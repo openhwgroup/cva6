@@ -207,7 +207,8 @@ module mmu import ariane_pkg::*; #(
         // 2. We got an access error because of insufficient permissions -> throw an access exception
         icache_areq_o.fetch_exception      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
+        iaccess_err   = icache_areq_i.fetch_req && enable_translation_i
+                                                 && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
                                                  || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
@@ -255,12 +256,12 @@ module mmu import ariane_pkg::*; #(
                 icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
                 if (ptw_error) icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
                 // TODO(moschn,zarubaf): What should the value of tval be in this case?
-                else icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, ptw_bad_paddr}, 1'b1};
+                else icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN-riscv::PLEN{1'b0}}, ptw_bad_paddr}, 1'b1};
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
-        if (!match_any_execute_region || (!enable_translation_i && !pmp_instr_allow)) begin
+        if ((!match_any_execute_region && !ptw_error) || (!enable_translation_i && !pmp_instr_allow)) begin
           icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
         end
     end
@@ -326,8 +327,8 @@ module mmu import ariane_pkg::*; #(
 
         // Check if the User flag is set, then we may only access it in supervisor mode
         // if SUM is enabled
-        daccess_err = (ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
-                      (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
+        daccess_err = en_ld_st_translation_i && ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
+                      (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u));            // this is not a user page but we are in user mode and trying to access it
         // translation is enabled and no misaligned exception occurred
         if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
             lsu_valid_o = 1'b0;

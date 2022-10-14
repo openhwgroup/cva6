@@ -221,7 +221,11 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
-    localparam NR_WB_PORTS = 5;
+
+    localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
+
+    // when cvx interface is present, use an additional writeback port
+    localparam NR_WB_PORTS = CVXIF_PRESENT ? 5 : 4;
 
     // Read ports for general purpose register files
     localparam NR_RGPR_PORTS = 2;
@@ -304,7 +308,7 @@ package ariane_pkg;
     // ---------------
     // Enable BITMANIP
     // ---------------
-    localparam bit BITMANIP = 1'b1;
+    localparam bit BITMANIP = 1'b0;
 
     // Only use struct when signals have same direction
     // exception
@@ -435,11 +439,14 @@ package ariane_pkg;
     localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
     localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
     localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN - ICACHE_INDEX_WIDTH;
+    localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     // D$
     localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
     localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
+    localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
+    localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
 `else
     // I$
     localparam int unsigned CONFIG_L1I_SIZE    = 16*1024;
@@ -457,8 +464,6 @@ package ariane_pkg;
     localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
 `endif
-
-    localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
 
     // ---------------
     // EX Stage

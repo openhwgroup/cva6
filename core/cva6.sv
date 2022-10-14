@@ -312,6 +312,22 @@ module cva6 import ariane_pkg::*; #(
     .tsr_i                      ( tsr_csr_id                 )
   );
 
+  logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
+  logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]   wbdata_ex_id;
+  exception_t [NR_WB_PORTS-1:0]              ex_ex_ex_id; // exception from execute, ex_stage to id_stage
+  logic [NR_WB_PORTS-1:0]                    wt_valid_ex_id;
+
+  if (CVXIF_PRESENT) begin
+    assign trans_id_ex_id = {x_trans_id_ex_id, flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id};
+    assign wbdata_ex_id   = {x_result_ex_id, flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id};
+    assign ex_ex_ex_id    = {x_exception_ex_id, flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id};
+    assign wt_valid_ex_id = {x_valid_ex_id, flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
+  end else begin
+    assign trans_id_ex_id = {flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id};
+    assign wbdata_ex_id   = {flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id};
+    assign ex_ex_ex_id    = {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id};
+    assign wt_valid_ex_id = {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
+  end
   // ---------
   // Issue
   // ---------
@@ -362,11 +378,11 @@ module cva6 import ariane_pkg::*; #(
     .x_off_instr_o              ( x_off_instr_id_ex            ),
     // Commit
     .resolved_branch_i          ( resolved_branch              ),
-    .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id, x_trans_id_ex_id}),
-    .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id, x_result_ex_id}),
-    .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id, x_exception_ex_id}),
-    .wt_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id, x_valid_ex_id}),
-    .x_we_i                     ( x_we_ex_id               ),
+    .trans_id_i                 ( trans_id_ex_id               ),
+    .wbdata_i                   ( wbdata_ex_id                 ),
+    .ex_ex_i                    ( ex_ex_ex_id                  ),
+    .wt_valid_i                 ( wt_valid_ex_id               ),
+    .x_we_i                     ( x_we_ex_id                   ),
 
     .waddr_i                    ( waddr_commit_id              ),
     .wdata_i                    ( wdata_commit_id              ),
