@@ -108,3 +108,4 @@ while [[ $j -lt ${#TEST_NAME[@]} ]];do
   rm -rf out_$dd
   j=$((j+1))
 done
+cd -
