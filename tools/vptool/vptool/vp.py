@@ -1727,18 +1727,30 @@ class MyMain:
                         list(self.ip_list.items()), key=lambda key: key[1].ip_num
                     )
                     # Create DVPLAN in Markdown format
-                    md_dir = os.path.join(os.path.dirname(vp_config.SAVED_DB_LOCATION), '..', 'source')
+                    md_dir = os.path.join(
+                        os.path.dirname(vp_config.SAVED_DB_LOCATION), "..", "source"
+                    )
                     if os.path.isfile(md_dir):
-                        print("*** MD destination '%s' is not a directory, cannot generate markdown output!" % md_dir)
+                        print(
+                            "*** MD destination '%s' is not a directory, cannot generate markdown output!"
+                            % md_dir
+                        )
                     else:
                         if not os.path.exists(md_dir):
                             try:
                                 os.makedirs(md_dir)
                             except Exception as e:
-                                print("*** Cannot create markdown output directory '%s', output will be sent to database directory" % md_dir)
+                                print(
+                                    "*** Cannot create markdown output directory '%s', output will be sent to database directory"
+                                    % md_dir
+                                )
                                 md_dir = os.path.dirname(vp_config.SAVED_DB_LOCATION)
-                        with open(os.path.join(md_dir, "dvplan_") + vp_config.PROJECT_NAME + ".md", "w"
-                         ) as md_file:
+                        with open(
+                            os.path.join(md_dir, "dvplan_")
+                            + vp_config.PROJECT_NAME
+                            + ".md",
+                            "w",
+                        ) as md_file:
                             md_file.write("# %s module\n\n" % (vp_config.PROJECT_NAME))
                             for ip_elt in pickle_ip_list:
                                 md_file.write(str(ip_elt[1]))

@@ -13,7 +13,7 @@ from datetime import datetime
 
 # Load the configuration associated with the current platform
 if "PLATFORM_TOP_DIR" in os.environ:
-    lib_path = os.path.abspath(os.path.join(os.environ["PLATFORM_TOP_DIR"], 'vptool'))
+    lib_path = os.path.abspath(os.path.join(os.environ["PLATFORM_TOP_DIR"], "vptool"))
     sys.path.append(lib_path)
     try:
         import vp_config
@@ -73,24 +73,35 @@ class Item:
         self.rfu_dict["lock_status"] = 0
 
     def attrval2str(self, attr):
-        if attr == 'cores' and 'cores' in vp_config.yaml_config:
+        if attr == "cores" and "cores" in vp_config.yaml_config:
             # 'cores' are at toplevel of the Yaml config and the attr value is a bitmap.
             # Select entries corresponding to each bit that is set
             # and return a comma-separated list of associated names.
-            matches = [ x['label'] for x in vp_config.yaml_config[attr]['values'] if x['value'] & getattr(self, attr) != 0]
+            matches = [
+                x["label"]
+                for x in vp_config.yaml_config[attr]["values"]
+                if x["value"] & getattr(self, attr) != 0
+            ]
             if len(matches) == 0:
-                return 'None applicable'
+                return "None applicable"
             else:
-                return ', '.join(matches)
-        elif 'values' in vp_config.yaml_config['gui'][attr]:
+                return ", ".join(matches)
+        elif "values" in vp_config.yaml_config["gui"][attr]:
             # This attribute takes predefined values.
             # A single value is allowed.
-            if getattr(self, attr) == vp_config.yaml_config['gui'][attr]['default']['value']:
-                return 'NDY (Not Defined Yet)'
+            if (
+                getattr(self, attr)
+                == vp_config.yaml_config["gui"][attr]["default"]["value"]
+            ):
+                return "NDY (Not Defined Yet)"
             else:
-                matches = [ x['label'] for x in vp_config.yaml_config['gui'][attr]['values'] if x['value'] == getattr(self, attr)]
+                matches = [
+                    x["label"]
+                    for x in vp_config.yaml_config["gui"][attr]["values"]
+                    if x["value"] == getattr(self, attr)
+                ]
                 if len(matches) == 0:
-                    return '<UNKNOWN>'
+                    return "<UNKNOWN>"
                 else:
                     return matches[0]
         else:
@@ -102,10 +113,12 @@ class Item:
         return0 += format("* **Requirement location:** %s\n" % self.purpose)
         return0 += format("* **Feature Description:** %s\n" % self.description)
         return0 += format("* **Verification goals:** %s\n" % self.verif_goals)
-        return0 += format("* **Pass/Fail Criteria:** %s\n" % self.attrval2str('pfc'))
-        return0 += format("* **Test Type:** %s\n" % self.attrval2str('test_type'))
-        return0 += format("* **Coverage Method:** %s\n" % self.attrval2str('cov_method'))
-        return0 += format("* **Applicable Cores:** %s\n" % self.attrval2str('cores'))
+        return0 += format("* **Pass/Fail Criteria:** %s\n" % self.attrval2str("pfc"))
+        return0 += format("* **Test Type:** %s\n" % self.attrval2str("test_type"))
+        return0 += format(
+            "* **Coverage Method:** %s\n" % self.attrval2str("cov_method")
+        )
+        return0 += format("* **Applicable Cores:** %s\n" % self.attrval2str("cores"))
         return0 += format("* **Link to Coverage:** %s\n" % self.tag)
         return0 += format("* **Comments:** %s\n\n" % self.comments)
         return return0
