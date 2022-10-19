@@ -438,8 +438,10 @@ pub_fpga-build:
 
 pub_generated_tests:
   stage: two
-  tags: [shell,debian10]
-  needs: [pub_smoke]
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: pub_smoke
+      artifacts: false
   variables:
     DASHBOARD_SORT_INDEX: 11
     DASHBOARD_JOB_CATEGORY: "Code Coverage"
@@ -455,24 +457,34 @@ pub_generated_tests:
         DASHBOARD_JOB_TITLE: "Generated CSR tests"
         DASHBOARD_JOB_DESCRIPTION: "Generate Random CSR tests using the RISCV-DV"
   script:
+    - mkdir -p artifacts/coverage
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - echo $SYN_VERDI_BASHRC; source $SYN_VERDI_BASHRC
     - DV_TARGET=cv64a6_imafdc_sv39 #Specification target
     - source ./cva6/regress/dv-generated-tests.sh
+    - mv cva6/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
+    - mv cva6/sim/seedlist.yaml artifacts/coverage
+    - python3 .gitlab-ci/scripts/report_pass.py
   rules:
     - when: manual
       allow_failure: true
   timeout: 4h
   artifacts:
-      paths:
-          - cva6/sim/vcs_results/default/vcs.d/simv.vdb
-          - cva6/sim/seedlist.yaml
-      expire_in: 3 week
+    when: always
+    paths:
+      - artifacts/coverage/simv.vdb
+      - artifacts/coverage/seedlist.yaml
+      - "artifacts/reports/*.yml"
+    expire_in: 3 week
 
 pub_fpga-boot:
   stage: three
   tags: [fpga,shell]
-  needs: [pub_fpga-build]
+  needs:
+    - job: pub_fpga-build
+      artifacts: true
   variables:
     VERILATOR_ROOT: "/shares/tools/dummy/verilator" # to avoid install of verilator
     SPIKE_ROOT: "/shares/tools/dummy/spike"  # to avoid install of spike
@@ -498,21 +510,33 @@ pub_fpga-boot:
 
 code_coverage-report:
   stage: three
-  tags: [shell,debian10]
+  tags: [$TAGS_RUNNER]
   needs:
     - job: pub_generated_tests
+      artifacts: true
+  variables:
+    DASHBOARD_JOB_TITLE: "Report merge coverage"
+    DASHBOARD_JOB_DESCRIPTION: "Report merge coverage of generated tests"
+    DASHBOARD_SORT_INDEX: 12
+    DASHBOARD_JOB_CATEGORY: "Code Coverage"
   script:
     - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - mkdir -p cva6/sim/vcs_results/default/vcs.d
+    - mv artifacts/coverage/simv.vdb cva6/sim/vcs_results/default/vcs.d/
+    - mv artifacts/coverage/seedlist.yaml cva6/sim/seedlist.yaml
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - echo $SYN_VERDI_BASHRC; source $SYN_VERDI_BASHRC
     - make -C cva6/sim generate_cov_dash
-    - mv cva6/sim/urgReport artifacts/reports/
+    - mv cva6/sim/urgReport artifacts/cov_reports/
+    - python3 .gitlab-ci/scripts/report_pass.py
   rules:
     - when: on_success
   artifacts:
     when: always
     paths:
-      - "artifacts/reports/urgReport"
+      - "artifacts/cov_reports/urgReport"
+      - "artifacts/reports/*.yml"
     expire_in: 3 week
 
 merge_report:
