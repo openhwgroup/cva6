@@ -472,11 +472,12 @@ pub_generated_tests:
       allow_failure: true
   timeout: 4h
   artifacts:
-      paths:
-          - artifacts/coverage/simv.vdb
-          - artifacts/coverage/seedlist.yaml
-          - "artifacts/reports/*.yml"
-      expire_in: 3 week
+    when: always
+    paths:
+      - artifacts/coverage/simv.vdb
+      - artifacts/coverage/seedlist.yaml
+      - "artifacts/reports/*.yml"
+    expire_in: 3 week
 
 pub_fpga-boot:
   stage: three
