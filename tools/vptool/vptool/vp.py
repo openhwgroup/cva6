@@ -1727,18 +1727,40 @@ class MyMain:
                         list(self.ip_list.items()), key=lambda key: key[1].ip_num
                     )
                     # Create DVPLAN in Markdown format
-                    with open(
-                        "../source/dvplan_" + vp_config.PROJECT_NAME + ".md", "w"
-                    ) as md_file:
-                        md_file.write("# %s module\n\n" % (vp_config.PROJECT_NAME))
-                        for ip_elt in pickle_ip_list:
-                            md_file.write(str(ip_elt[1]))
-                            for rfu1_elt in ip_elt[1].rfu_list:
-                                md_file.write(str(rfu1_elt[1]))
-                                for rfu2_elt in rfu1_elt[1].rfu_list:
-                                    # Generate only when cores = cv32a6-step1
-                                    if rfu2_elt[1].cores == 8:
-                                        md_file.write(str(rfu2_elt[1]))
+                    md_dir = os.path.join(
+                        os.path.dirname(vp_config.SAVED_DB_LOCATION), "..", "source"
+                    )
+                    if os.path.isfile(md_dir):
+                        print(
+                            "*** MD destination '%s' is not a directory, cannot generate markdown output!"
+                            % md_dir
+                        )
+                    else:
+                        if not os.path.exists(md_dir):
+                            try:
+                                os.makedirs(md_dir)
+                            except Exception as e:
+                                print(
+                                    "*** Cannot create markdown output directory '%s', output will be sent to database directory"
+                                    % md_dir
+                                )
+                                md_dir = os.path.dirname(vp_config.SAVED_DB_LOCATION)
+                        with open(
+                            os.path.join(md_dir, "dvplan_")
+                            + vp_config.PROJECT_NAME
+                            + ".md",
+                            "w",
+                        ) as md_file:
+                            md_file.write("# %s module\n\n" % (vp_config.PROJECT_NAME))
+                            for ip_elt in pickle_ip_list:
+                                md_file.write(str(ip_elt[1]))
+                                for rfu1_elt in ip_elt[1].rfu_list:
+                                    md_file.write(str(rfu1_elt[1]))
+                                    for rfu2_elt in rfu1_elt[1].rfu_list:
+                                        # FORNOW Generate only when 'cores' include CV32A6-step1
+                                        # (see sibling file 'vptool.yml').
+                                        if rfu2_elt[1].cores & 8 != 0:
+                                            md_file.write(str(rfu2_elt[1]))
                     if self.split_save:
                         save_dir = os.path.dirname(vp_config.SAVED_DB_LOCATION)
                         saved_ip_str = ""

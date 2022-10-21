@@ -7,9 +7,8 @@
 #############################################################################
 #!/bin/sh
 
-# Root of the example directories.  VPTOOL is located in '../vptool' relative
-# to the location of 'vptool-example.sh'.
-ROOTDIR=`readlink -f $(dirname $0)`
+# Location of project-specific directories
+ROOTDIR=`readlink -f $(dirname "${BASH_SOURCE[0]}")`
 
 # Set up platform location.  It can be anywhere but should contain
 # a valid `vp_config.py` file in `vptool` directory.
@@ -19,7 +18,11 @@ export PLATFORM_TOP_DIR="$ROOTDIR"
 # Set a meaningful name for the example project.
 export PROJECT_NAME="FRONTEND"
 
-export PYTHONPATH=`pwd`
+# Set Python path to make vpconfig.py reachable.
+export PYTHONPATH="$ROOTDIR:$PYTHONPATH"
 
 # Run VPTOOL overriding the default theme from Yaml config with 'winxpblue'.
+# FIXME: Introduce a suitably named shell variable that points to the root
+# directory of the tool set (TOOL_TOP etc.)
+# FORNOW use a hardcoded relative path.
 python3 $ROOTDIR/../../../../tools/vptool/vptool/vp.py -t winxpblue
