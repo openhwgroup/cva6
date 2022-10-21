@@ -513,7 +513,9 @@ where a high level of timing predictability is needed.
 +-----------------------------------+-----------------------------------+
 | L1W‑90                            | L1WTD should offer a feature to   |
 |                                   | transform cache ways into a       |
-|                                   | scratchpad.                       |
+|                                   | scratchpad. Alternatively, this   |
+|                                   | requirement can be realized with  |
+|                                   | a separate scratchpad.            |
 +-----------------------------------+-----------------------------------+
 | L1W‑100                           | A custom CSR shall allow to       |
 |                                   | disable or enable L1WTD.          |
@@ -569,7 +571,9 @@ applications where a high level of timing predictability is needed.
 +-----------------------------------+-----------------------------------+
 | L1I‑60                            | L1I should offer a feature to     |
 |                                   | transform cache ways into a       |
-|                                   | scratchpad.                       |
+|                                   | scratchpad. Alternatively, this   |
+|                                   | requirement can be realized with  |
+|                                   | a separate scratchpad.            |
 +-----------------------------------+-----------------------------------+
 | L1I‑70                            | A custom CSR shall allow to       |
 |                                   | disable or enable L1I.            |
