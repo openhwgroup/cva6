@@ -126,7 +126,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   always_comb begin : p_axi_req
     // write channel
     axi_wr_id_in = arb_idx;
-    axi_wr_data  = {(AxiDataWidth/64){dcache_data.data}};
+    axi_wr_data  = {(AxiDataWidth/riscv::XLEN){dcache_data.data}};
     axi_wr_user  = dcache_data.user;
     axi_wr_addr  = {{64-riscv::PLEN{1'b0}}, dcache_data.paddr};
     axi_wr_size  = dcache_data.size;
@@ -145,10 +145,8 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_rd_blen  = '0;
 
     if (dcache_data.paddr[2] == 1'b0) begin
-      axi_wr_data  = {{64-riscv::XLEN{1'b0}}, dcache_data.data};
       axi_wr_user  = {{64-AXI_USER_WIDTH{1'b0}}, dcache_data.user};
     end else begin
-      axi_wr_data  = {dcache_data.data, {64-riscv::XLEN{1'b0}}};
       axi_wr_user  = {dcache_data.user, {64-AXI_USER_WIDTH{1'b0}}};
     end
 
