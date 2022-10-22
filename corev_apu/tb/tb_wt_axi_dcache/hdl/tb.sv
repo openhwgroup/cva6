@@ -599,30 +599,15 @@ axi_riscv_atomics_wrap #(
     .dut_amo_resp_port_i ( amo_resp_o     )
   );
 
-  // Translate write requests for shadow memory. Delay them for one cycle for consistency.
+  // Translate write requests for shadow memory.
   initial begin
-    automatic logic       write_en_n;
-    automatic logic[63:0] write_paddr_n;
-    automatic logic[63:0] write_data_n;
-    automatic logic[7:0]  write_be_n;
-
-    write_en_n    = '0;
-    write_paddr_n = '0;
-    write_data_n  = '0;
-    write_be_n    = '0;
-
     forever begin
       `WAIT_CYC(clk_i,1)
 
-      write_en      = write_en_n;
-      write_paddr   = write_paddr_n;
-      write_data    = write_data_n;
-      write_be      = write_be_n;
-
-      write_en_n    = req_ports_i[2].data_req & req_ports_o[2].data_gnt & req_ports_i[2].data_we;
-      write_paddr_n = {req_ports_i[2].address_tag,  req_ports_i[2].address_index};
-      write_data_n  = req_ports_i[2].data_wdata;
-      write_be_n    = req_ports_i[2].data_be;
+      write_en    = req_ports_i[2].data_req & req_ports_o[2].data_gnt & req_ports_i[2].data_we;
+      write_paddr = {req_ports_i[2].address_tag,  req_ports_i[2].address_index};
+      write_data  = req_ports_i[2].data_wdata;
+      write_be    = req_ports_i[2].data_be;
     end
   end
 
