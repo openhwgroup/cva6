@@ -190,7 +190,7 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
 
         if(Verbose | !ok) begin
           tmpstr0 =  $psprintf("vector: %02d - %06d -- paddr:   %16X -- AMO: 0x%2X -- size: %X  -- op_a: %16X -- op_b: %16X",
-                      n, k, dut_amo_req_port_o.operand_a, dut_amo_req_port_o.amo_op, 2**dut_amo_req_port_o.size, exp_result_i, dut_amo_req_port_o.operand_b);
+                      n, k, dut_amo_req_port_o.operand_a, dut_amo_req_port_o.amo_op, 2**dut_amo_req_port_o.size, dut_amo_req_port_o.operand_a, dut_amo_req_port_o.operand_b);
           tmpstr1 =  $psprintf("vector: %02d - %06d -- exp_res: %16X -- exp_mem: %16X",
                       n, k, exp_result_i, exp_mem_i);
           tmpstr2 =  $psprintf("vector: %02d - %06d -- result:  %16X -- memory: %16X",
