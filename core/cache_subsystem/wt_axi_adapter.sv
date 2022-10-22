@@ -79,7 +79,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [AxiNumWords-1:0][(AxiDataWidth/8)-1:0]  axi_wr_be;
   logic [5:0] axi_wr_atop;
   logic invalidate;
-  logic [2:0] amo_off_d, amo_off_q;
+  logic [$clog2(AxiDataWidth/8)-1:0] amo_off_d, amo_off_q;
   // AMO generates r beat
   logic amo_gen_r_d, amo_gen_r_q;
 
@@ -226,13 +226,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
               AMO_SC: begin
                 axi_wr_lock  = 1'b1;
                 amo_gen_r_d  = 1'b0;
-                // needed to properly encode success
-                unique case (dcache_data.size[1:0])
-                  2'b00: amo_off_d    = dcache_data.paddr[2:0];
-                  2'b01: amo_off_d    = {dcache_data.paddr[2:1], 1'b0};
-                  2'b10: amo_off_d    = {dcache_data.paddr[2],   2'b00};
-                  2'b11: amo_off_d    = '0;
-                endcase
+                // needed to properly encode success. store the result at offset within the returned
+                // AXI data word aligned with the requested word size.
+                amo_off_d = dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] & ~((1 << dcache_data.size[1:0]) - 1);
               end
               // RISC-V atops have a load semantic
               AMO_SWAP: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ATOMICSWAP};
