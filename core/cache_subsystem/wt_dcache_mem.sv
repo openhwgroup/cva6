@@ -345,8 +345,18 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
 //pragma translate_off
 `ifndef VERILATOR
   initial begin
-    cach_line_width: assert (DCACHE_LINE_WIDTH/AxiDataWidth inside {1, 2, 4, 8, 16})
-      else $fatal(1, "[l1 dcache] cache line size needs to be a power of two multiple of AXI_DATA_WIDTH");
+    cach_line_width_axi: assert (DCACHE_LINE_WIDTH >= AxiDataWidth)
+      else $fatal(1, "[l1 dcache] cache line size needs to be greater or equal AXI data width");
+  end
+
+  initial begin
+    axi_xlen: assert (AxiDataWidth >= riscv::XLEN)
+      else $fatal(1, "[l1 dcache] AXI data width needs to be greater or equal XLEN");
+  end
+
+  initial begin
+    cach_line_width_xlen: assert (DCACHE_LINE_WIDTH > riscv::XLEN)
+      else $fatal(1, "[l1 dcache] cache_line_size needs to be greater than XLEN");
   end
 
   hit_hot1: assert property (
