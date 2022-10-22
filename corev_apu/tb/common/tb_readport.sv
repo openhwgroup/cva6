@@ -47,7 +47,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
   // expresp interface
   output logic [63:0]   exp_paddr_o,
   input  logic [1:0]    exp_size_i,
-  input  logic [63:0]   exp_rdata_i,
+  input  riscv::xlen_t  exp_rdata_i,
   input  logic [63:0]   exp_paddr_i,
   input  logic [63:0]   act_paddr_i,
 

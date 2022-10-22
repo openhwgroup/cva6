@@ -72,9 +72,9 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   input wbuffer_t             [DCACHE_WBUF_DEPTH-1:0]       wbuffer_data_i
 );
 
-  // number of bits needed to address AXI data. Until XLEN bit (processor dwidth) this is not needed.
-  // (Therefore lower cap at XLEN bit)
-  localparam AXI_OFFSET_WIDTH = AxiDataWidth <= riscv::XLEN ? 4 : $clog2(AxiDataWidth/8);
+  // number of bits needed to address AXI data. If AxiDataWidth equals XLEN this parameter
+  // is not needed. Therefore, increment it by one to avoid reverse range select during elaboration.
+  localparam AXI_OFFSET_WIDTH = AxiDataWidth == riscv::XLEN ? $clog2(AxiDataWidth/8)+1 : $clog2(AxiDataWidth/8);
 
   logic [DCACHE_NUM_BANKS-1:0]                                             bank_req;
   logic [DCACHE_NUM_BANKS-1:0]                                             bank_we;
@@ -248,7 +248,7 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   if (AxiCompliant) begin : gen_axi_off
       // In case of an uncached read, return the desired XLEN-bit segment of the most recent AXI read
-      assign wr_cl_off     = (wr_cl_nc_i) ? (AxiDataWidth <= riscv::XLEN) ? '0 :
+      assign wr_cl_off     = (wr_cl_nc_i) ? (AxiDataWidth == riscv::XLEN) ? '0 :
                               wr_cl_off_i[AXI_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES] :
                               wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES];
   end else begin  : gen_piton_off

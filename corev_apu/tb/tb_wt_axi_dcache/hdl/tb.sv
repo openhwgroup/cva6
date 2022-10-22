@@ -115,7 +115,7 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
   } reservation_t;
 
   logic [63:0] act_paddr[1:0];
-  logic [63:0] exp_rdata[1:0];
+  riscv::xlen_t exp_rdata[1:0];
   logic [63:0] exp_paddr[1:0];
   logic [63:0] amo_act_mem;
   logic [63:0] amo_shadow;
@@ -441,7 +441,7 @@ axi_riscv_atomics_wrap #(
     .AXI_ID_WIDTH       ( TbAxiIdWidthFull + 32'd1 ),
     .AXI_USER_WIDTH     ( TbAxiUserWidthFull       ),
     .AXI_MAX_WRITE_TXNS ( 1                        ),
-    .RISCV_WORD_WIDTH   ( 64                       )
+    .RISCV_WORD_WIDTH   ( riscv::XLEN              )
 ) i_amo_adapter (
     .clk_i  ( clk_i                         ),
     .rst_ni ( rst_ni                        ),
@@ -467,7 +467,7 @@ axi_riscv_atomics_wrap #(
       assign fifo_data_in[k] =  {req_ports_i[k].data_size,
                                  exp_paddr[k]};
 
-      for (genvar l=0; l<8; l++)
+      for (genvar l=0; l<riscv::XLEN/8; l++)
         assign exp_rdata[k][l*8 +: 8] = tb_mem_port_t::shadow_q[{fifo_data[k].paddr[63:3], 3'b0} + l];
 
       assign fifo_push[k]  = req_ports_i[k].data_req & req_ports_o[k].data_gnt;

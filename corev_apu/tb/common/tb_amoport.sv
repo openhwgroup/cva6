@@ -82,7 +82,10 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
       // Apply random stimuli, choose random AMO operand
       void'(randomize(amo_op) with {!(amo_op inside {AMO_NONE, AMO_CAS1, AMO_CAS2});});
       void'(randomize(data));
-      void'(randomize(size) with {size >= 2; size <= 3;});
+      if (riscv::XLEN == 64)
+        void'(randomize(size) with {size >= 2; size <= 3;});
+      else
+        size = 'h2;
 
       // For LRs/SCs, choose from only 4 adresses,
       // so that valid LR/SC combinations become more likely.

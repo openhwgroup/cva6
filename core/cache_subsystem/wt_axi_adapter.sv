@@ -68,7 +68,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic axi_wr_req, axi_wr_gnt;
   logic axi_wr_valid, axi_rd_valid, axi_rd_rdy, axi_wr_rdy;
   logic axi_rd_lock, axi_wr_lock, axi_rd_exokay, axi_wr_exokay, wr_exokay;
-  logic [63:0]                    axi_rd_addr, axi_wr_addr;
+  logic [AxiAddrWidth-1:0] axi_rd_addr, axi_wr_addr;
   logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
   logic [2:0] axi_rd_size, axi_wr_size;
   logic [AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
