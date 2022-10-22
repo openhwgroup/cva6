@@ -34,9 +34,18 @@
 ../../../common/submodules/common_cells/src/lzc.sv
 ../../../common/submodules/common_cells/src/rr_arb_tree.sv
 ../../../common/submodules/common_cells/src/exp_backoff.sv
+../../../common/submodules/common_cells/src/stream_arbiter.sv
+../../../common/submodules/common_cells/src/stream_arbiter_flushable.sv
+../../../common/submodules/common_cells/src/stream_mux.sv
 ../../src/tech_cells_generic/src/rtl/tc_sram.sv
 ../../../common/local/util/tc_sram_wrapper.sv
 ../../../common/local/util/sram.sv
+../../src/axi_riscv_atomics/src/axi_res_tbl.sv
+../../src/axi_riscv_atomics/src/axi_riscv_amos.sv
+../../src/axi_riscv_atomics/src/axi_riscv_amos_alu.sv
+../../src/axi_riscv_atomics/src/axi_riscv_lrsc.sv
+../../src/axi_riscv_atomics/src/axi_riscv_atomics.sv
+../../src/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv
 
 ../common/tb_dcache_pkg.sv
 ../common/tb_readport.sv
