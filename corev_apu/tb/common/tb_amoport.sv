@@ -16,7 +16,7 @@
 
 `include "tb.svh"
 
-program tb_amoport import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #(
+program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
   parameter string       PortName      = "atomics port 0",
   parameter              MemWords      = 1024*1024,// in 64bit words
   parameter logic [63:0] CachedAddrBeg = 0,
