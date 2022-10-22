@@ -188,10 +188,12 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
     icache_dreq_o.vaddr, icache_dreq_o.data);
 
-  a_invalid_write_data: assert property (
-    @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)
-  else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X",
-    {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
+  for (genvar j=0; j<riscv::XLEN/8; j++) begin : gen_invalid_write_assertion
+    a_invalid_write_data: assert property (
+      @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[2].data_req |-> dcache_req_ports_i[2].data_be[j] |-> (|dcache_req_ports_i[2].data_wdata[j*8+:8] !== 1'hX))
+    else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X, databe=%016X",
+      {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata, dcache_req_ports_i[2].data_be & dcache_req_ports_i[2].data_wdata);
+  end
 
 
   for (genvar j=0; j<2; j++) begin : gen_assertion
