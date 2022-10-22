@@ -326,9 +326,8 @@ add wave -noupdate -group i_axi_adapter {/tb/i_dut/i_adapter/*}
 add wave -noupdate -group i_axi_shim {/tb/i_dut/i_adapter/i_axi_shim/*}
 TreeUpdate [SetDefaultTree]
 quietly WaveActivateNextPane
-add wave -noupdate {/tb/i_tb_mem/mem_array_q[6741]}
-add wave -noupdate {/tb/i_tb_mem/mem_array_shadow_q[6741]}
-add wave -noupdate {/tb/i_tb_mem/mem_array_dirty_q[6741]}
+add wave -position insertpoint {sim:/tb_pkg::tb_mem_port::tb_mem_port__1::memory_q[8]}
+add wave -position insertpoint {sim:/tb_pkg::tb_mem_port::tb_mem_port__1::shadow_q[8]}
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {31432807547 ps} 0} {{Cursor 2} {17675291 ps} 0} {{Cursor 3} {1027790000 ps} 0}
 quietly wave cursor active 2
