@@ -15,6 +15,7 @@
 
 `include "tb.svh"
 `include "assign.svh"
+`include "axi/typedef.svh"
 
 module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
 
@@ -63,16 +64,23 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
 // MUT signal declarations
 ///////////////////////////////////////////////////////////////////////////////
 
-  logic                           enable_i;
-  logic                           flush_i;
-  logic                           flush_ack_o;
-  logic                           miss_o;
-  amo_req_t                       amo_req_i;
-  amo_resp_t                      amo_resp_o;
-  dcache_req_i_t [2:0]            req_ports_i;
-  dcache_req_o_t [2:0]            req_ports_o;
-  ariane_axi::req_t               axi_data_o;
-  ariane_axi::resp_t              axi_data_i;
+  `AXI_TYPEDEF_ALL(axi_data,
+                   logic [    TbAxiAddrWidthFull-1:0],
+                   logic [      TbAxiIdWidthFull-1:0],
+                   logic [    TbAxiDataWidthFull-1:0],
+                   logic [(TbAxiDataWidthFull/8)-1:0],
+                   logic [    TbAxiUserWidthFull-1:0])
+
+  logic                enable_i;
+  logic                flush_i;
+  logic                flush_ack_o;
+  logic                miss_o;
+  amo_req_t            amo_req_i;
+  amo_resp_t           amo_resp_o;
+  dcache_req_i_t [2:0] req_ports_i;
+  dcache_req_o_t [2:0] req_ports_o;
+  axi_data_req_t       axi_data_o;
+  axi_data_resp_t      axi_data_i;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TB signal declarations
@@ -397,8 +405,8 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
     .AxiAddrWidth ( TbAxiAddrWidthFull  ),
     .AxiDataWidth ( TbAxiDataWidthFull  ),
     .AxiIdWidth   ( TbAxiIdWidthFull    ),
-    .axi_req_t    ( ariane_axi::req_t   ),
-    .axi_rsp_t    ( ariane_axi::resp_t  )
+    .axi_req_t    ( axi_data_req_t      ),
+    .axi_rsp_t    ( axi_data_resp_t     )
   ) i_dut (
     .clk_i              (clk_i        ),
     .rst_ni             (rst_ni       ),
