@@ -113,9 +113,10 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
 ///////////////////////////////////////////////////////
 
   wt_dcache_missunit #(
-    .Axi64BitCompliant ( ArianeCfg.Axi64BitCompliant ),
-    .AmoTxId           ( RdAmoTxId                   ),
-    .NumPorts          ( NumPorts                    )
+    .AxiCompliant ( ArianeCfg.AxiCompliant ),
+    .AmoTxId      ( RdAmoTxId              ),
+    .NumPorts     ( NumPorts               ),
+    .AxiDataWidth ( AxiDataWidth           )
   ) i_wt_dcache_missunit (
     .clk_i              ( clk_i              ),
     .rst_ni             ( rst_ni             ),
@@ -276,9 +277,9 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
 ///////////////////////////////////////////////////////
 
   wt_dcache_mem #(
-    .Axi64BitCompliant ( ArianeCfg.Axi64BitCompliant ),
-    .AxiDataWidth      ( AxiDataWidth                ),
-    .NumPorts          ( NumPorts                    )
+    .AxiCompliant ( ArianeCfg.AxiCompliant ),
+    .AxiDataWidth ( AxiDataWidth           ),
+    .NumPorts     ( NumPorts               )
   ) i_wt_dcache_mem (
     .clk_i             ( clk_i              ),
     .rst_ni            ( rst_ni             ),

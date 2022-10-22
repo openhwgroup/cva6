@@ -246,7 +246,7 @@ add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/tx_vld_i
 add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/mem_rtrn_vld_i
 add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/mem_rtrn_i
 add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/mem_data_ack_i
-add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/Axi64BitCompliant
+add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/AxiCompliant
 add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/AmoTxId
 add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/NumPorts
 add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/state_d

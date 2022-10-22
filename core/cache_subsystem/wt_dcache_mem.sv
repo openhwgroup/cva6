@@ -27,9 +27,9 @@
 
 
 module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter bit          Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
-  parameter int unsigned AxiDataWidth       = 0,
-  parameter int unsigned NumPorts           = 3
+  parameter bit          AxiCompliant  = 1'b0, // set this to 1 when using in conjunction with AXI bus adapter
+  parameter int unsigned AxiDataWidth  = 0,
+  parameter int unsigned NumPorts      = 3
 ) (
   input  logic                                              clk_i,
   input  logic                                              rst_ni,
@@ -246,7 +246,7 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign wbuffer_ruser = wbuffer_data_i[wbuffer_hit_idx].user;
   assign wbuffer_be    = (|wbuffer_hit_oh) ? wbuffer_data_i[wbuffer_hit_idx].valid : '0;
 
-  if (Axi64BitCompliant) begin : gen_axi_off
+  if (AxiCompliant) begin : gen_axi_off
       // In case of an uncached read, return the desired XLEN-bit segment of the most recent AXI read
       assign wr_cl_off     = (wr_cl_nc_i) ? (AxiDataWidth <= riscv::XLEN) ? '0 :
                               wr_cl_off_i[AXI_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES] :

@@ -54,7 +54,7 @@ module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
     CachedRegionAddrBase: {CachedAddrBeg},
     CachedRegionLength:   {CachedAddrEnd-CachedAddrBeg+64'b1},
     // cache config
-    Axi64BitCompliant:     1'b0,
+    AxiCompliant:          1'b0,
     SwapEndianess:         1'b0,
     // debug
     DmBaseAddress:         64'h0,
