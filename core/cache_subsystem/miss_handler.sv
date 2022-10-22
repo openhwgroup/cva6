@@ -617,7 +617,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .wdata_i             ( req_fsm_miss_wdata ),
         .be_i                ( req_fsm_miss_be    ),
         .size_i              ( req_fsm_miss_size  ),
-        .id_i                ( AXI_ID_WIDTH'b1100 ),
+        .id_i                ( 'b1100             ),
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),
