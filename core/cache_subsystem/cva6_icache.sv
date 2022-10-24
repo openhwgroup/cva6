@@ -425,7 +425,8 @@ end else begin : gen_piton_offset
     sram #(
       // tag + valid bit
       .DATA_WIDTH ( ICACHE_TAG_WIDTH+1 ),
-      .NUM_WORDS  ( ICACHE_NUM_WORDS   )
+      .NUM_WORDS  ( ICACHE_NUM_WORDS   ),
+      .FPGA_OPTIM ( ariane_pkg::FPGA_OPTIMIZATION_EN )
     ) tag_sram (
       .clk_i     ( clk_i                    ),
       .rst_ni    ( rst_ni                   ),
@@ -449,7 +450,8 @@ end else begin : gen_piton_offset
       .USER_WIDTH ( ICACHE_USER_LINE_WIDTH ),
       .DATA_WIDTH ( ICACHE_LINE_WIDTH ),
       .USER_EN    ( ariane_pkg::FETCH_USER_EN ),
-      .NUM_WORDS  ( ICACHE_NUM_WORDS  )
+      .NUM_WORDS  ( ICACHE_NUM_WORDS  ),
+      .FPGA_OPTIM ( ariane_pkg::FPGA_OPTIMIZATION_EN )
     ) data_sram (
       .clk_i     ( clk_i               ),
       .rst_ni    ( rst_ni              ),

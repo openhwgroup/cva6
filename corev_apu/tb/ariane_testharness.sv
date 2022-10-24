@@ -460,7 +460,8 @@ module ariane_testharness #(
 `ifdef DROMAJO
     .DROMAJO_RAM (1),
 `endif
-    .NUM_WORDS  ( NUM_WORDS      )
+    .NUM_WORDS  ( NUM_WORDS      ),
+    .FPGA_OPTIM ( ariane_pkg::FPGA_OPTIMIZATION_EN )
   ) i_sram (
     .clk_i      ( clk_i                                                                       ),
     .rst_ni     ( rst_ni                                                                      ),

@@ -28,5 +28,7 @@ package cva6_config_pkg;
     localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
     localparam CVA6ConfigRenameEn = 0;
+    
+    localparam CVA6ConfigFPGAEn = 0;
 
 endpackage
