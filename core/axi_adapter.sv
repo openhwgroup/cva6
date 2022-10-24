@@ -72,7 +72,8 @@ module axi_adapter #(
   always_comb begin : axi_fsm
     // Default assignments
     axi_req_o.aw_valid  = 1'b0;
-    axi_req_o.aw.addr   = addr_i[AXI_ADDR_WIDTH-1:0];
+    // Cast to AXI address width
+    axi_req_o.aw.addr   = addr_i;
     axi_req_o.aw.prot   = 3'b0;
     axi_req_o.aw.region = 4'b0;
     axi_req_o.aw.len    = 8'b0;
@@ -86,9 +87,13 @@ module axi_adapter #(
     axi_req_o.aw.user   = '0;
 
     axi_req_o.ar_valid  = 1'b0;
+    // Cast to AXI address width
+    axi_req_o.ar.addr   = addr_i;
     // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
     // with an incremental transfer we need to output the corresponding base address of the cache line
-    axi_req_o.ar.addr   = (CRITICAL_WORD_FIRST || type_i == ariane_axi::SINGLE_REQ) ? addr_i[AXI_ADDR_WIDTH-1:0] : { addr_i[AXI_ADDR_WIDTH-1:CACHELINE_BYTE_OFFSET], {{CACHELINE_BYTE_OFFSET}{1'b0}}};
+    if (!CRITICAL_WORD_FIRST && type_i != ariane_axi::SINGLE_REQ) begin
+      axi_req_o.ar.addr[CACHELINE_BYTE_OFFSET-1:0] = '0;
+    end
     axi_req_o.ar.prot   = 3'b0;
     axi_req_o.ar.region = 4'b0;
     axi_req_o.ar.len    = 8'b0;

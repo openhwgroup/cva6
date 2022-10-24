@@ -564,6 +564,10 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     // ----------------------
     // Bypass AXI Interface
     // ----------------------
+    // Cast bypass_adapter_req.addr to axi_adapter port size
+    logic [riscv::XLEN-1:0] bypass_addr;
+    assign bypass_addr = bypass_adapter_req.addr;
+
     axi_adapter #(
         .DATA_WIDTH            ( 64                 ),
         .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET ),
@@ -579,7 +583,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .type_i               (bypass_adapter_req.reqtype),
         .amo_i                (bypass_adapter_req.amo),
         .id_i                 (({{AXI_ID_WIDTH-4{1'b0}}, bypass_adapter_req.id})),
-        .addr_i               (bypass_adapter_req.addr),
+        .addr_i               (bypass_addr),
         .wdata_i              (bypass_adapter_req.wdata),
         .we_i                 (bypass_adapter_req.we),
         .be_i                 (bypass_adapter_req.be),
@@ -597,6 +601,10 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     // ----------------------
     // Cache Line AXI Refill
     // ----------------------
+    // Cast req_fsm_miss_addr to axi_adapter port size
+    logic [riscv::XLEN-1:0] miss_addr;
+    assign miss_addr = req_fsm_miss_addr;
+
     axi_adapter  #(
         .DATA_WIDTH            ( DCACHE_LINE_WIDTH  ),
         .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET ),
@@ -612,7 +620,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .type_i              ( req_fsm_miss_req   ),
         .amo_i               ( AMO_NONE           ),
         .gnt_o               ( gnt_miss_fsm       ),
-        .addr_i              ( req_fsm_miss_addr  ),
+        .addr_i              ( miss_addr          ),
         .we_i                ( req_fsm_miss_we    ),
         .wdata_i             ( req_fsm_miss_wdata ),
         .be_i                ( req_fsm_miss_be    ),

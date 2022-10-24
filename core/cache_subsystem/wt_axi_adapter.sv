@@ -128,7 +128,8 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_wr_id_in = arb_idx;
     axi_wr_data  = {(AxiDataWidth/riscv::XLEN){dcache_data.data}};
     axi_wr_user  = dcache_data.user;
-    axi_wr_addr  = {{64-riscv::PLEN{1'b0}}, dcache_data.paddr};
+    // Cast to AXI address width
+    axi_wr_addr  = dcache_data.paddr;
     axi_wr_size  = dcache_data.size;
     axi_wr_req   = 1'b0;
     axi_wr_blen  = '0;// single word writes
@@ -152,14 +153,16 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 
     // arbiter mux
     if (arb_idx) begin
-      axi_rd_addr  = {{64-riscv::PLEN{1'b0}}, dcache_data.paddr};
+      // Cast to AXI address width
+      axi_rd_addr = dcache_data.paddr;
       // If dcache_data.size MSB is set, we want to read as much as possible
       axi_rd_size  = dcache_data.size[2] ? $clog2(AxiDataWidth/8) : dcache_data.size;
       if (dcache_data.size[2]) begin
         axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH/AxiDataWidth-1;
       end
     end else begin
-      axi_rd_addr  = {{64-riscv::PLEN{1'b0}}, icache_data.paddr};
+      // Cast to AXI address width
+      axi_rd_addr = icache_data.paddr;
       axi_rd_size  = $clog2(AxiDataWidth/8); // always request max number of words in case of ifill
       if (!icache_data.nc) begin
         axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/AxiDataWidth-1;

@@ -57,7 +57,8 @@ add wave -noupdate -group i_missunit /tb/i_dut/i_miss_handler/*
 add wave -noupdate -group i_ctrl0 {/tb/i_dut/master_ports[0]/i_cache_ctrl/*}
 add wave -noupdate -group i_ctrl1 {/tb/i_dut/master_ports[1]/i_cache_ctrl/*}
 add wave -noupdate -group i_ctrl2 {/tb/i_dut/master_ports[2]/i_cache_ctrl/*}
-add wave -noupdate -group i_miss_axi_adapter0 /tb/i_dut/i_miss_handler/i_miss_axi_adapter/*
+add wave -noupdate -group i_bypass_axi_adapter /tb/i_dut/i_miss_handler/i_bypass_axi_adapter/*
+add wave -noupdate -group i_miss_axi_adapter /tb/i_dut/i_miss_handler/i_miss_axi_adapter/*
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {31432807547 ps} 0} {{Cursor 2} {17675291 ps} 0} {{Cursor 3} {1027790000 ps} 0}
 quietly wave cursor active 2
