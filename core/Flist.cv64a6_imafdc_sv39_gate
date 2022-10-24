@@ -23,5 +23,9 @@ ${CVA6_REPO_DIR}/core/include/axi_intf.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
 ${LIB_VERILOG}
-${CVA6_REPO_DIR}/pd/synth/ariane_synth_modified.v
-${CVA6_REPO_DIR}/pd/synth/SyncSpRamBeNx64_1.sv
+${CVA6_REPO_DIR}/pd/synth/cva6_cv64a6_imafdc_sv39_synth_modified.v
+
+${CVA6_REPO_DIR}/pd/synth/tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0.sv
+${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
+${CVA6_REPO_DIR}/corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv
+${CVA6_REPO_DIR}/common/local/util/sram.sv

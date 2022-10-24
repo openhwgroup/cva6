@@ -68,7 +68,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [1:0] axi_rd_size, axi_wr_size;
   logic [$size(axi_resp_i.r.id)-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
   logic [AxiNumWords-1:0][63:0] axi_wr_data;
+  logic [AxiNumWords-1:0][AXI_USER_WIDTH-1:0] axi_wr_user;
   logic [63:0] axi_rd_data;
+  logic [AXI_USER_WIDTH-1:0] axi_rd_user;
   logic [AxiNumWords-1:0][7:0]  axi_wr_be;
   logic [5:0] axi_wr_atop;
   logic invalidate;
@@ -120,6 +122,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     // write channel
     axi_wr_id_in = arb_idx;
     axi_wr_data  = dcache_data.data;
+    axi_wr_user  = dcache_data.user;
     axi_wr_addr  = {{64-riscv::PLEN{1'b0}}, dcache_data.paddr};
     axi_wr_size  = dcache_data.size[1:0];
     axi_wr_req   = 1'b0;
@@ -135,6 +138,14 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_rd_req   = 1'b0;
     axi_rd_lock  = '0;
     axi_rd_blen  = '0;
+
+    if (dcache_data.paddr[2] == 1'b0) begin
+      axi_wr_data  = {{64-riscv::XLEN{1'b0}}, dcache_data.data};
+      axi_wr_user  = {{64-AXI_USER_WIDTH{1'b0}}, dcache_data.user};
+    end else begin
+      axi_wr_data  = {dcache_data.data, {64-riscv::XLEN{1'b0}}};
+      axi_wr_user  = {dcache_data.user, {64-AXI_USER_WIDTH{1'b0}}};
+    end
 
     // arbiter mux
     if (arb_idx) begin
@@ -171,7 +182,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
           //////////////////////////////////////
           wt_cache_pkg::DCACHE_STORE_REQ: begin
             axi_wr_req   = 1'b1;
-            axi_wr_be    = wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
+            axi_wr_be    = wt_cache_pkg::to_byte_enable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
           end
           //////////////////////////////////////
           wt_cache_pkg::DCACHE_ATOMIC_REQ: begin
@@ -182,7 +193,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
             // an atomic, this is safe.
             invalidate   = arb_gnt;
             axi_wr_req   = 1'b1;
-            axi_wr_be    = wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
+            axi_wr_be    = wt_cache_pkg::to_byte_enable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
             amo_gen_r_d  = 1'b1;
             // need to use a separate ID here, so concat an additional bit
             axi_wr_id_in[1] = 1'b1;
@@ -212,7 +223,13 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
               AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
               AMO_AND:  begin
                 // in this case we need to invert the data to get a "CLR"
-                axi_wr_data  = ~dcache_data.data;
+                if (dcache_data.paddr[2] == 1'b0) begin
+                  axi_wr_data  = {{64-riscv::XLEN{1'b1}}, ~dcache_data.data};
+                  axi_wr_user  = {{64-riscv::XLEN{1'b1}}, ~dcache_data.user};
+                end else begin
+                  axi_wr_data  = {~dcache_data.data, {64-riscv::XLEN{1'b1}}};
+                  axi_wr_user  = {~dcache_data.user, {64-riscv::XLEN{1'b1}}};
+                end
                 axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
               end
               AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
@@ -354,7 +371,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   // buffer read responses in shift regs
   logic icache_first_d, icache_first_q, dcache_first_d, dcache_first_q;
   logic [ICACHE_LINE_WIDTH/64-1:0][63:0] icache_rd_shift_d, icache_rd_shift_q;
+  logic [ICACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:0][AXI_USER_WIDTH-1:0] icache_rd_shift_user_d, icache_rd_shift_user_q;
   logic [DCACHE_LINE_WIDTH/64-1:0][63:0] dcache_rd_shift_d, dcache_rd_shift_q;
+  logic [DCACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:0][AXI_USER_WIDTH-1:0] dcache_rd_shift_user_d, dcache_rd_shift_user_q;
   wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
   wt_cache_pkg::dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
   logic dcache_sc_rtrn, axi_rd_last;
@@ -365,6 +384,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     icache_rtrn_o.rtype        = wt_cache_pkg::ICACHE_IFILL_ACK;
     icache_rtrn_o.tid          = icache_rtrn_tid_q;
     icache_rtrn_o.data         = icache_rd_shift_q;
+    icache_rtrn_o.user         = icache_rd_shift_user_q;
     icache_rtrn_vld_o          = icache_rtrn_vld_q;
 
     dcache_rtrn_o              = '0;
@@ -372,34 +392,43 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     dcache_rtrn_o.inv          = dcache_rtrn_inv_q;
     dcache_rtrn_o.tid          = dcache_rtrn_tid_q;
     dcache_rtrn_o.data         = dcache_rd_shift_q;
+    dcache_rtrn_o.user         = dcache_rd_shift_user_q;
     dcache_rtrn_vld_o          = dcache_rtrn_vld_q;
 
     // read shift registers
     icache_rd_shift_d = icache_rd_shift_q;
+    icache_rd_shift_user_d = icache_rd_shift_user_q;
     dcache_rd_shift_d = dcache_rd_shift_q;
+    dcache_rd_shift_user_d = dcache_rd_shift_user_q;
     icache_first_d    = icache_first_q;
     dcache_first_d    = dcache_first_q;
 
     if (icache_rtrn_rd_en) begin
       icache_first_d    = axi_rd_last;
       icache_rd_shift_d = {axi_rd_data, icache_rd_shift_q[ICACHE_LINE_WIDTH/64-1:1]};
+      icache_rd_shift_user_d = {axi_rd_user, icache_rd_shift_user_q[ICACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:1]};
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (icache_first_q) begin
         icache_rd_shift_d[0] = axi_rd_data;
+        icache_rd_shift_user_d[0] = axi_rd_user;
       end
     end
 
     if (dcache_rtrn_rd_en) begin
       dcache_first_d    = axi_rd_last;
       dcache_rd_shift_d = {axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/64-1:1]};
+      dcache_rd_shift_user_d = {axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:1]};
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (dcache_first_q) begin
         dcache_rd_shift_d[0] = axi_rd_data;
+        dcache_rd_shift_user_d[0] = axi_rd_user;
       end
     end else if (dcache_sc_rtrn) begin
       // encode lr/sc success
       dcache_rd_shift_d[0] = '0;
+      dcache_rd_shift_user_d[0] = '0;
       dcache_rd_shift_d[0][amo_off_q*8] = (wr_exokay) ? '0 : 1'b1;
+      dcache_rd_shift_user_d[0][amo_off_q*8] = (wr_exokay) ? '0 : 1'b1;
     end
   end
 
@@ -507,7 +536,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
       icache_first_q     <= 1'b1;
       dcache_first_q     <= 1'b1;
       icache_rd_shift_q  <= '0;
+      icache_rd_shift_user_q  <= '0;
       dcache_rd_shift_q  <= '0;
+      dcache_rd_shift_user_q  <= '0;
       icache_rtrn_vld_q  <= '0;
       dcache_rtrn_vld_q  <= '0;
       icache_rtrn_tid_q  <= '0;
@@ -520,7 +551,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
       icache_first_q     <= icache_first_d;
       dcache_first_q     <= dcache_first_d;
       icache_rd_shift_q  <= icache_rd_shift_d;
+      icache_rd_shift_user_q  <= icache_rd_shift_user_d;
       dcache_rd_shift_q  <= dcache_rd_shift_d;
+      dcache_rd_shift_user_q  <= dcache_rd_shift_user_d;
       icache_rtrn_vld_q  <= icache_rtrn_vld_d;
       dcache_rtrn_vld_q  <= dcache_rtrn_vld_d;
       icache_rtrn_tid_q  <= icache_rtrn_tid_d;
@@ -538,6 +571,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 ///////////////////////////////////////////////////////
 
   axi_shim #(
+    .AxiUserWidth    ( AXI_USER_WIDTH         ),
     .AxiNumWords     ( AxiNumWords            ),
     .AxiIdWidth      ( $size(axi_resp_i.r.id) )
   ) i_axi_shim (
@@ -554,12 +588,14 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     .rd_last_o       ( axi_rd_last       ),
     .rd_valid_o      ( axi_rd_valid      ),
     .rd_data_o       ( axi_rd_data       ),
+    .rd_user_o       ( axi_rd_user       ),
     .rd_id_o         ( axi_rd_id_out     ),
     .rd_exokay_o     ( axi_rd_exokay     ),
     .wr_req_i        ( axi_wr_req        ),
     .wr_gnt_o        ( axi_wr_gnt        ),
     .wr_addr_i       ( axi_wr_addr       ),
     .wr_data_i       ( axi_wr_data       ),
+    .wr_user_i       ( axi_wr_user       ),
     .wr_be_i         ( axi_wr_be         ),
     .wr_blen_i       ( axi_wr_blen       ),
     .wr_size_i       ( axi_wr_size       ),

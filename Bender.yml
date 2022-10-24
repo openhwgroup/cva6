@@ -19,7 +19,6 @@ sources:
     - core/include/riscv_pkg.sv
     - corev_apu/riscv-dbg/src/dm_pkg.sv
     - core/include/ariane_pkg.sv
-    - core/include/std_cache_pkg.sv
     - core/include/wt_cache_pkg.sv
     - corev_apu/axi/src/axi_pkg.sv
     - corev_apu/register_interface/src/reg_intf.sv
@@ -28,6 +27,7 @@ sources:
     - corev_apu/tb/ariane_soc_pkg.sv
     - corev_apu/tb/ariane_axi_soc_pkg.sv
     - core/include/ariane_axi_pkg.sv
+    - core/include/std_cache_pkg.sv
     - core/fpu/src/fpnew_pkg.sv
     - core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
     # Stand-alone source files
@@ -153,10 +153,6 @@ sources:
     - common/submodules/common_cells/src/stream_demux.sv
     - common/submodules/common_cells/src/stream_arbiter.sv
     - common/submodules/common_cells/src/stream_arbiter_flushable.sv
-    - common/local/util/axi_master_connect.sv
-    - common/local/util/axi_slave_connect.sv
-    - common/local/util/axi_master_connect_rev.sv
-    - common/local/util/axi_slave_connect_rev.sv
     - corev_apu/axi/src/axi_cut.sv
     - corev_apu/axi/src/axi_join.sv
     - corev_apu/axi/src/axi_delayer.sv

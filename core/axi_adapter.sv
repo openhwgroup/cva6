@@ -27,8 +27,8 @@ module axi_adapter #(
 
   input  logic                             req_i,
   input  ariane_axi::ad_req_t              type_i,
+  input  ariane_pkg::amo_t                 amo_i,
   output logic                             gnt_o,
-  output logic [AXI_ID_WIDTH-1:0]          gnt_id_o,
   input  logic [riscv::XLEN-1:0]           addr_i,
   input  logic                             we_i,
   input  logic [(DATA_WIDTH/riscv::XLEN)-1:0][riscv::XLEN-1:0] wdata_i,
@@ -51,7 +51,7 @@ module axi_adapter #(
 
   enum logic [3:0] {
     IDLE, WAIT_B_VALID, WAIT_AW_READY, WAIT_LAST_W_READY, WAIT_LAST_W_READY_AW_READY, WAIT_AW_READY_BURST,
-    WAIT_R_VALID, WAIT_R_VALID_MULTIPLE, COMPLETE_READ
+    WAIT_R_VALID, WAIT_R_VALID_MULTIPLE, COMPLETE_READ, WAIT_AMO_R_VALID
   } state_q, state_d;
 
   // counter for AXI transfers
@@ -61,6 +61,9 @@ module axi_adapter #(
   logic [(DATA_WIDTH/riscv::XLEN)-1:0] addr_offset_d, addr_offset_q;
   logic [AXI_ID_WIDTH-1:0]    id_d, id_q;
   logic [ADDR_INDEX-1:0]      index;
+  // save the atomic operation and size
+  ariane_pkg::amo_t amo_d, amo_q;
+  logic [1:0] size_d, size_q;
 
   always_comb begin : axi_fsm
     // Default assignments
@@ -75,7 +78,7 @@ module axi_adapter #(
     axi_req_o.aw.cache  = 4'b0;
     axi_req_o.aw.qos    = 4'b0;
     axi_req_o.aw.id     = id_i;
-    axi_req_o.aw.atop   = '0; // currently not used
+    axi_req_o.aw.atop   = atop_from_amo(amo_i);
     axi_req_o.aw.user   = '0;
 
     axi_req_o.ar_valid  = 1'b0;
@@ -103,7 +106,6 @@ module axi_adapter #(
     axi_req_o.r_ready   = 1'b0;
 
     gnt_o    = 1'b0;
-    gnt_id_o = id_i;
     valid_o  = 1'b0;
     id_o     = axi_resp_i.r.id;
 
@@ -116,6 +118,8 @@ module axi_adapter #(
     cache_line_d  = cache_line_q;
     addr_offset_d = addr_offset_q;
     id_d          = id_q;
+    amo_d         = amo_q;
+    size_d        = size_q;
     index         = '0;
 
     case (state_q)
@@ -130,6 +134,8 @@ module axi_adapter #(
             // the data is valid
             axi_req_o.aw_valid = 1'b1;
             axi_req_o.w_valid  = 1'b1;
+            // store-conditional requires exclusive access
+            axi_req_o.aw.lock = amo_i == ariane_pkg::AMO_SC;
             // its a single write
             if (type_i == ariane_axi::SINGLE_REQ) begin
               // only a single write so the data is already the last one
@@ -143,8 +149,17 @@ module axi_adapter #(
                 default: state_d = IDLE;
               endcase
 
+              if (axi_resp_i.aw_ready) begin
+                amo_d  = amo_i;
+                size_d = size_i;
+              end
+
             // its a request for the whole cache line
             end else begin
+              // bursts of AMOs unsupported
+              assert (amo_i == ariane_pkg::AMO_NONE) 
+                else $fatal("Bursts of atomic operations are not supported");
+
               axi_req_o.aw.len = BURST_SIZE; // number of bursts to do
               axi_req_o.w.data = wdata_i[0];
               axi_req_o.w.strb = be_i[0];
@@ -165,8 +180,14 @@ module axi_adapter #(
           end else begin
 
             axi_req_o.ar_valid = 1'b1;
+            // load-reserved requires exclusive access
+            axi_req_o.ar.lock = amo_i == ariane_pkg::AMO_LR;
+
             gnt_o = axi_resp_i.ar_ready;
             if (type_i != ariane_axi::SINGLE_REQ) begin
+              assert (amo_i == ariane_pkg::AMO_NONE) 
+                else $fatal("Bursts of atomic operations are not supported");
+
               axi_req_o.ar.len = BURST_SIZE;
               cnt_d = BURST_SIZE;
             end
@@ -186,6 +207,8 @@ module axi_adapter #(
         if (axi_resp_i.aw_ready) begin
           gnt_o   = 1'b1;
           state_d = WAIT_B_VALID;
+          amo_d   = amo_i;
+          size_d  = size_i;
         end
       end
 
@@ -264,13 +287,54 @@ module axi_adapter #(
 
       // ~> finish write transaction
       WAIT_B_VALID: begin
-        axi_req_o.b_ready = 1'b1;
         id_o = axi_resp_i.b.id;
 
         // Write is valid
         if (axi_resp_i.b_valid) begin
-          state_d = IDLE;
-          valid_o = 1'b1;
+          axi_req_o.b_ready = 1'b1;
+
+          // some atomics must wait for read data
+          // we only accept it after accepting bvalid
+          if (amo_returns_data(amo_q)) begin
+            if (axi_resp_i.r_valid) begin
+              // return read data if valid
+              valid_o           = 1'b1;
+              axi_req_o.r_ready = 1'b1;
+              state_d           = IDLE;
+              rdata_o           = axi_resp_i.r.data;
+            end else begin
+              // wait otherwise
+              state_d = WAIT_AMO_R_VALID;
+            end
+          end else begin
+            valid_o = 1'b1;
+            state_d = IDLE;
+
+            // store-conditional response
+            if (amo_q == ariane_pkg::AMO_SC) begin
+              if (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY) begin
+                // success -> return 0
+                rdata_o = 1'b0;
+              end else begin
+                // failure -> when request is 64-bit, return 1;
+                // when request is 32-bit place a 1 in both upper
+                // and lower half words. The right word will be
+                // realigned/masked externally
+                rdata_o = size_q == 2'b10 ? (1'b1 << 32) | 64'b1 : 64'b1;
+              end
+            end
+          end
+        end
+      end
+
+      // ~> some atomics wait for read data
+      WAIT_AMO_R_VALID: begin
+        // acknowledge data and terminate atomic
+        if (axi_resp_i.r_valid) begin
+          axi_req_o.r_ready = 1'b1;
+          state_d           = IDLE;
+          valid_o           = 1'b1;
+          rdata_o           = axi_resp_i.r.data;
         end
       end
 
@@ -336,13 +400,46 @@ module axi_adapter #(
       cache_line_q  <= '0;
       addr_offset_q <= '0;
       id_q          <= '0;
+      amo_q         <= ariane_pkg::AMO_NONE;
+      size_q        <= '0;
     end else begin
       state_q       <= state_d;
       cnt_q         <= cnt_d;
       cache_line_q  <= cache_line_d;
       addr_offset_q <= addr_offset_d;
       id_q          <= id_d;
+      amo_q         <= amo_d;
+      size_q        <= size_d;
     end
   end
+
+  function automatic axi_pkg::atop_t atop_from_amo(ariane_pkg::amo_t amo);
+    axi_pkg::atop_t result = 6'b000000;
+
+    unique case(amo)
+      ariane_pkg::AMO_NONE: result = {axi_pkg::ATOP_NONE, 4'b0000};
+      ariane_pkg::AMO_SWAP: result = {axi_pkg::ATOP_ATOMICSWAP};
+      ariane_pkg::AMO_ADD : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
+      ariane_pkg::AMO_AND : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
+      ariane_pkg::AMO_OR  : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
+      ariane_pkg::AMO_XOR : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
+      ariane_pkg::AMO_MAX : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX};
+      ariane_pkg::AMO_MAXU: result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX};
+      ariane_pkg::AMO_MIN : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN};
+      ariane_pkg::AMO_MINU: result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN};
+      ariane_pkg::AMO_CAS1: result = {axi_pkg::ATOP_NONE, 4'b0000}; // Unsupported
+      ariane_pkg::AMO_CAS2: result = {axi_pkg::ATOP_NONE, 4'b0000}; // Unsupported
+      default: result = 6'b000000;
+    endcase
+
+    return result;
+  endfunction
+
+  function automatic logic amo_returns_data(ariane_pkg::amo_t amo);
+    axi_pkg::atop_t atop           = atop_from_amo(amo);
+    logic           is_load        = atop[5:4] == axi_pkg::ATOP_ATOMICLOAD;
+    logic           is_swap_or_cmp = atop[5:4] == axi_pkg::ATOP_ATOMICSWAP[5:4];
+    return is_load || is_swap_or_cmp;
+  endfunction
 
 endmodule

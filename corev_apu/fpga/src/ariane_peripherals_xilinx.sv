@@ -8,7 +8,10 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Xilinx Peripehrals
+// Xilinx Peripherals
+
+`include "register_interface/assign.svh"
+`include "register_interface/typedef.svh"
 
 module ariane_peripherals #(
     parameter int AxiAddrWidth = -1,
@@ -160,28 +163,26 @@ module ariane_peripherals #(
         .reg_o     ( reg_bus      )
     );
 
-    reg_intf::reg_intf_resp_d32 plic_resp;
-    reg_intf::reg_intf_req_a32_d32 plic_req;
+    // define reg type according to REG_BUS above
+    `REG_BUS_TYPEDEF_ALL(plic, logic[31:0], logic[31:0], logic[3:0])
+    plic_req_t plic_req;
+    plic_rsp_t plic_rsp;
 
-    assign plic_req.addr  = reg_bus.addr;
-    assign plic_req.write = reg_bus.write;
-    assign plic_req.wdata = reg_bus.wdata;
-    assign plic_req.wstrb = reg_bus.wstrb;
-    assign plic_req.valid = reg_bus.valid;
-
-    assign reg_bus.rdata = plic_resp.rdata;
-    assign reg_bus.error = plic_resp.error;
-    assign reg_bus.ready = plic_resp.ready;
+    // assign REG_BUS.out to (req_t, rsp_t) pair
+    `REG_BUS_ASSIGN_TO_REQ(plic_req, reg_bus)
+    `REG_BUS_ASSIGN_FROM_RSP(reg_bus, plic_rsp)
 
     plic_top #(
       .N_SOURCE    ( ariane_soc::NumSources  ),
       .N_TARGET    ( ariane_soc::NumTargets  ),
-      .MAX_PRIO    ( ariane_soc::MaxPriority )
+      .MAX_PRIO    ( ariane_soc::MaxPriority ),
+      .reg_req_t   ( plic_req_t              ),
+      .reg_rsp_t   ( plic_rsp_t              )
     ) i_plic (
       .clk_i,
       .rst_ni,
       .req_i         ( plic_req    ),
-      .resp_o        ( plic_resp   ),
+      .resp_o        ( plic_rsp    ),
       .le_i          ( '0          ), // 0:level 1:edge
       .irq_sources_i ( irq_sources ),
       .eip_targets_o ( irq_o       )

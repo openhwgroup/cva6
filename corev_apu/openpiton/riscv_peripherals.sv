@@ -24,6 +24,8 @@
 // CLINT    0xfff1020000 <length 0xc0000>
 // PLIC     0xfff1100000 <length 0x4000000>
 //
+`include "register_interface/assign.svh"
+`include "register_interface/typedef.svh"
 
 module riscv_peripherals #(
     parameter int unsigned DataWidth       = 64,
@@ -619,9 +621,10 @@ module riscv_peripherals #(
   assign plic_master.ar_qos    = '0;
   assign plic_master.ar_region = '0;
 
-
-  reg_intf::reg_intf_resp_d32 plic_resp;
-  reg_intf::reg_intf_req_a32_d32 plic_req;
+  // define reg type according to REG_BUS above
+  `REG_BUS_TYPEDEF_ALL(plic, logic[31:0], logic[31:0], logic[3:0])
+  plic_req_t plic_req;
+  plic_rsp_t plic_resp;
 
   enum logic [2:0] {Idle, WriteSecond, ReadSecond, WriteResp, ReadResp} state_d, state_q;
   logic [31:0] rword_d, rword_q;
@@ -743,7 +746,9 @@ module riscv_peripherals #(
   plic_top #(
     .N_SOURCE    ( NumSources      ),
     .N_TARGET    ( 2*NumHarts      ),
-    .MAX_PRIO    ( PlicMaxPriority )
+    .MAX_PRIO    ( PlicMaxPriority ),
+    .reg_req_t   ( plic_req_t      ),
+    .reg_rsp_t   ( plic_rsp_t      )
   ) i_plic (
     .clk_i,
     .rst_ni,

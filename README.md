@@ -8,32 +8,35 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 
 ![](docs/_static/ariane_overview.png)
 
-## New Directory Structure:
-The directory structure has been changed to cleanly separate the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the COREV-APU [FPGA Emulation](#corev-apu-fpga-emulation).
+## Directory Structure:
+The directory structure separates the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the [CORE-V-APU FPGA Emulation Platform](#corev-apu-fpga-emulation).
 Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
 Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
 The CVA6 core can be compiled stand-alone, and obviously the APU is dependent on the core.
 
-#### ci
-Scriptware for CI (unchanged).
+The top-level directories of this repo:
+* **ci**: Scriptware for CI.
+* **common**: Source code used by both the CVA6 Core and the COREV APU. Subdirectories from here are `local` for common files that are hosted in this repo and `submodules` that are hosted in other repos.
+* **core**: Source code for the CVA6 Core only. There should be no sources in this directory used to build anything other than the CVA6 core.
+* **corev_apu**: Source code for the CVA6 APU, exclusive of the CVA6 core. There should be no sources in this directory used to build the CVA6 core.
+* **docs**: Documentation.
+* **scripts**: General scriptware.
 
-#### common
-Source code used by both the CVA6 Core and the COREV APU.
-Subdirectories from here are `local` for common files that are hosted in this repo and `submodules` that are hosted in other repos.
+## Verification
+The verification environment for the CVA6 is _not_ in this Repository.
 
-#### core
-Source code for the CVA6 Core only.
-There should be no sources in this directory used to build anything other than the CVA6 core.
+The verification environment for this core as well as other cores in the OpenHW Group CORE-V family is at the
+[core-v-verif](https://github.com/openhwgroup/core-v-verif) repository on GitHub.
 
-#### corev_apu
-Source code for the CVA6 APU, exclusive of the CVA6 core.
-There should be no sources in this directory used to build the CVA6 core.
+The Makefiles supported in the **core-v-verif** project automatically clone the appropriate version of the **CVA6**  RTL sources.
 
-#### docs
-Documentation (unchanged).
+## Contributing
+We highly appreciate community contributions.
+<br><br>To ease the work of reviewing contributions, please review [CONTRIBUTING](https://github.com/openhwgroup/cva6/blob/master/CONTRIBUTING.md).
 
-#### scripts
-General scriptware (unchanged).
+## Issues and Troubleshooting
+If you find any problems or issues with CVA6 or the documentation, please check out the [issue tracker](https://github.com/openhwgroup/cva6/issues)
+and create a new issue if your problem is not yet tracked.
 
 ## Publication
 
@@ -54,8 +57,8 @@ If you use CVA6 in your academic work you can cite us:
 }
 ```
 
-Table of Contents
-=================
+CVA6 User Documentation
+=======================
 
    * [CVA6 RISC-V CPU](#cva6-risc-v-cpu)
    * [Table of Contents](#table-of-contents)

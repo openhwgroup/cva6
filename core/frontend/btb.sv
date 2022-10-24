@@ -27,11 +27,12 @@ module btb #(
     output ariane_pkg::btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o // prediction from btb
 );
     // the last bit is always zero, we don't need it for indexing
-    localparam OFFSET = 1;
+    localparam OFFSET = ariane_pkg::RVC == 1'b1 ? 1 : 2;
     // re-shape the branch history table
     localparam NR_ROWS = NR_ENTRIES / ariane_pkg::INSTR_PER_FETCH;
     // number of bits needed to index the row
     localparam ROW_ADDR_BITS = $clog2(ariane_pkg::INSTR_PER_FETCH);
+    localparam ROW_INDEX_BITS = ariane_pkg::RVC == 1'b1 ? $clog2(ariane_pkg::INSTR_PER_FETCH) : 1; //1
     // number of bits we should use for prediction
     localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
     // prevent aliasing to degrade performance
@@ -44,11 +45,15 @@ module btb #(
     ariane_pkg::btb_prediction_t btb_d [NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0],
                                  btb_q [NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0];
     logic [$clog2(NR_ROWS)-1:0]  index, update_pc;
-    logic [ROW_ADDR_BITS-1:0]    update_row_index;
+    logic [ROW_INDEX_BITS-1:0]    update_row_index;
 
     assign index     = vpc_i[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
     assign update_pc = btb_update_i.pc[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
-    assign update_row_index = btb_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
+    if (ariane_pkg::RVC) begin : gen_update_row_index
+      assign update_row_index = btb_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
+    end else begin
+      assign update_row_index = '0;
+    end
 
     // output matching prediction
     for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_btb_output

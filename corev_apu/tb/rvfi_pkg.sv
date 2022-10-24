@@ -14,9 +14,10 @@ package rvfi_pkg;
 
   typedef struct packed {
     logic [NRET-1:0]                 valid;
-    logic [NRET*63:0]                order;
+    logic [NRET*64-1:0]              order;
     logic [NRET*ILEN-1:0]            insn;
     logic [NRET-1:0]                 trap;
+    logic [NRET*riscv::XLEN-1:0]     cause;
     logic [NRET-1:0]                 halt;
     logic [NRET-1:0]                 intr;
     logic [NRET*2-1:0]               mode;

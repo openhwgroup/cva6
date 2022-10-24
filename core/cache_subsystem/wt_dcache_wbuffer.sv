@@ -66,7 +66,8 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   output logic [riscv::PLEN-1:0]             miss_paddr_o,
   output logic                               miss_req_o,
   output logic                               miss_we_o,       // always 1 here
-  output logic [63:0]                        miss_wdata_o,
+  output riscv::xlen_t                       miss_wdata_o,
+  output logic [DCACHE_USER_WIDTH-1:0]       miss_wuser_o,
   output logic [DCACHE_SET_ASSOC-1:0]        miss_vld_bits_o, // unused here (set to 0)
   output logic                               miss_nc_o,       // request to I/O space
   output logic [2:0]                         miss_size_o,     //
@@ -81,7 +82,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   output logic                               rd_req_o,        // read the word at offset off_i[:3] in all ways
   output logic                               rd_tag_only_o,   // set to 1 here as we do not have to read the data arrays
   input  logic                               rd_ack_i,
-  input logic  [63:0]                        rd_data_i,       // unused
+  input riscv::xlen_t                        rd_data_i,       // unused
   input logic  [DCACHE_SET_ASSOC-1:0]        rd_vld_bits_i,   // unused
   input logic  [DCACHE_SET_ASSOC-1:0]        rd_hit_oh_i,
   // cacheline writes
@@ -92,8 +93,9 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  logic                               wr_ack_i,
   output logic [DCACHE_CL_IDX_WIDTH-1:0]     wr_idx_o,
   output logic [DCACHE_OFFSET_WIDTH-1:0]     wr_off_o,
-  output logic [63:0]                        wr_data_o,
-  output logic [7:0]                         wr_data_be_o,
+  output riscv::xlen_t                       wr_data_o,
+  output logic [(riscv::XLEN/8)-1:0]         wr_data_be_o,
+  output logic [DCACHE_USER_WIDTH-1:0]       wr_user_o,
   // to forwarding logic and miss unit
   output wbuffer_t  [DCACHE_WBUF_DEPTH-1:0]  wbuffer_data_o,
   output logic [DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
@@ -106,13 +108,14 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic     [DCACHE_WBUF_DEPTH-1:0]         dirty;
   logic     [DCACHE_WBUF_DEPTH-1:0]         tocheck;
   logic     [DCACHE_WBUF_DEPTH-1:0]         wbuffer_hit_oh, inval_hit;
-  logic     [DCACHE_WBUF_DEPTH-1:0][7:0]    bdirty;
+  //logic     [DCACHE_WBUF_DEPTH-1:0][7:0]    bdirty;
+  logic     [DCACHE_WBUF_DEPTH-1:0][(riscv::XLEN/8)-1:0]    bdirty;
 
   logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
   logic [CACHE_ID_WIDTH-1:0] tx_id, rtrn_id;
 
-  logic [2:0] bdirty_off;
-  logic [7:0] tx_be;
+  logic [riscv::XLEN_ALIGN_BYTES-1:0] bdirty_off;
+  logic [(riscv::XLEN/8)-1:0] tx_be;
   logic [riscv::PLEN-1:0] wr_paddr, rd_paddr;
   logic [DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
   logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
@@ -138,7 +141,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic is_ni;
   assign miss_tag = miss_paddr_o[ariane_pkg::DCACHE_INDEX_WIDTH+:ariane_pkg::DCACHE_TAG_WIDTH];
   assign is_nc_miss = !ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH-DCACHE_INDEX_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
-  assign miss_nc_o = !cache_en_i || is_nc_miss; 
+  assign miss_nc_o = !cache_en_i || is_nc_miss;
   // Non-idempotent if request goes to NI region
   assign is_ni = ariane_pkg::is_inside_nonidempotent_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH-DCACHE_INDEX_WIDTH{1'b0}}, req_port_i.address_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
 
@@ -148,7 +151,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   for (genvar k=0; k<DCACHE_MAX_TX;k++) begin : gen_tx_vld
     assign tx_vld_o[k]   = tx_stat_q[k].vld;
-    assign tx_paddr_o[k] = wbuffer_q[tx_stat_q[k].ptr].wtag<<3;
+    assign tx_paddr_o[k] = wbuffer_q[tx_stat_q[k].ptr].wtag<<riscv::XLEN_ALIGN_BYTES;
   end
 
 ///////////////////////////////////////////////////////
@@ -164,7 +167,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // get byte offset
   lzc #(
-    .WIDTH ( 8 )
+    .WIDTH ( riscv::XLEN/8 )
   ) i_vld_bdirty (
     .in_i    ( bdirty[dirty_ptr] ),
     .cnt_o   ( bdirty_off        ),
@@ -182,15 +185,18 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   // note: openpiton can only handle aligned offsets + size, and hence
   // we have to split unaligned data into multiple transfers (see toSize64)
   // e.g. if we have the following valid bytes: 0011_1001 -> TX0: 0000_0001, TX1: 0000_1000, TX2: 0011_0000
-  assign miss_size_o  = toSize64(bdirty[dirty_ptr]);
+
+  assign miss_size_o = riscv::IS_XLEN64 ? toSize64(bdirty[dirty_ptr]):
+                                          toSize32(bdirty[dirty_ptr]);
 
   // replicate transfers shorter than a dword
-  assign miss_wdata_o = repData64(wbuffer_dirty_mux.data,
-                                  bdirty_off,
-                                  miss_size_o[1:0]);
+  assign miss_wdata_o = riscv::IS_XLEN64 ? repData64(wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]):
+                                           repData32(wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]);
+  assign miss_wuser_o = riscv::IS_XLEN64 ? repData64(wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]):
+                                           repData32(wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]);
 
-  assign tx_be        = toByteEnable8(bdirty_off,
-                                      miss_size_o[1:0]);
+  assign tx_be        = riscv::IS_XLEN64 ? to_byte_enable8(bdirty_off, miss_size_o[1:0]):
+                                           to_byte_enable4(bdirty_off, miss_size_o[1:0]);
 
 ///////////////////////////////////////////////////////
 // TX status registers and ID counters
@@ -273,7 +279,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // trigger TAG readout in cache
   assign rd_tag_only_o = 1'b1;
-  assign rd_paddr   = wbuffer_check_mux.wtag<<3;
+  assign rd_paddr   = wbuffer_check_mux.wtag<<riscv::XLEN_ALIGN_BYTES;
   assign rd_req_o   = |tocheck;
   assign rd_tag_o   = rd_tag_q;//delay by one cycle
   assign rd_idx_o   = rd_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
@@ -285,10 +291,11 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   // if we wrote into a word while it was in-flight, we cannot write the dirty bytes to the cache
   // when the TX returns
   assign wr_data_be_o = tx_stat_q[rtrn_id].be & (~wbuffer_q[rtrn_ptr].dirty);
-  assign wr_paddr     = wbuffer_q[rtrn_ptr].wtag<<3;
+  assign wr_paddr     = wbuffer_q[rtrn_ptr].wtag<<riscv::XLEN_ALIGN_BYTES;
   assign wr_idx_o     = wr_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
   assign wr_off_o     = wr_paddr[DCACHE_OFFSET_WIDTH-1:0];
   assign wr_data_o    = wbuffer_q[rtrn_ptr].data;
+  assign wr_user_o    = wbuffer_q[rtrn_ptr].user;
 
 
 ///////////////////////////////////////////////////////
@@ -302,7 +309,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   for (genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin : gen_flags
     // only for debug, will be pruned
-    assign debug_paddr[k] = wbuffer_q[k].wtag << 3;
+    assign debug_paddr[k] = wbuffer_q[k].wtag << riscv::XLEN_ALIGN_BYTES;
 
     // dirty bytes that are ready for transmission.
     // note that we cannot retransmit a word that is already in-flight
@@ -312,12 +319,12 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
     assign dirty[k]          = |bdirty[k];
     assign valid[k]          = |wbuffer_q[k].valid;
-    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:3]});
+    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]});
 
     // checks if an invalidation/cache refill hits a particular word
     // note: an invalidation can hit multiple words!
     // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
-    assign wtag_comp[k] = wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-4:DCACHE_OFFSET_WIDTH-3];
+    assign wtag_comp[k] = wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES-1:DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES];
     assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wtag_comp[k] == wr_cl_idx_d)) |
                            (wr_cl_vld_q & valid[k] & (wtag_comp[k] == wr_cl_idx_q));
 
@@ -389,10 +396,11 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   assign req_port_o.data_rvalid = '0;
   assign req_port_o.data_rdata  = '0;
+  assign req_port_o.data_ruser  = '0;
 
   assign rd_hit_oh_d = rd_hit_oh_i;
- 
-  logic ni_inside,ni_conflict; 
+
+  logic ni_inside,ni_conflict;
   assign ni_inside = |ni_pending_q;
   assign ni_conflict = is_ni && ni_inside;
   assign not_ni_o = !ni_inside;
@@ -425,7 +433,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
     // once TX write response came back, we can clear the TX block. if it was not dirty, we
     // can completely evict it - otherwise we have to leave it there for retransmission
     if (evict) begin
-      for (int k=0; k<8; k++) begin
+      for (int k=0; k<(riscv::XLEN/8); k++) begin
         if (tx_stat_q[rtrn_id].be[k]) begin
           wbuffer_d[rtrn_ptr].txblock[k] = 1'b0;
           if (!wbuffer_q[rtrn_ptr].dirty[k]) begin
@@ -447,7 +455,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
     // mark bytes sent out to the memory system
     if (miss_req_o && miss_ack_i) begin
       dirty_rd_en = 1'b1;
-      for (int k=0; k<8; k++) begin
+      for (int k=0; k<(riscv::XLEN/8); k++) begin
         if (tx_be[k]) begin
           wbuffer_d[dirty_ptr].dirty[k]   = 1'b0;
           wbuffer_d[dirty_ptr].txblock[k] = 1'b1;
@@ -466,14 +474,16 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
         ni_pending_d[wr_ptr]      = is_ni;
 
         wbuffer_d[wr_ptr].checked = 1'b0;
-        wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:3]};
+        wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]};
 
         // mark bytes as dirty
-        for (int k=0; k<8; k++) begin
+        for (int k=0; k<(riscv::XLEN/8); k++) begin
           if (req_port_i.data_be[k]) begin
             wbuffer_d[wr_ptr].valid[k]       = 1'b1;
             wbuffer_d[wr_ptr].dirty[k]       = 1'b1;
             wbuffer_d[wr_ptr].data[k*8 +: 8] = req_port_i.data_wdata[k*8 +: 8];
+            if (ariane_pkg::DATA_USER_EN)
+              wbuffer_d[wr_ptr].user[k*8 +: 8] = req_port_i.data_wuser[k*8 +: 8];
           end
         end
       end
@@ -550,7 +560,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
       else $fatal(1,"[l1 dcache wbuffer] req_port_i.kill_req should not be asserted");
 
   for (genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin : gen_assert1
-    for (genvar j=0; j<8; j++) begin : gen_assert2
+    for (genvar j=0; j<(riscv::XLEN/8); j++) begin : gen_assert2
       byteStates: assert property (
         @(posedge clk_i) disable iff (!rst_ni) {wbuffer_q[k].valid[j], wbuffer_q[k].dirty[j], wbuffer_q[k].txblock[j]} inside {3'b000, 3'b110, 3'b101, 3'b111} )
           else $fatal(1,"[l1 dcache wbuffer] byte %02d of wbuffer entry %02d has invalid state: valid=%01b, dirty=%01b, txblock=%01b",

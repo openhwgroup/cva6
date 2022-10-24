@@ -35,7 +35,7 @@ module store_buffer import ariane_pkg::*; (
 
     input  logic [riscv::PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
     input  riscv::xlen_t            data_i,          // data which is placed in the queue
-    input  logic [7:0]   be_i,            // byte enable in
+    input  logic [(riscv::XLEN/8)-1:0]   be_i,            // byte enable in
     input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
@@ -47,11 +47,11 @@ module store_buffer import ariane_pkg::*; (
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
     struct packed {
-        logic [riscv::PLEN-1:0] address;
-        riscv::xlen_t           data;
-        logic [7:0]             be;
-        logic [1:0]             data_size;
-        logic                   valid;     // this entry is valid, we need this for checking if the address offset matches
+        logic [riscv::PLEN-1:0]      address;
+        riscv::xlen_t                data;
+        logic [(riscv::XLEN/8)-1:0]  be;
+        logic [1:0]                  data_size;
+        logic                        valid;     // this entry is valid, we need this for checking if the address offset matches
     } speculative_queue_n [DEPTH_SPEC-1:0], speculative_queue_q [DEPTH_SPEC-1:0],
       commit_queue_n [DEPTH_COMMIT-1:0],    commit_queue_q [DEPTH_COMMIT-1:0];
 
@@ -133,8 +133,7 @@ module store_buffer import ariane_pkg::*; (
     assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_TAG_WIDTH     +
                                                                                     ariane_pkg::DCACHE_INDEX_WIDTH-1 :
                                                                                     ariane_pkg::DCACHE_INDEX_WIDTH];
-    assign req_port_o.data_wdata    = (req_port_o.address_index[2] == 1'b0) ? {{64-riscv::XLEN{1'b0}}, commit_queue_q[commit_read_pointer_q].data} :
-                                                                              {commit_queue_q[commit_read_pointer_q].data, {64-riscv::XLEN{1'b0}}};
+    assign req_port_o.data_wdata    = commit_queue_q[commit_read_pointer_q].data;
     assign req_port_o.data_be       = commit_queue_q[commit_read_pointer_q].be;
     assign req_port_o.data_size     = commit_queue_q[commit_read_pointer_q].data_size;
 

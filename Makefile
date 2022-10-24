@@ -90,18 +90,19 @@ ariane_pkg += core/include/riscv_pkg.sv                              \
               corev_apu/riscv-dbg/src/dm_pkg.sv                      \
               core/include/ariane_pkg.sv                             \
               core/include/ariane_rvfi_pkg.sv                        \
-              core/include/std_cache_pkg.sv                          \
               core/include/wt_cache_pkg.sv                           \
               core/include/cvxif_pkg.sv                              \
               corev_apu/axi/src/axi_pkg.sv                           \
               corev_apu/register_interface/src/reg_intf.sv           \
-              corev_apu/register_interface/src/reg_intf_pkg.sv       \
               core/include/axi_intf.sv                               \
               corev_apu/tb/rvfi_pkg.sv                               \
               corev_apu/tb/ariane_soc_pkg.sv                         \
               corev_apu/tb/ariane_axi_soc_pkg.sv                     \
               core/include/ariane_axi_pkg.sv                         \
+              core/include/std_cache_pkg.sv                          \
               core/fpu/src/fpnew_pkg.sv                              \
+              common/submodules/common_cells/src/cf_math_pkg.sv      \
+              core/cvxif_example/include/cvxif_instr_pkg.sv          \
               core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
@@ -109,7 +110,6 @@ ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 util := core/include/instr_tracer_pkg.sv                              \
         common/local/util/instr_tracer_if.sv                          \
         common/local/util/instr_tracer.sv                             \
-        corev_apu/src/tech_cells_generic/src/cluster_clock_gating.sv  \
         corev_apu/tb/common/mock_uart.sv                              \
         common/local/util/sram.sv
 
@@ -171,6 +171,7 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         $(wildcard corev_apu/src/axi_riscv_atomics/src/*.sv)                         \
         $(wildcard corev_apu/axi_mem_if/src/*.sv)                                    \
         $(wildcard core/pmp/src/*.sv)                                                \
+        $(wildcard core/cvxif_example/*.sv)                                          \
         corev_apu/rv_plic/rtl/rv_plic_target.sv                                      \
         corev_apu/rv_plic/rtl/rv_plic_gateway.sv                                     \
         corev_apu/rv_plic/rtl/plic_regmap.sv                                         \
@@ -185,10 +186,6 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/riscv-dbg/debug_rom/debug_rom.sv                                   \
         corev_apu/register_interface/src/apb_to_reg.sv                               \
         corev_apu/axi/src/axi_multicut.sv                                            \
-        common/submodules/common_cells/src/cf_math_pkg.sv                            \
-        common/submodules/common_cells/src/deprecated/generic_fifo.sv                \
-        common/submodules/common_cells/src/deprecated/pulp_sync.sv                   \
-        common/submodules/common_cells/src/deprecated/find_first_one.sv              \
         common/submodules/common_cells/src/rstgen_bypass.sv                          \
         common/submodules/common_cells/src/rstgen.sv                                 \
         common/submodules/common_cells/src/stream_mux.sv                             \
@@ -196,10 +193,6 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         common/submodules/common_cells/src/exp_backoff.sv                            \
         common/submodules/common_cells/src/addr_decode.sv                            \
         common/submodules/common_cells/src/stream_register.sv                        \
-        common/local/util/axi_master_connect.sv                                      \
-        common/local/util/axi_slave_connect.sv                                       \
-        common/local/util/axi_master_connect_rev.sv                                  \
-        common/local/util/axi_slave_connect_rev.sv                                   \
         corev_apu/axi/src/axi_cut.sv                                                 \
         corev_apu/axi/src/axi_join.sv                                                \
         corev_apu/axi/src/axi_delayer.sv                                             \
@@ -210,7 +203,6 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/axi/src/axi_mux.sv                                                 \
         corev_apu/axi/src/axi_demux.sv                                               \
         corev_apu/axi/src/axi_xbar.sv                                                \
-        corev_apu/fpga-support/rtl/SyncSpRamBeNx64.sv                                \
         common/submodules/common_cells/src/unread.sv                                 \
         common/submodules/common_cells/src/sync.sv                                   \
         common/submodules/common_cells/src/cdc_2phase.sv                             \
@@ -234,9 +226,11 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         common/submodules/common_cells/src/delta_counter.sv                          \
         common/submodules/common_cells/src/counter.sv                                \
         common/submodules/common_cells/src/shift_reg.sv                              \
-        corev_apu/src/tech_cells_generic/src/pulp_clock_gating.sv                    \
-        corev_apu/src/tech_cells_generic/src/cluster_clock_inverter.sv               \
-        corev_apu/src/tech_cells_generic/src/pulp_clock_mux2.sv                      \
+        corev_apu/src/tech_cells_generic/src/deprecated/cluster_clk_cells.sv         \
+        corev_apu/src/tech_cells_generic/src/deprecated/pulp_clk_cells.sv            \
+        common/local/util/tc_sram_wrapper.sv                                         \
+        corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv                          \
+        corev_apu/src/tech_cells_generic/src/rtl/tc_clk.sv                           \
         corev_apu/tb/ariane_testharness.sv                                           \
         corev_apu/tb/ariane_peripherals.sv                                           \
         corev_apu/tb/rvfi_tracer.sv                                                  \
@@ -260,7 +254,7 @@ copro_src := $(addprefix $(root-dir), $(copro_src))
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
 
-fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/bootrom/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv)
+fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/bootrom/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) corev_apu/src/tech_cells_generic/src/fpga/tc_sram_xilinx.sv common/local/util/tc_sram_xilinx_wrapper.sv
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
@@ -283,7 +277,7 @@ riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := common/submodules/common_cells/include/ corev_apu/axi/include/
+incdir := common/submodules/common_cells/include/ corev_apu/axi/include/ corev_apu/register_interface/include/
 
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
@@ -334,12 +328,12 @@ vcs_build: $(dpi-library)/ariane_dpi.so
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+$(defines) $(filter %.sv,$(util)) +incdir+../common/local/util+../core/include/+src/util/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
 	vhdlan $(if $(VERDI), -kdb,) -full64 -nc $(filter %.vhd,$(uart_src)) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 $(filter %.sv,$(copro_src)) &&\
-	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 -assert svaext +define+$(defines) $(filter %.sv,$(src)) +incdir+../core/include/+../common/submodules/common_cells/include/+../common/local/util/+../corev_apu/axi/include/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 -assert svaext +define+$(defines) $(filter %.sv,$(src)) +incdir+../core/include/+../common/submodules/common_cells/include/+../common/local/util/+../corev_apu/axi/include/+../corev_apu/register_interface/include/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs) +define+$(defines) +incdir+../corev_apu/axi/include/ &&\
 	vcs $(if $(VERDI), -kdb -debug_access+all -lca,) -full64 -timescale=1ns/1ns -ntb_opts uvm-1.2 work.ariane_tb
 
 vcs: vcs_build
-	cd $(vcs-library) && ./simv  $(if $(VERDI), -verdi,) +permissive -sv_lib ../work-dpi/ariane_dpi +PRELOAD=$(elf-bin) +permissive-off ++$(elf-bin)| tee vcs.log
+	cd $(vcs-library) && ./simv  $(if $(VERDI), -verdi -do $(root-dir)/init_testharness.do,) +permissive -sv_lib ../work-dpi/ariane_dpi +PRELOAD=$(elf-bin) +permissive-off ++$(elf-bin)| tee vcs.log
 
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
@@ -592,7 +586,7 @@ verilate_command := $(verilator)                                                
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                  \
                     $(copro_src)                                                                                 \
-                    +define+$(defines)                                                                           \
+                    +define+$(defines)$(if $(TRACE_FAST),+VM_TRACE)$(if $(TRACE_COMPACT),+VM_TRACE+VM_TRACE_FST) \
                     common/local/util/sram.sv                                                                    \
                     corev_apu/tb/common/mock_uart.sv                                                             \
                     +incdir+corev_apu/axi_node                                                                   \
@@ -611,8 +605,10 @@ verilate_command := $(verilator)                                                
                     $(if ($(PRELOAD)!=""), -DPRELOAD=1,)                                                         \
                     $(if $(DROMAJO), -DDROMAJO=1,)                                                               \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
-                    $(if $(DEBUG),--trace --trace-structs,)                                                      \
-                    -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -L../corev_apu/tb/dromajo/src -ldromajo_cosim,) -lpthread" \
+                    $(if $(DEBUG), --trace-structs,)                                                             \
+                    $(if $(TRACE_COMPACT), --trace-fst $(VERILATOR_ROOT)/include/verilated_fst_c.cpp)            \
+                    $(if $(TRACE_FAST), --trace $(VERILATOR_ROOT)/include/verilated_vcd_c.cpp,)                  \
+                    -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -L../corev_apu/tb/dromajo/src -ldromajo_cosim,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -DDROMAJO=1,) -DVL_DEBUG"       \
                     -Wall --cc  --vpi                                                                            \
                     $(list_incdir) --top-module ariane_testharness                                               \
@@ -773,6 +769,8 @@ fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer_if.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer.sv)
+fpga_filter += $(addprefix $(root-dir), corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv)
+fpga_filter += $(addprefix $(root-dir), common/local/util/tc_sram_wrapper.sv)
 
 fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(copro_src)
 	@echo "[FPGA] Generate sources"

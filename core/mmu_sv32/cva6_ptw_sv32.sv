@@ -80,12 +80,11 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
 
     // input registers
     logic data_rvalid_q;
-    logic [31:0] data_rdata_q, data_rdata_n;
+    riscv::xlen_t data_rdata_q;
 
     riscv::pte_sv32_t pte;
     assign pte = riscv::pte_sv32_t'(data_rdata_q);
 
-    assign data_rdata_n    = (req_port_o.address_index[2] == 1'b1) ? req_port_i.data_rdata[63:32] : req_port_i.data_rdata[31:0];
 
     enum logic[2:0] {
       IDLE,
@@ -124,7 +123,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
     // we are never going to kill this request
     assign req_port_o.kill_req      = '0;
     // we are never going to write with the HPTW
-    assign req_port_o.data_wdata    = 64'b0;
+    assign req_port_o.data_wdata    = '0;
     // -----------
     // TLB Update
     // -----------
@@ -163,7 +162,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
     );
 
 
-    assign req_port_o.data_be = be_gen(req_port_o.address_index[2:0],req_port_o.data_size );
+    assign req_port_o.data_be = be_gen_32(req_port_o.address_index[1:0],req_port_o.data_size );
 
     //-------------------
     // Page table walker
@@ -399,7 +398,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
             tlb_update_asid_q  <= tlb_update_asid_n;
             vaddr_q            <= vaddr_n;
             global_mapping_q   <= global_mapping_n;
-            data_rdata_q       <= data_rdata_n;
+            data_rdata_q       <= req_port_i.data_rdata;
             data_rvalid_q      <= req_port_i.data_rvalid;
         end
     end

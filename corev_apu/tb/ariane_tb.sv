@@ -19,7 +19,8 @@ import uvm_pkg::*;
 
 `include "uvm_macros.svh"
 
-`define MAIN_MEM(P) dut.i_sram.gen_cut[0].gen_mem.i_ram.Mem_DP[(``P``)]
+`define MAIN_MEM(P) dut.i_sram.gen_cut[0].gen_mem.i_tc_sram_wrapper.i_tc_sram.init_val[(``P``)]
+// `define USER_MEM(P) dut.i_sram.gen_cut[0].gen_mem.gen_mem_user.i_tc_sram_wrapper_user.i_tc_sram.init_val[(``P``)]
 
 import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
@@ -33,7 +34,7 @@ module ariane_tb;
     // toggle with RTC period
     localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
 
-    localparam NUM_WORDS = 2**25;
+    localparam NUM_WORDS = 2**16;
     logic clk_i;
     logic rst_ni;
     logic rtc_i;
@@ -130,7 +131,7 @@ module ariane_tb;
 
             void'(read_elf(binary));
             // wait with preloading, otherwise randomization will overwrite the existing value
-            wait(rst_ni);
+            wait(clk_i);
 
             // while there are more sections to process
             while (get_section(address, len)) begin
@@ -146,7 +147,7 @@ UVM_LOW)
                     for (int j = 0; j < 8; j++) begin
                         mem_row[j] = buffer[i*8 + j];
                     end
-                    `MAIN_MEM((address[28:0] >> 3) + i) = mem_row;
+                    `MAIN_MEM((address[23:0] >> 3) + i) = mem_row;
                 end
             end
         end
