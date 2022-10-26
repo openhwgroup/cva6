@@ -17,7 +17,7 @@
 `include "assign.svh"
 `include "axi/typedef.svh"
 
-module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()();
+module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
 
   // leave this
   timeunit 1ps;
@@ -30,30 +30,6 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   // noncacheable portion
   parameter logic [63:0] CachedAddrBeg = MemBytes>>3;//1/8th of the memory is NC
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
-
-  localparam ariane_cfg_t ArianeDefaultConfig = '{
-    RASDepth: 2,
-    BTBEntries: 32,
-    BHTEntries: 128,
-    // idempotent region
-    NrNonIdempotentRules:  0,
-    NonIdempotentAddrBase: {64'b0},
-    NonIdempotentLength:   {64'b0},
-    // executable region
-    NrExecuteRegionRules:  0,
-    ExecuteRegionAddrBase: {64'h0},
-    ExecuteRegionLength:   {64'h0},
-    // cached region
-    NrCachedRegionRules:   1,
-    CachedRegionAddrBase:  {CachedAddrBeg},//1/8th of the memory is NC
-    CachedRegionLength:    {CachedAddrEnd-CachedAddrBeg+64'b1},
-    // cache config
-    AxiCompliant:          1'b1,
-    SwapEndianess:         1'b0,
-    // debug
-    DmBaseAddress:         64'h0,
-    NrPMPEntries:          0
-  };
 
   // contention and invalidation rates (in %)
   parameter MemRandHitRate   = 75;
@@ -77,7 +53,7 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   parameter int unsigned  TbAxiAddrWidthFull = 32'd64;
   /// Data width of the full AXI bus
   parameter int unsigned  TbAxiDataWidthFull = 32'd64;
-  localparam int unsigned TbAxiUserWidthFull = 32'd1;
+  localparam int unsigned TbAxiUserWidthFull = AXI_USER_WIDTH;
   /// Application time to the DUT
   parameter time          TbApplTime         = 2ns;
   /// Test time of the DUT
@@ -88,25 +64,23 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 // MUT signal declarations
 ///////////////////////////////////////////////////////////////////////////////
 
-  `AXI_TYPEDEF_ALL(axi,
+  `AXI_TYPEDEF_ALL(axi_data,
                    logic [    TbAxiAddrWidthFull-1:0],
                    logic [      TbAxiIdWidthFull-1:0],
                    logic [    TbAxiDataWidthFull-1:0],
                    logic [(TbAxiDataWidthFull/8)-1:0],
                    logic [    TbAxiUserWidthFull-1:0])
 
-  logic                           enable_i;
-  logic                           flush_i;
-  logic                           flush_ack_o;
-  logic                           miss_o;
-  amo_req_t                       amo_req_i;
-  amo_resp_t                      amo_resp_o;
-  dcache_req_i_t [2:0]            req_ports_i;
-  dcache_req_o_t [2:0]            req_ports_o;
-  axi_req_t                       axi_data_o;
-  axi_resp_t                      axi_data_i;
-  axi_req_t                       axi_bypass_o;
-  axi_resp_t                      axi_bypass_i;
+  logic                enable_i;
+  logic                flush_i;
+  logic                flush_ack_o;
+  logic                miss_o;
+  amo_req_t            amo_req_i;
+  amo_resp_t           amo_resp_o;
+  dcache_req_i_t [2:0] req_ports_i;
+  dcache_req_o_t [2:0] req_ports_o;
+  axi_data_req_t       axi_data_o;
+  axi_data_resp_t      axi_data_i;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TB signal declarations
@@ -141,7 +115,7 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   } reservation_t;
 
   logic [63:0] act_paddr[1:0];
-  logic [63:0] exp_rdata[1:0];
+  riscv::xlen_t exp_rdata[1:0];
   logic [63:0] exp_paddr[1:0];
   logic [63:0] amo_act_mem;
   logic [63:0] amo_shadow;
@@ -161,19 +135,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     .clk_i ( clk_i )
   );
 
-  AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
-    .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
-    .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
-    .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
-  ) axi_bypass_dv (
-    .clk_i ( clk_i )
-  );
-
   `AXI_ASSIGN_FROM_REQ(axi_data_dv, axi_data_o)
   `AXI_ASSIGN_TO_RESP(axi_data_i, axi_data_dv)
-  `AXI_ASSIGN_FROM_REQ(axi_bypass_dv, axi_bypass_o)
-  `AXI_ASSIGN_TO_RESP(axi_bypass_i, axi_bypass_dv)
 
   typedef tb_mem_port #(
     .AW                   ( TbAxiAddrWidthFull       ),
@@ -192,33 +155,32 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   ) tb_mem_port_t;
 
   tb_mem_port_t data_mem_port;
-  tb_mem_port_t bypass_mem_port;
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
     .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
     .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
     .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
-  ) axi_bypass ();
+  ) axi_data ();
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
     .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
     .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
     .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
-  ) axi_bypass_amo_adapter ();
+  ) axi_amo_adapter ();
 
   AXI_BUS_DV #(
     .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
     .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
     .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
     .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
-  ) axi_bypass_amo_adapter_dv (
+  ) axi_amo_adapter_dv (
     .clk_i ( clk_i )
   );
 
-  `AXI_ASSIGN(axi_bypass, axi_bypass_dv)
-  `AXI_ASSIGN(axi_bypass_amo_adapter_dv, axi_bypass_amo_adapter)
+  `AXI_ASSIGN(axi_data, axi_data_dv)
+  `AXI_ASSIGN(axi_amo_adapter_dv, axi_amo_adapter)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper tasks
@@ -396,12 +358,10 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   // Instantiate memory and AXI ports
   initial begin : p_sim_mem
     // Create AXI ports
-    data_mem_port   = new(axi_data_dv              , CACHED);
-    bypass_mem_port = new(axi_bypass_amo_adapter_dv, BYPASS);
+    data_mem_port   = new(axi_amo_adapter_dv, CACHED);
 
     // Initialize AXI ports and memory
     data_mem_port.reset();
-    bypass_mem_port.reset();
     tb_mem_port_t::init_mem();
 
     @(posedge rst_ni);
@@ -409,7 +369,6 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     // Start AXI port emulation
     fork
       data_mem_port.run();
-      bypass_mem_port.run();
     join
   end
 
@@ -417,28 +376,59 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 // MUT
 ///////////////////////////////////////////////////////////////////////////////
 
-  std_nbdcache  #(
-    .ArianeCfg      ( ArianeDefaultConfig ),
-    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull  ),
-    .AXI_DATA_WIDTH ( TbAxiDataWidthFull  ),
-    .AXI_ID_WIDTH   ( TbAxiIdWidthFull    ),
-    .axi_req_t      ( axi_req_t           ),
-    .axi_rsp_t      ( axi_resp_t          )
+  localparam ariane_cfg_t ArianeDefaultConfig = '{
+    RASDepth: 2,
+    BTBEntries: 32,
+    BHTEntries: 128,
+    // idempotent region
+    NrNonIdempotentRules:  0,
+    NonIdempotentAddrBase: {64'b0},
+    NonIdempotentLength:   {64'b0},
+    // executable region
+    NrExecuteRegionRules:  0,
+    ExecuteRegionAddrBase: {64'h0},
+    ExecuteRegionLength:   {64'h0},
+    // cached region
+    NrCachedRegionRules:   1,
+    CachedRegionAddrBase:  {CachedAddrBeg},//1/8th of the memory is NC
+    CachedRegionLength:    {CachedAddrEnd-CachedAddrBeg+64'b1},
+    // cache config
+    AxiCompliant:          1'b1,
+    SwapEndianess:         1'b0,
+    // debug
+    DmBaseAddress:         64'h0,
+    NrPMPEntries:          0
+  };
+
+  wt_cache_subsystem  #(
+    .ArianeCfg    ( ArianeDefaultConfig ),
+    .AxiAddrWidth ( TbAxiAddrWidthFull  ),
+    .AxiDataWidth ( TbAxiDataWidthFull  ),
+    .AxiIdWidth   ( TbAxiIdWidthFull    ),
+    .axi_req_t    ( axi_data_req_t      ),
+    .axi_rsp_t    ( axi_data_resp_t     )
   ) i_dut (
-    .clk_i           ( clk_i           ),
-    .rst_ni          ( rst_ni          ),
-    .flush_i         ( flush_i         ),
-    .flush_ack_o     ( flush_ack_o     ),
-    .enable_i        ( enable_i        ),
-    .miss_o          ( miss_o          ),
-    .amo_req_i       ( amo_req_i       ),
-    .amo_resp_o      ( amo_resp_o      ),
-    .req_ports_i     ( req_ports_i     ),
-    .req_ports_o     ( req_ports_o     ),
-    .axi_data_o      ( axi_data_o      ),
-    .axi_data_i      ( axi_data_i      ),
-    .axi_bypass_o    ( axi_bypass_o    ),
-    .axi_bypass_i    ( axi_bypass_i    )
+    .clk_i              (clk_i        ),
+    .rst_ni             (rst_ni       ),
+    .icache_en_i        ( '0          ),
+    .icache_flush_i     ( '0          ),
+    .icache_miss_o      (             ),
+    .icache_areq_i      ( '0          ),
+    .icache_areq_o      (             ),
+    .icache_dreq_i      ( '0          ),
+    .icache_dreq_o      (             ),
+    .dcache_enable_i    ( 1'b1        ),
+    .dcache_flush_i     ( flush_i     ),
+    .dcache_flush_ack_o ( flush_ack_o ),
+    .dcache_amo_req_i   ( amo_req_i   ),
+    .dcache_amo_resp_o  ( amo_resp_o  ),
+    .dcache_miss_o      (             ),
+    .dcache_req_ports_i ( req_ports_i ),
+    .dcache_req_ports_o ( req_ports_o ),
+    .wbuffer_empty_o    (             ),
+    .wbuffer_not_ni_o   (             ),
+    .axi_req_o          ( axi_data_o  ),
+    .axi_resp_i         ( axi_data_i  )
   );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -451,12 +441,12 @@ axi_riscv_atomics_wrap #(
     .AXI_ID_WIDTH       ( TbAxiIdWidthFull + 32'd1 ),
     .AXI_USER_WIDTH     ( TbAxiUserWidthFull       ),
     .AXI_MAX_WRITE_TXNS ( 1                        ),
-    .RISCV_WORD_WIDTH   ( 64                       )
+    .RISCV_WORD_WIDTH   ( riscv::XLEN              )
 ) i_amo_adapter (
     .clk_i  ( clk_i                         ),
     .rst_ni ( rst_ni                        ),
-    .mst    ( axi_bypass_amo_adapter.Master ),
-    .slv    ( axi_bypass.Slave )
+    .mst    ( axi_amo_adapter.Master ),
+    .slv    ( axi_data.Slave )
 );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -464,12 +454,12 @@ axi_riscv_atomics_wrap #(
 ///////////////////////////////////////////////////////////////////////////////
 
   // get actual paddr from read controllers
-  assign act_paddr[0] = (i_dut.master_ports[0].i_cache_ctrl.state_q == 4'h1) ? {i_dut.tag[1], i_dut.master_ports[0].i_cache_ctrl.mem_req_q.index} :
-                        {i_dut.master_ports[0].i_cache_ctrl.mem_req_q.tag,
-                         i_dut.master_ports[0].i_cache_ctrl.mem_req_q.index};
-  assign act_paddr[1] = (i_dut.master_ports[1].i_cache_ctrl.state_q == 4'h1) ? {i_dut.tag[2], i_dut.master_ports[1].i_cache_ctrl.mem_req_q.index} :
-                        {i_dut.master_ports[1].i_cache_ctrl.mem_req_q.tag,
-                         i_dut.master_ports[1].i_cache_ctrl.mem_req_q.index};
+  assign act_paddr[0] = {i_dut.i_wt_dcache.gen_rd_ports[0].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.i_wt_dcache.gen_rd_ports[0].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.i_wt_dcache.gen_rd_ports[0].i_wt_dcache_ctrl.address_off_q};
+  assign act_paddr[1] = {i_dut.i_wt_dcache.gen_rd_ports[1].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.i_wt_dcache.gen_rd_ports[1].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.i_wt_dcache.gen_rd_ports[1].i_wt_dcache_ctrl.address_off_q};
 
   // generate fifo queues for expected responses
   generate
@@ -477,7 +467,7 @@ axi_riscv_atomics_wrap #(
       assign fifo_data_in[k] =  {req_ports_i[k].data_size,
                                  exp_paddr[k]};
 
-      for (genvar l=0; l<8; l++)
+      for (genvar l=0; l<riscv::XLEN/8; l++)
         assign exp_rdata[k][l*8 +: 8] = tb_mem_port_t::shadow_q[{fifo_data[k].paddr[63:3], 3'b0} + l];
 
       assign fifo_push[k]  = req_ports_i[k].data_req & req_ports_o[k].data_gnt;
@@ -617,30 +607,15 @@ axi_riscv_atomics_wrap #(
     .dut_amo_resp_port_i ( amo_resp_o     )
   );
 
-  // Translate write requests for shadow memory. Delay them for one cycle for consistency.
+  // Translate write requests for shadow memory.
   initial begin
-    automatic logic       write_en_n;
-    automatic logic[63:0] write_paddr_n;
-    automatic logic[63:0] write_data_n;
-    automatic logic[7:0]  write_be_n;
-
-    write_en_n    = '0;
-    write_paddr_n = '0;
-    write_data_n  = '0;
-    write_be_n    = '0;
-
     forever begin
       `WAIT_CYC(clk_i,1)
 
-      write_en      = write_en_n;
-      write_paddr   = write_paddr_n;
-      write_data    = write_data_n;
-      write_be      = write_be_n;
-
-      write_en_n    = req_ports_i[2].data_req & req_ports_o[2].data_gnt & req_ports_i[2].data_we;
-      write_paddr_n = {req_ports_i[2].address_tag,  req_ports_i[2].address_index};
-      write_data_n  = req_ports_i[2].data_wdata;
-      write_be_n    = req_ports_i[2].data_be;
+      write_en    = req_ports_i[2].data_req & req_ports_o[2].data_gnt & req_ports_i[2].data_we;
+      write_paddr = {req_ports_i[2].address_tag,  req_ports_i[2].address_index};
+      write_data  = req_ports_i[2].data_wdata;
+      write_be    = req_ports_i[2].data_be;
     end
   end
 
@@ -702,8 +677,7 @@ axi_riscv_atomics_wrap #(
     req_rate     = '{default: 7'd50};
 
     // Cache disabled ~> all requests should use bypass port
-    bypass_mem_port.set_region(0, MemBytes - 1);
-    data_mem_port.set_region(0, 0);
+    data_mem_port.set_region(0, MemBytes - 1);
 
     runSeq(nReadVectors);
     flushCache();
@@ -728,11 +702,6 @@ axi_riscv_atomics_wrap #(
     enable_i     = 1;
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd50};
-
-    // cache enabled ~> requests to cached region should use cache port,
-    // those to uncached regions should use bypass port
-    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
-    data_mem_port.set_region(CachedAddrBeg, MemBytes - 1);
 
     runSeq(nReadVectors);
     flushCache();
@@ -804,10 +773,6 @@ axi_riscv_atomics_wrap #(
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd25};
 
-    // cache disabled ~> all requests should use bypass port
-    bypass_mem_port.set_region(0, MemBytes - 1);
-    data_mem_port.set_region(0, 0);
-
     runSeq(nReadVectors,nWriteVectors);
     flushCache();
     tb_mem_port_t::check_mem();
@@ -822,11 +787,6 @@ axi_riscv_atomics_wrap #(
     inv_rand_en  = 0;
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd25};
-
-    // cache enabled ~> requests to cached region should use cache port,
-    // those to uncached regions should use bypass port
-    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
-    data_mem_port.set_region(CachedAddrBeg, MemBytes - 1);
 
     runSeq(nReadVectors,2*nWriteVectors);
     flushCache();
@@ -980,10 +940,6 @@ axi_riscv_atomics_wrap #(
     inv_rand_en  = 0;
     seq_type     = '{CONST_SEQ, IDLE_SEQ, SET_SEQ};
     req_rate     = '{50,0,2};
-
-    // AMOs should use cache port
-    bypass_mem_port.set_region(0, MemBytes-1);
-    data_mem_port.set_region(0, 0);
 
     runAMOs(nAMOs,1); // Last sequence flag, terminates agents
     flushCache();

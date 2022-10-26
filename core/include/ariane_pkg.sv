@@ -48,7 +48,7 @@ package ariane_pkg;
       logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;  // base which needs to match
       logic [NrMaxRules-1:0][63:0]      CachedRegionLength;    // bit mask which bits to consider when matching the rule
       // cache config
-      bit                               Axi64BitCompliant;     // set to 1 when using in conjunction with 64bit AXI bus adapter
+      bit                               AxiCompliant;          // set to 1 when using in conjunction with 64bit AXI bus adapter
       bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
       //
       logic [63:0]                      DmBaseAddress;         // offset of the debug module
@@ -72,7 +72,7 @@ package ariane_pkg;
       CachedRegionAddrBase:  {64'h8000_0000},
       CachedRegionLength:    {64'h40000000},
       //  cache config
-      Axi64BitCompliant:      1'b1,
+      AxiCompliant:           1'b1,
       SwapEndianess:          1'b0,
       // debug
       DmBaseAddress:          64'h0,
@@ -96,6 +96,7 @@ package ariane_pkg;
 
     function automatic logic range_check(logic[63:0] base, logic[63:0] len, logic[63:0] address);
       // if len is a power of two, and base is properly aligned, this check could be simplified
+      // Extend base by one bit to prevent an overflow.
       return (address >= base) && (address < (65'(base)+len));
     endfunction : range_check
 

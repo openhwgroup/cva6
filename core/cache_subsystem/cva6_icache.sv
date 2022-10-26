@@ -116,7 +116,7 @@ module cva6_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign cl_index    = vaddr_d[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH];
 
 
-  if (ArianeCfg.Axi64BitCompliant) begin : gen_axi_offset
+  if (ArianeCfg.AxiCompliant) begin : gen_axi_offset
     // if we generate a noncacheable access, the word will be at offset 0 or 4 in the cl coming from memory
     assign cl_offset_d = ( dreq_o.ready & dreq_i.req)      ? {dreq_i.vaddr>>2, 2'b0} :
                          ( paddr_is_nc  & mem_data_req_o ) ? cl_offset_q[2]<<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case

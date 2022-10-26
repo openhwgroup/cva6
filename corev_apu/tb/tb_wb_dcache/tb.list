@@ -45,5 +45,5 @@
 ../common/tb_dcache_pkg.sv
 ../common/tb_readport.sv
 ../common/tb_writeport.sv
-hdl/tb_amoport.sv
+../common/tb_amoport.sv
 hdl/tb.sv

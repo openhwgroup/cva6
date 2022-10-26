@@ -201,11 +201,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                         end
 
                         // this is timing critical
-                        // req_port_o.data_rdata = cl_i[cl_offset +: 64];
-                        case (mem_req_q.index[3])
-                            1'b0: req_port_o.data_rdata = cl_i[63:0];
-                            1'b1: req_port_o.data_rdata = cl_i[127:64];
-                        endcase
+                        req_port_o.data_rdata = cl_i[cl_offset +: 64];
 
                         // report data for a read
                         if (!mem_req_q.we) begin

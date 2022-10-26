@@ -85,7 +85,7 @@ package ariane_soc;
     CachedRegionAddrBase:  {DRAMBase},
     CachedRegionLength:    {DRAMLength},
     //  cache config
-    Axi64BitCompliant:      1'b1,
+    AxiCompliant:           1'b1,
     SwapEndianess:          1'b0,
     // debug
     DmBaseAddress:          DebugBase,

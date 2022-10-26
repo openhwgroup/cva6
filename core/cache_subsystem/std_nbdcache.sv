@@ -14,7 +14,12 @@
 
 
 module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; #(
-    parameter ariane_cfg_t ArianeCfg        = ArianeDefaultConfig // contains cacheable regions
+    parameter ariane_cfg_t ArianeCfg        = ArianeDefaultConfig, // contains cacheable regions
+    parameter int unsigned AXI_ADDR_WIDTH   = 0,
+    parameter int unsigned AXI_DATA_WIDTH   = 0,
+    parameter int unsigned AXI_ID_WIDTH     = 0,
+    parameter type axi_req_t = ariane_axi::req_t,
+    parameter type axi_rsp_t = ariane_axi::resp_t
 )(
     input  logic                           clk_i,       // Clock
     input  logic                           rst_ni,      // Asynchronous reset active low
@@ -30,10 +35,10 @@ module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; #(
     input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
     output dcache_req_o_t [2:0]            req_ports_o,  // request ports
     // Cache AXI refill port
-    output ariane_axi::req_t               axi_data_o,
-    input  ariane_axi::resp_t              axi_data_i,
-    output ariane_axi::req_t               axi_bypass_o,
-    input  ariane_axi::resp_t              axi_bypass_i
+    output axi_req_t                       axi_data_o,
+    input  axi_rsp_t                       axi_data_i,
+    output axi_req_t                       axi_bypass_o,
+    input  axi_rsp_t                       axi_bypass_i
 );
 
 import std_cache_pkg::*;
@@ -127,7 +132,12 @@ import std_cache_pkg::*;
     // Miss Handling Unit
     // ------------------
     miss_handler #(
-        .NR_PORTS               ( 3                    )
+        .NR_PORTS               ( 3                    ),
+        .AXI_ADDR_WIDTH         ( AXI_ADDR_WIDTH       ),
+        .AXI_DATA_WIDTH         ( AXI_DATA_WIDTH       ),
+        .AXI_ID_WIDTH           ( AXI_ID_WIDTH         ),
+        .axi_req_t              ( axi_req_t            ),
+        .axi_rsp_t              ( axi_rsp_t            )
     ) i_miss_handler (
         .flush_i                ( flush_i              ),
         .busy_i                 ( |busy                ),
@@ -261,8 +271,7 @@ import std_cache_pkg::*;
 
 //pragma translate_off
     initial begin
-        assert ($bits(axi_data_o.aw.addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
-        assert (DCACHE_LINE_WIDTH/64 inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of 64");
+        assert (DCACHE_LINE_WIDTH/AXI_DATA_WIDTH inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of AXI_DATA_WIDTH");
     end
 //pragma translate_on
 endmodule

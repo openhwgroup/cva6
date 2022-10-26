@@ -16,7 +16,7 @@
 
 `include "tb.svh"
 
-program tb_amoport import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #(
+program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
   parameter string       PortName      = "atomics port 0",
   parameter              MemWords      = 1024*1024,// in 64bit words
   parameter logic [63:0] CachedAddrBeg = 0,
@@ -82,7 +82,10 @@ program tb_amoport import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg:
       // Apply random stimuli, choose random AMO operand
       void'(randomize(amo_op) with {!(amo_op inside {AMO_NONE, AMO_CAS1, AMO_CAS2});});
       void'(randomize(data));
-      void'(randomize(size) with {size >= 2; size <= 3;});
+      if (riscv::XLEN == 64)
+        void'(randomize(size) with {size >= 2; size <= 3;});
+      else
+        size = 'h2;
 
       // For LRs/SCs, choose from only 4 adresses,
       // so that valid LR/SC combinations become more likely.
@@ -190,7 +193,7 @@ program tb_amoport import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg:
 
         if(Verbose | !ok) begin
           tmpstr0 =  $psprintf("vector: %02d - %06d -- paddr:   %16X -- AMO: 0x%2X -- size: %X  -- op_a: %16X -- op_b: %16X",
-                      n, k, dut_amo_req_port_o.operand_a, dut_amo_req_port_o.amo_op, 2**dut_amo_req_port_o.size, exp_result_i, dut_amo_req_port_o.operand_b);
+                      n, k, dut_amo_req_port_o.operand_a, dut_amo_req_port_o.amo_op, 2**dut_amo_req_port_o.size, dut_amo_req_port_o.operand_a, dut_amo_req_port_o.operand_b);
           tmpstr1 =  $psprintf("vector: %02d - %06d -- exp_res: %16X -- exp_mem: %16X",
                       n, k, exp_result_i, exp_mem_i);
           tmpstr2 =  $psprintf("vector: %02d - %06d -- result:  %16X -- memory: %16X",
