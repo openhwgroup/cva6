@@ -156,7 +156,7 @@ package ariane_pkg;
     localparam int unsigned DEPTH_COMMIT = 8;
 `endif
 
-    localparam bit FPGA_OPTIMIZATION_EN = cva6_config_pkg::CVA6ConfigFPGAEn; // Is FPGA optimization of CV32A6
+    localparam bit FPGA_EN = cva6_config_pkg::CVA6ConfigFPGAEn; // Is FPGA optimization of CV32A6
     
     localparam bit RVC = cva6_config_pkg::CVA6ConfigCExtEn; // Is C extension configuration
 

@@ -167,7 +167,7 @@ import std_cache_pkg::*;
         sram #(
             .DATA_WIDTH ( DCACHE_LINE_WIDTH                 ),
             .NUM_WORDS  ( DCACHE_NUM_WORDS                  ),
-            .FPGA_OPTIM ( ariane_pkg::FPGA_OPTIMIZATION_EN  )
+            .FPGA_EN    ( ariane_pkg::FPGA_EN               )
         ) data_sram (
             .req_i   ( req_ram [i]                          ),
             .rst_ni  ( rst_ni                               ),
@@ -184,7 +184,7 @@ import std_cache_pkg::*;
         sram #(
             .DATA_WIDTH ( DCACHE_TAG_WIDTH                  ),
             .NUM_WORDS  ( DCACHE_NUM_WORDS                  ),
-            .FPGA_OPTIM ( ariane_pkg::FPGA_OPTIMIZATION_EN  )
+            .FPGA_EN    ( ariane_pkg::FPGA_EN               )
         ) tag_sram (
             .req_i   ( req_ram [i]                          ),
             .rst_ni  ( rst_ni                               ),
@@ -220,7 +220,7 @@ import std_cache_pkg::*;
         .USER_WIDTH ( 1                                ),
         .DATA_WIDTH ( 4*DCACHE_DIRTY_WIDTH             ),
         .NUM_WORDS  ( DCACHE_NUM_WORDS                 ),
-        .FPGA_OPTIM ( ariane_pkg::FPGA_OPTIMIZATION_EN )
+        .FPGA_EN    ( ariane_pkg::FPGA_EN              )
     ) valid_dirty_sram (
         .clk_i   ( clk_i                               ),
         .rst_ni  ( rst_ni                              ),

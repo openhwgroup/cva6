@@ -279,7 +279,7 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
       .DATA_WIDTH ( ariane_pkg::DCACHE_SET_ASSOC * riscv::XLEN ),
       .USER_EN    ( ariane_pkg::DATA_USER_EN          ),
       .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS    ),
-      .FPGA_OPTIM ( ariane_pkg::FPGA_OPTIMIZATION_EN  )
+      .FPGA_EN    ( ariane_pkg::FPGA_EN               )
     ) i_data_sram (
       .clk_i      ( clk_i               ),
       .rst_ni     ( rst_ni              ),
@@ -304,7 +304,7 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
       // tag + valid bit
       .DATA_WIDTH ( ariane_pkg::DCACHE_TAG_WIDTH + 1 ),
       .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS   ),
-      .FPGA_OPTIM ( ariane_pkg::FPGA_OPTIMIZATION_EN )
+      .FPGA_EN    ( ariane_pkg::FPGA_EN              )
     ) i_tag_sram (
       .clk_i     ( clk_i               ),
       .rst_ni    ( rst_ni              ),

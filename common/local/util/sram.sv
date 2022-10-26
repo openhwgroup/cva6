@@ -26,7 +26,7 @@ module sram #(
     parameter SIM_INIT   = "none",
     parameter OUT_REGS   = 0,    // enables output registers in FPGA macro (read lat = 2)
     parameter DROMAJO_RAM  = 0,
-    parameter FPGA_OPTIM = 0
+    parameter FPGA_EN = 0
 )(
    input  logic                          clk_i,
    input  logic                          rst_ni,
@@ -95,7 +95,7 @@ end
             .RdData_DO ( ruser_aligned[k*64 +: 64] )
         );
       end
-    end else if (FPGA_OPTIM) begin : gen_fpga_mem
+    end else if (FPGA_EN) begin : gen_fpga_mem
       // unused byte-enable segments (8bits) are culled by the tool
       SyncSpRamBeNx64 #(
         .ADDR_WIDTH($clog2(NUM_WORDS)),
@@ -114,7 +114,7 @@ end
           .Addr_DI   ( addr_i                    ),
           .RdData_DO ( rdata_aligned[k*64 +: 64] )
       );
-      if (USER_EN) begin : gen_mem_user
+      if (USER_EN) begin : gen_mem_fpga_user
         SyncSpRamBeNx64 #(
           .ADDR_WIDTH($clog2(NUM_WORDS)),
           .DATA_DEPTH(NUM_WORDS),
