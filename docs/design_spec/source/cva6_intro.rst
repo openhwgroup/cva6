@@ -83,5 +83,8 @@ Contributors
 | Jean-Roch Coulon
   (`jean-roch.coulon@thalesgroup.com <mailto:jean-roch.coulon@thalesgroup.com>`__)
 
+| Ayoub Jalali
+  (`ayoub.jalali@external.thalesgroup.com <mailto:ayoub.jalali@external.thalesgroup.com>`__)
+
 [TO BE COMPLETED]
 
