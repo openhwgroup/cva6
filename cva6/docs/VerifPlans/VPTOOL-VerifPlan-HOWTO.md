@@ -1,4 +1,4 @@
-[//]: # (Copyright (C) 2022 Thales Silicon Security)
+[//]: # (Copyright 2022 Thales Silicon Security)
 [//]: # (SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.)
 [//]: # (Original Author: Zbigniew CHAMSKI <zbigniew.chamski@thalesgroup.com>)
 
