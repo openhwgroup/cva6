@@ -26,6 +26,10 @@ if "PLATFORM_TOP_DIR" in os.environ:  ## Env Variable existence Check
     VP_PLATFORM_TOP_DIR = os.environ["PLATFORM_TOP_DIR"]
     # Name of the project (can be empty if the variable is not defined in environment.)
     PROJECT_NAME = os.environ["PROJECT_NAME"]
+    # Identifier of the project, to be used when constructing file names etc.
+    PROJECT_IDENT = os.environ["PROJECT_IDENT"]
+    # Location of Markdown output file(s)
+    MARKDOWN_OUTPUT_DIR = os.environ["MARKDOWN_OUTPUT_DIR"]
     # Location of database files
     SAVED_DB_LOCATION = os.path.join(VP_PLATFORM_TOP_DIR, "*.pck")
     # Location of the Pickle file containing the current IP/Feature lock info.

@@ -15,8 +15,17 @@ ROOTDIR=`readlink -f $(dirname "${BASH_SOURCE[0]}")`
 # Here we use the verification tree from the example directory.
 export PLATFORM_TOP_DIR="$ROOTDIR"
 
-# Set a meaningful name for the example project.
+# Set the printable name for the project that will be used
+# in the human-readable documentation.
 export PROJECT_NAME="FRONTEND"
+
+# Set the alphanumerical identifier of the project that
+# will be used to construct file names etc.
+export PROJECT_IDENT="FRONTEND"
+
+# Set the destination directory of Markdown files for this project.
+# Since it will be used by VPTOOL, it shall NOT be a relative path.
+export MARKDOWN_OUTPUT_DIR=`readlink -f "$ROOTDIR/../source"`
 
 # Set Python path to make vpconfig.py reachable.
 export PYTHONPATH="$ROOTDIR:$PYTHONPATH"
