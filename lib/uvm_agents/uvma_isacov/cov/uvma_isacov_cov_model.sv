@@ -1398,7 +1398,7 @@ covergroup cg_sequential(string name,
     `ISACOV_IGN_BINS
   }
 
-  cp_instr_prev_x2: coverpoint(instr.name)  {
+  cp_instr_prev_x2: coverpoint(instr_prev.name) iff (instr_prev != null) {
     `ISACOV_IGN_BINS
     ignore_bins IGN_X2_OFF = {[0:$]} with (!seq_instr_x2_enabled);
   }
