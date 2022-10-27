@@ -186,7 +186,7 @@ sg23
 VVP_IP003_P001_I002
 p76
 sg35
-VIf instruction is a JALR and BTB (Branch Target Buffer) returns a valid address, next PC is predicted by BTB. Else JALR is not considered as a control flow instruction, which will generate a mispredict.
+VIf instruction is a JALR and BTB (Branch Target Buffer) returns a valid address, next PC is predicted by BTB.\u000a\u000aElse JALR is not considered as a control flow instruction, which will generate a mispredict.
 p77
 sg37
 VFRONTEND sub-system/functionality/PC generation stage/Branch Predict

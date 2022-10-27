@@ -107,12 +107,22 @@ class Item:
         else:
             return "N/A (unsupported field '%s')" % attr
 
+    def preserve_linebrs(self, text, indent="  "):
+        '''Preserve line breaks in the text by inserting two spaces before
+        each newline.  Ensure first line of 'text' starts on a new line.'''
+        md_linebreak = '  \n' + indent
+        return md_linebreak + md_linebreak.join(text.split('\n'))
+
     def __str__(self):
         return0 = ""
-        return0 += format("#### %s item\n\n" % self.name)
+        return0 += format("#### Item: %s\n\n" % self.name)
         return0 += format("* **Requirement location:** %s\n" % self.purpose)
-        return0 += format("* **Feature Description:** %s\n" % self.description)
-        return0 += format("* **Verification goals:** %s\n" % self.verif_goals)
+        return0 += format(
+            "* **Feature Description** %s\n" % self.preserve_linebrs(self.description)
+        )
+        return0 += format(
+            "* **Verification goals** %s\n" % self.preserve_linebrs(self.verif_goals)
+        )
         return0 += format("* **Pass/Fail Criteria:** %s\n" % self.attrval2str("pfc"))
         return0 += format("* **Test Type:** %s\n" % self.attrval2str("test_type"))
         return0 += format(
@@ -178,7 +188,7 @@ class Prop:
         self.rfu_dict = {}
 
     def __str__(self):
-        return format("### %s sub-feature\n\n" % (self.name))
+        return format("### Sub-feature: %s\n\n" % (self.name))
 
     def prop_clone(self):
         new_prop = Prop()
@@ -300,7 +310,7 @@ class Ip:
         self.rfu_list_1 = []
 
     def __str__(self):
-        return format("## %s feature\n\n" % (self.name))
+        return format("## Feature: %s\n\n" % (self.name))
 
     def add_property(self, name, tag="", custom_num=""):  # adds an Prop instance to Ip
         if name in list(self.prop_list.keys()):
