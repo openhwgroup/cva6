@@ -1,5 +1,5 @@
-[//]: # (SPDX-License-Identifier)
-[//]: # (Copyright Thales Silicon Security 2022)
+[//]: # (Copyright (C) 2022 Thales Silicon Security)
+[//]: # (SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.)
 [//]: # (Original Author: Zbigniew CHAMSKI <zbigniew.chamski@thalesgroup.com>)
 
 # HOWTO use VPTOOL to edit and export DV plans
@@ -10,7 +10,7 @@ New features pertaining to Verification Plan exports are currently being develop
 
 ## Requirements for Markdown output generation
 
-* VPTOOL (included in the `core-v-verif` distribution under `tools/vptool`) with its dependencies installed, as per instructions in file `tools/vptool/VPTOOL-readme.txt`.
+* VPTOOL (included in the `core-v-verif` distribution under `tools/vptool`) with its dependencies installed, as per instructions in file `core-v-verif/tools/vptool/VPTOOL-readme.txt`.
 * Python packages related to the processing of markdown files (listed in file `requirements.txt`).
 * Verification Plan directories, one per subsystem.
 
@@ -30,22 +30,22 @@ Otherwise, up-to-date versions of the packages listed in file `requirements.txt`
 
 Currently, the verification plan for each subsystem is stored in a separate VPTOOL database.  The per-subsystem configuration consists of the following information:
 
-* a Python configuration file `vp_config.py` that specifies the naming of database files and the layout of database directories;
-* shell variable `PLATFORM_TOP_DIR` which indicates the root location of the database files;
+* a Python configuration file `vp_config.py` that specifies the naming of database files and the layout of database directories. The location of this file is treated as the root of the directory tree for a given database.
+* shell variable `PLATFORM_TOP_DIR` which indicates the root location of the database files. It is recommended to use an absolute path; a good choice is the *effective* location of the database as returned by `dirname $(readlink -f <path_to_vp_config.py>)`.
 * shell variable `PROJECT_NAME` which specifies the human-friendly name of the subsystem (a free-form string containing no newline characters).  The value of this variable will serve as the name of the subsystem in the generated documentation.
 * shell variable `PROJECT_IDENT` which specifies the file name stem to use in Markdown processing (no path separators, spaces nor special characters allowed).  This string will be used to construct the name of the output Markdown file, and must be unique across all subsystems of a design.
-* shell variable `MARKDOWN_OUTPUT_DIR` which designates the directory in which to place he generated per-subsystem Markdown files.  
+* shell variable `MARKDOWN_OUTPUT_DIR` which designates the directory in which to place the generated per-subsystem Markdown files.  The Markdown rendering tools that produce human-friendly output (e.g. HTML) for CVA6 Verification Plans are configured to take Markdown input from directory `core-v-verif/cva6/docs/VerifPlans/source`.  It is recommended to use an absolute path; a good choice is the *effective* location of the database (`readlink -f $PLATFORM_TOP_DIR`) suffixed with the *relative* path to `source` as this avoids hardcoded absolute paths.)
 
 Additionnally, shell variable `PYTHONPATH` needs to contain the per-subsystem directory (in addition to other explicit module paths, if such paths are needed).
 
-To ensure consistent configurations between consecutive runs of VPTOOL on a given database, it is recommended to set these variables within a shell script (see `cva6/docs/VerifPlans/FRONTEND/runme.sh` for an example.)
+To ensure consistent configurations between consecutive runs of VPTOOL on a given database, it is recommended to set these variables within a shell script (see `core-v-verif/cva6/docs/VerifPlans/FRONTEND/runme.sh` for an example.)
 
 Typically, creating a new database could be as simple as:
 
-* create a directory for a new per-subsystem DV plan, say `cva6/docs/VerifPlans/NEW_ARCH_VARIANT/NEW_SUBSYSTEM`.
-* copy existing `vp_config.py` and `runme.sh` files from an existing per-subsystem Verification Plan directory to the newly created directory.
-* edit the `runme.sh` in the new directory to adjust the vaue of variable `PROJECT_NAME`, `PROJECT_IDENT` and `MARKDOWN_OUTPUT_DIR`
-* using the adjusted `runme.sh` script, launch VPTOOL to interactively create the new database:
+* Create a directory for a new per-subsystem DV plan, say `cva6/docs/VerifPlans/NEW_ARCH_VARIANT/NEW_SUBSYSTEM`.
+* Copy existing `vp_config.py` and `runme.sh` files from an existing per-subsystem Verification Plan directory to the newly created directory.
+* Edit the `runme.sh` in the new directory to adjust the vaue of variable `PROJECT_NAME`, `PROJECT_IDENT` and `MARKDOWN_OUTPUT_DIR`.
+* Using the adjusted `runme.sh` script, launch VPTOOL to interactively create the new database:
   ```
   . cva6/docs/VerifPlans/NEW_ARCH_VARIANT/NEW_SUBSYSTEM/runme.sh
   ```
@@ -59,8 +59,6 @@ In VPTOOL, modify the Verification Plan database of the new subsystem as appropr
 ### Step 1: Export database content to Markdown document(s)
 
 Currently, the generation of Markdown output is directly coupled to the action of saving database content of a project.  When saving a database, VPTOOL will also create a Markdown file containing a human readable version of the DV plan in file `dvplan_${PROJECT_IDENT}.md` in directory designated by the shell variable `MARKDOWN_OUTPUT_DIR` set in the `runme.sh` script of the given subsystem.
-
-The Markdown rendering tools that produce human-friendly output (e.g. HTML) are configured to take Markdown input from directory `cva6/docs/VerifPlans/source` in the `core-v-verif` tree.  Therefore, the shell variable should b 
 
 After editing the databases for projects `FRONTEND` and `NEW_ARCH_VARIANT/NEW_SUBSYSTEM` the directory layout will thus be:
 
@@ -116,7 +114,29 @@ Please use `make target' where target is one of
   linkcheck   to check all external links for integrity
   doctest     to run all doctests embedded in the documentation (if enabled)
   coverage    to run coverage check of the documentation (if enabled)
-me@ariane:cva6/docs/VerifPlans$ 
+me@ariane:cva6/docs/VerifPlans$
 ```
 
-The recommended target during the development of the verification plans is `singlehtml` as it offers the shortest turnaround time.  Also, some of the formatting targets may depend on the availability of additional tools that may or may not be installed (or even installable) on your system.
+The recommended target during the development of the verification plans is `singlehtml` as it offers the shortest turnaround time and interactive output with good readability.  Also, some of the other formatting targets may depend on the availability of additional tools that may or may not be installed (or even installable) on your system.
+
+```
+me@ariane:cva6/docs/VerifPlans$ make singlehtml
+Running Sphinx v1.8.4
+loading translations [en]... done
+loading pickled environment... done
+building [mo]: targets for 0 po files that are out of date
+building [singlehtml]: all documents
+updating environment: 0 added, 0 changed, 0 removed
+looking for now-outdated files... none found
+preparing documents... done
+assembling single document... dvplan_intro dvplan_FRONTEND dvplan_NEW_SUBSYS
+writing... done
+writing additional files...
+copying static files... done
+copying extra files... done
+dumping object inventory... done
+build succeeded.
+
+The HTML page is in build/singlehtml.
+me@ariane:cva6/docs/VerifPlans$
+```
