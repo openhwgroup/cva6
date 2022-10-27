@@ -85,7 +85,7 @@ After editing the databases for projects `FRONTEND` and `NEW_ARCH_VARIANT/NEW_SU
 
 In order to include the newly generated `NEW_SUBSYSTEM` verification plan into the overall DV Plan document, the file `source/dvplan_index.rst` needs to be modified so that it includes `dvplan_NEW_SUBSYS.md`.  This is achieved by simply adding the name of the new DV plan Markdown document (without the `.md` extension) at the appropriate location in the document structure, e.g. after the line containing 'dvplan_FRONTEND`.
 
-Once the index file has been adjusted, the final document can generated in a variety of formats by invoking `make` in the directory `cva6/docs/VerifPlans` with the desired output format as argument.  The list of formats supported by your local Sphinx installation can be obtained by invoking `make` without arguments:
+Once the index file has been adjusted, the final document can generated in a variety of formats by invoking `make` in the directory `core-v-verif/cva6/docs/VerifPlans` with the desired output format as argument.  The list of formats supported by your local Sphinx installation can be obtained by invoking `make` without arguments:
 
 ```
 me@ariane:cva6/docs/VerifPlans$ make
@@ -140,3 +140,5 @@ build succeeded.
 The HTML page is in build/singlehtml.
 me@ariane:cva6/docs/VerifPlans$
 ```
+
+The resulting document can be viewed by pointing your browser at the file `core-v-verif/cva6/docs/VerifPlans/build/singlehtml/index.html`.
