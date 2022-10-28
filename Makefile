@@ -203,7 +203,7 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/axi/src/axi_mux.sv                                                 \
         corev_apu/axi/src/axi_demux.sv                                               \
         corev_apu/axi/src/axi_xbar.sv                                                \
-        corev_apu/fpga-support/rtl/SyncSpRamBeNx64.sv                                \
+        common/local/techlib/fpga/rtl/SyncSpRamBeNx64.sv                             \
         common/submodules/common_cells/src/unread.sv                                 \
         common/submodules/common_cells/src/sync.sv                                   \
         common/submodules/common_cells/src/cdc_2phase.sv                             \
