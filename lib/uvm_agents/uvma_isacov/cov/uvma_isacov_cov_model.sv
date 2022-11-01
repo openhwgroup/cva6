@@ -957,7 +957,7 @@ covergroup cg_cr(
     ignore_bins IGN_OFF = cross_rdrs1_rs2 with (!reg_crosses_enabled);
   }
 
-  `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
+  `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, has_rs1)
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
 
