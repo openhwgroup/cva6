@@ -1959,6 +1959,7 @@ module csr_regfile import ariane_pkg::*; #(
     assign vmid_o           = ariane_pkg::RVH ? hgatp_q.vmid[VmidWidth-1:0] : '0;
     assign sum_o            = mstatus_q.sum;
     assign vs_sum_o         = ariane_pkg::RVH ? vsstatus_q.sum : '0;
+    assign hu_o             = ariane_pkg::RVH ? hstatus_q.hu : '0;
     // we support bare memory addressing and SV39
     if(ariane_pkg::RVH) begin
         assign en_translation_o = ((((riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV && !v_q) || (riscv::vm_mode_t'(vsatp_q.mode) == riscv::MODE_SV && v_q)) &&
