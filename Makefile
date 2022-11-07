@@ -203,6 +203,7 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/axi/src/axi_mux.sv                                                 \
         corev_apu/axi/src/axi_demux.sv                                               \
         corev_apu/axi/src/axi_xbar.sv                                                \
+        common/local/techlib/fpga/rtl/SyncSpRamBeNx64.sv                             \
         common/submodules/common_cells/src/unread.sv                                 \
         common/submodules/common_cells/src/sync.sv                                   \
         common/submodules/common_cells/src/cdc_2phase.sv                             \
@@ -254,7 +255,7 @@ copro_src := $(addprefix $(root-dir), $(copro_src))
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
 
-fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/bootrom/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) corev_apu/src/tech_cells_generic/src/fpga/tc_sram_xilinx.sv common/local/util/tc_sram_xilinx_wrapper.sv
+fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/bootrom/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
