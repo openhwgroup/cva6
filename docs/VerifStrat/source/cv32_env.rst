@@ -18,27 +18,26 @@
 
 .. _cv32_env:
 
-CV32E40P Simulation Testbench and Environment
-=============================================
+CV32E4\* Simulation Testbench and Environment
+==============================================
 
 As stated in the :ref:`pulp-verif` chapter (in the :ref:`exec_summary`),
-CV32E40P verification will
-follow a two-pronged approach using an updated RI5CY testbench,
+CV32E40P verification
+followed a two-pronged approach using an updated RI5CY testbench,
 hereafter referred to as the core testbench in parallel with the
-development of a UVM environment. The UVM environment will be developed
-in a step-wise fashion adding ever more capabilities, and will always
-maintain the ability to run testcases and regressions.
+development of a UVM environment. The UVM environment was developed
+in a step-wise fashion adding ever more capabilities.
 
-The UVM environment will be based on the verification environment
-developed for the Ibex core, using the Google random-instruction
+The UVM environment uses the Google random-instruction
 generator for stimulus creation, the Imperas Instruction Set Simulator
-(ISS) for results prediction and will also be able to run hand-coded
-code-segments (programs) such as those developed by the RISC-V Compliance Task
-Group.
+(ISS) for results prediction. It is also capable running hand-coded
+code-segments (test-programs) such as those developed by the RISC-V Compliance
+Task Group.
 
 The end-goal is to have a single UVM-based verification environment
-capable of complete CV32E40P and CV32E40 verification. This environment
-will be rolled out in three phases as detailed below.
+capable of "industrial grade" verification of the CORE-V family of cores,
+startng with the CV32E40P and the CV32E4* cores.
+This environment is always evolving to meet the needs of curent and future cores.
 
 Core Testbench
 --------------
@@ -74,54 +73,20 @@ verification environment under development for CV32E40\*. This
 environment is intended to be able to verify the CV32E40P and CV32E40
 devices with only minimal modification to the environment itself.
 
-Phase 1 Environment
-~~~~~~~~~~~~~~~~~~~
+First Generation UVM Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The goal of the phase 1 environment are to able to execute all of the
-compliance tests from the RISC-V Foundation, PULP-Platform and OpenHW
-Group, plus a set of manually written C and assembler testcases in a
-minimal UVM environment. Essentially, it will have the same
-functionality as the core testbench, but will all the overhead of the
-UVM.
+The first generation environment has been supplanted by subsequent generations to the point where is it no long useful to discuss it.
 
-Recall from the structure of the core testbench. Swapping out the RI5CY
-RTL model for the CV32E40P RTL model, and adding SystemVerilog
-interfaces yields the testbench components for the phase 1 environment.
-Rounding out the environment is a minimal UVM environment and UVM base
-test. This is shown in `Illustration 1`_.
+Second Generation UVM Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. figure:: ../images/CV32E_VE_phase1.png
-   :name: Illustration 1
-   :align: center
-   :alt: 
-
-   Illustration 1: Phase 1 CV32E40P UVM Environment
-
-The testbench components of the phase 1 environment are the so-called
-“DUT wrapper” (module uvmt\_cv32\_dut\_wrap) which is a modification of
-the riscv\_wrapper in core testbench, and the “testbench” (module
-uvmt\_cv32\_tb) which is a replacement of the tb\_top module from the
-core testbench. This structure provides the UVM environment with access
-to all of the CV32E40P top-level control and status ports via
-SystemVerilog interfaces. Note that for phase 1, most of the control
-inputs are static, just as they are in the core testbench. The phase 2
-environment will have dedicated UVM agents for each of the interfaces
-shown in , allowing testcases to control these interfaces using UVM test
-sequences.
-
-The phase 1 environment will also control the function of the riscv-gcc
-toolchain directly as part of the UVM run-flow, simplifying the
-Makefiles used to control compilation and execution of testcases.
-
-Phase 2 Environment
-~~~~~~~~~~~~~~~~~~~
-
-The phase two environment is shown in `Illustration 2`_. Phase 2 introduces the `Google
+The second generation environment is shown in `Illustration 2`_. Phase 2 introduces the `Google
 Random Instruction Generator <https://github.com/google/riscv-dv>`__ and
 the `Imperas
 ISS <http://www.imperas.com/articles/imperas-empowers-riscv-community-with-riscvovpsim>`__
 as a stand-alone components. The most significant capabilities of the
-phase 2 environment are:
+second generation environment are:
 
 -  Ability to use SystemVerilog class constraints to automatically
    generate testcases.
@@ -139,7 +104,7 @@ phase 2 environment are:
    :align: center
    :alt: 
 
-   Illustration 2: Phase 2 Verification Environment for CV32E
+   Illustration 2: Second Generation Verification Environment for CV32E
 
 As shown in `Illustration 2`_, the environment is not a single entity.
 Rather, it is a collection of disjoint components, held together by
@@ -176,37 +141,8 @@ significant of these:
    results produced by the ISS. Any mismatch results in a testcase
    failure.
 
-Phase 2 Development Strategy
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The disjoint-component nature of the phase two environment simplifies
-its development, as almost any component of the environment can be
-developed, unit-tested and deployed separately, without a significant
-impact on the other components or on the phase one environment. In
-addition, the Ibex environment provides a working example for much of
-the phase two work.
-
-The first step will be to introduce the random-instruction generator
-into the script-ware. This is seen as a relatively simple task as the
-generator has been developed as a stand-alone UVM component and has
-previously been vetted by OpenHW. Once the generator is integrated,
-user’s of the environment will have the ability to run existing or new
-testcases for the phase one environment, as well has run generated
-programs on the RTL. The programs generated by the Google
-random-instruction generator are not self-checking, so tests run with
-the generator will not produce a useful pass/fail indication, although
-they may be used to measure coverage.
-
-In order to get a self-checking environment, the ISS needs to be
-integrated into the flow. This is explicitly supported by the Google
-generator, so this is seen as low-risk work. An open issue is to extract
-execution trace information both the RTL simulation and ISS simulation
-in such a way as to make the comparison script simple. Ideally, the
-comparison script would be implemented using ***diff***. This is a
-significant ToDo.
-
-Phase 3 Environment Reference Model (ISS) Integration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Phase 2 Environment Reference Model (ISS) Integration
+_____________________________________________________
 
 `Illustration 2`_ shows the ISS as an entity external to the environment. Phase
 3 adds significant capabilies to the environment, notably the integration
@@ -224,7 +160,7 @@ instruction execution by the Core are done in real time.  This is a significant
 aid to debugging failures.
 
 Step-and-Compare
-~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^
 
 The integrated RM is used in a step-and-compare mode in which the RM and
 RTL execution are in lock-step.  Step and compare is invaluable for debug
@@ -271,7 +207,7 @@ Referring to Illustration 3:
 Step and compare is accomplished by the *uvmt_cv32_step_compare* module.
 
 Compare
-_______
+^^^^^^^
 
 RTL module *riscv_tracer* flags that the RTL has retired an instruction by
 triggering the *retire* event.  The PC, GPRs, and CSRs are compared when the
@@ -280,7 +216,7 @@ the test. The test will call UVM_ERROR if the PC, GPR, or CSR is never compared,
 i.e. the comparison count is 0.  
 
 GPR Comparison
-______________
+^^^^^^^^^^^^^^
 
 When the RTL retire event is triggered *<gpr>_q* may not yet have updated. For
 this reason RTL module *riscv_tracer* maintains queue *reg_t insn_regs_write*
@@ -311,7 +247,7 @@ If the size of queue *insn_regs_write* is 0 all 32 registers are compared,
 
 
 CSR Comparison
-______________
+^^^^^^^^^^^^^^
 
 When the RTL retire event is triggered the RTL CSRs will have updated and can
 be probed directly. At each Step the RM will write the updated CSR registers to
@@ -859,78 +795,11 @@ event should be discarded for the *deferint* step.
    should be checked against an RVFI instruction.  (This may be better clarified via the *valid* signal on the RVVI state
    interface in the future).
 
-Beyond Phase 3 Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Third Generation UVM Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-At the time of this writing (2020-04-21) there is a proposal to develop a
-CV32E40P Subsystem, comprized of the Core, a Debug Module and Debug Transport
-Module, plus a cross-bar which will allow for Debug Module and an external AHB
-master to access instruction and data memory.  Details of this Subsystem can be
-found in the Architecture Specification for the
-'Open  Bus Interface <https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/OBI-v1.0.pdf>'_.
-
-`Illustration 10`_ shows a simple (?) change to the **uvmt_cv32_tb** that allows
-the testbench (and thereby the UVM enviroment) to switch between a Core-level
-DUT and a Subsystem-level DUT.
-
-Here, the memory model **mm_ram** has been moved from the dut_wrap module to
-the testbench module.  The connection between the memory model and the dut_wrap
-is via new SystemVerilog interfaces, **itcm** and **dtcm**.  These SystemVerilog
-interfaces support both the Core-level instruction and data interfaces as well
-as the OBI instruction and data interfaces.  This is possible because the OBI
-standard is a super-set of the Core's interfaces.  Any difference in operation
-between these interfaces is controlled at compile time [11]_.
-
-.. figure:: ../images/MemoryModelTestbench.png
-   :name: Illustration 10
-   :align: center
-   :alt: 
-
-   Illustration 10: Moving Memory Model to the Testbench
-
-In `Illustration 10`_ the **uvmt_cv32_dut_wrap** (or core wrapper) is replaced with
-**uvmt_cv32_ss_wrap** (subsystem wrapper).  This subsystem wrapper has the same
-SystemVerilog interfaces as the core wrapper and instantiates the CV32E40*
-Subsystem directly.  For Core-level testing, the the OBI XBAR and DM_TOP modules
-are replaced with "shell" modules at compile-time.  The XBAR shell is a pass-through
-for the instruction and data buses to directly connect to
-itcm_if and dtcm_if respectively.  Likewise, the DM is also replaced with a shell
-that drives Hi-Z on its debug_req output, thereby allowing debug_req to be driven
-directly from the dbg_if.  The DM shell drives the ready output on the DMI low to
-ensure that the Debug Agent (in the UVM environment, not shown in the Illustration)
-does not inadvertently attempt debug access via the DMI.  Instead, the Debug Agent
-is configured to drive debug_req directly.
-
-Testing the Subsystem involves no compile-time changes to the UVM environment
-as it is able to use the same SystemVerilog interfaces.  The run-time configuration
-is changed such that the Debug Agent drives Hi-Z on its debug_req ouput and all
-accesses to the DM use the DMI signalling.   At compile-time the RTL for the
-OBI XBAR and DM modules are instantiated.  The AHB master and slave interfaces
-of the Subsystem (not shown in the Illustration) connect to their own SystemVerilog
-interfaces which connect to AHB Agents in the UVM environment.  If the wrapper has
-been compiled to instantiate just the Core, these AHB Agents are configured to
-be inactive.
-
-.. figure:: ../images/SubsystemWrapper.png
-   :name: Illustration 11
-   :align: center
-   :alt: 
-
-   Illustration 11: Subsystem Wrapper (compiled for Core-level verification)
-
-File Structure and Organization
--------------------------------
-
-ToDo
-
-Naming Convention
-~~~~~~~~~~~~~~~~~
-
-Directory and File Structure
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Compiling the Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~
+At the time of this writing (2022-11-06), the third generation of the CV32E4\* UVM verification environment is being rolled out.
+Watch this space for updates.
 
 
 .. [10]
@@ -942,11 +811,3 @@ Compiling the Environment
    `core-v-docs <https://github.com/openhwgroup/core-v-docs/tree/master/verif>`__\ project
    which is home for this document.
 
-.. [11]
-   The memory model is currently implemented as a SystemVerilog module.  Replacing
-   this with a SystemVerilog class based implementation would allow for run-time
-   control of the SystemVerilog interface operation.  This is a nice-to-have
-   feature and is not, on its own, enough of a reason to re-code the memory model.
-
-
-   
