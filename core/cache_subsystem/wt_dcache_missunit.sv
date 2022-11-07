@@ -15,9 +15,10 @@
 
 
 module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter bit                         Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
-  parameter logic [CACHE_ID_WIDTH-1:0]  AmoTxId            = 1,    // TX id to be used for AMOs
-  parameter int unsigned                NumPorts           = 3     // number of miss ports
+  parameter bit                         AxiCompliant  = 1'b0, // set this to 1 when using in conjunction with AXI bus adapter
+  parameter logic [CACHE_ID_WIDTH-1:0]  AmoTxId       = 1,    // TX id to be used for AMOs
+  parameter int unsigned                NumPorts      = 3,    // number of miss ports
+  parameter int                         AxiDataWidth  = 0
 ) (
   input  logic                                       clk_i,       // Clock
   input  logic                                       rst_ni,      // Asynchronous reset active low
@@ -220,8 +221,12 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   end
 
   // note: openpiton returns a full cacheline!
-  if (Axi64BitCompliant) begin : gen_axi_rtrn_mux
-    assign amo_rtrn_mux = mem_rtrn_i.data[0 +: 64];
+  if (AxiCompliant) begin : gen_axi_rtrn_mux
+    if (AxiDataWidth > 64) begin
+      assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[$clog2(AxiDataWidth/8)-1:3]*64 +: 64];
+    end else begin
+      assign amo_rtrn_mux = mem_rtrn_i.data[0 +: 64];
+    end
   end else begin : gen_piton_rtrn_mux
     assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64 +: 64];
   end

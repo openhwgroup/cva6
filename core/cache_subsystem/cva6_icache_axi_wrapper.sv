@@ -14,7 +14,12 @@
 //
 
 module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig  // contains cacheable regions
+  parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig,  // contains cacheable regions
+  parameter int unsigned AxiAddrWidth = 0,
+  parameter int unsigned AxiDataWidth = 0,
+  parameter int unsigned AxiIdWidth   = 0,
+  parameter type axi_req_t = ariane_axi::req_t,
+  parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
   input  logic              clk_i,
   input  logic              rst_ni,
@@ -30,12 +35,12 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  icache_dreq_i_t    dreq_i,
   output icache_dreq_o_t    dreq_o,
   // AXI refill port
-  output ariane_axi::req_t  axi_req_o,
-  input  ariane_axi::resp_t axi_resp_i
+  output axi_req_t          axi_req_o,
+  input  axi_rsp_t          axi_resp_i
 );
 
-  localparam AxiNumWords = (ICACHE_LINE_WIDTH/64) * (ICACHE_LINE_WIDTH  > DCACHE_LINE_WIDTH)  +
-                           (DCACHE_LINE_WIDTH/64) * (ICACHE_LINE_WIDTH <= DCACHE_LINE_WIDTH) ;
+  localparam AxiNumWords = (ICACHE_LINE_WIDTH/AxiDataWidth) * (ICACHE_LINE_WIDTH  > DCACHE_LINE_WIDTH)  +
+                           (DCACHE_LINE_WIDTH/AxiDataWidth) * (ICACHE_LINE_WIDTH <= DCACHE_LINE_WIDTH) ;
 
   logic                                  icache_mem_rtrn_vld;
   icache_rtrn_t                          icache_mem_rtrn;
@@ -47,20 +52,20 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic                                  axi_rd_gnt;
   logic [63:0]                           axi_rd_addr;
   logic [$clog2(AxiNumWords)-1:0]        axi_rd_blen;
-  logic [1:0]                            axi_rd_size;
+  logic [2:0]                            axi_rd_size;
   logic [$size(axi_resp_i.r.id)-1:0]     axi_rd_id_in;
   logic                                  axi_rd_rdy;
   logic                                  axi_rd_lock;
   logic                                  axi_rd_last;
   logic                                  axi_rd_valid;
-  logic [63:0]                           axi_rd_data;
+  logic [AxiDataWidth-1:0]               axi_rd_data;
   logic [$size(axi_resp_i.r.id)-1:0]     axi_rd_id_out;
   logic                                  axi_rd_exokay;
 
   logic                                  req_valid_d, req_valid_q;
   icache_req_t                           req_data_d,  req_data_q;
   logic                                  first_d,     first_q;
-  logic [ICACHE_LINE_WIDTH/64-1:0][63:0] rd_shift_d,  rd_shift_q;
+  logic [ICACHE_LINE_WIDTH/AxiDataWidth-1:0][AxiDataWidth-1:0] rd_shift_d,  rd_shift_q;
 
   // Keep read request asserted until we have an AXI grant. This is not guaranteed by icache (but
   // required by AXI).
@@ -75,7 +80,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // Fetch a full cache line on a cache miss, or a single word on a bypassed access
   assign axi_rd_blen           = (req_data_d.nc) ? '0 : ariane_pkg::ICACHE_LINE_WIDTH/64-1;
-  assign axi_rd_size           = 2'b11;
+  assign axi_rd_size           = $clog2(AxiDataWidth/8); // Maximum
   assign axi_rd_id_in          = req_data_d.tid;
   assign axi_rd_rdy            = 1'b1;
   assign axi_rd_lock           = 1'b0;
@@ -118,9 +123,13 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   // AXI shim
   // --------
     axi_shim #(
-    .AxiUserWidth    ( AXI_USER_WIDTH         ),
-    .AxiNumWords     ( AxiNumWords            ),
-    .AxiIdWidth      ( $size(axi_resp_i.r.id) )
+    .AxiNumWords     ( AxiNumWords    ),
+    .AxiAddrWidth    ( AxiAddrWidth   ),
+    .AxiDataWidth    ( AxiDataWidth   ),
+    .AxiIdWidth      ( AxiIdWidth     ),
+    .AxiUserWidth    ( AXI_USER_WIDTH ),
+    .axi_req_t       ( axi_req_t      ),
+    .axi_rsp_t       ( axi_rsp_t      )
   ) i_axi_shim (
     .clk_i           ( clk_i             ),
     .rst_ni          ( rst_ni            ),
@@ -164,7 +173,11 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
 
     if (axi_rd_valid) begin
       first_d    = axi_rd_last;
-      rd_shift_d = {axi_rd_data, rd_shift_q[ICACHE_LINE_WIDTH/64-1:1]};
+      if (ICACHE_LINE_WIDTH == AxiDataWidth) begin
+        rd_shift_d = axi_rd_data;
+      end else begin
+        rd_shift_d = {axi_rd_data, rd_shift_q[ICACHE_LINE_WIDTH/AxiDataWidth-1:1]};
+      end
 
       // If this is a single word transaction, we need to make sure that word is placed at offset 0
       if (first_q) begin

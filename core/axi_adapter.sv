@@ -19,8 +19,12 @@
 module axi_adapter #(
   parameter int unsigned DATA_WIDTH            = 256,
   parameter logic        CRITICAL_WORD_FIRST   = 0, // the AXI subsystem needs to support wrapping reads for this feature
-  parameter int unsigned AXI_ID_WIDTH          = 10,
-  parameter int unsigned CACHELINE_BYTE_OFFSET = 8
+  parameter int unsigned CACHELINE_BYTE_OFFSET = 8,
+  parameter int unsigned AXI_ADDR_WIDTH        = 0,
+  parameter int unsigned AXI_DATA_WIDTH        = 0,
+  parameter int unsigned AXI_ID_WIDTH          = 0,
+  parameter type axi_req_t = ariane_axi::req_t,
+  parameter type axi_rsp_t = ariane_axi::resp_t
 )(
   input  logic                             clk_i,  // Clock
   input  logic                             rst_ni, // Asynchronous reset active low
@@ -31,23 +35,23 @@ module axi_adapter #(
   output logic                             gnt_o,
   input  logic [riscv::XLEN-1:0]           addr_i,
   input  logic                             we_i,
-  input  logic [(DATA_WIDTH/riscv::XLEN)-1:0][riscv::XLEN-1:0] wdata_i,
-  input  logic [(DATA_WIDTH/riscv::XLEN)-1:0][(riscv::XLEN/8)-1:0]  be_i,
+  input  logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0][AXI_DATA_WIDTH-1:0]      wdata_i,
+  input  logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0][(AXI_DATA_WIDTH/8)-1:0]  be_i,
   input  logic [1:0]                       size_i,
   input  logic [AXI_ID_WIDTH-1:0]          id_i,
   // read port
   output logic                             valid_o,
-  output logic [(DATA_WIDTH/riscv::XLEN)-1:0][riscv::XLEN-1:0] rdata_o,
+  output logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0][AXI_DATA_WIDTH-1:0] rdata_o,
   output logic [AXI_ID_WIDTH-1:0]          id_o,
   // critical word - read port
-  output logic [riscv::XLEN-1:0]                      critical_word_o,
+  output logic [AXI_DATA_WIDTH-1:0]        critical_word_o,
   output logic                             critical_word_valid_o,
   // AXI port
-  output ariane_axi::req_t                 axi_req_o,
-  input  ariane_axi::resp_t                axi_resp_i
+  output axi_req_t                 axi_req_o,
+  input  axi_rsp_t                 axi_resp_i
 );
-  localparam BURST_SIZE = DATA_WIDTH/riscv::XLEN-1;
-  localparam ADDR_INDEX = ($clog2(DATA_WIDTH/riscv::XLEN) > 0) ? $clog2(DATA_WIDTH/riscv::XLEN) : 1;
+  localparam BURST_SIZE = (DATA_WIDTH/AXI_DATA_WIDTH)-1;
+  localparam ADDR_INDEX = ($clog2(DATA_WIDTH/AXI_DATA_WIDTH) > 0) ? $clog2(DATA_WIDTH/AXI_DATA_WIDTH) : 1;
 
   enum logic [3:0] {
     IDLE, WAIT_B_VALID, WAIT_AW_READY, WAIT_LAST_W_READY, WAIT_LAST_W_READY_AW_READY, WAIT_AW_READY_BURST,
@@ -56,9 +60,9 @@ module axi_adapter #(
 
   // counter for AXI transfers
   logic [ADDR_INDEX-1:0] cnt_d, cnt_q;
-  logic [(DATA_WIDTH/riscv::XLEN)-1:0][riscv::XLEN-1:0] cache_line_d, cache_line_q;
+  logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0][AXI_DATA_WIDTH-1:0] cache_line_d, cache_line_q;
   // save the address for a read, as we allow for non-cacheline aligned accesses
-  logic [(DATA_WIDTH/riscv::XLEN)-1:0] addr_offset_d, addr_offset_q;
+  logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0] addr_offset_d, addr_offset_q;
   logic [AXI_ID_WIDTH-1:0]    id_d, id_q;
   logic [ADDR_INDEX-1:0]      index;
   // save the atomic operation and size
@@ -68,6 +72,7 @@ module axi_adapter #(
   always_comb begin : axi_fsm
     // Default assignments
     axi_req_o.aw_valid  = 1'b0;
+    // Cast to AXI address width
     axi_req_o.aw.addr   = addr_i;
     axi_req_o.aw.prot   = 3'b0;
     axi_req_o.aw.region = 4'b0;
@@ -82,9 +87,13 @@ module axi_adapter #(
     axi_req_o.aw.user   = '0;
 
     axi_req_o.ar_valid  = 1'b0;
+    // Cast to AXI address width
+    axi_req_o.ar.addr   = addr_i;
     // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
     // with an incremental transfer we need to output the corresponding base address of the cache line
-    axi_req_o.ar.addr   = (CRITICAL_WORD_FIRST || type_i == ariane_axi::SINGLE_REQ) ? addr_i : { addr_i[(riscv::XLEN-1):CACHELINE_BYTE_OFFSET], {{CACHELINE_BYTE_OFFSET}{1'b0}}};
+    if (!CRITICAL_WORD_FIRST && type_i != ariane_axi::SINGLE_REQ) begin
+      axi_req_o.ar.addr[CACHELINE_BYTE_OFFSET-1:0] = '0;
+    end
     axi_req_o.ar.prot   = 3'b0;
     axi_req_o.ar.region = 4'b0;
     axi_req_o.ar.len    = 8'b0;

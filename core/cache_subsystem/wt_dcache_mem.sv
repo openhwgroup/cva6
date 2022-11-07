@@ -27,8 +27,9 @@
 
 
 module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter bit          Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
-  parameter int unsigned NumPorts           = 3
+  parameter bit          AxiCompliant  = 1'b0, // set this to 1 when using in conjunction with AXI bus adapter
+  parameter int unsigned AxiDataWidth  = 0,
+  parameter int unsigned NumPorts      = 3
 ) (
   input  logic                                              clk_i,
   input  logic                                              rst_ni,
@@ -70,6 +71,10 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   // forwarded wbuffer
   input wbuffer_t             [DCACHE_WBUF_DEPTH-1:0]       wbuffer_data_i
 );
+
+  // number of bits needed to address AXI data. If AxiDataWidth equals XLEN this parameter
+  // is not needed. Therefore, increment it by one to avoid reverse range select during elaboration.
+  localparam AXI_OFFSET_WIDTH = AxiDataWidth == riscv::XLEN ? $clog2(AxiDataWidth/8)+1 : $clog2(AxiDataWidth/8);
 
   logic [DCACHE_NUM_BANKS-1:0]                                             bank_req;
   logic [DCACHE_NUM_BANKS-1:0]                                             bank_we;
@@ -241,9 +246,11 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign wbuffer_ruser = wbuffer_data_i[wbuffer_hit_idx].user;
   assign wbuffer_be    = (|wbuffer_hit_oh) ? wbuffer_data_i[wbuffer_hit_idx].valid : '0;
 
-  if (Axi64BitCompliant) begin : gen_axi_off
-      assign wr_cl_nc_off  = riscv::IS_XLEN64 ? '0 : wr_cl_off_i[2];
-      assign wr_cl_off     = (wr_cl_nc_i) ? wr_cl_nc_off : wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES];
+  if (AxiCompliant) begin : gen_axi_off
+      // In case of an uncached read, return the desired XLEN-bit segment of the most recent AXI read
+      assign wr_cl_off     = (wr_cl_nc_i) ? (AxiDataWidth == riscv::XLEN) ? '0 :
+                              wr_cl_off_i[AXI_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES] :
+                              wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES];
   end else begin  : gen_piton_off
       assign wr_cl_off     = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
   end
@@ -337,6 +344,20 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
 
 //pragma translate_off
 `ifndef VERILATOR
+  initial begin
+    cach_line_width_axi: assert (DCACHE_LINE_WIDTH >= AxiDataWidth)
+      else $fatal(1, "[l1 dcache] cache line size needs to be greater or equal AXI data width");
+  end
+
+  initial begin
+    axi_xlen: assert (AxiDataWidth >= riscv::XLEN)
+      else $fatal(1, "[l1 dcache] AXI data width needs to be greater or equal XLEN");
+  end
+
+  initial begin
+    cach_line_width_xlen: assert (DCACHE_LINE_WIDTH > riscv::XLEN)
+      else $fatal(1, "[l1 dcache] cache_line_size needs to be greater than XLEN");
+  end
 
   hit_hot1: assert property (
     @(posedge clk_i) disable iff (!rst_ni) &vld_req |-> !vld_we |=> $onehot0(rd_hit_oh_o))
