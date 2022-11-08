@@ -117,7 +117,7 @@ PLIC is a slave in this SoC. The hiearchy through which the request is propagate
 ![plic_hierarchy](diagrams/plic_checked.png )
 
 `axi2apb_64_32` has been used to convert all the plic axi signals into apb signals.  
-apb_to_reg is used to assign the apb signals to the `reg_bus` interface which basically communicates with the `plic_top` module. In `apb_to_reg' module ,the logical `AND` of `psel` and `penable` signals of apb makes the `valid` signal of `reg_bus` interface.  
+apb_to_reg is used to assign the apb signals to the `reg_bus` interface which basically communicates with the `plic_top` module. In `apb_to_reg` module ,the logical `AND` of `psel` and `penable` signals of apb makes the `valid` signal of `reg_bus` interface.  
 The signals of the `plic_top` have been shown below:
 
 ![plic_top](diagrams/Test_harness_CVA6-plic_top.drawio.png "plic_top")
