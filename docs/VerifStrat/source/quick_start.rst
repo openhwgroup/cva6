@@ -138,7 +138,7 @@ This chapter uses the CV32E40P as its example, but there are equivalent READMEs 
 Supported Simulators
 ~~~~~~~~~~~~~~~~~~~~
 
-It is a goal of CORE-V-VERIF to support all known SystemVerilog 1800-2017 compliant simulators.
+It is a goal of the OpenHW Verification Task Group for core-v-verif to support all known SystemVerilog 1800-2017 compliant simulators.
 The Makefiles for the UVM environments have a variable `CV_SIMULATOR` which is used to select the simulator used to compile and run a testcase.
 So you can run hello-world with Cadence Xcelium like this::
 
