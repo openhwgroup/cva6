@@ -90,9 +90,9 @@ The complete sequence through which a request to SRAM is transferred is as follo
 
 `dram` and `dram_delayed` are two AXI_BUS interfaces.
 The slave modport of AXI_BUS interface for `Master[DRAM]` has been linked with `axi_riscv_atomics` module and the request of the master has been passed to `dram` interface, another instantiation of interface of AXI_BUS. All this is for the exclusive accesses and no burst is supported in this exclusive access.  
-`dram` and `dram_delayed` interfaces have also been passed to `axi_delayer_intf` module as a slave modport and master modport of the AXI_BUS interaface, respectively. The `axi_delayer_intf` module is used to introduce the delay.  
+`dram` and `dram_delayed` interfaces have also been passed to `axi_delayer_intf` module as a slave modport and master modport of the AXI_BUS interface, respectively. The `axi_delayer_intf` module is used to introduce the delay.  
 `dram_delayed` is also passed to the `axi2mem` module as a slave modport of AXI_BUS interface. `axi2mem` module with `dram_delayed` as an AXI_Bus interface will interact with SRAM.  
-SRAM is a word address-able memory with the signals as follows:
+SRAM is a word addressable memory with the signals as follows:
 
 ![sram](diagrams/sram.png "sram")
 
@@ -103,12 +103,12 @@ GPIO not implemented, error slave has been added in place of it.
 ## UART
 
 There are two signals for the `apb_uart` module in the `ariane_testharness` namely `tx` and `rx` for transmitting and receiving the data.  
-`axi2apb_64_32`, module is used to convert the axi protocol five channel signals  to a single channel apb signals. The `axi2apb_64_32` module has been used between AXI_BUS and `apb_uart module`.  
+`axi2apb_64_32`, module has been used to convert the axi protocol five channel signals to a single channel apb signals. The `axi2apb_64_32` module has been used between AXI_BUS and `apb_uart module`.  
 The signals of the `apb_uart` module have been shown in the diagram below:
 
 ![apb_uart](diagrams/Test_harness_CVA6-apb_uart.drawio.png "apb_uart")
 
-Only the signals related to the test_harness has been shown in the above diagram.
+Only the signals related to the test_harness have been shown in the above diagram.
 
 ## PLIC
 
@@ -117,7 +117,7 @@ PLIC is a slave in this SoC. The hiearchy through which the request is propagate
 ![plic_hierarchy](diagrams/plic_checked.png )
 
 `axi2apb_64_32` has been used to convert all the plic axi signals into apb signals.  
-apb_to_reg is used to assign the apb signals to the `reg_bus` interface which basically communicates with the `plic_top` module. In `apb_to_reg module` ,the logical `AND` of `psel` and `penable` signals of apb makes the `valid` signal of `reg_bus` interface.  
+apb_to_reg is used to assign the apb signals to the `reg_bus` interface which basically communicates with the `plic_top` module. In `apb_to_reg' module ,the logical `AND` of `psel` and `penable` signals of apb makes the `valid` signal of `reg_bus` interface.  
 The signals of the `plic_top` have been shown below:
 
 ![plic_top](diagrams/Test_harness_CVA6-plic_top.drawio.png "plic_top")
@@ -128,13 +128,13 @@ The `axi2apb_64_32` module has been used to convert all the timer axi signals in
 
 ![apb_timer](diagrams/Test_harness_CVA6-timer.drawio.png "apb_timer")
 
-The signals of apb has been shown in the form of `apb_timer_req` and `apb_timer_resp` in the following diagram.
+The signals of apb protocol have been shown in the form of `apb_timer_req` and `apb_timer_resp` in the above diagram.
 
 ## Ethernet
 
 Ethernet is a slave in this testharness.
 
-Ethernet support has not been added in the ariane_testharness at this time. For any read or write request from the master to this module is returned with
+Ethernet support has not been added in the 'ariane_testharness' at this time. For any read or write request from the master to this module is returned with
 
 > `"ethernet.b_resp = axi_pkg::RESP_SLVERR"`
 
@@ -146,4 +146,4 @@ where,
 ## SPI
 
  SPI is a slave in this testharness.
-  There is the support of the of SPI protocol but at this time it is turned off, as the `.spi_clk_o ( )`,`.spi_mosi  ( )`,`.spi_miso  ( )` ,and `.spi_ss    ( )` signals of SPI have been left open in the `ariane_testharness` module. For any read or write request from the master to this module is returned with `"Slave error"`.
+  There is the support of the of SPI protocol but at this time it is turned off, as the `.spi_clk_o ( )`,`.spi_mosi  ( )`,`.spi_miso  ( )` ,and `.spi_ss    ( )` signals of SPI have been left opened in the `ariane_testharness` module. For any read or write request from the master to this module is returned with `"Slave error"`.
