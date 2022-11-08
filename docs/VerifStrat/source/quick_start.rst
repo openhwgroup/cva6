@@ -78,7 +78,7 @@ Up to this point, the discussion has been about the "core" testbench, which is i
 The primary verification environments implemented in CORE-V-VERIF are all based on the UVM.
 The UVM enviroment for CV32E40P is completely separate from the core testbench and uses a different set of Makefiles.
 
-In order to use the UVM environments you will need items 1, 2 and 3 from the list above, plus a SystemVerilog simulator capable of supporting UVM and the Imperas OVPsim Instruction Set Simulator (ISS).
+In order to use the UVM environments you will need items 1, 2 and 3 from the list above, plus a SystemVerilog simulator capable of supporting the UVM and the Imperas OVPsim Instruction Set Simulator (ISS).
 You should also review the README in $CORE_V_VERIF/mk for a description of the `shell ENV vars used by the UVM environment <https://github.com/openhwgroup/core-v-verif/blob/master/mk/README.md#required-corev-environment-variables>`_.
 With these in place you can do the following::
 
@@ -129,7 +129,7 @@ All of the verification code specific to that core will be in this directory.
 Look at the README in `cv32e40p` to get a sense of the directory structure of the cv32e40p-specific testbenches.
 The structure of the other cores will be similar, but need not be identical.
 
-The cv32e40p sub-tree supports a simple "core" testbench and a complete UVM verification environment.
+The cv32e40p sub-tree supports a simple "core" testbench and a complete UVM environment.
 Partial instructions to run the core testbench are provided above; see the README at `$CORE_V_VERIF/cv32e40p/sim/core` for full details.
 To run the CV32E40P UVM environment, go to `$CORE_V_VERIF/cv32e40p/sim/uvmt` and read the README.
 
@@ -159,10 +159,10 @@ Verifying other Cores
 
 At the time of this writting (2021-12-17), CORE-V-VERIF supports verification of multiple CORE-V cores:
 
-* **CV32E40P**: UVM environment is stable and v1.0.0 is complete.  Work on v2.0.0 has started.  A simple "core" testbench which can be run with open-source tools is available.
-* **CV32E40X**: UVM environment is stable, and verification is on-going.
-* **CV32E40S**: UVM environment is stable, and verification is on-going.
-* **CVA6**: UVM environment is in the early stages of development.
+* **CV32E40P**: the UVM environment is stable and v1.0.0 is complete.  Work on v2.0.0 has started.  A simple "core" testbench which can be run with open-source tools is available.
+* **CV32E40X**: the UVM environment is stable, and verification is on-going.
+* **CV32E40S**: the UVM environment is stable, and verification is on-going.
+* **CVA6**: the UVM environment is in the early stages of development.
 * **CVE2**: Coming soon!
 
 CV32E40P Directory Tree (simplified)
