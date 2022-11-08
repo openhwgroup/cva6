@@ -157,7 +157,7 @@ If you notice an issue with a simulator-specific Makefile, please either raise a
 Verifying other Cores
 ~~~~~~~~~~~~~~~~~~~~~
 
-At the time of this writting (2021-12-17), CORE-V-VERIF supports verification of multiple CORE-V cores:
+At the time of this update (2022-11-08), CORE-V-VERIF supports verification of multiple CORE-V cores:
 
 * **CV32E40P**: the UVM environment is stable and v1.0.0 is complete.  Work on v2.0.0 has started.  A simple "core" testbench which can be run with open-source tools is available.
 * **CV32E40X**: the UVM environment is stable, and verification is on-going.
