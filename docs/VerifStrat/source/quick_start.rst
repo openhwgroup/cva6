@@ -113,7 +113,7 @@ Without a comparison to a reference model, the pass/fail status of a given simul
 
 There are several popular options for a RISC-V ISS, including `Spike <https://github.com/riscv-software-src/riscv-isa-sim>`_, `Whisper <https://github.com/chipsalliance/SweRV-ISS>`_ and `Imperas OVPsim <https://www.ovpworld.org/technology_ovpsim>`_.
 Both Spike and Whisper are open-source ISS models.
-At the time of this writting (2021-12-07) CORE-V-VERIF uses a commerical version of Imperas OVPsim for the CV32E4 cores.
+At the time of this update (2022-11-08) CORE-V-VERIF uses a commercial version of Imperas OVPsim for the CV32E4 cores.
 A contribution to integrate another reference model into CORE-V-VERIF would be welcome.
 
 Doing More in CORE-V-VERIF
