@@ -566,7 +566,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
-    run_cmd(cmd, 100, debug_cmd = debug_cmd)
+    run_cmd(cmd, 300, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -857,7 +857,7 @@ def load_config(args, cwd):
       args.isa  = "rv64gc"
     elif args.target == "cv32a60x":
       args.mabi = "ilp32"
-      args.isa  = "rv32imc"
+      args.isa  = "rv32imac" # A is needed to compile custom BSP
     elif args.target == "cv32a6_imac_sv0":
       args.mabi = "ilp32"
       args.isa  = "rv32imac"
