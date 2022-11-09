@@ -17,7 +17,7 @@
 ../ariane_axi_soc_pkg.sv
 ../../../core/include/ariane_axi_pkg.sv
 ../../../core/include/std_cache_pkg.sv
-../../fpga-support/rtl/SyncSpRamBeNx64.sv
+../../../common/local/techlib/fpga/rtl/SyncSpRamBeNx64.sv
 ../../../core/cache_subsystem/cache_ctrl.sv
 ../../../core/cache_subsystem/miss_handler.sv
 ../../../core/cache_subsystem/std_nbdcache.sv

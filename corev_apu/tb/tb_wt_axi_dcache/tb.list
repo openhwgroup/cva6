@@ -18,7 +18,7 @@
 ../ariane_axi_soc_pkg.sv
 ../../../core/include/ariane_axi_pkg.sv
 ../../../core/include/wt_cache_pkg.sv
-../../fpga-support/rtl/SyncSpRamBeNx64.sv
+../../../common/local/techlib/fpga/rtl/SyncSpRamBeNx64.sv
 ../../../core/cache_subsystem/wt_dcache_ctrl.sv
 ../../../core/cache_subsystem/wt_dcache_mem.sv
 ../../../core/cache_subsystem/wt_dcache_missunit.sv

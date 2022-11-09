@@ -1,17 +1,17 @@
-// Copyright 2022 Thales DIS design services SAS
+// Copyright 2022 Thales Research and Technology
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
-// Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.com)
+// Original Author: Sébastien Jacq
 
 module tc_sram_wrapper #(
   parameter int unsigned NumWords     = 32'd1024, // Number of Words in data array
   parameter int unsigned DataWidth    = 32'd128,  // Data signal width
   parameter int unsigned ByteWidth    = 32'd8,    // Width of a data byte
-  parameter int unsigned NumPorts     = 32'd2,    // Number of read and write ports
+  parameter int unsigned NumPorts     = 32'd1,    // Number of read and write ports
   parameter int unsigned Latency      = 32'd1,    // Latency when the read data is available
   parameter              SimInit      = "none",   // Simulation initialization
   parameter bit          PrintSimCfg  = 1'b0,     // Print configuration
@@ -34,25 +34,25 @@ module tc_sram_wrapper #(
   output data_t [NumPorts-1:0] rdata_o     // read data
 );
 
+  SyncSpRamBeNx64 #(
+    .ADDR_WIDTH(AddrWidth),
+    .DATA_DEPTH(NumWords),
+    .OUT_REGS (0),
+    // this initializes the memory with 0es. adjust to taste...
+    // 0: no init, 1: zero init, 2: random init, 3: deadbeef init
+    .SIM_INIT (1)
+  ) i_ram (
+    .Clk_CI    ( clk_i      ),
+    .Rst_RBI   ( rst_ni     ),
+    .CSel_SI   ( req_i[0]   ),
+    .WrEn_SI   ( we_i[0]    ),
+    .BEn_SI    ( be_i[0]    ),
+    .WrData_DI ( wdata_i[0] ),
+    .Addr_DI   ( addr_i[0]  ),
+    .RdData_DO ( rdata_o[0] )
+  );
 
-  tc_sram #(
-    .NumWords(NumWords),
-    .DataWidth(DataWidth),
-    .ByteWidth(ByteWidth),
-    .NumPorts(NumPorts),
-    .Latency(Latency),
-    .SimInit(SimInit),
-    .PrintSimCfg(PrintSimCfg)
-  ) i_tc_sram (
-      .clk_i    ( clk_i   ),
-      .rst_ni   ( rst_ni  ),
-      .req_i    ( req_i   ),
-      .we_i     ( we_i    ),
-      .be_i     ( be_i    ),
-      .wdata_i  ( wdata_i ),
-      .addr_i   ( addr_i  ),
-      .rdata_o  ( rdata_o )
-    );
+
 
 
 endmodule
