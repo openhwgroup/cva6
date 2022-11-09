@@ -255,7 +255,13 @@ copro_src := $(addprefix $(root-dir), $(copro_src))
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
 
-fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/bootrom/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv
+fpga_src := $(wildcard corev_apu/fpga/src/*.sv)                 \
+            $(wildcard corev_apu/fpga/src/bootrom/*.sv)         \
+            $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) \
+            common/local/util/tc_sram_fpga_wrapper.sv           \
+            common/local/techlib/fpga/rtl/AsyncSpRam.sv         \
+            common/local/techlib/fpga/rtl/fifo_v3_fpga.sv
+
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
@@ -772,6 +778,7 @@ fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer_if.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer.sv)
 fpga_filter += $(addprefix $(root-dir), corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/tc_sram_wrapper.sv)
+fpga_filter += $(addprefix $(root-dir), common/submodules/common_cells/src/fifo_v3.sv)
 
 fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(copro_src)
 	@echo "[FPGA] Generate sources"
