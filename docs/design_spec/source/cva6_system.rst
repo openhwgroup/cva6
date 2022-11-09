@@ -216,7 +216,7 @@ CVA6 memory interface complies with AXI5 specification including the Atomic_Tran
 
 CVA6 coprocessor interface complies with CV-X-IF protocol specification as defined in [CV-X-IF].
 
-The CV32A6 cwv0.1.0 core is fully synthesizable. It has been designed mainly for ASIC designs, but FPGA synthesis is supported as well.
+The CV32A6 v0.1.0 core is fully synthesizable. It has been designed mainly for ASIC designs, but FPGA synthesis is supported as well.
 
 For ASIC synthesis, the whole design is completely synchronous and uses positive-edge triggered flip-flops. The core occupies an area of about 80 kGE. The clock frequency can be more than 1GHz depending of technology.
 
