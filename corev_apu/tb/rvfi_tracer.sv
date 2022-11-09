@@ -22,7 +22,7 @@ module rvfi_tracer #(
   int unsigned SIM_FINISH;
   initial begin
     f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
-    if (!$value$plusargs("time_out=%d", SIM_FINISH)) SIM_FINISH = 2000000;
+    if (!$value$plusargs("time_out=%d", SIM_FINISH)) SIM_FINISH = 6000000;
   end
 
   final $fclose(f);
