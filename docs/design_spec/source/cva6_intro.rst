@@ -82,7 +82,8 @@ Contributors
 
 | Jean-Roch Coulon
   (`jean-roch.coulon@thalesgroup.com <mailto:jean-roch.coulon@thalesgroup.com>`__)
-
+| Ayoub Jalali
+  (`ayoub.jalali@external.thalesgroup.com <mailto:ayoub.jalali@external.thalesgroup.com>`__)
 | Alae Eddine Ezzejjari
   (`alae-eddine.ez-zejjari@external.thalesgroup.com <mailto:alae-eddine.ez-zejjari@external.thalesgroup.com>`__)
 
