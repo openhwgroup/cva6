@@ -37,7 +37,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u'CORE-V CV32A6-step1 Design Document'
+project = u'CORE-V CV32A6 v0.1.0 Design Document'
 copyright = u'2022, Thales Group'
 author = u'Thales and OpenHW Group'
 
@@ -134,7 +134,7 @@ html_static_path = []
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'CORE-V_CV32A6-step1_DESIGN_DOC'
+htmlhelp_basename = 'CORE-V_CV32A6_V0.1.0_DESIGN_DOC'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -161,7 +161,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'CV32A6-step1_Design_Spec.tex', u'CORE-V-Docs Documentation',
+    (master_doc, 'CV32A6-v0.1.0_Design_Spec.tex', u'CORE-V-Docs Documentation',
      u'Jean-Roch Coulon', 'manual'),
 ]
 
@@ -171,7 +171,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'CV32A6-step1_Design_Spec.tex', u'CORE-V-Docs Documentation',
+    (master_doc, 'CV32A6-v0.1.0_Design_Spec.tex', u'CORE-V-Docs Documentation',
      [author], 1)
 ]
 
@@ -182,8 +182,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'CV32A6-step1_Design_Spec.tex', u'CORE-V-Docs Documentation',
-     author, 'UserManual', 'User Manual for CV32A6-step1 CORE-V processor core.',
+    (master_doc, 'CV32A6-v0.1.0_Design_Spec.tex', u'CORE-V-Docs Documentation',
+     author, 'UserManual', 'User Manual for CV32A6 v0.1.0 CORE-V processor core.',
      'Miscellaneous'),
 ]
 
