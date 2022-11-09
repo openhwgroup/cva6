@@ -28,6 +28,39 @@ module multiplier import ariane_pkg::*; (
     output logic                     mult_ready_o,
     output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
+    // Carry-less multiplication
+    logic [riscv::XLEN-1:0] clmul_q, clmul_d, clmulr_q, clmulr_d, operand_a, operand_b, operand_a_rev, operand_b_rev;
+    logic clmul_rmode, clmul_hmode;
+
+    if (ariane_pkg::BITMANIP) begin : gen_bitmanip
+        // checking for clmul_rmode and clmul_hmode
+        assign clmul_rmode = (operator_i == CLMULR);
+        assign clmul_hmode = (operator_i == CLMULH);
+
+        // operand_a and b reverse generator
+        for (genvar i = 0; i < riscv::XLEN; i++) begin
+            assign operand_a_rev[i] = operand_a_i[(riscv::XLEN-1) -i];
+            assign operand_b_rev[i] = operand_b_i[(riscv::XLEN-1) -i];
+        end
+
+        // operand_a and operand_b selection
+        assign operand_a = (clmul_rmode | clmul_hmode) ? operand_a_rev : operand_a_i;
+        assign operand_b = (clmul_rmode | clmul_hmode) ? operand_b_rev : operand_b_i;
+
+        // implementation
+        always_comb begin
+            clmul_d = '0;
+            for (int i = 0; i <= riscv::XLEN; i++) begin
+                clmul_d = ((operand_b >> i) & 1) ? clmul_d ^ (operand_a << i) : clmul_d;
+            end
+        end
+
+        // clmulr + clmulh result generator
+        for (genvar i = 0; i < riscv::XLEN; i++) begin
+            assign clmulr_d[i] = clmul_d[(riscv::XLEN-1)-i];
+        end
+    end
+
     // Pipeline register
     logic [TRANS_ID_BITS-1:0]    trans_id_q;
     logic                        mult_valid_q;
@@ -43,10 +76,7 @@ module multiplier import ariane_pkg::*; (
     assign mult_trans_id_o = trans_id_q;
     assign mult_ready_o    = 1'b1;
 
-    assign mult_valid      = mult_valid_i && (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW});
-    // datapath
-    logic [riscv::XLEN*2-1:0] mult_result;
-    assign mult_result   = $signed({operand_a_i[riscv::XLEN-1] & sign_a, operand_a_i}) * $signed({operand_b_i[riscv::XLEN-1] & sign_b, operand_b_i});
+    assign mult_valid      = mult_valid_i && (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW, CLMUL, CLMULH, CLMULR});
 
     // Sign Select MUX
     always_comb begin
@@ -74,15 +104,29 @@ module multiplier import ariane_pkg::*; (
 
 
     assign operator_d = operator_i;
+
     always_comb begin : p_selmux
         unique case (operator_q)
             MULH, MULHU, MULHSU: result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
             MULW:                result_o = sext32(mult_result_q[31:0]);
+            CLMUL:               result_o = clmul_q;
+            CLMULH:              result_o = clmulr_q >> 1;
+            CLMULR:              result_o = clmulr_q;
             // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
             default:             result_o = mult_result_q[riscv::XLEN-1:0];// including MUL
         endcase
     end
-
+    if (ariane_pkg::BITMANIP) begin
+        always_ff @(posedge clk_i or negedge rst_ni) begin
+            if (~rst_ni) begin
+                clmul_q       <= '0;
+                clmulr_q      <= '0;
+             end else begin
+                clmul_q       <= clmul_d;
+                clmulr_q      <= clmulr_d;
+             end
+        end
+    end
     // -----------------------
     // Output pipeline register
     // -----------------------

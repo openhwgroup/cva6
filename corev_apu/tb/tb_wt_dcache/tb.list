@@ -6,8 +6,11 @@
 ../../axi/src/axi_intf.sv
 ../../axi/src/axi_test.sv
 ../../../core/include/ariane_pkg.sv
+../ariane_soc_pkg.sv
+../ariane_axi_soc_pkg.sv
+../../../core/include/ariane_axi_pkg.sv
 ../../../core/include/wt_cache_pkg.sv
-../../fpga-support/rtl/SyncSpRamBeNx64.sv
+../../../common/local/techlib/fpga/rtl/SyncSpRamBeNx64.sv
 ../../../core/cache_subsystem/wt_dcache_ctrl.sv
 ../../../core/cache_subsystem/wt_dcache_mem.sv
 ../../../core/cache_subsystem/wt_dcache_missunit.sv
@@ -19,6 +22,8 @@
 ../../../common/submodules/common_cells/src/lzc.sv
 ../../../common/submodules/common_cells/src/rr_arb_tree.sv
 ../../../common/submodules/common_cells/src/exp_backoff.sv
+../../src/tech_cells_generic/src/rtl/tc_sram.sv
+../../../common/local/util/tc_sram_wrapper.sv
 ../../../common/local/util/sram.sv
 ../common/tb_dcache_pkg.sv
 hdl/tb_mem.sv

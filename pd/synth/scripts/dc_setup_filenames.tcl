@@ -17,9 +17,9 @@ puts "RM-Info: Running script [info script]\n"
 # Copyright (C) 2010-2015 Synopsys, Inc. All rights reserved.
 #################################################################################
 
-set INPUTS_DIR ${DESIGN_NAME}/inputs/
-set REPORTS_DIR ${DESIGN_NAME}/reports/${PERIOD}/
-set OUTPUTS_DIR ${DESIGN_NAME}/outputs/${PERIOD}/
+set INPUTS_DIR ${DESIGN_NAME}_${TARGET}/inputs/
+set REPORTS_DIR ${DESIGN_NAME}_${TARGET}/reports/${PERIOD}/
+set OUTPUTS_DIR ${DESIGN_NAME}_${TARGET}/outputs/${PERIOD}/
 file mkdir ${INPUTS_DIR}
 file mkdir ${REPORTS_DIR}
 file mkdir ${OUTPUTS_DIR}

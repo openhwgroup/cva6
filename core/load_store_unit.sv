@@ -71,7 +71,13 @@ module load_store_unit import ariane_pkg::*; #(
     input  amo_resp_t                amo_resp_i,
     // PMP
     input  riscv::pmpcfg_t [15:0]    pmpcfg_i,
-    input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i
+    input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
+
+    //RVFI
+    output [riscv::VLEN-1:0]         lsu_addr_o,
+    output [(riscv::XLEN/8)-1:0]     lsu_rmask_o,
+    output [(riscv::XLEN/8)-1:0]     lsu_wmask_o,
+    output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
 );
     // data is misaligned
     logic data_misaligned;
@@ -89,10 +95,10 @@ module load_store_unit import ariane_pkg::*; #(
     // Address Generation Unit (AGU)
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
-    logic [riscv::VLEN-1:0]   vaddr_i;
-    riscv::xlen_t             vaddr_xlen;
-    logic                     overflow;
-    logic [7:0]               be_i;
+    logic [riscv::VLEN-1:0]           vaddr_i;
+    riscv::xlen_t                     vaddr_xlen;
+    logic                             overflow;
+    logic [(riscv::XLEN/8)-1:0]       be_i;
 
     assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
     assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
@@ -195,9 +201,9 @@ module load_store_unit import ariane_pkg::*; #(
 
         assign dcache_req_ports_o[0].address_index = '0;
         assign dcache_req_ports_o[0].address_tag   = '0;
-        assign dcache_req_ports_o[0].data_wdata    = 64'b0;
+        assign dcache_req_ports_o[0].data_wdata    = '0;
         assign dcache_req_ports_o[0].data_req      = 1'b0;
-        assign dcache_req_ports_o[0].data_be       = 8'hFF;
+        assign dcache_req_ports_o[0].data_be       = '1;
         assign dcache_req_ports_o[0].data_size     = 2'b11;
         assign dcache_req_ports_o[0].data_we       = 1'b0;
         assign dcache_req_ports_o[0].kill_req      = '0;
@@ -352,7 +358,8 @@ module load_store_unit import ariane_pkg::*; #(
     // we can generate the byte enable from the virtual address since the last
     // 12 bit are the same anyway
     // and we can always generate the byte enable from the address at hand
-    assign be_i = be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operator));
+    assign be_i = riscv::IS_XLEN64 ? be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operator)):
+                                     be_gen_32(vaddr_i[1:0], extract_transfer_size(fu_data_i.operator));
 
     // ------------------------
     // Misaligned Exception
@@ -446,7 +453,7 @@ module load_store_unit import ariane_pkg::*; #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, {{64-riscv::XLEN{1'b0}}, fu_data_i.operand_b}, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),
@@ -459,109 +466,10 @@ module load_store_unit import ariane_pkg::*; #(
         .*
     );
 
-endmodule
+    assign lsu_addr_o = lsu_ctrl.vaddr;
+    assign lsu_rmask_o = lsu_ctrl.fu == LOAD ? lsu_ctrl.be : '0;
+    assign lsu_wmask_o = lsu_ctrl.fu == STORE ? lsu_ctrl.be : '0;
+    assign lsu_addr_trans_id_o = lsu_ctrl.trans_id;
 
-// ------------------
-// LSU Control
-// ------------------
-// The LSU consists of two independent block which share a common address translation block.
-// The one block is the load unit, the other one is the store unit. They will signal their readiness
-// with separate signals. If they are not ready the LSU control should keep the last applied signals stable.
-// Furthermore it can be the case that another request for one of the two store units arrives in which case
-// the LSU control should sample it and store it for later application to the units. It does so, by storing it in a
-// two element FIFO. This is necessary as we only know very late in the cycle whether the load/store will succeed (address check,
-// TLB hit mainly). So we better unconditionally allow another request to arrive and store this request in case we need to.
-module lsu_bypass import ariane_pkg::*; (
-    input  logic      clk_i,
-    input  logic      rst_ni,
-    input  logic      flush_i,
-
-    input  lsu_ctrl_t lsu_req_i,
-    input  logic      lsu_req_valid_i,
-    input  logic      pop_ld_i,
-    input  logic      pop_st_i,
-
-    output lsu_ctrl_t lsu_ctrl_o,
-    output logic      ready_o
-    );
-
-    lsu_ctrl_t [1:0] mem_n, mem_q;
-    logic read_pointer_n, read_pointer_q;
-    logic write_pointer_n, write_pointer_q;
-    logic [1:0] status_cnt_n, status_cnt_q;
-
-    logic  empty;
-    assign empty = (status_cnt_q == 0);
-    assign ready_o = empty;
-
-    always_comb begin
-        automatic logic [1:0] status_cnt;
-        automatic logic write_pointer;
-        automatic logic read_pointer;
-
-        status_cnt = status_cnt_q;
-        write_pointer = write_pointer_q;
-        read_pointer = read_pointer_q;
-
-        mem_n = mem_q;
-        // we've got a valid LSU request
-        if (lsu_req_valid_i) begin
-            mem_n[write_pointer_q] = lsu_req_i;
-            write_pointer++;
-            status_cnt++;
-        end
-
-        if (pop_ld_i) begin
-            // invalidate the result
-            mem_n[read_pointer_q].valid = 1'b0;
-            read_pointer++;
-            status_cnt--;
-        end
-
-        if (pop_st_i) begin
-            // invalidate the result
-            mem_n[read_pointer_q].valid = 1'b0;
-            read_pointer++;
-            status_cnt--;
-        end
-
-        if (pop_st_i && pop_ld_i)
-            mem_n = '0;
-
-        if (flush_i) begin
-            status_cnt = '0;
-            write_pointer = '0;
-            read_pointer = '0;
-            mem_n = '0;
-        end
-        // default assignments
-        read_pointer_n  = read_pointer;
-        write_pointer_n = write_pointer;
-        status_cnt_n    = status_cnt;
-    end
-
-    // output assignment
-    always_comb begin : output_assignments
-        if (empty) begin
-            lsu_ctrl_o = lsu_req_i;
-        end else begin
-            lsu_ctrl_o = mem_q[read_pointer_q];
-        end
-    end
-
-    // registers
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            mem_q           <= '0;
-            status_cnt_q    <= '0;
-            write_pointer_q <= '0;
-            read_pointer_q  <= '0;
-        end else begin
-            mem_q           <= mem_n;
-            status_cnt_q    <= status_cnt_n;
-            write_pointer_q <= write_pointer_n;
-            read_pointer_q  <= read_pointer_n;
-        end
-    end
 endmodule
 

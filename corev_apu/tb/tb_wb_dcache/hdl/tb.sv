@@ -15,6 +15,7 @@
 
 `include "tb.svh"
 `include "assign.svh"
+`include "axi/typedef.svh"
 
 module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()();
 
@@ -47,7 +48,7 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     CachedRegionAddrBase:  {CachedAddrBeg},//1/8th of the memory is NC
     CachedRegionLength:    {CachedAddrEnd-CachedAddrBeg+64'b1},
     // cache config
-    Axi64BitCompliant:     1'b1,
+    AxiCompliant:          1'b1,
     SwapEndianess:         1'b0,
     // debug
     DmBaseAddress:         64'h0,
@@ -87,6 +88,13 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 // MUT signal declarations
 ///////////////////////////////////////////////////////////////////////////////
 
+  `AXI_TYPEDEF_ALL(axi,
+                   logic [    TbAxiAddrWidthFull-1:0],
+                   logic [      TbAxiIdWidthFull-1:0],
+                   logic [    TbAxiDataWidthFull-1:0],
+                   logic [(TbAxiDataWidthFull/8)-1:0],
+                   logic [    TbAxiUserWidthFull-1:0])
+
   logic                           enable_i;
   logic                           flush_i;
   logic                           flush_ack_o;
@@ -95,10 +103,10 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   amo_resp_t                      amo_resp_o;
   dcache_req_i_t [2:0]            req_ports_i;
   dcache_req_o_t [2:0]            req_ports_o;
-  ariane_axi::req_t               axi_data_o;
-  ariane_axi::resp_t              axi_data_i;
-  ariane_axi::req_t               axi_bypass_o;
-  ariane_axi::resp_t              axi_bypass_i;
+  axi_req_t                       axi_data_o;
+  axi_resp_t                      axi_data_i;
+  axi_req_t                       axi_bypass_o;
+  axi_resp_t                      axi_bypass_i;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TB signal declarations
@@ -410,7 +418,12 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 ///////////////////////////////////////////////////////////////////////////////
 
   std_nbdcache  #(
-    .ArianeCfg ( ArianeDefaultConfig )
+    .ArianeCfg      ( ArianeDefaultConfig ),
+    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull  ),
+    .AXI_DATA_WIDTH ( TbAxiDataWidthFull  ),
+    .AXI_ID_WIDTH   ( TbAxiIdWidthFull    ),
+    .axi_req_t      ( axi_req_t           ),
+    .axi_rsp_t      ( axi_resp_t          )
   ) i_dut (
     .clk_i           ( clk_i           ),
     .rst_ni          ( rst_ni          ),

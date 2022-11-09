@@ -136,8 +136,8 @@ module csr_regfile import ariane_pkg::*; #(
 
     logic        wfi_d,       wfi_q;
 
-    riscv::xlen_t cycle_q,     cycle_d;
-    riscv::xlen_t instret_q,   instret_d;
+    logic [63:0] cycle_q,     cycle_d;
+    logic [63:0] instret_q,   instret_d;
 
     riscv::pmpcfg_t [15:0]    pmpcfg_q,  pmpcfg_d;
     logic [15:0][riscv::PLEN-3:0]        pmpaddr_q,  pmpaddr_d;
@@ -242,11 +242,15 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = '0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
-                riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
-                riscv::CSR_MINSTRET:           csr_rdata = instret_q;
                 // Counters and Timers
-                riscv::CSR_CYCLE:              csr_rdata = cycle_q;
-                riscv::CSR_INSTRET:            csr_rdata = instret_q;
+                riscv::CSR_MCYCLE:             csr_rdata = cycle_q[riscv::XLEN-1:0];
+                riscv::CSR_MCYCLEH:            if (riscv::XLEN == 32) csr_rdata = cycle_q[63:32]; else read_access_exception = 1'b1;
+                riscv::CSR_MINSTRET:           csr_rdata = instret_q[riscv::XLEN-1:0];
+                riscv::CSR_MINSTRETH:          if (riscv::XLEN == 32) csr_rdata = instret_q[63:32]; else read_access_exception = 1'b1;
+                riscv::CSR_CYCLE:              csr_rdata = cycle_q[riscv::XLEN-1:0];
+                riscv::CSR_CYCLEH:             if (riscv::XLEN == 32) csr_rdata = cycle_q[63:32]; else read_access_exception = 1'b1;
+                riscv::CSR_INSTRET:            csr_rdata = instret_q[riscv::XLEN-1:0];
+                riscv::CSR_INSTRETH:           if (riscv::XLEN == 32) csr_rdata = instret_q[63:32]; else read_access_exception = 1'b1;
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
@@ -322,7 +326,7 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::xlen_t mask;
     always_comb begin : csr_update
         automatic riscv::satp_t satp;
-        automatic riscv::xlen_t instret;
+        automatic logic [63:0] instret;
 
 
         satp = satp_q;
@@ -564,8 +568,10 @@ module csr_regfile import ariane_pkg::*; #(
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
                 // performance counters
-                riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
-                riscv::CSR_MINSTRET:           instret     = csr_wdata;
+                riscv::CSR_MCYCLE:             cycle_d[riscv::XLEN-1:0] = csr_wdata;
+                riscv::CSR_MCYCLEH:            if (riscv::XLEN == 32) cycle_d[63:32] = csr_wdata; else update_access_exception = 1'b1;
+                riscv::CSR_MINSTRET:           instret[riscv::XLEN-1:0] = csr_wdata;
+                riscv::CSR_MINSTRETH:          if (riscv::XLEN == 32) instret[63:32] = csr_wdata; else update_access_exception = 1'b1;
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
@@ -1174,10 +1180,11 @@ module csr_regfile import ariane_pkg::*; #(
             for(int i = 0; i < 16; i++) begin
                 if(i < NrPMPEntries) begin
                     // We only support >=8-byte granularity, NA4 is disabled
-                    if(pmpcfg_d[i].addr_mode != riscv::NA4 && !(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1)) 
+                    if(pmpcfg_d[i].addr_mode != riscv::NA4 && !(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1)) begin
                         pmpcfg_q[i] <= pmpcfg_d[i];
-                    else
+                    end else begin
                         pmpcfg_q[i] <= pmpcfg_q[i];
+                    end
                     pmpaddr_q[i] <= pmpaddr_d[i];
                 end else begin
                     pmpcfg_q[i] <= '0;
@@ -1194,7 +1201,7 @@ module csr_regfile import ariane_pkg::*; #(
     `ifndef VERILATOR
         // check that eret and ex are never valid together
         assert property (
-          @(posedge clk_i) !(eret_o && ex_i.valid))
+          @(posedge clk_i) disable iff (!rst_ni !== '0) !(eret_o && ex_i.valid))
         else begin $error("eret and exception should never be valid at the same time"); $stop(); end
     `endif
     //pragma translate_on

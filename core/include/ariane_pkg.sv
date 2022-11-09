@@ -48,7 +48,7 @@ package ariane_pkg;
       logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;  // base which needs to match
       logic [NrMaxRules-1:0][63:0]      CachedRegionLength;    // bit mask which bits to consider when matching the rule
       // cache config
-      bit                               Axi64BitCompliant;     // set to 1 when using in conjunction with 64bit AXI bus adapter
+      bit                               AxiCompliant;          // set to 1 when using in conjunction with 64bit AXI bus adapter
       bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
       //
       logic [63:0]                      DmBaseAddress;         // offset of the debug module
@@ -72,7 +72,7 @@ package ariane_pkg;
       CachedRegionAddrBase:  {64'h8000_0000},
       CachedRegionLength:    {64'h40000000},
       //  cache config
-      Axi64BitCompliant:      1'b1,
+      AxiCompliant:           1'b1,
       SwapEndianess:          1'b0,
       // debug
       DmBaseAddress:          64'h0,
@@ -96,6 +96,7 @@ package ariane_pkg;
 
     function automatic logic range_check(logic[63:0] base, logic[63:0] len, logic[63:0] address);
       // if len is a power of two, and base is properly aligned, this check could be simplified
+      // Extend base by one bit to prevent an overflow.
       return (address >= base) && (address < (65'(base)+len));
     endfunction : range_check
 
@@ -135,7 +136,7 @@ package ariane_pkg;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
-    localparam ENABLE_RENAME = 1'b0;
+    localparam ENABLE_RENAME = cva6_config_pkg::CVA6ConfigRenameEn;
 
     localparam ISSUE_WIDTH = 1;
     // amount of pipeline registers inserted for load/store return path
@@ -155,6 +156,7 @@ package ariane_pkg;
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
     localparam int unsigned DEPTH_COMMIT = 8;
 `endif
+    localparam bit RVC = cva6_config_pkg::CVA6ConfigCExtEn; // Is C extension configuration
 
 `ifdef PITON_ARIANE
     // Floating-point extensions configuration
@@ -162,16 +164,16 @@ package ariane_pkg;
     localparam bit RVD = riscv::IS_XLEN64; // Is D extension enabled
 `else
     // Floating-point extensions configuration
-    localparam bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & riscv::FPU_EN; // Is F extension enabled for both 32 Bit and 64 bit CPU  
+    localparam bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & riscv::FPU_EN; // Is F extension enabled for both 32 Bit and 64 bit CPU
     localparam bit RVD = (riscv::IS_XLEN64 ? 1:0) & riscv::FPU_EN;              // Is D extension enabled for only 64 bit CPU
 `endif
-    localparam bit RVA = 1'b1; // Is A extension enabled
+    localparam bit RVA = cva6_config_pkg::CVA6ConfigAExtEn; // Is A extension enabled
 
     // Transprecision floating-point extensions configuration
-    localparam bit XF16    = 1'b0; // Is half-precision float extension (Xf16) enabled
-    localparam bit XF16ALT = 1'b0; // Is alternative half-precision float extension (Xf16alt) enabled
-    localparam bit XF8     = 1'b0; // Is quarter-precision float extension (Xf8) enabled
-    localparam bit XFVEC   = 1'b0; // Is vectorial float extension (Xfvec) enabled
+    localparam bit XF16    = cva6_config_pkg::CVA6ConfigF16En; // Is half-precision float extension (Xf16) enabled
+    localparam bit XF16ALT = cva6_config_pkg::CVA6ConfigF16AltEn; // Is alternative half-precision float extension (Xf16alt) enabled
+    localparam bit XF8     = cva6_config_pkg::CVA6ConfigF8En; // Is quarter-precision float extension (Xf8) enabled
+    localparam bit XFVEC   = cva6_config_pkg::CVA6ConfigFVecEn; // Is vectorial float extension (Xfvec) enabled
 
     // Transprecision float unit
     localparam int unsigned LAT_COMP_FP32    = 'd2;
@@ -207,7 +209,7 @@ package ariane_pkg;
     localparam riscv::xlen_t ARIANE_MARCHID = {{riscv::XLEN-32{1'b0}}, 32'd3};
 
     localparam riscv::xlen_t ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
-                                     | (1   <<  2)  // C - Compressed extension
+                                     | (RVC <<  2)  // C - Compressed extension
                                      | (RVD <<  3)  // D - Double precsision floating-point extension
                                      | (RVF <<  5)  // F - Single precsision floating-point extension
                                      | (1   <<  8)  // I - RV32I/64I/128I base ISA
@@ -220,7 +222,11 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
-    localparam NR_WB_PORTS = 5;
+
+    localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
+
+    // when cvx interface is present, use an additional writeback port
+    localparam NR_WB_PORTS = CVXIF_PRESENT ? 5 : 4;
 
     // Read ports for general purpose register files
     localparam NR_RGPR_PORTS = 2;
@@ -278,6 +284,18 @@ package ariane_pkg;
                                                     | riscv::SSTATUS_SUM
                                                     | riscv::SSTATUS_MXR;
     // ---------------
+    // User bits
+    // ---------------
+
+    localparam FETCH_USER_WIDTH = (cva6_config_pkg::CVA6ConfigFetchUserEn == 0) ? 1: cva6_config_pkg::CVA6ConfigFetchUserWidth;  // Possible cases: between 1 and 64
+    localparam DATA_USER_WIDTH = (cva6_config_pkg::CVA6ConfigDataUserEn == 0) ? 1: cva6_config_pkg::CVA6ConfigDataUserWidth;    // Possible cases: between 1 and 64
+    localparam AXI_USER_WIDTH = DATA_USER_WIDTH > FETCH_USER_WIDTH*2 ? DATA_USER_WIDTH : FETCH_USER_WIDTH*2;
+    localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
+    localparam FETCH_USER_EN = cva6_config_pkg::CVA6ConfigFetchUserEn;
+    localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
+
+
+    // ---------------
     // Fetch Stage
     // ---------------
 
@@ -285,7 +303,13 @@ package ariane_pkg;
     localparam int unsigned FETCH_FIFO_DEPTH  = 4;
     localparam int unsigned FETCH_WIDTH       = 32;
     // maximum instructions we can fetch on one request (we support compressed instructions)
-    localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH / 16;
+    localparam int unsigned INSTR_PER_FETCH = RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
+    localparam int unsigned LOG2_INSTR_PER_FETCH = RVC == 1'b1 ? $clog2(ariane_pkg::INSTR_PER_FETCH) : 1;
+
+    // ---------------
+    // Enable BITMANIP
+    // ---------------
+    localparam bit BITMANIP = 1'b0;
 
     // Only use struct when signals have same direction
     // exception
@@ -416,31 +440,37 @@ package ariane_pkg;
     localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
     localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
     localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN - ICACHE_INDEX_WIDTH;
+    localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     // D$
     localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
     localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
+    localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
+    localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
 `else
     // I$
-		localparam int unsigned CONFIG_L1I_SIZE    = 16*1024;
+    localparam int unsigned CONFIG_L1I_SIZE    = 16*1024;
     localparam int unsigned ICACHE_SET_ASSOC   = 4; // Must be between 4 to 64
     localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);  // in bit, contains also offset width
     localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN-ICACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
+    localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     // D$
-		localparam int unsigned CONFIG_L1D_SIZE    = 32*1024;
-	  localparam int unsigned DCACHE_SET_ASSOC   = 8; // Must be between 4 to 64
+    localparam int unsigned CONFIG_L1D_SIZE    = 32*1024;
+    localparam int unsigned DCACHE_SET_ASSOC   = 8; // Must be between 4 to 64
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);  // in bit, contains also offset width
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN-DCACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
+    localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
+    localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
 `endif
 
-    localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
     // ---------------
     // EX Stage
     // ---------------
-    typedef enum logic [6:0] { // basic ALU op
+
+    typedef enum logic [7:0] { // basic ALU op
                                ADD, SUB, ADDW, SUBW,
                                // logic operations
                                XORL, ORL, ANDL,
@@ -477,7 +507,29 @@ package ariane_pkg;
                                // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
                                VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D,
                                // Offload Instructions to be directed into cv_x_if
-                               OFFLOAD
+                               OFFLOAD,
+                               // Or-Combine and REV8
+                               ORCB, REV8,
+                               // Bitwise Rotation
+                               ROL, ROLW, ROR, RORI, RORIW, RORW,
+                               // Sign and Zero Extend
+                               SEXTB, SEXTH, ZEXTH,
+                               // Count population
+                               CPOP, CPOPW,
+                               // Count Leading/Training Zeros
+                               CLZ, CLZW, CTZ, CTZW,
+                               // Carry less multiplication Op's
+                               CLMUL, CLMULH, CLMULR,
+                               // Single bit instructions Op's
+                               BCLR, BCLRI, BEXT, BEXTI, BINV, BINVI, BSET, BSETI,
+                               // Integer minimum/maximum
+                               MAX, MAXU, MIN, MINU,
+                               // Shift with Add Unsigned Word and Unsigned Word Op's (Bitmanip)
+                               SH1ADDUW, SH2ADDUW, SH3ADDUW, ADDUW, SLLIUW,
+                               // Shift with Add (Bitmanip)
+                               SH1ADD, SH2ADD, SH3ADD,
+                               // Bitmanip Logical with negate op (Bitmanip)
+                               ANDN, ORN, XNOR
                              } fu_op;
 
     typedef struct packed {
@@ -572,14 +624,14 @@ package ariane_pkg;
     endfunction
 
     typedef struct packed {
-        logic                     valid;
-        logic [riscv::VLEN-1:0]   vaddr;
-        logic                     overflow;
-        logic [63:0]              data;
-        logic [7:0]               be;
-        fu_t                      fu;
-        fu_op                     operator;
-        logic [TRANS_ID_BITS-1:0] trans_id;
+        logic                           valid;
+        logic [riscv::VLEN-1:0]         vaddr;
+        logic                           overflow;
+        riscv::xlen_t                   data;
+        logic [(riscv::XLEN/8)-1:0]     be;
+        fu_t                            fu;
+        fu_op                           operator;
+        logic [TRANS_ID_BITS-1:0]       trans_id;
     } lsu_ctrl_t;
 
     // ---------------
@@ -617,6 +669,14 @@ package ariane_pkg;
         branchpredict_sbe_t       bp;            // branch predict scoreboard data structure
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2
+`ifdef RVFI_MEM
+        riscv::xlen_t               rs1_rdata;
+        riscv::xlen_t               rs2_rdata;
+        logic [riscv::VLEN-1:0]     lsu_addr;
+        logic [(riscv::XLEN/8)-1:0] lsu_rmask;
+        logic [(riscv::XLEN/8)-1:0] lsu_wmask;
+        riscv::xlen_t               lsu_wdata;
+`endif
     } scoreboard_entry_t;
 
     // ---------------
@@ -699,6 +759,7 @@ package ariane_pkg;
         logic                     ready;                  // icache is ready
         logic                     valid;                  // signals a valid read
         logic [FETCH_WIDTH-1:0]   data;                   // 2+ cycle out: tag
+        logic [FETCH_USER_WIDTH-1:0] user;                // User bits
         logic [riscv::VLEN-1:0]   vaddr;                  // virtual address out
         exception_t               ex;                     // we've encountered an exception
     } icache_dreq_o_t;
@@ -725,10 +786,11 @@ package ariane_pkg;
     typedef struct packed {
         logic [DCACHE_INDEX_WIDTH-1:0] address_index;
         logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
-        logic [63:0]                   data_wdata;
+        riscv::xlen_t                  data_wdata;
+        logic [DCACHE_USER_WIDTH-1:0]  data_wuser;
         logic                          data_req;
         logic                          data_we;
-        logic [7:0]                    data_be;
+        logic [(riscv::XLEN/8)-1:0]    data_be;
         logic [1:0]                    data_size;
         logic                          kill_req;
         logic                          tag_valid;
@@ -737,7 +799,8 @@ package ariane_pkg;
     typedef struct packed {
         logic                          data_gnt;
         logic                          data_rvalid;
-        logic [63:0]                   data_rdata;
+        riscv::xlen_t                  data_rdata;
+        logic [DCACHE_USER_WIDTH-1:0]  data_ruser;
     } dcache_req_o_t;
 
     // ----------------------
@@ -823,6 +886,32 @@ package ariane_pkg;
             end
         endcase
         return 8'b0;
+    endfunction
+
+    function automatic logic [3:0] be_gen_32(logic [1:0] addr, logic [1:0] size);
+        case (size)
+            2'b10: begin
+                return 4'b1111;
+            end
+            2'b01: begin
+                case (addr[1:0])
+                    2'b00: return 4'b0011;
+                    2'b01: return 4'b0110;
+                    2'b10: return 4'b1100;
+
+                endcase
+            end
+            2'b00: begin
+                case (addr[1:0])
+                    2'b00: return 4'b0001;
+                    2'b01: return 4'b0010;
+                    2'b10: return 4'b0100;
+                    2'b11: return 4'b1000;
+                endcase
+            end
+            default: return 4'b0;
+        endcase
+        return 4'b0;
     endfunction
 
     // ----------------------

@@ -24,7 +24,15 @@ import "DPI-C" function void init_dromajo(string cfg_f_name);
 
 
 module cva6 import ariane_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
+  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
+  parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
+  parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
+  parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
+  parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
+  parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
+  parameter type axi_req_t = ariane_axi::req_t,
+  parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -55,8 +63,8 @@ module cva6 import ariane_pkg::*; #(
   input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
 `else
   // memory side, AXI Master
-  output ariane_axi::req_t             axi_req_o,
-  input  ariane_axi::resp_t            axi_resp_i
+  output axi_req_t                     axi_req_o,
+  input  axi_rsp_t                     axi_resp_i
 `endif
 );
 
@@ -252,6 +260,11 @@ module cva6 import ariane_pkg::*; #(
   logic                     dcache_commit_wbuffer_empty;
   logic                     dcache_commit_wbuffer_not_ni;
 
+  logic [riscv::VLEN-1:0]               lsu_addr;
+  logic [(riscv::XLEN/8)-1:0]           lsu_rmask;
+  logic [(riscv::XLEN/8)-1:0]           lsu_wmask;
+  logic [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id;
+
   // --------------
   // Frontend
   // --------------
@@ -307,6 +320,22 @@ module cva6 import ariane_pkg::*; #(
     .tsr_i                      ( tsr_csr_id                 )
   );
 
+  logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
+  logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]   wbdata_ex_id;
+  exception_t [NR_WB_PORTS-1:0]              ex_ex_ex_id; // exception from execute, ex_stage to id_stage
+  logic [NR_WB_PORTS-1:0]                    wt_valid_ex_id;
+
+  if (CVXIF_PRESENT) begin
+    assign trans_id_ex_id = {x_trans_id_ex_id, flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id};
+    assign wbdata_ex_id   = {x_result_ex_id, flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id};
+    assign ex_ex_ex_id    = {x_exception_ex_id, flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id};
+    assign wt_valid_ex_id = {x_valid_ex_id, flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
+  end else begin
+    assign trans_id_ex_id = {flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id};
+    assign wbdata_ex_id   = {flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id};
+    assign ex_ex_ex_id    = {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id};
+    assign wt_valid_ex_id = {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
+  end
   // ---------
   // Issue
   // ---------
@@ -357,11 +386,11 @@ module cva6 import ariane_pkg::*; #(
     .x_off_instr_o              ( x_off_instr_id_ex            ),
     // Commit
     .resolved_branch_i          ( resolved_branch              ),
-    .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id, x_trans_id_ex_id}),
-    .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id, x_result_ex_id}),
-    .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id, x_exception_ex_id}),
-    .wt_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id, x_valid_ex_id}),
-    .x_we_i                     ( x_we_ex_id               ),
+    .trans_id_i                 ( trans_id_ex_id               ),
+    .wbdata_i                   ( wbdata_ex_id                 ),
+    .ex_ex_i                    ( ex_ex_ex_id                  ),
+    .wt_valid_i                 ( wt_valid_ex_id               ),
+    .x_we_i                     ( x_we_ex_id                   ),
 
     .waddr_i                    ( waddr_commit_id              ),
     .wdata_i                    ( wdata_commit_id              ),
@@ -369,6 +398,11 @@ module cva6 import ariane_pkg::*; #(
     .we_fpr_i                   ( we_fpr_commit_id             ),
     .commit_instr_o             ( commit_instr_id_commit       ),
     .commit_ack_i               ( commit_ack                   ),
+    //RVFI
+    .lsu_addr_i                 ( lsu_addr                     ),
+    .lsu_rmask_i                ( lsu_rmask                    ),
+    .lsu_wmask_i                ( lsu_wmask                    ),
+    .lsu_addr_trans_id_i        ( lsu_addr_trans_id            ),
     .*
   );
 
@@ -472,7 +506,12 @@ module cva6 import ariane_pkg::*; #(
     .dcache_wbuffer_not_ni_i ( dcache_commit_wbuffer_not_ni ),
     // PMP
     .pmpcfg_i               ( pmpcfg                      ),
-    .pmpaddr_i              ( pmpaddr                     )
+    .pmpaddr_i              ( pmpaddr                     ),
+    //RVFI
+    .lsu_addr_o             ( lsu_addr                    ),
+    .lsu_rmask_o            ( lsu_rmask                   ),
+    .lsu_wmask_o            ( lsu_wmask                   ),
+    .lsu_addr_trans_id_o    ( lsu_addr_trans_id           )
   );
 
   // ---------
@@ -643,7 +682,12 @@ module cva6 import ariane_pkg::*; #(
 `ifdef WT_DCACHE
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
-    .ArianeCfg            ( ArianeCfg     )
+    .ArianeCfg            ( ArianeCfg ),
+    .AxiAddrWidth         ( AxiAddrWidth ),
+    .AxiDataWidth         ( AxiDataWidth ),
+    .AxiIdWidth           ( AxiIdWidth ),
+    .axi_req_t            ( axi_req_t ),
+    .axi_rsp_t            ( axi_rsp_t )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
@@ -685,7 +729,15 @@ module cva6 import ariane_pkg::*; #(
     // note: this only works with one cacheable region
     // not as important since this cache subsystem is about to be
     // deprecated
-    .ArianeCfg             ( ArianeCfg                   )
+    .ArianeCfg             ( ArianeCfg                   ),
+    .AxiAddrWidth          ( AxiAddrWidth                ),
+    .AxiDataWidth          ( AxiDataWidth                ),
+    .AxiIdWidth            ( AxiIdWidth                  ),
+    .axi_ar_chan_t         ( axi_ar_chan_t               ),
+    .axi_aw_chan_t         ( axi_aw_chan_t               ),
+    .axi_w_chan_t          ( axi_w_chan_t                ),
+    .axi_req_t             ( axi_req_t                   ),
+    .axi_rsp_t             ( axi_rsp_t                   )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
@@ -927,29 +979,30 @@ module cva6 import ariane_pkg::*; #(
 //pragma translate_on
 
 `ifdef RVFI_TRACE
-  always_comb
+  always_comb begin
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
       logic exception, mem_exception;
-      exception = commit_instr_id_commit[i].valid && commit_instr_id_commit[i].ex.valid && ex_commit.valid;
+      exception = commit_instr_id_commit[i].valid && ex_commit.valid;
       mem_exception = exception &&
-        (commit_instr_id_commit[i].ex.cause == riscv::INSTR_ADDR_MISALIGNED ||
-         commit_instr_id_commit[i].ex.cause == riscv::INSTR_ACCESS_FAULT ||
-         commit_instr_id_commit[i].ex.cause == riscv::ILLEGAL_INSTR ||
-         commit_instr_id_commit[i].ex.cause == riscv::LD_ADDR_MISALIGNED ||
-         commit_instr_id_commit[i].ex.cause == riscv::LD_ACCESS_FAULT ||
-         commit_instr_id_commit[i].ex.cause == riscv::ST_ADDR_MISALIGNED ||
-         commit_instr_id_commit[i].ex.cause == riscv::ST_ACCESS_FAULT ||
-         commit_instr_id_commit[i].ex.cause == riscv::INSTR_PAGE_FAULT ||
-         commit_instr_id_commit[i].ex.cause == riscv::LOAD_PAGE_FAULT ||
-         commit_instr_id_commit[i].ex.cause == riscv::STORE_PAGE_FAULT);
+        (ex_commit.cause == riscv::INSTR_ADDR_MISALIGNED ||
+         ex_commit.cause == riscv::INSTR_ACCESS_FAULT ||
+         ex_commit.cause == riscv::ILLEGAL_INSTR ||
+         ex_commit.cause == riscv::LD_ADDR_MISALIGNED ||
+         ex_commit.cause == riscv::LD_ACCESS_FAULT ||
+         ex_commit.cause == riscv::ST_ADDR_MISALIGNED ||
+         ex_commit.cause == riscv::ST_ACCESS_FAULT ||
+         ex_commit.cause == riscv::INSTR_PAGE_FAULT ||
+         ex_commit.cause == riscv::LOAD_PAGE_FAULT ||
+         ex_commit.cause == riscv::STORE_PAGE_FAULT);
       // when rvfi_valid, the instruction is executed
-      rvfi_o[i].valid    = (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) ||
-        (exception && (commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_MMODE ||
-                  commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_SMODE ||
-                  commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_UMODE));
-      rvfi_o[i].insn     = commit_instr_id_commit[i].ex.tval[31:0];
+      rvfi_o[i].valid    = (commit_ack[i] && !ex_commit.valid) ||
+        (exception && (ex_commit.cause == riscv::ENV_CALL_MMODE ||
+                  ex_commit.cause == riscv::ENV_CALL_SMODE ||
+                  ex_commit.cause == riscv::ENV_CALL_UMODE));
+      rvfi_o[i].insn     = ex_commit.valid ? ex_commit.tval[31:0] : commit_instr_id_commit[i].ex.tval[31:0];
       // when trap, the instruction is not executed
       rvfi_o[i].trap     = mem_exception;
+      rvfi_o[i].cause    = ex_commit.cause;
       rvfi_o[i].mode     = debug_mode ? 2'b10 : priv_lvl;
       rvfi_o[i].ixl      = riscv::XLEN == 64 ? 2 : 1;
       rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1;
@@ -957,7 +1010,17 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd;
       rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
       rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
+`ifdef RVFI_MEM
+      rvfi_o[i].mem_addr  = commit_instr_id_commit[i].lsu_addr;
+      rvfi_o[i].mem_wmask = commit_instr_id_commit[i].lsu_wmask;
+      rvfi_o[i].mem_wdata = commit_instr_id_commit[i].lsu_wdata;
+      rvfi_o[i].mem_rmask = commit_instr_id_commit[i].lsu_rmask;
+      rvfi_o[i].mem_rdata = commit_instr_id_commit[i].result;
+      rvfi_o[i].rs1_rdata = commit_instr_id_commit[i].rs1_rdata;
+      rvfi_o[i].rs2_rdata = commit_instr_id_commit[i].rs2_rdata;
+`endif
     end
+  end
 `endif
 
 endmodule // ariane

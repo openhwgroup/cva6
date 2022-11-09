@@ -40,11 +40,12 @@ module id_stage (
     input  logic                          tsr_i
 );
     // ID/ISSUE register stage
-    struct packed {
+    typedef struct packed {
         logic                          valid;
         ariane_pkg::scoreboard_entry_t sbe;
         logic                          is_ctrl_flow;
-    } issue_n, issue_q;
+    } issue_struct_t;
+    issue_struct_t issue_n, issue_q;
 
     logic                            is_control_flow_instr;
     ariane_pkg::scoreboard_entry_t   decoded_instruction;
@@ -53,15 +54,21 @@ module id_stage (
     logic                [31:0] instruction;
     logic                is_compressed;
 
-    // ---------------------------------------------------------
-    // 1. Check if they are compressed and expand in case they are
-    // ---------------------------------------------------------
-    compressed_decoder compressed_decoder_i (
-        .instr_i                 ( fetch_entry_i.instruction   ),
-        .instr_o                 ( instruction                 ),
-        .illegal_instr_o         ( is_illegal                  ),
-        .is_compressed_o         ( is_compressed               )
-    );
+    if (ariane_pkg::RVC) begin
+      // ---------------------------------------------------------
+      // 1. Check if they are compressed and expand in case they are
+      // ---------------------------------------------------------
+      compressed_decoder compressed_decoder_i (
+          .instr_i                 ( fetch_entry_i.instruction   ),
+          .instr_o                 ( instruction                 ),
+          .illegal_instr_o         ( is_illegal                  ),
+          .is_compressed_o         ( is_compressed               )
+      );
+    end else begin
+      assign instruction = fetch_entry_i.instruction;
+      assign is_illegal = '0;
+      assign is_compressed = '0;
+    end
     // ---------------------------------------------------------
     // 2. Decode and emit instruction to issue stage
     // ---------------------------------------------------------

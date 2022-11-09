@@ -16,7 +16,15 @@
 
 
 module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
-    parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig  // contains cacheable regions
+    parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig,  // contains cacheable regions
+    parameter int unsigned AxiAddrWidth = 0,
+    parameter int unsigned AxiDataWidth = 0,
+    parameter int unsigned AxiIdWidth   = 0,
+    parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
+    parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
+    parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
+    parameter type axi_req_t = ariane_axi::req_t,
+    parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
     input logic                            clk_i,
     input logic                            rst_ni,
@@ -45,21 +53,26 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
     output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
     // memory side
-    output ariane_axi::req_t               axi_req_o,
-    input  ariane_axi::resp_t              axi_resp_i
+    output axi_req_t                       axi_req_o,
+    input  axi_rsp_t                       axi_resp_i
 );
 
   assign wbuffer_empty_o = 1'b1;
 
-    ariane_axi::req_t  axi_req_icache;
-    ariane_axi::resp_t axi_resp_icache;
-    ariane_axi::req_t  axi_req_bypass;
-    ariane_axi::resp_t axi_resp_bypass;
-    ariane_axi::req_t  axi_req_data;
-    ariane_axi::resp_t axi_resp_data;
+    axi_req_t axi_req_icache;
+    axi_rsp_t axi_resp_icache;
+    axi_req_t axi_req_bypass;
+    axi_rsp_t axi_resp_bypass;
+    axi_req_t axi_req_data;
+    axi_rsp_t axi_resp_data;
 
     cva6_icache_axi_wrapper #(
-        .ArianeCfg  ( ArianeCfg             )
+        .ArianeCfg    ( ArianeCfg    ),
+        .AxiAddrWidth ( AxiAddrWidth ),
+        .AxiDataWidth ( AxiDataWidth ),
+        .AxiIdWidth   ( AxiIdWidth   ),
+        .axi_req_t    ( axi_req_t    ),
+        .axi_rsp_t    ( axi_rsp_t    )
     ) i_cva6_icache_axi_wrapper (
         .clk_i      ( clk_i                 ),
         .rst_ni     ( rst_ni                ),
@@ -80,7 +93,12 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
    // Port 1: Load Unit
    // Port 2: Store Unit
    std_nbdcache #(
-      .ArianeCfg        ( ArianeCfg          )
+      .ArianeCfg        ( ArianeCfg    ),
+      .AXI_ADDR_WIDTH   ( AxiAddrWidth ),
+      .AXI_DATA_WIDTH   ( AxiDataWidth ),
+      .AXI_ID_WIDTH     ( AxiIdWidth   ),
+      .axi_req_t        ( axi_req_t    ),
+      .axi_rsp_t        ( axi_rsp_t    )
    ) i_nbdcache (
       .clk_i,
       .rst_ni,
@@ -107,7 +125,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
 
     // AR Channel
     stream_arbiter #(
-        .DATA_T ( ariane_axi::ar_chan_t ),
+        .DATA_T ( axi_ar_chan_t ),
         .N_INP  ( 3                     )
     ) i_stream_arbiter_ar (
         .clk_i,
@@ -122,7 +140,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
 
     // AW Channel
     stream_arbiter #(
-        .DATA_T ( ariane_axi::aw_chan_t ),
+        .DATA_T ( axi_aw_chan_t ),
         .N_INP  ( 3                     )
     ) i_stream_arbiter_aw (
         .clk_i,
@@ -174,7 +192,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     assign w_select_arbiter = (w_fifo_empty) ? 0 : w_select_fifo;
 
     stream_mux #(
-        .DATA_T ( ariane_axi::w_chan_t ),
+        .DATA_T ( axi_w_chan_t ),
         .N_INP  ( 3                    )
     ) i_stream_mux_w (
         .inp_data_i  ( {axi_req_data.w, axi_req_bypass.w, axi_req_icache.w} ),

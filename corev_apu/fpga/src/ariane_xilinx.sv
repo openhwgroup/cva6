@@ -159,7 +159,7 @@ localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 4;
 localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NBSlave); // 5
-localparam AxiUserWidth = 1;
+localparam AxiUserWidth = ariane_pkg::AXI_USER_WIDTH;
 
 `AXI_TYPEDEF_ALL(axi_slave,
                  logic [    AxiAddrWidth-1:0],
@@ -559,7 +559,12 @@ logic [1:0]    axi_adapter_size;
 assign axi_adapter_size = (riscv::XLEN == 64) ? 2'b11 : 2'b10;
 
 axi_adapter #(
-    .DATA_WIDTH            ( riscv::XLEN              )
+    .DATA_WIDTH            ( riscv::XLEN              ),
+    .AXI_ADDR_WIDTH        ( ariane_axi::AddrWidth    ),
+    .AXI_DATA_WIDTH        ( ariane_axi::DataWidth    ),
+    .AXI_ID_WIDTH          ( ariane_axi::IdWidth      ),
+    .axi_req_t             ( ariane_axi::req_t        ),
+    .axi_rsp_t             ( ariane_axi::resp_t       )
 ) i_dm_axi_master (
     .clk_i                 ( clk                       ),
     .rst_ni                ( rst_n                     ),

@@ -110,7 +110,6 @@ ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 util := core/include/instr_tracer_pkg.sv                              \
         common/local/util/instr_tracer_if.sv                          \
         common/local/util/instr_tracer.sv                             \
-        corev_apu/src/tech_cells_generic/src/cluster_clock_gating.sv  \
         corev_apu/tb/common/mock_uart.sv                              \
         common/local/util/sram.sv
 
@@ -187,9 +186,6 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/riscv-dbg/debug_rom/debug_rom.sv                                   \
         corev_apu/register_interface/src/apb_to_reg.sv                               \
         corev_apu/axi/src/axi_multicut.sv                                            \
-        common/submodules/common_cells/src/deprecated/generic_fifo.sv                \
-        common/submodules/common_cells/src/deprecated/pulp_sync.sv                   \
-        common/submodules/common_cells/src/deprecated/find_first_one.sv              \
         common/submodules/common_cells/src/rstgen_bypass.sv                          \
         common/submodules/common_cells/src/rstgen.sv                                 \
         common/submodules/common_cells/src/stream_mux.sv                             \
@@ -207,7 +203,7 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/axi/src/axi_mux.sv                                                 \
         corev_apu/axi/src/axi_demux.sv                                               \
         corev_apu/axi/src/axi_xbar.sv                                                \
-        corev_apu/fpga-support/rtl/SyncSpRamBeNx64.sv                                \
+        common/local/techlib/fpga/rtl/SyncSpRamBeNx64.sv                             \
         common/submodules/common_cells/src/unread.sv                                 \
         common/submodules/common_cells/src/sync.sv                                   \
         common/submodules/common_cells/src/cdc_2phase.sv                             \
@@ -231,9 +227,11 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         common/submodules/common_cells/src/delta_counter.sv                          \
         common/submodules/common_cells/src/counter.sv                                \
         common/submodules/common_cells/src/shift_reg.sv                              \
-        corev_apu/src/tech_cells_generic/src/pulp_clock_gating.sv                    \
-        corev_apu/src/tech_cells_generic/src/cluster_clock_inverter.sv               \
-        corev_apu/src/tech_cells_generic/src/pulp_clock_mux2.sv                      \
+        corev_apu/src/tech_cells_generic/src/deprecated/cluster_clk_cells.sv         \
+        corev_apu/src/tech_cells_generic/src/deprecated/pulp_clk_cells.sv            \
+        common/local/util/tc_sram_wrapper.sv                                         \
+        corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv                          \
+        corev_apu/src/tech_cells_generic/src/rtl/tc_clk.sv                           \
         corev_apu/tb/ariane_testharness.sv                                           \
         corev_apu/tb/ariane_peripherals.sv                                           \
         corev_apu/tb/rvfi_tracer.sv                                                  \
@@ -257,7 +255,7 @@ copro_src := $(addprefix $(root-dir), $(copro_src))
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
 
-fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/bootrom/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv)
+fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/bootrom/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
@@ -589,7 +587,7 @@ verilate_command := $(verilator)                                                
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                  \
                     $(copro_src)                                                                                 \
-                    +define+$(defines)                                                                           \
+                    +define+$(defines)$(if $(TRACE_FAST),+VM_TRACE)$(if $(TRACE_COMPACT),+VM_TRACE+VM_TRACE_FST) \
                     common/local/util/sram.sv                                                                    \
                     corev_apu/tb/common/mock_uart.sv                                                             \
                     +incdir+corev_apu/axi_node                                                                   \
@@ -608,8 +606,10 @@ verilate_command := $(verilator)                                                
                     $(if ($(PRELOAD)!=""), -DPRELOAD=1,)                                                         \
                     $(if $(DROMAJO), -DDROMAJO=1,)                                                               \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
-                    $(if $(DEBUG),--trace --trace-structs,)                                                      \
-                    -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -L../corev_apu/tb/dromajo/src -ldromajo_cosim,) -lpthread" \
+                    $(if $(DEBUG), --trace-structs,)                                                             \
+                    $(if $(TRACE_COMPACT), --trace-fst $(VERILATOR_ROOT)/include/verilated_fst_c.cpp)            \
+                    $(if $(TRACE_FAST), --trace $(VERILATOR_ROOT)/include/verilated_vcd_c.cpp,)                  \
+                    -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -L../corev_apu/tb/dromajo/src -ldromajo_cosim,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -DDROMAJO=1,) -DVL_DEBUG"       \
                     -Wall --cc  --vpi                                                                            \
                     $(list_incdir) --top-module ariane_testharness                                               \
@@ -770,6 +770,8 @@ fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer_if.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer.sv)
+fpga_filter += $(addprefix $(root-dir), corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv)
+fpga_filter += $(addprefix $(root-dir), common/local/util/tc_sram_wrapper.sv)
 
 fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(copro_src)
 	@echo "[FPGA] Generate sources"

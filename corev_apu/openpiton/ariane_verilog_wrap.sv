@@ -186,7 +186,7 @@ module ariane_verilog_wrap
     CachedRegionAddrBase:  CachedRegionAddrBase,
     CachedRegionLength:    CachedRegionLength,
     // cache config
-    Axi64BitCompliant:     1'b0,
+    AxiCompliant:          1'b0,
     SwapEndianess:         SwapEndianess,
     // debug
     DmBaseAddress:         DmBaseAddress,

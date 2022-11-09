@@ -69,9 +69,9 @@ module re_name import ariane_pkg::*; (
         issue_instr_o.rs2 = { ENABLE_RENAME & name_bit_rs2, issue_instr_i.rs2[4:0] };
 
         // re-name the third operand in imm if it's actually an operand
-        if (is_imm_fpr(issue_instr_i.op))
+        if (is_imm_fpr(issue_instr_i.op) || (issue_instr_i.op == OFFLOAD && ariane_pkg::NR_RGPR_PORTS == 3)) begin
             issue_instr_o.result = { ENABLE_RENAME & name_bit_rs3, issue_instr_i.result[4:0]};
-
+        end
         // re-name the destination register
         issue_instr_o.rd = { ENABLE_RENAME & name_bit_rd, issue_instr_i.rd[4:0] };
 

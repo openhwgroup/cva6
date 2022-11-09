@@ -190,6 +190,7 @@ package tb_pkg;
     rand_ax_beat_queue_t ar_queue;
     ax_beat_t            aw_queue[$];
     int unsigned         b_wait_cnt;
+    ax_beat_t            b_aw_queue[$];
 
     static byte_t memory_q[MEM_BYTES-1:0]; // Main memory
     static byte_t shadow_q[MEM_BYTES-1:0]; // Shadow of main memory for verification.
@@ -353,12 +354,12 @@ package tb_pkg;
       forever begin
         automatic ax_beat_t aw_beat;
         automatic addr_t  byte_addr;
+        wait (aw_queue.size() > 0);
+        aw_beat = aw_queue.pop_front();
         forever begin
           automatic w_beat_t w_beat;
           rand_wait(RESP_MIN_WAIT_CYCLES, RESP_MAX_WAIT_CYCLES);
           drv.recv_w(w_beat);
-          wait (aw_queue.size() > 0);
-          aw_beat = aw_queue[0];
           byte_addr  = (aw_beat.ax_addr >> $clog2(DW/8)) << $clog2(DW/8);
 
           assert (min_paddr != max_paddr && byte_addr inside {[min_paddr:max_paddr]}) else
@@ -376,11 +377,10 @@ package tb_pkg;
             aw_beat.ax_addr = ((aw_beat.ax_addr >> aw_beat.ax_size) << aw_beat.ax_size) +
                       2**aw_beat.ax_size;
           end
-          aw_queue[0] = aw_beat;
           if (w_beat.w_last)
             break;
         end
-        b_wait_cnt++;
+        b_aw_queue.push_back(aw_beat);
       end
     endtask
 
@@ -389,8 +389,8 @@ package tb_pkg;
         automatic ax_beat_t aw_beat;
         automatic b_beat_t b_beat = new;
         automatic logic rand_success;
-        wait (b_wait_cnt > 0 && (aw_queue.size() != 0));
-        aw_beat = aw_queue.pop_front();
+        wait (b_aw_queue.size() > 0);
+        aw_beat = b_aw_queue.pop_front();
         rand_success = std::randomize(b_beat); assert(rand_success);
         b_beat.b_id = aw_beat.ax_id;
         if (aw_beat.ax_lock) begin

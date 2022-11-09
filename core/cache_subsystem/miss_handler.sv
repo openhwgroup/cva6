@@ -17,7 +17,12 @@
 // --------------
 
 module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
-    parameter int unsigned NR_PORTS         = 3
+    parameter int unsigned NR_PORTS       = 3,
+    parameter int unsigned AXI_ADDR_WIDTH = 0,
+    parameter int unsigned AXI_DATA_WIDTH = 0,
+    parameter int unsigned AXI_ID_WIDTH   = 0,
+    parameter type axi_req_t = ariane_axi::req_t,
+    parameter type axi_rsp_t = ariane_axi::resp_t
 )(
     input  logic                                        clk_i,
     input  logic                                        rst_ni,
@@ -33,8 +38,8 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     output logic [NR_PORTS-1:0][63:0]                   bypass_data_o,
 
     // AXI port
-    output ariane_axi::req_t                            axi_bypass_o,
-    input  ariane_axi::resp_t                           axi_bypass_i,
+    output axi_req_t                                    axi_bypass_o,
+    input  axi_rsp_t                                    axi_bypass_i,
 
     // Miss handling (~> cacheline refill)
     output logic [NR_PORTS-1:0]                         miss_gnt_o,
@@ -42,8 +47,8 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
 
     output logic [63:0]                                 critical_word_o,
     output logic                                        critical_word_valid_o,
-    output ariane_axi::req_t                            axi_data_o,
-    input  ariane_axi::resp_t                           axi_data_i,
+    output axi_req_t                                    axi_data_o,
+    input  axi_rsp_t                                    axi_data_i,
 
     input  logic [NR_PORTS-1:0][55:0]                   mshr_addr_i,
     output logic [NR_PORTS-1:0]                         mshr_addr_matches_o,
@@ -559,18 +564,26 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     // ----------------------
     // Bypass AXI Interface
     // ----------------------
+    // Cast bypass_adapter_req.addr to axi_adapter port size
+    logic [riscv::XLEN-1:0] bypass_addr;
+    assign bypass_addr = bypass_adapter_req.addr;
+
     axi_adapter #(
-        .DATA_WIDTH           (64),
-        .AXI_ID_WIDTH         (4),
-        .CACHELINE_BYTE_OFFSET(DCACHE_BYTE_OFFSET)
+        .DATA_WIDTH            ( 64                 ),
+        .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET ),
+        .AXI_ADDR_WIDTH        ( AXI_ADDR_WIDTH     ),
+        .AXI_DATA_WIDTH        ( AXI_DATA_WIDTH     ),
+        .AXI_ID_WIDTH          ( AXI_ID_WIDTH       ),
+        .axi_req_t             ( axi_req_t          ),
+        .axi_rsp_t             ( axi_rsp_t          )
     ) i_bypass_axi_adapter (
         .clk_i                (clk_i),
         .rst_ni               (rst_ni),
         .req_i                (bypass_adapter_req.req),
         .type_i               (bypass_adapter_req.reqtype),
         .amo_i                (bypass_adapter_req.amo),
-        .id_i                 (bypass_adapter_req.id),
-        .addr_i               (bypass_adapter_req.addr),
+        .id_i                 (({{AXI_ID_WIDTH-4{1'b0}}, bypass_adapter_req.id})),
+        .addr_i               (bypass_addr),
         .wdata_i              (bypass_adapter_req.wdata),
         .we_i                 (bypass_adapter_req.we),
         .be_i                 (bypass_adapter_req.be),
@@ -588,10 +601,18 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     // ----------------------
     // Cache Line AXI Refill
     // ----------------------
+    // Cast req_fsm_miss_addr to axi_adapter port size
+    logic [riscv::XLEN-1:0] miss_addr;
+    assign miss_addr = req_fsm_miss_addr;
+
     axi_adapter  #(
         .DATA_WIDTH            ( DCACHE_LINE_WIDTH  ),
-        .AXI_ID_WIDTH          ( 4                  ),
-        .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET )
+        .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET ),
+        .AXI_ADDR_WIDTH        ( AXI_ADDR_WIDTH     ),
+        .AXI_DATA_WIDTH        ( AXI_DATA_WIDTH     ),
+        .AXI_ID_WIDTH          ( AXI_ID_WIDTH       ),
+        .axi_req_t             ( axi_req_t          ),
+        .axi_rsp_t             ( axi_rsp_t          )
     ) i_miss_axi_adapter (
         .clk_i,
         .rst_ni,
@@ -599,12 +620,12 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .type_i              ( req_fsm_miss_req   ),
         .amo_i               ( AMO_NONE           ),
         .gnt_o               ( gnt_miss_fsm       ),
-        .addr_i              ( req_fsm_miss_addr  ),
+        .addr_i              ( miss_addr          ),
         .we_i                ( req_fsm_miss_we    ),
         .wdata_i             ( req_fsm_miss_wdata ),
         .be_i                ( req_fsm_miss_be    ),
         .size_i              ( req_fsm_miss_size  ),
-        .id_i                ( 4'b1100            ),
+        .id_i                ( {{AXI_ID_WIDTH-4{1'b0}}, 4'b1100} ),
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),

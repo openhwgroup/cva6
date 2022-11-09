@@ -68,7 +68,11 @@ module frontend import ariane_pkg::*; #(
     // shift amount
     logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
     // address will always be 16 bit aligned, make this explicit here
-    assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
+    if (ariane_pkg::RVC) begin : gen_shamt
+      assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
+    end else begin
+      assign shamt = 1'b0;
+    end
 
     // -----------------------
     // Ctrl Flow Speculation
@@ -125,12 +129,16 @@ module frontend import ariane_pkg::*; #(
     // the prediction we saved from the previous fetch
     assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][1]];
     assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][1]];
-    // for all other predictions we can use the generated address to index
-    // into the branch prediction data structures
-    for (genvar i = 1; i < INSTR_PER_FETCH; i++) begin : gen_prediction_address
-      assign bht_prediction_shifted[i] = bht_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
-      assign btb_prediction_shifted[i] = btb_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
-    end
+
+    if (ariane_pkg::RVC) begin : gen_btb_prediction_shifted
+      // for all other predictions we can use the generated address to index
+      // into the branch prediction data structures
+      for (genvar i = 1; i < INSTR_PER_FETCH; i++) begin : gen_prediction_address
+        assign bht_prediction_shifted[i] = bht_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
+        assign btb_prediction_shifted[i] = btb_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
+      end
+    end;
+
     // for the return address stack it doens't matter as we have the
     // address of the call/return already
     logic bp_valid;
@@ -209,7 +217,9 @@ module frontend import ariane_pkg::*; #(
               taken_rvi_cf[i] = rvi_branch[i] & rvi_imm[i][riscv::VLEN-1];
               taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][riscv::VLEN-1];
             end
-            if (taken_rvi_cf[i] || taken_rvc_cf[i]) cf_type[i] = ariane_pkg::Branch;
+            if (taken_rvi_cf[i] || taken_rvc_cf[i]) begin
+              cf_type[i] = ariane_pkg::Branch;
+            end
           end
           default:;
             // default: $error("Decoded more than one control flow");
@@ -302,15 +312,25 @@ module frontend import ariane_pkg::*; #(
         npc_d = predict_address;
       end
       // 1. Default assignment
-      if (if_ready) npc_d = {fetch_address[riscv::VLEN-1:2], 2'b0}  + 'h4;
+      if (if_ready) begin
+        npc_d = {fetch_address[riscv::VLEN-1:2], 2'b0}  + 'h4;
+      end
       // 2. Replay instruction fetch
-      if (replay) npc_d = replay_addr;
+      if (replay) begin
+        npc_d = replay_addr;
+      end
       // 3. Control flow change request
-      if (is_mispredict) npc_d = resolved_branch_i.target_address;
+      if (is_mispredict) begin
+        npc_d = resolved_branch_i.target_address;
+      end
       // 4. Return from environment call
-      if (eret_i) npc_d = epc_i;
+      if (eret_i) begin
+        npc_d = epc_i;
+      end
       // 5. Exception/Interrupt
-      if (ex_valid_i) npc_d = trap_vector_base_i;
+      if (ex_valid_i) begin
+        npc_d = trap_vector_base_i;
+      end
       // 6. Pipeline Flush because of CSR side effects
       // On a pipeline flush start fetching from the next address
       // of the instruction in the commit stage
@@ -318,7 +338,9 @@ module frontend import ariane_pkg::*; #(
       // as CSR or AMO instructions do not exist in a compressed form
       // we can unconditionally do PC + 4 here
       // TODO(zarubaf) This adder can at least be merged with the one in the csr_regfile stage
-      if (set_pc_commit_i) npc_d = pc_commit_i + {{riscv::VLEN-3{1'b0}}, 3'b100};
+      if (set_pc_commit_i) begin
+        npc_d = pc_commit_i + {{riscv::VLEN-3{1'b0}}, 3'b100};
+      end
       // 7. Debug
       // enter debug on a hard-coded base-address
       if (set_debug_pc_i) npc_d = ArianeCfg.DmBaseAddress[riscv::VLEN-1:0] + dm::HaltAddress[riscv::VLEN-1:0];
@@ -353,7 +375,9 @@ module frontend import ariane_pkg::*; #(
             icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
           end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
             icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
-          end else icache_ex_valid_q <= ariane_pkg::FE_NONE;
+          end else begin
+            icache_ex_valid_q <= ariane_pkg::FE_NONE;
+          end
           // save the uppermost prediction
           btb_q                <= btb_prediction[INSTR_PER_FETCH-1];
           bht_q                <= bht_prediction[INSTR_PER_FETCH-1];

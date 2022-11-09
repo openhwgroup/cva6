@@ -41,7 +41,6 @@ ${CVA6_REPO_DIR}/corev_apu/riscv-dbg/src/dm_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_pkg.sv
 // TODO: ariane_axi_pkg is dependent on this.
 ${CVA6_REPO_DIR}/corev_apu/axi/src/axi_pkg.sv
-${CVA6_REPO_DIR}/corev_apu/fpga-support/rtl/SyncSpRamBeNx64.sv
 ${CVA6_REPO_DIR}/core/include/ariane_rvfi_pkg.sv
 
 // Packages
@@ -113,6 +112,7 @@ ${CVA6_REPO_DIR}/core/issue_read_operands.sv
 ${CVA6_REPO_DIR}/core/issue_stage.sv
 ${CVA6_REPO_DIR}/core/load_unit.sv
 ${CVA6_REPO_DIR}/core/load_store_unit.sv
+${CVA6_REPO_DIR}/core/lsu_bypass.sv
 ${CVA6_REPO_DIR}/core/mult.sv
 ${CVA6_REPO_DIR}/core/multiplier.sv
 ${CVA6_REPO_DIR}/core/serdiv.sv
@@ -153,6 +153,8 @@ ${CVA6_REPO_DIR}/core/pmp/src/pmp_entry.sv
 // Tracer (behavioral code, not RTL)
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer_if.sv
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv
+${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
+${CVA6_REPO_DIR}/corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
 
 // MMU Sv39

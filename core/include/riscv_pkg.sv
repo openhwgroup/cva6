@@ -37,17 +37,18 @@ package riscv;
 
     // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
     // Warning: VLEN must be superior or equal to PLEN
-    localparam VLEN       = (XLEN == 32) ? 32 : 64;    // virtual address length
-    localparam PLEN       = (XLEN == 32) ? 34 : 56;    // physical address length
+    localparam VLEN             = (XLEN == 32) ? 32 : 64;    // virtual address length
+    localparam PLEN             = (XLEN == 32) ? 34 : 56;    // physical address length
 
-    localparam IS_XLEN32  = (XLEN == 32) ? 1'b1 : 1'b0;
-    localparam IS_XLEN64  = (XLEN == 32) ? 1'b0 : 1'b1;
-    localparam ModeW      = (XLEN == 32) ? 1 : 4;
-    localparam ASIDW      = (XLEN == 32) ? 9 : 16;
-    localparam PPNW       = (XLEN == 32) ? 22 : 44;
-    localparam vm_mode_t MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
-    localparam SV         = (MODE_SV == ModeSv32) ? 32 : 39;
-    localparam VPN2       = (VLEN-31 < 8) ? VLEN-31 : 8;
+    localparam IS_XLEN32        = (XLEN == 32) ? 1'b1 : 1'b0;
+    localparam IS_XLEN64        = (XLEN == 32) ? 1'b0 : 1'b1;
+    localparam ModeW            = (XLEN == 32) ? 1 : 4;
+    localparam ASIDW            = (XLEN == 32) ? 9 : 16;
+    localparam PPNW             = (XLEN == 32) ? 22 : 44;
+    localparam vm_mode_t        MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
+    localparam SV               = (MODE_SV == ModeSv32) ? 32 : 39;
+    localparam VPN2             = (VLEN-31 < 8) ? VLEN-31 : 8;
+    localparam XLEN_ALIGN_BYTES = $clog2(XLEN/8);
 
     typedef logic [XLEN-1:0] xlen_t;
 
@@ -397,7 +398,9 @@ package riscv;
         CSR_MIMPID         = 12'hF13,
         CSR_MHARTID        = 12'hF14,
         CSR_MCYCLE         = 12'hB00,
+        CSR_MCYCLEH        = 12'hB80,
         CSR_MINSTRET       = 12'hB02,
+        CSR_MINSTRETH      = 12'hB82,
         // Performance counters (Machine Mode)
         CSR_ML1_ICACHE_MISS = 12'hB03,  // L1 Instr Cache Miss
         CSR_ML1_DCACHE_MISS = 12'hB04,  // L1 Data Cache Miss
@@ -444,8 +447,11 @@ package riscv;
         CSR_DSCRATCH1      = 12'h7b3, // optional
         // Counters and Timers (User Mode - R/O Shadows)
         CSR_CYCLE          = 12'hC00,
+        CSR_CYCLEH         = 12'hC80,
         CSR_TIME           = 12'hC01,
+        CSR_TIMEH          = 12'hC81,
         CSR_INSTRET        = 12'hC02,
+        CSR_INSTRETH       = 12'hC82,
         // Performance counters (User Mode - R/O Shadows)
         CSR_L1_ICACHE_MISS = 12'hC03,  // L1 Instr Cache Miss
         CSR_L1_DCACHE_MISS = 12'hC04,  // L1 Data Cache Miss

@@ -72,10 +72,11 @@ module ariane import ariane_pkg::*; #(
     .cvxif_resp_i         ( cvxif_resp                ),
 `ifdef PITON_ARIANE
     .l15_req_o            ( l15_req_o                 ),
-    .l15_rtrn_i           ( l15_rtrn_i                ),
-`endif
+    .l15_rtrn_i           ( l15_rtrn_i                )
+`else
     .axi_req_o            ( axi_req_o                 ),
     .axi_resp_i           ( axi_resp_i                )
+`endif
   );
 
   if (ariane_pkg::CVXIF_PRESENT) begin : gen_example_coprocessor
