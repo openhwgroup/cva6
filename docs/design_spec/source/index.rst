@@ -15,8 +15,8 @@
 
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
-OpenHW Group CV32A6-step1 design Document
-=========================================
+OpenHW Group CV32A6 v0.1.0 Design Document
+==========================================
 
 .. toctree::
    :maxdepth: 3
