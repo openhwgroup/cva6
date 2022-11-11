@@ -15,7 +15,7 @@
 
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
-.. _CVA6_GLOSSARY:
+.. _CV32A6_GLOSSARY:
 
 Glossary
 ========

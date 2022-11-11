@@ -1,28 +1,30 @@
-==============================
-CVA6 requirement specification
-==============================
+===============================
+CVA6 Requirement Specification
+===============================
 
 Revision 1.0.1
 
-.. __license:
+.. _license:
 
 License
 =======
 
-| Copyright 2022 OpenHW Group and Thales
-| Copyright 2018 ETH Zürich and University of Bologna
-| SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-| Licensed under the Solderpad Hardware License v 2.1 (the “License”);
-  you may not use this file except in compliance with the License, or,
-  at your option, the Apache License version 2.0. You may obtain a copy
-  of the License at https://solderpad.org/licenses/SHL-2.1/.
-| Unless required by applicable law or agreed to in writing, any work
-  distributed under the License is distributed on an “AS IS” BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied. See the License for the specific language governing
-  permissions and limitations under the License.
+Copyright 2022 OpenHW Group and Thales
+Copyright 2018 ETH Zürich and University of Bologna
 
-.. __introduction:
+SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+
+Licensed under the Solderpad Hardware License v 2.1 (the “License”);
+you may not use this file except in compliance with the License, or,
+at your option, the Apache License version 2.0. You may obtain a copy
+of the License at https://solderpad.org/licenses/SHL-2.1/.
+Unless required by applicable law or agreed to in writing, any work
+distributed under the License is distributed on an “AS IS” BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+implied. See the License for the specific language governing
+permissions and limitations under the License.
+
+.. _introduction:
 
 Introduction
 ============
@@ -49,12 +51,12 @@ project freeze (PF gate).
 
 A list of abbreviations is available at the end of this document.
 
-.. __scope:
+.. _scope:
 
 Scope
 =====
 
-.. __scope_of_the_ip:
+.. _scope_of_the_ip:
 
 Scope of the IP
 ---------------
@@ -126,7 +128,7 @@ These are not in the scope of this specification:
 -  The vector coprocessor (CV-VEC) that is planned to interface with
    CV64A6.
 
-.. __verified_configurations:
+.. _verified_configurations:
 
 Initial Release
 ---------------
@@ -162,12 +164,12 @@ The full list of parameters for these configurations will be detailed in the use
 | cv32a6_imac_sv0    | ASIC    | IMAC   |  32  | No    | Yes     | None    | None    | 4 kB    |
 +--------------------+---------+--------+------+-------+---------+---------+---------+---------+
 
-.. __references:
+.. _references:
 
 References
 ==========
 
-.. __applicable_specifications:
+.. _applicable_specifications:
 
 Applicable specifications
 -------------------------
@@ -202,7 +204,7 @@ https://docs.openhwgroup.org/projects/openhw-group-core-v-xif/.
 University,
 https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf.
 
-.. __reference_documents:
+.. _reference_documents:
 
 Reference documents
 -------------------
@@ -214,12 +216,12 @@ version 1.0-fd39d01, 2022-01-12”
 Manual v2p0”, chapter 6,
 https://static.dev.sifive.com/SiFive-E31-Manual-v2p0.pdf
 
-.. __functional_requirements:
+.. _functional_requirements:
 
 Functional requirements
 =======================
 
-.. __general_requirement:
+.. _general_requirement:
 
 General requirement
 -------------------
@@ -238,7 +240,7 @@ General requirement
 As the RISC-V specification leaves space for variations, this
 specification specificies some of these variations.
 
-.. __risc_v_standard_instructions:
+.. _risc_v_standard_instructions:
 
 RISC-V standard instructions
 ----------------------------
@@ -310,7 +312,7 @@ the F extension.
 Note to ISA-110: In the current design, the duration of the division
 is data-dependent, which can be a security issue.
 
-.. __privileges_and_virtual_memory:
+.. _privileges_and_virtual_memory:
 
 Privileges and virtual memory
 -----------------------------
@@ -343,7 +345,7 @@ The MMU includes a TLB and a hardware PTW.
 |                                   | (hypervisor) version 1.0.         |
 +-----------------------------------+-----------------------------------+
 
-.. __csr:
+.. _csr:
 
 CSR
 ---
@@ -352,7 +354,7 @@ There are no requirements related to CSR as they derive from other
 requirements, such as PVL-10, PVL-60… Details of CSRs will be available
 in the user’s manual.
 
-.. __performance_counters:
+.. _performance_counters:
 
 Performance counters
 --------------------
@@ -436,7 +438,7 @@ applications.
 The user’s manual will detail the list of counters, events and related
 controls.
 
-.. __cache_requirements:
+.. _cache_requirements:
 
 Cache requirements
 ------------------
@@ -450,7 +452,7 @@ The project would like to adopt the recently ratified [RVcmo]
 specification. The analysis yet needs to be performed and will likely
 lead to an evolution of this specification.
 
-.. __l1_write_through_data_cache:
+.. _l1_write_through_data_cache:
 
 L1 write-through data cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -528,7 +530,7 @@ size/ways configurations may be implemented in the design.
 
 The design will support one replacement policy allowed by L1W-80.
 
-.. __l1_instruction_cache:
+.. _l1_instruction_cache:
 
 L1 Instruction cache
 ~~~~~~~~~~~~~~~~~~~~
@@ -586,7 +588,7 @@ size/ways configurations may be implemented in the design.
 
 The design will support one replacement policy allowed by L1I-50.
 
-.. __fence_t_custom_instruction:
+.. _fence_t_custom_instruction:
 
 FENCE.T custom instruction
 --------------------------
@@ -626,7 +628,7 @@ decorrelation as expressed in the requirement with digital simulations.
 We can simulate the microarchitecture features and explain how they
 satisfy the requirement as Nils Wistoff’s work demonstrated.
 
-.. __ppa_targets:
+.. _ppa_targets:
 
 PPA targets
 ===========
@@ -663,12 +665,12 @@ integrated in the continuous integration flow.
 |                                   | performance per MHz.              |
 +-----------------------------------+-----------------------------------+
 
-.. __interface_requirements:
+.. _interface_requirements:
 
 Interface requirements
 ======================
 
-.. __memory_bus:
+.. _memory_bus:
 
 Memory bus
 ----------
@@ -694,7 +696,7 @@ The interface complies with AXI4. However, Atomic_Transactions is only
 defined in AXI5. For the sake of clarity, we do not use the AXI5-Lite
 interface.
 
-.. __debug:
+.. _debug:
 
 Debug
 -----
@@ -709,7 +711,7 @@ Debug
 In addition, there can be an external debug module, not in the scope of
 the IP.
 
-.. __interrupts:
+.. _interrupts:
 
 Interrupts
 ----------
@@ -722,7 +724,7 @@ Interrupts
 |                                   | implementation.                   |
 +-----------------------------------+-----------------------------------+
 
-.. __coprocessor_interface:
+.. _coprocessor_interface:
 
 Coprocessor interface
 ---------------------
@@ -743,7 +745,7 @@ speculative execution.
 CVA6 can interface with several coprocessors simultaneously through a
 specific external feature implemented on the CV-X-IF interface.
 
-.. __multi_core_interface:
+.. _multi_core_interface:
 
 Multi-core interface
 --------------------
@@ -757,7 +759,7 @@ Multi-core interface
 |                                   | [OpenPiton].                      |
 +-----------------------------------+-----------------------------------+
 
-.. __design_rules:
+.. _design_rules:
 
 Design rules
 ============
@@ -785,7 +787,7 @@ If technology-dependent blocks are used, e.g. to improve PPA on certain
 targets, the equivalent technology-independent block should be
 available. Parameters can be used to select between the implementations.
 
-.. __list_of_abbreviations:
+.. _list_of_abbreviations:
 
 List of abbreviations
 =====================

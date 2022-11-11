@@ -15,17 +15,17 @@
 
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
-OpenHW Group CV32A6 v0.1.0 Design Document
-==========================================
+CV32A6 Design Document
+======================
 
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
 
-   cva6_intro
-   cva6_system
-   cva6_frontend
-   cva6_isa
-   CV32A6_CSR
-   cva6_axi
-   cva6_glossary
+   cv32a6_intro
+   cv32a6_subsystem
+   cv32a6_frontend
+   cv32a6_isa
+   cv32a6_csr
+   cv32a6_axi
+   cv32a6_glossary

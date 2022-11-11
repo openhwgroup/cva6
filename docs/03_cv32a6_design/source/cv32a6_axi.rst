@@ -7,7 +7,7 @@
 
    Original Author: Alae Eddine EZ ZEJJARI (alae-eddine.ez-zejjari@external.thalesgroup.com)
 
-.. _CVA6_AXI:
+.. _CV32A6_AXI:
 
 AXI
 ===
