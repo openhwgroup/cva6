@@ -18,6 +18,7 @@ if "PLATFORM_TOP_DIR" in os.environ:
     sys.path.append(lib_path)
     try:
         import vp_config
+        vp_config.io_fmt_gitrev = "$Id$"
     except Exception as e:
         print("ERROR: Please define path to vp_config package (got %s!)" % str(e))
         sys.exit(1)

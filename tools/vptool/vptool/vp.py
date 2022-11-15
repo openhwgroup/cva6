@@ -1794,6 +1794,9 @@ class MyMain:
                                 saved_ip_str += "\n  " + ip_elt[1].name
                                 # Sign the IP with the current SHA1 of VPTOOL.
                                 ip_elt[1].vptool_gitrev = self.vptool_gitrev
+                                ip_elt[1].io_fmt_gitrev = vp_config.io_fmt_gitrev
+                                ip_elt[1].config_gitrev = vp_config.config_gitrev
+                                ip_elt[1].ymlcfg_gitrev = vp_config.yaml_config["yaml_cfg_gitrev"]
                                 with open(
                                     save_dir
                                     + "/VP_IP"

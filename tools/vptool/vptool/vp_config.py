@@ -55,6 +55,10 @@ else:
 # Location of the Pickle file containing the current IP/Feature lock info.
 LOCKED_IP_LOCATION = os.path.join(VP_PLATFORM_TOP_DIR, "locked_ip.pick")
 
+# Default Git revision
+io_fmt_gitrev = ""
+config_gitrev = "$Id$"
+
 # Globally accessible YAML config
 def init_yaml_config(config):
     global yaml_config
