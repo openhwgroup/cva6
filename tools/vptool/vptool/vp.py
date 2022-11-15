@@ -572,6 +572,11 @@ class MyTextWidget(ttk.LabelFrame):
             text=vp_config.yaml_config["gui"]["coverage_loc"]["label"],
             style="enabled.TLabelframe",
         )
+        self.text6frame = ttk.LabelFrame(
+            self,
+            text=vp_config.yaml_config["gui"]["verif_tag"]["label"],
+            style="enabled.TLabelframe",
+        )
         # Selectors of verif point properties (PFC, TT, CM) and applicable cores use a layout
         # different from the surrounding widgets, so we pack the in a canvas of their own.
         self.selector_canvas = tk.Canvas(self)
@@ -673,6 +678,20 @@ class MyTextWidget(ttk.LabelFrame):
             undo=True,
             wrap="word",
         )
+        self.text6 = MyText(
+            self.text6frame,
+            cue_text=vp_config.yaml_config["gui"]["verif_tag"]["cue_text"],
+            state="disabled",
+            height=1,
+            bg=BG_COLOR,
+            undo=False,
+            wrap="word",
+        )
+        # Clear all key bindings but allow single-click to set focus
+        # on the widget and double-click to select all.
+        self.text6.unbind("<Key>")
+        self.text6.bind("<1>", lambda event: self.text6.focus_set())
+
         self.pfc_string = tk.StringVar(self)
         self.testtype_string = tk.StringVar(self)
         self.covmethod_string = tk.StringVar(self)
@@ -684,6 +703,7 @@ class MyTextWidget(ttk.LabelFrame):
             self.text3,
             self.text4,
             self.text5,
+            # self.text6, # FOR NOW Not editable
         ]
         # By default, bulk text updates will be propagated to the following inner widgets:
         self.update_text_notify_list = self.keyevent_notify_list
@@ -699,7 +719,7 @@ class MyTextWidget(ttk.LabelFrame):
         # Include the default value in the list of values.
         pfc_default = vp_config.yaml_config["gui"]["pfc"]["default"]
         self.pfc_entries = sorted(
-            [pfc_default] + vp_config.yaml_config["gui"]["pfc"]["values"],
+            vp_config.yaml_config["gui"]["pfc"]["values"],
             key=lambda e: e["value"],
         )
         self.num_pfcs = len(self.pfc_entries)
@@ -707,7 +727,7 @@ class MyTextWidget(ttk.LabelFrame):
         # Likewise for test type.
         testtype_default = vp_config.yaml_config["gui"]["test_type"]["default"]
         self.testtype_entries = sorted(
-            [testtype_default] + vp_config.yaml_config["gui"]["test_type"]["values"],
+            vp_config.yaml_config["gui"]["test_type"]["values"],
             key=lambda e: e["value"],
         )
         self.num_testtypes = len(self.testtype_entries)
@@ -715,7 +735,7 @@ class MyTextWidget(ttk.LabelFrame):
         # Likewise for coverage method.
         covmethod_default = vp_config.yaml_config["gui"]["cov_method"]["default"]
         self.covmethod_entries = sorted(
-            [covmethod_default] + vp_config.yaml_config["gui"]["cov_method"]["values"],
+            vp_config.yaml_config["gui"]["cov_method"]["values"],
             key=lambda e: e["value"],
         )
         self.num_covmethods = len(self.covmethod_entries)
@@ -894,6 +914,7 @@ class MyTextWidget(ttk.LabelFrame):
         self.text3.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text4.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text5.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
+        self.text6.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         # Define the final order of top-level Description sub-widgets.
         self.text1frame.pack(side="top", padx=padx, pady=pady, fill="both")
         self.textframe.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
@@ -923,6 +944,7 @@ class MyTextWidget(ttk.LabelFrame):
             elt = self.core_button[i]
             elt[0].grid(row=(i % num_rows), column=(i // num_rows), sticky=tk.W)
 
+        self.text6frame.pack(side="top", padx=padx, pady=pady, fill="both")
         self.text5frame.pack(side="top", padx=padx, pady=pady, fill="both")
         self.text4frame.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.bsave.pack(side="left")
@@ -963,12 +985,10 @@ class MyTextWidget(ttk.LabelFrame):
         self.bframe.pack_forget()
 
     def update_item_tag(self, in_text):
-        # ZC: disable field
-        # self.itemtag.configure(state='normal')
-        # self.itemtag.delete(0,tk.END)
-        # self.itemtag.insert(1,in_text)
-        # self.itemtag.configure(state='readonly')
-        pass
+        self.text6.configure(state='normal')
+        self.text6.delete("1.0", tk.END)
+        self.text6.insert("1.0", in_text)
+        self.text6.configure(state='disabled')
 
     def update_prop_tag(self, in_text):
         # ZC: disable field
@@ -1032,6 +1052,7 @@ class MyTextWidget(ttk.LabelFrame):
         self.text3.configure(state="normal")
         self.text4.configure(state="normal")
         self.text5.configure(state="normal")
+        self.text6.configure(state="disabled")
         self.pfc_cbox.configure(state="normal")
         self.testtype_cbox["state"] = "normal"
         self.covmethod_cbox["state"] = "normal"
@@ -1045,6 +1066,7 @@ class MyTextWidget(ttk.LabelFrame):
         self.text3.configure(state="disabled")
         self.text4.configure(state="disabled")
         self.text5.configure(state="disabled")
+        self.text6.configure(state="disabled")
         self.pfc_cbox["state"] = "disabled"
         self.testtype_cbox["state"] = "disabled"
         self.covmethod_cbox["state"] = "disabled"
@@ -1586,6 +1608,9 @@ class MyMain:
             self.desc_widget.update_text(
                 self.desc_widget.text5, current_item.coverage_loc
             )
+            self.desc_widget.update_item_tag(
+                current_item.tag
+            )
             pfc = current_item.pfc
             self.desc_widget.update_pfc(pfc)
             test_type = current_item.test_type
@@ -1622,6 +1647,7 @@ class MyMain:
         current_item.verif_goals = self.desc_widget.text3.get(0.0, tk.END).rstrip()
         current_item.comments = self.desc_widget.text4.get(0.0, tk.END).rstrip()
         current_item.coverage_loc = self.desc_widget.text5.get(0.0, tk.END).rstrip()
+        current_item.tag = self.desc_widget.text6.get(0.0, tk.END).rstrip()
         self.unfreeze_all()
 
     def desc_cancel(self):
