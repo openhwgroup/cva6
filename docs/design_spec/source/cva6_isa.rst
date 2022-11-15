@@ -988,7 +988,7 @@ Integer Computational Instructions
 
     **Pseudocode**: x[rd] = x[rd] + x[rs2]
 
-    **Invalid values**: rd = x0 & rs1 = x0
+    **Invalid values**: rd = x0 & rs2 = x0
 
     **Exception raised**: NONE
 
@@ -1000,7 +1000,7 @@ Integer Computational Instructions
 
     **Pseudocode**: x[rd] = x[rs2]
 
-    **Invalid values**: rd = x0 & rs1 = x0
+    **Invalid values**: rd = x0 & rs2 = x0
 
     **Exception raised**: NONE
 
@@ -1085,7 +1085,7 @@ Control Transfer Instructions
 
     **Description**: performs the same operation as C.J, but additionally writes the address of the instruction following the jump (pc+2) to the link register, x1.
 
-    **Pseudocode**: x[1] = pc+2; pc += sext(offset)
+    **Pseudocode**: x[1] = pc+2; pc += sext(imm)
 
     **Invalid values**: NONE
 
@@ -1105,7 +1105,7 @@ Control Transfer Instructions
 
 - **C.JALR**: Compressed Jump and Link Register
 
-    **Format**: c.jalr imm[11:1]
+    **Format**: c.jalr rs1
 
     **Description**: performs the same operation as C.JR, but additionally writes the address of the instruction following the jump (pc+2) to the link register, x1.
 
