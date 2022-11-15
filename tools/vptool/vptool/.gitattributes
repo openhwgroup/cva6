@@ -1,1 +1,4 @@
-vp.py vp_config.py vp_pack.py vptool.yml ident
+vp.py ident
+vp_config.py ident
+vp_pack.py ident
+vptool.yml ident

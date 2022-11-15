@@ -7,7 +7,7 @@
 #############################################################################
 
 # Track the version of the configuration.
-yaml_cfg_gitrev: $Id$
+yaml_cfg_gitrev: "$Id$"
 
 gui:
   title: CORE-V Verification Plan tool
