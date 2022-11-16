@@ -18,6 +18,7 @@ if "PLATFORM_TOP_DIR" in os.environ:
     sys.path.append(lib_path)
     try:
         import vp_config
+
         vp_config.io_fmt_gitrev = "$Id$"
     except Exception as e:
         print("ERROR: Please define path to vp_config package (got %s!)" % str(e))
@@ -30,17 +31,19 @@ else:
 def remove_non_ascii(s):
     return "".join([x for x in s if ord(x) < 128])
 
+
 # Normalize a heritage VP_IPnnn_Pnnn_Innn tag
 # to VP_<PROJECT_NAME>_Fnnn_Snnn_Innn form.
 def normalize_tag(l):
-    pattern_oldstyle = re.compile(r'VP_IP([0-9]+)_P([0-9]+)_I([0-9]+)$')
+    pattern_oldstyle = re.compile(r"VP_IP([0-9]+)_P([0-9]+)_I([0-9]+)$")
     match = pattern_oldstyle.match(l)
     if match and match.group() == l:
         # Full match
-        return 'VP_' + vp_config.PROJECT_IDENT + '_F%s_S%s_I%s' % match.groups()
+        return "VP_" + vp_config.PROJECT_IDENT + "_F%s_S%s_I%s" % match.groups()
     else:
         # Partial match or no match at all: return unmodified label.
         return l
+
 
 #####################################
 ##### Class Definition
@@ -121,10 +124,10 @@ class Item:
             return "N/A (unsupported field '%s')" % attr
 
     def preserve_linebrs(self, text, indent="  "):
-        '''Preserve line breaks in the text by inserting two spaces before
-        each newline.  Ensure first line of 'text' starts on a new line.'''
-        md_linebreak = '  \n' + indent
-        return md_linebreak + md_linebreak.join(text.split('\n'))
+        """Preserve line breaks in the text by inserting two spaces before
+        each newline.  Ensure first line of 'text' starts on a new line."""
+        md_linebreak = "  \n" + indent
+        return md_linebreak + md_linebreak.join(text.split("\n"))
 
     def __str__(self):
         return0 = ""
@@ -142,9 +145,14 @@ class Item:
             "* **Coverage Method:** %s\n" % self.attrval2str("cov_method")
         )
         return0 += format("* **Applicable Cores:** %s\n" % self.attrval2str("cores"))
-        return0 += format("* **Unique verification tag:** %s\n" % normalize_tag(self.tag))
+        return0 += format(
+            "* **Unique verification tag:** %s\n" % normalize_tag(self.tag)
+        )
         return0 += format("* **Link to Coverage:** %s\n" % self.coverage_loc)
-        return0 += format("* **Comments**\n%s\n" % self.preserve_linebrs(self.comments if self.comments else "*(none)*\n"))
+        return0 += format(
+            "* **Comments**\n%s\n"
+            % self.preserve_linebrs(self.comments if self.comments else "*(none)*\n")
+        )
         return return0
 
     def __del__(self):
@@ -181,6 +189,7 @@ class Item:
             if getattr(self, attr) == vp_config.yaml_config["gui"][field]["cue_text"]:
                 setattr(self, attr, "")
         self.tag = normalize_tag(self.tag)
+
 
 class Prop:
     """

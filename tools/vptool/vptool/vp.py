@@ -985,10 +985,10 @@ class MyTextWidget(ttk.LabelFrame):
         self.bframe.pack_forget()
 
     def update_item_tag(self, in_text):
-        self.text6.configure(state='normal')
+        self.text6.configure(state="normal")
         self.text6.delete("1.0", tk.END)
         self.text6.insert("1.0", in_text)
-        self.text6.configure(state='disabled')
+        self.text6.configure(state="disabled")
 
     def update_prop_tag(self, in_text):
         # ZC: disable field
@@ -1608,9 +1608,7 @@ class MyMain:
             self.desc_widget.update_text(
                 self.desc_widget.text5, current_item.coverage_loc
             )
-            self.desc_widget.update_item_tag(
-                current_item.tag
-            )
+            self.desc_widget.update_item_tag(current_item.tag)
             pfc = current_item.pfc
             self.desc_widget.update_pfc(pfc)
             test_type = current_item.test_type
@@ -1796,7 +1794,9 @@ class MyMain:
                                 ip_elt[1].vptool_gitrev = self.vptool_gitrev
                                 ip_elt[1].io_fmt_gitrev = vp_config.io_fmt_gitrev
                                 ip_elt[1].config_gitrev = vp_config.config_gitrev
-                                ip_elt[1].ymlcfg_gitrev = vp_config.yaml_config["yaml_cfg_gitrev"]
+                                ip_elt[1].ymlcfg_gitrev = vp_config.yaml_config[
+                                    "yaml_cfg_gitrev"
+                                ]
                                 with open(
                                     save_dir
                                     + "/VP_IP"
