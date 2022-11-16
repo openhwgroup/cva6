@@ -73,7 +73,7 @@ g8
 V000
 p33
 sg23
-VVP_IP005_P000_I000
+VVP_FRONTEND_F005_S000_I000
 p34
 sVdescription
 p35
@@ -164,7 +164,7 @@ g8
 V000
 p73
 sg23
-VVP_IP005_P002_I000
+VVP_FRONTEND_F005_S002_I000
 p74
 sg35
 VWhen a branch instruction is resolved by the EXECUTE, the relative information is stored in the Branch History Table.
@@ -240,7 +240,7 @@ g8
 V000
 p98
 sg23
-VVP_IP005_P003_I000
+VVP_FRONTEND_F005_S003_I000
 p99
 sg35
 VThe Branch History table is a two-bit saturation counter that takes the virtual address of the current fetched instruction by the CACHE. It states whether the current branch request should be taken or not. The two bit counter is updated by the successive execution of the current instructions as shown in the following figure.
@@ -288,7 +288,7 @@ g8
 V001
 p112
 sg23
-VVP_IP005_P003_I001
+VVP_FRONTEND_F005_S003_I001
 p113
 sg35
 VThe Branch History table is a two-bit saturation counter that takes the virtual address of the current fetched instruction by the CACHE. It states whether the current branch request should be taken or not. The two bit counter is updated by the successive execution of the current instructions as shown in the following figure.
@@ -364,7 +364,7 @@ g8
 V000
 p137
 sg23
-VVP_IP005_P004_I000
+VVP_FRONTEND_F005_S004_I000
 p138
 sg35
 VThe information is stored in a 1024 entry table.
@@ -440,7 +440,7 @@ g8
 V000
 p162
 sg23
-VVP_IP005_P005_I000
+VVP_FRONTEND_F005_S005_I000
 p163
 sg35
 VThe BHT is not updated if processor is in debug mode.
@@ -490,7 +490,19 @@ sg57
 (lp178
 sVvptool_gitrev
 p179
-V$Id$
+V$Id: af214b54d38e440023a14011aefff4dabfd5f5ad $
 p180
-sbtp181
+sVio_fmt_gitrev
+p181
+V$Id: 052d0c6f3d12d7984d208b14555a56b2f0c2485d $
+p182
+sVconfig_gitrev
+p183
+V$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $
+p184
+sVymlcfg_gitrev
+p185
+V$Id: 286c689bd48b7a58f9a37754267895cffef1270c $
+p186
+sbtp187
 .
