@@ -10,11 +10,8 @@
 .. _CVA6_SUBSYSTEM:
 
 
-CV32A6 v0.1.0 Subsystem
-========================
-
-Description
------------
+CV32A6 Subsystem
+================
 
 The CV32A6 v0.1.0 is a subsystem composed of the modules and protocol interfaces as illustrated `CV32A6 v0.1.0 modules`_
 The processor is a Harvard-based modern architecture.

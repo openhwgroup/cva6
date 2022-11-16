@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.com)
 
-.. _CVA6_FRONTEND:
+.. _CV32A6_FRONTEND:
 
 FRONTEND Module
 ===============
