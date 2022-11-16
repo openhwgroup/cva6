@@ -73,7 +73,7 @@ g8
 V000
 p33
 sg23
-VVP_IP006_P000_I000
+VVP_FRONTEND_F006_S000_I000
 p34
 sVdescription
 p35
@@ -164,7 +164,7 @@ g8
 V000
 p73
 sg23
-VVP_IP006_P001_I000
+VVP_FRONTEND_F006_S001_I000
 p74
 sg35
 VThe RAS FIFO depth is 2.
@@ -240,7 +240,7 @@ g8
 V000
 p98
 sg23
-VVP_IP006_P002_I000
+VVP_FRONTEND_F006_S002_I000
 p99
 sg35
 VWhen an unconditional jumps to a known target address (JAL instruction) is consummed by the instr_queue, the next pc after the JAL instruction and the return address are stored into a FIFO.
@@ -316,7 +316,7 @@ g8
 V000
 p123
 sg23
-VVP_IP006_P003_I000
+VVP_FRONTEND_F006_S003_I000
 p124
 sg35
 VNo dedicated specification
@@ -366,7 +366,19 @@ sg57
 (lp139
 sVvptool_gitrev
 p140
-V$Id$
+V$Id: af214b54d38e440023a14011aefff4dabfd5f5ad $
 p141
-sbtp142
+sVio_fmt_gitrev
+p142
+V$Id: 052d0c6f3d12d7984d208b14555a56b2f0c2485d $
+p143
+sVconfig_gitrev
+p144
+V$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $
+p145
+sVymlcfg_gitrev
+p146
+V$Id: 286c689bd48b7a58f9a37754267895cffef1270c $
+p147
+sbtp148
 .

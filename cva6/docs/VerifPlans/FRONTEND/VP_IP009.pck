@@ -41,7 +41,19 @@ p19
 (lp20
 sVvptool_gitrev
 p21
-V$Id$
+V$Id: af214b54d38e440023a14011aefff4dabfd5f5ad $
 p22
-sbtp23
+sVio_fmt_gitrev
+p23
+V$Id: 052d0c6f3d12d7984d208b14555a56b2f0c2485d $
+p24
+sVconfig_gitrev
+p25
+V$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $
+p26
+sVymlcfg_gitrev
+p27
+V$Id: 286c689bd48b7a58f9a37754267895cffef1270c $
+p28
+sbtp29
 .

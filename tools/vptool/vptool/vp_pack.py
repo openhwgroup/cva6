@@ -10,6 +10,7 @@
 
 import sys, os
 from datetime import datetime
+import re
 
 # Load the configuration associated with the current platform
 if "PLATFORM_TOP_DIR" in os.environ:
@@ -17,6 +18,8 @@ if "PLATFORM_TOP_DIR" in os.environ:
     sys.path.append(lib_path)
     try:
         import vp_config
+
+        vp_config.io_fmt_gitrev = "$Id$"
     except Exception as e:
         print("ERROR: Please define path to vp_config package (got %s!)" % str(e))
         sys.exit(1)
@@ -27,6 +30,19 @@ else:
 # Remove non-ASCII characters from a string.
 def remove_non_ascii(s):
     return "".join([x for x in s if ord(x) < 128])
+
+
+# Normalize a heritage VP_IPnnn_Pnnn_Innn tag
+# to VP_<PROJECT_NAME>_Fnnn_Snnn_Innn form.
+def normalize_tag(l):
+    pattern_oldstyle = re.compile(r"VP_IP([0-9]+)_P([0-9]+)_I([0-9]+)$")
+    match = pattern_oldstyle.match(l)
+    if match and match.group() == l:
+        # Full match
+        return "VP_" + vp_config.PROJECT_IDENT + "_F%s_S%s_I%s" % match.groups()
+    else:
+        # Partial match or no match at all: return unmodified label.
+        return l
 
 
 #####################################
@@ -108,20 +124,20 @@ class Item:
             return "N/A (unsupported field '%s')" % attr
 
     def preserve_linebrs(self, text, indent="  "):
-        '''Preserve line breaks in the text by inserting two spaces before
-        each newline.  Ensure first line of 'text' starts on a new line.'''
-        md_linebreak = '  \n' + indent
-        return md_linebreak + md_linebreak.join(text.split('\n'))
+        """Preserve line breaks in the text by inserting two spaces before
+        each newline.  Ensure first line of 'text' starts on a new line."""
+        md_linebreak = "  \n" + indent
+        return md_linebreak + md_linebreak.join(text.split("\n"))
 
     def __str__(self):
         return0 = ""
         return0 += format("#### Item: %s\n\n" % self.name)
         return0 += format("* **Requirement location:** %s\n" % self.purpose)
         return0 += format(
-            "* **Feature Description** %s\n" % self.preserve_linebrs(self.description)
+            "* **Feature Description**\n%s\n" % self.preserve_linebrs(self.description)
         )
         return0 += format(
-            "* **Verification goals** %s\n" % self.preserve_linebrs(self.verif_goals)
+            "* **Verification Goals**\n%s\n" % self.preserve_linebrs(self.verif_goals)
         )
         return0 += format("* **Pass/Fail Criteria:** %s\n" % self.attrval2str("pfc"))
         return0 += format("* **Test Type:** %s\n" % self.attrval2str("test_type"))
@@ -129,8 +145,14 @@ class Item:
             "* **Coverage Method:** %s\n" % self.attrval2str("cov_method")
         )
         return0 += format("* **Applicable Cores:** %s\n" % self.attrval2str("cores"))
-        return0 += format("* **Link to Coverage:** %s\n" % self.tag)
-        return0 += format("* **Comments:** %s\n\n" % self.comments)
+        return0 += format(
+            "* **Unique verification tag:** %s\n" % normalize_tag(self.tag)
+        )
+        return0 += format("* **Link to Coverage:** %s\n" % self.coverage_loc)
+        return0 += format(
+            "* **Comments**\n%s\n"
+            % self.preserve_linebrs(self.comments if self.comments else "*(none)*\n")
+        )
         return return0
 
     def __del__(self):
@@ -158,12 +180,15 @@ class Item:
 
     def prep_to_save(self):
         """
-        Sanitize item before saving: Remove default values of text fields.
+        Sanitize item before saving:
+        - Remove default values of text fields
+        - Normalize old-style (VP_IPnnn_Pnnn_Innn) tags to full form with
+          project ident.
         """
-        pass
         for (attr, field) in zip(Item.attr_names, Item.gui_fields):
             if getattr(self, attr) == vp_config.yaml_config["gui"][field]["cue_text"]:
                 setattr(self, attr, "")
+        self.tag = normalize_tag(self.tag)
 
 
 class Prop:
@@ -321,9 +346,11 @@ class Ip:
             prop_name = custom_num + str(self.prop_count).zfill(3) + "_" + str(name)
             self.prop_list[prop_name] = Prop(
                 prop_name,
-                tag="VP_IP"
+                tag="VP_"
+                + vp_config.PROJECT_IDENT
+                + "_F"
                 + str(self.ip_num).zfill(3)
-                + "_P"
+                + "_S"
                 + str(self.prop_count).zfill(3),
                 wid_order=self.prop_count,
             )
@@ -364,7 +391,7 @@ class Ip:
     def prep_to_save(self):
         """
         Trick used to ensure pickle output file stability
-        Pickle doesn't provide reproductible output for dict. When saved, they are converted to list
+        Pickle doesn't provide reproducible output for dicts. When saved, they are converted to lists.
         """
         self.rfu_list = sorted(list(self.prop_list.items()), key=lambda key: key[0])
         self.prop_list = {}
@@ -372,7 +399,7 @@ class Ip:
     def post_load(self):
         """
         Trick used to ensure pickle output file stability
-        When loading saved db, list are converted back to initial dict
+        When loading saved db, lists are converted back to initial dicts.
         """
         for prop_key, prop_elt in self.rfu_list:
             self.prop_list[prop_key] = prop_elt

@@ -27,9 +27,6 @@ export PROJECT_IDENT="FRONTEND"
 # Since it will be used by VPTOOL, it shall NOT be a relative path.
 export MARKDOWN_OUTPUT_DIR=`readlink -f "$ROOTDIR/../source"`
 
-# Set Python path to make vpconfig.py reachable.
-export PYTHONPATH="$ROOTDIR:$PYTHONPATH"
-
 # Run VPTOOL overriding the default theme from Yaml config with 'winxpblue'.
 # FIXME: Introduce a suitably named shell variable that points to the root
 # directory of the tool set (TOOL_TOP etc.)

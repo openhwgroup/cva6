@@ -18,6 +18,19 @@ New features pertaining to Verification Plan exports are currently being develop
 
 ### Step 1: Install the required packages
 
+To generate DV plans in the form of viewable HTML/PDF/ePub documents, `VPTOOL` uses the `Sphinx` documentation generator.
+Furthermore, to generate PDF and ePub output formats, VPTOOL relies on the `LaTeX` typesetting program with the `latexmk` wrapper add-on.
+
+#### Semi-automated installation
+
+If your system can access a Python package repository (either on the Internet, or local to your site), the Bash shell script `install-prerequisites.sh` will install the necessary Python packages and check for the availability of basic LaTeX-related commands.  Run it with
+```
+. install-prerequisites.sh
+```
+
+If LaTeX distribution or the `latexmk` wrapper is missing, the script will inform your about the steps to follow.  *Please take note that these steps may require superuser privileges.*
+
+#### Manual installation
 If your system has access to the internet, you can install the packages using your preferred Python installer.  Under Bash shell, you can do this using PIP and the command
 
 ```
@@ -30,13 +43,10 @@ Otherwise, up-to-date versions of the packages listed in file `requirements.txt`
 
 Currently, the verification plan for each subsystem is stored in a separate VPTOOL database.  The per-subsystem configuration consists of the following information:
 
-* a Python configuration file `vp_config.py` that specifies the naming of database files and the layout of database directories. The location of this file is treated as the root of the directory tree for a given database.
 * shell variable `PLATFORM_TOP_DIR` which indicates the root location of the database files. It is recommended to use an absolute path; a good choice is the *effective* location of the database as returned by `dirname $(readlink -f <path_to_vp_config.py>)`.
 * shell variable `PROJECT_NAME` which specifies the human-friendly name of the subsystem (a free-form string containing no newline characters).  The value of this variable will serve as the name of the subsystem in the generated documentation.
 * shell variable `PROJECT_IDENT` which specifies the file name stem to use in Markdown processing (no path separators, spaces nor special characters allowed).  This string will be used to construct the name of the output Markdown file, and must be unique across all subsystems of a design.
 * shell variable `MARKDOWN_OUTPUT_DIR` which designates the directory in which to place the generated per-subsystem Markdown files.  The Markdown rendering tools that produce human-friendly output (e.g. HTML) for CVA6 Verification Plans are configured to take Markdown input from directory `core-v-verif/cva6/docs/VerifPlans/source`.  It is recommended to use an absolute path; a good choice is the *effective* location of the database (`readlink -f $PLATFORM_TOP_DIR`) suffixed with the *relative* path to `source` as this avoids hardcoded absolute paths.)
-
-Additionnally, shell variable `PYTHONPATH` needs to contain the per-subsystem directory (in addition to other explicit module paths, if such paths are needed).
 
 To ensure consistent configurations between consecutive runs of VPTOOL on a given database, it is recommended to set these variables within a shell script (see `core-v-verif/cva6/docs/VerifPlans/FRONTEND/runme.sh` for an example.)
 
