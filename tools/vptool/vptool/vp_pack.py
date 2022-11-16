@@ -131,10 +131,10 @@ class Item:
         return0 += format("#### Item: %s\n\n" % self.name)
         return0 += format("* **Requirement location:** %s\n" % self.purpose)
         return0 += format(
-            "* **Feature Description** %s\n" % self.preserve_linebrs(self.description)
+            "* **Feature Description**\n%s\n" % self.preserve_linebrs(self.description)
         )
         return0 += format(
-            "* **Verification goals** %s\n" % self.preserve_linebrs(self.verif_goals)
+            "* **Verification Goals**\n%s\n" % self.preserve_linebrs(self.verif_goals)
         )
         return0 += format("* **Pass/Fail Criteria:** %s\n" % self.attrval2str("pfc"))
         return0 += format("* **Test Type:** %s\n" % self.attrval2str("test_type"))
@@ -144,7 +144,7 @@ class Item:
         return0 += format("* **Applicable Cores:** %s\n" % self.attrval2str("cores"))
         return0 += format("* **Unique verification tag:** %s\n" % normalize_tag(self.tag))
         return0 += format("* **Link to Coverage:** %s\n" % self.coverage_loc)
-        return0 += format("* **Comments:** %s\n\n" % self.comments)
+        return0 += format("* **Comments**\n%s\n" % self.preserve_linebrs(self.comments if self.comments else "*(none)*\n"))
         return return0
 
     def __del__(self):
