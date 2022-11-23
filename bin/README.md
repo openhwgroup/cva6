@@ -11,6 +11,14 @@ determine their own directory based on the implementation langugage hooks availa
 For example from a bash-type shell:<br>
 > % export PATH=./core-v-verif/bin:$PATH
 
+Requirements
+============
+Much of the scriptware in CORE-V-VERIF is written in python and makes use of external packages that are not necessarily distributed with python itself.
+An easy way to get the Python plug-ins installed on your machine is:
+> % git clone https://github.com/openhwgroup/core-v-verif.git $CORE_V_VERIF
+> % cd $CORE_V_VERIF/bin
+> % pip3 install -r requirements.txt
+
 Utility Documentation
 ==================================
 
