@@ -215,7 +215,7 @@ Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 - JTAG port (see debugging section below)
 - Bootrom containing zero stage bootloader and device tree.
 
-![](docs01_cva6_user//_static/fpga_bd.png)
+![](docs/01_cva6_user/_static/fpga_bd.png)
 
 > The ethernet controller and the corresponding network connection is still work in progress and not functional at the moment. Expect some updates soon-ish.
 
