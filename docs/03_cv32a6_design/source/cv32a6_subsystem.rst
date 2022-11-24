@@ -10,18 +10,34 @@
 .. _CVA6_SUBSYSTEM:
 
 
-CV32A6-step1 Subsystem
-======================
+CV32A6 Subsystem
+================
 
-Description
------------
+The CV32A6 v0.1.0 is a subsystem composed of the modules and protocol interfaces as illustrated `CV32A6 v0.1.0 modules`_
+The processor is a Harvard-based modern architecture.
+Instructions are issued in-order through the DECODE stage and executed out-of-order but committed in-order.
+The processor is Single issue, that means that at maximum one instruction per cycle can be issued to the EXECUTE stage.
 
-The CV32A6-step1 is a subsystem composed of the modules and protocol interfaces as illustrated in the figure. The processor is a Harvard-based modern architecture. Instructions are issued in-order through the DECODE stage and executed out-of-order but committed in-order. The processor is Single issue, that means that at maximum one instruction per cycle can be issued to the EXECUTE stage.
+The CV32A6 implements a 6-stage pipeline composed of PC Generation, Instruction Detch, Instruction Decode, Issue stage, Execute stage and Commit stage.
+At least 6 cycles are needed to execute one instruction.
 
-The CV32A6 implements a 6-stage pipeline composed of PC Generation, Instruction Detch, Instruction Decode, Issue stage, Execute stage and Commit stage. At least 6 cycles are needed to execute one instruction.
+Instantiation
+^^^^^^^^^^^^^
 
+.. list-table:: CV32A6 v0.1.0 parameterization
+   :header-rows: 1
 
-.. list-table:: cv32a6-step1 interface signals
+   * - Parameter
+     - Type
+     - Value
+     - Description
+
+   * - ``ArianeCfg``
+     - ariane_pkg::ariane_cfg_t
+     - ariane_pkg::v0.1.0_Config
+     - CVA6 v0.1.0 configuration
+
+.. list-table:: CV32A6 v0.1.0 interface signals
    :header-rows: 1
 
    * - Signal
@@ -99,9 +115,9 @@ The CV32A6 implements a 6-stage pipeline composed of PC Generation, Instruction 
 Functionality
 -------------
 
-CV32A6-step1 implements a configuration which allows to connect coprocessor through CV-X-IF coprocessor interface, but the lack of MMU, A extension and data cache prevent from executing Linux.
+CV32A6 v0.1.0 implements a configuration which allows to connect coprocessor through CV-X-IF coprocessor interface, but the lack of MMU, A extension and data cache prevent from executing Linux.
 
-.. list-table:: CV32A6-step1 Standard Configuration
+.. list-table:: CV32A6 v0.1.0 Standard Configuration
    :header-rows: 1
 
    * - Standard Extension
@@ -165,7 +181,7 @@ CV32A6-step1 implements a configuration which allows to connect coprocessor thro
      - OFF
 
 
-.. list-table:: CV32A6-step1 Micro-Architecture Configuration
+.. list-table:: CV32A6 v0.1.0 Micro-Architecture Configuration
    :header-rows: 1
 
    * - Micro-architecture
@@ -197,7 +213,7 @@ CVA6 memory interface complies with AXI5 specification including the Atomic_Tran
 
 CVA6 coprocessor interface complies with CV-X-IF protocol specification as defined in [CV-X-IF].
 
-The CV32A4-step1 core is fully synthesizable. It has been designed mainly for ASIC designs, but FPGA synthesis is supported as well.
+The CV32A6 v0.1.0 core is fully synthesizable. It has been designed mainly for ASIC designs, but FPGA synthesis is supported as well.
 
 For ASIC synthesis, the whole design is completely synchronous and uses positive-edge triggered flip-flops. The core occupies an area of about 80 kGE. The clock frequency can be more than 1GHz depending of technology.
 
@@ -205,14 +221,14 @@ For ASIC synthesis, the whole design is completely synchronous and uses positive
 Architecture and Modules
 ----------------------------
 
-The cv32a6-step1 subsystem is composed of 8 modules.
+The CV32A6 v0.1.0 subsystem is composed of 8 modules.
 
 .. figure:: ../images/subsystems.png
-   :name: CVA6 modules
+   :name: CV32A6 v0.1.0 modules
    :align: center
    :alt:
 
-   CV32A6-step1 modules
+   CV32A6 v0.1.0 modules
 
 Connections between modules are illustrated in the following block diagram. FRONTEND, DECODE, ISSUE, EXECUTE, COMMIT and CONTROLLER are part of the pipeline. And CACHES implements the instruction and data caches and CSRFILE contains registers.
 
@@ -221,5 +237,5 @@ Connections between modules are illustrated in the following block diagram. FRON
    :align: center
    :alt:
 
-   CV32A6-step1 pipeline and modules
+   CV32A6 v0.1.0 pipeline and modules
 
