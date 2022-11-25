@@ -372,7 +372,7 @@ end else begin : gen_piton_offset
 
   // generate random cacheline index
   lfsr #(
-    .LfsrWidth  ( ariane_pkg::ICACHE_SET_ASSOC        ),
+    .LfsrWidth  ( 8                                   ),
     .OutWidth   ( $clog2(ariane_pkg::ICACHE_SET_ASSOC))
   ) i_lfsr (
     .clk_i          ( clk_i       ),
