@@ -4,7 +4,19 @@ RV32 Instructions
 Introduction
 ------------------
 
-In this section, we present ISA (Instruction Set Architecture) for C32VA6_v0.1.0, illustrating different supported instructions, the base RISC-V ISA has fixed-length 32-bit instructions that must be naturally aligned on 32-bit boundaries.
+In this document, we present ISA (Instruction Set Architecture) for C32VA6_v0.1.0, illustrating different supported instructions, the Base Integer Instruction set RV32I, and also other instructions in some extensions supported by the core as:
+
+* RV32M        – Standard Extension for Integer Multiplication and Division Instructions
+* RV32A        – Standard Extension for Atomic Instructions
+* RV32C        – Standard Extension for Compressed Instructions
+* RV32Zicsr    – Standard Extension for CSR Instructions
+* RV32Zifencei – Standard Extension for Instruction-Fetch Fence
+
+The base RISC-V ISA has fixed-length 32-bit instructions or 16-bit instructions (the C32VA6_v0.1.0 support C extension), so that must be naturally aligned on 4-byte boundary or 2-byte boundary.
+The C32VA6_v0.1.0 supports:
+
+* Only 1 hart,
+* Misaligned accesses to the memory.
 
 General purpose registers
 --------------------------
@@ -23,40 +35,40 @@ Table 1.1 shows the general-purpose registers :
      - **Register (ABI name)**
      - **Description**
    * - 0
-     - 
+     -
      - x0
-     - Zero
-     - Hardwired zero  
+     - zero
+     - Hardwired zero
    * - 1
-     - 
+     -
      - x1
      - ra
      - Return address
    * - 2
-     - 
+     -
      - x2
      - sp
-     - Stack pointer 
+     - Stack pointer
    * - 3
-     - 
+     -
      - x3
      - gp
      - Global pointer
    * - 4
-     - 
+     -
      - x4
      - tp
-     - Thread pointer  
+     - Thread pointer
    * - 5
-     - 
+     -
      - x5
      - t0
      - Temporaries/alternate link register
    * - 6 - 7
-     - 
+     -
      - x6 - x7
      - t1 - t2
-     - Temporaries 
+     - Temporaries
    * - 8
      - 0
      - x8
@@ -66,7 +78,7 @@ Table 1.1 shows the general-purpose registers :
      - 1
      - x9
      - s1
-     - Saved registers  
+     - Saved registers
    * - 10 - 11
      - 2 - 3
      - x10 - x11
@@ -78,17 +90,17 @@ Table 1.1 shows the general-purpose registers :
      - a2 - a5
      - Function arguments
    * - 16 - 17
-     - 
+     -
      - x16 - x17
      - a6 - a7
      - Function arguments
    * - 18 - 27
-     - 
+     -
      - x18 - x27
      - s2 - s11
-     - Saved registers  
+     - Saved registers
    * - 28 - 31
-     - 
+     -
      - x28 - x31
      - t3 - t6
      - Temporaries
@@ -324,7 +336,7 @@ Integer Register-Register Instructions
 
     **Format**: sll rd, rs1, rs2
 
-    **Description**:  logical left shift (zeros are shifted into the lower bits).
+    **Description**: logical left shift (zeros are shifted into the lower bits).
 
     **Pseudocode**: x[rd] = x[rs1] << x[rs2]
 
@@ -371,7 +383,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: Jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception. An exception is raised on taken branch or unconditional jump if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 - **JALR**: Jump and Link Register
 
@@ -383,7 +395,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: Jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception. An exception is raised on taken branch or unconditional jump if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 **Conditional Branches**
 
@@ -391,61 +403,61 @@ Control Transfer Instructions
 
     **Format**: beq rs1, rs2, imm[12:1]
 
-    **Description**: take the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are equal.
+    **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are equal.
 
     **Invalid values**: NONE
 
     **Pseudocode**: if (x[rs1] == x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: No instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
 
 - **BNE**: Branch Not Equal
 
     **Format**: bne rs1, rs2, imm[12:1]
 
-    **Description**: take the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are not equal.
+    **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are not equal.
 
     **Invalid values**: NONE
 
     **Pseudocode**: if (x[rs1] != x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: No instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
 
 - **BLT**: Branch Less Than
 
     **Format**: blt rs1, rs2, imm[12:1]
 
-    **Description**: take the branch (pc is calculated using signed arithmetic) if registers rs1 less than rs2 (using signed comparison).
+    **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 less than rs2 (using signed comparison).
 
     **Invalid values**: NONE
 
     **Pseudocode**: if (x[rs1] < x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: No instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
 
 - **BLTU**: Branch Less Than Unsigned
 
     **Format**: bltu rs1, rs2, imm[12:1]
 
-    **Description**: take the branch (pc is calculated using signed arithmetic) if registers rs1 less than rs2 (using unsigned comparison).
+    **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 less than rs2 (using unsigned comparison).
 
     **Invalid values**: NONE
 
     **Pseudocode**: if (x[rs1] <u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: No instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
 
 - **BGE**: Branch Greater or Equal
 
     **Format**: bge rs1, rs2, imm[12:1]
 
-    **Description**: take the branch (pc is calculated using signed arithmetic) if registers rs1 is greater than or equal rs2 (using signed comparison).
+    **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 is greater than or equal rs2 (using signed comparison).
 
     **Pseudocode**: if (x[rs1] >= x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
     **Invalid values**: NONE
 
-    **Exception raised**: No instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
 
 - **BGEU**: Branch Greater or Equal Unsigned
 
@@ -455,38 +467,38 @@ Control Transfer Instructions
 
     **Pseudocode**: if (x[rs1] >=u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: No instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
 
 Load and Store Instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **LB**: Load Byte
 
-    **Format**: lb rd, rs1, imm[11:0]
+    **Format**: lb rd, imm(rs1)
 
-    **Description**: loads a 8-bit value from memory, then sign-extends to 32-bit before storing in rd (rd is calculated using signed arithmetic). The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
+    **Description**: loads a 8-bit value from memory, then sign-extends to 32-bit before storing in rd (rd is calculated using signed arithmetic), the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
     **Pseudocode**: x[rd] = sext(M[x[rs1] + sext(imm[11:0])][7:0])
 
     **Invalid values**: NONE
 
-    **Exception raised**: Loads with a destination of x0 must still raise any exceptions.
+    **Exception raised**: loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded.
 
 - **LH**: Load Halfword
 
-    **Format**: lh rd, rs1, imm[11:0]
+    **Format**: lh rd, imm(rs1)
 
-    **Description**: loads a 16-bit value from memory, then sign-extends to 32-bit before storing in rd (rd is calculated using signed arithmetic). The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
+    **Description**: loads a 16-bit value from memory, then sign-extends to 32-bit before storing in rd (rd is calculated using signed arithmetic), the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
     **Pseudocode**: x[rd] = sext(M[x[rs1] + sext(imm[11:0])][15:0])
 
     **Invalid values**: NONE
 
-    **Exception raised**: Loads with a destination of x0 must still raise any exceptions, also an exception if the memory address isn't aligned (2-byte boundary).
+    **Exception raised**: loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded, also an exception is raised if the memory address isn't aligned (2-byte boundary).
 
 - **LW**: Load Word
 
-    **Format**: lw rd, rs1, imm[11:0]
+    **Format**: lw rd, imm(rs1)
 
     **Description**: loads a 32-bit value from memory, then storing in rd (rd is calculated using signed arithmetic). The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
@@ -494,37 +506,37 @@ Load and Store Instructions
 
     **Pseudocode**: x[rd] = sext(M[x[rs1] + sext(imm[11:0])][31:0])
 
-    **Exception raised**: Loads with a destination of x0 must still raise any exceptions, also an exception if the memory address isn't aligned (4-byte boundary).
+    **Exception raised**: loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded, also an exception is raised if the memory address isn't aligned (4-byte boundary).
 
 - **LBU**: Load Byte Unsigned
 
-    **Format**: lbu rd, rs1, imm[11:0]
+    **Format**: lbu rd, imm(rs1)
 
-    **Description**: loads a 8-bit value from memory, then zero-extends to 32-bit before storing in rd (rd is calculated using unsigned arithmetic). The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
+    **Description**: loads a 8-bit value from memory, then zero-extends to 32-bit before storing in rd (rd is calculated using unsigned arithmetic), the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
     **Pseudocode**: x[rd] = zext(M[x[rs1] + sext(imm[11:0])][7:0])
 
     **Invalid values**: NONE
 
-    **Exception raised**: Loads with a destination of x0 must still raise any exceptions.
+    **Exception raised**: loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded.
 
 - **LHU**: Load Halfword Unsigned
 
-    **Format**: lhu rd, rs1, imm[11:0]
+    **Format**: lhu rd, imm(rs1)
 
-    **Description**: loads a 16-bit value from memory, then zero-extends to 32-bit before storing in rd (rd is calculated using unsigned arithmetic). The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
+    **Description**: loads a 16-bit value from memory, then zero-extends to 32-bit before storing in rd (rd is calculated using unsigned arithmetic), the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
-    **Pseudocode**: x[rd] = zext(M[x[rs1] + sext(imm[11:0])][7:0])
+    **Pseudocode**: x[rd] = zext(M[x[rs1] + sext(imm[11:0])][15:0])
 
     **Invalid values**: NONE
 
-    **Exception raised**: Loads with a destination of x0 must still raise any exceptions, also an exception if the memory address isn't aligned (2-byte boundary).
+    **Exception raised**: loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded, also an exception is raised if the memory address isn't aligned (2-byte boundary).
 
 - **SB**: Store Byte
 
-    **Format**: sb rs1, rs2, imm[11:0]
+    **Format**: sb rs2, imm(rs1)
 
-    **Description**: stores a 8-bit value from the low bits of register rs2 to memory. The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
+    **Description**: stores a 8-bit value from the low bits of register rs2 to memory, the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
     **Pseudocode**: M[x[rs1] + sext(imm[11:0])][7:0] = x[rs2][7:0]
 
@@ -534,27 +546,27 @@ Load and Store Instructions
 
 - **SH**: Store Halfword
 
-    **Format**: sh rs1, rs2, imm[11:0]
+    **Format**: sh rs2, imm(rs1)
 
-    **Description**: stores a 16-bit value from the low bits of register rs2 to memory. The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
+    **Description**: stores a 16-bit value from the low bits of register rs2 to memory, the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
     **Pseudocode**: M[x[rs1] + sext(imm[11:0])][15:0] = x[rs2][15:0]
 
     **Invalid values**: NONE
 
-    **Exception raised**: An exception raised if the memory address isn't aligned (2-byte boundary).
+    **Exception raised**: an exception is raised if the memory address isn't aligned (2-byte boundary).
 
 - **SW**: Store Word
 
-    **Format**: sw rs1, rs2, imm[11:0]
+    **Format**: sw rs2, imm(rs1)
 
-    **Description**: stores a 32-bit value from register rs2 to memory. The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
+    **Description**: stores a 32-bit value from register rs2 to memory, the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
     **Pseudocode**: M[x[rs1] + sext(imm[11:0])][31:0] = x[rs2][31:0]
 
     **Invalid values**: NONE
 
-    **Exception raised**: An exception raised if the memory address isn't aligned (4-byte boundary).
+    **Exception raised**: an exception is raised if the memory address isn't aligned (4-byte boundary).
 
 Memory Ordering
 ^^^^^^^^^^^^^^^^^^
@@ -563,9 +575,9 @@ Memory Ordering
 
     **Format**: fence pre, succ
 
-    **Description**: order device I/O and memory accesses as viewed by other RISC-V harts and external devices or coprocessors. Any combination of device input (I), device output (O), memory reads (R), and memory writes (W) may be ordered with respect to any combination of the same. Informally, no other RISC-V hart or external device can observe any operation in the successor set following a FENCE before any operation in the predecessor set preceding the FENCE.
+    **Description**: order device I/O and memory accesses as viewed by other RISC-V harts and external devices or coprocessors. Any combination of device input (I), device output (O), memory reads (R), and memory writes (W) may be ordered with respect to any combination of the same. Informally, no other RISC-V hart or external device can observe any operation in the successor set following a FENCE before any operation in the predecessor set preceding the FENCE, as the core support 1 hart, the fence instruction has no effect so we can considerate it as a nop instruction.
 
-    **Pseudocode**: Fence(pred, succ)
+    **Pseudocode**: No operation (nop)
 
     **Invalid values**: NONE
 
@@ -728,7 +740,7 @@ Load-Reserved/Store-Conditional Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 - **LR.W**: Store-Conditional Word
 
@@ -740,7 +752,7 @@ Load-Reserved/Store-Conditional Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 Atomic Memory Operations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -749,109 +761,109 @@ Atomic Memory Operations
 
     **Format**: amoadd.w rd, rs2, (rs1)
 
-    **Description**: The atomic memory operation (AMO) instructions perform read-modify-write operations for multiprocessor synchronization and are encoded with an R-type instruction format. These AMO instructions atomically load a data value from the address in rs1, place the value into register rd, then add the loaded value and the original value in rs2, then store the result back to the address in rs1. 32-bit AMOs always sign-extend the value placed in rd.
+    **Description**: AMOADD.W atomically loads a data value from the address in rs1, places the value into register rd, then adds the loaded value and the original value in rs2, then stores the result back to the address in rs1. 
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] + x[rs2])
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 - **AMOAND.W**: Atomic Memory Operation: And Word
 
     **Format**: amoand.w rd, rs2, (rs1)
 
-    **Description**: The atomic memory operation (AMO) instructions perform read-modify-write operations for multiprocessor synchronization and are encoded with an R-type instruction format. These AMO instructions atomically load a data value from the address in rs1, place the value into register rd, apply a AND operator to the loaded value and the original value in rs2, then store the result back to the address in rs1. 32-bit AMOs always sign-extend the value placed in rd.
+    **Description**: AMOAND.W atomically loads a data value from the address in rs1, places the value into register rd, then performs an AND between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] & x[rs2])
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 - **AMOOR.W**: Atomic Memory Operation: Or Word
 
     **Format**: amoor.w rd, rs2, (rs1)
 
-    **Description**: The atomic memory operation (AMO) instructions perform read-modify-write operations for multiprocessor synchronization and are encoded with an R-type instruction format. These AMO instructions atomically load a data value from the address in rs1, place the value into register rd, apply a OR operator to the loaded value and the original value in rs2, then store the result back to the address in rs1. 32-bit AMOs always sign-extend the value placed in rd.
+    **Description**: AMOOR.W atomically loads a data value from the address in rs1, places the value into register rd, then performs an OR between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] | x[rs2])
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 - **AMOXOR.W**: Atomic Memory Operation: Xor Word
 
     **Format**: amoxor.w rd, rs2, (rs1)
 
-    **Description**: The atomic memory operation (AMO) instructions perform read-modify-write operations for multiprocessor synchronization and are encoded with an R-type instruction format. These AMO instructions atomically load a data value from the address in rs1, place the value into register rd, apply a XOR operator to the loaded value and the original value in rs2, then store the result back to the address in rs1. 32-bit AMOs always sign-extend the value placed in rd.
+    **Description**: AMOXOR.W atomically loads a data value from the address in rs1, places the value into register rd, then performs a XOR between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] ^ x[rs2])
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 - **AMOSWAP.W**: Atomic Memory Operation: Swap Word
 
     **Format**: amoswap.w rd, rs2, (rs1)
 
-    **Description**: The atomic memory operation (AMO) instructions perform read-modify-write operations for multiprocessor synchronization and are encoded with an R-type instruction format. These AMO instructions atomically load a data value from the address in rs1, place the value into register rd, then SWAP the loaded value and the original value in rs2, then store the result back to the address in rs1. 32-bit AMOs always sign-extend the value placed in rd.
+    **Description**: AMOSWAP.W atomically loads a data value from the address in rs1, places the value into register rd, then performs a SWAP between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] SWAP x[rs2])
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 - **AMOMIN.W**: Atomic Memory Operation: Minimum Word
 
     **Format**: amomin.d rd, rs2, (rs1)
 
-    **Description**: The atomic memory operation (AMO) instructions perform read-modify-write operations for multiprocessor synchronization and are encoded with an R-type instruction format. These AMO instructions atomically load a data value from the address in rs1, place the value into register rd, we take the minimum between the loaded value and the original value in rs2, then store the result back to the address in rs1. 32-bit AMOs always sign-extend the value placed in rd.
+    **Description**: AMOMIN.W atomically loads a data value from the address in rs1, places the value into register rd, then choses the minimum between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] MIN x[rs2])
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 - **AMOMINU.W**: Atomic Memory Operation: Minimum Word, Unsigned
 
     **Format**: amominu.d rd, rs2, (rs1)
 
-    **Description**: The atomic memory operation (AMO) instructions perform read-modify-write operations for multiprocessor synchronization and are encoded with an R-type instruction format. These AMO instructions atomically load a data value from the address in rs1, place the value into register rd, we take the minimum between the loaded value and the original value in rs2, then store the result back to the address in rs1. 32-bit AMOs always sign-extend the value placed in rd (the values treated as unsigned). 
+    **Description**: AMOMINU.W atomically loads a data value from the address in rs1, places the value into register rd, then choses the minimum (the values treated as unsigned) between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] MINU x[rs2])
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 - **AMOMAX.W**: Atomic Memory Operation: Maximum Word, Unsigned
 
     **Format**: amomax.d rd, rs2, (rs1)
 
-    **Description**: The atomic memory operation (AMO) instructions perform read-modify-write operations for multiprocessor synchronization and are encoded with an R-type instruction format. These AMO instructions atomically load a data value from the address in rs1, place the value into register rd, we take the maximum between the loaded value and the original value in rs2, then store the result back to the address in rs1. 32-bit AMOs always sign-extend the value placed in rd.
+    **Description**: AMOMAX.W atomically loads a data value from the address in rs1, places the value into register rd, then choses the maximum between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] MAX x[rs2])
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 - **AMOMAXU.W**: Atomic Memory Operation: Maximum Word, Unsigned
 
     **Format**: amomaxu.d rd, rs2, (rs1)
 
-    **Description**: The atomic memory operation (AMO) instructions perform read-modify-write operations for multiprocessor synchronization and are encoded with an R-type instruction format. These AMO instructions atomically load a data value from the address in rs1, place the value into register rd, we take the maximum between the loaded value and the original value in rs2, then store the result back to the address in rs1. 32-bit AMOs always sign-extend the value placed in rd (the values treated as unsigned). 
+    **Description**: AMOMAXU.W atomically loads a data value from the address in rs1, places the value into register rd, then choses the maximum (the values treated as unsigned) between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] MAXU x[rs2])
 
     **Invalid values**: NONE
 
-    **Exception raised**:  If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
 RV32C Compressed Instructions
 --------------------------------
@@ -948,7 +960,7 @@ Integer Computational Instructions
 
     **Format**: c.srli rd', uimm[5:0]
 
-    **Description**: performs a logical Right shift (zeros are shifted into the upper bits).
+    **Description**: performs a logical right shift (zeros are shifted into the upper bits).
 
     **Pseudocode**: x[8 + rd'] = x[8 + rd'] >> uimm[5:0]
 
@@ -960,9 +972,9 @@ Integer Computational Instructions
 
     **Format**: c.srai rd', uimm[5:0]
 
-    **Description**: performs an Arithmetic Right shift (sign bits are shifted into the upper bits).
+    **Description**: performs an arithmetic right shift (sign bits are shifted into the upper bits).
 
-    **Pseudocode**: x[8 + rd'] = x[8 + rd'] >> uimm[5:0]
+    **Pseudocode**: x[8 + rd'] = x[8 + rd'] >>s uimm[5:0]
 
     **Invalid values**: uimm[5] = 0
 
@@ -1077,7 +1089,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: Jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception.
 
 - **C.JAL**: Compressed Jump and Link
 
@@ -1089,7 +1101,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: Jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception.
 
 - **C.JR**: Compressed Jump Register
 
@@ -1101,11 +1113,11 @@ Control Transfer Instructions
 
     **Invalid values**: rs1 = x0
 
-    **Exception raised**: Jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception.
 
 - **C.JALR**: Compressed Jump and Link Register
 
-    **Format**: c.jalr imm[11:1]
+    **Format**: c.jalr rs1
 
     **Description**: performs the same operation as C.JR, but additionally writes the address of the instruction following the jump (pc+2) to the link register, x1.
 
@@ -1113,7 +1125,7 @@ Control Transfer Instructions
 
     **Invalid values**: rs1 = x0
 
-    **Exception raised**: Jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception.
 
 - **C.BEQZ**: Branch if Equal Zero
 
@@ -1121,7 +1133,7 @@ Control Transfer Instructions
 
     **Description**: performs conditional control transfers. The offset is sign-extended and added to the pc to form the branch target address. C.BEQZ takes the branch if the value in register rs1' is zero.
 
-    **Pseudocode**: if (x[8+rs1'] == 0) pc += sext(imm[11:1])
+    **Pseudocode**: if (x[8+rs1'] == 0) pc += sext(imm[8:1])
 
     **Invalid values**: NONE
 
@@ -1133,7 +1145,7 @@ Control Transfer Instructions
 
     **Description**: performs conditional control transfers. The offset is sign-extended and added to the pc to form the branch target address. C.BEQZ takes the branch if the value in register rs1' isn't zero.
 
-    **Pseudocode**: if (x[8+rs1'] != 0) pc += sext(imm[11:1])
+    **Pseudocode**: if (x[8+rs1'] != 0) pc += sext(imm[8:1])
 
     **Invalid values**: NONE
 
@@ -1148,11 +1160,11 @@ Load and Store Instructions
 
     **Description**: loads a 32-bit value from memory into register rd. It computes an effective address by adding the zero-extended offset, scaled by 4, to the stack pointer, x2.
 
-    **Pseudocode**: x[rd] = sext(M[x[2] + uimm][31:0])
+    **Pseudocode**: x[rd] = M[x[2] + zext(uimm[7:2])][31:0]
 
     **Invalid values**: rd = x0
 
-    **Exception raised**: Loads with a destination of x0 must still raise any exceptions, also an exception if the memory address isn't aligned (4-byte boundary).
+    **Exception raised**: loads with a destination of x0 must still raise any exceptions, also an exception if the memory address isn't aligned (4-byte boundary).
 
 - **C.SWSP**: Store Word Stack-Pointer
 
@@ -1160,7 +1172,7 @@ Load and Store Instructions
 
     **Description**: stores a 32-bit value in register rs2 to memory. It computes an effective address by adding the zero-extended offset, scaled by 4, to the stack pointer, x2.
 
-    **Pseudocode**: M[x[2] + uimm][31:0] = x[rs2]
+    **Pseudocode**: M[x[2] + zext(uimm[7:2])][31:0] = x[rs2]
 
     **Invalid values**: NONE
 
@@ -1170,9 +1182,9 @@ Load and Store Instructions
 
     **Format**: c.lw rd', uimm(rs1')
 
-    **Description**: loads a 32-bit value from memory into register rd'.It computes an effective address by adding the zero-extended offset, scaled by 4, to the base address in register rs1'.
+    **Description**: loads a 32-bit value from memory into register rd'. It computes an effective address by adding the zero-extended offset, scaled by 4, to the base address in register rs1'.
 
-    **Pseudocode**: x[8+rd'] = sext(M[x[8+rs1'] + uimm][31:0])
+    **Pseudocode**: x[8+rd'] = M[x[8+rs1'] + zext(uimm[6:2])][31:0])
 
     **Invalid values**: NONE
 
@@ -1182,9 +1194,9 @@ Load and Store Instructions
 
     **Format**: c.sw rs2', uimm(rs1')
 
-    **Description**: stores a 32-bit value from memory into register rd'.It computes an effective address by adding the zero-extended offset, scaled by 4, to the base address in register rs1'.
+    **Description**: stores a 32-bit value from memory into register rd'. It computes an effective address by adding the zero-extended offset, scaled by 4, to the base address in register rs1'.
 
-    **Pseudocode**: M[x[8+rs1'] + uimm][31:0] = x[8+rs2']
+    **Pseudocode**: M[x[8+rs1'] + zext(uimm[6:2])][31:0] = x[8+rs2']
 
     **Invalid values**: NONE
 
@@ -1193,15 +1205,13 @@ Load and Store Instructions
 RV32Zicsr Control and Status Register Instructions
 ---------------------------------------------------
 
-SYSTEM instructions are used to access system functionality that might require privileged access
-and are encoded using the I-type instruction format. These can be divided into two main classes:
-those that atomically read-modify-write control and status registers (CSRs), and all other potentially privileged instructions.
+All CSR instructions atomically read-modify-write a single CSR, whose CSR specifier is encoded in the 12-bit csr field of the instruction held in bits 31–20. The immediate forms use a 5-bit zero-extended immediate encoded in the rs1 field.
 
 - **CSRRW**: Control and Status Register Read and Write
 
-    **Format**: csrrw rd, rs1, csr
+    **Format**: csrrw rd, csr, rs1
 
-    **Description**: reads the old value of the CSR, zero-extends the value to 32 bits, then writes it to integer register rd. The initial value in rs1 is written to the CSR. If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side-effects that might occur on a CSR read.
+    **Description**: reads the old value of the CSR, zero-extends the value to 32 bits, then writes it to integer register rd, the initial value in rs1 is written to the CSR. If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side-effects that might occur on a CSR read.
 
     **Pseudocode**: t = CSRs[csr]; CSRs[csr] = x[rs1]; x[rd] = t
 
@@ -1211,9 +1221,9 @@ those that atomically read-modify-write control and status registers (CSRs), and
 
 - **CSRRS**: Control and Status Register Read and Set
 
-    **Format**: csrrs rd, rs1, csr
+    **Format**: csrrs rd, csr, rs1
 
-    **Description**: reads the value of the CSR, zero-extends the value to 32 bits, and writes it to integer register rd. The initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be set in the CSR. Any bit that is high in rs1 will cause the corresponding bit to be set in the CSR, if that CSR bit is writable. Other bits in the CSR are unaffected (though CSRs might have side effects when written).
+    **Description**: reads the value of the CSR, zero-extends the value to 32 bits, and writes it to integer register rd, the initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be set in the CSR. Any bit that is high in rs1 will cause the corresponding bit to be set in the CSR, if that CSR bit is writable. Other bits in the CSR are unaffected (though CSRs might have side effects when written), if rs1=x0, then the instruction will not write to the CSR at all, and so shall not cause any of the side effects that might otherwise occur on a CSR write, such as raising illegal instruction exceptions on accesses to read-only CSRs.
 
     **Pseudocode**: t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
 
@@ -1221,11 +1231,11 @@ those that atomically read-modify-write control and status registers (CSRs), and
 
     **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
 
-- **CSRRC**:Control and Status Register Read and Clear
+- **CSRRC**: Control and Status Register Read and Clear
 
-    **Format**: csrrc rd, rs1, csr
+    **Format**: csrrc rd, csr, rs1
 
-    **Description**: reads the value of the CSR, zero-extends the value to 32 bits, and writes it to integer register rd. The initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be cleared in the CSR. Any bit that is high in rs1 will cause the corresponding bit to be cleared in the CSR, if that CSR bit is writable. Other bits in the CSR are unaffected.
+    **Description**: reads the value of the CSR, zero-extends the value to 32 bits, and writes it to integer register rd, the initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be cleared in the CSR. Any bit that is high in rs1 will cause the corresponding bit to be set in the CSR, if that CSR bit is writable. Other bits in the CSR are unaffected (though CSRs might have side effects when written), if rs1=x0, then the instruction will not write to the CSR at all, and so shall not cause any of the side effects that might otherwise occur on a CSR write, such as raising illegal instruction exceptions on accesses to read-only CSRs.
 
     **Pseudocode**: t = CSRs[csr]; CSRs[csr] = t & ∼x[rs1]; x[rd] = t
 
@@ -1235,48 +1245,48 @@ those that atomically read-modify-write control and status registers (CSRs), and
 
 - **CSRRWI**: Control and Status Register Read and Write Immediate
 
-    **Format**: csrrwi rd, imm[4:0], csr
+    **Format**: csrrwi rd, csr, uimm[4:0]
 
     **Description**: reads the old value of the CSR, zero-extends the value to 32 bits, then writes it to integer register rd. The zero-extends immediate is written to the CSR. If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side-effects that might occur on a CSR read.
 
-    **Pseudocode**: x[rd] = CSRs[csr]; CSRs[csr] = zimm
+    **Pseudocode**: x[rd] = CSRs[csr]; CSRs[csr] = zext(uimm[4:0])
 
     **Invalid values**: NONE
 
     **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
 
-- **CSRRSI**:Control and Status Register Read and Set Immediate
+- **CSRRSI**: Control and Status Register Read and Set Immediate
 
-    **Format**: csrrsi rd, imm[4:0], csr
+    **Format**: csrrsi rd, csr, uimm[4:0]
 
-    **Description**: reads the value of the CSR, zero-extends the value to 32 bits, and writes it to integer register rd. The zero-extends immediate value is treated as a bit mask that specifies bit positions to be set in the CSR. Any bit that is high in zero-extends immediate will cause the corresponding bit to be set in the CSR, if that CSR bit is writable. Other bits in the CSR are unaffected (though CSRs might have side effects when written).
+    **Description**: reads the value of the CSR, zero-extends the value to 32 bits, and writes it to integer register rd. The zero-extends immediate value is treated as a bit mask that specifies bit positions to be set in the CSR. Any bit that is high in zero-extends immediate will cause the corresponding bit to be set in the CSR, if that CSR bit is writable. Other bits in the CSR are unaffected (though CSRs might have side effects when written), if the uimm[4:0] field is zero, then these instructions will not write to the CSR, and shall not cause any of the side effects that might otherwise occur on a CSR write.
 
-    **Pseudocode**: t = CSRs[csr]; CSRs[csr] = t | zimm; x[rd] = t
-
-    **Invalid values**: NONE
-
-    **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
-
-- **CSRRCI**:Control and Status Register Read and Clear Immediate
-
-    **Format**: csrrci rd, imm[4:0], csr
-
-    **Description**: reads the value of the CSR, zero-extends the value to 32 bits, and writes it to integer register rd. The zero-extends immediate value is treated as a bit mask that specifies bit positions to be cleared in the CSR. Any bit that is high in The zero-extends immediate will cause the corresponding bit to be cleared in the CSR, if that CSR bit is writable. Other bits in the CSR are unaffected.
-
-    **Pseudocode**: t = CSRs[csr]; CSRs[csr] = t & ∼zimm; x[rd] = t
+    **Pseudocode**: t = CSRs[csr]; CSRs[csr] = t | zext(uimm[4:0]); x[rd] = t
 
     **Invalid values**: NONE
 
     **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
 
-RV32Zifence Instruction
--------------------------
+- **CSRRCI**: Control and Status Register Read and Clear Immediate
 
-- **FENCE.I**:Fence Instruction
+    **Format**: csrrci rd, csr, uimm[4:0]
+
+    **Description**: reads the value of the CSR, zero-extends the value to 32 bits, and writes it to integer register rd. The zero-extends immediate value is treated as a bit mask that specifies bit positions to be cleared in the CSR. Any bit that is high in zero-extends immediate will cause the corresponding bit to be set in the CSR, if that CSR bit is writable. Other bits in the CSR are unaffected (though CSRs might have side effects when written), if the uimm[4:0] field is zero, then these instructions will not write to the CSR, and shall not cause any of the side effects that might otherwise occur on a CSR write.
+
+    **Pseudocode**: t = CSRs[csr]; CSRs[csr] = t & ∼zext(uimm[4:0]); x[rd] = t
+
+    **Invalid values**: NONE
+
+    **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
+
+RV32Zifencei Instruction-Fetch Fence
+--------------------------------------
+
+- **FENCE.I**: Fence Instruction
 
     **Format**: fence.i
 
-    **Description**: The FENCE.I instruction is used to synchronize the instruction and data streams.RISC-V does not guarantee that stores to instruction memory will be made visible to instruction fetches on the same RISC-V hart until a FENCE.I instruction is executed. A FENCE.I instruction only ensures that a subsequent instruction fetch on a RISC-V hart will see any previous data stores already visible to the same RISC-V hart.
+    **Description**: The FENCE.I instruction is used to synchronize the instruction and data streams. RISC-V does not guarantee that stores to instruction memory will be made visible to instruction fetches on the same RISC-V hart until a FENCE.I instruction is executed. A FENCE.I instruction only ensures that a subsequent instruction fetch on a RISC-V hart will see any previous data stores already visible to the same RISC-V hart.
 
     **Pseudocode**: Fence(Store, Fetch)
 
