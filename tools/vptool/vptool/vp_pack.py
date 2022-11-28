@@ -74,6 +74,10 @@ class Item:
         self.verif_goals = ""
         # Location of coverage data
         self.coverage_loc = ""
+        # Use page as the default reference mode for design docs.
+        # This will work with all files (no reliance on named dests).
+        self.ref_mode = "page"
+        self.viewer = "firefox"
         # FIXME: Propagate default value from YAML config.
         self.pfc = -1  # none selected, must choose
         self.test_type = -1  # none selected, must choose
