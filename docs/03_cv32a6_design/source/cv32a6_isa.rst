@@ -502,7 +502,7 @@ Load and Store Instructions
 
     **Description**: loads a 8-bit value from memory, then zero-extends to 32-bit before storing in rd (rd is calculated using unsigned arithmetic). The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
-    **Pseudocode**: x[rd] = Zext(M[x[rs1] + sext(imm[11:0])][7:0])
+    **Pseudocode**: x[rd] = zext(M[x[rs1] + sext(imm[11:0])][7:0])
 
     **Invalid values**: NONE
 
@@ -514,7 +514,7 @@ Load and Store Instructions
 
     **Description**: loads a 16-bit value from memory, then zero-extends to 32-bit before storing in rd (rd is calculated using unsigned arithmetic). The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
-    **Pseudocode**: x[rd] = Zext(M[x[rs1] + sext(imm[11:0])][7:0])
+    **Pseudocode**: x[rd] = zext(M[x[rs1] + sext(imm[11:0])][7:0])
 
     **Invalid values**: NONE
 
@@ -926,7 +926,7 @@ Integer Computational Instructions
 
     **Description**: adds a zero-extended non-zero immediate, scaled by 4, to the stack pointer, x2, and writes the result to rd'. This instruction is used to generate pointers to stack-allocated variables.
 
-    **Pseudocode**: x[8 + rd'] = x[2] + Zext(nzimm[9:2])
+    **Pseudocode**: x[8 + rd'] = x[2] + zext(nzimm[9:2])
 
     **Invalid values**: nzimm = 0
 
@@ -988,7 +988,7 @@ Integer Computational Instructions
 
     **Pseudocode**: x[rd] = x[rd] + x[rs2]
 
-    **Invalid values**: rd = x0 & rs1 = x0
+    **Invalid values**: rd = x0 & rs2 = x0
 
     **Exception raised**: NONE
 
@@ -1000,7 +1000,7 @@ Integer Computational Instructions
 
     **Pseudocode**: x[rd] = x[rs2]
 
-    **Invalid values**: rd = x0 & rs1 = x0
+    **Invalid values**: rd = x0 & rs2 = x0
 
     **Exception raised**: NONE
 
@@ -1073,7 +1073,7 @@ Control Transfer Instructions
 
     **Description**: performs an unconditional control transfer. The offset is sign-extended and added to the pc to form the jump target address.
 
-    **Pseudocode**: pc += sext(imm)
+    **Pseudocode**: pc += sext(imm[11:1])
 
     **Invalid values**: NONE
 
@@ -1085,7 +1085,7 @@ Control Transfer Instructions
 
     **Description**: performs the same operation as C.J, but additionally writes the address of the instruction following the jump (pc+2) to the link register, x1.
 
-    **Pseudocode**: x[1] = pc+2; pc += sext(offset)
+    **Pseudocode**: x[1] = pc+2; pc += sext(imm[11:1])
 
     **Invalid values**: NONE
 
@@ -1121,7 +1121,7 @@ Control Transfer Instructions
 
     **Description**: performs conditional control transfers. The offset is sign-extended and added to the pc to form the branch target address. C.BEQZ takes the branch if the value in register rs1' is zero.
 
-    **Pseudocode**: if (x[8+rs1'] == 0) pc += sext(imm)
+    **Pseudocode**: if (x[8+rs1'] == 0) pc += sext(imm[11:1])
 
     **Invalid values**: NONE
 
@@ -1133,7 +1133,7 @@ Control Transfer Instructions
 
     **Description**: performs conditional control transfers. The offset is sign-extended and added to the pc to form the branch target address. C.BEQZ takes the branch if the value in register rs1' isn't zero.
 
-    **Pseudocode**: if (x[8+rs1'] != 0) pc += sext(imm)
+    **Pseudocode**: if (x[8+rs1'] != 0) pc += sext(imm[11:1])
 
     **Invalid values**: NONE
 
