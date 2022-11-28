@@ -92,18 +92,18 @@ module commit_stage import ariane_pkg::*; #(
     always_comb begin : commit
         // default assignments
         commit_ack_o[0]    = 1'b0;
-        commit_ack_o[1]    = 1'b0;
+        //commit_ack_o[1]    = 1'b0;
 
         amo_valid_commit_o = 1'b0;
 
         we_gpr_o[0]        = 1'b0;
-        we_gpr_o[1]        = 1'b0;
+        //we_gpr_o[1]        = 1'b0;
         we_fpr_o           = '{default: 1'b0};
         commit_lsu_o       = 1'b0;
         commit_csr_o       = 1'b0;
         // amos will commit on port 0
         wdata_o[0]      = (amo_resp_i.ack) ? amo_resp_i.result[riscv::XLEN-1:0] : commit_instr_i[0].result;
-        wdata_o[1]      = commit_instr_i[1].result;
+        //wdata_o[1]      = commit_instr_i[1].result;
         csr_op_o        = ADD; // this corresponds to a CSR NOP
         csr_wdata_o        = {riscv::XLEN{1'b0}};
         fence_i_o          = 1'b0;
@@ -209,6 +209,10 @@ module commit_stage import ariane_pkg::*; #(
         end
 
         if (NR_COMMIT_PORTS > 1) begin
+        
+            commit_ack_o[1]    = 1'b0;
+            we_gpr_o[1]        = 1'b0;
+            wdata_o[1]      = commit_instr_i[1].result;
             // -----------------
             // Commit Port 2
             // -----------------
