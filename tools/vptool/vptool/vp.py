@@ -557,6 +557,42 @@ class MyTextWidget(ttk.LabelFrame):
             text=vp_config.yaml_config["gui"]["requirement_loc"]["label"],
             style="enabled.TLabelframe",
         )
+        # Design doc information uses a grid layout.
+        # - first row is a URL of the document
+        # - second row contains selectors for page/section mode and value, and a 'View' button.
+        self.text1frame.grid(column=0, row=0, padx=20, pady=20)
+        url_label = ttk.Label(self.text1frame, text="Path or URL", anchor=tk.E)
+        url_label.grid(column=0, row=0, sticky=tk.E, padx=10, pady=10)
+        mode_label = ttk.Label(self.text1frame, text="Refer to...", anchor=tk.E)
+        mode_label.grid(column=0, row=1, sticky=tk.E, padx=10)
+        self.page_num_var = tk.StringVar(self)
+        page_entry = ttk.Entry(self.text1frame, textvariable=self.page_num_var, width=4)
+        page_entry.grid(column=2, row=1, sticky=tk.W)
+        self.section_num_var= tk.StringVar(self)
+        section_entry = ttk.Entry(self.text1frame, textvariable=self.section_num_var, width=4)
+        section_entry.grid(column=2, row=2, sticky=tk.W)
+        view_btn = ttk.Button(self.text1frame, text="Show design doc", command=self.view_file)
+        view_btn.grid(column=5, row=2, sticky=tk.E)
+        self.ref_mode_var = tk.StringVar(self)
+        ref_mode_names = ("(consecutive) page #", "section #")
+        ref_mode_values = ("page", "section")
+        row = 1
+        for (name, value) in zip(ref_mode_names, ref_mode_values):
+            btn = ttk.Radiobutton(self.text1frame, text=name, value=value, variable=self.ref_mode_var, command=self.refmode_btn_selected)
+            btn.grid(column=1, row=row, sticky=tk.W)
+            row +=1
+        # Label of the viewer selector buttons
+        viewer_label = ttk.Label(self.text1frame, text="Design doc viewer", anchor=tk.E)
+        viewer_label.grid(column=3, row=1, sticky=tk.E)
+        self.viewer_var = tk.StringVar(self)
+        viewer_names = ("Mozilla Firefox", "Evince PDF viewer")
+        viewer_values = ("firefox", "evince")
+        row = 1
+        for (name, value) in zip(viewer_names, viewer_values):
+            btn = ttk.Radiobutton(self.text1frame, text=name, value=value, variable=self.viewer_var, command=self.docviewer_btn_selected)
+            btn.grid(column=4, row=row, sticky=tk.W)
+            row += 1
+
         self.text3frame = ttk.LabelFrame(
             self,
             text=vp_config.yaml_config["gui"]["verif_goals"]["label"],
@@ -578,7 +614,7 @@ class MyTextWidget(ttk.LabelFrame):
             style="enabled.TLabelframe",
         )
         # Selectors of verif point properties (PFC, TT, CM) and applicable cores use a layout
-        # different from the surrounding widgets, so we pack the in a canvas of their own.
+        # different from the surrounding widgets, so we pack them in a canvas of their own.
         self.selector_canvas = tk.Canvas(self)
         self.settings_frame = ttk.LabelFrame(
             self.selector_canvas,
@@ -646,11 +682,12 @@ class MyTextWidget(ttk.LabelFrame):
             self.text1frame,
             cue_text=vp_config.yaml_config["gui"]["requirement_loc"]["cue_text"],
             state="disabled",
-            height=4,
+            height=1,
             bg=BG_COLOR,
             undo=True,
             wrap="word",
         )
+        self.text1.grid(column=1, row=0, sticky=tk.W, columnspan=5)
         self.text3 = MyText(
             self.text3frame,
             cue_text=vp_config.yaml_config["gui"]["verif_goals"]["cue_text"],
@@ -797,6 +834,41 @@ class MyTextWidget(ttk.LabelFrame):
         self.bcancel.pack(side="left")
         self.pack(side, padx, pady)
 
+    def view_file(self):
+        """
+        View the requirement file (Design Doc) at the position specified in Requirement Location frame.
+        """
+        print(f"### Calling MyTextWidget.view_file('{self.text1.get(0.0, tk.END).rstrip()}', '#page={self.page_num_var.get()}|#nameddest=section.{self.section_num_var.get()}'"
+        )
+        if self.ref_mode_var.get() == "page":
+            ref_in_doc = f"#page={self.page_num_var.get().rstrip()}"
+        elif self.ref_mode_var.get() == "section":
+            ref_in_doc = f"#nameddest=section.{self.section_num_var.get().rstrip()}"
+        else:
+            ref_in_doc = ""
+        command = "firefox " + \
+            self.text1.get(0.0, tk.END).rstrip() + ref_in_doc
+        print(f"### ==> command = {command}")
+        os.system(command)
+
+    def refmode_btn_selected(self):
+        """
+        Callback to handle the selection of the Design Doc reference mode.
+        Sets the value of the corresponding item attribute.
+        """
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_mode = self.ref_mode_var.get()
+
+    def docviewer_btn_selected(self):
+        """
+        Callback to handle the selection of the design doc viewer.
+        Sets the value of the corresponding item attribute.
+        """
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().viewer = self.viewer_var.get()
+
     def all_cores_btn_selected(self):
         print("### self.cores_all.get() = %d" % self.cores_all.get())
         if self.cores_all.get() == 1:
@@ -910,7 +982,7 @@ class MyTextWidget(ttk.LabelFrame):
 
     def pack(self, side, padx, pady):
         self.text.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
-        self.text1.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
+        #self.text1.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text3.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text4.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text5.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
@@ -983,6 +1055,10 @@ class MyTextWidget(ttk.LabelFrame):
 
     def button_pack_forget(self):
         self.bframe.pack_forget()
+
+    def update_ref_mode(self, mode):
+        self.ref_mode = mode
+        self.ref_mode_var.set(mode)
 
     def update_item_tag(self, in_text):
         self.text6.configure(state="normal")
@@ -1609,6 +1685,8 @@ class MyMain:
                 self.desc_widget.text5, current_item.coverage_loc
             )
             self.desc_widget.update_item_tag(current_item.tag)
+            ref_mode = current_item.ref_mode if hasattr(current_item, "ref_mode") else "page"
+            self.desc_widget.update_ref_mode(ref_mode)
             pfc = current_item.pfc
             self.desc_widget.update_pfc(pfc)
             test_type = current_item.test_type
@@ -1651,6 +1729,10 @@ class MyMain:
     def desc_cancel(self):
         self.update_desc_widget()  # reprint current item initial value
         self.unfreeze_all()
+
+    def update_ref_mode(self):
+        self.get_current_item().ref_mode = self.desc_widget.ref_mode_var.get()
+        self.desc_widget.update_ref_mode(self.desc_widget.ref_mode_var.get())
 
     def update_pfc(self):
         self.get_current_item().pfc = self.desc_widget.pfc.get()
