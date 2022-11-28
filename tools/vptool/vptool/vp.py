@@ -568,9 +568,15 @@ class MyTextWidget(ttk.LabelFrame):
         self.page_num_var = tk.StringVar(self)
         page_entry = ttk.Entry(self.text1frame, textvariable=self.page_num_var, width=4)
         page_entry.grid(column=2, row=1, sticky=tk.W)
+        # Use a callaback to update state upon changes to page number field.
+        self.page_num_var.trace("w", self.ref_page_num_changed)
+
         self.section_num_var= tk.StringVar(self)
         section_entry = ttk.Entry(self.text1frame, textvariable=self.section_num_var, width=4)
         section_entry.grid(column=2, row=2, sticky=tk.W)
+        # Use a callaback to update state upon changes to section number field.
+        self.section_num_var.trace("w", self.ref_section_num_changed)
+
         view_btn = ttk.Button(self.text1frame, text="Show design doc", command=self.view_file)
         view_btn.grid(column=5, row=2, sticky=tk.E)
         self.ref_mode_var = tk.StringVar(self)
@@ -834,22 +840,43 @@ class MyTextWidget(ttk.LabelFrame):
         self.bcancel.pack(side="left")
         self.pack(side, padx, pady)
 
+    def ref_page_num_changed(self, *args):
+        """React to change in page number stringvar."""
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_page = self.page_num_var.get()
+
+    def ref_section_num_changed(self, *args):
+        """React to change in section number stringvar."""
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_section = self.section_num_var.get()
+
     def view_file(self):
         """
         View the requirement file (Design Doc) at the position specified in Requirement Location frame.
         """
-        print(f"### Calling MyTextWidget.view_file('{self.text1.get(0.0, tk.END).rstrip()}', '#page={self.page_num_var.get()}|#nameddest=section.{self.section_num_var.get()}'"
-        )
-        if self.ref_mode_var.get() == "page":
-            ref_in_doc = f"#page={self.page_num_var.get().rstrip()}"
-        elif self.ref_mode_var.get() == "section":
-            ref_in_doc = f"#nameddest=section.{self.section_num_var.get().rstrip()}"
-        else:
-            ref_in_doc = ""
-        command = "firefox " + \
-            self.text1.get(0.0, tk.END).rstrip() + ref_in_doc
+        if self.viewer_var.get() == "firefox":
+            # Browser mode: use HREFs with suffix #<anchortype>=<value>.
+            if self.ref_mode_var.get() == "page":
+                ref_in_doc = f"#page={self.page_num_var.get().rstrip()}"
+            elif self.ref_mode_var.get() == "section":
+                ref_in_doc = f"#nameddest=section.{self.section_num_var.get().rstrip()}"
+            else:
+                ref_in_doc = ""
+            command = [ "firefox",
+                "file://" + self.text1.get(0.0, tk.END).rstrip() + ref_in_doc ]
+        elif self.viewer_var.get() == "evince":
+            # PDF viewer mode: use appropriate cmdline option.
+            if self.ref_mode_var.get() == "page":
+                ref_in_doc = ["-i", f"{self.page_num_var.get().rstrip()}" ]
+            elif self.ref_mode_var.get() == "section":
+                ref_in_doc = ["-n", f"section.{self.section_num_var.get().rstrip()}"]
+            else:
+                ref_in_doc = []
+            command = ["evince"] + ref_in_doc + [self.text1.get(0.0, tk.END).rstrip()]
         print(f"### ==> command = {command}")
-        os.system(command)
+        subprocess.Popen(command)
 
     def refmode_btn_selected(self):
         """
@@ -867,7 +894,7 @@ class MyTextWidget(ttk.LabelFrame):
         """
         current_item = self.parent.item_widget.get_selection()
         if current_item and not self.parent.get_current_item().is_locked():
-            self.parent.get_current_item().viewer = self.viewer_var.get()
+            self.parent.get_current_item().ref_viewer = self.viewer_var.get()
 
     def all_cores_btn_selected(self):
         print("### self.cores_all.get() = %d" % self.cores_all.get())
@@ -1059,6 +1086,18 @@ class MyTextWidget(ttk.LabelFrame):
     def update_ref_mode(self, mode):
         self.ref_mode = mode
         self.ref_mode_var.set(mode)
+
+    def update_page_num(self, page):
+        self.page_num = page
+        self.page_num_var.set(page)
+
+    def update_section_num(self, section):
+        self.section_num = section
+        self.section_num_var.set(section)
+
+    def update_viewer(self, viewer):
+        self.viewer = viewer
+        self.viewer_var.set(viewer)
 
     def update_item_tag(self, in_text):
         self.text6.configure(state="normal")
@@ -1685,8 +1724,35 @@ class MyMain:
                 self.desc_widget.text5, current_item.coverage_loc
             )
             self.desc_widget.update_item_tag(current_item.tag)
-            ref_mode = current_item.ref_mode if hasattr(current_item, "ref_mode") else "page"
+            # Update mode of reference to location inside design doc.
+            # DB migration: Assume 'page' as default if the field was not present.
+            try:
+                ref_mode = current_item.ref_mode
+            except AttributeError:
+                ref_mode = "page"
             self.desc_widget.update_ref_mode(ref_mode)
+            # Update page number inside design doc.
+            # DB migration: Assume empty string as default if the field was not present.
+            try:
+                ref_page = current_item.ref_page
+            except AttributeError:
+                ref_page = ""
+            self.desc_widget.update_page_num(ref_page)
+            # Update section number inside design doc.
+            # DB migration: Assume empty string as default if the field was not present.
+            try:
+                ref_section = current_item.ref_section
+            except AttributeError:
+                ref_section = ""
+            self.desc_widget.update_section_num(ref_section)
+            # Update name of viewer app that should be used to display the design doc.
+            # DB migration: Assume empty string as default if the field was not present.
+            try:
+                ref_viewer = current_item.ref_viewer
+            except AttributeError:
+                ref_viewer = "firefox"
+            self.desc_widget.update_viewer(ref_viewer)
+
             pfc = current_item.pfc
             self.desc_widget.update_pfc(pfc)
             test_type = current_item.test_type
@@ -1733,6 +1799,18 @@ class MyMain:
     def update_ref_mode(self):
         self.get_current_item().ref_mode = self.desc_widget.ref_mode_var.get()
         self.desc_widget.update_ref_mode(self.desc_widget.ref_mode_var.get())
+
+    def update_page_num(self):
+        self.get_current_item().ref_page = self.desc_widget.page_num_var.get()
+        self.desc_widget.update_page_num(self.desc_widget.page_num_var.get())
+
+    def update_section_num(self):
+        self.get_current_item().ref_section = self.desc_widget.section_num_var.get()
+        self.desc_widget.update_section_num(self.desc_widget.section_num_var.get())
+
+    def update_viewer(self):
+        self.get_current_item().ref_viewer = self.desc_widget.viewer_var.get()
+        self.desc_widget.update_viewer(self.desc_widget.viewer_var.get())
 
     def update_pfc(self):
         self.get_current_item().pfc = self.desc_widget.pfc.get()
