@@ -40,7 +40,7 @@ An easy way to get the Python plug-ins installed on your machine is::
 
    $ git clone https://github.com/openhwgroup/core-v-verif.git $CORE_V_VERIF
    $ cd $CORE_V_VERIF/bin
-   $ pip install -r requirements.txt
+   $ pip3 install -r requirements.txt
 
 Once the above is in place type the following::
 
