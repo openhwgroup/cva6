@@ -25,7 +25,9 @@ SPLIT_SAVE = True
 if "PLATFORM_TOP_DIR" in os.environ:  ## Env Variable existence Check
     VP_PLATFORM_TOP_DIR = os.environ["PLATFORM_TOP_DIR"]
 else:
-    print("--- Error: Project location not set, please define PLATFORM_TOP_DIR env variable!")
+    print(
+        "--- Error: Project location not set, please define PLATFORM_TOP_DIR env variable!"
+    )
     sys.exit()
 
 # Name of the project (can be empty if the variable is not defined in environment.)
@@ -40,7 +42,9 @@ else:
 if "PROJECT_IDENT" in os.environ:
     PROJECT_IDENT = os.environ["PROJECT_IDENT"]
 else:
-    print("--- Error: Project identifier not set, please define PROJECT_IDENT env variable!")
+    print(
+        "--- Error: Project identifier not set, please define PROJECT_IDENT env variable!"
+    )
     sys.exit()
 
 # Location of database files
@@ -54,6 +58,10 @@ else:
 
 # Location of the Pickle file containing the current IP/Feature lock info.
 LOCKED_IP_LOCATION = os.path.join(VP_PLATFORM_TOP_DIR, "locked_ip.pick")
+
+# Default Git revision
+io_fmt_gitrev = ""
+config_gitrev = "$Id$"
 
 # Globally accessible YAML config
 def init_yaml_config(config):

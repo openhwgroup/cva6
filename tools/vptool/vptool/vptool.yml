@@ -6,6 +6,9 @@
 # Original Author: Zbigniew Chamski (zbigniew.chamski@thalesgroup.com)
 #############################################################################
 
+# Track the version of the configuration.
+yaml_cfg_gitrev: "$Id$"
+
 gui:
   title: CORE-V Verification Plan tool
   theme: arc
@@ -26,6 +29,9 @@ gui:
   verif_goals:
     label: Verification Goals
     cue_text: A summary of what stimulus and/or configuration needs to be generated/checked/covered to ensure sufficient testing of the Feature.
+  verif_tag:
+    label: Verification Tag
+    cue_text: Unique tag which can be used when implementing Regression.
   coverage_loc:
     label: Link to Coverage (test outcomes)
     cue_text: Link to Feature coverage data generated in Regression.
@@ -69,7 +75,7 @@ gui:
       label: Other
       value: 10
     -
-      label: RISC-V Compliance
+      label: RISC-V Arch-test
       value: 0
     -
       label: Directed SelfChk
@@ -122,11 +128,11 @@ cores:
       label: CV32E40X
       value: 4
     -
-      label: CV32A6
+      label: CV32A6_v0.1.0
       value: 8
     -
-      label: CV64A6
+      label: CV32A6-step2
       value: 16
     -
-      label: CV32A60X
+      label: CV64A6-step3
       value: 32

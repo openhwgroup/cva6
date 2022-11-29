@@ -364,7 +364,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
         cmd += test['gcc_opts']
       if 'gen_opts' in test:
         # Disable compressed instruction
-        if re.search('disable_compressed_instr', test['gen_opts']):
+        if re.search('disable_compressed_instr=1', test['gen_opts']):
           test_isa = re.sub("c",  "", test_isa)
       # If march/mabi is not defined in the test gcc_opts, use the default
       # setting from the command line.
@@ -566,7 +566,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
-    run_cmd(cmd, 100, debug_cmd = debug_cmd)
+    run_cmd(cmd, 300, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -754,7 +754,7 @@ def setup_parser():
                       help="GCC compile options")
   parser.add_argument("--issrun_opts", type=str, default="+debug_disable=1",
                       help="simulation run options")
-  parser.add_argument("--isscomp_opts", type=str, default="+define+WT_DCACHE+RVFI_TRACE",
+  parser.add_argument("--isscomp_opts", type=str, default="+define+WT_DCACHE+RVFI_TRACE+RVFI_MEM",
                       help="simulation comp options")
   parser.add_argument("--isspostrun_opts", type=str, default="0x0000000080000000",
                       help="simulation post run options")
@@ -857,7 +857,7 @@ def load_config(args, cwd):
       args.isa  = "rv64gc"
     elif args.target == "cv32a60x":
       args.mabi = "ilp32"
-      args.isa  = "rv32imc"
+      args.isa  = "rv32imac" # A is needed to compile custom BSP
     elif args.target == "cv32a6_imac_sv0":
       args.mabi = "ilp32"
       args.isa  = "rv32imac"
