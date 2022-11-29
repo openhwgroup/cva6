@@ -210,6 +210,7 @@ module commit_stage import ariane_pkg::*; #(
             commit_ack_o[1]    = 1'b0;
             we_gpr_o[1]        = 1'b0;
             wdata_o[1]      = commit_instr_i[1].result;
+            
             // -----------------
             // Commit Port 2
             // -----------------
