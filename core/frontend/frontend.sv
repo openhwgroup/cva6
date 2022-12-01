@@ -397,17 +397,31 @@ module frontend import ariane_pkg::*; #(
       .data_o ( ras_predict )
     );
 
-    btb #(
-      .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
-    ) i_btb (
-      .clk_i,
-      .rst_ni,
-      .flush_i          ( flush_bp_i       ),
-      .debug_mode_i,
-      .vpc_i            ( icache_vaddr_q   ),
-      .btb_update_i     ( btb_update       ),
-      .btb_prediction_o ( btb_prediction   )
-    );
+    if (ariane_pkg::FPGA_EN) begin
+      btb_fpga #(
+        .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
+      ) i_btb_fpga (
+        .clk_i,
+        .rst_ni,
+        .flush_i          ( flush_bp_i       ),
+        .debug_mode_i,
+        .vpc_i            ( icache_dreq_i.vaddr   ),
+        .btb_update_i     ( btb_update       ),
+        .btb_prediction_o ( btb_prediction   )
+      );
+    end else begin
+      btb #(
+        .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
+      ) i_btb (
+        .clk_i,
+        .rst_ni,
+        .flush_i          ( flush_bp_i       ),
+        .debug_mode_i,
+        .vpc_i            ( icache_vaddr_q   ),
+        .btb_update_i     ( btb_update       ),
+        .btb_prediction_o ( btb_prediction   )
+      );
+    end
 
     bht #(
       .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
