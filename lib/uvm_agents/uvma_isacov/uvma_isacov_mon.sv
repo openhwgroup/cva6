@@ -213,70 +213,70 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
 
   // Set enumerations for each immediate value (if applicable)
   if (mon_trn.instr.itype == B_TYPE)
-    mon_trn.instr.immb_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immb, 12, 1);
+    mon_trn.instr.immb_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immb, $bits(mon_trn.instr.immb), 1);
 
   if (mon_trn.instr.itype == S_TYPE)
-    mon_trn.instr.imms_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.imms, 12, 1);
+    mon_trn.instr.imms_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.imms, $bits(mon_trn.instr.imms), 1);
 
   if (mon_trn.instr.itype == U_TYPE)
-    mon_trn.instr.immu_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immu, 20, 0);
+    mon_trn.instr.immu_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immu, $bits(mon_trn.instr.immu), 0);
 
   if (mon_trn.instr.itype == I_TYPE)
-    mon_trn.instr.immi_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immi, 12, immi_is_signed[mon_trn.instr.name]);
+    mon_trn.instr.immi_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immi, $bits(mon_trn.instr.immi), immi_is_signed[mon_trn.instr.name]);
 
   if (mon_trn.instr.itype == J_TYPE)
-    mon_trn.instr.immj_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immj, 20, 1);
+    mon_trn.instr.immj_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immj, $bits(mon_trn.instr.immj), 1);
 
   if (mon_trn.instr.itype == CI_TYPE) begin
     case (mon_trn.instr.name)
-      C_ADDI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
-      C_NOP:       mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
-      C_ADDI16SP:  mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 10, 1);
-      C_LWSP:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 0);
-      C_SLLI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 0);
-      C_LI:        mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
-      C_LUI:       mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 18, 0);
+      C_ADDI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
+      C_NOP:       mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
+      C_ADDI16SP:  mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
+      C_LWSP:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
+      C_SLLI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
+      C_LI:        mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
+      C_LUI:       mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CI instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CSS_TYPE) begin
     case (mon_trn.instr.name)
-      C_SWSP: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 8, 0);
+      C_SWSP: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CSS instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CIW_TYPE) begin
     case (mon_trn.instr.name)
-      C_ADDI4SPN: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 10, 0);
+      C_ADDI4SPN: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 8, c_imm_is_signed[mon_trn.instr.name]);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CIW instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CL_TYPE) begin
     case (mon_trn.instr.name)
-      C_LW: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 8, 0);
+      C_LW: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 5, c_imm_is_signed[mon_trn.instr.name]);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CL instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CS_TYPE) begin
     case (mon_trn.instr.name)
-      C_SW: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 7, 0);
+      C_SW: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 5, c_imm_is_signed[mon_trn.instr.name]);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CS instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CB_TYPE) begin
     case (mon_trn.instr.name)
       C_BEQZ,
-      C_BNEZ: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 9, 1);
-      C_ANDI: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
+      C_BNEZ: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 8, c_imm_is_signed[mon_trn.instr.name]);
+      C_ANDI: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
       C_SRLI,
-      C_SRAI: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 0);
+      C_SRAI: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, c_imm_is_signed[mon_trn.instr.name]);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CB instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CJ_TYPE) begin
     case (mon_trn.instr.name)
       C_J,
-      C_JAL: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 12, 1);
+      C_JAL: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 11, c_imm_is_signed[mon_trn.instr.name]);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CJ instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
@@ -286,15 +286,15 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   // Set enumerations for register values as reported from RVFI
   if (mon_trn.instr.rs1_valid) begin
     mon_trn.instr.rs1_value = rvfi_instr.rs1_rdata;
-    mon_trn.instr.rs1_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs1_value, 32, rs1_is_signed[mon_trn.instr.name]);
+    mon_trn.instr.rs1_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs1_value, $bits(mon_trn.instr.rs1_value), rs1_is_signed[mon_trn.instr.name]);
   end
   if (mon_trn.instr.rs2_valid) begin
     mon_trn.instr.rs2_value = rvfi_instr.rs2_rdata;
-    mon_trn.instr.rs2_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs2_value, 32, rs2_is_signed[mon_trn.instr.name]);
+    mon_trn.instr.rs2_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs2_value, $bits(mon_trn.instr.rs2_value), rs2_is_signed[mon_trn.instr.name]);
   end
   if (mon_trn.instr.rd_valid) begin
     mon_trn.instr.rd_value  = rvfi_instr.rd1_wdata;
-    mon_trn.instr.rd_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rd_value, 32, rd_is_signed[mon_trn.instr.name]);
+    mon_trn.instr.rd_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rd_value, $bits(mon_trn.instr.rd_value), rd_is_signed[mon_trn.instr.name]);
   end
 
   // Write to analysis port

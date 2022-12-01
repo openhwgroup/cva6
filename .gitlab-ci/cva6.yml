@@ -307,14 +307,12 @@ pub_synthesis:
     - source ./cva6/regress/install-cva6.sh
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
     - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$(echo $PERIOD) NAND2_AREA=$(echo $NAND2_AREA) FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$(echo $INPUT_DELAY) OUTPUT_DELAY=$(echo $OUTPUT_DELAY) TARGET=$TARGET
-    - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified_$TARGET.v
-    - mv core-v-cores/cva6/pd/synth/ariane_synth.v artifacts/ariane_synth_$TARGET.v
-    - python3 .gitlab-ci/scripts/report_synth.py core-v-cores/cva6/pd/synth/ariane/reports/$PERIOD/ariane_$(echo $TECH_NAME)_synth_area.rpt core-v-cores/cva6/pd/synth/synthesis_batch.log
+    - mv core-v-cores/cva6/pd/synth/cva6_${TARGET}_synth_modified.v artifacts/cva6_${TARGET}_synth_modified.v
+    - python3 .gitlab-ci/scripts/report_synth.py core-v-cores/cva6/pd/synth/cva6_${TARGET}/reports/$PERIOD/cva6_$(echo $TECH_NAME)_synth_area.rpt core-v-cores/cva6/pd/synth/synthesis_batch.log
   artifacts:
     when: always
     paths:
-      - artifacts/ariane_synth_modified_$TARGET.v
-      - artifacts/ariane_synth_$TARGET.v
+      - artifacts/cva6_${TARGET}_synth_modified.v
       - "artifacts/reports/*.yml"
 
 
@@ -325,9 +323,11 @@ pub_smoke-gate:
   needs:
     - job: pub_synthesis
       artifacts: true
+  parallel:
+    matrix:
+      - TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   variables:
-    DV_TARGET: "cv64a6_imafdc_sv39"
-    DASHBOARD_JOB_TITLE: "Smoke Gate $DV_TARGET"
+    DASHBOARD_JOB_TITLE: "Smoke Gate $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
@@ -335,15 +335,17 @@ pub_smoke-gate:
     - mkdir -p artifacts/reports
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $LIB_VERILOG
+    - echo $FOUNDRY_PATH
+    - echo $PERIOD
+    - echo $TECH_NAME
     - source ./cva6/regress/install-cva6.sh
     - source ./cva6/regress/install-riscv-dv.sh
     - source ./cva6/regress/install-riscv-tests.sh
-    - mv artifacts/ariane_synth_modified_$DV_TARGET.v core-v-cores/cva6/pd/synth/ariane_synth_modified.v
-    - mv artifacts/ariane_synth_$DV_TARGET.v core-v-cores/cva6/pd/synth/ariane_synth.v
+    - mv artifacts/cva6_${TARGET}_synth_modified.v core-v-cores/cva6/pd/synth/cva6_${TARGET}_synth_modified.v
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - cd cva6/sim
     - make vcs_clean_all
-    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-gate $DV_OPTS
+    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target $TARGET --iss=spike,vcs-gate $DV_OPTS
     - cd ../..
     - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
   artifacts:
@@ -405,6 +407,7 @@ pub_wb_dcache:
 
 pub_fpga-build:
   stage: two
+  timeout: 90 minutes
   extends:
     - .template_job_short_ci
   needs:
@@ -433,10 +436,55 @@ pub_fpga-build:
       - "artifacts/ariane_xilinx_$TARGET.bit"
       - "artifacts/reports/*.yml"
 
+pub_generated_tests:
+  stage: two
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: pub_smoke
+      artifacts: false
+  variables:
+    DASHBOARD_SORT_INDEX: 11
+    DASHBOARD_JOB_CATEGORY: "Code Coverage"
+  parallel:
+    matrix:
+      - list_num: 0
+        DASHBOARD_JOB_TITLE: "Generated Random tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random tests using the RISCV-DV"
+      - list_num: 1
+        DASHBOARD_JOB_TITLE: "Generated Arithmetic tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random Arithmetic tests using the RISCV-DV"
+      - list_num: 2
+        DASHBOARD_JOB_TITLE: "Generated CSR tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random CSR tests using the RISCV-DV"
+  script:
+    - mkdir -p artifacts/coverage
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - echo $SYN_VERDI_BASHRC; source $SYN_VERDI_BASHRC
+    - DV_TARGET=cv64a6_imafdc_sv39 #Specification target
+    - source ./cva6/regress/dv-generated-tests.sh
+    - mv cva6/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
+    - mv cva6/sim/seedlist.yaml artifacts/coverage
+    - python3 .gitlab-ci/scripts/report_pass.py
+  rules:
+    - when: manual
+      allow_failure: true
+  timeout: 4h
+  artifacts:
+    when: always
+    paths:
+      - artifacts/coverage/simv.vdb
+      - artifacts/coverage/seedlist.yaml
+      - "artifacts/reports/*.yml"
+    expire_in: 3 week
+
 pub_fpga-boot:
   stage: three
   tags: [fpga,shell]
-  needs: [pub_fpga-build]
+  needs:
+    - job: pub_fpga-build
+      artifacts: true
   variables:
     VERILATOR_ROOT: "/shares/tools/dummy/verilator" # to avoid install of verilator
     SPIKE_ROOT: "/shares/tools/dummy/spike"  # to avoid install of spike
@@ -459,6 +507,37 @@ pub_fpga-boot:
     when: always
     paths:
       - "artifacts/reports/*.yml"
+
+code_coverage-report:
+  stage: three
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: pub_generated_tests
+      artifacts: true
+  variables:
+    DASHBOARD_JOB_TITLE: "Report merge coverage"
+    DASHBOARD_JOB_DESCRIPTION: "Report merge coverage of generated tests"
+    DASHBOARD_SORT_INDEX: 12
+    DASHBOARD_JOB_CATEGORY: "Code Coverage"
+  script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - mkdir -p cva6/sim/vcs_results/default/vcs.d
+    - mv artifacts/coverage/simv.vdb cva6/sim/vcs_results/default/vcs.d/
+    - mv artifacts/coverage/seedlist.yaml cva6/sim/seedlist.yaml
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - echo $SYN_VERDI_BASHRC; source $SYN_VERDI_BASHRC
+    - make -C cva6/sim generate_cov_dash
+    - mv cva6/sim/urgReport artifacts/cov_reports/
+    - python3 .gitlab-ci/scripts/report_pass.py
+  rules:
+    - when: on_success
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/cov_reports/urgReport"
+      - "artifacts/reports/*.yml"
+    expire_in: 3 week
 
 merge_report:
   stage: .post

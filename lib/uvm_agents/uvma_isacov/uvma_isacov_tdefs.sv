@@ -556,7 +556,6 @@ bit c_has_rs1[instr_name_t] = '{
   C_BNEZ : 1,
   C_SLLI : 1,
   C_JR   : 1,
-  C_MV   : 1,
   C_JALR : 1,
   C_ADD  : 1,
   default: 0
@@ -566,7 +565,7 @@ typedef enum {
   ZERO,     // For signed and unsigned values
   NON_ZERO, // For unsigned values
   POSITIVE, // For signed values
-  NEGATIVE  // For signed value
+  NEGATIVE  // For signed values
 } instr_value_t;  // TODO:ropeders should be "value_type_t"?
 
 // Package level methods to map instruction to extension
@@ -725,7 +724,7 @@ function instr_type_t get_instr_type(instr_name_t name);
 endfunction : get_instr_type
 
 // Package level methods to map instruction to type
-function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
+function instr_group_t get_instr_group(instr_name_t name, bit[DEFAULT_XLEN-1:0] mem_addr);
 
   if (name inside {UNKNOWN})
     return UNKNOWN_GROUP;
