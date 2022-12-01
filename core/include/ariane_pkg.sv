@@ -129,12 +129,12 @@ package ariane_pkg;
     endfunction : is_inside_cacheable_regions
 
     // TODO: Slowly move those parameters to the new system.
-    localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
+    localparam NR_SB_ENTRIES = cva6_config_pkg::CVA6ConfigNrScoreboardEntries; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
     localparam ASID_WIDTH    = (riscv::XLEN == 64) ? 16 : 1;
     localparam BITS_SATURATION_COUNTER = 2;
-    localparam NR_COMMIT_PORTS = 2;
+    localparam NR_COMMIT_PORTS = cva6_config_pkg::CVA6ConfigNrCommitPorts;
 
     localparam ENABLE_RENAME = cva6_config_pkg::CVA6ConfigRenameEn;
 
