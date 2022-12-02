@@ -121,7 +121,7 @@ ${CVA6_REPO_DIR}/core/commit_stage.sv
 ${CVA6_REPO_DIR}/core/axi_shim.sv
 
 // What is "frontend"?
-${CVA6_REPO_DIR}/core/frontend/btb.sv
+${CVA6_REPO_DIR}/core/frontend/btb_fpga.sv
 ${CVA6_REPO_DIR}/core/frontend/bht.sv
 ${CVA6_REPO_DIR}/core/frontend/ras.sv
 ${CVA6_REPO_DIR}/core/frontend/instr_scan.sv
