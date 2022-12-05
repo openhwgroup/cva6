@@ -1,0 +1,19 @@
+[options]
+mode bmc
+depth 100
+
+[engines]
+smtbmc
+
+[script]
+read -formal fifo_v3.sv
+read -formal fifo_v2.sv
+read -formal fall_through_register.sv
+read -formal fall_through_register_properties.sv
+prep -top fall_through_register
+
+[files]
+fall_through_register_properties.sv
+../src/fall_through_register.sv
+../src/fifo_v3.sv
+../src/deprecated/fifo_v2.sv

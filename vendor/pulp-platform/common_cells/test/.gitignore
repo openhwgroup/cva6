@@ -1,0 +1,6 @@
+*.syn
+*.pvl
+*.mr
+*.pvk
+*.svf
+synth.tcl
