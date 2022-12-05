@@ -27,8 +27,8 @@
 
 +define+WT_DCACHE
 
-+incdir+${CVA6_REPO_DIR}/common/submodules/common_cells/include/
-+incdir+${CVA6_REPO_DIR}/common/submodules/common_cells/src/
++incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/include/
++incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/
 +incdir+${CVA6_REPO_DIR}/common/local/util/
 
 ${CVA6_REPO_DIR}/core/include/cv32a6_imac_sv0_config_pkg.sv
@@ -55,15 +55,15 @@ ${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
 ${CVA6_REPO_DIR}/core/cvxif_fu.sv
 
 // Common Cells
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/cf_math_pkg.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/fifo_v3.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/lfsr.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/lzc.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/rr_arb_tree.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/shift_reg.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/unread.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/popcount.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/exp_backoff.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/fifo_v3.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lzc.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/rr_arb_tree.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/shift_reg.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/unread.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/popcount.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/exp_backoff.sv
 
 // Floating point unit
 ${CVA6_REPO_DIR}/core/fpu/src/fpnew_pkg.sv
