@@ -1,0 +1,31 @@
+// -*- coding: utf-8 -*-
+// Copyright (C) 2022 Thales DIS France SAS
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
+// Original Author: Zbigniew Chamski (zbigniew.chamski@thalesgroup.com)
+
+{
+    // Name of the project
+    name: "oprecomp_flexfloat",
+
+    // Target directory: relative to the location of this script.
+    target_dir: "pulp-platform/fpnew/tb/flexfloat",
+
+    // Upstream repository
+    upstream: {
+        // URL
+        url: "https://github.com/oprecomp/flexfloat.git",
+        // revision
+        rev: "28be2d4fbf41b38fc37763bb6e90a1c88f6aaa61",
+    }
+
+    //Patch dir for local changes
+    patch_dir: "patches/oprecomp/flexfloat",
+
+    // Exclusions from upstream content
+    exclude_from_upstream: [
+        "CMakeLists.txt",
+        "examples",
+        "test",
+    ]
+}
+
