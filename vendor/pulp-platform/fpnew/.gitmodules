@@ -1,0 +1,9 @@
+[submodule "src-sv/common_cells"]
+	path = src/common_cells
+	url = https://github.com/pulp-platform/common_cells.git
+[submodule "src-sv/fpu_div_sqrt_mvp"]
+	path = src/fpu_div_sqrt_mvp
+	url = https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
+[submodule "tb/flexfloat"]
+	path = tb/flexfloat
+	url = https://github.com/oprecomp/flexfloat.git
