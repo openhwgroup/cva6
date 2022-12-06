@@ -42,6 +42,11 @@ BOARD          ?= genesys2
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
 
+ifndef CVA6_REPO_DIR
+$(warning must set CVA6_REPO_DIR to point at the root of CVA6 sources -- doing it for you...)
+export CVA6_REPO_DIR = $(abspath $(root-dir))
+endif
+
 support_verilator_4 := $(shell ($(verilator) --version | grep '4\.') > /dev/null 2>&1 ; echo $$?)
 ifeq ($(support_verilator_4), 0)
 	verilator_threads := 1
