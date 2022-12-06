@@ -233,13 +233,13 @@ package ariane_pkg;
     typedef logic [(NR_RGPR_PORTS == 3 ? riscv::XLEN : FLEN)-1:0] rs3_len_t;
 
     // static debug hartinfo
-    localparam dm::hartinfo_t DebugHartInfo = '{
+    localparam ariane_dm_pkg::hartinfo_t DebugHartInfo = '{
                                                 zero1:        '0,
                                                 nscratch:      2, // Debug module needs at least two scratch regs
                                                 zero0:        '0,
                                                 dataaccess: 1'b1, // data registers are memory mapped in the debugger
-                                                datasize: dm::DataCount,
-                                                dataaddr: dm::DataAddr
+                                                datasize: ariane_dm_pkg::DataCount,
+                                                dataaddr: ariane_dm_pkg::DataAddr
                                               };
 
     // enables a commit log which matches spikes commit log format for easier trace comparison
