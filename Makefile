@@ -147,7 +147,7 @@ endif
 
 
 # this list contains the standalone components
-src :=  core/axi_adapter.sv                                                          \
+src :=  corev_apu/tb/axi_adapter.sv                                                  \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
         $(wildcard corev_apu/clint/*.sv)                                             \
         $(wildcard corev_apu/fpga/src/axi2apb/src/*.sv)                              \
