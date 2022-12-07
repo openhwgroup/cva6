@@ -17,15 +17,20 @@ class uvma_axi_ar_mon_c extends uvm_monitor;
    `uvm_component_utils(uvma_axi_ar_mon_c)
 
    uvma_axi_ar_item_c                           ar_item;
+   uvma_axi_ar_item_c                           ardrv_item;
    uvm_analysis_port#(uvma_axi_ar_item_c)       uvma_ar_mon_port;
+   uvm_analysis_port#(uvma_axi_ar_item_c)       uvma_ar_mon2drv_port;
+   uvma_axi_cfg_c     cfg;
    uvma_axi_cntxt_c   cntxt;
 
    // Handles to virtual interface modport
    virtual uvma_axi_intf.passive  passive_mp;
+   virtual uvma_axi_intf  vif;
 
    function new(string name = "uvma_axi_ar_mon_c", uvm_component parent);
       super.new(name, parent);
       this.uvma_ar_mon_port = new("uvma_ar_mon_port", this);
+      this.uvma_ar_mon2drv_port = new("uvma_ar_mon2drv_port", this);
    endfunction
 
    function void build_phase(uvm_phase phase);
@@ -37,8 +42,15 @@ class uvma_axi_ar_mon_c extends uvm_monitor;
       end
 
       passive_mp = cntxt.axi_vi.passive;
+      vif = cntxt.axi_vi;
 
       ar_item = uvma_axi_ar_item_c::type_id::create("ar_item", this);
+      ardrv_item = uvma_axi_ar_item_c::type_id::create("ardrv_item", this);
+
+      void'(uvm_config_db#(uvma_axi_cfg_c)::get(this, "", "cfg", cfg));
+      if (cfg == null) begin
+         `uvm_fatal("CFG", "Configuration handle is null")
+      end
 
    endfunction
 
@@ -77,6 +89,19 @@ class uvma_axi_ar_mon_c extends uvm_monitor;
                this.ar_item.ar_ready = 0;
                this.ar_item.ar_lock  = 0;
             end
+         end
+         if(cfg.is_active) begin
+            // collect AR signals
+            this.ardrv_item.ar_id    = vif.ar_id;
+            this.ardrv_item.ar_addr  = vif.ar_addr;
+            this.ardrv_item.ar_len   = vif.ar_len;
+            this.ardrv_item.ar_size  = vif.ar_size;
+            this.ardrv_item.ar_burst = vif.ar_burst;
+            this.ardrv_item.ar_user  = vif.ar_user;
+            this.ardrv_item.ar_valid = vif.ar_valid;
+            this.ardrv_item.ar_ready = vif.ar_ready;
+            this.ardrv_item.ar_lock  = vif.ar_lock;
+            this.uvma_ar_mon2drv_port.write(this.ardrv_item);
          end
          this.uvma_ar_mon_port.write(this.ar_item);
          @(passive_mp.psv_axi_cb); 

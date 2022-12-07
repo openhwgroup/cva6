@@ -17,14 +17,18 @@ class uvma_axi_b_mon_c extends uvm_monitor;
 
    `uvm_component_utils(uvma_axi_b_mon_c)
 
+   uvma_axi_cfg_c                          cfg;
    uvma_axi_cntxt_c                        cntxt;
 
    uvma_axi_b_item_c                       b_item;
+   uvma_axi_b_item_c                       bdrv_item;
 
    uvm_analysis_port #(uvma_axi_b_item_c)  uvma_b_mon_port;
+   uvm_analysis_port #(uvma_axi_b_item_c)  uvma_b_mon2drv_port;
 
    // Handles to virtual interface modport
    virtual uvma_axi_intf.passive  passive_mp;
+   virtual uvma_axi_intf  vif;
 
    extern function new(string name = "uvma_axi_b_mon_c", uvm_component parent);
    extern virtual function void build_phase(uvm_phase phase);
@@ -35,6 +39,7 @@ endclass:uvma_axi_b_mon_c
 function uvma_axi_b_mon_c::new(string name = "uvma_axi_b_mon_c", uvm_component parent);
    super.new(name, parent);
    this.uvma_b_mon_port     = new("uvma_b_mon_port", this);
+   this.uvma_b_mon2drv_port = new("uvma_b_mon2drv_port", this);
 endfunction
 
 function void uvma_axi_b_mon_c::build_phase(uvm_phase phase);
@@ -46,9 +51,16 @@ function void uvma_axi_b_mon_c::build_phase(uvm_phase phase);
          `uvm_fatal("build_phase", "monitor cntxt class failed")
       end
 
+   void'(uvm_config_db#(uvma_axi_cfg_c)::get(this, "", "cfg", cfg));
+      if (cfg == null) begin
+         `uvm_fatal("CFG", "Configuration handle is null")
+      end
+
    passive_mp = cntxt.axi_vi.passive;
+   vif = cntxt.axi_vi;
 
    this.b_item = uvma_axi_b_item_c::type_id::create("b_item", this);
+   this.bdrv_item = uvma_axi_b_item_c::type_id::create("bdrv_item", this);
 
 endfunction:build_phase
 
@@ -69,6 +81,16 @@ task uvma_axi_b_mon_c::monitor_b_items();
       this.b_item.b_valid = passive_mp.psv_axi_cb.b_valid;
       this.b_item.b_ready = passive_mp.psv_axi_cb.b_ready;
       this.uvma_b_mon_port.write(b_item);
+
+      if(cfg.is_active) begin
+         // collect b signals
+         this.bdrv_item.b_id    = vif.b_id;
+         this.bdrv_item.b_resp  = vif.b_resp;
+         this.bdrv_item.b_user  = vif.b_user;
+         this.bdrv_item.b_valid = vif.b_valid;
+         this.bdrv_item.b_ready = vif.b_ready;
+         this.uvma_b_mon2drv_port.write(this.bdrv_item);
+      end
       @(passive_mp.psv_axi_cb);
 
    end

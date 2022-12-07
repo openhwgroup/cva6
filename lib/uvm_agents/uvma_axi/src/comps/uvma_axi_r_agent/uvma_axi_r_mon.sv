@@ -17,14 +17,18 @@ class uvma_axi_r_mon_c extends uvm_monitor;
 
    `uvm_component_utils(uvma_axi_r_mon_c)
 
+   uvma_axi_cfg_c                         cfg;
    uvma_axi_cntxt_c                       cntxt;
 
    uvma_axi_r_item_c                      r_item;
+   uvma_axi_r_item_c                      rdrv_item;
 
    uvm_analysis_port #(uvma_axi_r_item_c) uvma_r_mon_port;
+   uvm_analysis_port #(uvma_axi_r_item_c) uvma_r_mon2drv_port;
 
    // Handles to virtual interface modport
    virtual uvma_axi_intf.passive  passive_mp;
+   virtual uvma_axi_intf  vif;
 
    extern function new(string name = "uvma_axi_r_mon_c", uvm_component parent);
    extern virtual function void build_phase(uvm_phase phase);
@@ -38,6 +42,7 @@ function uvma_axi_r_mon_c::new(string name = "uvma_axi_r_mon_c", uvm_component p
 
    super.new(name, parent);
    uvma_r_mon_port = new("uvma_r_mon_port", this);
+   uvma_r_mon2drv_port = new("uvma_r_mon2drv_port", this);
 
 endfunction
 
@@ -49,9 +54,16 @@ function void uvma_axi_r_mon_c::build_phase(uvm_phase phase);
          `uvm_fatal("build_phase", "monitor cntxt class failed")
       end
 
+   void'(uvm_config_db#(uvma_axi_cfg_c)::get(this, "", "cfg", cfg));
+      if (cfg == null) begin
+         `uvm_fatal("CFG", "Configuration handle is null")
+      end
+
    passive_mp = cntxt.axi_vi.passive;
+   vif = cntxt.axi_vi;
 
    this.r_item = uvma_axi_r_item_c::type_id::create("r_item", this);
+   this.rdrv_item = uvma_axi_r_item_c::type_id::create("rdrv_item", this);
 
 endfunction
 
@@ -79,6 +91,18 @@ task uvma_axi_r_mon_c::monitor_r_items();
       this.r_item.r_ready = passive_mp.psv_axi_cb.r_ready;
 
       this.uvma_r_mon_port.write(r_item);
+
+      if(cfg.is_active) begin
+         // collect AR signals
+         this.rdrv_item.r_id    = vif.r_id;
+         this.rdrv_item.r_data  = vif.r_data;
+         this.rdrv_item.r_resp  = vif.r_resp;
+         this.rdrv_item.r_last  = vif.r_last;
+         this.rdrv_item.r_user  = vif.r_user;
+         this.rdrv_item.r_valid = vif.r_valid;
+         this.rdrv_item.r_ready = vif.r_ready;
+         this.uvma_r_mon2drv_port.write(this.rdrv_item);
+      end
       @(passive_mp.psv_axi_cb);
 
    end
@@ -95,7 +119,6 @@ task uvma_axi_r_mon_c::observe_reset();
       wait (cntxt.axi_vi.rst_n === 1);
       cntxt.reset_state = UVMA_AXI_RESET_STATE_POST_RESET;
       `uvm_info(get_type_name(), $sformatf("RESET_STATE_POST_RESET"), UVM_LOW)
-
    end
 
 endtask : observe_reset

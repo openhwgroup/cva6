@@ -16,18 +16,23 @@ class uvma_axi_aw_mon_c extends uvm_monitor;
 
    `uvm_component_utils(uvma_axi_aw_mon_c)
 
+   uvma_axi_cfg_c     cfg;
    uvma_axi_cntxt_c   cntxt;
 
    uvma_axi_aw_item_c                      aw_item;
+   uvma_axi_aw_item_c                      awdrv_item;
 
    uvm_analysis_port #(uvma_axi_aw_item_c) uvma_aw_mon_port;
+   uvm_analysis_port #(uvma_axi_aw_item_c) uvma_aw_mon2drv_port;
 
    // Handles to virtual interface modport
    virtual uvma_axi_intf.passive  passive_mp;
+   virtual uvma_axi_intf  vif;
 
    function new(string name = "uvma_axi_aw_mon_c", uvm_component parent);
       super.new(name, parent);
       this.uvma_aw_mon_port = new("uvma_aw_mon_port", this);
+      this.uvma_aw_mon2drv_port = new("uvma_aw_mon2drv_port", this);
    endfunction
 
    function void build_phase(uvm_phase phase);
@@ -40,8 +45,15 @@ class uvma_axi_aw_mon_c extends uvm_monitor;
       end
 
       passive_mp = cntxt.axi_vi.passive;
+      vif        = cntxt.axi_vi;
 
       this.aw_item    = uvma_axi_aw_item_c::type_id::create("aw_item", this);
+      this.awdrv_item = uvma_axi_aw_item_c::type_id::create("awdrv_item", this);
+
+      void'(uvm_config_db#(uvma_axi_cfg_c)::get(this, "", "cfg", cfg));
+      if (cfg == null) begin
+         `uvm_fatal("CFG", "Configuration handle is null")
+      end
 
    endfunction
 
@@ -89,6 +101,22 @@ class uvma_axi_aw_mon_c extends uvm_monitor;
                this.aw_item.aw_atop  = 0;
             end
          end
+
+         if(cfg.is_active) begin
+            // collect AR signals
+            this.awdrv_item.aw_id    = vif.aw_id;
+            this.awdrv_item.aw_addr  = vif.aw_addr;
+            this.awdrv_item.aw_len   = vif.aw_len;
+            this.awdrv_item.aw_size  = vif.aw_size;
+            this.awdrv_item.aw_burst = vif.aw_burst;
+            this.awdrv_item.aw_user  = vif.aw_user;
+            this.awdrv_item.aw_valid = vif.aw_valid;
+            this.awdrv_item.aw_ready = vif.aw_ready;
+            this.awdrv_item.aw_lock  = vif.aw_lock;
+            this.awdrv_item.aw_atop  = vif.aw_atop;
+            this.uvma_aw_mon2drv_port.write(this.awdrv_item);
+         end
+
          this.uvma_aw_mon_port.write(this.aw_item);
          @(passive_mp.psv_axi_cb);
       end

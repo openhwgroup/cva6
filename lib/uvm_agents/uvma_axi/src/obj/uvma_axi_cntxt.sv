@@ -20,6 +20,9 @@ class uvma_axi_cntxt_c extends uvm_object;
    // Handle to agent interface
    virtual uvma_axi_intf  axi_vi;
 
+   // Handle to memory storage for active slaves
+   uvml_mem_c mem;
+
    uvma_axi_reset_state_enum  reset_state = UVMA_AXI_RESET_STATE_PRE_RESET;
 
    `uvm_object_utils_begin(uvma_axi_cntxt_c)
@@ -36,6 +39,7 @@ endclass : uvma_axi_cntxt_c
 function uvma_axi_cntxt_c::new(string name = "uvma_axi_cntxt");
 
    super.new(name);
+   mem = uvml_mem_c#(64)::type_id::create("mem");
 
 endfunction : new
 

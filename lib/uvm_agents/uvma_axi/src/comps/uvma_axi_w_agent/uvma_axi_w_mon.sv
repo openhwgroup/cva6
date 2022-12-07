@@ -17,14 +17,18 @@ class uvma_axi_w_mon_c extends uvm_monitor;
 
    `uvm_component_utils(uvma_axi_w_mon_c)
 
+   uvma_axi_cfg_c     cfg;
    uvma_axi_cntxt_c   cntxt;
 
    uvma_axi_w_item_c                                w_item;
+   uvma_axi_w_item_c                                wdrv_item;
 
    uvm_analysis_port #(uvma_axi_w_item_c)           uvma_w_mon_port;
+   uvm_analysis_port #(uvma_axi_w_item_c)           uvma_w_mon2drv_port;
 
    // Handles to virtual interface modport
    virtual uvma_axi_intf.passive  passive_mp;
+   virtual uvma_axi_intf  vif;
 
    extern function new(string name = "uvma_axi_w_mon_c", uvm_component parent);
    extern virtual  function void build_phase(uvm_phase phase);
@@ -37,6 +41,7 @@ function uvma_axi_w_mon_c::new(string name = "uvma_axi_w_mon_c", uvm_component p
 
    super.new(name, parent);
    uvma_w_mon_port = new("uvma_w_mon_port", this);
+   uvma_w_mon2drv_port = new("uvma_w_mon2drv_port", this);
 
 endfunction
 
@@ -50,8 +55,15 @@ function void uvma_axi_w_mon_c::build_phase(uvm_phase phase);
       end
 
    passive_mp = cntxt.axi_vi.passive;
+   vif = cntxt.axi_vi;
 
    w_item = uvma_axi_w_item_c::type_id::create("w_item", this);
+   wdrv_item = uvma_axi_w_item_c::type_id::create("wdrv_item", this);
+
+   void'(uvm_config_db#(uvma_axi_cfg_c)::get(this, "", "cfg", cfg));
+   if (cfg == null) begin
+      `uvm_fatal("CFG", "Configuration handle is null")
+   end
 
 endfunction
 
@@ -70,6 +82,16 @@ task uvma_axi_w_mon_c::monitor_w_items();
       w_item.w_user  = passive_mp.psv_axi_cb.w_user;
       w_item.w_valid = passive_mp.psv_axi_cb.w_valid;
       w_item.w_ready = passive_mp.psv_axi_cb.w_ready;
+      if(cfg.is_active) begin
+         // collect AR signals
+         this.wdrv_item.w_strb   = vif.w_strb;
+         this.wdrv_item.w_data   = vif.w_data;
+         this.wdrv_item.w_last   = vif.w_last;
+         this.wdrv_item.w_user   = vif.w_user;
+         this.wdrv_item.w_valid = vif.w_valid;
+         this.wdrv_item.w_ready = vif.w_ready;
+         this.uvma_w_mon2drv_port.write(this.wdrv_item);
+      end
       this.uvma_w_mon_port.write(this.w_item);
       @(passive_mp.psv_axi_cb);
    end

@@ -24,6 +24,10 @@
 package uvma_axi_pkg;
 
    import uvm_pkg::*;
+   import uvml_mem_pkg  ::*;
+   import "DPI-C" function read_elf(input string filename);
+   import "DPI-C" function byte get_section(output longint address, output longint len);
+   import "DPI-C" context function void read_section(input longint address, inout byte buffer[]);
 
    localparam NrSlaves      = 2; // actually masters, but slaves on the crossbar
    localparam IdWidth       = 4; // 4 is recommended by AXI standard, so lets stick to it, do not change
@@ -37,6 +41,7 @@ package uvma_axi_pkg;
    `include "uvma_axi_tdefs.sv"
 
     // Objects
+   `include "uvma_axi_cfg.sv"
    `include "uvma_axi_cntxt.sv"
 
    `include "uvma_axi_aw_item.sv"
@@ -45,12 +50,22 @@ package uvma_axi_pkg;
    `include "uvma_axi_ar_item.sv"
    `include "uvma_axi_r_item.sv"
 
+   `include "uvma_axi_aw_drv.sv"
+   `include "uvma_axi_w_drv.sv"
+   `include "uvma_axi_b_drv.sv"
+   `include "uvma_axi_ar_drv.sv"
+   `include "uvma_axi_r_drv.sv"
    `include "uvma_axi_aw_mon.sv"
    `include "uvma_axi_w_mon.sv"
    `include "uvma_axi_b_mon.sv"
    `include "uvma_axi_ar_mon.sv"
    `include "uvma_axi_r_mon.sv"
 
+   `include "uvma_axi_aw_sqr.sv"
+   `include "uvma_axi_w_sqr.sv"
+   `include "uvma_axi_b_sqr.sv"
+   `include "uvma_axi_ar_sqr.sv"
+   `include "uvma_axi_r_sqr.sv"
 
    `include "uvma_axi_aw_agent.sv"
    `include "uvma_axi_w_agent.sv"
@@ -58,7 +73,11 @@ package uvma_axi_pkg;
    `include "uvma_axi_ar_agent.sv"
    `include "uvma_axi_r_agent.sv"
 
+   `include "uvma_axi_vsqr.sv"
+
    `include "uvma_axi_agent.sv"
+    // Sequences
+   `include "uvma_axi_seq_lib.sv"
 
 endpackage : uvma_axi_pkg
 
