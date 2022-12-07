@@ -11,13 +11,19 @@ determine their own directory based on the implementation langugage hooks availa
 For example from a bash-type shell:<br>
 > % export PATH=./core-v-verif/bin:$PATH
 
+Requirements
+============
+Much of the scriptware in CORE-V-VERIF is written in python and makes use of external packages that are not necessarily distributed with python itself.
+An easy way to get the Python plug-ins installed on your machine is:
+> % git clone https://github.com/openhwgroup/core-v-verif.git \<core-v-verif><br>
+> % cd \<core-v-verif>/bin<br>
+> % pip3 install -r requirements.txt<br>
+
 Utility Documentation
-==================================
+=====================
 
 Documentation for each of the utilities are included below.  Each utility should also support a help option
 on the command line for describing options and arguments available.
-
-==================================
 
 ## makeuvmt
 This is a simple wrapper to redirect a make call to any core's UVMT Makefile.  This redirection script

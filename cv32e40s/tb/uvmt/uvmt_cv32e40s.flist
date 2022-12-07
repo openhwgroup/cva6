@@ -22,7 +22,7 @@
 -f ${DV_UVML_LOGS_PATH}/uvml_logs_pkg.flist
 -f ${DV_UVML_SB_PATH}/uvml_sb_pkg.flist
 -f ${DV_UVML_MEM_PATH}/uvml_mem_pkg.flist
--f $(DV_SVLIB_PATH)/svlib_pkg.flist
+-f ${DV_SVLIB_PATH}/svlib_pkg.flist
 
 // Agents
 -f ${DV_UVMA_CORE_CNTRL_PATH}/uvma_core_cntrl_pkg.flist

@@ -21,6 +21,7 @@
 # core-v-verif
 Functional verification project for the CORE-V family of RISC-V cores.
 
+<!--
 ## NEWS UPDATES:
 **2021-07-15**: The verificaton environment for the [cv32e40s](https://github.com/openhwgroup/cv32e40s) is up and running.
 <br>
@@ -30,11 +31,12 @@ Functional verification project for the CORE-V family of RISC-V cores.
 This tag clones the v1.0.0 release of the CV32E40P CORE-V core and will allow you to reproduce the verification environment as it existed at `RTL Freeze`.
 <br>
 More news is available in the [archive](https://github.com/openhwgroup/core-v-verif/blob/master/NEWS_ARCHIVE.md).
+-->
 
 ## Getting Started
 First, have a look at the [OpenHW Group's website](https://www.openhwgroup.org) to learn a bit more about who we are and what we are doing.
 <br>
-For first time users of CORE-V-VERIF, the **Quick Start Guide** in the [CORE-V-VERIF Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/) is the best place to start.
+For first time users of CORE-V-VERIF, the **Quick Start Guide** in the [CORE-V-VERIF Verification Strategy](https://docs.openhwgroup.org/projects/core-v-verif/en/latest/quick_start.html) is the best place to start.
 
 <!--
 ### Getting started with CV32E4\* cores

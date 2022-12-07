@@ -104,6 +104,11 @@ $ git push -u origin newbranch
 <br>
 The -u switch sets up tracking to the specified remote (in this example, origin).
 
+## Force your forked repo to be the same as upstream
+\# Note: this is a heavy-handed approach.<br>
+$ git fetch upstream<br>
+$ git reset --hard upstream/master<br>
+$ git push origin master --force
 
 ## Using ssh (need to set-up ssh keys first)
 \# git remote set-url origin git@github.com:username/your-repository.git<br>
