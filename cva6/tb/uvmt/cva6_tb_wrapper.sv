@@ -46,7 +46,8 @@ module cva6_tb_wrapper #(
   output wire                          tb_exit_o,
   output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
-  output cvxif_pkg::cvxif_req_t        cvxif_req
+  output cvxif_pkg::cvxif_req_t        cvxif_req,
+  uvma_axi_intf                        axi_slave
 );
 
   ariane_axi::req_t    axi_ariane_req;
@@ -156,6 +157,56 @@ module cva6_tb_wrapper #(
     .rdata_o    ( rdata                                                                       )
   );
 
+   // AW Channel
+   assign axi_slave.aw_valid  = cva6_axi_bus.aw_valid;
+   assign axi_slave.aw_ready  = cva6_axi_bus.aw_ready;
+   assign axi_slave.aw_id     = cva6_axi_bus.aw_id;
+   assign axi_slave.aw_addr   = cva6_axi_bus.aw_addr;
+   assign axi_slave.aw_len    = cva6_axi_bus.aw_len;
+   assign axi_slave.aw_size   = cva6_axi_bus.aw_size;
+   assign axi_slave.aw_burst  = cva6_axi_bus.aw_burst;
+   assign axi_slave.aw_lock   = cva6_axi_bus.aw_lock;
+   assign axi_slave.aw_cache  = cva6_axi_bus.aw_cache;
+   assign axi_slave.aw_prot   = cva6_axi_bus.aw_prot;
+   assign axi_slave.aw_qos    = cva6_axi_bus.aw_qos;
+   assign axi_slave.aw_region = cva6_axi_bus.aw_region;
+   assign axi_slave.aw_user   = cva6_axi_bus.aw_user;
+   assign axi_slave.aw_atop   = cva6_axi_bus.aw_atop;
+   // W Channel
+   assign axi_slave.w_valid = cva6_axi_bus.w_valid;
+   assign axi_slave.w_ready = cva6_axi_bus.w_ready;
+   assign axi_slave.w_data  = cva6_axi_bus.w_data;
+   assign axi_slave.w_strb  = cva6_axi_bus.w_strb;
+   assign axi_slave.w_last  = cva6_axi_bus.w_last;
+   assign axi_slave.w_user  = cva6_axi_bus.w_user;
+   // B Channel
+   assign axi_slave.b_valid = cva6_axi_bus.b_valid;
+   assign axi_slave.b_ready = cva6_axi_bus.b_ready;
+   assign axi_slave.b_id    = cva6_axi_bus.b_id;
+   assign axi_slave.b_resp  = cva6_axi_bus.b_resp;
+   assign axi_slave.b_user  = cva6_axi_bus.b_user;
+   // AR Channel
+   assign axi_slave.ar_valid  = cva6_axi_bus.ar_valid;
+   assign axi_slave.ar_ready  = cva6_axi_bus.ar_ready;
+   assign axi_slave.ar_id     = cva6_axi_bus.ar_id;
+   assign axi_slave.ar_addr   = cva6_axi_bus.ar_addr;
+   assign axi_slave.ar_len    = cva6_axi_bus.ar_len;
+   assign axi_slave.ar_size   = cva6_axi_bus.ar_size;
+   assign axi_slave.ar_burst  = cva6_axi_bus.ar_burst;
+   assign axi_slave.ar_lock   = cva6_axi_bus.ar_lock;
+   assign axi_slave.ar_cache  = cva6_axi_bus.ar_cache;
+   assign axi_slave.ar_prot   = cva6_axi_bus.ar_prot;
+   assign axi_slave.ar_qos    = cva6_axi_bus.ar_qos;
+   assign axi_slave.ar_region = cva6_axi_bus.ar_region;
+   assign axi_slave.ar_user   = cva6_axi_bus.ar_user;
+   // R Channel
+   assign axi_slave.r_valid = cva6_axi_bus.r_valid;
+   assign axi_slave.r_ready = cva6_axi_bus.r_ready;
+   assign axi_slave.r_id    = cva6_axi_bus.r_id;
+   assign axi_slave.r_data  = cva6_axi_bus.r_data;
+   assign axi_slave.r_resp  = cva6_axi_bus.r_resp;
+   assign axi_slave.r_last  = cva6_axi_bus.r_last;
+   assign axi_slave.r_user  = cva6_axi_bus.r_user;
     initial begin
         automatic logic [7:0][7:0] mem_row;
         longint address;

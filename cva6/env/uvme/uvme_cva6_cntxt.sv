@@ -30,6 +30,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
    // Agent context handles
    uvma_clknrst_cntxt_c    clknrst_cntxt;
    uvma_cvxif_cntxt_c      cvxif_cntxt;
+   uvma_axi_cntxt_c        axi_cntxt;
 
    // Events
    uvm_event  sample_cfg_e;
@@ -38,6 +39,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
 
    `uvm_object_utils_begin(uvme_cva6_cntxt_c)
       `uvm_field_object(clknrst_cntxt,   UVM_DEFAULT)
+      `uvm_field_object(axi_cntxt,     UVM_DEFAULT)
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
    `uvm_object_utils_end
@@ -56,6 +58,7 @@ function uvme_cva6_cntxt_c::new(string name="uvme_cva6_cntxt");
    super.new(name);
 
    clknrst_cntxt   = uvma_clknrst_cntxt_c::type_id::create("clknrst_cntxt");
+   axi_cntxt       = uvma_axi_cntxt_c::type_id::create("axi_cntxt");
 
    sample_cfg_e   = new("sample_cfg_e"  );
    sample_cntxt_e = new("sample_cntxt_e");

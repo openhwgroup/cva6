@@ -41,6 +41,7 @@ class uvme_cva6_env_c extends uvm_env;
    // Agents
    uvma_clknrst_agent_c   clknrst_agent;
    uvma_cvxif_agent_c     cvxif_agent;
+   uvma_axi_agent_c       axi_agent;
 
 
 
@@ -209,6 +210,7 @@ function void uvme_cva6_env_c::assign_cntxt();
 
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
+   uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
 
 endfunction: assign_cntxt
 
@@ -217,6 +219,7 @@ function void uvme_cva6_env_c::create_agents();
 
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    cvxif_agent   = uvma_cvxif_agent_c::type_id::create("cvxif_agent", this);
+   axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
 
 endfunction: create_agents
 
