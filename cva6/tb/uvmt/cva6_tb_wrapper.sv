@@ -105,138 +105,58 @@ module cva6_tb_wrapper #(
   logic [AXI_DATA_WIDTH-1:0]    rdata;
   logic [AXI_USER_WIDTH-1:0]    ruser;
 
-  AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
-  ) cva6_axi_bus();
-
-  axi_master_connect #(
-  ) i_axi_master_connect_cva6_to_mem (
-    .axi_req_i  (axi_ariane_req),
-    .axi_resp_o (axi_ariane_resp),
-    .master     (cva6_axi_bus)
-  );
-
-  axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
-  ) i_cva6_axi2mem (
-    .clk_i  ( clk_i       ),
-    .rst_ni ( rst_ni      ),
-    .slave  ( cva6_axi_bus ),
-    .req_o  ( req          ),
-    .we_o   ( we           ),
-    .addr_o ( addr         ),
-    .be_o   ( be           ),
-    .user_o ( wuser        ),
-    .data_o ( wdata        ),
-    .user_i ( ruser        ),
-    .data_i ( rdata        )
-  );
-
-  sram #(
-    .USER_WIDTH ( AXI_USER_WIDTH ),
-    .DATA_WIDTH ( AXI_DATA_WIDTH ),
-    .USER_EN    ( AXI_USER_EN    ),
-    .SIM_INIT   ( "zeros"        ),
-    .NUM_WORDS  ( NUM_WORDS      )
-  ) i_sram (
-    .clk_i      ( clk_i                                                                       ),
-    .rst_ni     ( rst_ni                                                                      ),
-    .req_i      ( req                                                                         ),
-    .we_i       ( we                                                                          ),
-    .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(AXI_DATA_WIDTH/8):$clog2(AXI_DATA_WIDTH/8)] ),
-    .wuser_i    ( wuser                                                                       ),
-    .wdata_i    ( wdata                                                                       ),
-    .be_i       ( be                                                                          ),
-    .ruser_o    ( ruser                                                                       ),
-    .rdata_o    ( rdata                                                                       )
-  );
-
-   // AW Channel
-   assign axi_slave.aw_valid  = cva6_axi_bus.aw_valid;
-   assign axi_slave.aw_ready  = cva6_axi_bus.aw_ready;
-   assign axi_slave.aw_id     = cva6_axi_bus.aw_id;
-   assign axi_slave.aw_addr   = cva6_axi_bus.aw_addr;
-   assign axi_slave.aw_len    = cva6_axi_bus.aw_len;
-   assign axi_slave.aw_size   = cva6_axi_bus.aw_size;
-   assign axi_slave.aw_burst  = cva6_axi_bus.aw_burst;
-   assign axi_slave.aw_lock   = cva6_axi_bus.aw_lock;
-   assign axi_slave.aw_cache  = cva6_axi_bus.aw_cache;
-   assign axi_slave.aw_prot   = cva6_axi_bus.aw_prot;
-   assign axi_slave.aw_qos    = cva6_axi_bus.aw_qos;
-   assign axi_slave.aw_region = cva6_axi_bus.aw_region;
-   assign axi_slave.aw_user   = cva6_axi_bus.aw_user;
-   assign axi_slave.aw_atop   = cva6_axi_bus.aw_atop;
-   // W Channel
-   assign axi_slave.w_valid = cva6_axi_bus.w_valid;
-   assign axi_slave.w_ready = cva6_axi_bus.w_ready;
-   assign axi_slave.w_data  = cva6_axi_bus.w_data;
-   assign axi_slave.w_strb  = cva6_axi_bus.w_strb;
-   assign axi_slave.w_last  = cva6_axi_bus.w_last;
-   assign axi_slave.w_user  = cva6_axi_bus.w_user;
+  //Response structs
+   assign axi_ariane_resp.aw_ready = axi_slave.aw_ready;
+   assign axi_ariane_resp.ar_ready = axi_slave.ar_ready;
+   assign axi_ariane_resp.w_ready  = axi_slave.w_ready;
+   assign axi_ariane_resp.b_valid  = axi_slave.b_valid;
+   assign axi_ariane_resp.r_valid  = axi_slave.r_valid;
    // B Channel
-   assign axi_slave.b_valid = cva6_axi_bus.b_valid;
-   assign axi_slave.b_ready = cva6_axi_bus.b_ready;
-   assign axi_slave.b_id    = cva6_axi_bus.b_id;
-   assign axi_slave.b_resp  = cva6_axi_bus.b_resp;
-   assign axi_slave.b_user  = cva6_axi_bus.b_user;
-   // AR Channel
-   assign axi_slave.ar_valid  = cva6_axi_bus.ar_valid;
-   assign axi_slave.ar_ready  = cva6_axi_bus.ar_ready;
-   assign axi_slave.ar_id     = cva6_axi_bus.ar_id;
-   assign axi_slave.ar_addr   = cva6_axi_bus.ar_addr;
-   assign axi_slave.ar_len    = cva6_axi_bus.ar_len;
-   assign axi_slave.ar_size   = cva6_axi_bus.ar_size;
-   assign axi_slave.ar_burst  = cva6_axi_bus.ar_burst;
-   assign axi_slave.ar_lock   = cva6_axi_bus.ar_lock;
-   assign axi_slave.ar_cache  = cva6_axi_bus.ar_cache;
-   assign axi_slave.ar_prot   = cva6_axi_bus.ar_prot;
-   assign axi_slave.ar_qos    = cva6_axi_bus.ar_qos;
-   assign axi_slave.ar_region = cva6_axi_bus.ar_region;
-   assign axi_slave.ar_user   = cva6_axi_bus.ar_user;
+   assign axi_ariane_resp.b.id   = axi_slave.b_id;
+   assign axi_ariane_resp.b.resp = axi_slave.b_resp;
+   assign axi_ariane_resp.b.user = axi_slave.b_user;
    // R Channel
-   assign axi_slave.r_valid = cva6_axi_bus.r_valid;
-   assign axi_slave.r_ready = cva6_axi_bus.r_ready;
-   assign axi_slave.r_id    = cva6_axi_bus.r_id;
-   assign axi_slave.r_data  = cva6_axi_bus.r_data;
-   assign axi_slave.r_resp  = cva6_axi_bus.r_resp;
-   assign axi_slave.r_last  = cva6_axi_bus.r_last;
-   assign axi_slave.r_user  = cva6_axi_bus.r_user;
-    initial begin
-        automatic logic [7:0][7:0] mem_row;
-        longint address;
-        longint len;
-        byte buffer[];
-        void'(uvcl.get_arg_value("+PRELOAD=", binary));
+   assign axi_ariane_resp.r.id   = axi_slave.r_id;
+   assign axi_ariane_resp.r.data = axi_slave.r_data;
+   assign axi_ariane_resp.r.resp = axi_slave.r_resp;
+   assign axi_ariane_resp.r.last = axi_slave.r_last;
+   assign axi_ariane_resp.r.user = axi_slave.r_user;
 
-        if (binary != "") begin
+   // Request structs
+   assign axi_slave.aw_valid = axi_ariane_req.aw_valid;
+   assign axi_slave.w_valid  = axi_ariane_req.w_valid;
+   assign axi_slave.b_ready  = axi_ariane_req.b_ready;
+   assign axi_slave.ar_valid = axi_ariane_req.ar_valid;
+   assign axi_slave.r_ready  = axi_ariane_req.r_ready;
+   // AW Channel
+   assign axi_slave.aw_id     = axi_ariane_req.aw.id;
+   assign axi_slave.aw_addr   = axi_ariane_req.aw.addr;
+   assign axi_slave.aw_len    = axi_ariane_req.aw.len;
+   assign axi_slave.aw_size   = axi_ariane_req.aw.size;
+   assign axi_slave.aw_burst  = axi_ariane_req.aw.burst;
+   assign axi_slave.aw_lock   = axi_ariane_req.aw.lock;
+   assign axi_slave.aw_cache  = axi_ariane_req.aw.cache;
+   assign axi_slave.aw_prot   = axi_ariane_req.aw.prot;
+   assign axi_slave.aw_qos    = axi_ariane_req.aw.qos;
+   assign axi_slave.aw_region = axi_ariane_req.aw.region;
+   assign axi_slave.aw_user   = 0;
+    // W Channel
+   assign axi_slave.w_data = axi_ariane_req.w.data;
+   assign axi_slave.w_strb = axi_ariane_req.w.strb;
+   assign axi_slave.w_last = axi_ariane_req.w.last;
+   assign axi_slave.w_user = 0;
+   // AR Channel
+   assign axi_slave.ar_id     = axi_ariane_req.ar.id;
+   assign axi_slave.ar_addr   = axi_ariane_req.ar.addr;
+   assign axi_slave.ar_len    = axi_ariane_req.ar.len;
+   assign axi_slave.ar_size   = axi_ariane_req.ar.size;
+   assign axi_slave.ar_burst  = axi_ariane_req.ar.burst;
+   assign axi_slave.ar_lock   = axi_ariane_req.ar.lock;
+   assign axi_slave.ar_cache  = axi_ariane_req.ar.cache;
+   assign axi_slave.ar_prot   = axi_ariane_req.ar.prot;
+   assign axi_slave.ar_qos    = axi_ariane_req.ar.qos;
+   assign axi_slave.ar_region = axi_ariane_req.ar.region;
+   assign axi_slave.ar_user   = 0;
 
-            void'(read_elf(binary));
-
-            wait(clk_i);
-
-            // while there are more sections to process
-            while (get_section(address, len)) begin
-                automatic int num_words0 = (len+7)/8;
-                `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
-                buffer = new [num_words0*8];
-                void'(read_section(address, buffer));
-                // preload memories
-                // 64-bit
-                for (int i = 0; i < num_words0; i++) begin
-                    mem_row = '0;
-                    for (int j = 0; j < 8; j++) begin
-                        mem_row[j] = buffer[i*8 + j];
-                    end
-                    `MAIN_MEM((address[23:0] >> 3) + i) = mem_row;
-                end
-            end
-        end
-    end
 
 endmodule

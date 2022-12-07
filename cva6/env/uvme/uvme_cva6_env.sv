@@ -203,6 +203,8 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*cvxif_agent", "cfg", cfg.cvxif_cfg);
 
+   uvm_config_db#(uvma_axi_cfg_c)::set(this, "*axi_agent", "cfg", cfg.axi_cfg);
+
 endfunction: assign_cfg
 
 
@@ -269,16 +271,29 @@ function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
    vsequencer.cvxif_sequencer     = cvxif_agent.sequencer;
+   vsequencer.axi_vsequencer      = axi_agent.vsequencer;
 
 endfunction: assemble_vsequencer
 
 
 task uvme_cva6_env_c::run_phase(uvm_phase phase);
 
+   fork
+
+      begin
             uvma_cvxif_seq_c        cvxif_seq;
             cvxif_seq = uvma_cvxif_seq_c::type_id::create("cvxif_seq");
             cvxif_seq.start(cvxif_agent.sequencer);
+      end
 
+      begin
+         if(cfg.axi_cfg.is_active == UVM_ACTIVE) begin
+            uvma_axi_vseq_c  axi_vseq;
+            axi_vseq = uvma_axi_vseq_c::type_id::create("axi_vseq");
+            axi_vseq.start(axi_agent.vsequencer);
+         end
+      end
+   join_none
 endtask
 
 function void uvme_cva6_env_c::connect_coverage_model();
