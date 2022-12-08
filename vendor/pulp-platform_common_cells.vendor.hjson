@@ -26,7 +26,15 @@
         ".github",
         ".gitlab-ci.yml",
         ".travis.yml",
+        "Bender.yml",
         "ci",
+        "common_cells.core",
+        "formal",
+        "ips_list.yml",
+        "lint",
+        "Makefile",
+        "src_files.yml",
+        "test",
     ]
 }
 
