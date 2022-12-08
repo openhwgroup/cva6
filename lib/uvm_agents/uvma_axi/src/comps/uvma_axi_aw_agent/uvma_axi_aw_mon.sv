@@ -21,9 +21,11 @@ class uvma_axi_aw_mon_c extends uvm_monitor;
 
    uvma_axi_aw_item_c                      aw_item;
    uvma_axi_aw_item_c                      awdrv_item;
+   uvma_axi_base_seq_item_c                transaction;
 
    uvm_analysis_port #(uvma_axi_aw_item_c) uvma_aw_mon_port;
    uvm_analysis_port #(uvma_axi_aw_item_c) uvma_aw_mon2drv_port;
+   uvm_analysis_port#(uvma_axi_base_seq_item_c) aw_mon2log_port;
 
    // Handles to virtual interface modport
    virtual uvma_axi_intf.passive  passive_mp;
@@ -33,6 +35,7 @@ class uvma_axi_aw_mon_c extends uvm_monitor;
       super.new(name, parent);
       this.uvma_aw_mon_port = new("uvma_aw_mon_port", this);
       this.uvma_aw_mon2drv_port = new("uvma_aw_mon2drv_port", this);
+      this.aw_mon2log_port = new("aw_mon2log_port", this);
    endfunction
 
    function void build_phase(uvm_phase phase);
@@ -49,6 +52,7 @@ class uvma_axi_aw_mon_c extends uvm_monitor;
 
       this.aw_item    = uvma_axi_aw_item_c::type_id::create("aw_item", this);
       this.awdrv_item = uvma_axi_aw_item_c::type_id::create("awdrv_item", this);
+      this.transaction = uvma_axi_base_seq_item_c::type_id::create("transaction", this);
 
       void'(uvm_config_db#(uvma_axi_cfg_c)::get(this, "", "cfg", cfg));
       if (cfg == null) begin
@@ -118,6 +122,16 @@ class uvma_axi_aw_mon_c extends uvm_monitor;
          end
 
          this.uvma_aw_mon_port.write(this.aw_item);
+
+         this.transaction.aw_id    = passive_mp.psv_axi_cb.aw_id;
+         this.transaction.aw_addr  = passive_mp.psv_axi_cb.aw_addr;
+         this.transaction.aw_valid = passive_mp.psv_axi_cb.aw_valid;
+         this.transaction.aw_ready = passive_mp.psv_axi_cb.aw_ready;
+         this.transaction.aw_lock  = passive_mp.psv_axi_cb.aw_lock;
+         if( cntxt.reset_state == UVMA_AXI_RESET_STATE_POST_RESET) begin
+            this.aw_mon2log_port.write(this.transaction);
+         end
+
          @(passive_mp.psv_axi_cb);
       end
 

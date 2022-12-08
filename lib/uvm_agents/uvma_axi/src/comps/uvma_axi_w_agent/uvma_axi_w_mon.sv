@@ -22,9 +22,11 @@ class uvma_axi_w_mon_c extends uvm_monitor;
 
    uvma_axi_w_item_c                                w_item;
    uvma_axi_w_item_c                                wdrv_item;
+   uvma_axi_base_seq_item_c                         transaction;
 
    uvm_analysis_port #(uvma_axi_w_item_c)           uvma_w_mon_port;
    uvm_analysis_port #(uvma_axi_w_item_c)           uvma_w_mon2drv_port;
+   uvm_analysis_port#(uvma_axi_base_seq_item_c)     w_mon2log_port;
 
    // Handles to virtual interface modport
    virtual uvma_axi_intf.passive  passive_mp;
@@ -42,6 +44,7 @@ function uvma_axi_w_mon_c::new(string name = "uvma_axi_w_mon_c", uvm_component p
    super.new(name, parent);
    uvma_w_mon_port = new("uvma_w_mon_port", this);
    uvma_w_mon2drv_port = new("uvma_w_mon2drv_port", this);
+   w_mon2log_port = new("w_mon2log_port", this);
 
 endfunction
 
@@ -59,6 +62,7 @@ function void uvma_axi_w_mon_c::build_phase(uvm_phase phase);
 
    w_item = uvma_axi_w_item_c::type_id::create("w_item", this);
    wdrv_item = uvma_axi_w_item_c::type_id::create("wdrv_item", this);
+   transaction = uvma_axi_base_seq_item_c::type_id::create("transaction", this);
 
    void'(uvm_config_db#(uvma_axi_cfg_c)::get(this, "", "cfg", cfg));
    if (cfg == null) begin
@@ -82,6 +86,7 @@ task uvma_axi_w_mon_c::monitor_w_items();
       w_item.w_user  = passive_mp.psv_axi_cb.w_user;
       w_item.w_valid = passive_mp.psv_axi_cb.w_valid;
       w_item.w_ready = passive_mp.psv_axi_cb.w_ready;
+
       if(cfg.is_active) begin
          // collect AR signals
          this.wdrv_item.w_strb   = vif.w_strb;
@@ -93,6 +98,15 @@ task uvma_axi_w_mon_c::monitor_w_items();
          this.uvma_w_mon2drv_port.write(this.wdrv_item);
       end
       this.uvma_w_mon_port.write(this.w_item);
+
+      this.transaction.w_valid = passive_mp.psv_axi_cb.w_valid;
+      this.transaction.w_ready = passive_mp.psv_axi_cb.w_ready;
+      this.transaction.w_data  = passive_mp.psv_axi_cb.w_data;
+      this.transaction.w_last  = passive_mp.psv_axi_cb.w_last;
+      if( cntxt.reset_state == UVMA_AXI_RESET_STATE_POST_RESET) begin
+         w_mon2log_port.write(transaction);
+      end
+
       @(passive_mp.psv_axi_cb);
    end
 

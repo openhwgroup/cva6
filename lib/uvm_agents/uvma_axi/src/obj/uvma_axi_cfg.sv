@@ -15,6 +15,7 @@
 class uvma_axi_cfg_c extends uvm_object;
 
    rand uvm_active_passive_enum            is_active;
+   rand bit                                trn_log_enabled;
    rand uvma_axi_drv_slv_mode_enum         drv_slv_mode;
    rand uvma_axi_drv_slv_err_mode_enum     drv_slv_err_mode;
 

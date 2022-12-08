@@ -22,9 +22,11 @@ class uvma_axi_r_mon_c extends uvm_monitor;
 
    uvma_axi_r_item_c                      r_item;
    uvma_axi_r_item_c                      rdrv_item;
+   uvma_axi_base_seq_item_c               transaction;
 
    uvm_analysis_port #(uvma_axi_r_item_c) uvma_r_mon_port;
    uvm_analysis_port #(uvma_axi_r_item_c) uvma_r_mon2drv_port;
+   uvm_analysis_port#(uvma_axi_base_seq_item_c) r_mon2log_port;
 
    // Handles to virtual interface modport
    virtual uvma_axi_intf.passive  passive_mp;
@@ -43,6 +45,7 @@ function uvma_axi_r_mon_c::new(string name = "uvma_axi_r_mon_c", uvm_component p
    super.new(name, parent);
    uvma_r_mon_port = new("uvma_r_mon_port", this);
    uvma_r_mon2drv_port = new("uvma_r_mon2drv_port", this);
+   r_mon2log_port = new("r_mon2log_port", this);
 
 endfunction
 
@@ -64,6 +67,7 @@ function void uvma_axi_r_mon_c::build_phase(uvm_phase phase);
 
    this.r_item = uvma_axi_r_item_c::type_id::create("r_item", this);
    this.rdrv_item = uvma_axi_r_item_c::type_id::create("rdrv_item", this);
+   this.transaction = uvma_axi_base_seq_item_c::type_id::create("transaction", this);
 
 endfunction
 
@@ -103,6 +107,17 @@ task uvma_axi_r_mon_c::monitor_r_items();
          this.rdrv_item.r_ready = vif.r_ready;
          this.uvma_r_mon2drv_port.write(this.rdrv_item);
       end
+
+      this.transaction.r_id    = passive_mp.psv_axi_cb.r_id;
+      this.transaction.r_data  = passive_mp.psv_axi_cb.r_data;
+      this.transaction.r_valid = passive_mp.psv_axi_cb.r_valid;
+      this.transaction.r_ready = passive_mp.psv_axi_cb.r_ready;
+      this.transaction.r_resp  = passive_mp.psv_axi_cb.r_resp;
+      this.transaction.r_last  = passive_mp.psv_axi_cb.r_last;
+      if( cntxt.reset_state == UVMA_AXI_RESET_STATE_POST_RESET) begin
+         this.r_mon2log_port.write(transaction);
+      end
+
       @(passive_mp.psv_axi_cb);
 
    end

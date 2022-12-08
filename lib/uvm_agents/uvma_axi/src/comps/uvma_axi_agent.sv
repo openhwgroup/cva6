@@ -24,6 +24,8 @@ class uvma_axi_agent_c extends uvm_agent;
    uvma_axi_r_agent_c         r_agent;
    uvma_axi_vsqr_c            vsequencer;
 
+   uvma_axi_seq_item_logger_c seq_item_logger;
+
    uvma_axi_cfg_c      cfg;
    uvma_axi_cntxt_c    cntxt;
 
@@ -83,6 +85,7 @@ class uvma_axi_agent_c extends uvm_agent;
       this.b_agent  = uvma_axi_b_agent_c  :: type_id :: create("b_agent",  this);
       this.ar_agent = uvma_axi_ar_agent_c :: type_id :: create("ar_agent", this);
       this.r_agent  = uvma_axi_r_agent_c  :: type_id :: create("r_agent",  this);
+      this.seq_item_logger = uvma_axi_seq_item_logger_c::type_id::create("seq_item_logger", this);
       if( cfg.is_active == UVM_ACTIVE) begin
          vsequencer = uvma_axi_vsqr_c::type_id::create("sequencer", this);
       end
@@ -97,6 +100,10 @@ class uvma_axi_agent_c extends uvm_agent;
          assemble_vsequencer();
       end else begin
          `uvm_info(get_type_name(), $sformatf("PASSIVE MODE"), UVM_LOW)
+      end
+
+      if (cfg.trn_log_enabled) begin
+         connect_trn_loggers();
       end
 
    endfunction
@@ -133,6 +140,15 @@ class uvma_axi_agent_c extends uvm_agent;
 
    endfunction: assemble_vsequencer
 
+   function void connect_trn_loggers();
+
+      this.aw_agent.monitor.aw_mon2log_port.connect(seq_item_logger.analysis_export);
+      this.w_agent.monitor.w_mon2log_port.connect(seq_item_logger.analysis_export);
+      this.b_agent.monitor.b_mon2log_port.connect(seq_item_logger.analysis_export);
+      this.ar_agent.monitor.ar_mon2log_port.connect(seq_item_logger.analysis_export);
+      this.r_agent.monitor.r_mon2log_port.connect(seq_item_logger.analysis_export);
+
+   endfunction : connect_trn_loggers
 
 endclass : uvma_axi_agent_c
 

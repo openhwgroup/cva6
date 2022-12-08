@@ -30,6 +30,9 @@ package uvma_axi_pkg;
 
    import uvm_pkg::*;
    import uvml_mem_pkg  ::*;
+   import uvml_trn_pkg  ::*;
+   import uvml_logs_pkg ::*;
+
    import "DPI-C" function read_elf(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len);
    import "DPI-C" context function void read_section(input longint address, inout byte buffer[]);
@@ -49,6 +52,7 @@ package uvma_axi_pkg;
    `include "uvma_axi_cfg.sv"
    `include "uvma_axi_cntxt.sv"
 
+   `include "uvma_axi_base_seq_item.sv"
    `include "uvma_axi_aw_item.sv"
    `include "uvma_axi_w_item.sv"
    `include "uvma_axi_b_item.sv"
@@ -71,6 +75,8 @@ package uvma_axi_pkg;
    `include "uvma_axi_b_sqr.sv"
    `include "uvma_axi_ar_sqr.sv"
    `include "uvma_axi_r_sqr.sv"
+
+   `include "uvma_axi_seq_item_logger.sv"
 
    `include "uvma_axi_aw_agent.sv"
    `include "uvma_axi_w_agent.sv"
