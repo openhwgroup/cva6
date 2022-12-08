@@ -20,6 +20,11 @@
 
 // Interfaces / Modules / Checkers
 `include "uvma_axi_intf.sv"
+`include "uvma_axi_aw_assert.sv"
+`include "uvma_axi_w_assert.sv"
+`include "uvma_axi_ar_assert.sv"
+`include "uvma_axi_r_assert.sv"
+`include "uvma_axi_b_assert.sv"
 
 package uvma_axi_pkg;
 
