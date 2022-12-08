@@ -32,6 +32,7 @@ Editor: **Florian Zaruba**
    ex_stage
    commit_stage
    cva6_soc
+   cva6_testharness
 
 Indices and tables
 ------------------
