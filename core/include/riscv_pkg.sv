@@ -841,6 +841,23 @@ package riscv;
         return 32'h00000000;
     endfunction
 
+    // This functions converts S-mode CSR addresses into VS-mode CSR addresses
+    // when V=1 (i.e., running in VS-mode).
+    function automatic csr_t convert_vs_access_csr(csr_t csr_addr, logic v);
+        csr_t ret;
+        ret = csr_addr;
+        unique case (csr_addr.address) inside
+            [CSR_SSTATUS:CSR_STVEC],
+            [CSR_SSCRATCH:CSR_SATP]: begin
+                if(v) begin
+                    ret.csr_decode.priv_lvl = PRIV_LVL_HS;
+                end
+                return ret;
+            end
+            default: return ret;
+        endcase
+    endfunction
+
 
     // trace log compatible to spikes commit log feature
     // pragma translate_off

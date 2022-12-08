@@ -130,7 +130,7 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::hgatp_t        hgatp_q, hgatp_d;
     riscv::satp_t         satp_q, satp_d;
     riscv::dcsr_t         dcsr_q,     dcsr_d;
-    riscv::csr_t  csr_addr;
+    riscv::csr_t  csr_addr, conv_csr_addr;
     // privilege level register
     riscv::priv_lvl_t   priv_lvl_d, priv_lvl_q;
     logic v_q, v_d;  // virtualization mode
@@ -199,6 +199,7 @@ module csr_regfile import ariane_pkg::*; #(
     // Assignments
     // ----------------
     assign csr_addr = riscv::csr_t'(csr_addr_i);
+    assign conv_csr_addr = (ariane_pkg::RVH) ? riscv::convert_vs_access_csr((riscv::csr_t'(csr_addr_i)),v_q) : csr_addr;
     assign fs_o = mstatus_q.fs;
     assign vfs_o = (ariane_pkg::RVH) ? vsstatus_q.fs : riscv::Off;
     // ----------------
@@ -223,7 +224,7 @@ module csr_regfile import ariane_pkg::*; #(
         perf_addr_o = csr_addr.address[11:0];
 
         if (csr_read) begin
-            unique case (csr_addr.address)
+            unique case (conv_csr_addr.address)
                 riscv::CSR_FFLAGS: begin
                     if (mstatus_q.fs == riscv::Off || (ariane_pkg::RVH && v_q && vsstatus_q.fs == riscv::Off)) begin
                         read_access_exception = 1'b1;
@@ -296,80 +297,37 @@ module csr_regfile import ariane_pkg::*; #(
                     else csr_rdata = vstval_q;
                 end
                 riscv::CSR_VSATP: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
-                    else csr_rdata = vsatp_q;
+                    // intercept reads to VSATP if in VS-Mode and VTVM is enabled
+                    if(~ariane_pkg::RVH) begin
+                        read_access_exception = 1'b1;
+                    end else if (priv_lvl_o == riscv::PRIV_LVL_S && hstatus_q.vtvm && v_q) begin
+                        virtual_read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = vsatp_q;
+                    end
                 end
                 // supervisor registers
                 riscv::CSR_SSTATUS: begin
-                    csr_rdata = (ariane_pkg::RVH && v_q) ? vsstatus_extended : mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
+                    csr_rdata = mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
                 end
                 riscv::CSR_SIE: begin
-                    if(ariane_pkg::RVH) begin
-                        if(v_q) begin
-                            csr_rdata = (mie_q & VS_DELEG_INTERRUPTS & hideleg_q) >> 1;
-                        end else begin
-                            csr_rdata = mie_q & mideleg_q & ~HS_DELEG_INTERRUPTS;
-                        end
-                    end else begin
-                        csr_rdata = mie_q & mideleg_q;
-                    end
+                    csr_rdata = (ariane_pkg::RVH) ? mie_q & mideleg_q & ~HS_DELEG_INTERRUPTS : mie_q & mideleg_q;
                 end
                 riscv::CSR_SIP: begin
-                    if(ariane_pkg::RVH) begin
-                        if(v_q) begin
-                            csr_rdata = (mip_q & VS_DELEG_INTERRUPTS & hideleg_q) >> 1;
-                        end else begin
-                            csr_rdata = mip_q & mideleg_q & ~HS_DELEG_INTERRUPTS;
-                        end
-                    end else begin
-                        csr_rdata = mip_q & mideleg_q;
-                    end
+                    csr_rdata = (ariane_pkg::RVH) ? mip_q & mideleg_q & ~HS_DELEG_INTERRUPTS : mip_q & mideleg_q;
                 end
-                riscv::CSR_STVEC: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        csr_rdata = vstvec_q;
-                    end else begin
-                        csr_rdata = stvec_q;
-                    end
-                end
-                riscv::CSR_SCOUNTEREN:         csr_rdata = scounteren_q;
-                riscv::CSR_SSCRATCH: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        csr_rdata = vsscratch_q;
-                    end else begin
-                        csr_rdata = sscratch_q;
-                    end
-                end
-                riscv::CSR_SEPC: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        csr_rdata = vsepc_q;
-                    end else begin
-                        csr_rdata = sepc_q;
-                    end
-                end
-                riscv::CSR_SCAUSE: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        csr_rdata = vscause_q;
-                    end else begin
-                        csr_rdata = scause_q;
-                    end
-                end
-                riscv::CSR_STVAL: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        csr_rdata = vstval_q;
-                    end else begin
-                        csr_rdata = stval_q;
-                    end
-                end
+                riscv::CSR_STVEC:       csr_rdata = stvec_q;
+                riscv::CSR_SCOUNTEREN:  csr_rdata = scounteren_q;
+                riscv::CSR_SSCRATCH:    csr_rdata = sscratch_q;
+                riscv::CSR_SEPC:        csr_rdata = sepc_q;
+                riscv::CSR_SCAUSE:      csr_rdata = scause_q;
+                riscv::CSR_STVAL:       csr_rdata = stval_q;
                 riscv::CSR_SATP: begin
                     // intercept reads to SATP if in S-Mode and TVM is enabled
-                    // intercept reads to VSATP if in VS-Mode and VTVM is enabled
-                    if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm && ((ariane_pkg::RVH && !v_q) || !ariane_pkg::RVH)) begin
+                    if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm) begin
                         read_access_exception = 1'b1;
-                    end else if (ariane_pkg::RVH && priv_lvl_o == riscv::PRIV_LVL_S && hstatus_q.vtvm && v_q) begin
-                        virtual_read_access_exception = 1'b1;
                     end else begin
-                        csr_rdata = (ariane_pkg::RVH && v_q) ? vsatp_q : satp_q;
+                        csr_rdata = satp_q;
                     end
                 end
                 riscv::CSR_SENVCFG:            csr_rdata = senvcfg_q;
@@ -711,7 +669,7 @@ module csr_regfile import ariane_pkg::*; #(
 
         // check for correct access rights and that we are writing
         if (csr_we) begin
-            unique case (csr_addr.address)
+            unique case (conv_csr_addr.address)
                 // Floating-Point
                 riscv::CSR_FFLAGS: begin
                     if (mstatus_q.fs == riscv::Off || (ariane_pkg::RVH && v_q && vsstatus_q.fs == riscv::Off)) begin
@@ -784,6 +742,8 @@ module csr_regfile import ariane_pkg::*; #(
                             vsstatus_d.fs = riscv::Off;
                         end
                     end
+                    // this instruction has side-effects
+                    flush_o = 1'b1;
                 end
                 riscv::CSR_VSIE: begin
                     if(~ariane_pkg::RVH) begin 
@@ -841,7 +801,9 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_VSATP: begin
                     if(~ariane_pkg::RVH) begin 
                         update_access_exception = 1'b1;
-                    end else begin
+                    end if (priv_lvl_o == riscv::PRIV_LVL_S && v_q && hstatus_q.vtvm)
+                            virtual_update_access_exception = 1'b1;
+                    else begin
                         vsatp      = riscv::satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
                         vsatp.asid = vsatp.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
@@ -855,11 +817,7 @@ module csr_regfile import ariane_pkg::*; #(
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
                     mask = ariane_pkg::SMODE_STATUS_WRITE_MASK[riscv::XLEN-1:0];
-                    if(ariane_pkg::RVH && v_q) begin
-                        vsstatus_d = (vsstatus_q & ~{{64-riscv::XLEN{1'b0}}, mask}) | {{64-riscv::XLEN{1'b0}}, (csr_wdata & mask)};
-                    end else begin
-                        mstatus_d  = (mstatus_q & ~{{64-riscv::XLEN{1'b0}}, mask}) | {{64-riscv::XLEN{1'b0}}, (csr_wdata & mask)};
-                    end
+                    mstatus_d  = (mstatus_q & ~{{64-riscv::XLEN{1'b0}}, mask}) | {{64-riscv::XLEN{1'b0}}, (csr_wdata & mask)};
                     // hardwire to zero if floating point extension is not present
                     if (!FP_PRESENT) begin
                         mstatus_d.fs  = riscv::Off;
@@ -873,109 +831,38 @@ module csr_regfile import ariane_pkg::*; #(
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
                 riscv::CSR_SIE: begin
-                    if(ariane_pkg::RVH) begin
-                        mask = v_q ? hideleg_q : mideleg_q & ~HS_DELEG_INTERRUPTS;
-                        // the mideleg makes sure only delegate-able register (and therefore also only implemented registers) are written
-                        if(v_q) begin
-                            mie_d = (mie_q & ~mask) | ((csr_wdata << 1) & mask);
-                        end else begin
-                            mie_d = (mie_q & ~mask) | (csr_wdata & mask);
-                        end
-                    end else begin
-                        mie_d = (mie_q & ~mideleg_q) | (csr_wdata & mideleg_q);
-                    end
+                    mask = (ariane_pkg::RVH) ? mideleg_q & ~HS_DELEG_INTERRUPTS : mideleg_q;
+                    // the mideleg makes sure only delegate-able register (and therefore also only implemented registers) are written
+                    mie_d = (mie_q & ~mask) | (csr_wdata & mask);
                 end
 
                 riscv::CSR_SIP: begin
-                    if(ariane_pkg::RVH) begin
-                        mask = v_q ? riscv::MIP_VSSIP & hideleg_q : riscv::MIP_SSIP & mideleg_q;
-                        // only the supervisor software interrupt is write-able, iff delegated
-                        if(v_q) begin
-                            mip_d = (mip_q & ~mask) | ((csr_wdata << 1) & mask);
-                        end else begin
-                            mip_d = (mip_q & ~mask) | (csr_wdata & mask);
-                        end
-                    end else begin
-                        mask  = riscv::MIP_SSIP & mideleg_q;
-                        mip_d = (mip_q & ~mask) | (csr_wdata & mask);
-                    end
+                    mask = riscv::MIP_SSIP & mideleg_q;
+                    // only the supervisor software interrupt is write-able, iff delegated
+                    mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
 
                 riscv::CSR_STVEC: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        vstvec_d  = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
-                        if (csr_wdata[0]) vstvec_d = {csr_wdata[riscv::XLEN-1:8], 7'b0, csr_wdata[0]};
-                    end else begin
-                        stvec_d = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
-                        if (csr_wdata[0]) stvec_d = {csr_wdata[riscv::XLEN-1:8], 7'b0, csr_wdata[0]};
-                    end
+                    stvec_d = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
+                    if (csr_wdata[0]) stvec_d = {csr_wdata[riscv::XLEN-1:8], 7'b0, csr_wdata[0]};
                 end
                 riscv::CSR_SCOUNTEREN:         scounteren_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
-                riscv::CSR_SSCRATCH: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        vsscratch_d  = csr_wdata;
-                    end else begin
-                        sscratch_d  = csr_wdata;
-                    end
-                end
-                riscv::CSR_SEPC: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        vsepc_d     = {csr_wdata[riscv::XLEN-1:1], 1'b0};
-                    end else begin
-                        sepc_d      = {csr_wdata[riscv::XLEN-1:1], 1'b0};
-                    end
-                end
-                riscv::CSR_SCAUSE: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        vscause_d   = csr_wdata;
-                    end else begin
-                        scause_d    = csr_wdata;
-                    end
-                end
-                riscv::CSR_STVAL: begin
-                    if(ariane_pkg::RVH && v_q) begin
-                        vstval_d    = csr_wdata;
-                    end else begin
-                        stval_d     = csr_wdata;
-                    end
-                end
+                riscv::CSR_SSCRATCH:           sscratch_d   = csr_wdata;
+                riscv::CSR_SEPC:               sepc_d       = {csr_wdata[riscv::XLEN-1:1], 1'b0};
+                riscv::CSR_SCAUSE:             scause_d     = csr_wdata;
+                riscv::CSR_STVAL:              stval_d      = csr_wdata;
                 // supervisor address translation and protection
                 riscv::CSR_SATP: begin
-                    if(ariane_pkg::RVH) begin
-                        // intercept SATP writes if in S-Mode and TVM is enabled
-                        if (priv_lvl_o == riscv::PRIV_LVL_S && !v_q && mstatus_q.tvm)
-                            update_access_exception = 1'b1;
-                        else if (priv_lvl_o == riscv::PRIV_LVL_S && v_q && hstatus_q.vtvm)
-                            virtual_update_access_exception = 1'b1;
-                        else begin
-                            if(v_q) begin
-                                vsatp      = riscv::satp_t'(csr_wdata);
-                                // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-                                vsatp.asid = vsatp.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
-                                // only update if we actually support this mode
-                                if (riscv::vm_mode_t'(vsatp.mode) == riscv::ModeOff ||
-                                    riscv::vm_mode_t'(vsatp.mode) == riscv::MODE_SV) vsatp_d = vsatp;
-                            end else begin
-                                satp      = riscv::satp_t'(csr_wdata);
-                                // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-                                satp.asid = satp.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
-                                // only update if we actually support this mode
-                                if (riscv::vm_mode_t'(satp.mode) == riscv::ModeOff ||
-                                    riscv::vm_mode_t'(satp.mode) == riscv::MODE_SV) satp_d = satp;
-                            end
-                        end
-                    end else begin
-                        // intercept SATP writes if in S-Mode and TVM is enabled
-                        if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm)
-                            update_access_exception = 1'b1;
-                        else begin
-                                satp      = riscv::satp_t'(csr_wdata);
-                                // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-                                satp.asid = satp.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
-                                // only update if we actually support this mode
-                                if (riscv::vm_mode_t'(satp.mode) == riscv::ModeOff ||
-                                    riscv::vm_mode_t'(satp.mode) == riscv::MODE_SV) satp_d = satp;
-                        end
+                    // intercept SATP writes if in S-Mode and TVM is enabled
+                    if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm)
+                        update_access_exception = 1'b1;
+                    else begin
+                        satp      = riscv::satp_t'(csr_wdata);
+                        // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
+                        satp.asid = satp.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
+                        // only update if we actually support this mode
+                        if (riscv::vm_mode_t'(satp.mode) == riscv::ModeOff ||
+                            riscv::vm_mode_t'(satp.mode) == riscv::MODE_SV) satp_d = satp;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
@@ -1930,15 +1817,10 @@ module csr_regfile import ariane_pkg::*; #(
         // bit and the interrupt signal from the interrupt controller.
         csr_rdata_o = csr_rdata;
 
-        unique case (csr_addr.address)
+        unique case (conv_csr_addr.address)
             riscv::CSR_MIP: csr_rdata_o = csr_rdata | (irq_i[1] << riscv::IRQ_S_EXT);
             // in supervisor mode we also need to check whether we delegated this bit
-            riscv::CSR_SIP: begin
-                if(!v_q) begin
-                    csr_rdata_o = csr_rdata
-                            | ((irq_i[1] & mideleg_q[riscv::IRQ_S_EXT]) << riscv::IRQ_S_EXT);
-                end
-            end
+            riscv::CSR_SIP: csr_rdata_o = csr_rdata | ((irq_i[1] & mideleg_q[riscv::IRQ_S_EXT]) << riscv::IRQ_S_EXT);
             default:;
         endcase
     end
