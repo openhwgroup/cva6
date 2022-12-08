@@ -51,6 +51,7 @@ ${CVA6_REPO_DIR}/core/include/axi_intf.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
 //CVXIF
+${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
 ${CVA6_REPO_DIR}/core/cvxif_example/include/cvxif_instr_pkg.sv
 ${CVA6_REPO_DIR}/core/cvxif_fu.sv
 ${CVA6_REPO_DIR}/core/cvxif_example/cvxif_example_coprocessor.sv
