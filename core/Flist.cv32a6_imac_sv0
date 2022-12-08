@@ -66,25 +66,25 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/popcount.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/exp_backoff.sv
 
 // Floating point unit
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_pkg.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_cast_multi.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_classifier.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_divsqrt_multi.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_fma_multi.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_fma.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_noncomp.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_opgroup_block.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_opgroup_fmt_slice.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_opgroup_multifmt_slice.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_rounding.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpnew_top.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
-${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_pkg.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_cast_multi.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_classifier.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_divsqrt_multi.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_fma_multi.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_fma.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_noncomp.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_opgroup_block.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_opgroup_fmt_slice.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_opgroup_multifmt_slice.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_rounding.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_top.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
 // Top-level source files (not necessarily instantiated at the top of the cva6).
 ${CVA6_REPO_DIR}/core/ariane.sv
