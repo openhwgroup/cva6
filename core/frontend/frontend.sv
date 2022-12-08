@@ -95,6 +95,7 @@ module frontend import ariane_pkg::*; #(
     bht_prediction_t [INSTR_PER_FETCH-1:0] bht_prediction_shifted;
     btb_prediction_t [INSTR_PER_FETCH-1:0] btb_prediction_shifted;
     ras_t            ras_predict;
+    logic [riscv::VLEN-1:0]      vpc_btb;
 
     // branch-predict update
     logic            is_mispredict;
@@ -397,6 +398,8 @@ module frontend import ariane_pkg::*; #(
       .data_o ( ras_predict )
     );
 
+    assign vpc_btb = (ariane_pkg::FPGA_EN) ? icache_dreq_i.vaddr : icache_vaddr_q;
+    
     btb #(
       .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
     ) i_btb (
@@ -404,7 +407,7 @@ module frontend import ariane_pkg::*; #(
       .rst_ni,
       .flush_i          ( flush_bp_i       ),
       .debug_mode_i,
-      .vpc_i            ( icache_vaddr_q   ),
+      .vpc_i            ( vpc_btb          ),
       .btb_update_i     ( btb_update       ),
       .btb_prediction_o ( btb_prediction   )
     );
