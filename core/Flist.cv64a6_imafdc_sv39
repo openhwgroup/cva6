@@ -27,8 +27,8 @@
 
 +define+WT_DCACHE
 
-+incdir+${CVA6_REPO_DIR}/common/submodules/common_cells/include/
-+incdir+${CVA6_REPO_DIR}/common/submodules/common_cells/src/
++incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/include/
++incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/
 +incdir+${CVA6_REPO_DIR}/common/local/util/
 
 ${CVA6_REPO_DIR}/core/include/cv64a6_imafdc_sv39_config_pkg.sv
@@ -58,19 +58,19 @@ ${CVA6_REPO_DIR}/core/cvxif_example/cvxif_example_coprocessor.sv
 ${CVA6_REPO_DIR}/core/cvxif_example/instr_decoder.sv
 
 // Common Cells
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/cf_math_pkg.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/fifo_v3.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/lfsr.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/lzc.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/rr_arb_tree.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/shift_reg.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/unread.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/popcount.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/exp_backoff.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/fifo_v3.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lzc.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/rr_arb_tree.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/shift_reg.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/unread.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/popcount.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/exp_backoff.sv
 
 // Common Cells for example coprocessor
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/counter.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/delta_counter.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/counter.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/delta_counter.sv
 
 // Floating point unit
 ${CVA6_REPO_DIR}/core/fpu/src/fpnew_pkg.sv
