@@ -114,7 +114,7 @@ module btb #(
         );
       end
 
-    else // ASIC TARGET
+    end else begin // ASIC TARGET
     
       // typedef for all branch target entries
       // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
