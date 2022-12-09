@@ -67,6 +67,15 @@ module btb #(
       logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0]  btb_ram_addr_update;
       logic [ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0]   btb_ram_wdata_update;
 
+      // output matching prediction
+      for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_btb_output
+        assign btb_ram_csel_prediction[i] = 1'b1;
+        assign btb_ram_we_prediction[i] = 1'b0;
+        assign btb_ram_wdata_prediction = '0;
+        assign btb_ram_addr_prediction[i*$clog2(NR_ROWS) +: $clog2(NR_ROWS)] = index;
+        assign btb_prediction_o[i] = btb_ram_rdata_prediction[i*BRAM_WORD_BITS +: BRAM_WORD_BITS];
+      end
+
       // -------------------------
       // Update Branch Prediction
       // -------------------------
@@ -159,6 +168,5 @@ module btb #(
           end
         end
       end
-      
     end
 endmodule
