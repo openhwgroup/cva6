@@ -343,7 +343,7 @@ module frontend import ariane_pkg::*; #(
       end
       // 7. Debug
       // enter debug on a hard-coded base-address
-      if (set_debug_pc_i) npc_d = ArianeCfg.DmBaseAddress[riscv::VLEN-1:0] + dm::HaltAddress[riscv::VLEN-1:0];
+      if (set_debug_pc_i) npc_d = ArianeCfg.DmBaseAddress[riscv::VLEN-1:0] + ariane_dm_pkg::HaltAddress[riscv::VLEN-1:0];
       icache_dreq_o.vaddr = fetch_address;
     end
 
