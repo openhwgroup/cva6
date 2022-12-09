@@ -26,6 +26,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // These need to be moved
+${CVA6_REPO_DIR}/corev_apu/riscv-dbg/src/dm_pkg.sv
 ${CVA6_REPO_DIR}/corev_apu/axi_mem_if/src/axi2mem.sv
 ${CVA6_REPO_DIR}/corev_apu/tb/ariane_soc_pkg.sv
 
