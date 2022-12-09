@@ -12,7 +12,18 @@
 // Date: 08.02.2018
 // Migrated: Luis Vitorio Cargnini, IEEE
 // Date: 09.06.2018
-
+//
+// Additional contributions by:
+//         Sebastien Jacq, Thales - sjthales on github.com
+//         Date: 2022-12-01
+//
+// Description: This module is an adaptation of the BTB (Branch Target Buffer)
+//              module both FPGA and ASIC targets.
+//              Prediction target address is stored in BRAM on FPGA while for
+//              original module, target address is stored in D flip-flop.
+//              For FPGA flushing is not supported because the frontend module
+//              flushing signal is not connected.
+//
 // branch target buffer
 module btb #(
     parameter int NR_ENTRIES = 8
@@ -53,8 +64,7 @@ module btb #(
     end else begin
       assign update_row_index = '0;
     end
-    
-    
+
     if (ariane_pkg::FPGA_EN) begin //FPGA TARGETS
       logic [ariane_pkg::INSTR_PER_FETCH-1:0]                  btb_ram_csel_prediction;
       logic [ariane_pkg::INSTR_PER_FETCH-1:0]                  btb_ram_we_prediction;
@@ -97,7 +107,7 @@ module btb #(
           end       
         end
       end
-      
+
       for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_btb_ram
         SyncDpRam #(
           .ADDR_WIDTH($clog2(NR_ROWS)),
@@ -124,7 +134,7 @@ module btb #(
       end
 
     end else begin // ASIC TARGET
-    
+
       // typedef for all branch target entries
       // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
       ariane_pkg::btb_prediction_t btb_d [NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0],
