@@ -169,13 +169,13 @@ src :=  core/axi_adapter.sv                                                     
         corev_apu/riscv-dbg/debug_rom/debug_rom.sv                                   \
         corev_apu/register_interface/src/apb_to_reg.sv                               \
         corev_apu/axi/src/axi_multicut.sv                                            \
-        common/submodules/common_cells/src/rstgen_bypass.sv                          \
-        common/submodules/common_cells/src/rstgen.sv                                 \
-        common/submodules/common_cells/src/stream_mux.sv                             \
-        common/submodules/common_cells/src/stream_demux.sv                           \
-        common/submodules/common_cells/src/exp_backoff.sv                            \
-        common/submodules/common_cells/src/addr_decode.sv                            \
-        common/submodules/common_cells/src/stream_register.sv                        \
+        vendor/pulp-platform/common_cells/src/rstgen_bypass.sv                          \
+        vendor/pulp-platform/common_cells/src/rstgen.sv                                 \
+        vendor/pulp-platform/common_cells/src/stream_mux.sv                             \
+        vendor/pulp-platform/common_cells/src/stream_demux.sv                           \
+        vendor/pulp-platform/common_cells/src/exp_backoff.sv                            \
+        vendor/pulp-platform/common_cells/src/addr_decode.sv                            \
+        vendor/pulp-platform/common_cells/src/stream_register.sv                        \
         corev_apu/axi/src/axi_cut.sv                                                 \
         corev_apu/axi/src/axi_join.sv                                                \
         corev_apu/axi/src/axi_delayer.sv                                             \
@@ -186,15 +186,15 @@ src :=  core/axi_adapter.sv                                                     
         corev_apu/axi/src/axi_mux.sv                                                 \
         corev_apu/axi/src/axi_demux.sv                                               \
         corev_apu/axi/src/axi_xbar.sv                                                \
-        common/submodules/common_cells/src/cdc_2phase.sv                             \
-        common/submodules/common_cells/src/spill_register_flushable.sv               \
-        common/submodules/common_cells/src/spill_register.sv                         \
-        common/submodules/common_cells/src/stream_arbiter.sv                         \
-        common/submodules/common_cells/src/stream_arbiter_flushable.sv               \
-        common/submodules/common_cells/src/deprecated/fifo_v1.sv                     \
-        common/submodules/common_cells/src/deprecated/fifo_v2.sv                     \
-        common/submodules/common_cells/src/stream_delay.sv                           \
-        common/submodules/common_cells/src/lfsr_16bit.sv                             \
+        vendor/pulp-platform/common_cells/src/cdc_2phase.sv                             \
+        vendor/pulp-platform/common_cells/src/spill_register_flushable.sv               \
+        vendor/pulp-platform/common_cells/src/spill_register.sv                         \
+        vendor/pulp-platform/common_cells/src/stream_arbiter.sv                         \
+        vendor/pulp-platform/common_cells/src/stream_arbiter_flushable.sv               \
+        vendor/pulp-platform/common_cells/src/deprecated/fifo_v1.sv                     \
+        vendor/pulp-platform/common_cells/src/deprecated/fifo_v2.sv                     \
+        vendor/pulp-platform/common_cells/src/stream_delay.sv                           \
+        vendor/pulp-platform/common_cells/src/lfsr_16bit.sv                             \
         corev_apu/src/tech_cells_generic/src/deprecated/cluster_clk_cells.sv         \
         corev_apu/src/tech_cells_generic/src/deprecated/pulp_clk_cells.sv            \
         corev_apu/src/tech_cells_generic/src/rtl/tc_clk.sv                           \
@@ -244,7 +244,7 @@ riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := common/submodules/common_cells/include/ corev_apu/axi/include/ corev_apu/register_interface/include/
+incdir := vendor/pulp-platform/common_cells/include/ corev_apu/axi/include/ corev_apu/register_interface/include/
 
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
@@ -293,7 +293,7 @@ vcs_build: $(dpi-library)/ariane_dpi.so
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) -f ../core/Flist.$(target) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
 	vhdlan $(if $(VERDI), -kdb,) -full64 -nc $(filter %.vhd,$(uart_src)) &&\
-	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -assert svaext +define+$(defines) $(filter %.sv,$(src)) +incdir+../common/submodules/common_cells/include/+../corev_apu/axi/include/+../corev_apu/register_interface/include/ &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -assert svaext +define+$(defines) $(filter %.sv,$(src)) +incdir+../vendor/pulp-platform/common_cells/include/+../corev_apu/axi/include/+../corev_apu/register_interface/include/ &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs) +define+$(defines) +incdir+../corev_apu/axi/include/ &&\
 	vcs $(if $(VERDI), -kdb -debug_access+all -lca,) -full64 -timescale=1ns/1ns -ntb_opts uvm-1.2 work.ariane_tb
