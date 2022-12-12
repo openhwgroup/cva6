@@ -65,7 +65,7 @@ module btb #(
       assign update_row_index = '0;
     end
 
-    if (ariane_pkg::FPGA_EN) begin //FPGA TARGETS
+    if (ariane_pkg::FPGA_EN) begin : gen_fpga_btb //FPGA TARGETS
       logic [ariane_pkg::INSTR_PER_FETCH-1:0]                  btb_ram_csel_prediction;
       logic [ariane_pkg::INSTR_PER_FETCH-1:0]                  btb_ram_we_prediction;
       logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0]  btb_ram_addr_prediction;
@@ -133,7 +133,7 @@ module btb #(
         );
       end
 
-    end else begin // ASIC TARGET
+    end else begin : gen_asic_btb // ASIC TARGET
 
       // typedef for all branch target entries
       // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
