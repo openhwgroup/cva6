@@ -112,8 +112,14 @@ def generate_config(argv):
           alllines.append(line)
           linematch = re.match(r"(    localparam (CVA6Config)(?P<param>.*) = )(?P<value>.*)(;)", line) # and read the modified line to know which configuration we are creating
           if linematch:
-            Param = MapParametersToArgs['CVA6Config'+linematch.group('param')]
-            Config[Param] = lineXlen.group('value') if linematch.group('value') == "CVA6ConfigXlen" else linematch.group('value')
+            try:
+              Param = MapParametersToArgs['CVA6Config'+linematch.group('param')]
+              Config[Param] = lineXlen.group('value') if linematch.group('value') == "CVA6ConfigXlen" else linematch.group('value')
+            except KeyError:
+              # No known cmdline option for this specific localparam.
+              full_name = 'CVA6Config' + linematch.group('param')
+              print(f"WARNING: CVA6 configuration parameter '{full_name}' not supported yet via cmdline args,",
+                    "\n\t consider extending script 'config_pkg_generator.py'!")
             for k in Config.keys():
               Config[k] = int(Config[k]) # Convert value from str to int
         configfile = open("core/include/"+gen+"_config_pkg.sv", "w")
