@@ -1,0 +1,39 @@
+// -*- coding: utf-8 -*-
+// Copyright (C) 2022 Thales DIS France SAS
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
+// Original Author: Zbigniew Chamski (zbigniew.chamski@thalesgroup.com)
+
+{
+    // Name of the project
+    name: "pulp_axi",
+
+    // Target directory: relative to the location of this script.
+    target_dir: "pulp-platform/axi",
+
+    // Upstream repository
+    upstream: {
+        // URL
+        url: "https://github.com/pulp-platform/axi.git",
+        // revision
+        rev: "v0.31.0",
+    }
+
+    // Patch dir for local changes
+    patch_dir: "patches/pulp-platform/axi",
+
+    // Exclusions from upstream content
+    exclude_from_upstream: [
+        ".ci",
+	".github",
+	".gitlab-ci.d",
+	".gitlab-ci.yml",
+        "axi.core",
+        "Bender.yml",
+	"doc",
+	"docs",
+	"ips_list.yml",
+        "scripts",
+        "src_files.yml",
+        "test",
+    ]
+}
