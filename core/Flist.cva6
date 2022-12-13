@@ -89,6 +89,9 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/norm_div_sq
 ${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
+//FPGA memories
+${CVA6_REPO_DIR}/common/local/techlib/fpga/rtl/SyncDpRam.sv
+
 // Top-level source files (not necessarily instantiated at the top of the cva6).
 ${CVA6_REPO_DIR}/core/ariane.sv
 ${CVA6_REPO_DIR}/core/cva6.sv
