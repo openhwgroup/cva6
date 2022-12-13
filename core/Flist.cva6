@@ -31,7 +31,7 @@
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/
 +incdir+${CVA6_REPO_DIR}/common/local/util/
 
-${CVA6_REPO_DIR}/core/include/cv32a6_imac_sv0_config_pkg.sv
+${CVA6_REPO_DIR}/core/include/${TARGET_CFG}_config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_dm_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_pkg.sv
@@ -48,7 +48,10 @@ ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
+${CVA6_REPO_DIR}/core/cvxif_example/include/cvxif_instr_pkg.sv
 ${CVA6_REPO_DIR}/core/cvxif_fu.sv
+${CVA6_REPO_DIR}/core/cvxif_example/cvxif_example_coprocessor.sv
+${CVA6_REPO_DIR}/core/cvxif_example/instr_decoder.sv
 
 // Common Cells
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
@@ -60,6 +63,10 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/shift_reg.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/unread.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/popcount.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/exp_backoff.sv
+
+// Common Cells for example coprocessor
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/counter.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/delta_counter.sv
 
 // Floating point unit
 ${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpnew_pkg.sv
@@ -145,6 +152,11 @@ ${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
 ${CVA6_REPO_DIR}/corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
+
+// MMU Sv39
+${CVA6_REPO_DIR}/core/mmu_sv39/mmu.sv
+${CVA6_REPO_DIR}/core/mmu_sv39/ptw.sv
+${CVA6_REPO_DIR}/core/mmu_sv39/tlb.sv
 
 // MMU Sv32
 ${CVA6_REPO_DIR}/core/mmu_sv32/cva6_mmu_sv32.sv

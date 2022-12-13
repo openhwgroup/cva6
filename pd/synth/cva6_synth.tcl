@@ -24,6 +24,7 @@ sh mkdir work
 define_design_lib ariane_lib -path work
 
 set CVA6_REPO_DIR "../../"
+set TARGET_CFG $TARGET
 source Flist.cva6_synth
 
 elaborate ${DESIGN_NAME} -library ariane_lib
