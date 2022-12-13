@@ -16,6 +16,9 @@ export CVA6_REPO_DIR = $(abspath $(root-dir)../../core-v-cores/cva6/)
 export CVA6_TB_DIR   = $(root-dir)/../tb/core
 export CORE_V_VERIF  = $(root-dir)/../..
 endif
+ifndef TARGET_CFG
+export TARGET_CFG = $(target)
+endif
 
 .DEFAULT_GOAL := help
 
@@ -23,7 +26,7 @@ FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
 # target takes one of the following cva6 hardware configuration:
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32
 target     ?= cv64a6_imafdc_sv39
-FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.$(target)
+FLIST_CORE := $(if $(gate), $(CVA6_REPO_DIR)/core/Flist.cva6_gate,$(CVA6_REPO_DIR)/core/Flist.cva6)
 
 TRACE_FAST      ?=
 TRACE_COMPACT   ?=
