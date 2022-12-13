@@ -1,0 +1,32 @@
+// -*- coding: utf-8 -*-
+// Copyright (C) 2022 Thales DIS France SAS
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
+// Original Author: Zbigniew Chamski (zbigniew.chamski@thalesgroup.com)
+
+{
+    // Name of the project
+    name: "pulp_tech_cells_generic",
+
+    // Target directory: relative to the location of this script.
+    target_dir: "pulp-platform/tech_cells_generic",
+
+    // Upstream repository
+    upstream: {
+        // URL
+        url: "https://github.com/pulp-platform/tech_cells_generic.git",
+        // revision
+        rev: "b2a68114302af1d8191ddf34ea0e07b471911866",
+    }
+
+    // Patch dir for local changes
+    patch_dir: "patches/pulp-platform/tech_cells_generic",
+
+    // Exclusions from upstream content
+    exclude_from_upstream: [
+        "Bender.yml",
+        "scripts",
+        "src_files.yml",
+        "test",
+    ]
+}
+

@@ -1,0 +1,7 @@
+.*
+!.git*
+*.out
+*~
+/Bender.lock
+/Bender.local
+build
