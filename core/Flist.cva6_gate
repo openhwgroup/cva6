@@ -13,7 +13,7 @@ ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_dm_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_pkg.sv
 // TODO: ariane_axi_pkg is dependent on this.
-${CVA6_REPO_DIR}/corev_apu/axi/src/axi_pkg.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/axi/src/axi_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_rvfi_pkg.sv
 
 ${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
@@ -29,5 +29,5 @@ ${CVA6_REPO_DIR}/pd/synth/cva6_${TARGET_CFG}_synth_modified.v
 
 ${CVA6_REPO_DIR}/pd/synth/tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0.sv
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
-${CVA6_REPO_DIR}/corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
