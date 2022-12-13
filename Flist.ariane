@@ -24,7 +24,7 @@ core/include/riscv_pkg.sv
 corev_apu/riscv-dbg/src/dm_pkg.sv
 core/include/ariane_pkg.sv
 corev_apu/tb/ariane_soc_pkg.sv
-corev_apu/axi/src/axi_pkg.sv
+vendor/pulp-platform/axi/src/axi_pkg.sv
 core/include/ariane_axi_pkg.sv
 core/include/wt_cache_pkg.sv
 core/include/axi_intf.sv
@@ -50,11 +50,11 @@ vendor/pulp-platform/common_cells/src/cdc_2phase.sv
 vendor/pulp-platform/common_cells/src/unread.sv
 vendor/pulp-platform/common_cells/src/popcount.sv
 corev_apu/axi_mem_if/src/axi2mem.sv
-corev_apu/src/tech_cells_generic/src/deprecated/cluster_clk_cells.sv
-corev_apu/src/tech_cells_generic/src/deprecated/pulp_clk_cells.sv
+vendor/pulp-platform/tech_cells_generic/src/deprecated/cluster_clk_cells.sv
+vendor/pulp-platform/tech_cells_generic/src/deprecated/pulp_clk_cells.sv
 common/local/util/tc_sram_wrapper.sv
-corev_apu/src/tech_cells_generic/src/rtl/tc_sram.sv
-corev_apu/src/tech_cells_generic/src/rtl/tc_clk.sv
+vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
+vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv
 core/axi_adapter.sv
 core/alu.sv
 core/fpu_wrap.sv
