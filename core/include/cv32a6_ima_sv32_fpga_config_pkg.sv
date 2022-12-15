@@ -35,4 +35,6 @@ package cva6_config_pkg;
     localparam CVA6ConfigNrCommitPorts = 1;
     localparam CVA6ConfigNrScoreboardEntries = 4;
 
+    localparam CVA6ConfigFPGAEn = 1;
+
 endpackage
