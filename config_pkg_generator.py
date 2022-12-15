@@ -90,21 +90,8 @@ def generate_config(argv):
     Args['xlen'] = 64
     MABI = "lp64"
 
-  # Create a copy of master Flists that points to the generated config_pkg files.
-  for suffix in [ "", "_gate"]:
-    src_flist = "core/Flist.cva6" + suffix
-    dest_flist = "core/Flist.cva6" + suffix + "_" + gen
-    os.system(f"cp {src_flist} {dest_flist}") #copy Flist
-    os.system(f"cp core/include/"+Args['default_config']+"_config_pkg.sv core/include/"+gen+"_config_pkg.sv") # copy package
-    Flistfile = open(src_flist, "r")
-    Flistlines = []
-    for line in Flistfile :
-      line = re.sub(r"(\${CVA6_REPO_DIR}/core/include/)"+Args['default_config']+"(_config_pkg.sv)", r"\g<1>"+gen+"\g<2>", line) # change package name in Flist to the one generated
-      Flistlines.append(line)
-    Flistfile = open(dest_flist, "w")
-    Flistfile.writelines(Flistlines)
-    Flistfile.close
-
+  # Apply cmdline args to override individual localparam values.
+  # Warn about localparams which have no matching cmdline option associated with them.
   for i in Args:
     configfile = open("core/include/"+gen+"_config_pkg.sv", "r")
     if i not in ['default_config', 'isa', 'xlen']:
