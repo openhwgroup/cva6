@@ -137,6 +137,8 @@ main(int argc, char *argv[])
     ee_s16       known_id = -1, total_errors = 0;
     ee_u16       seedcrc = 0;
     CORE_TICKS   total_time;
+    secs_ret total_time_secs;
+    long unsigned total_iterations, score100;
     core_results results[MULTITHREAD];
 #if (MEM_METHOD == MEM_STACK)
     ee_u8 stack_memblock[TOTAL_DATA_SIZE * MULTITHREAD];
@@ -301,6 +303,8 @@ for (i = 0; i < MULTITHREAD; i++)
 #endif
     stop_time();
     total_time = get_time();
+    total_time_secs = time_in_secs(total_time);
+    total_iterations = ((long unsigned) default_num_contexts) * ((long unsigned) results[0].iterations);
     /* get a function of the input to report */
     seedcrc = crc16(results[0].seed1, seedcrc);
     seedcrc = crc16(results[0].seed2, seedcrc);
@@ -376,33 +380,30 @@ for (i = 0; i < MULTITHREAD; i++)
     ee_printf("CoreMark Size    : %lu\n", (long unsigned)results[0].size);
     ee_printf("Total ticks      : %lu\n", (long unsigned)total_time);
 #if HAS_FLOAT
-    ee_printf("Total time (secs): %f\n", time_in_secs(total_time));
-    if (time_in_secs(total_time) > 0)
-        ee_printf("Iterations/Sec   : %f\n",
-                  default_num_contexts * results[0].iterations
-                      / time_in_secs(total_time));
+    ee_printf("Total time (secs): %f\n", total_time_secs);
+    if (total_time_secs > 0)
+        ee_printf("Iterations/Sec   : %f\n", total_iterations / total_time_secs);
 #else
-    ee_printf("Total time (secs): %d\n", time_in_secs(total_time));
-    if (time_in_secs(total_time) > 0)
-        ee_printf("Iterations/Sec   : %d\n",
-                  default_num_contexts * results[0].iterations
-                      / time_in_secs(total_time));
+    ee_printf("Total time (secs): %d\n", total_time_secs);
+    if (total_time_secs > 0)
+        ee_printf("Iterations/Sec   : %d\n", total_iterations / total_time_secs);
 #endif
-    if (time_in_secs(total_time) < 10)
+#if !SKIP_TIME_CHECK
+    if (total_time_secs < 10)
     {
         ee_printf(
             "ERROR! Must execute for at least 10 secs for a valid result!\n");
         total_errors++;
     }
+#endif
 
-    ee_printf("Iterations       : %lu\n",
-              (long unsigned)default_num_contexts * results[0].iterations);
-    ee_printf("Compiler version : %s\n", COMPILER_VERSION);
-    ee_printf("Compiler flags   : %s\n", COMPILER_FLAGS);
+    ee_printf("Iterations       : %lu\n", total_iterations);
+    ee_printf("Compiler version : " COMPILER_VERSION "\n");
+    ee_printf("Compiler flags   : " COMPILER_FLAGS "\n");
 #if (MULTITHREAD > 1)
     ee_printf("Parallel %s : %d\n", PARALLEL_METHOD, default_num_contexts);
 #endif
-    ee_printf("Memory location  : %s\n", MEM_LOCATION);
+    ee_printf("Memory location  : " MEM_LOCATION "\n");
     /* output for verification */
     ee_printf("seedcrc          : 0x%04x\n", seedcrc);
     if (results[0].execs & ID_LIST)
@@ -421,26 +422,29 @@ for (i = 0; i < MULTITHREAD; i++)
         ee_printf(
             "Correct operation validated. See README.md for run and reporting "
             "rules.\n");
-#if HAS_FLOAT
         if (known_id == 3)
         {
-            ee_printf("CoreMark 1.0 : %f / %s %s",
-                      default_num_contexts * results[0].iterations
-                          / time_in_secs(total_time),
-                      COMPILER_VERSION,
-                      COMPILER_FLAGS);
+            // Scaling results
+            score100 = total_iterations * 1000000 * 100 / total_time;
+            ee_printf("CoreMark/MHz 1.0 : %d.%02d / "
+                      COMPILER_VERSION " " COMPILER_FLAGS " / "
+                      SC_MEM_LOCATION "\n",
+                      score100 / 100, score100 % 100);
+
+#if HAS_FLOAT
+            ee_printf("CoreMark 1.0 : %f / " COMPILER_VERSION " " COMPILER_FLAGS,
+                      total_iterations / total_time_secs);
 #if defined(MEM_LOCATION) && !defined(MEM_LOCATION_UNSPEC)
-            ee_printf(" / %s", MEM_LOCATION);
+            ee_printf(" / " MEM_LOCATION);
 #else
             ee_printf(" / %s", mem_name[MEM_METHOD]);
 #endif
-
 #if (MULTITHREAD > 1)
             ee_printf(" / %d:%s", default_num_contexts, PARALLEL_METHOD);
 #endif
             ee_printf("\n");
-        }
 #endif
+        }
     }
     if (total_errors > 0)
         ee_printf("Errors detected\n");

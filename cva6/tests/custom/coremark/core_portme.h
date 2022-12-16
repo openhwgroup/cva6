@@ -36,6 +36,7 @@ Original Author: Shay Gal-on
 
 #include <stddef.h>
 #include <stdio.h>
+#include "uart.h"
 
 typedef signed short   ee_s16;
 typedef unsigned short ee_u16;
@@ -88,6 +89,10 @@ typedef struct CORE_PORTABLE_S
 #define MEM_LOCATION ""
 #endif
 
+#ifndef SC_MEM_LOCATION
+#define SC_MEM_LOCATION "UNSPECIFIED(" MEM_LOCATION ") RATIOS:1"
+#endif
+
 #ifndef SEED_METHOD
 #define SEED_METHOD SEED_VOLATILE
 #endif
@@ -95,6 +100,12 @@ typedef struct CORE_PORTABLE_S
 #ifndef HAS_PRINTF
 #define HAS_PRINTF 1
 #endif
+
+#define printf(...) do { \
+        char text[1024]; \
+        sprintf(text, __VA_ARGS__); \
+        print_uart(text); \
+} while (0)
 
 #define align_mem(x) (void *)(4 + (((ee_ptr_int)(x)-1) & ~3))
 
