@@ -93,7 +93,7 @@ def generate_config(argv):
   # Apply cmdline args to override individual localparam values.
   # Warn about localparams which have no matching cmdline option associated with them.
   for i in Args:
-    configfile = open("core/include/"+gen+"_config_pkg.sv", "r")
+    configfile = open("core/include/" + Args['default_config'] + "_config_pkg.sv", "r")
     if i not in ['default_config', 'isa', 'xlen']:
       if Args[i] != None:
         print("setting", i, "to", Args[i])
