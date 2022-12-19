@@ -577,7 +577,7 @@ class MyTextWidget(ttk.LabelFrame):
         # Use a callaback to update state upon changes to section number field.
         self.section_num_var.trace("w", self.ref_section_num_changed)
 
-        view_btn = ttk.Button(self.text1frame, text="Show design doc", command=self.view_file)
+        view_btn = ttk.Button(self.text1frame, text="View design doc", command=self.view_design_doc)
         view_btn.grid(column=5, row=2, sticky=tk.E)
         self.ref_mode_var = tk.StringVar(self)
         ref_mode_names = ("(consecutive) page #", "section #")
@@ -852,7 +852,7 @@ class MyTextWidget(ttk.LabelFrame):
         if current_item and not self.parent.get_current_item().is_locked():
             self.parent.get_current_item().ref_section = self.section_num_var.get()
 
-    def view_file(self):
+    def view_design_doc(self):
         """
         View the requirement file (Design Doc) at the position specified in Requirement Location frame.
         """
@@ -864,8 +864,13 @@ class MyTextWidget(ttk.LabelFrame):
                 ref_in_doc = f"#nameddest=section.{self.section_num_var.get().rstrip()}"
             else:
                 ref_in_doc = ""
-            command = [ "firefox",
-                "file://" + self.text1.get(0.0, tk.END).rstrip() + ref_in_doc ]
+            # Assume the location is a valid URL or an absolute path.
+            doc_location = self.text1.get(0.0, tk.END).rstrip()
+            # If no scheme (http://, file:// etc.) is given, treat it
+            # as an absolute file path.
+            if doc_location[0] == '/':
+                doc_location = "file://" + doc_location
+            command = [ "firefox", doc_location + ref_in_doc ]
         elif self.viewer_var.get() == "evince":
             # PDF viewer mode: use appropriate cmdline option.
             if self.ref_mode_var.get() == "page":
@@ -874,6 +879,7 @@ class MyTextWidget(ttk.LabelFrame):
                 ref_in_doc = ["-n", f"section.{self.section_num_var.get().rstrip()}"]
             else:
                 ref_in_doc = []
+            # The requirement location should be a valid path to a PDF file.
             command = ["evince"] + ref_in_doc + [self.text1.get(0.0, tk.END).rstrip()]
         print(f"### ==> command = {command}")
         subprocess.Popen(command)
