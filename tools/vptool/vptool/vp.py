@@ -688,7 +688,7 @@ class MyTextWidget(ttk.LabelFrame):
             self.text1frame,
             cue_text=vp_config.yaml_config["gui"]["requirement_loc"]["cue_text"],
             state="disabled",
-            height=1,
+            height=2,
             bg=BG_COLOR,
             undo=True,
             wrap="word",
