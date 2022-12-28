@@ -25,6 +25,7 @@ class uvma_axi_ar_item_c extends uvm_sequence_item;
    rand logic                      ar_valid;
    rand logic                      ar_ready;
    rand logic                      ar_lock;
+   int                             ar_latency;
 
    `uvm_object_utils_begin(uvma_axi_ar_item_c)
       `uvm_field_int(ar_id, UVM_ALL_ON | UVM_NOPACK);
@@ -36,6 +37,7 @@ class uvma_axi_ar_item_c extends uvm_sequence_item;
       `uvm_field_int(ar_valid, UVM_ALL_ON | UVM_NOPACK);
       `uvm_field_int(ar_ready, UVM_ALL_ON | UVM_NOPACK);
       `uvm_field_int(ar_lock, UVM_ALL_ON | UVM_NOPACK);
+      `uvm_field_int(ar_latency, UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE);
    `uvm_object_utils_end
 
    function new(string name = "uvma_axi_ar_item_c");

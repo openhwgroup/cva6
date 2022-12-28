@@ -104,6 +104,7 @@ task uvma_axi_r_seq_c::body();
 
          if(enable_change_id == 1) begin
             selected_id = check_tab(status);
+            inject_error = cfg.random_err();
             r_latency = -1;
          end
 
@@ -131,7 +132,7 @@ task uvma_axi_r_seq_c::body();
             end
 
             selected_id = check_tab(status);
-            inject_error = 1'b0;
+            inject_error = cfg.random_err();
             r_latency = -1;
 
             if(selected_id == -1) begin

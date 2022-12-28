@@ -6,6 +6,7 @@
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
 // Original Author: Alae Eddine EZ ZEJJARI (alae-eddine.ez-zejjari@external.thalesgroup.com)
+// Co-Author: Abdelaali Khardazi
 
 //=============================================================================
 // Description: Sequence for agent axi_w
@@ -45,6 +46,12 @@ endclass : uvma_axi_w_seq_c
 function uvma_axi_w_seq_c::new(string name = "");
    super.new(name);
 endfunction : new
+
+function void uvma_axi_w_seq_c::add_latencies(uvma_axi_w_item_c master_req);
+
+   master_req.w_latency = cfg.calc_random_latency();
+
+endfunction : add_latencies
 
 task uvma_axi_w_seq_c::body();
 
@@ -91,10 +98,28 @@ task uvma_axi_w_seq_c::body();
          `uvm_info(get_type_name(), $sformatf("req_requette size = %d", req_requette.size()), UVM_LOW)
          if(w_req_item.w_valid) begin
 
-            write_data_req = new[write_data_req.size() + 1] (write_data_req);
-            write_data_req[write_data_req.size() - 1] = new w_req_item;
-            write_status = 1;
-               
+            if(latency == 0) begin
+               add_latencies(w_req_item);
+               w_ready_latency = w_req_item.w_latency;
+            end
+
+            w_req_item.w_ready = 0;
+
+            if(latency == w_ready_latency) begin
+               w_req_item.w_ready = 1;
+               latency = 0;
+            end else begin
+               latency++;
+            end
+
+            if(w_req_item.w_ready) begin
+               write_data_req = new[write_data_req.size() + 1] (write_data_req);
+               write_data_req[write_data_req.size() - 1] = new w_req_item;
+               write_status = 1;
+            end
+
+         end else begin
+            w_req_item.w_ready = 0;
          end
 
          `uvm_info(get_type_name(), $sformatf("status = %d et  write_status = %d", status, write_status), UVM_LOW)

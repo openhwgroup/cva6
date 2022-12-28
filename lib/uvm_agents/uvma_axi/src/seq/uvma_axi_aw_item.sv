@@ -30,6 +30,7 @@ class uvma_axi_aw_item_c extends uvm_sequence_item;
    rand logic [3:0]                aw_qos;
    rand logic [3:0]                aw_region;
    rand logic [5:0]                aw_atop;
+   int                             aw_latency;
 
    `uvm_object_utils_begin(uvma_axi_aw_item_c)
       `uvm_field_int(aw_id, UVM_ALL_ON | UVM_NOPACK);
@@ -46,6 +47,7 @@ class uvma_axi_aw_item_c extends uvm_sequence_item;
       `uvm_field_int(aw_qos, UVM_ALL_ON | UVM_NOPACK);
       `uvm_field_int(aw_region, UVM_ALL_ON | UVM_NOPACK);
       `uvm_field_int(aw_atop, UVM_ALL_ON | UVM_NOPACK);
+      `uvm_field_int(aw_latency, UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE);
    `uvm_object_utils_end
 
    function new(string name = "uvma_axi_aw_item_c");

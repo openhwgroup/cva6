@@ -84,7 +84,14 @@ task uvma_axi_aw_drv_c::drv_post_reset();
    `uvm_info(get_type_name(), $sformatf("write address driver start"), UVM_LOW)
    seq_item_port.get_next_item(aw_item);
 
-      this.slave_mp.slv_axi_cb.aw_ready <= 1'b1;
+      this.slave_mp.slv_axi_cb.aw_ready <= 1'b0;
+
+      if(aw_item.aw_valid) begin
+         repeat (aw_item.aw_latency) begin
+            @(slave_mp.slv_axi_cb);
+         end
+         this.slave_mp.slv_axi_cb.aw_ready <= 1'b1;
+      end
       @(slave_mp.slv_axi_cb);
 
    seq_item_port.item_done();

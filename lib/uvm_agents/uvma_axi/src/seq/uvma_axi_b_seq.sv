@@ -36,6 +36,7 @@ class uvma_axi_b_seq_c extends uvm_sequence#(uvma_axi_b_item_c);
    int first_req = 0;
    int selected_id;
    int enable_change_id = 1;
+   bit[1:0] inject_error;
 
    extern function new(string name = "");
    extern function void create_item();
@@ -131,6 +132,7 @@ task uvma_axi_b_seq_c::body();
 
          if(enable_change_id == 1) begin
             selected_id = check_tab(status);
+            inject_error = cfg.random_err();
          end
  
          `uvm_info(get_type_name(), $sformatf("selected id = %d", selected_id), UVM_HIGH)
@@ -139,7 +141,7 @@ task uvma_axi_b_seq_c::body();
             `uvm_info(get_type_name(), "send resp", UVM_HIGH)
 
             b_resp_item.b_id = req_requette[selected_id][0].aw_id;
-            b_resp_item.b_resp  = 0;
+            b_resp_item.b_resp  = inject_error;
             b_resp_item.b_valid = 1;
             b_resp_item.b_user  = 0;
 

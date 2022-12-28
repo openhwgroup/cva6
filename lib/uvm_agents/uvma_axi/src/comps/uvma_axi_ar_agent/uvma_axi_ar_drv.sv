@@ -70,9 +70,15 @@ class uvma_axi_ar_drv_c extends uvm_driver #(uvma_axi_ar_item_c);
 
    task drv_post_reset();
       seq_item_port.get_next_item(ar_item);
-         this.slave_mp.slv_axi_cb.ar_ready <= 1'b1;
+         if(ar_item.ar_valid) begin
+            repeat (ar_item.ar_latency) begin
+               @(slave_mp.slv_axi_cb);
+            end
+            this.slave_mp.slv_axi_cb.ar_ready <= 1'b1;
+         end
          `uvm_info(get_type_name(), $sformatf("read address, response by ar_ready"), UVM_LOW)
          @(slave_mp.slv_axi_cb);
+         this.slave_mp.slv_axi_cb.ar_ready <= 1'b0;
       seq_item_port.item_done();
    endtask: drv_post_reset
 

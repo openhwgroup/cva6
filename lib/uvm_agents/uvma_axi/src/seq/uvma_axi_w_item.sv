@@ -21,6 +21,7 @@ class uvma_axi_w_item_c extends uvm_sequence_item;
    rand logic                        w_user;
    rand logic                        w_valid;
    rand logic                        w_ready;
+   int                               w_latency;
 
    `uvm_object_param_utils_begin(uvma_axi_w_item_c)
       `uvm_field_int(w_strb, UVM_ALL_ON | UVM_NOPACK);
@@ -29,6 +30,7 @@ class uvma_axi_w_item_c extends uvm_sequence_item;
       `uvm_field_int(w_user, UVM_ALL_ON | UVM_NOPACK);
       `uvm_field_int(w_valid, UVM_ALL_ON | UVM_NOPACK);
       `uvm_field_int(w_ready, UVM_ALL_ON | UVM_NOPACK);
+      `uvm_field_int(w_latency, UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE);
    `uvm_object_utils_end
 
    function new(string name = "uvma_axi_w_item_c");

@@ -18,4 +18,15 @@
       UVMA_AXI_RESET_STATE_POST_RESET
    } uvma_axi_reset_state_enum;
 
+   typedef enum {
+   UVMA_AXI_DRV_SLV_MODE_CONSTANT      ,
+   UVMA_AXI_DRV_SLV_MODE_FIXED_LATENCY ,
+   UVMA_AXI_DRV_SLV_MODE_RANDOM_LATENCY
+   } uvma_axi_drv_slv_mode_enum;
+
+   typedef enum {
+   UVMA_AXI_DRV_SLV_ERR_MODE_OK,
+   UVMA_AXI_DRV_SLV_ERR_MODE_RANDOM
+   } uvma_axi_drv_slv_err_mode_enum;
+
 `endif // __UVMA_AXI_TDEFS_SV__

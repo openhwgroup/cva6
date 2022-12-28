@@ -26,6 +26,7 @@ class uvma_axi_aw_seq_c extends uvm_sequence#(uvma_axi_aw_item_c);
    uvma_axi_aw_item_c  req_item;
 
    extern function new(string name = "");
+   extern function void add_latencies(uvma_axi_aw_item_c master_req);
    extern task body();
 
 endclass : uvma_axi_aw_seq_c
@@ -34,6 +35,12 @@ endclass : uvma_axi_aw_seq_c
 function uvma_axi_aw_seq_c::new(string name = "");
    super.new(name);
 endfunction : new
+
+function void uvma_axi_aw_seq_c::add_latencies(uvma_axi_aw_item_c master_req);
+
+   master_req.aw_latency = cfg.calc_random_latency();
+
+endfunction : add_latencies
 
 task uvma_axi_aw_seq_c::body();
    forever begin
@@ -45,6 +52,7 @@ task uvma_axi_aw_seq_c::body();
 
       start_item(req_item);
          `uvm_info(get_type_name(), "WRITE ADDRESS sequence starting", UVM_LOW)
+         add_latencies(req_item);
       finish_item(req_item);
 
    end

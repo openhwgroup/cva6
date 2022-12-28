@@ -94,7 +94,7 @@ task uvma_axi_w_drv_c::drv_post_reset();
 
    seq_item_port.get_next_item(w_item);
       `uvm_info(get_type_name(), $sformatf("write data driver start"), UVM_LOW)
-      this.slave_mp.slv_axi_cb.w_ready <= 1'b1;
+      this.slave_mp.slv_axi_cb.w_ready <= w_item.w_ready;
       @(slave_mp.slv_axi_cb);
    seq_item_port.item_done();
 
