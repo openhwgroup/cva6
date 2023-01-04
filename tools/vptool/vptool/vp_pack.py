@@ -68,12 +68,19 @@ class Item:
         self.tag = tag
         # Description of feature to be tested
         self.description = description
-        # Requirement to be verified
+        # Requirement to be verified (from now on, the design document...)
+        # FIXME: field naming needs a major rework.
         self.purpose = purpose
         # Summary of verification goals
         self.verif_goals = ""
         # Location of coverage data
         self.coverage_loc = ""
+        # Use page as the default reference mode for design docs.
+        # This will work with all files (no reliance on named dests).
+        self.ref_mode = "page"
+        self.ref_page = ""
+        self.ref_section = ""
+        self.ref_viewer = "firefox"
         # FIXME: Propagate default value from YAML config.
         self.pfc = -1  # none selected, must choose
         self.test_type = -1  # none selected, must choose
