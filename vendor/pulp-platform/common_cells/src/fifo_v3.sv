@@ -36,15 +36,25 @@ module fifo_v3 #(
     // local parameter
     // FIFO depth - handle the case of pass-through, synthesizer will do constant propagation
     localparam int unsigned FifoDepth = (DEPTH > 0) ? DEPTH : 1;
-    // clock gating control
-    logic gate_clock;
+    
     // pointer to the read and write section of the queue
     logic [ADDR_DEPTH - 1:0] read_pointer_n, read_pointer_q, write_pointer_n, write_pointer_q;
     // keep a counter to keep track of the current queue status
     // this integer will be truncated by the synthesis tool
     logic [ADDR_DEPTH:0] status_cnt_n, status_cnt_q;
-    // actual memory
-    dtype [FifoDepth - 1:0] mem_n, mem_q;
+    
+    if (ariane_pkg::FPGA_EN) begin : gen_fpga_signals //FPGA TARGETS
+        logic   fifo_ram_we;
+        logic   [ADDR_DEPTH-1:0] fifo_ram_read_address;
+        logic   [ADDR_DEPTH-1:0] fifo_ram_write_address;
+        logic   [$bits(dtype)-1:0] fifo_ram_wdata;
+        logic   [$bits(dtype)-1:0] fifo_ram_rdata;
+    end else begin : gen_asic_signals //ASIC TARGETS
+        // clock gating control
+        logic gate_clock;
+        // actual memory
+        dtype [FifoDepth - 1:0] mem_n, mem_q;
+    end
 
     assign usage_o = status_cnt_q[ADDR_DEPTH-1:0];
 
@@ -63,16 +73,31 @@ module fifo_v3 #(
         read_pointer_n  = read_pointer_q;
         write_pointer_n = write_pointer_q;
         status_cnt_n    = status_cnt_q;
-        data_o          = (DEPTH == 0) ? data_i : mem_q[read_pointer_q];
-        mem_n           = mem_q;
-        gate_clock      = 1'b1;
+        if (ariane_pkg::FPGA_EN) begin
+             fifo_ram_we             = '0;
+             fifo_ram_read_address   = read_pointer_q;
+             fifo_ram_write_address  = '0;
+             fifo_ram_wdata          = '0;
+             data_o = (DEPTH == 0) ? data_i : fifo_ram_rdata;
+        end else begin
+            data_o          = (DEPTH == 0) ? data_i : mem_q[read_pointer_q];
+            mem_n           = mem_q;
+            gate_clock      = 1'b1;
+        end
 
         // push a new element to the queue
         if (push_i && ~full_o) begin
-            // push the data onto the queue
-            mem_n[write_pointer_q] = data_i;
-            // un-gate the clock, we want to write something
-            gate_clock = 1'b0;
+            if (ariane_pkg::FPGA_EN) begin
+                fifo_ram_we = 1'b1;
+                fifo_ram_write_address = write_pointer_q;
+                fifo_ram_wdata = data_i;
+            end else begin
+                // push the data onto the queue
+                mem_n[write_pointer_q] = data_i;
+                // un-gate the clock, we want to write something
+                gate_clock = 1'b0;
+            end
+            
             // increment the write counter
             if (write_pointer_q == FifoDepth[ADDR_DEPTH-1:0] - 1)
                 write_pointer_n = '0;
@@ -127,11 +152,26 @@ module fifo_v3 #(
         end
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            mem_q <= '0;
-        end else if (!gate_clock) begin
-            mem_q <= mem_n;
+    if (ariane_pkg::FPGA_EN) begin : gen_fpga_queue
+        AsyncDpRam #(
+            .ADDR_WIDTH (ADDR_DEPTH),
+            .DATA_DEPTH (DEPTH),
+            .DATA_WIDTH ($bits(dtype))
+        ) queue_ram (
+            .Clk_CI      ( clk_i                   ),  
+            .WrEn_SI     ( fifo_ram_we             ),
+            .RdAddr_DI   ( fifo_ram_read_address   ),
+            .WrAddr_DI   ( fifo_ram_write_address  ),
+            .WrData_DI   ( fifo_ram_wdata          ),
+            .RdData_DO   ( fifo_ram_rdata          )
+        );
+    end else begin : gen_asic_queue
+        always_ff @(posedge clk_i or negedge rst_ni) begin
+            if(~rst_ni) begin
+                mem_q <= '0;
+            end else if (!gate_clock) begin
+                mem_q <= mem_n;
+            end
         end
     end
 
