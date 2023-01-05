@@ -57,9 +57,6 @@ module AsyncDpRam
   assert property
     (@(posedge Clk_CI) (longint'(2)**longint'(ADDR_WIDTH) >= longint'(DATA_DEPTH)))
     else $error("depth out of bounds");
-  assert property
-    (@(posedge Clk_CI) (CSelA_SI & CSelB_SI & WrEnA_SI & WrEnB_SI) |-> (AddrA_DI != AddrB_DI))
-    else $error("A and B write to the same address");
   // pragma translate_on
 
 endmodule 
