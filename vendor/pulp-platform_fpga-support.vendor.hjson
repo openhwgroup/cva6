@@ -24,7 +24,7 @@
     // Exclusions from upstream content
     exclude_from_upstream: [
         "ci",
-	".editorconfig",
-	"src_files.yml",
+        ".editorconfig",
+        "src_files.yml",
     ]
 }
