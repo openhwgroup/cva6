@@ -4,9 +4,6 @@
 [submodule "common/submodules/common_cells"]
 	path = common/submodules/common_cells
 	url = https://github.com/pulp-platform/common_cells.git
-[submodule "corev_apu/axi"]
-	path = corev_apu/axi
-	url = https://github.com/pulp-platform/axi.git
 [submodule "corev_apu/register_interface"]
 	path = corev_apu/register_interface
 	url = https://github.com/pulp-platform/register_interface.git
@@ -22,12 +19,6 @@
 [submodule "corev_apu/fpga/src/axi_slice"]
 	path = corev_apu/fpga/src/axi_slice
 	url = https://github.com/pulp-platform/axi_slice.git
-[submodule "corev_apu/src/tech_cells_generic"]
-	path = corev_apu/src/tech_cells_generic
-	url = https://github.com/pulp-platform/tech_cells_generic.git
-[submodule "core/fpu"]
-	path = core/fpu
-	url = https://github.com/pulp-platform/fpnew.git
 [submodule "corev_apu/fpga/src/ariane-ethernet"]
 	path = corev_apu/fpga/src/ariane-ethernet
 	url = https://github.com/lowRISC/ariane-ethernet.git
