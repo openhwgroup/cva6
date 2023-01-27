@@ -25,7 +25,7 @@
 //                 maintained keeping track of write acesses.
 //
 
-module ariane_regfile #(
+module ariane_regfile_fpga #(
   parameter int unsigned DATA_WIDTH     = 32,
   parameter int unsigned NR_READ_PORTS  = 2,
   parameter int unsigned NR_WRITE_PORTS = 2,
