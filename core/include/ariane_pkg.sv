@@ -139,10 +139,6 @@ package ariane_pkg;
     localparam ENABLE_RENAME = cva6_config_pkg::CVA6ConfigRenameEn;
 
     localparam ISSUE_WIDTH = 1;
-    // amount of pipeline registers inserted for load/store return path
-    // this can be tuned to trade-off IPC vs. cycle time
-    localparam int unsigned NR_LOAD_PIPE_REGS = cva6_config_pkg::CVA6ConfigNrLoadPipeRegs;
-    localparam int unsigned NR_STORE_PIPE_REGS = cva6_config_pkg::CVA6ConfigNrStorePipeRegs;
 
     // depth of store-buffers, this needs to be a power of two
     localparam int unsigned DEPTH_SPEC   = 4;
