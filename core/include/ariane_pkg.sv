@@ -378,7 +378,7 @@ package ariane_pkg;
         logic       valid;
         logic       taken;
     } bht_prediction_t;
-    
+
     typedef struct packed {
         logic       valid;
         logic [1:0] saturation_counter;
