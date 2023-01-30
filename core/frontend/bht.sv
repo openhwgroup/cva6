@@ -96,6 +96,7 @@ module bht #(
         bht_ram_write_address = '0;
         bht_ram_wdata ='0;
         bht_updated = '0;
+        bht = '0;
 
         for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
           if (row_index == i) begin
