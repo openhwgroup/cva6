@@ -14,6 +14,20 @@
 // Date: 09.06.2018
 
 // branch history table - 2 bit saturation counter
+
+// Additional contributions by:
+//         Sebastien Jacq, Thales - sjthales on github.com
+//         Date: 2023-01-30
+//
+// Description: The BHT module is optimized for target FPGA and ASIC.
+//              It counts and saves the saturation bits in D flip-flops for 
+//              the ASIC version and in a three-port asynchronous read memory
+//              for the FPGA version.
+//              For FPGA flushing is not supported because the frontend module
+//              flushing signal is not connected.
+//
+
+
 module bht #(
     parameter int unsigned NR_ENTRIES = 1024
 )(
@@ -35,6 +49,9 @@ module bht #(
     localparam ROW_INDEX_BITS = ariane_pkg::RVC == 1'b1 ? $clog2(ariane_pkg::INSTR_PER_FETCH) : 1;   // 1    1
     // number of bits we should use for prediction
     localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
+    // number of bits par word in the bram 
+    localparam BRAM_WORD_BITS = $bits(ariane_pkg::bht_t);
+    
     // we are not interested in all bits of the address
     unread i_unread (.d_i(|vpc_i));
 
@@ -45,7 +62,6 @@ module bht #(
 
     logic [$clog2(NR_ROWS)-1:0]  index, update_pc;
     logic [ROW_INDEX_BITS-1:0]    update_row_index;
-    logic [1:0]                  saturation_counter;
 
     assign index     = vpc_i[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
     assign update_pc = bht_update_i.pc[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
@@ -54,57 +70,146 @@ module bht #(
     end else begin
       assign update_row_index = '0;
     end
+    
+    if (ariane_pkg::FPGA_EN) begin : gen_fpga_bht //FPGA TARGETS
 
-    // prediction assignment
-    for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_bht_output
+      logic [ariane_pkg::INSTR_PER_FETCH-1:0]                    bht_ram_we;
+      logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0]    bht_ram_read_address_0;
+      logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0]    bht_ram_read_address_1;
+      logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0]    bht_ram_write_address;
+      logic [ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0]     bht_ram_wdata;
+      logic [ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0]     bht_ram_rdata_0;
+      logic [ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0]     bht_ram_rdata_1;
+    
+      // -------------------------
+      // prediction assignment & update Branch History Table
+      // -------------------------
+      always_comb begin : prediction_update_bht
+        bht_ram_we = '0;
+        bht_ram_read_address_0 = '0;
+        bht_ram_read_address_1 = '0;
+        bht_ram_write_address = '0;
+        bht_ram_wdata ='0;
+        bht_updated = '0;
+        bht = '0;
+
+        for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
+          if (row_index == i) begin
+            bht_ram_read_address_0[i*$clog2(NR_ROWS) +: $clog2(NR_ROWS)] = index;
+            bht_prediction_o[i].valid = bht_ram_rdata_0[i*BRAM_WORD_BITS+2] ;
+            bht_prediction_o[i].taken = bht_ram_rdata_0[i*BRAM_WORD_BITS+1] ;
+          end
+        end
+
+        if (bht_update_i.valid && !debug_mode_i) begin
+          for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
+            if (update_row_index == i) begin
+              bht_ram_read_address_1[i*$clog2(NR_ROWS) +: $clog2(NR_ROWS)] = update_pc;
+              bht[i].saturation_counter = bht_ram_rdata_1[i*BRAM_WORD_BITS +: 2];
+            
+              if (bht[i].saturation_counter == 2'b11) begin
+                // we can safely decrease it
+                if (!bht_update_i.taken)
+                  bht_updated[i].saturation_counter = bht[i].saturation_counter - 1;
+                else
+                  bht_updated[i].saturation_counter = 2'b11;
+              // then check if it saturated in the negative regime e.g.: branch not taken
+              end else if (bht[i].saturation_counter == 2'b00) begin
+                // we can safely increase it
+                if (bht_update_i.taken)
+                  bht_updated[i].saturation_counter = bht[i].saturation_counter + 1;
+                else
+                  bht_updated[i].saturation_counter = 2'b00;
+              end else begin // otherwise we are not in any boundaries and can decrease or increase it
+                if (bht_update_i.taken)
+                  bht_updated[i].saturation_counter = bht[i].saturation_counter + 1;
+                else
+                  bht_updated[i].saturation_counter = bht[i].saturation_counter - 1;
+              end
+            
+              bht_updated[i].valid = 1'b1;
+              bht_ram_we[i] = 1'b1;
+              bht_ram_write_address[i*$clog2(NR_ROWS) +: $clog2(NR_ROWS)] = update_pc;
+              //bht_ram_wdata[(i+1)*BRAM_WORD_BITS-1] =  1'b1; //valid
+              bht_ram_wdata[i*BRAM_WORD_BITS +: BRAM_WORD_BITS] =  {bht_updated[i].valid , bht_updated[i].saturation_counter}; 
+            
+            end
+          end
+        end
+      end
+      
+      for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_bht_ram
+        AsyncThreePortRam #(
+          .ADDR_WIDTH($clog2(NR_ROWS)),
+          .DATA_DEPTH (NR_ROWS),
+          .DATA_WIDTH(BRAM_WORD_BITS)
+        ) i_bht_ram (
+          .Clk_CI       ( clk_i                                                        ),  
+          .WrEn_SI      ( bht_ram_we[i]                                                ),
+          .WrAddr_DI    ( bht_ram_write_address[i*$clog2(NR_ROWS) +: $clog2(NR_ROWS)]  ),
+          .WrData_DI    ( bht_ram_wdata[i*BRAM_WORD_BITS +: BRAM_WORD_BITS]            ),
+          .RdAddr_DI_0  ( bht_ram_read_address_0[i*$clog2(NR_ROWS) +: $clog2(NR_ROWS)] ),
+          .RdAddr_DI_1  ( bht_ram_read_address_1[i*$clog2(NR_ROWS) +: $clog2(NR_ROWS)] ),
+          .RdData_DO_0  ( bht_ram_rdata_0[i*BRAM_WORD_BITS +: BRAM_WORD_BITS]          ),
+          .RdData_DO_1  ( bht_ram_rdata_1[i*BRAM_WORD_BITS +: BRAM_WORD_BITS]          )
+        );
+      end
+
+    end else begin : gen_asic_bht // ASIC TARGET
+
+      logic [1:0] saturation_counter;
+      // prediction assignment
+      for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_bht_output
         assign bht_prediction_o[i].valid = bht_q[index][i].valid;
         assign bht_prediction_o[i].taken = bht_q[index][i].saturation_counter[1] == 1'b1;
-    end
+      end
 
-    always_comb begin : update_bht
+      always_comb begin : update_bht
         bht_d = bht_q;
         saturation_counter = bht_q[update_pc][update_row_index].saturation_counter;
 
         if (bht_update_i.valid && !debug_mode_i) begin
-            bht_d[update_pc][update_row_index].valid = 1'b1;
+          bht_d[update_pc][update_row_index].valid = 1'b1;
 
-            if (saturation_counter == 2'b11) begin
-                // we can safely decrease it
-                if (!bht_update_i.taken)
-                    bht_d[update_pc][update_row_index].saturation_counter = saturation_counter - 1;
-            // then check if it saturated in the negative regime e.g.: branch not taken
-            end else if (saturation_counter == 2'b00) begin
-                // we can safely increase it
-                if (bht_update_i.taken)
-                    bht_d[update_pc][update_row_index].saturation_counter = saturation_counter + 1;
-            end else begin // otherwise we are not in any boundaries and can decrease or increase it
-                if (bht_update_i.taken)
-                    bht_d[update_pc][update_row_index].saturation_counter = saturation_counter + 1;
-                else
-                    bht_d[update_pc][update_row_index].saturation_counter = saturation_counter - 1;
-            end
+          if (saturation_counter == 2'b11) begin
+            // we can safely decrease it
+            if (!bht_update_i.taken)
+              bht_d[update_pc][update_row_index].saturation_counter = saturation_counter - 1;
+          // then check if it saturated in the negative regime e.g.: branch not taken
+          end else if (saturation_counter == 2'b00) begin
+            // we can safely increase it
+            if (bht_update_i.taken)
+              bht_d[update_pc][update_row_index].saturation_counter = saturation_counter + 1;
+          end else begin // otherwise we are not in any boundaries and can decrease or increase it
+            if (bht_update_i.taken)
+              bht_d[update_pc][update_row_index].saturation_counter = saturation_counter + 1;
+            else
+              bht_d[update_pc][update_row_index].saturation_counter = saturation_counter - 1;
+          end
         end
-    end
+      end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
+      always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
-            for (int unsigned i = 0; i < NR_ROWS; i++) begin
-                for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
-                    bht_q[i][j] <= '0;
-                end
+          for (int unsigned i = 0; i < NR_ROWS; i++) begin
+            for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
+              bht_q[i][j] <= '0;
             end
+          end
         end else begin
-            // evict all entries
-            if (flush_i) begin
-                for (int i = 0; i < NR_ROWS; i++) begin
-                    for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
-                        bht_q[i][j].valid <=  1'b0;
-                        bht_q[i][j].saturation_counter <= 2'b10;
-                    end
-                end
-            end else begin
-                bht_q <= bht_d;
+          // evict all entries
+          if (flush_i) begin
+            for (int i = 0; i < NR_ROWS; i++) begin
+              for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
+                bht_q[i][j].valid <=  1'b0;
+                bht_q[i][j].saturation_counter <= 2'b10;
+              end
             end
+          end else begin
+            bht_q <= bht_d;
+          end
         end
+      end
+
     end
 endmodule
