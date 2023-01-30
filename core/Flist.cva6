@@ -118,6 +118,7 @@ ${CVA6_REPO_DIR}/core/multiplier.sv
 ${CVA6_REPO_DIR}/core/serdiv.sv
 ${CVA6_REPO_DIR}/core/perf_counters.sv
 ${CVA6_REPO_DIR}/core/ariane_regfile_ff.sv
+${CVA6_REPO_DIR}/core/ariane_regfile_fpga.sv
 ${CVA6_REPO_DIR}/core/re_name.sv
 // NOTE: scoreboard.sv modified for DSIM (unchanged for other simulators)
 ${CVA6_REPO_DIR}/core/scoreboard.sv
