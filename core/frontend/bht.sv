@@ -82,7 +82,10 @@ module bht #(
       logic [ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0]     bht_ram_wdata;
       logic [ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0]     bht_ram_rdata_0;
       logic [ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0]     bht_ram_rdata_1;
-    
+
+      ariane_pkg::bht_t [ariane_pkg::INSTR_PER_FETCH-1:0]        bht;
+      ariane_pkg::bht_t [ariane_pkg::INSTR_PER_FETCH-1:0]        bht_updated;
+
       // -------------------------
       // prediction assignment & update Branch History Table
       // -------------------------
