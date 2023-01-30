@@ -857,7 +857,7 @@ def load_config(args, cwd):
       args.isa  = "rv64gc"
     elif args.target == "cv32a60x":
       args.mabi = "ilp32"
-      args.isa  = "rv32imac" # A is needed to compile custom BSP
+      args.isa  = "rv32imc" # Step1 configuration has no A extension.
     elif args.target == "cv32a6_imac_sv0":
       args.mabi = "ilp32"
       args.isa  = "rv32imac"

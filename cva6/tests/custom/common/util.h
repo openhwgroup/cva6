@@ -43,6 +43,7 @@ static int verifyDouble(int n, const volatile double* test, const double* verify
 
 static void __attribute__((noinline)) barrier(int ncores)
 {
+#ifdef __riscv_atomic // __sync_* builtins require A extension
   static volatile int sense;
   static volatile int count;
   static __thread int threadsense;
@@ -59,6 +60,7 @@ static void __attribute__((noinline)) barrier(int ncores)
     ;
 
   __sync_synchronize();
+#endif // __riscv_atomic
 }
 
 static uint64_t lfsr(uint64_t x)
