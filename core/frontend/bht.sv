@@ -51,7 +51,7 @@ module bht #(
     localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
     // number of bits par word in the bram 
     localparam BRAM_WORD_BITS = $bits(ariane_pkg::bht_t);
-    
+
     // we are not interested in all bits of the address
     unread i_unread (.d_i(|vpc_i));
 
@@ -72,7 +72,7 @@ module bht #(
       assign row_index = '0;
       assign update_row_index = '0;
     end
-    
+
     if (ariane_pkg::FPGA_EN) begin : gen_fpga_bht //FPGA TARGETS
 
       logic [ariane_pkg::INSTR_PER_FETCH-1:0]                    bht_ram_we;
@@ -142,7 +142,7 @@ module bht #(
           end
         end
       end
-      
+
       for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_bht_ram
         AsyncThreePortRam #(
           .ADDR_WIDTH($clog2(NR_ROWS)),
