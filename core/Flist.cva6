@@ -30,6 +30,7 @@
 //FPGA memories
 ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncDpRam.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/AsyncDpRam.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv
 
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/include/
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/
