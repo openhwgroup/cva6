@@ -61,20 +61,19 @@ module bht #(
     } bht_d[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0], bht_q[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0];
 
     logic [$clog2(NR_ROWS)-1:0]  index, update_pc;
-    logic [ROW_INDEX_BITS-1:0]   row_index, update_row_index;
+    logic [ROW_INDEX_BITS-1:0]   update_row_index;
 
     assign index     = vpc_i[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
     assign update_pc = bht_update_i.pc[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
     if (ariane_pkg::RVC) begin : gen_update_row_index
-    assign row_index        = vpc_i[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
       assign update_row_index = bht_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
     end else begin
-      assign row_index = '0;
       assign update_row_index = '0;
     end
 
     if (ariane_pkg::FPGA_EN) begin : gen_fpga_bht //FPGA TARGETS
 
+      logic [ROW_INDEX_BITS-1:0]                                 row_index;
       logic [ariane_pkg::INSTR_PER_FETCH-1:0]                    bht_ram_we;
       logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0]    bht_ram_read_address_0;
       logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0]    bht_ram_read_address_1;
@@ -85,6 +84,12 @@ module bht #(
 
       ariane_pkg::bht_t [ariane_pkg::INSTR_PER_FETCH-1:0]        bht;
       ariane_pkg::bht_t [ariane_pkg::INSTR_PER_FETCH-1:0]        bht_updated;
+
+      if (ariane_pkg::RVC) begin : gen_row_index
+        assign row_index        = vpc_i[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
+      end else begin
+        assign row_index = '0;
+      end
 
       // -------------------------
       // prediction assignment & update Branch History Table
