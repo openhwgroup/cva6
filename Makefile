@@ -120,23 +120,25 @@ endif
 
 dpi_hdr := $(wildcard corev_apu/tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
-CFLAGS := -I$(QUESTASIM_HOME)/include         \
-          -I$(VCS_HOME)/include \
-          -I$(RISCV)/include                  \
-          -I$(SPIKE_ROOT)/include             \
-          $(if $(DROMAJO), -I../corev_apu/tb/dromajo/src,) \
-          -std=c++11 -I../corev_apu/tb/dpi -O3
+DPI_FLAGS := -I$(QUESTASIM_HOME)/include                      \
+             -I$(VCS_HOME)/include                            \
+             -I$(RISCV)/include                               \
+             -I$(SPIKE_ROOT)/include                          \
+             $(if $(DROMAJO), -I../corev_apu/tb/dromajo/src,) \
+             -std=c++11 -I../corev_apu/tb/dpi -O3
 
 ifdef XCELIUM_HOME
-CFLAGS += -I$(XCELIUM_HOME)/tools/include
+DPI_FLAGS += -I$(XCELIUM_HOME)/tools/include
 else
 $(warning XCELIUM_HOME not set which is necessary for compiling DPIs when using XCELIUM)
 endif
 
 ifdef spike-tandem
-    CFLAGS += -Itb/riscv-isa-sim/install/include/spike
+DPI_FLAGS += -Itb/riscv-isa-sim/install/include/spike
 endif
 
+DPI_CFLAGS   ?= $(CFLAGS)   $(DPI_FLAGS)
+DPI_CXXFLAGS ?= $(CXXFLAGS) $(DPI_FLAGS)
 
 # this list contains the standalone components
 src :=  corev_apu/tb/axi_adapter.sv                                                  \
@@ -320,12 +322,12 @@ $(library):
 # compile DPIs
 $(dpi-library)/%.o: corev_apu/tb/dpi/%.cc $(dpi_hdr)
 	mkdir -p $(dpi-library)
-	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic $(CFLAGS) -c $< -o $@
+	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic $(DPI_CXXFLAGS) -c $< -o $@
 
 $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
-	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr
+	$(CXX) $(CXXFLAGS) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr
 
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
@@ -565,7 +567,7 @@ verilate_command := $(verilator)                                                
                     $(if $(TRACE_COMPACT), --trace-fst $(VERILATOR_ROOT)/include/verilated_fst_c.cpp)            \
                     $(if $(TRACE_FAST), --trace $(VERILATOR_ROOT)/include/verilated_vcd_c.cpp,)                  \
                     -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -L../corev_apu/tb/dromajo/src -ldromajo_cosim,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
-                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -DDROMAJO=1,) -DVL_DEBUG"       \
+                    -CFLAGS "$(DPI_CFLAGS)$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -DDROMAJO=1,) -DVL_DEBUG"       \
                     -Wall --cc  --vpi                                                                            \
                     $(list_incdir) --top-module ariane_testharness                                               \
 					--threads-dpi none 																			 \
