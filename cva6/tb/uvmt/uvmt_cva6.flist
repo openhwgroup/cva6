@@ -45,3 +45,5 @@ ${CVA6_UVMT_DIR}/uvmt_cva6_tb_ifs.sv
 ${CVA6_UVMT_DIR}/uvmt_cva6_tb.sv
 ${CVA6_UVMT_DIR}/uvmt_cva6_dut_wrap.sv
 ${CVA6_UVMT_DIR}/cva6_tb_wrapper.sv
+
+${CVA6_UVMT_DIR}/uvmt_axi_assert.sv

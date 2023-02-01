@@ -58,6 +58,12 @@ module uvmt_cva6_tb;
                                               .clk(clknrst_if.clk),
                                               .reset_n(clknrst_if.reset_n)
                                              );
+   //bind assertion module for axi interface
+   bind uvmt_cva6_dut_wrap
+      uvmt_axi_assert            axi_assert(.axi_assert(axi_if.passive),
+                                            .clk(clknrst_if.clk),
+                                            .rst_n(clknrst_if.reset_n)
+                                           );
    // DUT Wrapper Interfaces
    uvmt_rvfi_if                     rvfi_if(
                                                  .rvfi_o()
