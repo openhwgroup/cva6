@@ -120,7 +120,7 @@ endif
 
 dpi_hdr := $(wildcard corev_apu/tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
-CFLAGS := -I$(QUESTASIM_HOME)/include         \
+CFLAGS += -I$(QUESTASIM_HOME)/include         \
           -I$(VCS_HOME)/include \
           -I$(RISCV)/include                  \
           -I$(SPIKE_ROOT)/include             \
