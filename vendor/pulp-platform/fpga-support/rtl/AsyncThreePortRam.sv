@@ -31,7 +31,7 @@ module AsyncThreePortRam
   input  logic [ADDR_WIDTH-1:0]   WrAddr_DI,
   input  logic [DATA_WIDTH-1:0]   WrData_DI,
   
-  // Read port
+  // Read ports
   input  logic [ADDR_WIDTH-1:0]   RdAddr_DI_0,
   input  logic [ADDR_WIDTH-1:0]   RdAddr_DI_1,
   
