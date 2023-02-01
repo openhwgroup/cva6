@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 // You may obtain a copy of the License at https://solderpad.org/licenses
 //
-// Inferable, Asynchronous Three-Ports RAM, there are a write port and a read port
+// Inferable, Asynchronous Three-Ports RAM, there are a write port and two read ports
 //
 //
 // This module is designed to work with both Xilinx and Microchip FPGA tools by following the respective
