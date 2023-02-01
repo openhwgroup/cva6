@@ -1,5 +1,3 @@
 # Global Owners
-*  @zarubaf
+*  @niwis
 
-# FPU owners
-src/fpu_wrap.sv @stmach

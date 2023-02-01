@@ -2,6 +2,8 @@
 
 # CVA6 RISC-V CPU
 
+> :warning: **This is a fork of CVA6** intended for PULP development. The upstream repository is hosted on [openhwgroup/cva6](https://github.com/openhwgroup/cva6).
+
 CVA6 is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
 
 It has configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
