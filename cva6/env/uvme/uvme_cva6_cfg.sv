@@ -79,6 +79,7 @@ class uvme_cva6_cfg_c extends uvm_object;
 
       if (trn_log_enabled) {
          clknrst_cfg.trn_log_enabled   == 1;
+         axi_cfg.trn_log_enabled       == 1;
       }
 
       if (cov_model_enabled) {
