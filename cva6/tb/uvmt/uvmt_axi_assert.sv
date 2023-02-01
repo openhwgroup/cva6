@@ -42,5 +42,11 @@ module  uvmt_axi_assert (uvma_axi_intf.passive axi_assert, input bit clk, input 
                                             .rst_n(rst_n)
                                            );
 
+   bind uvmt_axi_assert
+      uvmt_cva6_axi_assert       cva6_axi_assert(.axi_assert(axi_assert),
+                                            .clk(clk),
+                                            .rst_n(rst_n)
+                                           );
+
 
 endmodule : uvmt_axi_assert
