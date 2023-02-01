@@ -49,9 +49,6 @@ module bht #(
     localparam ROW_INDEX_BITS = ariane_pkg::RVC == 1'b1 ? $clog2(ariane_pkg::INSTR_PER_FETCH) : 1;
     // number of bits we should use for prediction
     localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
-    // number of bits par word in the bram 
-    localparam BRAM_WORD_BITS = $bits(ariane_pkg::bht_t);
-
     // we are not interested in all bits of the address
     unread i_unread (.d_i(|vpc_i));
 
@@ -73,6 +70,8 @@ module bht #(
 
     if (ariane_pkg::FPGA_EN) begin : gen_fpga_bht //FPGA TARGETS
 
+      // number of bits par word in the bram 
+      localparam BRAM_WORD_BITS = $bits(ariane_pkg::bht_t);
       logic [ROW_INDEX_BITS-1:0]                                 row_index;
       logic [ariane_pkg::INSTR_PER_FETCH-1:0]                    bht_ram_we;
       logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0]    bht_ram_read_address_0;
