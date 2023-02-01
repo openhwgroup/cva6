@@ -22,14 +22,18 @@ static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t
   magic_mem[1] = arg0;
   magic_mem[2] = arg1;
   magic_mem[3] = arg2;
+#ifdef __riscv_atomic // __sync_synchronize requires A extension
   __sync_synchronize();
+#endif
 
   tohost = (uintptr_t)magic_mem;
   while (fromhost == 0)
     ;
   fromhost = 0;
 
+#ifdef __riscv_atomic // __sync_synchronize requires A extension
   __sync_synchronize();
+#endif
   return magic_mem[0];
 }
 
