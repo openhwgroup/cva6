@@ -158,9 +158,9 @@ export DV_OVPM_HOME           = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/imperas
 export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)_OVPsim
 export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/design
 
-ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
-	  /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
-	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
+ALL_UVM_FLAGS           = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
+	  $(VCS_HOME)/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
+	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+$(VCS_HOME)/etc/uvm/src \
 	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
 	  $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb) $(if $(TRACE_COMPACT),+vcs+fsdbon))
 
