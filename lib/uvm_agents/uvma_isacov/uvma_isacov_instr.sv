@@ -333,11 +333,6 @@ function void uvma_isacov_instr_c::set_valid_flags();
     return;
   end
 
-  if (itype == CSRI_TYPE) begin
-    rd_valid = 1;
-    return;
-  end
-
 endfunction : set_valid_flags
 
 
@@ -392,7 +387,7 @@ function  int  uvma_isacov_instr_c::get_field_imm();
   if (this.itype == CIW_TYPE) begin
     return (dasm_rvc_addi4spn_imm(instr) >> 2);  // Shift 2 because [9:2] to [7:0]
   end
-  if (this.itype == CS_TYPE) begin
+  if (this.itype == CL_TYPE) begin
     return (dasm_rvc_lw_imm(instr) >> 2);  // Shift 2 because [6:2] to [4:0]
   end
   if (this.itype == CB_TYPE) begin
@@ -433,13 +428,7 @@ function  int  uvma_isacov_instr_c::get_field_rd();
   // TODO:ropeders is CA handled properly?
   // TODO:ropeders call dpi_dasm from here, instead of elsewhere?
 
-  if (itype inside {CA_TYPE, CB_TYPE}) begin
-    return rd[2:0];
-  end else if (itype inside {CIW_TYPE, CL_TYPE}) begin
-    return rs2[2:0];
-  end else begin
-    return rd;
-  end
+  return (itype inside {CA_TYPE, CL_TYPE, CIW_TYPE, CB_TYPE}) ? rd[2:0] : rd;
 
 endfunction : get_field_rd
 
