@@ -1035,7 +1035,7 @@ covergroup cg_ci(
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_4_0(cp_imm_toggle, instr.get_field_imm(), 1)
+  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ci
 
@@ -1062,15 +1062,15 @@ covergroup cg_ci_shift(
   }
 
   cp_shamt: coverpoint instr.get_field_imm() {
-    bins SHAMT[] = {[0:31]};
+    bins SHAMT[] = {[0:63]};
+    illegal_bins ILLEGAL_SHAMT[] = {[32:63]};                                  // MSB of the immediate value should be always zero
   }
 
   cp_rd: coverpoint instr.rd {
     ignore_bins RD_NOT_ZERO = {0};
   }
 
-  `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(), 1)
+  `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)							// No need to toggle imm again because cp_shamt did the job
 
 endgroup : cg_ci_shift
 
@@ -1105,8 +1105,7 @@ covergroup cg_ci_lui(
   }
 
   `ISACOV_CP_BITWISE_31_12(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_17_12(cp_imm_toggle, instr.get_field_imm(), 1)
-  // TODO:ropeders the toggle macros are wrong; must revise
+  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ci_lui
 
@@ -1135,7 +1134,7 @@ covergroup cg_css(
   }
 
   `ISACOV_CP_BITWISE    (cp_rs2_toggle, instr.rs2_value,         1)
-  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.get_field_imm(),   1/*TODO:ropeders make function of instr_c?*/)
+  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(),   1)
 
 endgroup : cg_css
 
@@ -1150,7 +1149,7 @@ covergroup cg_ciw(
   cp_rd: coverpoint instr.rd;
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_9_2(cp_imm_toggle, instr.get_field_imm(), 1)
+  `ISACOV_CP_BITWISE_7_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ciw
 
@@ -1188,7 +1187,7 @@ covergroup cg_cl(
 
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.get_field_imm(), 1)
+  `ISACOV_CP_BITWISE_4_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cl
 
@@ -1221,7 +1220,7 @@ covergroup cg_cs(
 
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_6_2(cp_imm_toggle, instr.get_field_imm(), 1)
+  `ISACOV_CP_BITWISE_4_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cs
 
@@ -1295,7 +1294,7 @@ covergroup cg_cb(
   cp_rs1: coverpoint instr.rs1;
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.get_field_imm(), 1)
+  `ISACOV_CP_BITWISE_7_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cb
 
@@ -1344,13 +1343,13 @@ covergroup cg_cb_shift(
   }
 
   cp_shamt: coverpoint instr.get_field_imm() {
-    bins SHAMT[] = {[0:31]};
+    bins SHAMT[] = {[0:63]};
+    illegal_bins ILLEGAL_SHAMT[] = {[32:63]};                                  // MSB of the immediate value should be always zero
   }
 
   cp_rs1: coverpoint instr.rs1;
 
-  `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.get_field_imm(), 1)
+  `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)							// No need to toggle imm again because cp_shamt did the job
 
 endgroup : cg_cb_shift
 
@@ -1369,7 +1368,7 @@ covergroup cg_cj(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
   }
 
-  `ISACOV_CP_BITWISE_11_1(cp_imm_toggle, instr.get_field_imm(), 1)
+  `ISACOV_CP_BITWISE_10_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cj
 

@@ -1,7 +1,8 @@
+<!--
+Copyright 2022 Thales DIS Design Services SAS
+SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+-->
 # VPtool Introduction
-
-NOTE: This document is by no means exhaustive and is built incrementally from user experience.
-Therefore, it may contain mistakes and/or it may suggest non-optimal ways of dealing with VPTOOL.
 
 VPTOOL is a tool for creating and managing Verification Plans.  It supports concurrent editing
 at the granularity of Features: each Feature can be locked by a different user.
@@ -19,6 +20,11 @@ revert unwanted changes while editing the text.
 The labels and cue texts of VPTOOL are customizable by means of a configuration file so that the
 tool can be tailored to the needs of a site, e.g., to use local customary names of verification
 concepts.
+
+## Issue Reporting
+
+VPTOOL is in active development and is not fully tested.
+If you encounter a problem with VPTOOL, please open an issue on this repository (with our thanks!).
 
 ## Prerequisites
 
@@ -102,7 +108,7 @@ shell script named `vptool-example.sh` which can be invoked from any location.
     sh vptool-example/runme.sh
 
   This will load all per-feature Verification Plans present in the `SAVED_DB_LOCATION` variable.
-  The corresponding path is `vptool-example/example-database/ip_dir/core-v/cva6/*.pck` as defined
+  The corresponding path is `vptool-example/example-database/ip_dir/core-v/cva6/\*.pck` as defined
   in the configuration file `vptool-example/example-database/vptool/vp_config.py`.
 
   The New and Delete buttons at the bottom of the Feature, Sub-Feature and Verification Item selectors
@@ -132,7 +138,7 @@ shell script named `vptool-example.sh` which can be invoked from any location.
 
   The Item Description information appears in the right-hand pane.  You can edit the text fields and
   change the setting of radio button selectors.
-  
+
   Changes to drop-down selectors and check buttons take effect immediately.  Changes to text fields
   require a confirmation by pressing the `Save` button.  Unwanted text changes be discarded by pressing
   the `Cancel` button.  Both buttons are only active when the Feature is locked and at least one text

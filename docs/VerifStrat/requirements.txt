@@ -1,0 +1,4 @@
+# Used by ReadTheDocs
+# SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
+sphinx==4.2.0
+sphinx_rtd_theme==1.0.0

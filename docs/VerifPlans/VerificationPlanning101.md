@@ -21,7 +21,7 @@
 # How to Write a Verification Plan (Testplan)
 Verification plans are documents that defines _what_ is to be verified.  They go by many names including Testplan, DV plan or just Vplan.  A complete, high quality verification plan can be the most valuable item produced by a verification project.
 ## Format of a Verificaton Plan
-CORE-V projects use spreadsheets to capture Testplans<sup>1</sup>. The template for the spreadsheet is simple enough that you can use either Microsoft Office Excel or LibreOffice Calc.  The Verification Plan [template](https://github.com/openhwgroup/core-v-docs/blob/master/verif/CV32E40P/VerificationPlan/CORE-V_VerifPlan_Template.xlsx) for the CV32E40P is located at the root of the [VerificationPlan](https://github.com/openhwgroup/core-v-docs/blob/master/verif/CV32E40P/VerificationPlan) directory.
+CORE-V projects use spreadsheets to capture Testplans<sup>1</sup>. The template for the spreadsheet is simple enough that you can use either Microsoft Office Excel or LibreOffice Calc.  The Verification Plan [template](https://github.com/openhwgroup/core-v-verif/blob/master/docs/VerifPlans/templates/CORE-V_Simulation_VerifPlan_Template.xlsx) for the CORE-V-VERIF is located at the root of the [VerificationPlan](https://github.com/openhwgroup/core-v-verif/tree/master/docs/VerifPlans) directory.
 ## Verification Planning
 A key activity of any verification effort is to capture a Verification Plan.  The purpose of a verification plan is to identify what features need to be verified; the success criteria of the feature and the coverage metrics for testing the feature.  Testplans also allow us to reason about the capabilities of the verification environment.
 
@@ -29,7 +29,7 @@ A Verification Plan should focus on the **_what_**, and not the **_how_** of ver
 
 The “how” part is captured in the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/) document.  That document exists to support the Verification Plan. For example the CV32E40P testplan specifies that all RV32I instructions be generated and their results checked.  Obviously, the testbench needs to have these capabilities and its a goal of the Verification Strategy document to explain how that is done.
 ## A Trivial Example: the RV32I ADDI Instruction
-Let's assume your task is to verify the CV32E40P's implementation of the RV32I ADDI instruction.  Simple right?  Create a simple assembler program with a few **_addi_** instructions check the results and we're done.  Of course, simply checking for the correct result (rd = rs1 + imm), of a few instructions is insufficent.  We also need to check:
+Let's assume your task is to verify a core's implementation of the RV32I ADDI instruction.  Simple right?  Create a simple assembler program with a few **_addi_** instructions check the results and we're done.  Unfortunately, simply checking for the correct result (rd = rs1 + imm), of a few instructions is insufficent.  We also need to check:
 * Overflow is detected and flagged correctly
 * Underflow is detected and flagged correctly
 * No instruction execution side-effects (e.g. unexpected GPR changes, unexpected condition codes)
@@ -51,7 +51,7 @@ The template used for this project attempts to provide an easy-to-use format to 
 ## HOWTO: The CORE-V Simulation Verification Plan Template
 The following sub-sections explain each of the columns in the [simulation verification template spreadsheet](https://github.com/openhwgroup/core-v-verif/blob/master/docs/VerifPlans/templates/CORE-V_Simulation_VerifPlan_Template.xlsx).
 ### Requirement Location
-This is a pointer to the source Requirements document of the Features in question.  It can be a standards document, such as the RISC-V ISA, or a micro-architecture specification.   The CV32E40P [introduction](https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/user_manual/source/intro.rst) lists sources of [documentation](https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/user_manual/source/intro.rst#standards-compliance) relevant to the CV32E40P.  _Every item in a Verification Plan must be attributed to one or more of these sources_.  Please also include a chapter or section number.  Note that if you are using the [CV32E40P User Manual](https://core-v-docs-verif-strat.readthedocs.io/projects/cv32e40p_um/en/latest/) as a reference, you **must** provide a release/version number as well since this document is currently in active development.
+This is a pointer to the source Requirements document of the Features in question.  It can be a standards document, such as the RISC-V ISA, or a micro-architecture specification.   The CV32E40P [User Manual](https://cv32e40p.readthedocs.io/en/latest/intro/) lists sources of documentation relevant to the CV32E40P.  _Every item in a Verification Plan must be attributed to one or more of these sources_.  Please also include a chapter or section number.  Note that if you are using the [CV32E40P User Manual](https://core-v-docs-verif-strat.readthedocs.io/projects/cv32e40p_um/en/latest/) as a reference, you **must** provide a release/version number as well since this document is currently in active development.
 ### Feature
 The high-level feature you are trying to verify.  For example, RV32I Register-Immediate Instructions.  In some cases, it may be natural to use the section header name of the reference document.
 ### Sub-Feature
@@ -76,7 +76,6 @@ Here we attempt to answer the question, "how will the testbench know the test pa
 ### Test Type
 Choose one or more of the following:
 * **RISC-V Compliance**: a self-checking ISA compliance testcase from the RISC-V Foundation.
-* **OpenHW Compliance**: OpenHW Compliance is compliance testing of the custom XPULP instructions supported by CV32E40P.  For these we need to generate our own compliance test-suite.  It is not yet know if these can be randomly generated or will require a self-checking ISA compliance testcase from the OpenHW Group.  Note that if they are to be randomly generated then the ISS will need to be able to process XPULP instructions.
 * **Directed Self-Checking**: a directed (non-random) self-checking testcase from the OpenHW Group that is not specifically targetting ISA compliance.
 * **Directed Non-Self-Checking**: a directed (non-random) non-self-checking testcase from the OpenHW Group that is not specifically targetting ISA compliance.  Note that these tests assume that the pass/fail criteria will be "Check against ISS" (or other reference model).
 * **Constrained-Random**: a constrained-random testcase.  Typically the stimulus for these will come from the Google random instruction stream generator.  Note that by defintion these tests cannot be self-checking.

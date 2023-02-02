@@ -16,6 +16,9 @@ export CVA6_REPO_DIR = $(abspath $(root-dir)../../core-v-cores/cva6/)
 export CVA6_TB_DIR   = $(root-dir)/../tb/core
 export CORE_V_VERIF  = $(root-dir)/../..
 endif
+ifndef TARGET_CFG
+export TARGET_CFG = $(target)
+endif
 
 .DEFAULT_GOAL := help
 
@@ -23,10 +26,7 @@ FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
 # target takes one of the following cva6 hardware configuration:
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32
 target     ?= cv64a6_imafdc_sv39
-FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.$(target)
-
-# Convert target name to a valid ISA name for DASM.
-target_isa ?= $(shell echo $(target) | cut -d_ -f1,2 | sed -e 's/^cv\(32\|64\)/rv\1/')
+FLIST_CORE := $(if $(gate), $(CVA6_REPO_DIR)/core/Flist.cva6_gate,$(CVA6_REPO_DIR)/core/Flist.cva6)
 
 TRACE_FAST      ?=
 TRACE_COMPACT   ?=
@@ -110,13 +110,13 @@ spike:
 vcs-testharness:
 	make -C $(path_var) vcs_build target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/init_testharness.do,) +permissive -sv_lib $(path_var)/work-dpi/ariane_dpi +PRELOAD=$(elf) +permissive-off ++$(elf) $(issrun_opts)
-	$(tool_path)/spike-dasm --isa=$(target_isa) < ./trace_rvfi_hart_00.dasm > $(log)
+	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 veri-testharness:
 	make -C $(path_var) verilate target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) $(elf) $(issrun_opts)
-	$(tool_path)/spike-dasm --isa=$(target_isa) < ./trace_rvfi_hart_00.dasm > $(log)
+	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	# If present, move default trace files to per-test directory.
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.$(target).fst
 	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.$(target).vcd
@@ -219,7 +219,7 @@ vcs_uvm_run:
 vcs-uvm:
 	make vcs_uvm_comp
 	make vcs_uvm_run
-	$(tool_path)/spike-dasm --isa=$(target_isa) < ./trace_rvfi_hart_00.dasm > $(log)
+	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 	[ -z "`ls *.$(SIMV_TRACE_EXTN)`" ] || \
           for i in `ls *.$(SIMV_TRACE_EXTN)` ; do mv $$i `dirname $(log)`/`basename $(log) .log`.$(target).$$i ; done || true

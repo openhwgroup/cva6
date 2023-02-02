@@ -557,6 +557,48 @@ class MyTextWidget(ttk.LabelFrame):
             text=vp_config.yaml_config["gui"]["requirement_loc"]["label"],
             style="enabled.TLabelframe",
         )
+        # Design doc information uses a grid layout.
+        # - first row is a URL of the document
+        # - second row contains selectors for page/section mode and value, and a 'View' button.
+        self.text1frame.grid(column=0, row=0, padx=20, pady=20)
+        url_label = ttk.Label(self.text1frame, text="Path or URL", anchor=tk.E)
+        url_label.grid(column=0, row=0, sticky=tk.E, padx=10, pady=10)
+        mode_label = ttk.Label(self.text1frame, text="Refer to...", anchor=tk.E)
+        mode_label.grid(column=0, row=1, sticky=tk.E, padx=10)
+        self.page_num_var = tk.StringVar(self)
+        page_entry = ttk.Entry(self.text1frame, textvariable=self.page_num_var, width=4)
+        page_entry.grid(column=2, row=1, sticky=tk.W)
+        # Use a callaback to update state upon changes to page number field.
+        self.page_num_var.trace("w", self.ref_page_num_changed)
+
+        self.section_num_var= tk.StringVar(self)
+        section_entry = ttk.Entry(self.text1frame, textvariable=self.section_num_var, width=4)
+        section_entry.grid(column=2, row=2, sticky=tk.W)
+        # Use a callaback to update state upon changes to section number field.
+        self.section_num_var.trace("w", self.ref_section_num_changed)
+
+        view_btn = ttk.Button(self.text1frame, text="View design doc", command=self.view_design_doc)
+        view_btn.grid(column=5, row=2, sticky=tk.E)
+        self.ref_mode_var = tk.StringVar(self)
+        ref_mode_names = ("(consecutive) page #", "section #")
+        ref_mode_values = ("page", "section")
+        row = 1
+        for (name, value) in zip(ref_mode_names, ref_mode_values):
+            btn = ttk.Radiobutton(self.text1frame, text=name, value=value, variable=self.ref_mode_var, command=self.refmode_btn_selected)
+            btn.grid(column=1, row=row, sticky=tk.W)
+            row +=1
+        # Label of the viewer selector buttons
+        viewer_label = ttk.Label(self.text1frame, text="Design doc viewer", anchor=tk.E)
+        viewer_label.grid(column=3, row=1, sticky=tk.E)
+        self.viewer_var = tk.StringVar(self)
+        viewer_names = ("Mozilla Firefox", "Evince PDF viewer")
+        viewer_values = ("firefox", "evince")
+        row = 1
+        for (name, value) in zip(viewer_names, viewer_values):
+            btn = ttk.Radiobutton(self.text1frame, text=name, value=value, variable=self.viewer_var, command=self.docviewer_btn_selected)
+            btn.grid(column=4, row=row, sticky=tk.W)
+            row += 1
+
         self.text3frame = ttk.LabelFrame(
             self,
             text=vp_config.yaml_config["gui"]["verif_goals"]["label"],
@@ -572,8 +614,13 @@ class MyTextWidget(ttk.LabelFrame):
             text=vp_config.yaml_config["gui"]["coverage_loc"]["label"],
             style="enabled.TLabelframe",
         )
+        self.text6frame = ttk.LabelFrame(
+            self,
+            text=vp_config.yaml_config["gui"]["verif_tag"]["label"],
+            style="enabled.TLabelframe",
+        )
         # Selectors of verif point properties (PFC, TT, CM) and applicable cores use a layout
-        # different from the surrounding widgets, so we pack the in a canvas of their own.
+        # different from the surrounding widgets, so we pack them in a canvas of their own.
         self.selector_canvas = tk.Canvas(self)
         self.settings_frame = ttk.LabelFrame(
             self.selector_canvas,
@@ -641,11 +688,12 @@ class MyTextWidget(ttk.LabelFrame):
             self.text1frame,
             cue_text=vp_config.yaml_config["gui"]["requirement_loc"]["cue_text"],
             state="disabled",
-            height=4,
+            height=2,
             bg=BG_COLOR,
             undo=True,
             wrap="word",
         )
+        self.text1.grid(column=1, row=0, sticky=tk.W, columnspan=5)
         self.text3 = MyText(
             self.text3frame,
             cue_text=vp_config.yaml_config["gui"]["verif_goals"]["cue_text"],
@@ -673,6 +721,20 @@ class MyTextWidget(ttk.LabelFrame):
             undo=True,
             wrap="word",
         )
+        self.text6 = MyText(
+            self.text6frame,
+            cue_text=vp_config.yaml_config["gui"]["verif_tag"]["cue_text"],
+            state="disabled",
+            height=1,
+            bg=BG_COLOR,
+            undo=False,
+            wrap="word",
+        )
+        # Clear all key bindings but allow single-click to set focus
+        # on the widget and double-click to select all.
+        self.text6.unbind("<Key>")
+        self.text6.bind("<1>", lambda event: self.text6.focus_set())
+
         self.pfc_string = tk.StringVar(self)
         self.testtype_string = tk.StringVar(self)
         self.covmethod_string = tk.StringVar(self)
@@ -684,6 +746,7 @@ class MyTextWidget(ttk.LabelFrame):
             self.text3,
             self.text4,
             self.text5,
+            # self.text6, # FOR NOW Not editable
         ]
         # By default, bulk text updates will be propagated to the following inner widgets:
         self.update_text_notify_list = self.keyevent_notify_list
@@ -699,7 +762,7 @@ class MyTextWidget(ttk.LabelFrame):
         # Include the default value in the list of values.
         pfc_default = vp_config.yaml_config["gui"]["pfc"]["default"]
         self.pfc_entries = sorted(
-            [pfc_default] + vp_config.yaml_config["gui"]["pfc"]["values"],
+            vp_config.yaml_config["gui"]["pfc"]["values"],
             key=lambda e: e["value"],
         )
         self.num_pfcs = len(self.pfc_entries)
@@ -707,7 +770,7 @@ class MyTextWidget(ttk.LabelFrame):
         # Likewise for test type.
         testtype_default = vp_config.yaml_config["gui"]["test_type"]["default"]
         self.testtype_entries = sorted(
-            [testtype_default] + vp_config.yaml_config["gui"]["test_type"]["values"],
+            vp_config.yaml_config["gui"]["test_type"]["values"],
             key=lambda e: e["value"],
         )
         self.num_testtypes = len(self.testtype_entries)
@@ -715,7 +778,7 @@ class MyTextWidget(ttk.LabelFrame):
         # Likewise for coverage method.
         covmethod_default = vp_config.yaml_config["gui"]["cov_method"]["default"]
         self.covmethod_entries = sorted(
-            [covmethod_default] + vp_config.yaml_config["gui"]["cov_method"]["values"],
+            vp_config.yaml_config["gui"]["cov_method"]["values"],
             key=lambda e: e["value"],
         )
         self.num_covmethods = len(self.covmethod_entries)
@@ -776,6 +839,68 @@ class MyTextWidget(ttk.LabelFrame):
         self.bsave.pack(side="left")
         self.bcancel.pack(side="left")
         self.pack(side, padx, pady)
+
+    def ref_page_num_changed(self, *args):
+        """React to change in page number stringvar."""
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_page = self.page_num_var.get()
+
+    def ref_section_num_changed(self, *args):
+        """React to change in section number stringvar."""
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_section = self.section_num_var.get()
+
+    def view_design_doc(self):
+        """
+        View the requirement file (Design Doc) at the position specified in Requirement Location frame.
+        """
+        if self.viewer_var.get() == "firefox":
+            # Browser mode: use HREFs with suffix #<anchortype>=<value>.
+            if self.ref_mode_var.get() == "page":
+                ref_in_doc = f"#page={self.page_num_var.get().rstrip()}"
+            elif self.ref_mode_var.get() == "section":
+                ref_in_doc = f"#nameddest=section.{self.section_num_var.get().rstrip()}"
+            else:
+                ref_in_doc = ""
+            # Assume the location is a valid URL or an absolute path.
+            doc_location = self.text1.get(0.0, tk.END).rstrip()
+            # If no scheme (http://, file:// etc.) is given, treat it
+            # as an absolute file path.
+            if doc_location[0] == '/':
+                doc_location = "file://" + doc_location
+            command = [ "firefox", doc_location + ref_in_doc ]
+        elif self.viewer_var.get() == "evince":
+            # PDF viewer mode: use appropriate cmdline option.
+            if self.ref_mode_var.get() == "page":
+                ref_in_doc = ["-i", f"{self.page_num_var.get().rstrip()}" ]
+            elif self.ref_mode_var.get() == "section":
+                ref_in_doc = ["-n", f"section.{self.section_num_var.get().rstrip()}"]
+            else:
+                ref_in_doc = []
+            # The requirement location should be a valid path to a PDF file.
+            command = ["evince"] + ref_in_doc + [self.text1.get(0.0, tk.END).rstrip()]
+        print(f"### ==> command = {command}")
+        subprocess.Popen(command)
+
+    def refmode_btn_selected(self):
+        """
+        Callback to handle the selection of the Design Doc reference mode.
+        Sets the value of the corresponding item attribute.
+        """
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_mode = self.ref_mode_var.get()
+
+    def docviewer_btn_selected(self):
+        """
+        Callback to handle the selection of the design doc viewer.
+        Sets the value of the corresponding item attribute.
+        """
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_viewer = self.viewer_var.get()
 
     def all_cores_btn_selected(self):
         print("### self.cores_all.get() = %d" % self.cores_all.get())
@@ -890,10 +1015,11 @@ class MyTextWidget(ttk.LabelFrame):
 
     def pack(self, side, padx, pady):
         self.text.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
-        self.text1.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
+        #self.text1.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text3.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text4.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text5.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
+        self.text6.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         # Define the final order of top-level Description sub-widgets.
         self.text1frame.pack(side="top", padx=padx, pady=pady, fill="both")
         self.textframe.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
@@ -923,6 +1049,7 @@ class MyTextWidget(ttk.LabelFrame):
             elt = self.core_button[i]
             elt[0].grid(row=(i % num_rows), column=(i // num_rows), sticky=tk.W)
 
+        self.text6frame.pack(side="top", padx=padx, pady=pady, fill="both")
         self.text5frame.pack(side="top", padx=padx, pady=pady, fill="both")
         self.text4frame.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.bsave.pack(side="left")
@@ -962,13 +1089,27 @@ class MyTextWidget(ttk.LabelFrame):
     def button_pack_forget(self):
         self.bframe.pack_forget()
 
+    def update_ref_mode(self, mode):
+        self.ref_mode = mode
+        self.ref_mode_var.set(mode)
+
+    def update_page_num(self, page):
+        self.page_num = page
+        self.page_num_var.set(page)
+
+    def update_section_num(self, section):
+        self.section_num = section
+        self.section_num_var.set(section)
+
+    def update_viewer(self, viewer):
+        self.viewer = viewer
+        self.viewer_var.set(viewer)
+
     def update_item_tag(self, in_text):
-        # ZC: disable field
-        # self.itemtag.configure(state='normal')
-        # self.itemtag.delete(0,tk.END)
-        # self.itemtag.insert(1,in_text)
-        # self.itemtag.configure(state='readonly')
-        pass
+        self.text6.configure(state="normal")
+        self.text6.delete("1.0", tk.END)
+        self.text6.insert("1.0", in_text)
+        self.text6.configure(state="disabled")
 
     def update_prop_tag(self, in_text):
         # ZC: disable field
@@ -1032,6 +1173,7 @@ class MyTextWidget(ttk.LabelFrame):
         self.text3.configure(state="normal")
         self.text4.configure(state="normal")
         self.text5.configure(state="normal")
+        self.text6.configure(state="disabled")
         self.pfc_cbox.configure(state="normal")
         self.testtype_cbox["state"] = "normal"
         self.covmethod_cbox["state"] = "normal"
@@ -1045,6 +1187,7 @@ class MyTextWidget(ttk.LabelFrame):
         self.text3.configure(state="disabled")
         self.text4.configure(state="disabled")
         self.text5.configure(state="disabled")
+        self.text6.configure(state="disabled")
         self.pfc_cbox["state"] = "disabled"
         self.testtype_cbox["state"] = "disabled"
         self.covmethod_cbox["state"] = "disabled"
@@ -1586,6 +1729,36 @@ class MyMain:
             self.desc_widget.update_text(
                 self.desc_widget.text5, current_item.coverage_loc
             )
+            self.desc_widget.update_item_tag(current_item.tag)
+            # Update mode of reference to location inside design doc.
+            # DB migration: Assume 'page' as default if the field was not present.
+            try:
+                ref_mode = current_item.ref_mode
+            except AttributeError:
+                ref_mode = "page"
+            self.desc_widget.update_ref_mode(ref_mode)
+            # Update page number inside design doc.
+            # DB migration: Assume empty string as default if the field was not present.
+            try:
+                ref_page = current_item.ref_page
+            except AttributeError:
+                ref_page = ""
+            self.desc_widget.update_page_num(ref_page)
+            # Update section number inside design doc.
+            # DB migration: Assume empty string as default if the field was not present.
+            try:
+                ref_section = current_item.ref_section
+            except AttributeError:
+                ref_section = ""
+            self.desc_widget.update_section_num(ref_section)
+            # Update name of viewer app that should be used to display the design doc.
+            # DB migration: Assume empty string as default if the field was not present.
+            try:
+                ref_viewer = current_item.ref_viewer
+            except AttributeError:
+                ref_viewer = "firefox"
+            self.desc_widget.update_viewer(ref_viewer)
+
             pfc = current_item.pfc
             self.desc_widget.update_pfc(pfc)
             test_type = current_item.test_type
@@ -1622,11 +1795,28 @@ class MyMain:
         current_item.verif_goals = self.desc_widget.text3.get(0.0, tk.END).rstrip()
         current_item.comments = self.desc_widget.text4.get(0.0, tk.END).rstrip()
         current_item.coverage_loc = self.desc_widget.text5.get(0.0, tk.END).rstrip()
+        current_item.tag = self.desc_widget.text6.get(0.0, tk.END).rstrip()
         self.unfreeze_all()
 
     def desc_cancel(self):
         self.update_desc_widget()  # reprint current item initial value
         self.unfreeze_all()
+
+    def update_ref_mode(self):
+        self.get_current_item().ref_mode = self.desc_widget.ref_mode_var.get()
+        self.desc_widget.update_ref_mode(self.desc_widget.ref_mode_var.get())
+
+    def update_page_num(self):
+        self.get_current_item().ref_page = self.desc_widget.page_num_var.get()
+        self.desc_widget.update_page_num(self.desc_widget.page_num_var.get())
+
+    def update_section_num(self):
+        self.get_current_item().ref_section = self.desc_widget.section_num_var.get()
+        self.desc_widget.update_section_num(self.desc_widget.section_num_var.get())
+
+    def update_viewer(self):
+        self.get_current_item().ref_viewer = self.desc_widget.viewer_var.get()
+        self.desc_widget.update_viewer(self.desc_widget.viewer_var.get())
 
     def update_pfc(self):
         self.get_current_item().pfc = self.desc_widget.pfc.get()
@@ -1768,6 +1958,11 @@ class MyMain:
                                 saved_ip_str += "\n  " + ip_elt[1].name
                                 # Sign the IP with the current SHA1 of VPTOOL.
                                 ip_elt[1].vptool_gitrev = self.vptool_gitrev
+                                ip_elt[1].io_fmt_gitrev = vp_config.io_fmt_gitrev
+                                ip_elt[1].config_gitrev = vp_config.config_gitrev
+                                ip_elt[1].ymlcfg_gitrev = vp_config.yaml_config[
+                                    "yaml_cfg_gitrev"
+                                ]
                                 with open(
                                     save_dir
                                     + "/VP_IP"

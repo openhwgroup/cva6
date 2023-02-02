@@ -399,11 +399,12 @@ sanity: hello-world
 
 ###############################################################################
 # Code generators
+# New agent is pulled from moore.io temp site
 new-agent:
 	mkdir -p $(CORE_V_VERIF)/temp
 	wget --no-check-certificate -q https://mooreio.com/packages/uvm_gen.tgz -P $(CORE_V_VERIF)/temp
 	tar xzf $(CORE_V_VERIF)/temp/uvm_gen.tgz -C $(CORE_V_VERIF)/temp
-	cd $(CORE_V_VERIF)/temp && ./src/new_agent_simplex_no_layers.py $(CORE_V_VERIF)/lib/uvm_agents "OpenHW Group"
+	cd $(CORE_V_VERIF)/temp && ./src/new_agent_basic.py $(CORE_V_VERIF)/lib/uvm_agents "OpenHW Group"
 	rm -rf $(CORE_V_VERIF)/temp
 
 
