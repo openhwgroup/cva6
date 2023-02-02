@@ -21,13 +21,13 @@
 # How to Write a Verification Plan (Testplan)
 Verification plans are documents that defines _what_ is to be verified.  They go by many names including Testplan, DV plan or just Vplan.  A complete, high quality verification plan can be the most valuable item produced by a verification project.
 ## Format of a Verificaton Plan
-CORE-V projects use spreadsheets to capture Testplans<sup>1</sup>. The template for the spreadsheet is simple enough that you can use either Microsoft Office Excel or LibreOffice Calc.  The Verification Plan [template](https://github.com/openhwgroup/core-v-verif/blob/master/docs/VerifPlans/templates/CORE-V_Simulation_VerifPlan_Template.xlsx) for the CORE-V-VERIF is located at the root of the [VerificationPlan](https://github.com/openhwgroup/core-v-verif/tree/master/docs/VerifPlans) directory.
+Most CORE-V verification projects use spreadsheets to capture Testplans, and a template is provided. The template for the spreadsheet is simple enough that you can use either Microsoft Office Excel or LibreOffice Calc.  The Verification Plan [template](https://github.com/openhwgroup/core-v-verif/blob/master/docs/VerifPlans/templates/CORE-V_Simulation_VerifPlan_Template.xlsx) for CORE-V-VERIF is located at the root of the [VerificationPlan](https://github.com/openhwgroup/core-v-verif/tree/master/docs/VerifPlans) directory. Note that at OpenHW is also exploring the use of in-house tooling for Verification Planning, but the remainder of this document assumes the use of a spreadsheet.
 ## Verification Planning
 A key activity of any verification effort is to capture a Verification Plan.  The purpose of a verification plan is to identify what features need to be verified; the success criteria of the feature and the coverage metrics for testing the feature.  Testplans also allow us to reason about the capabilities of the verification environment.
 
 A Verification Plan should focus on the **_what_**, and not the **_how_** of verification.  When capturing a testplan we are mostly interested in creating a laundry list of thing to verify.  At this stage we are not (yet) concerned with how to verify them.
 
-The “how” part is captured in the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/) document.  That document exists to support the Verification Plan. For example the CV32E40P testplan specifies that all RV32I instructions be generated and their results checked.  Obviously, the testbench needs to have these capabilities and its a goal of the Verification Strategy document to explain how that is done.
+The “how” part is captured in the [Verification Strategy](https://docs.openhwgroup.org/projects/core-v-verif/en/latest/index.html) document.  That document exists to support the Verification Plan. For example the CV32E40P testplan specifies that all RV32I instructions be generated and their results checked.  Obviously, the testbench needs to have these capabilities and its a goal of the Verification Strategy document to explain how that is done.
 ## A Trivial Example: the RV32I ADDI Instruction
 Let's assume your task is to verify a core's implementation of the RV32I ADDI instruction.  Simple right?  Create a simple assembler program with a few **_addi_** instructions check the results and we're done.  Unfortunately, simply checking for the correct result (rd = rs1 + imm), of a few instructions is insufficent.  We also need to check:
 * Overflow is detected and flagged correctly
@@ -90,7 +90,6 @@ How will we know that the Feature is verified (covered)?  There are several choi
 ### Link to Coverage
 This field is used to link the Feature to coverage data generated in Regression.  Leave this blank for now as this information is tool dependent.
 <br><br><br>
-<sup>1</sup>I know, I know, we _all_ hate spreadsheets, but they really are the best format for this type of data.
 
 ## HOWTO: The CORE-V Formal Verification Plan Template
 The following sub-sections explain each of the columns in the [formal verification template spreadsheet](https://github.com/openhwgroup/core-v-verif/blob/master/docs/VerifPlans/templates/CORE-V_Formal_VerifPlan_Template.xlsx).
