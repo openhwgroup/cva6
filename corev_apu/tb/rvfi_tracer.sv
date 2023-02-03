@@ -7,6 +7,10 @@
 //
 // Original Author: Jean-Roch COULON (jean-roch.coulon@invia.fr)
 
+// Import the DTM exit code setter function.
+import "DPI-C" function void dtm_set_exitcode(input longint code);
+import "DPI-C" function longint dtm_get_tohost_addr(string binary);
+
 module rvfi_tracer #(
   parameter logic [7:0] HART_ID      = '0,
   parameter int unsigned DEBUG_START = 0,
@@ -18,21 +22,49 @@ module rvfi_tracer #(
   input rvfi_pkg::rvfi_instr_t[NR_COMMIT_PORTS-1:0]           rvfi_i
 );
 
+  string binary ="";
+  logic[riscv::XLEN-1:0] TOHOST_ADDR;
   int f;
   int unsigned SIM_FINISH;
+
   initial begin
     f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
     if (!$value$plusargs("time_out=%d", SIM_FINISH)) SIM_FINISH = 2000000;
+    if (!$value$plusargs("tohost_addr=%h", TOHOST_ADDR)) begin
+      if (!$value$plusargs("PRELOAD=%s", binary)) begin
+        $display("*** rvfi_tracer: Cannot determine name of ELF binary and no explicit 'tohost' address given!\n");
+        $fwrite(f, "*** rvfi_tracer: Cannot determine name of ELF binary and no explicit 'tohost' address given!\n");
+      end else begin
+        $display("### rvfi_tracer: Calling dtm_get_tohost_addr('%s')...\n", binary);
+        $fwrite(f, "### rvfi_tracer: Calling dtm_get_tohost_addr('%s')...\n", binary);
+        TOHOST_ADDR = dtm_get_tohost_addr(binary);
+      end
+    end
+    if (TOHOST_ADDR == '0) begin
+      $display("*** No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
+      $fwrite(f, "*** No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
+    end else begin
+      $display("NOTICE: Using 'tohost' address 0x%h\n", TOHOST_ADDR);
+      $fwrite(f, "NOTICE: Using 'tohost' address 0x%h\n", TOHOST_ADDR);
+    end
   end
 
   final $fclose(f);
-
   logic [31:0] cycles;
+
   // Generate the trace based on RVFI
   logic [63:0] pc64;
   string cause;
   always_ff @(posedge clk_i) begin
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+
+      // TERMINATION condition: "test result" value stored into tohost:
+      // - 64 bits: upon SD to TOHOST_ADDR with bit 0 of MEM_WDATA == 1'b1
+      //   and the two MSBytes of MEM_WDATA equal to zero.
+      // - 32 bits: upon SW to TOHOST_ADDR with bit 0 of MEM_WDATA == 1'b1,
+      //   FORNOW no check is done on SW to TOHOST_ADDR+4 (bit 0 of tohost == 1'b1
+      //   implies upper 16 bits of the upper word of tohost should be 16'b0.)
+
       pc64 = {{riscv::XLEN-riscv::VLEN{rvfi_i[i].pc_rdata[riscv::VLEN-1]}}, rvfi_i[i].pc_rdata};
       // print the instruction information if the instruction is valid or a trap is taken
       if (rvfi_i[i].valid) begin
@@ -65,16 +97,25 @@ module rvfi_tracer #(
           if (rvfi_i[i].mem_rmask != 0) begin
             $fwrite(f, " mem 0x%h", rvfi_i[i].mem_addr);
           end
+        end else if (rvfi_i[i].insn == 32'h00000073) begin
+          $fwrite(f, "\n>>> TERMINATING on ECALL\n");
+          $display("\n>>> TERMINATING on ECALL\n");
+          $finish(1);
+          $finish(1);
         end else begin
           if (rvfi_i[i].mem_wmask != 0) begin
             $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
+            if (rvfi_i[i].mem_addr == TOHOST_ADDR &&
+                rvfi_i[i].mem_wdata[0] == 1'b1) begin
+              $fwrite(f, "\n");
+              $display(">>> TERMINATING with exit value 0x%h at PC 0x%h\n", rvfi_i[i].mem_wdata, pc64);
+              dtm_set_exitcode(rvfi_i[i].mem_wdata);
+              $finish(1);
+              $finish(1);
+            end
           end
         end
         $fwrite(f, "\n");
-        if (rvfi_i[i].insn == 32'h00000073) begin
-          $finish(1);
-          $finish(1);
-        end
       end else begin
         if (rvfi_i[i].trap) begin
           case (rvfi_i[i].cause)
