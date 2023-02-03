@@ -83,6 +83,8 @@ void __attribute__((noreturn)) tohost_exit(uintptr_t code)
   tohost = ((((uint64_t) code) << 17) >> 16) | 1;
 
   // Don't care about the value returned by host...
+  __asm__("nop\n\tnop\n\tnop\n\tecall\t");
+
   while (1);
 }
 
