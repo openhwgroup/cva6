@@ -158,6 +158,33 @@ pub_smoke:
     paths:
       - artifacts/reports/*.yml
 
+pub_riscv_arch_test:
+  stage: two
+  extends:
+    - .template_job_short_ci
+  needs:
+    - job: pub_smoke
+      artifacts: false
+  parallel:
+    matrix:
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
+  variables:
+    DV_SIMULATORS: "veri-testharness,spike"
+    DASHBOARD_JOB_TITLE: "arch_test $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+  script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - source cva6/regress/dv-riscv-arch-test.sh
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/*.yml"
+
 pub_hwconfig:
   stage: two
   extends:
