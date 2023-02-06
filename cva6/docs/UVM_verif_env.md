@@ -6,7 +6,7 @@
 
 This document describes the uvm verification environment of the CVA6 core. This environment is intended to be able to verify the CVA6 core and run different test cases by the minimal modification to the environment itself.  The environment is shown below:
 
-![alt_text](images/CVA6_UVM_env.drawio.png "image_tooltip")
+![alt_text](images/CVA6_env.drawio.drawio.png "image_tooltip")
 
 ***
 
