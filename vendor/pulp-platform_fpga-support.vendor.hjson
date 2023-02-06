@@ -1,0 +1,30 @@
+// -*- coding: utf-8 -*-
+// Copyright (C) 2023 Thales Silicon Security SAS
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
+// Original Author: Zbigniew Chamski (zbigniew.chamski@thalesgroup.com)
+
+{
+    // Name of the project
+    name: "pulp_fpga-support",
+
+    // Target directory: relative to the location of this script.
+    target_dir: "pulp-platform/fpga-support",
+
+    // Upstream repository
+    upstream: {
+        // URL
+        url: "https://github.com/pulp-platform/fpga-support.git",
+        // revision
+        rev: "a3ba269c0fc6cfcee6f81e5d9af018a08e479d2b",
+    }
+
+    // Patch dir for local changes
+    patch_dir: "patches/pulp-platform/fpga-support",
+
+    // Exclusions from upstream content
+    exclude_from_upstream: [
+        "ci",
+        ".editorconfig",
+        "src_files.yml",
+    ]
+}

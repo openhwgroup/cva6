@@ -6,7 +6,7 @@ CVA6 is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V
 
 It has configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
 
-![](docs/_static/ariane_overview.png)
+![](docs/01_cva6_user/_static/ariane_overview.png)
 
 ## Directory Structure:
 The directory structure separates the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the [CORE-V-APU FPGA Emulation Platform](#corev-apu-fpga-emulation).
@@ -215,7 +215,7 @@ Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 - JTAG port (see debugging section below)
 - Bootrom containing zero stage bootloader and device tree.
 
-![](docs/_static/fpga_bd.png)
+![](docs/01_cva6_user/_static/fpga_bd.png)
 
 > The ethernet controller and the corresponding network connection is still work in progress and not functional at the moment. Expect some updates soon-ish.
 

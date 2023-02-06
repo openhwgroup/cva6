@@ -129,20 +129,16 @@ package ariane_pkg;
     endfunction : is_inside_cacheable_regions
 
     // TODO: Slowly move those parameters to the new system.
-    localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
+    localparam NR_SB_ENTRIES = cva6_config_pkg::CVA6ConfigNrScoreboardEntries; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
     localparam ASID_WIDTH    = (riscv::XLEN == 64) ? 16 : 1;
     localparam BITS_SATURATION_COUNTER = 2;
-    localparam NR_COMMIT_PORTS = 2;
+    localparam NR_COMMIT_PORTS = cva6_config_pkg::CVA6ConfigNrCommitPorts;
 
     localparam ENABLE_RENAME = cva6_config_pkg::CVA6ConfigRenameEn;
 
     localparam ISSUE_WIDTH = 1;
-    // amount of pipeline registers inserted for load/store return path
-    // this can be tuned to trade-off IPC vs. cycle time
-    localparam int unsigned NR_LOAD_PIPE_REGS = 1;
-    localparam int unsigned NR_STORE_PIPE_REGS = 0;
 
     // depth of store-buffers, this needs to be a power of two
     localparam int unsigned DEPTH_SPEC   = 4;
@@ -156,6 +152,9 @@ package ariane_pkg;
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
     localparam int unsigned DEPTH_COMMIT = 8;
 `endif
+
+    localparam bit FPGA_EN = cva6_config_pkg::CVA6ConfigFPGAEn; // Is FPGA optimization of CV32A6
+
     localparam bit RVC = cva6_config_pkg::CVA6ConfigCExtEn; // Is C extension configuration
 
 `ifdef PITON_ARIANE
@@ -233,13 +232,13 @@ package ariane_pkg;
     typedef logic [(NR_RGPR_PORTS == 3 ? riscv::XLEN : FLEN)-1:0] rs3_len_t;
 
     // static debug hartinfo
-    localparam dm::hartinfo_t DebugHartInfo = '{
+    localparam ariane_dm_pkg::hartinfo_t DebugHartInfo = '{
                                                 zero1:        '0,
                                                 nscratch:      2, // Debug module needs at least two scratch regs
                                                 zero0:        '0,
                                                 dataaccess: 1'b1, // data registers are memory mapped in the debugger
-                                                datasize: dm::DataCount,
-                                                dataaddr: dm::DataAddr
+                                                datasize: ariane_dm_pkg::DataCount,
+                                                dataaddr: ariane_dm_pkg::DataAddr
                                               };
 
     // enables a commit log which matches spikes commit log format for easier trace comparison
@@ -376,6 +375,11 @@ package ariane_pkg;
         logic       taken;
     } bht_prediction_t;
 
+    typedef struct packed {
+        logic       valid;
+        logic [1:0] saturation_counter;
+    } bht_t;
+
     typedef enum logic[3:0] {
         NONE,      // 0
         LOAD,      // 1
@@ -450,15 +454,15 @@ package ariane_pkg;
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
 `else
     // I$
-    localparam int unsigned CONFIG_L1I_SIZE    = 16*1024;
-    localparam int unsigned ICACHE_SET_ASSOC   = 4; // Must be between 4 to 64
+    localparam int unsigned CONFIG_L1I_SIZE    = cva6_config_pkg::CVA6ConfigIcacheSetAssoc * 4096; // one icache way is 4 KBytes
+    localparam int unsigned ICACHE_SET_ASSOC   = cva6_config_pkg::CVA6ConfigIcacheSetAssoc; // number of ways
     localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);  // in bit, contains also offset width
     localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN-ICACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
     localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     // D$
-    localparam int unsigned CONFIG_L1D_SIZE    = 32*1024;
-    localparam int unsigned DCACHE_SET_ASSOC   = 8; // Must be between 4 to 64
+    localparam int unsigned CONFIG_L1D_SIZE    = cva6_config_pkg::CVA6ConfigDcacheSetAssoc * 4096; // one icache way is 4 KBytes
+    localparam int unsigned DCACHE_SET_ASSOC   = cva6_config_pkg::CVA6ConfigDcacheSetAssoc; // number of ways
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);  // in bit, contains also offset width
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN-DCACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit

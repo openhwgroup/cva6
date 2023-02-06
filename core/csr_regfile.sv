@@ -775,7 +775,7 @@ module csr_regfile import ariane_pkg::*; #(
                 endcase
                 // save PC of next this instruction e.g.: the next one to be executed
                 dpc_d = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
-                dcsr_d.cause = dm::CauseBreakpoint;
+                dcsr_d.cause = ariane_dm_pkg::CauseBreakpoint;
             end
 
             // we've got a debug request
@@ -788,7 +788,7 @@ module csr_regfile import ariane_pkg::*; #(
                 // jump to the base address
                 set_debug_pc_o = 1'b1;
                 // save the cause as external debug request
-                dcsr_d.cause = dm::CauseRequest;
+                dcsr_d.cause = ariane_dm_pkg::CauseRequest;
             end
 
             // single step enable and we just retired an instruction
@@ -810,7 +810,7 @@ module csr_regfile import ariane_pkg::*; #(
                 end
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
-                dcsr_d.cause = dm::CauseSingleStep;
+                dcsr_d.cause = ariane_dm_pkg::CauseSingleStep;
             end
         end
         // go in halt-state again when we encounter an exception
@@ -1007,7 +1007,7 @@ module csr_regfile import ariane_pkg::*; #(
 
         // if we are in debug mode jump to a specific address
         if (debug_mode_q) begin
-            trap_vector_base_o = DmBaseAddress[riscv::VLEN-1:0] + dm::ExceptionAddress[riscv::VLEN-1:0];
+            trap_vector_base_o = DmBaseAddress[riscv::VLEN-1:0] + ariane_dm_pkg::ExceptionAddress[riscv::VLEN-1:0];
         end
 
         // check if we are in vectored mode, if yes then do BASE + 4 * cause we

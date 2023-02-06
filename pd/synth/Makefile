@@ -29,7 +29,7 @@ ifndef TECH_NAME
 endif
 
 pre_cva6_synth:
-	grep "CVA6_REPO_DIR\}" ../../core/Flist.$(TARGET)|grep -v "instr_tracer"|grep -v "incdir" > Flist.cva6_synth
+	grep "CVA6_REPO_DIR\}" ../../core/Flist.cva6|grep -v "instr_tracer"|grep -v "incdir" > Flist.cva6_synth
 	sed -i "s/^/analyze -f sverilog -define {WT_DCACHE,RVFI_TRACE} -lib ariane_lib /" Flist.cva6_synth
 
 cva6_synth: pre_cva6_synth

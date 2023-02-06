@@ -1,0 +1,40 @@
+// -*- coding: utf-8 -*-
+// Copyright (C) 2022 Thales DIS France SAS
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
+// Original Author: Zbigniew Chamski (zbigniew.chamski@thalesgroup.com)
+
+{
+    // Name of the project
+    name: "pulp_common_cells",
+
+    // Target directory: relative to the location of this script.
+    target_dir: "pulp-platform/common_cells",
+
+    // Upstream repository
+    upstream: {
+        // URL
+        url: "https://github.com/pulp-platform/common_cells.git",
+        // revision
+        rev: "v1.23.0",
+    }
+
+    //Patch dir for local changes
+    patch_dir: "patches/pulp-platform/common_cells",
+
+    // Exclusions from upstream content
+    exclude_from_upstream: [
+        ".github",
+        ".gitlab-ci.yml",
+        ".travis.yml",
+        "Bender.yml",
+        "ci",
+        "common_cells.core",
+        "formal",
+        "ips_list.yml",
+        "lint",
+        "Makefile",
+        "src_files.yml",
+        "test",
+    ]
+}
+

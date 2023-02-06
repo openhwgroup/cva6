@@ -1,0 +1,33 @@
+# Copyright 2021 Thales DIS design services SAS
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.com)
+#
+
+${CVA6_REPO_DIR}/core/include/${TARGET_CFG}_config_pkg.sv
+${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
+${CVA6_REPO_DIR}/core/include/ariane_dm_pkg.sv
+${CVA6_REPO_DIR}/core/include/ariane_pkg.sv
+// TODO: ariane_axi_pkg is dependent on this.
+${CVA6_REPO_DIR}/vendor/pulp-platform/axi/src/axi_pkg.sv
+${CVA6_REPO_DIR}/core/include/ariane_rvfi_pkg.sv
+
+${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
+
+${CVA6_REPO_DIR}/core/include/ariane_axi_pkg.sv
+${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
+${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
+${CVA6_REPO_DIR}/core/include/axi_intf.sv
+${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
+
+${LIB_VERILOG}
+${CVA6_REPO_DIR}/pd/synth/cva6_${TARGET_CFG}_synth_modified.v
+
+${CVA6_REPO_DIR}/pd/synth/tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0.sv
+${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
+${CVA6_REPO_DIR}/common/local/util/sram.sv

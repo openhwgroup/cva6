@@ -1,0 +1,6 @@
+.*
+!.git*
+build
+scripts/vivado/add_sources.tcl
+/Bender.lock
+/Bender.local

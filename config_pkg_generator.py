@@ -89,18 +89,11 @@ def generate_config(argv):
     gen = "gen64"
     Args['xlen'] = 64
     MABI = "lp64"
-  os.system("cp core/Flist."+Args['default_config']+" core/Flist."+gen) #copy Flist
-  os.system("cp core/include/"+Args['default_config']+"_config_pkg.sv core/include/"+gen+"_config_pkg.sv") # copy package
-  Flistfile = open("core/Flist."+gen, "r")
-  Flistlines = []
-  for line in Flistfile :
-    line = re.sub(r"(\${CVA6_REPO_DIR}/core/include/)"+Args['default_config']+"(_config_pkg.sv)", r"\g<1>"+gen+"\g<2>", line) # change package name in Flist to the one generated
-    Flistlines.append(line)
-  Flistfile = open("core/Flist."+gen, "w")
-  Flistfile.writelines(Flistlines)
-  Flistfile.close
+
+  # Apply cmdline args to override individual localparam values.
+  # Warn about localparams which have no matching cmdline option associated with them.
   for i in Args:
-    configfile = open("core/include/"+gen+"_config_pkg.sv", "r")
+    configfile = open("core/include/" + Args['default_config'] + "_config_pkg.sv", "r")
     if i not in ['default_config', 'isa', 'xlen']:
       if Args[i] != None:
         print("setting", i, "to", Args[i])
@@ -112,8 +105,14 @@ def generate_config(argv):
           alllines.append(line)
           linematch = re.match(r"(    localparam (CVA6Config)(?P<param>.*) = )(?P<value>.*)(;)", line) # and read the modified line to know which configuration we are creating
           if linematch:
-            Param = MapParametersToArgs['CVA6Config'+linematch.group('param')]
-            Config[Param] = lineXlen.group('value') if linematch.group('value') == "CVA6ConfigXlen" else linematch.group('value')
+            try:
+              Param = MapParametersToArgs['CVA6Config'+linematch.group('param')]
+              Config[Param] = lineXlen.group('value') if linematch.group('value') == "CVA6ConfigXlen" else linematch.group('value')
+            except KeyError:
+              # No known cmdline option for this specific localparam.
+              full_name = 'CVA6Config' + linematch.group('param')
+              print(f"WARNING: CVA6 configuration parameter '{full_name}' not supported yet via cmdline args,",
+                    "\n\t consider extending script 'config_pkg_generator.py'!")
             for k in Config.keys():
               Config[k] = int(Config[k]) # Convert value from str to int
         configfile = open("core/include/"+gen+"_config_pkg.sv", "w")

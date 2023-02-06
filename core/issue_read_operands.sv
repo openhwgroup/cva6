@@ -407,21 +407,37 @@ module issue_read_operands import ariane_pkg::*; #(
         assign wdata_pack[i] = wdata_i[i];
         assign we_pack[i]    = we_gpr_i[i];
     end
-
-    ariane_regfile #(
-        .DATA_WIDTH     ( riscv::XLEN     ),
-        .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
-        .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
-        .ZERO_REG_ZERO  ( 1               )
-    ) i_ariane_regfile (
-        .test_en_i ( 1'b0       ),
-        .raddr_i   ( raddr_pack ),
-        .rdata_o   ( rdata      ),
-        .waddr_i   ( waddr_pack ),
-        .wdata_i   ( wdata_pack ),
-        .we_i      ( we_pack    ),
-        .*
-    );
+    if (ariane_pkg::FPGA_EN) begin : gen_fpga_regfile
+        ariane_regfile_fpga #(
+            .DATA_WIDTH     ( riscv::XLEN     ),
+            .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
+            .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
+            .ZERO_REG_ZERO  ( 1               )
+        ) i_ariane_regfile_fpga (
+            .test_en_i ( 1'b0       ),
+            .raddr_i   ( raddr_pack ),
+            .rdata_o   ( rdata      ),
+            .waddr_i   ( waddr_pack ),
+            .wdata_i   ( wdata_pack ),
+            .we_i      ( we_pack    ),
+            .*
+        );
+    end else begin : gen_asic_regfile
+        ariane_regfile #(
+            .DATA_WIDTH     ( riscv::XLEN     ),
+            .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
+            .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
+            .ZERO_REG_ZERO  ( 1               )
+        ) i_ariane_regfile (
+            .test_en_i ( 1'b0       ),
+            .raddr_i   ( raddr_pack ),
+            .rdata_o   ( rdata      ),
+            .waddr_i   ( waddr_pack ),
+            .wdata_i   ( wdata_pack ),
+            .we_i      ( we_pack    ),
+            .*
+        );
+    end
 
     // -----------------------------
     // Floating-Point Register File
@@ -438,21 +454,37 @@ module issue_read_operands import ariane_pkg::*; #(
             for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_fp_wdata_pack
                 assign fp_wdata_pack[i] = {wdata_i[i][FLEN-1:0]};
             end
-
-            ariane_regfile #(
-                .DATA_WIDTH     ( FLEN            ),
-                .NR_READ_PORTS  ( 3               ),
-                .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
-                .ZERO_REG_ZERO  ( 0               )
-            ) i_ariane_fp_regfile (
-                .test_en_i ( 1'b0          ),
-                .raddr_i   ( fp_raddr_pack ),
-                .rdata_o   ( fprdata       ),
-                .waddr_i   ( waddr_pack    ),
-                .wdata_i   ( fp_wdata_pack ),
-                .we_i      ( we_fpr_i      ),
-                .*
-            );
+            if (ariane_pkg::FPGA_EN) begin : gen_fpga_fp_regfile
+                ariane_regfile_fpga #(
+                    .DATA_WIDTH     ( FLEN            ),
+                    .NR_READ_PORTS  ( 3               ),
+                    .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
+                    .ZERO_REG_ZERO  ( 0               )
+                ) i_ariane_fp_regfile_fpga (
+                    .test_en_i ( 1'b0          ),
+                    .raddr_i   ( fp_raddr_pack ),
+                    .rdata_o   ( fprdata       ),
+                    .waddr_i   ( waddr_pack    ),
+                    .wdata_i   ( fp_wdata_pack ),
+                    .we_i      ( we_fpr_i      ),
+                    .*
+                );
+            end else begin : gen_asic_fp_regfile
+                ariane_regfile #(
+                    .DATA_WIDTH     ( FLEN            ),
+                    .NR_READ_PORTS  ( 3               ),
+                    .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
+                    .ZERO_REG_ZERO  ( 0               )
+                ) i_ariane_fp_regfile (
+                    .test_en_i ( 1'b0          ),
+                    .raddr_i   ( fp_raddr_pack ),
+                    .rdata_o   ( fprdata       ),
+                    .waddr_i   ( waddr_pack    ),
+                    .wdata_i   ( fp_wdata_pack ),
+                    .we_i      ( we_fpr_i      ),
+                    .*
+                );
+            end
         end else begin : no_fpr_gen
             assign fprdata = '{default: '0};
         end

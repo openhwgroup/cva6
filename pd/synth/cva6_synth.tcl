@@ -17,13 +17,14 @@ set clk_period $PERIOD
 set input_delay $INPUT_DELAY
 set output_delay $OUTPUT_DELAY
 
-set_app_var search_path "../../core/fpu/src/common_cells/include/ $search_path"
+set_app_var search_path "../../vendor/pulp-platform/fpnew/src/common_cells/include/ $search_path"
 
 sh rm -rf work
 sh mkdir work
 define_design_lib ariane_lib -path work
 
 set CVA6_REPO_DIR "../../"
+set TARGET_CFG $TARGET
 source Flist.cva6_synth
 
 elaborate ${DESIGN_NAME} -library ariane_lib
