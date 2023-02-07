@@ -49,6 +49,20 @@ def setup_parser_config_generator():
                       help="Data User Width ? [1-64]")
   parser.add_argument("--RenameEn", type=int, default=None, choices=[0,1],
                       help="RenameEn ? 1 : enable, 0 : disable")
+  parser.add_argument("--IcacheSetAssoc", type=int, default=None,
+                      help="Instruction cache associativity")
+  parser.add_argument("--DcacheSetAssoc", type=int, default=None,
+                      help="Data cache associativity")
+  parser.add_argument("--NrCommitPorts", type=int, default=None, choices=[1,2],
+                      help="Number of commit ports")
+  parser.add_argument("--NrScoreboardEntries", type=int, default=None,
+                      help="Number of scoreboard entries")
+  parser.add_argument("--FPGAEn", type=int, default=None, choices=[0,1],
+                      help="Use FPGA-specific hardware")
+  parser.add_argument("--NrLoadPipeRegs", type=int, default=None,
+                      help="Load latency")
+  parser.add_argument("--NrStorePipeRegs", type=int, default=None,
+                      help="Store latency")
   return parser
 
 ISA = ""
@@ -70,6 +84,13 @@ MapArgsToParameter={
   "duser_en" : "CVA6ConfigDataUserEn",
   "duser_w" : "CVA6ConfigDataUserWidth",
   "RenameEn" : "CVA6ConfigRenameEn",
+  "IcacheSetAssoc" : "CVA6ConfigIcacheSetAssoc",
+  "DcacheSetAssoc" : "CVA6ConfigDcacheSetAssoc",
+  "NrCommitPorts" : "CVA6ConfigNrCommitPorts",
+  "NrScoreboardEntries" : "CVA6ConfigNrScoreboardEntries",
+  "FPGAEn" : "CVA6ConfigFPGAEn",
+  "NrLoadPipeRegs" : "CVA6ConfigNrLoadPipeRegs",
+  "NrStorePipeRegs" : "CVA6ConfigNrStorePipeRegs",
 }
 MapParametersToArgs = {i:k for k, i in MapArgsToParameter.items()} #reverse map
 
