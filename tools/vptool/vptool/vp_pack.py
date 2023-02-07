@@ -10,6 +10,7 @@
 
 import sys, os
 from datetime import datetime
+from collections import OrderedDict
 import re
 
 # Load the configuration associated with the current platform
@@ -47,6 +48,61 @@ def normalize_tag(l):
 
 #####################################
 ##### Class Definition
+
+class VerifItem:
+    """
+    A Verification Item captures a specific aspect of a design that
+    can be individually verified.
+    Verification Items are intended to be instantiated in a Subfeature
+    class which groups Verification Items related to a given property of
+    the design, e.g. to one instruction of an Instruction Set.
+    """
+    # Class variable: Names of Python attributes of a Verification Item that
+    # can be free-form strings and have default cue strings defined.
+    attr_names = [
+        "description",
+        "reqt_doc",  # Note the 'd' in '_doc'...
+        "verif_goals",
+        "coverage_loc",
+        "comments"
+    ]
+    # Class variable: Matching names in Yaml-based GUI configuration
+    gui_fields = [
+        "feature_descr",
+        "requirement_loc",
+        "verif_goals",
+        "coverage_loc",
+        "comments",
+    ]
+
+    def __init__(self, name=0, tag="", description=""):
+        # Identifier of the Item, used in display lists.
+        self.name = name
+        # Unique tag of the Verificataion Item (never to be reused).
+        self.tag = tag
+        # Description of the property to be verified.
+        self.description = description
+        # Document containing the corresponding requirement
+        self.reqt_doc = ""
+        # Pointers into the document
+        self.ref_mode = "page"
+        self.ref_page = ""
+        self.ref_section = ""
+        self.ref_viewer = "firefox"
+        # Goals of verification
+        self.verif_goals = ""
+        # Pointer to coverage data
+        self.coverage_loc = ""
+        # Pass/fail criteria
+        self.pfc = -1       # None selected, must choose
+        # Test type
+        self.test_type = -1 # None selected, must choose
+        # Coverage method
+        self.cov_method = -1 # None selected, must choose
+        # Applicable cores
+        self.cores = -1  # By default, a new Verif Item is applicable to all cores.
+        self.comments = ""
+
 class Item:
     """
     An item defines a specific case to test depending on its parent property
@@ -94,6 +150,27 @@ class Item:
         self.rfu_list_2 = []
         self.rfu_dict = {}  # used as lock. will be updated with class update
         self.rfu_dict["lock_status"] = 0
+
+    def to_VerifItem(self):
+        """
+        Convert an Item to a VerifItem.  Keep only the information that's needed.
+        """
+        result = VerifItem(self.name, self.tag, self.description)
+        result.reqt_doc = self.purpose
+        # These attributes may be missing on objects coming from older VPTOOL versions.
+        for attr in ["ref_mode", "ref_page", "ref_section", "ref_viewer"]:
+            if hasattr(self, attr):
+                setattr(result, attr, getattr(self, attr))
+            else:
+                setattr(result, attr, "")
+        result.verif_goals = self.verif_goals
+        result.pfc = self.pfc
+        result.test_type = self.test_type
+        result.cov_method = self.cov_method
+        result.cores = self.cores
+        result.coverage_loc = self.coverage_loc
+        result.comments = self.comments
+        return result
 
     def attrval2str(self, attr):
         if attr == "cores" and "cores" in vp_config.yaml_config:
@@ -198,6 +275,43 @@ class Item:
         self.tag = normalize_tag(self.tag)
 
 
+class Subfeature:
+    """
+    A Subfeature is a subset of a major design feature that is characterized
+    by a distinctive property.  Therefore, the verification items related to
+    that property are closely related and are grouped together into a list
+    associated with the Subfeature.
+    """
+    def __init__(self, name="", tag=""):
+        # Name of the subfeature
+        self.name = name
+        # Tag of the subfeature: Must be unique across all subfeatures.
+        self.tag = tag
+        # Index of the next item to be added (MUST INCREASE ON EVERY ADDITION!)
+        self.next_elt_id = 0
+        # List of Verification Items in this feature: an OrderedDict.
+        self.items = OrderedDict()
+
+    def __str__(self):
+        return format("### Sub-feature: %s\n\n" % (self.name))
+
+    def add_item(self, tag, description=""):  # adds a Verification Item to subfeature
+        new_item = VerifItem(
+            str(self.next_elt_id).zfill(3),
+            tag=tag + "_I" + str(self.next_elt_id).zfill(3),
+            description=description,
+        )
+        self.items[str(self.next_elt_id).zfill(3)] = new_item
+        self.next_elt_id += 1
+        # Return a ref to the newly created item.
+        return new_item
+
+    def del_item(self, index):  # remove a verification item from the subfeature
+        del self.items[index]
+
+    def get_item_names(self):
+        return [item.name for item in self.items.values()]
+
 class Prop:
     """
     A Property defines a specific behaviour or an IP section, to be tested/verified
@@ -218,6 +332,24 @@ class Prop:
         self.rfu_list_1 = []
         self.rfu_list_2 = []
         self.rfu_dict = {}
+
+    def to_Subfeature(self):
+        """
+        Convert a legacy Prop to a Subfeature, transfer only the fields that are required.
+        """
+        result = Subfeature(self.name, self.tag)
+        # 'next_elt_id' needs extra care as 'item_count' assumes a contiguous
+        # numbering of Items in Prop and will be inconsistent if items are removed.
+        # Computing the max of item IDs is not reliable either in case the last
+        # item was removed.
+        result.next_elt_id = self.item_count
+        max_item_id = max([int(elt[1].name) for elt in (self.item_list if self.item_list else self.rfu_list)])
+        if max_item_id >= self.item_count:
+            raise ValueError((self.item_count, max_item_id))
+        result.next_elt_id = 1 + max_item_id
+        translated_items = [[elt[0], elt[1].to_VerifItem()] for elt in (self.item_list if self.item_list else self.rfu_list)]
+        result.items = OrderedDict(translated_items)
+        return result
 
     def __str__(self):
         return format("### Sub-feature: %s\n\n" % (self.name))
@@ -315,6 +447,64 @@ class Prop:
         for item in list(self.item_list.values()):
             item.lock()
 
+class Feature:
+    """
+    A Feature is a major group of design properties, for example
+    a class of instructions or an operation mode of an interface.
+    """
+    # Class variable: highest Feature ID seen so far.
+    _highest_id = -1
+
+    def __init__(self, name="", id=0):
+        # Index of next subfeature to add (MUST ALWAYS GROW upon adding subfeatures!)
+        self.next_elt_id = 0
+        # Name of the Feature
+        self.name = name
+        # Numerical ID of the Feature: Use the highest known value PLUS ONE
+        # unless explicitly given (e.g., when converting Ip objects).
+        if id != 0:
+            if id > self.__class__._highest_id:
+                self.__class__._highest_id = id
+                self.id = id
+            else:
+                raise ValueError((id, self.__class__._highest_id))
+        else:
+            self.__class__._highest_id += 1
+            self.id = self.__class__._highest_id
+        # Index of the Feature (for display ordering)
+        #self.index = index
+        # List of subfeatures
+        self.subfeatures = OrderedDict()
+
+    def __str__(self):
+        return format("## Feature: %s\n\n" % (self.name))
+
+    def add_subfeature(self, name, tag=""):
+        """
+        Add a subfeature of the current feature.
+        """
+        if name in self.subfeatures.keys():
+            print("Subfeature '%s' already exists in Feature '%s'!" % (name, self.name))
+            feedback = 0
+        else:
+            name = remove_non_ascii(name)
+            subfeature_name = str(self.next_elt_id).zfill(3) + "_" + str(name)
+            self.next_elt_id += 1
+            self.subfeatures[name] = Subfeature(
+                subfeature_name,
+                tag="VP_"
+                + vp_config.PROJECT_IDENT
+                + "_F"
+                + str(self.ip_num).zfill(3)
+                + "_S"
+                + str(self.prop_count).zfill(3),
+            )
+            feedback = self.subfeatures[subfeature_name].tag
+            self._count += 1
+        return (feedback, subfeature_name)
+
+    def del_subfeature(self, name):
+        del self.subfeatures[str(name)]
 
 class Ip:
     """
@@ -340,6 +530,18 @@ class Ip:
         self.rfu_list = []
         self.rfu_list_0 = []
         self.rfu_list_1 = []
+
+    def to_Feature(self):
+        """
+        Convert an Ip to a Feature.
+        """
+        result = Feature(self.name, self.ip_num)
+        # Next_elf_it needs extra care as it is derived from the length of the list
+        # of Properties / Subfeatures.
+        result.next_elt_id = self.prop_count
+        translated_subfeatures = [[elt[0], elt[1].to_Subfeature()] for elt in (self.prop_list if self.prop_list else self.rfu_list)]
+        result.subfeatures = OrderedDict(translated_subfeatures)
+        return result
 
     def __str__(self):
         return format("## Feature: %s\n\n" % (self.name))

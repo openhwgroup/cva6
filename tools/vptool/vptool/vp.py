@@ -22,16 +22,16 @@ from collections import OrderedDict
 
 # Use Ruamel YAML support
 from ruamel.yaml import YAML, yaml_object
-# global db_yaml_engine
-# db_yaml_engine = YAML(typ='rt')
+global db_yaml_engine
+db_yaml_engine = YAML(typ='rt')
 
 # import cPickle as pickle
 # Configuration (env + Python + Yaml) is imported indirectly via vp_pack.
 from vp_pack import *
 
-# db_yaml_engine.register_class(Item)
-# db_yaml_engine.register_class(Prop)
-# db_yaml_engine.register_class(Ip)
+db_yaml_engine.register_class(VerifItem)
+db_yaml_engine.register_class(Subfeature)
+db_yaml_engine.register_class(Feature)
 
 import os, sys, pwd, glob, subprocess
 from optparse import OptionParser, Option
@@ -1983,14 +1983,14 @@ class MyMain:
                             # Emit the Yaml output from the fixed structures,
                             # skipping pickled ones.
                             # Write yaml output
-                            #with open(
-                            #    save_dir
-                            #    + "/VP_IP"
-                            #    + str(ip_elt[1].ip_num).zfill(3)
-                            #    + ".yml",
-                            #    "wb",
-                            #) as output:
-                            #    db_yaml_engine.dump(ip_elt[1], output)
+                            with open(
+                                save_dir
+                                + "/VP_IP"
+                                + str(ip_elt[1].ip_num).zfill(3)
+                                + "_new_types.yml",
+                                "wb",
+                            ) as output:
+                                db_yaml_engine.dump(ip_elt[1].to_Feature(), output)
 
                         if saved_ip_str:
                             tkinter.messagebox.showinfo(
@@ -2109,7 +2109,7 @@ class MyMain:
                 for dummy in range(ip_num_next):
                     pickle_ip_list.append(pickle.load(input))
         # change list to dict
-        # Yaml mode: !!omap produced a list of elts
+        # Yaml mode: !!omap yields a list of elts when loaded.
         #for ip_elt in pickle_ip_list:
         #    self.ip_list[ip_elt.name] = ip_elt
         #    # Seems pickle doesn't restore class attribute. Done manually here for IP
