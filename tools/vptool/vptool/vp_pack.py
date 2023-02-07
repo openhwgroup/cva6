@@ -82,17 +82,15 @@ class VerifItem:
         self.tag = tag
         # Description of the property to be verified.
         self.description = description
-        # Document containing the corresponding requirement
+        # Document containing the corresponding requirement or design spec.
         self.reqt_doc = ""
-        # Pointers into the document
+        # Viewing information for the requirement/design document.
         self.ref_mode = "page"
         self.ref_page = ""
         self.ref_section = ""
         self.ref_viewer = "firefox"
         # Goals of verification
         self.verif_goals = ""
-        # Pointer to coverage data
-        self.coverage_loc = ""
         # Pass/fail criteria
         self.pfc = -1       # None selected, must choose
         # Test type
@@ -101,7 +99,23 @@ class VerifItem:
         self.cov_method = -1 # None selected, must choose
         # Applicable cores
         self.cores = -1  # By default, a new Verif Item is applicable to all cores.
+        # Pointer to coverage data
+        self.coverage_loc = ""
+        # User comments for the verification item
         self.comments = ""
+
+    def to_Item(self):
+        """
+        Convert a VerifItem to a legacy-style Item object.
+        """
+        result = Item(self.name, self.tag, self.description, self.reqt_doc)
+        # These attributes are a 1-to-1 match.
+        for attr in [
+            "ref_mode", "ref_page", "ref_section", "ref_viewer", "verif_goals",
+            "pfc", "test_type", "cov_method", "cores", "coverage_loc", "comments",
+        ]:
+            setattr(result, attr, getattr(self, attr))
+        return result
 
 class Item:
     """
@@ -163,13 +177,12 @@ class Item:
                 setattr(result, attr, getattr(self, attr))
             else:
                 setattr(result, attr, "")
-        result.verif_goals = self.verif_goals
-        result.pfc = self.pfc
-        result.test_type = self.test_type
-        result.cov_method = self.cov_method
-        result.cores = self.cores
-        result.coverage_loc = self.coverage_loc
-        result.comments = self.comments
+        # The following attributes were already mandatory in older RISC-V VPTOOL versions.
+        for attr in [
+            "verif_goals",
+            "pfc", "test_type", "cov_method", "cores", "coverage_loc", "comments",
+        ]:
+            setattr(result, attr, getattr(self, attr))
         return result
 
     def attrval2str(self, attr):
@@ -289,6 +302,8 @@ class Subfeature:
         self.tag = tag
         # Index of the next item to be added (MUST INCREASE ON EVERY ADDITION!)
         self.next_elt_id = 0
+        # Display order of the Subfeature
+        self.display_order = 0
         # List of Verification Items in this feature: an OrderedDict.
         self.items = OrderedDict()
 
@@ -311,6 +326,14 @@ class Subfeature:
 
     def get_item_names(self):
         return [item.name for item in self.items.values()]
+
+    def to_Prop(self):
+        """
+        Convert a Subfeature into legacy-stype Prop object.
+        """
+        result = Prop(self.name, self.tag, self.display_order)
+        result.list_of_items = [[elt[0], elt[1].to_Item()] for elt in self.items.items()]
+        return result
 
 class Prop:
     """
@@ -347,6 +370,7 @@ class Prop:
         if max_item_id >= self.item_count:
             raise ValueError((self.item_count, max_item_id))
         result.next_elt_id = 1 + max_item_id
+        result.display_order = self.wid_order
         translated_items = [[elt[0], elt[1].to_VerifItem()] for elt in (self.item_list if self.item_list else self.rfu_list)]
         result.items = OrderedDict(translated_items)
         return result
@@ -471,10 +495,14 @@ class Feature:
         else:
             self.__class__._highest_id += 1
             self.id = self.__class__._highest_id
-        # Index of the Feature (for display ordering)
-        #self.index = index
+        # Display order of the Feature
+        self.display_order = self.id
         # List of subfeatures
         self.subfeatures = OrderedDict()
+        self.vptool_gitrev = ''
+        self.io_fmt_gitrev = ''
+        self.config_gitrev = ''
+        self.ymlcfg_gitrev = ''
 
     def __str__(self):
         return format("## Feature: %s\n\n" % (self.name))
@@ -506,6 +534,17 @@ class Feature:
     def del_subfeature(self, name):
         del self.subfeatures[str(name)]
 
+    def to_Ip(self):
+        """
+        Convert a Feature to a legacy-stype Ip.
+        """
+        result = Ip(self.name)
+        result.wid_order = self.display_order
+        result.prop_list = [[elt[0], elt[1].toSubfeature()] for elt in self.subfeatures.items()]
+        for attr in ["vptool_gitrev", "io_fmt_gitrev", "config_gitrev", "ymlcfg_gitrev"]:
+            setattr(result, attr, getattr(self, attr))
+        return result
+
 class Ip:
     """
     An IP defines a bloc instantiated at chip top level, or more generally, a design specification chapter
@@ -530,6 +569,10 @@ class Ip:
         self.rfu_list = []
         self.rfu_list_0 = []
         self.rfu_list_1 = []
+        self.vptool_gitrev = ''
+        self.io_fmt_gitrev = ''
+        self.config_gitrev = ''
+        self.ymlcfg_gitrev = ''
 
     def to_Feature(self):
         """
@@ -539,8 +582,11 @@ class Ip:
         # Next_elf_it needs extra care as it is derived from the length of the list
         # of Properties / Subfeatures.
         result.next_elt_id = self.prop_count
+        result.display_order = self.wid_order
         translated_subfeatures = [[elt[0], elt[1].to_Subfeature()] for elt in (self.prop_list if self.prop_list else self.rfu_list)]
         result.subfeatures = OrderedDict(translated_subfeatures)
+        for attr in ["vptool_gitrev", "io_fmt_gitrev", "config_gitrev", "ymlcfg_gitrev"]:
+            setattr(result, attr, getattr(self, attr))
         return result
 
     def __str__(self):
