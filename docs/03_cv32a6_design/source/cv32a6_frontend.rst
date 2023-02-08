@@ -566,7 +566,7 @@ BHT (Branch History Table) submodule
      -  in
      -  EXECUTE
      -  bht_update_t
-     -  Update btb with resolved address
+     -  Update bht with resolved address
 
    * - ``bht_prediction_o``
      -  out
@@ -592,7 +592,7 @@ The BHT is not updated if processor is in debug mode.
 
 When a branch instruction is pre-decoded by instr_scan submodule, the BHT informs whether the PC address is in the BHT. In this case, the BHT predicts whether the branch is taken and provides the corresponding target address.
 
-The BTB is never flushed.
+The BHT is never flushed.
 
 
 BTB (Branch Target Buffer) submodule
