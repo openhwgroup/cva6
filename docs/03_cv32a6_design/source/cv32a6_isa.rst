@@ -43,7 +43,7 @@ Table 1.1 shows the general-purpose registers :
      -
      - x1
      - ra
-     - Return address
+     - Return address (link register)
    * - 2
      -
      - x2
@@ -465,6 +465,8 @@ Control Transfer Instructions
 
     **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 is greater than or equal rs2 (using unsigned comparison).
 
+    **Invalid values**: NONE
+
     **Pseudocode**: if (x[rs1] >=u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
@@ -742,7 +744,7 @@ Load-Reserved/Store-Conditional Instructions
 
     **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
-- **LR.W**: Store-Conditional Word
+- **SC.W**: Store-Conditional Word
 
     **Format**: sc.w rd, rs2, (rs1)
 
@@ -1168,7 +1170,7 @@ Load and Store Instructions
 
 - **C.SWSP**: Store Word Stack-Pointer
 
-    **Format**: c.lwsp rd, uimm(x2)
+    **Format**: c.swsp rd, uimm(x2)
 
     **Description**: stores a 32-bit value in register rs2 to memory. It computes an effective address by adding the zero-extended offset, scaled by 4, to the stack pointer, x2.
 
