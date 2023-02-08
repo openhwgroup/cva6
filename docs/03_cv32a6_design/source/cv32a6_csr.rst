@@ -707,8 +707,8 @@ Machine ISA (``misa``)
 
 :Address Offset: 0x301
 :Width (bits): 32
-:Access Type: RW
-:Reset Value: 0x00000000
+:Access Type: RO
+:Reset Value: 0x4094_1104
 :Description: The misa CSR is reporting the ISA supported by the hart.
 
 .. csv-table::
@@ -716,53 +716,45 @@ Machine ISA (``misa``)
    :align: left
    :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:30]", "``MXL``", "Machine XLEN", "RW", "0b0"
-   "[29:26]", "``reserved_0``", "Reserved", "RO", "0b0"
-   "[25:0]", "``Extensions``", "Extensions", "RW", "0b0"
+   "[31:30]", "``MXL``", "Machine XLEN", "RO", "0b01"
+   "[29:26]", "``reserved_0``", "Reserved", "RO", "0b0000"
+   "[25:0]", "``Extensions``", "Extensions", "RO", "0b00_1001_0100_0001_0001_0000_0100"
 
 :Machine XLEN (``MXL``): The MXL field encodes the native base integer ISA width.
 
-    .. csv-table:: The following table shows the bitfield encoding
-       :widths: auto
-       :align: left
-       :header: "Value", "Name", "Description"
-
-       "0b01", "XLEN_32", ""
-       "0b10", "XLEN_64", ""
-       "0b11", "XLEN_128", ""
 :Extensions (``Extensions``): The Extensions field encodes the presence of the standard extensions, with a single bit per letter of the alphabet.
 
-    .. csv-table:: The following table shows the bitfield encoding
+    .. csv-table:: The following table shows the bitfield encoding for CV32A6
        :widths: auto
        :align: left
        :header: "Value", "Name", "Description"
 
-       "0b00000000000000000000000001", "A", "Atomic extension."
-       "0b00000000000000000000000010", "B", "*Tentatively reserved for Bit-Manipulation extension.*"
-       "0b00000000000000000000000100", "C", "Compressed extension."
-       "0b00000000000000000000001000", "D", "Double-precision floating-point extension."
-       "0b00000000000000000000010000", "E", "RV32E base ISA."
-       "0b00000000000000000000100000", "F", "Single-precision floating-point extension."
-       "0b00000000000000000001000000", "G", "*Reserved.*"
-       "0b00000000000000000010000000", "H", "Hypervisor extension."
-       "0b00000000000000000100000000", "I", "RV32I/64I/128I base ISA."
-       "0b00000000000000001000000000", "J", "*Tentatively reserved for Dynamically Translated Languages extension.*"
-       "0b00000000000000010000000000", "K", "*Reserved.*"
-       "0b00000000000000100000000000", "L", "*Reserved.*"
-       "0b00000000000001000000000000", "M", "Integer Multiply/Divide extension."
-       "0b00000000000010000000000000", "N", "*Tentatively reserved for User-Level Interrupts extension.*"
-       "0b00000000000100000000000000", "O", "*Reserved.*"
-       "0b00000000001000000000000000", "P", "*Tentatively reserved for Packed-SIMD extension.*"
-       "0b00000000010000000000000000", "Q", "Quad-precision floating-point extension."
-       "0b00000000100000000000000000", "R", "*Reserved.*"
-       "0b00000001000000000000000000", "S", "Supervisor mode implemented."
-       "0b00000010000000000000000000", "T", "*Reserved.*"
-       "0b00000100000000000000000000", "U", "User mode implemented."
-       "0b00001000000000000000000000", "V", "*Tentatively reserved for Vector extension.*"
-       "0b00010000000000000000000000", "W", "*Reserved.*"
-       "0b00100000000000000000000000", "X", "Non-standard extensions present."
-       "0b01000000000000000000000000", "Y", "*Reserved.*"
-       "0b10000000000000000000000000", "Z", "*Reserved.*"
+       "0b00_0000_0000_0000_0000_0000_0000", "A", "Atomic extension."
+       "0b00_0000_0000_0000_0000_0000_0000", "B", "*Tentatively reserved for Bit-Manipulation extension.*"
+       "0b00_0000_0000_0000_0000_0000_0100", "C", "Compressed extension."
+       "0b00_0000_0000_0000_0000_0000_0000", "D", "Double-precision floating-point extension."
+       "0b00_0000_0000_0000_0000_0000_0000", "E", "RV32E base ISA."
+       "0b00_0000_0000_0000_0000_0000_0000", "F", "Single-precision floating-point extension."
+       "0b00_0000_0000_0000_0000_0000_0000", "G", "*Reserved.*"
+       "0b00_0000_0000_0000_0000_0000_0000", "H", "Hypervisor extension."
+       "0b00_0000_0000_0000_0001_0000_0000", "I", "RV32I/64I/128I base ISA."
+       "0b00_0000_0000_0000_0000_0000_0000", "J", "*Tentatively reserved for Dynamically Translated Languages extension.*"
+       "0b00_0000_0000_0000_0000_0000_0000", "K", "*Reserved.*"
+       "0b00_0000_0000_0000_0000_0000_0000", "L", "*Reserved.*"
+       "0b00_0000_0000_0001_0000_0000_0000", "M", "Integer Multiply/Divide extension."
+       "0b00_0000_0000_0000_0000_0000_0000", "N", "*Tentatively reserved for User-Level Interrupts extension.*"
+       "0b00_0000_0000_0000_0000_0000_0000", "O", "*Reserved.*"
+       "0b00_0000_0000_0000_0000_0000_0000", "P", "*Tentatively reserved for Packed-SIMD extension.*"
+       "0b00_0000_0000_0000_0000_0000_0000", "Q", "Quad-precision floating-point extension."
+       "0b00_0000_0000_0000_0000_0000_0000", "R", "*Reserved.*"
+       "0b00_0000_0100_0000_0000_0000_0000", "S", "Supervisor mode implemented."
+       "0b00_0000_0000_0000_0000_0000_0000", "T", "*Reserved.*"
+       "0b00_0001_0000_0000_0000_0000_0000", "U", "User mode implemented."
+       "0b00_0000_0000_0000_0000_0000_0000", "V", "*Tentatively reserved for Vector extension.*"
+       "0b00_0000_0000_0000_0000_0000_0000", "W", "*Reserved.*"
+       "0b00_1000_0000_0000_0000_0000_0000", "X", "Non-standard extensions present."
+       "0b00_0000_0000_0000_0000_0000_0000", "Y", "*Reserved.*"
+       "0b00_0000_0000_0000_0000_0000_0000", "Z", "*Reserved.*"
 
 Machine Exception Delegation (``medeleg``)
 ------------------------------------------
