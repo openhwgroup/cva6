@@ -126,34 +126,37 @@ def generate_config(argv):
     Args['xlen'] = 64
     MABI = "lp64"
 
+  # Read file
+  alllines = []
+  with open("core/include/" + Args['default_config'] + "_config_pkg.sv", "r") as in_f:
+    alllines = in_f.readlines()
+  
   # Apply cmdline args to override individual localparam values.
-  # Warn about localparams which have no matching cmdline option associated with them.
-  for i in Args:
-    configfile = open("core/include/" + Args['default_config'] + "_config_pkg.sv", "r")
-    if i not in ['default_config', 'isa', 'xlen']:
-      if Args[i] != None:
-        print("setting", i, "to", Args[i])
-        alllines = []
-        lineXlen = None
-        for line in configfile :
-          lineXlen = re.match(r"(    localparam CVA6ConfigXlen = )(?P<value>.*)(;)", line) if lineXlen == None else lineXlen
-          line = re.sub(r"(    localparam "+MapArgsToParameter[i]+" = )(.*)(;)", r"\g<1>"+str(Args[i])+"\g<3>", line) # change parameter if required by Args
-          alllines.append(line)
-          linematch = re.match(r"(    localparam (CVA6Config)(?P<param>.*) = )(?P<value>.*)(;)", line) # and read the modified line to know which configuration we are creating
-          if linematch:
-            try:
-              Param = MapParametersToArgs['CVA6Config'+linematch.group('param')]
-              Config[Param] = lineXlen.group('value') if linematch.group('value') == "CVA6ConfigXlen" else linematch.group('value')
-            except KeyError:
-              # No known cmdline option for this specific localparam.
-              full_name = 'CVA6Config' + linematch.group('param')
-              print(f"WARNING: CVA6 configuration parameter '{full_name}' not supported yet via cmdline args,",
-                    "\n\t consider extending script 'config_pkg_generator.py'!")
-            for k in Config.keys():
-              Config[k] = int(Config[k]) # Convert value from str to int
-        configfile = open("core/include/"+gen+"_config_pkg.sv", "w")
-        configfile.writelines(alllines)
-  configfile.close
+  for name, value in Args.items():
+    if name not in ['default_config', 'isa', 'xlen'] and value is not None:
+      param = MapArgsToParameter[name]
+      print("setting", name, "to", value)
+      for i, line in enumerate(alllines):
+        alllines[i] = re.sub(r"^(\s*localparam\s+"+param+r"\s*=\s*)(.*)(;\s*)$", r"\g<1>"+str(value)+r"\g<3>", line)
+
+  # Build Config and warn about localparams which have no matching cmdline option associated with them.
+  for line in alllines:
+    linematch = re.match(r"^(\s*localparam\s+CVA6Config(?P<param>\w*)\s*=\s*)(?P<value>.*)(;\s*)$", line)
+    if linematch:
+      param = 'CVA6Config'+linematch.group('param')
+      value = linematch.group('value')
+      if linematch:
+        try:
+          arg = MapParametersToArgs[param]
+          Config[arg] = Config['xlen'] if value == "CVA6ConfigXlen" else int(value)
+        except KeyError:
+          print(f"WARNING: CVA6 configuration parameter '{param}' not supported yet via cmdline args,",
+                "\n\t consider extending script 'config_pkg_generator.py'!")
+
+  # Write new file
+  with open("core/include/"+gen+"_config_pkg.sv", "w") as out_f:
+    out_f.writelines(alllines)
+
   print("[Generating configuration Done]")
   return [ISA, MABI, gen, Config] # return ISA, MABI, gen (for testharness), Config for cva6.py in core-v-verif
 
