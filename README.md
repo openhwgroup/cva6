@@ -104,7 +104,7 @@ git submodule update --init --recursive
 2. Run `./ci/setup.sh` to install all required tools (i.e. verilator, device-tree-compiler, riscv64-unknown-elf-*, ..)
 
 You can install verilator from source using `./ci/install-verilator.sh` or by manually installing `verilator >= 4.002`
-Note: There is currently a known issue with version 4.106 and 4.108. 4.106 does not compile and 4.108 hangs after a 
+Note: There is currently a known issue with version 4.106 and 4.108. 4.106 does not compile and 4.108 hangs after a
 couple of cycles simulation time.)
 
 
@@ -134,17 +134,14 @@ Both, the Verilator model as well as the Questa simulation will produce trace lo
 spike-dasm < trace_hart_00.dasm > logfile.txt
 ```
 
-To build, compile and run the CVA6 core-only in its example testbench using Verilator (known to work with V4.108):
-```
-$ cd core/example_tb
-$ make veri_run
-```
-`make help` will print all supported targets.
+To build, compile and run the CVA6 core-only, follow instructions in
+[`core-v-verif` repository](https://github.com/openhwgroup/core-v-verif)
+(`cva6/README.md`).
 
 
 ### Running User-Space Applications
 
-It is possible to run user-space binaries on CVA6 with ([RISC-V Proxy Kernel and Boot Loader](https://github.com/riscv/riscv-pk)). 
+It is possible to run user-space binaries on CVA6 with ([RISC-V Proxy Kernel and Boot Loader](https://github.com/riscv/riscv-pk)).
 RISC-V PK can be installed by running: `./ci/install-riscvpk.sh`
 
 ```
