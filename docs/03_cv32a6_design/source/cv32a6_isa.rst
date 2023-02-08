@@ -43,7 +43,7 @@ Table 1.1 shows the general-purpose registers :
      -
      - x1
      - ra
-     - Return address
+     - Return address (link register)
    * - 2
      -
      - x2
