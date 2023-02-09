@@ -4,7 +4,7 @@ RV32 Instructions
 Introduction
 ------------------
 
-In this document, we present ISA (Instruction Set Architecture) for C32VA6_v0.1.0, illustrating different supported instructions, the Base Integer Instruction set RV32I, and also other instructions in some extensions supported by the core as:
+In this document, we present ISA (Instruction Set Architecture) for C32VA6_v5.0.0, illustrating different supported instructions, the Base Integer Instruction set RV32I, and also other instructions in some extensions supported by the core as:
 
 * RV32M        – Standard Extension for Integer Multiplication and Division Instructions
 * RV32A        – Standard Extension for Atomic Instructions
@@ -12,8 +12,8 @@ In this document, we present ISA (Instruction Set Architecture) for C32VA6_v0.1.
 * RV32Zicsr    – Standard Extension for CSR Instructions
 * RV32Zifencei – Standard Extension for Instruction-Fetch Fence
 
-The base RISC-V ISA has fixed-length 32-bit instructions or 16-bit instructions (the C32VA6_v0.1.0 support C extension), so that must be naturally aligned on 4-byte boundary or 2-byte boundary.
-The C32VA6_v0.1.0 supports:
+The base RISC-V ISA has fixed-length 32-bit instructions or 16-bit instructions (the C32VA6_v5.0.0 support C extension), so that must be naturally aligned on 4-byte boundary or 2-byte boundary.
+The C32VA6_v5.0.0 supports:
 
 * Only 1 hart,
 * Misaligned accesses to the memory.
@@ -21,7 +21,7 @@ The C32VA6_v0.1.0 supports:
 General purpose registers
 --------------------------
 
-As shown in the Table 1.1, There are 31 general-purpose registers x1–x31, which hold integer values. Register x0 is hardwired to the constant 0. There is no hardwired subroutine return address link register, but the standard software calling convention uses register x1 to hold the return address on a call. For C32VA6_v0.1.0, the x registers are 32 bits wide. There is one additional register also 32 bits wide: the program counter pc holds the address of the current instruction.
+As shown in the Table 1.1, There are 31 general-purpose registers x1–x31, which hold integer values. Register x0 is hardwired to the constant 0. There is no hardwired subroutine return address link register, but the standard software calling convention uses register x1 to hold the return address on a call. For C32VA6_v5.0.0, the x registers are 32 bits wide. There is one additional register also 32 bits wide: the program counter pc holds the address of the current instruction.
 
 Table 1.1 shows the general-purpose registers :
 
@@ -763,7 +763,7 @@ Atomic Memory Operations
 
     **Format**: amoadd.w rd, rs2, (rs1)
 
-    **Description**: AMOADD.W atomically loads a data value from the address in rs1, places the value into register rd, then adds the loaded value and the original value in rs2, then stores the result back to the address in rs1. 
+    **Description**: AMOADD.W atomically loads a data value from the address in rs1, places the value into register rd, then adds the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] + x[rs2])
 

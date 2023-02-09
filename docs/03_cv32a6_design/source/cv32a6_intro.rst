@@ -13,13 +13,13 @@ Introduction
 =============
 
 The OpenHW Group uses `semantic versioning <https://semver.org/>`_ to describe the release status of its IP.
-This document describes v0.1.0 of the CV32A6.
+This document describes v5.0.0 of the CV32A6.
 This is not intended to be a formal release of CVA6.
 Currently, the first planned release of CVA6 is the CV32A6 v0.2.0.
 
 CVA6 is a 6-stage in-order and single issue processor core which implements the RISC-V instruction set.
 CVA6 can be configured as a 32- or 64-bit core (RV32 or RV64), called CV32A6 or CV64A6.
-This document describes an initial version (v0.1.0) of the CV32A6 processor configuration.
+This document describes an initial version (v5.0.0) of the CV32A6 processor configuration.
 
 The objective of this document is to provide enough information to allow the RTL modification (by designers) and the RTL verification (by verificators).
 This document is not dedicated to CVA6 users looking for information to develop software like instructions or registers.
