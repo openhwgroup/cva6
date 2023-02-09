@@ -367,7 +367,7 @@ class Prop:
         # numbering of Items in Prop and will be inconsistent if items are removed.
         # Computing the max of item IDs is not reliable either in case the last
         # item was removed.
-        3print("### Prop.to_Subfeature(tag='%s'): item_count = %d" % (self.tag, self.item_count))
+        #print("### Prop.to_Subfeature(tag='%s'): item_count = %d" % (self.tag, self.item_count))
         result.next_elt_id = self.item_count
         result.display_order = self.wid_order
         translated_items = [[elt[0], elt[1].to_VerifItem()] for elt in (self.item_list if self.item_list else self.rfu_list)]
