@@ -162,7 +162,7 @@ module scoreboard #(
     end else if (lsu_wmask_i != 0) begin
       mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
       mem_n[lsu_addr_trans_id_i].sbe.lsu_wmask = lsu_wmask_i;
-      mem_n[lsu_addr_trans_id_i].sbe.lsu_wdata = wbdata_i[2];
+      mem_n[lsu_addr_trans_id_i].sbe.lsu_wdata = wbdata_i[1];
     end
 `endif
 
