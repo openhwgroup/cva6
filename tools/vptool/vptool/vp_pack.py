@@ -332,7 +332,9 @@ class Subfeature:
         Convert a Subfeature into legacy-stype Prop object.
         """
         result = Prop(self.name, self.tag, self.display_order)
-        result.list_of_items = [[elt[0], elt[1].to_Item()] for elt in self.items.items()]
+        result.item_count = self.next_elt_id
+        result.rfu_list = [[elt[0], elt[1].to_Item()] for elt in self.items.items()]
+        result.item_list = dict(result.rfu_list)
         return result
 
 class Prop:
@@ -365,11 +367,8 @@ class Prop:
         # numbering of Items in Prop and will be inconsistent if items are removed.
         # Computing the max of item IDs is not reliable either in case the last
         # item was removed.
+        3print("### Prop.to_Subfeature(tag='%s'): item_count = %d" % (self.tag, self.item_count))
         result.next_elt_id = self.item_count
-        max_item_id = max([int(elt[1].name) for elt in (self.item_list if self.item_list else self.rfu_list)])
-        if max_item_id >= self.item_count:
-            raise ValueError((self.item_count, max_item_id))
-        result.next_elt_id = 1 + max_item_id
         result.display_order = self.wid_order
         translated_items = [[elt[0], elt[1].to_VerifItem()] for elt in (self.item_list if self.item_list else self.rfu_list)]
         result.items = OrderedDict(translated_items)
@@ -477,24 +476,20 @@ class Feature:
     a class of instructions or an operation mode of an interface.
     """
     # Class variable: highest Feature ID seen so far.
-    _highest_id = -1
+    _feature_count = 0
 
-    def __init__(self, name="", id=0):
+    def __init__(self, name="", id=""):
         # Index of next subfeature to add (MUST ALWAYS GROW upon adding subfeatures!)
         self.next_elt_id = 0
         # Name of the Feature
         self.name = name
         # Numerical ID of the Feature: Use the highest known value PLUS ONE
         # unless explicitly given (e.g., when converting Ip objects).
-        if id != 0:
-            if id > self.__class__._highest_id:
-                self.__class__._highest_id = id
-                self.id = id
-            else:
-                raise ValueError((id, self.__class__._highest_id))
+        if id != "":
+            self.id = int(id)
         else:
-            self.__class__._highest_id += 1
-            self.id = self.__class__._highest_id
+            self.id = self.__class__._feature_count
+            self.__class__._feature_count += 1
         # Display order of the Feature
         self.display_order = self.id
         # List of subfeatures
@@ -538,9 +533,13 @@ class Feature:
         """
         Convert a Feature to a legacy-stype Ip.
         """
-        result = Ip(self.name)
+        # Map Feature.id to Ip.ip_num.
+        #print("### Feature.to_Ip(name='%s', id='%d')" % (self.name, self.id))
+        result = Ip(self.name, self.id)
+        result.prop_count = self.next_elt_id
         result.wid_order = self.display_order
-        result.prop_list = [[elt[0], elt[1].toSubfeature()] for elt in self.subfeatures.items()]
+        result.rfu_list = [[elt[0], elt[1].to_Prop()] for elt in self.subfeatures.items()]
+        result.prop_list = dict(result.rfu_list)
         for attr in ["vptool_gitrev", "io_fmt_gitrev", "config_gitrev", "ymlcfg_gitrev"]:
             setattr(result, attr, getattr(self, attr))
         return result
@@ -558,10 +557,11 @@ class Ip:
         self.prop_count = 0  # determine how many prop have been created for a given IP
         self.name = name
         self.prop_list = {}
-        if index:
+        if index != "":
             self.ip_num = index  ## Store number creation
         else:
             self.ip_num = self.__class__._ip_count
+        #print("### Created Ip(name='%s', index='%d')" % (self.name, self.ip_num))
         self.__class__._ip_count += 1
         self.wid_order = self.ip_num
         # rfu for future dev
@@ -578,6 +578,7 @@ class Ip:
         """
         Convert an Ip to a Feature.
         """
+        # Map Ip.ip_num to Feature.id.
         result = Feature(self.name, self.ip_num)
         # Next_elf_it needs extra care as it is derived from the length of the list
         # of Properties / Subfeatures.

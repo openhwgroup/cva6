@@ -1977,7 +1977,7 @@ class MyMain:
                                     + ".pck",
                                     "wb",
                                 ) as output:
-                                    pickle.dump(ip_elt, output, 4)
+                                    pickle.dump(ip_elt, output, 0)
                             # TODO: Add translation of pickle_ip_list to new-gen
                             # types *HERE*, after emitting Pickle.
                             # Emit the Yaml output from the fixed structures,
@@ -1987,7 +1987,7 @@ class MyMain:
                                 save_dir
                                 + "/VP_IP"
                                 + str(ip_elt[1].ip_num).zfill(3)
-                                + "_new_types.yml",
+                                + ".yml",
                                 "wb",
                             ) as output:
                                 db_yaml_engine.dump(ip_elt[1].to_Feature(), output)
@@ -2010,9 +2010,9 @@ class MyMain:
                     else:
                         # ZC FIXME Add support for Yaml in non-split-save mode.
                         with open(vp_config.SAVED_DB_LOCATION, "wb") as output:
-                            pickle.dump(len(pickle_ip_list), output, 4)
+                            pickle.dump(len(pickle_ip_list), output, 0)
                             for ip_elt in pickle_ip_list:
-                                pickle.dump(ip_elt, output, 4)
+                                pickle.dump(ip_elt, output, 0)
                     self.prep_db_import()
                     # update_ip_widget()
                     self.update_all_item_target_list()
@@ -2057,7 +2057,7 @@ class MyMain:
                 tkinter.messagebox.showwarning("Warning", "No DB Loaded!")
         return need_to_load
 
-    def load_db_quiet(self):
+    def load_db_quiet(self, use_yaml_input=False):
         pickle_ip_list = []
         ip_num_next = 0
         if self.split_save:
@@ -2073,16 +2073,18 @@ class MyMain:
                         else "<generic>"
                     )
                     + ")",
-                    os.path.join(dir_to_load, "VP_IP*.pck"),
+                    os.path.join(dir_to_load, "VP_IP[0-9][0-9][0-9].pck"),
                 )
             )
-            for filename in glob.glob(dir_to_load + "/VP_IP*pck"):
-                # print("---INFO: Loading "+filename)
-                with open(filename, "rb") as input:
-                    pickle_ip_list.append(pickle.load(input))
-            #for filename in glob.glob(dir_to_load + "/VP_IP*yml"):
-            #    with open(filename, "rb") as input:
-            #        pickle_ip_list.append(db_yaml_engine.load(input))
+            if not use_yaml_input:
+                for filename in glob.glob(dir_to_load + "/VP_IP*pck"):
+                    # print("---INFO: Loading "+filename)
+                    with open(filename, "rb") as input:
+                        pickle_ip_list.append(pickle.load(input))
+            else:
+                for filename in glob.glob(dir_to_load + "/VP_IP[0-9][0-9][0-9].yml"):
+                    with open(filename, "rb") as input:
+                        pickle_ip_list.append(db_yaml_engine.load(input))
             if pickle_ip_list:
                 # Find the lowest ip_num that can be used for newly created IPs.
                 # It has to be higher than the highest existing ip_num.
@@ -2090,8 +2092,8 @@ class MyMain:
                 ip_num_next = 1 + max(
                     [
                         (lambda e: e if isinstance(e, int) else int(e, base=10))(
-                            #elt.ip_num  # Yaml !!omap mode: list of objects
-                            elt[1].ip_num
+                            elt.id if use_yaml_input # Yaml !!omap mode: list of objects
+                            else elt[1].ip_num
                         )
                         for elt in pickle_ip_list
                     ]
@@ -2109,16 +2111,18 @@ class MyMain:
                 for dummy in range(ip_num_next):
                     pickle_ip_list.append(pickle.load(input))
         # change list to dict
-        # Yaml mode: !!omap yields a list of elts when loaded.
-        #for ip_elt in pickle_ip_list:
-        #    self.ip_list[ip_elt.name] = ip_elt
-        #    # Seems pickle doesn't restore class attribute. Done manually here for IP
-        #    self.ip_list[ip_elt.name].__class__._ip_count = ip_num_next
-        # Pickle mode: list of objects is a list of mappings
-        for ip_key, ip_elt in pickle_ip_list:
-            self.ip_list[ip_key] = ip_elt
-            # Seems pickle doesn't restore class attribute. Done manually here for IP
-            self.ip_list[ip_key].__class__._ip_count = ip_num_next
+        if use_yaml_input:
+            # Yaml mode: !!omap yields a list of elts when loaded.
+            for ip_elt in pickle_ip_list:
+                self.ip_list[ip_elt.name] = ip_elt.to_Ip()
+                # Seems pickle doesn't restore class attribute. Done manually here for IP
+                self.ip_list[ip_elt.name].__class__._ip_count = ip_num_next
+        else:
+            # Pickle mode: list of objects is a list of mappings as 2-elt lists
+            for ip_key, ip_elt in pickle_ip_list:
+                self.ip_list[ip_key] = ip_elt
+                # Seems pickle doesn't restore class attribute. Done manually here for IP
+                self.ip_list[ip_key].__class__._ip_count = ip_num_next
         self.prep_db_import()
         self.update_all_item_target_list()
         self.db_git_rev = self.get_db_gitrev()
@@ -2177,7 +2181,7 @@ class MyMain:
             LOCKED_IP_DICT[current_ip_name] = pwd.getpwuid(os.getuid()).pw_name
         try:
             with open(vp_config.LOCKED_IP_LOCATION, "wb") as output:
-                pickle.dump(LOCKED_IP_DICT, output, 4)
+                pickle.dump(LOCKED_IP_DICT, output, 0)
             self.update_ip_widget()
         except Exception as e:
             print(
@@ -2200,7 +2204,7 @@ class MyMain:
                 LOCKED_IP_DICT[current_ip_name] = pwd.getpwuid(os.getuid()).pw_name
             try:
                 with open(vp_config.LOCKED_IP_LOCATION, "wb") as output:
-                    pickle.dump(LOCKED_IP_DICT, output, 4)
+                    pickle.dump(LOCKED_IP_DICT, output, 0)
                 self.update_ip_widget()
             except Exception as e:
                 print(
@@ -2279,9 +2283,9 @@ class MyMain:
         if os.path.exists(sys.argv[0]):
             preference_file = os.path.dirname(sys.argv[0]) + "/" + PERSO_FILE
             with open(preference_file, "wb") as output:
-                pickle.dump(BG_COLOR, output, 4)
-                pickle.dump(EDITOR, output, 4)
-                pickle.dump(self.verif_menu.enable_image_panel.get(), output, 4)
+                pickle.dump(BG_COLOR, output, 0)
+                pickle.dump(EDITOR, output, 0)
+                pickle.dump(self.verif_menu.enable_image_panel.get(), output, 0)
 
     def change_gui_color(self):
         global BG_COLOR
@@ -2342,7 +2346,7 @@ class MyMain:
     ##### DB INTERACTIION FUNCTIONS
 
     ##### Main GUI Creation
-    def create_gui(self, theme):
+    def create_gui(self, theme, use_yaml_input):
         self.personalization()
 
         # TOP Widget
@@ -2450,7 +2454,7 @@ class MyMain:
         self.desc_widget.text1.bind("<Control-1>", self.im_up_des_ctrl_lock)
         self.desc_widget.text.bind("<Control-3>", self.im_up_des_tip_disp)
         self.item_widget.wlist.bind("<<ListboxSelect>>", self.im_up_item)
-        self.load_db_quiet()
+        self.load_db_quiet(use_yaml_input)
         self.load_lock_ip()
         self.update_ip_widget()
         self.top.bind("<Control-q>", self.main_exit_handler)
@@ -2481,6 +2485,14 @@ def __generate_option_parser():
         help="Select a GUI theme for this session",
         default=vp_config.yaml_config["gui"]["theme"],
     )
+    parser.add_option(
+        "-y",
+        "--yaml",
+        action="store_true",
+        dest="use_yaml_input",
+        help="Read database in Yaml format",
+        default=False,
+    )
     return parser
 
 
@@ -2507,4 +2519,4 @@ if os.path.exists(os.path.realpath(options.dataBase)):
     SAVED_DB_LOCATION = os.path.realpath(options.dataBase)
     print(SAVED_DB_LOCATION)
 
-top_gui.create_gui(options.theme)
+top_gui.create_gui(options.theme, options.use_yaml_input)
