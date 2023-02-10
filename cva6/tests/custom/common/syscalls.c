@@ -82,9 +82,12 @@ void __attribute__((noreturn)) tohost_exit(uintptr_t code)
   // so that the syscall is properly recognized even if 'code' value is very large.
   tohost = ((((uint64_t) code) << 17) >> 16) | 1;
 
-  // Don't care about the value returned by host...
-  __asm__("nop\n\tnop\n\tnop\n\tecall\t");
+  // Do not care about the value returned by host.
+  // Leave 1 cycle of slack (one NOP instruction) to help debugging
+  // the termination mechanism if needed.
+  __asm__("nop\n\t");
 
+  // Go into an endless loop if the write into 'tohost' did not terminate the simulation.
   while (1);
 }
 
