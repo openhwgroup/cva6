@@ -4,7 +4,6 @@
 #include <fesvr/dtm.h>
 #include <vpi_user.h>
 #include <svdpi.h>
-#include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <vector>
@@ -58,26 +57,4 @@ extern "C" int debug_tick
   *debug_req_bits_data = dtm->req_bits().data;
 
   return dtm->done() ? (dtm->exit_code() << 1 | 1) : 0;
-}
-
-extern "C" void dtm_set_exitcode(unsigned int code)
-{
-  if (!dtm) {
-    std::cerr << "*** Cannot return the exit code without a running DTM!\n";
-    return;
-  }
-
-  dtm->set_exitcode(code);
-}
-
-extern "C" unsigned long int dtm_get_tohost_addr(const char *binary /* unused when using HTIF */)
-{
-  if (!dtm) {
-    std::cerr << "*** Cannot determine DTM 'tohost' address without a running DTM!\n";
-    return 0;
-  }
-
-  unsigned long int tohost_addr = dtm->get_tohost_addr();
-  std::cerr << "### Calling dtm->get_tohost_addr() for file '" << binary << "', value returned is 0x" << std::hex << tohost_addr << std::dec << "\n";
-  return dtm->get_tohost_addr();
 }
