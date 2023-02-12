@@ -33,7 +33,7 @@ package cva6_config_pkg;
     localparam CVA6ConfigDcacheSetAssoc = 8;
 
     localparam CVA6ConfigNrCommitPorts = 2;
-    localparam CVA6ConfigNrScoreboardEntries = 8;
+    localparam CVA6ConfigNrScoreboardEntries = 4;
 
     localparam CVA6ConfigFPGAEn = 0;
 
@@ -70,9 +70,9 @@ package cva6_config_pkg;
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
-      RASDepth: 2,
-      BTBEntries: 32,
-      BHTEntries: 128,
+      RASDepth: 0,
+      BTBEntries: 0,
+      BHTEntries: 0,
       // idempotent region
       NrNonIdempotentRules: 2,
       NonIdempotentAddrBase: {64'b0, 64'b0},
