@@ -69,7 +69,7 @@ package ariane_soc;
   localparam NrRegion = 1;
   localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};
 
-  localparam ariane_pkg::ariane_cfg_t ArianeSocCfg = '{
+  localparam cva6_config_pkg::ariane_cfg_t ArianeSocCfg = '{
     RASDepth: 2,
     BTBEntries: 32,
     BHTEntries: 128,

@@ -28,7 +28,7 @@
 
 module cva6_ptw_sv32 import ariane_pkg::*; #(
         parameter int ASID_WIDTH = 1,
-        parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+        parameter cva6_config_pkg::ariane_cfg_t ArianeCfg = cva6_config_pkg::ArianeDefaultConfig
 ) (
     input  logic                    clk_i,                  // Clock
     input  logic                    rst_ni,                 // Asynchronous reset active low

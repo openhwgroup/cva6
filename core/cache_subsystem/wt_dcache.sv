@@ -19,7 +19,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
   parameter logic [CACHE_ID_WIDTH-1:0]   RdAmoTxId          = 1,
   // contains cacheable regions
-  parameter ariane_pkg::ariane_cfg_t     ArianeCfg          = ariane_pkg::ArianeDefaultConfig
+  parameter cva6_config_pkg::ariane_cfg_t ArianeCfg         = cva6_config_pkg::ArianeDefaultConfig
 ) (
   input  logic                           clk_i,       // Clock
   input  logic                           rst_ni,      // Asynchronous reset active low

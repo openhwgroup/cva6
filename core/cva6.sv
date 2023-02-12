@@ -24,7 +24,7 @@ import "DPI-C" function void init_dromajo(string cfg_f_name);
 
 
 module cva6 import ariane_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  parameter cva6_config_pkg::ariane_cfg_t ArianeCfg = cva6_config_pkg::ArianeDefaultConfig,
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,

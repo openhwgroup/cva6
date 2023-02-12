@@ -16,7 +16,7 @@
 // change request from the back-end and does branch prediction.
 
 module frontend import ariane_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+  parameter cva6_config_pkg::ariane_cfg_t ArianeCfg = cva6_config_pkg::ArianeDefaultConfig
 ) (
   input  logic               clk_i,              // Clock
   input  logic               rst_ni,             // Asynchronous reset active low
@@ -397,7 +397,7 @@ module frontend import ariane_pkg::*; #(
       .data_i ( ras_update  ),
       .data_o ( ras_predict )
     );
-    
+
     //For FPGA, BTB is implemented in read synchronous BRAM
     //while for ASIC, BTB is implemented in D flip-flop
     //and can be read at the same cycle.

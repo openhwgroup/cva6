@@ -50,7 +50,7 @@
 
 
 module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t    ArianeCfg          = ariane_pkg::ArianeDefaultConfig     // contains cacheable regions
+  parameter cva6_config_pkg::ariane_cfg_t ArianeCfg = cva6_config_pkg::ArianeDefaultConfig  // contains cacheable regions
 ) (
   input  logic                               clk_i,          // Clock
   input  logic                               rst_ni,         // Asynchronous reset active low

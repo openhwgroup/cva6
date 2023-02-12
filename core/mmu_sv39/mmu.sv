@@ -19,7 +19,7 @@ module mmu import ariane_pkg::*; #(
     parameter int unsigned INSTR_TLB_ENTRIES     = 4,
     parameter int unsigned DATA_TLB_ENTRIES      = 4,
     parameter int unsigned ASID_WIDTH            = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter cva6_config_pkg::ariane_cfg_t ArianeCfg = cva6_config_pkg::ArianeDefaultConfig
 ) (
     input  logic                            clk_i,
     input  logic                            rst_ni,
@@ -129,8 +129,8 @@ module mmu import ariane_pkg::*; #(
 
         .lu_access_i      ( dtlb_lu_access              ),
         .lu_asid_i        ( asid_i                      ),
-	      .asid_to_be_flushed_i  ( asid_to_be_flushed_i   ),
-	      .vaddr_to_be_flushed_i ( vaddr_to_be_flushed_i  ),
+          .asid_to_be_flushed_i  ( asid_to_be_flushed_i   ),
+          .vaddr_to_be_flushed_i ( vaddr_to_be_flushed_i  ),
         .lu_vaddr_i       ( lsu_vaddr_i                 ),
         .lu_content_o     ( dtlb_content                ),
 

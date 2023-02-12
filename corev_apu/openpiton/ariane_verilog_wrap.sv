@@ -170,7 +170,7 @@ module ariane_verilog_wrap
   // ariane instance
   /////////////////////////////
 
-  localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
+  localparam cva6_config_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
     RASDepth:              RASDepth,
     BTBEntries:            BTBEntries,
     BHTEntries:            BHTEntries,

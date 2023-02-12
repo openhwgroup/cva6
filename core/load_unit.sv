@@ -14,7 +14,7 @@
 // Description: Load Unit, takes care of all load requests
 
 module load_unit import ariane_pkg::*; #(
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter cva6_config_pkg::ariane_cfg_t ArianeCfg = cva6_config_pkg::ArianeDefaultConfig
 ) (
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,   // Asynchronous reset active low
@@ -341,16 +341,16 @@ module load_unit import ariane_pkg::*; #(
     // prepare these signals for faster selection in the next cycle
     assign signed_d  = load_data_d.operator  inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
     assign fp_sign_d = load_data_d.operator  inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-    
+
     assign idx_d     = ((load_data_d.operator inside {ariane_pkg::LW,  ariane_pkg::FLW}) & riscv::IS_XLEN64) ? load_data_d.address_offset + 3 :
                        (load_data_d.operator inside {ariane_pkg::LH,  ariane_pkg::FLH}) ? load_data_d.address_offset + 1 :
                                                                                           load_data_d.address_offset;
 
 
     for (genvar i = 0; i < (riscv::XLEN/8); i++) begin : gen_sign_bits
-        assign sign_bits[i] = req_port_i.data_rdata[(i+1)*8-1]; 
+        assign sign_bits[i] = req_port_i.data_rdata[(i+1)*8-1];
     end
-    
+
 
     // select correct sign bit in parallel to result shifter above
     // pull to 0 if unsigned
