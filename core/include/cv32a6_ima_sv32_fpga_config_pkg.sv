@@ -43,4 +43,8 @@ package cva6_config_pkg;
     localparam CVA6ConfigInstrTlbEntries = 2;
     localparam CVA6ConfigDataTlbEntries = 2;
 
+    localparam RASDepth = 2;
+    localparam BTBEntries = 32;
+    localparam BHTEntries = 128;
+
 endpackage
