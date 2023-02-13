@@ -425,7 +425,7 @@ module frontend import ariane_pkg::*; #(
 
     if (ArianeCfg.BHTEntries == 0) begin
       assign bht_prediction = '0;
-    else
+    end else begin
       bht #(
         .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
       ) i_bht (
