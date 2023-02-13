@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F006_S000_I000
+        tag: VP_ISA_RV32_F014_S000_I000
         description: "Fence.I instruction executed\nImplementation is core-specific"
         reqt_doc: "Unprivileged ISA\nChapter 3"
         ref_mode: ''

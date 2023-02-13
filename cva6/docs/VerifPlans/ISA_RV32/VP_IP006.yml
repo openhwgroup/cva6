@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F000_S000_I000
+        tag: VP_ISA_RV32_F006_S000_I000
         description: "mul rd, rs1, rs2\nx[rd] = x[rs1] * x[rs2]\nArithmetic overflow\
           \ is ignored."
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -33,7 +33,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F000_S000_I001
+        tag: VP_ISA_RV32_F006_S000_I001
         description: "mul rd, rs1, rs2\nx[rd] = x[rs1] * x[rs2]\nArithmetic overflow\
           \ is ignored."
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -54,7 +54,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F000_S000_I002
+        tag: VP_ISA_RV32_F006_S000_I002
         description: "mul rd, rs1, rs2\nx[rd] = x[rs1] * x[rs2]\nArithmetic overflow\
           \ is ignored."
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -78,7 +78,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F000_S001_I000
+        tag: VP_ISA_RV32_F006_S001_I000
         description: "mulh rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nBoth\
           \ rs1 and rs2 treated as signed numbers"
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -99,7 +99,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F000_S001_I001
+        tag: VP_ISA_RV32_F006_S001_I001
         description: "mulh rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nBoth\
           \ rs1 and rs2 treated as signed numbers"
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -120,7 +120,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F000_S001_I002
+        tag: VP_ISA_RV32_F006_S001_I002
         description: "mulh rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nBoth\
           \ rs1 and rs2 treated as signed numbers"
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -144,7 +144,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F000_S002_I000
+        tag: VP_ISA_RV32_F006_S002_I000
         description: "mulhu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >> XLEN\nBoth\
           \ rs1 and rs2 treated as unsigned numbers"
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -165,7 +165,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F000_S002_I001
+        tag: VP_ISA_RV32_F006_S002_I001
         description: "mulhu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >> XLEN\nBoth\
           \ rs1 and rs2 treated as unsigned numbers"
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -186,7 +186,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F000_S002_I002
+        tag: VP_ISA_RV32_F006_S002_I002
         description: "mulhu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >> XLEN\nBoth\
           \ rs1 and rs2 treated as unsigned numbers"
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -210,7 +210,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F000_S003_I000
+        tag: VP_ISA_RV32_F006_S003_I000
         description: "mulhsu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nrs1\
           \ treated as signed number, rs2 treated as unsigned number"
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -232,7 +232,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F000_S003_I001
+        tag: VP_ISA_RV32_F006_S003_I001
         description: "mulhsu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nrs1\
           \ treated as signed number, rs2 treated as unsigned number"
         reqt_doc: "Unprivileged ISA\nChapter 7.1"
@@ -253,7 +253,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F000_S003_I002
+        tag: VP_ISA_RV32_F006_S003_I002
         description: "mulhsu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nrs1\
           \ treated as signed number, rs2 treated as unsigned number"
         reqt_doc: "Unprivileged ISA\nChapter 7.1"

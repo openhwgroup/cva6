@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F003_S000_I000
+        tag: VP_ISA_RV32_F003_S000_I000
         description: "lb rd, rs1, imm\nrd = Sext(M[rs1+imm][0:7])\nrd is calculated\
           \ using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -31,7 +31,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F003_S000_I001
+        tag: VP_ISA_RV32_F003_S000_I001
         description: "lb rd, rs1, imm\nrd = Sext(M[rs1+imm][0:7])\nrd is calculated\
           \ using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -51,7 +51,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F003_S000_I002
+        tag: VP_ISA_RV32_F003_S000_I002
         description: "lb rd, rs1, imm\nrd = Sext(M[rs1+imm][0:7])\nrd is calculated\
           \ using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -75,7 +75,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F003_S001_I000
+        tag: VP_ISA_RV32_F003_S001_I000
         description: "lh rd, rs1, imm\nrd = Sext(M[rs1+imm][0:15])\nrd is calculated\
           \ using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -94,7 +94,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F003_S001_I001
+        tag: VP_ISA_RV32_F003_S001_I001
         description: "lh rd, rs1, imm\nrd = Sext(M[rs1+imm][0:15])\nrd is calculated\
           \ using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -115,7 +115,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F003_S001_I002
+        tag: VP_ISA_RV32_F003_S001_I002
         description: "lh rd, rs1, imm\nrd = Sext(M[rs1+imm][0:15])\nrd is calculated\
           \ using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -139,7 +139,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F003_S002_I000
+        tag: VP_ISA_RV32_F003_S002_I000
         description: "lw rd, rs1, imm\nrd = Sext(M[rs1+imm][0:31])\nrd is calculated\
           \ using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -158,7 +158,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F003_S002_I001
+        tag: VP_ISA_RV32_F003_S002_I001
         description: "lw rd, rs1, imm\nrd = Sext(M[rs1+imm][0:31])\nrd is calculated\
           \ using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -179,7 +179,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F003_S002_I002
+        tag: VP_ISA_RV32_F003_S002_I002
         description: "lw rd, rs1, imm\nrd = Sext(M[rs1+imm][0:31])\nrd is calculated\
           \ using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -203,7 +203,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F003_S003_I000
+        tag: VP_ISA_RV32_F003_S003_I000
         description: "lbu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:7])\nrd is calculated\
           \ using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -222,7 +222,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F003_S003_I001
+        tag: VP_ISA_RV32_F003_S003_I001
         description: "lbu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:7])\nrd is calculated\
           \ using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -242,7 +242,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F003_S003_I002
+        tag: VP_ISA_RV32_F003_S003_I002
         description: "lbu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:7])\nrd is calculated\
           \ using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -266,7 +266,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F003_S004_I000
+        tag: VP_ISA_RV32_F003_S004_I000
         description: "lhu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:15])\nrd is calculated\
           \ using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -285,7 +285,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F003_S004_I001
+        tag: VP_ISA_RV32_F003_S004_I001
         description: "lhu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:15])\nrd is calculated\
           \ using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -306,7 +306,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F003_S004_I002
+        tag: VP_ISA_RV32_F003_S004_I002
         description: "lhu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:15])\nrd is calculated\
           \ using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.6"
@@ -330,7 +330,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F003_S005_I000
+        tag: VP_ISA_RV32_F003_S005_I000
         description: "sb rs1, rs2, imm\nM[rs1+imm][0:7] = rs2[0:7]"
         reqt_doc: "ISA\nChapter 2.6"
         ref_mode: ''
@@ -347,7 +347,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F003_S005_I001
+        tag: VP_ISA_RV32_F003_S005_I001
         description: "sb rs1, rs2, imm\nM[rs1+imm][0:7] = rs2[0:7]"
         reqt_doc: "ISA\nChapter 2.6"
         ref_mode: ''
@@ -372,7 +372,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F003_S006_I000
+        tag: VP_ISA_RV32_F003_S006_I000
         description: "sh rs1, rs2, imm\nM[rs1+imm][0:15] = rs2[0:15]"
         reqt_doc: "ISA\nChapter 2.6"
         ref_mode: ''
@@ -389,7 +389,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F003_S006_I001
+        tag: VP_ISA_RV32_F003_S006_I001
         description: "sh rs1, rs2, imm\nM[rs1+imm][0:15] = rs2[0:15]"
         reqt_doc: "ISA\nChapter 2.6"
         ref_mode: ''
@@ -414,7 +414,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F003_S007_I000
+        tag: VP_ISA_RV32_F003_S007_I000
         description: "sw rs1, rs2, imm\nM[rs1+imm][0:31] = rs2[0:31]"
         reqt_doc: "ISA\nChapter 2.6"
         ref_mode: ''
@@ -431,7 +431,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F003_S007_I001
+        tag: VP_ISA_RV32_F003_S007_I001
         description: "sw rs1, rs2, imm\nM[rs1+imm][0:31] = rs2[0:31]"
         reqt_doc: "ISA\nChapter 2.6"
         ref_mode: ''

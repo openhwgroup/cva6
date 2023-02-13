@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F002_S000_I000
+        tag: VP_ISA_RV32_F002_S000_I000
         description: "jal rd, imm[20:1]\nrd = pc+4; pc += Sext({imm[20:1], 1’b0})\n\
           pc is calculated using signed arithmetic\n\njal x0, imm[20:1] (special case:\
           \ unconditional jump)\npc += Sext({imm[20:1], 1’b0})"
@@ -30,7 +30,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F002_S000_I001
+        tag: VP_ISA_RV32_F002_S000_I001
         description: "jal rd, imm[20:1]\nrd = pc+4; pc += Sext({imm[20:1], 1’b0})\n\
           pc is calculated using signed arithmetic\n\njal x0, imm[20:1] (special case:\
           \ unconditional jump)\npc += Sext({imm[20:1], 1’b0})"
@@ -49,7 +49,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F002_S000_I002
+        tag: VP_ISA_RV32_F002_S000_I002
         description: "jal rd, imm[20:1]\nrd = pc+4; pc += Sext({imm[20:1], 1’b0})\n\
           pc is calculated using signed arithmetic\n\njal x0, imm[20:1] (special case:\
           \ unconditional jump)\npc += Sext({imm[20:1], 1’b0})"
@@ -73,7 +73,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F002_S001_I000
+        tag: VP_ISA_RV32_F002_S001_I000
         description: "jalr rd, rs1, imm[11:0]\nrd = pc+4; pc = rs1 + Sext(imm[11:0])\n\
           pc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -92,7 +92,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F002_S001_I001
+        tag: VP_ISA_RV32_F002_S001_I001
         description: "jalr rd, rs1, imm[11:0]\nrd = pc+4; pc = rs1 + Sext(imm[11:0])\n\
           pc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -111,7 +111,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F002_S001_I002
+        tag: VP_ISA_RV32_F002_S001_I002
         description: "jalr rd, rs1, imm[11:0]\nrd = pc+4; pc = rs1 + Sext(imm[11:0])\n\
           pc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -134,7 +134,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F002_S002_I000
+        tag: VP_ISA_RV32_F002_S002_I000
         description: "beq rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1==rs2)\
           \ else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -152,7 +152,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F002_S002_I001
+        tag: VP_ISA_RV32_F002_S002_I001
         description: "beq rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1==rs2)\
           \ else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -172,7 +172,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F002_S002_I002
+        tag: VP_ISA_RV32_F002_S002_I002
         description: "beq rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1==rs2)\
           \ else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -195,7 +195,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F002_S003_I000
+        tag: VP_ISA_RV32_F002_S003_I000
         description: "bne rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1!=rs2)\
           \ else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -213,7 +213,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F002_S003_I001
+        tag: VP_ISA_RV32_F002_S003_I001
         description: "bne rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1!=rs2)\
           \ else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -233,7 +233,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F002_S003_I002
+        tag: VP_ISA_RV32_F002_S003_I002
         description: "bne rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1!=rs2)\
           \ else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -256,7 +256,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F002_S004_I000
+        tag: VP_ISA_RV32_F002_S004_I000
         description: "blt rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ < rs2) else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -274,7 +274,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F002_S004_I001
+        tag: VP_ISA_RV32_F002_S004_I001
         description: "blt rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ < rs2) else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -294,7 +294,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F002_S004_I002
+        tag: VP_ISA_RV32_F002_S004_I002
         description: "blt rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ < rs2) else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -317,7 +317,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F002_S005_I000
+        tag: VP_ISA_RV32_F002_S005_I000
         description: "bge rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ >= rs2) else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -335,7 +335,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F002_S005_I001
+        tag: VP_ISA_RV32_F002_S005_I001
         description: "bge rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ >= rs2) else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -355,7 +355,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F002_S005_I002
+        tag: VP_ISA_RV32_F002_S005_I002
         description: "bge rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ >= rs2) else pc += 4\npc is calculated using signed arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -378,7 +378,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F002_S006_I000
+        tag: VP_ISA_RV32_F002_S006_I000
         description: "bltu rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ < rs2) else pc += 4\npc is calculated using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -396,7 +396,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F002_S006_I001
+        tag: VP_ISA_RV32_F002_S006_I001
         description: "bltu rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ < rs2) else pc += 4\npc is calculated using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -416,7 +416,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F002_S006_I002
+        tag: VP_ISA_RV32_F002_S006_I002
         description: "bltu rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ < rs2) else pc += 4\npc is calculated using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -439,7 +439,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F002_S007_I000
+        tag: VP_ISA_RV32_F002_S007_I000
         description: "bgeu rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ >= rs2) else pc += 4\npc is calculated using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -457,7 +457,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F002_S007_I001
+        tag: VP_ISA_RV32_F002_S007_I001
         description: "bgeu rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ >= rs2) else pc += 4\npc is calculated using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.5"
@@ -477,7 +477,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F002_S007_I002
+        tag: VP_ISA_RV32_F002_S007_I002
         description: "bgeu rs1, rs2, imm[12:1]\npc += Sext({imm[12:1], 1’b0}) if (rs1\
           \ >= rs2) else pc += 4\npc is calculated using unsigned arithmetic"
         reqt_doc: "ISA\nChapter 2.5"

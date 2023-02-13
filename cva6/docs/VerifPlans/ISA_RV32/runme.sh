@@ -17,11 +17,11 @@ export PLATFORM_TOP_DIR="$ROOTDIR"
 
 # Set the printable name for the project that will be used
 # in the human-readable documentation.
-export PROJECT_NAME="ISA"
+export PROJECT_NAME="ISA RISC-V 32b"
 
 # Set the alphanumerical identifier of the project that
 # will be used to construct file names etc.
-export PROJECT_IDENT="ISA"
+export PROJECT_IDENT="ISA_RV32"
 
 # Set the destination directory of Markdown files for this project.
 # Since it will be used by VPTOOL, it shall NOT be a relative path.

@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F008_S000_I000
+        tag: VP_ISA_RV32_F008_S000_I000
         description: "lr.w rd, (rs1)\nrd = [rs1]\nA load occurs to address at rs1\
           \ with the results loaded to rd.\nMisaligned address should cause an exception"
         reqt_doc: "Unprivileged ISA\nChapter 8.2"
@@ -31,7 +31,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F008_S000_I001
+        tag: VP_ISA_RV32_F008_S000_I001
         description: "lr.w rd, (rs1)\nrd = [rs1]\nA load occurs to address at rs1\
           \ with the results loaded to rd.\nMisaligned address should cause an exception"
         reqt_doc: "Unprivileged ISA\nChapter 8.2"
@@ -48,7 +48,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F008_S000_I002
+        tag: VP_ISA_RV32_F008_S000_I002
         description: "lr.w rd, (rs1)\nrd = [rs1]\nA load occurs to address at rs1\
           \ with the results loaded to rd.\nMisaligned address should cause an exception"
         reqt_doc: "Unprivileged ISA\nChapter 8.2"
@@ -65,7 +65,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F008_S000_I003
+        tag: VP_ISA_RV32_F008_S000_I003
         description: "lr.w rd, (rs1)\nrd = [rs1]\nA load occurs to address at rs1\
           \ with the results loaded to rd.\nMisaligned address should cause an exception"
         reqt_doc: "Unprivileged ISA\nChapter 8.2"
@@ -89,7 +89,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F008_S001_I000
+        tag: VP_ISA_RV32_F008_S001_I000
         description: "sc.w rd, rs2, (rs1)\n[rs1] = rs2\nrd = exokay ? 0 : 1\nA store\
           \ occurs to address at rs1  with data from rs2.\nIf the reservation set\
           \ from a previous LR.W fails, then rd is set to a non-zero value and the\
@@ -112,7 +112,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F008_S001_I001
+        tag: VP_ISA_RV32_F008_S001_I001
         description: "sc.w rd, rs2, (rs1)\n[rs1] = rs2\nrd = exokay ? 0 : 1\nA store\
           \ occurs to address at rs1  with data from rs2.\nIf the reservation set\
           \ from a previous LR.W fails, then rd is set to a non-zero value and the\
@@ -133,7 +133,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F008_S001_I002
+        tag: VP_ISA_RV32_F008_S001_I002
         description: "sc.w rd, rs2, (rs1)\n[rs1] = rs2\nrd = exokay ? 0 : 1\nA store\
           \ occurs to address at rs1  with data from rs2.\nIf the reservation set\
           \ from a previous LR.W fails, then rd is set to a non-zero value and the\
@@ -154,7 +154,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F008_S001_I003
+        tag: VP_ISA_RV32_F008_S001_I003
         description: "sc.w rd, rs2, (rs1)\n[rs1] = rs2\nrd = exokay ? 0 : 1\nA store\
           \ occurs to address at rs1  with data from rs2.\nIf the reservation set\
           \ from a previous LR.W fails, then rd is set to a non-zero value and the\

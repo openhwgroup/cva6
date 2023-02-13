@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S000_I000
+        tag: VP_ISA_RV32_F007_S000_I000
         description: "div rd, rs1, rs2\nx[rd] = x[rs1] / x[rs2]\nrd is calculated\
           \ using signed arithmetic; rounding towards zero"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -33,7 +33,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S000_I001
+        tag: VP_ISA_RV32_F007_S000_I001
         description: "div rd, rs1, rs2\nx[rd] = x[rs1] / x[rs2]\nrd is calculated\
           \ using signed arithmetic; rounding towards zero"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -54,7 +54,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F007_S000_I002
+        tag: VP_ISA_RV32_F007_S000_I002
         description: "div rd, rs1, rs2\nx[rd] = x[rs1] / x[rs2]\nrd is calculated\
           \ using signed arithmetic; rounding towards zero"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -74,7 +74,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F007_S000_I003
+        tag: VP_ISA_RV32_F007_S000_I003
         description: "div rd, rs1, rs2\nx[rd] = x[rs1] / x[rs2]\nrd is calculated\
           \ using signed arithmetic; rounding towards zero"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -98,7 +98,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S001_I000
+        tag: VP_ISA_RV32_F007_S001_I000
         description: "rem rd, rs1, rs2\nx[rd] = x[rs1] % x[rs2]\nrd is calculated\
           \ using signed arithmetic; remainder from the same division than DIV (the\
           \ sign of rd equals the sign of rs1)"
@@ -120,7 +120,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S001_I001
+        tag: VP_ISA_RV32_F007_S001_I001
         description: "rem rd, rs1, rs2\nx[rd] = x[rs1] % x[rs2]\nrd is calculated\
           \ using signed arithmetic; remainder from the same division than DIV (the\
           \ sign of rd equals the sign of rs1)"
@@ -142,7 +142,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F007_S001_I002
+        tag: VP_ISA_RV32_F007_S001_I002
         description: "rem rd, rs1, rs2\nx[rd] = x[rs1] % x[rs2]\nrd is calculated\
           \ using signed arithmetic; remainder from the same division than DIV (the\
           \ sign of rd equals the sign of rs1)"
@@ -161,7 +161,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F007_S001_I003
+        tag: VP_ISA_RV32_F007_S001_I003
         description: "rem rd, rs1, rs2\nx[rd] = x[rs1] % x[rs2]\nrd is calculated\
           \ using signed arithmetic; remainder from the same division than DIV (the\
           \ sign of rd equals the sign of rs1)"
@@ -186,7 +186,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S002_I000
+        tag: VP_ISA_RV32_F007_S002_I000
         description: "divu rd, rs1, rs2\nx[rd] = x[rs1] u/ x[rs2]\nrd is calculated\
           \ using unsigned arithmetic; rounding towards zero"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -207,7 +207,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S002_I001
+        tag: VP_ISA_RV32_F007_S002_I001
         description: "divu rd, rs1, rs2\nx[rd] = x[rs1] u/ x[rs2]\nrd is calculated\
           \ using unsigned arithmetic; rounding towards zero"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -228,7 +228,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F007_S002_I002
+        tag: VP_ISA_RV32_F007_S002_I002
         description: "divu rd, rs1, rs2\nx[rd] = x[rs1] u/ x[rs2]\nrd is calculated\
           \ using unsigned arithmetic; rounding towards zero"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -246,7 +246,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F007_S002_I003
+        tag: VP_ISA_RV32_F007_S002_I003
         description: "divu rd, rs1, rs2\nx[rd] = x[rs1] u/ x[rs2]\nrd is calculated\
           \ using unsigned arithmetic; rounding towards zero"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -269,7 +269,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S003_I000
+        tag: VP_ISA_RV32_F007_S003_I000
         description: "remu rd, rs1, rs2\nx[rd] = x[rs1] % x[rs2]\nrd is calculated\
           \ using unsigned arithmetic; remainder from the same division than DIVU"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -290,7 +290,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S003_I001
+        tag: VP_ISA_RV32_F007_S003_I001
         description: "remu rd, rs1, rs2\nx[rd] = x[rs1] % x[rs2]\nrd is calculated\
           \ using unsigned arithmetic; remainder from the same division than DIVU"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -311,7 +311,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F007_S003_I002
+        tag: VP_ISA_RV32_F007_S003_I002
         description: "remu rd, rs1, rs2\nx[rd] = x[rs1] % x[rs2]\nrd is calculated\
           \ using unsigned arithmetic; remainder from the same division than DIVU"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"
@@ -329,7 +329,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F007_S003_I003
+        tag: VP_ISA_RV32_F007_S003_I003
         description: "remu rd, rs1, rs2\nx[rd] = x[rs1] % x[rs2]\nrd is calculated\
           \ using unsigned arithmetic; remainder from the same division than DIVU"
         reqt_doc: "Unprivileged ISA\nChapter 7.2"

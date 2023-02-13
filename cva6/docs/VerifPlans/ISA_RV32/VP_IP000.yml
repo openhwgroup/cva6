@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S000_I000
+        tag: VP_ISA_RV32_F000_S000_I000
         description: "addi rd, rs1, imm[11:0]\nrd = rs1 + Sext(imm[11:0])\nArithmetic\
           \ overflow is lost and ignored"
         reqt_doc: "ISA\nChapter 2.4"
@@ -31,7 +31,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S000_I001
+        tag: VP_ISA_RV32_F000_S000_I001
         description: "addi rd, rs1, imm[11:0]\nrd = rs1 + Sext(imm[11:0])\nArithmetic\
           \ overflow is lost and ignored"
         reqt_doc: "ISA\nChapter 2.4"
@@ -52,7 +52,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S000_I002
+        tag: VP_ISA_RV32_F000_S000_I002
         description: "addi rd, rs1, imm[11:0]\nrd = rs1 + Sext(imm[11:0])\nArithmetic\
           \ overflow is lost and ignored"
         reqt_doc: "ISA\nChapter 2.4"
@@ -76,7 +76,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S001_I000
+        tag: VP_ISA_RV32_F000_S001_I000
         description: "xori rd, rs1, imm[11:0]\nrd = rs1 ^ Sext(imm[11:0])\nNote: this\
           \ is a bitwise, not logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -95,7 +95,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S001_I001
+        tag: VP_ISA_RV32_F000_S001_I001
         description: "xori rd, rs1, imm[11:0]\nrd = rs1 ^ Sext(imm[11:0])\nNote: this\
           \ is a bitwise, not logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -116,7 +116,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S001_I002
+        tag: VP_ISA_RV32_F000_S001_I002
         description: "xori rd, rs1, imm[11:0]\nrd = rs1 ^ Sext(imm[11:0])\nNote: this\
           \ is a bitwise, not logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -140,7 +140,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S002_I000
+        tag: VP_ISA_RV32_F000_S002_I000
         description: "ori rd, rs1, imm[11:0]\nrd = rs1 | Sext(imm[11:0])\nNote: this\
           \ is a bitwise, not logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -159,7 +159,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S002_I001
+        tag: VP_ISA_RV32_F000_S002_I001
         description: "ori rd, rs1, imm[11:0]\nrd = rs1 | Sext(imm[11:0])\nNote: this\
           \ is a bitwise, not logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -180,7 +180,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S002_I002
+        tag: VP_ISA_RV32_F000_S002_I002
         description: "ori rd, rs1, imm[11:0]\nrd = rs1 | Sext(imm[11:0])\nNote: this\
           \ is a bitwise, not logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -204,7 +204,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S003_I000
+        tag: VP_ISA_RV32_F000_S003_I000
         description: "andi rd, rs1, imm[11:0]\nrd = rs1 &  Sext(imm[11:0])\nNote:\
           \ this is a bitwise, not logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -223,7 +223,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S003_I001
+        tag: VP_ISA_RV32_F000_S003_I001
         description: "andi rd, rs1, imm[11:0]\nrd = rs1 &  Sext(imm[11:0])\nNote:\
           \ this is a bitwise, not logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -244,7 +244,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S003_I002
+        tag: VP_ISA_RV32_F000_S003_I002
         description: "andi rd, rs1, imm[11:0]\nrd = rs1 &  Sext(imm[11:0])\nNote:\
           \ this is a bitwise, not logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -268,7 +268,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S004_I000
+        tag: VP_ISA_RV32_F000_S004_I000
         description: "slti rd, rs1, imm[11:0]\nrd = (rs1 < Sext(imm[11:0]) ? 1 : 0\n\
           Both imm and rs1 treated as signed numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -287,7 +287,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S004_I001
+        tag: VP_ISA_RV32_F000_S004_I001
         description: "slti rd, rs1, imm[11:0]\nrd = (rs1 < Sext(imm[11:0]) ? 1 : 0\n\
           Both imm and rs1 treated as signed numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -308,7 +308,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S004_I002
+        tag: VP_ISA_RV32_F000_S004_I002
         description: "slti rd, rs1, imm[11:0]\nrd = (rs1 < Sext(imm[11:0]) ? 1 : 0\n\
           Both imm and rs1 treated as signed numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -331,7 +331,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S005_I000
+        tag: VP_ISA_RV32_F000_S005_I000
         description: "sltiu rd, rs1, imm[11:0]\nrd = (rs1 < Sext(imm[11:0]) ? 1 :\
           \ 0\nBoth imm and rs1 treated as unsigned numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -351,7 +351,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S005_I001
+        tag: VP_ISA_RV32_F000_S005_I001
         description: "sltiu rd, rs1, imm[11:0]\nrd = (rs1 < Sext(imm[11:0]) ? 1 :\
           \ 0\nBoth imm and rs1 treated as unsigned numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -372,7 +372,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S005_I002
+        tag: VP_ISA_RV32_F000_S005_I002
         description: "sltiu rd, rs1, imm[11:0]\nrd = (rs1 < Sext(imm[11:0]) ? 1 :\
           \ 0\nBoth imm and rs1 treated as unsigned numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -395,7 +395,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S006_I000
+        tag: VP_ISA_RV32_F000_S006_I000
         description: "slli rd, rs, imm[4:0]\nrd = rs << imm[4:0]\nZeros are shirfted\
           \ into lower bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -414,7 +414,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S006_I001
+        tag: VP_ISA_RV32_F000_S006_I001
         description: "slli rd, rs, imm[4:0]\nrd = rs << imm[4:0]\nZeros are shirfted\
           \ into lower bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -434,7 +434,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S006_I002
+        tag: VP_ISA_RV32_F000_S006_I002
         description: "slli rd, rs, imm[4:0]\nrd = rs << imm[4:0]\nZeros are shirfted\
           \ into lower bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -458,7 +458,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S007_I000
+        tag: VP_ISA_RV32_F000_S007_I000
         description: "srli rd, rs, imm[4:0]\nrd = rs >> imm[4:0]\nZeros are shirfted\
           \ into upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -477,7 +477,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S007_I001
+        tag: VP_ISA_RV32_F000_S007_I001
         description: "srli rd, rs, imm[4:0]\nrd = rs >> imm[4:0]\nZeros are shirfted\
           \ into upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -497,7 +497,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S007_I002
+        tag: VP_ISA_RV32_F000_S007_I002
         description: "srli rd, rs, imm[4:0]\nrd = rs >> imm[4:0]\nZeros are shirfted\
           \ into upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -521,7 +521,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S008_I000
+        tag: VP_ISA_RV32_F000_S008_I000
         description: "srli rd, rs, imm[4:0]\nrd = rs >> imm[4:0]\nThe original sign\
           \ bit is copied into the vacated upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -540,7 +540,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S008_I001
+        tag: VP_ISA_RV32_F000_S008_I001
         description: "srli rd, rs, imm[4:0]\nrd = rs >> imm[4:0]\nThe original sign\
           \ bit is copied into the vacated upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -560,7 +560,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S008_I002
+        tag: VP_ISA_RV32_F000_S008_I002
         description: "srli rd, rs, imm[4:0]\nrd = rs >> imm[4:0]\nZeros are shirfted\
           \ into upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -584,7 +584,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S009_I000
+        tag: VP_ISA_RV32_F000_S009_I000
         description: "lui rd, imm[19:0]\nrd = imm[19:0] << 12\nrd[11:0] is zero-filled."
         reqt_doc: "ISA\nChapter 2.4"
         ref_mode: ''
@@ -600,7 +600,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S009_I001
+        tag: VP_ISA_RV32_F000_S009_I001
         description: "lui rd, imm[19:0]\nrd = imm[19:0] << 12\nrd[11:0] is zero-filled."
         reqt_doc: "ISA\nChapter 2.4"
         ref_mode: ''
@@ -617,7 +617,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S009_I002
+        tag: VP_ISA_RV32_F000_S009_I002
         description: "lui rd, imm[19:0]\nrd = imm[19:0] << 12\nrd[11:0] is zero-filled."
         reqt_doc: "ISA\nChapter 2.4"
         ref_mode: ''
@@ -640,7 +640,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F011_S010_I000
+        tag: VP_ISA_RV32_F000_S010_I000
         description: "auipc rd, imm[19:0]\nrd = pc + (imm[19:0] << 12)\npc is address\
           \ of auipc instruction\n\nAssumption: arithmetic overflow is lost and ignored."
         reqt_doc: "ISA\nChapter 2.4"
@@ -657,7 +657,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F011_S010_I001
+        tag: VP_ISA_RV32_F000_S010_I001
         description: "auipc rd, imm[19:0]\nrd = pc + (imm[19:0] << 12)\npc is address\
           \ of auipc instruction\n\nAssumption: arithmetic overflow is lost and ignored."
         reqt_doc: "ISA\nChapter 2.4"
@@ -675,7 +675,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F011_S010_I002
+        tag: VP_ISA_RV32_F000_S010_I002
         description: "auipc rd, imm[19:0]\nrd = pc + (imm[19:0] << 12)\npc is address\
           \ of auipc instruction\n\nAssumption: arithmetic overflow is lost and ignored."
         reqt_doc: "ISA\nChapter 2.4"

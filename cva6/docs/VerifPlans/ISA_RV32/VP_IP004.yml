@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F004_S000_I000
+        tag: VP_ISA_RV32_F004_S000_I000
         description: "Fence operation executed\nImplementation is microarchitecture\
           \ specific"
         reqt_doc: "ISA\nChapter 2.7"

@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F010_S000_I000
+        tag: VP_ISA_RV32_F011_S000_I000
         description: "c.j imm[11:1]\npc += sext(imm)\npc is calculated using signed\
           \ arithmetic\nExpands to jal x0, imm[11:1]."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -36,7 +36,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F010_S001_I000
+        tag: VP_ISA_RV32_F011_S001_I000
         description: "c.jal imm[11:1]\nx[1] = pc+2; pc += sext(imm)\npc is calculated\
           \ using signed arithmetic."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -54,7 +54,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F010_S001_I001
+        tag: VP_ISA_RV32_F011_S001_I001
         description: "c.jal imm[11:1]\nx[1] = pc+2; pc += sext(imm)\npc is calculated\
           \ using signed arithmetic."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -77,7 +77,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F010_S002_I000
+        tag: VP_ISA_RV32_F011_S002_I000
         description: "c.jr rs1\npc = x[rs1]\nExpands to jalr x0, 0(rs1). \nInvalid\
           \ when rs1=x0."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -94,7 +94,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F010_S002_I001
+        tag: VP_ISA_RV32_F011_S002_I001
         description: "c.jr rs1\npc = x[rs1]\nExpands to jalr x0, 0(rs1). \nInvalid\
           \ when rs1=x0."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -117,7 +117,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F010_S003_I000
+        tag: VP_ISA_RV32_F011_S003_I000
         description: "c.jalr rs1\nt = pc + 2; pc = x[rs1]; x[1] = t\nExpands to jalr\
           \ x1, 0(rs1). \nInvalid when rs1=x0."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -134,7 +134,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F010_S003_I001
+        tag: VP_ISA_RV32_F011_S003_I001
         description: "c.jalr rs1\nt = pc + 2; pc = x[rs1]; x[1] = t\nExpands to jalr\
           \ x1, 0(rs1). \nInvalid when rs1=x0."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -151,7 +151,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F010_S003_I002
+        tag: VP_ISA_RV32_F011_S003_I002
         description: "c.jalr rs1\nt = pc + 2; pc = x[rs1]; x[1] = t\nExpands to jalr\
           \ x1, 0(rs1). \nInvalid when rs1=x0."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -174,7 +174,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F010_S004_I000
+        tag: VP_ISA_RV32_F011_S004_I000
         description: "c.beqz rs1', imm[8:1]\nif (x[8+rs1'] == 0) pc += sext(imm)\n\
           Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -191,7 +191,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F010_S004_I001
+        tag: VP_ISA_RV32_F011_S004_I001
         description: "c.beqz rs1', imm[8:1]\nif (x[8+rs1'] == 0) pc += sext(imm)\n\
           Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -208,7 +208,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F010_S004_I002
+        tag: VP_ISA_RV32_F011_S004_I002
         description: "c.beqz rs1', imm[8:1]\nif (x[8+rs1'] == 0) pc += sext(imm)\n\
           Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -231,7 +231,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F010_S005_I000
+        tag: VP_ISA_RV32_F011_S005_I000
         description: "c.bnez  rs1', imm[8:1]\nif (x[8+rs1'] ≠ 0) pc += sext(imm)\n\
           Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -248,7 +248,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F010_S005_I001
+        tag: VP_ISA_RV32_F011_S005_I001
         description: "c.bnez  rs1', imm[8:1]\nif (x[8+rs1'] ≠ 0) pc += sext(imm)\n\
           Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"
@@ -265,7 +265,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F010_S005_I002
+        tag: VP_ISA_RV32_F011_S005_I002
         description: "c.bnez  rs1', imm[8:1]\nif (x[8+rs1'] ≠ 0) pc += sext(imm)\n\
           Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
         reqt_doc: "Unprivileged ISA\nChapter 16.4"

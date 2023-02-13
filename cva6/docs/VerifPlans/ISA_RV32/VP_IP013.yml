@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S000_I000
+        tag: VP_ISA_RV32_F013_S000_I000
         description: "csrrw rd, rs1, csr\nrd = Zext([csr]); csr = [rs1]"
         reqt_doc: ISA Chapter 9
         ref_mode: ''
@@ -30,7 +30,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S000_I001
+        tag: VP_ISA_RV32_F013_S000_I001
         description: "csrrw rd, rs1, csr\nrd = Zext([csr]); csr = [rs1]"
         reqt_doc: ISA Chapter 9
         ref_mode: ''
@@ -53,7 +53,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S001_I000
+        tag: VP_ISA_RV32_F013_S001_I000
         description: "csrrs rd, rs1, csr\nrd = Zext([csr]); csr = [rs1] | csr\nNote\
           \ that not all bits of csr will be writable."
         reqt_doc: ISA Chapter 9
@@ -72,7 +72,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S001_I001
+        tag: VP_ISA_RV32_F013_S001_I001
         description: "csrrs rd, rs1, csr\nrd = Zext([csr]); csr = [rs1] | csr\nNote\
           \ that not all bits of csr will be writable."
         reqt_doc: ISA Chapter 9
@@ -96,7 +96,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S002_I000
+        tag: VP_ISA_RV32_F013_S002_I000
         description: "csrrs rd, rs1, csr\nrd = Zext([csr]); csr = ~[rs1] | csr\nNote\
           \ that not all bits of csr will be writable."
         reqt_doc: ISA Chapter 9
@@ -115,7 +115,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S002_I001
+        tag: VP_ISA_RV32_F013_S002_I001
         description: "csrrs rd, rs1, csr\nrd = Zext([csr]); csr = ~[rs1] | csr\nNote\
           \ that not all bits of csr will be writable."
         reqt_doc: ISA Chapter 9
@@ -139,7 +139,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S003_I000
+        tag: VP_ISA_RV32_F013_S003_I000
         description: "csrrwi rd, imm[4:0], csr\nrd = Zext([csr]); csr = Zext(imm[4:0])\n\
           If rd == x0 then CSR is not read."
         reqt_doc: ISA Chapter 9
@@ -157,7 +157,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S003_I001
+        tag: VP_ISA_RV32_F013_S003_I001
         description: "csrrwi rd, imm[4:0], csr\nrd = Zext([csr]); csr = Zext(imm[4:0])\n\
           If rd == x0 then CSR is not read."
         reqt_doc: ISA Chapter 9
@@ -181,7 +181,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S004_I000
+        tag: VP_ISA_RV32_F013_S004_I000
         description: "csrrsi rd, imm[4:0], csr\nrd = Zext([csr]); csr = Zext(imm[4:0])\
           \ | csr\nNote that not all bits of csr will be writable."
         reqt_doc: ISA Chapter 9
@@ -199,7 +199,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S004_I001
+        tag: VP_ISA_RV32_F013_S004_I001
         description: "csrrsi rd, imm[4:0], csr\nrd = Zext([csr]); csr = Zext(imm[4:0])\
           \ | csr\nNote that not all bits of csr will be writable."
         reqt_doc: ISA Chapter 9
@@ -223,7 +223,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F007_S005_I000
+        tag: VP_ISA_RV32_F013_S005_I000
         description: "csrrs rd, imm[4:0], csr\nrd = Zext([csr]); csr = ~(Zext(imm[4:0]))\
           \ | csr\nNote that not all bits of csr will be writable."
         reqt_doc: ISA Chapter 9
@@ -241,7 +241,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F007_S005_I001
+        tag: VP_ISA_RV32_F013_S005_I001
         description: "csrrs rd, imm[4:0], csr\nrd = Zext([csr]); csr = ~(Zext(imm[4:0]))\
           \ | csr\nNote that not all bits of csr will be writable."
         reqt_doc: ISA Chapter 9

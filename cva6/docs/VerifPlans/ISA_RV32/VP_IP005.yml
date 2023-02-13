@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F005_S000_I000
+        tag: VP_ISA_RV32_F005_S000_I000
         description: Software exception vector entered
         reqt_doc: "ISA\nChapter 2.8"
         ref_mode: ''
@@ -28,7 +28,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F005_S000_I001
+        tag: VP_ISA_RV32_F005_S000_I001
         description: Return control to a debugger
         reqt_doc: "ISA\nChapter 2.8"
         ref_mode: ''
@@ -50,7 +50,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F005_S001_I000
+        tag: VP_ISA_RV32_F005_S001_I000
         description: Return control to a debugger
         reqt_doc: "ISA\nChapter 2.8"
         ref_mode: ''

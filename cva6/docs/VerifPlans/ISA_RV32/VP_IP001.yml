@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S000_I000
+        tag: VP_ISA_RV32_F001_S000_I000
         description: "add rd, rs1, rs2\nrd = rs1 + rs2\nArithmetic overflow is lost\
           \ and ignored"
         reqt_doc: "ISA\nChapter 2.4"
@@ -33,7 +33,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S000_I001
+        tag: VP_ISA_RV32_F001_S000_I001
         description: "add rd, rs1, rs2\nrd = rs1 + rs2\nArithmetic overflow is lost\
           \ and ignored"
         reqt_doc: "ISA\nChapter 2.4"
@@ -54,7 +54,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S000_I002
+        tag: VP_ISA_RV32_F001_S000_I002
         description: "add rd, rs1, rs2\nrd = rs1 + rs2\nArithmetic overflow is lost\
           \ and ignored"
         reqt_doc: "ISA\nChapter 2.4"
@@ -78,7 +78,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S001_I000
+        tag: VP_ISA_RV32_F001_S001_I000
         description: "sub rd, rs1, rs2\nrd = rs1 - rs2\nArithmetic underflow is ignored"
         reqt_doc: "ISA\nChapter 2.4"
         ref_mode: ''
@@ -98,7 +98,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S001_I001
+        tag: VP_ISA_RV32_F001_S001_I001
         description: "sub rd, rs1, rs2\nrd = rs1 - rs2\nArithmetic underflow is ignored"
         reqt_doc: "ISA\nChapter 2.4"
         ref_mode: ''
@@ -118,7 +118,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S001_I002
+        tag: VP_ISA_RV32_F001_S001_I002
         description: "sub rd, rs1, rs2\nrd = rs1 - rs2\nArithmetic underflow is ignored"
         reqt_doc: "ISA\nChapter 2.4"
         ref_mode: ''
@@ -141,7 +141,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S002_I000
+        tag: VP_ISA_RV32_F001_S002_I000
         description: "and rd, rs1, rs2\nrd = rs1 & rs2\nNote: this is a bitwise, not\
           \ logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -164,7 +164,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S002_I001
+        tag: VP_ISA_RV32_F001_S002_I001
         description: "and rd, rs1, rs2\nrd = rs1 & rs2\nNote: this is a bitwise, not\
           \ logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -185,7 +185,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S002_I002
+        tag: VP_ISA_RV32_F001_S002_I002
         description: "and rd, rs1, rs2\nrd = rs1 & rs2\nNote: this is a bitwise, not\
           \ logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -209,7 +209,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S003_I000
+        tag: VP_ISA_RV32_F001_S003_I000
         description: "or rd, rs1, rs2\nrd = rs1 | rs2\nNote: this is a bitwise, not\
           \ logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -230,7 +230,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S003_I001
+        tag: VP_ISA_RV32_F001_S003_I001
         description: "or rd, rs1, rs2\nrd = rs1 | rs2\nNote: this is a bitwise, not\
           \ logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -251,7 +251,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S003_I002
+        tag: VP_ISA_RV32_F001_S003_I002
         description: "or rd, rs1, rs2\nrd = rs1 | rs2\nNote: this is a bitwise, not\
           \ logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -275,7 +275,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S004_I000
+        tag: VP_ISA_RV32_F001_S004_I000
         description: "xor rd, rs1, rs2\nrd = rs1 ^ rs2\nNote: this is a bitwise, not\
           \ logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -296,7 +296,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S004_I001
+        tag: VP_ISA_RV32_F001_S004_I001
         description: "xor rd, rs1, rs2\nrd = rs1 ^ rs2\nNote: this is a bitwise, not\
           \ logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -317,7 +317,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S004_I002
+        tag: VP_ISA_RV32_F001_S004_I002
         description: "xor rd, rs1, rs2\nrd = rs1 ^ rs2\nNote: this is a bitwise, not\
           \ logical operation"
         reqt_doc: "ISA\nChapter 2.4"
@@ -341,7 +341,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S005_I000
+        tag: VP_ISA_RV32_F001_S005_I000
         description: "slt rd, rs1, rs2\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1 ad rs2\
           \ treated as signed numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -362,7 +362,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S005_I001
+        tag: VP_ISA_RV32_F001_S005_I001
         description: "slt rd, rs1, rs2\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1 ad rs2\
           \ treated as signed numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -383,7 +383,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S005_I002
+        tag: VP_ISA_RV32_F001_S005_I002
         description: "slt rd, rs1, rs2\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1 ad rs2\
           \ treated as signed numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -406,7 +406,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S006_I000
+        tag: VP_ISA_RV32_F001_S006_I000
         description: "sltu rd, rs1, imm[11:0]\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1\
           \ and rs2 treated as unsigned numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -427,7 +427,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S006_I001
+        tag: VP_ISA_RV32_F001_S006_I001
         description: "sltu rd, rs1, imm[11:0]\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1\
           \ and rs2 treated as unsigned numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -448,7 +448,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S006_I002
+        tag: VP_ISA_RV32_F001_S006_I002
         description: "sltu rd, rs1, imm[11:0]\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1\
           \ and rs2 treated as unsigned numbers"
         reqt_doc: "ISA\nChapter 2.4"
@@ -471,7 +471,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S007_I000
+        tag: VP_ISA_RV32_F001_S007_I000
         description: "sll rd, rs1, rs2\nrd = rs1 << rs2[4:0]\nZeros are shirfted into\
           \ lower bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -492,7 +492,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S007_I001
+        tag: VP_ISA_RV32_F001_S007_I001
         description: "sll rd, rs1, rs2\nrd = rs1 << rs2[4:0]\nZeros are shirfted into\
           \ lower bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -512,7 +512,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S007_I002
+        tag: VP_ISA_RV32_F001_S007_I002
         description: "sll rd, rs1, rs2\nrd = rs1 << rs2[4:0]\nZeros are shirfted into\
           \ lower bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -537,7 +537,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S008_I000
+        tag: VP_ISA_RV32_F001_S008_I000
         description: "srl rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
           \ upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -558,7 +558,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S008_I001
+        tag: VP_ISA_RV32_F001_S008_I001
         description: "srl rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
           \ upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -578,7 +578,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S008_I002
+        tag: VP_ISA_RV32_F001_S008_I002
         description: "srl rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
           \ upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -602,7 +602,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F001_S009_I000
+        tag: VP_ISA_RV32_F001_S009_I000
         description: "sra rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nThe original sign bit\
           \ is copied into the vacated upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -623,7 +623,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F001_S009_I001
+        tag: VP_ISA_RV32_F001_S009_I001
         description: "sra rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nThe original sign bit\
           \ is copied into the vacated upper bits"
         reqt_doc: "ISA\nChapter 2.4"
@@ -643,7 +643,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F001_S009_I002
+        tag: VP_ISA_RV32_F001_S009_I002
         description: "sra rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
           \ upper bits"
         reqt_doc: "ISA\nChapter 2.4"

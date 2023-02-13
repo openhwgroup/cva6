@@ -12,7 +12,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F009_S000_I000
+        tag: VP_ISA_RV32_F009_S000_I000
         description: "amoswap.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2\nA load occurs\
           \ from the address at rs1 into rd.\nThe value at rs2 is then written back\
           \ to the address at (rs1)"
@@ -33,7 +33,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F009_S000_I001
+        tag: VP_ISA_RV32_F009_S000_I001
         description: "amoswap.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2\nA load occurs\
           \ from the address at rs1 into rd.\nThe value at rs2 is then written back\
           \ to the address at (rs1)"
@@ -52,7 +52,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F009_S000_I002
+        tag: VP_ISA_RV32_F009_S000_I002
         description: "amoswap.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2\nA load occurs\
           \ from the address at rs1 into rd.\nThe value at rs2 is then written back\
           \ to the address at (rs1)"
@@ -70,7 +70,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F009_S000_I003
+        tag: VP_ISA_RV32_F009_S000_I003
         description: "amoswap.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2\nA load occurs\
           \ from the address at rs1 into rd.\nThe value at rs2 is then written back\
           \ to the address at (rs1)"
@@ -95,7 +95,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F009_S001_I000
+        tag: VP_ISA_RV32_F009_S001_I000
         description: "amoadd.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 + [rs1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and added using signed arithmetic and the result iis then written back\
@@ -117,7 +117,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F009_S001_I001
+        tag: VP_ISA_RV32_F009_S001_I001
         description: "amoadd.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 + [rs1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and added using signed arithmetic and the result iis then written back\
@@ -137,7 +137,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F009_S001_I002
+        tag: VP_ISA_RV32_F009_S001_I002
         description: "amoadd.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 + [rs1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and added using signed arithmetic and the result iis then written back\
@@ -157,7 +157,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F009_S001_I003
+        tag: VP_ISA_RV32_F009_S001_I003
         description: "amoadd.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 + [rs1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and added using signed arithmetic and the result iis then written back\
@@ -183,7 +183,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F009_S002_I000
+        tag: VP_ISA_RV32_F009_S002_I000
         description: "amoand.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 & rs[1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and bit-wise ANDed and the result iis then written back to the address\
@@ -205,7 +205,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F009_S002_I001
+        tag: VP_ISA_RV32_F009_S002_I001
         description: "amoand.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 & rs[1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and bit-wise ANDed and the result iis then written back to the address\
@@ -225,7 +225,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F009_S002_I002
+        tag: VP_ISA_RV32_F009_S002_I002
         description: "amoand.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 & rs[1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and bit-wise ANDed and the result iis then written back to the address\
@@ -244,7 +244,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F009_S002_I003
+        tag: VP_ISA_RV32_F009_S002_I003
         description: "amoand.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 & rs[1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and bit-wise ANDed and the result iis then written back to the address\
@@ -270,7 +270,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F009_S003_I000
+        tag: VP_ISA_RV32_F009_S003_I000
         description: "amoor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 | [rs1]\nA load\
           \ occurs from the address at rs1 into rd.\nThe values in rd and rs2 and\
           \ bit-wise ORed and the result iis then written back to the address at (rs1)"
@@ -291,7 +291,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F009_S003_I001
+        tag: VP_ISA_RV32_F009_S003_I001
         description: "amoor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 | [rs1]\nA load\
           \ occurs from the address at rs1 into rd.\nThe values in rd and rs2 and\
           \ bit-wise ORed and the result iis then written back to the address at (rs1)"
@@ -310,7 +310,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F009_S003_I002
+        tag: VP_ISA_RV32_F009_S003_I002
         description: "amoor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 | [rs1]\nA load\
           \ occurs from the address at rs1 into rd.\nThe values in rd and rs2 and\
           \ bit-wise ORed and the result iis then written back to the address at (rs1)"
@@ -328,7 +328,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F009_S003_I003
+        tag: VP_ISA_RV32_F009_S003_I003
         description: "amoor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 | [rs1]\nA load\
           \ occurs from the address at rs1 into rd.\nThe values in rd and rs2 and\
           \ bit-wise ORed and the result iis then written back to the address at (rs1)"
@@ -353,7 +353,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F009_S004_I000
+        tag: VP_ISA_RV32_F009_S004_I000
         description: "amoxor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 ^ [rs1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and bit-wise XORRed and the result iis then written back to the address\
@@ -375,7 +375,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F009_S004_I001
+        tag: VP_ISA_RV32_F009_S004_I001
         description: "amoxor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 ^ [rs1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and bit-wise XORRed and the result iis then written back to the address\
@@ -395,7 +395,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F009_S004_I002
+        tag: VP_ISA_RV32_F009_S004_I002
         description: "amoxor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 ^ [rs1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and bit-wise XORRed and the result iis then written back to the address\
@@ -414,7 +414,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F009_S004_I003
+        tag: VP_ISA_RV32_F009_S004_I003
         description: "amoxor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 ^ [rs1]\nA\
           \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
           \ and bit-wise XORRed and the result iis then written back to the address\
@@ -440,7 +440,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F009_S005_I000
+        tag: VP_ISA_RV32_F009_S005_I000
         description: "amomax.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_signed(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming signed numbers and the largest value\
@@ -462,7 +462,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F009_S005_I001
+        tag: VP_ISA_RV32_F009_S005_I001
         description: "amomax.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_signed(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming signed numbers and the largest value\
@@ -482,7 +482,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F009_S005_I002
+        tag: VP_ISA_RV32_F009_S005_I002
         description: "amomax.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_signed(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming signed numbers and the largest value\
@@ -502,7 +502,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F009_S005_I003
+        tag: VP_ISA_RV32_F009_S005_I003
         description: "amomax.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_signed(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming signed numbers and the largest value\
@@ -528,7 +528,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F009_S006_I000
+        tag: VP_ISA_RV32_F009_S006_I000
         description: "amomaxu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_unsigned(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming unsigned numbers and the largest value\
@@ -550,7 +550,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F009_S006_I001
+        tag: VP_ISA_RV32_F009_S006_I001
         description: "amomaxu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_unsigned(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming unsigned numbers and the largest value\
@@ -570,7 +570,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F009_S006_I002
+        tag: VP_ISA_RV32_F009_S006_I002
         description: "amomaxu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_unsigned(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming unsigned numbers and the largest value\
@@ -589,7 +589,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F009_S006_I003
+        tag: VP_ISA_RV32_F009_S006_I003
         description: "amomaxu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_unsigned(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming unsigned numbers and the largest value\
@@ -615,7 +615,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F009_S007_I000
+        tag: VP_ISA_RV32_F009_S007_I000
         description: "amomin.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_signed(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming signed numbers and the smaller value\
@@ -637,7 +637,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F009_S007_I001
+        tag: VP_ISA_RV32_F009_S007_I001
         description: "amomin.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_signed(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming signed numbers and the smaller value\
@@ -657,7 +657,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F009_S007_I002
+        tag: VP_ISA_RV32_F009_S007_I002
         description: "amomin.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_signed(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming signed numbers and the smaller value\
@@ -677,7 +677,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F009_S007_I003
+        tag: VP_ISA_RV32_F009_S007_I003
         description: "amomin.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_signed(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming signed numbers and the smaller value\
@@ -703,7 +703,7 @@ subfeatures: !!omap
     items: !!omap
     - '000': !VerifItem
         name: '000'
-        tag: VP_ISA_F009_S008_I000
+        tag: VP_ISA_RV32_F009_S008_I000
         description: "amominu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_unsigned(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming unsigned numbers and the smaller value\
@@ -725,7 +725,7 @@ subfeatures: !!omap
         comments: ''
     - '001': !VerifItem
         name: '001'
-        tag: VP_ISA_F009_S008_I001
+        tag: VP_ISA_RV32_F009_S008_I001
         description: "amominu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_unsigned(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming unsigned numbers and the smaller value\
@@ -745,7 +745,7 @@ subfeatures: !!omap
         comments: ''
     - '002': !VerifItem
         name: '002'
-        tag: VP_ISA_F009_S008_I002
+        tag: VP_ISA_RV32_F009_S008_I002
         description: "amominu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_unsigned(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming unsigned numbers and the smaller value\
@@ -764,7 +764,7 @@ subfeatures: !!omap
         comments: ''
     - '003': !VerifItem
         name: '003'
-        tag: VP_ISA_F009_S008_I003
+        tag: VP_ISA_RV32_F009_S008_I003
         description: "amominu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_unsigned(rs2,\
           \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
           \ rd and rs2 and compared assuming unsigned numbers and the smaller value\
