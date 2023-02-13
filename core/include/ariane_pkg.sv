@@ -32,7 +32,6 @@ package ariane_pkg;
     // within Ariane add a field here and assign a default value to the config. Please make
     // sure to add a propper parameter check to the `check_cfg` function.
     localparam NrMaxRules = 16;
-
     typedef struct packed {
       int                               RASDepth;
       int                               BTBEntries;
@@ -56,9 +55,9 @@ package ariane_pkg;
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
-      RASDepth: 2,
-      BTBEntries: 32,
-      BHTEntries: 128,
+      RASDepth: cva6_config_pkg::CVA6ConfigRASDepth,
+      BTBEntries: cva6_config_pkg::CVA6ConfigBTBEntries,
+      BHTEntries: cva6_config_pkg::CVA6ConfigBHTEntries,
       // idempotent region
       NrNonIdempotentRules: 2,
       NonIdempotentAddrBase: {64'b0, 64'b0},
@@ -687,7 +686,7 @@ package ariane_pkg;
     // MMU instanciation
     // ---------------
      localparam bit MMU_PRESENT = 1'b1;  // MMU is present
-     
+
      localparam int unsigned INSTR_TLB_ENTRIES = cva6_config_pkg::CVA6ConfigInstrTlbEntries;
      localparam int unsigned DATA_TLB_ENTRIES  = cva6_config_pkg::CVA6ConfigDataTlbEntries;
 

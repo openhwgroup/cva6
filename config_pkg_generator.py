@@ -63,6 +63,12 @@ def setup_parser_config_generator():
                       help="Load latency")
   parser.add_argument("--NrStorePipeRegs", type=int, default=None,
                       help="Store latency")
+  parser.add_argument("--RASDepth", type=int, default=None,
+                      help="Depth of Return Address Stack")
+  parser.add_argument("--BTBEntries", type=int, default=None,
+                      help="Number of Branch Target Buffer entries")
+  parser.add_argument("--BHTEntries", type=int, default=None,
+                      help="Number of Branch History Table entries")
   return parser
 
 ISA = ""
@@ -91,6 +97,9 @@ MapArgsToParameter={
   "FPGAEn" : "CVA6ConfigFPGAEn",
   "NrLoadPipeRegs" : "CVA6ConfigNrLoadPipeRegs",
   "NrStorePipeRegs" : "CVA6ConfigNrStorePipeRegs",
+  "RASDepth": "CVA6ConfigRASDepth",
+  "BTBEntries": "CVA6ConfigBTBEntries",
+  "BHTEntries": "CVA6ConfigBHTEntries",
 }
 MapParametersToArgs = {i:k for k, i in MapArgsToParameter.items()} #reverse map
 
