@@ -1,0 +1,152 @@
+!Feature
+next_elt_id: 6
+name: BHT
+id: 5
+display_order: 5
+subfeatures: !!omap
+- 000_flush: !Subfeature
+    name: 000_flush
+    tag: VP_IP005_P000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F005_S000_I000
+        description: The BTB is never flushed.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/BHT
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "NA\n\n[Does it make sense?]"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 0
+        coverage_loc: ''
+        comments: ''
+- 002_table update: !Subfeature
+    name: 002_table update
+    tag: VP_IP005_P002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F005_S002_I000
+        description: When a branch instruction is resolved by the EXECUTE, the relative
+          information is stored in the Branch History Table.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/BHT
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: When a mis predict occurs caused by BRANCH, check that info is
+          stored in BHT
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+- 003_saturation: !Subfeature
+    name: 003_saturation
+    tag: VP_IP005_P003
+    next_elt_id: 2
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F005_S003_I000
+        description: The Branch History table is a two-bit saturation counter that
+          takes the virtual address of the current fetched instruction by the CACHE.
+          It states whether the current branch request should be taken or not. The
+          two bit counter is updated by the successive execution of the current instructions
+          as shown in the following figure.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/BHT
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a serie of taken and not taken branch to check the saturation
+          mechanism
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: -1
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_FRONTEND_F005_S003_I001
+        description: The Branch History table is a two-bit saturation counter that
+          takes the virtual address of the current fetched instruction by the CACHE.
+          It states whether the current branch request should be taken or not. The
+          two bit counter is updated by the successive execution of the current instructions
+          as shown in the following figure.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/BHT
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Verify the saturation mechnism is optimal. Modify the saturation
+          mechanism by removing/adding one stage, and check the Coremark performance
+          evolution
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+- 004_Table depth: !Subfeature
+    name: 004_Table depth
+    tag: VP_IP005_P004
+    next_elt_id: 1
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F005_S004_I000
+        description: The information is stored in a 1024 entry table.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/BHT
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Confirm that the best configuration for BHT entry number is 1024
+          by monitoring the Coremark performance and silicon footprint, the configuration
+          without BHT is to be challenged too.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+- 005_Debug is not intrusive: !Subfeature
+    name: 005_Debug is not intrusive
+    tag: VP_IP005_P005
+    next_elt_id: 1
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F005_S005_I000
+        description: The BHT is not updated if processor is in debug mode.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/BHT
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a debug session, check that the table content is not
+          modified
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 32
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: 755afe774cedc2d4910aa802ee20a1f485c1236e $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
