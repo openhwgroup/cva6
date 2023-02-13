@@ -55,9 +55,9 @@ package ariane_pkg;
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
-      RASDepth: cva6_config_pkg::RASDepth,
-      BTBEntries: cva6_config_pkg::BTBEntries,
-      BHTEntries: cva6_config_pkg::BHTEntries,
+      RASDepth: cva6_config_pkg::CVA6ConfigRASDepth,
+      BTBEntries: cva6_config_pkg::CVA6ConfigBTBEntries,
+      BHTEntries: cva6_config_pkg::CVA6ConfigBHTEntries,
       // idempotent region
       NrNonIdempotentRules: 2,
       NonIdempotentAddrBase: {64'b0, 64'b0},
