@@ -1968,20 +1968,21 @@ class MyMain:
                                 "yaml_cfg_gitrev"
                             ]
                             # Save individual IPs only if locked by user.
-                            if self.is_locked_by_user(current_ip_name=ip_elt[1].name):
-                                saved_ip_str += "\n  " + ip_elt[1].name
-                                with open(
-                                    save_dir
-                                    + "/VP_IP"
-                                    + str(ip_elt[1].ip_num).zfill(3)
-                                    + ".pck",
-                                    "wb",
-                                ) as output:
-                                    pickle.dump(ip_elt, output, 0)
+                            #if self.is_locked_by_user(current_ip_name=ip_elt[1].name):
+                            #    saved_ip_str += "\n  " + ip_elt[1].name
+                            #    with open(
+                            #        save_dir
+                            #        + "/VP_IP"
+                            #        + str(ip_elt[1].ip_num).zfill(3)
+                            #        + ".pck",
+                            #        "wb",
+                            #    ) as output:
+                            #        pickle.dump(ip_elt, output, 0)
                             # TODO: Add translation of pickle_ip_list to new-gen
                             # types *HERE*, after emitting Pickle.
                             # Emit the Yaml output from the fixed structures,
                             # skipping pickled ones.
+                            saved_ip_str += "\n  " + ip_elt[1].name
                             # Write yaml output
                             with open(
                                 save_dir
@@ -2057,7 +2058,7 @@ class MyMain:
                 tkinter.messagebox.showwarning("Warning", "No DB Loaded!")
         return need_to_load
 
-    def load_db_quiet(self, use_yaml_input=False):
+    def load_db_quiet(self, use_yaml_input=True):
         pickle_ip_list = []
         ip_num_next = 0
         if self.split_save:
@@ -2073,11 +2074,11 @@ class MyMain:
                         else "<generic>"
                     )
                     + ")",
-                    os.path.join(dir_to_load, "VP_IP[0-9][0-9][0-9].pck"),
+                    os.path.join(dir_to_load, "VP_IP[0-9][0-9][0-9].%s" % ("yml" if use_yaml_input else "pck")),
                 )
             )
             if not use_yaml_input:
-                for filename in glob.glob(dir_to_load + "/VP_IP*pck"):
+                for filename in glob.glob(dir_to_load + "/VP_IP[0-9][0-9][0-9].pck"):
                     # print("---INFO: Loading "+filename)
                     with open(filename, "rb") as input:
                         pickle_ip_list.append(pickle.load(input))
@@ -2491,8 +2492,17 @@ def __generate_option_parser():
         action="store_true",
         dest="use_yaml_input",
         help="Read database in Yaml format",
-        default=False,
+        default=True,
     )
+    parser.add_option(
+        "-p",
+        "--pickle",
+        action="store_false",
+        dest="use_yaml_input",
+        help="Read database in Pickle format",
+        default=True,
+    )
+
     return parser
 
 
