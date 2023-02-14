@@ -1,0 +1,179 @@
+!Feature
+next_elt_id: 9
+name: Signals
+id: 6
+display_order: 6
+subfeatures: !!omap
+- 000_ID: !Subfeature
+    name: 000_ID
+    tag: VP_IP006_P000
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F006_S000_I000
+        description: The CVA6 identify read transaction with an ID equal to 0 or 1
+        reqt_doc: AXI Design doc - Transaction Identifiers
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that ARID == 0b01 || ARID == 0b00 is always true while
+          AR_VALID is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_1_F006_S000_I001
+        description: The CVA6 identify write transaction with an ID equal to 1
+        reqt_doc: AXI Design doc - Transaction Identifiers
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AWID == 0b01 is always true while AW_VALID is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_User: !Subfeature
+    name: 001_User
+    tag: VP_IP006_P001
+    next_elt_id: 2
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F006_S001_I000
+        description: User-defined extension for the write and read address channel
+          is not supported. AxUSER = 0b00
+        reqt_doc: AXI Design doc - (table 2.2 and 2.5)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AxUSER = 0b00 is always true while AX_VALID is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_1_F006_S001_I001
+        description: User-defined extension for the write response channel is not
+          supported.
+        reqt_doc: AXI Design doc - (table 2.4)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that BUSER = 0b00 is always true while B_VALID is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_Quality_of_Service: !Subfeature
+    name: 002_Quality_of_Service
+    tag: VP_IP006_P002
+    next_elt_id: 2
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F006_S002_I000
+        description: Quality of Service identifier is not supported. AxQOS = 0b0000
+        reqt_doc: AXI Design doc - (table 2.2 and 2.5)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AxQOS = 0b0000 is always true while AX_VALID is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_Cache: !Subfeature
+    name: 003_Cache
+    tag: VP_IP006_P003
+    next_elt_id: 2
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F006_S003_I000
+        description: AxCACHE always take 0b0000.
+        reqt_doc: 'AXI Design Doc - Transaction Attributes: Memory types'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AxCACHE = 0b0000 is always true while AX_VALID is
+          asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_Protection: !Subfeature
+    name: 004_Protection
+    tag: VP_IP006_P004
+    next_elt_id: 1
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F006_S004_I000
+        description: Protection attributes always take the 0b000
+        reqt_doc: AXI Design Doc - (Table 2.2 and 2.5)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AxPROT = 0b000 is always true while AX_VALID is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 008_Region: !Subfeature
+    name: 008_Region
+    tag: VP_IP006_P008
+    next_elt_id: 1
+    display_order: 8
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F006_S008_I000
+        description: Region indicator is not supported. AxREGION = 0b0000
+        reqt_doc: AXI Design doc - (table 2.2 and 2.5)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AxREGION = 0b0000 is always true while AX_VALID is
+          asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: 03047594b4818fcbd06a40669e637081ff1d4fb9 $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

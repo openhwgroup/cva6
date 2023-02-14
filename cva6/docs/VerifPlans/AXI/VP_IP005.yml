@@ -1,0 +1,104 @@
+!Feature
+next_elt_id: 2
+name: Burst
+id: 5
+display_order: 5
+subfeatures: !!omap
+- 000_Control_Signals: !Subfeature
+    name: 000_Control_Signals
+    tag: VP_IP005_P000
+    next_elt_id: 12
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F005_S000_I000
+        description: All transaction performed by CVA6 are of type INCR. AxBURST =
+          0b01
+        reqt_doc: AXI Design doc - Address structure
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AxBURST == 0b01 is always true while AX_VALID is
+          asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_1_F005_S000_I001
+        description: All Read transaction performed by CVA6 are of burst lenght less
+          or equal to 2. ARLEN = 0b01
+        reqt_doc: AXI Design doc - Address structure
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that ARLEN == 0b01 is always true while AR_VALID is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_1_F005_S000_I002
+        description: All write transaction performed by CVA6 are of burst lenght equal
+          to 1. AWLEN = 0b00
+        reqt_doc: AXI Design doc - Address structure
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AWLEN == 0b00 is always true while AW_VALID is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_1_F005_S000_I003
+        description: The size of a read transfer does not exceed the width of the
+          data interface. The maximum value can be taking by AxSIZE is 3.
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A3.4.1)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AxSIZE <= log2(AXI_DATA_WIDTH/8) is always true while
+          AR_VALID is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '007': !VerifItem
+        name: '007'
+        tag: VP_1_F005_S000_I007
+        description: Exclusive access transactions cannot have a length greater than
+          16 beats
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A7.2.4)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that AxLOCK && AxLEN <= 15 is always true while AX_VALID
+          is asserted.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: 03047594b4818fcbd06a40669e637081ff1d4fb9 $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
