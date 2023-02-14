@@ -32,7 +32,7 @@ package cva6_config_pkg;
     localparam CVA6ConfigIcacheSetAssoc = 4;
     localparam CVA6ConfigDcacheSetAssoc = 8;
 
-    localparam CVA6ConfigNrCommitPorts = 1;
+    localparam CVA6ConfigNrCommitPorts = 2;
     localparam CVA6ConfigNrScoreboardEntries = 4;
 
     localparam CVA6ConfigFPGAEn = 0;
