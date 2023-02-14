@@ -21,7 +21,6 @@ module rvfi_tracer #(
   logic[riscv::XLEN-1:0] TOHOST_ADDR;
   int f;
   int unsigned SIM_FINISH;
-
   initial begin
     f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
     if (!$value$plusargs("time_out=%d", SIM_FINISH)) SIM_FINISH = 2000000;
@@ -36,14 +35,13 @@ module rvfi_tracer #(
   end
 
   final $fclose(f);
-  logic [31:0] cycles;
 
+  logic [31:0] cycles;
   // Generate the trace based on RVFI
   logic [63:0] pc64;
   string cause;
   always_ff @(posedge clk_i) begin
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-
       pc64 = {{riscv::XLEN-riscv::VLEN{rvfi_i[i].pc_rdata[riscv::VLEN-1]}}, rvfi_i[i].pc_rdata};
       // print the instruction information if the instruction is valid or a trap is taken
       if (rvfi_i[i].valid) begin
