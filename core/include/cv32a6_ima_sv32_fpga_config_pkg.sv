@@ -47,4 +47,6 @@ package cva6_config_pkg;
     localparam CVA6ConfigBTBEntries = 32;
     localparam CVA6ConfigBHTEntries = 128;
 
+    localparam CVA6ConfigNrPMPEntries = 0;
+
 endpackage

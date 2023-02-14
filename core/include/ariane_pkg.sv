@@ -75,7 +75,7 @@ package ariane_pkg;
       SwapEndianess:          1'b0,
       // debug
       DmBaseAddress:          64'h0,
-      NrPMPEntries:           8
+      NrPMPEntries:           cva6_config_pkg::CVA6ConfigNrPMPEntries
     };
 
     // Function being called to check parameters
