@@ -138,8 +138,8 @@ module load_store_unit import ariane_pkg::*; #(
     // -------------------
     if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
         mmu #(
-            .INSTR_TLB_ENTRIES      ( 16                     ),
-            .DATA_TLB_ENTRIES       ( 16                     ),
+            .INSTR_TLB_ENTRIES      ( ariane_pkg::INSTR_TLB_ENTRIES ),
+            .DATA_TLB_ENTRIES       ( ariane_pkg::DATA_TLB_ENTRIES ),
             .ASID_WIDTH             ( ASID_WIDTH             ),
             .ArianeCfg              ( ArianeCfg              )
         ) i_cva6_mmu (
@@ -167,8 +167,8 @@ module load_store_unit import ariane_pkg::*; #(
         );
     end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
         cva6_mmu_sv32 #(
-            .INSTR_TLB_ENTRIES      ( 16                     ),
-            .DATA_TLB_ENTRIES       ( 16                     ),
+            .INSTR_TLB_ENTRIES      ( ariane_pkg::INSTR_TLB_ENTRIES ),
+            .DATA_TLB_ENTRIES       ( ariane_pkg::DATA_TLB_ENTRIES ),
             .ASID_WIDTH             ( ASID_WIDTH             ),
             .ArianeCfg              ( ArianeCfg              )
         ) i_cva6_mmu (

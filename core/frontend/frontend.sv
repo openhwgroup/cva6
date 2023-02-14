@@ -386,46 +386,58 @@ module frontend import ariane_pkg::*; #(
       end
     end
 
-    ras #(
-      .DEPTH  ( ArianeCfg.RASDepth  )
-    ) i_ras (
-      .clk_i,
-      .rst_ni,
-      .flush_i( flush_bp_i  ),
-      .push_i ( ras_push    ),
-      .pop_i  ( ras_pop     ),
-      .data_i ( ras_update  ),
-      .data_o ( ras_predict )
-    );
-    
+    if (ArianeCfg.RASDepth == 0) begin
+      assign ras_predict = '0;
+    end else begin
+      ras #(
+        .DEPTH  ( ArianeCfg.RASDepth  )
+      ) i_ras (
+        .clk_i,
+        .rst_ni,
+        .flush_i( flush_bp_i  ),
+        .push_i ( ras_push    ),
+        .pop_i  ( ras_pop     ),
+        .data_i ( ras_update  ),
+        .data_o ( ras_predict )
+      );
+    end
+
     //For FPGA, BTB is implemented in read synchronous BRAM
     //while for ASIC, BTB is implemented in D flip-flop
     //and can be read at the same cycle.
     assign vpc_btb = (ariane_pkg::FPGA_EN) ? icache_dreq_i.vaddr : icache_vaddr_q;
 
-    btb #(
-      .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
-    ) i_btb (
-      .clk_i,
-      .rst_ni,
-      .flush_i          ( flush_bp_i       ),
-      .debug_mode_i,
-      .vpc_i            ( vpc_btb          ),
-      .btb_update_i     ( btb_update       ),
-      .btb_prediction_o ( btb_prediction   )
-    );
+    if (ArianeCfg.BTBEntries == 0) begin
+      assign btb_prediction = '0;
+    end else begin
+      btb #(
+        .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
+      ) i_btb (
+        .clk_i,
+        .rst_ni,
+        .flush_i          ( flush_bp_i       ),
+        .debug_mode_i,
+        .vpc_i            ( vpc_btb          ),
+        .btb_update_i     ( btb_update       ),
+        .btb_prediction_o ( btb_prediction   )
+      );
+    end
 
-    bht #(
-      .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
-    ) i_bht (
-      .clk_i,
-      .rst_ni,
-      .flush_i          ( flush_bp_i       ),
-      .debug_mode_i,
-      .vpc_i            ( icache_vaddr_q   ),
-      .bht_update_i     ( bht_update       ),
-      .bht_prediction_o ( bht_prediction   )
-    );
+    if (ArianeCfg.BHTEntries == 0) begin
+      assign bht_prediction = '0;
+    end else begin
+      bht #(
+        .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
+      ) i_bht (
+        .clk_i,
+        .rst_ni,
+        .flush_i          ( flush_bp_i       ),
+        .debug_mode_i,
+        .vpc_i            ( icache_vaddr_q   ),
+        .bht_update_i     ( bht_update       ),
+        .bht_prediction_o ( bht_prediction   )
+      );
+    end
 
     // we need to inspect up to INSTR_PER_FETCH instructions for branches
     // and jumps
