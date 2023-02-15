@@ -115,7 +115,7 @@ module load_store_unit import ariane_pkg::*; #(
     logic                     translation_req;
     logic                     translation_valid;
     logic [riscv::VLEN-1:0]   mmu_vaddr;
-    logic [riscv::PLEN-1:0]   mmu_paddr;
+    logic [riscv::PLEN-1:0]   mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
     logic [riscv::PPNW-1:0]   dtlb_ppn;
@@ -196,8 +196,17 @@ module load_store_unit import ariane_pkg::*; #(
             .*
         );
     end else begin : gen_no_mmu
+
+        if (riscv::VLEN > riscv::PLEN) begin
+          assign mmu_vaddr_plen = mmu_vaddr[riscv::PLEN-1:0];
+          assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0];
+        end else begin
+          assign mmu_vaddr_plen = {{{riscv::PLEN-riscv::VLEN}{1'b0}}, mmu_vaddr};
+          assign fetch_vaddr_plen = {{{riscv::PLEN-riscv::VLEN}{1'b0}}, icache_areq_i.fetch_vaddr};
+        end
+
         assign  icache_areq_o.fetch_valid  = icache_areq_i.fetch_req;
-        assign  icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0];
+        assign  icache_areq_o.fetch_paddr  = fetch_vaddr_plen;
         assign  icache_areq_o.fetch_exception      = '0;
 
         assign dcache_req_ports_o[0].address_index = '0;
@@ -212,7 +221,7 @@ module load_store_unit import ariane_pkg::*; #(
 
         assign itlb_miss_o = 1'b0;
         assign dtlb_miss_o = 1'b0;
-        assign dtlb_ppn    = mmu_vaddr[riscv::PLEN-1:12];
+        assign dtlb_ppn    = mmu_vaddr_plen[riscv::PLEN-1:12];
         assign dtlb_hit    = 1'b1;
 
         assign mmu_exception = '0;
@@ -222,7 +231,7 @@ module load_store_unit import ariane_pkg::*; #(
                 mmu_paddr         <= '0;
                 translation_valid <= '0;
             end else begin
-                mmu_paddr         <=  mmu_vaddr[riscv::PLEN-1:0];
+                mmu_paddr         <=  mmu_vaddr_plen;
                 translation_valid <= translation_req;
             end
         end
