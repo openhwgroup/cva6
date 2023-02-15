@@ -212,12 +212,7 @@ module scoreboard #(
   end
 
   // FIFO counter updates
-  popcount #(
-    .INPUT_WIDTH(NR_COMMIT_PORTS)
-  ) i_popcount (
-    .data_i(commit_ack_i),
-    .popcount_o(num_commit)
-  );
+  assign num_commit = (NR_COMMIT_PORTS == 2) ? commit_ack_i[1] + commit_ack_i[0] : commit_ack_i[0];
 
   assign issue_cnt_n         = (flush_i) ? '0 : issue_cnt_q         - num_commit + issue_en;
   assign commit_pointer_n[0] = (flush_i) ? '0 : commit_pointer_q[0] + num_commit;
