@@ -213,9 +213,9 @@ module scoreboard #(
 
   // FIFO counter updates
   popcount #(
-    .INPUT_WIDTH(NR_COMMIT_PORTS)
+    .INPUT_WIDTH(NR_COMMIT_PORTS+1)
   ) i_popcount (
-    .data_i(commit_ack_i),
+    .data_i({1'b0, commit_ack_i}),
     .popcount_o(num_commit)
   );
 
