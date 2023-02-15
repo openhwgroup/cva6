@@ -70,9 +70,9 @@ package ariane_soc;
   localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};
 
   localparam ariane_pkg::ariane_cfg_t ArianeSocCfg = '{
-    RASDepth: 2,
-    BTBEntries: 32,
-    BHTEntries: 128,
+    RASDepth: cva6_config_pkg::CVA6ConfigRASDepth,
+    BTBEntries: cva6_config_pkg::CVA6ConfigBTBEntries,
+    BHTEntries: cva6_config_pkg::CVA6ConfigBHTEntries,
     // idempotent region
     NrNonIdempotentRules:  1,
     NonIdempotentAddrBase: {64'b0},
@@ -89,7 +89,7 @@ package ariane_soc;
     SwapEndianess:          1'b0,
     // debug
     DmBaseAddress:          DebugBase,
-    NrPMPEntries:           8
+    NrPMPEntries:           cva6_config_pkg::CVA6ConfigNrPMPEntries
   };
 
 endpackage

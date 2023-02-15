@@ -63,6 +63,10 @@ def setup_parser_config_generator():
                       help="Load latency")
   parser.add_argument("--NrStorePipeRegs", type=int, default=None,
                       help="Store latency")
+  parser.add_argument("--InstrTlbEntries", type=int, default=None,
+                      help="Number of instruction TLB entries")
+  parser.add_argument("--DataTlbEntries", type=int, default=None,
+                      help="Number of data TLB entries")
   parser.add_argument("--RASDepth", type=int, default=None,
                       help="Depth of Return Address Stack")
   parser.add_argument("--BTBEntries", type=int, default=None,
@@ -97,6 +101,8 @@ MapArgsToParameter={
   "FPGAEn" : "CVA6ConfigFPGAEn",
   "NrLoadPipeRegs" : "CVA6ConfigNrLoadPipeRegs",
   "NrStorePipeRegs" : "CVA6ConfigNrStorePipeRegs",
+  "InstrTlbEntries" : "CVA6ConfigInstrTlbEntries",
+  "DataTlbEntries" : "CVA6ConfigDataTlbEntries",
   "RASDepth": "CVA6ConfigRASDepth",
   "BTBEntries": "CVA6ConfigBTBEntries",
   "BHTEntries": "CVA6ConfigBHTEntries",
