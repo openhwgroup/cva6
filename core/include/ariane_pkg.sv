@@ -205,6 +205,7 @@ package ariane_pkg;
     // ^^^^ until here ^^^^
     // ---------------------
 
+    localparam riscv::xlen_t OPENHWGROUP_MVENDORID = {{riscv::XLEN-32{1'b0}}, 32'h0602};
     localparam riscv::xlen_t ARIANE_MARCHID = {{riscv::XLEN-32{1'b0}}, 32'd3};
 
     localparam riscv::xlen_t ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension

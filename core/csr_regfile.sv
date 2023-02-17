@@ -238,7 +238,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
                 riscv::CSR_MTVAL:              csr_rdata = mtval_q;
                 riscv::CSR_MIP:                csr_rdata = mip_q;
-                riscv::CSR_MVENDORID:          csr_rdata = '0; // not implemented
+                riscv::CSR_MVENDORID:          csr_rdata = OPENHWGROUP_MVENDORID;
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = '0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
