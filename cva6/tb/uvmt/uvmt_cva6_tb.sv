@@ -47,6 +47,10 @@ module uvmt_cva6_tb;
                                          .clk(clknrst_if.clk),
                                          .reset_n(clknrst_if.reset_n)
                                         ); // cvxif from the cvxif agent
+   uvma_axi_intf                axi_if(
+                                         .clk(clknrst_if.clk),
+                                         .rst_n(clknrst_if.reset_n)
+                                      );
 
    //bind assertion module for cvxif interface
    bind uvmt_cva6_dut_wrap
@@ -54,6 +58,12 @@ module uvmt_cva6_tb;
                                               .clk(clknrst_if.clk),
                                               .reset_n(clknrst_if.reset_n)
                                              );
+   //bind assertion module for axi interface
+   bind uvmt_cva6_dut_wrap
+      uvmt_axi_assert            axi_assert(.axi_assert(axi_if.passive),
+                                            .clk(clknrst_if.clk),
+                                            .rst_n(clknrst_if.reset_n)
+                                           );
    // DUT Wrapper Interfaces
    uvmt_rvfi_if                     rvfi_if(
                                                  .rvfi_o()
@@ -72,6 +82,7 @@ module uvmt_cva6_tb;
    ) cva6_dut_wrap (
                     .clknrst_if(clknrst_if),
                     .cvxif_if  (cvxif_if),
+                    .axi_if    (axi_if),
                     .tb_exit_o(),
                     .rvfi_o(rvfi_if.rvfi_o)
                     );
@@ -88,6 +99,7 @@ module uvmt_cva6_tb;
      // Add interfaces handles to uvm_config_db
      uvm_config_db#(virtual uvma_clknrst_if )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),       .value(clknrst_if));
      uvm_config_db#(virtual uvma_cvxif_intf )::set(.cntxt(null), .inst_name("*.env.cvxif_agent"),   .field_name("vif"),       .value(cvxif_if)  );
+     uvm_config_db#(virtual uvma_axi_intf   )::set(.cntxt(null), .inst_name("*"),                   .field_name("axi_vif"),    .value(axi_if));
      uvm_config_db#(virtual uvmt_rvfi_if    )::set(.cntxt(null), .inst_name("*"),                   .field_name("rvfi_vif"),  .value(rvfi_if));
 
      // DUT and ENV parameters

@@ -18,11 +18,13 @@
 -f ${DV_UVML_HRTBT_PATH}/uvml_hrtbt_pkg.flist
 -f ${DV_UVML_TRN_PATH}/uvml_trn_pkg.flist
 -f ${DV_UVML_LOGS_PATH}/uvml_logs_pkg.flist
+-f ${DV_UVML_MEM_PATH}/uvml_mem_pkg.flist
 -f ${DV_UVML_SB_PATH}/uvml_sb_pkg.flist
 
 // Agents
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist
 -f ${DV_UVMA_CVXIF_PATH}/src/uvma_cvxif_pkg.flist
+-f ${DV_UVMA_AXI_PATH}/src/uvma_axi_pkg.flist
 
 // Environments
 -f ${CVA6_UVME_PATH}/uvme_cva6_pkg.flist
@@ -43,3 +45,6 @@ ${CVA6_UVMT_DIR}/uvmt_cva6_tb_ifs.sv
 ${CVA6_UVMT_DIR}/uvmt_cva6_tb.sv
 ${CVA6_UVMT_DIR}/uvmt_cva6_dut_wrap.sv
 ${CVA6_UVMT_DIR}/cva6_tb_wrapper.sv
+
+${CVA6_UVMT_DIR}/uvmt_axi_assert.sv
+${CVA6_UVMT_DIR}/uvmt_cva6_axi_assert.sv

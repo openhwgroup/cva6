@@ -1,0 +1,24 @@
+// Copyright 2022 Thales DIS SAS
+//
+// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+// You may obtain a copy of the License at https://solderpad.org/licenses/
+//
+// Original Author: Alae Eddine EZ ZEJJARI (alae-eddine.ez-zejjari@external.thalesgroup.com)
+// Co-Author: Abdelaali Khardazi
+
+// Directories
++incdir+${DV_UVMA_AXI_PATH}
++incdir+${DV_UVMA_AXI_PATH}/src
++incdir+${DV_UVMA_AXI_PATH}/src/obj
++incdir+${DV_UVMA_AXI_PATH}/src/seq
++incdir+${DV_UVMA_AXI_PATH}/src/comps
++incdir+${DV_UVMA_AXI_PATH}/src/comps/uvma_axi_aw_agent
++incdir+${DV_UVMA_AXI_PATH}/src/comps/uvma_axi_w_agent
++incdir+${DV_UVMA_AXI_PATH}/src/comps/uvma_axi_b_agent
++incdir+${DV_UVMA_AXI_PATH}/src/comps/uvma_axi_ar_agent
++incdir+${DV_UVMA_AXI_PATH}/src/comps/uvma_axi_r_agent
+
+// Files
+${DV_UVMA_AXI_PATH}/src/uvma_axi_pkg.sv
