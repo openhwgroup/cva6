@@ -1,3 +1,27 @@
+diff --git a/p/riscv_test.h b/p/riscv_test.h
+index 88ca6c1..d345eb5 100644
+--- a/p/riscv_test.h
++++ b/p/riscv_test.h
+@@ -238,7 +238,8 @@ reset_vector:                                                           \
+         li TESTNUM, 1;                                                  \
+         li a7, 93;                                                      \
+         li a0, 0;                                                       \
+-        ecall
++        sw TESTNUM, tohost, t5;                                         \
++42:     j 42b
+ 
+ #define TESTNUM gp
+ #define RVTEST_FAIL                                                     \
+@@ -248,7 +249,8 @@ reset_vector:                                                           \
+         or TESTNUM, TESTNUM, 1;                                         \
+         li a7, 93;                                                      \
+         addi a0, TESTNUM, 0;                                            \
+-        ecall
++        sw TESTNUM, tohost, t5;                                         \
++42:     j 42b
+ 
+ //-----------------------------------------------------------------------
+ // Data Section Macro
 diff --git a/v/vm.c b/v/vm.c
 index 6bf05f7..71700f5 100644
 --- a/v/vm.c
