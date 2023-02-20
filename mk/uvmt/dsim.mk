@@ -105,6 +105,10 @@ ifneq ($(CCOV), 0)
 	DSIM_RUN_FLAGS    += -code-cov block -code-cov-scope-specs $(DSIM_CODE_COV_SCOPE)
 endif
 
+# Special var to point to tool and installation dependent path of DPI headers.
+# Used to recompile dpi_dasm_spike if needed (by default, not needed).
+DPI_INCLUDE        ?= $(shell dirname $(shell which dsim))/../include
+
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
 	@echo 'try "make SIMULATOR=dsim sanity" (or just "make sanity" if shell ENV variable SIMULATOR is already set).'
