@@ -40,6 +40,7 @@ class uvme_cva6_cfg_c extends uvm_object;
    // Agent cfg handles
    rand uvma_clknrst_cfg_c    clknrst_cfg;
    rand uvma_cvxif_cfg_c      cvxif_cfg;
+   rand uvma_axi_cfg_c        axi_cfg;
 
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
@@ -52,6 +53,8 @@ class uvme_cva6_cfg_c extends uvm_object;
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
 
       `uvm_field_object(cvxif_cfg, UVM_DEFAULT)
+
+      `uvm_field_object(axi_cfg, UVM_DEFAULT)
 
    `uvm_object_utils_end
 
@@ -71,10 +74,12 @@ class uvme_cva6_cfg_c extends uvm_object;
       }
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active   == UVM_ACTIVE;
+         axi_cfg.is_active       == UVM_ACTIVE;
       }
 
       if (trn_log_enabled) {
          clknrst_cfg.trn_log_enabled   == 1;
+         axi_cfg.trn_log_enabled       == 1;
       }
 
       if (cov_model_enabled) {
@@ -97,6 +102,7 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
 
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    cvxif_cfg    = uvma_cvxif_cfg_c::type_id::create("cvxif_cfg");
+   axi_cfg      = uvma_axi_cfg_c::type_id::create("axi_cfg");
 
 endfunction : new
 

@@ -28,7 +28,7 @@ from riscv_trace_csv import *
 from lib import *
 
 RD_RE = re.compile(r"(core\s+\d+:\s+)?(?P<pri>\d) 0x(?P<addr>[a-f0-9]+?) " \
-                   "\((?P<bin>.*?)\)(( c\S* 0x[a-f0-9]+)*) (?P<reg>[xf]\s*\d*?) 0x(?P<val>[a-f0-9]+)")
+                   "\((?P<bin>.*?)\)(( c\S* 0x[a-f0-9]+)*) (?P<reg>[xf]\s*\d*?)\s*0x(?P<val>[a-f0-9]+)")
 
 CORE_RE = re.compile(
     r"core\s+\d+:\s+0x(?P<addr>[a-f0-9]+?) \(0x(?P<bin>.*?)\) (?P<instr>.*?)$")
