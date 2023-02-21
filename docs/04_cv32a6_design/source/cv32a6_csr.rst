@@ -17,7 +17,7 @@ This keeps the footprint of the core as low as possible and avoid any overhead t
 
 The **Parameter** column identifies those CSRs that are dependent on the value
 of specific compile/synthesis parameters. If these parameters are not set as
-indicated in :numref:`Control and Status Register Map` then the associated CSR is not implemented.  If the
+indicated in **Control and Status Register Map** then the associated CSR is not implemented.  If the
 parameter column is empty then the associated CSR is always implemented.
 
 The **Privilege** column indicates the access mode of a CSR.  The first letter
