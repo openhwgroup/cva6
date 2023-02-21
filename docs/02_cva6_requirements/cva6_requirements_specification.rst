@@ -1,6 +1,8 @@
 ===============================
 CVA6 Requirement Specification
 ===============================
+Editor: **Jerome Quevremont**
+`jerome.quevremont@thalesgroup.com <mailto:jerome.quevremont@thalesgroup.com?subject=CVA6%20User%20Manual>`__
 
 Revision 1.0.1
 

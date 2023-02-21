@@ -16,13 +16,14 @@
 
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
-CVA6 User Manual
-================
-Editor: **Jerome Quevremont**
-`jerome.quevremont@thalesgroup.com <mailto:jerome.quevremont@thalesgroup.com?subject=CVA6%20User%20Manual>`__
+CVA6 APU
+========
+Editor: **Florian Zaruba**
+`florian@openhwgroup.org <mailto:florian@openhwgroup.org?subject=CVA6%20User%20Manual>`__
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   CVA6_user_guide
+   cva6_apu
+   cva6_testharness

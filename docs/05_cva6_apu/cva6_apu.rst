@@ -1,5 +1,5 @@
-CVA6 System on Chip (SoC)
-=========================
+CVA6 APU
+========
 
 Memory Map
 ----------
