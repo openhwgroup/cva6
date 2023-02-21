@@ -205,6 +205,10 @@
       }
    }
 
+   constraint boot_addr_cons { //boot addr should be half-word aligned
+      boot_addr % 2 == 0;
+   }
+
    /**
     * Creates sub-configuration objects.
     */
