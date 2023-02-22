@@ -16,13 +16,10 @@
    Level 4
    ^^^^^^^
 
-.. _cva6_user_guide:
+.. _cva6_traps_interrupts_exceptions:
 
-OpenHW Group CVA6 User Manual
+Traps, Interrupts, Exceptions
 =============================
-This is a template for the CVA6 user guide.
-
-Changelog
----------
-We start filling in the Changelog after the first “official” release of the user manual, at the end of step 2.
+Gap for step1 verification. Reuse DVplan from E4? Jean-Roch will check with André. Mike will reach out to some people who could help.
+We expect this section to be 1 page.
 
