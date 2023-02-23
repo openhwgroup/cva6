@@ -51,6 +51,7 @@ module uvmt_cva6_tb;
                                          .clk(clknrst_if.clk),
                                          .rst_n(clknrst_if.reset_n)
                                       );
+   uvme_cva6_core_cntrl_if      core_cntrl_if();
 
    //bind assertion module for cvxif interface
    bind uvmt_cva6_dut_wrap
@@ -83,6 +84,7 @@ module uvmt_cva6_tb;
                     .clknrst_if(clknrst_if),
                     .cvxif_if  (cvxif_if),
                     .axi_if    (axi_if),
+                    .core_cntrl_if(core_cntrl_if),
                     .tb_exit_o(),
                     .rvfi_o(rvfi_if.rvfi_o)
                     );
@@ -101,6 +103,7 @@ module uvmt_cva6_tb;
      uvm_config_db#(virtual uvma_cvxif_intf )::set(.cntxt(null), .inst_name("*.env.cvxif_agent"),   .field_name("vif"),       .value(cvxif_if)  );
      uvm_config_db#(virtual uvma_axi_intf   )::set(.cntxt(null), .inst_name("*"),                   .field_name("axi_vif"),    .value(axi_if));
      uvm_config_db#(virtual uvmt_rvfi_if    )::set(.cntxt(null), .inst_name("*"),                   .field_name("rvfi_vif"),  .value(rvfi_if));
+     uvm_config_db#(virtual uvme_cva6_core_cntrl_if)::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),  .value(core_cntrl_if));
 
      // DUT and ENV parameters
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_ADDR_WIDTH"),  .value(ENV_PARAM_INSTR_ADDR_WIDTH) );
@@ -112,6 +115,8 @@ module uvmt_cva6_tb;
      uvm_top.finish_on_completion  = 1;
      uvm_top.run_test();
    end : test_bench_entry_point
+
+   assign core_cntrl_if.clk = clknrst_if.clk;
 
    /**
     * End-of-test summary printout.
