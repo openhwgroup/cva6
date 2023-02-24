@@ -42,7 +42,7 @@ class uvme_cva6_env_c extends uvm_env;
    uvma_clknrst_agent_c   clknrst_agent;
    uvma_cvxif_agent_c     cvxif_agent;
    uvma_axi_agent_c       axi_agent;
-
+   uvma_cva6_core_cntrl_agent_c core_cntrl_agent;
 
 
    `uvm_component_utils_begin(uvme_cva6_env_c)
@@ -205,6 +205,8 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_axi_cfg_c)::set(this, "*axi_agent", "cfg", cfg.axi_cfg);
 
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "core_cntrl_agent", "cfg", cfg);
+
 endfunction: assign_cfg
 
 
@@ -222,6 +224,7 @@ function void uvme_cva6_env_c::create_agents();
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    cvxif_agent   = uvma_cvxif_agent_c::type_id::create("cvxif_agent", this);
    axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
+   core_cntrl_agent = uvma_cva6_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
 
 endfunction: create_agents
 

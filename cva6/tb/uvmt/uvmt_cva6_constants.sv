@@ -19,5 +19,6 @@
 `ifndef __UVMT_CVA6_CONSTANTS_SV__
 `define __UVMT_CVA6_CONSTANTS_SV__
 
+parameter XLEN = 32;
 
 `endif // __UVMT_CVA6_CONSTANTS_SV__

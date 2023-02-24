@@ -26,11 +26,10 @@
  * Object encapsulating all parameters for creating, connecting and running
  * CVA6 environment (uvme_cva6_env_c) components.
  */
-class uvme_cva6_cfg_c extends uvm_object;
+class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
    // Integrals
    rand bit                      enabled;
-   rand uvm_active_passive_enum  is_active;
 
    rand bit                      scoreboarding_enabled;
    rand bit                      cov_model_enabled;
@@ -61,11 +60,66 @@ class uvme_cva6_cfg_c extends uvm_object;
 
    constraint defaults_cons {
       soft enabled                == 0;
-      soft is_active              == UVM_PASSIVE;
+      soft is_active              == UVM_ACTIVE;
       soft scoreboarding_enabled  == 1;
       soft cov_model_enabled      == 1;
       soft trn_log_enabled        == 1;
       soft sys_clk_period         == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
+   }
+
+   constraint cva6_riscv_cons {
+      xlen == uvma_core_cntrl_pkg::MXL_32;
+      ilen == 32;
+
+      ext_i_supported        == 1;
+      ext_a_supported        == 0;
+      ext_m_supported        == 1;
+      ext_c_supported        == 1;
+      ext_p_supported        == 0;
+      ext_v_supported        == 0;
+      ext_f_supported        == 0;
+      ext_d_supported        == 0;
+      ext_zba_supported      == 0;
+      ext_zbb_supported      == 0;
+      ext_zbc_supported      == 0;
+      ext_zbe_supported      == 0;
+      ext_zbf_supported      == 0;
+      ext_zbm_supported      == 0;
+      ext_zbp_supported      == 0;
+      ext_zbr_supported      == 0;
+      ext_zbs_supported      == 0;
+      ext_zbt_supported      == 0;
+      ext_zifencei_supported == 1;
+      ext_zicsr_supported    == 1;
+
+      mode_s_supported       == 0;
+      mode_u_supported       == 0;
+
+      pmp_supported          == 0;
+      debug_supported        == 1;
+
+      unaligned_access_supported     == 1;
+      unaligned_access_amo_supported == 0;
+
+      bitmanip_version        == BITMANIP_VERSION_1P00;
+      priv_spec_version       == PRIV_VERSION_MASTER;
+      endianness              == ENDIAN_LITTLE;
+
+      boot_addr_valid         == 1;
+      mtvec_addr_valid        == 1;
+      dm_halt_addr_valid      == 1;
+      dm_exception_addr_valid == 1;
+      nmi_addr_valid          == 1;
+   }
+
+   constraint default_cva6_boot_cons {
+      (!mhartid_plusarg_valid)           -> (mhartid           == 'h0000_0000);
+      (!mimpid_plusarg_valid)            -> (mimpid            == 'h0000_0000);
+      (!boot_addr_plusarg_valid)         -> (boot_addr         == 'h8000_0000);
+      (!mtvec_addr_plusarg_valid)        -> (mtvec_addr        == 'h0000_0000);
+      (!nmi_addr_plusarg_valid)          -> (nmi_addr          == 'h0000_0000);
+      (!dm_halt_addr_plusarg_valid)      -> (dm_halt_addr      == 'h0000_0000);
+      (!dm_exception_addr_plusarg_valid) -> (dm_exception_addr == 'h0000_0000);
    }
 
    constraint agent_cfg_cons {
@@ -93,6 +147,11 @@ class uvme_cva6_cfg_c extends uvm_object;
     */
    extern function new(string name="uvme_cva6_cfg");
 
+      /**
+    * Sample the parameters of the DUT via the virtual interface in a context
+    */
+   extern virtual function void sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
+
 endclass : uvme_cva6_cfg_c
 
 
@@ -106,5 +165,34 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
 
 endfunction : new
 
+function void uvme_cva6_cfg_c::sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
+
+   uvma_cva6_core_cntrl_cntxt_c cva6_cntxt;
+
+   if (!$cast(cva6_cntxt, cntxt)) begin
+      `uvm_fatal("SAMPLECNTXT", "Could not cast cntxt to uvma_cva6_core_cntrl_cntxt_c");
+   end
+
+
+   num_mhpmcounters = cva6_cntxt.core_cntrl_vif.num_mhpmcounters;
+   // TODO : Check PMA
+   //~ pma_regions      = new[cva6_cntxt.core_cntrl_vif.pma_cfg.size()];
+
+   //~ foreach (pma_regions[i]) begin
+      //~ pma_regions[i] = uvma_core_cntrl_pma_region_c::type_id::create($sformatf("pma_region%0d", i));
+      //~ pma_regions[i].word_addr_low  = cva6_cntxt.core_cntrl_vif.pma_cfg[i].word_addr_low;
+      //~ pma_regions[i].word_addr_high = cva6_cntxt.core_cntrl_vif.pma_cfg[i].word_addr_high;
+      //~ pma_regions[i].main           = cva6_cntxt.core_cntrl_vif.pma_cfg[i].main;
+      //~ pma_regions[i].bufferable     = core_cntrl_vif.pma_cfg[i].bufferable;
+      //~ pma_regions[i].cacheable      = core_cntrl_vif.pma_cfg[i].cacheable;
+      //~ pma_regions[i].atomic         = core_cntrl_vif.pma_cfg[i].atomic;
+   //~ end
+
+   //~ // Copy to the pma_configuration
+   //~ pma_cfg.regions = new[pma_regions.size()];
+   //~ foreach (pma_cfg.regions[i])
+      //~ pma_cfg.regions[i] = pma_regions[i];
+
+endfunction : sample_parameters
 
 `endif // __UVME_CVA6_CFG_SV__

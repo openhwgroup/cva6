@@ -34,7 +34,9 @@ import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
 import "DPI-C" context function void read_section(input longint address, inout byte buffer[]);
 
-module cva6_tb_wrapper #(
+module cva6_tb_wrapper
+ import uvmt_cva6_pkg::*;
+#(
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_USER_EN       = 0,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
@@ -43,6 +45,7 @@ module cva6_tb_wrapper #(
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
+  input  logic [XLEN-1:0]              boot_addr_i,
   output wire                          tb_exit_o,
   output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
@@ -64,7 +67,7 @@ module cva6_tb_wrapper #(
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
-    .boot_addr_i          ( 64'h0000_0000_8000_0000   ), //ariane_soc::ROMBase
+    .boot_addr_i          ( boot_addr_i               ),//Driving the boot_addr value from the core control agent
     .hart_id_i            ( 64'h0000_0000_0000_0000   ),
     .irq_i                ( 2'b00 /*irqs*/            ),
     .ipi_i                ( 1'b0  /*ipi*/             ),
