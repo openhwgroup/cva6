@@ -10,9 +10,7 @@
 # Make sure all necessary components are installed/available.
 #
 # Install Python dependencies.
-for REQT in `cat requirements.txt` ; do
-  python3 -m pip install $REQT
-done
+python3 -m pip install -q -r $(dirname $(readlink -f $0))/requirements.txt
 
 # Check for a LaTeX installation.
 which latex > /dev/null || { \
