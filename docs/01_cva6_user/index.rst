@@ -38,5 +38,6 @@ Editor: **Jerome Quevremont**
    CSR_Cache_Control
    CSR_Performance_Counters
    Parameters_Configuration
+   Interfaces
    Core_Integration
    CVX_Interface_Coprocessor
