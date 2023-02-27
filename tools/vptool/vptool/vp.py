@@ -39,11 +39,6 @@ from PIL import Image, ImageTk
 import shutil
 import hashlib
 
-try:
-    from yaml import CLoader as Loader, CDumper as Dumper
-except ImportError:
-    from yaml import Loader, Dumper
-
 global ip_list  # Dict Containing IPs->Prop->item. Eventually, it contains the whole DB
 global MASTER_LABEL_COLOR, SECONDARY_LABEL_COLOR, TERTIARY_LABEL_COLOR, BG_COLOR, LOCK_COLOR
 global CUSTOM_NUM
