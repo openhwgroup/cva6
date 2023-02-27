@@ -34,6 +34,7 @@ module store_buffer import ariane_pkg::*; (
     input  logic         valid_without_flush_i, // just tell if the address is valid which we are current putting and do not take any further action
 
     input  logic [riscv::PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
+    output [riscv::PLEN-1:0]        mem_paddr_o,
     input  riscv::xlen_t            data_i,          // data which is placed in the queue
     input  logic [(riscv::XLEN/8)-1:0]   be_i,            // byte enable in
     input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
@@ -136,6 +137,8 @@ module store_buffer import ariane_pkg::*; (
     assign req_port_o.data_wdata    = commit_queue_q[commit_read_pointer_q].data;
     assign req_port_o.data_be       = commit_queue_q[commit_read_pointer_q].be;
     assign req_port_o.data_size     = commit_queue_q[commit_read_pointer_q].data_size;
+
+    assign mem_paddr_o              = commit_queue_n[commit_read_pointer_n].address;
 
     always_comb begin : store_if
         automatic logic [DEPTH_COMMIT:0] commit_status_cnt;

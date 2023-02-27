@@ -261,6 +261,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     dcache_commit_wbuffer_not_ni;
 
   logic [riscv::VLEN-1:0]               lsu_addr;
+  logic [riscv::PLEN-1:0]               mem_paddr;
   logic [(riscv::XLEN/8)-1:0]           lsu_rmask;
   logic [(riscv::XLEN/8)-1:0]           lsu_wmask;
   logic [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id;
@@ -509,6 +510,7 @@ module cva6 import ariane_pkg::*; #(
     .pmpaddr_i              ( pmpaddr                     ),
     //RVFI
     .lsu_addr_o             ( lsu_addr                    ),
+    .mem_paddr_o            ( mem_paddr                   ),
     .lsu_rmask_o            ( lsu_rmask                   ),
     .lsu_wmask_o            ( lsu_wmask                   ),
     .lsu_addr_trans_id_o    ( lsu_addr_trans_id           )
@@ -1012,6 +1014,8 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
 `ifdef RVFI_MEM
       rvfi_o[i].mem_addr  = commit_instr_id_commit[i].lsu_addr;
+      // So far, only write paddr is reported. TODO: read paddr
+      rvfi_o[i].mem_paddr = mem_paddr;
       rvfi_o[i].mem_wmask = commit_instr_id_commit[i].lsu_wmask;
       rvfi_o[i].mem_wdata = commit_instr_id_commit[i].lsu_wdata;
       rvfi_o[i].mem_rmask = commit_instr_id_commit[i].lsu_rmask;
