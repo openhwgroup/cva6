@@ -307,7 +307,7 @@ package ariane_pkg;
     // ---------------
     // Enable BITMANIP
     // ---------------
-    localparam bit BITMANIP = 1'b0;
+    localparam bit BITMANIP = 1'b1;
 
     // Only use struct when signals have same direction
     // exception
