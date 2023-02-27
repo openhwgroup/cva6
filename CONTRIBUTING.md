@@ -4,7 +4,7 @@ New Contributors are always welcome.
 Note that Contributors are required to be covered by an [Eclipse Contributor Agreement](https://www.eclipse.org/legal/ECA.php).
 Contributors are encouraged, but not required, to be a [member](https://www.openhwgroup.org/membership/) of the OpenHW Group.
 
-## Read this before.
+## Read this before
 
 ### Major evolutions
 
