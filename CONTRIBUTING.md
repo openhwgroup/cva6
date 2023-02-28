@@ -21,14 +21,14 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
     * Together, we can anticipate specific cases that are not addressed here.
     * If you do not know how to contact us already, get in touch through info@openhwgroup.org.
     
-- Here are guidelines for your contribution:
+- Specific recommendations:
     * Always consider using the CV-X-IF interface if your contribution is an instruction-set extension.
         - and talk to the team if it's not possible.
-    * Your contribution shall be optional and fully disabled by default
-        - so that projects already using CVA6 are not impacted (no functionality change, no extra silicon...)
+    * Your contribution shall be optional and fully disabled by default.
+        - so that projects already using CVA6 are not impacted (no functionality change, no extra silicon...).
     * To configure your contribution, System Verilog top-level parameters are preferred.
         - Synchronize with CVA6 team if this is not possible and you need other means (`directives, ariane_pkg parameters, templating).
-        - Synchronize with CVA6 team (again) because this rule is likely change over time as we are considering templating.
+        - Synchronize with CVA6 team (again) because this rule is likely to change over time as we are considering templating.
     * Commit to maintain your contribution 2 years after the pull request
         - We know it's not always possible, so refer to the next rule.
     * Your complete contribution shall be identifiable with parameters (or `directives / templating if together we decide to go this way).
