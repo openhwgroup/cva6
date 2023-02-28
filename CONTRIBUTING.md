@@ -17,7 +17,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
 - Get in touch early with the CVA6 team, present your initiative, get feedback, synchronize with the team...
     * The CVA6 team wants to assess the potential of your contribution.
     * The CVA6 team can provide you recommendations to ease the upcoming contribution.
-    * This can help save significant review and overhauling effort for you and us when dealing with the pull requet review.
+    * This can help save significant review and overhauling effort for you and us when dealing with the pull request review.
     * Together, we can anticipate specific cases that are not addressed here.
     * If you do not know how to contact us already, get in touch through info@openhwgroup.org.
     
@@ -27,7 +27,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
     * Your contribution shall be optional and fully disabled by default.
         - so that projects already using CVA6 are not impacted (no functionality change, no extra silicon...).
     * To configure your contribution, System Verilog top-level parameters are preferred.
-        - Synchronize with CVA6 team if this is not possible and you need other means (`directives, ariane_pkg parameters, templating).
+        - Synchronize with CVA6 team if this is not possible and you need other means (`directives, ariane_pkg parameters, templating...)
         - Synchronize with CVA6 team (again) because this rule is likely to change over time as we are considering templating.
     * Commit to maintain your contribution 2 years after the pull request
         - We know it's not always possible, so refer to the next rule.
@@ -43,7 +43,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - To avoid impacting those users who use your contribution in their project.
         - At this point, we do not request a 100%-coverage verification suite.
 
-If these you encounter difficulties with these guidelines, get in touch with the team!
+If you encounter difficulties with these guidelines, get in touch with the team!
 
 ### Bug fixing
 
