@@ -32,36 +32,3 @@ Configurations
 A configuration is a fixed set of parameters.
 We list the parameters of the configuration for which verification activities have started.
 Give step 1 configuration (Jean-Roch?)
-
-Interfaces
-----------
-List of interface signals
-As in the RTL files.
-
-AXI Interface
-~~~~~~~~~~~~~
-Need for step1 verification. Already written by MU Electronics.
-Focus on the features used by the CVA6 and refer to ARM documentation for the AXI specification (e.g. do not draw the standard chronogram).
-Features:
-* See requirement specification
-* Atomic transactions
-* “USER” bus width extension
-* Transaction ordering
-
-Debug Interface
-~~~~~~~~~~~~~~~
-Desired for step1 verification, but we can likely reuse an E4 DVplan.
-Remember: the debug module (DTM) is not in the scope, so we focus on the debug interrupt.
-How to use the interface (HW/SW). We can refer to RISC-V specifications.
-If the section is too heavy, promote it to a separate chapter.
-
-Interrupt Interface
-~~~~~~~~~~~~~~~~~~~
-Desired for step1 verification, but we can likely reuse an E4 DVplan.
-How to use the interface (HW/SW). We can refer to RISC-V specifications.
-If the section is too heavy, promote it to a separate chapter.
-
-TRI Interface
-~~~~~~~~~~~~~
-Refer to OpenPiton documents.
-
