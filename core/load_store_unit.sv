@@ -75,6 +75,7 @@ module load_store_unit import ariane_pkg::*; #(
 
     //RVFI
     output [riscv::VLEN-1:0]         lsu_addr_o,
+    output [riscv::PLEN-1:0]         mem_paddr_o,
     output [(riscv::XLEN/8)-1:0]     lsu_rmask_o,
     output [(riscv::XLEN/8)-1:0]     lsu_wmask_o,
     output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
@@ -253,6 +254,7 @@ module load_store_unit import ariane_pkg::*; #(
         // MMU port
         .translation_req_o     ( st_translation_req   ),
         .vaddr_o               ( st_vaddr             ),
+        .mem_paddr_o           ( mem_paddr_o          ),
         .paddr_i               ( mmu_paddr            ),
         .ex_i                  ( mmu_exception        ),
         .dtlb_hit_i            ( dtlb_hit             ),
