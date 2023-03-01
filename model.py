@@ -60,10 +60,11 @@ class Model:
         r"([a-z]+)\s+0:\s*0x00000000([0-9a-f]+)\s*\(([0-9a-fx]+)\)\s*@\s*([0-9]+)\s*(.*)"
     )
 
-    def __init__(self, issue=1, commit=2, has_forwarding=True, has_renaming=True):
+    def __init__(self, issue=1, commit=2, sb_len=16, has_forwarding=True, has_renaming=True):
         self.instr_queue = []
         self.scoreboard = []
         self.retired = []
+        self.sb_len = sb_len
         self.issue_width = issue
         self.commit_width = commit
         self.has_forwarding = has_forwarding
@@ -78,7 +79,7 @@ class Model:
 
     def try_issue(self, cycle):
         """Try to issue an instruction"""
-        if len(self.instr_queue) == 0:
+        if len(self.instr_queue) == 0 or len(self.scoreboard) >= self.sb_len:
             return
         can_issue = True
         instr = self.instr_queue[0]
