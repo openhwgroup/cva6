@@ -78,7 +78,7 @@ module rvfi_tracer #(
           if (rvfi_i[i].mem_wmask != 0) begin
             $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
             if (TOHOST_ADDR != '0 &&
-                rvfi_i[i].mem_addr == TOHOST_ADDR &&
+                rvfi_i[i].mem_paddr == TOHOST_ADDR &&
                 rvfi_i[i].mem_wdata[0] == 1'b1) begin
               $display("### [rvfi_tracer] INFO: Terminating on store of 0x%h into 'tohost' at PC 0x%h\n", rvfi_i[i].mem_wdata, pc64);
               $fwrite(f, "\n### [rvfi_tracer] INFO: Terminating on store of 0x%h into 'tohost' at PC 0x%h\n", rvfi_i[i].mem_wdata, pc64);
