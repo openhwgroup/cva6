@@ -25,7 +25,7 @@ VCOM ?= vcom$(questa_version)
 VLIB ?= vlib$(questa_version)
 VMAP ?= vmap$(questa_version)
 # verilator version
-verilator      ?= verilator
+verilator      ?= verilator --no-timing
 # traget option
 target-options ?=
 # additional definess
