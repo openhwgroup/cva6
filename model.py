@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 
 from isa import Instr
 
-EventKind = Enum('EventKind', ['WAW', 'WAR', 'RAW', 'issue', 'done', 'commit'])
+EventKind = Enum('EventKind', ['WAW', 'WAR', 'RAW', 'SAL', 'issue', 'done', 'commit'])
 
 class Event:
     """Represents an event on an instruction"""
@@ -84,6 +84,7 @@ class Model:
         can_issue = True
         instr = self.instr_queue[0]
         for entry in self.scoreboard:
+            # Data hazards
             if instr.has_WAW_from(entry.instr) and not self.has_renaming:
                 self.log_event_on(instr, EventKind.WAW, cycle)
                 can_issue = False
@@ -94,6 +95,11 @@ class Model:
             if instr.has_RAW_from(entry.instr) and not can_forward:
                 self.log_event_on(instr, EventKind.RAW, cycle)
                 can_issue = False
+            # Store after Load
+            if instr.is_store() and entry.instr.is_load() and not entry.done:
+                if instr.addr_fields() == entry.instr.addr_fields():
+                    self.log_event_on(instr, EventKind.SAL, cycle)
+                    can_issue = False
         if can_issue:
             instr = self.instr_queue.pop(0)
             self.log_event_on(instr, EventKind.issue, cycle)

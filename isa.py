@@ -2,6 +2,8 @@
 Represents the instruction set
 """
 
+from dataclasses import dataclass
+
 class Reg:
     """Constants to represent registers"""
     # ABI names
@@ -71,6 +73,12 @@ class Reg:
     x29 = 29
     x30 = 30
     x31 = 31
+
+@dataclass
+class AddrFields:
+    """Represents the data used to build a memory address"""
+    base_reg: int
+    offset: int
 
 class Rtype:
     """R-type instructions"""
@@ -415,6 +423,12 @@ class Instr:
         'C.SLLI': CItype,
         'MISC-ALU': CAtype,
     }
+    iloads = ['C.LW', 'C.LWSP', 'LOAD']
+    floads = ['C.FLD', 'C.FLW', 'C.FLDSP', 'C.FLWSP', 'LOAD-FP']
+    istores = ['C.SW', 'C.SWSP', 'STORE']
+    fstores = ['C.FSD', 'C.FSW', 'C.FSDSP', 'C.FSWSP', 'STORE-FP']
+    loads = iloads + floads
+    stores = istores + fstores
 
     def __init__(self, bincode):
         self.bin = bincode
@@ -440,6 +454,20 @@ class Instr:
     def is_compressed(self):
         """Is the instruction from the C extension?"""
         return (self.bin & 3) < 3
+
+    def is_load(self):
+        """Is the instruction a load?"""
+        return self.base() in Instr.loads
+
+    def is_store(self):
+        """Is the instruction a store?"""
+        return self.base() in Instr.stores
+
+    def addr_fields(self):
+        """Get the register and offset to build an address"""
+        fields = self.fields()
+        offset = fields.offset if hasattr(fields, 'offset') else fields.imm
+        return AddrFields(fields.rs1, offset)
 
     def has_WAW_from(self, other):
         """b.has_WAW_from(a) if a.rd == b.rd"""
