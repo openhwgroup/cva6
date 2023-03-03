@@ -19,7 +19,7 @@ fi
 
 # install Verilator
 if ! [ -n "$VERILATOR_ROOT" ]; then
-  export VERILATOR_ROOT=$TOP/verilator-4.110/
+  export VERILATOR_ROOT=$TOP/verilator-5.006/
 fi
 cva6/regress/install-verilator.sh
 
