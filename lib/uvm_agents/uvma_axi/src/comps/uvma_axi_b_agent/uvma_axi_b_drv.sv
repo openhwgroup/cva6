@@ -82,7 +82,7 @@ class uvma_axi_b_drv_c extends uvm_driver #(uvma_axi_b_item_c);
 
       seq_item_port.get_next_item(b_item);
 
-         `uvm_info(get_type_name(),$sformatf("response, send resp to DUT"), UVM_LOW)
+         `uvm_info(get_type_name(),$sformatf("response, send resp to DUT"), UVM_HIGH)
 
          this.slave_mp.slv_axi_cb.b_id    <= this.b_item.b_id;
          this.slave_mp.slv_axi_cb.b_resp  <= this.b_item.b_resp;

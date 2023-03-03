@@ -81,7 +81,7 @@ endtask: drv_in_reset
 
 task uvma_axi_aw_drv_c::drv_post_reset();
 
-   `uvm_info(get_type_name(), $sformatf("write address driver start"), UVM_LOW)
+   `uvm_info(get_type_name(), $sformatf("write address driver start"), UVM_HIGH)
    seq_item_port.get_next_item(aw_item);
 
       this.slave_mp.slv_axi_cb.aw_ready <= 1'b0;

@@ -51,12 +51,12 @@ task uvma_axi_aw_seq_c::body();
       p_sequencer.aw_req_fifo.get(req_item);
 
       start_item(req_item);
-         `uvm_info(get_type_name(), "WRITE ADDRESS sequence starting", UVM_LOW)
+         `uvm_info(get_type_name(), "WRITE ADDRESS sequence starting", UVM_HIGH)
          add_latencies(req_item);
       finish_item(req_item);
 
    end
-   `uvm_info(get_type_name(), "Default sequence completed", UVM_LOW)
+   `uvm_info(get_type_name(), "Default sequence completed", UVM_HIGH)
 
 endtask : body
 

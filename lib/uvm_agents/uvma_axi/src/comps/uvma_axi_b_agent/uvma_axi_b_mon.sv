@@ -78,7 +78,7 @@ task uvma_axi_b_mon_c::monitor_b_items();
    forever begin
 
       // collect b signals
-      `uvm_info(get_type_name(), $sformatf("response, collect resp signals from interface"), UVM_LOW)
+      `uvm_info(get_type_name(), $sformatf("response, collect resp signals from interface"), UVM_HIGH)
       this.b_item.b_id    = passive_mp.psv_axi_cb.b_id;
       this.b_item.b_resp  = passive_mp.psv_axi_cb.b_resp;
       this.b_item.b_user  = passive_mp.psv_axi_cb.b_user;

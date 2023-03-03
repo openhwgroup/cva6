@@ -63,7 +63,7 @@ task uvma_axi_w_seq_c::body();
       cfg   = p_sequencer.cfg;
       cntxt = p_sequencer.cntxt;
 
-      `uvm_info(get_type_name(), "WRITE DATA sequence starting", UVM_LOW)
+      `uvm_info(get_type_name(), "WRITE DATA sequence starting", UVM_HIGH)
 
       p_sequencer.aw_req_export.get(aw_req_item);
       p_sequencer.w_req_fifo.get(w_req_item);
@@ -95,7 +95,6 @@ task uvma_axi_w_seq_c::body();
       end
 
       start_item(w_req_item);
-         `uvm_info(get_type_name(), $sformatf("req_requette size = %d", req_requette.size()), UVM_LOW)
          if(w_req_item.w_valid) begin
 
             if(latency == 0) begin
@@ -122,11 +121,11 @@ task uvma_axi_w_seq_c::body();
             w_req_item.w_ready = 0;
          end
 
-         `uvm_info(get_type_name(), $sformatf("status = %d et  write_status = %d", status, write_status), UVM_LOW)
+         `uvm_info(get_type_name(), $sformatf("status = %d et  write_status = %d", status, write_status), UVM_HIGH)
          if(status == 1 && write_status == 1) begin
 
             longint aligned_addr;
-            `uvm_info(get_type_name(), $sformatf("AXI_ADDR_WIDTH = %d et  AXI_ADDR_WIDTH_BYTE = %d", AXI_ADDR_WIDTH, AXI_ADDR_WIDTH/8), UVM_LOW)
+            `uvm_info(get_type_name(), $sformatf("AXI_ADDR_WIDTH = %d et  AXI_ADDR_WIDTH_BYTE = %d", AXI_ADDR_WIDTH, AXI_ADDR_WIDTH/8), UVM_HIGH)
             aligned_addr = req_requette[0].aw_addr - req_requette[0].aw_addr % (AXI_ADDR_WIDTH/8);
             if(write_data_req[0].w_strb[0]) cntxt.mem.write(aligned_addr+0, write_data_req[0].w_data[07:00]);
             if(write_data_req[0].w_strb[1]) cntxt.mem.write(aligned_addr+1, write_data_req[0].w_data[15:08]);
@@ -162,7 +161,7 @@ task uvma_axi_w_seq_c::body();
          end
       finish_item(w_req_item);
    end
-   `uvm_info(get_type_name(), "Write data sequence completed", UVM_LOW)
+   `uvm_info(get_type_name(), "Write data sequence completed", UVM_HIGH)
 
 endtask : body
 
