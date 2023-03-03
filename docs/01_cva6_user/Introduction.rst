@@ -84,7 +84,7 @@ curated at the OpenHW Group by its members.
 This guide targets all versions of the cores, except if a specific configuration or parameter setting is mentioned.
 
 Scope of the IP
----------------
+~~~~~~~~~~~~~~~
 
 The **scope of the IP** refers the subsystem that is documented here.
 
@@ -109,8 +109,8 @@ These are not part of the IP (several solutions can be used):
 -  Debug module (such as DTM);
 -  Support of L1 write-back cache.
 
-Compliance to Specifications
-----------------------------
+Specifications and References
+-----------------------------
 
 Applicable Specifications
 ~~~~~~~~~~~~~~~~~~~~~~~~~
