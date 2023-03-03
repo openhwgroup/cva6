@@ -148,13 +148,17 @@ task uvma_axi_b_seq_c::body();
             if(b_preresp_item.b_ready) begin
 
                foreach(req_requette[i,j]) begin
-                  req_requette[selected_id][j] = req_requette[selected_id][j+1];
+                  if(j < req_requette[selected_id].size()-1) begin
+                     req_requette[selected_id][j] = req_requette[selected_id][j+1];
+                  end
                end
                req_requette[selected_id] = new[aw_id_tr[selected_id] - 1] (req_requette[selected_id]);
                aw_id_tr[selected_id]--;
  
                foreach(status[i]) begin
-                  status[i] = status[i+1];
+                  if(i < status.size()-1) begin
+                     status[i] = status[i+1];
+                  end
                end
                status = new[status.size() - 1] (status);
 
