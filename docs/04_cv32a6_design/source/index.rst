@@ -27,7 +27,6 @@ Editor: **Jean Roch Coulon**
    cv32a6_intro
    cv32a6_subsystem
    cv32a6_frontend
-   cv32a6_isa
    cv32a6_csr
    cv32a6_axi
    cv32a6_glossary
