@@ -72,7 +72,7 @@ task uvma_axi_r_seq_c::body();
       cfg   = p_sequencer.cfg  ;
       cntxt = p_sequencer.cntxt;
 
-      `uvm_info(get_type_name(), "READ DATA sequence starting", UVM_LOW)
+      `uvm_info(get_type_name(), "READ DATA sequence starting", UVM_HIGH)
 
       p_sequencer.ar_req_export.get(req_item);
       p_sequencer.r_resp_fifo.get(pre_resp);
@@ -81,7 +81,7 @@ task uvma_axi_r_seq_c::body();
 
          if(req_item.ar_valid && req_item.ar_ready) begin
 
-            `uvm_info(get_type_name(), "Read request registere", UVM_LOW)
+            `uvm_info(get_type_name(), "Read request registere", UVM_HIGH)
             if(req_item.ar_id >= ar_id_tr.size()) begin
 
                ar_id_tr = new[req_item.ar_id+1] (ar_id_tr);
@@ -97,7 +97,7 @@ task uvma_axi_r_seq_c::body();
                req_requette[req_item.ar_id][ar_id_tr[req_item.ar_id] - 1] = new req_item;
 
             end
-            `uvm_info(get_type_name(), "Read request registred", UVM_LOW)
+            `uvm_info(get_type_name(), "Read request registred", UVM_HIGH)
             status = new[status.size() + 1] (status);
             status[status.size() - 1] = req_item.ar_id;
          end
@@ -108,10 +108,9 @@ task uvma_axi_r_seq_c::body();
             r_latency = -1;
          end
 
-         `uvm_info(get_type_name(), $sformatf("r_ready id = %d || LATENCY = %d",pre_resp.r_ready, r_latency), UVM_LOW)
          if(r_latency > -1 && pre_resp.r_ready && selected_id != -1) begin
 
-            `uvm_info(get_type_name(), "transfert termine", UVM_LOW)
+            `uvm_info(get_type_name(), "transfert termine", UVM_HIGH)
             if(ar_id_tr[selected_id] > 0) begin
                if(resp_item.r_last  == 1'b1) begin
 
@@ -143,12 +142,12 @@ task uvma_axi_r_seq_c::body();
 
          end
 
-         `uvm_info(get_type_name(), $sformatf("selected id = %d || LATENCY = %d",selected_id, r_latency), UVM_LOW)
+         `uvm_info(get_type_name(), $sformatf("selected id = %d || LATENCY = %d",selected_id, r_latency), UVM_HIGH)
 
          if(selected_id != -1) begin
             if(r_latency == -1) begin
 
-			   `uvm_info(get_type_name(), "read item", UVM_LOW)
+			   `uvm_info(get_type_name(), "read item", UVM_HIGH)
                prepare_resp(req_requette[selected_id][0], resp_item, inject_error);
                if(req_requette[selected_id][0].ar_len == 0) begin
                   `uvm_info(get_type_name()," last will be asserted ",UVM_HIGH)
@@ -173,7 +172,7 @@ task uvma_axi_r_seq_c::body();
 
       finish_item(resp_item);
    end
-   `uvm_info(get_type_name(), "Default sequence completed", UVM_LOW)
+   `uvm_info(get_type_name(), "Default sequence completed", UVM_HIGH)
 
 endtask : body
 

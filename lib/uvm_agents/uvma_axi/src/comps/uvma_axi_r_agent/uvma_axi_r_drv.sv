@@ -90,7 +90,7 @@ task uvma_axi_r_drv_c::drv_post_reset();
 
    seq_item_port.get_next_item(r_item);
 
-      `uvm_info(get_type_name(),$sformatf("response, send data to DUT"), UVM_LOW)
+      `uvm_info(get_type_name(),$sformatf("response, send data to DUT"), UVM_HIGH)
       this.slave_mp.slv_axi_cb.r_id    <= this.r_item.r_id;
       this.slave_mp.slv_axi_cb.r_resp  <= this.r_item.r_resp;
       this.slave_mp.slv_axi_cb.r_user  <= this.r_item.r_user;

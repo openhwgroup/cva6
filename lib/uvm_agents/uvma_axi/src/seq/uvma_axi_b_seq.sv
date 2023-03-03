@@ -67,7 +67,7 @@ task uvma_axi_b_seq_c::body();
       cfg   = p_sequencer.cfg  ;
       cntxt = p_sequencer.cntxt;
 
-      `uvm_info(get_type_name(), "WRITE RESPONSE sequence starting", UVM_LOW)
+      `uvm_info(get_type_name(), "WRITE RESPONSE sequence starting", UVM_HIGH)
 
       p_sequencer.aw_req_export.get(aw_req_item);
       p_sequencer.w_req_export.get(w_req_item);
@@ -174,7 +174,7 @@ task uvma_axi_b_seq_c::body();
          end
 
       finish_item(b_resp_item);
-      `uvm_info(get_type_name(), "Default sequence completed", UVM_LOW)
+      `uvm_info(get_type_name(), "Default sequence completed", UVM_HIGH)
    end
 endtask : body
 

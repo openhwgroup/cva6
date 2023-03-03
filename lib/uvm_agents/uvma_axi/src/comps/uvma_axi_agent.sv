@@ -104,6 +104,7 @@ class uvma_axi_agent_c extends uvm_agent;
 
       if (cfg.trn_log_enabled) begin
          connect_trn_loggers();
+         `uvm_info(get_type_name(), $sformatf("Transaction Loger enable"), UVM_LOW)
       end
 
    endfunction
