@@ -1,6 +1,7 @@
 ===============================
 CVA6 Requirement Specification
 ===============================
+Editor: **Jerome Quevremont**
 
 Revision 1.0.1
 

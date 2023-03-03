@@ -16,28 +16,14 @@
 
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
-CVA6 User Manual
-================
-Editor: **Jerome Quevremont**
+CVA6 APU
+========
+Editor: **Florian Zaruba**
+`florian@openhwgroup.org <mailto:florian@openhwgroup.org?subject=CVA6%20User%20Manual>`__
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   CVA6_user_guide
-   Introduction
-   Programmer_View
-   Custom_Instructions
-   PMA
-   PMP
-   Traps_Interrupts_Exceptions
-   Compiler_Command_Lines
-   RISCV_Instructions
-   CV32A6_Control_Status_Registers
-   CV64A6_Control_Status_Registers
-   CSR_Cache_Control
-   CSR_Performance_Counters
-   Parameters_Configuration
-   Interfaces
-   Core_Integration
-   CVX_Interface_Coprocessor
+   cva6_apu
+   cva6_testharness

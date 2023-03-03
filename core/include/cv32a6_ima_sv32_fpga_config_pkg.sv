@@ -40,4 +40,13 @@ package cva6_config_pkg;
     localparam CVA6ConfigNrLoadPipeRegs = 1;
     localparam CVA6ConfigNrStorePipeRegs = 0;
 
+    localparam CVA6ConfigInstrTlbEntries = 2;
+    localparam CVA6ConfigDataTlbEntries = 2;
+
+    localparam CVA6ConfigRASDepth = 2;
+    localparam CVA6ConfigBTBEntries = 32;
+    localparam CVA6ConfigBHTEntries = 128;
+
+    localparam CVA6ConfigNrPMPEntries = 0;
+
 endpackage

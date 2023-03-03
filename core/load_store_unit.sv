@@ -75,6 +75,7 @@ module load_store_unit import ariane_pkg::*; #(
 
     //RVFI
     output [riscv::VLEN-1:0]         lsu_addr_o,
+    output [riscv::PLEN-1:0]         mem_paddr_o,
     output [(riscv::XLEN/8)-1:0]     lsu_rmask_o,
     output [(riscv::XLEN/8)-1:0]     lsu_wmask_o,
     output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
@@ -138,8 +139,8 @@ module load_store_unit import ariane_pkg::*; #(
     // -------------------
     if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
         mmu #(
-            .INSTR_TLB_ENTRIES      ( 16                     ),
-            .DATA_TLB_ENTRIES       ( 16                     ),
+            .INSTR_TLB_ENTRIES      ( ariane_pkg::INSTR_TLB_ENTRIES ),
+            .DATA_TLB_ENTRIES       ( ariane_pkg::DATA_TLB_ENTRIES ),
             .ASID_WIDTH             ( ASID_WIDTH             ),
             .ArianeCfg              ( ArianeCfg              )
         ) i_cva6_mmu (
@@ -167,8 +168,8 @@ module load_store_unit import ariane_pkg::*; #(
         );
     end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
         cva6_mmu_sv32 #(
-            .INSTR_TLB_ENTRIES      ( 16                     ),
-            .DATA_TLB_ENTRIES       ( 16                     ),
+            .INSTR_TLB_ENTRIES      ( ariane_pkg::INSTR_TLB_ENTRIES ),
+            .DATA_TLB_ENTRIES       ( ariane_pkg::DATA_TLB_ENTRIES ),
             .ASID_WIDTH             ( ASID_WIDTH             ),
             .ArianeCfg              ( ArianeCfg              )
         ) i_cva6_mmu (
@@ -253,6 +254,7 @@ module load_store_unit import ariane_pkg::*; #(
         // MMU port
         .translation_req_o     ( st_translation_req   ),
         .vaddr_o               ( st_vaddr             ),
+        .mem_paddr_o           ( mem_paddr_o          ),
         .paddr_i               ( mmu_paddr            ),
         .ex_i                  ( mmu_exception        ),
         .dtlb_hit_i            ( dtlb_hit             ),
