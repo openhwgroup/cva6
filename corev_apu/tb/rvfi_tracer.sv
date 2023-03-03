@@ -28,9 +28,6 @@ module rvfi_tracer #(
     if (TOHOST_ADDR == '0) begin
       $display("*** [rvf_tracer] WARNING: No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
       $fwrite(f, "*** [rvfi_tracer] WARNING No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
-    end else begin
-      $display("### [rvfi_tracer] INFO: Using 'tohost' address 0x%h\n", TOHOST_ADDR);
-      $fwrite(f, "### [rvfi_tracer] INFO: Using 'tohost' address 0x%h\n", TOHOST_ADDR);
     end
   end
 
@@ -80,8 +77,6 @@ module rvfi_tracer #(
             if (TOHOST_ADDR != '0 &&
                 rvfi_i[i].mem_paddr == TOHOST_ADDR &&
                 rvfi_i[i].mem_wdata[0] == 1'b1) begin
-              $display("### [rvfi_tracer] INFO: Terminating on store of 0x%h into 'tohost' at PC 0x%h\n", rvfi_i[i].mem_wdata, pc64);
-              $fwrite(f, "\n### [rvfi_tracer] INFO: Terminating on store of 0x%h into 'tohost' at PC 0x%h\n", rvfi_i[i].mem_wdata, pc64);
               $finish(1);
               $finish(1);
             end
