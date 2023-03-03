@@ -1,4 +1,4 @@
-sphinx
+sphinx>=3.1.2
 sphinx-rtd-theme
 recommonmark
 sphinxcontrib-svg2pdfconverter
