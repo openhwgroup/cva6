@@ -615,12 +615,16 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_PMPCFG1: begin
                     if (riscv::XLEN == 32) begin
                         for (int i = 0; i < 4; i++) if (!pmpcfg_q[i+4].locked) pmpcfg_d[i+4]  = csr_wdata[i*8+:8];
+                    end else begin
+                      update_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_PMPCFG2:    for (int i = 0; i < (riscv::XLEN/8); i++) if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8]  = csr_wdata[i*8+:8];
                 riscv::CSR_PMPCFG3: begin
                     if (riscv::XLEN == 32) begin
                         for (int i = 0; i < 4; i++) if (!pmpcfg_q[i+12].locked) pmpcfg_d[i+12]  = csr_wdata[i*8+:8];
+                    end else begin
+                      update_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_PMPADDR0,
