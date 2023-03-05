@@ -88,7 +88,7 @@ Scope of the IP
 
 The **scope of the IP** refers the subsystem that is documented here.
 
-.. image:: https://github.com/jquevremont/cva6/blob/master/docs/02_cva6_requirements/images/cva6_scope.png
+.. image:: ../02_cva6_requirements/images/cva6_scope.png
 
 As displayed in the picture above, the IP comprises:
 
