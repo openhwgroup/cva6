@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
+# Original Author: Jean-Roch COULON - Thales
 
 if ! [ -n "$ARCH_TEST_REPO" ]; then
   ARCH_TEST_REPO=https://github.com/riscv-non-isa/riscv-arch-test

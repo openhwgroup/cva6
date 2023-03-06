@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
+# Original Author: Jean-Roch COULON - Thales
 
 set -e
 VERSION="e93b9cbbbcd3ad0a02ae298e9f1a2d98d3ac0153"
@@ -19,7 +19,7 @@ if [ ! -f "$SPIKE_ROOT/bin/spike"  ]; then
     PATCH_DIR=`pwd`/cva6/regress
     mkdir -p $SPIKE_ROOT
     cd $SPIKE_ROOT
-    git clone https://github.com/riscv/riscv-isa-sim.git 
+    git clone https://github.com/riscv/riscv-isa-sim.git
     cd riscv-isa-sim
     git checkout $VERSION
     # Apply Spike patches.

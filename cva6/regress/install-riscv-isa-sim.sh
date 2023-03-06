@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
+# Original Author: Jean-Roch COULON - Thales
 
 if ! [ -n "$RISCV_ISA_SIM" ]; then
   RISCV_ISA_SIM="https://github.com/riscv-software-src/riscv-isa-sim.git"

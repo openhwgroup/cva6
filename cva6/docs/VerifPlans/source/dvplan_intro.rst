@@ -6,7 +6,7 @@
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
    You may obtain a copy of the License at https://solderpad.org/licenses/
 
-   Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.com)
+   Original Author: Jean-Roch COULON - Thales
 
 .. _DVPLAN_INTRO:
 
@@ -71,8 +71,7 @@ Description of the framework:
 Contributors
 ------------
 
-| Jean-Roch Coulon
-  (`jean-roch.coulon@thalesgroup.com <mailto:jean-roch.coulon@thalesgroup.com>`__)
+| Jean-Roch Coulon - Thales
 
 [TO BE COMPLETED]
 
