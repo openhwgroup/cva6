@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
-// Original Author: Jean-Roch COULON (jean-roch.coulon@invia.fr)
+// Original Author: Jean-Roch COULON - Thales
 
 module rvfi_tracer #(
   parameter logic [7:0] HART_ID      = '0,

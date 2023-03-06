@@ -18,7 +18,6 @@
 CV32A6 Design Document
 ======================
 Editor: **Jean Roch Coulon**
-`jean-roch.coulon@thalesgroup.com <mailto:jean-roch.coulon@thalesgroup.com?subject=CV32A6%20Design%20Document>`__
 
 .. toctree::
    :maxdepth: 3
