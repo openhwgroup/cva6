@@ -1,7 +1,7 @@
 XLEN ?= 64
 CROSSCOMPILE ?= riscv64-unknown-elf-
 CC = ${CROSSCOMPILE}gcc
-PYTHON=python
+PYTHON=python2
 
 ifeq ($(XLEN), 64)
 CFLAGS = -Os -ggdb -march=rv64imac -mabi=lp64 -Wall -mcmodel=medany -mexplicit-relocs
