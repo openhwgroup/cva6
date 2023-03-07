@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+""" Convert binary output of objcopy -O binary into a system verilog module and
+a header file for simulation
+"""
 
 from string import Template
 import argparse
@@ -12,17 +15,17 @@ def parse() :
             help='filename of input binary')
 
     args = parser.parse_args()
-    file = args.filename[0];
+    file = args.filename[0]
+    filename = os.path.splitext(file)[0]
 
-# check that file exists
+    # check that file exists
     if not os.path.isfile(file):
         print("File {} does not exist.".format(filename))
         sys.exit(1)
 
-    filename = os.path.splitext(file)[0]
     return filename
 
-license = """\
+LICENSE_TEMPLATE = """\
 /* Copyright 2018 ETH Zurich and University of Bologna.
  * Copyright and related rights are licensed under the Solderpad Hardware
  * License, Version 0.51 (the "License"); you may not use this file except in
@@ -41,7 +44,7 @@ license = """\
 // Auto-generated code
 """
 
-module = """\
+MODULE_TEMPLATE = """\
 module $filename (
    input  logic         clk_i,
    input  logic         req_i,
@@ -83,16 +86,15 @@ def read_bin(filename):
         rom = f.read()
 
     # align to 64 bit
-    align = (int((len(rom) + 7) / 8 )) * 8;
+    align = (int((len(rom) + 7) / 8 )) * 8
 
     for i in range(len(rom), align):
         rom += b"\x00"
 
     return rom
 
-""" Generate C header file for simulator
-"""
 def generate_h(filename, rom):
+    """ Generate C header file for simulator """
     with open(filename + ".h", "w") as f:
         rom_str = ""
         # process in junks of 32 bit (4 byte)
@@ -107,9 +109,8 @@ def generate_h(filename, rom):
 
         f.close()
 
-""" Generate SystemVerilog bootcode for FPGA and ASIC
-"""
 def generate_sv(filename, rom):
+    """ Generate SystemVerilog bootcode for FPGA and ASIC """
     with open(filename + ".sv", "w") as f:
         rom_str = ""
         rom = bytes(reversed(rom))
@@ -120,8 +121,8 @@ def generate_sv(filename, rom):
         # remove the trailing comma
         rom_str = rom_str[:-2]
 
-        f.write(license)
-        s = Template(module)
+        f.write(LICENSE_TEMPLATE)
+        s = Template(MODULE_TEMPLATE)
         f.write(s.substitute(filename=filename, size=int(len(rom)/8), content=rom_str))
 
 if __name__ == "__main__":
