@@ -51,8 +51,8 @@ module ariane import ariane_pkg::*; #(
   input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
 `else
   // memory side, AXI Master
-  output ariane_axi::req_t             axi_req_o,
-  input  ariane_axi::resp_t            axi_resp_i
+  output axi_req_t                     axi_req_o,
+  input  axi_rsp_t                     axi_resp_i
 `endif
 );
 
