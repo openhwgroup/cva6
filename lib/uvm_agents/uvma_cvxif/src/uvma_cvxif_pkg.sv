@@ -15,6 +15,7 @@
 // Interface(s) / Module(s) / Checker(s)
 `include "uvma_cvxif_intf.sv"
 `include "uvma_cvxif_assert.sv"
+`include "uvma_cvxif_macros.sv"
 
 /**
  * Encapsulates all the types needed for an UVM agent capable of driving and/or

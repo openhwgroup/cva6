@@ -67,6 +67,10 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft sys_clk_period         == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
    }
 
+   constraint cvxif_feature { //CVA6 do not support dual read & write also the memory interface
+      soft cvxif_cfg.dual_read_write_support_x == 0;
+      soft cvxif_cfg.load_store_support_x == 0;
+   }
    constraint cva6_riscv_cons {
       xlen == uvma_core_cntrl_pkg::MXL_32;
       ilen == 32;
