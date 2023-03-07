@@ -1,0 +1,45 @@
+packages:
+  axi:
+    revision: 9251564ed67e3e71adf46dbeba62ef4435d2524c
+    version: 0.31.1
+    source:
+      Git: https://github.com/pulp-platform/axi.git
+    dependencies:
+    - common_cells
+    - common_verification
+  common_cells:
+    revision: 4dc9413990622dcbf4b37a19f792834c800da5c7
+    version: 1.28.0
+    source:
+      Git: https://github.com/pulp-platform/common_cells
+    dependencies:
+    - common_verification
+    - tech_cells_generic
+  common_verification:
+    revision: 9c07fa860593b2caabd9b5681740c25fac04b878
+    version: 0.2.3
+    source:
+      Git: https://github.com/pulp-platform/common_verification.git
+    dependencies: []
+  fpnew:
+    revision: 8dc44406b1ccbc4487121710c1883e805f893965
+    version: 0.6.6
+    source:
+      Git: https://github.com/pulp-platform/fpnew.git
+    dependencies:
+    - common_cells
+    - fpu_div_sqrt_mvp
+  fpu_div_sqrt_mvp:
+    revision: 86e1f558b3c95e91577c41b2fc452c86b04e85ac
+    version: 1.0.4
+    source:
+      Git: https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
+    dependencies:
+    - common_cells
+  tech_cells_generic:
+    revision: b2a68114302af1d8191ddf34ea0e07b471911866
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/tech_cells_generic.git
+    dependencies:
+    - common_verification
