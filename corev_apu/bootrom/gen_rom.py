@@ -80,15 +80,13 @@ $content
 def read_bin():
 
     with open(filename + ".img", 'rb') as f:
-        rom = binascii.hexlify(f.read())
-        rom = map(''.join, zip(rom[::2], rom[1::2]))
-
+        rom = f.read()
 
     # align to 64 bit
     align = (int((len(rom) + 7) / 8 )) * 8;
 
     for i in range(len(rom), align):
-        rom.append("00")
+        rom += b"\x00"
 
     return rom
 
@@ -100,7 +98,7 @@ with open(filename + ".h", "w") as f:
     rom_str = ""
     # process in junks of 32 bit (4 byte)
     for i in range(0, int(len(rom)/4)):
-        rom_str += "    0x" + "".join(rom[i*4:i*4+4][::-1]) + ",\n"
+        rom_str += "    0x" + bytes(reversed(rom[i*4:i*4+4])).hex() + ",\n"
 
     # remove the trailing comma
     rom_str = rom_str[:-2]
@@ -114,9 +112,10 @@ with open(filename + ".h", "w") as f:
 """
 with open(filename + ".sv", "w") as f:
     rom_str = ""
+    rom = bytes(reversed(rom))
     # process in junks of 64 bit (8 byte)
-    for i in reversed(range(int(len(rom)/8))):
-        rom_str += "        64'h" + "".join(rom[i*8+4:i*8+8][::-1]) + "_" + "".join(rom[i*8:i*8+4][::-1]) + ",\n"
+    for i in range(int(len(rom)/8)):
+        rom_str += "        64'h" + rom[i*8:i*8+4].hex() + "_" + rom[i*8+4:i*8+8].hex() + ",\n"
 
     # remove the trailing comma
     rom_str = rom_str[:-2]
