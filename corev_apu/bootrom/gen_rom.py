@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Convert binary output of objcopy -O binary into a system verilog module and
+""" Convert binary output of 'objcopy -O binary elfFile' into a system verilog module and
 a header file for simulation
 """
 
@@ -9,7 +9,7 @@ import os.path
 import sys
 
 
-def parse() :
+def parse():
     parser = argparse.ArgumentParser(description='Convert binary file to verilog rom')
     parser.add_argument('filename', metavar='filename', nargs=1,
             help='filename of input binary')
