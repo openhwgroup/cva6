@@ -525,6 +525,7 @@ module fpu_wrap import ariane_pkg::*; (
       .int_fmt_i      ( fpnew_pkg::int_format_e'(fpu_ifmt)  ),
       .vectorial_op_i ( fpu_vec_op                          ),
       .tag_i          ( fpu_tag                             ),
+      .simd_mask_i    ( 1'b1                                ),
       .in_valid_i     ( fpu_in_valid                        ),
       .in_ready_o     ( fpu_in_ready                        ),
       .flush_i,

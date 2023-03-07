@@ -17,7 +17,7 @@ set clk_period $PERIOD
 set input_delay $INPUT_DELAY
 set output_delay $OUTPUT_DELAY
 
-set_app_var search_path "../../vendor/pulp-platform/fpnew/src/common_cells/include/ $search_path"
+set_app_var search_path "../../vendor/openhwgroup/cvfpu/src/common_cells/include/ $search_path"
 
 sh rm -rf work
 sh mkdir work

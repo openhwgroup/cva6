@@ -12,7 +12,7 @@
 ../../axi/src/axi_pkg.sv
 ../../axi/src/axi_intf.sv
 ../../axi/src/axi_test.sv
-../../../vendor/pulp-platform/fpnew/src/fpnew_pkg.sv
+../../../vendor/openhwgroup/cvfpu/src/fpnew_pkg.sv
 ../../../core/include/ariane_pkg.sv
 ../ariane_soc_pkg.sv
 ../ariane_axi_soc_pkg.sv
