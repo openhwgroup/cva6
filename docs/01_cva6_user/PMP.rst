@@ -36,6 +36,7 @@ The PMP grain is ``2**G+2``. Only a PMP granularity of 8 bytes (``G=1``) is
 supported in CVA6. PMP address length is equal to the processors physical
 address length. Since ``G=1`` the ``NA4`` modes is not selectable.
 
-Writes to ``pmpaddr`` are WARL and depend on the address mode. For ``NAPOT`` it is
-set to ``1``, for ``TOR`` / ``OFF`` it is set to ``0``.
+Writes to ``pmpaddr`` are WARL and depend on the address mode. For naturally
+aligned power-of 2 addressing mode (``NAPOT``) it is set to ``1``, for top
+boundary of an arbitrary range (``TOR``) or ``OFF`` it is set to ``0``.
 
