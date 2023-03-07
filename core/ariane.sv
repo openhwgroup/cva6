@@ -66,6 +66,7 @@ module ariane import ariane_pkg::*; #(
     .AxiIdWidth ( AxiIdWidth ),
     .axi_ar_chan_t (axi_ar_chan_t),
     .axi_aw_chan_t (axi_aw_chan_t),
+    .axi_w_chan_t (axi_w_chan_t),
     .axi_req_t (axi_req_t),
     .axi_rsp_t (axi_rsp_t)
   ) i_cva6 (
