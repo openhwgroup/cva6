@@ -125,8 +125,11 @@ def generate_sv(filename, rom):
         s = Template(MODULE_TEMPLATE)
         f.write(s.substitute(filename=filename, size=int(len(rom)/8), content=rom_str))
 
-if __name__ == "__main__":
+def main():
     filename = parse()
     rom = read_bin(filename)
     generate_sv(filename, rom)
     generate_h(filename, rom)
+
+if __name__ == "__main__":
+    main()
