@@ -4,22 +4,23 @@ from string import Template
 import argparse
 import os.path
 import sys
-import binascii
 
 
-parser = argparse.ArgumentParser(description='Convert binary file to verilog rom')
-parser.add_argument('filename', metavar='filename', nargs=1,
-                   help='filename of input binary')
+def parse() :
+    parser = argparse.ArgumentParser(description='Convert binary file to verilog rom')
+    parser.add_argument('filename', metavar='filename', nargs=1,
+            help='filename of input binary')
 
-args = parser.parse_args()
-file = args.filename[0];
+    args = parser.parse_args()
+    file = args.filename[0];
 
 # check that file exists
-if not os.path.isfile(file):
-    print("File {} does not exist.".format(filename))
-    sys.exit(1)
+    if not os.path.isfile(file):
+        print("File {} does not exist.".format(filename))
+        sys.exit(1)
 
-filename = os.path.splitext(file)[0]
+    filename = os.path.splitext(file)[0]
+    return filename
 
 license = """\
 /* Copyright 2018 ETH Zurich and University of Bologna.
@@ -77,8 +78,7 @@ $content
 };
 """
 
-def read_bin():
-
+def read_bin(filename):
     with open(filename + ".img", 'rb') as f:
         rom = f.read()
 
@@ -90,37 +90,42 @@ def read_bin():
 
     return rom
 
-rom = read_bin()
-
 """ Generate C header file for simulator
 """
-with open(filename + ".h", "w") as f:
-    rom_str = ""
-    # process in junks of 32 bit (4 byte)
-    for i in range(0, int(len(rom)/4)):
-        rom_str += "    0x" + bytes(reversed(rom[i*4:i*4+4])).hex() + ",\n"
+def generate_h(filename, rom):
+    with open(filename + ".h", "w") as f:
+        rom_str = ""
+        # process in junks of 32 bit (4 byte)
+        for i in range(0, int(len(rom)/4)):
+            rom_str += "    0x" + bytes(reversed(rom[i*4:i*4+4])).hex() + ",\n"
 
-    # remove the trailing comma
-    rom_str = rom_str[:-2]
+        # remove the trailing comma
+        rom_str = rom_str[:-2]
 
-    s = Template(c_var)
-    f.write(s.substitute(filename=filename, size=int(len(rom)/4), content=rom_str))
+        s = Template(c_var)
+        f.write(s.substitute(filename=filename, size=int(len(rom)/4), content=rom_str))
 
-    f.close()
+        f.close()
 
 """ Generate SystemVerilog bootcode for FPGA and ASIC
 """
-with open(filename + ".sv", "w") as f:
-    rom_str = ""
-    rom = bytes(reversed(rom))
-    # process in junks of 64 bit (8 byte)
-    for i in range(int(len(rom)/8)):
-        rom_str += "        64'h" + rom[i*8:i*8+4].hex() + "_" + rom[i*8+4:i*8+8].hex() + ",\n"
+def generate_sv(filename, rom):
+    with open(filename + ".sv", "w") as f:
+        rom_str = ""
+        rom = bytes(reversed(rom))
+        # process in junks of 64 bit (8 byte)
+        for i in range(int(len(rom)/8)):
+            rom_str += "        64'h" + rom[i*8:i*8+4].hex() + "_" + rom[i*8+4:i*8+8].hex() + ",\n"
 
-    # remove the trailing comma
-    rom_str = rom_str[:-2]
+        # remove the trailing comma
+        rom_str = rom_str[:-2]
 
-    f.write(license)
-    s = Template(module)
-    f.write(s.substitute(filename=filename, size=int(len(rom)/8), content=rom_str))
+        f.write(license)
+        s = Template(module)
+        f.write(s.substitute(filename=filename, size=int(len(rom)/8), content=rom_str))
 
+if __name__ == "__main__":
+    filename = parse()
+    rom = read_bin(filename)
+    generate_sv(filename, rom)
+    generate_h(filename, rom)
