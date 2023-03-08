@@ -353,7 +353,7 @@ done_processing:
   // memif.read(0x84000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__gen_mem_user__DOT__i_tc_sram_wrapper_user__DOT__i_tc_sram__DOT__sram);
 
 #ifndef DROMAJO
-  while (!dtm->done() && !jtag->done()) {
+  while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)) {
 #else
   // the simulation gets killed by dromajo
   while (true) {
@@ -387,13 +387,17 @@ done_processing:
 
 #ifndef DROMAJO
   if (dtm->exit_code()) {
-    fprintf(stderr, "%s *** FAILED *** (code = %d) after %ld cycles\n", htif_argv[1], dtm->exit_code(), main_time);
+    fprintf(stderr, "%s *** FAILED *** (tohost = %d) after %ld cycles\n", htif_argv[1], dtm->exit_code(), main_time);
     ret = dtm->exit_code();
   } else if (jtag->exit_code()) {
-    fprintf(stderr, "%s *** FAILED *** (code = %d, seed %d) after %ld cycles\n", htif_argv[1], jtag->exit_code(), random_seed, main_time);
+    fprintf(stderr, "%s *** FAILED *** (tohost = %d, seed %d) after %ld cycles\n", htif_argv[1], jtag->exit_code(), random_seed, main_time);
     ret = jtag->exit_code();
+  } else if (top->exit_o & 0xFFFFFFFE) {
+    int exitcode = ((unsigned int) top->exit_o) >> 1;
+    fprintf(stderr, "%s *** FAILED *** (tohost = %d) after %ld cycles\n", htif_argv[1], exitcode, main_time);
+    ret = exitcode;
   } else {
-    fprintf(stderr, "%s completed after %ld cycles\n", htif_argv[1], main_time);
+    fprintf(stderr, "%s *** SUCCESS *** (tohost = 0) after %ld cycles\n", htif_argv[1], main_time);
   }
 
   if (dtm) delete dtm;
