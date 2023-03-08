@@ -1,9 +1,6 @@
 [submodule "corev_apu/axi_mem_if"]
 	path = corev_apu/axi_mem_if
 	url = https://github.com/pulp-platform/axi_mem_if.git
-[submodule "common/submodules/common_cells"]
-	path = common/submodules/common_cells
-	url = https://github.com/pulp-platform/common_cells.git
 [submodule "corev_apu/register_interface"]
 	path = corev_apu/register_interface
 	url = https://github.com/pulp-platform/register_interface.git

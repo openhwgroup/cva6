@@ -1,13 +1,12 @@
 ..
-   Copyright 2022 Thales DIS SAS
-   Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
-   You may obtain a copy of the License at https://solderpad.org/licenses/
+   Copyright (c) 2023 OpenHW Group
+   Copyright (c) 2023 Thales
+
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
    Original Author: Alae Eddine EZ ZEJJARI (alae-eddine.ez-zejjari@external.thalesgroup.com)
 
-.. _CV32A6_AXI:
+.. _cva6_axi:
 
 AXI
 ===

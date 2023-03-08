@@ -14,7 +14,15 @@
 
 
 module ariane import ariane_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
+  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
+  parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
+  parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
+  parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
+  parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
+  parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
+  parameter type axi_req_t = ariane_axi::req_t,
+  parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -43,8 +51,8 @@ module ariane import ariane_pkg::*; #(
   input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
 `else
   // memory side, AXI Master
-  output ariane_axi::req_t             axi_req_o,
-  input  ariane_axi::resp_t            axi_resp_i
+  output axi_req_t                     axi_req_o,
+  input  axi_rsp_t                     axi_resp_i
 `endif
 );
 
@@ -52,7 +60,15 @@ module ariane import ariane_pkg::*; #(
   cvxif_pkg::cvxif_resp_t cvxif_resp;
 
   cva6 #(
-    .ArianeCfg  ( ArianeCfg )
+    .ArianeCfg  ( ArianeCfg ),
+    .AxiAddrWidth ( AxiAddrWidth ),
+    .AxiDataWidth ( AxiDataWidth ),
+    .AxiIdWidth ( AxiIdWidth ),
+    .axi_ar_chan_t (axi_ar_chan_t),
+    .axi_aw_chan_t (axi_aw_chan_t),
+    .axi_w_chan_t (axi_w_chan_t),
+    .axi_req_t (axi_req_t),
+    .axi_rsp_t (axi_rsp_t)
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),

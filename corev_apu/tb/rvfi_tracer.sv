@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
-// Original Author: Jean-Roch COULON (jean-roch.coulon@invia.fr)
+// Original Author: Jean-Roch COULON - Thales
 
 module rvfi_tracer #(
   parameter logic [7:0] HART_ID      = '0,
@@ -18,11 +18,17 @@ module rvfi_tracer #(
   input rvfi_pkg::rvfi_instr_t[NR_COMMIT_PORTS-1:0]           rvfi_i
 );
 
+  logic[riscv::XLEN-1:0] TOHOST_ADDR;
   int f;
   int unsigned SIM_FINISH;
   initial begin
     f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
     if (!$value$plusargs("time_out=%d", SIM_FINISH)) SIM_FINISH = 6000000;
+    if (!$value$plusargs("tohost_addr=%h", TOHOST_ADDR)) TOHOST_ADDR = '0;
+    if (TOHOST_ADDR == '0) begin
+      $display("*** [rvf_tracer] WARNING: No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
+      $fwrite(f, "*** [rvfi_tracer] WARNING No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
+    end
   end
 
   final $fclose(f);
@@ -68,13 +74,15 @@ module rvfi_tracer #(
         end else begin
           if (rvfi_i[i].mem_wmask != 0) begin
             $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
+            if (TOHOST_ADDR != '0 &&
+                rvfi_i[i].mem_paddr == TOHOST_ADDR &&
+                rvfi_i[i].mem_wdata[0] == 1'b1) begin
+              $finish(1);
+              $finish(1);
+            end
           end
         end
         $fwrite(f, "\n");
-        if (rvfi_i[i].insn == 32'h00000073) begin
-          $finish(1);
-          $finish(1);
-        end
       end else begin
         if (rvfi_i[i].trap) begin
           case (rvfi_i[i].cause)

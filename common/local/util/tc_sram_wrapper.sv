@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
-// Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.com)
+// Original Author: Jean-Roch COULON - Thales
 
 module tc_sram_wrapper #(
   parameter int unsigned NumWords     = 32'd1024, // Number of Words in data array

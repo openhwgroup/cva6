@@ -41,3 +41,4 @@ Editor: **Jerome Quevremont**
    Interfaces
    Core_Integration
    CVX_Interface_Coprocessor
+   AXI_Interface
