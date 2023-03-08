@@ -46,6 +46,7 @@ module ariane_testharness #(
   int          jtag_enable;
   logic        init_done;
   logic [31:0] jtag_exit, dmi_exit;
+  logic [31:0] rvfi_exit;
 
   logic        jtag_TCK;
   logic        jtag_TMS;
@@ -116,7 +117,11 @@ module ariane_testharness #(
   assign debug_req_valid     = (jtag_enable[0]) ? jtag_req_valid     : dmi_req_valid;
   assign debug_resp_ready    = (jtag_enable[0]) ? jtag_resp_ready    : dmi_resp_ready;
   assign debug_req           = (jtag_enable[0]) ? jtag_dmi_req       : dmi_req;
+`ifdef RVFI_TRACE
+  assign exit_o              = (jtag_enable[0]) ? jtag_exit          : rvfi_exit;
+`else
   assign exit_o              = (jtag_enable[0]) ? jtag_exit          : dmi_exit;
+`endif
   assign jtag_resp_valid     = (jtag_enable[0]) ? debug_resp_valid   : 1'b0;
   assign dmi_resp_valid      = (jtag_enable[0]) ? 1'b0               : debug_resp_valid;
 
@@ -667,7 +672,8 @@ module ariane_testharness #(
   ) rvfi_tracer_i (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .rvfi_i(rvfi)
+    .rvfi_i(rvfi),
+    .end_of_test_o(rvfi_exit)
   );
 
 `ifdef AXI_SVA
