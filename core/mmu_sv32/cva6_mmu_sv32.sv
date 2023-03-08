@@ -28,8 +28,8 @@
 
 
 module cva6_mmu_sv32 import ariane_pkg::*; #(
-    parameter int unsigned INSTR_TLB_ENTRIES     = 4,
-    parameter int unsigned DATA_TLB_ENTRIES      = 4,
+    parameter int unsigned INSTR_TLB_ENTRIES     = 2,
+    parameter int unsigned DATA_TLB_ENTRIES      = 2,
     parameter int unsigned ASID_WIDTH            = 1,
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
@@ -87,7 +87,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     logic [riscv::PLEN-1:0] ptw_bad_paddr; // PTW PMP exception bad physical addr
 
     logic [riscv::VLEN-1:0] update_vaddr;
-    tlb_update_sv32_t update_ptw_itlb, update_ptw_dtlb;
+    tlb_update_sv32_t update_itlb, update_dtlb, update_shared_tlb;
 
     logic             itlb_lu_access;
     riscv::pte_sv32_t itlb_content;
@@ -99,7 +99,13 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     logic             dtlb_is_4M;
     logic             dtlb_lu_hit;
 
-
+    logic                     shared_tlb_access;
+    logic [riscv::VLEN-1:0]   shared_tlb_vaddr;
+    logic                     shared_tlb_hit;
+    
+    logic             itlb_req;
+    
+    
     // Assignments
     assign itlb_lu_access = icache_areq_i.fetch_req;
     assign dtlb_lu_access = lsu_req_i;
@@ -113,7 +119,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         .rst_ni           ( rst_ni                     ),
         .flush_i          ( flush_tlb_i                ),
 
-        .update_i         ( update_ptw_itlb            ),
+        .update_i         ( update_itlb                ),
 
         .lu_access_i      ( itlb_lu_access             ),
         .lu_asid_i        ( asid_i                     ),
@@ -127,26 +133,65 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     );
 
     cva6_tlb_sv32 #(
-        .TLB_ENTRIES     ( DATA_TLB_ENTRIES             ),
-        .ASID_WIDTH      ( ASID_WIDTH                   )
+        .TLB_ENTRIES     ( DATA_TLB_ENTRIES            ),
+        .ASID_WIDTH      ( ASID_WIDTH                  )
     ) i_dtlb (
+        .clk_i            ( clk_i                      ),
+        .rst_ni           ( rst_ni                     ),
+        .flush_i          ( flush_tlb_i                ),
+
+        .update_i         ( update_dtlb                ),
+
+        .lu_access_i      ( dtlb_lu_access             ),
+        .lu_asid_i        ( asid_i                     ),
+        .asid_to_be_flushed_i  ( asid_to_be_flushed_i  ),
+        .vaddr_to_be_flushed_i ( vaddr_to_be_flushed_i ),
+        .lu_vaddr_i       ( lsu_vaddr_i                ),
+        .lu_content_o     ( dtlb_content               ),
+
+        .lu_is_4M_o       ( dtlb_is_4M                 ),
+        .lu_hit_o         ( dtlb_lu_hit                )
+    );
+    
+    cva6_shared_tlb_sv32 #(
+        .SHARED_TLB_DEPTH ( 64 ),
+        .SHARED_TLB_WAYS  ( 2 ),
+        .ASID_WIDTH ( ASID_WIDTH )
+    ) i_shared_tlb (
         .clk_i            ( clk_i                       ),
         .rst_ni           ( rst_ni                      ),
         .flush_i          ( flush_tlb_i                 ),
 
-        .update_i         ( update_ptw_dtlb             ),
+        .enable_translation_i   ( enable_translation_i  ),
+        .en_ld_st_translation_i ( en_ld_st_translation_i),
 
-        .lu_access_i      ( dtlb_lu_access              ),
-        .lu_asid_i        ( asid_i                      ),
-        .asid_to_be_flushed_i  ( asid_to_be_flushed_i   ),
-        .vaddr_to_be_flushed_i ( vaddr_to_be_flushed_i  ),
-        .lu_vaddr_i       ( lsu_vaddr_i                 ),
-        .lu_content_o     ( dtlb_content                ),
+        .asid_i           (asid_i                       ),
+        // from TLBs
+        // did we miss?
+        .itlb_access_i    ( itlb_lu_access              ),
+        .itlb_hit_i       ( itlb_lu_hit                 ),
+        .itlb_vaddr_i     ( icache_areq_i.fetch_vaddr   ),
 
-        .lu_is_4M_o       ( dtlb_is_4M                  ),
-        .lu_hit_o         ( dtlb_lu_hit                 )
+        .dtlb_access_i    ( dtlb_lu_access              ),
+        .dtlb_hit_i       ( dtlb_lu_hit                 ),
+        .dtlb_vaddr_i     ( lsu_vaddr_i                 ),
+    
+        // to TLBs, update logic
+        .itlb_update_o    ( update_itlb                 ),
+        .dtlb_update_o    ( update_dtlb                 ),
+    
+        // Performance counters
+        .itlb_miss_o      (itlb_miss_o                  ),
+        .dtlb_miss_o      (dtlb_miss_o                  ),
+
+        .shared_tlb_access_o ( shared_tlb_access        ),
+        .shared_tlb_hit_o    ( shared_tlb_hit           ),
+        .shared_tlb_vaddr_o  ( shared_tlb_vaddr         ),
+
+        .itlb_req_o          ( itlb_req                 ),
+        // to update shared tlb
+        .shared_tlb_update_i (update_shared_tlb         )
     );
-
 
     cva6_ptw_sv32  #(
         .ASID_WIDTH             ( ASID_WIDTH            ),
@@ -154,31 +199,46 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     ) i_ptw (
         .clk_i                  ( clk_i                 ),
         .rst_ni                 ( rst_ni                ),
+        .flush_i                ( flush_i ),
+
         .ptw_active_o           ( ptw_active            ),
         .walking_instr_o        ( walking_instr         ),
         .ptw_error_o            ( ptw_error             ),
         .ptw_access_exception_o ( ptw_access_exception  ),
-        .enable_translation_i   ( enable_translation_i  ),
 
-        .update_vaddr_o         ( update_vaddr          ),
-        .itlb_update_o          ( update_ptw_itlb       ),
-        .dtlb_update_o          ( update_ptw_dtlb       ),
-
-        .itlb_access_i          ( itlb_lu_access        ),
-        .itlb_hit_i             ( itlb_lu_hit           ),
-        .itlb_vaddr_i           ( icache_areq_i.fetch_vaddr ),
-
-        .dtlb_access_i          ( dtlb_lu_access        ),
-        .dtlb_hit_i             ( dtlb_lu_hit           ),
-        .dtlb_vaddr_i           ( lsu_vaddr_i           ),
-
+        .lsu_is_store_i         ( lsu_is_store_i        ),       
+         // PTW memory interface
         .req_port_i             ( req_port_i            ),
         .req_port_o             ( req_port_o            ),
-        .pmpcfg_i,
-        .pmpaddr_i,
-        .bad_paddr_o            ( ptw_bad_paddr         ),
-        .*
-    );
+
+        // to Shared TLB, update logic
+        .shared_tlb_update_o    ( update_shared_tlb     ),
+
+        .update_vaddr_o         ( update_vaddr          ),
+
+        .asid_i                 ( asid_i                ),
+   
+        // from shared TLB
+        // did we miss?
+        .shared_tlb_access_i    ( shared_tlb_access     ),
+        .shared_tlb_hit_i       ( shared_tlb_hit        ),
+        .shared_tlb_vaddr_i     ( shared_tlb_vaddr      ),
+    
+        .itlb_req_i             ( itlb_req              ),
+    
+        // from CSR file
+       .satp_ppn_i              ( satp_ppn_i            ), // ppn from satp
+       .mxr_i                   ( mxr_i                 ),
+       
+       // Performance counters
+       .shared_tlb_miss_o       (                       ), //open for now
+    
+       // PMP
+      .pmpcfg_i                 ( pmpcfg_i              ),
+      .pmpaddr_i                ( pmpaddr_i             ),
+      .bad_paddr_o              ( ptw_bad_paddr         )
+
+);
 
     // ila_1 i_ila_1 (
     //     .clk(clk_i), // input wire clk
@@ -189,8 +249,8 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     //     .probe4(req_port_i.data_rvalid), // input wire [0:0]  probe4
     //     .probe5(ptw_error), // input wire [1:0]  probe5
     //     .probe6(update_vaddr), // input wire [0:0]  probe6
-    //     .probe7(update_ptw_itlb.valid), // input wire [0:0]  probe7
-    //     .probe8(update_ptw_dtlb.valid), // input wire [0:0]  probe8
+    //     .probe7(update_itlb.valid), // input wire [0:0]  probe7
+    //     .probe8(update_dtlb.valid), // input wire [0:0]  probe8
     //     .probe9(dtlb_lu_access), // input wire [0:0]  probe9
     //     .probe10(lsu_vaddr_i), // input wire [0:0]  probe10
     //     .probe11(dtlb_lu_hit), // input wire [0:0]  probe11
@@ -215,8 +275,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         // 2. We got an access error because of insufficient permissions -> throw an access exception
         icache_areq_o.fetch_exception      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err   = icache_areq_i.fetch_req && enable_translation_i
-												 && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
+        iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
                                                  || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
@@ -266,7 +325,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
-        if ((!match_any_execute_region && !ptw_error) || (!enable_translation_i && !pmp_instr_allow)) begin
+        if (!match_any_execute_region || (!enable_translation_i && !pmp_instr_allow)) begin
           icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, icache_areq_o.fetch_paddr[riscv::PLEN-1:2], 1'b1};//to check on wave --> not connected
         end
     end
@@ -330,7 +389,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
 
         // Check if the User flag is set, then we may only access it in supervisor mode
         // if SUM is enabled
-        daccess_err = en_ld_st_translation_i && (ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
+        daccess_err = (ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
                       (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
         // translation is enabled and no misaligned exception occurred
         if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
