@@ -491,13 +491,13 @@ class Instr:
         b = self.fields()
         if not (hasattr(a, 'rd') and hasattr(b, 'rd')):
             return False
-        return a.rd == b.rd and a.rd != 0
+        return a.rd == b.rd and a.rd != Reg.zero
 
     def has_RAW_from(self, other):
         """b.has_RAW_from(a) if same b.rsX == a.rd"""
         a = other.fields()
         b = self.fields()
-        if not hasattr(a, 'rd'):
+        if not hasattr(a, 'rd') or a.rd == Reg.zero:
             return False
         if hasattr(b, 'rs1') and a.rd == b.rs1:
             return True
@@ -507,7 +507,7 @@ class Instr:
         """b.has_WAR_from(a) if b.rd == a.rsX"""
         a = other.fields()
         b = self.fields()
-        if not hasattr(b, 'rd'):
+        if not hasattr(b, 'rd') or b.rd == Reg.zero:
             return False
         if hasattr(a, 'rs1') and a.rs1 == b.rd:
             return True
