@@ -46,7 +46,7 @@ module cva6_tb_wrapper
   input  logic                         clk_i,
   input  logic                         rst_ni,
   input  logic [XLEN-1:0]              boot_addr_i,
-  output wire                          tb_exit_o,
+  output logic [31:0]                  tb_exit_o,
   output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
@@ -92,7 +92,8 @@ module cva6_tb_wrapper
   ) rvfi_tracer_i (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .rvfi_i(rvfi)
+    .rvfi_i(rvfi),
+    .end_of_test_o(tb_exit_o)
   ) ;
 
   //----------------------------------------------------------------------------
