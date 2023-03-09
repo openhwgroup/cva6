@@ -53,4 +53,6 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigNrPMPEntries = 0;
 
+    localparam CVA6ConfigPerfCounterEn = 0;
+
 endpackage
