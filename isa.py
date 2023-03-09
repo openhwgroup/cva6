@@ -178,8 +178,24 @@ class CRtype:
         self.rs2 = (instr.bin >> 2) & 31
         self.op = instr.bin & 3
         self.rs1 = r
-        if instr.base() in CRtype.regreg:
+        base = instr.base()
+        if base == 'C.J[AL]R/C.MV/C.ADD':
+            if self.funct4 & 1:
+                if self.rs2 == 0:
+                    if r == 0:
+                        base = 'C.EBREAK'
+                    else:
+                        base = 'C.JALR'
+                else:
+                    base = 'C.ADD'
+            else:
+                if self.rs2 == 0:
+                    base = 'C.JR'
+                else:
+                    base = 'C.MV'
+        if base in CRtype.regreg:
             self.rd = r
+        self.name = base
 
     control = ['C.JR', 'C.JALR']
     regreg = ['C.MV', 'C.ADD']
