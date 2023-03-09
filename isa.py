@@ -122,12 +122,12 @@ class Btype:
         self.rs2 = (instr.bin >> 20) & 31
         self.rs1 = (instr.bin >> 15) & 31
         self.func3 = (instr.bin >> 12) & 7
-        self.imm_4_1 = (instr.bin >> 1) & 15
+        self.imm_4_1 = (instr.bin >> 8) & 15
         self.imm_11 = (instr.bin >> 7) & 1
         self.opcode = instr.bin & 63
         imm = (self.imm_12 << 12) | (self.imm_11 << 11) \
             | (self.imm_10_5 << 5) | (self.imm_4_1 << 1)
-        sext = ((imm >> 12) & 0x7ffff) << 13
+        sext = ((imm >> 12) * 0x7ffff) << 13
         self.imm = sext | imm
 
 class Utype:
