@@ -624,7 +624,7 @@ module cva6 import ariane_pkg::*; #(
   // ------------------------
   // Performance Counters
   // ------------------------
-  if (ariane_pkg::CVA6ConfigPerfCounterEn) begin: gen_perf_counter
+  if (PERF_COUNTER_EN) begin: gen_perf_counter
     perf_counters i_perf_counters (
       .clk_i             ( clk_i                  ),
       .rst_ni            ( rst_ni                 ),

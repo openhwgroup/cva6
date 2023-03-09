@@ -689,6 +689,11 @@ package ariane_pkg;
      localparam int unsigned INSTR_TLB_ENTRIES = cva6_config_pkg::CVA6ConfigInstrTlbEntries;
      localparam int unsigned DATA_TLB_ENTRIES  = cva6_config_pkg::CVA6ConfigDataTlbEntries;
 
+    // -------------------
+    // Performance counter 
+    // -------------------
+    localparam bit PERF_COUNTER_EN = cva6_config_pkg::CVA6ConfigPerfCounterEn;
+
     // --------------------
     // Atomics
     // --------------------
