@@ -93,6 +93,8 @@ end
             .Addr_DI   ( addr_i                    ),
             .RdData_DO ( ruser_aligned[k*64 +: 64] )
         );
+      end else begin : gen_dromajo_no_user
+        assign ruser_aligned[k*64 +: 64] = '0;
       end
     end else begin : gen_mem
       // unused byte-enable segments (8bits) are culled by the tool
@@ -133,6 +135,8 @@ end
             .addr_i   ( addr_i                    ),
             .rdata_o  ( ruser_aligned[k*64 +: 64] )
         );
+      end else begin : gen_mem_no_user
+        assign ruser_aligned[k*64 +: 64] = '0;
       end
     end
   end
