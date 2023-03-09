@@ -29,7 +29,7 @@ class Instruction(Instr):
     def __init__(self, line, address, hex_code, mnemo):
         Instr.__init__(self, int(hex_code, base=16))
         self.line = line
-        self.address = address
+        self.address = int(address, base=16)
         self.hex_code = hex_code
         self.mnemo = mnemo
         self.events = []
@@ -52,6 +52,12 @@ class Entry:
         status = "DONE" if self.done else "WIP "
         return f"{status} `{self.instr}` for {self.cycles_since_issue}"
 
+@dataclass
+class LastIssue:
+    """To store the last issued instruction"""
+    instr: Instruction
+    issue_cycle: int
+
 class Model:
     """Models the scheduling of CVA6"""
 
@@ -63,6 +69,7 @@ class Model:
     def __init__(self, issue=1, commit=2, sb_len=16, has_forwarding=True, has_renaming=True):
         self.instr_queue = []
         self.scoreboard = []
+        self.last_issued = None
         self.retired = []
         self.sb_len = sb_len
         self.issue_width = issue
@@ -97,14 +104,35 @@ class Model:
                 can_issue = False
             # Store after Load
             if instr.is_store() and entry.instr.is_load() and not entry.done:
+                # TODO understand why it is better to remove this check
                 if instr.addr_fields() == entry.instr.addr_fields():
                     self.log_event_on(instr, EventKind.SAL, cycle)
+                    can_issue = False
+        # Branch prediction
+        if self.last_issued is not None:
+            branch_miss = False
+            last = self.last_issued.instr
+            if last.is_branch():
+                offset = last.offset()
+                pjump = (offset - (1 << 32)) if (offset >> 31) else last.size()
+                paddr = last.address + pjump
+                if paddr != instr.address:
+                    branch_miss = True
+            if last.base() == 'C.J[AL]R/C.MV/C.ADD':
+                if last.fields().name in ['C.JALR', 'C.JR']:
+                    branch_miss = True
+            if last.base() == 'JALR':
+                branch_miss = True
+            if branch_miss:
+                if cycle < self.last_issued.issue_cycle + 2:
+                    # TODO log the branch miss
                     can_issue = False
         if can_issue:
             instr = self.instr_queue.pop(0)
             self.log_event_on(instr, EventKind.issue, cycle)
             entry = Entry(instr)
             self.scoreboard.append(entry)
+            self.last_issued = LastIssue(instr, cycle)
 
     def try_execute(self, cycle):
         """Try to execute instructions"""

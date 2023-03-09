@@ -471,6 +471,10 @@ class Instr:
         """Is the instruction from the C extension?"""
         return (self.bin & 3) < 3
 
+    def size(self):
+        """Size of the instruction in bytes"""
+        return 2 if self.is_compressed() else 4
+
     def is_load(self):
         """Is the instruction a load?"""
         return self.base() in Instr.loads
@@ -479,11 +483,26 @@ class Instr:
         """Is the instruction a store?"""
         return self.base() in Instr.stores
 
+    def is_branch(self):
+        """Is it a taken/not taken branch?"""
+        return self.base() in ['C.BEQZ', 'C.BNEZ', 'BRANCH']
+
+    def is_reljump(self):
+        """Is it a relative jump? (Register)"""
+        if self.base() in ['JALR']:
+            return True
+        if self.base() == 'C.J[AL]R/C.MV/C.ADD':
+            return
+        return False
+
+    def offset(self):
+        """Get offset from instr (sometimes it is just 'imm' in RISCV spec)"""
+        fields = self.fields()
+        return fields.offset if hasattr(fields, 'offset') else fields.imm
+
     def addr_fields(self):
         """Get the register and offset to build an address"""
-        fields = self.fields()
-        offset = fields.offset if hasattr(fields, 'offset') else fields.imm
-        return AddrFields(fields.rs1, offset)
+        return AddrFields(self.fields().rs1, self.offset())
 
     def has_WAW_from(self, other):
         """b.has_WAW_from(a) if a.rd == b.rd"""
