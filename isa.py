@@ -74,6 +74,21 @@ class Reg:
     x30 = 30
     x31 = 31
 
+def sign_ext(imm, index, xlen=32):
+    """
+    Sign extends a value
+    imm: value to sign extend
+    index: index of the sign bit of the value
+    len: target len for sign extended value
+    """
+    imm_bits = index + 1
+    assert (imm >> imm_bits) == 0
+    neg = imm >> index
+    sext_bits = xlen - imm_bits
+    sext_ones = (1 << sext_bits) - 1
+    sext = neg * sext_ones << imm_bits
+    return sext | imm
+
 @dataclass
 class AddrFields:
     """Represents the data used to build a memory address"""
@@ -93,42 +108,37 @@ class Rtype:
 class Itype:
     """I-type instructions"""
     def __init__(self, instr):
-        self.imm_11_0 = instr.bin >> 20
         self.rs1 = (instr.bin >> 15) & 31
         self.func3 = (instr.bin >> 12) & 7
         self.rd = (instr.bin >> 7) & 31
         self.opcode = instr.bin & 63
-        sext = ((self.imm_11_0 >> 11) & 0xfffff) << 12
-        self.imm = sext | self.imm_11_0
+        self.imm = sign_ext(instr.bin >> 20, 11)
 
 class Stype:
     """S-type instructions"""
     def __init__(self, instr):
-        self.imm_15_5 = instr.bin >> 25
         self.rs2 = (instr.bin >> 20) & 31
         self.rs1 = (instr.bin >> 15) & 31
         self.func3 = (instr.bin >> 12) & 7
-        self.imm_4_0 = (instr.bin >> 7) & 31
         self.opcode = instr.bin & 63
-        imm = (self.imm_15_5 << 5) | self.imm_4_0
-        sext = ((imm >> 15) & 0xffff) << 16
-        self.imm = sext | imm
+        self.imm = sign_ext(
+            ((instr.bin >> 25) << 5) \
+            | ((instr.bin >> 7) & 31)
+        , 11)
 
 class Btype:
     """B-type instructions"""
     def __init__(self, instr):
-        self.imm_12 = instr.bin >> 31
-        self.imm_10_5 = (instr.bin >> 25) & 0x3f
         self.rs2 = (instr.bin >> 20) & 31
         self.rs1 = (instr.bin >> 15) & 31
         self.func3 = (instr.bin >> 12) & 7
-        self.imm_4_1 = (instr.bin >> 8) & 15
-        self.imm_11 = (instr.bin >> 7) & 1
         self.opcode = instr.bin & 63
-        imm = (self.imm_12 << 12) | (self.imm_11 << 11) \
-            | (self.imm_10_5 << 5) | (self.imm_4_1 << 1)
-        sext = ((imm >> 12) * 0x7ffff) << 13
-        self.imm = sext | imm
+        self.imm = sign_ext(
+            ((instr.bin >> 31) << 12) \
+            | (((instr.bin >> 7) & 1) << 11) \
+            | (((instr.bin >> 25) & 0x3f) << 5) \
+            | (((instr.bin >> 8) & 15) << 1)
+        , 12)
 
 class Utype:
     """U-type instructions"""
@@ -142,16 +152,14 @@ class Utype:
 class Jtype:
     """J-type instructions"""
     def __init__(self, instr):
-        self.imm_20 = instr.bin >> 31
-        self.imm_10_1 = (instr.bin >> 21) & 0x3ff
-        self.imm_11 = (instr.bin >> 20) & 1
-        self.imm_19_12 = (instr.bin >> 12) & 0xff
         self.rd = (instr.bin >> 7) & 31
         self.opcode = instr.bin & 63
-        imm = (self.imm_20 << 20) | (self.imm_19_12 << 12) \
-            | (self.imm_11 << 11) | (self.imm_10_1 << 1)
-        sext = ((self.imm_20) & 0x3ff) << 21
-        self.imm = sext | imm
+        self.imm = sign_ext(
+            ((instr.bin >> 31) << 20) \
+            | (((instr.bin >> 12) & 0xff) << 12) \
+            | (((instr.bin >> 20) & 1) << 11) \
+            | (((instr.bin >> 21) & 0x3ff) << 1)
+        , 20)
 
 class MOItype:
     """Memory ordering instructions"""
@@ -217,20 +225,21 @@ class CItype:
         if base in CItype.SPload:
             self.rs1 = Reg.sp
             self.offset = CItype.offset[base](instr.bin)
+            # zero-extended offset
         if base == 'C.LI':
-            self.imm = CItype.imm(instr.bin)
+            self.imm = sign_ext(CItype.imm(instr.bin), 5)
         if base == 'C.LUI':
-            self.nzimm = CItype.imm(instr.bin) << 12
+            self.nzimm = sign_ext(CItype.imm(instr.bin) << 12, 17)
         if base in CItype.regimm:
             self.rd = r
             self.rs1 = r
         if base == 'C.ADDI':
-            self.nzimm = CItype.imm(instr.bin)
+            self.nzimm = sign_ext(CItype.imm(instr.bin), 5)
         if base == 'C.ADDIW':
-            self.imm = CItype.imm(instr.bin)
+            self.imm = sign_ext(CItype.imm(instr.bin), 5)
         if base == 'C.ADDI16SP':
-            self.nzimm = CItype.immsp(instr.bin)
-        if base == 'C.SLL':
+            self.nzimm = sign_ext(CItype.immsp(instr.bin), 9)
+        if base == 'C.SLLI':
             self.shamt = CItype.imm(instr.bin)
 
     SPload = ['C.LWSP', 'C.LDSP', 'C.LQSP', 'C.FLWSP', 'C.FLDSP']
@@ -264,6 +273,7 @@ class CSStype:
         self.rs2 = (instr.bin >> 2) & 31
         self.op = instr.bin & 3
         self.offset = CSStype.offset[instr.base()](instr.bin)
+        # zero-extended offset
 
     Woffset = lambda i: (((i >> 9) & 15) << 2) | (((i >> 7) & 3) << 6)
     Doffset = lambda i: (((i >> 10) & 7) << 3) | (((i >> 7) & 7) << 6)
@@ -287,6 +297,7 @@ class CIWtype:
         self.op = i & 3
         self.nzuimm = (((i >> 11) & 3) << 4) | (((i >> 7) & 15) << 6) \
             | (((i >> 6) & 1) << 2) | (((i >> 5) & 1) << 3)
+        # zero-extended (unsigned) non-zero immediate
         if instr.base() == 'C.ADDI4SPN':
             self.rs1 = Reg.sp
 
@@ -306,6 +317,7 @@ class CLtype:
         self.rd = rd_ + 8
         self.op = instr.bin & 3
         self.offset = CLtype.offset[instr.base()](instr.bin)
+        # zero-extended offset
 
     offset = {
         'C.LW': CLS_Woffset,
@@ -325,6 +337,7 @@ class CStype:
         self.rs2 = rs2_ + 8
         self.op = instr.bin & 3
         self.offset = CStype.offset[instr.base()](instr.bin)
+        # zero-extended offset
 
     offset = {
         'C.SW': CLS_Woffset,
@@ -356,11 +369,18 @@ class CBtype:
         self.rs1 = rs1_ + 8
         self.op = instr.bin & 3
         if base in CBtype.branch:
-            self.offset = (((i >> 12) & 1) << 8) | (((i >> 10) & 3) << 3) \
-                | (((i >> 5) & 3) << 6) | (((i >> 3) & 3) << 1) \
+            self.offset = sign_ext(
+                (((i >> 12) & 1) << 8) \
+                | (((i >> 10) & 3) << 3) \
+                | (((i >> 5) & 3) << 6) \
+                | (((i >> 3) & 3) << 1) \
                 | (((i >> 2) & 1) << 5)
+            , 8)
         if base in CBtype.regimm:
-            self.shamt = CItype.imm(i)
+            if base == 'C.ANDI':
+                self.shamt = sign_ext(CItype.imm(i), 5)
+            else:
+                self.shamt = CItype.imm(i)
             self.rd = self.rs1
 
     branch = ['C.BEQZ', 'C.BNEZ']
@@ -371,7 +391,7 @@ class CJtype:
     def __init__(self, instr):
         self.funct3 = instr.bin >> 13
         assert instr.base() in ['C.J', 'C.JAL']
-        self.offset = CJtype.offset(instr.bin)
+        self.offset = sign_ext(CJtype.offset(instr.bin), 11)
         self.jump_target = (instr.bin >> 2) & 0x7ff
         self.op = instr.bin & 3
 
@@ -384,9 +404,12 @@ class Instr:
     """Instructions"""
 
     table_16_4_RV32 = [
-        ['C.ADDI4SPN', 'C.FLD', 'C.LW', 'C.FLW', 'Reserved', 'C.FSD', 'C.SW', 'C.FSW'],
-        ['C.ADDI', 'C.JAL', 'C.LI', 'C.LUI/C.ADDI16SP', 'MISC-ALU', 'C.J', 'C.BEQZ', 'C.BNEZ'],
-        ['C.SLLI', 'C.FLDSP', 'C.LWSP', 'C.FLWSP', 'C.J[AL]R/C.MV/C.ADD', 'C.FSDSP', 'C.SWSP', 'C.FSWSP'],
+        ['C.ADDI4SPN', 'C.FLD', 'C.LW', 'C.FLW',
+            'Reserved', 'C.FSD', 'C.SW', 'C.FSW'],
+        ['C.ADDI', 'C.JAL', 'C.LI', 'C.LUI/C.ADDI16SP',
+            'MISC-ALU', 'C.J', 'C.BEQZ', 'C.BNEZ'],
+        ['C.SLLI', 'C.FLDSP', 'C.LWSP', 'C.FLWSP',
+            'C.J[AL]R/C.MV/C.ADD', 'C.FSDSP', 'C.SWSP', 'C.FSWSP'],
     ]
 
     table_24_1 = [
@@ -487,12 +510,12 @@ class Instr:
         """Is it a taken/not taken branch?"""
         return self.base() in ['C.BEQZ', 'C.BNEZ', 'BRANCH']
 
-    def is_reljump(self):
-        """Is it a relative jump? (Register)"""
+    def is_regjump(self):
+        """Is it a register jump?"""
         if self.base() in ['JALR']:
             return True
         if self.base() == 'C.J[AL]R/C.MV/C.ADD':
-            return
+            return self.fields().name in ['C.JALR', 'C.JR']
         return False
 
     def offset(self):

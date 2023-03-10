@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 
 from isa import Instr
 
-EventKind = Enum('EventKind', ['WAW', 'WAR', 'RAW', 'SAL', 'issue', 'done', 'commit'])
+EventKind = Enum('EventKind', ['WAW', 'WAR', 'RAW', 'SAL', 'BMISS', 'issue', 'done', 'commit'])
 
 class Event:
     """Represents an event on an instruction"""
@@ -102,12 +102,10 @@ class Model:
             if instr.has_RAW_from(entry.instr) and not can_forward:
                 self.log_event_on(instr, EventKind.RAW, cycle)
                 can_issue = False
-            # Store after Load
+            # Store after Load is a structural hazard (no need to check addrs)
             if instr.is_store() and entry.instr.is_load() and not entry.done:
-                # TODO understand why it is better to remove this check
-                if instr.addr_fields() == entry.instr.addr_fields():
-                    self.log_event_on(instr, EventKind.SAL, cycle)
-                    can_issue = False
+                self.log_event_on(instr, EventKind.SAL, cycle)
+                can_issue = False
         # Branch prediction
         if self.last_issued is not None:
             branch_miss = False
@@ -118,14 +116,11 @@ class Model:
                 paddr = last.address + pjump
                 if paddr != instr.address:
                     branch_miss = True
-            if last.base() == 'C.J[AL]R/C.MV/C.ADD':
-                if last.fields().name in ['C.JALR', 'C.JR']:
-                    branch_miss = True
-            if last.base() == 'JALR':
+            if last.is_regjump():
                 branch_miss = True
             if branch_miss:
                 if cycle < self.last_issued.issue_cycle + 2:
-                    # TODO log the branch miss
+                    self.log_event_on(instr, EventKind.BMISS, cycle)
                     can_issue = False
         if can_issue:
             instr = self.instr_queue.pop(0)
@@ -138,9 +133,7 @@ class Model:
         """Try to execute instructions"""
         for entry in self.scoreboard:
             entry.cycles_since_issue += 1
-            name = entry.instr.mnemo_name()
-            is_load = (name.startswith('l') or name.startswith('fl')) and not "".endswith('i')
-            duration = 2 if is_load else 1
+            duration = 2 if entry.instr.is_load() else 1
             if entry.cycles_since_issue == duration:
                 self.log_event_on(entry.instr, EventKind.done, cycle)
                 entry.done = True
