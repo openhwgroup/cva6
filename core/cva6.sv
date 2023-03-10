@@ -620,30 +620,33 @@ module cva6 import ariane_pkg::*; #(
     .time_irq_i,
     .*
   );
+
   // ------------------------
   // Performance Counters
   // ------------------------
-  perf_counters i_perf_counters (
-    .clk_i             ( clk_i                  ),
-    .rst_ni            ( rst_ni                 ),
-    .debug_mode_i      ( debug_mode             ),
-    .addr_i            ( addr_csr_perf          ),
-    .we_i              ( we_csr_perf            ),
-    .data_i            ( data_csr_perf          ),
-    .data_o            ( data_perf_csr          ),
-    .commit_instr_i    ( commit_instr_id_commit ),
-    .commit_ack_i      ( commit_ack             ),
+  if (PERF_COUNTER_EN) begin: gen_perf_counter
+    perf_counters i_perf_counters (
+      .clk_i             ( clk_i                  ),
+      .rst_ni            ( rst_ni                 ),
+      .debug_mode_i      ( debug_mode             ),
+      .addr_i            ( addr_csr_perf          ),
+      .we_i              ( we_csr_perf            ),
+      .data_i            ( data_csr_perf          ),
+      .data_o            ( data_perf_csr          ),
+      .commit_instr_i    ( commit_instr_id_commit ),
+      .commit_ack_i      ( commit_ack             ),
 
-    .l1_icache_miss_i  ( icache_miss_cache_perf ),
-    .l1_dcache_miss_i  ( dcache_miss_cache_perf ),
-    .itlb_miss_i       ( itlb_miss_ex_perf      ),
-    .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
-    .sb_full_i         ( sb_full                ),
-    .if_empty_i        ( ~fetch_valid_if_id     ),
-    .ex_i              ( ex_commit              ),
-    .eret_i            ( eret                   ),
-    .resolved_branch_i ( resolved_branch        )
-  );
+      .l1_icache_miss_i  ( icache_miss_cache_perf ),
+      .l1_dcache_miss_i  ( dcache_miss_cache_perf ),
+      .itlb_miss_i       ( itlb_miss_ex_perf      ),
+      .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
+      .sb_full_i         ( sb_full                ),
+      .if_empty_i        ( ~fetch_valid_if_id     ),
+      .ex_i              ( ex_commit              ),
+      .eret_i            ( eret                   ),
+      .resolved_branch_i ( resolved_branch        )
+    );
+  end
 
   // ------------
   // Controller
