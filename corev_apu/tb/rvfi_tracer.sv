@@ -104,15 +104,17 @@ module rvfi_tracer #(
         end
       end
     end
-    end_of_test_d <= end_of_test_q;
-    if (cycles > SIM_FINISH) $finish(1);
-  end
 
-  always_ff @(posedge clk_i or negedge rst_ni)
     if (~rst_ni)
       cycles <= 0;
     else
       cycles <= cycles+1;
+    if (cycles > SIM_FINISH)
+      end_of_test_q = 32'hffff_ffff;
+
+    end_of_test_d <= end_of_test_q;
+  end
+
 
   // Trace any custom signals
   // Define signals to be traced by adding them into debug and name arrays
