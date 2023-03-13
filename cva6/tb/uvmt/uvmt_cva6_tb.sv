@@ -129,6 +129,7 @@ module uvmt_cva6_tb;
       int                warning_count;
       int                fatal_count;
       static bit         sim_finished = 0;
+      static int         test_exit_code = 0;
 
       static string  red   = "\033[31m\033[1m";
       static string  green = "\033[32m\033[1m";
@@ -140,14 +141,11 @@ module uvmt_cva6_tb;
       fatal_count   = rs.get_severity_count(UVM_FATAL);
 
       void'(uvm_config_db#(bit)::get(null, "", "sim_finished", sim_finished));
-      $display("### Got sim_finished:  %4d", sim_finished);
-      $display("###     warning_count: %4d", warning_count);
-      $display("###     err_count:     %4d", err_count);
-      $display("###     fatal_count:   %4d", fatal_count);
+      void'(uvm_config_db#(int)::get(null, "", "test_exit_code", test_exit_code));
 
       $display("\n%m: *** Test Summary ***\n");
 
-      if (sim_finished && (err_count == 0) && (fatal_count == 0)) begin
+      if (sim_finished && (test_exit_code == 0) && (err_count == 0) && (fatal_count == 0)) begin
          $display("    PPPPPPP    AAAAAA    SSSSSS    SSSSSS   EEEEEEEE  DDDDDDD     ");
          $display("    PP    PP  AA    AA  SS    SS  SS    SS  EE        DD    DD    ");
          $display("    PP    PP  AA    AA  SS        SS        EE        DD    DD    ");
@@ -162,6 +160,7 @@ module uvmt_cva6_tb;
          else begin
            $display("                 SIMULATION PASSED with WARNINGS              ");
          end
+         $display("                 test exit code = %0d (0x%h)", test_exit_code, test_exit_code);
          $display("    ----------------------------------------------------------");
       end
       else begin
@@ -178,6 +177,7 @@ module uvmt_cva6_tb;
          end
          else begin
             $display("                       SIMULATION FAILED                    ");
+            $display("                 test exit code = %0d (0x%h)", test_exit_code, test_exit_code);
          end
          $display("    ----------------------------------------------------------");
       end

@@ -152,8 +152,12 @@ task uvmt_cva6_firmware_test_c::run_phase(uvm_phase phase);
    `uvm_info("TEST", "Test FINISHED", UVM_NONE)
    // Set sim_finished (otherwise tb will flag that sim was aborted)
    uvm_config_db#(bit)::set(null, "", "sim_finished", 1);
-   repeat (100) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
+   uvm_config_db#(int)::set(null, "", "test_exit_code", { 0'b0, rvfi_vif.tb_exit_o[31:1] });
+   // Let the termination-triggering instruction appear in the log.
+   @(posedge env_cntxt.clknrst_cntxt.vif.clk);
+   // Allow termination from now on.
    phase.drop_objection(this);
+   repeat (100) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
 
 endtask : run_phase
 
