@@ -134,6 +134,7 @@ _start:
   add tp, tp, a2
 
   j _init
+  .size    _start, . - _start
 
   .align 2
 trap_entry:
@@ -215,6 +216,42 @@ trap_entry:
 
   addi sp, sp, 272
   mret
+
+  // Default definition of handle_trap: Exit with code 0x7ffffff0.
+  .weak   handle_trap
+  .type	handle_trap, @function
+handle_trap:
+        li  a0, -32
+	j   _exit
+  .size handle_trap, . - handle_trap
+
+  // Default, overrideable definition of _init:
+  // Call 'main' and jump to '_exit' which never returns.
+  .weak   _init
+  .type   _init, @function
+_init:
+  jal     main
+  j       _exit
+  .size   _init, . - _init
+
+  // Default, overrideable definition of 'exit':
+  // Jump to '_exit' low-level termination function.
+  .weak   exit
+  .type   exit, @function
+exit:
+  j       _exit
+  .size   exit, . - exit
+
+  // Minimal low-level exit function.
+  .global  _exit
+_exit:
+  sll  a0, a0, 1      # Set up exit code: shift a0 left by 1
+  add  a0, a0, 1      # and set bit 0.
+  sw   a0, tohost, t5 # Store bits [31:0] of a0 into variable tohost
+  nop                 # Leave one cycle of slack before entering endless loop
+1:
+  j        1b;        # Wait indefinitely (until the env terminates the simulation)
+  .size    _exit, . - _exit
 
 .section ".tohost","aw",@progbits
 .align 6
