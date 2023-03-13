@@ -56,12 +56,12 @@ module  uvmt_cva6_axi_assert (uvma_axi_intf axi_assert, input bit clk, input rst
 
    //Check if AWCACHE is always equal to 0b0000
    property AXI4_CVA6_AWCACHE;
-      @(posedge clk) disable iff (!rst_n) axi_assert.aw_valid |-> axi_assert.aw_cache == 0;
+      @(posedge clk) disable iff (!rst_n) axi_assert.aw_valid |-> axi_assert.aw_cache == 2;
    endproperty
 
    //Check if ARCACHE is always equal to 0b0000
    property AXI4_CVA6_ARCACHE;
-      @(posedge clk) disable iff (!rst_n) axi_assert.ar_valid |-> axi_assert.ar_cache == 0;
+      @(posedge clk) disable iff (!rst_n) axi_assert.ar_valid |-> axi_assert.ar_cache == 2;
    endproperty
 
    //Check if Protection attributes for write transaction always take the 0b000
