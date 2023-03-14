@@ -34,12 +34,9 @@ We identify the supported RISC-V privileges
 
 RISC-V Virtual Memory
 ---------------------
-Need for step1 verification (MMU by 10xEngineers).
-We identify the supported RISC-V virtual memories
+CV32A6 supports the RISC-V **Sv32** virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 32).
 
-CV32A6 supports the RISC-V Sv32 virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 32).
-
-CV64A6 supports the RISC-V Sv39 virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 64).
+CV64A6 supports the RISC-V **Sv39** virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 64).
 
 The virtual memory is implemented by a memory management unit (MMU) that accelerates the translation from virtual memory addresses (as handled by the core) and physical memory addresses. The MMU integrable transaction lookaside buffers (TLB) and a hardware page table walker (PTW). The number of instruction and data TLB entries are configured with ``InstrTlbEntries`` and ``DataTlbEntries``.
 
