@@ -38,9 +38,19 @@ CV32A6 supports the RISC-V **Sv32** virtual memory when the ``MMUEn`` parameter 
 
 CV64A6 supports the RISC-V **Sv39** virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 64).
 
-The virtual memory is implemented by a memory management unit (MMU) that accelerates the translation from virtual memory addresses (as handled by the core) and physical memory addresses. The MMU integrable transaction lookaside buffers (TLB) and a hardware page table walker (PTW). The number of instruction and data TLB entries are configured with ``InstrTlbEntries`` and ``DataTlbEntries``.
+By default, CV32A6 and CV64A6 are in RISC-V **Bare** mode. **Sv32** or **Sv39** are enabled by writing ``stap[0]`` register bit to 1.
 
-Note that the CV32A6 memory will evolve to feature micro-TLB and shared TLB.
+When the ``MMUEn`` parameter is set to 0, CV32A6 and CV64A6 are always in RISC-V **Bare** mode; ``stap[0]`` remains at 0.
+
+*This section needs to be completed with limitations and interpretations of the RISC-V specification as implemented in CVA6.*
+
+Notes for the integrator:
+
+* The virtual memory is implemented by a memory management unit (MMU) that accelerates the translation from virtual memory addresses (as handled by the core) to physical memory addresses. The MMU integrates translation lookaside buffers (TLB) and a hardware page table walker (PTW). The number of instruction and data TLB entries are configured with ``InstrTlbEntries`` and ``DataTlbEntries``.
+
+* The CV32A6 MMU will evolve with a microarchitectural optimization featuring two levels of TLB: level 1 TBL (sized by ``InstrTlbEntries`` and ``DataTlbEntries``) and a shared level 2 TLB. This optimization remains to be implemented in CV64A6. The optimization has no consequences on the programmer's view.
+
+* The addition of the hypervisor support will come with **Sv39x4** virtual memory that is not yet documented here.
 
 Memory Alignment
 ----------------
