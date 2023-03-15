@@ -18,9 +18,9 @@ if ! [ -n "$ARCH_TEST_REPO" ]; then
   ARCH_TEST_BRANCH=main
   ARCH_TEST_HASH=ad04e119a5d846a1c11159786ad3382cf5ad3649
 fi
-echo $ARCH_TEST_REPO
-echo $ARCH_TEST_BRANCH
-echo $ARCH_TEST_HASH
+echo "Repo:  " $ARCH_TEST_REPO
+echo "Branch:" $ARCH_TEST_BRANCH
+echo "Hash:  " $ARCH_TEST_HASH
 
 
 mkdir -p cva6/tests

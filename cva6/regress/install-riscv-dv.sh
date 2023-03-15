@@ -26,10 +26,10 @@ if ! [ -n "$DV_REPO" ]; then
   export DV_HASH=96c1ee6f371f2754c45b4831fcab95f6671689d9
   export DV_PATCH=
 fi
-echo $DV_REPO
-echo $DV_BRANCH
-echo $DV_HASH
-echo $DV_PATCH
+echo "Repo:  " $DV_REPO
+echo "Branch:" $DV_BRANCH
+echo "Hash:  " $DV_HASH
+echo "Patch: " $DV_PATCH
 
 mkdir -p cva6/sim
 if ! [ -d cva6/sim/dv ]; then
