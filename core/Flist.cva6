@@ -168,5 +168,6 @@ ${CVA6_REPO_DIR}/core/mmu_sv39/tlb.sv
 ${CVA6_REPO_DIR}/core/mmu_sv32/cva6_mmu_sv32.sv
 ${CVA6_REPO_DIR}/core/mmu_sv32/cva6_ptw_sv32.sv
 ${CVA6_REPO_DIR}/core/mmu_sv32/cva6_tlb_sv32.sv
+${CVA6_REPO_DIR}/core/mmu_sv32/cva6_shared_tlb_sv32.sv
 
 // end of manifest
