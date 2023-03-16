@@ -115,6 +115,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
         req_port_o.data_gnt    = 1'b0;
         req_port_o.data_rvalid = 1'b0;
         req_port_o.data_rdata  = '0;
+        req_port_o.data_rid    = '0;
         miss_req_o    = '0;
         mshr_addr_o   = '0;
         // Memory array communication

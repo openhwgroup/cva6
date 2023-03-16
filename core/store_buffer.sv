@@ -128,6 +128,8 @@ module store_buffer import ariane_pkg::*; (
     assign req_port_o.data_we   = 1'b1; // we will always write in the store queue
     assign req_port_o.tag_valid = 1'b0;
 
+    // we do not require an acknowledgement for writes, thus we do not need to identify uniquely the responses
+    assign req_port_o.data_id       = '0;
     // those signals can directly be output to the memory
     assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
     // if we got a new request we already saved the tag from the previous cycle
