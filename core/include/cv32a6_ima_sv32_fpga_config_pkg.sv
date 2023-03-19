@@ -36,6 +36,8 @@ package cva6_config_pkg;
     localparam CVA6ConfigDcacheSetAssoc = 2;
     localparam CVA6ConfigDcacheLineWidth = 128;
 
+    localparam CVA6ConfigDcacheIdWidth = 1;
+
     localparam CVA6ConfigNrCommitPorts = 1;
     localparam CVA6ConfigNrScoreboardEntries = 4;
 

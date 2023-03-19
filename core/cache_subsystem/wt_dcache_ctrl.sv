@@ -78,6 +78,7 @@ module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   assign req_port_o.data_rdata = rd_data_i;
   assign req_port_o.data_ruser = rd_user_i;
+  assign req_port_o.data_rid   = '0;
 
   // to miss unit
   assign miss_vld_bits_o       = vld_data_q;
