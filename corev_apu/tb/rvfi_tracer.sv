@@ -18,7 +18,7 @@ module rvfi_tracer #(
   input rvfi_pkg::rvfi_instr_t[NR_COMMIT_PORTS-1:0]           rvfi_i
 );
 
-  logic[riscv::XLEN-1:0] TOHOST_ADDR;
+  logic[riscv::PLEN-1:0] TOHOST_ADDR;
   int f;
   int unsigned SIM_FINISH;
   initial begin

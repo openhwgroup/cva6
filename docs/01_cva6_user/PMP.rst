@@ -20,6 +20,23 @@
 
 PMP
 ===
-Gap for step1 verification. Reuse DVplan from CV32E40S? Mike will reach out to some people who could help.
-Refer to RISC-V specs and focus on the parameters (regions, granularity)
+The CVA6 includes a Physical Memory Protection (PMP) unit. The PMP is both
+statically and dynamically configurable. The static configuration is performed
+through the top level parameters ``ArianeCfg.NrPMPEntries``. The dynamic
+configuration is performed through the CSRs described in Control and Status
+Registers. A maximum of 16 PMP entries are supported.
+
+All PMP CSRs are always implemented, but CSRs (or bitfields of CSRs) related to
+PMP entries with number ``ArianeCfg.NrPMPEntries`` and above are hardwired to
+zero. All PMPs reset to zero.
+
+When the ``L`` (Lock) bit is set, PMPs are also enforced in M-mode.
+
+The PMP grain is ``2**G+2``. Only a PMP granularity of 8 bytes (``G=1``) is
+supported in CVA6. PMP address length is equal to the processors physical
+address length. Since ``G=1`` the ``NA4`` modes is not selectable.
+
+Writes to ``pmpaddr`` are WARL and depend on the address mode. For naturally
+aligned power-of 2 addressing mode (``NAPOT``) it is set to ``1``, for top
+boundary of an arbitrary range (``TOR``) or ``OFF`` it is set to ``0``.
 

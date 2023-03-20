@@ -39,39 +39,34 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
     output logic                    walking_instr_o,        // set when walking for TLB
     output logic                    ptw_error_o,            // set when an error occurred
     output logic                    ptw_access_exception_o, // set when an PMP access exception occured
-    input  logic                    enable_translation_i,   // CSRs indicate to enable SV32
-    input  logic                    en_ld_st_translation_i, // enable virtual memory translation for load/stores
 
     input  logic                    lsu_is_store_i,         // this translation was triggered by a store
     // PTW memory interface
     input  dcache_req_o_t           req_port_i,
     output dcache_req_i_t           req_port_o,
 
-
-    // to TLBs, update logic
-    output tlb_update_sv32_t        itlb_update_o,
-    output tlb_update_sv32_t        dtlb_update_o,
+    // to Shared TLB, update logic
+    output tlb_update_sv32_t        shared_tlb_update_o,
 
     output logic [riscv::VLEN-1:0]  update_vaddr_o,
 
     input  logic [ASID_WIDTH-1:0]   asid_i,
-    // from TLBs
-    // did we miss?
-    input  logic                    itlb_access_i,
-    input  logic                    itlb_hit_i,
-    input  logic [riscv::VLEN-1:0]  itlb_vaddr_i,
-
-    input  logic                    dtlb_access_i,
-    input  logic                    dtlb_hit_i,
-    input  logic [riscv::VLEN-1:0]  dtlb_vaddr_i,
+    
+    // from shared TLB
+    input  logic                    shared_tlb_access_i,
+    input  logic                    shared_tlb_hit_i,
+    input  logic [riscv::VLEN-1:0]  shared_tlb_vaddr_i,
+    
+    input logic                     itlb_req_i,
+    
     // from CSR file
     input  logic [riscv::PPNW-1:0]  satp_ppn_i, // ppn from satp
     input  logic                    mxr_i,
-    // Performance counters
-    output logic                    itlb_miss_o,
-    output logic                    dtlb_miss_o,
-    // PMP
 
+    // Performance counters
+    output logic                    shared_tlb_miss_o,
+    
+    // PMP
     input  riscv::pmpcfg_t [15:0]   pmpcfg_i,
     input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
     output logic [riscv::PLEN-1:0]  bad_paddr_o
@@ -92,7 +87,8 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
       PTE_LOOKUP,
       WAIT_RVALID,
       PROPAGATE_ERROR,
-      PROPAGATE_ACCESS_ERROR
+      PROPAGATE_ACCESS_ERROR,
+      LATENCY
     } state_q, state_d;
 
     // SV32 defines two levels of page tables
@@ -116,6 +112,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
     assign update_vaddr_o  = vaddr_q;
 
     assign ptw_active_o    = (state_q != IDLE);
+    //assign walking_instr_o = is_instr_ptw_q;
     assign walking_instr_o = is_instr_ptw_q;
     // directly output the correct physical address
     assign req_port_o.address_index = ptw_pptr_q[DCACHE_INDEX_WIDTH-1:0];
@@ -124,20 +121,20 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
     assign req_port_o.kill_req      = '0;
     // we are never going to write with the HPTW
     assign req_port_o.data_wdata    = '0;
+    // we only issue one single request at a time
+    assign req_port_o.data_id       = '0;
+
     // -----------
-    // TLB Update
+    // Shared TLB Update
     // -----------
-    assign itlb_update_o.vpn = vaddr_q[riscv::SV-1:12];
-    assign dtlb_update_o.vpn = vaddr_q[riscv::SV-1:12];
+    assign shared_tlb_update_o.vpn = vaddr_q[riscv::SV-1:12];
     // update the correct page table level
-    assign itlb_update_o.is_4M = (ptw_lvl_q == LVL1);
-    assign dtlb_update_o.is_4M = (ptw_lvl_q == LVL1);
+    assign shared_tlb_update_o.is_4M = (ptw_lvl_q == LVL1);
     // output the correct ASID
-    assign itlb_update_o.asid = tlb_update_asid_q;
-    assign dtlb_update_o.asid = tlb_update_asid_q;
+    assign shared_tlb_update_o.asid = tlb_update_asid_q;
     // set the global mapping bit
-    assign itlb_update_o.content = pte | (global_mapping_q << 5);
-    assign dtlb_update_o.content = pte | (global_mapping_q << 5);
+    assign shared_tlb_update_o.content = pte | (global_mapping_q << 5);
+
 
     assign req_port_o.tag_valid      = tag_valid_q;
 
@@ -190,25 +187,23 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
     always_comb begin : ptw
         // default assignments
         // PTW memory interface
-        tag_valid_n            = 1'b0;
-        req_port_o.data_req    = 1'b0;
-        req_port_o.data_size   = 2'b10;
-        req_port_o.data_we     = 1'b0;
-        ptw_error_o            = 1'b0;
-        ptw_access_exception_o = 1'b0;
-        itlb_update_o.valid    = 1'b0;
-        dtlb_update_o.valid    = 1'b0;
-        is_instr_ptw_n         = is_instr_ptw_q;
-        ptw_lvl_n              = ptw_lvl_q;
-        ptw_pptr_n             = ptw_pptr_q;
-        state_d                = state_q;
-        global_mapping_n       = global_mapping_q;
+        tag_valid_n               = 1'b0;
+        req_port_o.data_req       = 1'b0;
+        req_port_o.data_size      = 2'b10;
+        req_port_o.data_we        = 1'b0;
+        ptw_error_o               = 1'b0;
+        ptw_access_exception_o    = 1'b0;
+        shared_tlb_update_o.valid = 1'b0;
+        is_instr_ptw_n            = is_instr_ptw_q;
+        ptw_lvl_n                 = ptw_lvl_q;
+        ptw_pptr_n                = ptw_pptr_q;
+        state_d                   = state_q;
+        global_mapping_n          = global_mapping_q;
         // input registers
-        tlb_update_asid_n     = tlb_update_asid_q;
-        vaddr_n               = vaddr_q;
+        tlb_update_asid_n         = tlb_update_asid_q;
+        vaddr_n                   = vaddr_q;
 
-        itlb_miss_o           = 1'b0;
-        dtlb_miss_o           = 1'b0;
+        shared_tlb_miss_o           = 1'b0;
 
         case (state_q)
 
@@ -217,21 +212,14 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
                 ptw_lvl_n        = LVL1;
                 global_mapping_n = 1'b0;
                 is_instr_ptw_n   = 1'b0;
-                // if we got an ITLB miss
-                if (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
-                    ptw_pptr_n          = {satp_ppn_i, itlb_vaddr_i[riscv::SV-1:22], 2'b0}; // SATP.PPN * PAGESIZE + VPN*PTESIZE = SATP.PPN * 2^(12) + VPN*4
-                    is_instr_ptw_n      = 1'b1;
+                // if we got a Shared TLB miss
+                if (shared_tlb_access_i & ~shared_tlb_hit_i) begin
+                    ptw_pptr_n          = {satp_ppn_i, shared_tlb_vaddr_i[riscv::SV-1:22], 2'b0}; // SATP.PPN * PAGESIZE + VPN*PTESIZE = SATP.PPN * 2^(12) + VPN*4
+                    is_instr_ptw_n      = itlb_req_i;
                     tlb_update_asid_n   = asid_i;
-                    vaddr_n             = itlb_vaddr_i;
+                    vaddr_n             = shared_tlb_vaddr_i;
                     state_d             = WAIT_GRANT;
-                    itlb_miss_o         = 1'b1;
-                // we got an DTLB miss
-                end else if (en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i) begin
-                    ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[riscv::SV-1:22], 2'b0}; // SATP.PPN * PAGESIZE + VPN*PTESIZE = SATP.PPN * 2^(12) + VPN*4
-                    tlb_update_asid_n   = asid_i;
-                    vaddr_n             = dtlb_vaddr_i;
-                    state_d             = WAIT_GRANT;
-                    dtlb_miss_o         = 1'b1;
+                    shared_tlb_miss_o   = 1'b1;
                 end
             end
 
@@ -264,7 +252,8 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
                     // Valid PTE
                     // -----------
                     else begin
-                        state_d = IDLE;
+                        //state_d = IDLE;
+                        state_d     = LATENCY;
                         // it is a valid PTE
                         // if pte.r = 1 or pte.x = 1 it is a valid PTE
                         if (pte.r || pte.x) begin
@@ -279,7 +268,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
                                 if (!pte.x || !pte.a)
                                   state_d = PROPAGATE_ERROR;
                                 else
-                                  itlb_update_o.valid = 1'b1;
+                                  shared_tlb_update_o.valid = 1'b1;
 
                             end else begin
                                 // ------------
@@ -291,7 +280,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
                                 // we can directly raise an error. This doesn't put a useless
                                 // entry into the TLB.
                                 if (pte.a && (pte.r || (pte.x && mxr_i))) begin
-                                  dtlb_update_o.valid = 1'b1;
+                                  shared_tlb_update_o.valid = 1'b1;
                                 end else begin
                                   state_d   = PROPAGATE_ERROR;
                                 end
@@ -299,7 +288,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
                                 // If the request was a store and the page is not write-able, raise an error
                                 // the same applies if the dirty flag is not set
                                 if (lsu_is_store_i && (!pte.w || !pte.d)) begin
-                                    dtlb_update_o.valid = 1'b0;
+                                    shared_tlb_update_o.valid = 1'b0;
                                     state_d   = PROPAGATE_ERROR;
                                 end
                             end
@@ -308,8 +297,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
                             // exception.
                             if (ptw_lvl_q == LVL1 && pte.ppn[9:0] != '0) begin
                                 state_d             = PROPAGATE_ERROR;
-                                dtlb_update_o.valid = 1'b0;
-                                itlb_update_o.valid = 1'b0;
+                                shared_tlb_update_o.valid = 1'b0;
                             end
                         // this is a pointer to the next TLB level
                         end else begin
@@ -332,8 +320,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
 
                     // Check if this access was actually allowed from a PMP perspective
                     if (!allow_access) begin
-                        itlb_update_o.valid = 1'b0;
-                        dtlb_update_o.valid = 1'b0;
+                        shared_tlb_update_o.valid = 1'b0;
                         // we have to return the failed address in bad_addr
                         ptw_pptr_n = ptw_pptr_q;
                         state_d = PROPAGATE_ACCESS_ERROR;
@@ -343,17 +330,20 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
             end
             // Propagate error to MMU/LSU
             PROPAGATE_ERROR: begin
-                state_d     = IDLE;
+                state_d     = LATENCY;
                 ptw_error_o = 1'b1;
             end
             PROPAGATE_ACCESS_ERROR: begin
-                state_d     = IDLE;
+                state_d     = LATENCY;
                 ptw_access_exception_o = 1'b1;
             end
             // wait for the rvalid before going back to IDLE
             WAIT_RVALID: begin
                 if (data_rvalid_q)
                     state_d = IDLE;
+            end       
+            LATENCY: begin
+                state_d     = IDLE;
             end
             default: begin
                 state_d = IDLE;
@@ -372,7 +362,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
             if ((state_q == PTE_LOOKUP && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
                 state_d = WAIT_RVALID;
             else
-                state_d = IDLE;
+                state_d = LATENCY;
         end
     end
 

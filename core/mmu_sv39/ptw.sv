@@ -112,6 +112,8 @@ module ptw import ariane_pkg::*; #(
     assign req_port_o.kill_req      = '0;
     // we are never going to write with the HPTW
     assign req_port_o.data_wdata    = 64'b0;
+    // we only issue one single request at a time
+    assign req_port_o.data_id       = '0;
     // -----------
     // TLB Update
     // -----------

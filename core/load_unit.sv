@@ -73,6 +73,8 @@ module load_unit import ariane_pkg::*; #(
     assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
                                               ariane_pkg::DCACHE_INDEX_WIDTH-1 :
                                               ariane_pkg::DCACHE_INDEX_WIDTH];
+    // we only issue one single request at a time
+    assign req_port_o.data_id = '0;
     // directly forward exception fields (valid bit is set below)
     assign ex_o.cause = ex_i.cause;
     assign ex_o.tval  = ex_i.tval;

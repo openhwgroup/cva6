@@ -238,7 +238,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
                 riscv::CSR_MTVAL:              csr_rdata = mtval_q;
                 riscv::CSR_MIP:                csr_rdata = mip_q;
-                riscv::CSR_MVENDORID:          csr_rdata = '0; // not implemented
+                riscv::CSR_MVENDORID:          csr_rdata = OPENHWGROUP_MVENDORID;
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = '0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
@@ -570,8 +570,8 @@ module csr_regfile import ariane_pkg::*; #(
                 // performance counters
                 riscv::CSR_MCYCLE:             cycle_d[riscv::XLEN-1:0] = csr_wdata;
                 riscv::CSR_MCYCLEH:            if (riscv::XLEN == 32) cycle_d[63:32] = csr_wdata; else update_access_exception = 1'b1;
-                riscv::CSR_MINSTRET:           instret[riscv::XLEN-1:0] = csr_wdata;
-                riscv::CSR_MINSTRETH:          if (riscv::XLEN == 32) instret[63:32] = csr_wdata; else update_access_exception = 1'b1;
+                riscv::CSR_MINSTRET:           instret_d[riscv::XLEN-1:0] = csr_wdata;
+                riscv::CSR_MINSTRETH:          if (riscv::XLEN == 32) instret_d[63:32] = csr_wdata; else update_access_exception = 1'b1;
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
@@ -615,12 +615,16 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_PMPCFG1: begin
                     if (riscv::XLEN == 32) begin
                         for (int i = 0; i < 4; i++) if (!pmpcfg_q[i+4].locked) pmpcfg_d[i+4]  = csr_wdata[i*8+:8];
+                    end else begin
+                      update_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_PMPCFG2:    for (int i = 0; i < (riscv::XLEN/8); i++) if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8]  = csr_wdata[i*8+:8];
                 riscv::CSR_PMPCFG3: begin
                     if (riscv::XLEN == 32) begin
                         for (int i = 0; i < 4; i++) if (!pmpcfg_q[i+12].locked) pmpcfg_d[i+12]  = csr_wdata[i*8+:8];
+                    end else begin
+                      update_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_PMPADDR0,
