@@ -55,4 +55,6 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigPerfCounterEn = 0;
 
+    localparam CVA6ConfigWtDcache = 1;
+
 endpackage

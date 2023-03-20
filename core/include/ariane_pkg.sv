@@ -142,15 +142,12 @@ package ariane_pkg;
     // depth of store-buffers, this needs to be a power of two
     localparam int unsigned DEPTH_SPEC   = 4;
 
-`ifdef WT_DCACHE
-    // in this case we can use a small commit queue since we have a write buffer in the dcache
+    localparam int unsigned WT_DCACHE    = cva6_config_pkg::CVA6ConfigWtDcache;
+    // if WT_DCACHE = 1, we can use a small commit queue since we have a write buffer in the dcache
     // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
     // to longer paths into the commit stage
-    localparam int unsigned DEPTH_COMMIT = 4;
-`else
-    // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
-    localparam int unsigned DEPTH_COMMIT = 8;
-`endif
+    // if WT_DCACHE = 0, allocate more space for the commit buffer to be on the save side, this needs to be a power of two
+    localparam int unsigned DEPTH_COMMIT = (WT_DCACHE == 1) ? 4 : 8;
 
     localparam bit FPGA_EN = cva6_config_pkg::CVA6ConfigFPGAEn; // Is FPGA optimization of CV32A6
 
@@ -691,7 +688,7 @@ package ariane_pkg;
      localparam int unsigned DATA_TLB_ENTRIES  = cva6_config_pkg::CVA6ConfigDataTlbEntries;
 
     // -------------------
-    // Performance counter 
+    // Performance counter
     // -------------------
     localparam bit PERF_COUNTER_EN = cva6_config_pkg::CVA6ConfigPerfCounterEn;
 
