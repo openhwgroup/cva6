@@ -12,7 +12,7 @@ package cva6_config_pkg;
 
     enum {
       WB = 0,
-      WT = 1,
+      WT = 1
     } cache_type_t ;
 
     localparam CVA6ConfigXlen = 32;
