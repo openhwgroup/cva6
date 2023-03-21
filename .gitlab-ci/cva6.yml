@@ -53,14 +53,14 @@ build:
 asm-quest:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-asm-tests batch-mode=1 defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-asm-tests batch-mode=1
   dependencies:
     - build
 
 amo-quest:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-amo-tests batch-mode=1 defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-amo-tests batch-mode=1
   dependencies:
     - build
 
@@ -68,14 +68,14 @@ amo-quest:
 fp-quest:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-fp-tests batch-mode=1 defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-fp-tests batch-mode=1
   dependencies:
     - build
 
 bench-quest:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-benchmarks batch-mode=1 defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-benchmarks batch-mode=1
   dependencies:
     - build
 
@@ -83,7 +83,7 @@ bench-quest:
 asm1-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-asm-tests1-verilator
   dependencies:
     - build
 
@@ -91,7 +91,7 @@ asm1-ver:
 asm2-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-asm-tests2-verilator
   dependencies:
     - build
 
@@ -99,7 +99,7 @@ asm2-ver:
 mul-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-mul-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-mul-verilator
   dependencies:
     - build
 
@@ -107,7 +107,7 @@ mul-ver:
 amo-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-amo-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-amo-verilator
   dependencies:
     - build
 
@@ -115,21 +115,21 @@ amo-ver:
 fp-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-fp-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-fp-verilator
   dependencies:
     - build
 
 bench-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-benchmarks-verilator
   dependencies:
     - build
 
 bench-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-benchmarks-verilator
   dependencies:
     - build
 
@@ -150,108 +150,3 @@ serdiv-quest:
   dependencies:
     - build
 
-###################################
-# tests with write-through cache system
-
-s-asm-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-asm-tests defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-# atomics
-s-amo-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-amo-tests defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-# floating point
-s-fp-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-fp-tests defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-s-bench-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-benchmarks defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-# rv64ui-p-* tests
-s-asm1-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# rv64ui-v-* tests
-s-asm2-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# rv64um-*-* tests
-mul-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-mul-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# atomics
-amo-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-amo-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# floating point
-s-fp-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-fp-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-s-bench-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-s-icache-quest:
-  stage: write-through
-  script:
-    - cd tb/tb_icache/
-    - make simc
-    - "grep 'CI: PASSED' summary.rep"
-
-s-dcache-quest:
-  stage: write-through
-  script:
-    - cd tb/tb_wt_dcache/
-    - make simc
-    - "grep 'CI: PASSED' RD0_summary.rep"
-    - "grep 'CI: PASSED' RD1_summary.rep"
-    - "grep 'CI: PASSED' TB_MEM_summary.rep"
-  dependencies:
-    - build
-
-# s-torture:
-#   stage: write-through
-#   script:
-#     - make torture-rtest           defines=WT_DCACHE batch-mode=1
-#     - make torture-rtest-verilator defines=WT_DCACHE
-#   dependencies:
-#     - build

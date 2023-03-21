@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         testcase: [asm-tests, mul, amo, fp, benchmarks]
-        cache: [WB_DCACHE, WT_DCACHE]
+        target: [cv64a6_imafdc_sv39, cv32a60x, cv32a6_imafc_sv32]
     env:
       RISCV: /riscv
     steps:

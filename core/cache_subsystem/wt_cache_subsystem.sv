@@ -14,7 +14,7 @@
 //              coherent memory system.
 //
 //              Define PITON_ARIANE if you want to use this cache.
-//              Define WT_DCACHE if you want to use this cache
+//              Define DCACHE_TYPE if you want to use this cache
 //              with a standard 64 bit AXI interface instead of the OpenPiton
 //              L1.5 interface.
 
