@@ -21,6 +21,7 @@
 
 module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig,  // contains cacheable regions
+  parameter int unsigned NumPorts     = 3,
   parameter int unsigned AxiAddrWidth = 0,
   parameter int unsigned AxiDataWidth = 0,
   parameter int unsigned AxiIdWidth   = 0,
@@ -45,6 +46,8 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  logic                           dcache_flush_i,         // high until acknowledged
   output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
   output logic                           dcache_miss_o,          // we missed on a ld/st
+  // For Performance Counter
+  output logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits_o,
   // AMO interface
   input amo_req_t                        dcache_amo_req_i,
   output amo_resp_t                      dcache_amo_resp_o,
@@ -120,6 +123,7 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
     .amo_resp_o      ( dcache_amo_resp_o       ),
     .req_ports_i     ( dcache_req_ports_i      ),
     .req_ports_o     ( dcache_req_ports_o      ),
+    .miss_vld_bits_o ( miss_vld_bits_o         ),
     .mem_rtrn_vld_i  ( adapter_dcache_rtrn_vld ),
     .mem_rtrn_i      ( adapter_dcache          ),
     .mem_data_req_o  ( dcache_adapter_data_req ),
