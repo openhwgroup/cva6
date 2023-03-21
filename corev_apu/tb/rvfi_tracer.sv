@@ -15,7 +15,8 @@ module rvfi_tracer #(
 )(
   input logic                           clk_i,
   input logic                           rst_ni,
-  input rvfi_pkg::rvfi_instr_t[NR_COMMIT_PORTS-1:0]           rvfi_i
+  input rvfi_pkg::rvfi_instr_t[NR_COMMIT_PORTS-1:0]           rvfi_i,
+  output logic[31:0]                    end_of_test_o
 );
 
   logic[riscv::PLEN-1:0] TOHOST_ADDR;
@@ -37,7 +38,12 @@ module rvfi_tracer #(
   // Generate the trace based on RVFI
   logic [63:0] pc64;
   string cause;
+  logic[31:0] end_of_test_q;
+  logic[31:0] end_of_test_d;
+
+  assign end_of_test_o = end_of_test_d;
   always_ff @(posedge clk_i) begin
+    end_of_test_q = (rst_ni && (end_of_test_d[0] == 1'b1)) ? end_of_test_d : 0;
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
       pc64 = {{riscv::XLEN-riscv::VLEN{rvfi_i[i].pc_rdata[riscv::VLEN-1]}}, rvfi_i[i].pc_rdata};
       // print the instruction information if the instruction is valid or a trap is taken
@@ -77,8 +83,7 @@ module rvfi_tracer #(
             if (TOHOST_ADDR != '0 &&
                 rvfi_i[i].mem_paddr == TOHOST_ADDR &&
                 rvfi_i[i].mem_wdata[0] == 1'b1) begin
-              $finish(1);
-              $finish(1);
+              end_of_test_q = rvfi_i[i].mem_wdata[31:0];
             end
           end
         end
@@ -99,14 +104,17 @@ module rvfi_tracer #(
         end
       end
     end
-    if (cycles > SIM_FINISH) $finish(1);
-  end
 
-  always_ff @(posedge clk_i or negedge rst_ni)
     if (~rst_ni)
       cycles <= 0;
     else
       cycles <= cycles+1;
+    if (cycles > SIM_FINISH)
+      end_of_test_q = 32'hffff_ffff;
+
+    end_of_test_d <= end_of_test_q;
+  end
+
 
   // Trace any custom signals
   // Define signals to be traced by adding them into debug and name arrays
