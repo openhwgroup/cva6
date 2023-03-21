@@ -49,13 +49,81 @@ module load_unit import ariane_pkg::*; #(
                        ABORT_TRANSACTION, ABORT_TRANSACTION_NI, WAIT_TRANSLATION, WAIT_FLUSH,
                        WAIT_WB_EMPTY
                      } state_d, state_q;
-    // in order to decouple the response interface from the request interface we need a
-    // a queue which can hold all outstanding memory requests
-    struct packed {
-        logic [TRANS_ID_BITS-1:0]         trans_id;
-        logic [riscv::XLEN_ALIGN_BYTES-1:0] address_offset;
-        fu_op                             operator;
-    } load_data_d, load_data_q, in_data;
+
+    // in order to decouple the response interface from the request interface,
+    // we need a a buffer which can hold all inflight memory load requests
+    typedef struct packed {
+        logic [TRANS_ID_BITS-1:0]           trans_id;       // scoreboard identifier
+        logic [riscv::XLEN_ALIGN_BYTES-1:0] address_offset; // least significant bits of the address
+        fu_op                               operator;       // type of load
+    } ldbuf_t;
+
+    localparam int unsigned REQ_ID_BITS = NR_LOAD_BUFFER_ENTRIES > 1 ? $clog2(NR_LOAD_BUFFER_ENTRIES) : 1;
+    typedef logic [REQ_ID_BITS-1:0] ldbuf_id_t;
+
+    logic [NR_LOAD_BUFFER_ENTRIES-1:0] ldbuf_valid_q, ldbuf_valid_d;
+    logic [NR_LOAD_BUFFER_ENTRIES-1:0] ldbuf_flushed_q, ldbuf_flushed_d;
+    ldbuf_t                            ldbuf_q[NR_LOAD_BUFFER_ENTRIES];
+    logic                              ldbuf_empty, ldbuf_full;
+    logic                              ldbuf_w;
+    ldbuf_t                            ldbuf_wdata;
+    ldbuf_id_t                         ldbuf_windex;
+    logic                              ldbuf_r;
+    ldbuf_t                            ldbuf_rdata;
+    ldbuf_id_t                         ldbuf_rindex;
+    ldbuf_id_t                         ldbuf_last_id_q;
+
+    assign ldbuf_full = &ldbuf_valid_q;
+
+    //
+    //  buffer of outstanding loads
+
+    //  write in the first available slot
+    lzc #(
+        .WIDTH   (NR_LOAD_BUFFER_ENTRIES),
+        .MODE    (1'b0) // Count leading zeros
+    ) lzc_windex_i (
+        .in_i    (~ldbuf_valid_q),
+        .cnt_o   (ldbuf_windex),
+        .empty_o (ldbuf_empty)
+    );
+
+    always_comb
+    begin : ldbuf_comb
+        ldbuf_flushed_d = ldbuf_flushed_q;
+        ldbuf_valid_d   = ldbuf_valid_q;
+
+        //  In case of flush, raise the flushed flag in all slots.
+        if (flush_i) begin
+            ldbuf_flushed_d = '1;
+        end
+        //  Invalid read entries
+        if (ldbuf_r) begin
+            ldbuf_valid_d[ldbuf_rindex] = 1'b0;
+        end
+        //  Track a new outstanding operation in the load buffer
+        if (ldbuf_w) begin
+            ldbuf_flushed_d[ldbuf_windex] = 1'b0;
+            ldbuf_valid_d[ldbuf_windex] = 1'b1;
+        end
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni)
+    begin : ldbuf_ff
+        if (!rst_ni) begin
+            ldbuf_flushed_q <= '0;
+            ldbuf_valid_q   <= '0;
+            ldbuf_last_id_q <= '0;
+            ldbuf_q         <= '{default:'0};
+        end else begin
+            ldbuf_flushed_q <= ldbuf_flushed_d;
+            ldbuf_valid_q   <= ldbuf_valid_d;
+            if (ldbuf_w) begin
+                ldbuf_last_id_q       <= ldbuf_windex;
+                ldbuf_q[ldbuf_windex] <= ldbuf_wdata;
+            end
+        end
+    end
 
     // page offset is defined as the lower 12 bits, feed through for address checker
     assign page_offset_o = lsu_ctrl_i.vaddr[11:0];
@@ -64,8 +132,8 @@ module load_unit import ariane_pkg::*; #(
     // this is a read-only interface so set the write enable to 0
     assign req_port_o.data_we = 1'b0;
     assign req_port_o.data_wdata = '0;
-    // compose the queue data, control is handled in the FSM
-    assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[riscv::XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operator};
+    // compose the load buffer write data, control is handled in the FSM
+    assign ldbuf_wdata = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[riscv::XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operator};
     // output address
     // we can now output the lower 12 bit as the index to the cache
     assign req_port_o.address_index = lsu_ctrl_i.vaddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
@@ -73,8 +141,8 @@ module load_unit import ariane_pkg::*; #(
     assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
                                               ariane_pkg::DCACHE_INDEX_WIDTH-1 :
                                               ariane_pkg::DCACHE_INDEX_WIDTH];
-    // we only issue one single request at a time
-    assign req_port_o.data_id = '0;
+    // request id = index of the load buffer's entry
+    assign req_port_o.data_id = ldbuf_windex;
     // directly forward exception fields (valid bit is set below)
     assign ex_o.cause = ex_i.cause;
     assign ex_o.tval  = ex_i.tval;
@@ -95,7 +163,6 @@ module load_unit import ariane_pkg::*; #(
     always_comb begin : load_control
         // default assignments
         state_d              = state_q;
-        load_data_d          = load_data_q;
         translation_req_o    = 1'b0;
         req_port_o.data_req  = 1'b0;
         // tag control
@@ -107,8 +174,8 @@ module load_unit import ariane_pkg::*; #(
 
         case (state_q)
             IDLE: begin
-                // we've got a new load request
-                if (valid_i) begin
+                // we've got a new load request and the load buffer is not full
+                if (valid_i && !ldbuf_full) begin
                     // start the translation process even though we do not know if the addresses match
                     // this should ease timing
                     translation_req_o = 1'b1;
@@ -194,8 +261,8 @@ module load_unit import ariane_pkg::*; #(
             SEND_TAG: begin
                 req_port_o.tag_valid = 1'b1;
                 state_d = IDLE;
-                // we can make a new request here if we got one
-                if (valid_i) begin
+                // we can make a new request here if we got one and the load buffer is not full
+                if (valid_i && !ldbuf_full) begin
                     // start the translation process even though we do not know if the addresses match
                     // this should ease timing
                     translation_req_o = 1'b1;
@@ -252,30 +319,33 @@ module load_unit import ariane_pkg::*; #(
                 pop_ld_o = 1'b1;
         end
 
-        // save the load data for later usage -> we should not clutter the load_data register
-        if (pop_ld_o && !ex_i.valid) begin
-            load_data_d = in_data;
-        end
-
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
         if (flush_i) begin
             state_d = WAIT_FLUSH;
         end
     end
 
+    // track the load data for later usage
+    assign ldbuf_w         = pop_ld_o & ~ex_i.valid & ~flush_i;
+
+
     // ---------------
     // Retire Load
     // ---------------
+    assign ldbuf_r      = req_port_i.data_rvalid;
+    assign ldbuf_rindex = ldbuf_id_t'(req_port_i.data_rid);
+    assign ldbuf_rdata  = ldbuf_q[ldbuf_rindex];
+
     // decoupled rvalid process
     always_comb begin : rvalid_output
         valid_o    = 1'b0;
         ex_o.valid = 1'b0;
         // output the queue data directly, the valid signal is set corresponding to the process above
-        trans_id_o = load_data_q.trans_id;
-        // we got an rvalid and are currently not flushing and not aborting the request
-        if (req_port_i.data_rvalid && state_q != WAIT_FLUSH) begin
-            // we killed the request
-            if(!req_port_o.kill_req)
+        trans_id_o = ldbuf_rdata.trans_id;
+        // we got an rvalid and it's corresponding request was not flushed
+        if (req_port_i.data_rvalid && !ldbuf_flushed_q[ldbuf_rindex]) begin
+            // if the response corresponds to the last request, check that we are not killing it
+            if((ldbuf_last_id_q != ldbuf_rindex) || !req_port_o.kill_req)
                 valid_o = 1'b1;
             // the output is also valid if we got an exception. An exception arrives one cycle after
             // dtlb_hit_i is asserted, i.e. when we are in SEND_TAG. Otherwise, the exception
@@ -304,11 +374,9 @@ module load_unit import ariane_pkg::*; #(
     // latch physical address for the tag cycle (one cycle after applying the index)
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            state_q     <= IDLE;
-            load_data_q <= '0;
+            state_q <= IDLE;
         end else begin
-            state_q     <= state_d;
-            load_data_q <= load_data_d;
+            state_q <= state_d;
         end
     end
 
@@ -318,12 +386,12 @@ module load_unit import ariane_pkg::*; #(
     riscv::xlen_t shifted_data;
 
     // realign as needed
-    assign shifted_data   = req_port_i.data_rdata >> {load_data_q.address_offset, 3'b000};
+    assign shifted_data = req_port_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};
 
 /*  // result mux (leaner code, but more logic stages.
     // can be used instead of the code below (in between //result mux fast) if timing is not so critical)
     always_comb begin
-        unique case (load_data_q.operator)
+        unique case (ldbuf_rdata.operator)
             LWU:        result_o = shifted_data[31:0];
             LHU:        result_o = shifted_data[15:0];
             LBU:        result_o = shifted_data[7:0];
@@ -336,23 +404,21 @@ module load_unit import ariane_pkg::*; #(
 
     // result mux fast
     logic [(riscv::XLEN/8)-1:0]  sign_bits;
-    logic [riscv::XLEN_ALIGN_BYTES-1:0]  idx_d, idx_q;
-    logic        sign_bit, signed_d, signed_q, fp_sign_d, fp_sign_q;
+    logic [riscv::XLEN_ALIGN_BYTES-1:0]  idx_q;
+    logic        sign_bit, signed_q, fp_sign_q;
 
 
     // prepare these signals for faster selection in the next cycle
-    assign signed_d  = load_data_d.operator  inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
-    assign fp_sign_d = load_data_d.operator  inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-    
-    assign idx_d     = ((load_data_d.operator inside {ariane_pkg::LW,  ariane_pkg::FLW}) & riscv::IS_XLEN64) ? load_data_d.address_offset + 3 :
-                       (load_data_d.operator inside {ariane_pkg::LH,  ariane_pkg::FLH}) ? load_data_d.address_offset + 1 :
-                                                                                          load_data_d.address_offset;
-
+    assign signed_q  = ldbuf_rdata.operator  inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
+    assign fp_sign_q = ldbuf_rdata.operator  inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
+    assign idx_q     = ((ldbuf_rdata.operator inside {ariane_pkg::LW,  ariane_pkg::FLW}) & riscv::IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
+                       ( ldbuf_rdata.operator inside {ariane_pkg::LH,  ariane_pkg::FLH}) ? ldbuf_rdata.address_offset + 1 :
+                                                                                           ldbuf_rdata.address_offset;
 
     for (genvar i = 0; i < (riscv::XLEN/8); i++) begin : gen_sign_bits
         assign sign_bits[i] = req_port_i.data_rdata[(i+1)*8-1]; 
     end
-    
+
 
     // select correct sign bit in parallel to result shifter above
     // pull to 0 if unsigned
@@ -360,24 +426,12 @@ module load_unit import ariane_pkg::*; #(
 
     // result mux
     always_comb begin
-        unique case (load_data_q.operator)
+        unique case (ldbuf_rdata.operator)
             ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::FLW:    result_o = {{riscv::XLEN-32{sign_bit}}, shifted_data[31:0]};
             ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::FLH:    result_o = {{riscv::XLEN-32+16{sign_bit}}, shifted_data[15:0]};
             ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::FLB:    result_o = {{riscv::XLEN-32+24{sign_bit}}, shifted_data[7:0]};
             default:    result_o = shifted_data[riscv::XLEN-1:0];
         endcase
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-        if (~rst_ni) begin
-            idx_q     <= 0;
-            signed_q  <= 0;
-            fp_sign_q <= 0;
-        end else begin
-            idx_q     <= idx_d;
-            signed_q  <= signed_d;
-            fp_sign_q <= fp_sign_d;
-        end
     end
     // end result mux fast
 
@@ -389,11 +443,11 @@ module load_unit import ariane_pkg::*; #(
 `ifndef VERILATOR
     // check invalid offsets
     addr_offset0: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (load_data_q.operator inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
+        valid_o |->  (ldbuf_rdata.operator inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> ldbuf_rdata.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
     addr_offset1: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (load_data_q.operator inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
+        valid_o |->  (ldbuf_rdata.operator inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> ldbuf_rdata.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
     addr_offset2: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (load_data_q.operator inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
+        valid_o |->  (ldbuf_rdata.operator inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> ldbuf_rdata.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
 `endif
 //pragma translate_on
 
