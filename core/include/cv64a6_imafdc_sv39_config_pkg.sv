@@ -10,7 +10,7 @@
 
 package cva6_config_pkg;
 
-    enum {
+    typedef enum logic {
       WB = 0,
       WT = 1
     } cache_type_t ;
