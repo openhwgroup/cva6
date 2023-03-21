@@ -53,14 +53,14 @@ build:
 asm-quest:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-asm-tests batch-mode=1 defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-asm-tests batch-mode=1 target=cv32a6_imafc_sv32
   dependencies:
     - build
 
 amo-quest:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-amo-tests batch-mode=1 defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-amo-tests batch-mode=1 target=cv32a6_imafc_sv32
   dependencies:
     - build
 
@@ -68,14 +68,14 @@ amo-quest:
 fp-quest:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-fp-tests batch-mode=1 defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-fp-tests batch-mode=1 target=cv32a6_imafc_sv32
   dependencies:
     - build
 
 bench-quest:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-benchmarks batch-mode=1 defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-benchmarks batch-mode=1 target=cv32a6_imafc_sv32
   dependencies:
     - build
 
@@ -83,7 +83,7 @@ bench-quest:
 asm1-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-asm-tests1-verilator target=cv32a6_imafc_sv32
   dependencies:
     - build
 
@@ -91,7 +91,7 @@ asm1-ver:
 asm2-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-asm-tests2-verilator target=cv32a6_imafc_sv32
   dependencies:
     - build
 
@@ -99,7 +99,7 @@ asm2-ver:
 mul-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-mul-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-mul-verilator target=cv32a6_imafc_sv32
   dependencies:
     - build
 
@@ -107,7 +107,7 @@ mul-ver:
 amo-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-amo-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-amo-verilator target=cv32a6_imafc_sv32
   dependencies:
     - build
 
@@ -115,21 +115,21 @@ amo-ver:
 fp-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-fp-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-fp-verilator target=cv32a6_imafc_sv32
   dependencies:
     - build
 
 bench-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-benchmarks-verilator target=cv32a6_imafc_sv32
   dependencies:
     - build
 
 bench-ver:
   stage: write-back
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
+    - make -j${NUM_JOBS} run-benchmarks-verilator target=cv32a6_imafc_sv32
   dependencies:
     - build
 
@@ -156,7 +156,7 @@ serdiv-quest:
 s-asm-quest:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-asm-tests defines=WT_DCACHE batch-mode=1
+    - make -j${NUM_JOBS} run-asm-tests target=cv64a6_imafdc_sv39 batch-mode=1
   dependencies:
     - build
 
@@ -164,7 +164,7 @@ s-asm-quest:
 s-amo-quest:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-amo-tests defines=WT_DCACHE batch-mode=1
+    - make -j${NUM_JOBS} run-amo-tests target=cv64a6_imafdc_sv39 batch-mode=1
   dependencies:
     - build
 
@@ -172,14 +172,14 @@ s-amo-quest:
 s-fp-quest:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-fp-tests defines=WT_DCACHE batch-mode=1
+    - make -j${NUM_JOBS} run-fp-tests target=cv64a6_imafdc_sv39 batch-mode=1
   dependencies:
     - build
 
 s-bench-quest:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-benchmarks defines=WT_DCACHE batch-mode=1
+    - make -j${NUM_JOBS} run-benchmarks target=cv64a6_imafdc_sv39 batch-mode=1
   dependencies:
     - build
 
@@ -187,7 +187,7 @@ s-bench-quest:
 s-asm1-ver:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WT_DCACHE
+    - make -j${NUM_JOBS} run-asm-tests1-verilator target=cv64a6_imafdc_sv39
   dependencies:
     - build
 
@@ -195,7 +195,7 @@ s-asm1-ver:
 s-asm2-ver:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WT_DCACHE
+    - make -j${NUM_JOBS} run-asm-tests2-verilator target=cv64a6_imafdc_sv39
   dependencies:
     - build
 
@@ -203,7 +203,7 @@ s-asm2-ver:
 mul-ver:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-mul-verilator defines=WT_DCACHE
+    - make -j${NUM_JOBS} run-mul-verilator target=cv64a6_imafdc_sv39
   dependencies:
     - build
 
@@ -211,7 +211,7 @@ mul-ver:
 amo-ver:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-amo-verilator defines=WT_DCACHE
+    - make -j${NUM_JOBS} run-amo-verilator target=cv64a6_imafdc_sv39
   dependencies:
     - build
 
@@ -219,14 +219,14 @@ amo-ver:
 s-fp-ver:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-fp-verilator defines=WT_DCACHE
+    - make -j${NUM_JOBS} run-fp-verilator target=cv64a6_imafdc_sv39
   dependencies:
     - build
 
 s-bench-ver:
   stage: write-through
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WT_DCACHE
+    - make -j${NUM_JOBS} run-benchmarks-verilator target=cv64a6_imafdc_sv39
   dependencies:
     - build
 
