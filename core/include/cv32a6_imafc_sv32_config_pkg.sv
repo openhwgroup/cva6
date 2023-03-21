@@ -35,9 +35,10 @@ package cva6_config_pkg;
     localparam CVA6ConfigDcacheByteSize = 32768;
     localparam CVA6ConfigDcacheSetAssoc = 8;
     localparam CVA6ConfigDcacheLineWidth = 128;
-    localparam CVA6ConfigDcacheWbuf_Depth = 8;
 
     localparam CVA6ConfigDcacheIdWidth = 1;
+
+    localparam CVA6ConfigWtDcacheWbufDepth = 8;
 
     localparam CVA6ConfigNrCommitPorts = 2;
     localparam CVA6ConfigNrScoreboardEntries = 8;
