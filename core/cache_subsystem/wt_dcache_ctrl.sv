@@ -59,6 +59,7 @@ module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [DCACHE_TAG_WIDTH-1:0]    address_tag_d, address_tag_q;
   logic [DCACHE_CL_IDX_WIDTH-1:0] address_idx_d, address_idx_q;
   logic [DCACHE_OFFSET_WIDTH-1:0] address_off_d, address_off_q;
+  logic [DCACHE_TID_WIDTH-1:0]    id_d, id_q;
   logic [DCACHE_SET_ASSOC-1:0]    vld_data_d,    vld_data_q;
   logic save_tag, rd_req_d, rd_req_q, rd_ack_d, rd_ack_q;
   logic [1:0] data_size_d, data_size_q;
@@ -72,6 +73,7 @@ module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign address_tag_d = (save_tag)            ? req_port_i.address_tag                                             : address_tag_q;
   assign address_idx_d = (req_port_o.data_gnt) ? req_port_i.address_index[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH] : address_idx_q;
   assign address_off_d = (req_port_o.data_gnt) ? req_port_i.address_index[DCACHE_OFFSET_WIDTH-1:0]                  : address_off_q;
+  assign id_d          = (req_port_o.data_gnt) ? req_port_i.data_id                                                 : id_q;
   assign data_size_d   = (req_port_o.data_gnt) ? req_port_i.data_size                                               : data_size_q;
   assign rd_tag_o      = address_tag_d;
   assign rd_idx_o      = address_idx_d;
@@ -79,7 +81,7 @@ module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   assign req_port_o.data_rdata = rd_data_i;
   assign req_port_o.data_ruser = rd_user_i;
-  assign req_port_o.data_rid   = '0;
+  assign req_port_o.data_rid   = id_q;
 
   // to miss unit
   assign miss_vld_bits_o       = vld_data_q;
@@ -240,6 +242,7 @@ module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
       address_tag_q    <= '0;
       address_idx_q    <= '0;
       address_off_q    <= '0;
+      id_q             <= '0;
       vld_data_q       <= '0;
       data_size_q      <= '0;
       rd_req_q         <= '0;
@@ -249,6 +252,7 @@ module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
       address_tag_q    <= address_tag_d;
       address_idx_q    <= address_idx_d;
       address_off_q    <= address_off_d;
+      id_q             <= id_d;
       vld_data_q       <= vld_data_d;
       data_size_q      <= data_size_d;
       rd_req_q         <= rd_req_d;

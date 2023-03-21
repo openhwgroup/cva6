@@ -21,6 +21,7 @@ package config_pkg;
       int unsigned AxiDataWidth;
       int unsigned AxiIdWidth;
       int unsigned AxiUserWidth;
+      int unsigned NrLoadBufEntries;
       bit FpuEn;
       bit XF16;
       bit XF16ALT;
@@ -51,6 +52,7 @@ package config_pkg;
       unsigned'(64),     // AxiDataWidth
       unsigned'(4),      // AxiIdWidth
       unsigned'(32),     // AxiUserWidth
+      unsigned'(2),      // NrLoadBufEntries
       bit'(0),           // FpuEn
       bit'(0),           // XF16
       bit'(0),           // XF16ALT
@@ -81,6 +83,7 @@ package config_pkg;
       unsigned'(0),      // AxiDataWidth
       unsigned'(0),      // AxiIdWidth
       unsigned'(0),      // AxiUserWidth
+      unsigned'(0),      // NrLoadBufEntries
       bit'(0),           // FpuEn
       bit'(0),           // XF16
       bit'(0),           // XF16ALT

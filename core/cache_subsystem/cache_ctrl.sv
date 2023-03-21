@@ -74,6 +74,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
     typedef struct packed {
         logic [DCACHE_INDEX_WIDTH-1:0] index;
         logic [DCACHE_TAG_WIDTH-1:0]   tag;
+        logic [DCACHE_TID_WIDTH-1:0]   id;
         logic [7:0]             be;
         logic [1:0]             size;
         logic                   we;
@@ -116,7 +117,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
         req_port_o.data_gnt    = 1'b0;
         req_port_o.data_rvalid = 1'b0;
         req_port_o.data_rdata  = '0;
-        req_port_o.data_rid    = '0;
+        req_port_o.data_rid    = mem_req_q.id;
         miss_req_o    = '0;
         mshr_addr_o   = '0;
         // Memory array communication
@@ -138,6 +139,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
 
                     // save index, be and we
                     mem_req_d.index = req_port_i.address_index;
+                    mem_req_d.id    = req_port_i.data_id;
                     mem_req_d.be    = req_port_i.data_be;
                     mem_req_d.size  = req_port_i.data_size;
                     mem_req_d.we    = req_port_i.data_we;
@@ -186,6 +188,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                         if (req_port_i.data_req && !mem_req_q.we && !flush_i) begin
                             state_d          = WAIT_TAG; // switch back to WAIT_TAG
                             mem_req_d.index  = req_port_i.address_index;
+                            mem_req_d.id     = req_port_i.data_id;
                             mem_req_d.be     = req_port_i.data_be;
                             mem_req_d.size   = req_port_i.data_size;
                             mem_req_d.we     = req_port_i.data_we;
@@ -391,6 +394,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                     if (req_port_i.data_req) begin
                         // save index, be and we
                         mem_req_d.index = req_port_i.address_index;
+                        mem_req_d.id    = req_port_i.data_id;
                         mem_req_d.be    = req_port_i.data_be;
                         mem_req_d.size  = req_port_i.data_size;
                         mem_req_d.we    = req_port_i.data_we;
