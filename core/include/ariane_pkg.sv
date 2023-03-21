@@ -468,6 +468,7 @@ package ariane_pkg;
     localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigDcacheLineWidth; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
     localparam int unsigned DCACHE_TID_WIDTH   = cva6_config_pkg::CVA6ConfigDcacheIdWidth;
+    localparam int unsigned DCACHE_WBUF_DEPTH   = cva6_config_pkg::CVA6ConfigDcacheWbuf_Depth;
 `endif
 
     // ---------------
