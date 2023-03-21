@@ -684,7 +684,7 @@ module cva6 import ariane_pkg::*; #(
   // Cache Subsystem
   // -------------------
 
-  if (WT_DCACHE == 1) begin
+  if (DCACHE_TYPE == WT) begin
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
     .ArianeCfg            ( ArianeCfg ),
