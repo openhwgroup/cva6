@@ -45,6 +45,7 @@ An easy way to get the Python plug-ins installed on your machine is::
 **Note:** Virtual python environments can be used if desired.
 
 Once the above is in place type the following::
+
     $ cd $CORE-V-VERIF/cv32e40p/sim/core
     $ make
 
