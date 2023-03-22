@@ -469,6 +469,8 @@ package ariane_pkg;
     localparam int unsigned DCACHE_TID_WIDTH   = cva6_config_pkg::CVA6ConfigDcacheIdWidth;
 `endif
 
+    localparam int unsigned WT_DCACHE_WBUF_DEPTH   = cva6_config_pkg::CVA6ConfigWtDcacheWbufDepth;
+
     // ---------------
     // EX Stage
     // ---------------
