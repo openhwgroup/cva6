@@ -138,7 +138,7 @@ DPI_FLAGS += -Itb/riscv-isa-sim/install/include/spike
 endif
 
 DPI_CFLAGS   ?= $(CFLAGS)   $(DPI_FLAGS)
-DPI_CXXFLAGS ?= $(CXXFLAGS) $(DPI_FLAGS)
+DPI_CXXFLAGS ?= $(CXXFLAGS) $(DPI_FLAGS) -D_GLIBCXX_USE_CXX11_ABI=0
 
 # this list contains the standalone components
 src :=  corev_apu/tb/axi_adapter.sv                                                  \
@@ -328,7 +328,7 @@ $(dpi-library)/%.o: corev_apu/tb/dpi/%.cc $(dpi_hdr)
 $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
-	$(CXX) $(CXXFLAGS) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr
+	$(CXX) $(CXXFLAGS) -D_GLIBCXX_USE_CXX11_ABI=0 -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr
 
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
