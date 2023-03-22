@@ -10,6 +10,11 @@
 
 package cva6_config_pkg;
 
+    typedef enum logic {
+      WB = 0,
+      WT = 1
+    } cache_type_t ;
+
     localparam CVA6ConfigXlen = 32;
 
     localparam CVA6ConfigFpuEn = 0;
@@ -56,5 +61,7 @@ package cva6_config_pkg;
     localparam CVA6ConfigNrPMPEntries = 8;
 
     localparam CVA6ConfigPerfCounterEn = 1;
+
+    localparam CVA6ConfigDcacheType = WT;
 
 endpackage

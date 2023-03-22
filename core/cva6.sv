@@ -698,7 +698,7 @@ module cva6 import ariane_pkg::*; #(
   // Cache Subsystem
   // -------------------
 
-`ifdef WT_DCACHE
+  if (DCACHE_TYPE == cva6_config_pkg::WT) begin
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
     .ArianeCfg            ( ArianeCfg ),
@@ -744,7 +744,7 @@ module cva6 import ariane_pkg::*; #(
     .axi_resp_i            ( axi_resp_i                  )
 `endif
   );
-`else
+  end else begin
 
   std_cache_subsystem #(
     // note: this only works with one cacheable region
@@ -790,7 +790,7 @@ module cva6 import ariane_pkg::*; #(
     .axi_resp_i            ( axi_resp_i                  )
   );
   assign dcache_commit_wbuffer_not_ni = 1'b1;
-`endif
+  end
 
   // -------------------
   // Parameter Check
