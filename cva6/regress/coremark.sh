@@ -25,7 +25,7 @@ source ./cva6/regress/install-riscv-compliance.sh
 source ./cva6/regress/install-riscv-tests.sh
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=veri-testharness,spike
+  DV_SIMULATORS=veri-testharness
 fi
 
 cd cva6/sim/
