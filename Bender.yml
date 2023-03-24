@@ -1,16 +1,15 @@
 package:
-  name: ariane
+  name: cva6
   authors:
     - "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"
     - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
     - "Andreas Kuster <kustera@ethz.ch>"
 
-# WT_DCACHE
 dependencies:
   axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.31.0 }
   common_cells:
     { git: "https://github.com/pulp-platform/common_cells", version: 1.23.0 }
-  fpnew: { git: "https://github.com/pulp-platform/fpnew.git", version: 0.6.2 }
+  fpnew: { git: "https://github.com/openhwgroup/cvfpu.git", version: 0.7.0 }
   tech_cells_generic:
     {
       git: "https://github.com/pulp-platform/tech_cells_generic.git",
@@ -21,7 +20,7 @@ frozen: true
 
 sources:
   - defines:
-      WT_DCACHE: 1
+      WB_DCACHE: 1
     files:
       - target: cv64a6_imafdc_sv39
         files:
@@ -77,9 +76,11 @@ sources:
       # for all the below files use Flist.cva6 as baseline and also look at Makefile pd/synth
 
       # FPGA support keep vendoring here because too old
-      - vendor/pulp-platform/fpga-support/rtl/SyncDpRam.sv
-      - vendor/pulp-platform/fpga-support/rtl/AsyncDpRam.sv
-      - vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv
+      - target: all(fpga, xilinx)
+        files
+          - vendor/pulp-platform/fpga-support/rtl/SyncDpRam.sv
+          - vendor/pulp-platform/fpga-support/rtl/AsyncDpRam.sv
+          - vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv
 
       # CVXIF
       - core/include/cvxif_pkg.sv
@@ -177,6 +178,15 @@ sources:
       - core/cache_subsystem/cva6_icache.sv
       - core/cache_subsystem/wt_cache_subsystem.sv
       - core/cache_subsystem/wt_axi_adapter.sv
+      - core/cache_subsystem/tag_cmp.sv
+      - core/cache_subsystem/cache_ctrl.sv
+      - core/cache_subsystem/amo_alu.sv
+      - core/cache_subsystem/wt_l15_adapter.sv
+      - corev_apu/tb/axi_adapter.sv
+      - core/cache_subsystem/miss_handler.sv
+      - core/cache_subsystem/std_nbdcache.sv
+      - core/cache_subsystem/cva6_icache_axi_wrapper.sv
+      - core/cache_subsystem/std_cache_subsystem.sv
 
       # Physical Memory Protection
       # NOTE: pmp.sv modified for DSIM (unchanged for other simulators)
@@ -205,8 +215,10 @@ sources:
       - target: not(synthesis)
         include_dirs:
           - core/include
+          - common/local/util
         files:
           # Tracer (behavioral code, not RTL)
+          - core/include/instr_tracer_pkg.sv
           - common/local/util/instr_tracer.sv
           - common/local/util/instr_tracer_if.sv
           - common/local/util/instr_trace_item.svh
