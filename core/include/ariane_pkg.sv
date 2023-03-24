@@ -687,7 +687,7 @@ package ariane_pkg;
     // ---------------
     // MMU instanciation
     // ---------------
-     localparam bit MMU_PRESENT = 1'b1;  // MMU is present
+     localparam bit MMU_PRESENT = cva6_config_pkg::CVA6ConfigMmuPresent;
 
      localparam int unsigned INSTR_TLB_ENTRIES = cva6_config_pkg::CVA6ConfigInstrTlbEntries;
      localparam int unsigned DATA_TLB_ENTRIES  = cva6_config_pkg::CVA6ConfigDataTlbEntries;

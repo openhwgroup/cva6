@@ -66,4 +66,6 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigDcacheType = WB;
 
+    localparam CVA6ConfigMmuPresent = 1;
+
 endpackage
