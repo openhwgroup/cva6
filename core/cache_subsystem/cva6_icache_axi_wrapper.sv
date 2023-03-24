@@ -53,7 +53,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   logic                                  axi_rd_req;
   logic                                  axi_rd_gnt;
-  logic [63:0]                           axi_rd_addr;
+  logic [AxiAddrWidth-1:0]               axi_rd_addr;
   logic [$clog2(AxiNumWords)-1:0]        axi_rd_blen;
   logic [2:0]                            axi_rd_size;
   logic [$size(axi_resp_i.r.id)-1:0]     axi_rd_id_in;
