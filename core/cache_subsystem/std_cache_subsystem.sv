@@ -26,9 +26,12 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     parameter type axi_req_t = ariane_axi::req_t,
     parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
-    input logic                            clk_i,
-    input logic                            rst_ni,
-    input riscv::priv_lvl_t                priv_lvl_i,
+    input  logic                           clk_i,
+    input  logic                           rst_ni,
+    input  riscv::priv_lvl_t               priv_lvl_i,
+    output logic                           busy_o,
+    input  logic                           stall_i,                // stall new memory requests
+    input  logic                           init_ni,                // do not init after reset
     // I$
     input  logic                           icache_en_i,            // enable icache (or bypass e.g: in debug mode)
     input  logic                           icache_flush_i,         // flush the icache, flush and kill have to be asserted together
@@ -66,6 +69,11 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     axi_req_t axi_req_data;
     axi_rsp_t axi_resp_data;
 
+    logic              icache_busy;
+    logic              dcache_busy;
+
+    assign busy_o = icache_busy | dcache_busy;
+
     cva6_icache_axi_wrapper #(
         .ArianeCfg    ( ArianeCfg    ),
         .AxiAddrWidth ( AxiAddrWidth ),
@@ -80,6 +88,9 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
         .flush_i    ( icache_flush_i        ),
         .en_i       ( icache_en_i           ),
         .miss_o     ( icache_miss_o         ),
+        .busy_o     ( icache_busy           ),
+        .stall_i    ( stall_i               ),
+        .init_ni    ( init_ni               ),
         .areq_i     ( icache_areq_i         ),
         .areq_o     ( icache_areq_o         ),
         .dreq_i     ( icache_dreq_i         ),
@@ -106,6 +117,9 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
       .flush_i      ( dcache_flush_i         ),
       .flush_ack_o  ( dcache_flush_ack_o     ),
       .miss_o       ( dcache_miss_o          ),
+      .busy_o       ( dcache_busy            ),
+      .stall_i      ( stall_i                ),
+      .init_ni      ( init_ni                ),
       .axi_bypass_o ( axi_req_bypass         ),
       .axi_bypass_i ( axi_resp_bypass        ),
       .axi_data_o   ( axi_req_data           ),

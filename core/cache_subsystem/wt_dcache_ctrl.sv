@@ -20,6 +20,8 @@ module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  logic                            clk_i,          // Clock
   input  logic                            rst_ni,         // Asynchronous reset active low
   input  logic                            cache_en_i,
+  output logic                            busy_o,
+  input  logic                            stall_i,        // stall new memory requests
   // core request ports
   input  dcache_req_i_t                   req_port_i,
   output dcache_req_o_t                   req_port_o,
@@ -97,6 +99,8 @@ module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign rd_ack_d     = rd_ack_i;
   assign rd_tag_only_o = '0;
 
+  assign busy_o = (state_q != IDLE);
+
 ///////////////////////////////////////////////////////
 // main control logic
 ///////////////////////////////////////////////////////
@@ -115,7 +119,7 @@ module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
         //////////////////////////////////
         // wait for an incoming request
         IDLE: begin
-          if (req_port_i.data_req) begin
+          if (req_port_i.data_req && !stall_i) begin
             rd_req_o = 1'b1;
             // if read ack then ack the `req_port_o`, and goto `READ` state
             if (rd_ack_i) begin

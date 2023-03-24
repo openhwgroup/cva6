@@ -21,6 +21,7 @@ module issue_stage import ariane_pkg::*; #(
 )(
     input  logic                                     clk_i,     // Clock
     input  logic                                     rst_ni,    // Asynchronous reset active low
+    input  logic                                     rst_uarch_ni,
 
     output logic                                     sb_full_o,
     input  logic                                     flush_unissued_instr_i,
@@ -122,7 +123,7 @@ module issue_stage import ariane_pkg::*; #(
     // ---------------------------------------------------------
     re_name i_re_name (
         .clk_i                  ( clk_i                        ),
-        .rst_ni                 ( rst_ni                       ),
+        .rst_ni                 ( rst_uarch_ni                 ),
         .flush_i                ( flush_i                      ),
         .flush_unissied_instr_i ( flush_unissued_instr_i       ),
         .issue_instr_i          ( decoded_instr_i              ),
@@ -141,6 +142,8 @@ module issue_stage import ariane_pkg::*; #(
         .NR_WB_PORTS(NR_WB_PORTS),
         .NR_COMMIT_PORTS(NR_COMMIT_PORTS)
     ) i_scoreboard (
+        .rst_ni                ( rst_uarch_ni                              ),
+
         .sb_full_o             ( sb_full_o                                 ),
         .unresolved_branch_i   ( 1'b0                                      ),
         .rd_clobber_gpr_o      ( rd_clobber_gpr_sb_iro                     ),

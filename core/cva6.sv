@@ -78,6 +78,7 @@ module cva6 import ariane_pkg::*; #(
   logic [riscv::VLEN-1:0]     pc_commit;
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
+  logic                       rst_uarch_n;
 
   // --------------
   // PCGEN <-> CSR
@@ -206,6 +207,9 @@ module cva6 import ariane_pkg::*; #(
   logic                     dcache_en_csr_nbdcache;
   logic                     csr_write_fflags_commit_cs;
   logic                     icache_en_csr;
+  logic [31:0]              fence_t_pad_csr_ctrl;
+  logic                     fence_t_src_sel_csr_ctrl;
+  logic [31:0]              fence_t_ceil_csr_ctrl;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
   riscv::pmpcfg_t [15:0]    pmpcfg;
@@ -236,12 +240,18 @@ module cva6 import ariane_pkg::*; #(
   logic                     fence_i_commit_controller;
   logic                     fence_commit_controller;
   logic                     sfence_vma_commit_controller;
+  logic                     fence_t_commit_controller;
   logic                     halt_ctrl;
   logic                     halt_csr_ctrl;
   logic                     dcache_flush_ctrl_cache;
   logic                     dcache_flush_ack_cache_ctrl;
   logic                     set_debug_pc;
   logic                     flush_commit;
+  logic                     rst_uarch_controller_n;
+  logic [riscv::VLEN-1:0]   rst_addr_ctrl_if;
+  logic                     busy_cache_ctrl;
+  logic                     stall_ctrl_cache;
+  logic                     init_ctrl_cache_n;
 
   icache_areq_i_t           icache_areq_ex_cache;
   icache_areq_o_t           icache_areq_cache_ex;
@@ -266,16 +276,25 @@ module cva6 import ariane_pkg::*; #(
   logic [(riscv::XLEN/8)-1:0]           lsu_wmask;
   logic [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id;
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      rst_uarch_n <= 1'b0;
+    end else begin
+      rst_uarch_n <= rst_uarch_controller_n;
+    end
+  end
+
   // --------------
   // Frontend
   // --------------
   frontend #(
     .ArianeCfg ( ArianeCfg )
   ) i_frontend (
+    .rst_ni              ( rst_uarch_n                   ),
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),
     .debug_mode_i        ( debug_mode                    ),
-    .boot_addr_i         ( boot_addr_i[riscv::VLEN-1:0]  ),
+    .boot_addr_i         ( rst_addr_ctrl_if              ),
     .icache_dreq_i       ( icache_dreq_cache_if          ),
     .icache_dreq_o       ( icache_dreq_if_cache          ),
     .resolved_branch_i   ( resolved_branch               ),
@@ -297,7 +316,7 @@ module cva6 import ariane_pkg::*; #(
   // ---------
   id_stage id_stage_i (
     .clk_i,
-    .rst_ni,
+    .rst_ni                     ( rst_uarch_n                ),
     .flush_i                    ( flush_ctrl_if              ),
     .debug_req_i,
 
@@ -347,6 +366,7 @@ module cva6 import ariane_pkg::*; #(
   ) issue_stage_i (
     .clk_i,
     .rst_ni,
+    .rst_uarch_ni               ( rst_uarch_n                  ),
     .sb_full_o                  ( sb_full                      ),
     .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id ),
     .flush_i                    ( flush_ctrl_id                ),
@@ -415,7 +435,7 @@ module cva6 import ariane_pkg::*; #(
     .ArianeCfg  ( ArianeCfg  )
   ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
-    .rst_ni                 ( rst_ni                      ),
+    .rst_ni                 ( rst_uarch_n                 ),
     .debug_mode_i           ( debug_mode                  ),
     .flush_i                ( flush_ctrl_ex               ),
     .rs1_forwarding_i       ( rs1_forwarding_id_ex        ),
@@ -528,7 +548,7 @@ module cva6 import ariane_pkg::*; #(
     .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
   ) commit_stage_i (
     .clk_i,
-    .rst_ni,
+    .rst_ni                 ( rst_uarch_n                   ),
     .halt_i                 ( halt_ctrl                     ),
     .flush_dcache_i         ( dcache_flush_ctrl_cache       ),
     .exception_o            ( ex_commit                     ),
@@ -556,6 +576,7 @@ module cva6 import ariane_pkg::*; #(
     .fence_i_o              ( fence_i_commit_controller     ),
     .fence_o                ( fence_commit_controller       ),
     .sfence_vma_o           ( sfence_vma_commit_controller  ),
+    .fence_t_o              ( fence_t_commit_controller     ),
     .flush_commit_o         ( flush_commit                  ),
     .*
   );
@@ -608,6 +629,9 @@ module cva6 import ariane_pkg::*; #(
     .single_step_o          ( single_step_csr_commit        ),
     .dcache_en_o            ( dcache_en_csr_nbdcache        ),
     .icache_en_o            ( icache_en_csr                 ),
+    .fence_t_pad_o          ( fence_t_pad_csr_ctrl          ),
+    .fence_t_src_sel_o      ( fence_t_src_sel_csr_ctrl      ),
+    .fence_t_ceil_i         ( fence_t_ceil_csr_ctrl         ),
     .perf_addr_o            ( addr_csr_perf                 ),
     .perf_data_o            ( data_csr_perf                 ),
     .perf_data_i            ( data_perf_csr                 ),
@@ -662,10 +686,21 @@ module cva6 import ariane_pkg::*; #(
     .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
     .flush_dcache_o         ( dcache_flush_ctrl_cache       ),
     .flush_dcache_ack_i     ( dcache_flush_ack_cache_ctrl   ),
+    .rst_uarch_no           ( rst_uarch_controller_n        ),
+    .rst_addr_o             ( rst_addr_ctrl_if              ),
+    .cache_busy_i           ( busy_cache_ctrl               ),
+    .stall_cache_o          ( stall_ctrl_cache              ),
+    .cache_init_no          ( init_ctrl_cache_n             ),
+    .fence_t_pad_i          ( fence_t_pad_csr_ctrl          ),
+    .fence_t_src_sel_i      ( fence_t_src_sel_csr_ctrl      ),
+    .fence_t_ceil_o         ( fence_t_ceil_csr_ctrl         ),
+    .priv_lvl_i             ( priv_lvl                      ),
 
     .halt_csr_i             ( halt_csr_ctrl                 ),
     .halt_o                 ( halt_ctrl                     ),
     // control ports
+    .boot_addr_i            ( boot_addr_i[riscv::VLEN-1:0]  ),
+    .pc_commit_i            ( pc_commit                     ),
     .eret_i                 ( eret                          ),
     .ex_valid_i             ( ex_commit.valid               ),
     .set_debug_pc_i         ( set_debug_pc                  ),
@@ -673,6 +708,7 @@ module cva6 import ariane_pkg::*; #(
     .resolved_branch_i      ( resolved_branch               ),
     .fence_i_i              ( fence_i_commit_controller     ),
     .fence_i                ( fence_commit_controller       ),
+    .fence_t_i              ( fence_t_commit_controller     ),
     .sfence_vma_i           ( sfence_vma_commit_controller  ),
     .flush_commit_i         ( flush_commit                  ),
 
@@ -696,7 +732,10 @@ module cva6 import ariane_pkg::*; #(
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
-    .rst_ni                ( rst_ni                      ),
+    .rst_ni                ( rst_uarch_n                 ),
+    .busy_o                ( busy_cache_ctrl             ),
+    .stall_i               ( stall_ctrl_cache            ),
+    .init_ni               ( init_ctrl_cache_n           ),
     // I$
     .icache_en_i           ( icache_en_csr               ),
     .icache_flush_i        ( icache_flush_ctrl_cache     ),
@@ -746,8 +785,11 @@ module cva6 import ariane_pkg::*; #(
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
-    .rst_ni                ( rst_ni                      ),
+    .rst_ni                ( rst_uarch_n                 ),
     .priv_lvl_i            ( priv_lvl                    ),
+    .busy_o                ( busy_cache_ctrl             ),
+    .stall_i               ( stall_ctrl_cache            ),
+    .init_ni               ( init_ctrl_cache_n           ),
     // I$
     .icache_en_i           ( icache_en_csr               ),
     .icache_flush_i        ( icache_flush_ctrl_cache     ),

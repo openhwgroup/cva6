@@ -434,6 +434,8 @@ package riscv;
         // Cache Control (platform specifc)
         CSR_DCACHE         = 12'h701,
         CSR_ICACHE         = 12'h700,
+        CSR_FENCE_T_PAD    = 12'h702,
+        CSR_FENCE_T_CEIL   = 12'h703,
         // Triggers
         CSR_TSELECT        = 12'h7A0,
         CSR_TDATA1         = 12'h7A1,

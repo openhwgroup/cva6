@@ -27,8 +27,11 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter type axi_req_t = ariane_axi::req_t,
   parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
-  input logic                            clk_i,
-  input logic                            rst_ni,
+  input  logic                           clk_i,
+  input  logic                           rst_ni,
+  output logic                           busy_o,
+  input  logic                           stall_i,                // stall new memory requests
+  input  logic                           init_ni,
   // I$
   input  logic                           icache_en_i,            // enable icache (or bypass e.g: in debug mode)
   input  logic                           icache_flush_i,         // flush the icache, flush and kill have to be asserted together
@@ -75,6 +78,11 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   wt_cache_pkg::dcache_req_t  dcache_adapter;
   wt_cache_pkg::dcache_rtrn_t adapter_dcache;
 
+  logic                       icache_busy;
+  logic                       dcache_busy;
+
+  assign busy_o = dcache_busy | icache_busy;
+
   cva6_icache #(
     // use ID 0 for icache reads
     .RdTxId             ( 0             ),
@@ -85,6 +93,9 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
     .flush_i            ( icache_flush_i          ),
     .en_i               ( icache_en_i             ),
     .miss_o             ( icache_miss_o           ),
+    .busy_o             ( icache_busy             ),
+    .stall_i            ( stall_i                 ),
+    .init_ni            ( init_ni                 ),
     .areq_i             ( icache_areq_i           ),
     .areq_o             ( icache_areq_o           ),
     .dreq_i             ( icache_dreq_i           ),
@@ -111,6 +122,9 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
     .clk_i           ( clk_i                   ),
     .rst_ni          ( rst_ni                  ),
     .enable_i        ( dcache_enable_i         ),
+    .busy_o          ( dcache_busy             ),
+    .stall_i         ( stall_i                 ),
+    .init_ni         ( init_ni                 ),
     .flush_i         ( dcache_flush_i          ),
     .flush_ack_o     ( dcache_flush_ack_o      ),
     .miss_o          ( dcache_miss_o           ),
