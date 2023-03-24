@@ -53,13 +53,13 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [63:0]                           axi_rd_addr;
   logic [$clog2(AxiNumWords)-1:0]        axi_rd_blen;
   logic [2:0]                            axi_rd_size;
-  logic [$size(axi_resp_i.r.id)-1:0]     axi_rd_id_in;
+  logic [AxiIdWidth-1:0]                 axi_rd_id_in;
   logic                                  axi_rd_rdy;
   logic                                  axi_rd_lock;
   logic                                  axi_rd_last;
   logic                                  axi_rd_valid;
   logic [AxiDataWidth-1:0]               axi_rd_data;
-  logic [$size(axi_resp_i.r.id)-1:0]     axi_rd_id_out;
+  logic [AxiIdWidth-1:0]                 axi_rd_id_out;
   logic                                  axi_rd_exokay;
 
   logic                                  req_valid_d, req_valid_q;
