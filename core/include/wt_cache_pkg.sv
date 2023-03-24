@@ -30,23 +30,17 @@ package wt_cache_pkg;
     `define CONFIG_L15_ASSOCIATIVITY 4
 `endif
 
-`ifndef L15_THREADID_WIDTH
-    // this results in 8 pending tx slots in the writebuffer
-    `define L15_THREADID_WIDTH 3
-`endif
-
 `ifndef TLB_CSM_WIDTH
     `define TLB_CSM_WIDTH 33
 `endif
 
   localparam L15_SET_ASSOC           = `CONFIG_L15_ASSOCIATIVITY;
-  localparam L15_TID_WIDTH           = `L15_THREADID_WIDTH;
   localparam L15_TLB_CSM_WIDTH       = `TLB_CSM_WIDTH;
 `else
   localparam L15_SET_ASSOC           = ariane_pkg::DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Ariane setup
-  localparam L15_TID_WIDTH           = 2;
   localparam L15_TLB_CSM_WIDTH       = 33;
 `endif
+  localparam L15_TID_WIDTH           = ariane_pkg::MEM_TID_WIDTH;
   localparam L15_WAY_WIDTH           = $clog2(L15_SET_ASSOC);
   localparam L1I_WAY_WIDTH           = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
   localparam L1D_WAY_WIDTH           = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
