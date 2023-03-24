@@ -646,6 +646,9 @@ package riscv;
     CSR_ICACHE           = 12'h7C0,
     // Accelerator memory consistency (platform specific)
     CSR_ACC_CONS         = 12'h7C2,
+    CSR_FENCE_T_PAD      = 12'h7C3,
+    CSR_FENCE_T_SEL      = 12'h7C4,
+    CSR_FENCE_T_CEIL     = 12'h7C5,
     // Triggers
     CSR_TSELECT          = 12'h7A0,
     CSR_TDATA1           = 12'h7A1,

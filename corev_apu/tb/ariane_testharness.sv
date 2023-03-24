@@ -318,6 +318,7 @@ module ariane_testharness #(
   ) i_dm_axi_master (
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
+    .busy_o                (                           ),
     .req_i                 ( dm_master_req             ),
     .type_i                ( ariane_pkg::SINGLE_REQ    ),
     .amo_i                 ( ariane_pkg::AMO_NONE      ),

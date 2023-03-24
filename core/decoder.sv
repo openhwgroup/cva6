@@ -1736,6 +1736,17 @@ module decoder
           instruction_o.rd = instr.utype.rd;
         end
 
+        // Custom instructions
+        // FENCE.T
+        riscv::OpcodeCustom0: begin
+          instruction_o.fu  = NONE;
+          instruction_o.rs1 = '0;
+          instruction_o.rs2 = '0;
+          instruction_o.rd  = '0;
+          imm_select        = UIMM;
+          instruction_o.op  = ariane_pkg::FENCE_T;
+        end
+
         default: illegal_instr = 1'b1;
       endcase
     end

@@ -48,6 +48,9 @@ module cva6_icache
     input  logic         en_i,
     /// to performance counter
     output logic         miss_o,
+    output logic         busy_o,
+    input  logic         stall_i,
+    input  logic         init_ni,         // do not init after enabling
     // address translation requests
     input  icache_areq_t areq_i,
     output icache_arsp_t areq_o,
@@ -129,6 +132,8 @@ module cva6_icache
   } state_e;
   state_e state_d, state_q;
 
+  assign busy_o = (state_q != IDLE);
+
   ///////////////////////////////////////////////////////
   // address -> cl_index mapping, interface plumbing
   ///////////////////////////////////////////////////////
@@ -192,7 +197,7 @@ module cva6_icache
   always_comb begin : p_fsm
     // default assignment
     state_d = state_q;
-    cache_en_d   = cache_en_q & en_i;// disabling the cache is always possible, enable needs to go via flush
+    cache_en_d   = (cache_en_q | init_ni) & en_i;// disabling the cache is always possible, enable needs to go via flush if we init
     flush_en = 1'b0;
     cmp_en_d = 1'b0;
     cache_rden = 1'b0;
@@ -236,10 +241,10 @@ module cva6_icache
         cmp_en_d = cache_en_q;
 
         // handle pending flushes, or perform cache clear upon enable
-        if (flush_d || (en_i && !cache_en_q)) begin
+        if (flush_d || (en_i && !cache_en_q && !init_ni)) begin
           state_d = FLUSH;
           // wait for incoming requests
-        end else begin
+        end else if (!stall_i) begin
           // mem requests are for sure invals here
           if (!mem_rtrn_vld_i) begin
             dreq_o.ready = 1'b1;

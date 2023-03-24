@@ -30,9 +30,9 @@ module cache_ctrl
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
-    input logic flush_i,
     input logic bypass_i,  // enable cache
     output logic busy_o,
+    input logic stall_i,  // stall new memory requests
     // Core request ports
     input dcache_req_i_t req_port_i,
     output dcache_req_o_t req_port_o,
@@ -145,7 +145,7 @@ module cache_ctrl
 
       IDLE: begin
         // a new request arrived
-        if (req_port_i.data_req && !flush_i) begin
+        if (req_port_i.data_req && !stall_i) begin
           // request the cache line - we can do this speculatively
           req_o = '1;
 
@@ -188,7 +188,7 @@ module cache_ctrl
             mem_req_d.tag = req_port_i.address_tag;
           end
           // we speculatively request another transfer
-          if (req_port_i.data_req && !flush_i) begin
+          if (req_port_i.data_req && !stall_i) begin
             req_o = '1;
           end
           // ------------
@@ -196,7 +196,7 @@ module cache_ctrl
           // ------------
           if (|hit_way_i) begin
             // we can request another cache-line if this was a load
-            if (req_port_i.data_req && !mem_req_q.we && !flush_i) begin
+            if (req_port_i.data_req && !mem_req_q.we && !stall_i) begin
               state_d             = WAIT_TAG;  // switch back to WAIT_TAG
               mem_req_d.index     = req_port_i.address_index;
               mem_req_d.id        = req_port_i.data_id;
@@ -408,7 +408,7 @@ module cache_ctrl
           req_port_o.data_rvalid = ~mem_req_q.killed;
           req_port_o.data_rdata  = critical_word_i[axi_offset+:CVA6Cfg.XLEN];
           // we can make another request
-          if (req_port_i.data_req && !flush_i) begin
+          if (req_port_i.data_req && !stall_i) begin
             // save index, be and we
             mem_req_d.index = req_port_i.address_index;
             mem_req_d.id    = req_port_i.data_id;

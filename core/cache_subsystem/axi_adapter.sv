@@ -27,6 +27,7 @@ module axi_adapter #(
     input logic clk_i,  // Clock
     input logic rst_ni, // Asynchronous reset active low
 
+    output logic busy_o,
     input logic req_i,
     input ariane_pkg::ad_req_t type_i,
     input ariane_pkg::amo_t amo_i,
@@ -93,6 +94,9 @@ module axi_adapter #(
   logic any_outstanding_aw;
 
   assign any_outstanding_aw = outstanding_aw_cnt_q != '0;
+
+  // Busy if we're not idle or have outstanding writes
+  assign busy_o = (state_q != IDLE) || any_outstanding_aw;
 
   always_comb begin : axi_fsm
     // Default assignments

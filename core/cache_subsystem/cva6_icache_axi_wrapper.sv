@@ -34,6 +34,9 @@ module cva6_icache_axi_wrapper
     input logic flush_i,  // flush the icache, flush and kill have to be asserted together
     input logic en_i,  // enable icache
     output logic miss_o,  // to performance counter
+    output logic busy_o,
+    input logic stall_i,
+    input logic init_ni,
     // address translation requests
     input icache_areq_t areq_i,
     output icache_arsp_t areq_o,
@@ -121,6 +124,9 @@ module cva6_icache_axi_wrapper
       .flush_i       (flush_i),
       .en_i          (en_i),
       .miss_o        (miss_o),
+      .busy_o        (busy_o),
+      .stall_i       (stall_i),
+      .init_ni       (init_ni),
       .areq_i        (areq_i),
       .areq_o        (areq_o),
       .dreq_i        (dreq_i),

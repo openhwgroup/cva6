@@ -29,10 +29,12 @@ module miss_handler
 ) (
     input logic clk_i,
     input logic rst_ni,
+    output logic busy_o,  // miss handler or axi is busy
     input logic flush_i,  // flush request
     output logic flush_ack_o,  // acknowledge successful flush
     output logic miss_o,
     input logic busy_i,  // dcache is busy with something
+    input logic init_ni,  // do not init after reset
     // Bypass or miss
     input logic [NR_PORTS-1:0][$bits(miss_req_t)-1:0] miss_req_i,
     // Bypass handling
@@ -169,6 +171,10 @@ module miss_handler
   // 32b request
   logic                [                                  31:0]       halfword;
   logic                [ $clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0]       cl_offset;
+
+  // Busy signals
+  logic bypass_axi_busy, miss_axi_busy;
+  assign busy_o = bypass_axi_busy | miss_axi_busy | (state_q != IDLE);
 
   // ------------------------------
   // Cache Management
@@ -431,7 +437,7 @@ module miss_handler
         be_o.vldrty = '1;
         cnt_d       = cnt_q + (1'b1 << CVA6Cfg.DCACHE_OFFSET_WIDTH);
         // finished initialization
-        if (cnt_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == CVA6Cfg.DCACHE_NUM_WORDS - 1)
+        if (cnt_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == CVA6Cfg.DCACHE_NUM_WORDS - 1 || init_ni)
           state_d = IDLE;
       end
       // ----------------------
@@ -618,6 +624,7 @@ module miss_handler
   ) i_bypass_axi_adapter (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
+      .busy_o(bypass_axi_busy),
       .req_i(bypass_adapter_req.req),
       .type_i(bypass_adapter_req.reqtype),
       .amo_i(bypass_adapter_req.amo),
@@ -653,6 +660,7 @@ module miss_handler
   ) i_miss_axi_adapter (
       .clk_i,
       .rst_ni,
+      .busy_o               (miss_axi_busy),
       .req_i                (req_fsm_miss_valid),
       .type_i               (req_fsm_miss_req),
       .amo_i                (AMO_NONE),
