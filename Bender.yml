@@ -77,7 +77,7 @@ sources:
 
       # FPGA support keep vendoring here because too old
       - target: all(fpga, xilinx)
-        files
+        files:
           - vendor/pulp-platform/fpga-support/rtl/SyncDpRam.sv
           - vendor/pulp-platform/fpga-support/rtl/AsyncDpRam.sv
           - vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv
