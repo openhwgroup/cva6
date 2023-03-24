@@ -312,6 +312,8 @@ pub_synthesis:
         PERIOD: ["1.1"]
       - TARGET: [cv32a60x]
         PERIOD: ["0.95"]
+      - TARGET: [cv32a6_embedded]
+        PERIOD: ["0.85"]
   variables:
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"

@@ -858,6 +858,9 @@ def load_config(args, cwd):
     elif args.target == "cv32a60x":
       args.mabi = "ilp32"
       args.isa  = "rv32imc" # Step1 configuration has no A extension.
+    elif args.target == "cv32a6_embedded":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc" # Step1 configuration has no A extension.
     elif args.target == "cv32a6_imac_sv0":
       args.mabi = "ilp32"
       args.isa  = "rv32imac"
