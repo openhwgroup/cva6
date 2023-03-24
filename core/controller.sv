@@ -81,7 +81,7 @@ module controller import ariane_pkg::*; (
             flush_ex_o             = 1'b1;
 // this is not needed in the case since we
 // have a write-through cache in this case
-            if (DCACHE_TYPE == cva6_config_pkg::WB) begin
+            if (DCACHE_TYPE == int'(cva6_config_pkg::WB)) begin
               flush_dcache           = 1'b1;
               fence_active_d         = 1'b1;
             end
@@ -99,7 +99,7 @@ module controller import ariane_pkg::*; (
             flush_icache_o         = 1'b1;
 // this is not needed in the case since we
 // have a write-through cache in this case
-            if (DCACHE_TYPE == cva6_config_pkg::WB) begin
+            if (DCACHE_TYPE == int'(cva6_config_pkg::WB)) begin
               flush_dcache           = 1'b1;
               fence_active_d         = 1'b1;
             end
@@ -107,7 +107,7 @@ module controller import ariane_pkg::*; (
 
 // this is not needed in the case since we
 // have a write-through cache in this case
-      if (DCACHE_TYPE == cva6_config_pkg::WB) begin
+      if (DCACHE_TYPE == int'(cva6_config_pkg::WB)) begin
         // wait for the acknowledge here
         if (flush_dcache_ack_i && fence_active_q) begin
             fence_active_d = 1'b0;
