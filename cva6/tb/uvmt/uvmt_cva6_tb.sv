@@ -51,6 +51,7 @@ module uvmt_cva6_tb;
                                          .clk(clknrst_if.clk),
                                          .rst_n(clknrst_if.reset_n)
                                       );
+   uvmt_axi_switch_intf         axi_switch_vif();
    uvme_cva6_core_cntrl_if      core_cntrl_if();
 
    //bind assertion module for cvxif interface
@@ -85,6 +86,7 @@ module uvmt_cva6_tb;
                     .clknrst_if(clknrst_if),
                     .cvxif_if  (cvxif_if),
                     .axi_if    (axi_if),
+                    .axi_switch_vif    (axi_switch_vif),
                     .core_cntrl_if(core_cntrl_if),
                     .tb_exit_o(rvfi_if.tb_exit_o),
                     .rvfi_o(rvfi_if.rvfi_o)
@@ -103,6 +105,7 @@ module uvmt_cva6_tb;
      uvm_config_db#(virtual uvma_clknrst_if )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),       .value(clknrst_if));
      uvm_config_db#(virtual uvma_cvxif_intf )::set(.cntxt(null), .inst_name("*.env.cvxif_agent"),   .field_name("vif"),       .value(cvxif_if)  );
      uvm_config_db#(virtual uvma_axi_intf   )::set(.cntxt(null), .inst_name("*"),                   .field_name("axi_vif"),    .value(axi_if));
+     uvm_config_db#(virtual uvmt_axi_switch_intf  )::set(.cntxt(null), .inst_name("*.env"),             .field_name("axi_switch_vif"),   .value(axi_switch_vif));
      uvm_config_db#(virtual uvmt_rvfi_if    )::set(.cntxt(null), .inst_name("*"),                   .field_name("rvfi_vif"),  .value(rvfi_if));
      uvm_config_db#(virtual uvme_cva6_core_cntrl_if)::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),  .value(core_cntrl_if));
 
