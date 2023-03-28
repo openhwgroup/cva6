@@ -102,10 +102,6 @@ class Model:
             if instr.has_RAW_from(entry.instr) and not can_forward:
                 self.log_event_on(instr, EventKind.RAW, cycle)
                 can_issue = False
-            # Store after Load is a structural hazard (no need to check addrs)
-            if instr.is_store() and entry.instr.is_load() and not entry.done:
-                self.log_event_on(instr, EventKind.SAL, cycle)
-                can_issue = False
         # Branch prediction
         if self.last_issued is not None:
             branch_miss = False
