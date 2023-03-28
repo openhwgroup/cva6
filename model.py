@@ -133,7 +133,8 @@ class Model:
         """Try to execute instructions"""
         for entry in self.scoreboard:
             entry.cycles_since_issue += 1
-            duration = 2 if entry.instr.is_load() else 1
+            is_lsu = entry.instr.is_load() or entry.instr.is_store()
+            duration = 2 if is_lsu else 1
             if entry.cycles_since_issue == duration:
                 self.log_event_on(entry.instr, EventKind.done, cycle)
                 entry.done = True
