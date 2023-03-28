@@ -98,10 +98,10 @@ class AddrFields:
 class Rtype:
     """R-type instructions"""
     def __init__(self, instr):
-        self.func7 = instr.bin >> 25
+        self.funct7 = instr.bin >> 25
         self.rs2 = (instr.bin >> 20) & 31
         self.rs1 = (instr.bin >> 15) & 31
-        self.func3 = (instr.bin >> 12) & 7
+        self.funct3 = (instr.bin >> 12) & 7
         self.rd = (instr.bin >> 7) & 31
         self.opcode = instr.bin & 63
 
@@ -109,7 +109,7 @@ class Itype:
     """I-type instructions"""
     def __init__(self, instr):
         self.rs1 = (instr.bin >> 15) & 31
-        self.func3 = (instr.bin >> 12) & 7
+        self.funct3 = (instr.bin >> 12) & 7
         self.rd = (instr.bin >> 7) & 31
         self.opcode = instr.bin & 63
         self.imm = sign_ext(instr.bin >> 20, 11)
@@ -119,7 +119,7 @@ class Stype:
     def __init__(self, instr):
         self.rs2 = (instr.bin >> 20) & 31
         self.rs1 = (instr.bin >> 15) & 31
-        self.func3 = (instr.bin >> 12) & 7
+        self.funct3 = (instr.bin >> 12) & 7
         self.opcode = instr.bin & 63
         self.imm = sign_ext(
             ((instr.bin >> 25) << 5) \
@@ -131,7 +131,7 @@ class Btype:
     def __init__(self, instr):
         self.rs2 = (instr.bin >> 20) & 31
         self.rs1 = (instr.bin >> 15) & 31
-        self.func3 = (instr.bin >> 12) & 7
+        self.funct3 = (instr.bin >> 12) & 7
         self.opcode = instr.bin & 63
         self.imm = sign_ext(
             ((instr.bin >> 31) << 12) \
@@ -174,7 +174,7 @@ class MOItype:
         self.SR = (instr.bin >> 21) & 1
         self.SW = (instr.bin >> 20) & 1
         self.rs1 = (instr.bin >> 15) & 31
-        self.func3 = (instr.bin >> 12) & 7
+        self.funct3 = (instr.bin >> 12) & 7
         self.rd = (instr.bin >> 7) & 31
         self.opcode = instr.bin & 63
 
