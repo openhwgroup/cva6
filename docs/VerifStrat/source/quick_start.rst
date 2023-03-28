@@ -33,7 +33,7 @@ You will need:
 
 #. A Linux machine (CORE-V-VERIF has been successfully run under Ubuntu, Debian and CentOS).
 #. Python3 and a set of plug-ins. The current plug-in list is kept in `$CORE_V_VERIF/bin/requirements.txt`.
-#. A GCC cross-compiler (aka "the `Toolchain <https://github.com/openhwgroup/core-v-verif/blob/master/mk/TOOLCHAIN.md#core-v-toolchain>`_"). Even if you already have a RISC-V toolchain, please do follow that link and read **TOOLCHAIN.md** for recommended ENV variables to point to it.
+#. A GCC cross-compiler (aka "the `Toolchain <https://github.com/openhwgroup/core-v-verif/blob/master/mk/TOOLCHAIN.md#core-v-toolchain>`_"). Even if you already have a RISC-V toolchain, please do follow that link and read `TOOLCHAIN.md <https://github.com/openhwgroup/core-v-verif/blob/master/mk/TOOLCHAIN.md>`_ for recommended ENV variables to point to it.
 #. `Verilator <https://veripool.org/guide/latest/install.html>`_.
 
 An easy way to get the Python plug-ins installed on your machine is::
@@ -42,10 +42,14 @@ An easy way to get the Python plug-ins installed on your machine is::
    $ cd $CORE_V_VERIF/bin
    $ pip3 install -r requirements.txt
 
+**Note:** Virtual python environments can be used if desired.
+
 Once the above is in place type the following::
 
     $ cd $CORE-V-VERIF/cv32e40p/sim/core
     $ make
+
+**Note:** Check the required shell environment variables (`variables <https://github.com/openhwgroup/core-v-verif/tree/master/mk#required-corev-environment-variables>`_).
 
 The above will compile the RTL and the core testbench using Verilator, compile the 'hello-world' test-program using the Toolchain and run it on the "Verilated" model.
 The simulation run should produce the following::
