@@ -1,3 +1,6 @@
+# Copyright 2020 OpenHW Group
+# Copyright 2020 Silicon Labs, Inc.
+# SPDX-License-Identifier:Apache-2.0 WITH SHL-2.1
 name: coremark
 uvm_test: uvmt_cv32e40s_firmware_test_c
 default_cflags: >
