@@ -423,6 +423,7 @@ class Instr:
         'LUI': Utype,
         'AUIPC': Utype,
         'OP': Rtype,
+        'OP-32': Rtype,
         'JAL': Jtype,
         'JALR': Itype,
         'BRANCH': Btype,
@@ -517,6 +518,10 @@ class Instr:
         if self.base() == 'C.J[AL]R/C.MV/C.ADD':
             return self.fields().name in ['C.JALR', 'C.JR']
         return False
+
+    def is_muldiv(self):
+        """Is it a muldiv instruction?"""
+        return self.base() in ['OP', 'OP-32'] and self.fields().funct7 == 1
 
     def offset(self):
         """Get offset from instr (sometimes it is just 'imm' in RISCV spec)"""

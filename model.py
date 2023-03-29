@@ -129,10 +129,14 @@ class Model:
         """Try to execute instructions"""
         for entry in self.scoreboard:
             entry.cycles_since_issue += 1
-            is_lsu = entry.instr.is_load() or entry.instr.is_store()
-            duration = 2 if is_lsu else 1
+            instr = entry.instr
+            duration = 1
+            if instr.is_load() or instr.is_store():
+                duration = 2
+            if instr.is_muldiv():
+                duration = 2
             if entry.cycles_since_issue == duration:
-                self.log_event_on(entry.instr, EventKind.done, cycle)
+                self.log_event_on(instr, EventKind.done, cycle)
                 entry.done = True
 
     def try_commit(self, cycle):
