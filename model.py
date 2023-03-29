@@ -259,7 +259,7 @@ def issue_commit_graph(input_file, n = 3):
 def main(input_file: str):
     """Entry point"""
 
-    debug = False
+    debug = True
     model = Model()
     model.load_file(input_file)
     cycle_number = model.run(debug=debug)
