@@ -18,16 +18,21 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install Verilator
+# Use historical variable VERILATOR_ROOT to check/specify VL configuration.
 if ! [ -n "$VERILATOR_ROOT" ]; then
-  export VERILATOR_ROOT=$TOP/verilator-5.006/
+  # Verilator installation dir should be separate from the VL source root.
+  # Source code will be unpacked, built and tested in the 'verilator'
+  # subdir of the install dir.
+  export VERILATOR_ROOT=$TOP/verilator-5.008/verilator
+  export VERILATOR_INSTALL_DIR=$(dirname $VERILATOR_ROOT)
 fi
 cva6/regress/install-verilator.sh
 
-export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
+export PATH=$RISCV/bin:$VERILATOR_INSTALL_DIR/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
-export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
+export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_INSTALL_DIR/share/verilator/include
+export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_INSTALL_DIR/share/verilator/include
 
 # number of parallel jobs to use for make commands and simulation
 export NUM_JOBS=24
