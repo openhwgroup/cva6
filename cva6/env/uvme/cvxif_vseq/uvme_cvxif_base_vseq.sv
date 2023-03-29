@@ -8,23 +8,23 @@
 // Original Author: Zineb EL KACIMI (zineb.el-kacimi@external.thalesgroup.com)
 
 
-`ifndef __UVMA_CVXIF_BASE_SEQ_SV__
-`define __UVMA_CVXIF_BASE_SEQ_SV__
+`ifndef __UVME_CVXIF_BASE_VSEQ_SV__
+`define __UVME_CVXIF_BASE_VSEQ_SV__
 
 
-class uvma_cvxif_base_seq_c extends uvm_sequence #(uvma_cvxif_resp_item_c);
+class uvme_cvxif_base_vseq_c extends uvm_sequence #(uvma_cvxif_resp_item_c);
 
-   `uvm_object_utils (uvma_cvxif_base_seq_c)
-   `uvm_declare_p_sequencer (uvma_cvxif_sqr_c)
+   `uvm_object_utils (uvme_cvxif_base_vseq_c)
+   `uvm_declare_p_sequencer (uvma_cvxif_vsqr_c)
 
    uvma_cvxif_resp_item_c   resp_item;
    uvma_cvxif_req_item_c    req_item;
 
    uvma_cvxif_cfg_c    cfg;
 
-   string info_tag = "CVXIF_BASE_SEQ";
+   string info_tag = "CVXIF_BASE_VSEQ";
 
-   extern function new(string name="uvma_cvxif_base_seq");
+   extern function new(string name="uvme_cvxif_base_vseq");
 
    extern virtual task pre_body();
 
@@ -32,13 +32,13 @@ class uvma_cvxif_base_seq_c extends uvm_sequence #(uvma_cvxif_resp_item_c);
 
 endclass
 
-function uvma_cvxif_base_seq_c::new(string name="uvma_cvxif_base_seq");
+function uvme_cvxif_base_vseq_c::new(string name="uvme_cvxif_base_vseq");
 
    super.new(name);
 
 endfunction : new
 
-task uvma_cvxif_base_seq_c::pre_body();
+task uvme_cvxif_base_vseq_c::pre_body();
 
    req_item  = uvma_cvxif_req_item_c::type_id::create("req_item");
    resp_item = uvma_cvxif_resp_item_c::type_id::create("resp_item");
@@ -47,7 +47,7 @@ task uvma_cvxif_base_seq_c::pre_body();
 
 endtask
 
-function string uvma_cvxif_base_seq_c::decode(input logic [31:0] instr);
+function string uvme_cvxif_base_vseq_c::decode(input logic [31:0] instr);
 
    bit [6:0] opcode    = instr [6:0];
    bit [6:0] custom3   = 7'b1111011;
@@ -103,4 +103,4 @@ function string uvma_cvxif_base_seq_c::decode(input logic [31:0] instr);
 endfunction
 
 
-`endif // __UVMA_CVXIF_BASE_SEQ_SV__
+`endif // __UVME_CVXIF_BASE_VSEQ_SV__

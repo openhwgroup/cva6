@@ -14,7 +14,6 @@
 +incdir+${DV_UVMA_CVXIF_PATH}/src/comps
 +incdir+${DV_UVMA_CVXIF_PATH}/src/obj
 +incdir+${DV_UVMA_CVXIF_PATH}/src/seq
-+incdir+${CORE_V_VERIF}/${CV_CORE_LC}/lib/cvxif_seq
 
 // Files
 ${DV_UVMA_CVXIF_PATH}/src/uvma_cvxif_pkg.sv
