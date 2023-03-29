@@ -19,11 +19,16 @@ fi
 
 # install Verilator
 # Use historical variable VERILATOR_ROOT to check/specify VL configuration.
-if ! [ -n "$VERILATOR_ROOT" ]; then
+if [ -z "$VERILATOR_ROOT" ]; then
   # Verilator installation dir should be separate from the VL source root.
   # Source code will be unpacked, built and tested in the 'verilator'
   # subdir of the install dir.
   export VERILATOR_ROOT=$TOP/verilator-5.008/verilator
+fi
+
+# If the installation directory of Verilator is not set,
+# default to the parent directory of the Verilator source.
+if [ -z "$VERILATOR_INSTALL_DIR" ]; then
   export VERILATOR_INSTALL_DIR=$(dirname $VERILATOR_ROOT)
 fi
 cva6/regress/install-verilator.sh
