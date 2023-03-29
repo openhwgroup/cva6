@@ -50,7 +50,8 @@ class Entry:
 
     def __repr__(self):
         status = "DONE" if self.done else "WIP "
-        return f"{status} `{self.instr}` for {self.cycles_since_issue}"
+        addr = f"0x{self.instr.address:08X}"
+        return f"{status} {addr}:`{self.instr}` for {self.cycles_since_issue}"
 
 @dataclass
 class LastIssue:
