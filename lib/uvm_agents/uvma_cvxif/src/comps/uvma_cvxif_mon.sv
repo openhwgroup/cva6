@@ -136,6 +136,7 @@ task uvma_cvxif_mon_c::run_phase(uvm_phase phase);
                   issue_id_lst[i] = i;
                   req_tr.issue_valid     = cntxt.vif.cvxif_req_i.x_issue_valid;
                   req_tr.issue_req.instr = cntxt.vif.cvxif_req_i.x_issue_req.instr;
+                  req_tr.issue_req.rs_valid = cntxt.vif.cvxif_req_i.x_issue_req.rs_valid;
                   req_tr.issue_req.id    = cntxt.vif.cvxif_req_i.x_issue_req.id;
                   req_tr.issue_req.mode  = cntxt.vif.cvxif_req_i.x_issue_req.mode;
                   req_tr.issue_ready     = cntxt.vif.cvxif_resp_o.x_issue_ready;
