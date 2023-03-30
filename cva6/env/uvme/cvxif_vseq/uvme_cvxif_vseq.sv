@@ -7,22 +7,22 @@
 //
 // Original Author: Zineb EL KACIMI (zineb.el-kacimi@external.thalesgroup.com)
 
-`ifndef __UVMA_CVXIF_SEQ_SV__
-`define __UVMA_CVXIF_SEQ_SV__
+`ifndef __UVME_CVXIF_VSEQ_SV__
+`define __UVME_CVXIF_VSEQ_SV__
 
 
-class uvma_cvxif_seq_c extends uvma_cvxif_base_seq_c#(uvma_cvxif_resp_item_c);
+class uvme_cvxif_vseq_c extends uvme_cvxif_base_vseq_c#(uvma_cvxif_resp_item_c);
 
-   `uvm_object_utils (uvma_cvxif_seq_c)
-   `uvm_declare_p_sequencer (uvma_cvxif_sqr_c)
+   `uvm_object_utils (uvme_cvxif_vseq_c)
+   `uvm_declare_p_sequencer (uvma_cvxif_vsqr_c)
 
-   string info_tag = "CVXIF_SEQ_RESP";
+   string info_tag = "CVXIF_VSEQ_RESP";
    string instr;
 
    /**
     * Default constructor.
    */
-   extern function new(string name="uvma_cvxif_seq");
+   extern function new(string name="uvme_cvxif_vseq");
 
    /**
     * Send the Sequence Response to the Sequencer.
@@ -57,7 +57,7 @@ class uvma_cvxif_seq_c extends uvma_cvxif_base_seq_c#(uvma_cvxif_resp_item_c);
 
 endclass
 
-task uvma_cvxif_seq_c::body();
+task uvme_cvxif_vseq_c::body();
 
    forever begin
       // wait for a transaction request (get is blocking)
@@ -85,13 +85,13 @@ task uvma_cvxif_seq_c::body();
 
 endtask
 
-function uvma_cvxif_seq_c::new(string name="uvma_cvxif_seq");
+function uvme_cvxif_vseq_c::new(string name="uvme_cvxif_vseq");
 
    super.new(name);
 
 endfunction : new
 
-task uvma_cvxif_seq_c::do_default();
+task uvme_cvxif_vseq_c::do_default();
 
    resp_item.issue_resp.accept=0;
    resp_item.issue_resp.writeback=0;
@@ -110,7 +110,7 @@ task uvma_cvxif_seq_c::do_default();
 
 endtask
 
-task uvma_cvxif_seq_c::do_issue_resp();
+task uvme_cvxif_vseq_c::do_issue_resp();
 
    resp_item.issue_resp.dualwrite  = 0;
    resp_item.issue_resp.dualread   = 0;
@@ -154,7 +154,7 @@ task uvma_cvxif_seq_c::do_issue_resp();
 
 endtask
 
-task uvma_cvxif_seq_c::do_result_resp();
+task uvme_cvxif_vseq_c::do_result_resp();
 
    //result_resp
    if (!req_item.commit_req.commit_kill && req_item.commit_valid) begin
@@ -186,7 +186,7 @@ task uvma_cvxif_seq_c::do_result_resp();
 
 endtask
 
-task uvma_cvxif_seq_c::do_instr_result();
+task uvme_cvxif_vseq_c::do_instr_result();
 
    //result response depend on instruction
    resp_item.result.exc=0;
@@ -233,7 +233,7 @@ task uvma_cvxif_seq_c::do_instr_result();
 
 endtask
 
-task uvma_cvxif_seq_c::send_resp(uvma_cvxif_resp_item_c resp);
+task uvme_cvxif_vseq_c::send_resp(uvma_cvxif_resp_item_c resp);
 
    resp_item.set_sequencer(p_sequencer);
    `uvm_send(resp_item);

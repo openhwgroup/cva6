@@ -273,7 +273,7 @@ endfunction: connect_scoreboard
 function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
-   vsequencer.cvxif_sequencer     = cvxif_agent.sequencer;
+   vsequencer.cvxif_vsequencer    = cvxif_agent.vsequencer;
    vsequencer.axi_vsequencer      = axi_agent.vsequencer;
 
 endfunction: assemble_vsequencer
@@ -284,9 +284,9 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
    fork
 
       begin
-            uvma_cvxif_seq_c        cvxif_seq;
-            cvxif_seq = uvma_cvxif_seq_c::type_id::create("cvxif_seq");
-            cvxif_seq.start(cvxif_agent.sequencer);
+            uvme_cvxif_vseq_c        cvxif_vseq;
+            cvxif_vseq = uvme_cvxif_vseq_c::type_id::create("cvxif_vseq");
+            cvxif_vseq.start(cvxif_agent.vsequencer);
       end
 
       begin
