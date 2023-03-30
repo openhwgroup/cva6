@@ -376,7 +376,7 @@ module cva6_ptw_sv39x4 import ariane_pkg::*; #(
                     // Invalid PTE
                     // -------------
                     // If pte.v = 0, or if pte.r = 0 and pte.w = 1, stop and raise a page-fault exception.
-                    if (!pte.v || (!pte.r && pte.w))
+                    if (!pte.v || (!pte.r && pte.w) || (|pte.reserved))
                         state_d = PROPAGATE_ERROR;
                     // -----------
                     // Valid PTE
