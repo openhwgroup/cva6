@@ -58,46 +58,31 @@ function string uvme_cvxif_base_vseq_c::decode(input logic [31:0] instr);
    bit [4:0] rs1       = instr [19:15];
    bit [4:0] rs2       = instr [24:20];
 
-   if (opcode != custom3 ) begin
-      return ("illegal");
-   end
-   else begin
+   if (opcode == custom3) begin
       if (func3 == 0) begin
-         if (rd == 0) begin
-             if (func7 == 0 && rs1 == 0 && rs2 == 0) begin
-                return ("CUS_NOP");
-             end
-             if (func7 == 7'b1000000 && rs2 == 0) begin
-                return ("CUS_EXC");
-             end
-             if (func7 == 7'b0100000 && rs1 == 0 && rs2 == 0) begin
-                return ("CUS_NOP_EXC");
-             end
-             if (func7 == 7'b1100000 && rs1 == 0 && rs2 == 0) begin
-                return ("CUS_ISS_EXC");
-             end
+         if (func7 == 7'b0000000 && rd != 0) begin
+            return ("CUS_ADD");
          end
-         else begin
-            if (func7 == 0) begin
-              return ("CUS_ADD");
-            end
-            if (func2==2'b01) begin
-               return ("CUS_ADD_RS3");
-            end
-            if (func7==7'b0001000) begin
-               return ("CUS_ADD_MULTI");
-            end
-            if (func7==7'b0000010) begin
-               return ("CUS_M_ADD");
-            end
-            if (func7==7'b0000110) begin
-               return ("CUS_S_ADD");
-            end
+         if (func7 == 7'b0001000 && rd != 0) begin
+            return ("CUS_ADD_MULTI");
+         end
+         if (func2 == 2'b01 && rd != 0) begin
+            return ("CUS_ADD_RS3");
+         end
+         if (func7 == 7'b0000010 && rd != 0) begin
+            return ("CUS_M_ADD");
+         end
+         if (func7 == 7'b0000110 && rd != 0) begin
+            return ("CUS_S_ADD");
+         end
+         if (func7 == 7'b0000000 && rd == 0 && rs1 == 0 && rs2 == 0) begin
+            return ("CUS_NOP");
+         end
+         if (func7 == 7'b1000000 && rd == 0 && rs2[4:1] == 0) begin
+            return ("CUS_EXC");
          end
       end
-      else begin
-        return ("illegal");
-      end
+   return ("ILLEGAL");
    end
 
 endfunction

@@ -116,15 +116,33 @@ task uvme_cvxif_vseq_c::do_issue_resp();
    resp_item.issue_resp.dualread   = 0;
    resp_item.issue_resp.exc        = 0;
    case (instr) inside
-      "CUS_ADD", "CUS_ADD_MULTI", "CUS_ADD_RS3"   : begin
-          resp_item.issue_resp.writeback  = 1;
-          resp_item.issue_resp.accept     = 1;
+      "CUS_ADD", "CUS_ADD_MULTI" : begin
+          if (req_item.issue_req.rs_valid == 2'b11) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+          end
+          else begin
+             resp_item.issue_resp.writeback  = 0;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.exc        = 1;
+          end
         end
-      "CUS_EXC", "CUS_NOP"            : begin
+      "CUS_ADD_RS3" : begin
+          if (req_item.issue_req.rs_valid == 3'b111) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+          end
+          else begin
+             resp_item.issue_resp.writeback  = 0;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.exc        = 1;
+          end
+        end
+      "CUS_NOP" : begin
           resp_item.issue_resp.writeback  = 0;
           resp_item.issue_resp.accept     = 1;
         end
-      "CUS_NOP_EXC", "CUS_ISS_EXC" : begin
+      "CUS_EXC" : begin
           resp_item.issue_resp.writeback  = 0;
           resp_item.issue_resp.accept     = 1;
           resp_item.issue_resp.exc        = 1;
@@ -136,7 +154,8 @@ task uvme_cvxif_vseq_c::do_issue_resp();
           end
           else begin
              resp_item.issue_resp.writeback  = 0;
-             resp_item.issue_resp.accept     = 0;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.exc        = 1;
           end
         end
       "CUS_S_ADD" : begin
@@ -146,11 +165,14 @@ task uvme_cvxif_vseq_c::do_issue_resp();
           end
           else begin
              resp_item.issue_resp.writeback  = 0;
-             resp_item.issue_resp.accept     = 0;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.exc        = 1;
           end
         end
    endcase
    `uvm_info(info_tag, $sformatf("instr =  %s", instr), UVM_LOW);
+   `uvm_info(info_tag, $sformatf("Response :  accept = %h	writeback = %h	dualwrite = %h	dualread = %h	exc = %h", 
+				resp_item.issue_resp.accept, resp_item.issue_resp.writeback, resp_item.issue_resp.dualwrite, resp_item.issue_resp.dualread, resp_item.issue_resp.exc), UVM_LOW);
 
 endtask
 
@@ -158,12 +180,12 @@ task uvme_cvxif_vseq_c::do_result_resp();
 
    //result_resp
    if (!req_item.commit_req.commit_kill && req_item.commit_valid) begin
-      resp_item.result_valid=1;
-      resp_item.result.id=req_item.commit_req.id;
-      resp_item.result.rd=req_item.issue_req.instr[11:7];
-      resp_item.result.we=resp_item.issue_resp.writeback;
-      resp_item.result.data=0;
-      resp_item.result_ready=req_item.result_ready;
+      resp_item.result_valid = 1;
+      resp_item.result.id = req_item.commit_req.id;
+      resp_item.result.rd = req_item.issue_req.instr[11:7];
+      resp_item.result.we = resp_item.issue_resp.writeback;
+      resp_item.result.data = 0;
+      resp_item.result_ready = req_item.result_ready;
       do_instr_result();
       if (cfg.instr_delayed) begin
          cfg.randomize(rnd_delay);
@@ -174,13 +196,13 @@ task uvme_cvxif_vseq_c::do_result_resp();
       end
    end
    else begin
-      resp_item.result_valid=0;
-      resp_item.result.id=0;
-      resp_item.result.exc=0;
-      resp_item.result.data=0;
-      resp_item.result.rd=0;
-      resp_item.result.we=0;
-      resp_item.result.exccode=0;
+      resp_item.result_valid = 0;
+      resp_item.result.id = 0;
+      resp_item.result.exc = 0;
+      resp_item.result.data = 0;
+      resp_item.result.rd = 0;
+      resp_item.result.we = 0;
+      resp_item.result.exccode = 0;
       resp_item.rnd_delay = 0;
    end
 
@@ -189,44 +211,61 @@ endtask
 task uvme_cvxif_vseq_c::do_instr_result();
 
    //result response depend on instruction
-   resp_item.result.exc=0;
-   resp_item.result.exccode=0;
+   resp_item.result.exc = 0;
+   resp_item.result.exccode = 0;
    cfg.instr_delayed = 0;
    case (instr)
       "CUS_ADD": begin
-         resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+         if (req_item.issue_req.rs_valid == 2'b11)
+            resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+         else begin
+            resp_item.result.exc = 1;
+            resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
+            `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
+         end
         end
       "CUS_ADD_MULTI": begin
-         resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
-         cfg.instr_delayed = 1;
-        end
-      "CUS_NOP_EXC": begin
-         cfg.instr_delayed = 1;
+         if (req_item.issue_req.rs_valid == 2'b11) begin
+            resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+            cfg.instr_delayed = 1;
+         end
+         else begin
+            resp_item.result.exc = 1;
+            resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
+            `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
+         end
         end
       "CUS_EXC":  begin
-         resp_item.result.exc=1;
-         resp_item.result.exccode[4:0] = req_item.issue_req.instr[19:15];
-         resp_item.result.exccode[5] = req_item.issue_req.instr[20];
-         `uvm_info(info_tag, $sformatf("EXCCODE: %d", resp_item.result.exccode), UVM_HIGH);
-        end
-      "CUS_ISS_EXC":  begin
-         cfg.instr_delayed    = 1;
          resp_item.result.exc = 1;
          resp_item.result.exccode[4:0] = req_item.issue_req.instr[19:15];
-         resp_item.result.exccode[5]   = req_item.issue_req.instr[20];
-         `uvm_info(info_tag, $sformatf("EXCCODE: %d", resp_item.result.exccode), UVM_HIGH);
+         resp_item.result.exccode[5] = req_item.issue_req.instr[20];
+         `uvm_info(info_tag, $sformatf("EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
         end
       "CUS_ADD_RS3": begin
-         resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1] + ( cvxif_pkg::X_NUM_RS == 3 ? req_item.issue_req.rs[2] : 0);
+         if (req_item.issue_req.rs_valid == 3'b111)
+            resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1] + req_item.issue_req.rs[2];
+         else begin
+            resp_item.result.exc = 1;
+            resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
+            `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
+         end
         end
       "CUS_M_ADD": begin
-          if (req_item.issue_req.mode == 2'b11) begin
-             resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+          if (req_item.issue_req.mode == 2'b11 && req_item.issue_req.rs_valid == 2'b11)
+             resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+          else begin
+             resp_item.result.exc = 1;
+             resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
+             `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
           end
         end
       "CUS_S_ADD": begin
-          if (req_item.issue_req.mode == 2'b01 || req_item.issue_req.mode == 2'b11) begin
-             resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+          if (req_item.issue_req.mode == 2'b01 && req_item.issue_req.rs_valid == 2'b11)
+             resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+          else begin
+             resp_item.result.exc = 1;
+             resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
+             `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
           end
         end
    endcase
