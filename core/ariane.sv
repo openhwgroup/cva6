@@ -78,9 +78,6 @@ module ariane import ariane_pkg::*; #(
     .ipi_i                ( ipi_i                     ),
     .time_irq_i           ( time_irq_i                ),
     .debug_req_i          ( debug_req_i               ),
-`ifdef FIRESIME_TRACE
-    .trace_o              ( trace_o                   ),
-`endif
 `ifdef RVFI_TRACE
     .rvfi_o               ( rvfi_o                    ),
 `else
