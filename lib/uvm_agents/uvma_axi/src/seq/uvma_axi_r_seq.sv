@@ -115,7 +115,9 @@ task uvma_axi_r_seq_c::body();
                if(resp_item.r_last  == 1'b1) begin
 
                   foreach(req_requette[i,j]) begin
-                     req_requette[selected_id][j] = req_requette[selected_id][j+1];
+                     if(j < req_requette[selected_id].size()-1) begin
+                        req_requette[selected_id][j] = req_requette[selected_id][j+1];
+                     end
                   end
                   req_requette[selected_id] = new[ar_id_tr[selected_id] - 1] (req_requette[selected_id]);
 
@@ -123,7 +125,9 @@ task uvma_axi_r_seq_c::body();
 
                   selected_indice = select_first_id(status, selected_id);
                   foreach(status[j]) begin
-                     status[selected_indice + j] = status[selected_indice + j + 1];
+                     if(selected_indice + j < status.size()-1) begin
+                        status[selected_indice + j] = status[selected_indice + j + 1];
+                     end
                   end
                   status = new[status.size() - 1] (status);
 
