@@ -29,8 +29,7 @@ To exercise the DUT, tests have to be added. Two types of tests are possible:
 - Generated ones: produced by riscv-dv
 - Directed ones: hand crafted to address specific cases difficult to exercise with generated tests
 
-When the test bench and the tests to fullfil the DV plan are developed,
-they have to be formally approved.
+The implementation of the different components (tests, code coverage, assertions, agents,...) have to be formally approved.
 
 ## Coverage
 - Functional coverage: if not 100%, missing points explained and approved
