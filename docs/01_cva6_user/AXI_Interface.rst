@@ -154,8 +154,8 @@ Write address channel signals (Section A2.2)
        | (optional)
      - | Indicates how a write transaction is required to progress
        | through a system.
-       | The subordinate is always of type Device Non-bufferable.
-       | (AWCACHE = 0b0000)
+       | The subordinate is always of type Normal Non-cacheable Non-bufferable.
+       | (AWCACHE = 0b0010)
    * - **AWPROT**
      - M
      - Yes
@@ -282,7 +282,7 @@ Write Response Channel signals (Section A2.4)
      - | No
        | (optional)
      - | User-defined extension for the write response channel.
-       | BUSER= 0b00
+       | Not supported.
    * - **BVALID**
      - S
      - Yes
@@ -328,8 +328,8 @@ Read address channel signals (Section A2.5)
      - | Length, the exact number of data transfers in a read
        | transaction. This information determines the number of data
        | transfers associated with the address.
-       | All read transactions performed by CVA6 are of length less or
-       | equal to ICACHE_LINE_WIDTH/64.
+       | All read transactions performed by CVA6 have a length equal to 0,
+       | ICACHE_LINE_WIDTH/64 or DCACHE_LINE_WIDTH/64.
    * - **ARSIZE**
      - M
      - | Yes
@@ -357,8 +357,8 @@ Read address channel signals (Section A2.5)
        | (optional)
      - | Indicates how a read transaction is required to progress
        | through a system.
-       | The memory is always of type Device Non-bufferable.
-       | (ARCACHE = 0b0000)
+       | The memory is always of type Normal Non-cacheable Non-bufferable.
+       | (ARCACHE = 0b0010)
    * - **ARPROT**
      - M
      - | Yes
@@ -431,7 +431,7 @@ Read data channel signals (Section A2.6)
      - | Yes
        | (optional)
      - | User-defined extension for the read data channel.
-       | Not supported. (RUSER= 0b00)
+       | Not supported.
    * - **RVALID**
      - S
      - Yes
@@ -473,7 +473,7 @@ The AXI protocol is burst-based. The Manager begins each burst by driving contro
 
    CVA6 has some limitation governing the use of bursts:
 
-   * *All read transactions performed by CVA6 are of burst length less or equal to ICACHE_LINE_WIDTH/64.*
+   * *All read transactions performed by CVA6 are of burst length equal to 0, ICACHE_LINE_WIDTH/64 or DCACHE_LINE_WIDTH/64.*
    * *All write transactions performed by CVA6 are of burst length equal to 1.*
 
 **Burst size**
@@ -483,7 +483,7 @@ The AXI protocol is burst-based. The Manager begins each burst by driving contro
    * **ARSIZE[2:0]**, for read transfers
    * **AWSIZE[2:0]**, for write transfers
 
-   *AXI DATA WIDTH used by CVA6 is 64-bit. For that, the maximum value can be taking by AXSIZE is 3 (8 bytes by transfer).*
+   *The maximum value can be taking by AXSIZE is log2(AXI DATA WIDTH/8) (8 bytes by transfer).*
 
 
 **Burst type**
@@ -504,13 +504,27 @@ The AXI protocol is burst-based. The Manager begins each burst by driving contro
 
 .. _data_read_and_write_structure_label:
 
-Data read and write structure: Write strobes (Section A3.4.4)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Data read and write structure: (Section A3.4.4)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Write strobes**
 
    The WSTRB[n:0] signals when HIGH, specify the byte lanes of the data bus that contain valid information. There is one write strobe
    for each 8 bits of the write data bus, therefore WSTRB[n] corresponds to WDATA[(8n)+7: (8n)].
 
-   *AXI DATA WIDTH used by CVA6 is 64-bit. Therefore, Write Strobe width is equal to eight (n = 7).*
+   *Write Strobe width is equal to (AXI_DATA_WIDTH/8)  (n = (AXI_DATA_WIDTH/8)-1).*
+
+   *The size of all transactions performed by cva6 is equal to the number of byte lanes of the data bus containing valid information.*
+   *This means 1, 2, 4, ... or (AXI_DATA_WIDTH/8) byte lanes containing valid information.*
+
+
+**Unaligned transfers**
+
+   For any burst that is made up of data transfers wider than 1 byte, the first bytes accessed might be unaligned with the natural
+   address boundary. For example, a 32-bit data packet that starts at a byte address of 0x1002 is not aligned to the natural 32-bit
+   transfer size.
+
+   *CVA6 does not perform Unaligned transfers.*
+
 
 .. _read_and_write_response_structure_label:
 
@@ -529,14 +543,14 @@ Transaction Attributes: Memory types (Section A4)
 
    This section describes the attributes that determine how a transaction should be treated by the AXI subordinate that is connected to the CVA6.
 
-   *AXCACHE always take 0b0000. The subordinate should be a Device Non-bufferable.*
+   *AXCACHE always take 0b0010. The subordinate should be a Normal Non-cacheable Non-bufferable.*
 
-   The required behavior for Device Non-bufferable memory is:
+   The required behavior for Normal Non-cacheable Non-bufferable memory is:
 
    * The write response must be obtained from the final destination.
    * Read data must be obtained from the final destination.
-   * Transactions are Non-modifiable.
-   * Reads must not be prefetched. Writes must not be merged.
+   * Transactions are modifiable.
+   * Writes can be merged.
 
 
 .. _transaction_identifiers_label:
@@ -606,11 +620,13 @@ Transactions and ordering (Section A6.3)
    * A transaction to a Peripheral region must be entirely contained within that region.
    * A transaction that spans multiple Memory locations has multiple ordering guarantees.
 
-   *Transaction performed by CVA6 is of type Device. Because AxCACHE[1] deasserted.*
+   *Transaction performed by CVA6 is of type Normal. Because AxCACHE[1] is asserted.*
 
-   Device transactions can be used to access Peripheral regions or Memory locations.
+   Normal transactions are used to access Memory locations and are not expected to be used to access Peripheral regions.
 
-   *A write transaction performed by CVA6 is Non-bufferable (It is possible to send an early response to Bufferable write). Because AxCACHE[0] deasserted.*
+   A Normal access to a Peripheral region must complete in a protocol-compliant manner, but the result is IMPLEMENTATION DEFINED.
+
+   *A write transaction performed by CVA6 is Non-bufferable (It is not possible to send an early response before the transaction reach the final destination). Because AxCACHE[0] deasserted.*
 
 Ordered write observation (Section A6.8)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
