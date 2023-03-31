@@ -116,7 +116,9 @@ class Model:
             if last.is_regjump():
                 branch_miss = True
             if branch_miss:
-                if cycle < self.last_issued.issue_cycle + 2:
+                needs_realign = instr.address & 2 != 0 and not instr.is_compressed()
+                latency = 7 if needs_realign else 6
+                if cycle < self.last_issued.issue_cycle + latency:
                     self.log_event_on(instr, EventKind.BMISS, cycle)
                     can_issue = False
         if can_issue:
