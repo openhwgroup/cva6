@@ -15,9 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-#include "Variane_testharness.h"
 #include "verilator.h"
 #include "verilated.h"
+#include "Variane_testharness.h"
+#if (VERILATOR_VERSION_INTEGER >= 5000000)
+  // Verilator v5 adds $root wrapper that provides rootp pointer.
+  #include "Variane_testharness___024root.h"
+#endif
 #if VM_TRACE_FST
 #include "verilated_fst_c.h"
 #else
@@ -349,7 +353,13 @@ done_processing:
 
   // Preload memory.
   size_t mem_size = 0xFFFFFF;
+#if (VERILATOR_VERSION_INTEGER >= 5000000)
+  // Verilator v5: Use rootp pointer and .data() accessor.
+  memif.read(0x80000000, mem_size, (void *)top->rootp->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram.data());
+#else
+  // Verilator v4
   memif.read(0x80000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram);
+#endif
   // memif.read(0x84000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__gen_mem_user__DOT__i_tc_sram_wrapper_user__DOT__i_tc_sram__DOT__sram);
 
 #ifndef DROMAJO
