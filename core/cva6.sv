@@ -974,51 +974,51 @@ module cva6 import ariane_pkg::*; #(
 `endif // VERILATOR
 //pragma translate_on
 
-`ifdef RVFI_TRACE
-  always_comb begin
-    for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-      logic exception, mem_exception;
-      exception = commit_instr_id_commit[i].valid && ex_commit.valid;
-      mem_exception = exception &&
-        (ex_commit.cause == riscv::INSTR_ADDR_MISALIGNED ||
-         ex_commit.cause == riscv::INSTR_ACCESS_FAULT ||
-         ex_commit.cause == riscv::ILLEGAL_INSTR ||
-         ex_commit.cause == riscv::LD_ADDR_MISALIGNED ||
-         ex_commit.cause == riscv::LD_ACCESS_FAULT ||
-         ex_commit.cause == riscv::ST_ADDR_MISALIGNED ||
-         ex_commit.cause == riscv::ST_ACCESS_FAULT ||
-         ex_commit.cause == riscv::INSTR_PAGE_FAULT ||
-         ex_commit.cause == riscv::LOAD_PAGE_FAULT ||
-         ex_commit.cause == riscv::STORE_PAGE_FAULT);
-      // when rvfi_valid, the instruction is executed
-      rvfi_o[i].valid    = (commit_ack[i] && !ex_commit.valid) ||
-        (exception && (ex_commit.cause == riscv::ENV_CALL_MMODE ||
-                  ex_commit.cause == riscv::ENV_CALL_SMODE ||
-                  ex_commit.cause == riscv::ENV_CALL_UMODE));
-      rvfi_o[i].insn     = ex_commit.valid ? ex_commit.tval[31:0] : commit_instr_id_commit[i].ex.tval[31:0];
-      // when trap, the instruction is not executed
-      rvfi_o[i].trap     = mem_exception;
-      rvfi_o[i].cause    = ex_commit.cause;
-      rvfi_o[i].mode     = debug_mode ? 2'b10 : priv_lvl;
-      rvfi_o[i].ixl      = riscv::XLEN == 64 ? 2 : 1;
-      rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1;
-      rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2;
-      rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd;
-      rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
-      rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
-`ifdef RVFI_MEM
-      rvfi_o[i].mem_addr  = commit_instr_id_commit[i].lsu_addr;
-      // So far, only write paddr is reported. TODO: read paddr
-      rvfi_o[i].mem_paddr = mem_paddr;
-      rvfi_o[i].mem_wmask = commit_instr_id_commit[i].lsu_wmask;
-      rvfi_o[i].mem_wdata = commit_instr_id_commit[i].lsu_wdata;
-      rvfi_o[i].mem_rmask = commit_instr_id_commit[i].lsu_rmask;
-      rvfi_o[i].mem_rdata = commit_instr_id_commit[i].result;
-      rvfi_o[i].rs1_rdata = commit_instr_id_commit[i].rs1_rdata;
-      rvfi_o[i].rs2_rdata = commit_instr_id_commit[i].rs2_rdata;
-`endif
+  if (RVFI_TRACE) begin
+    always_comb begin
+      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+        logic exception, mem_exception;
+        exception = commit_instr_id_commit[i].valid && ex_commit.valid;
+        mem_exception = exception &&
+          (ex_commit.cause == riscv::INSTR_ADDR_MISALIGNED ||
+           ex_commit.cause == riscv::INSTR_ACCESS_FAULT ||
+           ex_commit.cause == riscv::ILLEGAL_INSTR ||
+           ex_commit.cause == riscv::LD_ADDR_MISALIGNED ||
+           ex_commit.cause == riscv::LD_ACCESS_FAULT ||
+           ex_commit.cause == riscv::ST_ADDR_MISALIGNED ||
+           ex_commit.cause == riscv::ST_ACCESS_FAULT ||
+           ex_commit.cause == riscv::INSTR_PAGE_FAULT ||
+           ex_commit.cause == riscv::LOAD_PAGE_FAULT ||
+           ex_commit.cause == riscv::STORE_PAGE_FAULT);
+        // when rvfi_valid, the instruction is executed
+        rvfi_o[i].valid    = (commit_ack[i] && !ex_commit.valid) ||
+          (exception && (ex_commit.cause == riscv::ENV_CALL_MMODE ||
+                    ex_commit.cause == riscv::ENV_CALL_SMODE ||
+                    ex_commit.cause == riscv::ENV_CALL_UMODE));
+        rvfi_o[i].insn     = ex_commit.valid ? ex_commit.tval[31:0] : commit_instr_id_commit[i].ex.tval[31:0];
+        // when trap, the instruction is not executed
+        rvfi_o[i].trap     = mem_exception;
+        rvfi_o[i].cause    = ex_commit.cause;
+        rvfi_o[i].mode     = debug_mode ? 2'b10 : priv_lvl;
+        rvfi_o[i].ixl      = riscv::XLEN == 64 ? 2 : 1;
+        rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1;
+        rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2;
+        rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd;
+        rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
+        rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
+
+        rvfi_o[i].mem_addr  = commit_instr_id_commit[i].lsu_addr;
+        // So far, only write paddr is reported. TODO: read paddr
+        rvfi_o[i].mem_paddr = mem_paddr;
+        rvfi_o[i].mem_wmask = commit_instr_id_commit[i].lsu_wmask;
+        rvfi_o[i].mem_wdata = commit_instr_id_commit[i].lsu_wdata;
+        rvfi_o[i].mem_rmask = commit_instr_id_commit[i].lsu_rmask;
+        rvfi_o[i].mem_rdata = commit_instr_id_commit[i].result;
+        rvfi_o[i].rs1_rdata = commit_instr_id_commit[i].rs1_rdata;
+        rvfi_o[i].rs2_rdata = commit_instr_id_commit[i].rs2_rdata;
+
+      end
     end
   end
-`endif
 
 endmodule // ariane

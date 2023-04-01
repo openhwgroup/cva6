@@ -96,14 +96,14 @@ module scoreboard #(
   ariane_pkg::scoreboard_entry_t decoded_instr;
   always_comb begin
     decoded_instr = decoded_instr_i;
-`ifdef RVFI_MEM
-    decoded_instr.rs1_rdata = rs1_forwarding_i;
-    decoded_instr.rs2_rdata = rs2_forwarding_i;
-    decoded_instr.lsu_addr = '0;
-    decoded_instr.lsu_rmask = '0;
-    decoded_instr.lsu_wmask = '0;
-    decoded_instr.lsu_wdata = '0;
-`endif
+    if (ariane_pkg::RVFI_TRACE) begin
+      decoded_instr.rs1_rdata = rs1_forwarding_i;
+      decoded_instr.rs2_rdata = rs2_forwarding_i;
+      decoded_instr.lsu_addr  = '0;
+      decoded_instr.lsu_rmask = '0;
+      decoded_instr.lsu_wmask = '0;
+      decoded_instr.lsu_wdata = '0;
+    end
   end
 
   // output commit instruction directly
@@ -155,16 +155,16 @@ module scoreboard #(
     // ------------
     // Write Back
     // ------------
-`ifdef RVFI_MEM
-    if (lsu_rmask_i != 0) begin
-      mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
-      mem_n[lsu_addr_trans_id_i].sbe.lsu_rmask = lsu_rmask_i;
-    end else if (lsu_wmask_i != 0) begin
-      mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
-      mem_n[lsu_addr_trans_id_i].sbe.lsu_wmask = lsu_wmask_i;
-      mem_n[lsu_addr_trans_id_i].sbe.lsu_wdata = wbdata_i[1];
+    if (ariane_pkg::RVFI_TRACE) begin
+      if (lsu_rmask_i != 0) begin
+        mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
+        mem_n[lsu_addr_trans_id_i].sbe.lsu_rmask = lsu_rmask_i;
+      end else if (lsu_wmask_i != 0) begin
+        mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
+        mem_n[lsu_addr_trans_id_i].sbe.lsu_wmask = lsu_wmask_i;
+        mem_n[lsu_addr_trans_id_i].sbe.lsu_wdata = wbdata_i[1];
+      end
     end
-`endif
 
     for (int unsigned i = 0; i < NR_WB_PORTS; i++) begin
       // check if this instruction was issued (e.g.: it could happen after a flush that there is still

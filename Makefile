@@ -29,7 +29,7 @@ verilator      ?= verilator
 # traget option
 target-options ?=
 # additional definess
-defines        ?= RVFI_TRACE
+defines        ?=
 # test name for torture runs (binary name)
 test-location  ?= output/test
 # set to either nothing or -log

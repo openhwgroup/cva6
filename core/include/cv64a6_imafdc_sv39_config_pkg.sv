@@ -70,4 +70,6 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigMmuPresent = 1;
 
+    localparam CVA6ConfigRvfiTrace = 1;
+
 endpackage

@@ -117,11 +117,11 @@ module ariane_testharness #(
   assign debug_req_valid     = (jtag_enable[0]) ? jtag_req_valid     : dmi_req_valid;
   assign debug_resp_ready    = (jtag_enable[0]) ? jtag_resp_ready    : dmi_resp_ready;
   assign debug_req           = (jtag_enable[0]) ? jtag_dmi_req       : dmi_req;
-`ifdef RVFI_TRACE
-  assign exit_o              = (jtag_enable[0]) ? jtag_exit          : rvfi_exit;
-`else
-  assign exit_o              = (jtag_enable[0]) ? jtag_exit          : dmi_exit;
-`endif
+  if (ariane_pkg::RVFI_TRACE) begin
+    assign exit_o              = (jtag_enable[0]) ? jtag_exit          : rvfi_exit;
+  end else begin
+    assign exit_o              = (jtag_enable[0]) ? jtag_exit          : dmi_exit;
+  end
   assign jtag_resp_valid     = (jtag_enable[0]) ? debug_resp_valid   : 1'b0;
   assign dmi_resp_valid      = (jtag_enable[0]) ? 1'b0               : debug_resp_valid;
 
