@@ -347,7 +347,7 @@ module load_store_unit import ariane_pkg::*; #(
         translation_req      = 1'b0;
         mmu_vaddr            = {riscv::VLEN{1'b0}};
 
-        // check the operator to activate the right functional unit accordingly
+        // check the operation to activate the right functional unit accordingly
         unique case (lsu_ctrl.fu)
             // all loads go here
             LOAD:  begin
@@ -373,8 +373,8 @@ module load_store_unit import ariane_pkg::*; #(
     // we can generate the byte enable from the virtual address since the last
     // 12 bit are the same anyway
     // and we can always generate the byte enable from the address at hand
-    assign be_i = riscv::IS_XLEN64 ? be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operator)):
-                                     be_gen_32(vaddr_i[1:0], extract_transfer_size(fu_data_i.operator));
+    assign be_i = riscv::IS_XLEN64 ? be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operation)):
+                                     be_gen_32(vaddr_i[1:0], extract_transfer_size(fu_data_i.operation));
 
     // ------------------------
     // Misaligned Exception
@@ -393,7 +393,7 @@ module load_store_unit import ariane_pkg::*; #(
         data_misaligned = 1'b0;
 
         if (lsu_ctrl.valid) begin
-            case (lsu_ctrl.operator)
+            case (lsu_ctrl.operation)
                 // double word
                 LD, SD, FLD, FSD,
                 AMO_LRD, AMO_SCD,
@@ -468,7 +468,7 @@ module load_store_unit import ariane_pkg::*; #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operation, fu_data_i.trans_id};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),

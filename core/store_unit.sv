@@ -62,7 +62,7 @@ module store_unit import ariane_pkg::*; (
     logic st_valid;
     logic st_valid_without_flush;
     logic instr_is_amo;
-    assign instr_is_amo = is_amo(lsu_ctrl_i.operator);
+    assign instr_is_amo = is_amo(lsu_ctrl_i.operation);
     // keep the data and the byte enable for the second cycle (after address translation)
     riscv::xlen_t st_data_n, st_data_q;
     logic [(riscv::XLEN/8)-1:0]   st_be_n,        st_be_q;
@@ -183,9 +183,9 @@ module store_unit import ariane_pkg::*; (
         // don't shift the data if we are going to perform an AMO as we still need to operate on this data
         st_data_n = instr_is_amo ? lsu_ctrl_i.data[riscv::XLEN-1:0]
                                  : data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
-        st_data_size_n = extract_transfer_size(lsu_ctrl_i.operator);
+        st_data_size_n = extract_transfer_size(lsu_ctrl_i.operation);
         // save AMO op for next cycle
-        case (lsu_ctrl_i.operator)
+        case (lsu_ctrl_i.operation)
             AMO_LRW, AMO_LRD:     amo_op_d = AMO_LR;
             AMO_SCW, AMO_SCD:     amo_op_d = AMO_SC;
             AMO_SWAPW, AMO_SWAPD: amo_op_d = AMO_SWAP;

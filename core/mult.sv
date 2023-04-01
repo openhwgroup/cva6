@@ -23,9 +23,9 @@ module mult import ariane_pkg::*; (
     logic                     mul_valid_op;
     // Input Arbitration
 
-    assign mul_valid_op = ~flush_i && mult_valid_i && (fu_data_i.operator inside { MUL, MULH, MULHU, MULHSU, MULW, CLMUL, CLMULH, CLMULR });
+    assign mul_valid_op = ~flush_i && mult_valid_i && (fu_data_i.operation inside { MUL, MULH, MULHU, MULHSU, MULW, CLMUL, CLMULH, CLMULR });
 
-    assign div_valid_op = ~flush_i && mult_valid_i && (fu_data_i.operator inside { DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW });
+    assign div_valid_op = ~flush_i && mult_valid_i && (fu_data_i.operation inside { DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW });
 
     // ---------------------
     // Output Arbitration
@@ -45,7 +45,7 @@ module mult import ariane_pkg::*; (
         .clk_i,
         .rst_ni,
         .trans_id_i        ( fu_data_i.trans_id  ),
-        .operator_i        ( fu_data_i.operator  ),
+        .operator_i        ( fu_data_i.operation  ),
         .operand_a_i       ( fu_data_i.operand_a ),
         .operand_b_i       ( fu_data_i.operand_b ),
         .result_o          ( mul_result   ),
@@ -66,9 +66,9 @@ module mult import ariane_pkg::*; (
     logic        word_op_d, word_op_q;  // save whether the operation was signed or not
 
     // is this a signed op?
-    assign div_signed = fu_data_i.operator inside {DIV, DIVW, REM, REMW};
+    assign div_signed = fu_data_i.operation inside {DIV, DIVW, REM, REMW};
     // is this a modulo?
-    assign rem        = fu_data_i.operator inside {REM, REMU, REMW, REMUW};
+    assign rem        = fu_data_i.operation inside {REM, REMU, REMW, REMUW};
 
     // prepare the input operands and control divider
     always_comb begin
@@ -79,9 +79,9 @@ module mult import ariane_pkg::*; (
         word_op_d   = word_op_q;
 
         // we've go a new division operation
-        if (mult_valid_i && fu_data_i.operator inside {DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW}) begin
+        if (mult_valid_i && fu_data_i.operation inside {DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW}) begin
             // is this a word operation?
-            if (fu_data_i.operator inside {DIVW, DIVUW, REMW, REMUW}) begin
+            if (fu_data_i.operation inside {DIVW, DIVUW, REMW, REMUW}) begin
                 // yes so check if we should sign extend this is only done for a signed operation
                 if (div_signed) begin
                     operand_a = sext32(fu_data_i.operand_a[31:0]);

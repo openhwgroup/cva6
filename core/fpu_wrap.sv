@@ -151,7 +151,7 @@ module fpu_wrap import ariane_pkg::*; (
       fpu_srcfmt_d = fpu_dstfmt_d;
 
       // Operations (this can modify the rounding mode field and format!)
-      unique case (fu_data_i.operator)
+      unique case (fu_data_i.operation)
         // Addition
         FADD: begin
           fpu_op_d    = fpnew_pkg::ADD;
