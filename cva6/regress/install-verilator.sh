@@ -25,6 +25,7 @@ VERILATOR_PATCH="../../../cva6/regress/verilator-v5.patch"
 # the installation location of Verilator.
 if [ ! -f "$VERILATOR_INSTALL_DIR/bin/verilator" ]; then
     echo "Building Verilator in $VERILATOR_ROOT..."
+    echo "Verilator will be installed in $VERILATOR_INSTALL_DIR"
     echo "VERILATOR_REPO=$VERILATOR_REPO"
     echo "VERILATOR_BRANCH=$VERILATOR_BRANCH"
     echo "VERILATOR_HASH=$VERILATOR_HASH"
@@ -37,7 +38,7 @@ if [ ! -f "$VERILATOR_INSTALL_DIR/bin/verilator" ]; then
     [ -d .git ] || git clone $VERILATOR_REPO -b $VERILATOR_BRANCH .
     git checkout $VERILATOR_HASH
     if [ ! -z "$VERILATOR_PATCH" ] ; then
-      git apply $VERILATOR_PATCH
+      git apply $VERILATOR_PATCH || true
     fi
     # Generate the config script and configure Verilator.
     autoconf && ./configure --prefix="$VERILATOR_INSTALL_DIR" && make -j${NUM_JOBS}
