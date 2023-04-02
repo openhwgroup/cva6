@@ -548,7 +548,7 @@ package ariane_pkg;
 
     typedef struct packed {
         fu_t                      fu;
-        fu_op                     operator;
+        fu_op                     operation;
         riscv::xlen_t             operand_a;
         riscv::xlen_t             operand_b;
         riscv::xlen_t             imm;
@@ -644,7 +644,7 @@ package ariane_pkg;
         riscv::xlen_t                   data;
         logic [(riscv::XLEN/8)-1:0]     be;
         fu_t                            fu;
-        fu_op                           operator;
+        fu_op                           operation;
         logic [TRANS_ID_BITS-1:0]       trans_id;
     } lsu_ctrl_t;
 
