@@ -102,6 +102,7 @@ pub_check_env:
     - echo $RISCV
     - echo $RISCV_PREFIX
     - echo $VERILATOR_ROOT
+    - echo $VERILATOR_INSTALL_DIR
     - echo $SPIKE_ROOT
     - echo $BBL_ROOT
     - echo $SYN_VCS_BASHRC
