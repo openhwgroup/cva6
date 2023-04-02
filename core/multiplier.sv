@@ -20,7 +20,7 @@ module multiplier import ariane_pkg::*; (
     input  logic                     rst_ni,
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     input  logic                     mult_valid_i,
-    input  fu_op                     operator_i,
+    input  fu_op                     operation_i,
     input  riscv::xlen_t             operand_a_i,
     input  riscv::xlen_t             operand_b_i,
     output riscv::xlen_t             result_o,
@@ -34,8 +34,8 @@ module multiplier import ariane_pkg::*; (
 
     if (ariane_pkg::BITMANIP) begin : gen_bitmanip
         // checking for clmul_rmode and clmul_hmode
-        assign clmul_rmode = (operator_i == CLMULR);
-        assign clmul_hmode = (operator_i == CLMULH);
+        assign clmul_rmode = (operation_i == CLMULR);
+        assign clmul_hmode = (operation_i == CLMULH);
 
         // operand_a and b reverse generator
         for (genvar i = 0; i < riscv::XLEN; i++) begin
@@ -76,7 +76,7 @@ module multiplier import ariane_pkg::*; (
     assign mult_trans_id_o = trans_id_q;
     assign mult_ready_o    = 1'b1;
 
-    assign mult_valid      = mult_valid_i && (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW, CLMUL, CLMULH, CLMULR});
+    assign mult_valid      = mult_valid_i && (operation_i inside {MUL, MULH, MULHU, MULHSU, MULW, CLMUL, CLMULH, CLMULR});
 
     // Sign Select MUX
     always_comb begin
@@ -84,11 +84,11 @@ module multiplier import ariane_pkg::*; (
         sign_b = 1'b0;
 
         // signed multiplication
-        if (operator_i == MULH) begin
+        if (operation_i == MULH) begin
             sign_a   = 1'b1;
             sign_b   = 1'b1;
         // signed - unsigned multiplication
-        end else if (operator_i == MULHSU) begin
+        end else if (operation_i == MULHSU) begin
             sign_a   = 1'b1;
         // unsigned multiplication
         end else begin
@@ -103,7 +103,7 @@ module multiplier import ariane_pkg::*; (
                              $signed({operand_b_i[riscv::XLEN-1] & sign_b, operand_b_i});
 
 
-    assign operator_d = operator_i;
+    assign operator_d = operation_i;
 
     always_comb begin : p_selmux
         unique case (operator_q)

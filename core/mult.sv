@@ -45,7 +45,7 @@ module mult import ariane_pkg::*; (
         .clk_i,
         .rst_ni,
         .trans_id_i        ( fu_data_i.trans_id  ),
-        .operator_i        ( fu_data_i.operation  ),
+        .operation_i       ( fu_data_i.operation  ),
         .operand_a_i       ( fu_data_i.operand_a ),
         .operand_b_i       ( fu_data_i.operand_b ),
         .result_o          ( mul_result   ),
