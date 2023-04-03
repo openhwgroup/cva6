@@ -149,15 +149,21 @@ pub_smoke:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
   script:
-    - mkdir -p artifacts/reports
+    - mkdir -p artifacts/reports artifacts/logs
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
-    - source cva6/regress/smoke-tests.sh
+    # In order to capture logs in case of test failure, the test script cannot fail.
+    - source cva6/regress/smoke-tests.sh || true
+    # The list of files must NOT fail on various DV_SIMULATORS values, so use 'v*_sim' to match
+    # 'veri-testharness_sim', 'vcs-testharness_sim' and 'vcs-uvm_sim' (one of them always applies,
+    # at least until new RTL simulator configurations are added.)
+    - for i in cva6/sim/*/v*_sim/*.log.iss ; do head -5000 $i > artifacts/logs/$(basename $i).head ; done
     - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
   artifacts:
     when: always
     paths:
       - artifacts/reports/*.yml
+      - artifacts/logs/*.log.iss.head
 
 pub_riscv_arch_test:
   stage: two
