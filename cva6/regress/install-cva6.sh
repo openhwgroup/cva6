@@ -33,6 +33,12 @@ if [ -z "$VERILATOR_INSTALL_DIR" ]; then
 fi
 cva6/regress/install-verilator.sh
 
+# With Verilator v5, it is (FORNOW) necessary to either maintain a copy
+# of the source+build directory at $VERILATOR_ROOT, or to unset VERILATOR_ROOT
+# so that 'verilator_bin' is searched in the PATH.  The former is not
+# applicable to Continuous Integration environments, so...
+unset VERILATOR_ROOT
+
 export PATH=$RISCV/bin:$VERILATOR_INSTALL_DIR/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
