@@ -157,7 +157,7 @@ pub_smoke:
     # The list of files must NOT fail on various DV_SIMULATORS values, so use 'v*_sim' to match
     # 'veri-testharness_sim', 'vcs-testharness_sim' and 'vcs-uvm_sim' (one of them always applies,
     # at least until new RTL simulator configurations are added.)
-    - for i in cva6/sim/*/v*_sim/*.log.iss ; do head -5000 $i > artifacts/logs/$(basename $i).head ; done
+    - for i in cva6/sim/*/v*_sim/*.log.iss ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
     - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
   artifacts:
     when: always
