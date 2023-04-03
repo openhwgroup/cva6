@@ -39,6 +39,11 @@ export LD_LIBRARY_PATH=$RISCV/lib
 export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_INSTALL_DIR/share/verilator/include
 export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_INSTALL_DIR/share/verilator/include
 
+# Check proper Verilator installation given current $PATH.
+echo PATH=\"$PATH\"
+echo "Verilator version:"
+verilator --version
+
 # number of parallel jobs to use for make commands and simulation
 export NUM_JOBS=24
 

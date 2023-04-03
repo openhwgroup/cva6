@@ -49,5 +49,5 @@ if [ ! -f "$VERILATOR_INSTALL_DIR/bin/verilator" ]; then
     #make test || echo "### 'make test' in $VERILATOR_ROOT: some tests failed."
     cd -
 else
-    echo "Using Verilator from cached directory."
+    echo "Using Verilator from cached directory $VERILATOR_INSTALL_DIR."
 fi
