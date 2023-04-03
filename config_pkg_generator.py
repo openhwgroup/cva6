@@ -49,10 +49,24 @@ def setup_parser_config_generator():
                       help="Data User Width ? [1-64]")
   parser.add_argument("--RenameEn", type=int, default=None, choices=[0,1],
                       help="RenameEn ? 1 : enable, 0 : disable")
+  parser.add_argument("--IcacheByteSize", type=int, default=None,
+                      help="Instruction cache size in bytes")
   parser.add_argument("--IcacheSetAssoc", type=int, default=None,
                       help="Instruction cache associativity")
+  parser.add_argument("--IcacheLineWidth", type=int, default=None,
+                      help="Instruction cache line width")
+  parser.add_argument("--DcacheByteSize", type=int, default=None,
+                      help="Data cache size in bytes")
   parser.add_argument("--DcacheSetAssoc", type=int, default=None,
                       help="Data cache associativity")
+  parser.add_argument("--DcacheLineWidth", type=int, default=None,
+                      help="Data cache line width")
+  parser.add_argument("--DcacheIdWidth", type=int, default=None,
+                      help="Data cache TID width")
+  parser.add_argument("--MemTidWidth", type=int, default=None,
+                      help="Memory TID width")
+  parser.add_argument("--WtDcacheWbufDepth", type=int, default=None,
+                      help="WT data cache WBUF depth")
   parser.add_argument("--NrCommitPorts", type=int, default=None, choices=[1,2],
                       help="Number of commit ports")
   parser.add_argument("--NrScoreboardEntries", type=int, default=None,
@@ -73,6 +87,12 @@ def setup_parser_config_generator():
                       help="Number of Branch Target Buffer entries")
   parser.add_argument("--BHTEntries", type=int, default=None,
                       help="Number of Branch History Table entries")
+  parser.add_argument("--NrPMPEntries", type=int, default=None,
+                      help="Number of PMP entries")
+  parser.add_argument("--PerfCounterEn", type=int, default=None,
+                      help="Enable performance counters")
+  parser.add_argument("--DcacheType", type=str, default=None, choices=["WB", "WT"],
+                      help="Cache type (WB or WT)")
   return parser
 
 ISA = ""
@@ -94,8 +114,16 @@ MapArgsToParameter={
   "duser_en" : "CVA6ConfigDataUserEn",
   "duser_w" : "CVA6ConfigDataUserWidth",
   "RenameEn" : "CVA6ConfigRenameEn",
+  "IcacheByteSize" : "CVA6ConfigIcacheByteSize",
   "IcacheSetAssoc" : "CVA6ConfigIcacheSetAssoc",
+  "IcacheLineWidth" : "CVA6ConfigIcacheLineWidth",
+  "DcacheByteSize" : "CVA6ConfigDcacheByteSize",
   "DcacheSetAssoc" : "CVA6ConfigDcacheSetAssoc",
+  "DcacheLineWidth" : "CVA6ConfigDcacheLineWidth",
+  "DcacheIdWidth" : "CVA6ConfigDcacheIdWidth",
+  "DcacheIdWidth": "CVA6ConfigDcacheIdWidth",
+  "MemTidWidth": "CVA6ConfigMemTidWidth",
+  "WtDcacheWbufDepth": "CVA6ConfigWtDcacheWbufDepth",
   "NrCommitPorts" : "CVA6ConfigNrCommitPorts",
   "NrScoreboardEntries" : "CVA6ConfigNrScoreboardEntries",
   "FPGAEn" : "CVA6ConfigFPGAEn",
@@ -106,6 +134,9 @@ MapArgsToParameter={
   "RASDepth": "CVA6ConfigRASDepth",
   "BTBEntries": "CVA6ConfigBTBEntries",
   "BHTEntries": "CVA6ConfigBHTEntries",
+  "NrPMPEntries": "CVA6ConfigNrPMPEntries",
+  "PerfCounterEn": "CVA6ConfigPerfCounterEn",
+  "DcacheType": "CVA6ConfigDcacheType",
 }
 MapParametersToArgs = {i:k for k, i in MapArgsToParameter.items()} #reverse map
 
@@ -148,7 +179,14 @@ def generate_config(argv):
       if linematch:
         try:
           arg = MapParametersToArgs[param]
-          Config[arg] = Config['xlen'] if value == "CVA6ConfigXlen" else int(value)
+          if value == "CVA6ConfigXlen":
+              Config[arg] = Config['xlen']
+          elif value == "WB":
+              Config[arg] = 0
+          elif value == "WT":
+              Config[arg] = 1
+          else:
+              Config[arg] = int(value)
         except KeyError:
           print(f"WARNING: CVA6 configuration parameter '{param}' not supported yet via cmdline args,",
                 "\n\t consider extending script 'config_pkg_generator.py'!")
