@@ -1789,25 +1789,15 @@ module csr_regfile import ariane_pkg::*; #(
         // we want to spare the costly addition. Furthermore check to which
         // privilege level we are jumping and whether the vectored mode is
         // activated for _that_ privilege level.
-       unique case(trap_to_priv_lvl)
-            riscv::PRIV_LVL_M: begin
-                if (mtvec_q[0] && ex_i.cause[riscv::XLEN-1]) begin
-                    trap_vector_base_o[7:2] = ex_i.cause[5:0];
-                end
-            end
-            riscv::PRIV_LVL_S: begin
-                if(ariane_pkg::RVH && trap_to_v) begin
-                    if (vstvec_q[0] && ex_i.cause[riscv::XLEN-1]) begin
-                        trap_vector_base_o[7:2] = {ex_i.cause[5:2],2'b01};
-                    end
-                end else begin
-                    if (stvec_q[0] && ex_i.cause[riscv::XLEN-1]) begin
-                        trap_vector_base_o[7:2] = ex_i.cause[5:0];
-                    end
-                end
-            end
-            default: trap_vector_base_o[7:2] = mtvec_q[7:2];
-        endcase
+        if (ex_i.cause[riscv::XLEN-1] &&
+                ((trap_to_priv_lvl == riscv::PRIV_LVL_M && mtvec_q[0])
+               || (trap_to_priv_lvl == riscv::PRIV_LVL_S && !trap_to_v && stvec_q[0]))) begin
+            trap_vector_base_o[7:2] = ex_i.cause[5:0];
+        end
+        if (ariane_pkg::RVH && ex_i.cause[riscv::XLEN-1] &&
+                trap_to_priv_lvl == riscv::PRIV_LVL_S && trap_to_v && vstvec_q[0]) begin
+            trap_vector_base_o[7:2] = {ex_i.cause[5:2],2'b01};
+        end
 
         epc_o = mepc_q[riscv::VLEN-1:0];
         // we are returning from supervisor or virtual supervisor mode, so take the sepc register
