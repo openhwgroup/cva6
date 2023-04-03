@@ -263,7 +263,11 @@ module axi_shim #(
   // return path
   assign axi_req_o.r_ready   = rd_rdy_i;
   assign rd_data_o           = axi_resp_i.r.data;
-  assign rd_user_o           = axi_resp_i.r.user;
+  if (ariane_pkg::AXI_USER_EN) begin
+    assign rd_user_o           = axi_resp_i.r.user;
+  end else begin
+    assign rd_user_o           = '0;
+  end
   assign rd_last_o           = axi_resp_i.r.last;
   assign rd_valid_o          = axi_resp_i.r_valid;
   assign rd_id_o             = axi_resp_i.r.id;

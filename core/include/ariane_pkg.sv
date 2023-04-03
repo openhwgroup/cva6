@@ -285,10 +285,10 @@ package ariane_pkg;
     // User bits
     // ---------------
 
-    localparam FETCH_USER_WIDTH = (cva6_config_pkg::CVA6ConfigFetchUserEn == 0) ? 1: cva6_config_pkg::CVA6ConfigFetchUserWidth;  // Possible cases: between 1 and 64
-    localparam DATA_USER_WIDTH = (cva6_config_pkg::CVA6ConfigDataUserEn == 0) ? 1: cva6_config_pkg::CVA6ConfigDataUserWidth;    // Possible cases: between 1 and 64
+    localparam FETCH_USER_WIDTH = cva6_config_pkg::CVA6ConfigFetchUserWidth;
+    localparam DATA_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
     localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
-    localparam AXI_USER_WIDTH = AXI_USER_EN ? (DATA_USER_WIDTH > FETCH_USER_WIDTH*2 ? DATA_USER_WIDTH : FETCH_USER_WIDTH*2) : 1;
+    localparam AXI_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
     localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
     localparam FETCH_USER_EN = cva6_config_pkg::CVA6ConfigFetchUserEn;
 
