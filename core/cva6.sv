@@ -929,7 +929,7 @@ module cva6 import ariane_pkg::*; #(
     dcache_req_ports_cache_acc[1].data_gnt &= !dcache_req_ports_ex_cache[2].data_req;
   end
 
-  if (DCACHE_TYPE == int'(cva6_config_pkg::WT)) begin : gen_cache_wt
+  if (DCACHE_TYPE == int'(config_pkg::WT)) begin : gen_cache_wt
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
     .CVA6Cfg              ( CVA6ExtendCfg ),
@@ -970,8 +970,59 @@ module cva6 import ariane_pkg::*; #(
     .inval_valid_i         ( inval_valid                 ),
     .inval_ready_o         ( inval_ready                 )
   );
-  end else begin : gen_cache_wb
+  end else if (DCACHE_TYPE == int'(config_pkg::HPDCACHE)) begin : hpdcache_subsystem_gen
+  cva6_hpdcache_subsystem #(
+    .CVA6Cfg               ( CVA6ExtendCfg ),
+    .NumPorts              ( NumPorts ),
+    .noc_req_t             ( noc_req_t ),
+    .noc_resp_t            ( noc_resp_t ),
+    .cmo_req_t             ( logic /*FIXME*/ ),
+    .cmo_rsp_t             ( logic /*FIXME*/ )
+  ) i_cache_subsystem (
+    .clk_i                 ( clk_i ),
+    .rst_ni                ( rst_ni ),
 
+    .icache_en_i           ( icache_en_csr ),
+    .icache_flush_i        ( icache_flush_ctrl_cache ),
+    .icache_miss_o         ( icache_miss_cache_perf ),
+    .icache_areq_i         ( icache_areq_ex_cache ),
+    .icache_areq_o         ( icache_areq_cache_ex ),
+    .icache_dreq_i         ( icache_dreq_if_cache ),
+    .icache_dreq_o         ( icache_dreq_cache_if ),
+
+    .dcache_enable_i       ( dcache_en_csr_nbdcache ),
+    .dcache_flush_i        ( dcache_flush_ctrl_cache ),
+    .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl ),
+    .dcache_miss_o         ( dcache_miss_cache_perf ),
+
+    .dcache_amo_req_i      ( amo_req ),
+    .dcache_amo_resp_o     ( amo_resp ),
+
+    .dcache_cmo_req_i      ( '0/*FIXME*/ ),
+    .dcache_cmo_resp_o     (   /*FIXME*/ ),
+
+    .dcache_req_ports_i    ( dcache_req_to_cache ),
+    .dcache_req_ports_o    ( dcache_req_from_cache ),
+
+    .wbuffer_empty_o       ( dcache_commit_wbuffer_empty ),
+    .wbuffer_not_ni_o      ( dcache_commit_wbuffer_not_ni ),
+
+    .hwpf_base_set_i       ( '0/*FIXME*/ ),
+    .hwpf_base_i           ( '0/*FIXME*/ ),
+    .hwpf_base_o           (   /*FIXME*/ ),
+    .hwpf_param_set_i      ( '0/*FIXME*/ ),
+    .hwpf_param_i          ( '0/*FIXME*/ ),
+    .hwpf_param_o          (   /*FIXME*/ ),
+    .hwpf_throttle_set_i   ( '0/*FIXME*/ ),
+    .hwpf_throttle_i       ( '0/*FIXME*/ ),
+    .hwpf_throttle_o       (   /*FIXME*/ ),
+    .hwpf_status_o         (   /*FIXME*/ ),
+
+    .noc_req_o             ( noc_req_o ),
+    .noc_resp_i            ( noc_resp_i )
+  );
+  assign inval_ready                  = 1'b1;
+  end else begin
   std_cache_subsystem #(
     // note: this only works with one cacheable region
     // not as important since this cache subsystem is about to be

@@ -47,6 +47,8 @@ $(warning must set CVA6_REPO_DIR to point at the root of CVA6 sources -- doing i
 export CVA6_REPO_DIR = $(abspath $(root-dir))
 endif
 
+export HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
+
 support_verilator_4 := $(shell ($(verilator) --version | grep '4\.') > /dev/null 2>&1 ; echo $$?)
 ifeq ($(support_verilator_4), 0)
 	verilator_threads := 1

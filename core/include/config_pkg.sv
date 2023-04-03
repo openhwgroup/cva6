@@ -26,6 +26,13 @@ package config_pkg;
       NOC_TYPE_L15_LITTLE_ENDIAN
     } noc_type_e;
 
+    /// Cache type parameter
+    typedef enum logic [1:0] {
+      WB = 0,
+      WT = 1,
+      HPDCACHE = 2
+    } cache_type_t ;
+
     localparam NrMaxRules = 16;
 
     typedef struct packed {
