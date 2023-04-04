@@ -330,7 +330,7 @@ CVA6 has preliminary support for the OpenPiton distributed cache system from Pri
 
 The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the `README` in that repository to see how to use CVA6 in the OpenPiton setting.
 
-To activate the different cache system, compile your code with the macro `WT_DCACHE` (set by default).
+To activate the different cache system, compile your code with the macro `DCACHE_TYPE`.
 
 ## Planned Improvements
 

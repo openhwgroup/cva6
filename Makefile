@@ -29,7 +29,7 @@ verilator      ?= verilator
 # traget option
 target-options ?=
 # additional definess
-defines        ?= WT_DCACHE
+defines        ?=
 # test name for torture runs (binary name)
 test-location  ?= output/test
 # set to either nothing or -log
@@ -142,6 +142,7 @@ DPI_CXXFLAGS ?= $(CXXFLAGS) $(DPI_FLAGS)
 
 # this list contains the standalone components
 src :=  corev_apu/tb/axi_adapter.sv                                                  \
+        corev_apu/tb/ariane.sv                                                       \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
         $(wildcard corev_apu/clint/*.sv)                                             \
         $(wildcard corev_apu/fpga/src/axi2apb/src/*.sv)                              \
@@ -285,7 +286,7 @@ endif
 vcs_build: $(dpi-library)/ariane_dpi.so
 	mkdir -p $(vcs-library)
 	cd $(vcs-library) &&\
-	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) $(addprefix -f , ${flists}) &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) -assert svaext $(addprefix -f , ${flists}) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
 	vhdlan $(if $(VERDI), -kdb,) -full64 -nc $(filter %.vhd,$(uart_src)) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -assert svaext +define+$(defines) $(filter %.sv,$(src)) +incdir+../vendor/pulp-platform/common_cells/include/+../vendor/pulp-platform/axi/include/+../corev_apu/register_interface/include/ &&\

@@ -78,18 +78,21 @@ module ariane import ariane_pkg::*; #(
     .ipi_i                ( ipi_i                     ),
     .time_irq_i           ( time_irq_i                ),
     .debug_req_i          ( debug_req_i               ),
-`ifdef FIRESIME_TRACE
-    .trace_o              ( trace_o                   ),
-`endif
 `ifdef RVFI_TRACE
     .rvfi_o               ( rvfi_o                    ),
+`else
+    .rvfi_o               (                           ),
 `endif
     .cvxif_req_o          ( cvxif_req                 ),
     .cvxif_resp_i         ( cvxif_resp                ),
 `ifdef PITON_ARIANE
     .l15_req_o            ( l15_req_o                 ),
-    .l15_rtrn_i           ( l15_rtrn_i                )
+    .l15_rtrn_i           ( l15_rtrn_i                ),
+    .axi_req_o            (                           ),
+    .axi_resp_i           ( '0                        )
 `else
+    .l15_req_o            (                           ),
+    .l15_rtrn_i           ( '0                        ),
     .axi_req_o            ( axi_req_o                 ),
     .axi_resp_i           ( axi_resp_i                )
 `endif

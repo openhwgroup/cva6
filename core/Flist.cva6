@@ -25,8 +25,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-+define+WT_DCACHE
-
 //FPGA memories
 ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncDpRam.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/AsyncDpRam.sv
@@ -62,6 +60,11 @@ ${CVA6_REPO_DIR}/core/cvxif_example/instr_decoder.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/fifo_v3.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr_8bit.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_arbiter.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_arbiter_flushable.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_mux.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_demux.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lzc.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/rr_arb_tree.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/shift_reg.sv
@@ -95,7 +98,6 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_m
 ${CVA6_REPO_DIR}/vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
 // Top-level source files (not necessarily instantiated at the top of the cva6).
-${CVA6_REPO_DIR}/core/ariane.sv
 ${CVA6_REPO_DIR}/core/cva6.sv
 ${CVA6_REPO_DIR}/core/alu.sv
 // Note: depends on fpnew_pkg, above
@@ -146,6 +148,13 @@ ${CVA6_REPO_DIR}/core/cache_subsystem/wt_dcache.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_icache.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/wt_cache_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/wt_axi_adapter.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/tag_cmp.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/axi_adapter.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/miss_handler.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/cache_ctrl.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/cva6_icache_axi_wrapper.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/std_cache_subsystem.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/std_nbdcache.sv
 
 // Physical Memory Protection
 // NOTE: pmp.sv modified for DSIM (unchanged for other simulators)

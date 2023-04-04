@@ -213,14 +213,16 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
     if (riscv::IS_XLEN64) begin
       if (amo_req_i.size==2'b10) begin
         amo_data = {amo_req_i.operand_b[0 +: 32], amo_req_i.operand_b[0 +: 32]};
-        amo_user = {amo_req_i.operand_b[0 +: 32], amo_req_i.operand_b[0 +: 32]};
       end else begin
         amo_data = amo_req_i.operand_b;
-        amo_user = amo_req_i.operand_b;
       end
     end else begin
       amo_data = amo_req_i.operand_b[0 +: 32];
-      amo_user = amo_req_i.operand_b[0 +: 32];
+    end
+    if (ariane_pkg::DATA_USER_EN) begin
+      amo_user = amo_data;
+    end else begin
+      amo_user = '0;
     end
   end
 

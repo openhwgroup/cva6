@@ -142,15 +142,14 @@ package ariane_pkg;
     // depth of store-buffers, this needs to be a power of two
     localparam int unsigned DEPTH_SPEC   = 4;
 
-`ifdef WT_DCACHE
-    // in this case we can use a small commit queue since we have a write buffer in the dcache
+    localparam int unsigned DCACHE_TYPE = int'(cva6_config_pkg::CVA6ConfigDcacheType);
+    // if DCACHE_TYPE = cva6_config_pkg::WT
+    // we can use a small commit queue since we have a write buffer in the dcache
     // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
     // to longer paths into the commit stage
-    localparam int unsigned DEPTH_COMMIT = 4;
-`else
+    // if DCACHE_TYPE = cva6_config_pkg::WB
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
-    localparam int unsigned DEPTH_COMMIT = 8;
-`endif
+    localparam int unsigned DEPTH_COMMIT = (DCACHE_TYPE == int'(cva6_config_pkg::WT)) ? 4 : 8;
 
     localparam bit FPGA_EN = cva6_config_pkg::CVA6ConfigFPGAEn; // Is FPGA optimization of CV32A6
 
@@ -286,10 +285,10 @@ package ariane_pkg;
     // User bits
     // ---------------
 
-    localparam FETCH_USER_WIDTH = (cva6_config_pkg::CVA6ConfigFetchUserEn == 0) ? 1: cva6_config_pkg::CVA6ConfigFetchUserWidth;  // Possible cases: between 1 and 64
-    localparam DATA_USER_WIDTH = (cva6_config_pkg::CVA6ConfigDataUserEn == 0) ? 1: cva6_config_pkg::CVA6ConfigDataUserWidth;    // Possible cases: between 1 and 64
+    localparam FETCH_USER_WIDTH = cva6_config_pkg::CVA6ConfigFetchUserWidth;
+    localparam DATA_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
     localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
-    localparam AXI_USER_WIDTH = AXI_USER_EN ? (DATA_USER_WIDTH > FETCH_USER_WIDTH*2 ? DATA_USER_WIDTH : FETCH_USER_WIDTH*2) : 1;
+    localparam AXI_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
     localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
     localparam FETCH_USER_EN = cva6_config_pkg::CVA6ConfigFetchUserEn;
 
@@ -307,7 +306,7 @@ package ariane_pkg;
     // ---------------
     // Enable BITMANIP
     // ---------------
-    localparam bit BITMANIP = 1'b0;
+    localparam bit BITMANIP = cva6_config_pkg::CVA6ConfigBExtEn;
 
     // Only use struct when signals have same direction
     // exception
@@ -438,6 +437,10 @@ package ariane_pkg;
     `define CONFIG_L1D_SIZE 32*1024
 `endif
 
+`ifndef L15_THREADID_WIDTH
+    `define L15_THREADID_WIDTH 3
+`endif
+
     // I$
     localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
     localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
@@ -451,6 +454,8 @@ package ariane_pkg;
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
     localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
+
+    localparam int unsigned MEM_TID_WIDTH      = `L15_THREADID_WIDTH;
 `else
     // I$
     localparam int unsigned CONFIG_L1I_SIZE    = cva6_config_pkg::CVA6ConfigIcacheByteSize; // in byte
@@ -467,8 +472,13 @@ package ariane_pkg;
     localparam int unsigned DCACHE_LINE_WIDTH  = cva6_config_pkg::CVA6ConfigDcacheLineWidth; // in bit
     localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigDcacheLineWidth; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
-    localparam int unsigned DCACHE_TID_WIDTH   = cva6_config_pkg::CVA6ConfigDcacheIdWidth;
+
+    localparam int unsigned MEM_TID_WIDTH      = cva6_config_pkg::CVA6ConfigMemTidWidth;
 `endif
+
+    localparam int unsigned DCACHE_TID_WIDTH   = cva6_config_pkg::CVA6ConfigDcacheIdWidth;
+
+    localparam int unsigned WT_DCACHE_WBUF_DEPTH   = cva6_config_pkg::CVA6ConfigWtDcacheWbufDepth;
 
     // ---------------
     // EX Stage
@@ -538,7 +548,7 @@ package ariane_pkg;
 
     typedef struct packed {
         fu_t                      fu;
-        fu_op                     operator;
+        fu_op                     operation;
         riscv::xlen_t             operand_a;
         riscv::xlen_t             operand_b;
         riscv::xlen_t             imm;
@@ -634,7 +644,7 @@ package ariane_pkg;
         riscv::xlen_t                   data;
         logic [(riscv::XLEN/8)-1:0]     be;
         fu_t                            fu;
-        fu_op                           operator;
+        fu_op                           operation;
         logic [TRANS_ID_BITS-1:0]       trans_id;
     } lsu_ctrl_t;
 
@@ -686,13 +696,13 @@ package ariane_pkg;
     // ---------------
     // MMU instanciation
     // ---------------
-     localparam bit MMU_PRESENT = 1'b1;  // MMU is present
+     localparam bit MMU_PRESENT = cva6_config_pkg::CVA6ConfigMmuPresent;
 
      localparam int unsigned INSTR_TLB_ENTRIES = cva6_config_pkg::CVA6ConfigInstrTlbEntries;
      localparam int unsigned DATA_TLB_ENTRIES  = cva6_config_pkg::CVA6ConfigDataTlbEntries;
 
     // -------------------
-    // Performance counter 
+    // Performance counter
     // -------------------
     localparam bit PERF_COUNTER_EN = cva6_config_pkg::CVA6ConfigPerfCounterEn;
 

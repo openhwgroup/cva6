@@ -1,4 +1,4 @@
-// Copyright 2021 Thales DIS design services SAS
+// Copyright 2022 Thales DIS design services SAS
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ package cva6_config_pkg;
     localparam CVA6ConfigF8En = 0;
     localparam CVA6ConfigFVecEn = 0;
 
-    localparam CVA6ConfigCvxifEn = 0;
-    localparam CVA6ConfigCExtEn = 0;
-    localparam CVA6ConfigAExtEn = 1;
-    localparam CVA6ConfigBExtEn = 0;
+    localparam CVA6ConfigCvxifEn = 1;
+    localparam CVA6ConfigCExtEn = 1;
+    localparam CVA6ConfigAExtEn = 0;
+    localparam CVA6ConfigBExtEn = 1;
 
     localparam CVA6ConfigFetchUserEn = 0;
     localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
@@ -35,11 +35,11 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigRenameEn = 0;
 
-    localparam CVA6ConfigIcacheByteSize = 8192;
-    localparam CVA6ConfigIcacheSetAssoc = 2;
+    localparam CVA6ConfigIcacheByteSize = 16384;
+    localparam CVA6ConfigIcacheSetAssoc = 4;
     localparam CVA6ConfigIcacheLineWidth = 128;
-    localparam CVA6ConfigDcacheByteSize = 8192;
-    localparam CVA6ConfigDcacheSetAssoc = 2;
+    localparam CVA6ConfigDcacheByteSize = 32768;
+    localparam CVA6ConfigDcacheSetAssoc = 8;
     localparam CVA6ConfigDcacheLineWidth = 128;
 
     localparam CVA6ConfigDcacheIdWidth = 1;
@@ -50,7 +50,7 @@ package cva6_config_pkg;
     localparam CVA6ConfigNrCommitPorts = 1;
     localparam CVA6ConfigNrScoreboardEntries = 4;
 
-    localparam CVA6ConfigFPGAEn = 1;
+    localparam CVA6ConfigFPGAEn = 0;
 
     localparam CVA6ConfigNrLoadPipeRegs = 1;
     localparam CVA6ConfigNrStorePipeRegs = 0;
@@ -58,16 +58,16 @@ package cva6_config_pkg;
     localparam CVA6ConfigInstrTlbEntries = 2;
     localparam CVA6ConfigDataTlbEntries = 2;
 
-    localparam CVA6ConfigRASDepth = 2;
-    localparam CVA6ConfigBTBEntries = 32;
-    localparam CVA6ConfigBHTEntries = 128;
+    localparam CVA6ConfigRASDepth = 0;
+    localparam CVA6ConfigBTBEntries = 0;
+    localparam CVA6ConfigBHTEntries = 0;
 
-    localparam CVA6ConfigNrPMPEntries = 0;
+    localparam CVA6ConfigNrPMPEntries = 8;
 
     localparam CVA6ConfigPerfCounterEn = 0;
 
     localparam CVA6ConfigDcacheType = WT;
 
-    localparam CVA6ConfigMmuPresent = 1;
+    localparam CVA6ConfigMmuPresent = 0;
 
 endpackage

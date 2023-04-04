@@ -19,9 +19,7 @@ dependencies:
 frozen: true
 
 sources:
-  - defines:
-      WB_DCACHE: 1
-    files:
+  - files:
       - target: cv64a6_imafdc_sv39
         files:
           - core/include/cv64a6_imafdc_sv39_config_pkg.sv

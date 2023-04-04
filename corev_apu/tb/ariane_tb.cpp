@@ -15,9 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-#include "Variane_testharness.h"
 #include "verilator.h"
 #include "verilated.h"
+#include "Variane_testharness.h"
+#if (VERILATOR_VERSION_INTEGER >= 5000000)
+  // Verilator v5 adds $root wrapper that provides rootp pointer.
+  #include "Variane_testharness___024root.h"
+#endif
 #if VM_TRACE_FST
 #include "verilated_fst_c.h"
 #else
@@ -349,11 +353,17 @@ done_processing:
 
   // Preload memory.
   size_t mem_size = 0xFFFFFF;
+#if (VERILATOR_VERSION_INTEGER >= 5000000)
+  // Verilator v5: Use rootp pointer and .data() accessor.
+  memif.read(0x80000000, mem_size, (void *)top->rootp->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram.data());
+#else
+  // Verilator v4
   memif.read(0x80000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram);
+#endif
   // memif.read(0x84000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__gen_mem_user__DOT__i_tc_sram_wrapper_user__DOT__i_tc_sram__DOT__sram);
 
 #ifndef DROMAJO
-  while (!dtm->done() && !jtag->done()) {
+  while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)) {
 #else
   // the simulation gets killed by dromajo
   while (true) {
@@ -387,13 +397,17 @@ done_processing:
 
 #ifndef DROMAJO
   if (dtm->exit_code()) {
-    fprintf(stderr, "%s *** FAILED *** (code = %d) after %ld cycles\n", htif_argv[1], dtm->exit_code(), main_time);
+    fprintf(stderr, "%s *** FAILED *** (tohost = %d) after %ld cycles\n", htif_argv[1], dtm->exit_code(), main_time);
     ret = dtm->exit_code();
   } else if (jtag->exit_code()) {
-    fprintf(stderr, "%s *** FAILED *** (code = %d, seed %d) after %ld cycles\n", htif_argv[1], jtag->exit_code(), random_seed, main_time);
+    fprintf(stderr, "%s *** FAILED *** (tohost = %d, seed %d) after %ld cycles\n", htif_argv[1], jtag->exit_code(), random_seed, main_time);
     ret = jtag->exit_code();
+  } else if (top->exit_o & 0xFFFFFFFE) {
+    int exitcode = ((unsigned int) top->exit_o) >> 1;
+    fprintf(stderr, "%s *** FAILED *** (tohost = %d) after %ld cycles\n", htif_argv[1], exitcode, main_time);
+    ret = exitcode;
   } else {
-    fprintf(stderr, "%s completed after %ld cycles\n", htif_argv[1], main_time);
+    fprintf(stderr, "%s *** SUCCESS *** (tohost = 0) after %ld cycles\n", htif_argv[1], main_time);
   }
 
   if (dtm) delete dtm;

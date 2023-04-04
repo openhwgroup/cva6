@@ -115,7 +115,7 @@ module load_store_unit import ariane_pkg::*; #(
     logic                     translation_req;
     logic                     translation_valid;
     logic [riscv::VLEN-1:0]   mmu_vaddr;
-    logic [riscv::PLEN-1:0]   mmu_paddr;
+    logic [riscv::PLEN-1:0]   mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
     logic [riscv::PPNW-1:0]   dtlb_ppn;
@@ -196,8 +196,17 @@ module load_store_unit import ariane_pkg::*; #(
             .*
         );
     end else begin : gen_no_mmu
+
+        if (riscv::VLEN > riscv::PLEN) begin
+          assign mmu_vaddr_plen = mmu_vaddr[riscv::PLEN-1:0];
+          assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0];
+        end else begin
+          assign mmu_vaddr_plen = {{{riscv::PLEN-riscv::VLEN}{1'b0}}, mmu_vaddr};
+          assign fetch_vaddr_plen = {{{riscv::PLEN-riscv::VLEN}{1'b0}}, icache_areq_i.fetch_vaddr};
+        end
+
         assign  icache_areq_o.fetch_valid  = icache_areq_i.fetch_req;
-        assign  icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0];
+        assign  icache_areq_o.fetch_paddr  = fetch_vaddr_plen;
         assign  icache_areq_o.fetch_exception      = '0;
 
         assign dcache_req_ports_o[0].address_index = '0;
@@ -212,7 +221,7 @@ module load_store_unit import ariane_pkg::*; #(
 
         assign itlb_miss_o = 1'b0;
         assign dtlb_miss_o = 1'b0;
-        assign dtlb_ppn    = mmu_vaddr[riscv::PLEN-1:12];
+        assign dtlb_ppn    = mmu_vaddr_plen[riscv::PLEN-1:12];
         assign dtlb_hit    = 1'b1;
 
         assign mmu_exception = '0;
@@ -222,7 +231,7 @@ module load_store_unit import ariane_pkg::*; #(
                 mmu_paddr         <= '0;
                 translation_valid <= '0;
             end else begin
-                mmu_paddr         <=  mmu_vaddr[riscv::PLEN-1:0];
+                mmu_paddr         <=  mmu_vaddr_plen;
                 translation_valid <= translation_req;
             end
         end
@@ -338,7 +347,7 @@ module load_store_unit import ariane_pkg::*; #(
         translation_req      = 1'b0;
         mmu_vaddr            = {riscv::VLEN{1'b0}};
 
-        // check the operator to activate the right functional unit accordingly
+        // check the operation to activate the right functional unit accordingly
         unique case (lsu_ctrl.fu)
             // all loads go here
             LOAD:  begin
@@ -364,8 +373,8 @@ module load_store_unit import ariane_pkg::*; #(
     // we can generate the byte enable from the virtual address since the last
     // 12 bit are the same anyway
     // and we can always generate the byte enable from the address at hand
-    assign be_i = riscv::IS_XLEN64 ? be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operator)):
-                                     be_gen_32(vaddr_i[1:0], extract_transfer_size(fu_data_i.operator));
+    assign be_i = riscv::IS_XLEN64 ? be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operation)):
+                                     be_gen_32(vaddr_i[1:0], extract_transfer_size(fu_data_i.operation));
 
     // ------------------------
     // Misaligned Exception
@@ -384,7 +393,7 @@ module load_store_unit import ariane_pkg::*; #(
         data_misaligned = 1'b0;
 
         if (lsu_ctrl.valid) begin
-            case (lsu_ctrl.operator)
+            case (lsu_ctrl.operation)
                 // double word
                 LD, SD, FLD, FSD,
                 AMO_LRD, AMO_SCD,
@@ -459,7 +468,7 @@ module load_store_unit import ariane_pkg::*; #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operation, fu_data_i.trans_id};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),

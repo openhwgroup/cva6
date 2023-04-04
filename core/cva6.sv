@@ -46,26 +46,17 @@ module cva6 import ariane_pkg::*; #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
-`ifdef FIRESIM_TRACE
-  // firesim trace port
-  output traced_instr_pkg::trace_port_t trace_o,
-`endif
-`ifdef RVFI_TRACE
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
-`endif
   output cvxif_pkg::cvxif_req_t        cvxif_req_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
-`ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
-  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
-`else
+  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i,
   // memory side, AXI Master
   output axi_req_t                     axi_req_o,
   input  axi_rsp_t                     axi_resp_i
-`endif
 );
 
   // ------------------------------------------
@@ -720,7 +711,7 @@ module cva6 import ariane_pkg::*; #(
   // Cache Subsystem
   // -------------------
 
-`ifdef WT_DCACHE
+  if (DCACHE_TYPE == int'(cva6_config_pkg::WT)) begin
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
     .ArianeCfg            ( ArianeCfg ),
@@ -767,7 +758,7 @@ module cva6 import ariane_pkg::*; #(
     .axi_resp_i            ( axi_resp_i                  )
 `endif
   );
-`else
+  end else begin
 
   std_cache_subsystem #(
     // note: this only works with one cacheable region
@@ -816,7 +807,7 @@ module cva6 import ariane_pkg::*; #(
     .axi_resp_i            ( axi_resp_i                  )
   );
   assign dcache_commit_wbuffer_not_ni = 1'b1;
-`endif
+  end
 
   // -------------------
   // Parameter Check

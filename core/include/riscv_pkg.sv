@@ -274,7 +274,7 @@ package riscv;
     // memory management, pte for sv39
     typedef struct packed {
         logic [9:0]  reserved;
-        logic [44-1:0] ppn; // PPN length for 
+        logic [44-1:0] ppn; // PPN length for
         logic [1:0]  rsw;
         logic d;
         logic a;
@@ -288,7 +288,7 @@ package riscv;
 
     // memory management, pte for sv32
     typedef struct packed {
-        logic [22-1:0] ppn; // PPN length for 
+        logic [22-1:0] ppn; // PPN length for
         logic [1:0]  rsw;
         logic d;
         logic a;
