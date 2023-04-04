@@ -36,7 +36,7 @@ export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_INSTALL_DIR/share/verilator/
 # Check proper Verilator installation given current $PATH.
 echo PATH=\"$PATH\"
 echo "Verilator version:"
-verilator --version
+verilator --version || { echo "Error: Verilator not in \$PATH." ; return ; }
 
 # number of parallel jobs to use for make commands and simulation
 export NUM_JOBS=24
