@@ -13,25 +13,48 @@ if [ -z ${NUM_JOBS} ]; then
     NUM_JOBS=1
 fi
 
+# Ensure the location of tools is known (usually, .../core-v-verif/tools).
+if [ -z "$TOP" ]; then
+  echo "Error: location of core-v-verif 'tools' tree (\$TOP) is not defined."
+  return
+fi
+
 VERILATOR_REPO="https://github.com/verilator/verilator.git"
 VERILATOR_BRANCH="master"
 # Use the release tag instead of a full SHA1 hash.
 VERILATOR_HASH="v5.008"
-VERILATOR_PATCH="../../../cva6/regress/verilator-v5.patch"
+VERILATOR_PATCH="$TOP/../cva6/regress/verilator-v5.patch"
 
-# VERILATOR_ROOT must point to the root of the Verilator source tree.
-# This is not necessarily the installation prefix.
-# The two should be kept separate ==> use VERILATOR_INSTALL_DIR to specify
-# the installation location of Verilator.
+# Unset historical variable VERILATOR_ROOT as it collides with the build process.
+if [ -n "$VERILATOR_ROOT" ]; then
+  unset VERILATOR_ROOT
+fi
+
+# Define the default src+build location of Verilator.
+# No need to force this location in Continuous Integration scripts.
+if [ -z "$VERILATOR_BUILD_DIR" ]; then
+  export VERILATOR_BUILD_DIR=${TOP}/verilator-$VERILATOR_HASH/verilator
+fi
+
+# Define the default installation location of Verilator: one level up
+# from the source tree in the core-v-verif tree.
+# Continuous Integration may need to override this particular variable
+# to use a preinstalled build of Verilator.
+if [ -z "$VERILATOR_INSTALL_DIR" ]; then
+  export VERILATOR_INSTALL_DIR=$(dirname ${VERILATOR_BUILD_DIR})
+fi
+
+# Build and install Verilator only if not already installed at the expected
+# location $VERILATOR_INSTALL_DIR.
 if [ ! -f "$VERILATOR_INSTALL_DIR/bin/verilator" ]; then
-    echo "Building Verilator in $VERILATOR_ROOT..."
+    echo "Building Verilator in $VERILATOR_BUILD_DIR..."
     echo "Verilator will be installed in $VERILATOR_INSTALL_DIR"
     echo "VERILATOR_REPO=$VERILATOR_REPO"
     echo "VERILATOR_BRANCH=$VERILATOR_BRANCH"
     echo "VERILATOR_HASH=$VERILATOR_HASH"
     echo "VERILATOR_PATCH=$VERILATOR_PATCH"
-    mkdir -p $VERILATOR_ROOT
-    cd $VERILATOR_ROOT
+    mkdir -p $VERILATOR_BUILD_DIR
+    cd $VERILATOR_BUILD_DIR
     # Clone only if the ".git" directory does not exist.
     # Do not remove the content arbitrarily if ".git" does not exist in order
     # to preserve user content - let git fail instead.
@@ -51,3 +74,7 @@ if [ ! -f "$VERILATOR_INSTALL_DIR/bin/verilator" ]; then
 else
     echo "Using Verilator from cached directory $VERILATOR_INSTALL_DIR."
 fi
+
+# Update PATH to match the verilator installation.
+export PATH="$VERILATOR_INSTALL_DIR/bin:$PATH"
+

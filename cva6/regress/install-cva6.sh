@@ -13,33 +13,21 @@ export TOP=$ROOT_PROJECT/tools
 
 # where to install the tools
 if ! [ -n "$RISCV" ]; then
-  echo "Error: RISCV variable undefined"
+  echo "Error: RISCV variable undefined."
   return
 fi
 
-# install Verilator
-# Use historical variable VERILATOR_ROOT to check/specify VL configuration.
-if [ -z "$VERILATOR_ROOT" ]; then
-  # Verilator installation dir should be separate from the VL source root.
-  # Source code will be unpacked, built and tested in the 'verilator'
-  # subdir of the install dir.
-  export VERILATOR_ROOT=$TOP/verilator-5.008/verilator
-fi
-
-# If the installation directory of Verilator is not set,
-# default to the parent directory of the Verilator source.
-if [ -z "$VERILATOR_INSTALL_DIR" ]; then
-  export VERILATOR_INSTALL_DIR=$(dirname $VERILATOR_ROOT)
-fi
+# Install Verilator v5.
 cva6/regress/install-verilator.sh
 
-# With Verilator v5, it is (FORNOW) necessary to either maintain a copy
-# of the source+build directory at $VERILATOR_ROOT, or to unset VERILATOR_ROOT
-# so that 'verilator_bin' is searched in the PATH.  The former is not
-# applicable to Continuous Integration environments, so...
-unset VERILATOR_ROOT
+# Complain if the installation directory of Verilator still is not set
+# after running the installer.
+if [ -z "$VERILATOR_INSTALL_DIR" ]; then
+  echo "Error: VERILATOR_INSTALL_DIR variable still undefined after running Verilator installer."
+  return
+fi
 
-export PATH=$RISCV/bin:$VERILATOR_INSTALL_DIR/bin:$PATH
+export PATH=$RISCV/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
 export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_INSTALL_DIR/share/verilator/include
