@@ -177,7 +177,7 @@ module csr_regfile import ariane_pkg::*; #(
 
     // Environment Configuration Registers
     riscv::envcfg_rv_t menvcfg_q, menvcfg_d;
-    riscv::envcfg_rv_t senvcfg_q, senvcfg_d;
+    riscv::senvcfg_rv_t senvcfg_q, senvcfg_d;
 
     riscv::xlen_t dcache_q,    dcache_d;
     riscv::xlen_t icache_q,    icache_d;
@@ -330,7 +330,7 @@ module csr_regfile import ariane_pkg::*; #(
                         csr_rdata = satp_q;
                     end
                 end
-                riscv::CSR_SENVCFG:            csr_rdata = senvcfg_q;
+                riscv::CSR_SENVCFG: csr_rdata = senvcfg_q[riscv::XLEN-1:0];
                 // hypervisor mode registers
                 riscv::CSR_HSTATUS: begin
                     if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
@@ -386,8 +386,10 @@ module csr_regfile import ariane_pkg::*; #(
                         csr_rdata = hgatp_q;
                     end
                 end
-                riscv::CSR_HENVCFG:            csr_rdata = henvcfg_q;
-
+                riscv::CSR_HENVCFG: begin
+                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;
+                    else csr_rdata = henvcfg_q[riscv::XLEN-1:0];
+                end
                 // machine mode registers
                 riscv::CSR_MSTATUS:            csr_rdata = mstatus_extended;
                 riscv::CSR_MISA:               csr_rdata = ISA_CODE;
@@ -420,7 +422,8 @@ module csr_regfile import ariane_pkg::*; #(
                         csr_rdata = mtval2_q;
                     end
                 end
-                riscv::CSR_MENVCFG:            csr_rdata = menvcfg_q;
+                riscv::CSR_MENVCFG: csr_rdata = menvcfg_q[riscv::XLEN-1:0];
+                riscv::CSR_MENVCFGH: if (riscv::XLEN == 32) csr_rdata = menvcfg_q[63:32]; else read_access_exception = 1'b1;
                 // Counters and Timers
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q[riscv::XLEN-1:0];
                 riscv::CSR_MCYCLEH:            if (riscv::XLEN == 32) csr_rdata = cycle_q[63:32]; else read_access_exception = 1'b1;
@@ -870,7 +873,7 @@ module csr_regfile import ariane_pkg::*; #(
                 end
                 riscv::CSR_SENVCFG: begin
                     mask = ariane_pkg::ENVCFG_WRITE_MASK[riscv::XLEN-1:0];
-                    senvcfg_d = (senvcfg_q & ~mask) | (csr_wdata & mask);
+                    senvcfg_d[riscv::XLEN-1:0] = (senvcfg_q[riscv::XLEN-1:0] & ~mask) | (csr_wdata & mask);
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
@@ -1078,9 +1081,19 @@ module csr_regfile import ariane_pkg::*; #(
                 end
                 riscv::CSR_MENVCFG: begin
                     mask = ariane_pkg::ENVCFG_WRITE_MASK[riscv::XLEN-1:0];
-                    menvcfg_d = (menvcfg_q & ~mask) | (csr_wdata & mask);
+                    menvcfg_d[riscv::XLEN-1:0] = (menvcfg_q[riscv::XLEN-1:0] & ~mask) | (csr_wdata & mask);
                     // this instruction has side-effects
                     flush_o = 1'b1;
+                end
+                riscv::CSR_MENVCFGH: begin
+                    if (riscv::XLEN == 32) begin
+                        mask = ariane_pkg::ENVCFG_WRITE_MASK[63:32];
+                        menvcfg_d[63:32] = (menvcfg_q[63:32] & ~mask) | (csr_wdata & mask);
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end else begin
+                        update_access_exception = 1'b1;
+                    end
                 end
                 riscv::CSR_MIP: begin
                     if (~ariane_pkg::RVH) begin
@@ -1911,8 +1924,8 @@ module csr_regfile import ariane_pkg::*; #(
             mtval_q                <= {riscv::XLEN{1'b0}};
             mtval2_q               <= {riscv::XLEN{1'b0}};
             mtinst_q               <= {riscv::XLEN{1'b0}};
-            menvcfg_q              <= {riscv::XLEN{1'b0}};
-            senvcfg_q              <= {riscv::XLEN{1'b0}};
+            menvcfg_q              <= '0;
+            senvcfg_q              <= '0;
             dcache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
             icache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
             // supervisor mode registers
@@ -1931,7 +1944,7 @@ module csr_regfile import ariane_pkg::*; #(
             hcounteren_q           <= {riscv::XLEN{1'b0}};
             htval_q                <= {riscv::XLEN{1'b0}};
             htinst_q               <= {riscv::XLEN{1'b0}};
-            henvcfg_q              <= {riscv::XLEN{1'b0}};
+            henvcfg_q              <= '0;
             // virtual supervisor mode registers
             vsstatus_q              <= 64'b0;
             vsepc_q                 <= {riscv::XLEN{1'b0}};

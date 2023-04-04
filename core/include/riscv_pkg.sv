@@ -142,6 +142,15 @@ package riscv;
     } envcfg_rv_t;
 
     typedef struct packed {
+        logic [XLEN-1:8]  wpri1;  // writes preserved reads ignored
+        logic             cbze;   // not implemented - requires Zicboz extension
+        logic             cbcfe;  // not implemented - requires Zicbom extension
+        logic [1:0]       cbie;   // not implemented - requires Zicbom extension
+        logic [2:0]       wpri0;  // writes preserved reads ignored
+        logic             fiom;   // fence of I/O implies memory
+    } senvcfg_rv_t;
+
+    typedef struct packed {
         logic [ModeW-1:0] mode;
         logic [ASIDW-1:0] asid;
         logic [PPNW-1:0]  ppn;
