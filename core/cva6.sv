@@ -46,26 +46,17 @@ module cva6 import ariane_pkg::*; #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
-`ifdef FIRESIM_TRACE
-  // firesim trace port
-  output traced_instr_pkg::trace_port_t trace_o,
-`endif
-`ifdef RVFI_TRACE
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
-`endif
   output cvxif_pkg::cvxif_req_t        cvxif_req_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
-`ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
-  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
-`else
+  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i,
   // memory side, AXI Master
   output axi_req_t                     axi_req_o,
   input  axi_rsp_t                     axi_resp_i
-`endif
 );
 
   // ------------------------------------------
