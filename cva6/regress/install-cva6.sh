@@ -27,7 +27,7 @@ if [ -z "$VERILATOR_INSTALL_DIR" ]; then
   return
 fi
 
-export PATH=$RISCV/bin:$PATH
+export PATH=$RISCV/bin:$VERILATOR_INSTALL_DIR/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
 export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_INSTALL_DIR/share/verilator/include
