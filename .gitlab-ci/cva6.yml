@@ -522,8 +522,8 @@ pub_fpga-boot:
     - job: pub_fpga-build
       artifacts: true
   variables:
-    VERILATOR_ROOT: "/shares/tools/dummy/verilator" # to avoid install of verilator
-    SPIKE_ROOT: "/shares/tools/dummy/spike"  # to avoid install of spike
+    VERILATOR_INSTALL_DIR: "NO" # Skip install and checks of verilator
+    SPIKE_ROOT: "NO"  # Skip install and checks of spike
     DASHBOARD_JOB_TITLE: "FPGA Linux64 Boot "
     DASHBOARD_JOB_DESCRIPTION: "Test of Linux 64 bits boot on FPGA Genesys2"
     DASHBOARD_SORT_INDEX: 10
