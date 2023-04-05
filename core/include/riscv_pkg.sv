@@ -443,7 +443,6 @@ package riscv;
         CSR_MHPM_COUNTER_6H = 12'hB86, 
         CSR_MHPM_COUNTER_7H = 12'hB87,
         CSR_MHPM_COUNTER_8H = 12'hB88,
-        CSR_MHPM_COUNTER_8H = 12'hB88,
         CSR_MHPM_COUNTER_9H = 12'hB89,   // reserved
         CSR_MHPM_COUNTER_10H = 12'hB8A,  // reserved
         CSR_MHPM_COUNTER_11H = 12'hB8B,  // reserved
