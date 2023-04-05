@@ -38,7 +38,7 @@ module branch_unit (
         // set the jump base, for JALR we need to look at the register, for all other control flow instructions we can take the current PC
         automatic logic [riscv::VLEN-1:0] jump_base;
         // TODO(zarubaf): The ALU can be used to calculate the branch target
-        jump_base = (fu_data_i.operator == ariane_pkg::JALR) ? fu_data_i.operand_a[riscv::VLEN-1:0] : pc_i;
+        jump_base = (fu_data_i.operation == ariane_pkg::JALR) ? fu_data_i.operand_a[riscv::VLEN-1:0] : pc_i;
 
         target_address                   = {riscv::VLEN{1'b0}};
         resolve_branch_o                 = 1'b0;
@@ -53,7 +53,7 @@ module branch_unit (
         // calculate target address simple 64 bit addition
         target_address                   = $unsigned($signed(jump_base) + $signed(fu_data_i.imm[riscv::VLEN-1:0]));
         // on a JALR we are supposed to reset the LSB to 0 (according to the specification)
-        if (fu_data_i.operator == ariane_pkg::JALR) target_address[0] = 1'b0;
+        if (fu_data_i.operation == ariane_pkg::JALR) target_address[0] = 1'b0;
         // we need to put the branch target address into rd, this is the result of this unit
         branch_result_o = next_pc;
         resolved_branch_o.pc = pc_i;
@@ -65,13 +65,13 @@ module branch_unit (
             resolved_branch_o.target_address = (branch_comp_res_i) ? target_address : next_pc;
             resolved_branch_o.is_taken = branch_comp_res_i;
             // check the outcome of the branch speculation
-            if ( ariane_pkg::op_is_branch(fu_data_i.operator) ) begin
+            if ( ariane_pkg::op_is_branch(fu_data_i.operation) ) begin
                // Set the `cf_type` of the output as `branch`, this will update the BHT.
                resolved_branch_o.cf_type = ariane_pkg::Branch;
                // If the ALU comparison does not agree with the BHT prediction set the resolution as mispredicted.
                resolved_branch_o.is_mispredict  = branch_comp_res_i != (branch_predict_i.cf == ariane_pkg::Branch);
             end
-            if (fu_data_i.operator == ariane_pkg::JALR
+            if (fu_data_i.operation == ariane_pkg::JALR
                 // check if the address of the jump register is correct and that we actually predicted
                 && (branch_predict_i.cf == ariane_pkg::NoCF || target_address != branch_predict_i.predict_address)) begin
                 resolved_branch_o.is_mispredict  = 1'b1;

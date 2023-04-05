@@ -61,7 +61,7 @@ module alu import ariane_pkg::*;(
     always_comb begin
       adder_op_b_negate = 1'b0;
 
-      unique case (fu_data_i.operator)
+      unique case (fu_data_i.operation)
         // ADDER OPS
         EQ,  NE,
         SUB, SUBW,
@@ -74,7 +74,7 @@ module alu import ariane_pkg::*;(
       operand_a_bitmanip = fu_data_i.operand_a;
 
       if (ariane_pkg::BITMANIP) begin
-        unique case (fu_data_i.operator)
+        unique case (fu_data_i.operation)
           SH1ADD   : operand_a_bitmanip = fu_data_i.operand_a << 1;
           SH2ADD   : operand_a_bitmanip = fu_data_i.operand_a << 2;
           SH3ADD   : operand_a_bitmanip = fu_data_i.operand_a << 3;
@@ -105,7 +105,7 @@ module alu import ariane_pkg::*;(
     always_comb begin : branch_resolve
         // set comparison by default
         alu_branch_res_o      = 1'b1;
-        case (fu_data_i.operator)
+        case (fu_data_i.operation)
             EQ:       alu_branch_res_o = adder_z_flag;
             NE:       alu_branch_res_o = ~adder_z_flag;
             LTS, LTU: alu_branch_res_o = less;
@@ -137,9 +137,9 @@ module alu import ariane_pkg::*;(
 
     assign shift_amt = fu_data_i.operand_b;
 
-    assign shift_left = (fu_data_i.operator == SLL) | (fu_data_i.operator == SLLW);
+    assign shift_left = (fu_data_i.operation == SLL) | (fu_data_i.operation == SLLW);
 
-    assign shift_arithmetic = (fu_data_i.operator == SRA) | (fu_data_i.operator == SRAW);
+    assign shift_arithmetic = (fu_data_i.operation == SRA) | (fu_data_i.operation == SRAW);
 
     // right shifts, we let the synthesizer optimize this
     logic [riscv::XLEN:0] shift_op_a_64;
@@ -177,11 +177,11 @@ module alu import ariane_pkg::*;(
         logic sgn;
         sgn = 1'b0;
 
-        if ((fu_data_i.operator == SLTS) ||
-            (fu_data_i.operator == LTS)  ||
-            (fu_data_i.operator == GES)  ||
-            (fu_data_i.operator == MAX)  ||
-            (fu_data_i.operator == MIN))
+        if ((fu_data_i.operation == SLTS) ||
+            (fu_data_i.operation == LTS)  ||
+            (fu_data_i.operation == GES)  ||
+            (fu_data_i.operation == MAX)  ||
+            (fu_data_i.operation == MIN))
             sgn = 1'b1;
 
         less = ($signed({sgn & fu_data_i.operand_a[riscv::XLEN-1], fu_data_i.operand_a})  <  $signed({sgn & fu_data_i.operand_b[riscv::XLEN-1], fu_data_i.operand_b}));
@@ -223,7 +223,7 @@ module alu import ariane_pkg::*;(
     // -----------
     always_comb begin
         result_o   = '0;
-        unique case (fu_data_i.operator)
+        unique case (fu_data_i.operation)
             // Standard Operations
             ANDL, ANDN: result_o = fu_data_i.operand_a & operand_b_neg[riscv::XLEN:1];
             ORL, ORN  : result_o = fu_data_i.operand_a | operand_b_neg[riscv::XLEN:1];
@@ -257,7 +257,7 @@ module alu import ariane_pkg::*;(
             // rolw, roriw, rorw
             rolw = ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
             rorw = ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
-            unique case (fu_data_i.operator)
+            unique case (fu_data_i.operation)
                 // Left Shift 32 bit unsigned
                 SLLIUW: result_o = {{riscv::XLEN-32{1'b0}}, fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[5:0];
                 // Integer minimum/maximum
