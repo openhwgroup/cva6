@@ -769,7 +769,6 @@ module csr_regfile import ariane_pkg::*; #(
                         update_access_exception = 1'b1;
                     end else begin
                         vstvec_d    = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
-                        if (csr_wdata[0]) vstvec_d = {csr_wdata[riscv::XLEN-1:8], 7'b0, csr_wdata[0]};
                     end
                 end
                 riscv::CSR_VSSCRATCH: begin
@@ -845,10 +844,7 @@ module csr_regfile import ariane_pkg::*; #(
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
 
-                riscv::CSR_STVEC: begin
-                    stvec_d = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
-                    if (csr_wdata[0]) stvec_d = {csr_wdata[riscv::XLEN-1:8], 7'b0, csr_wdata[0]};
-                end
+                riscv::CSR_STVEC:              stvec_d = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
                 riscv::CSR_SCOUNTEREN:         scounteren_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
                 riscv::CSR_SSCRATCH:           sscratch_d   = csr_wdata;
                 riscv::CSR_SEPC:               sepc_d       = {csr_wdata[riscv::XLEN-1:1], 1'b0};
