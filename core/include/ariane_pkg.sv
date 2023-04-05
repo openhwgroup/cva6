@@ -341,7 +341,7 @@ package ariane_pkg;
          riscv::xlen_t       cause; // cause of exception
          riscv::xlen_t       tval;  // additional information of causing exception (e.g.: instruction causing it),
                              // address of LD/ST fault
-         riscv::xlen_t       tval2; // additional information when the causing exception in a guest exception
+         logic [riscv::GPLEN-1:0] tval2; // additional information when the causing exception in a guest exception
          riscv::xlen_t       tinst;  // transformed instruction information
          logic        gva;          // signals when a guest virtual address is written to tval
          logic        valid;

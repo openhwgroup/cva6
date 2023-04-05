@@ -288,7 +288,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                 icache_areq_o.fetch_exception = {
                     riscv::INSTR_ACCESS_FAULT,
                     {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-                    {riscv::XLEN{1'b0}},
+                    {riscv::GPLEN{1'b0}},
                     {riscv::XLEN{1'b0}},
                     1'b0,
                     1'b1
@@ -318,7 +318,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                     icache_areq_o.fetch_exception = {
                         riscv::INSTR_PAGE_FAULT,
                         {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-                        {riscv::XLEN{1'b0}},
+                        {riscv::GPLEN{1'b0}},
                         {riscv::XLEN{1'b0}},
                         1'b0,
                         1'b1
@@ -328,7 +328,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                     icache_areq_o.fetch_exception = {
                         riscv::INSTR_ACCESS_FAULT,
                         icache_areq_i.fetch_vaddr,
-                        {riscv::XLEN{1'b0}},
+                        {riscv::GPLEN{1'b0}},
                         {riscv::XLEN{1'b0}},
                         1'b0,
                         1'b1
@@ -345,7 +345,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                 if (ptw_error) icache_areq_o.fetch_exception = {
                                     riscv::INSTR_PAGE_FAULT,
                                     {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
-                                    {riscv::XLEN{1'b0}},
+                                    {riscv::GPLEN{1'b0}},
                                     {riscv::XLEN{1'b0}},
                                     1'b0,
                                     1'b1
@@ -355,7 +355,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                 else icache_areq_o.fetch_exception = {
                         riscv::INSTR_ACCESS_FAULT,
                         ptw_bad_paddr[riscv::PLEN-1:2],
-                        {riscv::XLEN{1'b0}},
+                        {riscv::GPLEN{1'b0}},
                         {riscv::XLEN{1'b0}},
                         1'b0,
                         1'b1
@@ -369,7 +369,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
             icache_areq_o.fetch_exception = {
                 riscv::INSTR_ACCESS_FAULT,
                 icache_areq_o.fetch_paddr[riscv::PLEN-1:2],
-                {riscv::XLEN{1'b0}},
+                {riscv::GPLEN{1'b0}},
                 {riscv::XLEN{1'b0}},
                 1'b0,
                 1'b1
@@ -468,7 +468,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                         lsu_exception_o = {
                             riscv::STORE_PAGE_FAULT,
                             {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q},
-                            {riscv::XLEN{1'b0}},
+                            {riscv::GPLEN{1'b0}},
                             {riscv::XLEN{1'b0}},
                             1'b0,
                             1'b1
@@ -479,7 +479,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                         lsu_exception_o = {
                             riscv::ST_ACCESS_FAULT,
                             lsu_paddr_o[riscv::PLEN-1:2],
-                            {riscv::XLEN{1'b0}},
+                            {riscv::GPLEN{1'b0}},
                             {riscv::XLEN{1'b0}},
                             1'b0,
                             1'b1
@@ -493,7 +493,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                         lsu_exception_o = {
                             riscv::LOAD_PAGE_FAULT,
                             {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q},
-                            {riscv::XLEN{1'b0}},
+                            {riscv::GPLEN{1'b0}},
                             {riscv::XLEN{1'b0}},
                             1'b0,
                             1'b1
@@ -504,7 +504,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                         lsu_exception_o = {
                             riscv::LD_ACCESS_FAULT,
                             lsu_paddr_o[riscv::PLEN-1:2],
-                            {riscv::XLEN{1'b0}},
+                            {riscv::GPLEN{1'b0}},
                             {riscv::XLEN{1'b0}},
                             1'b0,
                             1'b1
@@ -527,7 +527,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                         lsu_exception_o = {
                             riscv::STORE_PAGE_FAULT,
                             {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr},
-                            {riscv::XLEN{1'b0}},
+                            {riscv::GPLEN{1'b0}},
                             {riscv::XLEN{1'b0}},
                             1'b0,
                             1'b1
@@ -536,7 +536,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                         lsu_exception_o = {
                             riscv::LOAD_PAGE_FAULT,
                             {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr},
-                            {riscv::XLEN{1'b0}},
+                            {riscv::GPLEN{1'b0}},
                             {riscv::XLEN{1'b0}},
                             1'b0,
                             1'b1
@@ -551,7 +551,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                     lsu_exception_o = {
                         riscv::LD_ACCESS_FAULT,
                         ptw_bad_paddr[riscv::PLEN-1:2],
-                        {riscv::XLEN{1'b0}},
+                        {riscv::GPLEN{1'b0}},
                         {riscv::XLEN{1'b0}},
                         1'b0,
                         1'b1
@@ -565,7 +565,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                 lsu_exception_o = {
                     riscv::ST_ACCESS_FAULT,
                     lsu_paddr_o[riscv::PLEN-1:2],
-                    {riscv::XLEN{1'b0}},
+                    {riscv::GPLEN{1'b0}},
                     {riscv::XLEN{1'b0}},
                     1'b0,
                     1'b1
@@ -574,7 +574,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                 lsu_exception_o = {
                     riscv::LD_ACCESS_FAULT,
                     lsu_paddr_o[riscv::PLEN-1:2],
-                    {riscv::XLEN{1'b0}},
+                    {riscv::GPLEN{1'b0}},
                     {riscv::XLEN{1'b0}},
                     1'b0,
                     1'b1
