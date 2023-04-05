@@ -47,14 +47,11 @@ class uvme_cva6_env_c extends uvm_env;
    // Handle to agent switch interface
    virtual uvmt_axi_switch_intf  axi_switch_vif;
 
-   // Variable can be modified from command line, to change the AXI agent mode
-   int axi_is_passive;
 
 
    `uvm_component_utils_begin(uvme_cva6_env_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
-      `uvm_field_int(axi_is_passive, UVM_ALL_ON)
    `uvm_component_utils_end
 
 
@@ -271,15 +268,6 @@ function void uvme_cva6_env_c::retrieve_vif();
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(axi_switch_vif)), UVM_DEBUG)
    end
 
-   if(axi_is_passive == 1) begin
-      cfg.axi_cfg.is_active = UVM_PASSIVE;
-      `uvm_info("ENV", $sformatf("PASSIVE mode"), UVM_LOW)
-   end
-   else if(axi_is_passive == 10) begin
-      cfg.axi_cfg.is_active = UVM_ACTIVE;
-      `uvm_info("ENV", $sformatf("ACTIVE mode"), UVM_LOW)
-   end
-
    if(cfg.axi_cfg.is_active == UVM_PASSIVE) begin
       axi_switch_vif.active <= 0;
    end else begin
@@ -312,9 +300,7 @@ function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
    vsequencer.cvxif_sequencer     = cvxif_agent.sequencer;
-   if (cfg.axi_cfg.is_active == UVM_ACTIVE) begin
-      vsequencer.axi_vsequencer = axi_agent.vsequencer;
-   end
+   vsequencer.axi_vsequencer      = axi_agent.vsequencer;
 
 endfunction: assemble_vsequencer
 

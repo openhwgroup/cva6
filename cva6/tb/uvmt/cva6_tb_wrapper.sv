@@ -110,8 +110,6 @@ module cva6_tb_wrapper
   logic [AXI_DATA_WIDTH-1:0]    rdata;
   logic [AXI_USER_WIDTH-1:0]    ruser;
 
-
-
   //Response structs
    assign axi_ariane_resp.aw_ready = (axi_switch_vif.active) ? axi_slave.aw_ready : cva6_axi_bus.aw_ready;
    assign axi_ariane_resp.ar_ready = (axi_switch_vif.active) ? axi_slave.ar_ready : cva6_axi_bus.ar_ready;
@@ -195,7 +193,6 @@ module cva6_tb_wrapper
     .dis_mem    (axi_switch_vif.active),
     .master     (cva6_axi_bus)
   );
-
 
   axi2mem #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),

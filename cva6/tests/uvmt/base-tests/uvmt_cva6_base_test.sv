@@ -47,11 +47,15 @@ class uvmt_cva6_base_test_c extends uvm_test;
    // Default sequences
    rand uvme_cva6_reset_vseq_c  reset_vseq;
 
+   // Variable can be modified from command line, to change the AXI agent mode
+   int force_axi_mode = -1;
+
 
    `uvm_component_utils_begin(uvmt_cva6_base_test_c)
       `uvm_field_object(test_cfg , UVM_DEFAULT)
       `uvm_field_object(env_cfg  , UVM_DEFAULT)
       `uvm_field_object(env_cntxt, UVM_DEFAULT)
+      `uvm_field_int (force_axi_mode , UVM_DEFAULT)
    `uvm_component_utils_end
 
 
@@ -59,6 +63,11 @@ class uvmt_cva6_base_test_c extends uvm_test;
       env_cfg.enabled         == 1;
       env_cfg.is_active       == UVM_ACTIVE;
       env_cfg.trn_log_enabled == 1;
+   }
+
+   constraint axi_agent_cfg_cons {
+      force_axi_mode == -1  -> env_cfg.axi_cfg.is_active  == UVM_ACTIVE;
+      force_axi_mode != -1  -> env_cfg.axi_cfg.is_active  == uvm_active_passive_enum'(force_axi_mode);
    }
 
    constraint test_type_default_cons {
