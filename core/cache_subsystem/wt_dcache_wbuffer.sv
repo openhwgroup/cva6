@@ -192,8 +192,12 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   // replicate transfers shorter than a dword
   assign miss_wdata_o = riscv::IS_XLEN64 ? repData64(wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]):
                                            repData32(wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]);
-  assign miss_wuser_o = riscv::IS_XLEN64 ? repData64(wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]):
-                                           repData32(wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]);
+  if (ariane_pkg::DATA_USER_EN) begin
+    assign miss_wuser_o = riscv::IS_XLEN64 ? repData64(wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]):
+                                             repData32(wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]);
+  end else begin
+    assign miss_wuser_o = '0;
+  end
 
   assign tx_be        = riscv::IS_XLEN64 ? to_byte_enable8(bdirty_off, miss_size_o[1:0]):
                                            to_byte_enable4(bdirty_off, miss_size_o[1:0]);
@@ -483,8 +487,11 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
             wbuffer_d[wr_ptr].valid[k]       = 1'b1;
             wbuffer_d[wr_ptr].dirty[k]       = 1'b1;
             wbuffer_d[wr_ptr].data[k*8 +: 8] = req_port_i.data_wdata[k*8 +: 8];
-            if (ariane_pkg::DATA_USER_EN)
+            if (ariane_pkg::DATA_USER_EN) begin
               wbuffer_d[wr_ptr].user[k*8 +: 8] = req_port_i.data_wuser[k*8 +: 8];
+            end else begin
+              wbuffer_d[wr_ptr].user[k*8 +: 8] = '0;
+            end
           end
         end
       end

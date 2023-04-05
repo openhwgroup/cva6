@@ -133,6 +133,8 @@ end
             .addr_i   ( addr_i                    ),
             .rdata_o  ( ruser_aligned[k*64 +: 64] )
         );
+      end else begin
+        assign ruser_aligned[k*64 +: 64] = '0;
       end
     end
   end

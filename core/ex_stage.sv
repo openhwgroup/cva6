@@ -374,7 +374,7 @@ module ex_stage import ariane_pkg::*; #(
           end else begin
           if (flush_i) begin
               current_instruction_is_sfence_vma <= 1'b0;
-          end else if ((fu_data_i.operator == SFENCE_VMA) && csr_valid_i) begin
+          end else if ((fu_data_i.operation == SFENCE_VMA) && csr_valid_i) begin
               current_instruction_is_sfence_vma <= 1'b1;
           end
       end
@@ -386,7 +386,7 @@ module ex_stage import ariane_pkg::*; #(
             asid_to_be_flushed  <= '0;
               vaddr_to_be_flushed <=  '0;
     // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
-        end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operator == SFENCE_VMA) && csr_valid_i))) begin
+        end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operation == SFENCE_VMA) && csr_valid_i))) begin
               vaddr_to_be_flushed <=  rs1_forwarding_i;
               asid_to_be_flushed  <= rs2_forwarding_i[ASID_WIDTH-1:0];
         end
