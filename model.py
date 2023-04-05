@@ -85,6 +85,26 @@ class Model:
         instr.events.append(event)
         self.log.append((event, instr))
 
+    def predict_branch(self, branch_instr):
+        """Predict if branch is taken or not"""
+        return branch_instr.offset() >> 31 != 0
+
+    def predict_regjump(self, regjump_instr):
+        """Predict destination address of indirect jump"""
+        return 0 # always miss
+
+    def predict_pc(self, last):
+        """Predict next program counter depending on last issued instruction"""
+        if last.is_branch():
+            offset = last.offset()
+            if offset >> 31:
+                offset -= 1 << 32
+            taken = self.predict_branch(last)
+            return last.address + (offset if taken else last.size())
+        elif last.is_regjump():
+            return self.predict_regjump(last)
+        return None
+
     def try_issue(self, cycle):
         """Try to issue an instruction"""
         if len(self.instr_queue) == 0 or len(self.scoreboard) >= self.sb_len:
@@ -103,24 +123,18 @@ class Model:
             if instr.has_RAW_from(entry.instr) and not can_forward:
                 self.log_event_on(instr, EventKind.RAW, cycle)
                 can_issue = False
-        # Branch prediction
         if self.last_issued is not None:
-            branch_miss = False
             last = self.last_issued.instr
-            if last.is_branch():
-                offset = last.offset()
-                pjump = (offset - (1 << 32)) if (offset >> 31) else last.size()
-                paddr = last.address + pjump
-                if paddr != instr.address:
-                    branch_miss = True
-            if last.is_regjump():
-                branch_miss = True
-            if branch_miss:
-                needs_realign = instr.address & 2 != 0 and not instr.is_compressed()
-                latency = 7 if needs_realign else 6
-                if cycle < self.last_issued.issue_cycle + latency:
-                    self.log_event_on(instr, EventKind.BMISS, cycle)
-                    can_issue = False
+            # Branch prediction
+            pred = self.predict_pc(last)
+            latency = 1
+            if pred is not None and pred != instr.address:
+                self.log_event_on(instr, EventKind.BMISS, cycle)
+                latency += 5
+                if instr.address & 2 != 0 and not instr.is_compressed():
+                    latency += 1
+            if cycle < self.last_issued.issue_cycle + latency:
+                can_issue = False
         if can_issue:
             instr = self.instr_queue.pop(0)
             self.log_event_on(instr, EventKind.issue, cycle)
