@@ -175,6 +175,3 @@ module perf_counters import ariane_pkg::*; #(
    end
 
 endmodule
-
-
-
