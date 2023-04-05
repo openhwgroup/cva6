@@ -433,7 +433,8 @@ pub_wb_dcache:
     - source ci/make-tmp.sh
     - source ci/build-riscv-tests.sh
     - cd ../../../
-    - make run-asm-tests-verilator defines=WB_DCACHE
+    # Use 'verilator --no-timing' until the timing issues in corev_apu RTL are fixed.
+    - make verilator="verilator --no-timing" run-asm-tests-verilator defines=WB_DCACHE
     - cd ../..
     - python3 .gitlab-ci/scripts/report_pass.py
   artifacts:
