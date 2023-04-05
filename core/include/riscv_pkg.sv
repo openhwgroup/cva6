@@ -103,6 +103,17 @@ package riscv;
     } status_rv_t;
 
     typedef struct packed {
+        logic [7:0] mil;
+        logic [7:0] wpri;
+        logic [7:0] sil;
+        logic [7:0] uil;
+    } intstatus_rv_t;
+
+    typedef struct packed {
+        logic [7:0] th;
+    } intthresh_rv_t;
+
+    typedef struct packed {
         logic [ModeW-1:0] mode;
         logic [ASIDW-1:0] asid;
         logic [PPNW-1:0]  ppn;
@@ -354,11 +365,13 @@ package riscv;
         CSR_SIE            = 12'h104,
         CSR_STVEC          = 12'h105,
         CSR_SCOUNTEREN     = 12'h106,
+        CSR_STVT           = 12'h107,
         CSR_SSCRATCH       = 12'h140,
         CSR_SEPC           = 12'h141,
         CSR_SCAUSE         = 12'h142,
         CSR_STVAL          = 12'h143,
         CSR_SIP            = 12'h144,
+        CSR_SINTTHRESH     = 12'h147,
         CSR_SATP           = 12'h180,
         // Machine Mode CSRs
         CSR_MSTATUS        = 12'h300,
@@ -368,11 +381,14 @@ package riscv;
         CSR_MIE            = 12'h304,
         CSR_MTVEC          = 12'h305,
         CSR_MCOUNTEREN     = 12'h306,
+        CSR_MTVT           = 12'h307,
         CSR_MSCRATCH       = 12'h340,
         CSR_MEPC           = 12'h341,
         CSR_MCAUSE         = 12'h342,
         CSR_MTVAL          = 12'h343,
         CSR_MIP            = 12'h344,
+        CSR_MINTSTATUS     = 12'h346,
+        CSR_MINTTHRESH     = 12'h347,
         CSR_PMPCFG0        = 12'h3A0,
         CSR_PMPCFG1        = 12'h3A1,
         CSR_PMPCFG2        = 12'h3A2,
@@ -483,7 +499,9 @@ package riscv;
         CSR_HPM_COUNTER_28 = 12'hC1C,  // reserved
         CSR_HPM_COUNTER_29 = 12'hC1D,  // reserved
         CSR_HPM_COUNTER_30 = 12'hC1E,  // reserved
-        CSR_HPM_COUNTER_31 = 12'hC1F  // reserved
+        CSR_HPM_COUNTER_31 = 12'hC1F, // reserved
+        // CLIC CSRs (Supervisor Mode)
+        CSR_SINTSTATUS     = 12'hDB1
     } csr_reg_t;
 
     localparam logic [63:0] SSTATUS_UIE  = 'h00000001;

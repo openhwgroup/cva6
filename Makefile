@@ -85,8 +85,8 @@ ifdef spike-tandem
 endif
 
 # target takes one of the following cva6 hardware configuration:
-# cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga
-target     ?= cv64a6_imafdc_sv39
+# cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga, cv64a6_imafdcsclic_sv39
+target     ?= cv64a6_imafdcsclic_sv39
 ifndef TARGET_CFG
 	export TARGET_CFG = $(target)
 endif
@@ -152,8 +152,17 @@ src :=  corev_apu/tb/axi_adapter.sv                                             
         $(wildcard corev_apu/axi_mem_if/src/*.sv)                                    \
         corev_apu/rv_plic/rtl/rv_plic_target.sv                                      \
         corev_apu/rv_plic/rtl/rv_plic_gateway.sv                                     \
+        corev_apu/rv_plic/rtl/prim_subreg.sv                                         \
         corev_apu/rv_plic/rtl/plic_regmap.sv                                         \
         corev_apu/rv_plic/rtl/plic_top.sv                                            \
+        corev_apu/clic/src/mclic_reg_pkg.sv                                          \
+        corev_apu/clic/src/mclic_reg_top.sv                                          \
+        corev_apu/clic/src/clicint_reg_pkg.sv                                        \
+        corev_apu/clic/src/clicint_reg_top.sv                                        \
+        corev_apu/clic/src/clic_reg_adapter.sv                                       \
+        corev_apu/clic/src/clic_gateway.sv                                           \
+        corev_apu/clic/src/clic_target.sv                                            \
+        corev_apu/clic/src/clic.sv                                                   \
         corev_apu/riscv-dbg/src/dmi_cdc.sv                                           \
         corev_apu/riscv-dbg/src/dmi_jtag.sv                                          \
         corev_apu/riscv-dbg/src/dmi_jtag_tap.sv                                      \
@@ -232,11 +241,13 @@ riscv-asm-tests-list      := ci/riscv-asm-tests.list
 riscv-amo-tests-list      := ci/riscv-amo-tests.list
 riscv-mul-tests-list      := ci/riscv-mul-tests.list
 riscv-fp-tests-list       := ci/riscv-fp-tests.list
+riscv-clic-tests-list     := ci/riscv-clic-tests.list
 riscv-benchmarks-list     := ci/riscv-benchmarks.list
 riscv-asm-tests           := $(shell xargs printf '\n%s' < $(riscv-asm-tests-list)  | cut -b 1-)
 riscv-amo-tests           := $(shell xargs printf '\n%s' < $(riscv-amo-tests-list)  | cut -b 1-)
 riscv-mul-tests           := $(shell xargs printf '\n%s' < $(riscv-mul-tests-list)  | cut -b 1-)
 riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list)   | cut -b 1-)
+riscv-clic-tests          := $(shell xargs printf '\n%s' < $(riscv-clic-tests-list)   | cut -b 1-)
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
@@ -363,6 +374,11 @@ $(riscv-fp-tests): build
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(SPIKE_ROOT)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
 	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-fp-tests-$@.log
 
+$(riscv-clic-tests): build
+	$(VSIM) +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(SPIKE_ROOT)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-clic-tests-$@.log
+
 $(riscv-benchmarks): build
 	$(VSIM) +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(SPIKE_ROOT)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi   \
@@ -381,6 +397,9 @@ run-mul-tests: $(riscv-mul-tests)
 run-fp-tests: $(riscv-fp-tests)
 	$(MAKE) check-fp-tests
 
+run-clic-tests: $(riscv-clic-tests)
+	$(MAKE) check-clic-tests
+
 check-asm-tests:
 	ci/check-tests.sh tmp/riscv-asm-tests- $(shell wc -l $(riscv-asm-tests-list) | awk -F " " '{ print $1 }')
 
@@ -392,6 +411,9 @@ check-mul-tests:
 
 check-fp-tests:
 	ci/check-tests.sh tmp/riscv-fp-tests- $(shell wc -l $(riscv-fp-tests-list) | awk -F " " '{ print $1 }')
+
+check-clic-tests:
+	ci/check-tests.sh tmp/riscv-clic-tests- $(shell wc -l $(riscv-clic-tests-list) | awk -F " " '{ print $1 }')
 
 # can use -jX to run ci tests in parallel using X processes
 run-benchmarks: $(riscv-benchmarks)
@@ -499,6 +521,12 @@ $(addprefix xrun_, $(riscv-fp-tests)): xrun_comp
 	$(XRUN)	+permissive $(XRUN_RUN) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) 	\
 	-l isa/fp/$(notdir $@).log +permissive-off ++$(CVA6_HOME)/$(riscv-test-dir)/$(patsubst xrun_%,%,$@)
 
+$(addprefix xrun_, $(riscv-clic-tests)): xrun_comp
+	cd $(XRUN_RESULTS_DIR); 								\
+	mkdir -p isa/clic/;									\
+	$(XRUN)	+permissive $(XRUN_RUN) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) 	\
+	-l isa/clic/$(notdir $@).log +permissive-off ++$(CVA6_HOME)/$(riscv-test-dir)/$(patsubst xrun_%,%,$@)
+
 $(addprefix xrun_, $(riscv-benchmarks)): xrun_comp
 	cd $(XRUN_RESULTS_DIR);									\
 	mkdir -p benchmarks/;									\
@@ -518,6 +546,9 @@ xrun-mul-tests: $(addprefix xrun_, $(riscv-mul-tests))
 xrun-fp-tests: $(addprefix xrun_, $(riscv-fp-tests))
 	$(MAKE) xrun-check-fp-tests
 
+xrun-clic-tests: $(addprefix xrun_, $(riscv-clic-tests))
+	$(MAKE) xrun-check-clic-tests
+
 xrun-check-asm-tests:
 	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/asm/ $(shell wc -l $(riscv-asm-tests-list) | awk -F " " '{ print $1 }')
 
@@ -530,6 +561,8 @@ xrun-check-mul-tests:
 xrun-check-fp-tests:
 	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/fp/ $(shell wc -l $(riscv-fp-tests-list) | awk -F " " '{ print $1 }')
 
+xrun-check-clic-tests:
+	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/clic/ $(shell wc -l $(riscv-clic-tests-list) | awk -F " " '{ print $1 }')
 
 # can use -jX to run ci tests in parallel using X processes
 xrun-benchmarks: $(addprefix xrun_, $(riscv-benchmarks))
@@ -657,6 +690,9 @@ $(addsuffix -verilator,$(riscv-mul-tests)): verilate
 $(addsuffix -verilator,$(riscv-fp-tests)): verilate
 	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
 
+$(addsuffix -verilator,$(riscv-clic-tests)): verilate
+	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
+
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate
 	$(ver-library)/Variane_testharness $(riscv-benchmarks-dir)/$(subst -verilator,,$@)
 
@@ -673,6 +709,8 @@ run-fp-verilator: $(addsuffix -verilator, $(riscv-fp-tests))
 run-fp-d-verilator: $(addsuffix -verilator, $(filter rv64ud%, $(riscv-fp-tests)))
 
 run-fp-f-verilator: $(addsuffix -verilator, $(filter rv64uf%, $(riscv-fp-tests)))
+
+run-clic-verilator: $(addsuffix -verilator, $(riscv-clic-tests))
 
 run-benchmarks-verilator: $(addsuffix -verilator,$(riscv-benchmarks))
 

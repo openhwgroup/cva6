@@ -13,7 +13,10 @@ jobs:
     strategy:
       matrix:
         testcase: [asm-tests, mul, amo, fp, benchmarks]
-        target: [cv64a6_imafdc_sv39, cv32a60x, cv32a6_imafc_sv32]
+        target: [cv64a6_imafdc_sv39, cv32a60x, cv32a6_imafc_sv32, cv64a6_imafdcsclic_sv39]
+        include:
+          - testcase: clic
+            target: cv64_imafdcsclic_sv39
     env:
       RISCV: /riscv
     steps:

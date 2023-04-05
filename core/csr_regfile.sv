@@ -17,7 +17,8 @@ module csr_regfile import ariane_pkg::*; #(
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
     parameter int unsigned NrCommitPorts   = 2,
-    parameter int unsigned NrPMPEntries    = 8
+    parameter int unsigned NrPMPEntries    = 8,
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
@@ -66,8 +67,14 @@ module csr_regfile import ariane_pkg::*; #(
     output logic [AsidWidth-1:0] asid_o,
     // external interrupts
     input  logic [1:0]            irq_i,                      // external interrupt in
+    input  logic                  clic_irq_shv_i,             // selective hardware vectoring bit
     input  logic                  ipi_i,                      // inter processor interrupt -> connected to machine mode sw
     input  logic                  debug_req_i,                // debug request in
+    output logic                  clic_mode_o,                // CLIC mode
+    output riscv::intstatus_rv_t  mintstatus_o,
+    output logic [7:0]            mintthresh_o,
+    output logic [7:0]            sintthresh_o,
+    output logic                  clic_irq_ready_o,
     output logic                  set_debug_pc_o,
     // Virtualization Support
     output logic                  tvm_o,                      // trap virtual memory
@@ -119,10 +126,13 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::xlen_t dscratch0_q, dscratch0_d;
     riscv::xlen_t dscratch1_q, dscratch1_d;
     riscv::xlen_t mtvec_q,     mtvec_d;
+    riscv::xlen_t mtvt_q,      mtvt_d;
     riscv::xlen_t medeleg_q,   medeleg_d;
     riscv::xlen_t mideleg_q,   mideleg_d;
     riscv::xlen_t mip_q,       mip_d;
     riscv::xlen_t mie_q,       mie_d;
+    riscv::intstatus_rv_t mintstatus_q, mintstatus_d;
+    riscv::intthresh_rv_t mintthresh_q, mintthresh_d;
     riscv::xlen_t mcounteren_q,mcounteren_d;
     riscv::xlen_t mscratch_q,  mscratch_d;
     riscv::xlen_t mepc_q,      mepc_d;
@@ -130,7 +140,9 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::xlen_t mtval_q,     mtval_d;
 
     riscv::xlen_t stvec_q,     stvec_d;
+    riscv::intthresh_rv_t sintthresh_q, sintthresh_d;
     riscv::xlen_t scounteren_q,scounteren_d;
+    riscv::xlen_t stvt_q,      stvt_d;
     riscv::xlen_t sscratch_q,  sscratch_d;
     riscv::xlen_t sepc_q,      sepc_d;
     riscv::xlen_t scause_q,    scause_d;
@@ -163,6 +175,20 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------
     assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
+
+    if (ariane_pkg::RVSCLIC) begin : gen_clic_csr_signals
+        assign clic_mode_o  = &mtvec_q[1:0];
+        assign mintstatus_o = mintstatus_q;
+        assign mintthresh_o = mintthresh_q.th;
+        assign sintthresh_o = sintthresh_q.th;
+        assign clic_irq_ready_o = clic_mode_o & ex_i.valid & ex_i.cause[riscv::XLEN-1];
+    end else begin : gen_dummy_clic_csr_signals
+        assign clic_mode_o  = 1'b0;
+        assign mintstatus_o = '0;
+        assign mintthresh_o = '0;
+        assign sintthresh_o = '0;
+        assign clic_irq_ready_o = 1'b0;
+    end
 
     always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
@@ -215,13 +241,45 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_SSTATUS: begin
                     csr_rdata = mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
                 end
-                riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
-                riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
-                riscv::CSR_STVEC:              csr_rdata = stvec_q;
+                riscv::CSR_SIE:                csr_rdata = clic_mode_o ? '0 : (mie_q & mideleg_q);
+                riscv::CSR_SIP:                csr_rdata = clic_mode_o ? '0 : (mip_q & mideleg_q);
+                riscv::CSR_STVEC:              csr_rdata = clic_mode_o ? {stvec_q[riscv::XLEN-1:6], 6'b11} : {stvec_q[riscv::XLEN-1:6], 5'b0, stvec_q[0]};
+                riscv::CSR_SINTSTATUS: begin
+                    if (ariane_pkg::RVSCLIC) begin
+                        // sintstatus reads 0 from CLINT mode
+                        // Return a restricted view of mintstatus (sil and uil)
+                        csr_rdata = clic_mode_o ? {{riscv::XLEN-16{1'b0}}, mintstatus_q[15:0]} : '0;
+                    end else begin
+                        read_access_exception = 1'b1;
+                    end
+                end
+                riscv::CSR_SINTTHRESH: begin
+                    if (ariane_pkg::RVSCLIC) begin
+                        // sintthresh reads 0 from CLINT mode
+                        csr_rdata = clic_mode_o ? {{riscv::XLEN-8{1'b0}}, sintthresh_q} : '0;
+                    end else begin
+                        read_access_exception = 1'b1;
+                    end
+                end
                 riscv::CSR_SCOUNTEREN:         csr_rdata = scounteren_q;
+                riscv::CSR_STVT: begin
+                    if (ariane_pkg::RVSCLIC) begin
+                        // stvt reads 0 from CLINT mode
+                        csr_rdata = clic_mode_o ? stvt_q : '0;
+                    end else begin
+                        read_access_exception = 1'b1;
+                    end
+                end
                 riscv::CSR_SSCRATCH:           csr_rdata = sscratch_q;
                 riscv::CSR_SEPC:               csr_rdata = sepc_q;
-                riscv::CSR_SCAUSE:             csr_rdata = scause_q;
+                riscv::CSR_SCAUSE:             begin
+                    csr_rdata = scause_q;
+                    // In CLIC mode, reading or writing mstatus fields spp/spie in mcause is
+                    // equivalent to reading or writing the homonymous field in mstatus.
+                    if (ariane_pkg::RVSCLIC && clic_mode_o) begin
+                        csr_rdata[29:27] = {1'b0, mstatus_q.spp, mstatus_q.spie};
+                    end
+                end
                 riscv::CSR_STVAL:              csr_rdata = stval_q;
                 riscv::CSR_SATP: begin
                     // intercept reads to SATP if in S-Mode and TVM is enabled
@@ -236,14 +294,38 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MISA:               csr_rdata = ISA_CODE;
                 riscv::CSR_MEDELEG:            csr_rdata = medeleg_q;
                 riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
-                riscv::CSR_MIE:                csr_rdata = mie_q;
+                riscv::CSR_MIE:                csr_rdata = clic_mode_o ? '0 : mie_q;
                 riscv::CSR_MTVEC:              csr_rdata = mtvec_q;
                 riscv::CSR_MCOUNTEREN:         csr_rdata = mcounteren_q;
+                riscv::CSR_MTVT:               csr_rdata = mtvt_q;
                 riscv::CSR_MSCRATCH:           csr_rdata = mscratch_q;
                 riscv::CSR_MEPC:               csr_rdata = mepc_q;
-                riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
+                riscv::CSR_MCAUSE: begin
+                    csr_rdata = mcause_q;
+                    // In CLIC mode, reading or writing mstatus fields mpp/mpie in mcause is
+                    // equivalent to reading or writing the homonymous field in mstatus.
+                    if (ariane_pkg::RVSCLIC && clic_mode_o) begin
+                        csr_rdata[29:27] = {mstatus_q.mpp, mstatus_q.mpie};
+                    end
+                end
                 riscv::CSR_MTVAL:              csr_rdata = mtval_q;
-                riscv::CSR_MIP:                csr_rdata = mip_q;
+                riscv::CSR_MIP:                csr_rdata = clic_mode_o ? '0 : mip_q;
+                riscv::CSR_MINTSTATUS: begin
+                    if (ariane_pkg::RVSCLIC) begin
+                        // mintstatus reads 0 from CLINT mode
+                        csr_rdata = clic_mode_o ? {{riscv::XLEN-32{1'b0}}, mintstatus_q} : '0;
+                    end else begin
+                        read_access_exception = 1'b1;
+                    end
+                end
+                riscv::CSR_MINTTHRESH: begin
+                    if (ariane_pkg::RVSCLIC) begin
+                        // mintthresh reads 0 from CLINT mode
+                        csr_rdata = clic_mode_o ? {{riscv::XLEN-8{1'b0}}, mintthresh_q} : '0;
+                    end else begin
+                        read_access_exception = 1'b1;
+                    end
+                end
                 riscv::CSR_MVENDORID:          csr_rdata = OPENHWGROUP_MVENDORID;
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = '0; // not implemented
@@ -391,9 +473,12 @@ module csr_regfile import ariane_pkg::*; #(
         mideleg_d               = mideleg_q;
         mip_d                   = mip_q;
         mie_d                   = mie_q;
+        mintstatus_d            = mintstatus_q;
+        mintthresh_d            = mintthresh_q;
         mepc_d                  = mepc_q;
         mcause_d                = mcause_q;
         mcounteren_d            = mcounteren_q;
+        mtvt_d                  = mtvt_q;
         mscratch_d              = mscratch_q;
         mtval_d                 = mtval_q;
         dcache_d                = dcache_q;
@@ -404,7 +489,9 @@ module csr_regfile import ariane_pkg::*; #(
         sepc_d                  = sepc_q;
         scause_d                = scause_q;
         stvec_d                 = stvec_q;
+        sintthresh_d            = sintthresh_q;
         scounteren_d            = scounteren_q;
+        stvt_d                  = stvt_q;
         sscratch_d              = sscratch_q;
         stval_d                 = stval_q;
         satp_d                  = satp_q;
@@ -491,18 +578,44 @@ module csr_regfile import ariane_pkg::*; #(
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
                 riscv::CSR_SIE: begin
-                    // the mideleg makes sure only delegate-able register (and therefore also only implemented registers) are written
-                    mie_d = (mie_q & ~mideleg_q) | (csr_wdata & mideleg_q);
+                    // In CLIC mode, writes to SIE are ignored.
+                    if (!clic_mode_o) begin
+                        // the mideleg makes sure only delegate-able register (and therefore also only implemented registers) are written
+                        mie_d = (mie_q & ~mideleg_q) | (csr_wdata & mideleg_q);
+                    end
                 end
 
                 riscv::CSR_SIP: begin
-                    // only the supervisor software interrupt is write-able, iff delegated
-                    mask = riscv::MIP_SSIP & mideleg_q;
-                    mip_d = (mip_q & ~mask) | (csr_wdata & mask);
+                    // In CLIC mode, writes to SIP are ignored.
+                    if (!clic_mode_o) begin
+                        // only the supervisor software interrupt is write-able, iff delegated
+                        mask = riscv::MIP_SSIP & mideleg_q;
+                        mip_d = (mip_q & ~mask) | (csr_wdata & mask);
+                    end
                 end
 
-                riscv::CSR_STVEC:              stvec_d     = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
+                riscv::CSR_STVEC:              stvec_d     = clic_mode_o ? {csr_wdata[riscv::XLEN-1:2], 2'b11} : {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
                 riscv::CSR_SCOUNTEREN:         scounteren_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
+                riscv::CSR_STVT: begin
+                    if (ariane_pkg::RVSCLIC) begin
+                        // Writes are legal but ignored in CLINT mode
+                        if (clic_mode_o) begin
+                            stvt_d = {csr_wdata[riscv::XLEN-1:8], 8'b0};
+                        end
+                    end else begin
+                        update_access_exception = 1'b1;
+                    end
+                end
+                riscv::CSR_SINTTHRESH: begin
+                    if (ariane_pkg::RVSCLIC) begin
+                        // Writes are legal but ignored in CLINT mode
+                        if (clic_mode_o) begin
+                            sintthresh_d.th = csr_wdata[7:0];
+                        end
+                    end else begin
+                        update_access_exception = 1'b1;
+                    end
+                end
                 riscv::CSR_SSCRATCH:           sscratch_d  = csr_wdata;
                 riscv::CSR_SEPC:               sepc_d      = {csr_wdata[riscv::XLEN-1:1], 1'b0};
                 riscv::CSR_SCAUSE:             scause_d    = csr_wdata;
@@ -557,8 +670,11 @@ module csr_regfile import ariane_pkg::*; #(
                 end
                 // mask the register so that unsupported interrupts can never be set
                 riscv::CSR_MIE: begin
-                    mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP | riscv::MIP_MSIP | riscv::MIP_MTIP | riscv::MIP_MEIP;
-                    mie_d = (mie_q & ~mask) | (csr_wdata & mask); // we only support supervisor and M-mode interrupts
+                    // In CLIC mode, writes to MIE are ignored.
+                    if (!clic_mode_o) begin
+                        mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP | riscv::MIP_MSIP | riscv::MIP_MTIP | riscv::MIP_MEIP;
+                        mie_d = (mie_q & ~mask) | (csr_wdata & mask); // we only support supervisor and M-mode interrupts
+                    end
                 end
 
                 riscv::CSR_MTVEC: begin
@@ -566,16 +682,41 @@ module csr_regfile import ariane_pkg::*; #(
                     // we are in vector mode, this implementation requires the additional
                     // alignment constraint of 64 * 4 bytes
                     if (csr_wdata[0]) mtvec_d = {csr_wdata[riscv::XLEN-1:8], 7'b0, csr_wdata[0]};
+                    // we are in CLIC mode.
+                    if (ariane_pkg::RVSCLIC && &csr_wdata[1:0]) mtvec_d = {csr_wdata[riscv::XLEN-1:8], 6'b0, csr_wdata[1:0]};
                 end
                 riscv::CSR_MCOUNTEREN:         mcounteren_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
+                riscv::CSR_MTVT: begin
+                    if (ariane_pkg::RVSCLIC) begin
+                        // Writes are legal but ignored in CLINT mode
+                        if (clic_mode_o) begin
+                            mtvt_d      = {csr_wdata[riscv::XLEN-1:8], 8'b0};
+                        end
+                    end else begin
+                        update_access_exception = 1'b1;
+                    end
+                end
 
                 riscv::CSR_MSCRATCH:           mscratch_d  = csr_wdata;
                 riscv::CSR_MEPC:               mepc_d      = {csr_wdata[riscv::XLEN-1:1], 1'b0};
                 riscv::CSR_MCAUSE:             mcause_d    = csr_wdata;
                 riscv::CSR_MTVAL:              mtval_d     = csr_wdata;
                 riscv::CSR_MIP: begin
-                    mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
-                    mip_d = (mip_q & ~mask) | (csr_wdata & mask);
+                    // In CLIC mode, writes to MIP are ignored.
+                    if (!clic_mode_o) begin
+                        mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
+                        mip_d = (mip_q & ~mask) | (csr_wdata & mask);
+                    end
+                end
+                riscv::CSR_MINTTHRESH: begin
+                    if (ariane_pkg::RVSCLIC) begin
+                        // Writes are legal but ignored in CLINT mode
+                        if (clic_mode_o) begin
+                            mintthresh_d.th = csr_wdata[7:0];
+                        end
+                    end else begin
+                        update_access_exception = 1'b1;
+                    end
                 end
                 // performance counters
                 riscv::CSR_MCYCLE:             cycle_d[riscv::XLEN-1:0] = csr_wdata;
@@ -705,7 +846,8 @@ module csr_regfile import ariane_pkg::*; #(
             // a m-mode trap might be delegated if we are taking it in S mode
             // first figure out if this was an exception or an interrupt e.g.: look at bit (XLEN-1)
             // the cause register can only be $clog2(riscv::XLEN) bits long (as we only support XLEN exceptions)
-            if ((ex_i.cause[riscv::XLEN-1] && mideleg_q[ex_i.cause[$clog2(riscv::XLEN)-1:0]]) ||
+            // In CLIC mode, xideleg ceases to have effect.
+            if ((ex_i.cause[riscv::XLEN-1] && mideleg_q[ex_i.cause[$clog2(riscv::XLEN)-1:0]] && ~clic_mode_o) ||
                 (~ex_i.cause[riscv::XLEN-1] && medeleg_q[ex_i.cause[$clog2(riscv::XLEN)-1:0]])) begin
                 // traps never transition from a more-privileged mode to a less privileged mode
                 // so if we are already in M mode, stay there
@@ -721,6 +863,11 @@ module csr_regfile import ariane_pkg::*; #(
                 mstatus_d.spp  = priv_lvl_q[0];
                 // set cause
                 scause_d       = ex_i.cause;
+                // update the current and previous interrupt level
+                if (ariane_pkg::RVSCLIC && clic_mode_o && ex_i.cause[riscv::XLEN-1]) begin
+                    mintstatus_d.sil = ex_i.cause[23:16];
+                    scause_d[23:16]  = mintstatus_q.sil;
+                end
                 // set epc
                 sepc_d         = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // set mtval or stval
@@ -740,6 +887,11 @@ module csr_regfile import ariane_pkg::*; #(
                 // save the previous privilege mode
                 mstatus_d.mpp  = priv_lvl_q;
                 mcause_d       = ex_i.cause;
+                // update the current and previous interrupt level
+                if (ariane_pkg::RVSCLIC && clic_mode_o && ex_i.cause[riscv::XLEN-1]) begin
+                    mintstatus_d.mil = ex_i.cause[23:16];
+                    mcause_d[23:16]  = mintstatus_q.mil;
+                end
                 // set epc
                 mepc_d         = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // set mtval or stval
@@ -863,6 +1015,8 @@ module csr_regfile import ariane_pkg::*; #(
             mstatus_d.mpp  = riscv::PRIV_LVL_U;
             // set mpie to 1
             mstatus_d.mpie = 1'b1;
+            // restore mintstatus
+            if (ariane_pkg::RVSCLIC && clic_mode_o && mcause_q[riscv::XLEN-1]) mintstatus_d.mil = mcause_q[23:16];
         end
 
         if (sret) begin
@@ -876,6 +1030,8 @@ module csr_regfile import ariane_pkg::*; #(
             mstatus_d.spp  = 1'b0;
             // set spie to 1
             mstatus_d.spie = 1'b1;
+            // restore sintstatus
+            if (ariane_pkg::RVSCLIC && clic_mode_o && scause_q[riscv::XLEN-1]) mintstatus_d.sil = scause_q[23:16];
         end
 
         // return from debug mode
@@ -1015,10 +1171,10 @@ module csr_regfile import ariane_pkg::*; #(
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
-        trap_vector_base_o = {mtvec_q[riscv::VLEN-1:2], 2'b0};
+        trap_vector_base_o = (ariane_pkg::RVSCLIC && clic_mode_o && clic_irq_shv_i && ex_i.cause[riscv::XLEN-1]) ? {mtvt_q[riscv::VLEN-1:8], 8'b0} : {mtvec_q[riscv::VLEN-1:2], 2'b0};
         // output user mode stvec
         if (trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
-            trap_vector_base_o = {stvec_q[riscv::VLEN-1:2], 2'b0};
+            trap_vector_base_o = (ariane_pkg::RVSCLIC && clic_mode_o && clic_irq_shv_i && ex_i.cause[riscv::XLEN-1]) ? {stvt_q[riscv::VLEN-1:8], 8'b0} : {stvec_q[riscv::VLEN-1:2], 2'b0};
         end
 
         // if we are in debug mode jump to a specific address
@@ -1031,9 +1187,14 @@ module csr_regfile import ariane_pkg::*; #(
         // we want to spare the costly addition. Furthermore check to which
         // privilege level we are jumping and whether the vectored mode is
         // activated for _that_ privilege level.
+        // Note for CLIC mode: according to the spec, we should actually jump to the address
+        // stored at trap_vector_base. Since this would have significant HW implications and no
+        // significant benefit, we conciously diverge from the spec here by jumping to
+        // trap_vector_base instead.
         if (ex_i.cause[riscv::XLEN-1] &&
                 ((trap_to_priv_lvl == riscv::PRIV_LVL_M && mtvec_q[0])
-               || trap_to_priv_lvl == riscv::PRIV_LVL_S && stvec_q[0])) begin
+                || (trap_to_priv_lvl == riscv::PRIV_LVL_S && stvec_q[0])
+                || (ariane_pkg::RVSCLIC && clic_mode_o && clic_irq_shv_i))) begin
             trap_vector_base_o[7:2] = ex_i.cause[5:0];
         end
 
@@ -1129,9 +1290,12 @@ module csr_regfile import ariane_pkg::*; #(
             mideleg_q              <= {riscv::XLEN{1'b0}};
             mip_q                  <= {riscv::XLEN{1'b0}};
             mie_q                  <= {riscv::XLEN{1'b0}};
+            mintstatus_q           <= 32'b0;
+            mintthresh_q           <= 8'b0;
             mepc_q                 <= {riscv::XLEN{1'b0}};
             mcause_q               <= {riscv::XLEN{1'b0}};
             mcounteren_q           <= {riscv::XLEN{1'b0}};
+            mtvt_q                 <= {riscv::XLEN{1'b0}};
             mscratch_q             <= {riscv::XLEN{1'b0}};
             mtval_q                <= {riscv::XLEN{1'b0}};
             dcache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
@@ -1142,7 +1306,9 @@ module csr_regfile import ariane_pkg::*; #(
             sepc_q                 <= {riscv::XLEN{1'b0}};
             scause_q               <= {riscv::XLEN{1'b0}};
             stvec_q                <= {riscv::XLEN{1'b0}};
+            sintthresh_q           <= 8'b0;
             scounteren_q           <= {riscv::XLEN{1'b0}};
+            stvt_q                 <= {riscv::XLEN{1'b0}};
             sscratch_q             <= {riscv::XLEN{1'b0}};
             stval_q                <= {riscv::XLEN{1'b0}};
             satp_q                 <= {riscv::XLEN{1'b0}};
@@ -1174,9 +1340,12 @@ module csr_regfile import ariane_pkg::*; #(
             mideleg_q              <= mideleg_d;
             mip_q                  <= mip_d;
             mie_q                  <= mie_d;
+            mintstatus_q           <= mintstatus_d;
+            mintthresh_q           <= mintthresh_d;
             mepc_q                 <= mepc_d;
             mcause_q               <= mcause_d;
             mcounteren_q           <= mcounteren_d;
+            mtvt_q                 <= mtvt_d;
             mscratch_q             <= mscratch_d;
             mtval_q                <= mtval_d;
             dcache_q               <= dcache_d;
@@ -1187,7 +1356,9 @@ module csr_regfile import ariane_pkg::*; #(
             sepc_q                 <= sepc_d;
             scause_q               <= scause_d;
             stvec_q                <= stvec_d;
+            sintthresh_q           <= sintthresh_d;
             scounteren_q           <= scounteren_d;
+            stvt_q                 <= stvt_d;
             sscratch_q             <= sscratch_d;
             stval_q                <= stval_d;
             satp_q                 <= satp_d;

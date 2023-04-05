@@ -13,7 +13,9 @@
 // Description: Instruction decode, contains the logic for decode,
 //              issue and read operands.
 
-module id_stage (
+module id_stage #(
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+) (
     input  logic                          clk_i,
     input  logic                          rst_ni,
 
@@ -34,6 +36,10 @@ module id_stage (
     input  logic [2:0]                    frm_i,               // floating-point dynamic rounding mode
     input  logic [1:0]                    irq_i,
     input  ariane_pkg::irq_ctrl_t         irq_ctrl_i,
+    // from CLIC Controller
+    input  logic                          clic_mode_i,
+    input  logic                          clic_irq_req_i,
+    input  riscv::xlen_t                  clic_irq_cause_i,
     input  logic                          debug_mode_i,        // we are in debug mode
     input  logic                          tvm_i,
     input  logic                          tw_i,
@@ -72,9 +78,14 @@ module id_stage (
     // ---------------------------------------------------------
     // 2. Decode and emit instruction to issue stage
     // ---------------------------------------------------------
-    decoder decoder_i (
+    decoder #(
+        .ArianeCfg               ( ArianeCfg                       )
+    ) decoder_i (
         .debug_req_i,
         .irq_ctrl_i,
+        .clic_mode_i             ( clic_mode_i                     ),
+        .clic_irq_req_i          ( clic_irq_req_i                  ),
+        .clic_irq_cause_i        ( clic_irq_cause_i                ),
         .irq_i,
         .pc_i                    ( fetch_entry_i.address           ),
         .is_compressed_i         ( is_compressed                   ),

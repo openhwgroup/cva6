@@ -13,11 +13,11 @@ package cva6_config_pkg;
     typedef enum logic {
       WB = 0,
       WT = 1
-    } cache_type_t;
+    } cache_type_t ;
 
-    localparam CVA6ConfigXlen = 32;
+    localparam CVA6ConfigXlen = 64;
 
-    localparam CVA6ConfigFpuEn = 0;
+    localparam CVA6ConfigFpuEn = 1;
     localparam CVA6ConfigF16En = 0;
     localparam CVA6ConfigF16AltEn = 0;
     localparam CVA6ConfigF8En = 0;
@@ -27,7 +27,7 @@ package cva6_config_pkg;
     localparam CVA6ConfigCExtEn = 1;
     localparam CVA6ConfigAExtEn = 1;
     localparam CVA6ConfigBExtEn = 0;
-    localparam CVA6ConfigSclicExtEn = 0;
+    localparam CVA6ConfigSclicExtEn = 1;
 
     localparam CVA6ConfigFetchUserEn = 0;
     localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
@@ -56,8 +56,8 @@ package cva6_config_pkg;
     localparam CVA6ConfigNrLoadPipeRegs = 1;
     localparam CVA6ConfigNrStorePipeRegs = 0;
 
-    localparam CVA6ConfigInstrTlbEntries = 2;
-    localparam CVA6ConfigDataTlbEntries = 2;
+    localparam CVA6ConfigInstrTlbEntries = 16;
+    localparam CVA6ConfigDataTlbEntries = 16;
 
     localparam CVA6ConfigRASDepth = 2;
     localparam CVA6ConfigBTBEntries = 32;
@@ -67,7 +67,7 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigPerfCounterEn = 1;
 
-    localparam CVA6ConfigDcacheType = WT;
+    localparam CVA6ConfigDcacheType = WB;
 
     localparam CVA6ConfigMmuPresent = 1;
 

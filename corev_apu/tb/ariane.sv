@@ -78,6 +78,14 @@ module ariane import ariane_pkg::*; #(
     .ipi_i                ( ipi_i                     ),
     .time_irq_i           ( time_irq_i                ),
     .debug_req_i          ( debug_req_i               ),
+    .clic_irq_valid_i     ( '0                        ),
+    .clic_irq_id_i        ( 1'b0                      ),
+    .clic_irq_level_i     ( '0                        ),
+    .clic_irq_priv_i      ( riscv::PRIV_LVL_M         ),
+    .clic_irq_shv_i       ( 1'b0                      ),
+    .clic_irq_ready_o     (                           ),
+    .clic_kill_req_i      ( 1'b0                      ),
+    .clic_kill_ack_o      (                           ),
 `ifdef RVFI_TRACE
     .rvfi_o               ( rvfi_o                    ),
 `else

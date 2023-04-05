@@ -19,7 +19,9 @@
 //              This also includes all the forwarding logic
 //
 
-module decoder import ariane_pkg::*; (
+module decoder import ariane_pkg::*; #(
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+) (
     input  logic               debug_req_i,             // external debug request
     input  logic [riscv::VLEN-1:0] pc_i,                // PC from IF
     input  logic               is_compressed_i,         // is a compressed instruction
@@ -30,6 +32,10 @@ module decoder import ariane_pkg::*; (
     input  exception_t         ex_i,                    // if an exception occured in if
     input  logic [1:0]         irq_i,                   // external interrupt
     input  irq_ctrl_t          irq_ctrl_i,              // interrupt control and status information from CSRs
+    // from CLIC Controller
+    input  logic               clic_mode_i,
+    input  logic               clic_irq_req_i,
+    input  riscv::xlen_t       clic_irq_cause_i,
     // From CSR
     input  riscv::priv_lvl_t   priv_lvl_i,              // current privilege level
     input  logic               debug_mode_i,            // we are in debug mode
@@ -1237,40 +1243,45 @@ module decoder import ariane_pkg::*; (
             // -----------------
             // we decode an interrupt the same as an exception, hence it will be taken if the instruction did not
             // throw any previous exception.
-            // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
-            // for two privilege levels: Supervisor and Machine Mode
-            // Supervisor Timer Interrupt
-            if (irq_ctrl_i.mie[riscv::S_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mip[riscv::S_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
-                interrupt_cause = riscv::S_TIMER_INTERRUPT;
-            end
-            // Supervisor Software Interrupt
-            if (irq_ctrl_i.mie[riscv::S_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mip[riscv::S_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
-                interrupt_cause = riscv::S_SW_INTERRUPT;
-            end
-            // Supervisor External Interrupt
-            // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
-            // used to generate external interrupts to the supervisor
-            if (irq_ctrl_i.mie[riscv::S_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && (irq_ctrl_i.mip[riscv::S_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]] | irq_i[ariane_pkg::SupervisorIrq])) begin
-                interrupt_cause = riscv::S_EXT_INTERRUPT;
-            end
-            // Machine Timer Interrupt
-            if (irq_ctrl_i.mip[riscv::M_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mie[riscv::M_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
-                interrupt_cause = riscv::M_TIMER_INTERRUPT;
-            end
-            // Machine Mode Software Interrupt
-            if (irq_ctrl_i.mip[riscv::M_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mie[riscv::M_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
-                interrupt_cause = riscv::M_SW_INTERRUPT;
-            end
-            // Machine Mode External Interrupt
-            if (irq_ctrl_i.mip[riscv::M_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mie[riscv::M_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
-                interrupt_cause = riscv::M_EXT_INTERRUPT;
+            if (ariane_pkg::RVSCLIC && clic_mode_i && clic_irq_req_i) begin
+                interrupt_cause = clic_irq_cause_i;
+            end else begin
+                // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
+                // for two privilege levels: Supervisor and Machine Mode
+                // Supervisor Timer Interrupt
+                if (irq_ctrl_i.mie[riscv::S_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mip[riscv::S_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
+                    interrupt_cause = riscv::S_TIMER_INTERRUPT;
+                end
+                // Supervisor Software Interrupt
+                if (irq_ctrl_i.mie[riscv::S_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mip[riscv::S_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
+                    interrupt_cause = riscv::S_SW_INTERRUPT;
+                end
+                // Supervisor External Interrupt
+                // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
+                // used to generate external interrupts to the supervisor
+                if (irq_ctrl_i.mie[riscv::S_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && (irq_ctrl_i.mip[riscv::S_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]] | irq_i[ariane_pkg::SupervisorIrq])) begin
+                    interrupt_cause = riscv::S_EXT_INTERRUPT;
+                end
+                // Machine Timer Interrupt
+                if (irq_ctrl_i.mip[riscv::M_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mie[riscv::M_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
+                    interrupt_cause = riscv::M_TIMER_INTERRUPT;
+                end
+                // Machine Mode Software Interrupt
+                if (irq_ctrl_i.mip[riscv::M_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mie[riscv::M_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
+                    interrupt_cause = riscv::M_SW_INTERRUPT;
+                end
+                // Machine Mode External Interrupt
+                if (irq_ctrl_i.mip[riscv::M_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mie[riscv::M_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
+                    interrupt_cause = riscv::M_EXT_INTERRUPT;
+                end
             end
 
             if (interrupt_cause[riscv::XLEN-1] && irq_ctrl_i.global_enable) begin
                 // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
                 // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
                 // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
-                if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(riscv::XLEN)-1:0]]) begin
+                // In CLIC mode, xideleg ceases to have effect.
+                if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(riscv::XLEN)-1:0]] && !clic_mode_i) begin
                     if ((irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) begin
                         instruction_o.ex.valid = 1'b1;
                         instruction_o.ex.cause = interrupt_cause;

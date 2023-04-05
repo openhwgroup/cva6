@@ -27,6 +27,7 @@ package cva6_config_pkg;
     localparam CVA6ConfigCExtEn = 0;
     localparam CVA6ConfigAExtEn = 1;
     localparam CVA6ConfigBExtEn = 0;
+    localparam CVA6ConfigSclicExtEn = 0;
 
     localparam CVA6ConfigFetchUserEn = 0;
     localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
