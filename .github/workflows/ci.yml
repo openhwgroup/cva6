@@ -26,4 +26,4 @@ jobs:
     - name: Prepare
       run: ci/setup.sh
     - name: run tests
-      run: make run-${{ matrix.testcase}}-verilator defines=${{ matrix.cache }}
+      run: make run-${{ matrix.testcase}}-verilator target=${{ matrix.target }}
