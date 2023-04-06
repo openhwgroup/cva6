@@ -26,6 +26,7 @@ VLIB ?= vlib$(questa_version)
 VMAP ?= vmap$(questa_version)
 # verilator version
 verilator      ?= verilator
+verilator_version = $(shell $(verilator) --version | awk  '{split($$2,v,"."); print v[1]}')
 # traget option
 target-options ?=
 # additional definess
@@ -47,9 +48,12 @@ $(warning must set CVA6_REPO_DIR to point at the root of CVA6 sources -- doing i
 export CVA6_REPO_DIR = $(abspath $(root-dir))
 endif
 
-support_verilator_4 := $(shell ($(verilator) --version | grep '4\.') > /dev/null 2>&1 ; echo $$?)
-ifeq ($(support_verilator_4), 0)
+ifeq ($(verilator_version), 4)
 	verilator_threads := 1
+endif
+
+ifeq ($(verilator_version), 5)
+  verilator_5 := 1
 endif
 
 ifndef RISCV
@@ -594,6 +598,7 @@ verilate_command := $(verilator)                                                
                     -Wno-UNOPTFLAT                                                                               \
                     -Wno-BLKANDNBLK                                                                              \
                     -Wno-style                                                                                   \
+                    $(if $(verilator_5),--no-timing)                                                             \
                     $(if ($(PRELOAD)!=""), -DPRELOAD=1,)                                                         \
                     $(if $(DROMAJO), -DDROMAJO=1,)                                                               \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
