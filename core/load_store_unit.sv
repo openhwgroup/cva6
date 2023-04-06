@@ -501,7 +501,7 @@ module load_store_unit import ariane_pkg::*; #(
         misaligned_exception = {
             {riscv::XLEN{1'b0}},
             {riscv::XLEN{1'b0}},
-            {riscv::XLEN{1'b0}},
+            {riscv::GPLEN{1'b0}},
             {riscv::XLEN{1'b0}},
             1'b0,
             1'b0
@@ -547,7 +547,7 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::LD_ADDR_MISALIGNED,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
-                    {riscv::XLEN{1'b0}},
+                    {riscv::GPLEN{1'b0}},
                     lsu_ctrl.tinst,
                     ld_st_v_i,
                     1'b1
@@ -557,7 +557,7 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::ST_ADDR_MISALIGNED,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
-                    {riscv::XLEN{1'b0}},
+                    {riscv::GPLEN{1'b0}},
                     lsu_ctrl.tinst,
                     ld_st_v_i,
                     1'b1
@@ -571,7 +571,7 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::LD_ACCESS_FAULT,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
-                    {riscv::XLEN{1'b0}},
+                    {riscv::GPLEN{1'b0}},
                     lsu_ctrl.tinst,
                     ld_st_v_i,
                     1'b1
@@ -581,7 +581,7 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::ST_ACCESS_FAULT,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
-                    {riscv::XLEN{1'b0}},
+                    {riscv::GPLEN{1'b0}},
                     lsu_ctrl.tinst,
                     ld_st_v_i,
                     1'b1
@@ -595,7 +595,7 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::LOAD_GUEST_PAGE_FAULT,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
-                    {riscv::XLEN{1'b0}},
+                    {riscv::GPLEN{1'b0}},
                     lsu_ctrl.tinst,
                     ld_st_v_i,
                     1'b1
@@ -605,7 +605,7 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::STORE_GUEST_PAGE_FAULT,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
-                    {riscv::XLEN{1'b0}},
+                    {riscv::GPLEN{1'b0}},
                     lsu_ctrl.tinst,
                     ld_st_v_i,
                     1'b1
