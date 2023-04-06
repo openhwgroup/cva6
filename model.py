@@ -101,9 +101,25 @@ class Model:
                 offset -= 1 << 32
             taken = self.predict_branch(last)
             return last.address + (offset if taken else last.size())
-        elif last.is_regjump():
+        if last.is_regjump():
             return self.predict_regjump(last)
         return None
+
+    def find_data_hazards(self, instr, cycle):
+        """Detect and log data hazards"""
+        found = False
+        for entry in self.scoreboard:
+            if instr.has_WAW_from(entry.instr) and not self.has_renaming:
+                self.log_event_on(instr, EventKind.WAW, cycle)
+                found = True
+            if instr.has_WAR_from(entry.instr) and not self.has_renaming:
+                self.log_event_on(instr, EventKind.WAR, cycle)
+                found = True
+            can_forward = self.has_forwarding and entry.done
+            if instr.has_RAW_from(entry.instr) and not can_forward:
+                self.log_event_on(instr, EventKind.RAW, cycle)
+                found = True
+        return found
 
     def try_issue(self, cycle):
         """Try to issue an instruction"""
@@ -111,18 +127,8 @@ class Model:
             return
         can_issue = True
         instr = self.instr_queue[0]
-        for entry in self.scoreboard:
-            # Data hazards
-            if instr.has_WAW_from(entry.instr) and not self.has_renaming:
-                self.log_event_on(instr, EventKind.WAW, cycle)
-                can_issue = False
-            if instr.has_WAR_from(entry.instr) and not self.has_renaming:
-                self.log_event_on(instr, EventKind.WAR, cycle)
-                can_issue = False
-            can_forward = self.has_forwarding and entry.done
-            if instr.has_RAW_from(entry.instr) and not can_forward:
-                self.log_event_on(instr, EventKind.RAW, cycle)
-                can_issue = False
+        if self.find_data_hazards(instr, cycle):
+            can_issue = False
         if self.last_issued is not None:
             last = self.last_issued.instr
             # Branch prediction
