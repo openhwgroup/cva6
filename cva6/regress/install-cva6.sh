@@ -9,25 +9,46 @@
 
 # Customise this to a fast local disk
 export ROOT_PROJECT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)
-export TOP=$ROOT_PROJECT/tools
+export TOP="$ROOT_PROJECT/tools"
 
 # where to install the tools
 if ! [ -n "$RISCV" ]; then
-  echo "Error: RISCV variable undefined"
+  echo "Error: RISCV variable undefined."
   return
 fi
 
-# install Verilator
-if ! [ -n "$VERILATOR_ROOT" ]; then
-  export VERILATOR_ROOT=$TOP/verilator-4.110/
-fi
-cva6/regress/install-verilator.sh
+# Set up tool-related variables.
+export PATH="$RISCV/bin:$PATH"
+export LIBRARY_PATH="$RISCV/lib"
+export LD_LIBRARY_PATH="$RISCV/lib:$LD_LIBRARY_PATH"
+export C_INCLUDE_PATH="$RISCV/include"
+export CPLUS_INCLUDE_PATH="$RISCV/include"
 
-export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
-export LIBRARY_PATH=$RISCV/lib
-export LD_LIBRARY_PATH=$RISCV/lib
-export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
+# Install Verilator v5.
+# Set VERILATOR_INSTALL_DIR to 'NO' to skip installation and checks
+# of Verilator (useful for CI jobs not depending on Verilator in any way).
+if [ "$VERILATOR_INSTALL_DIR" != "NO" ]; then
+  cva6/regress/install-verilator.sh
+
+  # Complain if the installation directory of Verilator still is not set
+  # after running the installer.
+  if [ -z "$VERILATOR_INSTALL_DIR" ]; then
+    echo "Error: VERILATOR_INSTALL_DIR variable still undefined after running Verilator installer."
+    return
+  fi
+
+  # Verilator was set up: add Verilator paths to appropriate variables.
+  export PATH="$VERILATOR_INSTALL_DIR/bin:$PATH"
+  export C_INCLUDE_PATH="$VERILATOR_INSTALL_DIR/share/verilator/include:$C_INCLUDE_PATH"
+  export CPLUS_INCLUDE_PATH="$VERILATOR_INSTALL_DIR/share/verilator/include:$CPLUS_INCLUDE_PATH"
+
+  # Check proper Verilator installation given current $PATH.
+  echo PATH=\"$PATH\"
+  echo "Verilator version:"
+  verilator --version || { echo "Error: Verilator not in \$PATH." ; return ; }
+else
+  echo "Skipping Verilator setup on user's request (\$VERILATOR_INSTALL_DIR = \"NO\")."
+fi
 
 # number of parallel jobs to use for make commands and simulation
 export NUM_JOBS=24

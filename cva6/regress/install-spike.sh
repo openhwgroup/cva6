@@ -14,7 +14,12 @@ if [ -z ${NUM_JOBS} ]; then
     NUM_JOBS=1
 fi
 
-if [ ! -f "$SPIKE_ROOT/bin/spike"  ]; then
+# Set SPIKE_ROOT to 'NO' to skip the installation/checks of Spike altogether.
+# This is useful for CI jobs not depending on Spike in any way.
+if [ "$SPIKE_ROOT" = "NO" ]; then
+  echo "Skipping Spike setup on user's request (\$SPIKE_ROOT = \"NO\")."
+else
+  if [ ! -f "$SPIKE_ROOT/bin/spike"  ]; then
     echo "Installing Spike"
     PATCH_DIR=`pwd`/cva6/regress
     mkdir -p $SPIKE_ROOT
@@ -35,7 +40,8 @@ if [ ! -f "$SPIKE_ROOT/bin/spike"  ]; then
     ../configure --enable-commitlog --prefix="$SPIKE_ROOT"
     make -j${NUM_JOBS}
     make install
-else
-    echo "Using Spike from cached directory."
+  else
+    echo "Using Spike from cached directory $SPIKE_ROOT."
+  fi
 fi
 
