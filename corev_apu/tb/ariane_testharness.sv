@@ -812,6 +812,17 @@ module ariane_testharness #(
   assign reg_bus.error = clic_rsp.error;
   assign reg_bus.ready = clic_rsp.ready;
 
+  // coproc
+  cvxif_pkg::cvxif_req_t  cvxif_req;
+  cvxif_pkg::cvxif_resp_t cvxif_resp;
+
+  cvxif_example_coprocessor i_cvxif_coprocessor (
+    .clk_i                ( clk_i                          ),
+    .rst_ni               ( rst_ni                         ),
+    .cvxif_req_i          ( cvxif_req                      ),
+    .cvxif_resp_o         ( cvxif_resp                     )
+  );
+
   // clic
   clic #(
     .N_SOURCE  (ariane_soc::CLICNumInterruptSrc),
@@ -870,8 +881,8 @@ module ariane_testharness #(
     .clic_irq_ready_o     ( core_irq_ready      ),
     .clic_kill_req_i      ( core_irq_kill_req   ),
     .clic_kill_ack_o      ( core_irq_kill_ack   ),
-    .cvxif_req_o          (                     ),
-    .cvxif_resp_i         ( '0                  ),
+    .cvxif_req_o          ( cvxif_req           ),
+    .cvxif_resp_i         ( cvxif_resp          ),
     .l15_req_o            (                     ),
     .l15_rtrn_i           ( '0                  ),
     .axi_req_o            ( axi_ariane_req      ),
