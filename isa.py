@@ -541,7 +541,7 @@ class Instr:
         return a.rd == b.rd and a.rd != Reg.zero
 
     def has_RAW_from(self, other):
-        """b.has_RAW_from(a) if same b.rsX == a.rd"""
+        """b.has_RAW_from(a) if b.rsX == a.rd"""
         a = other.fields()
         b = self.fields()
         if not hasattr(a, 'rd') or a.rd == Reg.zero:
