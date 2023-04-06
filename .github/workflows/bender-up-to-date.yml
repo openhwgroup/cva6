@@ -1,0 +1,16 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+
+name: bender-up-to-date
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  bender-up-to-date:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Bender up-to-date
+        uses: pulp-platform/pulp-actions/bender-up-to-date@v2
