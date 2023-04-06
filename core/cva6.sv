@@ -70,6 +70,8 @@ module cva6 import ariane_pkg::*; #(
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
+  localparam NumPorts = 3;
+
   // --------------
   // PCGEN <-> CSR
   // --------------
@@ -204,7 +206,7 @@ module cva6 import ariane_pkg::*; #(
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
-  logic [4:0]               addr_csr_perf;
+  logic [11:0]              addr_csr_perf;
   riscv::xlen_t             data_csr_perf, data_perf_csr;
   logic                     we_csr_perf;
 
@@ -213,6 +215,8 @@ module cva6 import ariane_pkg::*; #(
   logic                     dtlb_miss_ex_perf;
   logic                     dcache_miss_cache_perf;
   logic                     icache_miss_cache_perf;
+  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits;
+  logic                     stall_issue;
   // --------------
   // CTRL <-> *
   // --------------
@@ -390,6 +394,8 @@ module cva6 import ariane_pkg::*; #(
     .we_fpr_i                   ( we_fpr_commit_id             ),
     .commit_instr_o             ( commit_instr_id_commit       ),
     .commit_ack_i               ( commit_ack                   ),
+    // Performance Counters
+    .stall_issue_o              ( stall_issue                  ),
     //RVFI
     .lsu_addr_i                 ( lsu_addr                     ),
     .lsu_rmask_i                ( lsu_rmask                    ),
@@ -616,28 +622,36 @@ module cva6 import ariane_pkg::*; #(
   // Performance Counters
   // ------------------------
   if (PERF_COUNTER_EN) begin: gen_perf_counter
-    perf_counters i_perf_counters (
-      .clk_i             ( clk_i                  ),
-      .rst_ni            ( rst_ni                 ),
-      .debug_mode_i      ( debug_mode             ),
-      .addr_i            ( addr_csr_perf          ),
-      .we_i              ( we_csr_perf            ),
-      .data_i            ( data_csr_perf          ),
-      .data_o            ( data_perf_csr          ),
-      .commit_instr_i    ( commit_instr_id_commit ),
-      .commit_ack_i      ( commit_ack             ),
+  perf_counters #(
+    .NumPorts            ( NumPorts                  )
+  ) perf_counters_i (
+    .clk_i               ( clk_i                     ),
+    .rst_ni              ( rst_ni                    ),
+    .debug_mode_i        ( debug_mode                ),
+    .addr_i              ( addr_csr_perf             ),   
+    .we_i                ( we_csr_perf               ),
+    .data_i              ( data_csr_perf             ),
+    .data_o              ( data_perf_csr             ),
+    .commit_instr_i      ( commit_instr_id_commit    ),
+    .commit_ack_i        ( commit_ack                ),
 
-      .l1_icache_miss_i  ( icache_miss_cache_perf ),
-      .l1_dcache_miss_i  ( dcache_miss_cache_perf ),
-      .itlb_miss_i       ( itlb_miss_ex_perf      ),
-      .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
-      .sb_full_i         ( sb_full                ),
-      .if_empty_i        ( ~fetch_valid_if_id     ),
-      .ex_i              ( ex_commit              ),
-      .eret_i            ( eret                   ),
-      .resolved_branch_i ( resolved_branch        )
-    );
-  end
+    .l1_icache_miss_i    ( icache_miss_cache_perf    ),
+    .l1_dcache_miss_i    ( dcache_miss_cache_perf    ),
+    .itlb_miss_i         ( itlb_miss_ex_perf         ),
+    .dtlb_miss_i         ( dtlb_miss_ex_perf         ),
+    .sb_full_i           ( sb_full                   ),
+    .if_empty_i          ( ~fetch_valid_if_id        ),
+    .ex_i                ( ex_commit                 ),
+    .eret_i              ( eret                      ),
+    .resolved_branch_i   ( resolved_branch           ),
+    .branch_exceptions_i ( flu_exception_ex_id       ),
+    .l1_icache_access_i  ( icache_dreq_if_cache      ),
+    .l1_dcache_access_i  ( dcache_req_ports_ex_cache ),
+    .miss_vld_bits_i     ( miss_vld_bits             ), 
+    .i_tlb_flush_i       ( flush_tlb_ctrl_ex         ),   
+    .stall_issue_i       ( stall_issue               )
+  );
+ end
 
   // ------------
   // Controller
@@ -679,6 +693,7 @@ module cva6 import ariane_pkg::*; #(
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
     .ArianeCfg            ( ArianeCfg ),
+    .NumPorts             ( NumPorts  ),
     .AxiAddrWidth         ( AxiAddrWidth ),
     .AxiDataWidth         ( AxiDataWidth ),
     .AxiIdWidth           ( AxiIdWidth ),
@@ -705,6 +720,7 @@ module cva6 import ariane_pkg::*; #(
     .dcache_amo_resp_o     ( amo_resp                    ),
     // from PTW, Load Unit  and Store Unit
     .dcache_miss_o         ( dcache_miss_cache_perf      ),
+    .miss_vld_bits_o       ( miss_vld_bits               ),
     .dcache_req_ports_i    ( dcache_req_ports_ex_cache   ),
     .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
     // write buffer status

@@ -15,6 +15,7 @@
 
 module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter int unsigned                 AxiDataWidth       = 0,
+  parameter int unsigned                 NumPorts           = 3,    // number of miss ports
   // ID to be used for read and AMO transactions.
   // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
   parameter logic [CACHE_ID_WIDTH-1:0]   RdAmoTxId          = 1,
@@ -40,15 +41,14 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  dcache_req_i_t [2:0]            req_ports_i,
   output dcache_req_o_t [2:0]            req_ports_o,
 
+  output logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits_o,
+
   input  logic                           mem_rtrn_vld_i,
   input  dcache_rtrn_t                   mem_rtrn_i,
   output logic                           mem_data_req_o,
   input  logic                           mem_data_ack_i,
   output dcache_req_t                    mem_data_o
 );
-
-  // LD unit and PTW
-  localparam NumPorts = 3;
 
   // miss unit <-> read controllers
   logic cache_en;
@@ -80,7 +80,6 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [NumPorts-1:0][riscv::XLEN-1:0]         miss_wdata;
   logic [NumPorts-1:0][DCACHE_USER_WIDTH-1:0]   miss_wuser;
   logic [NumPorts-1:0][riscv::PLEN-1:0]         miss_paddr;
-  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
   logic [NumPorts-1:0][2:0]                     miss_size;
   logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]      miss_id;
   logic [NumPorts-1:0]                          miss_replay;
@@ -137,7 +136,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
     .miss_wdata_i       ( miss_wdata         ),
     .miss_wuser_i       ( miss_wuser         ),
     .miss_paddr_i       ( miss_paddr         ),
-    .miss_vld_bits_i    ( miss_vld_bits      ),
+    .miss_vld_bits_i    ( miss_vld_bits_o    ),
     .miss_size_i        ( miss_size          ),
     .miss_id_i          ( miss_id            ),
     .miss_replay_o      ( miss_replay        ),
@@ -190,7 +189,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
       .miss_we_o       ( miss_we       [k] ),
       .miss_wdata_o    ( miss_wdata    [k] ),
       .miss_wuser_o    ( miss_wuser    [k] ),
-      .miss_vld_bits_o ( miss_vld_bits [k] ),
+      .miss_vld_bits_o ( miss_vld_bits_o[k]),
       .miss_paddr_o    ( miss_paddr    [k] ),
       .miss_nc_o       ( miss_nc       [k] ),
       .miss_size_o     ( miss_size     [k] ),
@@ -238,7 +237,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
     .miss_we_o       ( miss_we       [2]   ),
     .miss_wdata_o    ( miss_wdata    [2]   ),
     .miss_wuser_o    ( miss_wuser    [2]   ),
-    .miss_vld_bits_o ( miss_vld_bits [2]   ),
+    .miss_vld_bits_o ( miss_vld_bits_o[2]  ),
     .miss_paddr_o    ( miss_paddr    [2]   ),
     .miss_nc_o       ( miss_nc       [2]   ),
     .miss_size_o     ( miss_size     [2]   ),

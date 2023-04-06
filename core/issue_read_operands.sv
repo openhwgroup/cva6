@@ -70,13 +70,15 @@ module issue_read_operands import ariane_pkg::*; #(
     input  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_i,
     input  logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_i,
     input  logic [NR_COMMIT_PORTS-1:0]             we_gpr_i,
-    input  logic [NR_COMMIT_PORTS-1:0]             we_fpr_i
+    input  logic [NR_COMMIT_PORTS-1:0]             we_fpr_i,
+
+    output logic                                   stall_issue_o  // stall signal, we do not want to fetch any more entries
     // committing instruction instruction
     // from scoreboard
     // input  scoreboard_entry     commit_instr_i,
     // output logic                commit_ack_o
 );
-    logic stall;   // stall signal, we do not want to fetch any more entries
+    logic stall;   
     logic fu_busy; // functional unit is busy
     riscv::xlen_t    operand_a_regfile, operand_b_regfile;  // operands coming from regfile
     rs3_len_t operand_c_regfile; // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
@@ -128,6 +130,7 @@ module issue_read_operands import ariane_pkg::*; #(
     assign fpu_rm_o            = fpu_rm_q;
     assign cvxif_valid_o       = CVXIF_PRESENT ? cvxif_valid_q : '0;
     assign cvxif_off_instr_o   = CVXIF_PRESENT ? cvxif_off_instr_q : '0;
+    assign stall_issue_o       = stall;
     // ---------------
     // Issue Stage
     // ---------------
