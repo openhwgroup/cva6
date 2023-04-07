@@ -139,7 +139,8 @@ endif
 
 
 # this list contains the standalone components
-src :=  corev_apu/tb/axi_adapter.sv                                                  \
+src :=  core/include/$(target)_config_pkg.sv                                         \
+        corev_apu/tb/axi_adapter.sv                                                  \
         corev_apu/tb/ariane.sv                                                       \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
         $(wildcard corev_apu/clint/*.sv)                                             \
@@ -218,7 +219,7 @@ fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/b
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
-tbs := corev_apu/tb/ariane_tb.sv corev_apu/tb/ariane_testharness.sv
+tbs := core/include/$(target)_config_pkg.sv corev_apu/tb/ariane_tb.sv corev_apu/tb/ariane_testharness.sv
 tbs := $(addprefix $(root-dir), $(tbs))
 
 # RISCV asm tests and benchmark setup (used for CI)

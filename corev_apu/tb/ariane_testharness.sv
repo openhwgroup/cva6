@@ -117,7 +117,7 @@ module ariane_testharness #(
   assign debug_req_valid     = (jtag_enable[0]) ? jtag_req_valid     : dmi_req_valid;
   assign debug_resp_ready    = (jtag_enable[0]) ? jtag_resp_ready    : dmi_resp_ready;
   assign debug_req           = (jtag_enable[0]) ? jtag_dmi_req       : dmi_req;
-  if (ariane_pkg::RVFI_TRACE) begin
+  if (ariane_pkg::RVFI) begin
     assign exit_o              = (jtag_enable[0]) ? jtag_exit          : rvfi_exit;
   end else begin
     assign exit_o              = (jtag_enable[0]) ? jtag_exit          : dmi_exit;
@@ -632,7 +632,7 @@ module ariane_testharness #(
     .irq_i                ( irqs                ),
     .ipi_i                ( ipi                 ),
     .time_irq_i           ( timer_irq           ),
-`ifdef RVFI_TRACE
+`ifdef RVFI_PORT
     .rvfi_o               ( rvfi                ),
 `endif
 // Disable Debug when simulating with Spike

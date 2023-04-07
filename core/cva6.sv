@@ -958,7 +958,7 @@ module cva6 import ariane_pkg::*; #(
 `endif // VERILATOR
 //pragma translate_on
 
-  if (RVFI_TRACE) begin
+  if (ariane_pkg::RVFI) begin
     always_comb begin
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
         logic exception, mem_exception;

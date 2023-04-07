@@ -663,7 +663,7 @@ package ariane_pkg;
     // ID/EX/WB Stage
     // ---------------
 
-    localparam RVFI_TRACE = cva6_config_pkg::CVA6ConfigRvfiTrace;
+    localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
 
     typedef struct packed {
         logic [riscv::VLEN-1:0]   pc;            // PC of instruction
