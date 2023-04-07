@@ -12,7 +12,12 @@ from matplotlib import pyplot as plt
 
 from isa import Instr
 
-EventKind = Enum('EventKind', ['WAW', 'WAR', 'RAW', 'SAL', 'BMISS', 'issue', 'done', 'commit'])
+EventKind = Enum('EventKind', [
+    'WAW', 'WAR', 'RAW',
+    'BMISS', 'BHIT',
+    'STRUCT',
+    'issue', 'done', 'commit',
+])
 
 class Event:
     """Represents an event on an instruction"""
@@ -121,6 +126,17 @@ class Model:
                 found = True
         return found
 
+    def find_structural_hazard(self, instr, cycle):
+        """Detect and long structural hazards"""
+        found = False
+        for entry in self.scoreboard:
+            if not entry.done:
+                if entry.instr.is_muldiv() and not instr.is_muldiv():
+                    found = True
+        if found:
+            self.log_event_on(instr, EventKind.STRUCT, cycle)
+        return found
+
     def try_issue(self, cycle):
         """Try to issue an instruction"""
         if len(self.instr_queue) == 0 or len(self.scoreboard) >= self.sb_len:
@@ -128,6 +144,8 @@ class Model:
         can_issue = True
         instr = self.instr_queue[0]
         if self.find_data_hazards(instr, cycle):
+            can_issue = False
+        if self.find_structural_hazard(instr, cycle):
             can_issue = False
         if self.last_issued is not None:
             last = self.last_issued.instr
