@@ -108,7 +108,9 @@ void abort()
 
 void printstr(const char* s)
 {
+#if !NOPRINT
   syscall(SYS_write, 1, (uintptr_t)s, strlen(s));
+#endif
 }
 
 void __attribute__((weak)) thread_entry(int cid, int nc)
@@ -157,6 +159,7 @@ void _init(int cid, int nc)
 #undef putchar
 int putchar(int ch)
 {
+#if !NOPRINT
   static __thread char buf[64] __attribute__((aligned(64)));
   static __thread int buflen = 0;
 
@@ -167,6 +170,7 @@ int putchar(int ch)
     syscall(SYS_write, 1, (uintptr_t)buf, buflen);
     buflen = 0;
   }
+#endif
 
   return 0;
 }
