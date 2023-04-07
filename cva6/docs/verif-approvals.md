@@ -48,30 +48,30 @@ Each issue has to be assigned.
 
 ## ISACOV
 
-| Task            | Date       | Approved by           | Commit hash  |
-| --------------- | ---------- | --------------------- | ------------ |
-| User Manual     | YYYY-MM-DD | First name, Last name | 8 characters |
-| DV plan         | YYYY-MM-DD | First name, Last name | 8 characters |
-| Test bench      | YYYY-MM-DD | First name, Last name | 8 characters |
-| Coverage        | YYYY-MM-DD | First name, Last name | 8 characters |
-| Assigned Issues | YYYY-MM-DD | First name, Last name | 8 characters |
+| Task            | Date       | Owner                 | Approved by           | Commit hash  | link to extra information (GitHub issue, doc,..) |
+| --------------- | ---------- | --------------------- | --------------------- | ------------ | ------------------------------------------------ |
+| User Manual     | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| DV plan         | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| Test bench      | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| Coverage        | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| Assigned Issues | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
 
 ## CV-X-IF
 
-| Task            | Date       | Approved by           | Commit hash  |
-| --------------- | ---------- | --------------------- | ------------ |
-| User Manual     | YYYY-MM-DD | First name, Last name | 8 characters |
-| DV plan         | YYYY-MM-DD | First name, Last name | 8 characters |
-| Test bench      | YYYY-MM-DD | First name, Last name | 8 characters |
-| Coverage        | YYYY-MM-DD | First name, Last name | 8 characters |
-| Assigned Issues | YYYY-MM-DD | First name, Last name | 8 characters |
+| Task            | Date       | Owner                 | Approved by           | Commit hash  | link to extra information (GitHub issue, doc,..) |
+| --------------- | ---------- | --------------------- | --------------------- | ------------ | ------------------------------------------------ |
+| User Manual     | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| DV plan         | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| Test bench      | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| Coverage        | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| Assigned Issues | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
 
 ## AXI
 
-| Task            | Date       | Approved by           | Commit hash  |
-| --------------- | ---------- | --------------------- | ------------ |
-| User Manual     | YYYY-MM-DD | First name, Last name | 8 characters |
-| DV plan         | YYYY-MM-DD | First name, Last name | 8 characters |
-| Test bench      | YYYY-MM-DD | First name, Last name | 8 characters |
-| Coverage        | YYYY-MM-DD | First name, Last name | 8 characters |
-| Assigned Issues | YYYY-MM-DD | First name, Last name | 8 characters |
+| Task            | Date       | Owner                 | Approved by           | Commit hash  | link to extra information (GitHub issue, doc,..) |
+| --------------- | ---------- | --------------------- | --------------------- | ------------ | ------------------------------------------------ |
+| User Manual     | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| DV plan         | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| Test bench      | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| Coverage        | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| Assigned Issues | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
