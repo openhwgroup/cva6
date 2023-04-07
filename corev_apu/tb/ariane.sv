@@ -39,7 +39,7 @@ module ariane import ariane_pkg::*; #(
 `ifdef RVFI_PORT
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
+  output ariane_pkg::rvfi_port_t       rvfi_o,
 `endif
 `ifdef PITON_ARIANE
   // L15 (memory side)

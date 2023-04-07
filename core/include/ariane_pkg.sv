@@ -707,6 +707,11 @@ package ariane_pkg;
     // -------------------
     localparam bit PERF_COUNTER_EN = cva6_config_pkg::CVA6ConfigPerfCounterEn;
 
+    // -------------------
+    // RVFI
+    // -------------------
+    typedef rvfi_pkg::rvfi_instr_t [NR_COMMIT_PORTS-1:0] rvfi_port_t;
+
     // --------------------
     // Atomics
     // --------------------

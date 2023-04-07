@@ -36,11 +36,11 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv
 
 ${CVA6_REPO_DIR}/core/include/${TARGET_CFG}_config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
+${CVA6_REPO_DIR}/common/local/rvfi/rvfi_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_dm_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_pkg.sv
 // TODO: ariane_axi_pkg is dependent on this.
 ${CVA6_REPO_DIR}/vendor/pulp-platform/axi/src/axi_pkg.sv
-${CVA6_REPO_DIR}/core/include/ariane_rvfi_pkg.sv
 
 // Packages
 ${CVA6_REPO_DIR}/core/include/ariane_axi_pkg.sv

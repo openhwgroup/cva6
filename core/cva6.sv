@@ -48,7 +48,7 @@ module cva6 import ariane_pkg::*; #(
   input  logic                         debug_req_i,  // debug request (async)
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
+  output ariane_pkg::rvfi_port_t       rvfi_o,
   output cvxif_pkg::cvxif_req_t        cvxif_req_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
   // L15 (memory side)
