@@ -125,7 +125,7 @@ sources:
       #     - vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
       # Top-level source files (not necessarily instantiated at the top of the cva6).
-      - core/ariane.sv
+      - corev_apu/tb/ariane.sv
       - core/cva6.sv
       - core/alu.sv
       # Note: depends on fpnew_pkg, above
@@ -180,7 +180,7 @@ sources:
       - core/cache_subsystem/cache_ctrl.sv
       - core/cache_subsystem/amo_alu.sv
       - core/cache_subsystem/wt_l15_adapter.sv
-      - corev_apu/tb/axi_adapter.sv
+      - core/cache_subsystem/axi_adapter.sv
       - core/cache_subsystem/miss_handler.sv
       - core/cache_subsystem/std_nbdcache.sv
       - core/cache_subsystem/cva6_icache_axi_wrapper.sv
