@@ -1,0 +1,53 @@
+!Feature
+next_elt_id: 1
+name: machineScratch(MSCRATCH)
+id: 0
+display_order: 0
+subfeatures: !!omap
+- 000_MSCRATCH: !Subfeature
+    name: 000_MSCRATCH
+    tag: VP_csr-test-ident_F000_S000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_csr-test-ident_F000_S000_I000
+        description: "To verify the Power-on Reset value for MSCRATCH CSR.\n \nAddress\
+          \ Offset : 0x340\nWidth (bits) : 32\nAccess Type : RW\nReset Value : 0x00000000\n\
+          priviliged mode : Machine"
+        reqt_doc: riscv-privileged-20211203
+        ref_mode: section
+        ref_page: ''
+        ref_section: 3.1.13
+        ref_viewer: firefox
+        verif_goals: Read MSCRATCH CSR to check default POR value that should be equal
+          to 0x00000000.
+        pfc: 3
+        test_type: 1
+        cov_method: 10
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_csr-test-ident_F000_S000_I001
+        description: Verifying R/W access of a MSCRATCH CSR by writing random valid
+          data and Read back CSR values to check correctness.
+        reqt_doc: riscv-privileged-20211203
+        ref_mode: section
+        ref_page: ''
+        ref_section: 3.1.13
+        ref_viewer: firefox
+        verif_goals: The read values of MSCRATCH CSR should matches with written random
+          data values.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
