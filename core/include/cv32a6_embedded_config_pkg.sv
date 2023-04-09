@@ -69,8 +69,13 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigMmuPresent = 0;
 
-    // RVFI_PORT define conditions cva6 port at instantiation level
-    `define RVFI_PORT 1
-    localparam CVA6ConfigRvfiTrace = `RVFI_PORT;
+    `define RVFI_PORT
+
+    // Do not modify
+    `ifdef RVFI_PORT
+       localparam CVA6ConfigRvfiTrace = 1;
+    `else
+       localparam CVA6ConfigRvfiTrace = 0;
+    `endif
 
 endpackage
