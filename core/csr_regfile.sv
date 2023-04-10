@@ -124,7 +124,6 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::status_rv_t    vsstatus_q,  vsstatus_d;
 
     riscv::xlen_t         mstatus_extended;
-    riscv::xlen_t         hstatus_extended;
     riscv::xlen_t         vsstatus_extended;
     riscv::satp_t         vsatp_q, vsatp_d;
     riscv::hgatp_t        hgatp_q, hgatp_d;
@@ -208,11 +207,9 @@ module csr_regfile import ariane_pkg::*; #(
     assign mstatus_extended  = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
     if(ariane_pkg::RVH) begin
-        assign hstatus_extended  = hstatus_q[riscv::XLEN-1:0];
         assign vsstatus_extended = riscv::IS_XLEN64 ? vsstatus_q[riscv::XLEN-1:0] :
                                 {vsstatus_q.sd, vsstatus_q.wpri3[7:0], vsstatus_q[22:0]};
-    end else begin 
-        assign hstatus_extended  = '0;
+    end else begin
         assign vsstatus_extended = '0;
     end
 
@@ -334,7 +331,7 @@ module csr_regfile import ariane_pkg::*; #(
                 // hypervisor mode registers
                 riscv::CSR_HSTATUS: begin
                     if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
-                    else csr_rdata = hstatus_extended;
+                    else csr_rdata = hstatus_q[riscv::XLEN-1:0];
                 end
                 riscv::CSR_HEDELEG: begin
                     if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
