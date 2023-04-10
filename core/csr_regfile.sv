@@ -204,7 +204,7 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------
     // CSR Read logic
     // ----------------
-    assign mstatus_extended  = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
+    assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
     if(ariane_pkg::RVH) begin
         assign vsstatus_extended = riscv::IS_XLEN64 ? vsstatus_q[riscv::XLEN-1:0] :
@@ -594,8 +594,8 @@ module csr_regfile import ariane_pkg::*; #(
         dscratch1_d             = dscratch1_q;
         mstatus_d               = mstatus_q;
         if(ariane_pkg::RVH) begin
-            hstatus_d               = hstatus_q;
-            vsstatus_d              = vsstatus_q;
+            hstatus_d           = hstatus_q;
+            vsstatus_d          = vsstatus_q;
         end
 
         // check whether we come out of reset
@@ -620,20 +620,19 @@ module csr_regfile import ariane_pkg::*; #(
         mscratch_d              = mscratch_q;
         mtval_d                 = mtval_q;
         if(ariane_pkg::RVH) begin
-            mtinst_d                = mtinst_q;
-            mtval2_d                = mtval2_q;
+            mtinst_d            = mtinst_q;
+            mtval2_d            = mtval2_q;
         end
         dcache_d                = dcache_q;
         icache_d                = icache_q;
 
         if(ariane_pkg::RVH) begin
-            vsstatus_d              = vsstatus_q;
-            vstvec_d                = vstvec_q;
-            vsscratch_d             = vsscratch_q;
-            vsepc_d                 = vsepc_q;
-            vscause_d               = vscause_q;
-            vstval_d                = vstval_q;
-            vsatp_d                 = vsatp_q;
+            vstvec_d            = vstvec_q;
+            vsscratch_d         = vsscratch_q;
+            vsepc_d             = vsepc_q;
+            vscause_d           = vscause_q;
+            vstval_d            = vstval_q;
+            vsatp_d             = vsatp_q;
         end
 
         sepc_d                  = sepc_q;
@@ -645,14 +644,14 @@ module csr_regfile import ariane_pkg::*; #(
         satp_d                  = satp_q;
 
         if(ariane_pkg::RVH) begin
-            hedeleg_d               = hedeleg_q;
-            hideleg_d               = hideleg_q;
-            hgeie_d                 = hgeie_q;
-            hgatp_d                 = hgatp_q;
-            hcounteren_d            = hcounteren_q;
-            htval_d                 = htval_q;
-            htinst_d                = htinst_q;
-            henvcfg_d               = henvcfg_q;
+            hedeleg_d           = hedeleg_q;
+            hideleg_d           = hideleg_q;
+            hgeie_d             = hgeie_q;
+            hgatp_d             = hgatp_q;
+            hcounteren_d        = hcounteren_q;
+            htval_d             = htval_q;
+            htinst_d            = htinst_q;
+            henvcfg_d           = henvcfg_q;
         end
 
         menvcfg_d               = menvcfg_q;
@@ -1274,7 +1273,7 @@ module csr_regfile import ariane_pkg::*; #(
                     // so if we are already in M mode, stay there
                     trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
                 end else if ((ex_i.cause[riscv::XLEN-1] && hideleg_q[ex_i.cause[$clog2(riscv::XLEN)-1:0]]) ||
-                        (~ex_i.cause[riscv::XLEN-1] && hedeleg_q[ex_i.cause[$clog2(riscv::XLEN)-1:0]])) begin
+                             (~ex_i.cause[riscv::XLEN-1] && hedeleg_q[ex_i.cause[$clog2(riscv::XLEN)-1:0]])) begin
                     trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
                     // trap to VS only if it is  the currently active mode
                     trap_to_v   = v_q;
@@ -1285,7 +1284,7 @@ module csr_regfile import ariane_pkg::*; #(
                     // traps never transition from a more-privileged mode to a less privileged mode
                     // so if we are already in M mode, stay there
                     trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
-            end
+                end
             end
 
             // trap to supervisor mode
@@ -1939,13 +1938,13 @@ module csr_regfile import ariane_pkg::*; #(
             htinst_q               <= {riscv::XLEN{1'b0}};
             henvcfg_q              <= '0;
             // virtual supervisor mode registers
-            vsstatus_q              <= 64'b0;
-            vsepc_q                 <= {riscv::XLEN{1'b0}};
-            vscause_q               <= {riscv::XLEN{1'b0}};
-            vstvec_q                <= {riscv::XLEN{1'b0}};
-            vsscratch_q             <= {riscv::XLEN{1'b0}};
-            vstval_q                <= {riscv::XLEN{1'b0}};
-            vsatp_q                 <= {riscv::XLEN{1'b0}};
+            vsstatus_q             <= 64'b0;
+            vsepc_q                <= {riscv::XLEN{1'b0}};
+            vscause_q              <= {riscv::XLEN{1'b0}};
+            vstvec_q               <= {riscv::XLEN{1'b0}};
+            vsscratch_q            <= {riscv::XLEN{1'b0}};
+            vstval_q               <= {riscv::XLEN{1'b0}};
+            vsatp_q                <= {riscv::XLEN{1'b0}};
             // timer and counters
             cycle_q                <= {riscv::XLEN{1'b0}};
             instret_q              <= {riscv::XLEN{1'b0}};
@@ -2006,13 +2005,13 @@ module csr_regfile import ariane_pkg::*; #(
             htinst_q               <= htinst_d;
             henvcfg_q              <= henvcfg_d;
             // virtual supervisor mode registers
-            vsstatus_q              <= vsstatus_d;
-            vsepc_q                 <= vsepc_d;
-            vscause_q               <= vscause_d;
-            vstvec_q                <= vstvec_d;
-            vsscratch_q             <= vsscratch_d;
-            vstval_q                <= vstval_d;
-            vsatp_q                 <= vsatp_d;
+            vsstatus_q             <= vsstatus_d;
+            vsepc_q                <= vsepc_d;
+            vscause_q              <= vscause_d;
+            vstvec_q               <= vstvec_d;
+            vsscratch_q            <= vsscratch_d;
+            vstval_q               <= vstval_d;
+            vsatp_q                <= vsatp_d;
             // timer and counters
             cycle_q                <= cycle_d;
             instret_q              <= instret_d;

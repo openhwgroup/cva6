@@ -194,9 +194,9 @@ module instr_queue import ariane_pkg::*; (
       assign instr_data_in[i].cf = cf[i + idx_is_q];
       assign instr_data_in[i].ex = exception_i; // exceptions hold for the whole fetch packet
       assign instr_data_in[i].ex_vaddr = exception_addr_i;
-      assign instr_data_in[i].ex_gpaddr= exception_gpaddr_i;
+      assign instr_data_in[i].ex_gpaddr = exception_gpaddr_i;
       assign instr_data_in[i].ex_tinst = exception_tinst_i;
-      assign instr_data_in[i].ex_gva   = exception_gva_i;
+      assign instr_data_in[i].ex_gva = exception_gva_i;
       /* verilator lint_on WIDTH */
     end
   end else begin : gen_multiple_instr_per_fetch_without_C
@@ -226,9 +226,9 @@ module instr_queue import ariane_pkg::*; (
     assign instr_data_in[0].cf = cf_type_i[0];
     assign instr_data_in[0].ex = exception_i; // exceptions hold for the whole fetch packet
     assign instr_data_in[0].ex_vaddr = exception_addr_i;
-    assign instr_data_in[0].ex_gpaddr= exception_gpaddr_i;
+    assign instr_data_in[0].ex_gpaddr = exception_gpaddr_i;
     assign instr_data_in[0].ex_tinst = exception_tinst_i;
-    assign instr_data_in[0].ex_gva   = exception_gva_i;
+    assign instr_data_in[0].ex_gva = exception_gva_i;
     /* verilator lint_on WIDTH */
   end
 
@@ -277,8 +277,8 @@ module instr_queue import ariane_pkg::*; (
       fetch_entry_o.ex.cause = '0;
 
       fetch_entry_o.ex.tval = '0;
-      fetch_entry_o.ex.tval2= '0;
-      fetch_entry_o.ex.gva  = 1'b0;
+      fetch_entry_o.ex.tval2 = '0;
+      fetch_entry_o.ex.gva = 1'b0;
       // tinst hardwire to 0 for Instruction page fault and access fault exceptions
       fetch_entry_o.ex.tinst = '0;
       fetch_entry_o.branch_predict.predict_address = address_out;

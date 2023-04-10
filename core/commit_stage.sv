@@ -302,7 +302,7 @@ module commit_stage import ariane_pkg::*; #(
                 // if no earlier exception happened the commit instruction will still contain
                 // the instruction bits from the ID stage. If a earlier exception happened we don't care
                 // as we will overwrite it anyway in the next IF bl
-                exception_o.tval  = commit_instr_i[0].ex.tval;
+                exception_o.tval = commit_instr_i[0].ex.tval;
                 if(ariane_pkg::RVH) begin 
                     exception_o.tinst = commit_instr_i[0].ex.tinst;
                     exception_o.tval2 = commit_instr_i[0].ex.tval2;
