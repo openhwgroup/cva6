@@ -13,7 +13,7 @@
 // Description: Ariane Top-level module
 
 
-module ariane import ariane_pkg::*; #(
+module ariane import ariane_pkg::*; import ariane_rvfi_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
@@ -39,7 +39,7 @@ module ariane import ariane_pkg::*; #(
 `ifdef RVFI_PORT
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
+  output rvfi_port_t                   rvfi_o,
 `endif
 `ifdef PITON_ARIANE
   // L15 (memory side)
