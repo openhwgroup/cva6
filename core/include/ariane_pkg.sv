@@ -662,6 +662,9 @@ package ariane_pkg;
     // ---------------
     // ID/EX/WB Stage
     // ---------------
+
+    localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
+
     typedef struct packed {
         logic [riscv::VLEN-1:0]   pc;            // PC of instruction
         logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
@@ -683,14 +686,12 @@ package ariane_pkg;
         branchpredict_sbe_t       bp;            // branch predict scoreboard data structure
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2
-`ifdef RVFI_MEM
-        riscv::xlen_t               rs1_rdata;
-        riscv::xlen_t               rs2_rdata;
-        logic [riscv::VLEN-1:0]     lsu_addr;
-        logic [(riscv::XLEN/8)-1:0] lsu_rmask;
-        logic [(riscv::XLEN/8)-1:0] lsu_wmask;
-        riscv::xlen_t               lsu_wdata;
-`endif
+        riscv::xlen_t               rs1_rdata;   // information needed by RVFI
+        riscv::xlen_t               rs2_rdata;   // information needed by RVFI
+        logic [riscv::VLEN-1:0]     lsu_addr;    // information needed by RVFI
+        logic [(riscv::XLEN/8)-1:0] lsu_rmask;   // information needed by RVFI
+        logic [(riscv::XLEN/8)-1:0] lsu_wmask;   // information needed by RVFI
+        riscv::xlen_t               lsu_wdata;   // information needed by RVFI
     } scoreboard_entry_t;
 
     // ---------------

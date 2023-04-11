@@ -70,4 +70,13 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigMmuPresent = 1;
 
+    `define RVFI_PORT
+
+    // Do not modify
+    `ifdef RVFI_PORT
+       localparam CVA6ConfigRvfiTrace = 1;
+    `else
+       localparam CVA6ConfigRvfiTrace = 0;
+    `endif
+
 endpackage

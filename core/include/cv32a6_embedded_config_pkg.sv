@@ -7,7 +7,6 @@
 //
 // Original Author: Jean-Roch COULON - Thales
 
-
 package cva6_config_pkg;
 
     typedef enum logic {
@@ -69,5 +68,14 @@ package cva6_config_pkg;
     localparam CVA6ConfigDcacheType = WT;
 
     localparam CVA6ConfigMmuPresent = 0;
+
+    `define RVFI_PORT
+
+    // Do not modify
+    `ifdef RVFI_PORT
+       localparam CVA6ConfigRvfiTrace = 1;
+    `else
+       localparam CVA6ConfigRvfiTrace = 0;
+    `endif
 
 endpackage
