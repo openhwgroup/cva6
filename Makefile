@@ -95,7 +95,6 @@ endif
 # Package files -> compile first
 ariane_pkg := \
               corev_apu/register_interface/src/reg_intf.sv           \
-              corev_apu/tb/rvfi_pkg.sv                               \
               corev_apu/tb/ariane_soc_pkg.sv                         \
               corev_apu/riscv-dbg/src/dm_pkg.sv                      \
               corev_apu/tb/ariane_axi_soc_pkg.sv

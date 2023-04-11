@@ -48,7 +48,7 @@ module cva6 import ariane_pkg::*; #(
   input  logic                         debug_req_i,  // debug request (async)
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
+  output ariane_pkg::rvfi_port_t       rvfi_o,
   output cvxif_pkg::cvxif_req_t        cvxif_req_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
   // L15 (memory side)
@@ -628,7 +628,7 @@ module cva6 import ariane_pkg::*; #(
     .clk_i               ( clk_i                     ),
     .rst_ni              ( rst_ni                    ),
     .debug_mode_i        ( debug_mode                ),
-    .addr_i              ( addr_csr_perf             ),   
+    .addr_i              ( addr_csr_perf             ),
     .we_i                ( we_csr_perf               ),
     .data_i              ( data_csr_perf             ),
     .data_o              ( data_perf_csr             ),
@@ -647,8 +647,8 @@ module cva6 import ariane_pkg::*; #(
     .branch_exceptions_i ( flu_exception_ex_id       ),
     .l1_icache_access_i  ( icache_dreq_if_cache      ),
     .l1_dcache_access_i  ( dcache_req_ports_ex_cache ),
-    .miss_vld_bits_i     ( miss_vld_bits             ), 
-    .i_tlb_flush_i       ( flush_tlb_ctrl_ex         ),   
+    .miss_vld_bits_i     ( miss_vld_bits             ),
+    .i_tlb_flush_i       ( flush_tlb_ctrl_ex         ),
     .stall_issue_i       ( stall_issue               )
   );
  end
