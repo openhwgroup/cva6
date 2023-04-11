@@ -44,9 +44,9 @@ class Instruction(Instr):
         """The name of the instruction (fisrt word of the mnemo)"""
         return self.mnemo.split()[0]
 
-    def is_crossword(self):
-        """Is this instruction split on two words?"""
-        return self.address & 2 != 0 and not self.is_compressed()
+    def next_addr(self):
+        """Address of next instruction"""
+        return self.address + self.size()
 
     def __repr__(self):
         return self.mnemo
@@ -71,7 +71,7 @@ class LastIssue:
 
 class IqLen:
     """Model of the instruction queue with only a size counter"""
-    def __init__(self, fetch_size=4):
+    def __init__(self, fetch_size):
         self.len = fetch_size
         self.fetch_size = fetch_size
 
@@ -90,7 +90,10 @@ class IqLen:
 
     def has(self, instr):
         """Does the instruction queue have this instruction?"""
-        return self.len >= instr.size() + (2 if instr.is_crossword() else 0)
+        length = self.len
+        if self._is_crossword(instr):
+            length -= 2
+        return length >= instr.size()
 
     def remove(self, instr):
         """Remove instruction from queue"""
@@ -99,14 +102,23 @@ class IqLen:
         if instr.is_jump():
             self.jump()
 
+    def _addr_index(self, addr):
+        return addr & (self.fetch_size - 1)
+
+    def _instr_index(self, instr):
+        return self._addr_index(instr.address)
+
+    def _is_crossword(self, instr):
+        is_last_c_index = self._instr_index(instr) == self.fetch_size - 2
+        return is_last_c_index and not instr.is_compressed()
+
     def _truncate(self, mid_word=False):
-        if mid_word:
-            if self.len & 2 == 0:
-                self.len -= 2
-        else:
-            self.len -= self.len & 3
-
-
+        index = 2 if mid_word else 0
+        occupancy = self._addr_index(self.len)
+        to_remove = occupancy - index
+        if to_remove < 0:
+            to_remove += self.fetch_size
+        self.len -= to_remove
 
 class Model:
     """Models the scheduling of CVA6"""
@@ -116,9 +128,9 @@ class Model:
         r"([a-z]+)\s+0:\s*0x00000000([0-9a-f]+)\s*\(([0-9a-fx]+)\)\s*@\s*([0-9]+)\s*(.*)"
     )
 
-    def __init__(self, issue=1, commit=2, sb_len=8, has_forwarding=True, has_renaming=True):
+    def __init__(self, issue=1, commit=2, sb_len=8, fetch_size=None, has_forwarding=True, has_renaming=True):
         self.instr_queue = []
-        self.iqlen = IqLen()
+        self.iqlen = IqLen(fetch_size or 4 * issue)
         self.scoreboard = []
         self.last_issued = None
         self.retired = []
@@ -168,7 +180,7 @@ class Model:
                 branch = EventKind.BMISS if bmiss else EventKind.BHIT
                 if branch not in [e.kind for e in instr.events]:
                     self.log_event_on(instr, branch, cycle)
-                    taken = instr.address != last.address + last.size()
+                    taken = instr.address != last.next_addr()
                     if taken and not bmiss:
                         # last (not instr) was like a jump
                         self.iqlen.jump()
