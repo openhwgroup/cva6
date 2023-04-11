@@ -50,16 +50,16 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   logic                                  axi_rd_req;
   logic                                  axi_rd_gnt;
-  logic [63:0]                           axi_rd_addr;
+  logic [AxiAddrWidth-1:0]               axi_rd_addr;
   logic [$clog2(AxiNumWords)-1:0]        axi_rd_blen;
   logic [2:0]                            axi_rd_size;
-  logic [$size(axi_resp_i.r.id)-1:0]     axi_rd_id_in;
+  logic [AxiIdWidth-1:0]                 axi_rd_id_in;
   logic                                  axi_rd_rdy;
   logic                                  axi_rd_lock;
   logic                                  axi_rd_last;
   logic                                  axi_rd_valid;
   logic [AxiDataWidth-1:0]               axi_rd_data;
-  logic [$size(axi_resp_i.r.id)-1:0]     axi_rd_id_out;
+  logic [AxiIdWidth-1:0]                 axi_rd_id_out;
   logic                                  axi_rd_exokay;
 
   logic                                  req_valid_d, req_valid_q;
@@ -76,7 +76,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // We have a new or pending read request
   assign axi_rd_req            = icache_mem_data_req | req_valid_q;
-  assign axi_rd_addr           = {{64-riscv::PLEN{1'b0}}, req_data_d.paddr};
+  assign axi_rd_addr           = {{AxiAddrWidth-riscv::PLEN{1'b0}}, req_data_d.paddr};
 
   // Fetch a full cache line on a cache miss, or a single word on a bypassed access
   assign axi_rd_blen           = (req_data_d.nc) ? '0 : ariane_pkg::ICACHE_LINE_WIDTH/64-1;
