@@ -13,7 +13,7 @@
 // Description: Ariane Top-level module
 
 
-module ariane import ariane_pkg::*; import ariane_rvfi_pkg::*; #(
+module ariane import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
