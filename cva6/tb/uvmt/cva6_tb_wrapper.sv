@@ -47,7 +47,7 @@ module cva6_tb_wrapper
   input  logic                         rst_ni,
   input  logic [XLEN-1:0]              boot_addr_i,
   output logic [31:0]                  tb_exit_o,
-  output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
+  output ariane_pkg::rvfi_port_t       rvfi_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
   uvma_axi_intf                        axi_slave
@@ -59,7 +59,7 @@ module cva6_tb_wrapper
   static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
   string binary = "";
 
-  ariane_rvfi_pkg::rvfi_port_t  rvfi;
+  ariane_pkg::rvfi_port_t  rvfi;
   assign rvfi_o = rvfi;
 
   cva6 #(

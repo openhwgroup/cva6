@@ -22,7 +22,7 @@
 
 
 interface uvmt_rvfi_if (
-                    output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
+                    output ariane_pkg::rvfi_port_t  rvfi_o,
                     output logic[31:0] tb_exit_o
                                  );
 
