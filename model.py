@@ -7,6 +7,7 @@ import re
 
 from dataclasses import dataclass
 from enum import Enum
+from collections import defaultdict
 
 from matplotlib import pyplot as plt
 
@@ -43,6 +44,10 @@ class Instruction(Instr):
         """The name of the instruction (fisrt word of the mnemo)"""
         return self.mnemo.split()[0]
 
+    def is_crossword(self):
+        """Is this instruction split on two words?"""
+        return self.address & 2 != 0 and not self.is_compressed()
+
     def __repr__(self):
         return self.mnemo
 
@@ -64,6 +69,45 @@ class LastIssue:
     instr: Instruction
     issue_cycle: int
 
+class IqLen:
+    """Model of the instruction queue with only a size counter"""
+    def __init__(self, fetch_size=4):
+        self.len = fetch_size
+        self.fetch_size = fetch_size
+
+    def fetch(self):
+        """Fetch bytes"""
+        self.len += self.fetch_size
+
+    def flush(self):
+        """Flush instruction queue (bmiss or exception)"""
+        self.len = 0
+
+    def jump(self):
+        """Loose a fetch cycle and truncate (jump, branch hit taken)"""
+        self.len -= self.fetch_size
+        self._truncate()
+
+    def has(self, instr):
+        """Does the instruction queue have this instruction?"""
+        return self.len >= instr.size() + (2 if instr.is_crossword() else 0)
+
+    def remove(self, instr):
+        """Remove instruction from queue"""
+        self.len -= instr.size()
+        self._truncate(instr.is_compressed() == (instr.address & 2 == 0))
+        if instr.is_jump():
+            self.jump()
+
+    def _truncate(self, mid_word=False):
+        if mid_word:
+            if self.len & 2 == 0:
+                self.len -= 2
+        else:
+            self.len -= self.len & 3
+
+
+
 class Model:
     """Models the scheduling of CVA6"""
 
@@ -74,6 +118,7 @@ class Model:
 
     def __init__(self, issue=1, commit=2, sb_len=8, has_forwarding=True, has_renaming=True):
         self.instr_queue = []
+        self.iqlen = IqLen()
         self.scoreboard = []
         self.last_issued = None
         self.retired = []
@@ -109,6 +154,24 @@ class Model:
         if last.is_regjump():
             return self.predict_regjump(last)
         return None
+
+    def manage_last_branch(self, instr, cycle):
+        """Flush IQ if branch miss, jump if branch hit"""
+        if self.last_issued is not None:
+            last = self.last_issued.instr
+            pred = self.predict_pc(last)
+            if pred is not None:
+                bmiss = pred != instr.address
+                resolved = cycle >= self.last_issued.issue_cycle + 6
+                if bmiss and not resolved:
+                    self.iqlen.flush()
+                branch = EventKind.BMISS if bmiss else EventKind.BHIT
+                if branch not in [e.kind for e in instr.events]:
+                    self.log_event_on(instr, branch, cycle)
+                    taken = instr.address != last.address + last.size()
+                    if taken and not bmiss:
+                        # last (not instr) was like a jump
+                        self.iqlen.jump()
 
     def find_data_hazards(self, instr, cycle):
         """Detect and log data hazards"""
@@ -147,19 +210,11 @@ class Model:
             can_issue = False
         if self.find_structural_hazard(instr, cycle):
             can_issue = False
-        if self.last_issued is not None:
-            last = self.last_issued.instr
-            # Branch prediction
-            pred = self.predict_pc(last)
-            latency = 1
-            if pred is not None and pred != instr.address:
-                self.log_event_on(instr, EventKind.BMISS, cycle)
-                latency += 5
-                if instr.address & 2 != 0 and not instr.is_compressed():
-                    latency += 1
-            if cycle < self.last_issued.issue_cycle + latency:
-                can_issue = False
+        self.manage_last_branch(instr, cycle)
+        if not self.iqlen.has(instr):
+            can_issue = False
         if can_issue:
+            self.iqlen.remove(instr)
             instr = self.instr_queue.pop(0)
             self.log_event_on(instr, EventKind.issue, cycle)
             entry = Entry(instr)
@@ -197,6 +252,7 @@ class Model:
         self.try_execute(cycle)
         for _ in range(self.issue_width):
             self.try_issue(cycle)
+        self.iqlen.fetch()
 
     def load_file(self, path):
         """Fill a model from a trace file"""
@@ -224,6 +280,7 @@ class Model:
                 print(f"Scoreboard @{cycle}")
                 for entry in self.scoreboard:
                     print(f"    {entry}")
+                print(f"iqlen = {self.iqlen.len}")
                 print()
             cycle += 1
 
@@ -306,24 +363,16 @@ def main(input_file: str):
 
     write_trace('annotated.log', model.retired)
 
-    nWAW, nWAR, nRAW = 0, 0, 0
+    ecount = defaultdict(lambda: 0)
     for (e, i) in model.log:
-        if debug:
-            print_data(f"{e}", f"{i}", sep='on')
-        if e.kind == EventKind.WAW:
-            nWAW += 1
-        if e.kind == EventKind.WAR:
-            nWAR += 1
-        if e.kind == EventKind.RAW:
-            nRAW += 1
+        ecount[e.kind] += 1
 
     n_instr = len(model.retired)
     print_data("cycle number", cycle_number)
     print_data("Coremark/MHz", 1000000 / cycle_number)
     print_data("instruction number", n_instr)
-    print_data("WAW/instr", nWAW / n_instr)
-    print_data("WAR/instr", nWAR / n_instr)
-    print_data("RAW/instr", nRAW / n_instr)
+    for ek, count in ecount.items():
+        print_data(f"{ek}/instr", f"{100 * count / n_instr:.2f}%")
 
 if __name__ == "__main__":
     main(sys.argv[1])

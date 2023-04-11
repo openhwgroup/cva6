@@ -519,6 +519,10 @@ class Instr:
             return self.fields().name in ['C.JALR', 'C.JR']
         return False
 
+    def is_jump(self):
+        """Is it an immediate jump?"""
+        return self.base() in ['JAL', 'C.JAL', 'C.J']
+
     def is_muldiv(self):
         """Is it a muldiv instruction?"""
         return self.base() in ['OP', 'OP-32'] and self.fields().funct7 == 1
