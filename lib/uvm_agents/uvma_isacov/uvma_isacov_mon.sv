@@ -28,7 +28,7 @@ class uvma_isacov_mon_c#(int ILEN=DEFAULT_ILEN,
   instr_name_t                               instr_name_lookup[string];
 
   // Analysis export to receive instructions from RVFI
-  uvm_analysis_imp_rvfi_instr#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN), uvma_isacov_mon_c) rvfi_instr_export;
+  uvm_analysis_imp_rvfi_instr#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN), uvma_isacov_mon_c) rvfi_instr_imp;
 
   extern function new(string name = "uvma_isacov_mon", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
@@ -49,7 +49,7 @@ endclass : uvma_isacov_mon_c
 function uvma_isacov_mon_c::new(string name = "uvma_isacov_mon", uvm_component parent = null);
 
   super.new(name, parent);
-  rvfi_instr_export = new("rvfi_instr_export", this);
+  rvfi_instr_imp = new("rvfi_instr_imp", this);
 
 endfunction : new
 
