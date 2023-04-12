@@ -71,33 +71,40 @@ class LastIssue:
 
 class IqLen:
     """Model of the instruction queue with only a size counter"""
-    def __init__(self, fetch_size):
+    def __init__(self, fetch_size, debug=False):
         self.len = fetch_size
         self.fetch_size = fetch_size
+        self.debug = debug
 
     def fetch(self):
         """Fetch bytes"""
         self.len += self.fetch_size
+        self._debug(f"fetched {self.fetch_size}, got {self.len}")
 
     def flush(self):
         """Flush instruction queue (bmiss or exception)"""
         self.len = 0
+        self._debug(f"flushed, got {self.len}")
 
     def jump(self):
         """Loose a fetch cycle and truncate (jump, branch hit taken)"""
         self.len -= self.fetch_size
+        self._debug(f"jumping, removed {self.fetch_size}, got {self.len}")
         self._truncate()
+        self._debug(f"jumped, got {self.len}")
 
     def has(self, instr):
         """Does the instruction queue have this instruction?"""
         length = self.len
         if self._is_crossword(instr):
             length -= 2
+        self._debug(f"comparing {length} to {instr.size()} ({instr})")
         return length >= instr.size()
 
     def remove(self, instr):
         """Remove instruction from queue"""
         self.len -= instr.size()
+        self._debug(f"removed {instr.size()}, got {self.len}")
         self._truncate(instr.is_compressed() == (instr.address & 2 == 0))
         if instr.is_jump():
             self.jump()
@@ -115,10 +122,16 @@ class IqLen:
     def _truncate(self, mid_word=False):
         index = 2 if mid_word else 0
         occupancy = self._addr_index(self.len)
+        self._debug(f"truncating, index={index}, occupancy={occupancy}")
         to_remove = occupancy - index
         if to_remove < 0:
             to_remove += self.fetch_size
         self.len -= to_remove
+        self._debug(f"truncated, removed {to_remove}, got {self.len}")
+
+    def _debug(self, message):
+        if self.debug:
+            print(f"iq: {message}")
 
 class Model:
     """Models the scheduling of CVA6"""
@@ -128,13 +141,14 @@ class Model:
         r"([a-z]+)\s+0:\s*0x00000000([0-9a-f]+)\s*\(([0-9a-fx]+)\)\s*@\s*([0-9]+)\s*(.*)"
     )
 
-    def __init__(self, issue=1, commit=2, sb_len=8, fetch_size=None, has_forwarding=True, has_renaming=True):
+    def __init__(self, debug=False, issue=1, commit=2, sb_len=8, fetch_size=None, has_forwarding=True, has_renaming=True):
         self.instr_queue = []
-        self.iqlen = IqLen(fetch_size or 4 * issue)
         self.scoreboard = []
         self.last_issued = None
         self.retired = []
         self.sb_len = sb_len
+        self.debug = debug
+        self.iqlen = IqLen(fetch_size or 4 * issue, debug)
         self.issue_width = issue
         self.commit_width = commit
         self.has_forwarding = has_forwarding
@@ -283,12 +297,12 @@ class Model:
                     if accepting:
                         self.instr_queue.append(instr)
 
-    def run(self, cycles=None, debug=False):
+    def run(self, cycles=None):
         """Run until completion"""
         cycle = 0
         while len(self.instr_queue) > 0 or len(self.scoreboard) > 0:
             self.run_cycle(cycle)
-            if debug:
+            if self.debug:
                 print(f"Scoreboard @{cycle}")
                 for entry in self.scoreboard:
                     print(f"    {entry}")
@@ -357,7 +371,8 @@ def issue_commit_graph(input_file, n = 3):
         r = range(1, n + 1)
         for issue in r:
             for commit in r:
-                model = Model(issue, commit)
+                print("running", issue, commit)
+                model = Model(issue=issue, commit=commit)
                 model.load_file(input_file)
                 cycle_number = model.run()
                 score = 1000000 / cycle_number
@@ -368,10 +383,9 @@ def issue_commit_graph(input_file, n = 3):
 def main(input_file: str):
     """Entry point"""
 
-    debug = True
-    model = Model()
+    model = Model(debug=True)
     model.load_file(input_file)
-    cycle_number = model.run(debug=debug)
+    cycle_number = model.run()
 
     write_trace('annotated.log', model.retired)
 
