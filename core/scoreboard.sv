@@ -404,7 +404,6 @@ module scoreboard #(
   end
 
   //pragma translate_off
-  `ifndef VERILATOR
   initial begin
     assert (NR_ENTRIES == 2**BITS_ENTRIES) else $fatal(1, "Scoreboard size needs to be a power of two.");
   end
@@ -436,6 +435,5 @@ module scoreboard #(
         else $fatal (1,"Two or more functional units are retiring instructions with the same transaction id!");
     end
   end
-  `endif
   //pragma translate_on
 endmodule

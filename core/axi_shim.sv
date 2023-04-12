@@ -293,14 +293,12 @@ module axi_shim #(
 // ----------------
 
 //pragma translate_off
-`ifndef VERILATOR
-   initial begin
-    assert (AxiNumWords >= 1) else
-     $fatal(1, "[axi adapter] AxiNumWords must be >= 1");
-    assert (AxiIdWidth >= 2) else
-     $fatal(1, "[axi adapter] AXI id width must be at least 2 bit wide");
-   end
-`endif
+initial begin
+  assert (AxiNumWords >= 1) else
+    $fatal(1, "[axi adapter] AxiNumWords must be >= 1");
+  assert (AxiIdWidth >= 2) else
+    $fatal(1, "[axi adapter] AXI id width must be at least 2 bit wide");
+end
 //pragma translate_on
 
 endmodule // axi_adapter2

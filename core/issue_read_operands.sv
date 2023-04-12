@@ -526,17 +526,15 @@ module issue_read_operands import ariane_pkg::*; #(
     end
 
     //pragma translate_off
-    `ifndef VERILATOR
     initial begin
         assert (NR_RGPR_PORTS == 2 || (NR_RGPR_PORTS == 3 && CVXIF_PRESENT))
         else $fatal(1, "If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports.");
     end
 
-     assert property (
+    assert property (
         @(posedge clk_i) (branch_valid_q) |-> (!$isunknown(operand_a_q) && !$isunknown(operand_b_q)))
         else $warning ("Got unknown value in one of the operands");
 
-    `endif
     //pragma translate_on
 endmodule
 
