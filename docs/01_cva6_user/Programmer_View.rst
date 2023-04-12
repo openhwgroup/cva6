@@ -20,7 +20,7 @@
 
 Programmer’s View
 =================
-In each section, we must make clear when a feature is variable upon parameters
+RISC-V specifications allow many variations. This chapter provides more details about RISC-V variants available for the programmer. 
 
 RISC-V Extensions
 -----------------
@@ -52,5 +52,11 @@ Notes for the integrator:
 
 Memory Alignment
 ----------------
-CVA6 does not support non-aligned memory accesses.
+CVA6 **does not support non-aligned** memory accesses.
+
+Harts
+-----
+CVA6 features a **single hart**, i.e. a single hardware thread.
+
+Therefore the words *hart* and *core* have the same meaning in this guide.
 
