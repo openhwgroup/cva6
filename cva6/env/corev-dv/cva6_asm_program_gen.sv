@@ -38,7 +38,11 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
 
    virtual function void gen_program_header();
       string str[$];
-      instr_stream.push_back(".include \"user_define.include\"");
+      cva6_instr_gen_config_c cfg_cva6;
+      `DV_CHECK_FATAL($cast(cfg_cva6, cfg), "Could not cast cfg into cfg_cva6")
+      if (cfg_cva6.enable_x_extension) begin //used for cvxif custom test
+         instr_stream.push_back(".include \"x_extn_user_define.h\"");
+      end
       instr_stream.push_back(".include \"user_define.h\"");
       instr_stream.push_back(".globl _start");
       instr_stream.push_back(".section .text");
