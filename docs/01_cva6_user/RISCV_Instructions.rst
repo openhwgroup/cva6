@@ -36,12 +36,12 @@ The base RISC-V ISA has fixed-length 32-bit instructions or 16-bit instructions 
 The C32VA6_v5.0.0 supports:
 
 * Only 1 hart,
-* Misaligned accesses to the memory.
+* No misaligned memory accesses.
 
 General purpose registers
 --------------------------
 
-As shown in the Table 1.1, There are 31 general-purpose registers x1–x31, which hold integer values. Register x0 is hardwired to the constant 0. There is no hardwired subroutine return address link register, but the standard software calling convention uses register x1 to hold the return address on a call. For C32VA6_v5.0.0, the x registers are 32 bits wide. There is one additional register also 32 bits wide: the program counter pc holds the address of the current instruction.
+As shown in the Table 1.1, there are 31 general-purpose registers x1–x31, which hold integer values. Register x0 is hardwired to the constant 0. There is no hardwired subroutine return address link register, but the standard software calling convention uses register x1 to hold the return address on a call. For C32VA6_v5.0.0, the x registers are 32 bits wide. There is one additional register also 32 bits wide: the program counter pc holds the address of the current instruction.
 
 Table 1.1 shows the general-purpose registers :
 
@@ -403,7 +403,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception. An exception is raised on taken branch or unconditional jump if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
+    **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
 
 - **JALR**: Jump and Link Register
 
@@ -415,7 +415,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception. An exception is raised on taken branch or unconditional jump if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
+    **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
 
 **Conditional Branches**
 
@@ -429,7 +429,7 @@ Control Transfer Instructions
 
     **Pseudocode**: if (x[rs1] == x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 - **BNE**: Branch Not Equal
 
@@ -441,7 +441,7 @@ Control Transfer Instructions
 
     **Pseudocode**: if (x[rs1] != x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 - **BLT**: Branch Less Than
 
@@ -453,7 +453,7 @@ Control Transfer Instructions
 
     **Pseudocode**: if (x[rs1] < x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 - **BLTU**: Branch Less Than Unsigned
 
@@ -465,7 +465,7 @@ Control Transfer Instructions
 
     **Pseudocode**: if (x[rs1] <u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 - **BGE**: Branch Greater or Equal
 
@@ -477,7 +477,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 - **BGEU**: Branch Greater or Equal Unsigned
 
@@ -489,7 +489,7 @@ Control Transfer Instructions
 
     **Pseudocode**: if (x[rs1] >=u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
-    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 Load and Store Instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -762,7 +762,7 @@ Load-Reserved/Store-Conditional Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a Load/AMO address misaligned exception will be generated.
 
 - **SC.W**: Store-Conditional Word
 
@@ -774,7 +774,7 @@ Load-Reserved/Store-Conditional Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
+    **Exception raised**: If the address is not naturally aligned (4-byte boundary), a Store/AMO address misaligned exception will be generated.
 
 Atomic Memory Operations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1111,7 +1111,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
 
 - **C.JAL**: Compressed Jump and Link
 
@@ -1123,7 +1123,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
 
 - **C.JR**: Compressed Jump Register
 
@@ -1135,7 +1135,7 @@ Control Transfer Instructions
 
     **Invalid values**: rs1 = x0
 
-    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
 
 - **C.JALR**: Compressed Jump and Link Register
 
@@ -1147,7 +1147,7 @@ Control Transfer Instructions
 
     **Invalid values**: rs1 = x0
 
-    **Exception raised**: jumps to an incorrect instruction address will usually quickly raise an exception.
+    **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
 
 - **C.BEQZ**: Branch if Equal Zero
 
@@ -1159,7 +1159,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: No instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 - **C.BNEZ**: Branch if Not Equal Zero
 
@@ -1171,7 +1171,7 @@ Control Transfer Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: No instruction fetch misaligned exception is generated for a conditional branch that is not taken.
+    **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 Load and Store Instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1198,7 +1198,7 @@ Load and Store Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: An exception raised if the memory address isn't aligned (4-byte boundary).
+    **Exception raised**: an exception raised if the memory address isn't aligned (4-byte boundary).
 
 - **C.LW**: Compressed Load Word
 
@@ -1210,7 +1210,7 @@ Load and Store Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: An exception raised if the memory address isn't aligned (4-byte boundary).
+    **Exception raised**: an exception raised if the memory address isn't aligned (4-byte boundary).
 
 - **C.SW**: Compressed Store Word
 
@@ -1222,7 +1222,7 @@ Load and Store Instructions
 
     **Invalid values**: NONE
 
-    **Exception raised**: An exception raised if the memory address isn't aligned (4-byte boundary).
+    **Exception raised**: an exception raised if the memory address isn't aligned (4-byte boundary).
 
 RV32Zicsr Control and Status Register Instructions
 ---------------------------------------------------
@@ -1239,7 +1239,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
 
 - **CSRRS**: Control and Status Register Read and Set
 
@@ -1251,7 +1251,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
 
 - **CSRRC**: Control and Status Register Read and Clear
 
@@ -1263,7 +1263,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
 
 - **CSRRWI**: Control and Status Register Read and Write Immediate
 
@@ -1275,7 +1275,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
 
 - **CSRRSI**: Control and Status Register Read and Set Immediate
 
@@ -1287,7 +1287,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
 
 - **CSRRCI**: Control and Status Register Read and Clear Immediate
 
@@ -1299,7 +1299,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: Attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
 
 RV32Zifencei Instruction-Fetch Fence
 --------------------------------------
