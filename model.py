@@ -72,9 +72,11 @@ class LastIssue:
 class IqLen:
     """Model of the instruction queue with only a size counter"""
     def __init__(self, fetch_size, debug=False):
-        self.len = fetch_size
-        self.fetch_size = fetch_size
+        self.fetch_size = 4
+        while self.fetch_size < fetch_size:
+            self.fetch_size <<= 1
         self.debug = debug
+        self.len = self.fetch_size
 
     def fetch(self):
         """Fetch bytes"""
