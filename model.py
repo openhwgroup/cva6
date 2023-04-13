@@ -112,25 +112,20 @@ class IqLen:
         """Remove instruction from queue"""
         self.len -= instr.size()
         self._debug(f"removed {instr.size()}, got {self.len}")
-        self._truncate(instr.is_compressed() == (instr.address & 2 == 0))
+        self._truncate(self._addr_index(instr.next_addr()))
         if instr.is_jump():
             self.jump()
 
     def _addr_index(self, addr):
         return addr & (self.fetch_size - 1)
 
-    def _instr_index(self, instr):
-        return self._addr_index(instr.address)
-
     def _is_crossword(self, instr):
-        is_last_c_index = self._instr_index(instr) == self.fetch_size - 2
-        return is_last_c_index and not instr.is_compressed()
+        is_last = self._addr_index(instr.address) == self.fetch_size - 2
+        return is_last and not instr.is_compressed()
 
-    def _truncate(self, mid_word=False):
-        index = 2 if mid_word else 0
-        occupancy = self._addr_index(self.len)
-        self._debug(f"truncating, index={index}, occupancy={occupancy}")
-        to_remove = occupancy - index
+    def _truncate(self, index=0):
+        occupancy = self.fetch_size - self._addr_index(self.len)
+        to_remove = index - occupancy
         if to_remove < 0:
             to_remove += self.fetch_size
         self.len -= to_remove
