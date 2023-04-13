@@ -161,6 +161,17 @@ void _init(int cid, int nc)
   exit(ret);
 }
 
+int puts(const char *s)
+{
+  const char *p = s;
+
+  while (*p)
+    putchar(*p++);
+
+  putchar('\n');
+  return 0;
+}
+
 #undef putchar
 int putchar(int ch)
 {
