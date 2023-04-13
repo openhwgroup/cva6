@@ -77,21 +77,26 @@ class IqLen:
             self.fetch_size <<= 1
         self.debug = debug
         self.len = self.fetch_size
+        self.new_fetch = True
 
     def fetch(self):
         """Fetch bytes"""
         self.len += self.fetch_size
         self._debug(f"fetched {self.fetch_size}, got {self.len}")
+        self.new_fetch = True
 
     def flush(self):
         """Flush instruction queue (bmiss or exception)"""
         self.len = 0
         self._debug(f"flushed, got {self.len}")
+        self.new_fetch = False
 
     def jump(self):
         """Loose a fetch cycle and truncate (jump, branch hit taken)"""
-        self.len -= self.fetch_size
-        self._debug(f"jumping, removed {self.fetch_size}, got {self.len}")
+        if self.new_fetch:
+            self.len -= self.fetch_size
+            self._debug(f"jumping, removed {self.fetch_size}, got {self.len}")
+            self.new_fetch = False
         self._truncate()
         self._debug(f"jumped, got {self.len}")
 
