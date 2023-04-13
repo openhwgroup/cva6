@@ -56,7 +56,6 @@ cflags_opt=(
         -ffunction-sections -fdata-sections
         -Wl,-gc-sections
         -falign-jumps=4 -falign-functions=16
-        -misa-spec=2.2
 )
 
 cflags=(
