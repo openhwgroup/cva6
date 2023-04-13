@@ -17,12 +17,12 @@
 
 package ariane_axi_soc;
 
-    localparam UserWidth = ariane_axi_pkg::UserWidth;
-    localparam AddrWidth = ariane_axi_pkg::AddrWidth;
-    localparam DataWidth = ariane_axi_pkg::DataWidth;
+    localparam UserWidth = ariane_axi::UserWidth;
+    localparam AddrWidth = ariane_axi::AddrWidth;
+    localparam DataWidth = ariane_axi::DataWidth;
     localparam StrbWidth = DataWidth / 8;
 
-    typedef logic [ariane_axi_pkg::IdWidth-1:0]  id_t;
+    typedef logic [ariane_axi::IdWidth-1:0]  id_t;
     typedef logic [ariane_soc::IdWidthSlave-1:0] id_slv_t;
     typedef logic [AddrWidth-1:0] addr_t;
     typedef logic [DataWidth-1:0] data_t;
@@ -79,7 +79,7 @@ package ariane_axi_soc;
     typedef struct packed {
         aw_chan_slv_t aw;
         logic         aw_valid;
-        w_chan_t      w;
+        ariane_axi::w_chan_t      w;
         logic         w_valid;
         logic         b_ready;
         ar_chan_slv_t ar;

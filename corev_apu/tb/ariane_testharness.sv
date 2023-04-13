@@ -208,8 +208,8 @@ module ariane_testharness #(
     end
   end
 
-  ariane_axi_soc::req_t    dm_axi_m_req;
-  ariane_axi_soc::resp_t   dm_axi_m_resp;
+  ariane_axi::req_t    dm_axi_m_req;
+  ariane_axi::resp_t   dm_axi_m_resp;
 
   logic                dm_slave_req;
   logic                dm_slave_we;
@@ -292,8 +292,8 @@ module ariane_testharness #(
     .AXI_ADDR_WIDTH        ( ariane_axi_soc::AddrWidth ),
     .AXI_DATA_WIDTH        ( ariane_axi_soc::DataWidth ),
     .AXI_ID_WIDTH          ( ariane_soc::IdWidth       ),
-    .axi_req_t             ( ariane_axi_soc::req_t     ),
-    .axi_rsp_t             ( ariane_axi_soc::resp_t    )
+    .axi_req_t             ( ariane_axi::req_t         ),
+    .axi_rsp_t             ( ariane_axi::resp_t        )
   ) i_dm_axi_master (
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
@@ -618,8 +618,8 @@ module ariane_testharness #(
   // ---------------
   // Core
   // ---------------
-  ariane_axi_soc::req_t    axi_ariane_req;
-  ariane_axi_soc::resp_t   axi_ariane_resp;
+  ariane_axi::req_t    axi_ariane_req;
+  ariane_axi::resp_t   axi_ariane_resp;
   ariane_pkg::rvfi_port_t  rvfi;
 
   ariane #(
