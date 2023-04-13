@@ -416,6 +416,50 @@ pub_benchmarks:
     paths:
       - "artifacts/reports/*.yml"
 
+pub_coremark:
+  stage: two
+  extends:
+    - .template_job_full_ci
+  needs:
+    - job: pub_smoke
+      artifacts: false
+  variables:
+    DASHBOARD_JOB_TITLE: "CoreMark"
+    DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
+    DASHBOARD_SORT_INDEX: 5
+    DASHBOARD_JOB_CATEGORY: "Performance"
+  script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - bash cva6/regress/coremark.sh --no-print
+    - python3 .gitlab-ci/scripts/report_benchmark.py cva6/sim/out_*/veri-testharness_sim/core_main.log
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/*.yml"
+
+pub_dhrystone:
+  stage: two
+  extends:
+    - .template_job_full_ci
+  needs:
+    - job: pub_smoke
+      artifacts: false
+  variables:
+    DASHBOARD_JOB_TITLE: "Dhrystone"
+    DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
+    DASHBOARD_SORT_INDEX: 5
+    DASHBOARD_JOB_CATEGORY: "Performance"
+  script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - bash cva6/regress/dhrystone.sh
+    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone cva6/sim/out_*/veri-testharness_sim/dhrystone_main.log
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/*.yml"
+
 pub_wb_dcache:
   stage: three
   extends:
