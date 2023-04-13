@@ -121,7 +121,7 @@ function void uvma_isacov_agent_c::create_components();
       mon_trn_logger = uvma_isacov_mon_trn_logger_c::type_id::create("mon_trn_logger", this);
     end
     if (cfg.is_active==UVM_ACTIVE) begin
-      `uvm_error("CFG", "Active mode not yet supported")
+      `uvm_error("CFG", "Misconfiguration error: this agent should not be configured as an active agent")
     end
   end
 
