@@ -282,9 +282,12 @@ package ariane_pkg;
                                                     | riscv::SSTATUS_SUM
                                                     | riscv::SSTATUS_MXR;
     // ---------------
-    // User bits
+    // AXI
     // ---------------
 
+    localparam AXI_ID_WIDTH = 4;
+    localparam AXI_ADDR_WIDTH = 64;
+    localparam AXI_DATA_WIDTH = 64;
     localparam FETCH_USER_WIDTH = cva6_config_pkg::CVA6ConfigFetchUserWidth;
     localparam DATA_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
     localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
