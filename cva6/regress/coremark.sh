@@ -7,6 +7,11 @@
 #
 # Original Author: Zbigniew CHAMSKI (zbigniew.chamski@thalesgroup.fr)
 
+noprint=""
+if [ "$1" == "--no-print" ]; then
+        noprint="-DHAS_PRINTF=0"
+fi
+
 # where are the tools
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
@@ -46,6 +51,7 @@ cflags_opt=(
         -nostdlib
         -nostartfiles
         -lgcc
+        $noprint
         -funroll-all-loops
         -ffunction-sections -fdata-sections
         -Wl,-gc-sections

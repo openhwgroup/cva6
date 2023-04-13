@@ -60,6 +60,8 @@ Original Author: Shay Gal-on
 #endif
 #if HAS_PRINTF
 #define ee_printf printf
+#else
+#define ee_printf(...)
 #endif
 
 /* Actual benchmark execution in iterate */
