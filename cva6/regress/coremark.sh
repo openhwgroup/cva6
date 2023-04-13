@@ -66,6 +66,7 @@ cflags=(
         -DSKIP_TIME_CHECK
         -I../tests/custom/env
         -I../tests/custom/common
+        -DNOPRINT
 )
 
 set -x
