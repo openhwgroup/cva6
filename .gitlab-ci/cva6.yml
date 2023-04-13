@@ -308,6 +308,7 @@ pub_tests-p:
 
 pub_synthesis:
   stage: two
+  timeout: 2 hours
   extends:
     - .template_job_always_manual
   needs:
