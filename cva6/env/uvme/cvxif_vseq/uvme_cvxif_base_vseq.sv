@@ -82,8 +82,8 @@ function string uvme_cvxif_base_vseq_c::decode(input logic [31:0] instr);
             return ("CUS_EXC");
          end
       end
-   return ("ILLEGAL");
    end
+   return ("ILLEGAL");
 
 endfunction
 
