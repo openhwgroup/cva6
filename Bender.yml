@@ -10,7 +10,7 @@ dependencies:
   axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.31.0 }
   common_cells:
     { git: "https://github.com/pulp-platform/common_cells", version: 1.23.0 }
-  fpnew: { git: "https://github.com/pulp-platform/fpnew.git", version: 0.6.2 }
+  fpnew: { git: "https://github.com/openhwgroup/cvfpu.git", version: 0.7.0 }
   tech_cells_generic:
     {
       git: "https://github.com/pulp-platform/tech_cells_generic.git",
@@ -103,25 +103,25 @@ sources:
       #     - vendor/pulp-platform/common_cells/src/delta_counter.sv
 
       # Floating point unit
-      #     - vendor/pulp-platform/fpnew/src/fpnew_pkg.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_cast_multi.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_classifier.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_divsqrt_multi.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_fma_multi.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_fma.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_noncomp.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_opgroup_block.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_opgroup_fmt_slice.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_opgroup_multifmt_slice.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_rounding.sv
-      #     - vendor/pulp-platform/fpnew/src/fpnew_top.sv
-      #     - vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
-      #     - vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
-      #     - vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
-      #     - vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
-      #     - vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
-      #     - vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
-      #     - vendor/pulp-platform/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_pkg.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_cast_multi.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_classifier.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_divsqrt_multi.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_fma_multi.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_fma.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_noncomp.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_opgroup_block.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_opgroup_fmt_slice.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_opgroup_multifmt_slice.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_rounding.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpnew_top.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
+      #     - vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
       # Top-level source files (not necessarily instantiated at the top of the cva6).
       - core/ariane.sv

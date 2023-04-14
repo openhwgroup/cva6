@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use FPnew, please cite it as below."
+authors:
+- family-names: "Mach"
+  given-names: "Stefan"
+  orcid: "https://orcid.org/0000-0002-3476-8857"
+title: "FPnew: - New Floating-Point Unit with Transprecision Capabilities"
+version: 0.6.6
+url: "https://github.com/pulp-platform/fpnew"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Mach"
+    given-names: "Stefan"
+    orcid: "https://orcid.org/0000-0002-3476-8857"
+  - family-names: "Schuiki"
+    given-names: "Fabian"
+    orcid: "https://orcid.org/0000-0002-9923-5031"
+  - family-names: "Zaruba"
+    given-names: "Florian"
+    orcid: "https://orcid.org/0000-0002-8194-6521"
+  - family-names: "Benini"
+    given-names: "Luca"
+    orcid: "https://orcid.org/0000-0001-8068-3806"
+  doi: "10.1109/TVLSI.2020.3044752"
+  journal: "IEEE Transactions on Very Large Scale Integration (VLSI) Systems"
+  month: 12
+  start: 774
+  end: 787
+  title: "FPnew: An Open-Source Multiformat Floating-Point Unit Architecture for Energy-Proportional Transprecision Computing"
+  issue: 4
+  volume: 29
+  year: 2020

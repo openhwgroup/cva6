@@ -5,28 +5,30 @@
 
 {
     // Name of the project
-    name: "pulp_fpu_div_sqrt_mvp",
+    name: "openhwgroup_cvfpu",
 
     // Target directory: relative to the location of this script.
-    target_dir: "openhwgroup/cvfpu/src/fpu_div_sqrt_mvp",
+    target_dir: "openhwgroup/cvfpu",
 
     // Upstream repository
     upstream: {
         // URL
-        url: "https://github.com/pulp-platform/fpu_div_sqrt_mvp.git",
+        url: "https://github.com/openhwgroup/cvfpu",
         // revision
-        rev: "v1.0.4",
+        rev: "v0.7.0",
     }
 
-    //Patch dir for local changes
-    patch_dir: "patches/pulp-platform/fpu_div_sqrt_mvp",
+    // Patch dir for local changes
+    patch_dir: "patches/openhwgroup/cvfpu",
 
     // Exclusions from upstream content
     exclude_from_upstream: [
-        ".git",
+        ".gitmodules",
         "Bender.yml",
-        "document",
+        "docs",
+        "ips_list.yml",
         "src_files.yml",
+        "tb",
     ]
 }
 
