@@ -29,8 +29,8 @@ class uvma_isacov_agent_c#(int ILEN=DEFAULT_ILEN,
   uvma_isacov_cov_model_c                    cov_model;
   uvma_isacov_mon_trn_logger_c               mon_trn_logger;
 
-  // TLM
-  uvm_analysis_port #(uvma_isacov_mon_trn_c) mon_ap;
+  //TLM RVFI
+  uvm_analysis_export#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN)) rvfi_instr_export;
 
   // Methods
   extern function new(string name = "uvma_isacov_agent", uvm_component parent = null);
@@ -47,6 +47,7 @@ endclass : uvma_isacov_agent_c
 function uvma_isacov_agent_c::new(string name = "uvma_isacov_agent", uvm_component parent = null);
 
   super.new(name, parent);
+  rvfi_instr_export = new("rvfi_instr_export");
 
 endfunction : new
 
@@ -67,10 +68,12 @@ function void uvma_isacov_agent_c::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
 
   if (cfg.enabled) begin
-    mon_ap = monitor.ap;
-    mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);  //TODO if cfg...enabled
+    rvfi_instr_export.connect(monitor.rvfi_instr_imp);
+    if (cfg.cov_model_enabled) begin
+      monitor.ap.connect(cov_model.mon_trn_fifo.analysis_export);
+    end
     if (cfg.trn_log_enabled) begin
-      mon_ap.connect(mon_trn_logger.analysis_export);
+      monitor.ap.connect(mon_trn_logger.analysis_export);
     end
   end
 
@@ -104,14 +107,6 @@ endfunction : get_and_set_cntxt
 
 function void uvma_isacov_agent_c::retrieve_vif();
 
-  if (!uvm_config_db#(virtual uvma_isacov_if)::get(this, "", "vif", cntxt.vif)) begin
-    `uvm_fatal("VIF", $sformatf(
-               "Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.vif)))
-  end else begin
-    `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.vif)
-              ), UVM_DEBUG)
-  end
-
 endfunction : retrieve_vif
 
 
@@ -119,8 +114,15 @@ function void uvma_isacov_agent_c::create_components();
 
   if (cfg.enabled) begin
     monitor        = uvma_isacov_mon_c#(ILEN,XLEN)::type_id::create("monitor", this);
-    cov_model      = uvma_isacov_cov_model_c::type_id::create("cov_model", this);
-    mon_trn_logger = uvma_isacov_mon_trn_logger_c::type_id::create("mon_trn_logger", this);
+    if (cfg.cov_model_enabled) begin
+      cov_model      = uvma_isacov_cov_model_c::type_id::create("cov_model", this);
+    end
+    if (cfg.trn_log_enabled) begin
+      mon_trn_logger = uvma_isacov_mon_trn_logger_c::type_id::create("mon_trn_logger", this);
+    end
+    if (cfg.is_active==UVM_ACTIVE) begin
+      `uvm_error("CFG", "Misconfiguration error: this agent should not be configured as an active agent")
+    end
   end
 
 endfunction : create_components

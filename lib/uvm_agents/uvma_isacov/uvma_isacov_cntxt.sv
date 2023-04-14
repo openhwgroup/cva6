@@ -20,8 +20,6 @@ class uvma_isacov_cntxt_c extends uvm_object;
 
   `uvm_object_utils(uvma_isacov_cntxt_c)
 
-  virtual uvma_isacov_if vif;
-
   extern function new(string name = "uvma_isacov_cntxt");
 
 endclass : uvma_isacov_cntxt_c
