@@ -166,7 +166,7 @@ module axi_adapter #(
             // its a request for the whole cache line
             end else begin
               // bursts of AMOs unsupported
-              assert (amo_i == ariane_pkg::AMO_NONE) 
+              assert (amo_i == ariane_pkg::AMO_NONE)
                 else $fatal("Bursts of atomic operations are not supported");
 
               axi_req_o.aw.len = BURST_SIZE; // number of bursts to do
@@ -194,7 +194,7 @@ module axi_adapter #(
 
             gnt_o = axi_resp_i.ar_ready;
             if (type_i != ariane_axi::SINGLE_REQ) begin
-              assert (amo_i == ariane_pkg::AMO_NONE) 
+              assert (amo_i == ariane_pkg::AMO_NONE)
                 else $fatal("Bursts of atomic operations are not supported");
 
               axi_req_o.ar.len = BURST_SIZE;
@@ -395,6 +395,8 @@ module axi_adapter #(
         state_d = IDLE;
         id_o    = id_q;
       end
+
+      default: state_d = IDLE;
     endcase
   end
 

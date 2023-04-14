@@ -413,8 +413,8 @@ if (riscv::XLEN==32 ) begin
 
     assign master[ariane_soc::Debug].r_user ='0;
     assign master[ariane_soc::Debug].b_user ='0;
- 
-    xlnx_axi_dwidth_converter_dm_slave  i_axi_dwidth_converter_dm_slave( 
+
+    xlnx_axi_dwidth_converter_dm_slave  i_axi_dwidth_converter_dm_slave(
         .s_axi_aclk(clk),
         .s_axi_aresetn(ndmreset_n),
         .s_axi_awid(master[ariane_soc::Debug].aw_id),
@@ -550,7 +550,7 @@ end else begin
 
     assign master[ariane_soc::Debug].r_ready = master_to_dm[0].r_ready;
 
-end 
+end
 
 
 
@@ -596,7 +596,7 @@ if (riscv::XLEN==32 ) begin
 
     logic [31 : 0] dm_master_s_rdata;
 
-    assign dm_axi_m_resp.r.data = {32'h0000_0000, dm_master_s_rdata}; 
+    assign dm_axi_m_resp.r.data = {32'h0000_0000, dm_master_s_rdata};
 
     assign slave[1].aw_user = '0;
     assign slave[1].w_user = '0;
@@ -606,7 +606,7 @@ if (riscv::XLEN==32 ) begin
     assign slave[1].ar_id = dm_axi_m_req.ar.id;
     assign slave[1].aw_atop = dm_axi_m_req.aw.atop;
 
-    xlnx_axi_dwidth_converter_dm_master  i_axi_dwidth_converter_dm_master( 
+    xlnx_axi_dwidth_converter_dm_master  i_axi_dwidth_converter_dm_master(
         .s_axi_aclk(clk),
         .s_axi_aresetn(ndmreset_n),
         .s_axi_awid(dm_axi_m_req.aw.id),
@@ -777,7 +777,7 @@ if (riscv::XLEN==32 ) begin
         .addr_i  ( rom_addr  ),
         .rdata_o ( rom_rdata )
     );
-end else begin 
+end else begin
     bootrom_64 i_bootrom (
         .clk_i   ( clk       ),
         .req_i   ( rom_req   ),

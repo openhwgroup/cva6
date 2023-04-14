@@ -503,18 +503,18 @@ module ariane_testharness #(
   };
 
   localparam axi_pkg::xbar_cfg_t AXI_XBAR_CFG = '{
-    NoSlvPorts: ariane_soc::NrSlaves,
-    NoMstPorts: ariane_soc::NB_PERIPHERALS,
-    MaxMstTrans: 1, // Probably requires update
-    MaxSlvTrans: 1, // Probably requires update
+    NoSlvPorts: unsigned'(ariane_soc::NrSlaves),
+    NoMstPorts: unsigned'(ariane_soc::NB_PERIPHERALS),
+    MaxMstTrans: unsigned'(1), // Probably requires update
+    MaxSlvTrans: unsigned'(1), // Probably requires update
     FallThrough: 1'b0,
     LatencyMode: axi_pkg::NO_LATENCY,
-    AxiIdWidthSlvPorts: ariane_soc::IdWidth,
-    AxiIdUsedSlvPorts: ariane_soc::IdWidth,
+    AxiIdWidthSlvPorts: unsigned'(ariane_soc::IdWidth),
+    AxiIdUsedSlvPorts: unsigned'(ariane_soc::IdWidth),
     UniqueIds: 1'b0,
-    AxiAddrWidth: AXI_ADDRESS_WIDTH,
-    AxiDataWidth: AXI_DATA_WIDTH,
-    NoAddrRules: ariane_soc::NB_PERIPHERALS
+    AxiAddrWidth: unsigned'(AXI_ADDRESS_WIDTH),
+    AxiDataWidth: unsigned'(AXI_DATA_WIDTH),
+    NoAddrRules: unsigned'(ariane_soc::NB_PERIPHERALS)
   };
 
   axi_xbar_intf #(

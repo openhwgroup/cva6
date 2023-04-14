@@ -248,8 +248,10 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
               AMO_MAXU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX};
               AMO_MIN:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN};
               AMO_MINU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN};
+              default: ; // Do nothing
             endcase
           end
+          default: ; // Do nothing
         //////////////////////////////////////
         endcase
       end

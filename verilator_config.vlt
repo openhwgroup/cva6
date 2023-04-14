@@ -1,0 +1,19 @@
+// Copyright OpenHW contributors
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// common waiver rules for verilator
+
+`verilator_config
+
+// TODO -> Please update the configuration file according to the warnings resolution
+// Timing flag issue CVA6 #1162, waiving it off
+lint_off -rule STMTDLY
+
+// Big Endian usage issue CVA6 #1176, waiving it off
+lint_off -rule LITENDIAN
+
+// New Line at the end of file in submodule register_interface, waiving it off
+// Commenting this out since CI Verilator does not recognize this rule
+// lint_off -rule EOFNEWLINE -file "corev_apu/*.svh"
+// lint_off -file "corev_apu/*.svh"

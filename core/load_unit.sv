@@ -241,6 +241,8 @@ module load_unit import ariane_pkg::*; #(
                 // we've killed the current request so we can go back to idle
                 state_d = IDLE;
             end
+
+            default: state_d = IDLE;
         endcase
 
         // we got an exception
@@ -343,16 +345,16 @@ module load_unit import ariane_pkg::*; #(
     // prepare these signals for faster selection in the next cycle
     assign signed_d  = load_data_d.operation  inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
     assign fp_sign_d = load_data_d.operation  inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-    
+
     assign idx_d     = ((load_data_d.operation inside {ariane_pkg::LW,  ariane_pkg::FLW}) & riscv::IS_XLEN64) ? load_data_d.address_offset + 3 :
                        (load_data_d.operation inside {ariane_pkg::LH,  ariane_pkg::FLH}) ? load_data_d.address_offset + 1 :
                                                                                           load_data_d.address_offset;
 
 
     for (genvar i = 0; i < (riscv::XLEN/8); i++) begin : gen_sign_bits
-        assign sign_bits[i] = req_port_i.data_rdata[(i+1)*8-1]; 
+        assign sign_bits[i] = req_port_i.data_rdata[(i+1)*8-1];
     end
-    
+
 
     // select correct sign bit in parallel to result shifter above
     // pull to 0 if unsigned
