@@ -9,7 +9,7 @@ smtbmc yices
 
 [script]
 verific -vlog-incdir ./include
-verific -sv -DFORMAL \
+verific -sv \
     riscv.sv \
     pmp_entry.sv \
     pmp.sv

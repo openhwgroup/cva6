@@ -72,7 +72,6 @@ module pmp #(
         end
     end else assign allow_o = 1'b1;
 
-    `ifdef FORMAL
     always @(*) begin
         if(priv_lvl_i == riscv::PRIV_LVL_M) begin
             static logic no_locked = 1'b1;
@@ -85,5 +84,5 @@ module pmp #(
             if (no_locked == 1'b1) assert(allow_o == 1'b1);
         end
     end
-    `endif
+
 endmodule
