@@ -285,7 +285,7 @@ package ariane_pkg;
     // AXI
     // ---------------
 
-    localparam AXI_ID_WIDTH = cva6_config_pkg::CVA6ConfigAxiIdWidth;;
+    localparam AXI_ID_WIDTH = cva6_config_pkg::CVA6ConfigAxiIdWidth;
     localparam AXI_ADDR_WIDTH = cva6_config_pkg::CVA6ConfigAxiAddrWidth;
     localparam AXI_DATA_WIDTH = cva6_config_pkg::CVA6ConfigAxiDataWidth;
     localparam FETCH_USER_WIDTH = cva6_config_pkg::CVA6ConfigFetchUserWidth;
