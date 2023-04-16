@@ -369,7 +369,8 @@ module ptw import ariane_pkg::*; #(
             // 1. in the PTE Lookup check whether we still need to wait for an rvalid
             // 2. waiting for a grant, if so: wait for it
             // if not, go back to idle
-            if ((state_q == PTE_LOOKUP && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
+            if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) ||
+                ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
                 state_d = WAIT_RVALID;
             else
                 state_d = IDLE;
