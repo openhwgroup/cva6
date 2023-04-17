@@ -143,7 +143,15 @@ class Model:
         r"([a-z]+)\s+0:\s*0x00000000([0-9a-f]+)\s*\(([0-9a-fx]+)\)\s*@\s*([0-9]+)\s*(.*)"
     )
 
-    def __init__(self, debug=False, issue=1, commit=2, sb_len=8, fetch_size=None, has_forwarding=True, has_renaming=True):
+    def __init__(
+            self,
+            debug=False,
+            issue=1,
+            commit=2,
+            sb_len=8,
+            fetch_size=None,
+            has_forwarding=True,
+            has_renaming=True):
         self.instr_queue = []
         self.scoreboard = []
         self.last_issued = None
