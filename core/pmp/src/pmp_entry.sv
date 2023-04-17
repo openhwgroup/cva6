@@ -45,11 +45,13 @@ module pmp_entry #(
                     match_o = 1'b1;
                 end else match_o = 1'b0;
 
+// synthesis translate_off
                 if (match_o == 0) begin
                     assert(addr_i >= (conf_addr_i << 2) || addr_i < (conf_addr_prev_i << 2));
                 end else begin
                     assert(addr_i < (conf_addr_i << 2) && addr_i >= (conf_addr_prev_i << 2));
                 end
+// synthesis translate_on
 
             end
             riscv::NA4, riscv::NAPOT:   begin
@@ -67,6 +69,7 @@ module pmp_entry #(
                 base = (conf_addr_i << 2) & mask;
                 match_o = (addr_i & mask) == base ? 1'b1 : 1'b0;
 
+// synthesis translate_off
                 // size extract checks
                 assert(size >= 2);
                 if (conf_addr_mode_i == riscv::NAPOT) begin
@@ -94,6 +97,7 @@ module pmp_entry #(
                         end
                     end
                 end
+// synthesis translate_on
 
             end
             riscv::OFF: match_o = 1'b0;
