@@ -87,7 +87,7 @@ endif
 # target takes one of the following cva6 hardware configuration:
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga
 # Changing the default target to cv32a60x for Step1 verification
-target     ?= cv32a60x
+target     ?= cv64a6_imafdc_sv39
 ifndef TARGET_CFG
 	export TARGET_CFG = $(target)
 endif
@@ -164,6 +164,7 @@ src :=  corev_apu/tb/ariane.sv                                                  
         vendor/pulp-platform/common_cells/src/rstgen_bypass.sv                       \
         vendor/pulp-platform/common_cells/src/rstgen.sv                              \
         vendor/pulp-platform/common_cells/src/addr_decode.sv                         \
+				vendor/pulp-platform/common_cells/src/stream_register.sv                     \
         vendor/pulp-platform/axi/src/axi_cut.sv                                      \
         vendor/pulp-platform/axi/src/axi_join.sv                                     \
         vendor/pulp-platform/axi/src/axi_delayer.sv                                  \
