@@ -1,6 +1,6 @@
-# Copyright 2022 Thales DIS design services SAS
-#
-# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
+"""
+Performance model of the cva6
+"""
 
 import sys
 import re
