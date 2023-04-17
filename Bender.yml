@@ -30,6 +30,17 @@ sources:
           - core/mmu_sv39/mmu.sv
           - core/mmu_sv39/ptw.sv
 
+      - target: cv64a6_imafdcsclic_sv39
+        files:
+          - core/include/cv64a6_imafdcsclic_sv39_config_pkg.sv
+          - core/include/riscv_pkg.sv
+          - core/include/ariane_dm_pkg.sv
+          - core/include/ariane_pkg.sv
+          - core/mmu_sv39/tlb.sv
+          - core/mmu_sv39/mmu.sv
+          - core/mmu_sv39/ptw.sv
+          - core/cva6_clic_controller.sv
+
       - target: cv32a6_imac_sv0
         files:
           - core/include/cv32a6_imac_sv0_config_pkg.sv
