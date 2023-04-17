@@ -39,19 +39,20 @@ module pmp_entry #(
     always_comb begin
         case (conf_addr_mode_i)
             riscv::TOR:     begin
-                // check that the requested address is in between the two 
+                // check that the requested address is in between the two
                 // configuration addresses
                 if (addr_i >= (conf_addr_prev_i << 2) && addr_i < (conf_addr_i << 2)) begin
                     match_o = 1'b1;
                 end else match_o = 1'b0;
 
-                `ifdef FORMAL
+// synthesis translate_off
                 if (match_o == 0) begin
                     assert(addr_i >= (conf_addr_i << 2) || addr_i < (conf_addr_prev_i << 2));
                 end else begin
                     assert(addr_i < (conf_addr_i << 2) && addr_i >= (conf_addr_prev_i << 2));
                 end
-                `endif
+// synthesis translate_on
+
             end
             riscv::NA4, riscv::NAPOT:   begin
                 logic [PLEN-1:0] base;
@@ -68,7 +69,7 @@ module pmp_entry #(
                 base = (conf_addr_i << 2) & mask;
                 match_o = (addr_i & mask) == base ? 1'b1 : 1'b0;
 
-                `ifdef FORMAL
+// synthesis translate_off
                 // size extract checks
                 assert(size >= 2);
                 if (conf_addr_mode_i == riscv::NAPOT) begin
@@ -96,7 +97,8 @@ module pmp_entry #(
                         end
                     end
                 end
-                `endif
+// synthesis translate_on
+
             end
             riscv::OFF: match_o = 1'b0;
             default:    match_o = 0;
