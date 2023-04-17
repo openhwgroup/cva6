@@ -72,7 +72,7 @@ module pmp #(
         end
     end else assign allow_o = 1'b1;
 
-// synthesis translate_off
+    // synthesis translate_off
     always @(*) begin
         if(priv_lvl_i == riscv::PRIV_LVL_M) begin
             static logic no_locked = 1'b1;
@@ -84,6 +84,6 @@ module pmp #(
             if (no_locked == 1'b1) assert(allow_o == 1'b1);
         end
     end
-// synthesis translate_on
+    // synthesis translate_on
 
 endmodule
