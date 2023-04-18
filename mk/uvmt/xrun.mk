@@ -69,6 +69,9 @@ XRUN_RUN_BASE_FLAGS += -sv_lib $(DPI_DASM_LIB)
 XRUN_RUN_BASE_FLAGS += -sv_lib $(abspath $(SVLIB_LIB))
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
+
+# Special var to point to tool and installation dependent path of DPI headers.
+# Used to recompile dpi_dasm_spike if needed (by default, not needed).
 DPI_INCLUDE        ?= $(shell dirname $(shell which xrun))/../include
 
 # Necessary libraries for the PMA generator class

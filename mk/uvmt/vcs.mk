@@ -156,6 +156,10 @@ VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
 VCS_RUN_FLAGS        += $(USER_RUN_FLAGS)
 
+# Special var to point to tool and installation dependent path of DPI headers.
+# Used to recompile dpi_dasm_spike if needed (by default, not needed).
+DPI_INCLUDE          ?= $(shell dirname $(shell which vcs))/../lib
+
 ###############################################################################
 # Targets
 
