@@ -38,9 +38,9 @@ CV32A6 supports the RISC-V **Sv32** virtual memory when the ``MMUEn`` parameter 
 
 CV64A6 supports the RISC-V **Sv39** virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 64).
 
-By default, CV32A6 and CV64A6 are in RISC-V **Bare** mode. **Sv32** or **Sv39** are enabled by writing 1 to ``stap[0]`` register bit.
+By default, CV32A6 and CV64A6 are in RISC-V **Bare** mode. **Sv32** or **Sv39** are enabled by writing 1 to ``satp[0]`` register bit.
 
-When the ``MMUEn`` parameter is set to 0, CV32A6 and CV64A6 are always in RISC-V **Bare** mode; ``stap[0]`` remains at 0 and writes to this register are ignored.
+When the ``MMUEn`` parameter is set to 0, CV32A6 and CV64A6 are always in RISC-V **Bare** mode; ``satp[0]`` remains at 0 and writes to this register are ignored.
 
 Notes for the integrator:
 
