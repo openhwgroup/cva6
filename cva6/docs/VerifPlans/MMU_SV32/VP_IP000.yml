@@ -1,0 +1,583 @@
+!Feature
+next_elt_id: 16
+name: sv32
+id: 0
+display_order: 0
+subfeatures: !!omap
+- 000_PMP permissions on Physical Address: !Subfeature
+    name: 000_PMP permissions on Physical Address
+    tag: VP_MMU_SV32_F000_S000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S000_I000
+        description: "If PTE has valid and non-reserved RWX permissions, but the translated\
+          \ Physical address (pte.ppn of leaf PTE + offset) does not have (r,w,x)\
+          \ PMP permissions, then accessing the translated Physical address would\
+          \ raise access fault exception.\nWhen satp.mode=sv32, and PTE has valid\
+          \ and non-reserved RWX permissions then test the following in supervisor\
+          \ and user privilege mode for level1 and level0 PTE.\n\n- Remove read PMP\
+          \ permission of translated Physical Address in pmpcfg and test the read\
+          \ acces.\n- Remvoe write PMP permission of translated Physical Address in\
+          \ pmpcfg and test the write access.\n- Remove execute PMP permission of\
+          \ translated Physical Address in pmpcfg and test the execute access."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          3.7, 5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Access fault exception should be raised according to {x,r,w}\
+          \ access type. Check that:\n- m/scause must contain the exception number\
+          \ of:\n         - instruction  access fault for execute access.\n      \
+          \   - load page access for read access.\n         - store/AMO access fault\
+          \ for write access.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 001_PMP permissions on PTE: !Subfeature
+    name: 001_PMP permissions on PTE
+    tag: VP_MMU_SV32_F000_S001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S001_I000
+        description: "If PTE does not have (r,w,x) PMP permissions, then accessing\
+          \ it would raise access fault exception of the corresponding access type.\
+          \ \nWhen satp.mode=sv32, then test the following in supervisor and user\
+          \ privilege mode for level0 and level1 PTE.\n- Remove read PMP permission\
+          \ of PTE address in pmpcfg and test the read acces.\n- Remvoe write PMP\
+          \ permission of PTE address in pmpcfg and test the write access.\n- Remove\
+          \ execute PMP permission of PTE address in pmpcfg and test the execute access."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          3.7, 5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Access fault exception should be raised according to {x,r,w}\
+          \ access type. Check that:\n- m/scause must contain the exception number\
+          \ of:\n         - instruction  access fault for execute access.\n      \
+          \   - load page access for read access.\n         - store/AMO access fault\
+          \ for write access.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 002_In-Valid Permission of PTE: !Subfeature
+    name: 002_In-Valid Permission of PTE
+    tag: VP_MMU_SV32_F000_S002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S002_I000
+        description: "If PTE does not have Valid (pte.V=0) permission, then accessing\
+          \ it would raise page fault exception of the corresponding access type.\
+          \ \nWhen satp.mode=sv32 and PTE has (r,w,x) PMP permissions, then test the\
+          \ following in supervisor and user privilege mode for level0 and level1\
+          \ PTE.\n- Set PTE.V = 0 and test the read acces.\n- Set PTE.V = 0 and test\
+          \ the write access.\n- Set PTE.V = 0 and test the execute access.\n\n* For\
+          \ testing at level0, set all the pte perimssions at level1 to 0 except pte.v,\
+          \ so that level1 points to level0.\n* Set pte.U=0 when test in Supervisor\
+          \ mode and Set pte.U=1 when testing in user mode"
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chpter
+          5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Page fault exception should be raised according to {x,r,w} access\
+          \ type. Check that:\n- m/scause must contain the exception number of:\n\
+          \         - instruction page fault for execute access.\n         - load\
+          \ page fault for read access.\n         - store/AMO page fault for write\
+          \ access.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 003_Reserved RWX permission encodings of PTE: !Subfeature
+    name: 003_Reserved RWX permission encodings of PTE
+    tag: VP_MMU_SV32_F000_S003
+    next_elt_id: 1
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S003_I000
+        description: "If PTE has reserved RWX encodings (pte.w=1 & pte.r=0), then\
+          \ accessing it would raise page fault exception of the corresponding access\
+          \ type. \nWhen satp.mode=sv32, PTE has (r,w,x) PMP permissions, and pte.v=1,\
+          \ then test the following in supervisor and user privilege mode for level0\
+          \ and level1 PTE.\n- Set pte.w=1 & pte.r=0 and test the read acces.\n- Set\
+          \ pte.w=1 & pte.r=0 and test the write access.\n- Set pte.w=1 & pte.r=0\
+          \ and test the execute access.\n\n* For testing at level0, set all the pte\
+          \ perimssions at level1 to 0 except pte.v, so that level1 points to level0.\n\
+          * Set pte.U=0 when test in Supervisor mode and Set pte.U=1 when testing\
+          \ in user mode"
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          3.7, 5.3.1'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Page fault exception should be raised according to {x,r,w} access\
+          \ type. Check that:\n- m/scause must contain the exception number of:\n\
+          \         - instruction page fault for execute access.\n         - load\
+          \ page fault for read access.\n         - store/AMO page fault for write\
+          \ access.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 004_Non-leaf PTE permission at level 0: !Subfeature
+    name: 004_Non-leaf PTE permission at level 0
+    tag: VP_MMU_SV32_F000_S004
+    next_elt_id: 1
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S004_I000
+        description: "If PTE at level0 has non-leaf RWX permissions (pte.x=0 & pte.r=0),\
+          \ then accessing it would raise page fault exception of the corresponding\
+          \ access type. \nWhen satp.mode=sv32, PTE has (r,w,x) PMP permissions, and\
+          \ pte.v=1, then test the following in supervisor and user privilege mode\
+          \ for level0 PTE.\n- Set pte.x=0 & pte.r=0 & pte.w=0 and test the read acces.\n\
+          - Set pte.x=0 & pte.r=0 & pte.w=0 and test the write access.\n- Set pte.x=0\
+          \ & pte.r=0 & pte.w=0 and test the execute access.\n\n* For testing at level0,\
+          \ set all the pte perimssions at level1 to 0 except pte.v, so that level1\
+          \ points to level0.\n* Set pte.U=0 when test in Supervisor mode and Set\
+          \ pte.U=1 when testing in user mode"
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Page fault exception should be raised according to {x,r,w} access\
+          \ type. Check that:\n- m/scause must contain the exception number of:\n\
+          \         - instruction page fault for execute access.\n         - load\
+          \ page fault for read access.\n         - store/AMO page fault for write\
+          \ access.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 005_RWX access on S-mode pages in S-mode: !Subfeature
+    name: 005_RWX access on S-mode pages in S-mode
+    tag: VP_MMU_SV32_F000_S005
+    next_elt_id: 1
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S005_I000
+        description: "If PTE belongs to supervisor mode i.e. its U permission bit\
+          \ is clear (pte.u = 0), then accessing that PTE in supervisor mode should\
+          \ be successful if the corresponding (r,w,x) permission of PTE is granted.\
+          \ Otherwise raise page fault exception of the corresponding access type.\n\
+          When satp.mode=sv32, PTE has (r,w,x) PMP permissions, PTE has non-reserved\
+          \ RWX encoding, pte.u=0 and pte.v=1, then test the following in supervisor\
+          \ privilege mode for level 0 and level 1 PTE.\n- Test the read access for\
+          \ both pte.r=1 and for pte.r=0\n- Test the write access for both pte.w=1\
+          \ and for pte.w=0\n- Test the execute access for both pte.x=1 and for pte.x=0\n\
+          \n* For testing at level0, set all the pte perimssions at level1 to 0 except\
+          \ pte.v, so that level1 points to level0."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          5.3.1'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "RWX access should be successful if the corresponding permissions\
+          \ are granted in the PTE. Check that load, store and execute works without\
+          \ any page fault.\nPage fault exception should be raised according to (x,r,w)\
+          \ access type if the corresponding (r,w,x) permissions are not granted in\
+          \ the PTE. Check that:\n- m/scause must contain the exception number of:\n\
+          \         - instruction  page fault for execute.\n         - load page fault\
+          \ for read access.\n         - store/AMO page fault for write access.\n\
+          - m/sepc must contain the virtual address of the instruction at which the\
+          \ trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 006_RWX access on S-mode pages in U-mode: !Subfeature
+    name: 006_RWX access on S-mode pages in U-mode
+    tag: VP_MMU_SV32_F000_S006
+    next_elt_id: 1
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S006_I000
+        description: "If PTE belongs to supervisor mode i.e. its U permission bit\
+          \ is clear (pte.u = 0), then accessing that PTE in user mode would raise\
+          \ page fault exception of the corresponding access type. \nWhen satp.mode=sv32,\
+          \ PTE has (r,w,x) PMP permissions, PTE has non-reserved RWX encoding, and\
+          \ pte.v=1, then test the following user privilege mode for level0 and level1\
+          \ PTE.\n- Set pte.u=0 and test the read acces.\n- Set pte.u=0 and test the\
+          \ write access.\n- Set pte.u=0 and test the execute access.\n\n* For testing\
+          \ at level0, set all the pte perimssions at level1 to 0 except pte.v, so\
+          \ that level1 points to level0."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Page fault exception should be raised according to {x,r,w} access\
+          \ type. Check that:\n- m/scause must contain the exception number of instruction,\
+          \ load, and store/AMO page fault for execute, read and write access type,\
+          \ respectively.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 007_RWX access on U-mode pages in S-mode with mstatus.SUM unset: !Subfeature
+    name: 007_RWX access on U-mode pages in S-mode with mstatus.SUM unset
+    tag: VP_MMU_SV32_F000_S007
+    next_elt_id: 1
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S007_I000
+        description: "If PTE belongs to user mode i.e. its U permission bit is set\
+          \ (pte.u = 1) and m/sstatus.SUM = 0, then accessing that PTE in supervisor\
+          \ mode would raise page fault exception of the corresponding access type.\
+          \ \nWhen satp.mode=sv32, PTE has (r,w,x) PMP permissions, PTE has non-reserved\
+          \ RWX encoding, and pte.v=1, then test the following in supervisor mode\
+          \ for level 0 and level 1 PTE.\n- Set pte.u=1 & s/mstatus.SUM = 0 and test\
+          \ the read acces.\n- Set pte.u=1 & s/mstatus.SUM = 0 and test the write\
+          \ access.\n- Set pte.u=1 & s/mstatus.SUM = 0 and test the execute access.\n\
+          \n* For testing at level0, set all the pte perimssions at level1 to 0 except\
+          \ pte.v, so that level1 points to level0."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          3.1.6.3, 5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Page fault exception should be raised according to {x,r,w} access\
+          \ type. Check that:\n- m/scause must contain the exception number of:\n\
+          \         - instruction page fault for execute access.\n         - load\
+          \ page fault for read access.\n         - store/AMO page fault for write\
+          \ access.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 008_RWX access on U-mode pages in S-mode with mstatus.SUM set: !Subfeature
+    name: 008_RWX access on U-mode pages in S-mode with mstatus.SUM set
+    tag: VP_MMU_SV32_F000_S008
+    next_elt_id: 1
+    display_order: 8
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S008_I000
+        description: "If PTE belongs to user mode i.e. its U permission bit is set\
+          \ (pte.u = 1) and m/sstatus.SUM = 1, then RW access to that PTE in supervisor\
+          \ mode would be successful but eXecute access would raise instruction page\
+          \ fault exception in s-mode.\nWhen satp.mode=sv32, PTE has (r,w,x) PMP permissions,\
+          \ PTE has non-reserved RWX encoding, and pte.v=1, then test the following\
+          \ in supervisor mode for level0 and level1 PTE.\n- Set pte.r=1 & pte.u=1\
+          \ & s/mstatus.SUM = 1 and test the read acces.\n- Set pte.w=1 & pte.u=1\
+          \ & s/mstatus.SUM = 1 and test the write access.\n- Set pte.x=1 & pte.u=1\
+          \ & s/mstatus.SUM = 1 and test the execute access.\n\n* For testing at level0,\
+          \ set all the pte perimssions at level1 to 0 except pte.v, so that level1\
+          \ points to level0."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          3.1.6.3, 5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Read and Write access to the PTE should be successful. So, check\
+          \ that the load and store works without page fault and expected data is\
+          \ stored to and loaded from the memory, repectively.\n\nExecute access should\
+          \ raise instruction page fault. Check that:\n- m/scause must contain the\
+          \ exception number of instruction instruction access fault. \n- m/sepc must\
+          \ contain the virtual address of the instruction at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 009_RWX access on U-mode pages in U-mode: !Subfeature
+    name: 009_RWX access on U-mode pages in U-mode
+    tag: VP_MMU_SV32_F000_S009
+    next_elt_id: 1
+    display_order: 9
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S009_I000
+        description: "If PTE belongs to user mode i.e. its U permission bit is set\
+          \ (pte.u = 1), then accessing that PTE in user mode should be successful\
+          \ if the corresponding (r,w,x) permission of PTE is granted. Otherwise raise\
+          \ page fault exception of the corresponding access type.\nWhen satp.mode=sv32,\
+          \ PTE has (r,w,x) PMP permissions, PTE has non-reserved RWX encoding, pte.u=1\
+          \ and pte.v=1, then test the following in user privilege mode for level0\
+          \ and level1 PTE.\n- Test the read access for both pte.r=1 and for pte.r=0\n\
+          - Test the write access for both pte.w=1 and for pte.w=0\n- Test the execute\
+          \ access for both pte.x=1 and for pte.x=0\n\n* For testing at level0, set\
+          \ all the pte perimssions at level1 to 0 except pte.v, so that level1 points\
+          \ to level0."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "RWX access should be successful if the corresponding permissions\
+          \ are granted in the PTE. Check that load, store and execute works without\
+          \ any page fault.\n\nPage fault exception should be raised if the corresponding\
+          \ rwx PTE permissions are not granted. Check that:\n- m/scause must contain\
+          \ the exception number of:\n         - instruction page fault for execute\
+          \ access.\n         - load page fault for read access.\n         - store/AMO\
+          \ page fault for write access.\n- m/sepc must contain the virtual address\
+          \ of the instruction at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 010_Make Executable Page Readable with s/mstatus.MXR unset: !Subfeature
+    name: 010_Make Executable Page Readable with s/mstatus.MXR unset
+    tag: VP_MMU_SV32_F000_S010
+    next_elt_id: 1
+    display_order: 10
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S010_I000
+        description: "If PTE has only execute permission (pte.x = 1) and s/mstatus.MXR=0,\
+          \ then read access on that PTE should raise load page fault exception.\n\
+          When satp.mode=sv32, PTE has (r,w,x) PMP permissions, and pte.v=1, then\
+          \ test the following in supervisor and user privilege mode for level0 and\
+          \ level1 PTE.\n- Set pte.r=0 & pte.w=0 & pte.x=1 & s/mstatus.MXR=0 and test\
+          \ the read acces.\n\n* For testing at level0, set all the pte perimssions\
+          \ at level1 to 0 except pte.v, so that level1 points to level0.\n* Set pte.U=0\
+          \ when test in Supervisor mode and Set pte.U=1 when testing in user mode"
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          3.1.6.3, 5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Load Page fault exception should be raised. Check that:\n- m/scause\
+          \ must contain the exception number of load page fault for read access.\n\
+          - m/sepc must contain the virtual address of the instruction at which the\
+          \ trap occurs."
+        pfc: 2
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 011_Make Executable Page Readable with s/mstatus.MXR set: !Subfeature
+    name: 011_Make Executable Page Readable with s/mstatus.MXR set
+    tag: VP_MMU_SV32_F000_S011
+    next_elt_id: 1
+    display_order: 11
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S011_I000
+        description: "If PTE has only execute permission (pte.x = 1) and s/mstatus.MXR=1,\
+          \ then read access on that PTE should be successful without having explicit\
+          \ read permission (pte.r=0).\nWhen satp.mode=sv32, PTE has (r,w,x) PMP permissions,\
+          \ and pte.v=1, then test the following in supervisor and user privilege\
+          \ mode for level0 and level1 PTE.\n- Set pte.r=0 & pte.w=0 & pte.x=1 & s/mstatus.MXR=1\
+          \ and test the read acces.\n\n* For testing at level0, set all the pte perimssions\
+          \ at level1 to 0 except pte.v, so that level1 points to level0.\n* Set pte.U=0\
+          \ when test in Supervisor mode and Set pte.U=1 when testing in user mode"
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          3.1.6.3 ,5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Read access to the PTE should be successful. Check that load
+          instructions works without any load page fault exception and expected data
+          is loaded from the memory.
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- '012_Global mapping ': !Subfeature
+    name: '012_Global mapping '
+    tag: VP_MMU_SV32_F000_S012
+    next_elt_id: 1
+    display_order: 12
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S012_I000
+        description: For two different processes having same Virtual address and different
+          satp.ASID, maps to same Physical address, and the pte.G is set; then one
+          process will go through the address translation and update the TLB while
+          the 2nd process will not go through the translation if pte.G is set and
+          Physical address exist in TLB.
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          5.3.1'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Show that two different processes having same VA to PA mapping
+          can access the translated PA from TLB (if exist) and not go through complete
+          translation.
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 013_Access bit implementation: !Subfeature
+    name: 013_Access bit implementation
+    tag: VP_MMU_SV32_F000_S013
+    next_elt_id: 1
+    display_order: 13
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S013_I000
+        description: "If implementation does not sets the pte.A on accessing the PTE,\
+          \ and PTE has pte.A=0, then accessing it would raise page fault exception\
+          \ of the corresponding access type. \nWhen satp.mode=sv32, PTE has (r,w,x)\
+          \ PMP permissions, and pte.v=1, then test the following in supervisor and\
+          \ user privilege mode for level0 and level1 PTE. Execute sfence.vma before\
+          \ accessign the PTE.\n- Set pte.r=1 & pte.a=0 and test the read acces. \n\
+          - Set pte.w=1 & pte.a=0 and test the write access.\n- Set pte.x=1 & pte.a=0\
+          \ and test the execute access.\n\n* For testing at level0, set all the pte\
+          \ perimssions at level1 to 0 except pte.v, so that level1 points to level0.\n\
+          * Set pte.U=0 when test in Supervisor mode and Set pte.U=1 when testing\
+          \ in user mode."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          5.3.1, 5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Page fault exception should be raised according to {x,r,w} access\
+          \ type. Check that:\n- m/scause must contain the exception number of:\n\
+          \         - instruction page fault for execute access.\n         - load\
+          \ page fault for read access.\n         - store/AMO page fault for write\
+          \ access.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 014_Dirty bit Implementation: !Subfeature
+    name: 014_Dirty bit Implementation
+    tag: VP_MMU_SV32_F000_S014
+    next_elt_id: 1
+    display_order: 14
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S014_I000
+        description: "If implementation does not sets the pte.D when PTE is written,\
+          \ and PTE has pte.D=0, then attempting to store on that PTE would raise\
+          \ Store/AMO page fault exception.\nWhen satp.mode=sv32, PTE has (r,w,x)\
+          \ PMP permissions, pte.a=1 and pte.v=1, then test the following in supervisor\
+          \ and user privilege mode for level0 and level1 PTE. Execute sfence.vma\
+          \ before accessign the PTE.\n- Set pte.w=1 & pte.d=0 and test the write\
+          \ access.\n\n* For testing at level0, set all the pte perimssions at level1\
+          \ to 0 except pte.v, so that level1 points to level0.\n* Set pte.U=0 when\
+          \ test in Supervisor mode and Set pte.U=1 when testing in user mode."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          5.3.1, 5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Store/AMO page fault exception should be raised. Check that:\n\
+          - m/scause must contain the exception number of store/AMO page fault for\
+          \ write access.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 015_Misaligned Superpage: !Subfeature
+    name: 015_Misaligned Superpage
+    tag: VP_MMU_SV32_F000_S015
+    next_elt_id: 1
+    display_order: 15
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F000_S015_I000
+        description: "If PTE at level1 is leaf PTE (superpage) and its pte.ppn[0]=0,\
+          \ then it is a misaligned superpage and accessing that PTE would raise page\
+          \ fault exception of the corresponding access type.\nWhen satp.mode=sv32,\
+          \ PTE has (r,w,x) PMP permissions, PTE has non-reserved RWX encodings, (pte.r\
+          \ | pte.x)=1, and pte.v=1, then test the following in supervisor and user\
+          \ privilege mode for level1 PTE.\n-set pte.ppn[0]=0 and test for read, write\
+          \ and execute access.\n\n* Set pte.U=0 when test in Supervisor mode and\
+          \ Set pte.U=1 when testing in user mode."
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          5.3.1, 5.3.2'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Page fault exception should be raised according to {x,r,w} access\
+          \ type. Check that:\n- m/scause must contain the exception number of:\n\
+          \         - instruction page fault for execute access.\n         - load\
+          \ page fault for read access.\n         - store/AMO page fault for write\
+          \ access.\n- m/sepc must contain the virtual address of the instruction\
+          \ at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

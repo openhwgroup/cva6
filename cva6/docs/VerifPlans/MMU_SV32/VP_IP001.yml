@@ -1,0 +1,36 @@
+!Feature
+next_elt_id: 1
+name: mstatus.TVM
+id: 1
+display_order: 1
+subfeatures: !!omap
+- 000_Accessing satp and sfence.vma CSRs: !Subfeature
+    name: 000_Accessing satp and sfence.vma CSRs
+    tag: VP_MMU_SV32_F001_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_MMU_SV32_F001_S000_I000
+        description: If mstatus.TVM=1, read and write access to the satp and sfence.vma
+          will raise illegal instruction exception in S-mode.
+        reqt_doc: 'ISA Volume II: Privilege Architecture Version 20211203, Chapter
+          3.1.6.5'
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Show that:\n- s/mcause contains the exception number of illegal\
+          \ instruction exception.\n- m/sepc must contain the virtual address of the\
+          \ instruction at which the trap occurs."
+        pfc: 3
+        test_type: 0
+        cov_method: 0
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
