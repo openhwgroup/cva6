@@ -39,6 +39,14 @@ def setup_parser_config_generator():
                       help="C extension enable ? 1 : enable, 0 : disable")
   parser.add_argument("--a_ext", type=int, default=None, choices=[0,1],
                       help="A extension enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--b_ext", type=int, default=None, choices=[0,1],
+                      help="B extension enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--AxiIdWidth", type=int, default=None,
+                      help="AXI transaction ID width")
+  parser.add_argument("--AxiAddrWidth", type=int, default=None,
+                      help="AXI address width")
+  parser.add_argument("--AxiDataWidth", type=int, default=None,
+                      help="AXI data width")
   parser.add_argument("--iuser_en", type=int, default=None, choices=[0,1],
                       help="Fetch User enable ? 1 : enable, 0 : disable")
   parser.add_argument("--iuser_w", type=int, default=None, choices=list(range(1,64)),
@@ -93,6 +101,8 @@ def setup_parser_config_generator():
                       help="Enable performance counters")
   parser.add_argument("--DcacheType", type=str, default=None, choices=["WB", "WT"],
                       help="Cache type (WB or WT)")
+  parser.add_argument("--MmuPresent", type=int, default=None, choices=[0, 1],
+                      help="Use an MMU ? 1 : enable, 0 : disable")
   return parser
 
 ISA = ""
@@ -109,6 +119,10 @@ MapArgsToParameter={
   "cvxif" : "CVA6ConfigCvxifEn",
   "c_ext" : "CVA6ConfigCExtEn",
   "a_ext" : "CVA6ConfigAExtEn",
+  "b_ext" : "CVA6ConfigBExtEn",
+  "AxiIdWidth" : "CVA6ConfigAxiIdWidth",
+  "AxiAddrWidth" : "CVA6ConfigAxiAddrWidth",
+  "AxiDataWidth" : "CVA6ConfigAxiDataWidth",
   "iuser_en" : "CVA6ConfigFetchUserEn",
   "iuser_w" : "CVA6ConfigFetchUserWidth",
   "duser_en" : "CVA6ConfigDataUserEn",
@@ -137,6 +151,7 @@ MapArgsToParameter={
   "NrPMPEntries": "CVA6ConfigNrPMPEntries",
   "PerfCounterEn": "CVA6ConfigPerfCounterEn",
   "DcacheType": "CVA6ConfigDcacheType",
+  "MmuPresent": "CVA6ConfigMmuPresent",
 }
 MapParametersToArgs = {i:k for k, i in MapArgsToParameter.items()} #reverse map
 
