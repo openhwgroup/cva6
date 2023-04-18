@@ -68,7 +68,7 @@ task uvme_cvxif_vseq_c::body();
       instr = decode(req_item.issue_req.instr);
 
       // generate response based on observed request, e.g:
-      if (instr == "illegal" || instr == "") begin
+      if (instr == "ILLEGAL" || instr == "") begin
          do_default();
       end
       else begin
