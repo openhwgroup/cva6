@@ -103,6 +103,8 @@ def setup_parser_config_generator():
                       help="Cache type (WB or WT)")
   parser.add_argument("--MmuPresent", type=int, default=None, choices=[0, 1],
                       help="Use an MMU ? 1 : enable, 0 : disable")
+  parser.add_argument("--RvfiTrace", type=int, default=None, choices=[0, 1],
+                      help="Output an RVFI trace ? 1 : enable, 0 : disable")
   return parser
 
 ISA = ""
@@ -152,6 +154,9 @@ MapArgsToParameter={
   "PerfCounterEn": "CVA6ConfigPerfCounterEn",
   "DcacheType": "CVA6ConfigDcacheType",
   "MmuPresent": "CVA6ConfigMmuPresent",
+  "RvfiTrace": "RVFI_PORT",
+  # Ignored parameters
+  "ignored": "CVA6ConfigRvfiTrace",
 }
 MapParametersToArgs = {i:k for k, i in MapArgsToParameter.items()} #reverse map
 
@@ -183,7 +188,12 @@ def generate_config(argv):
       param = MapArgsToParameter[name]
       print("setting", name, "to", value)
       for i, line in enumerate(alllines):
-        alllines[i] = re.sub(r"^(\s*localparam\s+"+param+r"\s*=\s*)(.*)(;\s*)$", r"\g<1>"+str(value)+r"\g<3>", line)
+        line = re.sub(r"^(\s*localparam\s+"+param+r"\s*=\s*)(.*)(;\s*)$", r"\g<1>"+str(value)+r"\g<3>", line)
+        if isinstance(value, int) and value in [0, 1]:
+            preproc_regexp = r"^(\s*`\s*)(define|undef)(\s+" + param + r"\s*)$"
+            directive = "define" if value == 1 else "undef"
+            line = re.sub(preproc_regexp, r"\g<1>" + directive + r"\g<3>", line)
+        alllines[i] = line
 
   # Build Config and warn about localparams which have no matching cmdline option associated with them.
   for line in alllines:
