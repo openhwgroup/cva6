@@ -176,7 +176,7 @@ def generate_config(argv):
   alllines = []
   with open("core/include/" + Args['default_config'] + "_config_pkg.sv", "r") as in_f:
     alllines = in_f.readlines()
-  
+
   # Apply cmdline args to override individual localparam values.
   for name, value in Args.items():
     if name not in ['default_config', 'isa', 'xlen'] and value is not None:
