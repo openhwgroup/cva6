@@ -124,7 +124,7 @@ sources:
       #     - vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
       # Top-level source files (not necessarily instantiated at the top of the cva6).
-      - core/ariane.sv
+      - corev_apu/tb/ariane.sv
       - core/cva6.sv
       - core/alu.sv
       # Note: depends on fpnew_pkg, above
