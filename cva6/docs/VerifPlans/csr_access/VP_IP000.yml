@@ -7,7 +7,7 @@ subfeatures: !!omap
 - 000_MSCRATCH: !Subfeature
     name: 000_MSCRATCH
     tag: VP_csr-test-ident_F000_S000
-    next_elt_id: 2
+    next_elt_id: 3
     display_order: 0
     items: !!omap
     - '000': !VerifItem
@@ -33,7 +33,8 @@ subfeatures: !!omap
         name: '001'
         tag: VP_csr-test-ident_F000_S000_I001
         description: Verifying R/W access of a MSCRATCH CSR by writing random valid
-          data and Read back CSR values to check correctness.
+          data like 0xFFFFFFFF, 0XA5A5A5A5, 0X5A5A5A5A ... and Read back CSR values
+          to check correctness.
         reqt_doc: riscv-privileged-20211203
         ref_mode: section
         ref_page: ''
@@ -44,6 +45,23 @@ subfeatures: !!omap
         pfc: -1
         test_type: -1
         cov_method: -1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_csr-test-ident_F000_S000_I002
+        description: Verifying MSCRATCH CSR in other privilige modes(supervisor, user)
+        reqt_doc: ''
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: It is expected that accessing Machine Mode CSRs in lower privilige
+          modes will raise an exception.
+        pfc: 3
+        test_type: 1
+        cov_method: 10
         cores: 8
         coverage_loc: ''
         comments: ''
