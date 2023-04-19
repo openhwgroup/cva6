@@ -25,6 +25,7 @@ sources:
         files:
           - core/include/cv64a6_imafdc_sv39_config_pkg.sv
           - core/include/riscv_pkg.sv
+          - common/local/rvfi/rvfi_pkg.sv
           - core/include/ariane_dm_pkg.sv
           - core/include/ariane_pkg.sv
           - core/mmu_sv39/tlb.sv
@@ -35,6 +36,7 @@ sources:
         files:
           - core/include/cv32a6_imac_sv0_config_pkg.sv
           - core/include/riscv_pkg.sv
+          - common/local/rvfi/rvfi_pkg.sv
           - core/include/ariane_dm_pkg.sv
           - core/include/ariane_pkg.sv
           - core/mmu_sv32/cva6_tlb_sv32.sv
@@ -45,6 +47,7 @@ sources:
         files:
           - core/include/cv32a6_imac_sv32_config_pkg.sv
           - core/include/riscv_pkg.sv
+          - common/local/rvfi/rvfi_pkg.sv
           - core/include/ariane_dm_pkg.sv
           - core/include/ariane_pkg.sv
           - core/mmu_sv32/cva6_tlb_sv32.sv
@@ -64,7 +67,6 @@ sources:
       # included via target core/include/${TARGET_CFG}_config_pkg.sv
       # ariane_axi_pkg is dependent on this.
       # - vendor/pulp-platform/axi/src/axi_pkg.sv
-      - core/include/ariane_rvfi_pkg.sv
 
       # Packages
       - core/include/ariane_axi_pkg.sv
