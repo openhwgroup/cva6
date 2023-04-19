@@ -125,6 +125,33 @@ Table 1.1 shows the general-purpose registers :
      - t3 - t6
      - Temporaries
 
+Conventions and Terminology
+-----------------------------
+
+- **sext(val)**: Sign Extension is the operation of increasing the number of bits of a binary number while preserving the number's sign (positive(0)/negative(1)) and value. this is done by appending digits to the most significant side of the number.
+
+- **zext(val)**: Zero Extension is the operation of increasing the number of bits of a binary number with zeros. this is done by appending digits to the most significant side of the number.
+
+- **<u**: Comparison operation (less than) of 2 unsigned values.
+
+- **>>s**: Right shift of 2 signed values.
+
+- **>>u**: Right shift of 2 unsigned values.
+
+- **M[address]**: Value existe in the address of the memory.
+
+- **/s**: Division of 2 signed values.
+
+- **/u**: Division of 2 unsigned values.
+
+- **%s**: Remainder of the Division of 2 signed values.
+
+- **%u**: Remainder of the Division of 2 unsigned values.
+
+- **AMO32**: Atomic Memory Operation (word).
+
+- **rx'**: rd', rs1' or rs2', stand for the 3-bit Compressed Encoding registers.
+
 RV32I Base Integer Instruction Set
 -----------------------------------
 
