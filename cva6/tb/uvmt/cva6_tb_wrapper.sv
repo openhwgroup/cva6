@@ -50,7 +50,8 @@ module cva6_tb_wrapper
   output ariane_pkg::rvfi_port_t       rvfi_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
-  uvma_axi_intf                        axi_slave
+  uvma_axi_intf                        axi_slave,
+  uvmt_axi_switch_intf                 axi_switch_vif
 );
 
   ariane_axi::req_t    axi_ariane_req;
@@ -110,21 +111,37 @@ module cva6_tb_wrapper
   logic [AXI_USER_WIDTH-1:0]    ruser;
 
   //Response structs
-   assign axi_ariane_resp.aw_ready = axi_slave.aw_ready;
-   assign axi_ariane_resp.ar_ready = axi_slave.ar_ready;
-   assign axi_ariane_resp.w_ready  = axi_slave.w_ready;
-   assign axi_ariane_resp.b_valid  = axi_slave.b_valid;
-   assign axi_ariane_resp.r_valid  = axi_slave.r_valid;
+   assign axi_ariane_resp.aw_ready = (axi_switch_vif.active) ? axi_slave.aw_ready : cva6_axi_bus.aw_ready;
+   assign axi_ariane_resp.ar_ready = (axi_switch_vif.active) ? axi_slave.ar_ready : cva6_axi_bus.ar_ready;
+   assign axi_ariane_resp.w_ready  = (axi_switch_vif.active) ? axi_slave.w_ready  : cva6_axi_bus.w_ready;
+   assign axi_ariane_resp.b_valid  = (axi_switch_vif.active) ? axi_slave.b_valid  : cva6_axi_bus.b_valid;
+   assign axi_ariane_resp.r_valid  = (axi_switch_vif.active) ? axi_slave.r_valid  : cva6_axi_bus.r_valid;
    // B Channel
-   assign axi_ariane_resp.b.id   = axi_slave.b_id;
-   assign axi_ariane_resp.b.resp = axi_slave.b_resp;
-   assign axi_ariane_resp.b.user = axi_slave.b_user;
+   assign axi_ariane_resp.b.id   = (axi_switch_vif.active) ? axi_slave.b_id   : cva6_axi_bus.b_id;
+   assign axi_ariane_resp.b.resp = (axi_switch_vif.active) ? axi_slave.b_resp : cva6_axi_bus.b_resp;
+   assign axi_ariane_resp.b.user = (axi_switch_vif.active) ? axi_slave.b_user : cva6_axi_bus.b_user;
    // R Channel
-   assign axi_ariane_resp.r.id   = axi_slave.r_id;
-   assign axi_ariane_resp.r.data = axi_slave.r_data;
-   assign axi_ariane_resp.r.resp = axi_slave.r_resp;
-   assign axi_ariane_resp.r.last = axi_slave.r_last;
-   assign axi_ariane_resp.r.user = axi_slave.r_user;
+   assign axi_ariane_resp.r.id   = (axi_switch_vif.active) ? axi_slave.r_id   : cva6_axi_bus.r_id;
+   assign axi_ariane_resp.r.data = (axi_switch_vif.active) ? axi_slave.r_data : cva6_axi_bus.r_data;
+   assign axi_ariane_resp.r.resp = (axi_switch_vif.active) ? axi_slave.r_resp : cva6_axi_bus.r_resp;
+   assign axi_ariane_resp.r.last = (axi_switch_vif.active) ? axi_slave.r_last : cva6_axi_bus.r_last;
+   assign axi_ariane_resp.r.user = (axi_switch_vif.active) ? axi_slave.r_user : cva6_axi_bus.r_user;
+
+   assign axi_slave.aw_ready  = (axi_switch_vif.active) ? axi_slave.aw_ready : cva6_axi_bus.aw_ready;
+   assign axi_slave.ar_ready  = (axi_switch_vif.active) ? axi_slave.ar_ready : cva6_axi_bus.ar_ready;
+   assign axi_slave.w_ready   = (axi_switch_vif.active) ? axi_slave.w_ready  : cva6_axi_bus.w_ready;
+   assign axi_slave.b_valid   = (axi_switch_vif.active) ? axi_slave.b_valid  : cva6_axi_bus.b_valid;
+   assign axi_slave.r_valid   = (axi_switch_vif.active) ? axi_slave.r_valid  : cva6_axi_bus.r_valid;
+
+   assign axi_slave.b_id      = (axi_switch_vif.active) ? axi_slave.b_id   : cva6_axi_bus.b_id;
+   assign axi_slave.b_resp    = (axi_switch_vif.active) ? axi_slave.b_resp : cva6_axi_bus.b_resp;
+   assign axi_slave.b_user    = (axi_switch_vif.active) ? axi_slave.b_user : cva6_axi_bus.b_user;
+
+   assign axi_slave.r_id      = (axi_switch_vif.active) ? axi_slave.r_id   : cva6_axi_bus.r_id;
+   assign axi_slave.r_data    = (axi_switch_vif.active) ? axi_slave.r_data : cva6_axi_bus.r_data;
+   assign axi_slave.r_resp    = (axi_switch_vif.active) ? axi_slave.r_resp : cva6_axi_bus.r_resp;
+   assign axi_slave.r_last    = (axi_switch_vif.active) ? axi_slave.r_last : cva6_axi_bus.r_last;
+   assign axi_slave.r_user    = (axi_switch_vif.active) ? axi_slave.r_user : cva6_axi_bus.r_user;
 
    // Request structs
    assign axi_slave.aw_valid = axi_ariane_req.aw_valid;
@@ -162,5 +179,94 @@ module cva6_tb_wrapper
    assign axi_slave.ar_region = axi_ariane_req.ar.region;
    assign axi_slave.ar_user   = 0;
 
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) cva6_axi_bus();
+
+  axi_master_connect #(
+  ) i_axi_master_connect_cva6_to_mem (
+    .axi_req_i  (axi_ariane_req),
+    .dis_mem    (axi_switch_vif.active),
+    .master     (cva6_axi_bus)
+  );
+
+  axi2mem #(
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) i_cva6_axi2mem (
+    .clk_i  ( clk_i       ),
+    .rst_ni ( rst_ni      ),
+    .slave  ( cva6_axi_bus ),
+    .req_o  ( req          ),
+    .we_o   ( we           ),
+    .addr_o ( addr         ),
+    .be_o   ( be           ),
+    .user_o ( wuser        ),
+    .data_o ( wdata        ),
+    .user_i ( ruser        ),
+    .data_i ( rdata        )
+  );
+
+  sram #(
+    .USER_WIDTH ( AXI_USER_WIDTH ),
+    .DATA_WIDTH ( AXI_DATA_WIDTH ),
+    .USER_EN    ( AXI_USER_EN    ),
+    .SIM_INIT   ( "zeros"        ),
+    .NUM_WORDS  ( NUM_WORDS      )
+  ) i_sram (
+    .clk_i      ( clk_i                                                                       ),
+    .rst_ni     ( rst_ni                                                                      ),
+    .req_i      ( req                                                                         ),
+    .we_i       ( we                                                                          ),
+    .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(AXI_DATA_WIDTH/8):$clog2(AXI_DATA_WIDTH/8)] ),
+    .wuser_i    ( wuser                                                                       ),
+    .wdata_i    ( wdata                                                                       ),
+    .be_i       ( be                                                                          ),
+    .ruser_o    ( ruser                                                                       ),
+    .rdata_o    ( rdata                                                                       )
+  );
+
+    initial begin
+        wait (
+          !$isunknown(axi_switch_vif.active)
+        );
+        if(!axi_switch_vif.active) begin
+           automatic logic [7:0][7:0] mem_row;
+           longint address;
+           longint len;
+           byte buffer[];
+           void'(uvcl.get_arg_value("+PRELOAD=", binary));
+
+           if (binary != "") begin
+
+               void'(read_elf(binary));
+
+               wait(clk_i);
+
+               // while there are more sections to process
+               while (get_section(address, len)) begin
+                   automatic int num_words0 = (len+7)/8;
+                   `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
+                   buffer = new [num_words0*8];
+                   void'(read_section(address, buffer));
+                   // preload memories
+                   // 64-bit
+                   for (int i = 0; i < num_words0; i++) begin
+                       mem_row = '0;
+                       for (int j = 0; j < 8; j++) begin
+                           mem_row[j] = buffer[i*8 + j];
+                       end
+                       `MAIN_MEM((address[23:0] >> 3) + i) = mem_row;
+                   end
+               end
+           end
+        end
+    end
 
 endmodule

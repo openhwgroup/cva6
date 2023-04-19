@@ -816,6 +816,8 @@ def setup_parser():
                       help="custom configuration options, to be passed in config_pkg_generator.py in cva6")
   parser.add_argument("-l", "--linker", type=str, default="",
                       help="Path for the link.ld")
+  parser.add_argument("--axi_active", type=str, default="",
+                      help="switch AXI agent mode: yes for Active, no for Passive")
   return parser
 
 
@@ -931,7 +933,12 @@ def main():
     parser = setup_parser()
     args = parser.parse_args()
     global issrun_opts
+    if args.axi_active == "yes":
+      args.issrun_opts = args.issrun_opts + " +uvm_set_config_int=*uvm_test_top,force_axi_mode,1"
+    elif args.axi_active == "no":
+      args.issrun_opts = args.issrun_opts + " +uvm_set_config_int=uvm_test_top,force_axi_mode,0"
     issrun_opts = "\""+args.issrun_opts+"\""
+
     global isspostrun_opts
     isspostrun_opts = "\""+args.isspostrun_opts+"\""
     global isscomp_opts

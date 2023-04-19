@@ -132,7 +132,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       }
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active   == UVM_ACTIVE;
-         axi_cfg.is_active       == UVM_ACTIVE;
       }
 
       if (trn_log_enabled) {
