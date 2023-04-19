@@ -258,7 +258,6 @@ module store_buffer import ariane_pkg::*; (
 ///////////////////////////////////////////////////////
 
     //pragma translate_off
-    `ifndef VERILATOR
     // assert that commit is never set when we are flushing this would be counter intuitive
     // as flush and commit is decided in the same stage
     commit_and_flush: assert property (
@@ -276,7 +275,6 @@ module store_buffer import ariane_pkg::*; (
     commit_buffer_overflow: assert property (
         @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_COMMIT) |-> !commit_i)
         else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
-    `endif
     //pragma translate_on
 endmodule
 

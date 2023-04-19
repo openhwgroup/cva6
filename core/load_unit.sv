@@ -381,12 +381,11 @@ module load_unit import ariane_pkg::*; #(
     end
     // end result mux fast
 
-///////////////////////////////////////////////////////
-// assertions
-///////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+    // assertions
+    ///////////////////////////////////////////////////////
 
-//pragma translate_off
-`ifndef VERILATOR
+    //pragma translate_off
     // check invalid offsets
     addr_offset0: assert property (@(posedge clk_i) disable iff (~rst_ni)
         valid_o |->  (load_data_q.operation inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
@@ -394,7 +393,6 @@ module load_unit import ariane_pkg::*; #(
         valid_o |->  (load_data_q.operation inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
     addr_offset2: assert property (@(posedge clk_i) disable iff (~rst_ni)
         valid_o |->  (load_data_q.operation inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
-`endif
-//pragma translate_on
+    //pragma translate_on
 
 endmodule
