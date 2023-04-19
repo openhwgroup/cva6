@@ -1239,7 +1239,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception, attempts to access a CSR without appropriate privilege level or to write a read-only register also raise illegal instruction exceptions.
 
 - **CSRRS**: Control and Status Register Read and Set
 
@@ -1251,7 +1251,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception, attempts to access a CSR without appropriate privilege level or to write a read-only register also raise illegal instruction exceptions.
 
 - **CSRRC**: Control and Status Register Read and Clear
 
@@ -1263,7 +1263,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception, attempts to access a CSR without appropriate privilege level or to write a read-only register also raise illegal instruction exceptions.
 
 - **CSRRWI**: Control and Status Register Read and Write Immediate
 
@@ -1275,7 +1275,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception, attempts to access a CSR without appropriate privilege level or to write a read-only register also raise illegal instruction exceptions.
 
 - **CSRRSI**: Control and Status Register Read and Set Immediate
 
@@ -1287,7 +1287,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception, attempts to access a CSR without appropriate privilege level or to write a read-only register also raise illegal instruction exceptions.
 
 - **CSRRCI**: Control and Status Register Read and Clear Immediate
 
@@ -1299,7 +1299,7 @@ All CSR instructions atomically read-modify-write a single CSR, whose CSR specif
 
     **Invalid values**: NONE
 
-    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception.
+    **Exception raised**: attempts to access a non-existent CSR raise an illegal instruction exception, attempts to access a CSR without appropriate privilege level or to write a read-only register also raise illegal instruction exceptions.
 
 RV32Zifencei Instruction-Fetch Fence
 --------------------------------------
@@ -1316,4 +1316,23 @@ RV32Zifencei Instruction-Fetch Fence
 
     **Exception raised**: NONE
 
+Illegal Instruction
+---------------------------
 
+This section describe all kind of Illegal Instruction, in this case the Core generate an illegal instruction exception.
+
+- **ILLEGAL OPCODE**: any instruction (compressed or not compressed) with a non supported opcode is an illegal instruction
+
+- **ILLEGAL FUNCT2**: any instruction (R4type) with a non supported FUNCT2 is an illegal instruction
+
+- **ILLEGAL FUNCT3**: any instruction (Rtype, R4type, Itype, Stype or Atype) with a non supported FUNCT3 is an illegal instruction
+
+- **ILLEGAL FUNCT5**: any instruction (Atype) with a non supported FUNCT5 is an illegal instruction
+
+- **ILLEGAL FUNCT7**: any instruction (Rtype) with a non supported FUNCT7 is an illegal instruction
+
+- **ILLEGAL CSR**: any CSR instruction attempts to access a non-existent is an illegal instruction
+
+- **ILLEGAL PRIVILEGE LEVEL**: any CSR instruction attempts to access a CSR without appropriate privilege level is an illegal instruction
+
+- **ILLEGAL ACCESS TYPE CSR**: any CSR instruction attempts to write a read-only CSR a non-existent is an illegal instruction
