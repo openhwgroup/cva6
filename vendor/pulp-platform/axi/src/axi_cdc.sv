@@ -11,10 +11,8 @@
 //
 // Authors:
 // - Andreas Kurth <akurth@iis.ee.ethz.ch>
-// - Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
-// - Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+// - Luca Valente <luca.valente@unibo.it>
 // - Wolfgang Roenninger <wroennin@iis.ee.ethz.ch>
-// - Luca Valente <luca.valente2@unibo.it>
 
 `include "axi/assign.svh"
 

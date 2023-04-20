@@ -393,17 +393,44 @@ package axi_pkg;
 
   /// Configuration for `axi_xbar`.
   typedef struct packed {
+    /// Number of slave ports of the crossbar.
+    /// This many master modules are connected to it.
     int unsigned   NoSlvPorts;
+    /// Number of master ports of the crossbar.
+    /// This many slave modules are connected to it.
     int unsigned   NoMstPorts;
+    /// Maximum number of open transactions each master connected to the crossbar can have in
+    /// flight at the same time.
     int unsigned   MaxMstTrans;
+    /// Maximum number of open transactions each slave connected to the crossbar can have in
+    /// flight at the same time.
     int unsigned   MaxSlvTrans;
+    /// Determine if the internal FIFOs of the crossbar are instantiated in fallthrough mode.
+    /// 0: No fallthrough
+    /// 1: Fallthrough
     bit            FallThrough;
+    /// The Latency mode of the xbar. This determines if the channels on the ports have
+    /// a spill register instantiated.
+    /// Example configurations are provided with the enum `xbar_latency_e`.
     xbar_latency_e LatencyMode;
+    /// This is the number of `axi_multicut` stages instantiated in the line cross of the channels.
+    /// Having multiple stages can potentially add a large number of FFs!
+    int unsigned   PipelineStages;
+    /// AXI ID width of the salve ports. The ID width of the master ports is determined
+    /// Automatically. See `axi_mux` for details.
     int unsigned   AxiIdWidthSlvPorts;
+    /// The used ID portion to determine if a different salve is used for the same ID.
+    /// See `axi_demux` for details.
     int unsigned   AxiIdUsedSlvPorts;
+    /// Are IDs unique?
     bit            UniqueIds;
+    /// AXI4+ATOP address field width.
     int unsigned   AxiAddrWidth;
+    /// AXI4+ATOP data field width.
     int unsigned   AxiDataWidth;
+    /// The number of address rules defined for routing of the transactions.
+    /// Each master port can have multiple rules, should have however at least one.
+    /// If a transaction can not be routed the xbar will answer with an `axi_pkg::RESP_DECERR`.
     int unsigned   NoAddrRules;
   } xbar_cfg_t;
 

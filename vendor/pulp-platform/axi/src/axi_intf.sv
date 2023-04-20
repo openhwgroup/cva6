@@ -98,6 +98,14 @@ interface AXI_BUS #(
     output r_id, r_data, r_resp, r_last, r_user, r_valid, input r_ready
   );
 
+  modport Monitor (
+    input aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_region, aw_atop, aw_user, aw_valid, aw_ready,
+          w_data, w_strb, w_last, w_user, w_valid, w_ready,
+          b_id, b_resp, b_user, b_valid, b_ready,
+          ar_id, ar_addr, ar_len, ar_size, ar_burst, ar_lock, ar_cache, ar_prot, ar_qos, ar_region, ar_user, ar_valid, ar_ready,
+          r_id, r_data, r_resp, r_last, r_user, r_valid, r_ready
+  );
+
 endinterface
 
 
@@ -441,6 +449,14 @@ interface AXI_LITE #(
     output r_data, r_resp, r_valid, input r_ready
   );
 
+  modport Monitor (
+    input aw_addr, aw_prot, aw_valid, aw_ready,
+          w_data, w_strb, w_valid, w_ready,
+          b_resp, b_valid, b_ready,
+          ar_addr, ar_prot, ar_valid, ar_ready,
+          r_data, r_resp, r_valid, r_ready
+  );
+
 endinterface
 
 
@@ -497,6 +513,14 @@ interface AXI_LITE_DV #(
     output b_resp, b_valid, input b_ready,
     input ar_addr, ar_prot, ar_valid, output ar_ready,
     output r_data, r_resp, r_valid, input r_ready
+  );
+
+  modport Monitor (
+    input aw_addr, aw_prot, aw_valid, aw_ready,
+          w_data, w_strb, w_valid, w_ready,
+          b_resp, b_valid, b_ready,
+          ar_addr, ar_prot, ar_valid, ar_ready,
+          r_data, r_resp, r_valid, r_ready
   );
 
 endinterface

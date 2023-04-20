@@ -5,3 +5,4 @@
 /build
 /Bender.lock
 /Bender.local
+*.log

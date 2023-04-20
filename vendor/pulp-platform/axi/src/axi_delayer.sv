@@ -16,28 +16,28 @@
 /// Synthesizable module that (randomly) delays AXI channels.
 module axi_delayer #(
   // AXI channel types
-  parameter type aw_chan_t = logic,
-  parameter type  w_chan_t = logic,
-  parameter type  b_chan_t = logic,
-  parameter type ar_chan_t = logic,
-  parameter type  r_chan_t = logic,
+  parameter type  aw_chan_t = logic,
+  parameter type   w_chan_t = logic,
+  parameter type   b_chan_t = logic,
+  parameter type  ar_chan_t = logic,
+  parameter type   r_chan_t = logic,
   // AXI request & response types
-  parameter type     req_t = logic,
-  parameter type    resp_t = logic,
+  parameter type  axi_req_t = logic,
+  parameter type axi_resp_t = logic,
   // delay parameters
   parameter bit          StallRandomInput  = 0,
   parameter bit          StallRandomOutput = 0,
   parameter int unsigned FixedDelayInput   = 1,
   parameter int unsigned FixedDelayOutput  = 1
 ) (
-  input  logic  clk_i,      // Clock
-  input  logic  rst_ni,     // Asynchronous reset active low
+  input  logic      clk_i,      // Clock
+  input  logic      rst_ni,     // Asynchronous reset active low
   // slave port
-  input  req_t  slv_req_i,
-  output resp_t slv_resp_o,
+  input  axi_req_t  slv_req_i,
+  output axi_resp_t slv_resp_o,
   // master port
-  output req_t  mst_req_o,
-  input  resp_t mst_resp_i
+  output axi_req_t  mst_req_o,
+  input  axi_resp_t mst_resp_i
 );
   // AW
   stream_delay #(
@@ -152,11 +152,11 @@ module axi_delayer_intf #(
   `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, user_t)
   `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, user_t)
   `AXI_TYPEDEF_R_CHAN_T(r_chan_t, data_t, id_t, user_t)
-  `AXI_TYPEDEF_REQ_T(req_t, aw_chan_t, w_chan_t, ar_chan_t)
-  `AXI_TYPEDEF_RESP_T(resp_t, b_chan_t, r_chan_t)
+  `AXI_TYPEDEF_REQ_T(axi_req_t, aw_chan_t, w_chan_t, ar_chan_t)
+  `AXI_TYPEDEF_RESP_T(axi_resp_t, b_chan_t, r_chan_t)
 
-  req_t  slv_req,  mst_req;
-  resp_t slv_resp, mst_resp;
+  axi_req_t  slv_req,  mst_req;
+  axi_resp_t slv_resp, mst_resp;
 
   `AXI_ASSIGN_TO_REQ(slv_req, slv)
   `AXI_ASSIGN_FROM_RESP(slv, slv_resp)
@@ -170,8 +170,8 @@ module axi_delayer_intf #(
     .b_chan_t          (            b_chan_t ),
     .ar_chan_t         (           ar_chan_t ),
     .r_chan_t          (            r_chan_t ),
-    .req_t             (               req_t ),
-    .resp_t            (              resp_t ),
+    .axi_req_t         (           axi_req_t ),
+    .axi_resp_t        (          axi_resp_t ),
     .StallRandomInput  ( STALL_RANDOM_INPUT  ),
     .StallRandomOutput ( STALL_RANDOM_OUTPUT ),
     .FixedDelayInput   ( FIXED_DELAY_INPUT   ),

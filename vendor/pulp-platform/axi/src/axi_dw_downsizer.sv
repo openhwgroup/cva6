@@ -188,8 +188,8 @@ module axi_dw_downsizer #(
   axi_err_slv #(
     .AxiIdWidth(AxiIdWidth          ),
     .Resp      (axi_pkg::RESP_SLVERR),
-    .req_t     (axi_mst_req_t       ),
-    .resp_t    (axi_mst_resp_t      )
+    .axi_req_t (axi_mst_req_t       ),
+    .axi_resp_t(axi_mst_resp_t      )
   ) i_axi_err_slv (
     .clk_i     (clk_i       ),
     .rst_ni    (rst_ni      ),
@@ -216,8 +216,8 @@ module axi_dw_downsizer #(
     .b_chan_t   (b_chan_t      ),
     .ar_chan_t  (ar_chan_t     ),
     .r_chan_t   (mst_r_chan_t  ),
-    .req_t      (axi_mst_req_t ),
-    .resp_t     (axi_mst_resp_t),
+    .axi_req_t  (axi_mst_req_t ),
+    .axi_resp_t (axi_mst_resp_t),
     .NoMstPorts (2             ),
     .MaxTrans   (AxiMaxReads   ),
     .SpillAw    (1'b1          ) // Required to break dependency between AW and W channels
@@ -800,7 +800,7 @@ module axi_dw_downsizer #(
       w_req_d.burst_resp     = axi_pkg::RESP_OKAY;
 
       if (!forward_b_beat_full) begin
-        if (slv_req_i.aw_valid && slv_req_i.aw.atop[5]) begin // ATOP with an R response
+        if (slv_req_i.aw_valid && slv_req_i.aw.atop[axi_pkg::ATOP_R_RESP]) begin // ATOP with an R response
           inject_aw_into_ar_req = 1'b1                 ;
           slv_resp_o.aw_ready   = inject_aw_into_ar_gnt;
         end else begin // Regular AW

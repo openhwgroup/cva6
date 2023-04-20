@@ -14,6 +14,12 @@
 
 `include "common_cells/registers.svh"
 
+`ifdef QUESTA
+// Derive `TARGET_VSIM`, which is used for tool-specific workarounds in this file, from `QUESTA`,
+// which is automatically set in Questa.
+`define TARGET_VSIM
+`endif
+
 // axi_lite_demux: Demultiplex an AXI4-Lite bus from one slave port to multiple master ports.
 //                 The selection signal at the AW and AR channel has to follow the same
 //                 stability rules as the corresponding AXI4-Lite channel.
@@ -24,8 +30,8 @@ module axi_lite_demux #(
   parameter type         b_chan_t       = logic, // AXI4-Lite  B channel
   parameter type         ar_chan_t      = logic, // AXI4-Lite AR channel
   parameter type         r_chan_t       = logic, // AXI4-Lite  R channel
-  parameter type         req_t          = logic, // AXI4-Lite request struct
-  parameter type         resp_t         = logic, // AXI4-Lite response struct
+  parameter type         axi_req_t      = logic, // AXI4-Lite request struct
+  parameter type         axi_resp_t     = logic, // AXI4-Lite response struct
   parameter int unsigned NoMstPorts     = 32'd0, // Number of instantiated ports
   parameter int unsigned MaxTrans       = 32'd0, // Maximum number of open transactions per channel
   parameter bit          FallThrough    = 1'b0,  // FIFOs are in fall through mode
@@ -37,17 +43,17 @@ module axi_lite_demux #(
   // Dependent parameters, DO NOT OVERRIDE!
   parameter type         select_t       = logic [$clog2(NoMstPorts)-1:0]
 ) (
-  input  logic                   clk_i,
-  input  logic                   rst_ni,
-  input  logic                   test_i,
+  input  logic                        clk_i,
+  input  logic                        rst_ni,
+  input  logic                        test_i,
   // slave port (AXI4-Lite input), connect master module here
-  input  req_t                   slv_req_i,
-  input  select_t                slv_aw_select_i,
-  input  select_t                slv_ar_select_i,
-  output resp_t                  slv_resp_o,
+  input  axi_req_t                    slv_req_i,
+  input  select_t                     slv_aw_select_i,
+  input  select_t                     slv_ar_select_i,
+  output axi_resp_t                   slv_resp_o,
   // master ports (AXI4-Lite outputs), connect slave modules here
-  output req_t  [NoMstPorts-1:0] mst_reqs_o,
-  input  resp_t [NoMstPorts-1:0] mst_resps_i
+  output axi_req_t  [NoMstPorts-1:0]  mst_reqs_o,
+  input  axi_resp_t [NoMstPorts-1:0]  mst_resps_i
 );
 
   //--------------------------------------
@@ -64,9 +70,72 @@ module axi_lite_demux #(
 
   if (NoMstPorts == 32'd1) begin : gen_no_demux
     // degenerate case, connect slave to master port
-    // AW channel
-    assign mst_reqs_o[0] = slv_req_i;
-    assign slv_resp_o    = mst_resps_i[0];
+    spill_register #(
+      .T       ( aw_chan_t  ),
+      .Bypass  ( ~SpillAw   )
+    ) i_aw_spill_reg (
+      .clk_i   ( clk_i                    ),
+      .rst_ni  ( rst_ni                   ),
+      .valid_i ( slv_req_i.aw_valid       ),
+      .ready_o ( slv_resp_o.aw_ready      ),
+      .data_i  ( slv_req_i.aw             ),
+      .valid_o ( mst_reqs_o[0].aw_valid   ),
+      .ready_i ( mst_resps_i[0].aw_ready  ),
+      .data_o  ( mst_reqs_o[0].aw         )
+    );
+    spill_register #(
+      .T       ( w_chan_t  ),
+      .Bypass  ( ~SpillW   )
+    ) i_w_spill_reg (
+      .clk_i   ( clk_i                   ),
+      .rst_ni  ( rst_ni                  ),
+      .valid_i ( slv_req_i.w_valid       ),
+      .ready_o ( slv_resp_o.w_ready      ),
+      .data_i  ( slv_req_i.w             ),
+      .valid_o ( mst_reqs_o[0].w_valid   ),
+      .ready_i ( mst_resps_i[0].w_ready  ),
+      .data_o  ( mst_reqs_o[0].w         )
+    );
+    spill_register #(
+      .T       ( b_chan_t ),
+      .Bypass  ( ~SpillB      )
+    ) i_b_spill_reg (
+      .clk_i   ( clk_i                  ),
+      .rst_ni  ( rst_ni                 ),
+      .valid_i ( mst_resps_i[0].b_valid ),
+      .ready_o ( mst_reqs_o[0].b_ready  ),
+      .data_i  ( mst_resps_i[0].b       ),
+      .valid_o ( slv_resp_o.b_valid     ),
+      .ready_i ( slv_req_i.b_ready      ),
+      .data_o  ( slv_resp_o.b           )
+    );
+    spill_register #(
+      .T       ( ar_chan_t  ),
+      .Bypass  ( ~SpillAr   )
+    ) i_ar_spill_reg (
+      .clk_i   ( clk_i                    ),
+      .rst_ni  ( rst_ni                   ),
+      .valid_i ( slv_req_i.ar_valid       ),
+      .ready_o ( slv_resp_o.ar_ready      ),
+      .data_i  ( slv_req_i.ar             ),
+      .valid_o ( mst_reqs_o[0].ar_valid   ),
+      .ready_i ( mst_resps_i[0].ar_ready  ),
+      .data_o  ( mst_reqs_o[0].ar         )
+    );
+    spill_register #(
+      .T       ( r_chan_t ),
+      .Bypass  ( ~SpillR      )
+    ) i_r_spill_reg (
+      .clk_i   ( clk_i                  ),
+      .rst_ni  ( rst_ni                 ),
+      .valid_i ( mst_resps_i[0].r_valid ),
+      .ready_o ( mst_reqs_o[0].r_ready  ),
+      .data_i  ( mst_resps_i[0].r       ),
+      .valid_o ( slv_resp_o.r_valid     ),
+      .ready_i ( slv_req_i.r_ready      ),
+      .data_o  ( slv_resp_o.r           )
+    );
+
   end else begin : gen_demux
     // normal non degenerate case
 
@@ -123,9 +192,15 @@ module axi_lite_demux #(
     //--------------------------------------
     // AW Channel
     //--------------------------------------
-    // Workaround for bug in Questa 2021.1: Flatten the struct into a logic vector before
+    `ifdef TARGET_VSIM
+    // Workaround for bug in Questa 2020.2 and 2021.1: Flatten the struct into a logic vector before
     // instantiating `spill_register`.
     typedef logic [$bits(aw_chan_select_t)-1:0] aw_chan_select_flat_t;
+    `else
+    // Other tools, such as VCS, have problems with `$bits()`, so the workaround cannot be used
+    // generally.
+    typedef aw_chan_select_t aw_chan_select_flat_t;
+    `endif
     aw_chan_select_flat_t slv_aw_chan_select_in_flat,
                           slv_aw_chan_select_out_flat;
     assign slv_aw_chan_select_in_flat = {slv_req_i.aw, slv_aw_select_i};
@@ -282,9 +357,12 @@ module axi_lite_demux #(
     //--------------------------------------
     // AR Channel
     //--------------------------------------
-    // Workaround for bug in Questa 2021.1: Flatten the struct into a logic vector before
-    // instantiating `spill_register`.
+    // Workaround for bug in Questa (see comments on AW channel for details).
+    `ifdef TARGET_VSIM
     typedef logic [$bits(ar_chan_select_t)-1:0] ar_chan_select_flat_t;
+    `else
+    typedef ar_chan_select_t ar_chan_select_flat_t;
+    `endif
     ar_chan_select_flat_t slv_ar_chan_select_in_flat,
                           slv_ar_chan_select_out_flat;
     assign slv_ar_chan_select_in_flat = {slv_req_i.ar, slv_ar_select_i};
@@ -348,8 +426,15 @@ module axi_lite_demux #(
     );
 
     // connect the response if the FIFO has valid data in it
-    assign slv_r_chan      = (!r_fifo_empty) ? mst_resps_i[r_select].r : '0;
-    assign slv_r_valid     =  ~r_fifo_empty  & mst_resps_i[r_select].r_valid;
+    always_comb begin
+       slv_r_chan  = '0;
+       slv_r_valid = '0;
+       if (!r_fifo_empty) begin
+          slv_r_chan  = mst_resps_i[r_select].r;
+          slv_r_valid = mst_resps_i[r_select].r_valid;
+       end
+    end
+
     for (genvar i = 0; i < NoMstPorts; i++) begin : gen_mst_r
       assign mst_reqs_o[i].r_ready = ~r_fifo_empty & slv_r_ready & (r_select == select_t'(i));
     end
@@ -425,13 +510,13 @@ module axi_lite_demux_intf #(
   `AXI_LITE_TYPEDEF_B_CHAN_T(b_chan_t)
   `AXI_LITE_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t)
   `AXI_LITE_TYPEDEF_R_CHAN_T(r_chan_t, data_t)
-  `AXI_LITE_TYPEDEF_REQ_T(req_t, aw_chan_t, w_chan_t, ar_chan_t)
-  `AXI_LITE_TYPEDEF_RESP_T(resp_t, b_chan_t, r_chan_t)
+  `AXI_LITE_TYPEDEF_REQ_T(axi_req_t, aw_chan_t, w_chan_t, ar_chan_t)
+  `AXI_LITE_TYPEDEF_RESP_T(axi_resp_t, b_chan_t, r_chan_t)
 
-  req_t                   slv_req;
-  resp_t                  slv_resp;
-  req_t  [NoMstPorts-1:0] mst_reqs;
-  resp_t [NoMstPorts-1:0] mst_resps;
+  axi_req_t                   slv_req;
+  axi_resp_t                  slv_resp;
+  axi_req_t  [NoMstPorts-1:0] mst_reqs;
+  axi_resp_t [NoMstPorts-1:0] mst_resps;
 
   `AXI_LITE_ASSIGN_TO_REQ(slv_req, slv)
   `AXI_LITE_ASSIGN_FROM_RESP(slv, slv_resp)
@@ -442,13 +527,13 @@ module axi_lite_demux_intf #(
   end
 
   axi_lite_demux #(
-    .aw_chan_t   ( aw_chan_t   ),
-    .w_chan_t    (  w_chan_t   ),
-    .b_chan_t    (  b_chan_t   ),
-    .ar_chan_t   ( ar_chan_t   ),
-    .r_chan_t    (  r_chan_t   ),
-    .req_t       (     req_t   ),
-    .resp_t      (    resp_t   ),
+    .aw_chan_t   (  aw_chan_t  ),
+    .w_chan_t    (   w_chan_t  ),
+    .b_chan_t    (   b_chan_t  ),
+    .ar_chan_t   (  ar_chan_t  ),
+    .r_chan_t    (   r_chan_t  ),
+    .axi_req_t   (  axi_req_t  ),
+    .axi_resp_t  ( axi_resp_t  ),
     .NoMstPorts  ( NoMstPorts  ),
     .MaxTrans    ( MaxTrans    ),
     .FallThrough ( FallThrough ),

@@ -9,9 +9,10 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
-// Andreas Kurth <akurth@iis.ee.ethz.ch>
-// Florian Zaruba <zarubaf@iis.ee.ethz.ch>
-// Wolfgang Roenninger <wroennin@iis.ee.ethz.ch>
+// Authors:
+// - Andreas Kurth <akurth@iis.ee.ethz.ch>
+// - Wolfgang Roenninger <wroennin@iis.ee.ethz.ch>
+// - Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 `include "common_cells/registers.svh"
 
@@ -238,7 +239,7 @@ module axi_id_remap #(
         if (slv_req_i.aw_valid) begin
           // If this is not an ATOP that gives rise to an R response, we can handle it in isolation
           // on the write direction.
-          if (!slv_req_i.aw.atop[5]) begin
+          if (!slv_req_i.aw.atop[axi_pkg::ATOP_R_RESP]) begin
             // If a burst with the same input ID is already in flight or there are free output IDs:
             if ((wr_exists && !wr_exists_full) || (!wr_exists && !wr_full)) begin
               // Determine the output ID: if another in-flight burst had the same input ID, we must
@@ -284,13 +285,16 @@ module axi_id_remap #(
             aw_id_d = wr_push_oup_id;
           end
         end
-        priority casez ({mst_req_o.ar_valid, mst_resp_i.ar_ready,
-                         mst_req_o.aw_valid, mst_resp_i.aw_ready})
-          4'b1010: state_d = HoldAx;
-          4'b10??: state_d = HoldAR;
-          4'b??10: state_d = HoldAW;
-          default: state_d = Ready;
-        endcase
+        if ({mst_req_o.ar_valid, mst_resp_i.ar_ready,
+             mst_req_o.aw_valid, mst_resp_i.aw_ready} == 4'b1010) begin
+          state_d = HoldAx;
+        end else if ({mst_req_o.ar_valid, mst_resp_i.ar_ready} == 2'b10) begin
+          state_d = HoldAR;
+        end else if ({mst_req_o.aw_valid, mst_resp_i.aw_ready} == 2'b10) begin
+          state_d = HoldAW;
+        end else begin
+          state_d = Ready;
+        end
 
         if (mst_req_o.ar_valid && mst_resp_i.ar_ready) begin
           ar_prio_d = 1'b0; // Reset AR priority, because handshake was successful in this cycle.
@@ -378,7 +382,6 @@ module axi_id_remap #(
     assert ($bits(mst_req_o.ar.id) == AxiMstPortIdWidth);
     assert ($bits(mst_resp_i.r.id) == AxiMstPortIdWidth);
   end
-  `endif
   default disable iff (!rst_ni);
   assert property (@(posedge clk_i) slv_req_i.aw_valid && slv_resp_o.aw_ready
       |-> mst_req_o.aw_valid && mst_resp_i.aw_ready);
@@ -394,6 +397,7 @@ module axi_id_remap #(
       |=> mst_req_o.ar_valid && $stable(mst_req_o.ar.id));
   assert property (@(posedge clk_i) mst_req_o.aw_valid && !mst_resp_i.aw_ready
       |=> mst_req_o.aw_valid && $stable(mst_req_o.aw.id));
+  `endif
   // pragma translate_on
 endmodule
 

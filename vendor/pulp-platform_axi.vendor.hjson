@@ -15,7 +15,7 @@
         // URL
         url: "https://github.com/pulp-platform/axi.git",
         // revision
-        rev: "v0.31.0",
+        rev: "v0.39.0-beta.2",
     }
 
     // Patch dir for local changes

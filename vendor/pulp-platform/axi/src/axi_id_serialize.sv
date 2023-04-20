@@ -10,8 +10,7 @@
 // specific language governing permissions and limitations under the License.
 //
 // Authors:
-// - Wolfgang Roenninger <wroennin@iis.ee.ethz.ch>
-// - Andreas Kurth       <akurth@iis.ee.ethz.ch>
+// - Andreas Kurth <akurth@iis.ee.ethz.ch>
 
 `include "axi/assign.svh"
 `include "axi/typedef.svh"
@@ -47,6 +46,8 @@ module axi_id_serialize #(
   parameter int unsigned AxiDataWidth = 32'd0,
   /// User width of both AXI4+ATOP ports
   parameter int unsigned AxiUserWidth = 32'd0,
+  /// Enable support for AXI4+ATOP atomics
+  parameter bit          AtopSupport  = 1'b1,
   /// Request struct type of the AXI4+ATOP slave port
   parameter type slv_req_t = logic,
   /// Response struct type of the AXI4+ATOP slave port
@@ -156,12 +157,12 @@ module axi_id_serialize #(
     .b_chan_t    ( slv_b_t              ),
     .ar_chan_t   ( slv_ar_t             ),
     .r_chan_t    ( slv_r_t              ),
-    .req_t       ( slv_req_t            ),
-    .resp_t      ( slv_resp_t           ),
+    .axi_req_t   ( slv_req_t            ),
+    .axi_resp_t  ( slv_resp_t           ),
     .NoMstPorts  ( AxiMstPortMaxUniqIds ),
     .MaxTrans    ( AxiSlvPortMaxTxns    ),
     .AxiLookBits ( AxiSlvPortIdWidth    ),
-    .FallThrough ( 1'b1                 ),
+    .AtopSupport ( AtopSupport          ),
     .SpillAw     ( 1'b1                 ),
     .SpillW      ( 1'b0                 ),
     .SpillB      ( 1'b0                 ),
@@ -189,8 +190,8 @@ module axi_id_serialize #(
       .MaxReadTxns  ( AxiMstPortMaxTxnsPerId  ),
       .MaxWriteTxns ( AxiMstPortMaxTxnsPerId  ),
       .AxiIdWidth   ( AxiSlvPortIdWidth       ),
-      .req_t        ( slv_req_t               ),
-      .resp_t       ( slv_resp_t              )
+      .axi_req_t    ( slv_req_t               ),
+      .axi_resp_t   ( slv_resp_t              )
     ) i_axi_serializer (
       .clk_i,
       .rst_ni,

@@ -348,6 +348,7 @@ localparam axi_pkg::xbar_cfg_t AXI_XBAR_CFG = '{
   MaxSlvTrans:        1, // Probably requires update
   FallThrough:        1'b0,
   LatencyMode:        axi_pkg::CUT_ALL_PORTS,
+  PipelineStages:     1,
   AxiIdWidthSlvPorts: AxiIdWidthMaster,
   AxiIdUsedSlvPorts:  AxiIdWidthMaster,
   UniqueIds:          1'b0,

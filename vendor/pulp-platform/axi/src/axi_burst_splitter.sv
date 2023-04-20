@@ -35,19 +35,19 @@ module axi_burst_splitter #(
   parameter int unsigned DataWidth    = 32'd0,
   parameter int unsigned IdWidth      = 32'd0,
   parameter int unsigned UserWidth    = 32'd0,
-  parameter type         req_t        = logic,
-  parameter type         resp_t       = logic
+  parameter type         axi_req_t    = logic,
+  parameter type         axi_resp_t   = logic
 ) (
   input  logic  clk_i,
   input  logic  rst_ni,
 
   // Input / Slave Port
-  input  req_t  slv_req_i,
-  output resp_t slv_resp_o,
+  input  axi_req_t  slv_req_i,
+  output axi_resp_t slv_resp_o,
 
   // Output / Master Port
-  output req_t  mst_req_o,
-  input  resp_t mst_resp_i
+  output axi_req_t  mst_req_o,
+  input  axi_resp_t mst_resp_i
 );
 
   typedef logic [AddrWidth-1:0]   addr_t;
@@ -62,28 +62,27 @@ module axi_burst_splitter #(
   `AXI_TYPEDEF_R_CHAN_T(r_chan_t, data_t, id_t, user_t)
 
   // Demultiplex between supported and unsupported transactions.
-  req_t   act_req,  unsupported_req;
-  resp_t  act_resp, unsupported_resp;
-  logic   sel_aw_unsupported, sel_ar_unsupported;
+  axi_req_t   act_req,  unsupported_req;
+  axi_resp_t  act_resp, unsupported_resp;
+  logic sel_aw_unsupported, sel_ar_unsupported;
   localparam int unsigned MaxTxns = (MaxReadTxns > MaxWriteTxns) ? MaxReadTxns : MaxWriteTxns;
   axi_demux #(
-    .AxiIdWidth   ( IdWidth   ),
-    .aw_chan_t    ( aw_chan_t ),
-    .w_chan_t     ( w_chan_t  ),
-    .b_chan_t     ( b_chan_t  ),
-    .ar_chan_t    ( ar_chan_t ),
-    .r_chan_t     ( r_chan_t  ),
-    .req_t        ( req_t     ),
-    .resp_t       ( resp_t    ),
-    .NoMstPorts   ( 2         ),
-    .MaxTrans     ( MaxTxns   ),
-    .AxiLookBits  ( IdWidth   ),
-    .FallThrough  ( 1'b1      ),
-    .SpillAw      ( 1'b0      ),
-    .SpillW       ( 1'b0      ),
-    .SpillB       ( 1'b0      ),
-    .SpillAr      ( 1'b0      ),
-    .SpillR       ( 1'b0      )
+    .AxiIdWidth   ( IdWidth     ),
+    .aw_chan_t    ( aw_chan_t   ),
+    .w_chan_t     ( w_chan_t    ),
+    .b_chan_t     ( b_chan_t    ),
+    .ar_chan_t    ( ar_chan_t   ),
+    .r_chan_t     ( r_chan_t    ),
+    .axi_req_t    ( axi_req_t   ),
+    .axi_resp_t   ( axi_resp_t  ),
+    .NoMstPorts   ( 2           ),
+    .MaxTrans     ( MaxTxns     ),
+    .AxiLookBits  ( IdWidth     ),
+    .SpillAw      ( 1'b0        ),
+    .SpillW       ( 1'b0        ),
+    .SpillB       ( 1'b0        ),
+    .SpillAr      ( 1'b0        ),
+    .SpillR       ( 1'b0        )
   ) i_demux_supported_vs_unsupported (
     .clk_i,
     .rst_ni,
@@ -119,8 +118,8 @@ module axi_burst_splitter #(
   // Respond to unsupported transactions with slave errors.
   axi_err_slv #(
     .AxiIdWidth ( IdWidth               ),
-    .req_t      ( req_t                 ),
-    .resp_t     ( resp_t                ),
+    .axi_req_t  ( axi_req_t             ),
+    .axi_resp_t ( axi_resp_t            ),
     .Resp       ( axi_pkg::RESP_SLVERR  ),
     .ATOPs      ( 1'b0                  ),  // The burst splitter does not support ATOPs.
     .MaxTrans   ( 1                     )   // Splitting bursts implies a low-performance bus.

@@ -40,22 +40,22 @@ module axi_atop_filter #(
   /// Maximum number of in-flight AXI write transactions
   parameter int unsigned AxiMaxWriteTxns = 0,
   /// AXI request type
-  parameter type req_t  = logic,
+  parameter type axi_req_t  = logic,
   /// AXI response type
-  parameter type resp_t = logic
+  parameter type axi_resp_t = logic
 ) (
   /// Rising-edge clock of both ports
-  input  logic  clk_i,
+  input  logic      clk_i,
   /// Asynchronous reset, active low
-  input  logic  rst_ni,
+  input  logic      rst_ni,
   /// Slave port request
-  input  req_t  slv_req_i,
+  input  axi_req_t  slv_req_i,
   /// Slave port response
-  output resp_t slv_resp_o,
+  output axi_resp_t slv_resp_o,
   /// Master port request
-  output req_t  mst_req_o,
+  output axi_req_t  mst_req_o,
   /// Master port response
-  input  resp_t mst_resp_i
+  input  axi_resp_t mst_resp_i
 );
 
   // Minimum counter width is 2 to detect underflows.
@@ -137,8 +137,8 @@ module axi_atop_filter #(
           mst_req_o.aw_valid  = 1'b0; // Do not let AW pass to master port.
           slv_resp_o.aw_ready = 1'b1; // Absorb AW on slave port.
           id_d = slv_req_i.aw.id; // Store ID for B response.
-          // All atomic operations except atomic stores require a response on the R channel.
-          if (slv_req_i.aw.atop[5:4] != axi_pkg::ATOP_ATOMICSTORE) begin
+          // Some atomic operations require a response on the R channel.
+          if (slv_req_i.aw.atop[axi_pkg::ATOP_R_RESP]) begin
             // Push R response command.  We do not have to wait for the ready of the register
             // because we know it is ready: we are its only master and will wait for the register to
             // be emptied before going back to the `W_FEEDTHROUGH` state.
@@ -405,11 +405,11 @@ module axi_atop_filter_intf #(
   `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, user_t)
   `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, user_t)
   `AXI_TYPEDEF_R_CHAN_T(r_chan_t, data_t, id_t, user_t)
-  `AXI_TYPEDEF_REQ_T(req_t, aw_chan_t, w_chan_t, ar_chan_t)
-  `AXI_TYPEDEF_RESP_T(resp_t, b_chan_t, r_chan_t)
+  `AXI_TYPEDEF_REQ_T(axi_req_t, aw_chan_t, w_chan_t, ar_chan_t)
+  `AXI_TYPEDEF_RESP_T(axi_resp_t, b_chan_t, r_chan_t)
 
-  req_t  slv_req,  mst_req;
-  resp_t slv_resp, mst_resp;
+  axi_req_t  slv_req,  mst_req;
+  axi_resp_t slv_resp, mst_resp;
 
   `AXI_ASSIGN_TO_REQ(slv_req, slv)
   `AXI_ASSIGN_FROM_RESP(slv, slv_resp)
@@ -422,8 +422,8 @@ module axi_atop_filter_intf #(
   // Maximum number of AXI write bursts outstanding at the same time
     .AxiMaxWriteTxns ( AXI_MAX_WRITE_TXNS ),
   // AXI request & response type
-    .req_t           ( req_t              ),
-    .resp_t          ( resp_t             )
+    .axi_req_t       ( axi_req_t          ),
+    .axi_resp_t      ( axi_resp_t         )
   ) i_axi_atop_filter (
     .clk_i,
     .rst_ni,

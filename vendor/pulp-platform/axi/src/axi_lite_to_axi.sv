@@ -21,8 +21,8 @@ module axi_lite_to_axi #(
   parameter type  req_lite_t = logic,
   parameter type resp_lite_t = logic,
   // FULL AXI structs
-  parameter type       req_t = logic,
-  parameter type      resp_t = logic
+  parameter type   axi_req_t = logic,
+  parameter type  axi_resp_t = logic
 ) (
   // Slave AXI LITE port
   input  req_lite_t       slv_req_lite_i,
@@ -30,8 +30,8 @@ module axi_lite_to_axi #(
   input  axi_pkg::cache_t slv_aw_cache_i,
   input  axi_pkg::cache_t slv_ar_cache_i,
   // Master AXI port
-  output req_t            mst_req_o,
-  input  resp_t           mst_resp_i
+  output axi_req_t        mst_req_o,
+  input  axi_resp_t       mst_resp_i
 );
   localparam int unsigned AxiSize = axi_pkg::size_t'($unsigned($clog2(AxiDataWidth/8)));
 
