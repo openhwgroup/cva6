@@ -20,6 +20,12 @@ EventKind = Enum('EventKind', [
     'issue', 'done', 'commit',
 ])
 
+def to_signed(value, xlen=32):
+    signed = value
+    if signed >> (xlen - 1):
+        signed -= 1 << xlen
+    return signed
+
 class Event:
     """Represents an event on an instruction"""
     def __init__(self, kind, cycle):
@@ -135,6 +141,40 @@ class IqLen:
         if self.debug:
             print(f"iq: {message}")
 
+class Bht:
+    "Branch History Table"
+
+    @dataclass
+    class Entry:
+        "A BTB entry"
+        valid: bool = False
+        sat_counter: int = 0
+
+    def __init__(self, entries=128):
+        self.contents = [Bht.Entry() for _ in range(entries)]
+
+    def predict(self, addr):
+        "Is the branch taken? None if don't know"
+        entry = self.contents[self._index(addr)]
+        if entry.valid:
+            return entry.sat_counter >= 2
+        return None
+
+    def resolve(self, addr, taken):
+        "Update branch prediction"
+        index = self._index(addr)
+        entry = self.contents[index]
+        entry.valid = True
+        if taken:
+            if entry.sat_counter < 3:
+                entry.sat_counter += 1
+        else:
+            if entry.sat_counter > 0:
+                entry.sat_counter -= 1
+
+    def _index(self, addr):
+        return (addr >> 1) % len(self.contents)
+
 class Model:
     """Models the scheduling of CVA6"""
 
@@ -152,9 +192,11 @@ class Model:
             fetch_size=None,
             has_forwarding=True,
             has_renaming=True):
+        self.bht = Bht()
         self.instr_queue = []
         self.scoreboard = []
         self.last_issued = None
+        self.last_committed = None
         self.retired = []
         self.sb_len = sb_len
         self.debug = debug
@@ -171,9 +213,12 @@ class Model:
         instr.events.append(event)
         self.log.append((event, instr))
 
-    def predict_branch(self, branch_instr):
+    def predict_branch(self, instr):
         """Predict if branch is taken or not"""
-        return branch_instr.offset() >> 31 != 0
+        pred = self.bht.predict(instr.address)
+        if pred is not None:
+            return pred
+        return instr.offset() >> 31 != 0
 
     def predict_regjump(self, regjump_instr):
         """Predict destination address of indirect jump"""
@@ -182,16 +227,14 @@ class Model:
     def predict_pc(self, last):
         """Predict next program counter depending on last issued instruction"""
         if last.is_branch():
-            offset = last.offset()
-            if offset >> 31:
-                offset -= 1 << 32
             taken = self.predict_branch(last)
-            return last.address + (offset if taken else last.size())
+            offset = to_signed(last.offset()) if taken else last.size()
+            return last.address + offset
         if last.is_regjump():
             return self.predict_regjump(last)
         return None
 
-    def manage_last_branch(self, instr, cycle):
+    def issue_manage_last_branch(self, instr, cycle):
         """Flush IQ if branch miss, jump if branch hit"""
         if self.last_issued is not None:
             last = self.last_issued.instr
@@ -208,6 +251,15 @@ class Model:
                     if taken and not bmiss:
                         # last (not instr) was like a jump
                         self.iqlen.jump()
+
+    def commit_manage_last_branch(self, instr, cycle):
+        "Resolve branch prediction"
+        if self.last_committed is not None:
+            last = self.last_committed
+            if last.is_branch():
+                taken = instr.address != last.next_addr()
+                self.bht.resolve(last.address, taken)
+        self.last_committed = instr
 
     def find_data_hazards(self, instr, cycle):
         """Detect and log data hazards"""
@@ -246,7 +298,7 @@ class Model:
             can_issue = False
         if self.find_structural_hazard(instr, cycle):
             can_issue = False
-        self.manage_last_branch(instr, cycle)
+        self.issue_manage_last_branch(instr, cycle)
         if not self.iqlen.has(instr):
             can_issue = False
         if can_issue:
@@ -280,6 +332,7 @@ class Model:
             instr = self.scoreboard.pop(0).instr
             self.log_event_on(instr, EventKind.commit, cycle)
             self.retired.append(instr)
+            self.commit_manage_last_branch(instr, cycle)
 
     def run_cycle(self, cycle):
         """Runs a cycle"""
