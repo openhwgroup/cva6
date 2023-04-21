@@ -11,7 +11,11 @@ def api_url(owner, repo):
 
 def pulls(owner, repo):
     "Get (public) pull requests from a given repository"
-    response = requests.get(api_url(owner, repo) + '/pulls')
+    url = api_url(owner, repo) + '/pulls'
+    headers = {}
+    if 'GH_TOKEN' in env:
+        headers["Authorization"] = f"Token {env['GH_TOKEN']}"
+    response = requests.get(url, headers=headers)
     assert response.status_code == 200
     return response.json()
 
