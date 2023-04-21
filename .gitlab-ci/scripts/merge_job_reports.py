@@ -143,12 +143,6 @@ cd -
 except subprocess.CalledProcessError as e:
     print(f"Error: {e.output}")
 
-ref_branch = None
-if workflow_repo == 'cva6':
-    ref_branch = 'master'
-elif workflow_repo == 'core-v-verif':
-    ref_branch = 'cva6/dev'
-
 def find_pr(branch, prs):
     match = re.search(r'(.*)_PR_([a-zA-Z0-9](?:[a-zA-Z0-9]|[-_](?=[a-zA-Z0-9])){0,38})', branch)
     if match:
@@ -158,9 +152,9 @@ def find_pr(branch, prs):
                 return pr
     return None
 
-if ref_branch is not None:
-    pulls = gh.pulls('openhwgroup', workflow_repo)
-    pr = find_pr(workflow_commit_ref_name, pulls)
-    if pr is not None:
-        wf = gh.DashboardDone('openhwgroup', workflow_repo, ref_branch)
-        wf.send(pr['number'], success)
+pulls = gh.pulls('openhwgroup', workflow_repo)
+pr = find_pr(workflow_commit_ref_name, pulls)
+if pr is not None:
+    ref_branch = pr['base']['ref']
+    wf = gh.DashboardDone('openhwgroup', workflow_repo, ref_branch)
+    wf.send(pr['number'], success)
