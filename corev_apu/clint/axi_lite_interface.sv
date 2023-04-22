@@ -17,8 +17,8 @@ module axi_lite_interface #(
     parameter int unsigned AXI_ADDR_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned AXI_ID_WIDTH   = 10,
-    parameter type         axi_req_t      = ariane_axi::req_t,
-    parameter type         axi_resp_t     = ariane_axi::resp_t
+    parameter type         axi_req_t      = logic,
+    parameter type         axi_resp_t     = logic
 ) (
     input logic                               clk_i,    // Clock
     input logic                               rst_ni,   // Asynchronous reset active low

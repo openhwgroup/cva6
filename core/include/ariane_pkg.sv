@@ -47,7 +47,7 @@ package ariane_pkg;
       logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;  // base which needs to match
       logic [NrMaxRules-1:0][63:0]      CachedRegionLength;    // bit mask which bits to consider when matching the rule
       // cache config
-      bit                               AxiCompliant;          // set to 1 when using in conjunction with 64bit AXI bus adapter
+      bit                               AxiCompliant;          // set to 1 when using in conjunction with AXI bus adapter
       bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
       //
       logic [63:0]                      DmBaseAddress;         // offset of the debug module
@@ -282,18 +282,13 @@ package ariane_pkg;
                                                     | riscv::SSTATUS_SUM
                                                     | riscv::SSTATUS_MXR;
     // ---------------
-    // AXI
+    // Memory Interface User Bits
     // ---------------
 
-    localparam AXI_ID_WIDTH = cva6_config_pkg::CVA6ConfigAxiIdWidth;
-    localparam AXI_ADDR_WIDTH = cva6_config_pkg::CVA6ConfigAxiAddrWidth;
-    localparam AXI_DATA_WIDTH = cva6_config_pkg::CVA6ConfigAxiDataWidth;
     localparam FETCH_USER_WIDTH = cva6_config_pkg::CVA6ConfigFetchUserWidth;
-    localparam DATA_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
-    localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
-    localparam AXI_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
-    localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
     localparam FETCH_USER_EN = cva6_config_pkg::CVA6ConfigFetchUserEn;
+    localparam DATA_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
+    localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
 
     // ---------------
     // Fetch Stage
@@ -449,13 +444,13 @@ package ariane_pkg;
     localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
     localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
     localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN - ICACHE_INDEX_WIDTH;
-    localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
+    localparam int unsigned ICACHE_USER_LINE_WIDTH  = (DATA_USER_WIDTH == 1) ? 4 : 128; // in bit
     // D$
     localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
     localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
-    localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
+    localparam int unsigned DCACHE_USER_LINE_WIDTH  = (DATA_USER_WIDTH == 1) ? 4 : 128; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
 
     localparam int unsigned MEM_TID_WIDTH      = `L15_THREADID_WIDTH;
@@ -466,14 +461,14 @@ package ariane_pkg;
     localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);  // in bit, contains also offset width
     localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN-ICACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned ICACHE_LINE_WIDTH  = cva6_config_pkg::CVA6ConfigIcacheLineWidth; // in bit
-    localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigIcacheLineWidth; // in bit
+    localparam int unsigned ICACHE_USER_LINE_WIDTH  = (DATA_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigIcacheLineWidth; // in bit
     // D$
     localparam int unsigned CONFIG_L1D_SIZE    = cva6_config_pkg::CVA6ConfigDcacheByteSize; // in byte
     localparam int unsigned DCACHE_SET_ASSOC   = cva6_config_pkg::CVA6ConfigDcacheSetAssoc; // number of ways
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);  // in bit, contains also offset width
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN-DCACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned DCACHE_LINE_WIDTH  = cva6_config_pkg::CVA6ConfigDcacheLineWidth; // in bit
-    localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigDcacheLineWidth; // in bit
+    localparam int unsigned DCACHE_USER_LINE_WIDTH  = (DATA_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigDcacheLineWidth; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
 
     localparam int unsigned MEM_TID_WIDTH      = cva6_config_pkg::CVA6ConfigMemTidWidth;

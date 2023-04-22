@@ -18,8 +18,8 @@ module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; #(
     parameter int unsigned AXI_ADDR_WIDTH   = 0,
     parameter int unsigned AXI_DATA_WIDTH   = 0,
     parameter int unsigned AXI_ID_WIDTH     = 0,
-    parameter type axi_req_t = ariane_axi::req_t,
-    parameter type axi_rsp_t = ariane_axi::resp_t
+    parameter type axi_req_t = logic,
+    parameter type axi_rsp_t = logic
 )(
     input  logic                           clk_i,       // Clock
     input  logic                           rst_ni,      // Asynchronous reset active low

@@ -23,6 +23,8 @@ package std_cache_pkg;
     localparam DCACHE_DIRTY_WIDTH = ariane_pkg::DCACHE_SET_ASSOC*2;
     // localparam DECISION_BIT = 30; // bit on which to decide whether the request is cache-able or not
 
+    typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } ad_req_t;
+
     typedef struct packed {
         logic [1:0]      id;     // id for which we handle the miss
         logic            valid;
@@ -44,7 +46,7 @@ package std_cache_pkg;
 
     typedef struct packed {
         logic                req;
-        ariane_axi::ad_req_t reqtype;
+        ad_req_t             reqtype;
         ariane_pkg::amo_t    amo;
         logic [3:0]          id;
         logic [63:0]         addr;
