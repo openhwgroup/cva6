@@ -17,11 +17,12 @@
 module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter int unsigned ReqFifoDepth  = 2,
   parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
-  parameter int unsigned AxiAddrWidth = 0,
-  parameter int unsigned AxiDataWidth = 0,
-  parameter int unsigned AxiIdWidth   = 0,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter int unsigned AxiAddrWidth  = 0,
+  parameter int unsigned AxiDataWidth  = 0,
+  parameter int unsigned AxiIdWidth    = 0,
+  parameter int unsigned AxiUserWidth  = 0,
+  parameter type axi_req_t = logic,
+  parameter type axi_rsp_t = logic
 ) (
   input logic                  clk_i,
   input logic                  rst_ni,
@@ -73,9 +74,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [2:0] axi_rd_size, axi_wr_size;
   logic [AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
   logic [AxiNumWords-1:0][AxiDataWidth-1:0] axi_wr_data;
-  logic [AxiNumWords-1:0][AXI_USER_WIDTH-1:0] axi_wr_user;
+  logic [AxiNumWords-1:0][AxiUserWidth-1:0] axi_wr_user;
   logic [AxiDataWidth-1:0] axi_rd_data;
-  logic [AXI_USER_WIDTH-1:0] axi_rd_user;
+  logic [AxiUserWidth-1:0] axi_rd_user;
   logic [AxiNumWords-1:0][(AxiDataWidth/8)-1:0]  axi_wr_be;
   logic [5:0] axi_wr_atop;
   logic invalidate;
@@ -146,9 +147,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_rd_blen  = '0;
 
     if (dcache_data.paddr[2] == 1'b0) begin
-      axi_wr_user  = {{64-AXI_USER_WIDTH{1'b0}}, dcache_data.user};
+      axi_wr_user  = {{64-AxiUserWidth{1'b0}}, dcache_data.user};
     end else begin
-      axi_wr_user  = {dcache_data.user, {64-AXI_USER_WIDTH{1'b0}}};
+      axi_wr_user  = {dcache_data.user, {64-AxiUserWidth{1'b0}}};
     end
 
     // arbiter mux
@@ -382,8 +383,8 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // buffer read responses in shift regs
   logic icache_first_d, icache_first_q, dcache_first_d, dcache_first_q;
-  logic [ICACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:0][AXI_USER_WIDTH-1:0] icache_rd_shift_user_d, icache_rd_shift_user_q;
-  logic [DCACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:0][AXI_USER_WIDTH-1:0] dcache_rd_shift_user_d, dcache_rd_shift_user_q;
+  logic [ICACHE_USER_LINE_WIDTH/AxiUserWidth-1:0][AxiUserWidth-1:0] icache_rd_shift_user_d, icache_rd_shift_user_q;
+  logic [DCACHE_USER_LINE_WIDTH/AxiUserWidth-1:0][AxiUserWidth-1:0] dcache_rd_shift_user_d, dcache_rd_shift_user_q;
   logic [ICACHE_LINE_WIDTH/AxiDataWidth-1:0][AxiDataWidth-1:0] icache_rd_shift_d, icache_rd_shift_q;
   logic [DCACHE_LINE_WIDTH/AxiDataWidth-1:0][AxiDataWidth-1:0] dcache_rd_shift_d, dcache_rd_shift_q;
   wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
@@ -422,7 +423,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
       end else begin
         icache_rd_shift_d = {axi_rd_data, icache_rd_shift_q[ICACHE_LINE_WIDTH/AxiDataWidth-1:1]};
       end
-      icache_rd_shift_user_d = {axi_rd_user, icache_rd_shift_user_q[ICACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:1]};
+      icache_rd_shift_user_d = {axi_rd_user, icache_rd_shift_user_q[ICACHE_USER_LINE_WIDTH/AxiUserWidth-1:1]};
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (icache_first_q) begin
         icache_rd_shift_d[0] = axi_rd_data;
@@ -437,7 +438,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
       end else begin
         dcache_rd_shift_d = {axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/AxiDataWidth-1:1]};
       end
-      dcache_rd_shift_user_d = {axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:1]};
+      dcache_rd_shift_user_d = {axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/AxiUserWidth-1:1]};
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (dcache_first_q) begin
         dcache_rd_shift_d[0] = axi_rd_data;
@@ -595,7 +596,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     .AxiAddrWidth    ( AxiAddrWidth   ),
     .AxiDataWidth    ( AxiDataWidth   ),
     .AxiIdWidth      ( AxiIdWidth     ),
-    .AxiUserWidth    ( AXI_USER_WIDTH ),
+    .AxiUserWidth    ( AxiUserWidth   ),
     .axi_req_t       ( axi_req_t      ),
     .axi_rsp_t       ( axi_rsp_t      )
   ) i_axi_shim (

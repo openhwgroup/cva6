@@ -16,10 +16,7 @@
 `include "axi/assign.svh"
 
 module ariane_testharness #(
-  parameter int unsigned AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH,
-  parameter int unsigned AXI_USER_EN       = ariane_pkg::AXI_USER_EN,
-  parameter int unsigned AXI_ADDRESS_WIDTH = 64,
-  parameter int unsigned AXI_DATA_WIDTH    = 64,
+  parameter bit AXI_USER_EN = ariane_pkg::DATA_USER_EN,
   parameter bit          InclSimDTM        = 1'b1,
   parameter int unsigned NUM_WORDS         = 2**25,         // memory size
   parameter bit          StallRandomOutput = 1'b0,
@@ -76,17 +73,17 @@ module ariane_testharness #(
   assign test_en = 1'b0;
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidth ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
+    .AXI_ADDR_WIDTH ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH ( ariane_axi_soc::DataWidth ),
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidth ),
+    .AXI_USER_WIDTH ( ariane_axi_soc::UserWidth )
   ) slave[ariane_soc::NrSlaves-1:0]();
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_ADDR_WIDTH ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH ( ariane_axi_soc::DataWidth ),
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( ariane_axi_soc::UserWidth )
   ) master[ariane_soc::NB_PERIPHERALS-1:0]();
 
   rstgen i_rstgen_main (
@@ -204,8 +201,8 @@ module ariane_testharness #(
     end
   end
 
-  ariane_axi::req_t    dm_axi_m_req;
-  ariane_axi::resp_t   dm_axi_m_resp;
+  ariane_axi_soc::req_t  dm_axi_m_req;
+  ariane_axi_soc::resp_t dm_axi_m_resp;
 
   logic                dm_slave_req;
   logic                dm_slave_we;
@@ -226,7 +223,7 @@ module ariane_testharness #(
   // debug module
   dm_top #(
     .NrHarts              ( 1                           ),
-    .BusWidth             ( AXI_DATA_WIDTH              ),
+    .BusWidth             ( ariane_axi_soc::DataWidth   ),
     .SelectableHarts      ( 1'b1                        )
   ) i_dm_top (
     .clk_i                ( clk_i                       ),
@@ -262,10 +259,10 @@ module ariane_testharness #(
 
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_ADDR_WIDTH ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH ( ariane_axi_soc::DataWidth ),
+    .AXI_USER_WIDTH ( ariane_axi_soc::UserWidth )
   ) i_dm_axi2mem (
     .clk_i      ( clk_i                     ),
     .rst_ni     ( rst_ni                    ),
@@ -284,17 +281,17 @@ module ariane_testharness #(
   `AXI_ASSIGN_TO_RESP(dm_axi_m_resp, slave[1])
 
   axi_adapter #(
-    .DATA_WIDTH            ( AXI_DATA_WIDTH            ),
+    .DATA_WIDTH            ( ariane_axi_soc::DataWidth ),
     .AXI_ADDR_WIDTH        ( ariane_axi_soc::AddrWidth ),
     .AXI_DATA_WIDTH        ( ariane_axi_soc::DataWidth ),
-    .AXI_ID_WIDTH          ( ariane_soc::IdWidth       ),
-    .axi_req_t             ( ariane_axi::req_t         ),
-    .axi_rsp_t             ( ariane_axi::resp_t        )
+    .AXI_ID_WIDTH          ( ariane_axi_soc::IdWidth   ),
+    .axi_req_t             ( ariane_axi_soc::req_t     ),
+    .axi_rsp_t             ( ariane_axi_soc::resp_t    )
   ) i_dm_axi_master (
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
     .req_i                 ( dm_master_req             ),
-    .type_i                ( ariane_axi::SINGLE_REQ    ),
+    .type_i                ( std_cache_pkg::SINGLE_REQ ),
     .amo_i                 ( ariane_pkg::AMO_NONE      ),
     .gnt_o                 ( dm_master_gnt             ),
     .addr_i                ( dm_master_add             ),
@@ -316,15 +313,15 @@ module ariane_testharness #(
   // ---------------
   // ROM
   // ---------------
-  logic                         rom_req;
-  logic [AXI_ADDRESS_WIDTH-1:0] rom_addr;
-  logic [AXI_DATA_WIDTH-1:0]    rom_rdata;
+  logic                                 rom_req;
+  logic [ariane_axi_soc::AddrWidth-1:0] rom_addr;
+  logic [ariane_axi_soc::DataWidth-1:0] rom_rdata;
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_ADDR_WIDTH ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH ( ariane_axi_soc::DataWidth ),
+    .AXI_USER_WIDTH ( ariane_axi_soc::UserWidth )
   ) i_axi2rom (
     .clk_i  ( clk_i                   ),
     .rst_ni ( ndmreset_n              ),
@@ -357,7 +354,7 @@ module ariane_testharness #(
   `AXI_ASSIGN_TO_REQ(gpio_req, master[ariane_soc::GPIO])
   `AXI_ASSIGN_FROM_RESP(master[ariane_soc::GPIO], gpio_resp)
   axi_err_slv #(
-    .AxiIdWidth ( ariane_soc::IdWidthSlave   ),
+    .AxiIdWidth ( ariane_axi_soc::IdWidthSlave ),
     .req_t      ( ariane_axi_soc::req_slv_t  ),
     .resp_t     ( ariane_axi_soc::resp_slv_t )
   ) i_gpio_err_slv (
@@ -373,26 +370,26 @@ module ariane_testharness #(
   // Memory + Exclusive Access
   // ------------------------------
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_ADDR_WIDTH ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH ( ariane_axi_soc::DataWidth ),
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( ariane_axi_soc::UserWidth )
   ) dram();
 
   logic                         req;
   logic                         we;
-  logic [AXI_ADDRESS_WIDTH-1:0] addr;
-  logic [AXI_DATA_WIDTH/8-1:0]  be;
-  logic [AXI_DATA_WIDTH-1:0]    wdata;
-  logic [AXI_DATA_WIDTH-1:0]    rdata;
-  logic [AXI_USER_WIDTH-1:0]    wuser;
-  logic [AXI_USER_WIDTH-1:0]    ruser;
+  logic [ariane_axi_soc::AddrWidth-1:0]   addr;
+  logic [ariane_axi_soc::DataWidth/8-1:0] be;
+  logic [ariane_axi_soc::DataWidth-1:0]   wdata;
+  logic [ariane_axi_soc::DataWidth-1:0]   rdata;
+  logic [ariane_axi_soc::UserWidth-1:0]   wuser;
+  logic [ariane_axi_soc::UserWidth-1:0]   ruser;
 
   axi_riscv_atomics_wrap #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
+    .AXI_ADDR_WIDTH ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH ( ariane_axi_soc::DataWidth ),
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( ariane_axi_soc::UserWidth ),
     .AXI_MAX_WRITE_TXNS ( 1  ),
     .RISCV_WORD_WIDTH   ( 64 )
   ) i_axi_riscv_atomics (
@@ -403,17 +400,17 @@ module ariane_testharness #(
   );
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_ADDR_WIDTH ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH ( ariane_axi_soc::DataWidth ),
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( ariane_axi_soc::UserWidth )
   ) dram_delayed();
 
   axi_delayer_intf #(
-    .AXI_ID_WIDTH        ( ariane_soc::IdWidthSlave ),
-    .AXI_ADDR_WIDTH      ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH      ( AXI_DATA_WIDTH           ),
-    .AXI_USER_WIDTH      ( AXI_USER_WIDTH           ),
+    .AXI_ID_WIDTH        ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_ADDR_WIDTH      ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH      ( ariane_axi_soc::DataWidth ),
+    .AXI_USER_WIDTH      ( ariane_axi_soc::UserWidth ),
     .STALL_RANDOM_INPUT  ( StallRandomInput         ),
     .STALL_RANDOM_OUTPUT ( StallRandomOutput        ),
     .FIXED_DELAY_INPUT   ( 0                        ),
@@ -426,10 +423,10 @@ module ariane_testharness #(
   );
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_ADDR_WIDTH ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH ( ariane_axi_soc::DataWidth ),
+    .AXI_USER_WIDTH ( ariane_axi_soc::UserWidth )
   ) i_axi2mem (
     .clk_i  ( clk_i        ),
     .rst_ni ( ndmreset_n   ),
@@ -445,8 +442,8 @@ module ariane_testharness #(
   );
 
   sram #(
-    .DATA_WIDTH ( AXI_DATA_WIDTH ),
-    .USER_WIDTH ( AXI_USER_WIDTH ),
+    .DATA_WIDTH ( ariane_axi_soc::DataWidth ),
+    .USER_WIDTH ( ariane_axi_soc::UserWidth ),
     .USER_EN    ( AXI_USER_EN    ),
 `ifdef VERILATOR
     .SIM_INIT   ( "none"         ),
@@ -459,7 +456,7 @@ module ariane_testharness #(
     .rst_ni     ( rst_ni                                                                      ),
     .req_i      ( req                                                                         ),
     .we_i       ( we                                                                          ),
-    .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(AXI_DATA_WIDTH/8):$clog2(AXI_DATA_WIDTH/8)] ),
+    .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(ariane_axi_soc::DataWidth/8):$clog2(ariane_axi_soc::DataWidth/8)] ),
     .wuser_i    ( wuser                                                                       ),
     .wdata_i    ( wdata                                                                       ),
     .be_i       ( be                                                                          ),
@@ -493,16 +490,16 @@ module ariane_testharness #(
     MaxSlvTrans: unsigned'(1), // Probably requires update
     FallThrough: 1'b0,
     LatencyMode: axi_pkg::NO_LATENCY,
-    AxiIdWidthSlvPorts: unsigned'(ariane_soc::IdWidth),
-    AxiIdUsedSlvPorts: unsigned'(ariane_soc::IdWidth),
+    AxiIdWidthSlvPorts: ariane_axi_soc::IdWidth,
+    AxiIdUsedSlvPorts: ariane_axi_soc::IdWidth,
     UniqueIds: 1'b0,
-    AxiAddrWidth: unsigned'(AXI_ADDRESS_WIDTH),
-    AxiDataWidth: unsigned'(AXI_DATA_WIDTH),
-    NoAddrRules: unsigned'(ariane_soc::NB_PERIPHERALS)
+    AxiAddrWidth: ariane_axi_soc::AddrWidth,
+    AxiDataWidth: ariane_axi_soc::DataWidth,
+    NoAddrRules: ariane_soc::NB_PERIPHERALS
   };
 
   axi_xbar_intf #(
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH          ),
+    .AXI_USER_WIDTH ( ariane_axi_soc::UserWidth ),
     .Cfg            ( AXI_XBAR_CFG            ),
     .rule_t         ( axi_pkg::xbar_rule_64_t )
   ) i_axi_xbar (
@@ -526,9 +523,9 @@ module ariane_testharness #(
   ariane_axi_soc::resp_slv_t axi_clint_resp;
 
   clint #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH          ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH             ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave   ),
+    .AXI_ADDR_WIDTH ( ariane_axi_soc::AddrWidth  ),
+    .AXI_DATA_WIDTH ( ariane_axi_soc::DataWidth  ),
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
     .NR_CORES       ( 1                          ),
     .axi_req_t      ( ariane_axi_soc::req_slv_t  ),
     .axi_resp_t     ( ariane_axi_soc::resp_slv_t )
@@ -553,10 +550,10 @@ module ariane_testharness #(
   logic [1:0] irqs;
 
   ariane_peripherals #(
-    .AxiAddrWidth ( AXI_ADDRESS_WIDTH        ),
-    .AxiDataWidth ( AXI_DATA_WIDTH           ),
-    .AxiIdWidth   ( ariane_soc::IdWidthSlave ),
-    .AxiUserWidth ( AXI_USER_WIDTH           ),
+    .AxiAddrWidth ( ariane_axi_soc::AddrWidth ),
+    .AxiDataWidth ( ariane_axi_soc::DataWidth ),
+    .AxiIdWidth   ( ariane_axi_soc::IdWidthSlave ),
+    .AxiUserWidth ( ariane_axi_soc::UserWidth ),
 `ifndef VERILATOR
   // disable UART when using Spike, as we need to rely on the mockuart
   `ifdef SPIKE_TANDEM
@@ -602,12 +599,23 @@ module ariane_testharness #(
   // ---------------
   // Core
   // ---------------
-  ariane_axi::req_t    axi_ariane_req;
-  ariane_axi::resp_t   axi_ariane_resp;
+  ariane_axi_soc::req_t    axi_ariane_req;
+  ariane_axi_soc::resp_t   axi_ariane_resp;
   ariane_pkg::rvfi_port_t  rvfi;
 
   ariane #(
-    .ArianeCfg  ( ariane_soc::ArianeSocCfg )
+    .ArianeCfg            ( ariane_soc::ArianeSocCfg ),
+    .AxiAddrWidth         ( ariane_axi_soc::AddrWidth ),
+    .AxiDataWidth         ( ariane_axi_soc::DataWidth ),
+    .AxiIdWidth           ( ariane_axi_soc::IdWidth ),
+    .AxiUserWidth         ( ariane_axi_soc::UserWidth ),
+    .axi_ar_chan_t        ( ariane_axi_soc::ar_chan_t ),
+    .axi_r_chan_t         ( ariane_axi_soc::r_chan_t ),
+    .axi_aw_chan_t        ( ariane_axi_soc::aw_chan_t ),
+    .axi_w_chan_t         ( ariane_axi_soc::w_chan_t ),
+    .axi_b_chan_t         ( ariane_axi_soc::b_chan_t ),
+    .axi_req_t            ( ariane_axi_soc::req_t ),
+    .axi_rsp_t            ( ariane_axi_soc::resp_t )
   ) i_ariane (
     .clk_i                ( clk_i               ),
     .rst_ni               ( ndmreset_n          ),
@@ -665,8 +673,8 @@ module ariane_testharness #(
   // to use it
   Axi4PC #(
     .DATA_WIDTH(ariane_axi_soc::DataWidth),
-    .WID_WIDTH(ariane_soc::IdWidthSlave),
-    .RID_WIDTH(ariane_soc::IdWidthSlave),
+    .WID_WIDTH(ariane_axi_soc::IdWidthSlave),
+    .RID_WIDTH(ariane_axi_soc::IdWidthSlave),
     .AWUSER_WIDTH(ariane_axi_soc::UserWidth),
     .WUSER_WIDTH(ariane_axi_soc::UserWidth),
     .BUSER_WIDTH(ariane_axi_soc::UserWidth),

@@ -25,8 +25,9 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter int unsigned AxiAddrWidth = 0,
   parameter int unsigned AxiDataWidth = 0,
   parameter int unsigned AxiIdWidth   = 0,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter int unsigned AxiUserWidth = 0,
+  parameter type axi_req_t = logic,
+  parameter type axi_rsp_t = logic
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -161,6 +162,7 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
     .AxiAddrWidth       ( AxiAddrWidth ),
     .AxiDataWidth       ( AxiDataWidth ),
     .AxiIdWidth         ( AxiIdWidth ),
+    .AxiUserWidth       ( AxiUserWidth ),
     .axi_req_t          ( axi_req_t ),
     .axi_rsp_t          ( axi_rsp_t )
   ) i_adapter (
@@ -205,6 +207,12 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
       @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_o[j].data_rvalid && ~dcache_req_ports_i[j].kill_req |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
     else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X",
       j, dcache_req_ports_o[j].data_rdata);
+  end
+
+  initial
+  begin : gen_parameters_assertion
+    assert (CACHE_ID_WIDTH <= AxiIdWidth) else
+      $error("[l1 dcache] Not enough AXI Id bits to support the maximum TX transactions from the cache");
   end
 `endif
 //pragma translate_on

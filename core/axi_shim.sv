@@ -20,13 +20,13 @@
 
 
 module axi_shim #(
-  parameter int unsigned AxiUserWidth = 64, // data width in dwords, this is also the maximum burst length, must be >=2
+  parameter int unsigned AxiUserWidth = 64,
   parameter int unsigned AxiNumWords = 4, // data width in dwords, this is also the maximum burst length, must be >=2
   parameter int unsigned AxiAddrWidth = 0,
   parameter int unsigned AxiDataWidth = 0,
   parameter int unsigned AxiIdWidth   = 0,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter type axi_req_t = logic,
+  parameter type axi_rsp_t = logic
 ) (
   input  logic                            clk_i,  // Clock
   input  logic                            rst_ni, // Asynchronous reset active low
@@ -263,7 +263,7 @@ module axi_shim #(
   // return path
   assign axi_req_o.r_ready   = rd_rdy_i;
   assign rd_data_o           = axi_resp_i.r.data;
-  if (ariane_pkg::AXI_USER_EN) begin
+  if (ariane_pkg::DATA_USER_EN) begin
     assign rd_user_o           = axi_resp_i.r.user;
   end else begin
     assign rd_user_o           = '0;

@@ -21,8 +21,8 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     parameter int unsigned AXI_ADDR_WIDTH = 0,
     parameter int unsigned AXI_DATA_WIDTH = 0,
     parameter int unsigned AXI_ID_WIDTH   = 0,
-    parameter type axi_req_t = ariane_axi::req_t,
-    parameter type axi_rsp_t = ariane_axi::resp_t
+    parameter type axi_req_t = logic,
+    parameter type axi_rsp_t = logic
 )(
     input  logic                                        clk_i,
     input  logic                                        rst_ni,
@@ -121,7 +121,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     logic [DCACHE_LINE_WIDTH-1:0]            req_fsm_miss_wdata;
     logic                                    req_fsm_miss_we;
     logic [(DCACHE_LINE_WIDTH/8)-1:0]        req_fsm_miss_be;
-    ariane_axi::ad_req_t                     req_fsm_miss_req;
+    ad_req_t                                 req_fsm_miss_req;
     logic [1:0]                              req_fsm_miss_size;
 
     logic                                    gnt_miss_fsm;
@@ -166,11 +166,11 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         req_fsm_miss_wdata  = '0;
         req_fsm_miss_we     = 1'b0;
         req_fsm_miss_be     = '0;
-        req_fsm_miss_req    = ariane_axi::CACHE_LINE_REQ;
+        req_fsm_miss_req    = CACHE_LINE_REQ;
         req_fsm_miss_size   = 2'b11;
         // to AXI bypass
         amo_bypass_req.req     = 1'b0;
-        amo_bypass_req.reqtype = ariane_axi::SINGLE_REQ;
+        amo_bypass_req.reqtype = SINGLE_REQ;
         amo_bypass_req.amo     = ariane_pkg::AMO_NONE;
         amo_bypass_req.addr    = '0;
         amo_bypass_req.we      = 1'b0;
@@ -400,7 +400,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
             // ~> we are here because we need to do the AMO, the cache is clean at this point
             AMO_REQ: begin
                 amo_bypass_req.req     = 1'b1;
-                amo_bypass_req.reqtype = ariane_axi::SINGLE_REQ;
+                amo_bypass_req.reqtype = SINGLE_REQ;
                 amo_bypass_req.amo     = amo_req_i.amo_op;
                 // address is in operand a
                 amo_bypass_req.addr = amo_req_i.operand_a;
@@ -524,7 +524,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         // Pack MHSR ports first
         for (id = 0; id < NR_PORTS; id++) begin
             bypass_ports_req[id].req     = miss_req_valid[id] & miss_req_bypass[id];
-            bypass_ports_req[id].reqtype = ariane_axi::SINGLE_REQ;
+            bypass_ports_req[id].reqtype = SINGLE_REQ;
             bypass_ports_req[id].amo     = AMO_NONE;
             bypass_ports_req[id].id      = {2'b10, id};
             bypass_ports_req[id].addr    = miss_req_addr[id];
