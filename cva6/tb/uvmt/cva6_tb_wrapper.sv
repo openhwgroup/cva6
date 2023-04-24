@@ -23,8 +23,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-`define MAIN_MEM(P) uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_sram.gen_cut[0].gen_mem.i_tc_sram_wrapper.i_tc_sram.init_val[(``P``)]
-`define USER_MEM(P) uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_sram.gen_cut[0].gen_mem.gen_mem_user.i_tc_sram_wrapper_user.i_tc_sram.init_val[(``P``)]
+`define MAIN_MEM(P) uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_sram.gen_cut[0].i_tc_sram_wrapper.i_tc_sram.init_val[(``P``)]
+`define USER_MEM(P) uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_sram.gen_cut[0].gen_mem_user.i_tc_sram_wrapper_user.i_tc_sram.init_val[(``P``)]
 
 import uvm_pkg::*;
 
