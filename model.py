@@ -11,7 +11,7 @@ from collections import defaultdict
 
 from matplotlib import pyplot as plt
 
-from isa import Instr
+from isa import Instr, Reg
 
 EventKind = Enum('EventKind', [
     'WAW', 'WAR', 'RAW',
@@ -53,6 +53,24 @@ class Instruction(Instr):
     def next_addr(self):
         """Address of next instruction"""
         return self.address + self.size()
+
+    _ret_regs = [Reg.ra, Reg.t0]
+
+    def is_ret(self):
+        "Does CVA6 consider this instruction as a ret?"
+        f = self.fields()
+        # Strange conditions, no imm check, no rd-discard check
+        return self.is_regjump() \
+                and f.rs1 in Instruction._ret_regs \
+                and (self.is_compressed() or f.rs1 != f.rd)
+
+    def is_call(self):
+        "Does CVA6 consider this instruction as a ret?"
+        base = self.base()
+        f = self.fields()
+        return base == 'C.JAL' \
+            or base == 'C.J[AL]R/C.MV/C.ADD' and f.name == 'C.JALR' \
+            or base in ['JAL', 'JALR'] and f.rd in Instruction._ret_regs
 
     def __repr__(self):
         return self.mnemo
@@ -141,6 +159,55 @@ class IqLen:
         if self.debug:
             print(f"iq: {message}")
 
+class Ras:
+    "Return Address Stack"
+    def __init__(self, depth=2, debug=False):
+        self.depth = depth - 1
+        self.stack = []
+        self.debug = debug
+        self.last_dropped = None
+
+    def push(self, addr):
+        "Push an address on the stack, forget oldest entry if full"
+        self.stack.append(addr)
+        self._debug(f"pushed 0x{addr:08X}")
+        if len(self.stack) > self.depth:
+            self.stack.pop(0)
+            self._debug("overflown")
+
+    def drop(self):
+        "Drop an address from the stack"
+        self._debug("dropping")
+        if len(self.stack) > 0:
+            self.last_dropped = self.stack.pop()
+        else:
+            self.last_dropped = None
+            self._debug("was already empty")
+
+    def read(self):
+        "Read the top of the stack without modifying it"
+        self._debug("reading")
+        if self.last_dropped is not None:
+            addr = self.last_dropped
+            self._debug(f"read 0x{addr:08X}")
+            return addr
+        self._debug("was empty")
+        return None
+
+    def resolve(self, instr):
+        "Push or pop depending on the instruction"
+        self._debug(f"issuing {instr}")
+        if instr.is_ret():
+            self._debug("detected ret")
+            self.drop()
+        if instr.is_call():
+            self._debug("detected call")
+            self.push(instr.next_addr())
+
+    def _debug(self, message):
+        if self.debug:
+            print(f"RAS: {message}")
+
 class Bht:
     "Branch History Table"
 
@@ -191,6 +258,7 @@ class Model:
             fetch_size=None,
             has_forwarding=True,
             has_renaming=True):
+        self.ras = Ras(debug=debug)
         self.bht = Bht()
         self.instr_queue = []
         self.scoreboard = []
@@ -219,9 +287,11 @@ class Model:
             return pred
         return instr.offset() >> 31 != 0
 
-    def predict_regjump(self, regjump_instr):
+    def predict_regjump(self, instr):
         """Predict destination address of indirect jump"""
-        return 0 # always miss
+        if instr.is_ret():
+            return self.ras.read() or 0
+        return 0 # always miss, as there is no btb yet
 
     def predict_pc(self, last):
         """Predict next program counter depending on last issued instruction"""
@@ -307,6 +377,7 @@ class Model:
             entry = Entry(instr)
             self.scoreboard.append(entry)
             self.last_issued = LastIssue(instr, cycle)
+            self.ras.resolve(instr)
 
     def try_execute(self, cycle):
         """Try to execute instructions"""
