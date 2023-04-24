@@ -178,7 +178,6 @@ class Bht:
 class Model:
     """Models the scheduling of CVA6"""
 
-    re_csrr_minstret = re.compile(r"^csrr\s+\w\w,\s*minstret$")
     re_instr = re.compile(
         r"([a-z]+)\s+0:\s*0x00000000([0-9a-f]+)\s*\(([0-9a-fx]+)\)\s*@\s*([0-9]+)\s*(.*)"
     )
@@ -345,7 +344,6 @@ class Model:
 
     def load_file(self, path):
         """Fill a model from a trace file"""
-        accepting = False
         with open(path, "r", encoding="utf8") as file:
             for line in [l.strip() for l in file]:
                 found = Model.re_instr.search(line)
@@ -354,11 +352,7 @@ class Model:
                     hex_code = found.group(3)
                     mnemo = found.group(5)
                     instr = Instruction(line, address, hex_code, mnemo)
-                    if Model.re_csrr_minstret.search(instr.mnemo):
-                        accepting = not accepting
-                        continue
-                    if accepting:
-                        self.instr_queue.append(instr)
+                    self.instr_queue.append(instr)
 
     def run(self, cycles=None):
         """Run until completion"""
@@ -437,31 +431,56 @@ def issue_commit_graph(input_file, n = 3):
                 print("running", issue, commit)
                 model = Model(issue=issue, commit=commit)
                 model.load_file(input_file)
-                cycle_number = model.run()
-                score = 1000000 / cycle_number
+                model.run()
+                n_cycles = count_cycles(filter_timed_part(model.retired))
+                score = 1000000 / n_cycles
                 scores[issue][commit] = score
         print(scores)
     display_scores(scores)
 
-def main(input_file: str):
-    """Entry point"""
+def filter_timed_part(all_instructions):
+    "Keep only timed part from a trace"
+    filtered = []
+    re_csrr_minstret = re.compile(r"^csrr\s+\w\w,\s*minstret$")
+    accepting = False
+    for instr in all_instructions:
+        if re_csrr_minstret.search(instr.mnemo):
+            accepting = not accepting
+            continue
+        if accepting:
+            filtered.append(instr)
+    return filtered
 
-    model = Model(debug=True)
-    model.load_file(input_file)
-    cycle_number = model.run()
+def count_cycles(retired):
+    start = min(e.cycle for e in retired[0].events)
+    end = max(e.cycle for e in retired[-1].events)
+    return end - start
 
-    write_trace('annotated.log', model.retired)
-
+def print_stats(instructions):
     ecount = defaultdict(lambda: 0)
-    for (e, i) in model.log:
-        ecount[e.kind] += 1
 
-    n_instr = len(model.retired)
-    print_data("cycle number", cycle_number)
-    print_data("Coremark/MHz", 1000000 / cycle_number)
+    for instr in instructions:
+        for e in instr.events:
+            ecount[e.kind] += 1
+            cycle = e.cycle
+    n_instr = len(instructions)
+    n_cycles = count_cycles(instructions)
+
+    print_data("cycle number", n_cycles)
+    print_data("Coremark/MHz", 1000000 / n_cycles)
     print_data("instruction number", n_instr)
     for ek, count in ecount.items():
         print_data(f"{ek}/instr", f"{100 * count / n_instr:.2f}%")
+
+def main(input_file: str):
+    "Entry point"
+
+    model = Model(debug=True)
+    model.load_file(input_file)
+    model.run()
+
+    write_trace('annotated.log', model.retired)
+    print_stats(filter_timed_part(model.retired))
 
 if __name__ == "__main__":
     main(sys.argv[1])
