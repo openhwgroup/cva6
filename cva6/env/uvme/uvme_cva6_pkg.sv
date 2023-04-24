@@ -46,6 +46,8 @@ package uvme_cva6_pkg;
    import uvma_axi_pkg::*;
    import uvml_mem_pkg  ::*;
    import uvma_core_cntrl_pkg::*;
+   import uvma_rvfi_pkg::*;
+   import uvma_isacov_pkg::*;
 
    // Constants / Structs / Enums
    `include "uvme_cva6_constants.sv"

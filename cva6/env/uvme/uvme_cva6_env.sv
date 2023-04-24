@@ -43,6 +43,8 @@ class uvme_cva6_env_c extends uvm_env;
    uvma_cvxif_agent_c     cvxif_agent;
    uvma_axi_agent_c       axi_agent;
    uvma_cva6_core_cntrl_agent_c core_cntrl_agent;
+   uvma_rvfi_agent_c#(ILEN,XLEN)      rvfi_agent;
+   uvma_isacov_agent_c#(ILEN,XLEN)    isacov_agent;
 
    // Handle to agent switch interface
    virtual uvmt_axi_switch_intf  axi_switch_vif;
@@ -217,6 +219,10 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "core_cntrl_agent", "cfg", cfg);
 
+   uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "*rvfi_agent", "cfg", cfg.rvfi_cfg);
+
+   uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
+
 endfunction: assign_cfg
 
 
@@ -225,6 +231,7 @@ function void uvme_cva6_env_c::assign_cntxt();
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
+   uvm_config_db#(uvma_rvfi_cntxt_c)::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
 
 endfunction: assign_cntxt
 
@@ -235,6 +242,8 @@ function void uvme_cva6_env_c::create_agents();
    cvxif_agent   = uvma_cvxif_agent_c::type_id::create("cvxif_agent", this);
    axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
    core_cntrl_agent = uvma_cva6_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
+   rvfi_agent    = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
+   isacov_agent  = uvma_isacov_agent_c#(ILEN,XLEN)::type_id::create("isacov_agent", this);
 
 endfunction: create_agents
 
@@ -328,6 +337,9 @@ endtask
 function void uvme_cva6_env_c::connect_coverage_model();
 
    cvxif_agent.monitor.req_ap.connect(cov_model.cvxif_covg.req_item_fifo.analysis_export);
+   foreach (rvfi_agent.instr_mon_ap[i]) begin
+      rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_imp);
+   end
 
 endfunction: connect_coverage_model
 
