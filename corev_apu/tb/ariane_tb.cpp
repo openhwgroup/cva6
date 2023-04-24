@@ -55,14 +55,12 @@ static vluint64_t main_time = 0;
 
 static const char *verilog_plusargs[] = {"jtag_rbb_enable", "time_out", "debug_disable"};
 
-#ifndef DROMAJO
 extern dtm_t* dtm;
 extern remote_bitbang_t * jtag;
 
 void handle_sigterm(int sig) {
   dtm->stop();
 }
-#endif
 
 // Called by $time in Verilog converts to double, to match what SystemC does
 double sc_time_stamp () {
@@ -181,9 +179,6 @@ int main(int argc, char **argv) {
       case 'r': rbb_port = atoi(optarg);    break;
       case 'V': verbose = true;             break;
       case 'p': perf = true;                break;
-#ifdef DROMAJO
-            case 'D': break;
-#endif
 #if VM_TRACE
       case 'v': {
         vcdfile = strcmp(optarg, "-") == 0 ? stdout : fopen(optarg, "w");
@@ -213,12 +208,6 @@ int main(int argc, char **argv) {
           c = 'm';
           optarg = optarg+12;
         }
-#ifdef DROMAJO
-        else if (arg.substr(0, 12) == "+checkpoint=") {
-          c = 'D';
-          optarg = optarg+12;
-        }
-#endif
 #if VM_TRACE
         else if (arg.substr(0, 12) == "+dump-start=") {
           c = 'x';
@@ -277,15 +266,11 @@ int main(int argc, char **argv) {
   }
 
 done_processing:
-// allow proceeding without a binary if DROMAJO set,
-// binary will be loaded through checkpoint
-#ifndef DROMAJO
   if (optind == argc) {
     std::cerr << "No binary specified for emulator\n";
     usage(argv[0]);
     return 1;
   }
-#endif
   int htif_argc = 1 + argc - optind;
   htif_argv = (char **) malloc((htif_argc) * sizeof (char *));
   htif_argv[0] = argv[0];
@@ -294,11 +279,9 @@ done_processing:
   const char *vcd_file = NULL;
   Verilated::commandArgs(argc, argv);
 
-#ifndef DROMAJO
   jtag = new remote_bitbang_t(rbb_port);
   dtm = new preload_aware_dtm_t(htif_argc, htif_argv);
   signal(SIGTERM, handle_sigterm);
-#endif
 
   std::unique_ptr<Variane_testharness> top(new Variane_testharness);
 
@@ -362,12 +345,7 @@ done_processing:
 #endif
   // memif.read(0x84000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__gen_mem_user__DOT__i_tc_sram_wrapper_user__DOT__i_tc_sram__DOT__sram);
 
-#ifndef DROMAJO
   while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)) {
-#else
-  // the simulation gets killed by dromajo
-  while (true) {
-#endif
     top->clk_i = 0;
     top->eval();
 #if VM_TRACE
@@ -395,7 +373,6 @@ done_processing:
     fclose(vcdfile);
 #endif
 
-#ifndef DROMAJO
   if (dtm->exit_code()) {
     fprintf(stderr, "%s *** FAILED *** (tohost = %d) after %ld cycles\n", htif_argv[1], dtm->exit_code(), main_time);
     ret = dtm->exit_code();
@@ -412,7 +389,6 @@ done_processing:
 
   if (dtm) delete dtm;
   if (jtag) delete jtag;
-#endif
 
   std::clock_t c_end = std::clock();
   auto t_end = std::chrono::high_resolution_clock::now();
