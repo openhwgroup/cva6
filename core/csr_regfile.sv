@@ -79,7 +79,7 @@ module csr_regfile import ariane_pkg::*; #(
     output logic                  icache_en_o,                // L1 ICache Enable
     output logic                  dcache_en_o,                // L1 DCache Enable
     // Performance Counter
-    output logic [11:0]           perf_addr_o,                // read/write address to performance counter module 
+    output logic [11:0]           perf_addr_o,                // read/write address to performance counter module
     output logic[riscv::XLEN-1:0] perf_data_o,                // write data to performance counter module
     input  logic[riscv::XLEN-1:0] perf_data_i,                // read data from performance counter module
     output logic                  perf_we_o,
@@ -264,7 +264,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MHPM_COUNTER_5,
                 riscv::CSR_MHPM_COUNTER_6,
                 riscv::CSR_MHPM_COUNTER_7,
-                riscv::CSR_MHPM_COUNTER_8,    
+                riscv::CSR_MHPM_COUNTER_8,
                 riscv::CSR_MHPM_COUNTER_9,
                 riscv::CSR_MHPM_COUNTER_10,
                 riscv::CSR_MHPM_COUNTER_11,
@@ -287,7 +287,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MHPM_COUNTER_28,
                 riscv::CSR_MHPM_COUNTER_29,
                 riscv::CSR_MHPM_COUNTER_30,
-                riscv::CSR_MHPM_COUNTER_31 :     csr_rdata   = perf_data_i;   
+                riscv::CSR_MHPM_COUNTER_31 :     csr_rdata   = perf_data_i;
 
                 riscv::CSR_MHPM_COUNTER_3H,
                 riscv::CSR_MHPM_COUNTER_4H,
@@ -616,14 +616,14 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MHPM_EVENT_5,
                 riscv::CSR_MHPM_EVENT_6,
                 riscv::CSR_MHPM_EVENT_7,
-                riscv::CSR_MHPM_EVENT_8 :     begin perf_we_o = 1'b1; perf_data_o = csr_wdata;end 
+                riscv::CSR_MHPM_EVENT_8 :     begin perf_we_o = 1'b1; perf_data_o = csr_wdata;end
 
                 riscv::CSR_MHPM_COUNTER_3,
                 riscv::CSR_MHPM_COUNTER_4,
                 riscv::CSR_MHPM_COUNTER_5,
                 riscv::CSR_MHPM_COUNTER_6,
                 riscv::CSR_MHPM_COUNTER_7,
-                riscv::CSR_MHPM_COUNTER_8,    
+                riscv::CSR_MHPM_COUNTER_8,
                 riscv::CSR_MHPM_COUNTER_9,
                 riscv::CSR_MHPM_COUNTER_10,
                 riscv::CSR_MHPM_COUNTER_11,
@@ -646,7 +646,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MHPM_COUNTER_28,
                 riscv::CSR_MHPM_COUNTER_29,
                 riscv::CSR_MHPM_COUNTER_30,
-                riscv::CSR_MHPM_COUNTER_31 :  begin perf_we_o = 1'b1; perf_data_o = csr_wdata;end   
+                riscv::CSR_MHPM_COUNTER_31 :  begin perf_we_o = 1'b1; perf_data_o = csr_wdata;end
 
                 riscv::CSR_MHPM_COUNTER_3H,
                 riscv::CSR_MHPM_COUNTER_4H,
@@ -1168,11 +1168,7 @@ module csr_regfile import ariane_pkg::*; #(
             // floating-point registers
             fcsr_q                 <= '0;
             // debug signals
-`ifdef DROMAJO
-            debug_mode_q           <= 1'b1;
-`else
             debug_mode_q           <= 1'b0;
-`endif
             dcsr_q                 <= '0;
             dcsr_q.prv             <= riscv::PRIV_LVL_M;
             dcsr_q.xdebugver       <= 4'h4;

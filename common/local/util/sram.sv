@@ -24,8 +24,7 @@ module sram #(
     parameter USER_EN    = 0,
     parameter NUM_WORDS  = 1024,
     parameter SIM_INIT   = "none",
-    parameter OUT_REGS   = 0,    // enables output registers in FPGA macro (read lat = 2)
-    parameter DROMAJO_RAM  = 0
+    parameter OUT_REGS   = 0     // enables output registers in FPGA macro (read lat = 2)
 )(
    input  logic                          clk_i,
    input  logic                          rst_ni,
@@ -63,38 +62,6 @@ always_comb begin : p_align
 end
 
   for (genvar k = 0; k<(DATA_WIDTH+63)/64; k++) begin : gen_cut
-    if (DROMAJO_RAM) begin : gen_dromajo
-      dromajo_ram #(
-        .ADDR_WIDTH($clog2(NUM_WORDS)),
-        .DATA_DEPTH(NUM_WORDS),
-        .OUT_REGS (0)
-      ) i_ram (
-          .Clk_CI    ( clk_i                     ),
-          .Rst_RBI   ( rst_ni                    ),
-          .CSel_SI   ( req_i                     ),
-          .WrEn_SI   ( we_i                      ),
-          .BEn_SI    ( be_aligned[k*8 +: 8]      ),
-          .WrData_DI ( wdata_aligned[k*64 +: 64] ),
-          .Addr_DI   ( addr_i                    ),
-          .RdData_DO ( rdata_aligned[k*64 +: 64] )
-      );
-      if (USER_EN) begin : gen_dromajo_user
-        dromajo_ram #(
-          .ADDR_WIDTH($clog2(NUM_WORDS)),
-          .DATA_DEPTH(NUM_WORDS),
-          .OUT_REGS (0)
-        ) i_ram_user (
-            .Clk_CI    ( clk_i                     ),
-            .Rst_RBI   ( rst_ni                    ),
-            .CSel_SI   ( req_i                     ),
-            .WrEn_SI   ( we_i                      ),
-            .BEn_SI    ( be_aligned[k*8 +: 8]      ),
-            .WrData_DI ( wuser_aligned[k*64 +: 64] ),
-            .Addr_DI   ( addr_i                    ),
-            .RdData_DO ( ruser_aligned[k*64 +: 64] )
-        );
-      end
-    end else begin : gen_mem
       // unused byte-enable segments (8bits) are culled by the tool
       tc_sram_wrapper #(
         .NumWords(NUM_WORDS),           // Number of Words in data array
@@ -136,6 +103,5 @@ end
       end else begin
         assign ruser_aligned[k*64 +: 64] = '0;
       end
-    end
   end
 endmodule : sram
