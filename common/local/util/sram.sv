@@ -114,7 +114,7 @@ end
           .addr_i   ( addr_i                    ),
           .rdata_o  ( rdata_aligned[k*64 +: 64] )
       );
-      if (USER_EN) begin : gen_mem_user
+      if (USER_EN > 0) begin : gen_mem_user
         tc_sram_wrapper #(
           .NumWords(NUM_WORDS),           // Number of Words in data array
           .DataWidth(64),                 // Data signal width

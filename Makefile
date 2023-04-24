@@ -86,6 +86,7 @@ endif
 
 # target takes one of the following cva6 hardware configuration:
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga
+# Changing the default target to cv32a60x for Step1 verification
 target     ?= cv64a6_imafdc_sv39
 ifndef TARGET_CFG
 	export TARGET_CFG = $(target)
@@ -138,8 +139,7 @@ endif
 
 
 # this list contains the standalone components
-src :=  core/include/$(target)_config_pkg.sv                                         \
-        corev_apu/tb/ariane.sv                                                       \
+src :=  corev_apu/tb/ariane.sv                                                       \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
         $(wildcard corev_apu/clint/*.sv)                                             \
         $(wildcard corev_apu/fpga/src/axi2apb/src/*.sv)                              \
@@ -160,49 +160,37 @@ src :=  core/include/$(target)_config_pkg.sv                                    
         corev_apu/riscv-dbg/src/dm_top.sv                                            \
         corev_apu/riscv-dbg/debug_rom/debug_rom.sv                                   \
         corev_apu/register_interface/src/apb_to_reg.sv                               \
-        vendor/pulp-platform/axi/src/axi_multicut.sv                                            \
-        vendor/pulp-platform/common_cells/src/rstgen_bypass.sv                          \
-        vendor/pulp-platform/common_cells/src/rstgen.sv                                 \
-        vendor/pulp-platform/common_cells/src/stream_mux.sv                             \
-        vendor/pulp-platform/common_cells/src/stream_demux.sv                           \
-        vendor/pulp-platform/common_cells/src/exp_backoff.sv                            \
-        vendor/pulp-platform/common_cells/src/addr_decode.sv                            \
-        vendor/pulp-platform/common_cells/src/stream_register.sv                        \
-        vendor/pulp-platform/axi/src/axi_cut.sv                                                 \
-        vendor/pulp-platform/axi/src/axi_join.sv                                                \
-        vendor/pulp-platform/axi/src/axi_delayer.sv                                             \
-        vendor/pulp-platform/axi/src/axi_to_axi_lite.sv                                         \
-        vendor/pulp-platform/axi/src/axi_id_prepend.sv                                          \
-        vendor/pulp-platform/axi/src/axi_atop_filter.sv                                         \
-        vendor/pulp-platform/axi/src/axi_err_slv.sv                                             \
-        vendor/pulp-platform/axi/src/axi_mux.sv                                                 \
-        vendor/pulp-platform/axi/src/axi_demux.sv                                               \
-        vendor/pulp-platform/axi/src/axi_xbar.sv                                                \
-        vendor/pulp-platform/common_cells/src/cdc_2phase.sv                             \
-        vendor/pulp-platform/common_cells/src/spill_register_flushable.sv               \
-        vendor/pulp-platform/common_cells/src/spill_register.sv                         \
-        vendor/pulp-platform/common_cells/src/stream_arbiter.sv                         \
-        vendor/pulp-platform/common_cells/src/stream_arbiter_flushable.sv               \
-        vendor/pulp-platform/common_cells/src/deprecated/fifo_v1.sv                     \
-        vendor/pulp-platform/common_cells/src/deprecated/fifo_v2.sv                     \
-        vendor/pulp-platform/common_cells/src/stream_delay.sv                           \
-        vendor/pulp-platform/common_cells/src/lfsr_16bit.sv                             \
-        vendor/pulp-platform/tech_cells_generic/src/deprecated/cluster_clk_cells.sv         \
-        vendor/pulp-platform/tech_cells_generic/src/deprecated/pulp_clk_cells.sv            \
-        vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv                           \
+        vendor/pulp-platform/axi/src/axi_multicut.sv                                 \
+        vendor/pulp-platform/common_cells/src/rstgen_bypass.sv                       \
+        vendor/pulp-platform/common_cells/src/rstgen.sv                              \
+        vendor/pulp-platform/common_cells/src/addr_decode.sv                         \
+				vendor/pulp-platform/common_cells/src/stream_register.sv                     \
+        vendor/pulp-platform/axi/src/axi_cut.sv                                      \
+        vendor/pulp-platform/axi/src/axi_join.sv                                     \
+        vendor/pulp-platform/axi/src/axi_delayer.sv                                  \
+        vendor/pulp-platform/axi/src/axi_to_axi_lite.sv                              \
+        vendor/pulp-platform/axi/src/axi_id_prepend.sv                               \
+        vendor/pulp-platform/axi/src/axi_atop_filter.sv                              \
+        vendor/pulp-platform/axi/src/axi_err_slv.sv                                  \
+        vendor/pulp-platform/axi/src/axi_mux.sv                                      \
+        vendor/pulp-platform/axi/src/axi_demux.sv                                    \
+        vendor/pulp-platform/axi/src/axi_xbar.sv                                     \
+        vendor/pulp-platform/common_cells/src/cdc_2phase.sv                          \
+        vendor/pulp-platform/common_cells/src/spill_register_flushable.sv            \
+        vendor/pulp-platform/common_cells/src/spill_register.sv                      \
+        vendor/pulp-platform/common_cells/src/deprecated/fifo_v1.sv                  \
+        vendor/pulp-platform/common_cells/src/deprecated/fifo_v2.sv                  \
+        vendor/pulp-platform/common_cells/src/stream_delay.sv                        \
+        vendor/pulp-platform/common_cells/src/lfsr_16bit.sv                          \
+        vendor/pulp-platform/tech_cells_generic/src/deprecated/cluster_clk_cells.sv  \
+        vendor/pulp-platform/tech_cells_generic/src/deprecated/pulp_clk_cells.sv     \
+        vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv                    \
         corev_apu/tb/ariane_testharness.sv                                           \
         corev_apu/tb/ariane_peripherals.sv                                           \
         corev_apu/tb/rvfi_tracer.sv                                                  \
         corev_apu/tb/common/uart.sv                                                  \
         corev_apu/tb/common/SimDTM.sv                                                \
         corev_apu/tb/common/SimJTAG.sv
-
-# SV32 MMU for CV32, SV39 MMU for CV64
-ifeq ($(findstring 32, $(target)),32)
-    src += $(wildcard core/mmu_sv32/*.sv)
-else
-    src += $(wildcard core/mmu_sv39/*.sv)
-endif
 
 src := $(addprefix $(root-dir), $(src))
 
@@ -538,7 +526,7 @@ xrun-check-benchmarks:
 xrun-ci: xrun-asm-tests xrun-amo-tests xrun-mul-tests xrun-fp-tests xrun-benchmarks
 
 # verilator-specific
-verilate_command := $(verilator)                                                                                 \
+verilate_command := $(verilator) verilator_config.vlt                                                            \
                     -f core/Flist.cva6                                                                           \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                  \
@@ -547,6 +535,7 @@ verilate_command := $(verilator)                                                
                     +incdir+corev_apu/axi_node                                                                   \
                     $(if $(verilator_threads), --threads $(verilator_threads))                                   \
                     --unroll-count 256                                                                           \
+                    -Wall                                                                                        \
                     -Werror-PINMISSING                                                                           \
                     -Werror-IMPLICIT                                                                             \
                     -Wno-fatal                                                                                   \
@@ -565,9 +554,9 @@ verilate_command := $(verilator)                                                
                     $(if $(TRACE_FAST), --trace $(VERILATOR_ROOT)/include/verilated_vcd_c.cpp,)                  \
                     -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -L../corev_apu/tb/dromajo/src -ldromajo_cosim,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -DDROMAJO=1,) -DVL_DEBUG"       \
-                    -Wall --cc  --vpi                                                                            \
+                    --cc  --vpi                                                                                  \
                     $(list_incdir) --top-module ariane_testharness                                               \
-					--threads-dpi none 																			 \
+                    --threads-dpi none                                                                           \
                     --Mdir $(ver-library) -O3                                                                    \
                     --exe corev_apu/tb/ariane_tb.cpp corev_apu/tb/dpi/SimDTM.cc corev_apu/tb/dpi/SimJTAG.cc      \
                     corev_apu/tb/dpi/remote_bitbang.cc corev_apu/tb/dpi/msim_helper.cc $(if $(DROMAJO), corev_apu/tb/dpi/dromajo_cosim_dpi.cc,)

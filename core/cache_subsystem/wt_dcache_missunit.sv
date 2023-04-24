@@ -302,7 +302,7 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
           end
         end
         DCACHE_STORE_ACK: begin
-          if (stores_inflight_q) begin
+          if (stores_inflight_q>0) begin
             store_ack = 1'b1;
             miss_rtrn_vld_o[NumPorts-1] = 1'b1;
           end
@@ -313,7 +313,7 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
             // need to set SC backoff counter if
             // this op failed
             if (amo_req_i.amo_op == AMO_SC) begin
-              if (amo_resp_o.result) begin
+              if (amo_resp_o.result>0) begin
                 sc_fail = 1'b1;
               end else begin
                 sc_pass = 1'b1;

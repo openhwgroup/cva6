@@ -51,7 +51,7 @@ module fpu_wrap import ariane_pkg::*; (
 
     // Features (enabled formats, vectors etc.)
     localparam fpnew_pkg::fpu_features_t FPU_FEATURES = '{
-      Width:         riscv::XLEN, // parameterized using XLEN
+      Width:         unsigned'(riscv::XLEN), // parameterized using XLEN
       EnableVectors: ariane_pkg::XFVEC,
       EnableNanBox:  1'b1,
       FpFmtMask:     {RVF, RVD, XF16, XF8, XF16ALT},
@@ -61,10 +61,14 @@ module fpu_wrap import ariane_pkg::*; (
     // Implementation (number of registers etc)
     localparam fpnew_pkg::fpu_implementation_t FPU_IMPLEMENTATION = '{
       PipeRegs:  '{// FP32, FP64, FP16, FP8, FP16alt
-                 '{LAT_COMP_FP32, LAT_COMP_FP64, LAT_COMP_FP16, LAT_COMP_FP8, LAT_COMP_FP16ALT}, // ADDMUL
-                 '{default: LAT_DIVSQRT}, // DIVSQRT
-                 '{default: LAT_NONCOMP}, // NONCOMP
-                 '{default: LAT_CONV}},   // CONV
+                 '{unsigned'(LAT_COMP_FP32   ),
+                   unsigned'(LAT_COMP_FP64   ),
+                   unsigned'(LAT_COMP_FP16   ),
+                   unsigned'(LAT_COMP_FP8    ),
+                   unsigned'(LAT_COMP_FP16ALT)}, // ADDMUL
+                 '{default: unsigned'(LAT_DIVSQRT)}, // DIVSQRT
+                 '{default: unsigned'(LAT_NONCOMP)}, // NONCOMP
+                 '{default: unsigned'(LAT_CONV)}},   // CONV
       UnitTypes: '{'{default: fpnew_pkg::PARALLEL}, // ADDMUL
                    '{default: fpnew_pkg::MERGED},   // DIVSQRT
                    '{default: fpnew_pkg::PARALLEL}, // NONCOMP
@@ -253,6 +257,7 @@ module fpu_wrap import ariane_pkg::*; (
               3'b010: fpu_srcfmt_d = fpnew_pkg::FP16;
               3'b110: fpu_srcfmt_d = fpnew_pkg::FP16ALT;
               3'b011: fpu_srcfmt_d = fpnew_pkg::FP8;
+              default: ; // Do nothing
             endcase
           end
         end
@@ -392,6 +397,7 @@ module fpu_wrap import ariane_pkg::*; (
             fpnew_pkg::FP16,
             fpnew_pkg::FP16ALT: operand_c_d = RVD ? {4{operand_c_i[15:0]}} : {2{operand_c_i[15:0]}};
             fpnew_pkg::FP8:     operand_c_d = RVD ? {8{operand_c_i[7:0]}}  : {4{operand_c_i[7:0]}};
+            default: ; // Do nothing
           endcase // fpu_dstfmt_d
         end else begin
           unique case (fpu_dstfmt_d)
@@ -399,6 +405,7 @@ module fpu_wrap import ariane_pkg::*; (
             fpnew_pkg::FP16,
             fpnew_pkg::FP16ALT: operand_b_d = RVD ? {4{operand_b_i[15:0]}} : {2{operand_b_i[15:0]}};
             fpnew_pkg::FP8:     operand_b_d = RVD ? {8{operand_b_i[7:0]}}  : {4{operand_b_i[7:0]}};
+            default: ; // Do nothing
           endcase // fpu_dstfmt_d
         end
       end

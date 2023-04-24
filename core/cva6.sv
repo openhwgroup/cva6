@@ -947,6 +947,7 @@ module cva6 import ariane_pkg::*; #(
         riscv::PRIV_LVL_M: mode = "M";
         riscv::PRIV_LVL_S: mode = "S";
         riscv::PRIV_LVL_U: mode = "U";
+        default: ; // Do nothing
         endcase
       end
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
