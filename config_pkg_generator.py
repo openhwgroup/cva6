@@ -39,6 +39,14 @@ def setup_parser_config_generator():
                       help="C extension enable ? 1 : enable, 0 : disable")
   parser.add_argument("--a_ext", type=int, default=None, choices=[0,1],
                       help="A extension enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--b_ext", type=int, default=None, choices=[0,1],
+                      help="B extension enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--AxiIdWidth", type=int, default=None,
+                      help="AXI transaction ID width")
+  parser.add_argument("--AxiAddrWidth", type=int, default=None,
+                      help="AXI address width")
+  parser.add_argument("--AxiDataWidth", type=int, default=None,
+                      help="AXI data width")
   parser.add_argument("--iuser_en", type=int, default=None, choices=[0,1],
                       help="Fetch User enable ? 1 : enable, 0 : disable")
   parser.add_argument("--iuser_w", type=int, default=None, choices=list(range(1,64)),
@@ -93,6 +101,10 @@ def setup_parser_config_generator():
                       help="Enable performance counters")
   parser.add_argument("--DcacheType", type=str, default=None, choices=["WB", "WT"],
                       help="Cache type (WB or WT)")
+  parser.add_argument("--MmuPresent", type=int, default=None, choices=[0, 1],
+                      help="Use an MMU ? 1 : enable, 0 : disable")
+  parser.add_argument("--RvfiTrace", type=int, default=None, choices=[0, 1],
+                      help="Output an RVFI trace ? 1 : enable, 0 : disable")
   return parser
 
 ISA = ""
@@ -109,6 +121,10 @@ MapArgsToParameter={
   "cvxif" : "CVA6ConfigCvxifEn",
   "c_ext" : "CVA6ConfigCExtEn",
   "a_ext" : "CVA6ConfigAExtEn",
+  "b_ext" : "CVA6ConfigBExtEn",
+  "AxiIdWidth" : "CVA6ConfigAxiIdWidth",
+  "AxiAddrWidth" : "CVA6ConfigAxiAddrWidth",
+  "AxiDataWidth" : "CVA6ConfigAxiDataWidth",
   "iuser_en" : "CVA6ConfigFetchUserEn",
   "iuser_w" : "CVA6ConfigFetchUserWidth",
   "duser_en" : "CVA6ConfigDataUserEn",
@@ -137,6 +153,10 @@ MapArgsToParameter={
   "NrPMPEntries": "CVA6ConfigNrPMPEntries",
   "PerfCounterEn": "CVA6ConfigPerfCounterEn",
   "DcacheType": "CVA6ConfigDcacheType",
+  "MmuPresent": "CVA6ConfigMmuPresent",
+  "RvfiTrace": "RVFI_PORT",
+  # Ignored parameters
+  "ignored": "CVA6ConfigRvfiTrace",
 }
 MapParametersToArgs = {i:k for k, i in MapArgsToParameter.items()} #reverse map
 
@@ -161,14 +181,19 @@ def generate_config(argv):
   alllines = []
   with open("core/include/" + Args['default_config'] + "_config_pkg.sv", "r") as in_f:
     alllines = in_f.readlines()
-  
+
   # Apply cmdline args to override individual localparam values.
   for name, value in Args.items():
     if name not in ['default_config', 'isa', 'xlen'] and value is not None:
       param = MapArgsToParameter[name]
       print("setting", name, "to", value)
       for i, line in enumerate(alllines):
-        alllines[i] = re.sub(r"^(\s*localparam\s+"+param+r"\s*=\s*)(.*)(;\s*)$", r"\g<1>"+str(value)+r"\g<3>", line)
+        line = re.sub(r"^(\s*localparam\s+"+param+r"\s*=\s*)(.*)(;\s*)$", r"\g<1>"+str(value)+r"\g<3>", line)
+        if isinstance(value, int) and value in [0, 1]:
+            preproc_regexp = r"^(\s*`\s*)(define|undef)(\s+" + param + r"\s*)$"
+            directive = "define" if value == 1 else "undef"
+            line = re.sub(preproc_regexp, r"\g<1>" + directive + r"\g<3>", line)
+        alllines[i] = line
 
   # Build Config and warn about localparams which have no matching cmdline option associated with them.
   for line in alllines:
