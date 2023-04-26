@@ -27,4 +27,5 @@ CV32A6-step1 Design Verification Plan
    dvplan_ISA
    dvplan_CVXIF
    dvplan_AXI
+   dvplan_FENCEI
 

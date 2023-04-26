@@ -1,0 +1,69 @@
+!Feature
+next_elt_id: 2
+name: StoresComplete
+id: 4
+display_order: 4
+subfeatures: !!omap
+- 000_StoresComplete: !Subfeature
+    name: 000_StoresComplete
+    tag: VP_FENCEI_F004_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F004_S000_I000
+        description: Any store instruction that is successfully executed before a
+          fence.i will fully complete and have its effect visible (this is not about
+          syncronization with instruction fetch, but rather seeing that the stores
+          are not aborted).
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fenceThis
+          is a pointer to the source Requirements document of the Features in question.  The
+          pointer should state the version of the target document.  It is free-form,
+          so it can also indicate the specific section/page/paragraph.
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that all stores (either to next pc or other places) preceding
+          a fence.i will complete on the bus (excluding exceptions/interrupts/etc)
+          and be readable afterwards (particularly, ensure that the write buffer isn't
+          just purged).
+        pfc: 1
+        test_type: 1
+        cov_method: 0
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_StoresComplete: !Subfeature
+    name: 001_StoresComplete
+    tag: VP_FENCEI_F004_S001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F004_S001_I000
+        description: Any store instruction that is successfully executed before a
+          fence.i will fully complete and have its effect visible (this is not about
+          syncronization with instruction fetch, but rather seeing that the stores
+          are not aborted).
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fence
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that all stores (either to next pc or other places) preceding
+          a fence.i will complete on the bus (excluding exceptions/interrupts/etc)
+          and be readable afterwards (particularly, ensure that the write buffer isn't
+          just purged).
+        pfc: 3
+        test_type: 3
+        cov_method: 0
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
