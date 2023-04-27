@@ -32,6 +32,9 @@ for i in list_of_tests:
     else:
         metric.add_fail(*col)
 
+if job_test_total == 0:
+    metric.fail()
+
 report = rb.Report(f'{job_test_pass}/{job_test_total}')
 report.add_metric(metric)
 report.dump()
