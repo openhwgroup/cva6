@@ -26,6 +26,7 @@ riscv_hdrs = \
 	tracer.h \
 	extension.h \
 	rocc.h \
+	cvxif.h \
 	insn_template.h \
 	debug_module.h \
 	debug_rom_defines.h \
@@ -51,6 +52,7 @@ riscv_srcs = \
 	extension.cc \
 	extensions.cc \
 	rocc.cc \
+	cvxif_base.cc \
 	devices.cc \
 	rom.cc \
 	clint.cc \
