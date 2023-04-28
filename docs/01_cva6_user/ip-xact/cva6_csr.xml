@@ -2004,14 +2004,14 @@ with the index of the bit position equal to the value returned in the ``mcause``
                                 <ipxact:register>
                                         <ipxact:name>mscratch</ipxact:name>
                                         <ipxact:displayName>Machine Scratch</ipxact:displayName>
-                                        <ipxact:description>This register is used to hold a pointer to a machine-mode hart-local context space and swapped with a user register upon entry to an M-mode trap handler.</ipxact:description>
+                                        <ipxact:description>This register is used to hold a value dedicated to Machine mode. Attempts to access without Machine mode level raise illegal instruction exception.</ipxact:description>
                                         <ipxact:addressOffset>'h340</ipxact:addressOffset>
                                         <ipxact:size>32</ipxact:size>
                                         <ipxact:access>read-write</ipxact:access>
                                         <ipxact:field>
                                                 <ipxact:name>mscratch</ipxact:name>
                                                 <ipxact:displayName>Machine Scratch</ipxact:displayName>
-                                                <ipxact:description>Holds a pointer to a machine-mode hart-local context space and swapped with a user register upon entry to an M-mode trap handler.</ipxact:description>
+                                                <ipxact:description>Holds a a value dedicated to Machine mode.</ipxact:description>
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
