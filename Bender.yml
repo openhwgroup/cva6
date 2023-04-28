@@ -65,11 +65,8 @@ sources:
           - core/mmu_sv32/cva6_ptw_sv32.sv
 
       # included via target core/include/${TARGET_CFG}_config_pkg.sv
-      # ariane_axi_pkg is dependent on this.
-      # - vendor/pulp-platform/axi/src/axi_pkg.sv
 
       # Packages
-      - core/include/ariane_axi_pkg.sv
       - core/include/wt_cache_pkg.sv
       - core/include/std_cache_pkg.sv
       - core/include/axi_intf.sv
