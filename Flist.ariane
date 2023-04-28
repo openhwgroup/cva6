@@ -25,7 +25,6 @@ corev_apu/riscv-dbg/src/dm_pkg.sv
 core/include/ariane_pkg.sv
 corev_apu/tb/ariane_soc_pkg.sv
 vendor/pulp-platform/axi/src/axi_pkg.sv
-core/include/ariane_axi_pkg.sv
 core/include/wt_cache_pkg.sv
 core/include/axi_intf.sv
 vendor/openhwgroup/cvfpu/src/fpnew_pkg.sv
