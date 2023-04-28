@@ -7,8 +7,6 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
-set -e
-
 if [ -z ${NUM_JOBS} ]; then
     NUM_JOBS=1
 fi

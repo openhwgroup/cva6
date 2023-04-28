@@ -1,4 +1,4 @@
-# Copyright 2021-2022 Thales DIS design services SAS
+# Copyright 2021-2023i Thales DIS design services SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -7,41 +7,41 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
-set -e
-VERSION="e93b9cbbbcd3ad0a02ae298e9f1a2d98d3ac0153"
-
 if [ -z ${NUM_JOBS} ]; then
     NUM_JOBS=1
 fi
 
 # Set SPIKE_ROOT to 'NO' to skip the installation/checks of Spike altogether.
 # This is useful for CI jobs not depending on Spike in any way.
+# Otherwise expect/perform Spike installation in directory $SPIKE_ROOT
+# which defaults to $TOP/spike.
+if [ -z "$SPIKE_ROOT" ]; then
+  # Set the default location if not provided by caller.
+  export SPIKE_ROOT=$TOP/spike
+fi
+
 if [ "$SPIKE_ROOT" = "NO" ]; then
   echo "Skipping Spike setup on user's request (\$SPIKE_ROOT = \"NO\")."
 else
-  if [ ! -f "$SPIKE_ROOT/bin/spike"  ]; then
-    echo "Installing Spike"
-    PATCH_DIR=`pwd`/cva6/regress
-    mkdir -p $SPIKE_ROOT
-    cd $SPIKE_ROOT
-    git clone https://github.com/riscv/riscv-isa-sim.git
-    cd riscv-isa-sim
-    git checkout $VERSION
-    # Apply Spike patches.
-    git apply $PATCH_DIR/spike/patches/spike-shared-fesvr-lib.patch
-    git apply $PATCH_DIR/spike/patches/spike-cvxif-extension.patch
-    git apply $PATCH_DIR/spike/patches/spike-dlopen-diagnostics.patch
-    # Recursively copy Spike files related to CVXIF extension into current
-    # directory.
-    cp -rpa $PATCH_DIR/spike/cvxif-ext-files/* .
+  # Export the location of Spike source code.
+  export SPIKE_SRC_DIR=$ROOT_PROJECT/vendor/riscv/riscv-isa-sim
+
+  # Rebuild Spike or reuse an existing Spike build.
+  if [ ! -d "$SPIKE_ROOT" -o ! -f "$SPIKE_ROOT/bin/spike"  ]; then
+    echo "Installing Spike in '$SPIKE_ROOT'..."
+    # Keep track of current working dir.
+    CALLER_DIR=$(readlink -f $(pwd))
+    # Enter the vectorized tree.  It already captures the desired Spike config.
+    cd $SPIKE_SRC_DIR
     # Build and install Spike (including extensions).
     mkdir -p build
     cd build
     ../configure --enable-commitlog --prefix="$SPIKE_ROOT"
     make -j${NUM_JOBS}
     make install
+    cd $CALLER_DIR
   else
-    echo "Using Spike from cached directory $SPIKE_ROOT."
+    echo "Using Spike from cached directory '$SPIKE_ROOT'."
   fi
 fi
 
