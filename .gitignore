@@ -64,3 +64,4 @@ transcript
 .opt-rtl
 tools/spike
 tools/verilator*
+*_results/
