@@ -27,8 +27,8 @@ std::function<extension_t*()> find_extension(const char* name)
     if (!dlh) {
       dlh = dlopen(libdefault.c_str(), RTLD_LAZY);
       if (!dlh) {
-        fprintf(stderr, "couldn't find shared library either '%s' or '%s')\n",
-                libname.c_str(), libdefault.c_str());
+        fprintf(stderr, "couldn't load shared library (either '%s' or '%s'), reason: %s\n",
+                libname.c_str(), libdefault.c_str(), dlerror());
         exit(-1);
       }
 
