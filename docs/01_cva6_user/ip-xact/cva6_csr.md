@@ -278,10 +278,10 @@ This register controls which event causes the corresponding counter to increment
 ## Machine Scratch Register 
 ### *AddressOffset*: 'h340 
 ### *Description*:
-This register is used to hold a pointer to a machine-mode hart-local context space and swapped with a user register upon entry to an M-mode trap handler.
+This register is used to hold a value dedicated to Machine mode. Attempts to access without Machine mode level raise illegal instruction exception.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:0 | mscratch | Machine scratch | read-write  | This register is used to hold a pointer to a machine\-mode hart\-local context space and swapped with a user register upon entry to an M\-mode trap handler\.|
+| 31:0 | mscratch | Machine scratch | read-write  | This register is used to hold a value dedicated to Machine mode\. Attempts to access without Machine mode level raise illegal instruction exception\.|
 
 ## Machine Exception Program Counter Register 
 ### *AddressOffset*: 'h341 
