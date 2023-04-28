@@ -10,7 +10,7 @@
 # where are the tools
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
-  return
+  exit
 fi
 
 # install the required tools
