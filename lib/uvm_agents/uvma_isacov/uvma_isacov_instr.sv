@@ -49,9 +49,9 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   bit rd_valid;
 
   bit [4:0]  c_rdrs1;
-  bit [5:0]  c_rs1s;
-  bit [5:0]  c_rs2s;
-  bit [5:0]  c_rdp;
+  bit [2:0]  c_rs1s;
+  bit [2:0]  c_rs2s;
+  bit [2:0]  c_rdp;
 
   bit[XLEN-1:0]     rs1_value;
   instr_value_t rs1_value_type;

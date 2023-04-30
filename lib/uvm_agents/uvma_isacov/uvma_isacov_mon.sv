@@ -167,6 +167,7 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
     mon_trn.instr.rs2     = dasm_rvc_rs2(instr);
     mon_trn.instr.rd      = dasm_rvc_rd(instr);
     mon_trn.instr.c_rdrs1 = dasm_rvc_rd(instr);
+    mon_trn.instr.c_rdp  = dasm_rvc_rs1s(instr);
     mon_trn.instr.c_rs1s  = dasm_rvc_rs1s(instr);
     mon_trn.instr.c_rs2s  = dasm_rvc_rs2s(instr);
   end

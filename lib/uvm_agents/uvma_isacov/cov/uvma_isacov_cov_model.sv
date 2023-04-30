@@ -967,7 +967,7 @@ covergroup cg_cr_j(
     string name,
     bit reg_crosses_enabled,
     bit reg_hazards_enabled,
-    bit rdrs1_is_signed
+    bit rs1_is_signed
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -979,19 +979,12 @@ covergroup cg_cr_j(
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rdrs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rdrs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rdrs1_is_signed);
-  }
-
-  cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rdrs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rdrs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rdrs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
   }
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
 
 endgroup : cg_cr_j
 
@@ -1146,7 +1139,7 @@ covergroup cg_ciw(
   option.per_instance = 1;
   option.name = name;
 
-  cp_rd: coverpoint instr.rd;
+  cp_rd: coverpoint instr.c_rdp;
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
   `ISACOV_CP_BITWISE_7_0(cp_imm_toggle, instr.get_field_imm(), 1)
@@ -1177,8 +1170,8 @@ covergroup cg_cl(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
   }
 
-  cp_rs1: coverpoint instr.rs1;
-  cp_rd:  coverpoint instr.rd;
+  cp_rs1: coverpoint instr.c_rs1s;
+  cp_rd:  coverpoint instr.c_rdp;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
     ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
@@ -1215,8 +1208,8 @@ covergroup cg_cs(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
   }
 
-  cp_rs1: coverpoint instr.rs1;
-  cp_rs2: coverpoint instr.rs2;
+  cp_rs1: coverpoint instr.c_rs1s;
+  cp_rs2: coverpoint instr.c_rs2s;
 
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
@@ -1255,9 +1248,9 @@ covergroup cg_ca(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
   }
 
-  cp_rs1: coverpoint instr.rs1;
-  cp_rs2: coverpoint instr.rs2;
-  cp_rd: coverpoint instr.rd;
+  cp_rs1: coverpoint instr.c_rs1s;
+  cp_rs2: coverpoint instr.c_rs2s;
+  cp_rd: coverpoint instr.c_rdp;
 
   cross_rs1_rs2: cross cp_rs1, cp_rs2 {
     ignore_bins IGN_OFF = cross_rs1_rs2 with (!reg_crosses_enabled);
@@ -1291,7 +1284,7 @@ covergroup cg_cb(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
   }
 
-  cp_rs1: coverpoint instr.rs1;
+  cp_rs1: coverpoint instr.c_rs1s;
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
   `ISACOV_CP_BITWISE_7_0(cp_imm_toggle, instr.get_field_imm(), 1)
@@ -1981,11 +1974,11 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       rv32c_jr_cg       = new("rv32c_jr_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
-                              .rdrs1_is_signed(0));
+                              .rs1_is_signed(0));
       rv32c_jalr_cg     = new("rv32c_jalr_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
-                              .rdrs1_is_signed(0));
+                              .rs1_is_signed(0));
 
       rv32c_swsp_cg     = new("rv32c_swsp_cg",
                               .rs2_is_signed(0),
