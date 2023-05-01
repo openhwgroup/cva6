@@ -19,7 +19,7 @@
     }
 
     // Patch dir for local changes
-    patch_dir: "patches/riscv-isa-sim",
+    patch_dir: "patches/riscv/riscv-isa-sim",
 
     // Exclusions from upstream content
     exclude_from_upstream: [
