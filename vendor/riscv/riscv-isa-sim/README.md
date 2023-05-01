@@ -27,19 +27,42 @@ Spike supports the following RISC-V ISA features:
   - Zbb extension, v1.0
   - Zbc extension, v1.0
   - Zbs extension, v1.0
+  - Zfh and Zfhmin half-precision floating-point extensions, v1.0
+  - Zfinx extension, v1.0
+  - Zmmul integer multiplication extension, v1.0
+  - Zicbom, Zicbop, Zicboz cache-block maintenance extensions, v1.0
   - Conformance to both RVWMO and RVTSO (Spike is sequentially consistent)
   - Machine, Supervisor, and User modes, v1.11
   - Hypervisor extension, v1.0
   - Svnapot extension, v1.0
   - Svpbmt extension, v1.0
   - Svinval extension, v1.0
-  - Debug v0.14
+  - Sdext extension, v1.0-STABLE
+  - Sdtrig extension, v1.0-STABLE
+    - 4 triggers support type={2, 3, 4, 5, 6, 15} (mcontrol, icount, itrigger, etrigger, mcontrol6, disabled)
+  - Smepmp extension v1.0
+  - Smstateen extension, v1.0
+  - Sscofpmf v0.5.2
+  - Zca extension, v1.0
+  - Zcb extension, v1.0
+  - Zcf extension, v1.0
+  - Zcd extension, v1.0
+  - Zcmp extension, v1.0
+  - Zcmt extension, v1.0
 
 As a Spike extension, the remainder of the proposed
 [Bit-Manipulation Extensions](https://github.com/riscv/riscv-bitmanip)
 is provided under the Spike-custom extension name _Xbitmanip_.
 These instructions (and, of course, the extension name) are not RISC-V
 standards.
+
+These proposed bit-manipulation extensions can be split into further
+groups: Zbp, Zbs, Zbe, Zbf, Zbc, Zbm, Zbr, Zbt. Note that Zbc is
+ratified, but the original proposal contained some extra instructions
+(64-bit carryless multiplies) which are captured here.
+
+To enable these extensions individually, use the Spike-custom
+extension names _XZbp_, _XZbs_, _XZbc_, and so on.
 
 Versioning and APIs
 -------------------
@@ -211,7 +234,7 @@ OUTPUT_ARCH( "riscv" )
 
 SECTIONS
 {
-  . = 0x10010000;
+  . = 0x10110000;
   .text : { *(.text) }
   .data : { *(.data) }
 }
@@ -221,19 +244,19 @@ $ riscv64-unknown-elf-gcc -g -Og -T spike.lds -nostartfiles -o rot13-64 rot13-64
 
 To debug this program, first run spike telling it to listen for OpenOCD:
 ```
-$ spike --rbb-port=9824 -m0x10000000:0x20000 rot13-64
+$ spike --rbb-port=9824 -m0x10100000:0x20000 rot13-64
 Listening for remote bitbang connection on port 9824.
 ```
 
 In a separate shell run OpenOCD with the appropriate configuration file:
 ```
 $ cat spike.cfg 
-interface remote_bitbang
-remote_bitbang_host localhost
-remote_bitbang_port 9824
+adapter driver remote_bitbang
+remote_bitbang host localhost
+remote_bitbang port 9824
 
 set _CHIPNAME riscv
-jtag newtap $_CHIPNAME cpu -irlen 5 -expected-id 0x10e31913
+jtag newtap $_CHIPNAME cpu -irlen 5 -expected-id 0xdeadbeef
 
 set _TARGETNAME $_CHIPNAME.cpu
 target create $_TARGETNAME riscv -chain-position $_TARGETNAME
@@ -277,7 +300,7 @@ $2 = 0
 (gdb) print text
 $3 = "Vafgehpgvba frgf jnag gb or serr!"
 (gdb) b done 
-Breakpoint 1 at 0x10010064: file rot13.c, line 22.
+Breakpoint 1 at 0x10110064: file rot13.c, line 22.
 (gdb) c
 Continuing.
 Disabling abstract command writes to CSRs.

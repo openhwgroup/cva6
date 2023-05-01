@@ -3,63 +3,74 @@ get_opcode = $(shell grep ^DECLARE_INSN.*\\\<$(2)\\\> $(1) | sed 's/DECLARE_INSN
 
 riscv_subproject_deps = \
 	fdt \
+	disasm \
+	fesvr \
 	softfloat \
+
+riscv_CFLAGS = -fPIC
+
+riscv_install_shared_lib = yes
 
 riscv_install_prog_srcs = \
 
-riscv_hdrs = \
+riscv_install_hdrs = \
 	abstract_device.h \
+	abstract_interrupt_controller.h \
+	cachesim.h \
+	cfg.h \
 	common.h \
+	csrs.h \
+	debug_defines.h \
+	debug_module.h \
+	debug_rom_defines.h \
 	decode.h \
 	devices.h \
 	disasm.h \
-	dts.h \
+	encoding.h \
+	entropy_source.h \
+	extension.h \
+	isa_parser.h \
+	log_file.h \
+	memtracer.h \
+	mmio_plugin.h \
 	mmu.h \
+	platform.h \
 	processor.h \
+	rocc.h \
 	sim.h \
 	simif.h \
 	trap.h \
-	encoding.h \
-	cachesim.h \
-	memtracer.h \
-	mmio_plugin.h \
-	tracer.h \
-	extension.h \
-	rocc.h \
-	cvxif.h \
-	insn_template.h \
-	debug_module.h \
-	debug_rom_defines.h \
-	remote_bitbang.h \
-	jtag_dtm.h \
-	csrs.h \
-
-riscv_install_hdrs = mmio_plugin.h
+	triggers.h \
+	vector_unit.h \
 
 riscv_precompiled_hdrs = \
 	insn_template.h \
 
 riscv_srcs = \
+	isa_parser.cc \
 	processor.cc \
 	execute.cc \
 	dts.cc \
 	sim.cc \
 	interactive.cc \
-	trap.cc \
 	cachesim.cc \
 	mmu.cc \
-	disasm.cc \
 	extension.cc \
 	extensions.cc \
 	rocc.cc \
-	cvxif_base.cc \
 	devices.cc \
 	rom.cc \
 	clint.cc \
+	plic.cc \
+	ns16550.cc \
 	debug_module.cc \
 	remote_bitbang.cc \
 	jtag_dtm.cc \
 	csrs.cc \
+	triggers.cc \
+	vector_unit.cc \
+	socketif.cc \
+	cfg.cc \
 	$(riscv_gen_srcs) \
 
 riscv_test_srcs =
@@ -229,6 +240,15 @@ riscv_insn_ext_f = \
 	fsub_s \
 	fsw \
 
+riscv_insn_ext_f_zfa= \
+	fli_s \
+	fmaxm_s \
+	fminm_s \
+	fround_s \
+	froundnx_s \
+	fleq_s \
+	fltq_s
+
 riscv_insn_ext_d = \
 	fadd_d \
 	fclass_d \
@@ -263,6 +283,18 @@ riscv_insn_ext_d = \
 	fsgnjx_d \
 	fsqrt_d \
 	fsub_d \
+
+riscv_insn_ext_d_zfa = \
+	fli_d \
+	fmaxm_d \
+	fminm_d \
+	fround_d \
+	froundnx_d \
+	fmvh_x_d \
+	fmvp_d_x \
+	fcvtmod_w_d \
+	fleq_d \
+	fltq_d
 
 riscv_insn_ext_zfh = \
 	fadd_h \
@@ -302,6 +334,15 @@ riscv_insn_ext_zfh = \
 	fsqrt_h \
 	fsub_h \
 
+riscv_insn_ext_zfh_zfa = \
+	fli_h \
+	fmaxm_h \
+	fminm_h \
+	fround_h \
+	froundnx_h \
+	fleq_h \
+	fltq_h
+
 riscv_insn_ext_q = \
 	fadd_q \
 	fclass_q \
@@ -334,6 +375,17 @@ riscv_insn_ext_q = \
 	fsq \
 	fsqrt_q \
 	fsub_q \
+
+riscv_insn_ext_q_zfa = \
+	fli_q \
+	fmaxm_q \
+	fminm_q \
+	fround_q \
+	froundnx_q \
+	fmvh_x_q \
+	fmvp_q_x \
+	fleq_q \
+	fltq_q
 
 riscv_insn_ext_b = \
 	add_uw \
@@ -1255,6 +1307,9 @@ riscv_insn_priv = \
 	sret \
 	wfi \
 
+riscv_insn_smrnmi = \
+	mnret \
+
 riscv_insn_svinval = \
 	sfence_w_inval \
 	sfence_inval_ir \
@@ -1262,25 +1317,72 @@ riscv_insn_svinval = \
 	hinval_vvma \
 	hinval_gvma \
 
+riscv_insn_ext_zcb = \
+	c_zext_b \
+	c_zext_h \
+	c_zext_w \
+	c_sext_b \
+	c_sext_h \
+	c_not \
+	c_mul \
+	c_lbu \
+	c_lhu \
+	c_lh \
+	c_sb \
+	c_sh \
+
+riscv_insn_ext_zcmp = \
+	cm_push \
+	cm_pop \
+	cm_popret \
+	cm_popretz \
+	cm_mva01s \
+	cm_mvsa01 \
+
+riscv_insn_ext_zcmt = \
+	cm_jalt \
+
+riscv_insn_ext_zce = \
+	$(riscv_insn_ext_zcb) \
+	$(riscv_insn_ext_zcmp) \
+	$(riscv_insn_ext_zcmt) \
+
+riscv_insn_ext_cmo = \
+	cbo_clean \
+	cbo_flush \
+	cbo_inval \
+	cbo_zero \
+
+riscv_insn_ext_zicond = \
+        czero_eqz \
+        czero_nez \
+
 riscv_insn_list = \
 	$(riscv_insn_ext_a) \
 	$(riscv_insn_ext_c) \
 	$(riscv_insn_ext_i) \
 	$(riscv_insn_ext_m) \
 	$(riscv_insn_ext_f) \
+	$(riscv_insn_ext_f_zfa) \
 	$(riscv_insn_ext_d) \
+	$(riscv_insn_ext_d_zfa) \
 	$(riscv_insn_ext_zfh) \
+	$(riscv_insn_ext_zfh_zfa) \
 	$(riscv_insn_ext_q) \
+	$(riscv_insn_ext_q_zfa) \
 	$(riscv_insn_ext_b) \
-    $(riscv_insn_ext_k) \
+	$(riscv_insn_ext_k) \
 	$(if $(HAVE_INT128),$(riscv_insn_ext_v),) \
+	$(riscv_insn_ext_zce) \
 	$(riscv_insn_ext_h) \
 	$(riscv_insn_ext_p) \
 	$(riscv_insn_priv) \
 	$(riscv_insn_svinval) \
+	$(riscv_insn_smrnmi) \
+	$(riscv_insn_ext_cmo) \
+	$(riscv_insn_ext_zicond) \
 
-riscv_gen_srcs = \
-	$(addsuffix .cc,$(riscv_insn_list))
+riscv_gen_srcs = $(addsuffix .cc,$(riscv_insn_list))
 
 insn_list.h: $(src_dir)/riscv/riscv.mk.in
 	for insn in $(foreach insn,$(riscv_insn_list),$(subst .,_,$(insn))) ; do \

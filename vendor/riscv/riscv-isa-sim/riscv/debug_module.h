@@ -3,24 +3,26 @@
 #define _RISCV_DEBUG_MODULE_H
 
 #include <set>
+#include <vector>
 
 #include "abstract_device.h"
-#include "mmu.h"
 
-class sim_t;
+class simif_t;
 class bus_t;
+class processor_t;
 
 typedef struct {
-    // Size of program_buffer in 32-bit words, as exposed to the rest of the
-    // world.
-    unsigned progbufsize;
-    unsigned max_sba_data_width;
-    bool require_authentication;
-    unsigned abstract_rti;
-    bool support_hasel;
-    bool support_abstract_csr_access;
-    bool support_haltgroups;
-    bool support_impebreak;
+  // Size of program_buffer in 32-bit words, as exposed to the rest of the
+  // world.
+  unsigned progbufsize;
+  unsigned max_sba_data_width;
+  bool require_authentication;
+  unsigned abstract_rti;
+  bool support_hasel;
+  bool support_abstract_csr_access;
+  bool support_abstract_fpr_access;
+  bool support_haltgroups;
+  bool support_impebreak;
 } debug_module_config_t;
 
 typedef struct {
@@ -54,12 +56,12 @@ typedef struct {
 } dmstatus_t;
 
 typedef enum cmderr {
-    CMDERR_NONE = 0,
-    CMDERR_BUSY = 1,
-    CMDERR_NOTSUP = 2,
-    CMDERR_EXCEPTION = 3,
-    CMDERR_HALTRESUME = 4,
-    CMDERR_OTHER = 7  
+  CMDERR_NONE = 0,
+  CMDERR_BUSY = 1,
+  CMDERR_NOTSUP = 2,
+  CMDERR_EXCEPTION = 3,
+  CMDERR_HALTRESUME = 4,
+  CMDERR_OTHER = 7
 } cmderr_t;
 
 typedef struct {
@@ -108,7 +110,7 @@ class debug_module_t : public abstract_device_t
      * abstract_rti is extra run-test/idle cycles that each abstract command
      * takes to execute. Useful for testing OpenOCD.
      */
-    debug_module_t(sim_t *sim, const debug_module_config_t &config);
+    debug_module_t(simif_t *sim, const debug_module_config_t &config);
     ~debug_module_t();
 
     void add_device(bus_t *bus);
@@ -130,7 +132,6 @@ class debug_module_t : public abstract_device_t
 
   private:
     static const unsigned datasize = 2;
-    unsigned nprocs;
     debug_module_config_t config;
     // Actual size of the program buffer, which is 1 word bigger than we let on
     // to implement the implicit ebreak at the end.
@@ -144,11 +145,7 @@ class debug_module_t : public abstract_device_t
     // functionality.
     unsigned custom_base;
 
-    // We only support 1024 harts currently. More requires at least resizing
-    // the arrays below, and their corresponding special memory regions.
-    unsigned hartsellen = 10;
-
-    sim_t *sim;
+    simif_t *sim;
 
     uint8_t debug_rom_whereto[4];
     uint8_t debug_abstract[debug_abstract_size * 4];
@@ -181,13 +178,15 @@ class debug_module_t : public abstract_device_t
     uint32_t challenge;
     const uint32_t secret = 1;
 
-    processor_t *processor(unsigned hartid) const;
     bool hart_selected(unsigned hartid) const;
     void reset();
     bool perform_abstract_command();
 
     bool abstract_command_completed;
     unsigned rti_remaining;
+
+    size_t selected_hart_id() const;
+    hart_debug_state_t& selected_hart_state();
 };
 
 #endif
