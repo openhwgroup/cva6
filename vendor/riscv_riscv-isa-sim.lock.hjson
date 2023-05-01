@@ -9,6 +9,6 @@
   upstream:
   {
     url: https://github.com/riscv/riscv-isa-sim.git
-    rev: e93b9cbbbcd3ad0a02ae298e9f1a2d98d3ac0153
+    rev: fcbdbe7946079650d0e656fa3d353e3f652d471f
   }
 }
