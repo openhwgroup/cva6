@@ -60,12 +60,18 @@ The following environment variables may be set for any `make` invocation to run 
 | CV_SW_CFLAGS         | Optional command-line arguments (flags) passed to $(CV_SW_CC). |
 | CV_SW_CC             | Postfix name of the C compiler used to compile the test-program. The default is `gcc`. If you are using an LLVM toolchain, this would typically be set to `cc`. |
 
-Imperas OVPsim Instruction Set Simulator
-----------------------------------------
-This UVM verification environment uses the Imperas OVPsim Instruction Set Simulator
-(ISS) as a reference model.   The run-time license for this ISS is free to OpenHW
-Group Contributors.  Please contact @MikeOpenHWGroup to be added as a Contributor and
-go to the [Imperas website](http://www.imperas.com/) for installation instructions.
+Imperas Reference Models
+------------------------
+Many CORE-V cores verified in CORE-V-VERIF use a reference model from [Imperas](https://www.imperas.com/).
+Earlier generations of CORE-V-VERIF used the **_OVPsim Instruction Set Simulator_**, and as of March, 2023 we have transitioned to **_ImperasDV_**.
+To purchase a run-time license for ImperasDV, please contact Imperas at the link above.
+
+To run CORE-V-VERIF without the reference model, set the `USE_ISS` make variable to "NO":
+```
+$ make test TEST=hello-world SIMULATOR=<your-simulator> USE_ISS=NO
+```
+The above works for all tests, but be aware that most test-programs in CORE-V-VERIF are not self-checking,
+so without a running reference model, passing simulations are vacuous.
 
 SystemVerilog Simulators
 ----------------------------------
