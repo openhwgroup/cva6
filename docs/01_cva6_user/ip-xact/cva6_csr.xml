@@ -2011,7 +2011,7 @@ with the index of the bit position equal to the value returned in the ``mcause``
                                         <ipxact:field>
                                                 <ipxact:name>mscratch</ipxact:name>
                                                 <ipxact:displayName>Machine Scratch</ipxact:displayName>
-                                                <ipxact:description>Holds a a value dedicated to Machine mode.</ipxact:description>
+                                                <ipxact:description>Holds a value dedicated to Machine mode.</ipxact:description>
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
