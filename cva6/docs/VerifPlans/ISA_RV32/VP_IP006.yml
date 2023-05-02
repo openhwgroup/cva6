@@ -15,11 +15,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S000_I000
         description: "mul rd, rs1, rs2\nx[rd] = x[rs1] * x[rs2]\nArithmetic overflow\
           \ is ignored."
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -36,11 +36,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S000_I001
         description: "mul rd, rs1, rs2\nx[rd] = x[rs1] * x[rs2]\nArithmetic overflow\
           \ is ignored."
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
           \ is non-zero and zero\nAll combinations of rs1 and rs2 non-zero and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -57,11 +57,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S000_I002
         description: "mul rd, rs1, rs2\nx[rd] = x[rs1] * x[rs2]\nArithmetic overflow\
           \ is ignored."
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is non-zero and zero\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -81,11 +81,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S001_I000
         description: "mulh rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nBoth\
           \ rs1 and rs2 treated as signed numbers"
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -102,11 +102,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S001_I001
         description: "mulh rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nBoth\
           \ rs1 and rs2 treated as signed numbers"
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
           \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -123,11 +123,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S001_I002
         description: "mulh rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nBoth\
           \ rs1 and rs2 treated as signed numbers"
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -147,11 +147,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S002_I000
         description: "mulhu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >> XLEN\nBoth\
           \ rs1 and rs2 treated as unsigned numbers"
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -168,11 +168,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S002_I001
         description: "mulhu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >> XLEN\nBoth\
           \ rs1 and rs2 treated as unsigned numbers"
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
           \ is non-zero and zero\nAll combinations of rs1 and rs2 non-zero and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -189,11 +189,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S002_I002
         description: "mulhu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >> XLEN\nBoth\
           \ rs1 and rs2 treated as unsigned numbers"
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is non-zero and zero\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -213,11 +213,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S003_I000
         description: "mulhsu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nrs1\
           \ treated as signed number, rs2 treated as unsigned number"
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -235,11 +235,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S003_I001
         description: "mulhsu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nrs1\
           \ treated as signed number, rs2 treated as unsigned number"
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
           \ is non-zero and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -256,11 +256,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F006_S003_I002
         description: "mulhsu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nrs1\
           \ treated as signed number, rs2 treated as unsigned number"
-        reqt_doc: "Unprivileged ISA\nChapter 7.1"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -269,7 +269,7 @@ subfeatures: !!omap
         cores: 56
         coverage_loc: "isacov.rv32m_mulhsu_cg.cp_rd_value\nisacov.rv32m_mulhsu_cg.cp_rd_toggle"
         comments: ''
-vptool_gitrev: '$Id: 755afe774cedc2d4910aa802ee20a1f485c1236e $'
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
 io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
 config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
 ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
