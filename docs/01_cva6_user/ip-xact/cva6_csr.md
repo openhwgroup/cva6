@@ -1,7 +1,7 @@
 # REGISTERS CSR CV32A6
 
 ## Floating-Point Accrued Exceptions Register 
-### *AddressOffset*: 1 
+### *AddressOffset*: 'h1 
 ### *Description*:
 The fields within the ``fcsr`` can also be accessed individually through different CSR addresses, and separate assembler pseudoinstructions are defined for these accesses. The FRRM instruction reads the Rounding Mode field ``frm`` and copies it into the least-significant three bits of integer register *rd*, with zero in all other bits. FSRM swaps the value in frm by copying the original value into integer register *rd*, and then writing a new value obtained from the three least-significant bits of integer register *rs1* into ``frm``. FRFLAGS and FSFLAGS are defined analogously for the Accrued Exception Flags field ``fflags``.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -13,15 +13,15 @@ The fields within the ``fcsr`` can also be accessed individually through differe
 | 0 | NX | Inexact | read-write  | The accrued exception flags indicate the exception conditions that have arisen on any floating\-point arithmetic instruction since the field was last reset by software\. The base RISC\-V ISA does not support generating a trap on the setting of a floating\-point exception flag\.|
 
 ## Floating-Point Dynamic Rounding Mode Register 
-### *AddressOffset*: 2 
+### *AddressOffset*: 'h2 
 ### *Description*:
 The fields within the ``fcsr`` can also be accessed individually through different CSR addresses, and separate assembler pseudoinstructions are defined for these accesses. The FRRM instruction reads the Rounding Mode field ``frm`` and copies it into the least-significant three bits of integer register *rd*, with zero in all other bits. FSRM swaps the value in frm by copying the original value into integer register *rd*, and then writing a new value obtained from the three least-significant bits of integer register *rs1* into ``frm``. FRFLAGS and FSFLAGS are defined analogously for the Accrued Exception Flags field ``fflags``.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 2:0 | FRM | Floating-point rounding mode | read-write  | The fields within the ``fcsr`` can also be accessed individually through different CSR addresses, and separate assembler pseudoinstructions are defined for these accesses\. The FRRM instruction reads the Rounding Mode field ``frm`` and copies it into the least\-significant three bits of integer register \*rd\*, with zero in all other bits\. FSRM swaps the value in frm by copying the original value into integer register \*rd\*, and then writing a new value obtained from the three least\-significant bits of integer register \*rs1\* into ``frm``\. FRFLAGS and FSFLAGS are defined analogously for the Accrued Exception Flags field ``fflags``\.|
+| 2:0 | FRM | Floating-point rounding mode | read-write  | The fields within the ``fcsr`` can also be accessed individually through different CSR addresses, and separate assembler pseudoinstructions are defined for these accesses\. The FRRM instruction reads the Rounding Mode field ``frm`` and copies it into the least\-significant three bits of integer register \*rd\*, with zero in all other bits\. FSRM swaps the value in frm by copying the original value into integer register \*rd\*, and then writing a new value obtained from the three least\-significant bits of integer register \*rs1\* into ``frm``\. FRFLAGS and FSFLAGS are defined analogously for the Accrued Exception Flags field ``fflags``\. // ``Enumerated Values``( "RNE" :0 ) ( "RTZ" :1 ) ( "RDN" :2 ) ( "RUP" :3 ) ( "RMM" :4 ) ( "INVALID_5" :5 ) ( "INVALID_6" :6 ) ( "DYN" :7 ) |
 
 ## Floating-Point Control and Status Register Register 
-### *AddressOffset*: 3 
+### *AddressOffset*: 'h3 
 ### *Description*:
 The floating-point control and status register, ``fcsr``, is a RISC-V control and status register (CSR). It is a read/write register that selects the dynamic rounding mode for floating-point arithmetic operations and holds the accrued exception flags.
 
@@ -30,7 +30,7 @@ The ``fcsr`` register can be read and written with the FRCSR and FSCSR instructi
 The fields within the ``fcsr`` can also be accessed individually through different CSR addresses, and separate assembler pseudoinstructions are defined for these accesses. The FRRM instruction reads the Rounding Mode field ``frm`` and copies it into the least-significant three bits of integer register *rd*, with zero in all other bits. FSRM swaps the value in frm by copying the original value into integer register *rd*, and then writing a new value obtained from the three least-significant bits of integer register *rs1* into ``frm``. FRFLAGS and FSFLAGS are defined analogously for the Accrued Exception Flags field ``fflags``.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 7:5 | FRM | Floating-point rounding mode | read-write  | Floating\-point operations use either a static rounding mode encoded in the instruction, or a dynamic rounding mode held in ``frm``\. Rounding modes are encoded as shown in the enumerated value\. A value of 111 in the instruction’s \*rm\* field selects the dynamic rounding mode held in ``frm``\. If ``frm`` is set to an invalid value \(101–111\), any subsequent attempt to execute a floating\-point operation with a dynamic rounding mode will raise an illegal instruction exception\. Some instructions, including widening conversions, have the \*rm\* field but are nevertheless unaffected by the rounding mode; software should set their \*rm\* field to RNE \(000\)\.|
+| 7:5 | FRM | Floating-point rounding mode | read-write  | Floating\-point operations use either a static rounding mode encoded in the instruction, or a dynamic rounding mode held in ``frm``\. Rounding modes are encoded as shown in the enumerated value\. A value of 111 in the instruction’s \*rm\* field selects the dynamic rounding mode held in ``frm``\. If ``frm`` is set to an invalid value \(101–111\), any subsequent attempt to execute a floating\-point operation with a dynamic rounding mode will raise an illegal instruction exception\. Some instructions, including widening conversions, have the \*rm\* field but are nevertheless unaffected by the rounding mode; software should set their \*rm\* field to RNE \(000\)\. // ``Enumerated Values``( "RNE" :0 ) ( "RTZ" :1 ) ( "RDN" :2 ) ( "RUP" :3 ) ( "RMM" :4 ) ( "INVALID_5" :5 ) ( "INVALID_6" :6 ) ( "DYN" :7 ) |
 | 4 | NV | Invalid operation | read-write  | The accrued exception flags indicate the exception conditions that have arisen on any floating\-point arithmetic instruction since the field was last reset by software\. The base RISC\-V ISA does not support generating a trap on the setting of a floating\-point exception flag\.|
 | 3 | DZ | Divide by zero | read-write  | The accrued exception flags indicate the exception conditions that have arisen on any floating\-point arithmetic instruction since the field was last reset by software\. The base RISC\-V ISA does not support generating a trap on the setting of a floating\-point exception flag\.|
 | 2 | OF | Overflow | read-write  | The accrued exception flags indicate the exception conditions that have arisen on any floating\-point arithmetic instruction since the field was last reset by software\. The base RISC\-V ISA does not support generating a trap on the setting of a floating\-point exception flag\.|
@@ -38,7 +38,7 @@ The fields within the ``fcsr`` can also be accessed individually through differe
 | 0 | NX | Inexact | read-write  | The accrued exception flags indicate the exception conditions that have arisen on any floating\-point arithmetic instruction since the field was last reset by software\. The base RISC\-V ISA does not support generating a trap on the setting of a floating\-point exception flag\.|
 
 ## Supervisor Status Register 
-### *AddressOffset*: 256 
+### *AddressOffset*: 'h100 
 ### *Description*:
 The ``sstatus`` register keeps track of the processor’s current operating state.
 
@@ -48,8 +48,8 @@ The ``sstatus`` register is a subset of the ``mstatus`` register.
 | 31 | SD | State dirty | read-only  | The SD bit is a read\-only bit that summarizes whether either the FS, VS, or XS fields signal the presence of some dirty state that will require saving extended user context to memory\. If FS, XS, and VS are all read\-only zero, then SD is also always zero\.|
 | 19 | MXR | Make executable readable | read-write  | The MXR bit modifies the privilege with which loads access virtual memory\. When MXR=0, only loads from pages marked readable will succeed\. When MXR=1, loads from pages marked either readable or executable \(R=1 or X=1\) will succeed\. MXR has no effect when page\-based virtual memory is not in effect\.|
 | 18 | SUM | Supervisor user memory | read-write  | The SUM \(permit Supervisor User Memory access\) bit modifies the privilege with which S\-mode loads and stores access virtual memory\. When SUM=0, S\-mode memory accesses to pages that are accessible by U\-mode will fault\. When SUM=1, these accesses are permitted\. SUM has no effect when page\-based virtual memory is not in effect\. Note that, while SUM is ordinarily ignored when not executing in S\-mode, it \*is\* in effect when MPRV=1 and MPP=S\. SUM is read\-only 0 if S\-mode is not supported or if ``satp``\.MODE is read\-only 0\.|
-| 16:15 | XS | Extension state | read-only  | The XS field is used to reduce the cost of context save and restore by setting and tracking the current state of the user\-mode extensions\. The XS field encodes the status of the additional user\-mode extensions and associated state\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\.|
-| 14:13 | FS | Floating-point unit state | read-write  | The FS field is used to reduce the cost of context save and restore by setting and tracking the current state of the floating\-point unit\. The FS field encodes the status of the floating\-point unit state, including the floating\-point registers ``f0–f31`` and the CSRs ``fcsr``, ``frm``, and ``fflags``\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\.|
+| 16:15 | XS | Extension state | read-only  | The XS field is used to reduce the cost of context save and restore by setting and tracking the current state of the user\-mode extensions\. The XS field encodes the status of the additional user\-mode extensions and associated state\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
+| 14:13 | FS | Floating-point unit state | read-write  | The FS field is used to reduce the cost of context save and restore by setting and tracking the current state of the floating\-point unit\. The FS field encodes the status of the floating\-point unit state, including the floating\-point registers ``f0–f31`` and the CSRs ``fcsr``, ``frm``, and ``fflags``\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
 | 8 | SPP | Supervisor mode prior privilege | read-write  | SPP bit indicates the privilege level at which a hart was executing before entering supervisor mode\. When a trap is taken, SPP is set to 0 if the trap originated from user mode, or 1 otherwise\. When an SRET instruction is executed to return from the trap handler, the privilege level is set to user mode if the SPP bit is 0, or supervisor mode if the SPP bit is 1; SPP is then set to 0\.|
 | 5 | SPIE | Supervisor mode prior interrupt enable | read-write  | The SPIE bit indicates whether supervisor interrupts were enabled prior to trapping into supervisor mode\. When a trap is taken into supervisor mode, SPIE is set to SIE, and SIE is set to 0\. When an SRET instruction is executed, SIE is set to SPIE, then SPIE is set to 1\.|
 | 4 | UPIE |  | read-write  | When a URET instruction is executed, UIE is set to UPIE, and UPIE is set to 1\.|
@@ -57,7 +57,7 @@ The ``sstatus`` register is a subset of the ``mstatus`` register.
 | 0 | UIE |  | read-write  | The UIE bit enables or disables user\-mode interrupts\.|
 
 ## Supervisor Interrupt Enable Register 
-### *AddressOffset*: 260 
+### *AddressOffset*: 'h104 
 ### *Description*:
 The ``sie`` is the register containing supervisor interrupt enable bits.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -70,16 +70,16 @@ The ``sie`` is the register containing supervisor interrupt enable bits.
 | 0 | USIE |  | read-write  | User\-level software interrupts are disabled when the USIE bit in the sie register is clear|
 
 ## Supervisor Trap Vector Base Address Register 
-### *AddressOffset*: 261 
+### *AddressOffset*: 'h105 
 ### *Description*:
 The ``stvec`` register holds trap vector configuration, consisting of a vector base address (BASE) and a vector mode (MODE).
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31:2 | BASE |  | read-write  | The BASE field in stvec is a WARL field that can hold any valid virtual or physical address, subject to the following alignment constraints: the address must be 4\-byte aligned, and MODE settings other than Direct might impose additional alignment constraints on the value in the BASE field\.|
-| 1:0 | MODE |  | read-write  | When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field\. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number\.|
+| 1:0 | MODE |  | read-write  | When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field\. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
 
 ## Supervisor Counter Enable Register 
-### *AddressOffset*: 262 
+### *AddressOffset*: 'h106 
 ### *Description*:
 The counter-enable register ``scounteren`` controls the availability of the hardware performance monitoring counters to U-mode.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -90,7 +90,7 @@ The counter-enable register ``scounteren`` controls the availability of the hard
 | 0 | CY | Cycle | read-write  | When CY is clear, attempts to read the ``cycle`` register while executing in U\-mode will cause an illegal instruction exception\. When this bit is set, access to the corresponding register is permitted\.|
 
 ## Supervisor Scratch Register 
-### *AddressOffset*: 320 
+### *AddressOffset*: 'h140 
 ### *Description*:
 The ``sscratch`` register is dedicated for use by the supervisor.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -98,7 +98,7 @@ The ``sscratch`` register is dedicated for use by the supervisor.
 | 31:0 | SSCRATCH | Supervisor scratch | read-write  | The ``sscratch`` register is dedicated for use by the supervisor\.|
 
 ## Supervisor Exception Program Counter Register 
-### *AddressOffset*: 321 
+### *AddressOffset*: 'h141 
 ### *Description*:
 When a trap is taken into S-mode, ``sepc`` is written with the virtual address of the instruction that was interrupted or that encountered the exception. Otherwise, ``sepc`` is never written by the implementation, though it may be explicitly written by software.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -106,40 +106,40 @@ When a trap is taken into S-mode, ``sepc`` is written with the virtual address o
 | 31:0 | SEPC | Supervisor exception program counter | read-write  | When a trap is taken into S\-mode, ``sepc`` is written with the virtual address of the instruction that was interrupted or that encountered the exception\. Otherwise, ``sepc`` is never written by the implementation, though it may be explicitly written by software\.|
 
 ## Supervisor Cause Register 
-### *AddressOffset*: 322 
+### *AddressOffset*: 'h142 
 ### *Description*:
 When a trap is taken into S-mode, ``scause`` is written with a code indicating the event that caused the trap. Otherwise, ``scause`` is never written by the implementation, though it may be explicitly written by software.
 Supervisor cause register (``scause``) values after trap are shown in the following table.
-| Interrupt | Exception Code | Description                    |
-| - | ----- | ------------------------------ |
-| 1 | 0     | *Reserved*                     |
-| 1 | 1     | Supervisor software interrupt  |
-| 1 | 2-4   | *Reserved*                     |
-| 1 | 5     | Supervisor timer interrupt     |
-| 1 | 6-8   | *Reserved*                     |
-| 1 | 9     | Supervisor external interrupt  |
-| 1 | 10-15 | *Reserved*                     |
-| 1 | ≥16   | *Designated for platform use*  |
-| 0 | 0     | Instruction address misaligned |
-| 0 | 1     | Instruction access fault       |
-| 0 | 2     | Illegal instruction            |
-| 0 | 3     | Breakpoint                     |
-| 0 | 4     | Load address misaligned        |
-| 0 | 5     | Load access fault              |
-| 0 | 6     | Store/AMO address misaligned   |
-| 0 | 7     | Store/AMO access fault         |
-| 0 | 8     | Environment call from U-mode   |
-| 0 | 9     | Environment call from S-mode   |
-| 0 | 10-11 | *Reserved*                     |
-| 0 | 12    | Instruction page fault         |
-| 0 | 13    | Load page fault                |
-| 0 | 14    | *Reserved*                     |
-| 0 | 15    | Store/AMO page fault           |
-| 0 | 16-23 | *Reserved*                     |
-| 0 | 24-31 | *Designated for custom use*    |
-| 0 | 32-47 | *Reserved*                     |
-| 0 | 48-63 | *Designated for custom use*    |
-| 0 | ≥64   | *Reserved*                     |
+|Interrupt|Exception Code|Description|
+|---------|--------------|-----------|
+|1|0|*Reserved*|
+|1|1|Supervisor software interrupt|
+|1|2-4|*Reserved*|
+|1|5|Supervisor timer interrupt|
+|1|6-8|*Reserved*|
+|1|9|Supervisor external interrupt|
+|1|10-15|*Reserved*|
+|1|≥16|*Designated for platform use*|
+|0|0|Instruction address misaligned|
+|0|1|Instruction access fault|
+|0|2|Illegal instruction|
+|0|3|Breakpoint|
+|0|4|Load address misaligned|
+|0|5|Load access fault|
+|0|6|Store/AMO address misaligned|
+|0|7|Store/AMO access fault|
+|0|8|Environment call from U-mode|
+|0|9|Environment call from S-mode|
+|0|10-11|*Reserved*|
+|0|12|Instruction page fault|
+|0|13|Load page fault|
+|0|14|*Reserved*|
+|0|15|Store/AMO page fault|
+|0|16-23|*Reserved*|
+|0|24-31|*Designated for custom use*|
+|0|32-47|*Reserved*|
+|0|48-63|*Designated for custom use*|
+|0|≥64|*Reserved*|
 
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
@@ -147,7 +147,7 @@ Supervisor cause register (``scause``) values after trap are shown in the follow
 | 30:0 | Exception_Code | Exception code | read-write  | The Exception Code field contains a code identifying the last exception or interrupt\.|
 
 ## Supervisor Trap Value Register 
-### *AddressOffset*: 323 
+### *AddressOffset*: 'h143 
 ### *Description*:
 When a trap is taken into S-mode, ``stval`` is written with exception-specific information to assist software in handling the trap. Otherwise, ``stval`` is never written by the implementation, though it may be explicitly written by software. The hardware platform will specify which exceptions must set ``stval`` informatively and which may unconditionally set it to zero.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -155,7 +155,7 @@ When a trap is taken into S-mode, ``stval`` is written with exception-specific i
 | 31:0 | STVAL | Supervisor trap value | read-write  | When a trap is taken into S\-mode, ``stval`` is written with exception\-specific information to assist software in handling the trap\. Otherwise, ``stval`` is never written by the implementation, though it may be explicitly written by software\. The hardware platform will specify which exceptions must set ``stval`` informatively and which may unconditionally set it to zero\.|
 
 ## Supervisor Interrupt Pending Register 
-### *AddressOffset*: 324 
+### *AddressOffset*: 'h144 
 ### *Description*:
 The ``sip`` register contains information on pending interrupts.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -168,7 +168,7 @@ The ``sip`` register contains information on pending interrupts.
 | 0 | USIP |  | read-write  | A user\-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt\-pending \(USIP\) bit|
 
 ## Supervisor Address Translation and Protection Register 
-### *AddressOffset*: 384 
+### *AddressOffset*: 'h180 
 ### *Description*:
 The ``satp`` register controls supervisor-mode address translation and protection.
 
@@ -178,12 +178,12 @@ The ``satp`` register is considered active when the effective privilege mode is 
   Writing ``satp`` does not imply any ordering constraints between page-table updates and subsequent address translations, nor does it imply any invalidation of address-translation caches. If the new address space’s page tables have been modified, or if an ASID is reused, it may be necessary to execute an SFENCE.VMA instruction after, or in some cases before, writing ``satp``.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31 | MODE | Mode | read-write  | This bitfield selects the current address\-translation scheme\.  When MODE=Bare, supervisor virtual addresses are equal to supervisor physical addresses, and there is no additional memory protection beyond the physical memory protection scheme\.  To select MODE=Bare, software must write zero to the remaining fields of ``satp`` \(bits 30–0\)\. Attempting to select MODE=Bare with a nonzero pattern in the remaining fields has an ``unspecified`` effect on the value that the remaining fields assume and an ``unspecified`` effect on address translation and protection behavior\.|
+| 31:31 | MODE | Mode | read-write  | This bitfield selects the current address\-translation scheme\.  When MODE=Bare, supervisor virtual addresses are equal to supervisor physical addresses, and there is no additional memory protection beyond the physical memory protection scheme\.  To select MODE=Bare, software must write zero to the remaining fields of ``satp`` \(bits 30–0\)\. Attempting to select MODE=Bare with a nonzero pattern in the remaining fields has an ``unspecified`` effect on the value that the remaining fields assume and an ``unspecified`` effect on address translation and protection behavior\. // ``Enumerated Values``( "Bare" :0 ) ( "Sv32" :1 ) |
 | 30:22 | ASID | Address space identifier | read-write  | This bitfield facilitates address\-translation fences on a per\-address\-space basis\.|
 | 21:0 | PPN | Physical page number | read-write  | This bitfield holds the root page table, i\.e\., its supervisor physical address divided by 4 KiB\.|
 
 ## Machine Status Register 
-### *AddressOffset*: 768 
+### *AddressOffset*: 'h300 
 ### *Description*:
 The ``mstatus`` register keeps track of and controls the hart’s current operating state.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -195,8 +195,8 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
 | 19 | MXR | Make executable readable | read-write  | The MXR bit modifies the privilege with which loads access virtual memory\. When MXR=0, only loads from pages marked readable will succeed\. When MXR=1, loads from pages marked either readable or executable \(R=1 or X=1\) will succeed\. MXR has no effect when page\-based virtual memory is not in effect\.|
 | 18 | SUM | Supervisor user memory | read-write  | The SUM \(permit Supervisor User Memory access\) bit modifies the privilege with which S\-mode loads and stores access virtual memory\. When SUM=0, S\-mode memory accesses to pages that are accessible by U\-mode will fault\. When SUM=1, these accesses are permitted\. SUM has no effect when page\-based virtual memory is not in effect\. Note that, while SUM is ordinarily ignored when not executing in S\-mode, it is in effect when MPRV=1 and MPP=S\.|
 | 17 | MPRV | Modify privilege | read-write  | The MPRV \(Modify PRiVilege\) bit modifies the effective privilege mode, i\.e\., the privilege level at which loads and stores execute\. When MPRV=0, loads and stores behave as normal, using the translation and protection mechanisms of the current privilege mode\. When MPRV=1, load and store memory addresses are translated and protected, and endianness is applied, as though the current privilege mode were set to MPP\. Instruction address\-translation and protection are unaffected by the setting of MPRV\.|
-| 16:15 | XS | Extension state | read-only  | The XS field is used to reduce the cost of context save and restore by setting and tracking the current state of the user\-mode extensions\. The XS field encodes the status of the additional user\-mode extensions and associated state\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\.|
-| 14:13 | FS | Floating-point unit state | read-write  | The FS field is used to reduce the cost of context save and restore by setting and tracking the current state of the floating\-point unit\. The FS field encodes the status of the floating\-point unit state, including the floating\-point registers ``f0–f31`` and the CSRs ``fcsr``, ``frm``, and ``fflags``\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\.|
+| 16:15 | XS | Extension state | read-only  | The XS field is used to reduce the cost of context save and restore by setting and tracking the current state of the user\-mode extensions\. The XS field encodes the status of the additional user\-mode extensions and associated state\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
+| 14:13 | FS | Floating-point unit state | read-write  | The FS field is used to reduce the cost of context save and restore by setting and tracking the current state of the floating\-point unit\. The FS field encodes the status of the floating\-point unit state, including the floating\-point registers ``f0–f31`` and the CSRs ``fcsr``, ``frm``, and ``fflags``\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
 | 12:11 | MPP | Machine mode prior privilege | read-write  | Holds the previous privilege mode for machine mode\.|
 | 8 | SPP | Supervisor mode prior privilege | read-write  | Holds the previous privilege mode for supervisor mode\.|
 | 7 | MPIE | Machine mode prior interrupt enable | read-write  | Indicates whether machine interrupts were enabled prior to trapping into machine mode\.|
@@ -207,16 +207,16 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
 | 0 | UIE |  | read-write  | Global interrupt\-enable bits|
 
 ## Machine ISA Register 
-### *AddressOffset*: 769 
+### *AddressOffset*: 'h301 
 ### *Description*:
 The misa CSR is reporting the ISA supported by the hart.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:30 | MXL | Machine xlen | read-write  | The MXL field encodes the native base integer ISA width\.|
-| 25:0 | Extensions | Extensions | read-write  | The Extensions field encodes the presence of the standard extensions, with a single bit per letter of the alphabet\.|
+| 31:30 | MXL | Machine xlen | read-write  | The MXL field encodes the native base integer ISA width\. // ``Enumerated Values``( "XLEN_32" :1 ) ( "XLEN_64" :2 ) ( "XLEN_128" :3 ) |
+| 25:0 | Extensions | Extensions | read-write  | The Extensions field encodes the presence of the standard extensions, with a single bit per letter of the alphabet\. // ``Enumerated Values``( "A" :1 ) ( "B" :2 ) ( "C" :4 ) ( "D" :8 ) ( "E" :16 ) ( "F" :32 ) ( "G" :64 ) ( "H" :128 ) ( "I" :256 ) ( "J" :512 ) ( "K" :1024 ) ( "L" :2048 ) ( "M" :4096 ) ( "N" :8192 ) ( "O" :16384 ) ( "P" :32768 ) ( "Q" :65536 ) ( "R" :131072 ) ( "S" :262144 ) ( "T" :524288 ) ( "U" :1048576 ) ( "V" :2097152 ) ( "W" :4194304 ) ( "X" :8388608 ) ( "Y" :16777216 ) ( "Z" :33554432 ) |
 
 ## Machine Exception Delegation Register 
-### *AddressOffset*: 770 
+### *AddressOffset*: 'h302 
 ### *Description*:
 Provides individual read/write bits to indicate that certain exceptions should be processed directly by a lower privilege level.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -224,7 +224,7 @@ Provides individual read/write bits to indicate that certain exceptions should b
 | 31:0 | Synchronous_Exceptions | Synchronous exceptions | read-write  | Provides individual read/write bits to indicate that certain exceptions should be processed directly by a lower privilege level\.|
 
 ## Machine Interrupt Delegation Register 
-### *AddressOffset*: 771 
+### *AddressOffset*: 'h303 
 ### *Description*:
 Provides individual read/write bits to indicate that certain interrupts should be processed directly by a lower privilege level.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -232,7 +232,7 @@ Provides individual read/write bits to indicate that certain interrupts should b
 | 31:0 | Interrupts | Interrupts | read-write  | Provides individual read/write bits to indicate that certain interrupts should be processed directly by a lower privilege level\.|
 
 ## Machine Interrupt Enable Register 
-### *AddressOffset*: 772 
+### *AddressOffset*: 'h304 
 ### *Description*:
 This register contains machine interrupt enable bits.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -248,16 +248,16 @@ This register contains machine interrupt enable bits.
 | 0 | USIE |  | read-write  | enable U\-mode software interrrupts|
 
 ## Machine Trap Vector Register 
-### *AddressOffset*: 773 
+### *AddressOffset*: 'h305 
 ### *Description*:
 This register holds trap vector configuration, consisting of a vector base address and a vector mode.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31:2 | BASE |  | read-write  | Holds the vector base address\. The value in the BASE field must always be aligned on a 4\-byte boundary\.|
-| 1:0 | MODE |  | read-write  | Imposes additional alignment constraints on the value in the BASE field\.|
+| 1:0 | MODE |  | read-write  | Imposes additional alignment constraints on the value in the BASE field\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
 
 ## Machine Counter Enable Register 
-### *AddressOffset*: 774 
+### *AddressOffset*: 'h306 
 ### *Description*:
 This register controls the availability of the hardware performance-monitoring counters to the next-lowest privileged mode.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -268,7 +268,7 @@ This register controls the availability of the hardware performance-monitoring c
 | 0 | CY | Cycle | read-write  | When CY is clear, attempts to read the ``cycle`` register while executing in S\-mode or U\-mode will cause an illegal instruction exception\. When this bit is set, access to the corresponding register is permitted in the next implemented privilege mode\.|
 
 ## Hardware Performance-Monitoring Event Selector Register 
-### *AddressOffset*: 803 
+### *AddressOffset*: 'h323 
 ### *Description*:
 This register controls which event causes the corresponding counter to increment.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -276,15 +276,15 @@ This register controls which event causes the corresponding counter to increment
 | 4:0 | mhpmevent |  | read-write  | This register controls which event causes the corresponding counter to increment\.|
 
 ## Machine Scratch Register 
-### *AddressOffset*: 832 
+### *AddressOffset*: 'h340 
 ### *Description*:
-This register is used to hold a pointer to a machine-mode hart-local context space and swapped with a user register upon entry to an M-mode trap handler.
+This register is used to hold a value dedicated to Machine mode. Attempts to access without Machine mode level raise illegal instruction exception.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:0 | mscratch | Machine scratch | read-write  | This register is used to hold a pointer to a machine\-mode hart\-local context space and swapped with a user register upon entry to an M\-mode trap handler\.|
+| 31:0 | mscratch | Machine scratch | read-write  | This register is used to hold a value dedicated to Machine mode\. Attempts to access without Machine mode level raise illegal instruction exception\.|
 
 ## Machine Exception Program Counter Register 
-### *AddressOffset*: 833 
+### *AddressOffset*: 'h341 
 ### *Description*:
 This register must be able to hold all valid virtual addresses.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -292,40 +292,40 @@ This register must be able to hold all valid virtual addresses.
 | 31:0 | mepc | Machine exception program counter | read-write  | This register must be able to hold all valid virtual addresses\.|
 
 ## Machine Cause Register 
-### *AddressOffset*: 834 
+### *AddressOffset*: 'h342 
 ### *Description*:
 When a trap is taken into M-mode, mcause is written with a code indicating the event that caused the trap.
 Machine cause register (``mcause``) values after trap are shown in the following table.
-| Interrupt | Exception Code | Description                    |
-| - | ----- | ------------------------------ |
-| 1 | 0     | *Reserved*                     |
-| 1 | 1     | Supervisor software interrupt  |
-| 1 | 2-4   | *Reserved*                     |
-| 1 | 5     | Supervisor timer interrupt     |
-| 1 | 6-8   | *Reserved*                     |
-| 1 | 9     | Supervisor external interrupt  |
-| 1 | 10-15 | *Reserved*                     |
-| 1 | ≥16   | *Designated for platform use*  |
-| 0 | 0     | Instruction address misaligned |
-| 0 | 1     | Instruction access fault       |
-| 0 | 2     | Illegal instruction            |
-| 0 | 3     | Breakpoint                     |
-| 0 | 4     | Load address misaligned        |
-| 0 | 5     | Load access fault              |
-| 0 | 6     | Store/AMO address misaligned   |
-| 0 | 7     | Store/AMO access fault         |
-| 0 | 8     | Environment call from U-mode   |
-| 0 | 9     | Environment call from S-mode   |
-| 0 | 10-11 | *Reserved*                     |
-| 0 | 12    | Instruction page fault         |
-| 0 | 13    | Load page fault                |
-| 0 | 14    | *Reserved*                     |
-| 0 | 15    | Store/AMO page fault           |
-| 0 | 16-23 | *Reserved*                     |
-| 0 | 24-31 | *Designated for custom use*    |
-| 0 | 32-47 | *Reserved*                     |
-| 0 | 48-63 | *Designated for custom use*    |
-| 0 | ≥64   | *Reserved*                     |
+|Interrupt|Exception Code|Description|
+|---------|--------------|-----------|
+|1|0|*Reserved*|
+|1|1|Supervisor software interrupt|
+|1|2-4|*Reserved*|
+|1|5|Supervisor timer interrupt|
+|1|6-8|*Reserved*|
+|1|9|Supervisor external interrupt|
+|1|10-15|*Reserved*|
+|1|≥16|*Designated for platform use*|
+|0|0|Instruction address misaligned|
+|0|1|Instruction access fault|
+|0|2|Illegal instruction|
+|0|3|Breakpoint|
+|0|4|Load address misaligned|
+|0|5|Load access fault|
+|0|6|Store/AMO address misaligned|
+|0|7|Store/AMO access fault|
+|0|8|Environment call from U-mode|
+|0|9|Environment call from S-mode|
+|0|10-11|*Reserved*|
+|0|12|Instruction page fault|
+|0|13|Load page fault|
+|0|14|*Reserved*|
+|0|15|Store/AMO page fault|
+|0|16-23|*Reserved*|
+|0|24-31|*Designated for custom use*|
+|0|32-47|*Reserved*|
+|0|48-63|*Designated for custom use*|
+|0|≥64|*Reserved*|
 
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
@@ -333,7 +333,7 @@ Machine cause register (``mcause``) values after trap are shown in the following
 | 30:0 | exception_code | Exception code | read-write  | This field contains a code identifying the last exception or interrupt\.|
 
 ## Machine Trap Value Register 
-### *AddressOffset*: 835 
+### *AddressOffset*: 'h343 
 ### *Description*:
 When a trap is taken into M-mode, mtval is either set to zero or written with exception-specific information to assist software in handling the trap.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -341,7 +341,7 @@ When a trap is taken into M-mode, mtval is either set to zero or written with ex
 | 31:0 | mtval | Machine trap value | read-write  | When a trap is taken into M\-mode, mtval is either set to zero or written with exception\-specific information to assist software in handling the trap\.|
 
 ## Machine Interrupt Pending Register 
-### *AddressOffset*: 836 
+### *AddressOffset*: 'h344 
 ### *Description*:
 This register contains machine interrupt pending bits.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -357,7 +357,7 @@ This register contains machine interrupt pending bits.
 | 0 | USIP |  | read-write  | A hart to directly write its own USIP bits when running in the appropriate mode|
 
 ## Physical Memory Protection Config 0 Register 
-### *AddressOffset*: 928 
+### *AddressOffset*: 'h3A0 
 ### *Description*:
 Holds configuration 0-3.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -368,7 +368,7 @@ Holds configuration 0-3.
 | 7:0 | pmp0cfg | Physical memory protection 0 config | read-write  | Holds the configuration\.|
 
 ## Physical Memory Protection Config 1 Register 
-### *AddressOffset*: 929 
+### *AddressOffset*: 'h3A1 
 ### *Description*:
 Holds configuration 4-7.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -379,7 +379,7 @@ Holds configuration 4-7.
 | 7:0 | pmp4cfg | Physical memory protection 4 config | read-write  | Holds the configuration\.|
 
 ## Physical Memory Protection Config 2 Register 
-### *AddressOffset*: 930 
+### *AddressOffset*: 'h3A2 
 ### *Description*:
 Holds configuration 8-11.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -390,7 +390,7 @@ Holds configuration 8-11.
 | 7:0 | pmp8cfg | Physical memory protection 8 config | read-write  | Holds the configuration\.|
 
 ## Physical Memory Protection Config 3 Register 
-### *AddressOffset*: 931 
+### *AddressOffset*: 'h3A3 
 ### *Description*:
 Holds configuration 12-15.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -401,7 +401,7 @@ Holds configuration 12-15.
 | 7:0 | pmp12cfg | Physical memory protection 12 config | read-write  | Holds the configuration\.|
 
 ## Physical Memory Protection Address Register 
-### *AddressOffset*: 944 
+### *AddressOffset*: 'h3B0 
 ### *Description*:
 Address register for Physical Memory Protection.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -409,7 +409,7 @@ Address register for Physical Memory Protection.
 | 31:0 | address | Address | read-write  | Address register for Physical Memory Protection\.|
 
 ## Instuction Cache Register 
-### *AddressOffset*: 1792 
+### *AddressOffset*: 'h700 
 ### *Description*:
 Custom Register to enable/disable for Icache [bit 0]
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -417,7 +417,7 @@ Custom Register to enable/disable for Icache [bit 0]
 | 0 | icache | Instruction cache | read-write  | Custom Register to enable/disable for Icache \[bit 0\]|
 
 ## Data Cache Register 
-### *AddressOffset*: 1793 
+### *AddressOffset*: 'h701 
 ### *Description*:
 Custom Register to enable/disable for Dcache [bit 0]
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -425,7 +425,7 @@ Custom Register to enable/disable for Dcache [bit 0]
 | 0 | dcache | Data cache | read-write  | Custom Register to enable/disable for Dcache \[bit 0\]|
 
 ## Trigger Select Register 
-### *AddressOffset*: 1952 
+### *AddressOffset*: 'h7A0 
 ### *Description*:
 This register determines which trigger is accessible through the other trigger registers.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -433,17 +433,17 @@ This register determines which trigger is accessible through the other trigger r
 | 31:0 | index | Index | read-write  | This register determines which trigger is accessible through the other trigger registers\.|
 
 ## Trigger Data 1 Register 
-### *AddressOffset*: 1953 
+### *AddressOffset*: 'h7A1 
 ### *Description*:
 Trigger-specific data.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:28 | type | Type | read-write  | Type of trigger\.|
-| 27 | dmode | Debug mode | read-write  | This bit is only writable from Debug Mode\.|
+| 31:28 | type | Type | read-write  | Type of trigger\. // ``Enumerated Values``( "no_trigger" :0 ) ( "legacy_address_match_trigger" :1 ) ( "address_data_match_trigger" :2 ) ( "instruction_count_trigger" :3 ) ( "interrupt_trigger" :4 ) ( "exception_trigger" :5 ) ( "Reserved_6" :6 ) ( "Reserved_7" :7 ) ( "Reserved_8" :8 ) ( "Reserved_9" :9 ) ( "Reserved_10" :10 ) ( "Reserved_11" :11 ) ( "Reserved_12" :12 ) ( "Reserved_13" :13 ) ( "Reserved_14" :14 ) ( "trigger_exists" :15 ) |
+| 27:27 | dmode | Debug mode | read-write  | This bit is only writable from Debug Mode\. // ``Enumerated Values``( "D_and_M_mode" :0 ) ( "M_mode_only" :1 ) |
 | 26:0 | data | Data | read-write  | Trigger\-specific data\.|
 
 ## Trigger Data 2 Register 
-### *AddressOffset*: 1954 
+### *AddressOffset*: 'h7A2 
 ### *Description*:
 Trigger-specific data.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -451,7 +451,7 @@ Trigger-specific data.
 | 31:0 | data | Data | read-write  | Trigger\-specific data\.|
 
 ## Trigger Data 3 Register 
-### *AddressOffset*: 1955 
+### *AddressOffset*: 'h7A3 
 ### *Description*:
 Trigger-specific data.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -459,7 +459,7 @@ Trigger-specific data.
 | 31:0 | data | Data | read-write  | Trigger\-specific data\.|
 
 ## Trigger Info Register 
-### *AddressOffset*: 1956 
+### *AddressOffset*: 'h7A4 
 ### *Description*:
 Shows trigger information.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -467,26 +467,26 @@ Shows trigger information.
 | 15:0 | info | Info | read-only  | Shows trigger information\.|
 
 ## Debug Control and Status Register 
-### *AddressOffset*: 1968 
+### *AddressOffset*: 'h7B0 
 ### *Description*:
 Debug ontrol and status register.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:28 | xdebugver | Debug version | read-only  | Shows the version of the debug support\.|
-| 15 | ebreakm | Environment breakpoint m-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in machine mode\.|
-| 13 | ebreaks | Environment breakpoint s-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in supervisor mode\.|
-| 12 | ebreaku | Environment breakpoint u-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in user mode\.|
-| 11 | stepie | Stepping interrupt enable | read-write  | Enables/disables interrupts for single stepping\.  The debugger must not change the value of this bit while the hart is running\.|
-| 10 | stopcount | Stop counters | read-write  | Starts/stops incrementing counters in debug mode\.|
-| 9 | stoptime | Stop timers | read-write  | Starts/stops incrementing timers in debug mode\.|
-| 8:6 | cause | Cause | read-write  | Explains why Debug Mode was entered\.  When there are multiple reasons to enter Debug Mode in a single cycle, hardware sets ``cause`` to the cause with the highest priority\.|
-| 4 | mprven | Modify privilege enable | read-write  | Enables/disables the modify privilege setting in debug mode\.|
+| 31:28 | xdebugver | Debug version | read-only  | Shows the version of the debug support\. // ``Enumerated Values``( "no_ext_debug" :0 ) ( "ext_debug_spec" :4 ) ( "ext_debug_no_spec" :15 ) |
+| 15:15 | ebreakm | Environment breakpoint m-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in machine mode\. // ``Enumerated Values``( "break_as_spec" :0 ) ( "break_to_debug" :1 ) |
+| 13:13 | ebreaks | Environment breakpoint s-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in supervisor mode\. // ``Enumerated Values``( "break_as_spec" :0 ) ( "break_to_debug" :1 ) |
+| 12:12 | ebreaku | Environment breakpoint u-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in user mode\. // ``Enumerated Values``( "break_as_spec" :0 ) ( "break_to_debug" :1 ) |
+| 11:11 | stepie | Stepping interrupt enable | read-write  | Enables/disables interrupts for single stepping\.  The debugger must not change the value of this bit while the hart is running\. // ``Enumerated Values``( "disabled" :0 ) ( "enabled" :1 ) |
+| 10:10 | stopcount | Stop counters | read-write  | Starts/stops incrementing counters in debug mode\. // ``Enumerated Values``( "increment_counters" :0 ) ( "dont_increment_counters" :1 ) |
+| 9:9 | stoptime | Stop timers | read-write  | Starts/stops incrementing timers in debug mode\. // ``Enumerated Values``( "increment_timers" :0 ) ( "dont_increment_timers" :1 ) |
+| 8:6 | cause | Cause | read-write  | Explains why Debug Mode was entered\.  When there are multiple reasons to enter Debug Mode in a single cycle, hardware sets ``cause`` to the cause with the highest priority\. // ``Enumerated Values``( "ebreak_instruction" :1 ) ( "trigger_module" :2 ) ( "debugger_request" :3 ) ( "single_step" :4 ) ( "reset_halt" :5 ) |
+| 4:4 | mprven | Modify privilege enable | read-write  | Enables/disables the modify privilege setting in debug mode\. // ``Enumerated Values``( "disable_mprv" :0 ) ( "enable_mprv" :1 ) |
 | 3 | nmip | Non-maskable interrupt pending | read-only  | When set, there is a Non\-Maskable\-Interrupt \(NMI\) pending for the hart\.|
 | 2 | step | Step | read-write  | When set and not in Debug Mode, the hart will only execute a single instruction and then enter Debug Mode\. If the instruction does not complete due to an exception, the hart will immediately enter Debug Mode before executing the trap handler, with appropriate exception registers set\. The debugger must not change the value of this bit while the hart is running\.|
-| 1:0 | prv | Privilege level | read-write  | Contains the privilege level the hart was operating in when Debug Mode was entered\. A debugger can change this value to change the hart’s privilege level when exiting Debug Mode\.|
+| 1:0 | prv | Privilege level | read-write  | Contains the privilege level the hart was operating in when Debug Mode was entered\. A debugger can change this value to change the hart’s privilege level when exiting Debug Mode\. // ``Enumerated Values``( "User" :0 ) ( "Supervisor" :1 ) ( "Machine" :3 ) |
 
 ## Debug PC Register 
-### *AddressOffset*: 1969 
+### *AddressOffset*: 'h7B1 
 ### *Description*:
 Upon entry to debug mode, ``dpc`` is updated with the virtual address of the next instruction to be executed.
 
@@ -496,7 +496,7 @@ When resuming, the hart’s PC is updated to the virtual address stored in ``dpc
 | 31:0 | dpc |  | read-write  | Upon entry to debug mode, ``dpc`` is updated with the virtual address of the next instruction to be executed\.  When resuming, the hart’s PC is updated to the virtual address stored in ``dpc``\. A debugger may write ``dpc`` to change where the hart resumes\.|
 
 ## Debug Scratch Register Register 
-### *AddressOffset*: 1970 
+### *AddressOffset*: 'h7B2 
 ### *Description*:
 Optional scratch register. A debugger must not write to this register unless ``hartinfo`` explicitly mentions it.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -504,7 +504,7 @@ Optional scratch register. A debugger must not write to this register unless ``h
 | 31:0 | dscratch |  | read-write  | Optional scratch register\. A debugger must not write to this register unless ``hartinfo`` explicitly mentions it\.|
 
 ##  Register 
-### *AddressOffset*: 2048 
+### *AddressOffset*: 'h800 
 ### *Description*:
 Floating Point Custom CSR
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -512,7 +512,7 @@ Floating Point Custom CSR
 | 6:0 | ftran |  | read-write  | Floating Point Custom CSR|
 
 ## M-mode Cycle counter Register 
-### *AddressOffset*: 2816 
+### *AddressOffset*: 'hB00 
 ### *Description*:
 Counts the number of clock cycles executed by the processor core on which the hart is running.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -520,7 +520,7 @@ Counts the number of clock cycles executed by the processor core on which the ha
 | 31:0 | count | Count | read-write  | Counts the number of clock cycles executed by the processor core on which the hart is running\.|
 
 ## Machine Instruction Retired counter Register 
-### *AddressOffset*: 2818 
+### *AddressOffset*: 'hB02 
 ### *Description*:
 Counts the number of instructions the hart has retired.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -528,7 +528,7 @@ Counts the number of instructions the hart has retired.
 | 31:0 | count | Count | read-write  | Counts the number of instructions the hart has retired\.|
 
 ## L1 Inst Cache Miss Register 
-### *AddressOffset*: 2819 
+### *AddressOffset*: 'hB03 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -536,7 +536,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## L1 Data Cache Miss Register 
-### *AddressOffset*: 2820 
+### *AddressOffset*: 'hB04 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -544,7 +544,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## ITLB Miss Register 
-### *AddressOffset*: 2821 
+### *AddressOffset*: 'hB05 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -552,7 +552,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## DTLB Miss Register 
-### *AddressOffset*: 2822 
+### *AddressOffset*: 'hB06 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -560,7 +560,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Loads Register 
-### *AddressOffset*: 2823 
+### *AddressOffset*: 'hB07 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -568,7 +568,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Stores Register 
-### *AddressOffset*: 2824 
+### *AddressOffset*: 'hB08 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -576,7 +576,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Taken Exceptions Register 
-### *AddressOffset*: 2825 
+### *AddressOffset*: 'hB09 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -584,7 +584,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Exception Return Register 
-### *AddressOffset*: 2826 
+### *AddressOffset*: 'hB0A 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -592,7 +592,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Software Change of PC Register 
-### *AddressOffset*: 2827 
+### *AddressOffset*: 'hB0B 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -600,7 +600,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Procedure Call Register 
-### *AddressOffset*: 2828 
+### *AddressOffset*: 'hB0C 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -608,7 +608,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Procedure Return Register 
-### *AddressOffset*: 2829 
+### *AddressOffset*: 'hB0D 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -616,7 +616,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Branch mis-predicted Register 
-### *AddressOffset*: 2830 
+### *AddressOffset*: 'hB0E 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -624,7 +624,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Scoreboard Full Register 
-### *AddressOffset*: 2831 
+### *AddressOffset*: 'hB0F 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -632,7 +632,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Instruction Fetch Queue Empty Register 
-### *AddressOffset*: 2832 
+### *AddressOffset*: 'hB10 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -640,7 +640,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Upper 32-bits of M-mode Cycle counter Register 
-### *AddressOffset*: 2944 
+### *AddressOffset*: 'hB80 
 ### *Description*:
 Counts the number of clock cycles executed by the processor core on which the hart is running.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -648,7 +648,7 @@ Counts the number of clock cycles executed by the processor core on which the ha
 | 31:0 | count | Count | read-write  | Counts the number of clock cycles executed by the processor core on which the hart is running\.|
 
 ## Upper 32-bits of Machine Instruction Retired counter Register 
-### *AddressOffset*: 2946 
+### *AddressOffset*: 'hB82 
 ### *Description*:
 Counts the number of instructions the hart has retired.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -656,7 +656,7 @@ Counts the number of instructions the hart has retired.
 | 31:0 | count | Count | read-write  | Counts the number of instructions the hart has retired\.|
 
 ## Upper 32-bits of Machine Hardware Performance Monitoring Counter Register 
-### *AddressOffset*: 2947 
+### *AddressOffset*: 'hB83 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -664,7 +664,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-write  | Hardware performance event counter\.|
 
 ## Cycle counter Register 
-### *AddressOffset*: 3072 
+### *AddressOffset*: 'hC00 
 ### *Description*:
 Cycle counter for RDCYCLE instruction.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -672,7 +672,7 @@ Cycle counter for RDCYCLE instruction.
 | 31:0 | count | Count | read-only  | Cycle counter for RDCYCLE instruction\.|
 
 ## Timer Register 
-### *AddressOffset*: 3073 
+### *AddressOffset*: 'hC01 
 ### *Description*:
 Timer for RDTIME instruction.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -680,7 +680,7 @@ Timer for RDTIME instruction.
 | 31:0 | count | Count | read-only  | Timer for RDTIME instruction\.|
 
 ## Instruction Retired counter Register 
-### *AddressOffset*: 3074 
+### *AddressOffset*: 'hC02 
 ### *Description*:
 Instructions-retired counter for RDINSTRET instruction
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -688,7 +688,7 @@ Instructions-retired counter for RDINSTRET instruction
 | 31:0 | count | Count | read-only  | Instructions\-retired counter for RDINSTRET instruction|
 
 ## L1 Inst Cache Miss Register 
-### *AddressOffset*: 3075 
+### *AddressOffset*: 'hC03 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -696,7 +696,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## L1 Data Cache Miss Register 
-### *AddressOffset*: 3076 
+### *AddressOffset*: 'hC04 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -704,7 +704,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## ITLB Miss Register 
-### *AddressOffset*: 3077 
+### *AddressOffset*: 'hC05 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -712,7 +712,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## DTLB Miss Register 
-### *AddressOffset*: 3078 
+### *AddressOffset*: 'hC06 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -720,7 +720,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Loads Register 
-### *AddressOffset*: 3079 
+### *AddressOffset*: 'hC07 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -728,7 +728,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Stores Register 
-### *AddressOffset*: 3080 
+### *AddressOffset*: 'hC08 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -736,7 +736,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Taken Exceptions Register 
-### *AddressOffset*: 3081 
+### *AddressOffset*: 'hC09 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -744,7 +744,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Exception Return Register 
-### *AddressOffset*: 3082 
+### *AddressOffset*: 'hC0A 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -752,7 +752,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Software Change of PC Register 
-### *AddressOffset*: 3083 
+### *AddressOffset*: 'hC0B 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -760,7 +760,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Procedure Call Register 
-### *AddressOffset*: 3084 
+### *AddressOffset*: 'hC0C 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -768,7 +768,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Procedure Return Register 
-### *AddressOffset*: 3085 
+### *AddressOffset*: 'hC0D 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -776,7 +776,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Branch mis-predicted Register 
-### *AddressOffset*: 3086 
+### *AddressOffset*: 'hC0E 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -784,7 +784,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Scoreboard Full Register 
-### *AddressOffset*: 3087 
+### *AddressOffset*: 'hC0F 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -792,7 +792,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Instruction Fetch Queue Empty Register 
-### *AddressOffset*: 3088 
+### *AddressOffset*: 'hC10 
 ### *Description*:
 Hardware performance event counter.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -800,7 +800,7 @@ Hardware performance event counter.
 | 31:0 | count | Count | read-only  | Hardware performance event counter\.|
 
 ## Upper 32-bits of Cycle counter Register 
-### *AddressOffset*: 3200 
+### *AddressOffset*: 'hC80 
 ### *Description*:
 Cycle counter for RDCYCLE instruction.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -808,7 +808,7 @@ Cycle counter for RDCYCLE instruction.
 | 31:0 | count | Count | read-only  | Cycle counter for RDCYCLE instruction\.|
 
 ## Upper 32-bit of Timer Register 
-### *AddressOffset*: 3201 
+### *AddressOffset*: 'hC81 
 ### *Description*:
 Timer for RDTIME instruction.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -816,7 +816,7 @@ Timer for RDTIME instruction.
 | 31:0 | count | Count | read-only  | Timer for RDTIME instruction\.|
 
 ## Upper 32-bits of Instruction Retired counter Register 
-### *AddressOffset*: 3202 
+### *AddressOffset*: 'hC82 
 ### *Description*:
 Instructions-retired counter for RDINSTRET instruction
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -824,7 +824,7 @@ Instructions-retired counter for RDINSTRET instruction
 | 31:0 | count | Count | read-only  | Instructions\-retired counter for RDINSTRET instruction|
 
 ## Machine Vendor ID Register 
-### *AddressOffset*: 3857 
+### *AddressOffset*: 'hF11 
 ### *Description*:
 This register provids the JEDEC manufacturer ID of the provider of the core.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -833,7 +833,7 @@ This register provids the JEDEC manufacturer ID of the provider of the core.
 | 6:0 | offset | Offset | read-only  | Contain encording for the final byte discarding the parity bit\.|
 
 ## Machine Architecture ID Register 
-### *AddressOffset*: 3858 
+### *AddressOffset*: 'hF12 
 ### *Description*:
 This register encodes the base microarchitecture of the hart.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -841,7 +841,7 @@ This register encodes the base microarchitecture of the hart.
 | 31:0 | architecture_id | Architecture id | read-only  | This register encodes the base microarchitecture of the hart\.|
 
 ## Machine Implementation ID Register 
-### *AddressOffset*: 3859 
+### *AddressOffset*: 'hF13 
 ### *Description*:
 Provides a unique encoding of the version of the processor implementation.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -849,7 +849,7 @@ Provides a unique encoding of the version of the processor implementation.
 | 31:0 | implementation | Implementation | read-only  | Provides a unique encoding of the version of the processor implementation\.|
 
 ## Machine Hardware Thread ID Register 
-### *AddressOffset*: 3860 
+### *AddressOffset*: 'hF14 
 ### *Description*:
 This register contains the integer ID of the hardware thread running the code.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
