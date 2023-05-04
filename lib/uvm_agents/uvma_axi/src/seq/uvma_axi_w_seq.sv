@@ -138,12 +138,16 @@ task uvma_axi_w_seq_c::body();
 
             if(write_data_req[0].w_last) begin
 		       foreach(req_requette[i]) begin
-                  req_requette[i] = req_requette[(i  + aw_latency[0]) +1];
+                  if(i < req_requette.size() - aw_latency[0] - 1) begin
+                     req_requette[i] = req_requette[(i  + aw_latency[0]) +1];
+                  end
                end
                req_requette = new[req_requette.size() - (1 + aw_latency[0])] (req_requette);
 
                foreach(aw_latency[i]) begin
-                  aw_latency[i] = aw_latency[i + 1];
+                  if(i < aw_latency.size() - 1) begin
+                     aw_latency[i] = aw_latency[i + 1];
+                  end
                end
                aw_latency = new[aw_latency.size() - 1] (aw_latency);
 
@@ -151,7 +155,9 @@ task uvma_axi_w_seq_c::body();
             end
 
             foreach(write_data_req[i]) begin
-               write_data_req[i] = write_data_req[i+1];
+               if(i < write_data_req.size() - 1) begin
+                  write_data_req[i] = write_data_req[i+1];
+               end
             end
             write_data_req = new[write_data_req.size() - 1] (write_data_req);
             if(write_data_req.size() == 0) begin

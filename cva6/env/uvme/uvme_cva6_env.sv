@@ -44,6 +44,10 @@ class uvme_cva6_env_c extends uvm_env;
    uvma_axi_agent_c       axi_agent;
    uvma_cva6_core_cntrl_agent_c core_cntrl_agent;
 
+   // Handle to agent switch interface
+   virtual uvmt_axi_switch_intf  axi_switch_vif;
+
+
 
    `uvm_component_utils_begin(uvme_cva6_env_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -79,6 +83,11 @@ class uvme_cva6_env_c extends uvm_env;
     * Creates and starts the instruction and virtual peripheral sequences in active mode.
     */
    extern virtual task run_phase(uvm_phase phase);
+
+   /**
+    * Get switch vif and set signals values
+    */
+   extern function void retrieve_vif();
 
    /**
     * Assigns configuration handles to components using UVM Configuration Database.
@@ -154,6 +163,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
+      retrieve_vif();
       assign_cfg           ();
       assign_cntxt         ();
       create_agents        ();
@@ -249,6 +259,22 @@ function void uvme_cva6_env_c::create_vsequencer();
 
 endfunction: create_vsequencer
 
+function void uvme_cva6_env_c::retrieve_vif();
+
+   if (!uvm_config_db#(virtual uvmt_axi_switch_intf)::get(this, "", "axi_switch_vif", axi_switch_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(axi_switch_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(axi_switch_vif)), UVM_DEBUG)
+   end
+
+   if(cfg.axi_cfg.is_active == UVM_PASSIVE) begin
+      axi_switch_vif.active <= 0;
+   end else begin
+      axi_switch_vif.active <= 1;
+   end
+
+endfunction : retrieve_vif
 
 function void uvme_cva6_env_c::connect_predictor();
 
@@ -273,7 +299,7 @@ endfunction: connect_scoreboard
 function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
-   vsequencer.cvxif_sequencer     = cvxif_agent.sequencer;
+   vsequencer.cvxif_vsequencer    = cvxif_agent.vsequencer;
    vsequencer.axi_vsequencer      = axi_agent.vsequencer;
 
 endfunction: assemble_vsequencer
@@ -284,9 +310,9 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
    fork
 
       begin
-            uvma_cvxif_seq_c        cvxif_seq;
-            cvxif_seq = uvma_cvxif_seq_c::type_id::create("cvxif_seq");
-            cvxif_seq.start(cvxif_agent.sequencer);
+            uvme_cvxif_vseq_c        cvxif_vseq;
+            cvxif_vseq = uvme_cvxif_vseq_c::type_id::create("cvxif_vseq");
+            cvxif_vseq.start(cvxif_agent.vsequencer);
       end
 
       begin

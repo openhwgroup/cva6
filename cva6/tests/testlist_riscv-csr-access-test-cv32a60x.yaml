@@ -1,0 +1,7 @@
+- test: MSCRATCH_CSR
+  iterations: 1
+  path_var: TESTS_PATH
+  gcc_opts: "-DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-isa-sim/arch_test_target/spike/"
+  asm_tests: <path_var>/custom/csr_access_tests/riscv_mscratch_csr_test_0.S
+  
+

@@ -14,6 +14,7 @@ package cva6_instr_pkg;
    import uvm_pkg::*;
    `include "cva6_defines.svh"
    import riscv_instr_pkg::*;
+   `include "cva6_instr_gen_config.sv"
    `include "cva6_asm_program_gen.sv"
    `include "cvxif_custom_instr.sv"
    `include "rv32x_instr.sv"

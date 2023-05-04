@@ -12,9 +12,9 @@ if ! [ -n "$TESTS_REPO" ]; then
   TESTS_BRANCH="master"
   TESTS_HASH="f92842f91644092960ac7946a61ec2895e543cec"
 fi
-echo $TESTS_REPO
-echo $TESTS_BRANCH
-echo $TESTS_HASH
+echo "Repo:  " $TESTS_REPO
+echo "Branch:" $TESTS_BRANCH
+echo "Hash:  " $TESTS_HASH
 
 mkdir -p cva6/tests
 if ! [ -d cva6/tests/riscv-tests ]; then

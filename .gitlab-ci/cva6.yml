@@ -102,6 +102,7 @@ pub_check_env:
     - echo $RISCV
     - echo $RISCV_PREFIX
     - echo $VERILATOR_ROOT
+    - echo $VERILATOR_INSTALL_DIR
     - echo $SPIKE_ROOT
     - echo $BBL_ROOT
     - echo $SYN_VCS_BASHRC
@@ -148,15 +149,21 @@ pub_smoke:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
   script:
-    - mkdir -p artifacts/reports
+    - mkdir -p artifacts/reports artifacts/logs
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
-    - source cva6/regress/smoke-tests.sh
+    # In order to capture logs in case of test failure, the test script cannot fail.
+    - source cva6/regress/smoke-tests.sh || true
+    # The list of files must NOT fail on various DV_SIMULATORS values, so use 'v*_sim' to match
+    # 'veri-testharness_sim', 'vcs-testharness_sim' and 'vcs-uvm_sim' (one of them always applies,
+    # at least until new RTL simulator configurations are added.)
+    - for i in cva6/sim/*/v*_sim/*.log.iss ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
     - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
   artifacts:
     when: always
     paths:
       - artifacts/reports/*.yml
+      - artifacts/logs/*.log.iss.head
 
 pub_riscv_arch_test:
   stage: two
@@ -301,6 +308,7 @@ pub_tests-p:
 
 pub_synthesis:
   stage: two
+  timeout: 2 hours
   extends:
     - .template_job_always_manual
   needs:
@@ -312,6 +320,8 @@ pub_synthesis:
         PERIOD: ["1.1"]
       - TARGET: [cv32a60x]
         PERIOD: ["0.95"]
+      - TARGET: [cv32a6_embedded]
+        PERIOD: ["0.85"]
   variables:
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"
@@ -424,7 +434,8 @@ pub_wb_dcache:
     - source ci/make-tmp.sh
     - source ci/build-riscv-tests.sh
     - cd ../../../
-    - make run-asm-tests-verilator defines=WB_DCACHE
+    # Use 'verilator --no-timing' until the timing issues in corev_apu RTL are fixed.
+    - make verilator="verilator --no-timing" run-asm-tests-verilator defines=WB_DCACHE
     - cd ../..
     - python3 .gitlab-ci/scripts/report_pass.py
   artifacts:
@@ -513,8 +524,8 @@ pub_fpga-boot:
     - job: pub_fpga-build
       artifacts: true
   variables:
-    VERILATOR_ROOT: "/shares/tools/dummy/verilator" # to avoid install of verilator
-    SPIKE_ROOT: "/shares/tools/dummy/spike"  # to avoid install of spike
+    VERILATOR_INSTALL_DIR: "NO" # Skip install and checks of verilator
+    SPIKE_ROOT: "NO"  # Skip install and checks of spike
     DASHBOARD_JOB_TITLE: "FPGA Linux64 Boot "
     DASHBOARD_JOB_DESCRIPTION: "Test of Linux 64 bits boot on FPGA Genesys2"
     DASHBOARD_SORT_INDEX: 10

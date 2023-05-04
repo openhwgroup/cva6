@@ -40,14 +40,14 @@ package uvma_cvxif_pkg;
 
    // Agent components
    `include "uvma_cvxif_mon.sv"
-   `include "uvma_cvxif_sqr.sv"
+   `include "uvma_cvxif_vsqr.sv"
    `include "uvma_cvxif_drv.sv"
    `include "uvma_cvxif_cov_model.sv"
    `include "uvma_cvxif_agent.sv"
 
-   // Sequences
-   `include "uvma_cvxif_base_seq.sv"
-   `include "uvma_cvxif_seq.sv"
+   // Virtual Sequences
+   `include "uvme_cvxif_base_vseq.sv"
+   `include "uvme_cvxif_vseq.sv"
 
 endpackage : uvma_cvxif_pkg
 

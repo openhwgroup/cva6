@@ -14,6 +14,7 @@ import yaml
 import datetime
 import sys
 import subprocess
+import github_integration as gh
 
 # arguments: inputdir outputfile
 
@@ -105,12 +106,14 @@ pipeline = {
     'jobs': []
 }
 
+success = True
 dir_list = os.listdir(sys.argv[1])
 for f in dir_list:
     with open(sys.argv[1] + "/" + f, 'r') as job_report:
         report = safe_load(job_report)
         pipeline["jobs"].append(report)
         if report['status'] != 'pass':
+            success = False
             pipeline["status"] = 'fail'
             pipeline["label"] = 'FAIL'
 
@@ -139,3 +142,20 @@ cd -
 ''', shell=True))
 except subprocess.CalledProcessError as e:
     print(f"Error: {e.output}")
+
+def find_pr(branch, prs):
+    match = re.search(r'(.*)_PR_([a-zA-Z0-9](?:[a-zA-Z0-9]|[-_](?=[a-zA-Z0-9])){0,38})', branch)
+    if match:
+        label = f'{match.group(2)}:{match.group(1)}'
+        for pr in prs:
+            if label == pr['head']['label']:
+                return pr
+    return None
+
+pulls = gh.pulls('openhwgroup', workflow_repo)
+pr = find_pr(workflow_commit_ref_name, pulls)
+if pr is not None:
+    ref_branch = pr['base']['ref']
+    wf = gh.DashboardDone('openhwgroup', workflow_repo, ref_branch)
+    response = wf.send(pr['number'], success)
+    print(response.text)

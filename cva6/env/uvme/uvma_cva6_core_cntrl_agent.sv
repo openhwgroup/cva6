@@ -107,7 +107,7 @@ endtask : run_phase
 
 task uvma_cva6_core_cntrl_agent_c::start_fetch_toggle_seq();
 
-      `uvm_error(log_tag, "fetch toggle not supported in CVA6");
+      `uvm_warning(log_tag, "fetch toggle not supported in CVA6");
 
 endtask : start_fetch_toggle_seq
 

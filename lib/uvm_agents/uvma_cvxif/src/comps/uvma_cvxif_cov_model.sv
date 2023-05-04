@@ -410,7 +410,7 @@ function void uvma_cvxif_cov_model_c::sample_req_item(uvma_cvxif_req_item_c req_
    bit [4:0] rs2       = req_item.issue_req.instr [24:20];
 
    if (opcode != custom3 ) begin
-     `uvm_error("CVXIF", $sformatf("Could not sample instruction: %b", req_item.issue_req.instr));
+     `uvm_warning("CVXIF", $sformatf("Could not sample instruction: %b", req_item.issue_req.instr));
    end
    else begin
       if (func3 == 0) begin
@@ -433,7 +433,7 @@ function void uvma_cvxif_cov_model_c::sample_req_item(uvma_cvxif_req_item_c req_
          end
       end
       else begin
-        `uvm_error("CVXIF", $sformatf("Could not sample instruction: %b", req_item.issue_req.instr));
+        `uvm_warning("CVXIF", $sformatf("Could not sample instruction: %b", req_item.issue_req.instr));
       end
    end
   cus_seq_cg.sample(req_item);

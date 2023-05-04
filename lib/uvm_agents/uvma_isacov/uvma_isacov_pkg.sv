@@ -16,7 +16,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-`include "uvma_isacov_if.sv"
 `include "uvma_isacov_macros.sv"
 
 package uvma_isacov_pkg;
