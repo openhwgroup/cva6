@@ -274,7 +274,8 @@ covergroup cg_rtype_lr_w(
     string name,
     bit reg_hazards_enabled,
     bit rs1_is_signed,
-    bit rd_is_signed
+    bit rd_is_signed,
+    bit unaligned_access_amo_supported
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -302,6 +303,7 @@ covergroup cg_rtype_lr_w(
   }
 
   cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
+    ignore_bins IGN_OFF = {[0:$]} with (!unaligned_access_amo_supported);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -316,7 +318,8 @@ covergroup cg_rtype_sc_w (
     bit reg_crosses_enabled,
     bit reg_hazards_enabled,
     bit rs1_is_signed,
-    bit rs2_is_signed
+    bit rs2_is_signed,
+    bit unaligned_access_amo_supported
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -356,6 +359,7 @@ covergroup cg_rtype_sc_w (
   cross_rs1_rs2_value: cross cp_rs1_value, cp_rs2_value;
 
   cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
+    ignore_bins IGN_OFF = {[0:$]} with (!unaligned_access_amo_supported);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -372,7 +376,8 @@ covergroup cg_rtype_amo (
     bit reg_crosses_enabled,
     bit reg_hazards_enabled,
     bit rs1_is_signed,
-    bit rd_is_signed
+    bit rd_is_signed,
+    bit unaligned_access_amo_supported
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -404,6 +409,7 @@ covergroup cg_rtype_amo (
   }
 
   cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
+    ignore_bins IGN_OFF = {[0:$]} with (!unaligned_access_amo_supported);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -1702,7 +1708,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .rs1_is_signed(rs1_is_signed[LH]),
                             .immi_is_signed(immi_is_signed[LH]),
                             .rd_is_signed(rd_is_signed[LH]),
-                            .align_halfword(1),
+                            .align_halfword(cfg.core_cfg.unaligned_access_supported),
                             .align_word(0));
       rv32i_lw_cg     = new("rv32i_lw_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
@@ -1711,7 +1717,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .immi_is_signed(immi_is_signed[LW]),
                             .rd_is_signed(rd_is_signed[LW]),
                             .align_halfword(0),
-                            .align_word(1));
+                            .align_word(cfg.core_cfg.unaligned_access_supported));
       rv32i_lbu_cg    = new("rv32i_lbu_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
@@ -1726,7 +1732,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .rs1_is_signed(rs1_is_signed[LHU]),
                             .immi_is_signed(immi_is_signed[LHU]),
                             .rd_is_signed(rd_is_signed[LHU]),
-                            .align_halfword(1),
+                            .align_halfword(cfg.core_cfg.unaligned_access_supported),
                             .align_word(0));
 
       rv32i_sb_cg     = new("rv32i_sb_cg",
@@ -1735,12 +1741,12 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .align_word(0));
       rv32i_sh_cg     = new("rv32i_sh_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
-                            .align_halfword(1),
+                            .align_halfword(cfg.core_cfg.unaligned_access_supported),
                             .align_word(0));
       rv32i_sw_cg     = new("rv32i_sw_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .align_halfword(0),
-                            .align_word(1));
+                            .align_word(cfg.core_cfg.unaligned_access_supported));
 
       rv32i_addi_cg   = new("rv32i_addi_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
@@ -2081,57 +2087,68 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       rv32a_lr_w_cg = new("rv32a_lr_w_cg",
                           .reg_hazards_enabled(cfg.reg_hazards_enabled),
                           .rs1_is_signed(rs1_is_signed[LR_W]),
-                          .rd_is_signed(rd_is_signed[LR_W]));
+                          .rd_is_signed(rd_is_signed[LR_W]),
+                          .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_sc_w_cg = new("rv32a_sc_w_cg",
                           .reg_crosses_enabled(cfg.reg_crosses_enabled),
                           .reg_hazards_enabled(cfg.reg_hazards_enabled),
                           .rs1_is_signed(rs1_is_signed[SC_W]),
-                          .rs2_is_signed(rs2_is_signed[SC_W]));
+                          .rs2_is_signed(rs2_is_signed[SC_W]),
+                          .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoswap_w_cg = new("rv32a_amoswap_w_cg",
                                .reg_crosses_enabled(cfg.reg_crosses_enabled),
                                .reg_hazards_enabled(cfg.reg_hazards_enabled),
                                .rs1_is_signed(rs1_is_signed[AMOSWAP_W]),
-                               .rd_is_signed(rd_is_signed[AMOSWAP_W]));
+                               .rd_is_signed(rd_is_signed[AMOSWAP_W]),
+                               .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoadd_w_cg = new("rv32a_amoadd_w_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rs1_is_signed(rs1_is_signed[AMOADD_W]),
-                              .rd_is_signed(rd_is_signed[AMOADD_W]));
+                              .rd_is_signed(rd_is_signed[AMOADD_W]),
+                              .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoxor_w_cg = new("rv32a_amoxor_w_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rs1_is_signed(rs1_is_signed[AMOXOR_W]),
-                              .rd_is_signed(rd_is_signed[AMOXOR_W]));
+                              .rd_is_signed(rd_is_signed[AMOXOR_W]),
+                              .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoand_w_cg = new("rv32a_amoand_w_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rs1_is_signed(rs1_is_signed[AMOAND_W]),
-                              .rd_is_signed(rd_is_signed[AMOAND_W]));
+                              .rd_is_signed(rd_is_signed[AMOAND_W]),
+                              .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoor_w_cg = new("rv32a_amoor_w_cg",
                              .reg_crosses_enabled(cfg.reg_crosses_enabled),
                              .reg_hazards_enabled(cfg.reg_hazards_enabled),
                              .rs1_is_signed(rs1_is_signed[AMOOR_W]),
-                             .rd_is_signed(rd_is_signed[AMOOR_W]));
+                             .rd_is_signed(rd_is_signed[AMOOR_W]),
+                             .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amomax_w_cg = new("rv32a_max_w_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rs1_is_signed(rs1_is_signed[AMOMAX_W]),
-                              .rd_is_signed(rd_is_signed[AMOSWAP_W]));
+                              .rd_is_signed(rd_is_signed[AMOSWAP_W]),
+                              .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amomin_w_cg = new("rv32a_amomin_w_cg",
                                .reg_crosses_enabled(cfg.reg_crosses_enabled),
                                .reg_hazards_enabled(cfg.reg_hazards_enabled),
                                .rs1_is_signed(rs1_is_signed[AMOMIN_W]),
-                               .rd_is_signed(rd_is_signed[AMOMIN_W]));
+                               .rd_is_signed(rd_is_signed[AMOMIN_W]),
+                               .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amomaxu_w_cg = new("rv32a_amomaxu_w_cg",
                                .reg_crosses_enabled(cfg.reg_crosses_enabled),
                                .reg_hazards_enabled(cfg.reg_hazards_enabled),
                                .rs1_is_signed(rs1_is_signed[AMOMAXU_W]),
-                               .rd_is_signed(rd_is_signed[AMOMAXU_W]));
+                               .rd_is_signed(rd_is_signed[AMOMAXU_W]),
+                               .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amominu_w_cg = new("rv32a_amominu_w_cg",
                                .reg_crosses_enabled(cfg.reg_crosses_enabled),
                                .reg_hazards_enabled(cfg.reg_hazards_enabled),
                                .rs1_is_signed(rs1_is_signed[AMOMINU_W]),
-                               .rd_is_signed(rd_is_signed[AMOMINU_W]));
+                               .rd_is_signed(rd_is_signed[AMOMINU_W]),
+                               .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
     end
 
     // ----------------------------------------------------------------------------------------
@@ -2681,7 +2698,3 @@ function bit uvma_isacov_cov_model_c::is_csr_hazard(uvma_isacov_instr_c instr,
 
   return 0;
 endfunction : is_csr_hazard
-
-
-
-
