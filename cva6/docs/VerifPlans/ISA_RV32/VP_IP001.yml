@@ -15,11 +15,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S000_I000
         description: "add rd, rs1, rs2\nrd = rs1 + rs2\nArithmetic overflow is lost\
           \ and ignored"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -36,11 +36,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S000_I001
         description: "add rd, rs1, rs2\nrd = rs1 + rs2\nArithmetic overflow is lost\
           \ and ignored"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
           \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -57,11 +57,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S000_I002
         description: "add rd, rs1, rs2\nrd = rs1 + rs2\nArithmetic overflow is lost\
           \ and ignored"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -80,11 +80,11 @@ subfeatures: !!omap
         name: '000'
         tag: VP_ISA_RV32_F001_S001_I000
         description: "sub rd, rs1, rs2\nrd = rs1 - rs2\nArithmetic underflow is ignored"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -100,11 +100,11 @@ subfeatures: !!omap
         name: '001'
         tag: VP_ISA_RV32_F001_S001_I001
         description: "sub rd, rs1, rs2\nrd = rs1 - rs2\nArithmetic underflow is ignored"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
           \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -120,11 +120,11 @@ subfeatures: !!omap
         name: '002'
         tag: VP_ISA_RV32_F001_S001_I002
         description: "sub rd, rs1, rs2\nrd = rs1 - rs2\nArithmetic underflow is ignored"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -144,11 +144,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S002_I000
         description: "and rd, rs1, rs2\nrd = rs1 & rs2\nNote: this is a bitwise, not\
           \ logical operation"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -167,11 +167,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S002_I001
         description: "and rd, rs1, rs2\nrd = rs1 & rs2\nNote: this is a bitwise, not\
           \ logical operation"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
           \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -188,11 +188,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S002_I002
         description: "and rd, rs1, rs2\nrd = rs1 & rs2\nNote: this is a bitwise, not\
           \ logical operation"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -212,11 +212,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S003_I000
         description: "or rd, rs1, rs2\nrd = rs1 | rs2\nNote: this is a bitwise, not\
           \ logical operation"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -233,11 +233,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S003_I001
         description: "or rd, rs1, rs2\nrd = rs1 | rs2\nNote: this is a bitwise, not\
           \ logical operation"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
           \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -254,11 +254,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S003_I002
         description: "or rd, rs1, rs2\nrd = rs1 | rs2\nNote: this is a bitwise, not\
           \ logical operation"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -278,11 +278,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S004_I000
         description: "xor rd, rs1, rs2\nrd = rs1 ^ rs2\nNote: this is a bitwise, not\
           \ logical operation"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -299,11 +299,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S004_I001
         description: "xor rd, rs1, rs2\nrd = rs1 ^ rs2\nNote: this is a bitwise, not\
           \ logical operation"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
           \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -320,11 +320,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S004_I002
         description: "xor rd, rs1, rs2\nrd = rs1 ^ rs2\nNote: this is a bitwise, not\
           \ logical operation"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
           \ rd are toggled"
         pfc: -1
@@ -344,11 +344,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S005_I000
         description: "slt rd, rs1, rs2\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1 ad rs2\
           \ treated as signed numbers"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -365,11 +365,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S005_I001
         description: "slt rd, rs1, rs2\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1 ad rs2\
           \ treated as signed numbers"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
           \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -386,11 +386,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S005_I002
         description: "slt rd, rs1, rs2\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1 ad rs2\
           \ treated as signed numbers"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is [0,1]"
         pfc: 3
         test_type: 3
@@ -409,11 +409,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S006_I000
         description: "sltu rd, rs1, imm[11:0]\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1\
           \ and rs2 treated as unsigned numbers"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -430,11 +430,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S006_I001
         description: "sltu rd, rs1, imm[11:0]\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1\
           \ and rs2 treated as unsigned numbers"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
           \ is non-zero and zero\nAll combinations of rs1 and rs2 non-zero and zero\
           \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
@@ -451,11 +451,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S006_I002
         description: "sltu rd, rs1, imm[11:0]\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1\
           \ and rs2 treated as unsigned numbers"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is [0,1]"
         pfc: 3
         test_type: 3
@@ -474,11 +474,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S007_I000
         description: "sll rd, rs1, rs2\nrd = rs1 << rs2[4:0]\nZeros are shirfted into\
           \ lower bits"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -495,11 +495,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S007_I001
         description: "sll rd, rs1, rs2\nrd = rs1 << rs2[4:0]\nZeros are shirfted into\
           \ lower bits"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
           \ is tested from [0,31]\nAll combinations of rs1 and rs2 non-zero and zero\
           \ values with all shift values are used\nAll bits of rs1 are toggled"
@@ -515,11 +515,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S007_I002
         description: "sll rd, rs1, rs2\nrd = rs1 << rs2[4:0]\nZeros are shirfted into\
           \ lower bits"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is non-zero and zero.\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -540,11 +540,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S008_I000
         description: "srl rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
           \ upper bits"
-        reqt_doc: "ISA\nChapter 2.4"
-        ref_mode: ''
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -561,11 +561,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S008_I001
         description: "srl rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
           \ upper bits"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
           \ is tested from [0,31]\nAll combinations of rs1 and rs2 non-zero and zero\
           \ values with all shift values are used\nAll bits of rs1 are toggled"
@@ -581,11 +581,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S008_I002
         description: "srl rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
           \ upper bits"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is non-zero and zero.\nAll bits of\
           \ rd are toggled"
         pfc: 3
@@ -605,11 +605,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S009_I000
         description: "sra rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nThe original sign bit\
           \ is copied into the vacated upper bits"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
           All possible rs2 registers are used.\nAll possible rd registers are used.\n\
           All possible register combinations where rs1 == rd are used\nAll possible\
@@ -626,11 +626,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S009_I001
         description: "sra rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nThe original sign bit\
           \ is copied into the vacated upper bits"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Input operands:\n\nrs1 value is +ve, -ve, and zero\nrs2 value\
           \ is tested from [0,31]\nAll combinations of rs1 and rs2 +ve, -ve and zero\
           \ values with all shift values are used\nAll bits of rs1 are toggled"
@@ -646,11 +646,11 @@ subfeatures: !!omap
         tag: VP_ISA_RV32_F001_S009_I002
         description: "sra rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
           \ upper bits"
-        reqt_doc: "ISA\nChapter 2.4"
+        reqt_doc: ./RISCV_Instructions.rst
         ref_mode: ''
         ref_page: ''
         ref_section: ''
-        ref_viewer: ''
+        ref_viewer: firefox
         verif_goals: "Output result:\n\nrd value is +ve, -ve, and zero.\nAll bits\
           \ of rd are toggled"
         pfc: 3
@@ -659,7 +659,7 @@ subfeatures: !!omap
         cores: 56
         coverage_loc: "isacov.rv32i_sra_cg.cp_rd_value\nisacov.rv32i_sra_cg.cp_rd_toggle"
         comments: ''
-vptool_gitrev: '$Id: 755afe774cedc2d4910aa802ee20a1f485c1236e $'
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
 io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
 config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
 ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

@@ -1,4 +1,4 @@
-# Module: ISA
+# Module: ISA RISC-V 32b
 
 ## Feature: RV32I Register-Immediate Instructions
 
@@ -6,8 +6,7 @@
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   addi rd, rs1, imm[11:0]  
@@ -24,7 +23,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S000_I000
 * **Link to Coverage:** isacov.rv32i_addi_cg.cp_rs1
 isacov.rv32i_addi_cg.cp_rd
 isacov.rv32i_addi_cg.cp_rd_rs1_hazard
@@ -34,8 +33,7 @@ isacov.rv32i_addi_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   addi rd, rs1, imm[11:0]  
@@ -54,7 +52,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S000_I001
 * **Link to Coverage:** isacov.rv32i_addi_cg.cp_rs1_value
 isacov.rv32i_addi_cg.cp_immi_value
 isacov.rv32i_addi_cg.cross_rs1_immi_value
@@ -66,8 +64,7 @@ isacov.rv32i_addi_cg.cp_immi_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   addi rd, rs1, imm[11:0]  
@@ -83,7 +80,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S000_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S000_I002
 * **Link to Coverage:** isacov.rv32i_addi_cg.cp_rd_value
 isacov.rv32i_addi_cg.cp_rd_toggle
 * **Comments**
@@ -94,8 +91,7 @@ isacov.rv32i_addi_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   xori rd, rs1, imm[11:0]  
@@ -112,7 +108,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S001_I000
 * **Link to Coverage:** isacov.rv32i_xori_cg.cp_rs1
 isacov.rv32i_xori_cg.cp_rd
 isacov.rv32i_xori_cg.cp_rd_rs1_hazard
@@ -122,8 +118,7 @@ isacov.rv32i_xori_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   xori rd, rs1, imm[11:0]  
@@ -142,7 +137,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S001_I001
 * **Link to Coverage:** isacov.rv32i_xori_cg.cp_rs1_value
 isacov.rv32i_xori_cg.cp_immi_value
 isacov.rv32i_xori_cg.cross_rs1_immi_value
@@ -154,8 +149,7 @@ isacov.rv32i_xori_cg.cp_immi_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   xori rd, rs1, imm[11:0]  
@@ -171,7 +165,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S001_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S001_I002
 * **Link to Coverage:** isacov.rv32i_xori_cg.cp_rd_value
 isacov.rv32i_xori_cg.cp_rd_toggle
 * **Comments**
@@ -182,8 +176,7 @@ isacov.rv32i_xori_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   ori rd, rs1, imm[11:0]  
@@ -200,7 +193,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S002_I000
 * **Link to Coverage:** isacov.rv32i_ori_cg.cp_rs1
 isacov.rv32i_ori_cg.cp_rd
 isacov.rv32i_ori_cg.cp_rd_rs1_hazard
@@ -210,8 +203,7 @@ isacov.rv32i_ori_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   ori rd, rs1, imm[11:0]  
@@ -230,7 +222,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S002_I001
 * **Link to Coverage:** isacov.rv32i_ori_cg.cp_rs1_value
 isacov.rv32i_ori_cg.cp_immi_value
 isacov.rv32i_ori_cg.cross_rs1_immi_value
@@ -242,8 +234,7 @@ isacov.rv32i_ori_cg.cp_immi_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   ori rd, rs1, imm[11:0]  
@@ -259,7 +250,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S002_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S002_I002
 * **Link to Coverage:** isacov.rv32i_ori_cg.cp_rd_value
 isacov.rv32i_ori_cg.cp_rd_toggle
 * **Comments**
@@ -270,8 +261,7 @@ isacov.rv32i_ori_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   andi rd, rs1, imm[11:0]  
@@ -288,7 +278,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S003_I000
 * **Link to Coverage:** isacov.rv32i_andi_cg.cp_rs1
 isacov.rv32i_andi_cg.cp_rd
 isacov.rv32i_andi_cg.cp_rd_rs1_hazard
@@ -298,8 +288,7 @@ isacov.rv32i_andi_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   andi rd, rs1, imm[11:0]  
@@ -318,7 +307,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S003_I001
 * **Link to Coverage:** isacov.rv32i_andi_cg.cp_rs1_value
 isacov.rv32i_andi_cg.cp_immi_value
 isacov.rv32i_andi_cg.cross_rs1_immi_value
@@ -330,8 +319,7 @@ isacov.rv32i_andi_cg.cp_immi_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   andi rd, rs1, imm[11:0]  
@@ -347,7 +335,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S003_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S003_I002
 * **Link to Coverage:** isacov.rv32i_andi_cg.cp_rd_value
 isacov.rv32i_andi_cg.cp_rd_toggle
 * **Comments**
@@ -358,8 +346,7 @@ isacov.rv32i_andi_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   slti rd, rs1, imm[11:0]  
@@ -376,7 +363,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S004_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S004_I000
 * **Link to Coverage:** isacov.rv32i_slti_cg.cp_rs1
 isacov.rv32i_slti_cg.cp_rd
 isacov.rv32i_slti_cg.cp_rd_rs1_hazard
@@ -386,8 +373,7 @@ isacov.rv32i_slti_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   slti rd, rs1, imm[11:0]  
@@ -406,7 +392,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S004_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S004_I001
 * **Link to Coverage:** isacov.rv32i_slti_cg.cp_rs1_value
 isacov.rv32i_slti_cg.cp_immi_value
 isacov.rv32i_slti_cg.cross_rs1_immi_value
@@ -418,8 +404,7 @@ isacov.rv32i_slti_cg.cp_immi_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   slti rd, rs1, imm[11:0]  
@@ -434,7 +419,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S004_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S004_I002
 * **Link to Coverage:** isacov.rv32i_slti_cg.cp_rd_value
 * **Comments**
   
@@ -444,8 +429,7 @@ Chapter 2.4
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sltiu rd, rs1, imm[11:0]  
@@ -462,7 +446,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S005_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S005_I000
 * **Link to Coverage:** isacov.rv32i_sltiu_cg.cp_rs1
 isacov.rv32i_sltiu_cg.cp_rd
 isacov.rv32i_sltiu_cg.cp_rd_rs1_hazard
@@ -472,8 +456,7 @@ isacov.rv32i_sltiu_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sltiu rd, rs1, imm[11:0]  
@@ -492,7 +475,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S005_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S005_I001
 * **Link to Coverage:** isacov.rv32i_sltiu_cg.cp_rs1_value
 isacov.rv32i_sltiu_cg.cp_immi_value
 isacov.rv32i_sltiu_cg.cross_rs1_immi_value
@@ -504,8 +487,7 @@ isacov.rv32i_sltiu_cg.cp_immi_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sltiu rd, rs1, imm[11:0]  
@@ -520,7 +502,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S005_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S005_I002
 * **Link to Coverage:** isacov.rv32i_sltiu_cg.cp_rd_value
 * **Comments**
   
@@ -530,8 +512,7 @@ Chapter 2.4
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   slli rd, rs, imm[4:0]  
@@ -548,7 +529,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S006_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S006_I000
 * **Link to Coverage:** isacov.rv32i_slli_cg.cp_rs1
 isacov.rv32i_slli_cg.cp_rd
 isacov.rv32i_slli_cg.cp_rd_rs1_hazard
@@ -558,8 +539,7 @@ isacov.rv32i_slli_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   slli rd, rs, imm[4:0]  
@@ -577,7 +557,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S006_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S006_I001
 * **Link to Coverage:** isacov.rv32i_slli_cg.cp_rs1_value
 isacov.rv32i_slli_cg.cp_immi_value
 isacov.rv32i_slli_cg.cross_rs1_immi_value
@@ -588,8 +568,7 @@ isacov.rv32i_slli_cg.cp_rs1_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   slli rd, rs, imm[4:0]  
@@ -605,7 +584,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S006_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S006_I002
 * **Link to Coverage:** isacov.rv32i_slli_cg.cp_rd_value
 isacov.rv32i_slli_cg.cp_rd_toggle
 * **Comments**
@@ -616,8 +595,7 @@ isacov.rv32i_slli_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   srli rd, rs, imm[4:0]  
@@ -634,7 +612,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S007_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S007_I000
 * **Link to Coverage:** isacov.rv32i_srli_cg.cp_rs1
 isacov.rv32i_srli_cg.cp_rd
 isacov.rv32i_srli_cg.cp_rd_rs1_hazard
@@ -644,8 +622,7 @@ isacov.rv32i_srli_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   srli rd, rs, imm[4:0]  
@@ -663,7 +640,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S007_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S007_I001
 * **Link to Coverage:** isacov.rv32i_srli_cg.cp_rs1_value
 isacov.rv32i_srli_cg.cp_immi_value
 isacov.rv32i_srli_cg.cross_rs1_immi_value
@@ -674,8 +651,7 @@ isacov.rv32i_srli_cg.cp_rs1_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   srli rd, rs, imm[4:0]  
@@ -691,7 +667,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S007_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S007_I002
 * **Link to Coverage:** isacov.rv32i_srli_cg.cp_rd_value
 isacov.rv32i_srli_cg.cp_rd_toggle
 * **Comments**
@@ -702,8 +678,7 @@ isacov.rv32i_srli_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   srli rd, rs, imm[4:0]  
@@ -720,7 +695,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S008_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S008_I000
 * **Link to Coverage:** isacov.rv32i_srai_cg.cp_rs1
 isacov.rv32i_srai_cg.cp_rd
 isacov.rv32i_srai_cg.cp_rd_rs1_hazard
@@ -730,8 +705,7 @@ isacov.rv32i_srai_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   srli rd, rs, imm[4:0]  
@@ -749,7 +723,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S008_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S008_I001
 * **Link to Coverage:** isacov.rv32i_srai_cg.cp_rs1_value
 isacov.rv32i_srai_cg.cp_immi_value
 isacov.rv32i_srai_cg.cross_rs1_immi_value
@@ -760,8 +734,7 @@ isacov.rv32i_srai_cg.cp_rs1_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   srli rd, rs, imm[4:0]  
@@ -777,7 +750,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S008_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S008_I002
 * **Link to Coverage:** isacov.rv32i_srai_cg.cp_rd_value
 isacov.rv32i_srai_cg.cp_rd_toggle
 * **Comments**
@@ -788,8 +761,7 @@ isacov.rv32i_srai_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lui rd, imm[19:0]  
@@ -804,7 +776,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S009_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S009_I000
 * **Link to Coverage:** isacov.rv32i_lui_cg.cp_rd
 * **Comments**
   
@@ -812,8 +784,7 @@ Chapter 2.4
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lui rd, imm[19:0]  
@@ -830,7 +801,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S009_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S009_I001
 * **Link to Coverage:** isacov.rv32i_lui_cg.cp_immu_value
 isacov.rv32i_lui_cg.cp_immu_toggle
 * **Comments**
@@ -839,8 +810,7 @@ isacov.rv32i_lui_cg.cp_immu_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lui rd, imm[19:0]  
@@ -856,7 +826,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S009_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S009_I002
 * **Link to Coverage:** isacov.rv32i_lui_cg.cp_rd_value
 isacov.rv32i_lui_cg.cp_rd_toggle
 * **Comments**
@@ -867,8 +837,7 @@ isacov.rv32i_lui_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   auipc rd, imm[19:0]  
@@ -885,7 +854,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S010_I000
+* **Unique verification tag:** VP_ISA_RV32_F000_S010_I000
 * **Link to Coverage:** isacov.rv32i_auipc_cg.cp_rd
 * **Comments**
   
@@ -893,8 +862,7 @@ Chapter 2.4
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   auipc rd, imm[19:0]  
@@ -913,7 +881,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S010_I001
+* **Unique verification tag:** VP_ISA_RV32_F000_S010_I001
 * **Link to Coverage:** isacov.rv32i_auipc_cg.cp_immu_value
 isacov.rv32i_auipc_cg.cp_immu_toggle
 * **Comments**
@@ -922,8 +890,7 @@ isacov.rv32i_auipc_cg.cp_immu_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   auipc rd, imm[19:0]  
@@ -941,7 +908,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F011_S010_I002
+* **Unique verification tag:** VP_ISA_RV32_F000_S010_I002
 * **Link to Coverage:** isacov.rv32i_auipc_cg.cp_rd_value
 isacov.rv32i_auipc_cg.cp_rd_toggle
 * **Comments**
@@ -954,8 +921,7 @@ isacov.rv32i_auipc_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   add rd, rs1, rs2  
@@ -974,7 +940,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S000_I000
 * **Link to Coverage:** isacov.rv32i_add_cg.cp_rs1
 isacov.rv32i_add_cg.cp_rs2
 isacov.rv32i_add_cg.cp_rd
@@ -986,8 +952,7 @@ isacov.rv32i_add_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   add rd, rs1, rs2  
@@ -1006,7 +971,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S000_I001
 * **Link to Coverage:** isacov.rv32i_add_cg.cp_rs1_value
 isacov.rv32i_add_cg.cp_rs2_value
 isacov.rv32i_add_cg.cross_rs1_rs2_value
@@ -1018,8 +983,7 @@ isacov.rv32i_add_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   add rd, rs1, rs2  
@@ -1035,7 +999,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S000_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S000_I002
 * **Link to Coverage:** isacov.rv32i_add_cg.cp_rd_value
 isacov.rv32i_add_cg.cp_rd_toggle
 * **Comments**
@@ -1046,8 +1010,7 @@ isacov.rv32i_add_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sub rd, rs1, rs2  
@@ -1066,7 +1029,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S001_I000
 * **Link to Coverage:** isacov.rv32i_sub_cg.cp_rs1
 isacov.rv32i_sub_cg.cp_rs2
 isacov.rv32i_sub_cg.cp_rd
@@ -1078,8 +1041,7 @@ isacov.rv32i_sub_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sub rd, rs1, rs2  
@@ -1098,7 +1060,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S001_I001
 * **Link to Coverage:** isacov.rv32i_sub_cg.cp_rs1_value
 isacov.rv32i_sub_cg.cp_rs2_value
 isacov.rv32i_sub_cg.cross_rs1_rs2_value
@@ -1110,8 +1072,7 @@ isacov.rv32i_sub_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sub rd, rs1, rs2  
@@ -1127,7 +1088,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S001_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S001_I002
 * **Link to Coverage:** isacov.rv32i_sub_cg.cp_rd_value
 isacov.rv32i_sub_cg.cp_rd_toggle
 * **Comments**
@@ -1138,8 +1099,7 @@ isacov.rv32i_sub_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   and rd, rs1, rs2  
@@ -1158,7 +1118,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S002_I000
 * **Link to Coverage:** isacov.rv32i_and_cg.cp_rs1
 isacov.rv32i_and_cg.cp_rs2
 isacov.rv32i_and_cg.cp_rd
@@ -1175,8 +1135,7 @@ isacov.rv32i_and_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   and rd, rs1, rs2  
@@ -1195,7 +1154,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S002_I001
 * **Link to Coverage:** isacov.rv32i_and_cg.cp_rs1_value
 isacov.rv32i_and_cg.cp_rs2_value
 isacov.rv32i_and_cg.cross_rs1_rs2_value
@@ -1207,8 +1166,7 @@ isacov.rv32i_and_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   and rd, rs1, rs2  
@@ -1224,7 +1182,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S002_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S002_I002
 * **Link to Coverage:** isacov.rv32i_and_cg.cp_rd_value
 isacov.rv32i_and_cg.cp_rd_toggle
 * **Comments**
@@ -1235,8 +1193,7 @@ isacov.rv32i_and_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   or rd, rs1, rs2  
@@ -1255,7 +1212,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S003_I000
 * **Link to Coverage:** isacov.rv32i_or_cg.cp_rs1
 isacov.rv32i_or_cg.cp_rs2
 isacov.rv32i_or_cg.cp_rd
@@ -1267,8 +1224,7 @@ isacov.rv32i_or_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   or rd, rs1, rs2  
@@ -1287,7 +1243,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S003_I001
 * **Link to Coverage:** isacov.rv32i_or_cg.cp_rs1_value
 isacov.rv32i_or_cg.cp_rs2_value
 isacov.rv32i_or_cg.cross_rs1_rs2_value
@@ -1299,8 +1255,7 @@ isacov.rv32i_or_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   or rd, rs1, rs2  
@@ -1316,7 +1271,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S003_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S003_I002
 * **Link to Coverage:** isacov.rv32i_or_cg.cp_rd_value
 isacov.rv32i_or_cg.cp_rd_toggle
 * **Comments**
@@ -1327,8 +1282,7 @@ isacov.rv32i_or_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   xor rd, rs1, rs2  
@@ -1347,7 +1301,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S004_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S004_I000
 * **Link to Coverage:** isacov.rv32i_xor_cg.cp_rs1
 isacov.rv32i_xor_cg.cp_rs2
 isacov.rv32i_xor_cg.cp_rd
@@ -1359,8 +1313,7 @@ isacov.rv32i_xor_cg.rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   xor rd, rs1, rs2  
@@ -1379,7 +1332,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S004_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S004_I001
 * **Link to Coverage:** isacov.rv32i_xor_cg.cp_rs1_value
 isacov.rv32i_xor_cg.cp_rs2_value
 isacov.rv32i_xor_cg.cross_rs1_rs2_value
@@ -1391,8 +1344,7 @@ isacov.rv32i_xor_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   xor rd, rs1, rs2  
@@ -1408,7 +1360,7 @@ Chapter 2.4
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S004_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S004_I002
 * **Link to Coverage:** isacov.rv32i_xor_cg.cp_rd_value
 isacov.rv32i_xor_cg.cp_rd_toggle
 * **Comments**
@@ -1419,8 +1371,7 @@ isacov.rv32i_xor_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   slt rd, rs1, rs2  
@@ -1439,7 +1390,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S005_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S005_I000
 * **Link to Coverage:** isacov.rv32i_slt_cg.cp_rs1
 isacov.rv32i_slt_cg.cp_rs2
 isacov.rv32i_slt_cg.cp_rd
@@ -1451,8 +1402,7 @@ isacov.rv32i_slt_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   slt rd, rs1, rs2  
@@ -1471,7 +1421,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S005_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S005_I001
 * **Link to Coverage:** isacov.rv32i_slt_cg.cp_rs1_value
 isacov.rv32i_slt_cg.cp_rs2_value
 isacov.rv32i_slt_cg.cross_rs1_rs2_value
@@ -1483,8 +1433,7 @@ isacov.rv32i_slt_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   slt rd, rs1, rs2  
@@ -1499,7 +1448,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S005_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S005_I002
 * **Link to Coverage:** isacov.rv32i_slt_cg.cp_rd_value
 * **Comments**
   
@@ -1509,8 +1458,7 @@ Chapter 2.4
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sltu rd, rs1, imm[11:0]  
@@ -1529,7 +1477,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S006_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S006_I000
 * **Link to Coverage:** isacov.rv32i_sltu_cg.cp_rs1
 isacov.rv32i_sltu_cg.cp_rs2
 isacov.rv32i_sltu_cg.cp_rd
@@ -1541,8 +1489,7 @@ isacov.rv32i_sltu_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sltu rd, rs1, imm[11:0]  
@@ -1561,7 +1508,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S006_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S006_I001
 * **Link to Coverage:** isacov.rv32i_sltu_cg.cp_rs1_value
 isacov.rv32i_sltu_cg.cp_rs2_value
 isacov.rv32i_sltu_cg.cross_rs1_rs2_value
@@ -1573,8 +1520,7 @@ isacov.rv32i_sltu_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sltu rd, rs1, imm[11:0]  
@@ -1589,7 +1535,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S006_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S006_I002
 * **Link to Coverage:** isacov.rv32i_sltu_cg.cp_rd_value
 * **Comments**
   
@@ -1599,8 +1545,7 @@ Chapter 2.4
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sll rd, rs1, rs2  
@@ -1619,7 +1564,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S007_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S007_I000
 * **Link to Coverage:** isacov.rv32i_sll_cg.cp_rs1
 isacov.rv32i_sll_cg.cp_rs2
 isacov.rv32i_sll_cg.cp_rd
@@ -1631,8 +1576,7 @@ isacov.rv32i_sll_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sll rd, rs1, rs2  
@@ -1650,7 +1594,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S007_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S007_I001
 * **Link to Coverage:** isacov.rv32i_sll_cg.cp_rs1_value
 isacov.rv32i_sll_cg.cp_rs2_value
 isacov.rv32i_sll_cg.cross_rs1_rs2_value
@@ -1661,8 +1605,7 @@ isacov.rv32i_sll_cg.cp_rs1_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sll rd, rs1, rs2  
@@ -1678,7 +1621,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S007_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S007_I002
 * **Link to Coverage:** isacov.rv32i_sll_cg.cp_rd_value
 isacov.rv32i_sll_cg.cp_rd_toggle
 isacov.rv32i_sll_cg.cp_rd_value
@@ -1691,8 +1634,7 @@ isacov.rv32i_sll_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   srl rd, rs1, rs2  
@@ -1711,7 +1653,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S008_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S008_I000
 * **Link to Coverage:** isacov.rv32i_srl_cg.cp_rs1
 isacov.rv32i_srl_cg.cp_rs2
 isacov.rv32i_srl_cg.cp_rd
@@ -1723,8 +1665,7 @@ isacov.rv32i_srl_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   srl rd, rs1, rs2  
@@ -1742,7 +1683,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S008_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S008_I001
 * **Link to Coverage:** isacov.rv32i_srl_cg.cp_rs1_value
 isacov.rv32i_srl_cg.cp_rs2_value
 isacov.rv32i_srl_cg.cross_rs1_rs2_value
@@ -1753,8 +1694,7 @@ isacov.rv32i_srl_cg.cp_rs1_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   srl rd, rs1, rs2  
@@ -1770,7 +1710,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S008_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S008_I002
 * **Link to Coverage:** isacov.rv32i_srl_cg.cp_rd_value
 isacov.rv32i_srl_cg.cp_rd_toggle
 * **Comments**
@@ -1781,8 +1721,7 @@ isacov.rv32i_srl_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sra rd, rs1, rs2  
@@ -1801,7 +1740,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S009_I000
+* **Unique verification tag:** VP_ISA_RV32_F001_S009_I000
 * **Link to Coverage:** isacov.rv32i_sra_cg.cp_rs1
 isacov.rv32i_sra_cg.cp_rs2
 isacov.rv32i_sra_cg.cp_rd
@@ -1813,8 +1752,7 @@ isacov.rv32i_sra_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sra rd, rs1, rs2  
@@ -1832,7 +1770,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S009_I001
+* **Unique verification tag:** VP_ISA_RV32_F001_S009_I001
 * **Link to Coverage:** isacov.rv32i_sra_cg.cp_rs1_value
 isacov.rv32i_sra_cg.cp_rs2_value
 isacov.rv32i_sra_cg.cross_rs1_rs2_value
@@ -1843,8 +1781,7 @@ isacov.rv32i_sra_cg.cp_rs1_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sra rd, rs1, rs2  
@@ -1860,7 +1797,7 @@ Chapter 2.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F001_S009_I002
+* **Unique verification tag:** VP_ISA_RV32_F001_S009_I002
 * **Link to Coverage:** isacov.rv32i_sra_cg.cp_rd_value
 isacov.rv32i_sra_cg.cp_rd_toggle
 * **Comments**
@@ -1873,8 +1810,7 @@ isacov.rv32i_sra_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   jal rd, imm[20:1]  
@@ -1892,7 +1828,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F002_S000_I000
 * **Link to Coverage:** isacov.rv32i_jal_cg.cp_rd
 * **Comments**
   
@@ -1900,8 +1836,7 @@ Chapter 2.5
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   jal rd, imm[20:1]  
@@ -1920,7 +1855,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F002_S000_I001
 * **Link to Coverage:** isacov.rv32i_jal_cg.cp_immj_value
 isacov.rv32i_jal_cg.cp_immj_toggle
 * **Comments**
@@ -1929,8 +1864,7 @@ isacov.rv32i_jal_cg.cp_immj_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   jal rd, imm[20:1]  
@@ -1948,7 +1882,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S000_I002
+* **Unique verification tag:** VP_ISA_RV32_F002_S000_I002
 * **Link to Coverage:** isacov.rv32i_jal_cg.cp_rd_toggle
 * **Comments**
   
@@ -1958,8 +1892,7 @@ Chapter 2.5
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   jalr rd, rs1, imm[11:0]  
@@ -1976,7 +1909,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F002_S001_I000
 * **Link to Coverage:** isacov.rv32i_jalr_cg.cp_rs1
 isacov.rv32i_jalr_cg.cp_rd
 isacov.rv32i_jalr_cg.cp_rd_rs1_hazard
@@ -1986,8 +1919,7 @@ isacov.rv32i_jalr_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   jalr rd, rs1, imm[11:0]  
@@ -2004,7 +1936,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F002_S001_I001
 * **Link to Coverage:** isacov.rv32i_jalr_cg.cp_immi_value
 isacov.rv32i_jalr_cg.cp_immi_toggle
 isacov.rv32i_jalr_cg.cp_rs1_toggle
@@ -2014,8 +1946,7 @@ isacov.rv32i_jalr_cg.cp_rs1_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   jalr rd, rs1, imm[11:0]  
@@ -2030,7 +1961,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S001_I002
+* **Unique verification tag:** VP_ISA_RV32_F002_S001_I002
 * **Link to Coverage:** isacov.rv32i_jalr_cg.cp_rd_toggle
 * **Comments**
   
@@ -2040,8 +1971,7 @@ Chapter 2.5
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   beq rs1, rs2, imm[12:1]  
@@ -2057,7 +1987,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F002_S002_I000
 * **Link to Coverage:** isacov.rv32i_beq_cg.cp_rs1
 isacov.rv32i_beq_cg.cp_rs2
 * **Comments**
@@ -2066,8 +1996,7 @@ isacov.rv32i_beq_cg.cp_rs2
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   beq rs1, rs2, imm[12:1]  
@@ -2085,7 +2014,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F002_S002_I001
 * **Link to Coverage:** isacov.rv32i_beq_cg.cp_immb_value
 isacov.rv32i_beq_cg.cp_rs1_toggle
 isacov.rv32i_beq_cg.cp_rs2_toggle
@@ -2095,8 +2024,7 @@ isacov.rv32i_beq_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   beq rs1, rs2, imm[12:1]  
@@ -2111,7 +2039,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S002_I002
+* **Unique verification tag:** VP_ISA_RV32_F002_S002_I002
 * **Link to Coverage:** isacov.rv32i_beq_cg.cp_branch_taken
 * **Comments**
   
@@ -2121,8 +2049,7 @@ Chapter 2.5
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bne rs1, rs2, imm[12:1]  
@@ -2138,7 +2065,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F002_S003_I000
 * **Link to Coverage:** isacov.rv32i_bne_cg.cp_rs1
 isacov.rv32i_bne_cg.cp_rs2
 * **Comments**
@@ -2147,8 +2074,7 @@ isacov.rv32i_bne_cg.cp_rs2
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bne rs1, rs2, imm[12:1]  
@@ -2166,7 +2092,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F002_S003_I001
 * **Link to Coverage:** isacov.rv32i_bne_cg.cp_immb_value
 isacov.rv32i_bne_cg.cp_rs1_toggle
 isacov.rv32i_bne_cg.cp_rs2_toggle
@@ -2176,8 +2102,7 @@ isacov.rv32i_bne_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bne rs1, rs2, imm[12:1]  
@@ -2192,7 +2117,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S003_I002
+* **Unique verification tag:** VP_ISA_RV32_F002_S003_I002
 * **Link to Coverage:** isacov.rv32i_bne_cg.cp_branch_taken
 * **Comments**
   
@@ -2202,8 +2127,7 @@ Chapter 2.5
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   blt rs1, rs2, imm[12:1]  
@@ -2219,7 +2143,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S004_I000
+* **Unique verification tag:** VP_ISA_RV32_F002_S004_I000
 * **Link to Coverage:** isacov.rv32i_blt_cg.cp_rs1
 isacov.rv32i_blt_cg.cp_rs2
 * **Comments**
@@ -2228,8 +2152,7 @@ isacov.rv32i_blt_cg.cp_rs2
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   blt rs1, rs2, imm[12:1]  
@@ -2247,7 +2170,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S004_I001
+* **Unique verification tag:** VP_ISA_RV32_F002_S004_I001
 * **Link to Coverage:** isacov.rv32i_blt_cg.cp_immb_value
 isacov.rv32i_blt_cg.cp_rs1_toggle
 isacov.rv32i_blt_cg.cp_rs2_toggle
@@ -2257,8 +2180,7 @@ isacov.rv32i_blt_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   blt rs1, rs2, imm[12:1]  
@@ -2273,7 +2195,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S004_I002
+* **Unique verification tag:** VP_ISA_RV32_F002_S004_I002
 * **Link to Coverage:** isacov.rv32i_blt_cg.cp_branch_taken
 * **Comments**
   
@@ -2283,8 +2205,7 @@ Chapter 2.5
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bge rs1, rs2, imm[12:1]  
@@ -2300,7 +2221,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S005_I000
+* **Unique verification tag:** VP_ISA_RV32_F002_S005_I000
 * **Link to Coverage:** isacov.rv32i_bge_cg.cp_rs1
 isacov.rv32i_bge_cg.cp_rs2
 * **Comments**
@@ -2309,8 +2230,7 @@ isacov.rv32i_bge_cg.cp_rs2
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bge rs1, rs2, imm[12:1]  
@@ -2328,7 +2248,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S005_I001
+* **Unique verification tag:** VP_ISA_RV32_F002_S005_I001
 * **Link to Coverage:** isacov.rv32i_bge_cg.cp_immb_value
 isacov.rv32i_bge_cg.cp_rs1_toggle
 isacov.rv32i_bge_cg.cp_rs2_toggle
@@ -2338,8 +2258,7 @@ isacov.rv32i_bge_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bge rs1, rs2, imm[12:1]  
@@ -2354,7 +2273,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S005_I002
+* **Unique verification tag:** VP_ISA_RV32_F002_S005_I002
 * **Link to Coverage:** isacov.rv32i_bge_cg.cp_branch_taken
 * **Comments**
   
@@ -2364,8 +2283,7 @@ Chapter 2.5
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bltu rs1, rs2, imm[12:1]  
@@ -2381,7 +2299,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S006_I000
+* **Unique verification tag:** VP_ISA_RV32_F002_S006_I000
 * **Link to Coverage:** isacov.rv32i_bltu_cg.cp_rs1
 isacov.rv32i_bltu_cg.cp_rs2
 * **Comments**
@@ -2390,8 +2308,7 @@ isacov.rv32i_bltu_cg.cp_rs2
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bltu rs1, rs2, imm[12:1]  
@@ -2409,7 +2326,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S006_I001
+* **Unique verification tag:** VP_ISA_RV32_F002_S006_I001
 * **Link to Coverage:** isacov.rv32i_bltu_cg.cp_immb_value
 isacov.rv32i_bltu_cg.cp_rs1_toggle
 isacov.rv32i_bltu_cg.cp_rs2_toggle
@@ -2419,8 +2336,7 @@ isacov.rv32i_bltu_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bltu rs1, rs2, imm[12:1]  
@@ -2435,7 +2351,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S006_I002
+* **Unique verification tag:** VP_ISA_RV32_F002_S006_I002
 * **Link to Coverage:** isacov.rv32i_bltu_cg.cp_branch_taken
 * **Comments**
   
@@ -2445,8 +2361,7 @@ Chapter 2.5
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bgeu rs1, rs2, imm[12:1]  
@@ -2462,7 +2377,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S007_I000
+* **Unique verification tag:** VP_ISA_RV32_F002_S007_I000
 * **Link to Coverage:** isacov.rv32i_bgeu_cg.cp_rs1
 isacov.rv32i_bgeu_cg.cp_rs2
 * **Comments**
@@ -2471,8 +2386,7 @@ isacov.rv32i_bgeu_cg.cp_rs2
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bgeu rs1, rs2, imm[12:1]  
@@ -2490,7 +2404,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S007_I001
+* **Unique verification tag:** VP_ISA_RV32_F002_S007_I001
 * **Link to Coverage:** isacov.rv32i_bgeu_cg.cp_immb_value
 isacov.rv32i_bgeu_cg.cp_rs1_toggle
 isacov.rv32i_bgeu_cg.cp_rs2_toggle
@@ -2500,8 +2414,7 @@ isacov.rv32i_bgeu_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   bgeu rs1, rs2, imm[12:1]  
@@ -2516,7 +2429,7 @@ Chapter 2.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F002_S007_I002
+* **Unique verification tag:** VP_ISA_RV32_F002_S007_I002
 * **Link to Coverage:** isacov.rv32i_bgeu_cg.cp_branch_taken
 * **Comments**
   
@@ -2528,8 +2441,7 @@ Chapter 2.5
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lb rd, rs1, imm  
@@ -2546,7 +2458,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F003_S000_I000
 * **Link to Coverage:** isacov.rv32i_lb_cg.cp_rs1
 isacov.rv32i_lb_cg.cp_rd
 isacov.rv32i_lb_cg.cp_rd_rs1_hazard
@@ -2556,8 +2468,7 @@ isacov.rv32i_lb_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lb rd, rs1, imm  
@@ -2575,7 +2486,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F003_S000_I001
 * **Link to Coverage:** isacov.rv32i_lb_cg.cp_immi_value
 isacov.rv32i_lb_cg.cp_rs1_toggle
 isacov.rv32i_lb_cg.cp_immi_toggle
@@ -2585,8 +2496,7 @@ isacov.rv32i_lb_cg.cp_immi_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lb rd, rs1, imm  
@@ -2602,7 +2512,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S000_I002
+* **Unique verification tag:** VP_ISA_RV32_F003_S000_I002
 * **Link to Coverage:** isacov.rv32i_lb_cg.cp_rd_value
 isacov.rv32i_lb_cg.cp_rd_toggle
 * **Comments**
@@ -2613,8 +2523,7 @@ isacov.rv32i_lb_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lh rd, rs1, imm  
@@ -2631,7 +2540,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F003_S001_I000
 * **Link to Coverage:** isacov.rv32i_lh_cg.cp_rs1
 isacov.rv32i_lh_cg.cp_rd
 isacov.rv32i_lh_cg.cp_rd_rs1_hazard
@@ -2641,8 +2550,7 @@ isacov.rv32i_lh_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lh rd, rs1, imm  
@@ -2661,7 +2569,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F003_S001_I001
 * **Link to Coverage:** isacov.rv32i_lh_cg.cp_immi_value
 isacov.rv32i_lh_cg.cp_rs1_toggle
 isacov.rv32i_lh_cg.cp_immi_toggle
@@ -2672,8 +2580,7 @@ isacov.rv32i_lh_cg.cp_aligned
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lh rd, rs1, imm  
@@ -2689,7 +2596,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S001_I002
+* **Unique verification tag:** VP_ISA_RV32_F003_S001_I002
 * **Link to Coverage:** isacov.rv32i_lh_cg.cp_rd_value
 isacov.rv32i_lh_cg.cp_rd_toggle
 * **Comments**
@@ -2700,8 +2607,7 @@ isacov.rv32i_lh_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lw rd, rs1, imm  
@@ -2718,7 +2624,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F003_S002_I000
 * **Link to Coverage:** isacov.rv32i_lw_cg.cp_rs1
 isacov.rv32i_lw_cg.cp_rd
 isacov.rv32i_lw_cg.cp_rd_rs1_hazard
@@ -2728,8 +2634,7 @@ isacov.rv32i_lw_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lw rd, rs1, imm  
@@ -2748,7 +2653,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F003_S002_I001
 * **Link to Coverage:** isacov.rv32i_lw_cg.cp_immi_value
 isacov.rv32i_lw_cg.cp_rs1_toggle
 isacov.rv32i_lw_cg.cp_immi_toggle
@@ -2759,8 +2664,7 @@ isacov.rv32i_lw_cg.cp_aligned
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lw rd, rs1, imm  
@@ -2776,7 +2680,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S002_I002
+* **Unique verification tag:** VP_ISA_RV32_F003_S002_I002
 * **Link to Coverage:** isacov.rv32i_lw_cg.cp_rd_value
 isacov.rv32i_lw_cg.cp_rd_toggle
 * **Comments**
@@ -2787,8 +2691,7 @@ isacov.rv32i_lw_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lbu rd, rs1, imm  
@@ -2805,7 +2708,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F003_S003_I000
 * **Link to Coverage:** isacov.rv32i_lbu_cg.cp_rs1
 isacov.rv32i_lbu_cg.cp_rd
 isacov.rv32i_lbu_cg.cp_rd_rs1_hazard
@@ -2815,8 +2718,7 @@ isacov.rv32i_lbu_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lbu rd, rs1, imm  
@@ -2834,7 +2736,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F003_S003_I001
 * **Link to Coverage:** isacov.rv32i_lbu_cg.cp_immi_value
 isacov.rv32i_lbu_cg.cp_rs1_toggle
 isacov.rv32i_lbu_cg.cp_immi_toggle
@@ -2844,8 +2746,7 @@ isacov.rv32i_lbu_cg.cp_immi_toggle
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lbu rd, rs1, imm  
@@ -2861,7 +2762,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S003_I002
+* **Unique verification tag:** VP_ISA_RV32_F003_S003_I002
 * **Link to Coverage:** isacov.rv32i_lbu_cg.cp_rd_value
 isacov.rv32i_lbu_cg.cp_rd_toggle
 * **Comments**
@@ -2872,8 +2773,7 @@ isacov.rv32i_lbu_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lhu rd, rs1, imm  
@@ -2890,7 +2790,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S004_I000
+* **Unique verification tag:** VP_ISA_RV32_F003_S004_I000
 * **Link to Coverage:** isacov.rv32i_lhu_cg.cp_rs1
 isacov.rv32i_lhu_cg.cp_rd
 isacov.rv32i_lhu_cg.cp_rd_rs1_hazard
@@ -2900,8 +2800,7 @@ isacov.rv32i_lhu_cg.cp_rd_rs1_hazard
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lhu rd, rs1, imm  
@@ -2920,7 +2819,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S004_I001
+* **Unique verification tag:** VP_ISA_RV32_F003_S004_I001
 * **Link to Coverage:** isacov.rv32i_lhu_cg.cp_immi_value
 isacov.rv32i_lhu_cg.cp_rs1_toggle
 isacov.rv32i_lhu_cg.cp_immi_toggle
@@ -2931,8 +2830,7 @@ isacov.rv32i_lhu_cg.cp_aligned
   
 #### Item: 002
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lhu rd, rs1, imm  
@@ -2948,7 +2846,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S004_I002
+* **Unique verification tag:** VP_ISA_RV32_F003_S004_I002
 * **Link to Coverage:** isacov.rv32i_lhu_cg.cp_rd_value
 isacov.rv32i_lhu_cg.cp_rd_toggle
 * **Comments**
@@ -2959,8 +2857,7 @@ isacov.rv32i_lhu_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sb rs1, rs2, imm  
@@ -2975,7 +2872,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S005_I000
+* **Unique verification tag:** VP_ISA_RV32_F003_S005_I000
 * **Link to Coverage:** isacov.rv32i_sb_cg.cp_rs1
 isacov.rv32i_sb_cg.cp_rs2
 * **Comments**
@@ -2984,8 +2881,7 @@ isacov.rv32i_sb_cg.cp_rs2
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sb rs1, rs2, imm  
@@ -3002,7 +2898,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S005_I001
+* **Unique verification tag:** VP_ISA_RV32_F003_S005_I001
 * **Link to Coverage:** isacov.rv32i_sb_cg.cp_imms_value
 isacov.rv32i_sb_cg.cp_rs1_toggle
 isacov.rv32i_sb_cg.cp_rs2_toggle
@@ -3015,8 +2911,7 @@ isacov.rv32i_sb_cg.cp_imms_toggle
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sh rs1, rs2, imm  
@@ -3031,7 +2926,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S006_I000
+* **Unique verification tag:** VP_ISA_RV32_F003_S006_I000
 * **Link to Coverage:** isacov.rv32i_sh_cg.cp_rs1
 isacov.rv32i_sh_cg.cp_rs2
 * **Comments**
@@ -3040,8 +2935,7 @@ isacov.rv32i_sh_cg.cp_rs2
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sh rs1, rs2, imm  
@@ -3059,7 +2953,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S006_I001
+* **Unique verification tag:** VP_ISA_RV32_F003_S006_I001
 * **Link to Coverage:** isacov.rv32i_sh_cg.cp_imms_value
 isacov.rv32i_sh_cg.cp_rs1_toggle
 isacov.rv32i_sh_cg.cp_rs2_toggle
@@ -3073,8 +2967,7 @@ isacov.rv32i_sh_cg.cp_aligned
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sw rs1, rs2, imm  
@@ -3089,7 +2982,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S007_I000
+* **Unique verification tag:** VP_ISA_RV32_F003_S007_I000
 * **Link to Coverage:** isacov.rv32i_sw_cg.cp_rs1
 isacov.rv32i_sw_cg.cp_rs2
 * **Comments**
@@ -3098,8 +2991,7 @@ isacov.rv32i_sw_cg.cp_rs2
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.6
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sw rs1, rs2, imm  
@@ -3117,7 +3009,7 @@ Chapter 2.6
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F003_S007_I001
+* **Unique verification tag:** VP_ISA_RV32_F003_S007_I001
 * **Link to Coverage:** isacov.rv32i_sw_cg.cp_imms_value
 isacov.rv32i_sw_cg.cp_rs1_toggle
 isacov.rv32i_sw_cg.cp_rs2_toggle
@@ -3133,8 +3025,7 @@ isacov.rv32i_sw_cg.cp_aligned
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.7
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   Fence operation executed  
@@ -3146,7 +3037,7 @@ Chapter 2.7
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F004_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F004_S000_I000
 * **Link to Coverage:** isacov.rv32i_fence.cp_fixed
 * **Comments**
   
@@ -3158,8 +3049,7 @@ Chapter 2.7
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.8
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   Software exception vector entered
@@ -3170,7 +3060,7 @@ Chapter 2.8
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F005_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F005_S000_I000
 * **Link to Coverage:** isacov.rv32i_ecall.cp_fixed
 * **Comments**
   
@@ -3178,8 +3068,7 @@ Chapter 2.8
   
 #### Item: 001
 
-* **Requirement location:** ISA
-Chapter 2.8
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   Return control to a debugger
@@ -3190,7 +3079,7 @@ Chapter 2.8
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F005_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F005_S000_I001
 * **Link to Coverage:** isacov.rv32i_ebreak.cp_fixed
 * **Comments**
   
@@ -3200,8 +3089,7 @@ Chapter 2.8
 
 #### Item: 000
 
-* **Requirement location:** ISA
-Chapter 2.8
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   Return control to a debugger
@@ -3212,7 +3100,7 @@ Chapter 2.8
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F005_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F005_S001_I000
 * **Link to Coverage:** isacov.rv32i_ebreak.cp_fixed
 * **Comments**
   
@@ -3224,8 +3112,7 @@ Chapter 2.8
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mul rd, rs1, rs2  
@@ -3244,7 +3131,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F006_S000_I000
 * **Link to Coverage:** isacov.rv32m_mul_cg.cp_rs1
 isacov.rv32m_mul_cg.cp_rs2
 isacov.rv32m_mul_cg.cp_rd
@@ -3256,8 +3143,7 @@ isacov.rv32m_mul_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mul rd, rs1, rs2  
@@ -3276,7 +3162,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F006_S000_I001
 * **Link to Coverage:** isacov.rv32m_mul_cg.cp_rs1_value
 isacov.rv32m_mul_cg.cp_rs2_value
 isacov.rv32m_mul_cg.cross_rs1_rs2_value
@@ -3288,8 +3174,7 @@ isacov.rv32m_mul_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mul rd, rs1, rs2  
@@ -3305,7 +3190,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S000_I002
+* **Unique verification tag:** VP_ISA_RV32_F006_S000_I002
 * **Link to Coverage:** isacov.rv32m_mul_cg.cp_rd_value
 isacov.rv32m_mul_cg.cp_rd_toggle
 * **Comments**
@@ -3316,8 +3201,7 @@ isacov.rv32m_mul_cg.cp_rd_toggle
 
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mulh rd, rs1, rs2  
@@ -3333,7 +3217,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S001_I002
+* **Unique verification tag:** VP_ISA_RV32_F006_S001_I002
 * **Link to Coverage:** isacov.rv32m_mulh_cg.cp_rd_value
 isacov.rv32m_mulh_cg.cp_rd_toggle
 * **Comments**
@@ -3344,8 +3228,7 @@ isacov.rv32m_mulh_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mulhu rd, rs1, rs2  
@@ -3364,7 +3247,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F006_S002_I000
 * **Link to Coverage:** isacov.rv32m_mulhu_cg.cp_rs1
 isacov.rv32m_mulhu_cg.cp_rs2
 isacov.rv32m_mulhu_cg.cp_rd
@@ -3376,8 +3259,7 @@ isacov.rv32m_mulhu_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mulhu rd, rs1, rs2  
@@ -3396,7 +3278,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F006_S002_I001
 * **Link to Coverage:** isacov.rv32m_mulhu_cg.cp_rs1_value
 isacov.rv32m_mulhu_cg.cp_rs2_value
 isacov.rv32m_mulhu_cg.cross_rs1_rs2_value
@@ -3408,8 +3290,7 @@ isacov.rv32m_mulhu_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mulhu rd, rs1, rs2  
@@ -3425,7 +3306,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S002_I002
+* **Unique verification tag:** VP_ISA_RV32_F006_S002_I002
 * **Link to Coverage:** isacov.rv32m_mulhu_cg.cp_rd_value
 isacov.rv32m_mulhu_cg.cp_rd_toggle
 * **Comments**
@@ -3436,8 +3317,7 @@ isacov.rv32m_mulhu_cg.cp_rd_toggle
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mulhsu rd, rs1, rs2  
@@ -3456,7 +3336,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F006_S003_I000
 * **Link to Coverage:** isacov.rv32m_mulhsu_cg.cp_rs1
 isacov.rv32m_mulhsu_cg.cp_rs2
 isacov.rv32m_mulhsu_cg.cp_rd
@@ -3468,8 +3348,7 @@ isacov.rv32m_mulhsu_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mulhsu rd, rs1, rs2  
@@ -3488,7 +3367,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F006_S003_I001
 * **Link to Coverage:** isacov.rv32m_mulhsu_cg.cp_rs1_value
 isacov.rv32m_mulhsu_cg.cp_rs2_value
 isacov.rv32m_mulhsu_cg.cross_rs1_rs2_value
@@ -3500,8 +3379,7 @@ isacov.rv32m_mulhsu_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.1
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   mulhsu rd, rs1, rs2  
@@ -3517,7 +3395,7 @@ Chapter 7.1
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F000_S003_I002
+* **Unique verification tag:** VP_ISA_RV32_F006_S003_I002
 * **Link to Coverage:** isacov.rv32m_mulhsu_cg.cp_rd_value
 isacov.rv32m_mulhsu_cg.cp_rd_toggle
 * **Comments**
@@ -3550,7 +3428,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F007_S000_I000
 * **Link to Coverage:** isacov.rv32m_div_cg.cp_rs1
 isacov.rv32m_div_cg.cp_rs2
 isacov.rv32m_div_cg.cp_rd
@@ -3582,7 +3460,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F007_S000_I001
 * **Link to Coverage:** isacov.rv32m_div_cg.cp_rs1_value
 isacov.rv32m_div_cg.cp_rs2_value
 isacov.rv32m_div_cg.cross_rs1_rs2_value
@@ -3611,7 +3489,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S000_I002
+* **Unique verification tag:** VP_ISA_RV32_F007_S000_I002
 * **Link to Coverage:** isacov.rv32m_div_cg.cp_rs1_value
 isacov.rv32m_div_cg.cp_rs2_value
 isacov.rv32m_div_cg.cross_rs1_rs2_value
@@ -3638,7 +3516,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S000_I003
+* **Unique verification tag:** VP_ISA_RV32_F007_S000_I003
 * **Link to Coverage:** isacov.rv32m_div_results_cg.cp_div_special_results
 isacov.rv32m_div_results_cg.cp_div_arithmetic_overflow
 * **Comments**
@@ -3649,8 +3527,7 @@ isacov.rv32m_div_results_cg.cp_div_arithmetic_overflow
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   rem rd, rs1, rs2  
@@ -3669,7 +3546,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F007_S001_I000
 * **Link to Coverage:** isacov.rv32m_rem_cg.cp_rs1
 isacov.rv32m_rem_cg.cp_rs2
 isacov.rv32m_rem_cg.cp_rd
@@ -3681,8 +3558,7 @@ isacov.rv32m_rem_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   rem rd, rs1, rs2  
@@ -3701,7 +3577,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F007_S001_I001
 * **Link to Coverage:** isacov.rv32m_rem_cg.cp_rs1_value
 isacov.rv32m_rem_cg.cp_rs2_value
 isacov.rv32m_rem_cg.cross_rs1_rs2_value
@@ -3713,8 +3589,7 @@ isacov.rv32m_rem_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   rem rd, rs1, rs2  
@@ -3730,7 +3605,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S001_I002
+* **Unique verification tag:** VP_ISA_RV32_F007_S001_I002
 * **Link to Coverage:** isacov.rv32m_rem_cg.cp_rd_value
 isacov.rv32m_rem_cg.cp_rd_toggle
 * **Comments**
@@ -3739,8 +3614,7 @@ isacov.rv32m_rem_cg.cp_rd_toggle
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   rem rd, rs1, rs2  
@@ -3754,7 +3628,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S001_I003
+* **Unique verification tag:** VP_ISA_RV32_F007_S001_I003
 * **Link to Coverage:** isacov.rv32m_rem_results_cg.cp_div_zero
 isacov.rv32m_rem_results_cg.cp_div_arithmetic_overflow
 * **Comments**
@@ -3765,8 +3639,7 @@ isacov.rv32m_rem_results_cg.cp_div_arithmetic_overflow
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   divu rd, rs1, rs2  
@@ -3785,7 +3658,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F007_S002_I000
 * **Link to Coverage:** isacov.rv32m_divu_cg.cp_rs1
 isacov.rv32m_divu_cg.cp_rs2
 isacov.rv32m_divu_cg.cp_rd
@@ -3797,8 +3670,7 @@ isacov.rv32m_divu_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   divu rd, rs1, rs2  
@@ -3817,7 +3689,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F007_S002_I001
 * **Link to Coverage:** isacov.rv32m_divu_cg.cp_rs1_value
 isacov.rv32m_divu_cg.cp_rs2_value
 isacov.rv32m_divu_cg.cross_rs1_rs2_value
@@ -3829,8 +3701,7 @@ isacov.rv32m_divu_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   divu rd, rs1, rs2  
@@ -3846,7 +3717,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S002_I002
+* **Unique verification tag:** VP_ISA_RV32_F007_S002_I002
 * **Link to Coverage:** isacov.rv32m_divu_cg.cp_rd_value
 isacov.rv32m_divu_cg.cp_rd_toggle
 * **Comments**
@@ -3855,8 +3726,7 @@ isacov.rv32m_divu_cg.cp_rd_toggle
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   divu rd, rs1, rs2  
@@ -3869,7 +3739,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S002_I003
+* **Unique verification tag:** VP_ISA_RV32_F007_S002_I003
 * **Link to Coverage:** isacov.rv32m_divu_results_cg.cp_div_zero
 * **Comments**
   
@@ -3879,8 +3749,7 @@ Chapter 7.2
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   remu rd, rs1, rs2  
@@ -3899,7 +3768,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F007_S003_I000
 * **Link to Coverage:** isacov.rv32m_remu_cg.cp_rs1
 isacov.rv32m_remu_cg.cp_rs2
 isacov.rv32m_remu_cg.cp_rd
@@ -3911,8 +3780,7 @@ isacov.rv32m_remu_cg.cp_rd_rs2_hazard
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   remu rd, rs1, rs2  
@@ -3931,7 +3799,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F007_S003_I001
 * **Link to Coverage:** isacov.rv32m_remu_cg.cp_rs1_value
 isacov.rv32m_remu_cg.cp_rs2_value
 isacov.rv32m_remu_cg.cross_rs1_rs2_value
@@ -3943,8 +3811,7 @@ isacov.rv32m_remu_cg.cp_rs2_toggle
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   remu rd, rs1, rs2  
@@ -3960,7 +3827,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S003_I002
+* **Unique verification tag:** VP_ISA_RV32_F007_S003_I002
 * **Link to Coverage:** isacov.rv32m_remu_cg.cp_rd_value
 isacov.rv32m_remu_cg.cp_rd_toggle
 * **Comments**
@@ -3969,8 +3836,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 7.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   remu rd, rs1, rs2  
@@ -3983,7 +3849,7 @@ Chapter 7.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S003_I003
+* **Unique verification tag:** VP_ISA_RV32_F007_S003_I003
 * **Link to Coverage:** isacov.rv32m_remu_results_cg.cp_div_zero
 * **Comments**
   
@@ -3995,8 +3861,7 @@ Chapter 7.2
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lr.w rd, (rs1)  
@@ -4014,7 +3879,7 @@ Chapter 8.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F008_S000_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4022,8 +3887,7 @@ Chapter 8.2
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lr.w rd, (rs1)  
@@ -4039,7 +3903,7 @@ Chapter 8.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F008_S000_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4047,8 +3911,7 @@ Chapter 8.2
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lr.w rd, (rs1)  
@@ -4064,7 +3927,7 @@ Chapter 8.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S000_I002
+* **Unique verification tag:** VP_ISA_RV32_F008_S000_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4072,8 +3935,7 @@ Chapter 8.2
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   lr.w rd, (rs1)  
@@ -4089,7 +3951,7 @@ Chapter 8.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S000_I003
+* **Unique verification tag:** VP_ISA_RV32_F008_S000_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4099,8 +3961,7 @@ Chapter 8.2
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sc.w rd, rs2, (rs1)  
@@ -4121,7 +3982,7 @@ Chapter 8.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F008_S001_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4129,8 +3990,7 @@ Chapter 8.2
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sc.w rd, rs2, (rs1)  
@@ -4149,7 +4009,7 @@ Chapter 8.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F008_S001_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4157,8 +4017,7 @@ Chapter 8.2
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sc.w rd, rs2, (rs1)  
@@ -4176,7 +4035,7 @@ Chapter 8.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S001_I002
+* **Unique verification tag:** VP_ISA_RV32_F008_S001_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4184,8 +4043,7 @@ Chapter 8.2
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.2
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   sc.w rd, rs2, (rs1)  
@@ -4203,7 +4061,7 @@ Chapter 8.2
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S001_I003
+* **Unique verification tag:** VP_ISA_RV32_F008_S001_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4215,8 +4073,7 @@ Chapter 8.2
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoswap.w rd, rs2, (rs1)  
@@ -4237,7 +4094,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F009_S000_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4245,8 +4102,7 @@ Chapter 8.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoswap.w rd, rs2, (rs1)  
@@ -4265,7 +4121,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F009_S000_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4273,8 +4129,7 @@ Chapter 8.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoswap.w rd, rs2, (rs1)  
@@ -4291,7 +4146,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S000_I002
+* **Unique verification tag:** VP_ISA_RV32_F009_S000_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4299,8 +4154,7 @@ Chapter 8.4
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoswap.w rd, rs2, (rs1)  
@@ -4317,7 +4171,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S000_I003
+* **Unique verification tag:** VP_ISA_RV32_F009_S000_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4327,8 +4181,7 @@ Chapter 8.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoadd.w rd, rs2, (rs1)  
@@ -4349,7 +4202,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F009_S001_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4357,8 +4210,7 @@ Chapter 8.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoadd.w rd, rs2, (rs1)  
@@ -4377,7 +4229,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F009_S001_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4385,8 +4237,7 @@ Chapter 8.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoadd.w rd, rs2, (rs1)  
@@ -4404,7 +4255,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S001_I002
+* **Unique verification tag:** VP_ISA_RV32_F009_S001_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4412,8 +4263,7 @@ Chapter 8.4
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoadd.w rd, rs2, (rs1)  
@@ -4430,7 +4280,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S001_I003
+* **Unique verification tag:** VP_ISA_RV32_F009_S001_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4440,8 +4290,7 @@ Chapter 8.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoand.w rd, rs2, (rs1)  
@@ -4462,7 +4311,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F009_S002_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4470,8 +4319,7 @@ Chapter 8.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoand.w rd, rs2, (rs1)  
@@ -4490,7 +4338,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F009_S002_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4498,8 +4346,7 @@ Chapter 8.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoand.w rd, rs2, (rs1)  
@@ -4516,7 +4363,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S002_I002
+* **Unique verification tag:** VP_ISA_RV32_F009_S002_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4524,8 +4371,7 @@ Chapter 8.4
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoand.w rd, rs2, (rs1)  
@@ -4542,7 +4388,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S002_I003
+* **Unique verification tag:** VP_ISA_RV32_F009_S002_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4552,8 +4398,7 @@ Chapter 8.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoor.w rd, rs2, (rs1)  
@@ -4574,7 +4419,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F009_S003_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4582,8 +4427,7 @@ Chapter 8.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoor.w rd, rs2, (rs1)  
@@ -4602,7 +4446,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F009_S003_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4610,8 +4454,7 @@ Chapter 8.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoor.w rd, rs2, (rs1)  
@@ -4628,7 +4471,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S003_I002
+* **Unique verification tag:** VP_ISA_RV32_F009_S003_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4636,8 +4479,7 @@ Chapter 8.4
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoor.w rd, rs2, (rs1)  
@@ -4654,7 +4496,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S003_I003
+* **Unique verification tag:** VP_ISA_RV32_F009_S003_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4664,8 +4506,7 @@ Chapter 8.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoxor.w rd, rs2, (rs1)  
@@ -4686,7 +4527,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S004_I000
+* **Unique verification tag:** VP_ISA_RV32_F009_S004_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4694,8 +4535,7 @@ Chapter 8.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoxor.w rd, rs2, (rs1)  
@@ -4714,7 +4554,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S004_I001
+* **Unique verification tag:** VP_ISA_RV32_F009_S004_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4722,8 +4562,7 @@ Chapter 8.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoxor.w rd, rs2, (rs1)  
@@ -4740,7 +4579,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S004_I002
+* **Unique verification tag:** VP_ISA_RV32_F009_S004_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4748,8 +4587,7 @@ Chapter 8.4
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amoxor.w rd, rs2, (rs1)  
@@ -4766,7 +4604,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S004_I003
+* **Unique verification tag:** VP_ISA_RV32_F009_S004_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4776,8 +4614,7 @@ Chapter 8.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomax.w rd, rs2, (rs1)  
@@ -4798,7 +4635,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S005_I000
+* **Unique verification tag:** VP_ISA_RV32_F009_S005_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4806,8 +4643,7 @@ Chapter 8.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomax.w rd, rs2, (rs1)  
@@ -4826,7 +4662,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S005_I001
+* **Unique verification tag:** VP_ISA_RV32_F009_S005_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4834,8 +4670,7 @@ Chapter 8.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomax.w rd, rs2, (rs1)  
@@ -4853,7 +4688,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S005_I002
+* **Unique verification tag:** VP_ISA_RV32_F009_S005_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4861,8 +4696,7 @@ Chapter 8.4
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomax.w rd, rs2, (rs1)  
@@ -4879,7 +4713,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S005_I003
+* **Unique verification tag:** VP_ISA_RV32_F009_S005_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4889,8 +4723,7 @@ Chapter 8.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomaxu.w rd, rs2, (rs1)  
@@ -4911,7 +4744,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S006_I000
+* **Unique verification tag:** VP_ISA_RV32_F009_S006_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4919,8 +4752,7 @@ Chapter 8.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomaxu.w rd, rs2, (rs1)  
@@ -4938,7 +4770,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S006_I001
+* **Unique verification tag:** VP_ISA_RV32_F009_S006_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4946,8 +4778,7 @@ Chapter 8.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomaxu.w rd, rs2, (rs1)  
@@ -4964,7 +4795,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S006_I002
+* **Unique verification tag:** VP_ISA_RV32_F009_S006_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -4972,8 +4803,7 @@ Chapter 8.4
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomaxu.w rd, rs2, (rs1)  
@@ -4990,7 +4820,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S006_I003
+* **Unique verification tag:** VP_ISA_RV32_F009_S006_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5000,8 +4830,7 @@ Chapter 8.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomin.w rd, rs2, (rs1)  
@@ -5022,7 +4851,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S007_I000
+* **Unique verification tag:** VP_ISA_RV32_F009_S007_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5030,8 +4859,7 @@ Chapter 8.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomin.w rd, rs2, (rs1)  
@@ -5049,7 +4877,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S007_I001
+* **Unique verification tag:** VP_ISA_RV32_F009_S007_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5057,8 +4885,7 @@ Chapter 8.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomin.w rd, rs2, (rs1)  
@@ -5076,7 +4903,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S007_I002
+* **Unique verification tag:** VP_ISA_RV32_F009_S007_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5084,8 +4911,7 @@ Chapter 8.4
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amomin.w rd, rs2, (rs1)  
@@ -5102,7 +4928,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S007_I003
+* **Unique verification tag:** VP_ISA_RV32_F009_S007_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5112,8 +4938,7 @@ Chapter 8.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amominu.w rd, rs2, (rs1)  
@@ -5134,7 +4959,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S008_I000
+* **Unique verification tag:** VP_ISA_RV32_F009_S008_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5142,8 +4967,7 @@ Chapter 8.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amominu.w rd, rs2, (rs1)  
@@ -5161,7 +4985,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S008_I001
+* **Unique verification tag:** VP_ISA_RV32_F009_S008_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5169,8 +4993,7 @@ Chapter 8.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amominu.w rd, rs2, (rs1)  
@@ -5187,7 +5010,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S008_I002
+* **Unique verification tag:** VP_ISA_RV32_F009_S008_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5195,8 +5018,7 @@ Chapter 8.4
   
 #### Item: 003
 
-* **Requirement location:** Unprivileged ISA
-Chapter 8.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   amominu.w rd, rs2, (rs1)  
@@ -5213,7 +5035,7 @@ Chapter 8.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S008_I003
+* **Unique verification tag:** VP_ISA_RV32_F009_S008_I003
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5225,8 +5047,7 @@ Chapter 8.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.li rd, imm[5:0]  
@@ -5242,7 +5063,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S000_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5250,8 +5071,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.li rd, imm[5:0]  
@@ -5267,7 +5087,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S000_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5277,8 +5097,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.lui rd, nzimm[17:12]  
@@ -5294,7 +5113,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S001_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5302,8 +5121,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.lui rd, nzimm[17:12]  
@@ -5319,7 +5137,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S001_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5329,8 +5147,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.addi rd, nzimm[5:0]  
@@ -5347,7 +5164,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S002_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5355,8 +5172,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.addi rd, nzimm[5:0]  
@@ -5374,7 +5190,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S002_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5382,8 +5198,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.addi rd, nzimm[5:0]  
@@ -5400,7 +5215,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S002_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S002_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5410,8 +5225,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.addi16sp nzimm[9:4]  
@@ -5429,7 +5243,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S003_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5437,8 +5251,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.addi16sp nzimm[9:4]  
@@ -5454,7 +5267,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S003_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5464,8 +5277,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.addi4spn rd', nzuimm[9:2]  
@@ -5481,7 +5293,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S004_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S004_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5489,8 +5301,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.addi4spn rd', nzuimm[9:2]  
@@ -5507,7 +5318,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S004_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S004_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5515,8 +5326,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.addi4spn rd', nzuimm[9:2]  
@@ -5532,7 +5342,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S004_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S004_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5542,8 +5352,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.slli rd, uimm[5:0]  
@@ -5558,7 +5367,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S005_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S005_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5566,8 +5375,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.slli rd, uimm[5:0]  
@@ -5583,7 +5391,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S005_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S005_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5591,8 +5399,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.slli rd, uimm[5:0]  
@@ -5607,7 +5414,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S005_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S005_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5617,8 +5424,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.srli rd', uimm[5:0]  
@@ -5633,7 +5439,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S006_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S006_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5641,8 +5447,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.srli rd', uimm[5:0]  
@@ -5658,7 +5463,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S006_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S006_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5666,8 +5471,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.srli rd', uimm[5:0]  
@@ -5682,7 +5486,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S006_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S006_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5692,8 +5496,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.srai rd', uimm[5:0]  
@@ -5708,7 +5511,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S007_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S007_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5716,8 +5519,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.srai rd', uimm[5:0]  
@@ -5734,7 +5536,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S007_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S007_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5742,8 +5544,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.srai rd', uimm[5:0]  
@@ -5758,7 +5559,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S007_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S007_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5768,8 +5569,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.andi rd', imm[5:0]  
@@ -5785,7 +5585,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S008_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S008_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5793,8 +5593,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.andi rd', imm[5:0]  
@@ -5812,7 +5611,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S008_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S008_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5820,8 +5619,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.andi rd', imm[5:0]  
@@ -5837,7 +5635,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S008_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S008_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5847,8 +5645,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.mv rd, rs2  
@@ -5865,7 +5662,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S009_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S009_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5873,8 +5670,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.mv rd, rs2  
@@ -5890,7 +5686,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S009_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S009_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5898,8 +5694,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.mv rd, rs2  
@@ -5915,7 +5710,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S009_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S009_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5925,8 +5720,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.add rd, rs2  
@@ -5942,7 +5736,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S010_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S010_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5950,8 +5744,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.add rd, rs2  
@@ -5970,7 +5763,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S010_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S010_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -5978,8 +5771,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.add rd, rs2  
@@ -5996,7 +5788,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S010_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S010_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6006,8 +5798,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.and rd', rs2'  
@@ -6022,7 +5813,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S011_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S011_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6030,8 +5821,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.and rd', rs2'  
@@ -6049,7 +5839,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S011_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S011_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6057,8 +5847,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.and rd', rs2'  
@@ -6073,7 +5862,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S011_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S011_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6083,8 +5872,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.or rd', rs2'  
@@ -6099,7 +5887,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S012_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S012_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6107,8 +5895,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.or rd', rs2'  
@@ -6126,7 +5913,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S012_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S012_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6134,8 +5921,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.or rd', rs2'  
@@ -6150,7 +5936,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S012_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S012_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6160,8 +5946,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.xor rd', rs2'  
@@ -6176,7 +5961,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S013_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S013_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6184,8 +5969,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.xor rd', rs2'  
@@ -6203,7 +5987,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S013_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S013_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6211,8 +5995,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.xor rd', rs2'  
@@ -6227,7 +6010,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S013_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S013_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6237,8 +6020,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.sub rd', rs2'  
@@ -6253,7 +6035,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S014_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S014_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6261,8 +6043,7 @@ Chapter 16.5
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.sub rd', rs2'  
@@ -6280,7 +6061,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S014_I001
+* **Unique verification tag:** VP_ISA_RV32_F010_S014_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6288,8 +6069,7 @@ Chapter 16.5
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.sub rd', rs2'  
@@ -6304,7 +6084,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S014_I002
+* **Unique verification tag:** VP_ISA_RV32_F010_S014_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6314,8 +6094,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.5
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.ebreak  
@@ -6328,7 +6107,7 @@ Chapter 16.5
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F008_S015_I000
+* **Unique verification tag:** VP_ISA_RV32_F010_S015_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6340,8 +6119,7 @@ Chapter 16.5
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.j imm[11:1]  
@@ -6358,7 +6136,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F011_S000_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6368,8 +6146,7 @@ Chapter 16.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.jal imm[11:1]  
@@ -6385,7 +6162,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F011_S001_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6393,8 +6170,7 @@ Chapter 16.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.jal imm[11:1]  
@@ -6409,7 +6185,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F011_S001_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6419,8 +6195,7 @@ Chapter 16.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.jr rs1  
@@ -6436,7 +6211,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F011_S002_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6444,8 +6219,7 @@ Chapter 16.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.jr rs1  
@@ -6461,7 +6235,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F011_S002_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6471,8 +6245,7 @@ Chapter 16.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.jalr rs1  
@@ -6488,7 +6261,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F011_S003_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6496,8 +6269,7 @@ Chapter 16.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.jalr rs1  
@@ -6513,7 +6285,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F011_S003_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6521,8 +6293,7 @@ Chapter 16.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.jalr rs1  
@@ -6538,7 +6309,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S003_I002
+* **Unique verification tag:** VP_ISA_RV32_F011_S003_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6548,8 +6319,7 @@ Chapter 16.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.beqz rs1', imm[8:1]  
@@ -6564,7 +6334,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S004_I000
+* **Unique verification tag:** VP_ISA_RV32_F011_S004_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6572,8 +6342,7 @@ Chapter 16.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.beqz rs1', imm[8:1]  
@@ -6588,7 +6357,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S004_I001
+* **Unique verification tag:** VP_ISA_RV32_F011_S004_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6596,8 +6365,7 @@ Chapter 16.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.beqz rs1', imm[8:1]  
@@ -6612,7 +6380,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S004_I002
+* **Unique verification tag:** VP_ISA_RV32_F011_S004_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6622,8 +6390,7 @@ Chapter 16.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.bnez  rs1', imm[8:1]  
@@ -6638,7 +6405,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S005_I000
+* **Unique verification tag:** VP_ISA_RV32_F011_S005_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6646,8 +6413,7 @@ Chapter 16.4
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.bnez  rs1', imm[8:1]  
@@ -6662,7 +6428,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S005_I001
+* **Unique verification tag:** VP_ISA_RV32_F011_S005_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6670,8 +6436,7 @@ Chapter 16.4
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.4
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.bnez  rs1', imm[8:1]  
@@ -6686,7 +6451,7 @@ Chapter 16.4
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F010_S005_I002
+* **Unique verification tag:** VP_ISA_RV32_F011_S005_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6698,8 +6463,7 @@ Chapter 16.4
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.lwsp rd, uimm(x2)  
@@ -6716,7 +6480,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F012_S000_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6724,8 +6488,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.lwsp rd, uimm(x2)  
@@ -6743,7 +6506,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F012_S000_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6751,8 +6514,7 @@ Chapter 16.3
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.lwsp rd, uimm(x2)  
@@ -6770,7 +6532,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S000_I002
+* **Unique verification tag:** VP_ISA_RV32_F012_S000_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6780,8 +6542,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.swsp rs2, uimm(x2)  
@@ -6797,7 +6558,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F012_S001_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6805,8 +6566,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.swsp rs2, uimm(x2)  
@@ -6823,7 +6583,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F012_S001_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6833,8 +6593,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.lw rd', uimm(rs1')  
@@ -6851,7 +6610,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F012_S002_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6859,8 +6618,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.lw rd', uimm(rs1')  
@@ -6877,7 +6635,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F012_S002_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6885,8 +6643,7 @@ Chapter 16.3
   
 #### Item: 002
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.lw rd', uimm(rs1')  
@@ -6902,7 +6659,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S002_I002
+* **Unique verification tag:** VP_ISA_RV32_F012_S002_I002
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6912,8 +6669,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.sw rs2', uimm(rs1')  
@@ -6930,7 +6686,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F012_S003_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6938,8 +6694,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** Unprivileged ISA
-Chapter 16.3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   c.sw rs2', uimm(rs1')  
@@ -6957,7 +6712,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F009_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F012_S003_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6969,7 +6724,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrw rd, rs1, csr  
@@ -6986,7 +6741,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F013_S000_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -6994,7 +6749,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrw rd, rs1, csr  
@@ -7008,7 +6763,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S000_I001
+* **Unique verification tag:** VP_ISA_RV32_F013_S000_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7018,7 +6773,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrs rd, rs1, csr  
@@ -7036,7 +6791,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S001_I000
+* **Unique verification tag:** VP_ISA_RV32_F013_S001_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7044,7 +6799,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrs rd, rs1, csr  
@@ -7059,7 +6814,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S001_I001
+* **Unique verification tag:** VP_ISA_RV32_F013_S001_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7069,7 +6824,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrs rd, rs1, csr  
@@ -7087,7 +6842,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S002_I000
+* **Unique verification tag:** VP_ISA_RV32_F013_S002_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7095,7 +6850,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrs rd, rs1, csr  
@@ -7110,7 +6865,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S002_I001
+* **Unique verification tag:** VP_ISA_RV32_F013_S002_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7120,7 +6875,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrwi rd, imm[4:0], csr  
@@ -7136,7 +6891,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S003_I000
+* **Unique verification tag:** VP_ISA_RV32_F013_S003_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7144,7 +6899,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrwi rd, imm[4:0], csr  
@@ -7160,7 +6915,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S003_I001
+* **Unique verification tag:** VP_ISA_RV32_F013_S003_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7170,7 +6925,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrsi rd, imm[4:0], csr  
@@ -7186,7 +6941,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S004_I000
+* **Unique verification tag:** VP_ISA_RV32_F013_S004_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7194,7 +6949,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrsi rd, imm[4:0], csr  
@@ -7210,7 +6965,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S004_I001
+* **Unique verification tag:** VP_ISA_RV32_F013_S004_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7220,7 +6975,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrs rd, imm[4:0], csr  
@@ -7236,7 +6991,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S005_I000
+* **Unique verification tag:** VP_ISA_RV32_F013_S005_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7244,7 +6999,7 @@ Chapter 16.3
   
 #### Item: 001
 
-* **Requirement location:** ISA Chapter 9
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   csrrs rd, imm[4:0], csr  
@@ -7260,7 +7015,7 @@ Chapter 16.3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F007_S005_I001
+* **Unique verification tag:** VP_ISA_RV32_F013_S005_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -7272,8 +7027,7 @@ Chapter 16.3
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA
-Chapter 3
+* **Requirement location:** ./RISCV_Instructions.rst
 * **Feature Description**
   
   Fence.I instruction executed  
@@ -7285,8 +7039,152 @@ Chapter 3
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_ISA_F006_S000_I000
+* **Unique verification tag:** VP_ISA_RV32_F014_S000_I000
 * **Link to Coverage:** isacov.rv32zifencei_fence_i_cg
+* **Comments**
+  
+  *(none)*  
+  
+## Feature: Instruction execution sequences
+
+### Sub-feature: 000_Instruction Execution
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  All suported instructions for the core are executed
+* **Verification Goals**
+  
+  Instruction is executed
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F015_S000_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  All suported instructions for the core are executed
+* **Verification Goals**
+  
+  All back-to-back supported instruction sequences are executed
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F015_S000_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 001_Instruction Group Execution
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  All defined instruction groups for a core are executed
+* **Verification Goals**
+  
+  For the core under test, all instruction groups are executed in the core
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F015_S001_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  All defined instruction groups are executed in sequence
+* **Verification Goals**
+  
+  Depending on the length of the pipeline in the processor, sequence chains of 2,3,or 4 instruction groups are checked for execution
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F015_S001_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 002_GPR Hazard
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  An instruction reads from  register that was written to in the previous instruction
+* **Verification Goals**
+  
+  All instruction groups are tested across GPR hazards
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F015_S002_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 003_CSR Hazard
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  CSR writes from the program are executed in conjunction with all instruction groups
+* **Verification Goals**
+  
+  CSR write instruction attempts to write to a supported CSR  
+  This does not include csr set or clear instructions where rs1 is x0 (bypassing the write)
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F015_S003_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  CSR writes from the program are executed in conjunction with all instruction groups
+* **Verification Goals**
+  
+  Each instruction group is executed after each supported CSR is written with a Zicsri write instructio
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F015_S003_I001
+* **Link to Coverage:** 
 * **Comments**
   
   *(none)*  
