@@ -40,6 +40,9 @@ include:
 
 workflow:
   rules:
+    - if: '$CI_WEIGHT == "forced" && $CI_COMMIT_REF_NAME =~ /^cvvdev\/.*/' #bypass workflow + cvvdev
+      variables:
+        CORE_V_VERIF_BRANCH: $CI_COMMIT_REF_NAME
     - if: '$CI_WEIGHT == "forced"' #bypass workflow
     - if: '$CI_COMMIT_REF_NAME =~ /^master.*|^hotfix.*|^rc.*|^github-pr.*/'
       variables:
