@@ -387,7 +387,7 @@ function  int  uvma_isacov_instr_c::get_field_imm();
   if (this.itype == CIW_TYPE) begin
     return (dasm_rvc_addi4spn_imm(instr) >> 2);  // Shift 2 because [9:2] to [7:0]
   end
-  if (this.itype == CL_TYPE) begin
+  if (this.itype inside {CL_TYPE, CS_TYPE}) begin
     return (dasm_rvc_lw_imm(instr) >> 2);  // Shift 2 because [6:2] to [4:0]
   end
   if (this.itype == CB_TYPE) begin
