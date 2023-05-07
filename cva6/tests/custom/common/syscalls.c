@@ -75,6 +75,11 @@ void setStats(int enable)
 #undef READ_CTR
 }
 
+uintptr_t getStats(int counterid)
+{
+  return counters[counterid];
+}
+
 void __attribute__((noreturn)) tohost_exit(uintptr_t code)
 {
   // Simply write PASS/FAIL result into 'tohost'.
@@ -154,6 +159,17 @@ void _init(int cid, int nc)
     printstr(buf);
 
   exit(ret);
+}
+
+int puts(const char *s)
+{
+  const char *p = s;
+
+  while (*p)
+    putchar(*p++);
+
+  putchar('\n');
+  return 0;
 }
 
 #undef putchar

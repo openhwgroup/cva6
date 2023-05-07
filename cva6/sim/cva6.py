@@ -555,7 +555,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
                       linker, gcc_opts, elf))
   cmd += (" -march=%s" % isa)
   cmd += (" -mabi=%s" % mabi)
-  run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
+  run_cmd(cmd, debug_cmd = debug_cmd)
   elf2bin(elf, binary, debug_cmd)
   log_list = []
   # ISS simulation
