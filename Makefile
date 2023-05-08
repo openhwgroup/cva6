@@ -561,7 +561,7 @@ verilate_command := $(verilator) verilator_config.vlt                           
 verilate:
 	@echo "[Verilator] Building Model$(if $(PROFILE), for Profiling,)"
 	$(verilate_command)
-	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
+	cd $(ver-library) && $(MAKE) -j 4 -f Variane_testharness.mk
 
 sim-verilator: verilate
 	$(ver-library)/Variane_testharness $(elf-bin)
