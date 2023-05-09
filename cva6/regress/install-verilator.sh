@@ -9,7 +9,7 @@
 
 set -e
 
-if [ -z ${NUM_JOBS} ]; then
+if [ -z "$NUM_JOBS" ]; then
     NUM_JOBS=1
 fi
 
@@ -41,7 +41,7 @@ fi
 # Continuous Integration may need to override this particular variable
 # to use a preinstalled build of Verilator.
 if [ -z "$VERILATOR_INSTALL_DIR" ]; then
-  export VERILATOR_INSTALL_DIR=$(dirname ${VERILATOR_BUILD_DIR})
+  export VERILATOR_INSTALL_DIR="$(dirname $VERILATOR_BUILD_DIR)"
 fi
 
 # Build and install Verilator only if not already installed at the expected
