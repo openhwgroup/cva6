@@ -42,6 +42,6 @@ if mode is not None:
         score_metric.add_value('Dhrystone/MHz', ipmhz)
         score_metric.add_value('DMIPS/MHz', ipmhz / 1757)
 
-report = rb.Report(f'{cycles} cycles')
+report = rb.Report(f'{cycles//1000} kCycles')
 report.add_metric(score_metric)
 report.dump()
