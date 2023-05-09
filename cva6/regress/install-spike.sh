@@ -20,6 +20,7 @@ if [ "$SPIKE_ROOT" = "NO" ]; then
   echo "Skipping Spike setup on user's request (\$SPIKE_ROOT = \"NO\")."
 else
   if [ ! -f "$SPIKE_ROOT/bin/spike"  ]; then
+    PDIR=$(readlink -f .)
     echo "Installing Spike"
     PATCH_DIR=$(pwd)/cva6/regress
     mkdir -p $SPIKE_ROOT
@@ -39,6 +40,7 @@ else
     cd build
     ../configure --enable-commitlog --prefix="$SPIKE_ROOT"
     make -j${NUM_JOBS} install
+    cd $PDIR
   else
     echo "Using Spike from cached directory $SPIKE_ROOT."
   fi
