@@ -196,7 +196,7 @@ endif
 dpi-library = $(VCS_WORK_DIR)/work-dpi
 dpi_build:
 	mkdir -p $(dpi-library)
-	g++ -shared -fPIC -std=c++0x -Bsymbolic -std=c++11 -I../corev_apu/tb/dpi -O3 -I$(SPIKE_ROOT)/include \
+	g++ -shared -fPIC -std=c++17 -Bsymbolic -I../corev_apu/tb/dpi -O3 -I$(SPIKE_ROOT)/include \
 	-I$(VCS_HOME)/include -I$(RISCV)/include -c $(CVA6_REPO_DIR)/corev_apu/tb/dpi/elfloader.cc \
 	-o $(dpi-library)/elfloader.o
 	g++ -shared -m64 -o $(dpi-library)/ariane_dpi.so $(dpi-library)/elfloader.o -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib
