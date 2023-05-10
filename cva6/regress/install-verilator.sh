@@ -7,7 +7,7 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
-if [ -z ${NUM_JOBS} ]; then
+if [ -z "$NUM_JOBS" ]; then
     NUM_JOBS=1
 fi
 
@@ -39,7 +39,7 @@ fi
 # Continuous Integration may need to override this particular variable
 # to use a preinstalled build of Verilator.
 if [ -z "$VERILATOR_INSTALL_DIR" ]; then
-  export VERILATOR_INSTALL_DIR=$(dirname ${VERILATOR_BUILD_DIR})
+  export VERILATOR_INSTALL_DIR="$(dirname $VERILATOR_BUILD_DIR)"
 fi
 
 # Build and install Verilator only if not already installed at the expected
@@ -58,7 +58,7 @@ if [ ! -f "$VERILATOR_INSTALL_DIR/bin/verilator" ]; then
     # to preserve user content - let git fail instead.
     [ -d .git ] || git clone $VERILATOR_REPO -b $VERILATOR_BRANCH .
     git checkout $VERILATOR_HASH
-    if [ ! -z "$VERILATOR_PATCH" ] ; then
+    if [[ -n "$VERILATOR_PATCH" && -f "$VERILATOR_PATCH" ]] ; then
       git apply $VERILATOR_PATCH || true
     fi
     # Generate the config script and configure Verilator.

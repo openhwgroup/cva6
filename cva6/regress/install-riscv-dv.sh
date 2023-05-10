@@ -9,10 +9,10 @@
 
 # riscv-dv env variables
 export RISCV_TOOLCHAIN=$RISCV
-if ! [ -n "$RISCV_GCC" ]; then
+if [ -z "$RISCV_GCC" ]; then
   export RISCV_GCC="$RISCV_TOOLCHAIN/bin/riscv-none-elf-gcc"
 fi
-if ! [ -n "$RISCV_OBJCOPY" ]; then
+if [ -z "$RISCV_OBJCOPY" ]; then
   export RISCV_OBJCOPY="$RISCV_TOOLCHAIN/bin/riscv-none-elf-objcopy"
 fi
 export SPIKE_PATH=$SPIKE_ROOT/bin
@@ -20,10 +20,10 @@ export RTL_PATH=$ROOT_PROJECT/core-v-cores/cva6
 export TB_PATH=$ROOT_PROJECT/cva6/tb/core
 export TESTS_PATH=$ROOT_PROJECT/cva6/tests
 
-if ! [ -n "$DV_REPO" ]; then
+if [ -z "$DV_REPO" ]; then
   export DV_REPO="https://github.com/google/riscv-dv.git"
-  export DV_BRANCH=master
-  export DV_HASH=96c1ee6f371f2754c45b4831fcab95f6671689d9
+  export DV_BRANCH="master"
+  export DV_HASH="96c1ee6f371f2754c45b4831fcab95f6671689d9"
   export DV_PATCH=
 fi
 echo "Repo:  " $DV_REPO
@@ -35,8 +35,8 @@ mkdir -p cva6/sim
 if ! [ -d cva6/sim/dv ]; then
   git clone $DV_REPO -b $DV_BRANCH cva6/sim/dv
   cd cva6/sim/dv; git checkout $DV_HASH;
-  if [ -f "$DV_PATCH" ]; then
-    git apply $DV_PATCH
+  if [[ -n "$DV_PATCH" && -f "$DV_PATCH" ]]; then
+    git apply "$DV_PATCH"
   fi
   cd -
   # install riscv-dv dependencies

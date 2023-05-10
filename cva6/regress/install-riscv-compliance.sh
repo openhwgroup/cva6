@@ -22,9 +22,9 @@ mkdir -p cva6/tests
 if ! [ -d cva6/tests/riscv-compliance ]; then
   git clone $COMPLIANCE_REPO -b $COMPLIANCE_BRANCH cva6/tests/riscv-compliance
   cd cva6/tests/riscv-compliance; git checkout $COMPLIANCE_HASH;
-  if [ -f "$COMPLIANCE_PATCH" ]; then
+  if [[ -n "$COMPLIANCE_PATCH" && -f "$COMPLIANCE_PATCH" ]]; then
     echo "Applying patch $COMPLIANCE_PATCH in $PWD..."
-    git apply $COMPLIANCE_PATCH
+    git apply "$COMPLIANCE_PATCH"
   fi
   cd -
 fi
