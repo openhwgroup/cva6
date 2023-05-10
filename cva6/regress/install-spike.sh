@@ -10,7 +10,7 @@
 set -e
 VERSION="e93b9cbbbcd3ad0a02ae298e9f1a2d98d3ac0153"
 
-if [ -z "$NUM_JOBS" ]; then
+if [ -z ${NUM_JOBS} ]; then
     NUM_JOBS=1
 fi
 
@@ -20,15 +20,14 @@ if [ "$SPIKE_ROOT" = "NO" ]; then
   echo "Skipping Spike setup on user's request (\$SPIKE_ROOT = \"NO\")."
 else
   if [ ! -f "$SPIKE_ROOT/bin/spike"  ]; then
-    PDIR=$(readlink -f .)
     echo "Installing Spike"
-    PATCH_DIR=$(pwd)/cva6/regress
+    PATCH_DIR=`pwd`/cva6/regress
     mkdir -p $SPIKE_ROOT
     cd $SPIKE_ROOT
     git clone https://github.com/riscv/riscv-isa-sim.git
     cd riscv-isa-sim
     git checkout $VERSION
-    # Apply Spike patches (GCC > 4.8)
+    # Apply Spike patches.
     git apply $PATCH_DIR/spike/patches/spike-shared-fesvr-lib.patch
     git apply $PATCH_DIR/spike/patches/spike-cvxif-extension.patch
     git apply $PATCH_DIR/spike/patches/spike-dlopen-diagnostics.patch
@@ -39,9 +38,10 @@ else
     mkdir -p build
     cd build
     ../configure --enable-commitlog --prefix="$SPIKE_ROOT"
-    make -j${NUM_JOBS} install
-    cd $PDIR
+    make -j${NUM_JOBS}
+    make install
   else
     echo "Using Spike from cached directory $SPIKE_ROOT."
   fi
 fi
+
