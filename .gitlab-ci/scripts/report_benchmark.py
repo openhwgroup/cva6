@@ -14,12 +14,25 @@ path = None
 mode = None
 iterations = None
 
+# Keep it up-to-date with compiler version and core performance improvements
+# Will fail if the number of cycles is different from this one
+valid_cycles = {
+    'dhrystone': 221425,
+    'coremark': 700447,
+}
+
 for arg in sys.argv[1:]:
     if arg == '--dhrystone':
         mode = 'dhrystone'
         iterations = 500
+    elif arg == '--coremark':
+        mode = 'coremark'
+        # Too few iterations to consider a score
     else:
         path = arg
+
+# We do not want to have a report without a check
+assert mode is not None
 
 with open(path, 'r') as f:
     log = [l.strip() for l in f.readlines()]
@@ -36,12 +49,17 @@ cycles = stopwatch[N//2] - stopwatch[N//2-1]
 score_metric = rb.TableMetric('Performance results')
 score_metric.add_value('cycles', cycles)
 
-if mode is not None:
+if iterations is not None:
     ipmhz = iterations * 1000000 / cycles
     if mode == 'dhrystone':
         score_metric.add_value('Dhrystone/MHz', ipmhz)
         score_metric.add_value('DMIPS/MHz', ipmhz / 1757)
 
-report = rb.Report(f'{cycles} cycles')
+diff = cycles - valid_cycles[mode]
+if diff != 0:
+    score_metric.fail()
+    score_metric.add_value('Cycles diff', diff)
+
+report = rb.Report(f'{cycles//1000} kCycles')
 report.add_metric(score_metric)
 report.dump()

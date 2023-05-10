@@ -459,7 +459,7 @@ pub_coremark:
     - mkdir -p artifacts/reports
     - python3 .gitlab-ci/scripts/report_fail.py
     - bash cva6/regress/coremark.sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py cva6/sim/out_*/veri-testharness_sim/core_main.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark cva6/sim/out_*/veri-testharness_sim/core_main.log
   artifacts:
     when: always
     paths:
