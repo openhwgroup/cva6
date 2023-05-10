@@ -20,15 +20,19 @@
 
 CSR performance counters control
 ================================
-CVA6 implements performance counters according to the RISC-V Privileged Specification, version 1.11 (see Hardware Performance Monitor, Section 3.1.10). The performance counters are placed inside the Control and Status Registers(CSRs) and can be accessed with the                               instructions.
+CVA6 implements performance counters according to the RISC-V Privileged Specification, version 1.11 (see Hardware Performance Monitor, Section 3.1.10). The performance counters are placed inside the Control and Status Registers(CSRs) and can be accessed with the ``CSRRW(I)`` and ``CSRRS/C(I)`` instructions.
 
-CVA6 implements the standard clock cycle counter ``mcycle`` ,the retired instruction counter ``minstret`` as well as the six generic event counters ``mhpm_counter_3`` to ``mhpm_counter_8`` including their upper 32 bits counterparts ``mhpm_counter_3h`` to  ``mhpm_counter_8h``. The corresponding event selectors ``mhpm_event_3`` to ``mhpm_event_8`` are implemented for the selection of the source of events. 
+CVA6 implements the standard 64-bit clock cycle counter ``mcycle``, the retired instruction counter ``minstret`` as well as the six generic 64-bit event counters ``mhpm_counter_3`` to ``mhpm_counter_8`` including their upper 32 bits counterparts ``mhpm_counter_3h`` to  ``mhpm_counter_8h``. The corresponding event selectors ``mhpm_event_3`` to ``mhpm_event_8`` are implemented for the selection of the source of events. The unavailable counters (``mhpm_counter_9(h)`` to  ``mhpm_counter_31(h)``) and event selector (``mhpm_event_9`` to ``mhpm_event_31``) always read 0.
 
-The mcountinhibit CSR is used to individually inhibit the incrementing of the counters. The read-only shadows of the counters are also implemented as ``cycle``, ``instret`` and ``hpmcountern``. The ``mcycle`` and ``minstret`` counters are always available but the ``mhpmcounter`` are optional and can be configured through the parameter ``PERF_COUNTER_EN``. The supervisor and user access of performance counters are allowed through enabling of ``mcounteren`` and ``scounteren`` CSRs respectively.
+The ``mcountinhibit`` CSR is used to individually inhibit the incrementing of the counters. The read-only shadows of the counters are also implemented as ``cycle``, ``instret`` and ``hpmcountern``. The ``mcycle`` and ``minstret`` counters are always available but the ``mhpmcounter`` are optional and can be configured through the parameter ``PERF_COUNTER_EN``. The supervisor and user access of performance counters are allowed through enabling of ``mcounteren`` and ``scounteren`` CSRs.
 
 Event Selector
 -------------------------------
-The five least significant bit of the event selector CSRs ``mhpm_event_3`` to ``mhpm_event_8`` controls which of the events are counted by the six generic event counters ``mhpm_counter_3`` to ``mhpm_counter_8`` respectively. Each of the six generic performance counters is able to monitor events from one of these sources:
+The event selector CSRs ``mhpm_event_3`` to ``mhpm_event_8`` controls which of the events are counted by the six generic event counters ``mhpm_counter_3`` to ``mhpm_counter_8`` respectively.
+
+The five least significant bit(LSB) of the event selector CSRs are written to select the event that one needs to count from a particular generic event counter.Thus, we can count six different events at a time using the six generic counters. 
+
+Each of the six generic performance counters is able to monitor events from one of these sources:
 
 +----------+-----------------------------+---------------------------------------------------------------+
 | Event ID |         Event Name          |                          Description                          |
@@ -80,5 +84,8 @@ The five least significant bit of the event selector CSRs ``mhpm_event_3`` to ``
 |  23-31   |          Reserved           |                           Reserved                            |
 +----------+-----------------------------+---------------------------------------------------------------+
 
+Controlling the counters from software
+---------------------------------------
+By default, all the available counters are enabled after reset. The ``mcountinhibit`` CSR at address ``0x320`` controls which of the performance counters increment as described in the RISC-V Privileged Specification, version 1.11 (see Machine Counter-Inhibit CSR, Section 3.1.12). For instance, bit 0 is set to 0 for ``mcycle(h)`` to increment as usual, bit 2 for ``minstrert(h)`` and bit X for event counter mhpmcounterX(h).
 
-
+The lower 32 bits of all counters can be accessed through the base register, whereas the upper 32 bits are accessed through the h-register.
