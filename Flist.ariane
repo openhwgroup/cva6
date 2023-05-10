@@ -58,7 +58,7 @@ vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv
 core/axi_adapter.sv
 core/alu.sv
 core/fpu_wrap.sv
-core/ariane.sv
+corev_apu/src/ariane.sv
 core/cva6.sv
 core/branch_unit.sv
 core/compressed_decoder.sv
