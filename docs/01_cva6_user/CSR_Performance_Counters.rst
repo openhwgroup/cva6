@@ -37,31 +37,31 @@ Each of the six generic performance counters is able to monitor events from one 
 +----------+-----------------------------+---------------------------------------------------------------+
 | Event ID |         Event Name          |                          Description                          |
 +==========+=============================+===============================================================+
-|    1     |      L1 I-Cache Misses      |                Number Of Misses In L1 I-Cache                 |
+|    1     |      L1 I-Cache Misses      |                Number of misses in L1 I-Cache                 |
 +----------+-----------------------------+---------------------------------------------------------------+
-|    2     |      L1 D-Cache Misses      |                Number Of Misses In L1 D-Cache                 |
+|    2     |      L1 D-Cache Misses      |                Number of misses in L1 D-Cache                 |
 +----------+-----------------------------+---------------------------------------------------------------+
-|    3     |         ITLB Misses         |                   Number Of Misses In ITLB                    |
+|    3     |         ITLB Misses         |                   Number of misses in ITLB                    |
 +----------+-----------------------------+---------------------------------------------------------------+
-|    4     |         DTLB Misses         |                   Number Of Misses In DTLB                    |
+|    4     |         DTLB Misses         |                   Number of misses in DTLB                    |
 +----------+-----------------------------+---------------------------------------------------------------+
-|    5     |        Load Accesses        |                  Number Of Data Memory Loads                  |
+|    5     |        Load Accesses        |                  Number of data memory loads                  |
 +----------+-----------------------------+---------------------------------------------------------------+
-|    6     |       Store Accesses        |                 Number Of Data Memory Stores                  |
+|    6     |       Store Accesses        |                 Number of data memory stores                  |
 +----------+-----------------------------+---------------------------------------------------------------+
 |    7     |         Exceptions          |                 Valid Exceptions encountered                  |
 +----------+-----------------------------+---------------------------------------------------------------+
 |    8     |  Exception Handler Returns  |                   Return from an exception                    |
 +----------+-----------------------------+---------------------------------------------------------------+
-|    9     |     Branch Instructions     |           Number of Branch instructions encountered           |
+|    9     |     Branch Instructions     |           Number of branch instructions encountered           |
 +----------+-----------------------------+---------------------------------------------------------------+
 |    10    |     Branch Mispredicts      |                Number of branch mispredictions                |
 +----------+-----------------------------+---------------------------------------------------------------+
-|    11    |      Branch Exceptions      |               Number of valid Branch exceptions               |
+|    11    |      Branch Exceptions      |               Number of valid branch exceptions               |
 +----------+-----------------------------+---------------------------------------------------------------+
-|    12    |            Call             |                  Number of Call instructions                  |
+|    12    |            Call             |                  Number of call instructions                  |
 +----------+-----------------------------+---------------------------------------------------------------+
-|    13    |           Return            |                 Number of Return Instructions                 |
+|    13    |           Return            |                 Number of return instructions                 |
 +----------+-----------------------------+---------------------------------------------------------------+
 |    14    |          MSB Full           |                      Scoreboard is full                       |
 +----------+-----------------------------+---------------------------------------------------------------+
