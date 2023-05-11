@@ -380,8 +380,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         lsu_is_store_n        = lsu_is_store_i;
         dtlb_is_4M_n          = dtlb_is_4M;
 
-        if (riscv::PLEN > riscv::VLEN)
-        begin
+        if (riscv::PLEN > riscv::VLEN) begin
             lsu_paddr_o           = {{riscv::PLEN-riscv::VLEN{1'b0}}, lsu_vaddr_q};
             lsu_dtlb_ppn_o        = {{riscv::PLEN-riscv::VLEN{1'b0}},lsu_vaddr_n[riscv::VLEN-1:12]};
         end else begin
