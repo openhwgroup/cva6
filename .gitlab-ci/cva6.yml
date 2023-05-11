@@ -66,6 +66,7 @@ variables:
 
 stages:
   - .pre
+  - build_tools
   - one
   - two
   - three
@@ -91,9 +92,8 @@ initjob:
     reports:
       dotenv: .env
 
-
 pub_check_env:
-  stage: one
+  stage: .pre
   extends:
     - .template_job_low_footprint
     - .template_job_full_ci
@@ -104,6 +104,7 @@ pub_check_env:
     - echo $VERILATOR_ROOT
     - echo $VERILATOR_INSTALL_DIR
     - echo $SPIKE_ROOT
+    - echo $SPIKE_INSTALL_DIR
     - echo $BBL_ROOT
     - echo $SYN_VCS_BASHRC
     - echo $SYN_DCSHELL_BASHRC
@@ -134,6 +135,16 @@ pub_check_env:
     - echo $SYNTH_PERIOD
     - echo $LIB_VERILOG
 
+pub_build_tools:
+  stage: build_tools
+  extends:
+    - .template_job_low_footprint
+  needs: []
+  script:
+    - source cva6/regress/install-spike.sh
+  artifacts:
+    paths:
+      - tools/spike/
 
 pub_smoke:
   stage: one

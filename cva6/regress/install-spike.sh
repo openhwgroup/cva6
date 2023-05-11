@@ -1,4 +1,4 @@
-# Copyright 2021-2023i Thales DIS design services SAS
+# Copyright 2021-2023 Thales DIS design services SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,13 +21,26 @@ if [ -z "$SPIKE_ROOT" ]; then
 fi
 
 if [ "$SPIKE_ROOT" = "NO" ]; then
-  echo "Skipping Spike setup on user's request (\$SPIKE_ROOT = \"NO\")."
+  echo "NOTE: Skipping Spike setup on user's request (\$SPIKE_ROOT = \"NO\")."
 else
   # Export the location of Spike source code.
   export SPIKE_SRC_DIR=$ROOT_PROJECT/vendor/riscv/riscv-isa-sim
 
+  # Check if a local copy of Spike should be built/used ($SPIKE_INSTALL_DIR non empty).
+  # A value equal to '__local__' means $TOP/spike, same as $ROOT_PROJECT/tools/spike.
+  if [ -s "$SPIKE_INSTALL_DIR" ]; then
+      # Handle the 'default' value.
+      if [ "$SPIKE_INSTALL_DIR" = "__local__" ]; then
+        export SPIKE_INSTALL_DIR="$TOP/spike"
+      fi
+      # Override SPIKE_ROOT value with $SPIKE_INSTALL_DIR (the latter takes priority.)
+      echo "NOTE: Overriding SPIKE_ROOT value ('$SPIKE_ROOT') with \$SPIKE_INSTALL_DIR ('$SPIKE_INSTALL_DIR')."
+      export SPIKE_ROOT="$SPIKE_INSTALL_DIR"
+      # Do not clean up the destination directory: leave that to the user (real or CI job).
+  fi
+
   # Rebuild Spike or reuse an existing Spike build.
-  if [ ! -d "$SPIKE_ROOT" -o ! -f "$SPIKE_ROOT/bin/spike"  ]; then
+  if [ ! -d "$SPIKE_ROOT" -o ! -f "$SPIKE_ROOT/bin/spike" ]; then
     echo "Installing Spike in '$SPIKE_ROOT'..."
     # Keep track of current working dir.
     CALLER_DIR=$(readlink -f $(pwd))
