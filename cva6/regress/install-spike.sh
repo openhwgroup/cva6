@@ -14,10 +14,10 @@ fi
 # Set SPIKE_ROOT to 'NO' to skip the installation/checks of Spike altogether.
 # This is useful for CI jobs not depending on Spike in any way.
 # Otherwise expect/perform Spike installation in directory $SPIKE_ROOT
-# which defaults to $TOP/spike.
+# which defaults to $ROOT_PROJECT/tools/spike.
 if [ -z "$SPIKE_ROOT" ]; then
   # Set the default location if not provided by caller.
-  export SPIKE_ROOT=$TOP/spike
+  export SPIKE_ROOT=$ROOT_PROJECT/tools/spike
 fi
 
 if [ "$SPIKE_ROOT" = "NO" ]; then
@@ -27,11 +27,11 @@ else
   export SPIKE_SRC_DIR=$ROOT_PROJECT/vendor/riscv/riscv-isa-sim
 
   # Check if a local copy of Spike should be built/used ($SPIKE_INSTALL_DIR non empty).
-  # A value equal to '__local__' means $TOP/spike, same as $ROOT_PROJECT/tools/spike.
+  # A value equal to '__local__' means $ROOT_PROJECT/tools/spike (same as $TOP/spike).
   if [ -n "$SPIKE_INSTALL_DIR" ]; then
       # Handle the 'default' value.
       if [ "$SPIKE_INSTALL_DIR" = "__local__" ]; then
-        export SPIKE_INSTALL_DIR="$TOP/spike"
+        export SPIKE_INSTALL_DIR="$ROOT_PROJECT/tools/spike"
       fi
       # Override SPIKE_ROOT value with $SPIKE_INSTALL_DIR (the latter takes priority.)
       echo "NOTE: Overriding SPIKE_ROOT value ('$SPIKE_ROOT') with \$SPIKE_INSTALL_DIR ('$SPIKE_INSTALL_DIR')."

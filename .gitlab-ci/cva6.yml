@@ -141,6 +141,8 @@ pub_build_tools:
     - .template_job_full_ci
   needs: []
   script:
+    # ROOT_PROJECT is used by Spike installer and designates the toplevel of core-v-verif tree.
+    - 'export ROOT_PROJECT=$(pwd)'
     # If a local build of Spike is requested, clean up build and installation directories.
     - '[ -n "$SPIKE_INSTALL_DIR" -a "$SPIKE_INSTALL_DIR" = "__local__" ] && rm -rf vendor/riscv/riscv-isa-sim/build'
     - '[ -n "$SPIKE_INSTALL_DIR" -a "$SPIKE_INSTALL_DIR" = "__local__" ] && rm -rf tools/spike'
