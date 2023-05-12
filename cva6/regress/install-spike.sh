@@ -28,7 +28,7 @@ else
 
   # Check if a local copy of Spike should be built/used ($SPIKE_INSTALL_DIR non empty).
   # A value equal to '__local__' means $TOP/spike, same as $ROOT_PROJECT/tools/spike.
-  if [ -s "$SPIKE_INSTALL_DIR" ]; then
+  if [ -n "$SPIKE_INSTALL_DIR" ]; then
       # Handle the 'default' value.
       if [ "$SPIKE_INSTALL_DIR" = "__local__" ]; then
         export SPIKE_INSTALL_DIR="$TOP/spike"
@@ -44,7 +44,7 @@ else
     echo "Installing Spike in '$SPIKE_ROOT'..."
     # Keep track of current working dir.
     CALLER_DIR=$(readlink -f $(pwd))
-    # Enter the vectorized tree.  It already captures the desired Spike config.
+    # Enter the vendorized tree.  It already captures the desired Spike config.
     cd $SPIKE_SRC_DIR
     # Build and install Spike (including extensions).
     mkdir -p build
