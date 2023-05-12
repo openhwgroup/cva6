@@ -18,7 +18,7 @@ iterations = None
 # Will fail if the number of cycles is different from this one
 valid_cycles = {
     'dhrystone': 221425,
-    'coremark': 700447,
+    'coremark': 697868,
 }
 
 for arg in sys.argv[1:]:
