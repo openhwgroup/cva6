@@ -206,12 +206,8 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------
     assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
-    if(ariane_pkg::RVH) begin
-        assign vsstatus_extended = riscv::IS_XLEN64 ? vsstatus_q[riscv::XLEN-1:0] :
-                                {vsstatus_q.sd, vsstatus_q.wpri3[7:0], vsstatus_q[22:0]};
-    end else begin
-        assign vsstatus_extended = '0;
-    end
+    assign vsstatus_extended = (ariane_pkg::RVH) ? (riscv::IS_XLEN64 ? vsstatus_q[riscv::XLEN-1:0] :
+                                {vsstatus_q.sd, vsstatus_q.wpri3[7:0], vsstatus_q[22:0]}) : '0;
 
     always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
@@ -262,40 +258,40 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_TDATA2:;  // not implemented
                 riscv::CSR_TDATA3:;  // not implemented
                 riscv::CSR_VSSTATUS: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = vsstatus_extended;
                 end
                 riscv::CSR_VSIE: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = (mie_q & VS_DELEG_INTERRUPTS & hideleg_q) >> 1;
                 end
                 riscv::CSR_VSIP: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = (mip_q & VS_DELEG_INTERRUPTS & hideleg_q) >> 1;
                 end
                 riscv::CSR_VSTVEC: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = vstvec_q;
                 end
                 riscv::CSR_VSSCRATCH: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = vsscratch_q;
                 end
                 riscv::CSR_VSEPC: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = vsepc_q;
                 end
                 riscv::CSR_VSCAUSE: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = vscause_q;
                 end
                 riscv::CSR_VSTVAL: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = vstval_q;
                 end
                 riscv::CSR_VSATP: begin
                     // intercept reads to VSATP if in VS-Mode and VTVM is enabled
-                    if(~ariane_pkg::RVH) begin
+                    if (!ariane_pkg::RVH) begin
                         read_access_exception = 1'b1;
                     end else if (priv_lvl_o == riscv::PRIV_LVL_S && hstatus_q.vtvm && v_q) begin
                         virtual_read_access_exception = 1'b1;
@@ -330,51 +326,51 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_SENVCFG: csr_rdata = senvcfg_q[riscv::XLEN-1:0];
                 // hypervisor mode registers
                 riscv::CSR_HSTATUS: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = hstatus_q[riscv::XLEN-1:0];
                 end
                 riscv::CSR_HEDELEG: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = hedeleg_q;
                 end
                 riscv::CSR_HIDELEG: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = hideleg_q;
                 end
                 riscv::CSR_HIE: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = mie_q & HS_DELEG_INTERRUPTS;
                 end
                 riscv::CSR_HIP: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = mip_q & HS_DELEG_INTERRUPTS;
                 end
                 riscv::CSR_HVIP: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = mip_q & VS_DELEG_INTERRUPTS;
                 end
                 riscv::CSR_HCOUNTEREN: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = hcounteren_q;
                 end
                 riscv::CSR_HTVAL: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = htval_q;
                 end
                 riscv::CSR_HTINST: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = htinst_q;
                 end
                 riscv::CSR_HGEIE: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = '0;
                 end
                 riscv::CSR_HGEIP: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;           
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = '0;
                 end
                 riscv::CSR_HGATP: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         read_access_exception = 1'b1;
                     // intercept reads to HGATP if in HS-Mode and TVM is enabled
                     end else if (priv_lvl_o == riscv::PRIV_LVL_S && !v_q && mstatus_q.tvm) begin
@@ -384,7 +380,7 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 riscv::CSR_HENVCFG: begin
-                    if(~ariane_pkg::RVH) read_access_exception = 1'b1;
+                    if (!ariane_pkg::RVH) read_access_exception = 1'b1;
                     else csr_rdata = henvcfg_q[riscv::XLEN-1:0];
                 end
                 // machine mode registers
@@ -406,16 +402,16 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
                 riscv::CSR_MCONFIGPTR:         csr_rdata = '0; // no configuration data structure
                 riscv::CSR_MTINST: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         read_access_exception = 1'b1;
-                    end else begin 
+                    end else begin
                         csr_rdata = mtinst_q;
                     end
                 end
                 riscv::CSR_MTVAL2: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         read_access_exception = 1'b1;
-                    end else begin 
+                    end else begin
                         csr_rdata = mtval2_q;
                     end
                 end
@@ -548,13 +544,6 @@ module csr_regfile import ariane_pkg::*; #(
         automatic logic [63:0] instret;
 
         satp = satp_q;
-        if(ariane_pkg::RVH) begin
-            vsatp = vsatp_q;
-            hgatp = hgatp_q;
-        end else begin
-            vsatp = '0;
-            hgatp = '0;
-        end
         instret = instret_q;
 
         // --------------------
@@ -593,9 +582,36 @@ module csr_regfile import ariane_pkg::*; #(
         dscratch0_d             = dscratch0_q;
         dscratch1_d             = dscratch1_q;
         mstatus_d               = mstatus_q;
-        if(ariane_pkg::RVH) begin
-            hstatus_d           = hstatus_q;
+
+        if (ariane_pkg::RVH) begin
+            vsatp = vsatp_q;
+            hgatp = hgatp_q;
+
+            en_ld_st_g_translation_d = en_ld_st_g_translation_q;
+
             vsstatus_d          = vsstatus_q;
+            vstvec_d            = vstvec_q;
+            vsscratch_d         = vsscratch_q;
+            vsepc_d             = vsepc_q;
+            vscause_d           = vscause_q;
+            vstval_d            = vstval_q;
+            vsatp_d             = vsatp_q;
+
+            hstatus_d           = hstatus_q;
+            hedeleg_d           = hedeleg_q;
+            hideleg_d           = hideleg_q;
+            hgeie_d             = hgeie_q;
+            hgatp_d             = hgatp_q;
+            hcounteren_d        = hcounteren_q;
+            htval_d             = htval_q;
+            htinst_d            = htinst_q;
+            henvcfg_d           = henvcfg_q;
+
+            mtinst_d            = mtinst_q;
+            mtval2_d            = mtval2_q;
+        end else begin
+            vsatp = '0;
+            hgatp = '0;
         end
 
         // check whether we come out of reset
@@ -619,21 +635,10 @@ module csr_regfile import ariane_pkg::*; #(
         mcounteren_d            = mcounteren_q;
         mscratch_d              = mscratch_q;
         mtval_d                 = mtval_q;
-        if(ariane_pkg::RVH) begin
-            mtinst_d            = mtinst_q;
-            mtval2_d            = mtval2_q;
-        end
+        menvcfg_d               = menvcfg_q;
+
         dcache_d                = dcache_q;
         icache_d                = icache_q;
-
-        if(ariane_pkg::RVH) begin
-            vstvec_d            = vstvec_q;
-            vsscratch_d         = vsscratch_q;
-            vsepc_d             = vsepc_q;
-            vscause_d           = vscause_q;
-            vstval_d            = vstval_q;
-            vsatp_d             = vsatp_q;
-        end
 
         sepc_d                  = sepc_q;
         scause_d                = scause_q;
@@ -642,25 +647,9 @@ module csr_regfile import ariane_pkg::*; #(
         sscratch_d              = sscratch_q;
         stval_d                 = stval_q;
         satp_d                  = satp_q;
-
-        if(ariane_pkg::RVH) begin
-            hedeleg_d           = hedeleg_q;
-            hideleg_d           = hideleg_q;
-            hgeie_d             = hgeie_q;
-            hgatp_d             = hgatp_q;
-            hcounteren_d        = hcounteren_q;
-            htval_d             = htval_q;
-            htinst_d            = htinst_q;
-            henvcfg_d           = henvcfg_q;
-        end
-
-        menvcfg_d               = menvcfg_q;
         senvcfg_d               = senvcfg_q;
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
-        if(ariane_pkg::RVH) begin
-            en_ld_st_g_translation_d = en_ld_st_g_translation_q;
-        end
         dirty_fp_state_csr      = 1'b0;
 
         pmpcfg_d                = pmpcfg_q;
@@ -730,7 +719,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_TDATA3:;  // not implemented
                 // virtual supervisor registers
                 riscv::CSR_VSSTATUS: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin
                         mask = ariane_pkg::SMODE_STATUS_WRITE_MASK[riscv::XLEN-1:0];
@@ -745,14 +734,14 @@ module csr_regfile import ariane_pkg::*; #(
                     flush_o = 1'b1;
                 end
                 riscv::CSR_VSIE: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         mie_d = (mie_q & ~hideleg_q) | ((csr_wdata << 1) & hideleg_q);
                     end
                 end
                 riscv::CSR_VSIP: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin
                         // only the virtual supervisor software interrupt is write-able, iff delegated
@@ -761,35 +750,35 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 riscv::CSR_VSTVEC: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin
                         vstvec_d    = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
                     end
                 end
                 riscv::CSR_VSSCRATCH: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         vsscratch_d = csr_wdata;
                     end
                 end
                 riscv::CSR_VSEPC: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin
                         vsepc_d = {csr_wdata[riscv::XLEN-1:1], 1'b0};
                     end
                 end
                 riscv::CSR_VSCAUSE: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin
                         vscause_d = csr_wdata;
                     end
                 end
                 riscv::CSR_VSTVAL: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin
                         vstval_d = csr_wdata;
@@ -797,7 +786,7 @@ module csr_regfile import ariane_pkg::*; #(
                 end
                 // virtual supervisor address translation and protection
                 riscv::CSR_VSATP: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end if (priv_lvl_o == riscv::PRIV_LVL_S && v_q && hstatus_q.vtvm)
                             virtual_update_access_exception = 1'b1;
@@ -815,11 +804,11 @@ module csr_regfile import ariane_pkg::*; #(
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
                     mask = ariane_pkg::SMODE_STATUS_WRITE_MASK[riscv::XLEN-1:0];
-                    mstatus_d  = (mstatus_q & ~{{64-riscv::XLEN{1'b0}}, mask}) | {{64-riscv::XLEN{1'b0}}, (csr_wdata & mask)};
+                    mstatus_d = (mstatus_q & ~{{64-riscv::XLEN{1'b0}}, mask}) | {{64-riscv::XLEN{1'b0}}, (csr_wdata & mask)};
                     // hardwire to zero if floating point extension is not present
                     if (!FP_PRESENT) begin
                         mstatus_d.fs  = riscv::Off;
-                        if(ariane_pkg::RVH) begin
+                        if (ariane_pkg::RVH) begin
                             vsstatus_d.fs = riscv::Off;
                         end
                     end
@@ -871,7 +860,7 @@ module csr_regfile import ariane_pkg::*; #(
                 end
                 //hypervisor mode registers
                 riscv::CSR_HSTATUS: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         mask = ariane_pkg::HSTATUS_WRITE_MASK[riscv::XLEN-1:0];
@@ -881,7 +870,7 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 riscv::CSR_HEDELEG: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         mask = (1 << riscv::INSTR_ADDR_MISALIGNED) |
@@ -900,14 +889,14 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 riscv::CSR_HIDELEG: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         hideleg_d = (hideleg_q & ~VS_DELEG_INTERRUPTS) | (csr_wdata & VS_DELEG_INTERRUPTS);
                     end
                 end
                 riscv::CSR_HIE: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         mask = HS_DELEG_INTERRUPTS;
@@ -915,7 +904,7 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 riscv::CSR_HIP: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         mask = riscv::MIP_VSSIP;
@@ -923,7 +912,7 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 riscv::CSR_HVIP: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         mask = VS_DELEG_INTERRUPTS;
@@ -931,21 +920,21 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 riscv::CSR_HCOUNTEREN: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         hcounteren_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
                     end
                 end
                 riscv::CSR_HTVAL: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         htval_d = csr_wdata;
                     end
                 end
                 riscv::CSR_HTINST: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         htinst_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
@@ -953,12 +942,12 @@ module csr_regfile import ariane_pkg::*; #(
                 end
                 //TODO Hyp: implement hgeie write
                 riscv::CSR_HGEIE: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_HGATP: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin
                         // intercept HGATP writes if in HS-Mode and TVM is enabled
@@ -980,7 +969,7 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 riscv::CSR_HENVCFG: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin
                         mask = ariane_pkg::ENVCFG_WRITE_MASK[riscv::XLEN-1:0];
@@ -1029,7 +1018,7 @@ module csr_regfile import ariane_pkg::*; #(
                 // we do not support user interrupt delegation
                 riscv::CSR_MIDELEG: begin
                     mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
-                    if(~ariane_pkg::RVH) begin
+                    if (!ariane_pkg::RVH) begin
                         mideleg_d = (mideleg_q & ~mask) | (csr_wdata & mask);
                     end else begin
                         mideleg_d = (mideleg_q & ~mask) | (csr_wdata & mask) | HS_DELEG_INTERRUPTS;
@@ -1037,7 +1026,7 @@ module csr_regfile import ariane_pkg::*; #(
                 end
                 // mask the register so that unsupported interrupts can never be set
                 riscv::CSR_MIE: begin
-                    if(~ariane_pkg::RVH) begin
+                    if (!ariane_pkg::RVH) begin
                          mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP | riscv::MIP_MSIP | riscv::MIP_MTIP | riscv::MIP_MEIP;
                     end else begin
                         mask = HS_DELEG_INTERRUPTS | riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP | riscv::MIP_MSIP | riscv::MIP_MTIP | riscv::MIP_MEIP;
@@ -1058,14 +1047,14 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MCAUSE:             mcause_d    = csr_wdata;
                 riscv::CSR_MTVAL:              mtval_d     = csr_wdata;
                 riscv::CSR_MTINST: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         mtinst_d    = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
                     end
                 end
                 riscv::CSR_MTVAL2: begin
-                    if(~ariane_pkg::RVH) begin 
+                    if (!ariane_pkg::RVH) begin
                         update_access_exception = 1'b1;
                     end else begin 
                         mtval2_d    = csr_wdata;
@@ -1088,7 +1077,7 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 riscv::CSR_MIP: begin
-                    if (~ariane_pkg::RVH) begin
+                    if (!ariane_pkg::RVH) begin
                         mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
                     end else begin
                         mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP | riscv::MIP_VSSIP;
@@ -1403,14 +1392,14 @@ module csr_regfile import ariane_pkg::*; #(
         if (!debug_mode_q) begin
             dcsr_d.prv = priv_lvl_o;
             // save virtualization mode bit
-            dcsr_d.v   = (~ariane_pkg::RVH) ? 1'b0 : v_q;
+            dcsr_d.v = (!ariane_pkg::RVH) ? 1'b0 : v_q;
             // trigger module fired
 
             // caused by a breakpoint
             if (ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
                 dcsr_d.prv = priv_lvl_o;
                 // save virtualization mode bit
-                dcsr_d.v   = (~ariane_pkg::RVH) ? 1'b0 : v_q;
+                dcsr_d.v = (!ariane_pkg::RVH) ? 1'b0 : v_q;
                 // check that we actually want to enter debug depending on the privilege level we are currently in
                 unique case (priv_lvl_o)
                     riscv::PRIV_LVL_M: begin
@@ -1436,7 +1425,7 @@ module csr_regfile import ariane_pkg::*; #(
             if (ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
                 dcsr_d.prv = priv_lvl_o;
                 // save virtualization mode bit
-                dcsr_d.v   = (~ariane_pkg::RVH) ? 1'b0 : v_q;
+                dcsr_d.v = (!ariane_pkg::RVH) ? 1'b0 : v_q;
                 // save the PC
                 dpc_d = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // enter debug mode
@@ -1451,7 +1440,7 @@ module csr_regfile import ariane_pkg::*; #(
             if (dcsr_q.step && commit_ack_i[0]) begin
                 dcsr_d.prv = priv_lvl_o;
                 // save virtualization mode bit
-                dcsr_d.v   = (~ariane_pkg::RVH) ? 1'b0 : v_q;
+                dcsr_d.v = (!ariane_pkg::RVH) ? 1'b0 : v_q;
                 // valid CTRL flow change
                 if (commit_instr_i[0].fu == CTRL_FLOW) begin
                     // we saved the correct target address during execute
@@ -1494,8 +1483,8 @@ module csr_regfile import ariane_pkg::*; #(
                 en_ld_st_translation_d = en_translation_o;
             end
 
-            if(mprv && (mstatus_q.mpv == 1'b1)) begin
-                if(riscv::vm_mode_t'(hgatp_q.mode) == riscv::MODE_SV) begin
+            if (mprv && (mstatus_q.mpv == 1'b1)) begin
+                if (riscv::vm_mode_t'(hgatp_q.mode) == riscv::MODE_SV) begin
                     en_ld_st_g_translation_d = 1'b1;
                 end else begin
                     en_ld_st_g_translation_d = 1'b0;
@@ -1504,7 +1493,7 @@ module csr_regfile import ariane_pkg::*; #(
                 en_ld_st_g_translation_d = en_g_translation_o;
             end
 
-            if(csr_hs_ld_st_inst_i)
+            if (csr_hs_ld_st_inst_i)
                 ld_st_priv_lvl_o = riscv::priv_lvl_t'(hstatus_q.spvp);
             else
                 ld_st_priv_lvl_o = (mprv) ? mstatus_q.mpp : priv_lvl_o;
@@ -1563,7 +1552,7 @@ module csr_regfile import ariane_pkg::*; #(
             mstatus_d.spp  = 1'b0;
             // set spie to 1
             mstatus_d.spie = 1'b1;
-            if(ariane_pkg::RVH) begin
+            if (ariane_pkg::RVH) begin
                 // set virtualization mode
                 v_d            = hstatus_q.spv;
                 //set hstatus spv to false
@@ -1591,7 +1580,7 @@ module csr_regfile import ariane_pkg::*; #(
             eret_o = 1'b1;
             // restore the previous privilege level
             priv_lvl_d     = riscv::priv_lvl_t'(dcsr_q.prv);
-            if(ariane_pkg::RVH) begin
+            if (ariane_pkg::RVH) begin
             // restore the previous virtualization mode
                 v_d            = dcsr_q.v;
             end
@@ -1656,9 +1645,8 @@ module csr_regfile import ariane_pkg::*; #(
                                     & (~dcsr_q.step | dcsr_q.stepie)
                                     & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
                                     | (priv_lvl_o != riscv::PRIV_LVL_M));
-
-    always_comb begin : privilege_check
-        if(ariane_pkg::RVH) begin
+    if (ariane_pkg::RVH) begin : gen_hprivilege_check
+        always_comb begin
             automatic riscv::priv_lvl_t access_priv;
             automatic riscv::priv_lvl_t curr_priv;
             // transforms S mode accesses into HS mode
@@ -1702,7 +1690,9 @@ module csr_regfile import ariane_pkg::*; #(
                     endcase
                 end
             end
-        end else begin
+        end
+    end else begin : gen_privilege_check
+        always_comb begin
             // -----------------
             // Privilege Check
             // -----------------
@@ -1727,7 +1717,7 @@ module csr_regfile import ariane_pkg::*; #(
                     endcase
                 end
             end
-        end    
+        end
     end
     // ----------------------
     // CSR Exception Control
@@ -1850,7 +1840,7 @@ module csr_regfile import ariane_pkg::*; #(
     assign vs_sum_o         = ariane_pkg::RVH ? vsstatus_q.sum : '0;
     assign hu_o             = ariane_pkg::RVH ? hstatus_q.hu : '0;
     // we support bare memory addressing and SV39
-    if(ariane_pkg::RVH) begin
+    if (ariane_pkg::RVH) begin
         assign en_translation_o = ((((riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV && !v_q) || (riscv::vm_mode_t'(vsatp_q.mode) == riscv::MODE_SV && v_q)) &&
                                    priv_lvl_o != riscv::PRIV_LVL_M)
                                   ? 1'b1

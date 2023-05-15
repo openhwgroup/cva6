@@ -1044,11 +1044,9 @@ package ariane_pkg;
         if (s_st_enbl) begin
             gpaddr = {pte.ppn[(riscv::GPPNW-1):0], vaddr[11:0]};
             // Giga page
-            if (is_1G)
-                gpaddr[29:12] = vaddr[29:12];
+            if (is_1G) gpaddr[29:12] = vaddr[29:12];
             // Mega page
-            if (is_2M)
-                gpaddr[20:12] = vaddr[20:12];
+            if (is_2M) gpaddr[20:12] = vaddr[20:12];
         end else begin
             gpaddr = vaddr[(riscv::GPLEN-1):0];
         end

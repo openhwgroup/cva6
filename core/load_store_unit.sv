@@ -432,7 +432,7 @@ module load_store_unit import ariane_pkg::*; #(
                 ld_valid_i           = lsu_ctrl.valid;
                 translation_req      = ld_translation_req;
                 mmu_vaddr            = ld_vaddr;
-                if(ariane_pkg::RVH) begin
+                if (ariane_pkg::RVH) begin
                     mmu_tinst            = ld_tinst;
                     mmu_hs_ld_st_inst    = ld_hs_ld_st_inst;
                     mmu_hlvx_inst        = ld_hlvx_inst;
@@ -443,7 +443,7 @@ module load_store_unit import ariane_pkg::*; #(
                 st_valid_i           = lsu_ctrl.valid;
                 translation_req      = st_translation_req;
                 mmu_vaddr            = st_vaddr;
-                if(ariane_pkg::RVH) begin
+                if (ariane_pkg::RVH) begin
                     mmu_tinst            = st_tinst;
                     mmu_hs_ld_st_inst    = st_hs_ld_st_inst;
                     mmu_hlvx_inst        = st_hlvx_inst;
@@ -458,7 +458,7 @@ module load_store_unit import ariane_pkg::*; #(
     // Hypervisor Load/Store
     // ------------------------
     // determine whether this is a hypervisor load or store
-    if(ariane_pkg::RVH) begin
+    if (ariane_pkg::RVH) begin
         always_comb begin : hyp_ld_st
             // check the operator to activate the right functional unit accordingly
             hs_ld_st_inst = 1'b0;
@@ -476,7 +476,7 @@ module load_store_unit import ariane_pkg::*; #(
                 end
                 default:;
             endcase
-        end 
+        end
     end else begin
             assign hs_ld_st_inst = 1'b0;
             assign hlvx_inst     = 1'b0;

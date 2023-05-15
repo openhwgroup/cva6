@@ -860,7 +860,7 @@ package riscv;
         unique case (csr_addr.address) inside
             [CSR_SSTATUS:CSR_STVEC],
             [CSR_SSCRATCH:CSR_SATP]: begin
-                if(v) begin
+                if (v) begin
                     ret.csr_decode.priv_lvl = PRIV_LVL_HS;
                 end
                 return ret;

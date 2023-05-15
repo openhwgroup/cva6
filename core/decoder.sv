@@ -127,7 +127,7 @@ module decoder import ariane_pkg::*; (
                                     // check privilege level, SRET can only be executed in S and M mode
                                     // we'll just decode an illegal instruction if we are in the wrong privilege level
                                     if (priv_lvl_i == riscv::PRIV_LVL_U) begin
-                                        if(ariane_pkg::RVH && v_i) begin
+                                        if (ariane_pkg::RVH && v_i) begin
                                             virtual_illegal_instr = 1'b1;
                                         end else begin
                                             illegal_instr = 1'b1;
@@ -137,7 +137,7 @@ module decoder import ariane_pkg::*; (
                                     end
                                     // if we are in S-Mode and Trap SRET (tsr) is set -> trap on illegal instruction
                                     if (priv_lvl_i == riscv::PRIV_LVL_S && tsr_i) begin
-                                        if(ariane_pkg::RVH && v_i) begin
+                                        if (ariane_pkg::RVH && v_i) begin
                                             virtual_illegal_instr = 1'b1;
                                         end else begin
                                             illegal_instr = 1'b1;
@@ -201,7 +201,7 @@ module decoder import ariane_pkg::*; (
                                               illegal_instr = 1'b1;
                                         end
                                     end
-                                    if(ariane_pkg::RVH) begin
+                                    if (ariane_pkg::RVH) begin
                                         if (instr.instr[31:25] == 7'b10001) begin
                                             // check privilege level, HFENCE.VVMA can only be executed in M/S mode
                                             // otherwise decode an illegal instruction or virtual illegal instruction
@@ -241,13 +241,11 @@ module decoder import ariane_pkg::*; (
                                 instruction_o.rs1[4:0] = instr.itype.rs1;
                                 instruction_o.rd[4:0]  = instr.itype.rd;
                             end
-                            if(ariane_pkg::RVH) begin
+                            if (ariane_pkg::RVH) begin
                                 // Hypervisor load/store instructions when V=1 cause virtual instruction
-                                if (v_i)
-                                    virtual_illegal_instr = 1'b1;
+                                if (v_i) virtual_illegal_instr = 1'b1;
                                 // Hypervisor load/store instructions in U-mode when hstatus.HU=0 cause an illegal instruction trap.
-                                else if(!hu_i && priv_lvl_i == riscv::PRIV_LVL_U)
-                                    illegal_instr = 1'b1;
+                                else if(!hu_i && priv_lvl_i == riscv::PRIV_LVL_U) illegal_instr = 1'b1;
                                 unique case (instr.rtype.funct7)
                                 7'b011_0000: begin
                                     if(instr.rtype.rs2 == 5'b0) begin
@@ -853,7 +851,7 @@ module decoder import ariane_pkg::*; (
                                 else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
-                    if(ariane_pkg::RVH) begin
+                    if (ariane_pkg::RVH) begin
                         tinst = {7'b0, instr.stype.rs2, 5'b0, instr.stype.funct3, 5'b0, instr.stype.opcode};
                         tinst[1] = is_compressed_i ? 1'b0 : 'b1;
                     end
@@ -876,7 +874,7 @@ module decoder import ariane_pkg::*; (
                                 else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
-                    if(ariane_pkg::RVH) begin
+                    if (ariane_pkg::RVH) begin
                         tinst = {17'b0, instr.itype.funct3, instr.itype.rd, instr.itype.opcode};
                         tinst[1] = is_compressed_i ? 1'b0 : 'b1;
                     end
@@ -904,7 +902,7 @@ module decoder import ariane_pkg::*; (
                                     else illegal_instr = 1'b1;
                             default: illegal_instr = 1'b1;
                         endcase
-                        if(ariane_pkg::RVH) begin
+                        if (ariane_pkg::RVH) begin
                             tinst = {7'b0, instr.stype.rs2,5'b0, instr.stype.funct3, 5'b0, instr.stype.opcode};
                             tinst[1] = is_compressed_i ? 1'b0 : 'b1;
                         end
@@ -931,7 +929,7 @@ module decoder import ariane_pkg::*; (
                                     else illegal_instr = 1'b1;
                             default: illegal_instr = 1'b1;
                         endcase
-                        if(ariane_pkg::RVH) begin
+                        if (ariane_pkg::RVH) begin
                             tinst = {17'b0, instr.itype.funct3, instr.itype.rd, instr.itype.opcode};
                             tinst[1] = is_compressed_i ? 1'b0 : 'b1;
                         end
@@ -1196,7 +1194,7 @@ module decoder import ariane_pkg::*; (
                     end else begin
                         illegal_instr = 1'b1;
                     end
-                    if(ariane_pkg::RVH) begin
+                    if (ariane_pkg::RVH) begin
                         tinst = {instr.atype.funct5, instr.atype.aq, instr.atype.rl, instr.atype.rs2, 5'b0, instr.atype.funct3, instr.atype.rd, instr.atype.opcode};
                     end
                 end
@@ -1377,7 +1375,7 @@ module decoder import ariane_pkg::*; (
             // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
             // for two privilege levels: Supervisor and Machine Mode
             // Virtual Supervisor Interrupt
-            if(ariane_pkg::RVH) begin
+            if (ariane_pkg::RVH) begin
                 if (irq_ctrl_i.mie[riscv::VS_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mip[riscv::VS_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
                     interrupt_cause = riscv::VS_TIMER_INTERRUPT;
                 end
@@ -1426,7 +1424,7 @@ module decoder import ariane_pkg::*; (
                 // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
                 // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
                 if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(riscv::XLEN)-1:0]]) begin
-                    if(ariane_pkg::RVH) begin : hyp_int_gen
+                    if (ariane_pkg::RVH) begin : hyp_int_gen
                         if (v_i &&  irq_ctrl_i.hideleg[interrupt_cause[$clog2(riscv::XLEN)-1:0]]) begin
                             if ((irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) begin
                                 instruction_o.ex.valid = 1'b1;

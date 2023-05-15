@@ -132,36 +132,39 @@ module controller import ariane_pkg::*; (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-            if(ariane_pkg::RVH && v_i)
+            if(ariane_pkg::RVH && v_i) begin
                 flush_tlb_vvma_o       = 1'b1;
-            else
+            end else begin
                 flush_tlb_o            = 1'b1;
+            end
         end
 
-        // ---------------------------------
-        // HFENCE.VVMA
-        // ---------------------------------
-        if (ariane_pkg::RVH && hfence_vvma_i) begin
-            set_pc_commit_o        = 1'b1;
-            flush_if_o             = 1'b1;
-            flush_unissued_instr_o = 1'b1;
-            flush_id_o             = 1'b1;
-            flush_ex_o             = 1'b1;
+        if (ariane_pkg::RVH) begin
+            // ---------------------------------
+            // HFENCE.VVMA
+            // ---------------------------------
+            if (hfence_vvma_i) begin
+                set_pc_commit_o        = 1'b1;
+                flush_if_o             = 1'b1;
+                flush_unissued_instr_o = 1'b1;
+                flush_id_o             = 1'b1;
+                flush_ex_o             = 1'b1;
 
-            flush_tlb_vvma_o       = 1'b1;
-        end
+                flush_tlb_vvma_o       = 1'b1;
+            end
 
-        // ---------------------------------
-        // HFENCE.GVMA
-        // ---------------------------------
-        if (ariane_pkg::RVH && hfence_gvma_i) begin
-            set_pc_commit_o        = 1'b1;
-            flush_if_o             = 1'b1;
-            flush_unissued_instr_o = 1'b1;
-            flush_id_o             = 1'b1;
-            flush_ex_o             = 1'b1;
+            // ---------------------------------
+            // HFENCE.GVMA
+            // ---------------------------------
+            if (hfence_gvma_i) begin
+                set_pc_commit_o        = 1'b1;
+                flush_if_o             = 1'b1;
+                flush_unissued_instr_o = 1'b1;
+                flush_id_o             = 1'b1;
+                flush_ex_o             = 1'b1;
 
-            flush_tlb_gvma_o       = 1'b1;
+                flush_tlb_gvma_o       = 1'b1;
+            end
         end
 
         // Set PC to commit stage and flush pipleine
