@@ -902,7 +902,7 @@ module cva6 import ariane_pkg::*; #(
     .axi_resp_i            ( axi_resp_i                  )
   );
   assign dcache_commit_wbuffer_not_ni = 1'b1;
-  assign inval_ready_o                = 1'b1;
+  assign inval_ready                  = 1'b1;
   end
 
   // -------------------
