@@ -21,6 +21,17 @@ frozen: true
 
 sources:
   - files:
+      - target: cv64a6_imafdcv_sv39
+        files:
+          - core/include/cv64a6_imafdcv_sv39_config_pkg.sv
+          - core/include/riscv_pkg.sv
+          - common/local/rvfi/rvfi_pkg.sv
+          - core/include/ariane_dm_pkg.sv
+          - core/include/ariane_pkg.sv
+          - core/mmu_sv39/tlb.sv
+          - core/mmu_sv39/mmu.sv
+          - core/mmu_sv39/ptw.sv
+
       - target: cv64a6_imafdc_sv39
         files:
           - core/include/cv64a6_imafdc_sv39_config_pkg.sv
