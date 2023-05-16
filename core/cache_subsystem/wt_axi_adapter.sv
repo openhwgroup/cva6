@@ -45,7 +45,12 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // AXI port
   output axi_req_t             axi_req_o,
-  input  axi_rsp_t             axi_resp_i
+  input  axi_rsp_t             axi_resp_i,
+
+  // Invalidations
+  input  logic [63:0]          inval_addr_i,
+  input  logic                 inval_valid_i,
+  output logic                 inval_ready_o
 );
 
   // support up to 512bit cache lines
@@ -478,6 +483,15 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     b_pop               = 1'b0;
     dcache_sc_rtrn      = 1'b0;
 
+    // External invalidation requests (from coprocessor). This is safe as
+    // there are no other transactions when a coprocessor has pending stores.
+    inval_ready_o = 1'b0;
+    if (inval_valid_i) begin
+      inval_ready_o          = 1'b1;
+      dcache_rtrn_type_d     = wt_cache_pkg::DCACHE_INV_REQ;
+      dcache_rtrn_vld_d      = 1'b1;
+      dcache_rtrn_inv_d.all  = 1'b1;
+      dcache_rtrn_inv_d.idx  = inval_addr_i[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
     //////////////////////////////////////
     // dcache needs some special treatment
     // for arbitration and decoding of atomics
@@ -486,7 +500,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     // note that this self invalidation is handled in this way due to the
     // write-through cache architecture, which is aligned with the openpiton
     // cache subsystem.
-    if (invalidate) begin
+    end else if (invalidate) begin
         dcache_rtrn_type_d     = wt_cache_pkg::DCACHE_INV_REQ;
         dcache_rtrn_vld_d      = 1'b1;
 

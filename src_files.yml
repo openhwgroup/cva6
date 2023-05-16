@@ -51,6 +51,7 @@ ariane:
     src/store_unit.sv,
     src/mmu_sv39/tlb.sv,
     src/mmu_sv32/cva6_tlb_sv32.sv,
+    src/acc_dispatcher.sv,
     src/debug/dm_csrs.sv,
     src/debug/dm_mem.sv,
     src/debug/dm_top.sv,

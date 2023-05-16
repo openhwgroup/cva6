@@ -27,6 +27,7 @@ module controller import ariane_pkg::*; #(
     output logic            flush_icache_o,         // Flush ICache
     output logic            flush_dcache_o,         // Flush DCache
     input  logic            flush_dcache_ack_i,     // Acknowledge the whole DCache Flush
+    input  logic            acc_store_pending_i,    // Store instruction pending on an accelerator
     output logic            flush_tlb_o,            // Flush TLBs
 
     input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
@@ -45,12 +46,15 @@ module controller import ariane_pkg::*; #(
     // active fence - high if we are currently flushing the dcache
     logic fence_active_d, fence_active_q;
     logic flush_dcache;
+    // waiting for a store to finish execution on an accelerator
+    logic wait_acc_store_d, wait_acc_store_q;
 
     // ------------
     // Flush CTRL
     // ------------
     always_comb begin : flush_ctrl
         fence_active_d         = fence_active_q;
+        wait_acc_store_d       = wait_acc_store_q;
         set_pc_commit_o        = 1'b0;
         flush_if_o             = 1'b0;
         flush_unissued_instr_o = 1'b0;
@@ -81,6 +85,7 @@ module controller import ariane_pkg::*; #(
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
+            wait_acc_store_d       = 1'b1;
 // this is not needed in the case since we
 // have a write-through cache in this case
             if (DCACHE_TYPE == int'(cva6_config_pkg::WB)) begin
@@ -99,12 +104,18 @@ module controller import ariane_pkg::*; #(
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
             flush_icache_o         = 1'b1;
+            wait_acc_store_d       = 1'b1;
 // this is not needed in the case since we
 // have a write-through cache in this case
             if (DCACHE_TYPE == int'(cva6_config_pkg::WB)) begin
               flush_dcache           = 1'b1;
               fence_active_d         = 1'b1;
             end
+        end
+
+// acknowledge the vector store
+        if (!acc_store_pending_i && wait_acc_store_q) begin
+            wait_acc_store_d = 1'b0;
         end
 
 // this is not needed in the case since we
@@ -164,8 +175,8 @@ module controller import ariane_pkg::*; #(
     // Halt Logic
     // ----------------------
     always_comb begin
-        // halt the core if the fence is active
-        halt_o = halt_csr_i || fence_active_q;
+        // halt the core if the fence is active, or if it is waiting for an accelerator store
+        halt_o = halt_csr_i || fence_active_q || wait_acc_store_q;
     end
 
     // ----------------------
@@ -173,12 +184,14 @@ module controller import ariane_pkg::*; #(
     // ----------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            fence_active_q <= 1'b0;
-            flush_dcache_o <= 1'b0;
+            fence_active_q   <= 1'b0;
+            wait_acc_store_q <= 1'b0;
+            flush_dcache_o   <= 1'b0;
         end else begin
-            fence_active_q <= fence_active_d;
+            fence_active_q   <= fence_active_d;
+            wait_acc_store_q <= wait_acc_store_d;
             // register on the flush signal, this signal might be critical
-            flush_dcache_o <= flush_dcache;
+            flush_dcache_o   <= flush_dcache;
         end
     end
 endmodule

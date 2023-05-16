@@ -37,6 +37,7 @@ module decoder import ariane_pkg::*; #(
     input  logic               debug_mode_i,            // we are in debug mode
     input  riscv::xs_t         fs_i,                    // floating point extension status
     input  logic [2:0]         frm_i,                   // floating-point dynamic rounding mode
+    input  riscv::xs_t         vs_i,                    // vector extension status
     input  logic               tvm_i,                   // trap virtual memory
     input  logic               tw_i,                    // timeout wait
     input  logic               tsr_i,                   // trap sret
@@ -58,7 +59,7 @@ module decoder import ariane_pkg::*; #(
     // Immediate select
     // --------------------
     enum logic[3:0] {
-        NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3
+        NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3, INSN
     } imm_select;
 
     riscv::xlen_t imm_i_type;
@@ -67,6 +68,50 @@ module decoder import ariane_pkg::*; #(
     riscv::xlen_t imm_u_type;
     riscv::xlen_t imm_uj_type;
     riscv::xlen_t imm_bi_type;
+
+    // ---------------------------------------
+    // Accelerator instructions' first-pass decoder
+    // ---------------------------------------
+    logic is_accel;
+    logic is_rs1;
+    logic is_rs2;
+    logic is_rd;
+    logic is_fs1;
+    logic is_fs2;
+    logic is_fd;
+    logic is_vfp;
+    logic is_load;
+    logic is_store;
+
+    if (ENABLE_ACCELERATOR) begin: gen_accel_decoder
+        // This module is responsible for a light-weight decoding of accelerator instructions,
+        // identifying them, but also whether they read/write scalar registers.
+        // Accelerators are supposed to define this module.
+        cva6_accel_first_pass_decoder i_accel_decoder (
+            .instruction_i(instruction_i),
+            .is_accel_o(is_accel),
+            .is_rs1_o(is_rs1),
+            .is_rs2_o(is_rs2),
+            .is_rd_o(is_rd),
+            .is_fs1_o(is_fs1),
+            .is_fs2_o(is_fs2),
+            .is_fd_o(is_fd),
+            .is_vfp_o(is_vfp),
+            .is_load_o(is_load),
+            .is_store_o(is_store)
+        );
+    end: gen_accel_decoder else begin
+        assign is_accel = 1'b0;
+        assign is_rs1   = 1'b0;
+        assign is_rs2   = 1'b0;
+        assign is_rd    = 1'b0;
+        assign is_fs1   = 1'b0;
+        assign is_fs2   = 1'b0;
+        assign is_fd    = 1'b0;
+        assign is_vfp   = 1'b0;
+        assign is_load  = 1'b0;
+        assign is_store = 1'b0;
+    end
 
     always_comb begin : decoder
 
@@ -86,6 +131,7 @@ module decoder import ariane_pkg::*; #(
         instruction_o.is_compressed = is_compressed_i;
         instruction_o.use_zimm      = 1'b0;
         instruction_o.bp            = branch_predict_i;
+        instruction_o.vfp           = 1'b0;
         ecall                       = 1'b0;
         ebreak                      = 1'b0;
         check_fprm                  = 1'b0;
@@ -1143,6 +1189,7 @@ module decoder import ariane_pkg::*; #(
                 default: illegal_instr = 1'b1;
             endcase
         end
+
         if (CVXIF_PRESENT) begin
             if (is_illegal_i || illegal_instr) begin
                 instruction_o.fu    = CVXIF;
@@ -1151,6 +1198,39 @@ module decoder import ariane_pkg::*; #(
                 instruction_o.rd    = instr.r4type.rd;
                 instruction_o.op    = ariane_pkg::OFFLOAD;
                 imm_select          = RS3;
+            end
+        end
+
+        // Accelerator instructions.
+        // These can overwrite the previous decoding entirely.
+        if (ENABLE_ACCELERATOR) begin // only generate decoder if accelerators are enabled (static)
+            if (is_accel && vs_i != riscv::Off) begin // trigger illegal instruction if the vector extension is turned off
+                // TODO: Instruction going to other accelerators might need to distinguish whether the value of vs_i is needed or not.
+                // Send accelerator instructions to the coprocessor
+                instruction_o.fu  = ACCEL;
+                instruction_o.vfp = is_vfp;
+                instruction_o.rs1 = (is_rs1 || is_fs1) ? instr.rtype.rs1 : {REG_ADDR_SIZE{1'b0}};
+                instruction_o.rs2 = (is_rs2 || is_fs2) ? instr.rtype.rs2 : {REG_ADDR_SIZE{1'b0}};
+                instruction_o.rd  = (is_rd || is_fd) ? instr.rtype.rd : {REG_ADDR_SIZE{1'b0}};
+
+                // Decode the vector operation
+                unique case ({is_store, is_load, is_fs1, is_fs2, is_fd})
+                    5'b10000: instruction_o.op = ACCEL_OP_STORE;
+                    5'b01000: instruction_o.op = ACCEL_OP_LOAD;
+                    5'b00100: instruction_o.op = ACCEL_OP_FS1;
+                    5'b00001: instruction_o.op = ACCEL_OP_FD;
+                    5'b00000: instruction_o.op = ACCEL_OP;
+                endcase
+
+                // Ensure the decoding is sane
+                is_control_flow_instr_o = 1'b0;
+                check_fprm = 1'b0;
+
+                // Forward the undecoded instruction in the `result` field
+                imm_select = INSN;
+
+                // Check that mstatus.FS is not OFF if we have a FP instruction for the accelerator
+                illegal_instr = (is_vfp && (fs_i == riscv::Off)) ? 1'b1 : 1'b0;
             end
         end
     end
@@ -1192,6 +1272,11 @@ module decoder import ariane_pkg::*; #(
             RS3: begin
                 // result holds address of fp operand rs3
                 instruction_o.result = {{riscv::XLEN-5{1'b0}}, instr.r4type.rs3};
+                instruction_o.use_imm = 1'b0;
+            end
+            INSN : begin
+                // result holds the undecoded instruction
+                instruction_o.result = { {riscv::XLEN-32{1'b0}}, instruction_i[31:0] };
                 instruction_o.use_imm = 1'b0;
             end
             default: begin

@@ -62,6 +62,14 @@ module issue_stage import ariane_pkg::*; #(
     output logic                                     x_issue_valid_o,
     input  logic                                     x_issue_ready_i,
     output logic [31:0]                              x_off_instr_o,
+    input  logic                                     acc_ready_i,
+    output logic                                     acc_valid_o,
+    input  logic                                     acc_ld_disp_i,
+    input  logic                                     acc_st_disp_i,
+    input  logic                                     acc_ld_complete_i,
+    input  logic                                     acc_st_complete_i,
+    input  logic                                     acc_flush_undisp_i,
+    input  logic                                     acc_cons_en_i,
 
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,

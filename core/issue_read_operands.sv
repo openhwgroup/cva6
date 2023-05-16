@@ -67,6 +67,15 @@ module issue_read_operands import ariane_pkg::*; #(
     output logic                                   cvxif_valid_o,
     input  logic                                   cvxif_ready_i,
     output logic [31:0]                            cvxif_off_instr_o,
+    // Accelerator
+    input  logic                                   acc_ready_i,      // FU is ready
+    output logic                                   acc_valid_o,      // Output is valid
+    input  logic                                   acc_ld_disp_i,    // Load dispatched to accelerator
+    input  logic                                   acc_st_disp_i,    // Store dispatched to accelerator
+    input  logic                                   acc_ld_complete_i,// Load in accelerator complete
+    input  logic                                   acc_st_complete_i,// Store in accelerator complete
+    input  logic                                   acc_flush_undisp_i,//Undispatched accelerator instructions are flushed
+    input  logic                                   acc_cons_en_i,
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_i,
     input  logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_i,
@@ -98,6 +107,7 @@ module issue_read_operands import ariane_pkg::*; #(
     logic       branch_valid_q;
     logic        cvxif_valid_q;
     logic [31:0] cvxif_off_instr_q;
+    logic          acc_valid_q;
 
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q; // operation to perform
@@ -105,6 +115,10 @@ module issue_read_operands import ariane_pkg::*; #(
 
     // forwarding signals
     logic forward_rs1, forward_rs2, forward_rs3;
+
+    // Accelerator load/store pending signals
+    logic acc_no_ld_pending;
+    logic acc_no_st_pending;
 
     // original instruction stored in tval
     riscv::instruction_t orig_instr;
@@ -132,6 +146,7 @@ module issue_read_operands import ariane_pkg::*; #(
     assign cvxif_valid_o       = CVXIF_PRESENT ? cvxif_valid_q : '0;
     assign cvxif_off_instr_o   = CVXIF_PRESENT ? cvxif_off_instr_q : '0;
     assign stall_issue_o       = stall;
+    assign acc_valid_o         = acc_valid_q;
     // ---------------
     // Issue Stage
     // ---------------
@@ -150,6 +165,8 @@ module issue_read_operands import ariane_pkg::*; #(
                 fu_busy = ~lsu_ready_i;
             CVXIF:
                 fu_busy = ~cvxif_ready_i;
+            ACCEL:
+                fu_busy = ~acc_ready_i;
             default:
                 fu_busy = 1'b0;
         endcase
@@ -207,6 +224,14 @@ module issue_read_operands import ariane_pkg::*; #(
                 stall = 1'b1;
             end
         end
+
+        if (issue_instr_i.fu == LOAD && acc_cons_en_i) begin
+            stall |= !acc_no_st_pending;
+        end
+
+        if (issue_instr_i.fu == STORE && acc_cons_en_i) begin
+            stall |= !(acc_no_ld_pending && acc_no_st_pending);
+        end
     end
 
     // Forwarding/Output MUX
@@ -248,9 +273,9 @@ module issue_read_operands import ariane_pkg::*; #(
             // zero extend operand a
             operand_a_n = {{riscv::XLEN-5{1'b0}}, issue_instr_i.rs1[4:0]};
         end
-        // or is it an immediate (including PC), this is not the case for a store and control flow instructions
+        // or is it an immediate (including PC), this is not the case for a store, control flow, and accelerator instructions
         // also make sure operand B is not already used as an FP operand
-        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW) && !is_rs2_fpr(issue_instr_i.op)) begin
+        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW) && (issue_instr_i.fu != ACCEL) && !is_rs2_fpr(issue_instr_i.op)) begin
             operand_b_n = issue_instr_i.result;
         end
     end
@@ -267,6 +292,7 @@ module issue_read_operands import ariane_pkg::*; #(
         fpu_rm_q       <= 3'b0;
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
+        acc_valid_q    <= 1'b0;
       end else begin
         alu_valid_q    <= 1'b0;
         lsu_valid_q    <= 1'b0;
@@ -276,6 +302,7 @@ module issue_read_operands import ariane_pkg::*; #(
         fpu_rm_q       <= 3'b0;
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
+        acc_valid_q    <= 1'b0;
         // Exception pass through:
         // If an exception has occurred simply pass it through
         // we do not want to issue this instruction
@@ -306,6 +333,9 @@ module issue_read_operands import ariane_pkg::*; #(
                 CSR: begin
                     csr_valid_q    <= 1'b1;
                 end
+                ACCEL: begin
+                    acc_valid_q    <= 1'b1;
+                end
                 default:;
             endcase
         end
@@ -318,6 +348,7 @@ module issue_read_operands import ariane_pkg::*; #(
             fpu_valid_q    <= 1'b0;
             csr_valid_q    <= 1'b0;
             branch_valid_q <= 1'b0;
+            acc_valid_q    <= 1'b0;
         end
       end
     end
@@ -529,6 +560,103 @@ module issue_read_operands import ariane_pkg::*; #(
             branch_predict_o      <= issue_instr_i.bp;
         end
     end
+
+    // ---------------------
+    //  Load/Store tracking
+    // ---------------------
+
+    // Accelerator instruction is acknowleged and will be issued the next cycle
+    logic acc_valid_d;
+
+    assign acc_valid_d = !issue_instr_i.ex.valid && issue_instr_valid_i && issue_ack_o && (issue_instr_i.fu == ACCEL) && !flush_i;
+
+    // Loads
+    logic       acc_spec_loads_overflow;
+    logic [2:0] acc_spec_loads_pending;
+    logic       acc_disp_loads_overflow;
+    logic [2:0] acc_disp_loads_pending;
+
+    assign acc_no_ld_pending = (acc_spec_loads_pending == 3'b0) && (acc_disp_loads_pending == 3'b0);
+
+    // Count speculative loads. These can still be flushed.
+    counter #(
+        .WIDTH           (3),
+        .STICKY_OVERFLOW (0)
+    ) i_acc_spec_loads (
+        .clk_i           (clk_i                   ),
+        .rst_ni          (rst_ni                  ),
+        .clear_i         (acc_flush_undisp_i      ),
+        .en_i            ((acc_valid_d && issue_instr_i.op == ACCEL_OP_LOAD) ^ acc_ld_disp_i),
+        .load_i          (1'b0                    ),
+        .down_i          (acc_ld_disp_i           ),
+        .d_i             ('0                      ),
+        .q_o             (acc_spec_loads_pending  ),
+        .overflow_o      (acc_spec_loads_overflow )
+    );
+
+    // Count dispatched loads. These cannot be flushed anymore.
+    counter #(
+        .WIDTH           (3),
+        .STICKY_OVERFLOW (0)
+    ) i_acc_disp_loads (
+        .clk_i           (clk_i                   ),
+        .rst_ni          (rst_ni                  ),
+        .clear_i         (1'b0                    ),
+        .en_i            (acc_ld_disp_i ^ acc_ld_complete_i),
+        .load_i          (1'b0                    ),
+        .down_i          (acc_ld_complete_i       ),
+        .d_i             ('0                      ),
+        .q_o             (acc_disp_loads_pending  ),
+        .overflow_o      (acc_disp_loads_overflow )
+    );
+
+    acc_dispatcher_no_load_overflow: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) (acc_spec_loads_overflow == 1'b0) && (acc_disp_loads_overflow == 1'b0) )
+    else $error("[acc_dispatcher] Too many pending loads.");
+
+    // Stores
+    logic       acc_spec_stores_overflow;
+    logic [2:0] acc_spec_stores_pending;
+    logic       acc_disp_stores_overflow;
+    logic [2:0] acc_disp_stores_pending;
+
+    assign acc_no_st_pending = (acc_spec_stores_pending == 3'b0) && (acc_disp_stores_pending == 3'b0);
+
+    // Count speculative stores. These can still be flushed.
+    counter #(
+        .WIDTH           (3),
+        .STICKY_OVERFLOW (0)
+    ) i_acc_spec_stores (
+        .clk_i           (clk_i                   ),
+        .rst_ni          (rst_ni                  ),
+        .clear_i         (acc_flush_undisp_i      ),
+        .en_i            ((acc_valid_d && issue_instr_i.op == ACCEL_OP_STORE) ^ acc_st_disp_i),
+        .load_i          (1'b0                    ),
+        .down_i          (acc_st_disp_i           ),
+        .d_i             ('0                      ),
+        .q_o             (acc_spec_stores_pending ),
+        .overflow_o      (acc_spec_stores_overflow)
+    );
+
+    // Count dispatched stores. These cannot be flushed anymore.
+    counter #(
+        .WIDTH           (3),
+        .STICKY_OVERFLOW (0)
+    ) i_acc_disp_stores (
+        .clk_i           (clk_i                   ),
+        .rst_ni          (rst_ni                  ),
+        .clear_i         (1'b0                    ),
+        .en_i            (acc_st_disp_i ^ acc_st_complete_i),
+        .load_i          (1'b0                    ),
+        .down_i          (acc_st_complete_i       ),
+        .d_i             ('0                      ),
+        .q_o             (acc_disp_stores_pending ),
+        .overflow_o      (acc_disp_stores_overflow)
+    );
+
+    acc_dispatcher_no_store_overflow: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) (acc_spec_stores_overflow == 1'b0) && (acc_disp_stores_overflow == 1'b0) )
+    else $error("[acc_dispatcher] Too many pending stores.");
 
     //pragma translate_off
     initial begin

@@ -19,6 +19,7 @@ module store_unit import ariane_pkg::*; #(
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,  // Asynchronous reset active low
     input  logic                     flush_i,
+    input  logic                     stall_st_i,
     output logic                     no_st_pending_o,
     output logic                     store_buffer_empty_o,
     // store unit input port
@@ -210,7 +211,7 @@ module store_unit import ariane_pkg::*; #(
     assign store_buffer_valid = st_valid & (amo_op_q == AMO_NONE);
     assign amo_buffer_valid = st_valid & (amo_op_q != AMO_NONE);
 
-    assign st_ready = store_buffer_ready & amo_buffer_ready;
+    assign st_ready = store_buffer_ready & amo_buffer_ready & ~stall_st_i;
 
     // ---------------
     // Store Queue
