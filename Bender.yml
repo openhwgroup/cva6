@@ -31,6 +31,7 @@ sources:
           - core/mmu_sv39/tlb.sv
           - core/mmu_sv39/mmu.sv
           - core/mmu_sv39/ptw.sv
+          - corev_apu/tb/common/mock_uart.sv
 
       - target: cv64a6_imafdc_sv39
         files:
