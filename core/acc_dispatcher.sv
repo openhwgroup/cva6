@@ -202,6 +202,6 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   assign acc_resp_ready_o = 1'b1;
 
   // Signal dispatched load/store to issue stage
-  assign acc_ld_disp_o = acc_req_valid && (acc_insn_queue_o.operator == ACCEL_OP_LOAD);
-  assign acc_st_disp_o = acc_req_valid && (acc_insn_queue_o.operator == ACCEL_OP_STORE);
+  assign acc_ld_disp_o = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
+  assign acc_st_disp_o = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_STORE);
 endmodule : acc_dispatcher
