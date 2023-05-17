@@ -30,7 +30,7 @@ Event Selector
 -------------------------------
 The event selector CSRs ``mhpm_event_3`` to ``mhpm_event_8`` controls which of the events are counted by the six generic event counters ``mhpm_counter_3`` to ``mhpm_counter_8`` respectively.
 
-The five least significant bit(LSB) of the event selector CSRs are written to select the event that one needs to count from a particular generic event counter.Thus, we can count six different events at a time using the six generic counters. 
+The five least significant bit(LSB) of the event selector CSRs are written to select the event that one needs to count from a particular generic event counter. Thus, we can count six different events at a time using the six generic counters. 
 
 Each of the six generic performance counters is able to monitor events from one of these sources:
 
