@@ -1,0 +1,29 @@
+// -*- coding: utf-8 -*-
+// Copyright (C) 2022 Thales DIS France SAS
+// SPDX-License-Identifier: Apache-2.0.
+// Original Author: Zbigniew Chamski (Thales)
+
+{
+    // Name of the project
+    name: "riscv-isa-sim",
+
+    // Target directory: relative to the location of this script.
+    target_dir: "riscv/riscv-isa-sim",
+
+    // Upstream repository
+    upstream: {
+        // URL
+        url: "https://github.com/riscv/riscv-isa-sim.git",
+        // revision
+        rev: "e93b9cbbbcd3ad0a02ae298e9f1a2d98d3ac0153",
+    }
+
+    // Patch dir for local changes
+    patch_dir: "patches/riscv-isa-sim",
+
+    // Exclusions from upstream content
+    exclude_from_upstream: [
+	".github",
+	"ci-tests",
+    ]
+}

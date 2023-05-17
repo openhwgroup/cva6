@@ -66,6 +66,7 @@ variables:
 
 stages:
   - .pre
+  - build_tools
   - one
   - two
   - three
@@ -91,9 +92,8 @@ initjob:
     reports:
       dotenv: .env
 
-
 pub_check_env:
-  stage: one
+  stage: .pre
   extends:
     - .template_job_low_footprint
     - .template_job_full_ci
@@ -104,6 +104,7 @@ pub_check_env:
     - echo $VERILATOR_ROOT
     - echo $VERILATOR_INSTALL_DIR
     - echo $SPIKE_ROOT
+    - echo $SPIKE_INSTALL_DIR
     - echo $BBL_ROOT
     - echo $SYN_VCS_BASHRC
     - echo $SYN_DCSHELL_BASHRC
@@ -134,12 +135,36 @@ pub_check_env:
     - echo $SYNTH_PERIOD
     - echo $LIB_VERILOG
 
+pub_build_tools:
+  stage: build_tools
+  extends:
+    - .template_job_full_ci
+  needs: []
+  script:
+    # ROOT_PROJECT is used by Spike installer and designates the toplevel of core-v-verif tree.
+    - 'export ROOT_PROJECT=$(pwd)'
+    # If a local build of Spike is requested, clean up build and installation directories.
+    - '[ -n "$SPIKE_INSTALL_DIR" -a "$SPIKE_INSTALL_DIR" = "__local__" ] && rm -rf vendor/riscv/riscv-isa-sim/build'
+    - '[ -n "$SPIKE_INSTALL_DIR" -a "$SPIKE_INSTALL_DIR" = "__local__" ] && rm -rf tools/spike'
+    # Create default directory corresponding to the artifact path.
+    - mkdir -p tools/spike
+    # Set up Spike, whether locally built or pre-installed.
+    # If initially set to "__local__", SPIKE_INSTALL_DIR will be resolved
+    # to an absolute path by the installation script.
+    - source cva6/regress/install-spike.sh
+    # Strip locally built binaries and customext library to reduce artifact size.
+    - '[ -f $(pwd)/tools/spike/bin/spike ] && strip $(pwd)/tools/spike/bin/spike* $(pwd)/tools/spike/lib/libcustomext.so'
+  artifacts:
+    paths:
+      - tools/spike/
 
 pub_smoke:
   stage: one
   extends:
     - .template_job_full_ci
-  needs: []
+  needs:
+    - job: pub_build_tools
+      artifacts: true
   parallel:
     matrix:
       - DV_SIMULATORS: ["veri-testharness,spike","vcs-testharness,spike","vcs-uvm,spike" ]
@@ -170,6 +195,8 @@ pub_riscv_arch_test:
   extends:
     - .template_job_short_ci
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   parallel:
@@ -197,6 +224,8 @@ csr_test:
   extends:
     - .template_job_short_ci
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   parallel:
@@ -224,6 +253,8 @@ pub_hwconfig:
   extends:
     - .template_job_short_ci
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   parallel:
@@ -252,6 +283,8 @@ pub_compliance:
   extends:
     - .template_job_short_ci
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   parallel:
@@ -280,6 +313,8 @@ pub_tests-v:
   extends:
     - .template_job_short_ci
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   parallel:
@@ -309,6 +344,8 @@ pub_tests-p:
   extends:
     - .template_job_short_ci
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   parallel:
@@ -429,7 +466,9 @@ pub_benchmarks:
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator of some benchmark"
     DASHBOARD_SORT_INDEX: 7
     DASHBOARD_JOB_CATEGORY: "Test suites"
-  needs: []
+  needs:
+    - job: pub_build_tools
+      artifacts: true
   script:
     - mkdir -p artifacts/reports
     - python3 .gitlab-ci/scripts/report_fail.py
@@ -448,6 +487,8 @@ pub_coremark:
   extends:
     - .template_job_full_ci
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   variables:
@@ -470,6 +511,8 @@ pub_dhrystone:
   extends:
     - .template_job_full_ci
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   variables:
@@ -491,7 +534,9 @@ pub_wb_dcache:
   stage: three
   extends:
     - .template_job_always_manual
-  needs: []
+  needs:
+    - job: pub_build_tools
+      artifacts: true
   variables:
     DASHBOARD_JOB_TITLE: "Writeback Data Cache test"
     DASHBOARD_JOB_DESCRIPTION: "Test of IP wb_dcache"
@@ -549,6 +594,8 @@ pub_generated_tests:
   stage: two
   tags: [$TAGS_RUNNER]
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   variables:

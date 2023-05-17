@@ -1,4 +1,4 @@
-#include "../../riscv-isa-sim/arch_test_target/spike/model_test.h"
+#include "model_test.h"
 .macro init
 .endm
 .section .text.init

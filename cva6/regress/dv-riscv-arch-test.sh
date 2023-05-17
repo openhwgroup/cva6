@@ -16,7 +16,6 @@ fi
 # install the required tools
 source ./cva6/regress/install-cva6.sh
 source ./cva6/regress/install-riscv-dv.sh
-source ./cva6/regress/install-riscv-isa-sim.sh
 source ./cva6/regress/install-riscv-arch-test.sh
 
 if ! [ -n "$DV_TARGET" ]; then
@@ -28,5 +27,5 @@ if ! [ -n "$DV_SIMULATORS" ]; then
 fi
 
 cd cva6/sim
-python3 cva6.py --testlist=../tests/testlist_riscv-arch-test-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-isa-sim/arch_test_target/spike/link.ld
+python3 cva6.py --testlist=../tests/testlist_riscv-arch-test-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
 cd -

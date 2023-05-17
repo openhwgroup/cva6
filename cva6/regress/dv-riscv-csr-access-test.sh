@@ -16,7 +16,6 @@ fi
 # install the required tools
 source ./cva6/regress/install-cva6.sh
 source ./cva6/regress/install-riscv-dv.sh
-source ./cva6/regress/install-riscv-isa-sim.sh
 source ./cva6/regress/install-riscv-arch-test.sh
 
 if ! [ -n "$DV_TARGET" ]; then
