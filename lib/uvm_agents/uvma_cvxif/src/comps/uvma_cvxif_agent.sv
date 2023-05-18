@@ -141,7 +141,9 @@ function void uvma_cvxif_agent_c::create_components();
    monitor    = uvma_cvxif_mon_c ::type_id::create("monitor"  , this);
    vsequencer = uvma_cvxif_vsqr_c ::type_id::create("vsequencer", this);
    driver     = uvma_cvxif_drv_c ::type_id::create("driver"   , this);
-   cov_model  = uvma_cvxif_cov_model_c ::type_id::create("cov_model"   , this);
+   if (cfg.cov_model_enabled) begin
+      cov_model  = uvma_cvxif_cov_model_c ::type_id::create("cov_model"   , this);
+   end
 
 endfunction : create_components
 
@@ -159,8 +161,10 @@ endfunction : connect_analysis_ports
 
 function void uvma_cvxif_agent_c::connect_cov_model();
 
-   monitor.req_ap.connect(cov_model.req_item_fifo.analysis_export);
-   monitor.resp_ap.connect(cov_model.resp_item_fifo.analysis_export);
+   if (cfg.cov_model_enabled) begin
+      monitor.req_ap.connect(cov_model.req_item_fifo.analysis_export);
+      monitor.resp_ap.connect(cov_model.resp_item_fifo.analysis_export);
+   end
 
 endfunction : connect_cov_model
 
