@@ -32,6 +32,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
    uvma_cvxif_cntxt_c      cvxif_cntxt;
    uvma_axi_cntxt_c        axi_cntxt;
    uvma_cva6_core_cntrl_cntxt_c  core_cntrl_cntxt;
+   uvma_rvfi_cntxt_c       rvfi_cntxt;
 
 // Memory modelling
    rand uvml_mem_c                   mem;
@@ -45,6 +46,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
       `uvm_field_object(clknrst_cntxt,   UVM_DEFAULT)
       `uvm_field_object(axi_cntxt,     UVM_DEFAULT)
       `uvm_field_object(core_cntrl_cntxt,   UVM_DEFAULT)
+      `uvm_field_object(rvfi_cntxt,      UVM_DEFAULT)
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
       `uvm_field_object(mem, UVM_DEFAULT)
@@ -70,6 +72,7 @@ function uvme_cva6_cntxt_c::new(string name="uvme_cva6_cntxt");
    core_cntrl_cntxt   = uvma_cva6_core_cntrl_cntxt_c::type_id::create("core_cntrl_cntxt");
    axi_cntxt       = uvma_axi_cntxt_c::type_id::create("axi_cntxt");
    mem = uvml_mem_c::type_id::create("mem");
+   rvfi_cntxt      = uvma_rvfi_cntxt_c::type_id::create("rvfi_cntxt");
 
    sample_cfg_e   = new("sample_cfg_e"  );
    sample_cntxt_e = new("sample_cntxt_e");

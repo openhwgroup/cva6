@@ -40,6 +40,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand uvma_clknrst_cfg_c    clknrst_cfg;
    rand uvma_cvxif_cfg_c      cvxif_cfg;
    rand uvma_axi_cfg_c        axi_cfg;
+   rand uvma_rvfi_cfg_c#(ILEN,XLEN)       rvfi_cfg;
+   rand uvma_isacov_cfg_c                 isacov_cfg;
 
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
@@ -54,6 +56,10 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(cvxif_cfg, UVM_DEFAULT)
 
       `uvm_field_object(axi_cfg, UVM_DEFAULT)
+
+      `uvm_field_object(rvfi_cfg,    UVM_DEFAULT)
+
+      `uvm_field_object(isacov_cfg,  UVM_DEFAULT)
 
    `uvm_object_utils_end
 
@@ -102,7 +108,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       pmp_supported          == 0;
       debug_supported        == 1;
 
-      unaligned_access_supported     == 1;
+      unaligned_access_supported     == 0;
       unaligned_access_amo_supported == 0;
 
       bitmanip_version        == BITMANIP_VERSION_1P00;
@@ -129,18 +135,34 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    constraint agent_cfg_cons {
       if (enabled) {
          clknrst_cfg.enabled   == 1;
+         isacov_cfg.enabled    == 1;
+         rvfi_cfg.enabled      == 1;
       }
+      
+      isacov_cfg.seq_instr_group_x2_enabled == 1;
+      isacov_cfg.seq_instr_group_x3_enabled == 0;
+      isacov_cfg.seq_instr_group_x4_enabled == 0;
+      isacov_cfg.seq_instr_x2_enabled       == 1;
+      isacov_cfg.reg_crosses_enabled        == 1;
+      isacov_cfg.reg_hazards_enabled        == 1;
+      rvfi_cfg.nret                         == RVFI_NRET;
+      
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active   == UVM_ACTIVE;
+         isacov_cfg.is_active    == UVM_PASSIVE;
+         rvfi_cfg.is_active      == UVM_PASSIVE;
       }
 
       if (trn_log_enabled) {
-         clknrst_cfg.trn_log_enabled   == 1;
+         clknrst_cfg.trn_log_enabled   == 0;
          axi_cfg.trn_log_enabled       == 1;
+         rvfi_cfg.trn_log_enabled      == 1;
+         isacov_cfg.trn_log_enabled    == 1;
       }
 
       if (cov_model_enabled) {
-         cvxif_cfg.cov_model_enabled == 1;
+         cvxif_cfg.cov_model_enabled  == 1;
+         isacov_cfg.cov_model_enabled == 1;
       }
 
    }
@@ -165,6 +187,11 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    cvxif_cfg    = uvma_cvxif_cfg_c::type_id::create("cvxif_cfg");
    axi_cfg      = uvma_axi_cfg_c::type_id::create("axi_cfg");
+   rvfi_cfg     = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
+   isacov_cfg   = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
+
+   isacov_cfg.core_cfg = this;
+   rvfi_cfg.core_cfg = this;
 
 endfunction : new
 
