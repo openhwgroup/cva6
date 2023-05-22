@@ -88,6 +88,7 @@ function void uvme_cva6_cov_model_c::build_phase(uvm_phase phase);
    end
 
    cvxif_covg = uvme_cvxif_covg_c::type_id::create("cvxif_covg", this);
+   uvm_config_db#(uvme_cva6_cfg_c)::set(this, "cvxif_covg", "cfg", cfg);
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "cvxif_covg", "cntxt", cntxt);
 
 endfunction : build_phase

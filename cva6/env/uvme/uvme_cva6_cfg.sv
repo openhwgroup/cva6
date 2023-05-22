@@ -74,8 +74,10 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    }
 
    constraint cvxif_feature { //CVA6 do not support dual read & write also the memory interface
-      soft cvxif_cfg.dual_read_write_support_x == 0;
-      soft cvxif_cfg.load_store_support_x == 0;
+      cvxif_cfg.dual_read_write_support_x == 0;
+      cvxif_cfg.load_store_support_x == 0;
+      cvxif_cfg.seq_cus_instr_x2_enabled == 1;
+      cvxif_cfg.reg_cus_crosses_enabled == 1;
    }
    constraint cva6_riscv_cons {
       xlen == uvma_core_cntrl_pkg::MXL_32;
