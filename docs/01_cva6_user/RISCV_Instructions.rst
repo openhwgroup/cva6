@@ -983,7 +983,7 @@ Integer Computational Instructions
 
 - **C.ADDI4SPN**: Addition Immediate Scaled by 4, to Stack Pointer
 
-    **Format**: c.addi4spn nzimm[9:2]
+    **Format**: c.addi4spn rd', nzimm[9:2]
 
     **Description**: adds a zero-extended non-zero immediate, scaled by 4, to the stack pointer, x2, and writes the result to rd'. This instruction is used to generate pointers to stack-allocated variables.
 
