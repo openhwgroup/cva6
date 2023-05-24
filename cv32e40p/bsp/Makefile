@@ -6,7 +6,7 @@ RISCV_AR = $(RISCV_EXE_PREFIX)ar
 SRC = crt0.S handlers.S syscalls.c vectors.S
 OBJ = crt0.o handlers.o syscalls.o vectors.o
 LIBCV-VERIF = libcv-verif.a 
-CFLAGS ?= -Os -g -static -mabi=ilp32 -march=rv32imc -Wall -pedantic
+CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(CV_SW_MARCH) -Wall -pedantic
 
 all: $(LIBCV-VERIF)
 
@@ -26,6 +26,7 @@ clean:
 vars:
 	@echo "make bsp variables:"
 	@echo "   CV_SW_TOOLCHAIN  = $(CV_SW_TOOLCHAIN)"
+	@echo "   CV_SW_MARCH      = $(CV_SW_MARCH)"
 	@echo "   RISCV            = $(RISCV)"
 	@echo "   RISCV_EXE_PREFIX = $(RISCV_EXE_PREFIX)"
 	@echo "   RISCV_GCC        = $(RISCV_GCC)"
