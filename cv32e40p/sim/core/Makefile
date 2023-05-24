@@ -453,7 +453,7 @@ xrun-test: xrun-all $(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 		$(XRUN_FLAGS) \
 		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(TEST_PROGRAM_PATH)/$(TEST)/$(CUSTOM_PROG).hex
+		+firmware=$(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 
 # Cadence Xcelium xrun cleanup
 .PHONY: xrun-clean xrun-clean-all

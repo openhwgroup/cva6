@@ -30,7 +30,8 @@ endif
 
 # Executables
 VCS              = $(CV_SIM_PREFIX) vcs
-SIMV             = $(CV_TOOL_PREFIX) simv -licwait 20
+#SIMV             = $(CV_TOOL_PREFIX) simv -licwait 20
+SIMV             = simv -licwait 20
 DVE              = $(CV_TOOL_PREFIX) dve
 #VERDI            = $(CV_TOOL_PREFIX)verdi
 URG               = $(CV_SIM_PREFIX) urg
@@ -46,13 +47,13 @@ VCS_TIMESCALE = $(shell echo "$(TIMESCALE)" | tr ' ' '=')    # -timescale=1ns/1p
 VCS_UVM_VERBOSITY ?= UVM_MEDIUM
 
 # Flags
-#VCS_UVMHOME_ARG ?= /opt/uvm/1800.2-2017-0.9/
-VCS_UVMHOME_ARG ?= /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm
-VCS_UVM_ARGS          ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) -ntb_opts uvm-1.2
+VCS_VERSION     ?= S-2021.09-SP1
+VCS_UVMHOME_ARG ?= /synopsys/vcs/$(VCS_VERSION)/etc/uvm-1.2
+VCS_UVM_ARGS    ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) -ntb_opts uvm-1.2
 
 VCS_COMP_FLAGS  ?= -lca -sverilog \
-										$(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
-										-assert svaext -race=all -ignore unique_checks -full64
+                   $(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
+                   -assert svaext -race=all -ignore unique_checks -full64
 VCS_GUI         ?=
 VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert -cm_dir $(MAKECMDGOALS).vdb
 
@@ -190,7 +191,7 @@ VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(UVM_PLUSARGS)
 
 comp: mk_vcs_dir $(CV_CORE_PKG) $(SVLIB_PKG) $(OVP_MODEL_DPI)
-	cd $(SIM_CFG_RESULTS)/$(CFG) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
+	cd $(VCS_DIR) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
 	@echo "$(BANNER)"
 	@echo "* $(SIMULATOR) compile complete"
 	@echo "* Log: $(SIM_CFG_RESULTS)/vcs.log"
@@ -221,18 +222,20 @@ export IMPERAS_TOOLS=$(SIM_RUN_RESULTS)/ovpsim.ic
 # The new general test target
 
 test: $(VCS_SIM_PREREQ) hex gen_ovpsim_ic
-	echo $(IMPERAS_TOOLS)
+	@echo "$(BANNER)"
+	@echo "* Running simulation"
+	@echo "$(BANNER)"
 	mkdir -p $(SIM_RUN_RESULTS)
 	cd $(SIM_RUN_RESULTS) && \
-		$(VCS_RESULTS)/$(CFG)/$(SIMV) \
-			-l vcs-$(TEST_NAME).log \
-			-cm_name $(TEST_NAME) $(VCS_RUN_FLAGS) \
-			$(CFG_PLUSARGS) \
-			$(TEST_PLUSARGS) \
-			+UVM_TESTNAME=$(TEST_UVM_TEST) \
+		$(VCS_DIR)/$(SIMV) \
+		-l vcs-$(TEST_NAME).log \
+		-cm_name $(TEST_NAME) $(VCS_RUN_FLAGS) \
+		$(CFG_PLUSARGS) \
+		$(TEST_PLUSARGS) \
+		+UVM_TESTNAME=$(TEST_UVM_TEST) \
     		+elf_file=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
-			+firmware=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
-			+itb_file=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
+		+firmware=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
+		+itb_file=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
 
 ###############################################################################
 # Run a single test-program from the RISC-V Compliance Test-suite. The parent
