@@ -24,5 +24,8 @@
 parameter uvme_cva6_sys_default_clk_period   =  1_500; // 10ns
 parameter uvme_cva6_debug_default_clk_period = 10_000; // 10ns
 
+parameter XLEN = 32;
+parameter ILEN = 32;
+parameter RVFI_NRET = 1;
 
 `endif // __UVME_CVA6_CONSTANTS_SV__

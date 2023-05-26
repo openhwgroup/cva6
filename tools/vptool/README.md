@@ -39,7 +39,8 @@ If you encounter a problem with VPTOOL, please open an issue on this repository 
   use `sudo apt-get install python3-tk`.  On RedHat-based systems (RedHat/CentOS/Fedora), use
   `sudo dnf install python3-tkinter` or `sudo yum install python3-tkinter`, as appropriate.
 
-* PyYAML: a YAML I/O library for Python.  Install using `pip3 install --upgrade pyyaml`.
+* Ruamel YAML: a YAML I/O library for Python with round-trip parse/unparse capabilities.
+  Install using `pip3 install --upgrade ruamel.yaml`.
 
 * Pillow: A replacement for the original PIL (Python Image Library).  Install using
   `pip3 install --upgrade pillow`.
@@ -86,7 +87,7 @@ shell script named `vptool-example.sh` which can be invoked from any location.
 
 ### Directory structure
 
-- VPTOOL-readme.txt           this file
+- README.md                   this file
 - vptool                      the code of `VPTOOL`
 - vptool-example              an example of `VPTOOL` configuration with a verification database
   - runme.sh                  a shell script to run `VPTOOL` with the example database

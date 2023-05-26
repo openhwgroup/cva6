@@ -1,0 +1,104 @@
+!Feature
+next_elt_id: 4
+name: RAS
+id: 6
+display_order: 6
+subfeatures: !!omap
+- 000_flush: !Subfeature
+    name: 000_flush
+    tag: VP_IP006_P000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F006_S000_I000
+        description: The RAS is never flushed.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/RAS
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "NA\n\n[Does it make sense?]"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 0
+        coverage_loc: ''
+        comments: ''
+- 001_table depth: !Subfeature
+    name: 001_table depth
+    tag: VP_IP006_P001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F006_S001_I000
+        description: The RAS FIFO depth is 2.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/RAS
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Confirm that the best configuration for RAS entry number is 2
+          by monitoring the Coremark performance and silicon footprint, the configuration
+          without RAS is to be challenged too.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+- 002_Table update: !Subfeature
+    name: 002_Table update
+    tag: VP_IP006_P002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F006_S002_I000
+        description: When an unconditional jumps to a known target address (JAL instruction)
+          is consummed by the instr_queue, the next pc after the JAL instruction and
+          the return address are stored into a FIFO.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/RAS
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: When a JAL instruction is executed, check that info is stored
+          in RAS
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+- 003_Debug is not intrusive: !Subfeature
+    name: 003_Debug is not intrusive
+    tag: VP_IP006_P003
+    next_elt_id: 1
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F006_S003_I000
+        description: No dedicated specification
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/RAS
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a debug session, check that the table content is not
+          modified
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 32
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: 755afe774cedc2d4910aa802ee20a1f485c1236e $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

@@ -1,0 +1,80 @@
+!Feature
+next_elt_id: 3
+name: Instr_queue
+id: 8
+display_order: 8
+subfeatures: !!omap
+- 000_FIFO depth: !Subfeature
+    name: 000_FIFO depth
+    tag: VP_IP008_P000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F008_S000_I000
+        description: The instruction queue contains max 4 instructions.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/Instr_queue
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Confirm that the best configuration for instruction queue entry
+          number is 4 by monitoring the Coremark performance and silicon footprint
+        pfc: 11
+        test_type: 10
+        cov_method: 10
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 001_Page fault exception: !Subfeature
+    name: 001_Page fault exception
+    tag: VP_IP008_P001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F008_S001_I000
+        description: In instruction queue, exception can only correspond to page-fault
+          exception.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/Instr_queue
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: 'Execute following exception and check that only page-fault can
+          be stored in instruction queue: bus errors, invalid accesses or instruction
+          page faults.'
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+- 002_Flush: !Subfeature
+    name: 002_Flush
+    tag: VP_IP008_P002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F008_S002_I000
+        description: The instruction queue can be flushed by CONTROLLER.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/Instr_queue
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: '[NO NEED TO VERIFY THIS CASE]'
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 0
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: 755afe774cedc2d4910aa802ee20a1f485c1236e $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

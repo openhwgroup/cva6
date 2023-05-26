@@ -555,7 +555,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
                       linker, gcc_opts, elf))
   cmd += (" -march=%s" % isa)
   cmd += (" -mabi=%s" % mabi)
-  run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
+  run_cmd(cmd, debug_cmd = debug_cmd)
   elf2bin(elf, binary, debug_cmd)
   log_list = []
   # ISS simulation
@@ -754,7 +754,7 @@ def setup_parser():
                       help="GCC compile options")
   parser.add_argument("--issrun_opts", type=str, default="+debug_disable=1",
                       help="simulation run options")
-  parser.add_argument("--isscomp_opts", type=str, default="+define+WT_DCACHE+RVFI_TRACE+RVFI_MEM",
+  parser.add_argument("--isscomp_opts", type=str, default="",
                       help="simulation comp options")
   parser.add_argument("--isspostrun_opts", type=str, default="0x0000000080000000",
                       help="simulation post run options")
@@ -816,6 +816,8 @@ def setup_parser():
                       help="custom configuration options, to be passed in config_pkg_generator.py in cva6")
   parser.add_argument("-l", "--linker", type=str, default="",
                       help="Path for the link.ld")
+  parser.add_argument("--axi_active", type=str, default="",
+                      help="switch AXI agent mode: yes for Active, no for Passive")
   return parser
 
 
@@ -857,7 +859,10 @@ def load_config(args, cwd):
       args.isa  = "rv64gc"
     elif args.target == "cv32a60x":
       args.mabi = "ilp32"
-      args.isa  = "rv32imac" # A is needed to compile custom BSP
+      args.isa  = "rv32imc" # Step1 configuration has no A extension.
+    elif args.target == "cv32a6_embedded":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc" # Step1 configuration has no A extension.
     elif args.target == "cv32a6_imac_sv0":
       args.mabi = "ilp32"
       args.isa  = "rv32imac"
@@ -928,7 +933,12 @@ def main():
     parser = setup_parser()
     args = parser.parse_args()
     global issrun_opts
+    if args.axi_active == "yes":
+      args.issrun_opts = args.issrun_opts + " +uvm_set_config_int=*uvm_test_top,force_axi_mode,1"
+    elif args.axi_active == "no":
+      args.issrun_opts = args.issrun_opts + " +uvm_set_config_int=uvm_test_top,force_axi_mode,0"
     issrun_opts = "\""+args.issrun_opts+"\""
+
     global isspostrun_opts
     isspostrun_opts = "\""+args.isspostrun_opts+"\""
     global isscomp_opts

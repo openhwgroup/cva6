@@ -41,6 +41,13 @@ class uvme_cva6_env_c extends uvm_env;
    // Agents
    uvma_clknrst_agent_c   clknrst_agent;
    uvma_cvxif_agent_c     cvxif_agent;
+   uvma_axi_agent_c       axi_agent;
+   uvma_cva6_core_cntrl_agent_c core_cntrl_agent;
+   uvma_rvfi_agent_c#(ILEN,XLEN)      rvfi_agent;
+   uvma_isacov_agent_c#(ILEN,XLEN)    isacov_agent;
+
+   // Handle to agent switch interface
+   virtual uvmt_axi_switch_intf  axi_switch_vif;
 
 
 
@@ -78,6 +85,11 @@ class uvme_cva6_env_c extends uvm_env;
     * Creates and starts the instruction and virtual peripheral sequences in active mode.
     */
    extern virtual task run_phase(uvm_phase phase);
+
+   /**
+    * Get switch vif and set signals values
+    */
+   extern function void retrieve_vif();
 
    /**
     * Assigns configuration handles to components using UVM Configuration Database.
@@ -153,6 +165,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
+      retrieve_vif();
       assign_cfg           ();
       assign_cntxt         ();
       create_agents        ();
@@ -202,6 +215,14 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*cvxif_agent", "cfg", cfg.cvxif_cfg);
 
+   uvm_config_db#(uvma_axi_cfg_c)::set(this, "*axi_agent", "cfg", cfg.axi_cfg);
+
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "core_cntrl_agent", "cfg", cfg);
+
+   uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "*rvfi_agent", "cfg", cfg.rvfi_cfg);
+
+   uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
+
 endfunction: assign_cfg
 
 
@@ -209,6 +230,8 @@ function void uvme_cva6_env_c::assign_cntxt();
 
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
+   uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
+   uvm_config_db#(uvma_rvfi_cntxt_c)::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
 
 endfunction: assign_cntxt
 
@@ -217,6 +240,10 @@ function void uvme_cva6_env_c::create_agents();
 
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    cvxif_agent   = uvma_cvxif_agent_c::type_id::create("cvxif_agent", this);
+   axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
+   core_cntrl_agent = uvma_cva6_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
+   rvfi_agent    = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
+   isacov_agent  = uvma_isacov_agent_c#(ILEN,XLEN)::type_id::create("isacov_agent", this);
 
 endfunction: create_agents
 
@@ -241,6 +268,22 @@ function void uvme_cva6_env_c::create_vsequencer();
 
 endfunction: create_vsequencer
 
+function void uvme_cva6_env_c::retrieve_vif();
+
+   if (!uvm_config_db#(virtual uvmt_axi_switch_intf)::get(this, "", "axi_switch_vif", axi_switch_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(axi_switch_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(axi_switch_vif)), UVM_DEBUG)
+   end
+
+   if(cfg.axi_cfg.is_active == UVM_PASSIVE) begin
+      axi_switch_vif.active <= 0;
+   end else begin
+      axi_switch_vif.active <= 1;
+   end
+
+endfunction : retrieve_vif
 
 function void uvme_cva6_env_c::connect_predictor();
 
@@ -265,22 +308,38 @@ endfunction: connect_scoreboard
 function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
-   vsequencer.cvxif_sequencer     = cvxif_agent.sequencer;
+   vsequencer.cvxif_vsequencer    = cvxif_agent.vsequencer;
+   vsequencer.axi_vsequencer      = axi_agent.vsequencer;
 
 endfunction: assemble_vsequencer
 
 
 task uvme_cva6_env_c::run_phase(uvm_phase phase);
 
-            uvma_cvxif_seq_c        cvxif_seq;
-            cvxif_seq = uvma_cvxif_seq_c::type_id::create("cvxif_seq");
-            cvxif_seq.start(cvxif_agent.sequencer);
+   fork
 
+      begin
+            uvme_cvxif_vseq_c        cvxif_vseq;
+            cvxif_vseq = uvme_cvxif_vseq_c::type_id::create("cvxif_vseq");
+            cvxif_vseq.start(cvxif_agent.vsequencer);
+      end
+
+      begin
+         if(cfg.axi_cfg.is_active == UVM_ACTIVE) begin
+            uvma_axi_vseq_c  axi_vseq;
+            axi_vseq = uvma_axi_vseq_c::type_id::create("axi_vseq");
+            axi_vseq.start(axi_agent.vsequencer);
+         end
+      end
+   join_none
 endtask
 
 function void uvme_cva6_env_c::connect_coverage_model();
 
    cvxif_agent.monitor.req_ap.connect(cov_model.cvxif_covg.req_item_fifo.analysis_export);
+   foreach (rvfi_agent.instr_mon_ap[i]) begin
+      rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_imp);
+   end
 
 endfunction: connect_coverage_model
 

@@ -16,7 +16,7 @@ class uvma_cvxif_agent_c extends uvm_agent;
 
    // Components
    uvma_cvxif_mon_c          monitor;
-   uvma_cvxif_sqr_c          sequencer;
+   uvma_cvxif_vsqr_c         vsequencer;
    uvma_cvxif_drv_c          driver;
    uvma_cvxif_cov_model_c    cov_model;
 
@@ -138,22 +138,22 @@ endfunction : retrieve_vif
 
 function void uvma_cvxif_agent_c::create_components();
 
-   monitor   = uvma_cvxif_mon_c ::type_id::create("monitor"  , this);
-   sequencer = uvma_cvxif_sqr_c ::type_id::create("sequencer", this);
-   driver    = uvma_cvxif_drv_c ::type_id::create("driver"   , this);
-   cov_model = uvma_cvxif_cov_model_c ::type_id::create("cov_model"   , this);
+   monitor    = uvma_cvxif_mon_c ::type_id::create("monitor"  , this);
+   vsequencer = uvma_cvxif_vsqr_c ::type_id::create("vsequencer", this);
+   driver     = uvma_cvxif_drv_c ::type_id::create("driver"   , this);
+   cov_model  = uvma_cvxif_cov_model_c ::type_id::create("cov_model"   , this);
 
 endfunction : create_components
 
 function void uvma_cvxif_agent_c::connect_sequencer_and_driver();
 
-   driver.seq_item_port.connect(sequencer.seq_item_export);
+   driver.seq_item_port.connect(vsequencer.seq_item_export);
 
 endfunction : connect_sequencer_and_driver
 
 function void uvma_cvxif_agent_c::connect_analysis_ports();
 
-   monitor.req_ap.connect(sequencer.mm_req_fifo.analysis_export);
+   monitor.req_ap.connect(vsequencer.mm_req_fifo.analysis_export);
 
 endfunction : connect_analysis_ports
 

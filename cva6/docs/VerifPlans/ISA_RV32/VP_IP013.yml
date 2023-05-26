@@ -1,0 +1,263 @@
+!Feature
+next_elt_id: 6
+name: RV32Zicsr Control and Status Register (CSR) Instructions
+id: 13
+display_order: 13
+subfeatures: !!omap
+- 000_CSRRW: !Subfeature
+    name: 000_CSRRW
+    tag: VP_IP007_P000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F013_S000_I000
+        description: "csrrw rd, rs1, csr\nrd = Zext([csr]); csr = [rs1]"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used\n\
+          All possible rd registers are used\nAll supported CSRs are used\nAll possible\
+          \ register combinations where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F013_S000_I001
+        description: "csrrw rd, rs1, csr\nrd = Zext([csr]); csr = [rs1]"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operand:\n\nNon-zero and zero rs1 operands are used (if\
+          \ rs1 != x0)"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_CSRRS: !Subfeature
+    name: 001_CSRRS
+    tag: VP_IP007_P001
+    next_elt_id: 2
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F013_S001_I000
+        description: "csrrs rd, rs1, csr\nrd = Zext([csr]); csr = [rs1] | csr\nNote\
+          \ that not all bits of csr will be writable."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used\n\
+          All possible rd registers are used\nAll supported CSRs are used\nAll possible\
+          \ register combinations where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F013_S001_I001
+        description: "csrrs rd, rs1, csr\nrd = Zext([csr]); csr = [rs1] | csr\nNote\
+          \ that not all bits of csr will be writable."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operand:\n\nNon-zero and zero rs1 operands are used (if\
+          \ rs1 != x0)"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_CSRRC: !Subfeature
+    name: 002_CSRRC
+    tag: VP_IP007_P002
+    next_elt_id: 2
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F013_S002_I000
+        description: "csrrs rd, rs1, csr\nrd = Zext([csr]); csr = ~[rs1] | csr\nNote\
+          \ that not all bits of csr will be writable."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used\n\
+          All possible rd registers are used\nAll supported CSRs are used\nAll possible\
+          \ register combinations where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F013_S002_I001
+        description: "csrrs rd, rs1, csr\nrd = Zext([csr]); csr = ~[rs1] | csr\nNote\
+          \ that not all bits of csr will be writable."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operand:\n\nNon-zero and zero rs1 operands are used (if\
+          \ rs1 != x0)"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_CSRRWI: !Subfeature
+    name: 003_CSRRWI
+    tag: VP_IP007_P003
+    next_elt_id: 2
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F013_S003_I000
+        description: "csrrwi rd, imm[4:0], csr\nrd = Zext([csr]); csr = Zext(imm[4:0])\n\
+          If rd == x0 then CSR is not read."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd registers are used\nAll\
+          \ supported CSRs are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F013_S003_I001
+        description: "csrrwi rd, imm[4:0], csr\nrd = Zext([csr]); csr = Zext(imm[4:0])\n\
+          If rd == x0 then CSR is not read."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operand:\n\nNon-zero and zero imm[4:0] operands are used\n\
+          All bits of imm[4:0] are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_CSRRSI: !Subfeature
+    name: 004_CSRRSI
+    tag: VP_IP007_P004
+    next_elt_id: 2
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F013_S004_I000
+        description: "csrrsi rd, imm[4:0], csr\nrd = Zext([csr]); csr = Zext(imm[4:0])\
+          \ | csr\nNote that not all bits of csr will be writable."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd registers are used\nAll\
+          \ supported CSRs are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F013_S004_I001
+        description: "csrrsi rd, imm[4:0], csr\nrd = Zext([csr]); csr = Zext(imm[4:0])\
+          \ | csr\nNote that not all bits of csr will be writable."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operand:\n\nNon-zero and zero imm[4:0] operands are used\n\
+          All bits of imm[4:0] are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_CSRRCI: !Subfeature
+    name: 005_CSRRCI
+    tag: VP_IP007_P005
+    next_elt_id: 2
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F013_S005_I000
+        description: "csrrs rd, imm[4:0], csr\nrd = Zext([csr]); csr = ~(Zext(imm[4:0]))\
+          \ | csr\nNote that not all bits of csr will be writable."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd registers are used\nAll\
+          \ supported CSRs are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F013_S005_I001
+        description: "csrrs rd, imm[4:0], csr\nrd = Zext([csr]); csr = ~(Zext(imm[4:0]))\
+          \ | csr\nNote that not all bits of csr will be writable."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operand:\n\nNon-zero and zero imm[4:0] operands are used\n\
+          All bits of imm[4:0] are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

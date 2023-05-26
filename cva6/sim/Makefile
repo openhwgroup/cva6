@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
+# Original Author: Jean-Roch COULON - Thales
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir    := $(dir $(mkfile_path))
@@ -16,6 +16,9 @@ export CVA6_REPO_DIR = $(abspath $(root-dir)../../core-v-cores/cva6/)
 export CVA6_TB_DIR   = $(root-dir)/../tb/core
 export CORE_V_VERIF  = $(root-dir)/../..
 endif
+ifndef TARGET_CFG
+export TARGET_CFG = $(target)
+endif
 
 .DEFAULT_GOAL := help
 
@@ -23,7 +26,7 @@ FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
 # target takes one of the following cva6 hardware configuration:
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32
 target     ?= cv64a6_imafdc_sv39
-FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.$(target)
+FLIST_CORE := $(if $(gate), $(CVA6_REPO_DIR)/core/Flist.cva6_gate,$(CVA6_REPO_DIR)/core/Flist.cva6)
 
 TRACE_FAST      ?=
 TRACE_COMPACT   ?=
@@ -106,13 +109,16 @@ spike:
 ###############################################################################
 vcs-testharness:
 	make -C $(path_var) vcs_build target=$(target) defines=$(subst +define+,,$(isscomp_opts))
-	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/init_testharness.do,) +permissive -sv_lib $(path_var)/work-dpi/ariane_dpi +PRELOAD=$(elf) +permissive-off ++$(elf) $(issrun_opts)
+	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/init_testharness.do,) +permissive -sv_lib $(path_var)/work-dpi/ariane_dpi \
+	  +tohost_addr=$(shell $$RISCV/bin/riscv-none-elf-nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
+	  +PRELOAD=$(elf) +permissive-off ++$(elf) $(issrun_opts)
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 veri-testharness:
-	make -C $(path_var) verilate target=$(target) defines=$(subst +define+,,$(isscomp_opts))
-	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) $(elf) $(issrun_opts)
+	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) $(elf) $(issrun_opts) +PRELOAD=$(elf) \
+	  +tohost_addr=$(shell $$RISCV/bin/riscv-none-elf-nm -B $(elf) | grep -w tohost | cut -d' ' -f1)
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	# If present, move default trace files to per-test directory.
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.$(target).fst
@@ -134,13 +140,17 @@ export CV_CORE_UC             = CVA6
 export DV_UVMT_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt
 export DV_UVME_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme
 export DV_UVML_HRTBT_PATH     = $(CORE_V_VERIF)/lib/uvm_libs/uvml_hrtbt
+export DV_UVMA_CORE_CNTRL_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_core_cntrl
+export DV_UVMA_RVFI_PATH      = $(CORE_V_VERIF)/lib/uvm_agents/uvma_rvfi
 export DV_UVMA_ISACOV_PATH    = $(CORE_V_VERIF)/lib/uvm_agents/uvma_isacov
 export DV_UVMA_CLKNRST_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
 export DV_UVMA_CVXIF_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_cvxif
+export DV_UVMA_AXI_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_axi
 export DV_UVMA_INTERRUPT_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
 export DV_UVMA_DEBUG_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
 export DV_UVMA_OBI_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi
 export DV_UVML_TRN_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
+export DV_UVML_MEM_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_mem
 export DV_UVML_LOGS_PATH      = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
 export CV_CORE_PKG            = $(CORE_V_VERIF)/core-v-cores/$(CV_CORE_LC)
@@ -155,13 +165,13 @@ export DV_OVPM_HOME           = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/imperas
 export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)_OVPsim
 export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/design
 
-ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
-	  /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
-	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
+ALL_UVM_FLAGS           = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
+	  $(VCS_HOME)/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
+	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+$(VCS_HOME)/etc/uvm/src \
 	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
 	  $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb) $(if $(TRACE_COMPACT),+vcs+fsdbon))
 
-ALL_SIMV_UVM_FLAGS      = -licwait 20 -l +ntb_random_seed=1 \
+ALL_SIMV_UVM_FLAGS      = -licwait 20 +ntb_random_seed=1 \
 		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
 		+UVM_TESTNAME=uvmt_cva6_firmware_test_c
 
@@ -197,7 +207,7 @@ vcs_uvm_comp: dpi_build
 	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
 	  -f $(FLIST_CORE) -f $(FLIST_TB) \
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
-	  $(cov-comp-opt) $(isscomp_opts)\
+	  $(cov-comp-opt) +define+UNSUPPORTED_WITH+ $(isscomp_opts)\
 	  -top uvmt_cva6_tb
 
 vcs_uvm_run:
@@ -206,6 +216,7 @@ vcs_uvm_run:
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
 	++$(elf) \
 	+PRELOAD=$(elf) \
+	+tohost_addr=$(shell $$RISCV/bin/riscv-none-elf-nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	-sv_lib $(dpi-library)/ariane_dpi \
 	$(cov-run-opt) $(issrun_opts) && \
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/ && \

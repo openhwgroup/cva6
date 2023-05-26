@@ -1,0 +1,14 @@
+- csr: CSR_MSCRATCH
+  description: >
+    Scratch register for machine trap handlers
+  address: 0x340
+  privilege_mode: M
+  rv32:
+    - field_name: mscratch
+      description: >
+        hold a pointer to a machine-mode hart-local context space and swapped with a user register upon entry to an M-mode trap handler
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
+

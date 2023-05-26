@@ -8,11 +8,9 @@
 # Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
 
 import re
-from pprint import pprint
-import yaml
-import datetime
 import sys
 import os
+import report_builder as rb
 
 with open(str(sys.argv[1]), 'r') as f:
     log = f.read()
@@ -22,31 +20,8 @@ with open(str(sys.argv[2]), 'r') as f:
 
 kgate_ratio = int(os.environ["NAND2_AREA"])
 
-global_pass = "pass"
-
-report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
-          'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
-          'category': os.environ["DASHBOARD_JOB_CATEGORY"],
-          'sort_index': os.environ["DASHBOARD_SORT_INDEX"],
-          'job_id': os.environ["CI_JOB_ID"],
-          'job_url': os.environ["CI_JOB_URL"],
-          'job_stage_name': os.environ["CI_JOB_STAGE"],
-          'job_started_at': int(datetime.datetime.strptime(os.environ['CI_JOB_STARTED_AT'], '%Y-%m-%dT%H:%M:%S%z').timestamp()),
-          'job_end_at': int(datetime.datetime.now().timestamp()),
-          'token': 'YC' + str(datetime.datetime.now().timestamp()).replace('.', ''),
-          'status': "pass",
-          'metrics': []
-         }
-
 #Compile & elaborate log:
-
-metric = {'display_name': 'Synthesis full log',
-          'sort_index': 3,
-          'type': 'log',
-          'status': "pass",
-          'value': []
-         }
-
+log_metric = rb.LogMetric('Synthesis full log')
 error_log = []
 warning_log = []
 for line in synthesis_log.splitlines():
@@ -58,14 +33,9 @@ for line in synthesis_log.splitlines():
         error_log.append(line)
     if 'Warning: ' in line:
         warning_log.append(line)
-
-metric['value'] = error_log + warning_log
-
-report['metrics'].append(metric)
-
+log_metric.values = error_log + warning_log
 
 # Area repport:
-
 pattern = re.compile(
     "^(Combinational area|Buf/Inv area|Noncombinational area|Macro/Black Box area):\ *(\d*\.\d*)$",
     re.MULTILINE)
@@ -78,57 +48,24 @@ hier = pattern.findall(log)
 
 total_area = float(hier[0][1])
 
-
-metric = {'display_name': 'Global results',
-          'sort_index': 1,
-          'type': 'table',
-          'status': "pass",
-          'value': []
-         }
-
-value = {'col': []}
-value['col'].append("Total area")  # Name
-value['col'].append(f'{int(total_area/kgate_ratio)} kGates')  # value
-metric['value'].append(value)
-
+result_metric = rb.TableMetric('Global results')
+label = f'{int(total_area/kgate_ratio)} kGates'
+result_metric.add_value("Total area", label)
 for i in global_val:
-    value = {'col': []}
-    value['col'].append(i[0])  # Name
-    if total_area == 0: 
-        value['col'].append('0 %')
-    else:
-        value['col'].append(f'{int(float((i[1]))/total_area*100)} %')  # value
-        
-    metric['value'].append(value)
+    rel_area = 0 if total_area == 0 else int(float(i[1]) / total_area * 100)
+    result_metric.add_value(i[0], f'{rel_area} %')
 
-report['metrics'].append(metric)
-
-metric = {'display_name': 'Hierarchies details',
-          'sort_index': 2,
-          'type': 'table',
-          'status': "pass",
-          'value': []
-         }
-
+hier_metric = rb.TableMetric('Hierarchies details')
 for i in hier:
-    value = {}
-    value['col'] = []
-    value['col'].append(i[0])  # hier
-    value['col'].append(f"{int(float(i[1])/kgate_ratio)} kGates")  # area
-    value['col'].append(f"{int(float(i[2]))} %")  # %
-    #value['col'].append(int(float(i[3]))/int(float(i[1])*100))  # % combi
-    #value['col'].append(int(float(i[4]))/int(float(i[1])*100))  # % reg
-    #value['col'].append(int(float(i[5]))/int(float(i[1])*100))  # % black box
-    metric['value'].append(value)
+    hier_metric.add_value(
+        i[0],  # hier
+        f"{int(float(i[1])/kgate_ratio)} kGates",  # area
+        f"{int(float(i[2]))} %",  # %
+        #int(float(i[3]))/int(float(i[1])*100),  # % combi
+        #int(float(i[4]))/int(float(i[1])*100),  # % reg
+        #int(float(i[5]))/int(float(i[1])*100),  # % black box
+    )
 
-report['metrics'].append(metric)
-
-report['label'] = f'{int(total_area/kgate_ratio)} kGates'
-
-pprint(report)
-
-filename = re.sub('[^\w\.\\\/]', '_', os.environ["CI_JOB_NAME"])
-print(filename)
-
-with open('artifacts/reports/'+filename+'.yml', 'w+') as f:
-    yaml.dump(report, f)
+report = rb.Report(label)
+report.add_metric(result_metric, hier_metric, log_metric)
+report.dump()
