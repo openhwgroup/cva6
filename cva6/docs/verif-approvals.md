@@ -50,7 +50,7 @@ Each issue has to be assigned.
 
 | Task            | Date       | Owner                 | Approved by           | Commit hash  | link to extra information (GitHub issue, doc,..) |
 | --------------- | ---------- | --------------------- | --------------------- | ------------ | ------------------------------------------------ |
-| User Manual     | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
+| User Manual     | 2023-05-26 | Ayoub Jalali          | André Sintzoff        | [be58d57d](https://github.com/openhwgroup/cva6/commit/be58d57d)| [User Manual chapter](https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/RISCV_Instructions.html) |
 | DV plan         | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
 | Test bench      | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
 | Coverage        | YYYY-MM-DD | First name, Last name | First name, Last name | 8 characters | 50 characters                                    |
