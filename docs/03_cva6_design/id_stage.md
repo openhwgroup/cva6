@@ -1,6 +1,6 @@
 # Instruction Decode
 
-Instruction decode is the fist pipeline stage of the processor's
+Instruction decode is the first pipeline stage of the processor's
 back-end. Its main purpose is to distill instructions from the data
 stream it gets from IF stage, decode them and send them to the issue
 stage.

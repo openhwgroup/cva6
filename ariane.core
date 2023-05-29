@@ -69,7 +69,7 @@ targets:
           - -LDFLAGS
           - "-lfesvr"
           - -CFLAGS
-          - "-std=c++11"
+          - "-std=c++17"
           - -Wall
           - --trace
     toplevel : [ariane_wrapped]
