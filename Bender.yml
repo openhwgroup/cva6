@@ -69,7 +69,7 @@ sources:
       # - vendor/pulp-platform/axi/src/axi_pkg.sv
 
       # Packages
-      - core/include/ariane_axi_pkg.sv
+      # - corev_apu/tb/ariane_axi_pkg.sv
       - core/include/wt_cache_pkg.sv
       - core/include/std_cache_pkg.sv
       - core/include/axi_intf.sv
@@ -127,6 +127,7 @@ sources:
 
       # Top-level source files (not necessarily instantiated at the top of the cva6).
       - corev_apu/src/ariane.sv
+      - core/cva6_params.sv
       - core/cva6.sv
       - core/alu.sv
       # Note: depends on fpnew_pkg, above

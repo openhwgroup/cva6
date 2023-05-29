@@ -8,8 +8,9 @@
 // Original Author: Jean-Roch COULON
 
 module cva6_params import ariane_pkg::*; #(
-  // Paramaters that can be modified
+  // PMA user paramaters
   parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig,
+  // AXI user parameters
   parameter int unsigned AxiAddrWidth = cva6_config_pkg::CVA6ConfigAxiAddrWidth,
   parameter int unsigned AxiDataWidth = cva6_config_pkg::CVA6ConfigAxiDataWidth,
   parameter int unsigned AxiIdWidth   = cva6_config_pkg::CVA6ConfigAxiIdWidth,
