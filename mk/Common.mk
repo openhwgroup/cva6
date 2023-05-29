@@ -677,6 +677,7 @@ DPI_DASM_INC    = -I$(DPI_DASM_PKG) -I$(DPI_INCLUDE) -I$(DPI_DASM_SPIKE_PKG)/ris
 DPI_DASM_CXX    = g++
 
 dpi_dasm: $(DPI_DASM_SPIKE_PKG)
+	$(CLONE_DPI_DASM_SPIKE_CMD)
 	$(DPI_DASM_CXX) $(DPI_DASM_CFLAGS) $(DPI_DASM_INC) $(DPI_DASM_SRC) -o $(DPI_DASM_LIB)
 
 ###############################################################################

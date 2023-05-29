@@ -37,6 +37,7 @@ DVE              = $(CV_TOOL_PREFIX) dve
 URG               = $(CV_SIM_PREFIX) urg
 
 # Paths
+VCS_RESULTS     ?= vcs_results
 VCS_DIR         ?= $(SIM_CFG_RESULTS)/vcs.d
 VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/$(MAKECMDGOALS).vdb
 
@@ -47,13 +48,15 @@ VCS_TIMESCALE = $(shell echo "$(TIMESCALE)" | tr ' ' '=')    # -timescale=1ns/1p
 VCS_UVM_VERBOSITY ?= UVM_MEDIUM
 
 # Flags
-VCS_VERSION     ?= S-2021.09-SP1
-VCS_UVMHOME_ARG ?= /synopsys/vcs/$(VCS_VERSION)/etc/uvm-1.2
-VCS_UVM_ARGS    ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) -ntb_opts uvm-1.2
+#VCS_UVMHOME_ARG ?= /opt/uvm/1800.2-2017-0.9/
+#VCS_UVMHOME_ARG ?= /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm
+VCS_UVMHOME_ARG  ?= /synopsys/vcs/S-2021.09-SP1/etc/uvm
+VCS_UVM_ARGS          ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) -ntb_opts uvm-1.2
 
 VCS_COMP_FLAGS  ?= -lca -sverilog \
                    $(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
                    -assert svaext -race=all -ignore unique_checks -full64
+
 VCS_GUI         ?=
 VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert -cm_dir $(MAKECMDGOALS).vdb
 
@@ -62,6 +65,13 @@ VCS_PMA_INC += +incdir+$(TBSRC_HOME)/uvmt \
                +incdir+$(CV_CORE_PKG)/rtl/include \
                +incdir+$(CV_CORE_COREVDV_PKG)/ldgen \
                +incdir+$(abspath $(MAKE_PATH)/../../../lib/mem_region_gen)
+
+# Need to re-define the LIB paths for VCS to drop the "*.so" extension.
+DPI_DASM_LIB = $(DPI_DASM_PKG)/lib/$(DPI_DASM_ARCH)/libdpi_dasm
+SVLIB_LIB    = $(SVLIB_PKG)/../svlib_dpi
+
+# Required by dpi_dasm target
+DPI_INCLUDE ?= $(shell dirname $(shell which vcs))/../include
 
 ###############################################################################
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
@@ -146,9 +156,9 @@ endif
 
 VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
                         $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) \
-						-sv_lib $(VCS_OVP_MODEL_DPI) \
-						-sv_lib $(DPI_DASM_LIB) \
-						-sv_lib $(abspath $(SVLIB_LIB))
+                        -sv_lib $(VCS_OVP_MODEL_DPI) \
+                        -sv_lib $(DPI_DASM_LIB) \
+                        -sv_lib $(abspath $(SVLIB_LIB))
 
 # Simulate using latest elab
 VCS_RUN_FLAGS        ?=
@@ -156,10 +166,6 @@ VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
 VCS_RUN_FLAGS        += $(USER_RUN_FLAGS)
-
-# Special var to point to tool and installation dependent path of DPI headers.
-# Used to recompile dpi_dasm_spike if needed (by default, not needed).
-DPI_INCLUDE          ?= $(shell dirname $(shell which vcs))/../lib
 
 ###############################################################################
 # Targets
@@ -191,7 +197,7 @@ VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(UVM_PLUSARGS)
 
 comp: mk_vcs_dir $(CV_CORE_PKG) $(SVLIB_PKG) $(OVP_MODEL_DPI)
-	cd $(VCS_DIR) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
+	cd $(SIM_CFG_RESULTS) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
 	@echo "$(BANNER)"
 	@echo "* $(SIMULATOR) compile complete"
 	@echo "* Log: $(SIM_CFG_RESULTS)/vcs.log"
@@ -222,12 +228,9 @@ export IMPERAS_TOOLS=$(SIM_RUN_RESULTS)/ovpsim.ic
 # The new general test target
 
 test: $(VCS_SIM_PREREQ) hex gen_ovpsim_ic
-	@echo "$(BANNER)"
-	@echo "* Running simulation"
-	@echo "$(BANNER)"
+	echo $(IMPERAS_TOOLS)
 	mkdir -p $(SIM_RUN_RESULTS)
-	cd $(SIM_RUN_RESULTS) && \
-		$(VCS_DIR)/$(SIMV) \
+	$(VCS_RESULTS)/$(CFG)/$(SIMV) \
 		-l vcs-$(TEST_NAME).log \
 		-cm_name $(TEST_NAME) $(VCS_RUN_FLAGS) \
 		$(CFG_PLUSARGS) \
