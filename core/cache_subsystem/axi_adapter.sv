@@ -23,14 +23,14 @@ module axi_adapter #(
   parameter int unsigned AXI_ADDR_WIDTH        = 0,
   parameter int unsigned AXI_DATA_WIDTH        = 0,
   parameter int unsigned AXI_ID_WIDTH          = 0,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter type axi_req_t                     = logic,
+  parameter type axi_rsp_t                     = logic
 )(
   input  logic                             clk_i,  // Clock
   input  logic                             rst_ni, // Asynchronous reset active low
 
   input  logic                             req_i,
-  input  ariane_axi::ad_req_t              type_i,
+  input  ariane_pkg::ad_req_t              type_i,
   input  ariane_pkg::amo_t                 amo_i,
   output logic                             gnt_o,
   input  logic [riscv::XLEN-1:0]           addr_i,
@@ -91,7 +91,7 @@ module axi_adapter #(
     axi_req_o.ar.addr   = addr_i;
     // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
     // with an incremental transfer we need to output the corresponding base address of the cache line
-    if (!CRITICAL_WORD_FIRST && type_i != ariane_axi::SINGLE_REQ) begin
+    if (!CRITICAL_WORD_FIRST && type_i != ariane_pkg::SINGLE_REQ) begin
       axi_req_o.ar.addr[CACHELINE_BYTE_OFFSET-1:0] = '0;
     end
     axi_req_o.ar.prot   = 3'b0;
@@ -146,7 +146,7 @@ module axi_adapter #(
             // store-conditional requires exclusive access
             axi_req_o.aw.lock = amo_i == ariane_pkg::AMO_SC;
             // its a single write
-            if (type_i == ariane_axi::SINGLE_REQ) begin
+            if (type_i == ariane_pkg::SINGLE_REQ) begin
               // only a single write so the data is already the last one
               axi_req_o.w.last   = 1'b1;
               // single req can be granted here
@@ -193,7 +193,7 @@ module axi_adapter #(
             axi_req_o.ar.lock = amo_i == ariane_pkg::AMO_LR;
 
             gnt_o = axi_resp_i.ar_ready;
-            if (type_i != ariane_axi::SINGLE_REQ) begin
+            if (type_i != ariane_pkg::SINGLE_REQ) begin
               assert (amo_i == ariane_pkg::AMO_NONE)
                 else $fatal("Bursts of atomic operations are not supported");
 
@@ -202,7 +202,7 @@ module axi_adapter #(
             end
 
             if (axi_resp_i.ar_ready) begin
-              state_d = (type_i == ariane_axi::SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
+              state_d = (type_i == ariane_pkg::SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
               addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
             end
           end
@@ -225,7 +225,7 @@ module axi_adapter #(
       WAIT_LAST_W_READY_AW_READY: begin
         axi_req_o.w_valid  = 1'b1;
         axi_req_o.w.last   = (cnt_q == '0);
-        if (type_i == ariane_axi::SINGLE_REQ) begin
+        if (type_i == ariane_pkg::SINGLE_REQ) begin
           axi_req_o.w.data = wdata_i[0];
           axi_req_o.w.strb = be_i[0];
         end else begin
@@ -277,7 +277,7 @@ module axi_adapter #(
       WAIT_LAST_W_READY: begin
         axi_req_o.w_valid = 1'b1;
 
-        if (type_i != ariane_axi::SINGLE_REQ) begin
+        if (type_i != ariane_pkg::SINGLE_REQ) begin
           axi_req_o.w.data = wdata_i[BURST_SIZE-cnt_q];
           axi_req_o.w.strb = be_i[BURST_SIZE-cnt_q];
         end

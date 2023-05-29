@@ -25,8 +25,9 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter int unsigned AxiAddrWidth = 0,
   parameter int unsigned AxiDataWidth = 0,
   parameter int unsigned AxiIdWidth   = 0,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter int unsigned AxiUserWidth = 0,
+  parameter type axi_req_t            = logic,
+  parameter type axi_rsp_t            = logic
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -160,9 +161,10 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   wt_axi_adapter #(
     .AxiAddrWidth       ( AxiAddrWidth ),
     .AxiDataWidth       ( AxiDataWidth ),
-    .AxiIdWidth         ( AxiIdWidth ),
-    .axi_req_t          ( axi_req_t ),
-    .axi_rsp_t          ( axi_rsp_t )
+    .AxiIdWidth         ( AxiIdWidth   ),
+    .AxiUserWidth       ( AxiUserWidth ),
+    .axi_req_t          ( axi_req_t    ),
+    .axi_rsp_t          ( axi_rsp_t    )
   ) i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),

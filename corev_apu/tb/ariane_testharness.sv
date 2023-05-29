@@ -16,10 +16,10 @@
 `include "axi/assign.svh"
 
 module ariane_testharness #(
-  parameter int unsigned AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH,
-  parameter int unsigned AXI_USER_EN       = ariane_pkg::AXI_USER_EN,
-  parameter int unsigned AXI_ADDRESS_WIDTH = 64,
-  parameter int unsigned AXI_DATA_WIDTH    = 64,
+  parameter int unsigned AXI_USER_WIDTH    = ariane_axi::UserWidth,
+  parameter int unsigned AXI_USER_EN       = 0,
+  parameter int unsigned AXI_ADDRESS_WIDTH = ariane_axi::AddrWidth,
+  parameter int unsigned AXI_DATA_WIDTH    = ariane_axi::DataWidth,
   parameter bit          InclSimDTM        = 1'b1,
   parameter int unsigned NUM_WORDS         = 2**25,         // memory size
   parameter bit          StallRandomOutput = 1'b0,
@@ -294,7 +294,7 @@ module ariane_testharness #(
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
     .req_i                 ( dm_master_req             ),
-    .type_i                ( ariane_axi::SINGLE_REQ    ),
+    .type_i                ( ariane_pkg::SINGLE_REQ    ),
     .amo_i                 ( ariane_pkg::AMO_NONE      ),
     .gnt_o                 ( dm_master_gnt             ),
     .addr_i                ( dm_master_add             ),

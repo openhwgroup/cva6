@@ -14,15 +14,19 @@
 
 
 module cva6 import ariane_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
-  parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
-  parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
-  parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
-  parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
-  parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
-  parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  // Paramaters that can be modified
+  parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig,
+  parameter int unsigned AxiAddrWidth = 0,
+  parameter int unsigned AxiDataWidth = 0,
+  parameter int unsigned AxiIdWidth   = 0,
+  parameter int unsigned AxiUserWidth = 0,
+  parameter type axi_ar_chan_t        = logic,
+  parameter type axi_aw_chan_t        = logic,
+  parameter type axi_w_chan_t         = logic,
+  parameter type b_chan_t             = logic,
+  parameter type r_chan_t             = logic,
+  parameter type axi_req_t            = logic,
+  parameter type axi_rsp_t            = logic
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -687,6 +691,7 @@ module cva6 import ariane_pkg::*; #(
     .AxiAddrWidth         ( AxiAddrWidth ),
     .AxiDataWidth         ( AxiDataWidth ),
     .AxiIdWidth           ( AxiIdWidth ),
+    .AxiUserWidth         ( AxiUserWidth ),
     .axi_req_t            ( axi_req_t ),
     .axi_rsp_t            ( axi_rsp_t )
   ) i_cache_subsystem (
@@ -735,6 +740,7 @@ module cva6 import ariane_pkg::*; #(
     .AxiAddrWidth          ( AxiAddrWidth                ),
     .AxiDataWidth          ( AxiDataWidth                ),
     .AxiIdWidth            ( AxiIdWidth                  ),
+    .AxiUserWidth          ( AxiUserWidth                ),
     .axi_ar_chan_t         ( axi_ar_chan_t               ),
     .axi_aw_chan_t         ( axi_aw_chan_t               ),
     .axi_w_chan_t          ( axi_w_chan_t                ),

@@ -18,6 +18,7 @@ module ariane import ariane_pkg::*; #(
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
+  parameter int unsigned AxiUserWidth = ariane_axi::UserWidth,
   parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
   parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
   parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
@@ -55,7 +56,7 @@ module ariane import ariane_pkg::*; #(
   cvxif_pkg::cvxif_req_t  cvxif_req;
   cvxif_pkg::cvxif_resp_t cvxif_resp;
 
-  cva6 #(
+  cva6_params #(
     .ArianeCfg  ( ArianeCfg ),
     .AxiAddrWidth ( AxiAddrWidth ),
     .AxiDataWidth ( AxiDataWidth ),
@@ -65,7 +66,7 @@ module ariane import ariane_pkg::*; #(
     .axi_w_chan_t (axi_w_chan_t),
     .axi_req_t (axi_req_t),
     .axi_rsp_t (axi_rsp_t)
-  ) i_cva6 (
+  ) i_cva6_params (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
     .boot_addr_i          ( boot_addr_i               ),
