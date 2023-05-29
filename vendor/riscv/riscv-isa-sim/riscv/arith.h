@@ -20,7 +20,6 @@ inline uint64_t mulhu(uint64_t a, uint64_t b)
   y2 = t >> 32;
 
   t = a0*b1 + y1;
-  y1 = t;
 
   t = a1*b1 + y2 + (t >> 32);
   y2 = t;
@@ -185,6 +184,15 @@ static inline int clz(uint64_t val)
   if ((val >> 62) == 0) res += 2, val <<= 2;
   if ((val >> 63) == 0) res += 1, val <<= 1;
 
+  return res;
+}
+
+// Count number of contiguous 1 bits starting from the LSB.
+static inline int cto(uint64_t val)
+{
+  int res = 0;
+  while ((val & 1) == 1)
+    val >>= 1, res++;
   return res;
 }
 

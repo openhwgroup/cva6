@@ -26,32 +26,27 @@ class htif_t : public chunked_memif_t
   int run();
   bool done();
   int exit_code();
-
+  void set_expected_xlen(unsigned int m) { expected_xlen = m; }
   virtual memif_t& memif() { return mem; }
 
   template<typename T> inline T from_target(target_endian<T> n) const
   {
-#ifdef RISCV_ENABLE_DUAL_ENDIAN
-    memif_endianness_t endianness = get_target_endianness();
-    assert(endianness == memif_endianness_little || endianness == memif_endianness_big);
+    endianness_t endianness = get_target_endianness();
+    assert(endianness == endianness_little || endianness == endianness_big);
 
-    return endianness == memif_endianness_big? n.from_be() : n.from_le();
-#else
-    return n.from_le();
-#endif
+    return endianness == endianness_big? n.from_be() : n.from_le();
   }
 
   template<typename T> inline target_endian<T> to_target(T n) const
   {
-#ifdef RISCV_ENABLE_DUAL_ENDIAN
-    memif_endianness_t endianness = get_target_endianness();
-    assert(endianness == memif_endianness_little || endianness == memif_endianness_big);
+    endianness_t endianness = get_target_endianness();
+    assert(endianness == endianness_little || endianness == endianness_big);
 
-    return endianness == memif_endianness_big? target_endian<T>::to_be(n) : target_endian<T>::to_le(n);
-#else
-    return target_endian<T>::to_le(n);
-#endif
+    return endianness == endianness_big? target_endian<T>::to_be(n) : target_endian<T>::to_le(n);
   }
+
+  addr_t get_tohost_addr() { return tohost_addr; }
+  addr_t get_fromhost_addr() { return fromhost_addr; }
 
  protected:
   virtual void reset() = 0;
@@ -68,12 +63,13 @@ class htif_t : public chunked_memif_t
   virtual void idle() {}
 
   const std::vector<std::string>& host_args() { return hargs; }
+  const std::vector<std::string>& target_args() { return targs; }
 
   reg_t get_entry_point() { return entry; }
 
   // indicates that the initial program load can skip writing this address
   // range to memory, because it has already been loaded through a sideband
-  virtual bool is_address_preloaded(addr_t taddr, size_t len) { return false; }
+  virtual bool is_address_preloaded(addr_t, size_t) { return false; }
 
   // Given an address, return symbol from addr2symbol map
   const char* get_symbol(uint64_t addr);
@@ -82,7 +78,7 @@ class htif_t : public chunked_memif_t
   void parse_arguments(int argc, char ** argv);
   void register_devices();
   void usage(const char * program_name);
-
+  unsigned int expected_xlen = 0;
   memif_t mem;
   reg_t entry;
   bool writezeros;
@@ -103,8 +99,7 @@ class htif_t : public chunked_memif_t
   std::vector<device_t*> dynamic_devices;
   std::vector<std::string> payloads;
 
-  const std::vector<std::string>& target_args() { return targs; }
-
+  std::vector<std::string> symbol_elfs;
   std::map<uint64_t, std::string> addr2symbol;
 
   friend class memif_t;
@@ -133,6 +128,8 @@ class htif_t : public chunked_memif_t
        +chroot=PATH\n\
       --payload=PATH       Load PATH memory as an additional ELF payload\n\
        +payload=PATH\n\
+      --symbol-elf=PATH    Populate the symbol table with the ELF file at PATH\n\
+       +symbol-elf=PATH\n\
 \n\
 HOST OPTIONS (currently unsupported)\n\
       --disk=DISK          Add DISK device. Use a ramdisk since this isn't\n\
@@ -150,7 +147,9 @@ TARGET (RISC-V BINARY) OPTIONS\n\
 {"signature", required_argument, 0, HTIF_LONG_OPTIONS_OPTIND + 2 },     \
 {"chroot",    required_argument, 0, HTIF_LONG_OPTIONS_OPTIND + 3 },     \
 {"payload",   required_argument, 0, HTIF_LONG_OPTIONS_OPTIND + 4 },     \
-{"signature-granularity",    optional_argument, 0, HTIF_LONG_OPTIONS_OPTIND + 5 },     \
+{"signature-granularity",    required_argument, 0, HTIF_LONG_OPTIONS_OPTIND + 5 },     \
+{"target-argument",          required_argument, 0, HTIF_LONG_OPTIONS_OPTIND + 6 },     \
+{"symbol-elf",               required_argument, 0, HTIF_LONG_OPTIONS_OPTIND + 7 },     \
 {0, 0, 0, 0}
 
 #endif // __HTIF_H

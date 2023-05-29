@@ -4,6 +4,8 @@
 //
 // Original Author: Zbigniew CHAMSKI <zbigniew.chamski@thalesgroup.com>
 
+#define DECODE_MACRO_USAGE_LOGGED 1
+#include "decode_macros.h"
 #include "cvxif.h"
 #include "mmu.h"
 #include <cstring>
@@ -43,7 +45,7 @@ class cvxif_t : public cvxif_extn_t
     // INSN_R personality serves to simplify access to standard encoding fields.
     cvxif_r_insn_t insn_r = copro_insn.r_type;
 
-    if (insn_r.opcode != MATCH_CUSTOM3)
+   if (insn_r.opcode != 0x7b /* MATCH_CUSTOM3 */)
       return false;
     else switch (insn_r.funct3)
     {
@@ -148,16 +150,16 @@ class cvxif_t : public cvxif_extn_t
       case 1:
         // Perform RV load.  If runtime XLEN is not 64, assume 32.
         if (p->get_xlen() == 64)
-          return MMU.load_int64(RS1 + insn.i_imm());
+          return MMU.load<int64_t>(RS1 + insn.i_imm());
         else
-          return MMU.load_int32(RS1 + insn.i_imm());
+          return MMU.load<int32_t>(RS1 + insn.i_imm());
 
       case 2:
         // Perform RV store.  If runtime XLEN is not 64, assume 32.
         if (p->get_xlen() == 64)
-          MMU.store_uint64(RS1 + insn.s_imm(), RS2);
+          MMU.store<uint64_t>(RS1 + insn.s_imm(), RS2);
         else
-          MMU.store_uint32(RS1 + insn.s_imm(), RS2);
+          MMU.store<uint32_t>(RS1 + insn.s_imm(), RS2);
 
         // Writeback will be disabled by 'do_writeback_p'.
         break;

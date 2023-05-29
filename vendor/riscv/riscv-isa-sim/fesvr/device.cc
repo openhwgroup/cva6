@@ -33,7 +33,7 @@ void device_t::handle_command(command_t cmd)
   command_handlers[cmd.cmd()](cmd);
 }
 
-void device_t::handle_null_command(command_t cmd)
+void device_t::handle_null_command(command_t)
 {
 }
 
@@ -41,7 +41,6 @@ void device_t::handle_identify(command_t cmd)
 {
   size_t what = cmd.payload() % command_t::MAX_COMMANDS;
   uint64_t addr = cmd.payload() / command_t::MAX_COMMANDS;
-  assert(addr % IDENTITY_SIZE == 0);
 
   char id[IDENTITY_SIZE] = {0};
   if (what == command_t::MAX_COMMANDS-1)

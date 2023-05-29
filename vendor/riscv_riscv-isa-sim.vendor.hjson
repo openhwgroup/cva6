@@ -15,11 +15,11 @@
         // URL
         url: "https://github.com/riscv/riscv-isa-sim.git",
         // revision
-        rev: "e93b9cbbbcd3ad0a02ae298e9f1a2d98d3ac0153",
+        rev: "fcbdbe7946079650d0e656fa3d353e3f652d471f",
     }
 
     // Patch dir for local changes
-    patch_dir: "patches/riscv-isa-sim",
+    patch_dir: "patches/riscv/riscv-isa-sim",
 
     // Exclusions from upstream content
     exclude_from_upstream: [

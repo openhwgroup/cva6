@@ -27,7 +27,7 @@
 //      core   0:           tval 0x0000000000000001
 //
 // The corresponding trace in 32-bit mode should be equivalent to
-// 
+//
 //       core   0: 0x8000205a (0x8002007b) custom3 (args unknown)
 //       core   0: exception trap_load_address_misaligned, epc 0x8000205a
 //       core   0:           tval 0x00000001

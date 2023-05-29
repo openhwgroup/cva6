@@ -152,8 +152,8 @@ pub_build_tools:
     # If initially set to "__local__", SPIKE_INSTALL_DIR will be resolved
     # to an absolute path by the installation script.
     - source cva6/regress/install-spike.sh
-    # Strip locally built binaries and customext library to reduce artifact size.
-    - '[ -f $(pwd)/tools/spike/bin/spike ] && strip $(pwd)/tools/spike/bin/spike* $(pwd)/tools/spike/lib/libcustomext.so'
+    # Strip locally built binaries and libraries to reduce artifact size.
+    - '[ -f $(pwd)/tools/spike/bin/spike ] && strip $(pwd)/tools/spike/bin/spike* $(pwd)/tools/spike/lib/lib*.*'
   artifacts:
     paths:
       - tools/spike/

@@ -4,6 +4,7 @@
 #define _RISCV_CACHE_SIM_H
 
 #include "memtracer.h"
+#include "common.h"
 #include <cstring>
 #include <string>
 #include <map>
@@ -27,6 +28,7 @@ class cache_sim_t
   virtual ~cache_sim_t();
 
   void access(uint64_t addr, size_t bytes, bool store);
+  void clean_invalidate(uint64_t addr, size_t bytes, bool clean, bool inval);
   void print_stats();
   void set_miss_handler(cache_sim_t* mh) { miss_handler = mh; }
   void set_log(bool _log) { log = _log; }
@@ -90,9 +92,17 @@ class cache_memtracer_t : public memtracer_t
   {
     cache->set_miss_handler(mh);
   }
+  void clean_invalidate(uint64_t addr, size_t bytes, bool clean, bool inval)
+  {
+    cache->clean_invalidate(addr, bytes, clean, inval);
+  }
   void set_log(bool log)
   {
     cache->set_log(log);
+  }
+  void print_stats()
+  {
+    cache->print_stats();
   }
 
  protected:
@@ -102,8 +112,9 @@ class cache_memtracer_t : public memtracer_t
 class icache_sim_t : public cache_memtracer_t
 {
  public:
-  icache_sim_t(const char* config) : cache_memtracer_t(config, "I$") {}
-  bool interested_in_range(uint64_t begin, uint64_t end, access_type type)
+  icache_sim_t(const char* config, const char* name = "I$")
+	  : cache_memtracer_t(config, name) {}
+  bool interested_in_range(uint64_t UNUSED begin, uint64_t UNUSED end, access_type type)
   {
     return type == FETCH;
   }
@@ -116,8 +127,9 @@ class icache_sim_t : public cache_memtracer_t
 class dcache_sim_t : public cache_memtracer_t
 {
  public:
-  dcache_sim_t(const char* config) : cache_memtracer_t(config, "D$") {}
-  bool interested_in_range(uint64_t begin, uint64_t end, access_type type)
+  dcache_sim_t(const char* config, const char* name = "D$")
+	  : cache_memtracer_t(config, name) {}
+  bool interested_in_range(uint64_t UNUSED begin, uint64_t UNUSED end, access_type type)
   {
     return type == LOAD || type == STORE;
   }

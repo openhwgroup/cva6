@@ -5,6 +5,7 @@
 // in its inputs, then output the RISC-V instruction with the disassembly
 // enclosed hexadecimal number.
 
+#include "config.h"
 #include <iostream>
 #include <string>
 #include <cstdint>
@@ -16,18 +17,32 @@
 
 using namespace std;
 
-int main(int argc, char** argv)
+int main(int UNUSED argc, char** argv)
 {
   string s;
-  const char* isa = DEFAULT_ISA;
+  const char* isa_string = DEFAULT_ISA;
 
   std::function<extension_t*()> extension;
   option_parser_t parser;
   parser.option(0, "extension", 1, [&](const char* s){extension = find_extension(s);});
-  parser.option(0, "isa", 1, [&](const char* s){isa = s;});
+  parser.option(0, "isa", 1, [&](const char* s){isa_string = s;});
   parser.parse(argv);
 
-  processor_t p(isa, DEFAULT_PRIV, DEFAULT_VARCH, 0, 0, false, nullptr, cerr);
+  cfg_t cfg(/*default_initrd_bounds=*/std::make_pair((reg_t)0, (reg_t)0),
+            /*default_bootargs=*/nullptr,
+            /*default_isa=*/DEFAULT_ISA,
+            /*default_priv=*/DEFAULT_PRIV,
+            /*default_varch=*/DEFAULT_VARCH,
+            /*default_misaligned=*/false,
+            /*default_endianness*/endianness_little,
+            /*default_pmpregions=*/16,
+            /*default_mem_layout=*/std::vector<mem_cfg_t>(),
+            /*default_hartids=*/std::vector<size_t>(),
+            /*default_real_time_clint=*/false,
+            /*default_trigger_count=*/4);
+
+  isa_parser_t isa(isa_string, DEFAULT_PRIV);
+  processor_t p(&isa, &cfg, 0, 0, false, nullptr, cerr);
   if (extension) {
     p.register_extension(extension());
   }
