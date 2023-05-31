@@ -347,12 +347,12 @@ class Model:
         return found
 
     def find_structural_hazard(self, instr, cycle):
-        """Detect and long structural hazards"""
+        """Detect and log structural hazards"""
         found = False
-        for entry in self.scoreboard:
-            if not entry.done:
-                if entry.instr.is_muldiv() and not instr.is_muldiv():
-                    found = True
+        if self.last_issued is not None:
+            if self.last_issued.instr.is_muldiv() and not instr.is_muldiv():
+                if not (instr.is_load() or instr.is_store()):
+                    found = self.last_issued.issue_cycle == cycle - 1
         if found:
             self.log_event_on(instr, EventKind.STRUCT, cycle)
         return found
