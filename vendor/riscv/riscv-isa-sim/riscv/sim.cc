@@ -40,7 +40,8 @@ sim_t::sim_t(const cfg_t *cfg, bool halted,
              const char *log_path,
              bool dtb_enabled, const char *dtb_file,
              bool socket_enabled,
-             FILE *cmd_file) // needed for command line option --cmd
+             FILE *cmd_file, // needed for command line option --cmd
+             size_t max_steps)
   : htif_t(args),
     isa(cfg->isa(), cfg->priv()),
     cfg(cfg),
@@ -52,6 +53,8 @@ sim_t::sim_t(const cfg_t *cfg, bool halted,
     cmd_file(cmd_file),
     sout_(nullptr),
     current_step(0),
+    total_steps(0),
+    max_steps(max_steps),
     current_proc(0),
     debug(false),
     histogram_enabled(false),
@@ -236,6 +239,21 @@ void sim_t::step(size_t n)
     procs[current_proc]->step(steps);
 
     current_step += steps;
+    total_steps += steps;
+
+    // max_steps must be non-zero to act as an execution limit.
+    if (max_steps && total_steps >= max_steps)
+    {
+      // "Stepout": max step count reached/exceeded.
+      std::cerr << "*** Maximum step count reached (total_steps = "
+                << std::dec << total_steps << ", max_steps = "
+                << max_steps << "), exiting!" << std::endl;
+      // TODO FIXME: Determine the best method of terminating.
+      // FORNOW: Exit successfully and let the caller of Spike
+      // decide how to proceed in view of simulation results.
+      exit(0);
+    }
+
     if (current_step == INTERLEAVE)
     {
       current_step = 0;

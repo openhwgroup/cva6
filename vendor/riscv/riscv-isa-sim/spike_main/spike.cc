@@ -86,6 +86,8 @@ static void help(int exit_code = 1)
   fprintf(stderr, "  --dm-no-halt-groups   Debug module won't support halt groups\n");
   fprintf(stderr, "  --dm-no-impebreak     Debug module won't support implicit ebreak in program buffer\n");
   fprintf(stderr, "  --blocksz=<size>      Cache block size (B) for CMO operations(powers of 2) [default 64]\n");
+  fprintf(stderr, "  --steps=<n>           Stop simulation after reaching specified number of steps "
+          "(default: unlimited)\n");
 
   exit(exit_code);
 }
@@ -361,6 +363,7 @@ int main(int argc, char** argv)
     .support_haltgroups = true,
     .support_impebreak = true
   };
+  size_t max_steps = 0;
   cfg_arg_t<size_t> nprocs(1);
 
   cfg_t cfg(/*default_initrd_bounds=*/std::make_pair((reg_t)0, (reg_t)0),
@@ -465,6 +468,7 @@ int main(int argc, char** argv)
       exit(-1);
     }
   });
+  parser.option(0, "steps", 1, [&](const char* s){max_steps = strtoull(s, 0, 0);});
   parser.option(0, "dm-progsize", 1,
       [&](const char* s){dm_config.progbufsize = atoul_safe(s);});
   parser.option(0, "dm-no-impebreak", 0,
@@ -564,9 +568,9 @@ int main(int argc, char** argv)
   }
 
   sim_t s(&cfg, halted,
-      mems, plugin_devices, htif_args, dm_config, log_path, dtb_enabled, dtb_file,
-      socket,
-      cmd_file);
+          mems, plugin_devices, htif_args, dm_config, log_path, dtb_enabled, dtb_file,
+          socket,
+          cmd_file, max_steps);
   std::unique_ptr<remote_bitbang_t> remote_bitbang((remote_bitbang_t *) NULL);
   std::unique_ptr<jtag_dtm_t> jtag_dtm(
       new jtag_dtm_t(&s.debug_module, dmi_rti));
