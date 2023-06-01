@@ -49,7 +49,8 @@ hier = pattern.findall(log)
 total_area = float(hier[0][1])
 
 result_metric = rb.TableMetric('Global results')
-label = f'{int(total_area/kgate_ratio)} kGates'
+kgates = int(total_area/kgate_ratio)
+label = f'{kgates} kGates'
 result_metric.add_value("Total area", label)
 for i in global_val:
     rel_area = 0 if total_area == 0 else int(float(i[1]) / total_area * 100)
@@ -68,4 +69,20 @@ for i in hier:
 
 report = rb.Report(label)
 report.add_metric(result_metric, hier_metric, log_metric)
+
+expected = {
+    'cv64a6_imafdc_sv39': 545,
+    'cv32a60x': 160,
+    'cv32a6_embedded': 126,
+}
+
+file_re = r'^core-v-cores/cva6/pd/synth/cva6_([^/]+)'
+match = re.match(file_re, str(sys.argv[1]))
+if match:
+    target = match.group(1)
+    if target not in expected or kgates != expected[target]:
+        report.fail()
+else:
+    report.fail()
+
 report.dump()
