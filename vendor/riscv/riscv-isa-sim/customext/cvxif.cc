@@ -49,18 +49,21 @@ class cvxif_t : public cvxif_extn_t
       return false;
     else switch (insn_r.funct3)
     {
-      case 0b000:
-        // CUSTOM_NOP and CUSTOM_EXC have rd == x0.
-        // Return TRUE if destination is NOT x0.
+      case FUNC3_0:
+        //CUS_NOP have rd equal to zero
         return (insn_r.rd != 0x0);
 
-      case 0b010:
-        // Return false for CUS_SD.
+      case FUNC3_1:
+        //Only CUS_ADD
+        return true;
+      
+      case FUNC3_2:
+        //Only CUS_EXC
         return false;
-
+      
       default:
         // All other cases: writeback is assumed REQUIRED.
-        return true;
+        return false;
     }
   }
 
@@ -95,74 +98,49 @@ class cvxif_t : public cvxif_extn_t
 
     switch (r_insn.funct3)
     {
-      case 0:
+      case FUNC3_0:
+        switch (r_insn.funct7 & 0x1) {
+          case NO_RS3:
+            switch (r_insn.funct7 & 0xe) {
+              case CUS_NOP:
+                break;
+              case CUS_U_ADD:
+                if (p -> get_state() -> prv != PRV_U) {
+                  illegal_instruction();
+                }
+                return (reg_t) ((reg_t) RS1 + (reg_t) RS2 + (reg_t) RS3);
 
-        // funct7[1:0] == 0b01: three-input RV add.
-        // If rd is x0: illegal instruction.
-        if ((r_insn.funct7 & 0x3) == 0b01)
-        {
-          if (insn.rd() == 0x0)
-            illegal_instruction();
-
-          // Destination is not x0: R4-type insn performing a 3-operand RV add
-          return (reg_t) ((reg_t) RS1 + (reg_t) RS2 + (reg_t) RS3);
-        }
-
-        // Non-memory operations (including NOP and EXC)
-        switch (r_insn.funct7 & 0b1111001)
-        {
-          case 0:
-            {
-              // Single-cycle RV addition with privilege: all non-privilege bits are zero.
-              // funct7[2:1] == 0x0 (PRV_U): CUS_ADD (single-cycle RV ADD, any mode)
-              // funct7[2:1] == 0x1 (PRV_S): CUS_S_ADD (single-cycle S-/M-mode RV ADD)
-              // funct7[2:1] == 0x2 (PRV_HS): ILLEGAL
-              // funct7[2:1] == 0x3 (PRV_M): CUS_M_ADD (single-cycle M-mode RV ADD)
-              reg_t required_priv = (r_insn.funct7 & 0x6) >> 1;
-              if (required_priv != PRV_HS && (p->get_state()->prv & required_priv) == required_priv)
+              case CUS_S_ADD:
+                if (p -> get_state() -> prv != PRV_S) {
+                  illegal_instruction();
+                }
                 return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
-              else
+
+              case CUS_ADD_MULTI:
+                return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
+
+              default:
                 illegal_instruction();
             }
-
-          case 0x8:
-            // Multi-cycle RV add.
-            // TODO FIXME: Represent delay.
-            return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
-
-          case 0x40:
-            // Exception. MCAUSE[4:0] encoded in RS1, MCAUSE[5] assumed to be 0.
-            if (insn.rd() == 0x0 && insn.rs2() == 0x0)
-            {
-              // Raise an exception only if registers rd and rs2 are both x0 (no 'bit 5' extension yet).
-              raise_exception(insn, insn.rs1());
-              // Writeback will be disabled by 'do_writeback_p'.
-              return (reg_t) -1;
-            }
-            else
-              // Illegal instruction.
+            break;
+          case RS3_IN:
+            //Actually only CUS_ADD_RS3 using rs3, we don't need to add another switch case
+            if (p -> get_nb_register_source() != 3) {
               illegal_instruction();
-
+            }
+            return (reg_t) ((reg_t) RS1 + (reg_t) RS2 + (reg_t) RS3);
           default:
             illegal_instruction();
         }
-
-      case 1:
-        // Perform RV load.  If runtime XLEN is not 64, assume 32.
-        if (p->get_xlen() == 64)
-          return MMU.load<int64_t>(RS1 + insn.i_imm());
-        else
-          return MMU.load<int32_t>(RS1 + insn.i_imm());
-
-      case 2:
-        // Perform RV store.  If runtime XLEN is not 64, assume 32.
-        if (p->get_xlen() == 64)
-          MMU.store<uint64_t>(RS1 + insn.s_imm(), RS2);
-        else
-          MMU.store<uint32_t>(RS1 + insn.s_imm(), RS2);
-
-        // Writeback will be disabled by 'do_writeback_p'.
         break;
+      case FUNC3_1:
+        //Actually only CUS_ADD using func3 equal to one, we don't need to add another switch case
+        return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
+      
+      case FUNC3_2:
+        //Actually only CUS_EXC using func3 equal to one, we don't need to add another switch case
+        p -> put_csr(CSR_MCAUSE, (reg_t) ((insn.bits() >> 7) & 0x1f));
+        raise_exception(insn, (reg_t) ((insn.bits() >> 7) & 0x1f));
 
       default:
         illegal_instruction();
@@ -214,10 +192,10 @@ class cvxif_t : public cvxif_extn_t
   std::vector<insn_desc_t> get_instructions()
   {
     std::vector<insn_desc_t> insns;
-    insns.push_back((insn_desc_t){0x0b, 0x7f, &::illegal_instruction, c0});
-    insns.push_back((insn_desc_t){0x2b, 0x7f, &::illegal_instruction, c1});
-    insns.push_back((insn_desc_t){0x5b, 0x7f, &::illegal_instruction, c2});
-    insns.push_back((insn_desc_t){0x7b, 0x7f, &c3,                    c3});
+    insns.push_back((insn_desc_t){0x0b, 0x7f, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, c0});
+    insns.push_back((insn_desc_t){0x2b, 0x7f, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, c1});
+    insns.push_back((insn_desc_t){0x5b, 0x7f, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, &::illegal_instruction, c2});
+    insns.push_back((insn_desc_t){0x7b, 0x7f, &c3, &c3, &c3, &c3, &c3, &c3, &c3, c3});
     return insns;
   }
 

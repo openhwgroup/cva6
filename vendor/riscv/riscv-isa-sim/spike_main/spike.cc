@@ -88,6 +88,7 @@ static void help(int exit_code = 1)
   fprintf(stderr, "  --blocksz=<size>      Cache block size (B) for CMO operations(powers of 2) [default 64]\n");
   fprintf(stderr, "  --steps=<n>           Stop simulation after reaching specified number of steps "
           "(default: unlimited)\n");
+  fprintf(stderr, "  --nb_register_source=<n>     Set the number of register source usable(2 or 3)\n");
 
   exit(exit_code);
 }
@@ -329,6 +330,7 @@ static std::vector<size_t> parse_hartids(const char *s)
 
 int main(int argc, char** argv)
 {
+  uint8_t number_register_source = 2;
   bool debug = false;
   bool halted = false;
   bool histogram = false;
@@ -510,6 +512,9 @@ int main(int argc, char** argv)
       exit(-1);
     }
   });
+  parser.option(0, "nb_register_source", 1, [&](const char* s){
+    number_register_source = (uint8_t)atoi(s);
+  });
 
   auto argv1 = parser.parse(argv);
   std::vector<std::string> htif_args(argv1, (const char*const*)argv + argc);
@@ -590,6 +595,7 @@ int main(int argc, char** argv)
   if (dc) dc->set_log(log_cache);
   for (size_t i = 0; i < cfg.nprocs(); i++)
   {
+    s.get_core(i)->set_nb_register_source(number_register_source);
     if (ic) s.get_core(i)->get_mmu()->register_memtracer(&*ic);
     if (dc) s.get_core(i)->get_mmu()->register_memtracer(&*dc);
     for (auto e : extensions)
