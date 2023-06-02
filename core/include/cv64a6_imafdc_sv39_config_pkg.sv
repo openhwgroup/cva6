@@ -28,9 +28,9 @@ package cva6_config_pkg;
     localparam CVA6ConfigAExtEn = 1;
     localparam CVA6ConfigBExtEn = 1;
 
-    localparam CVA6ConfigAxiIdWidth = 4;
-    localparam CVA6ConfigAxiAddrWidth = 64;
-    localparam CVA6ConfigAxiDataWidth = 64;
+    localparam CVA6ConfigDefaultAxiIdWidth = 4;
+    localparam CVA6ConfigDefaultAxiAddrWidth = 64;
+    localparam CVA6ConfigDefaultAxiDataWidth = 64;
     localparam CVA6ConfigFetchUserEn = 0;
     localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
     localparam CVA6ConfigDataUserEn = 0;

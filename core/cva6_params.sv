@@ -11,9 +11,9 @@ module cva6_params import ariane_pkg::*; #(
   // PMA user paramaters
   parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig,
   // AXI user parameters
-  parameter int unsigned AxiAddrWidth = cva6_config_pkg::CVA6ConfigAxiAddrWidth,
-  parameter int unsigned AxiDataWidth = cva6_config_pkg::CVA6ConfigAxiDataWidth,
-  parameter int unsigned AxiIdWidth   = cva6_config_pkg::CVA6ConfigAxiIdWidth,
+  parameter int unsigned AxiAddrWidth = cva6_config_pkg::CVA6ConfigDefaultAxiAddrWidth,
+  parameter int unsigned AxiDataWidth = cva6_config_pkg::CVA6ConfigDefaultAxiDataWidth,
+  parameter int unsigned AxiIdWidth   = cva6_config_pkg::CVA6ConfigDefaultAxiIdWidth,
   parameter int unsigned AxiUserWidth = cva6_config_pkg::CVA6ConfigDataUserWidth,
   // WARNING: Do not touch the following parameters
   parameter type axi_ar_chan_t = struct packed {
