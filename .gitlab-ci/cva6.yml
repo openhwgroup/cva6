@@ -454,34 +454,6 @@ pub_smoke-gate:
     paths:
       - "artifacts/reports/*.yml"
 
-pub_benchmarks:
-  stage: three
-  timeout: 2 hours
-  extends:
-    - .template_job_always_manual
-  variables:
-    DV_TARGET: "cv64a6_imafdc_sv39"
-    DV_SIMULATORS: "veri-testharness,spike"
-    DASHBOARD_JOB_TITLE: "BenchMark $DV_TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "Performance indicator of some benchmark"
-    DASHBOARD_SORT_INDEX: 7
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-  script:
-    - mkdir -p artifacts/reports
-    - python3 .gitlab-ci/scripts/report_fail.py
-    - source ./cva6/regress/install-cva6.sh
-    - source ./cva6/regress/install-riscv-dv.sh
-    - source ./cva6/regress/install-riscv-tests.sh
-    - source ./cva6/regress/benchmark.sh
-    - python3 .gitlab-ci/scripts/report_pass.py
-  artifacts:
-    when: always
-    paths:
-      - "artifacts/reports/*.yml"
-
 pub_coremark:
   stage: two
   extends:
@@ -525,35 +497,6 @@ pub_dhrystone:
     - python3 .gitlab-ci/scripts/report_fail.py
     - bash cva6/regress/dhrystone.sh
     - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone cva6/sim/out_*/veri-testharness_sim/dhrystone_main.log
-  artifacts:
-    when: always
-    paths:
-      - "artifacts/reports/*.yml"
-
-pub_wb_dcache:
-  stage: three
-  extends:
-    - .template_job_always_manual
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-  variables:
-    DASHBOARD_JOB_TITLE: "Writeback Data Cache test"
-    DASHBOARD_JOB_DESCRIPTION: "Test of IP wb_dcache"
-    DASHBOARD_SORT_INDEX: 8
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-  script:
-    - mkdir -p artifacts/reports
-    - python3 .gitlab-ci/scripts/report_fail.py
-    - source ./cva6/regress/install-cva6.sh
-    - cd core-v-cores/cva6
-    - source ci/make-tmp.sh
-    - source ci/build-riscv-tests.sh
-    - cd ../../../
-    # Use 'verilator --no-timing' until the timing issues in corev_apu RTL are fixed.
-    - make verilator="verilator --no-timing" run-asm-tests-verilator defines=WB_DCACHE
-    - cd ../..
-    - python3 .gitlab-ci/scripts/report_pass.py
   artifacts:
     when: always
     paths:
