@@ -476,8 +476,10 @@ module decoder import ariane_pkg::*; (
                     // Integer Reg-Reg Operations
                     // ---------------------------
                     end else begin
+                        //VCS coverage off
                         if (ariane_pkg::BITMANIP) begin
                             instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001 || ((instr.rtype.funct7 == 7'b000_0101) && !(instr.rtype.funct3[14]))) ? MULT : ALU;
+                        //VCS coverage on
                         end else begin
                             instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
                         end
@@ -509,6 +511,7 @@ module decoder import ariane_pkg::*; (
                                 illegal_instr_non_bm = 1'b1;
                             end
                         endcase
+                        //VCS coverage off
                         if (ariane_pkg::BITMANIP) begin
                             unique case ({instr.rtype.funct7, instr.rtype.funct3})
                                 //Logical with Negate
@@ -542,8 +545,11 @@ module decoder import ariane_pkg::*; (
                                     illegal_instr_bm = 1'b1;
                                 end
                             endcase
+                            illegal_instr = illegal_instr_non_bm & illegal_instr_bm;
+                        //VCS coverage on
+                        end else begin
+                          illegal_instr = illegal_instr_non_bm;
                         end
-                        illegal_instr = (ariane_pkg::BITMANIP) ? (illegal_instr_non_bm & illegal_instr_bm) : illegal_instr_non_bm;
                     end
                 end
 
@@ -570,6 +576,7 @@ module decoder import ariane_pkg::*; (
                             {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMUW;
                             default: illegal_instr_non_bm = 1'b1;
                         endcase
+                        //VCS coverage off
                         if (ariane_pkg::BITMANIP) begin
                             unique case ({instr.rtype.funct7, instr.rtype.funct3})
                                 // Shift with Add (Unsigned Word)
@@ -585,8 +592,11 @@ module decoder import ariane_pkg::*; (
                                 {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::RORW;     // rorw
                                 default: illegal_instr_bm = 1'b1;
                             endcase
+                            illegal_instr = illegal_instr_non_bm & illegal_instr_bm;
+                        //VCS coverage on
+                        end else begin
+                          illegal_instr = illegal_instr_non_bm;
                         end
-                        illegal_instr = (ariane_pkg::BITMANIP) ? (illegal_instr_non_bm & illegal_instr_bm) : illegal_instr_non_bm;
                       end else illegal_instr = 1'b1;
                 end
                 // --------------------------------
@@ -622,6 +632,7 @@ module decoder import ariane_pkg::*; (
                             if (instr.instr[25] != 1'b0 && riscv::XLEN==32) illegal_instr_non_bm = 1'b1;
                         end
                     endcase
+                    //VCS coverage off
                     if (ariane_pkg::BITMANIP) begin
                         unique case (instr.itype.funct3)
                             3'b001: begin
@@ -660,8 +671,11 @@ module decoder import ariane_pkg::*; (
                             end
                             default: illegal_instr_bm = 1'b1;
                         endcase
+                        illegal_instr = illegal_instr_non_bm & illegal_instr_bm;
+                    //VCS coverage on
+                    end else begin
+                      illegal_instr = illegal_instr_non_bm;
                     end
-                    illegal_instr = (ariane_pkg::BITMANIP) ? (illegal_instr_non_bm & illegal_instr_bm) : illegal_instr_non_bm;
                 end
 
                 // --------------------------------
@@ -690,6 +704,7 @@ module decoder import ariane_pkg::*; (
                             end
                             default: illegal_instr_non_bm = 1'b1;
                         endcase
+                        //VCS coverage off
                         if (ariane_pkg::BITMANIP) begin
                             unique case (instr.itype.funct3)
                                 3'b001: begin
@@ -713,8 +728,12 @@ module decoder import ariane_pkg::*; (
                                 end
                                 default: illegal_instr_bm = 1'b1;
                             endcase
+                            illegal_instr = illegal_instr_non_bm & illegal_instr_bm;
+                        //VCS coverage on
+                        end else begin
+                          illegal_instr = illegal_instr_non_bm;
                         end
-                        illegal_instr = (ariane_pkg::BITMANIP) ? (illegal_instr_non_bm & illegal_instr_bm) : illegal_instr_non_bm;
+
                     end else illegal_instr = 1'b1;
                 end
                 // --------------------------------

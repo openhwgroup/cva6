@@ -32,6 +32,7 @@ module multiplier import ariane_pkg::*; (
     logic [riscv::XLEN-1:0] clmul_q, clmul_d, clmulr_q, clmulr_d, operand_a, operand_b, operand_a_rev, operand_b_rev;
     logic clmul_rmode, clmul_hmode;
 
+    //VCS coverage off
     if (ariane_pkg::BITMANIP) begin : gen_bitmanip
         // checking for clmul_rmode and clmul_hmode
         assign clmul_rmode = (operation_i == CLMULR);
@@ -60,6 +61,7 @@ module multiplier import ariane_pkg::*; (
             assign clmulr_d[i] = clmul_d[(riscv::XLEN-1)-i];
         end
     end
+    //VCS coverage on
 
     // Pipeline register
     logic [TRANS_ID_BITS-1:0]    trans_id_q;
@@ -116,6 +118,7 @@ module multiplier import ariane_pkg::*; (
             default:             result_o = mult_result_q[riscv::XLEN-1:0];// including MUL
         endcase
     end
+    //VCS coverage off
     if (ariane_pkg::BITMANIP) begin
         always_ff @(posedge clk_i or negedge rst_ni) begin
             if (~rst_ni) begin
@@ -127,6 +130,7 @@ module multiplier import ariane_pkg::*; (
              end
         end
     end
+    //VCS coverage on
     // -----------------------
     // Output pipeline register
     // -----------------------
