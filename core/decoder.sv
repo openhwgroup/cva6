@@ -505,7 +505,6 @@ module decoder import ariane_pkg::*; (
                             {7'b000_0001, 3'b101}: instruction_o.op = ariane_pkg::DIVU;
                             {7'b000_0001, 3'b110}: instruction_o.op = ariane_pkg::REM;
                             {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMU;
-                            {7'b000_0100, 3'b100}: instruction_o.op = ariane_pkg::ZEXTH;
                             default: begin
                                 illegal_instr_non_bm = 1'b1;
                             end
@@ -537,6 +536,8 @@ module decoder import ariane_pkg::*; (
                                 // Bitwise Shifting
                                 {7'b011_0000, 3'b001}: instruction_o.op = ariane_pkg::ROL;      // rol
                                 {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::ROR;      // ror
+                                // Zero Extend Op
+                                {7'b000_0100, 3'b100}: instruction_o.op = ariane_pkg::ZEXTH;
                                 default: begin
                                     illegal_instr_bm = 1'b1;
                                 end
@@ -729,7 +730,7 @@ module decoder import ariane_pkg::*; (
                         3'b000: instruction_o.op  = ariane_pkg::SB;
                         3'b001: instruction_o.op  = ariane_pkg::SH;
                         3'b010: instruction_o.op  = ariane_pkg::SW;
-                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::SD; 
+                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::SD;
                                 else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
@@ -748,7 +749,7 @@ module decoder import ariane_pkg::*; (
                         3'b100: instruction_o.op  = ariane_pkg::LBU;
                         3'b101: instruction_o.op  = ariane_pkg::LHU;
                         3'b110: instruction_o.op  = ariane_pkg::LWU;
-                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::LD; 
+                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::LD;
                                 else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
