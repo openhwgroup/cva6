@@ -26,7 +26,6 @@
 // 2020-02-17  0.1      S.Jacq       MMU Sv32 for CV32A6
 // =========================================================================== //
 
-
 module cva6_mmu_sv32 import ariane_pkg::*; #(
     parameter int unsigned INSTR_TLB_ENTRIES     = 2,
     parameter int unsigned DATA_TLB_ENTRIES      = 2,
@@ -102,10 +101,10 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     logic                     shared_tlb_access;
     logic [riscv::VLEN-1:0]   shared_tlb_vaddr;
     logic                     shared_tlb_hit;
-    
+
     logic             itlb_req;
-    
-    
+
+
     // Assignments
     assign itlb_lu_access = icache_areq_i.fetch_req;
     assign dtlb_lu_access = lsu_req_i;
@@ -152,7 +151,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         .lu_is_4M_o       ( dtlb_is_4M                 ),
         .lu_hit_o         ( dtlb_lu_hit                )
     );
-    
+
     cva6_shared_tlb_sv32 #(
         .SHARED_TLB_DEPTH ( 64 ),
         .SHARED_TLB_WAYS  ( 2 ),
@@ -175,11 +174,11 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         .dtlb_access_i    ( dtlb_lu_access              ),
         .dtlb_hit_i       ( dtlb_lu_hit                 ),
         .dtlb_vaddr_i     ( lsu_vaddr_i                 ),
-    
+
         // to TLBs, update logic
         .itlb_update_o    ( update_itlb                 ),
         .dtlb_update_o    ( update_dtlb                 ),
-    
+
         // Performance counters
         .itlb_miss_o      (itlb_miss_o                  ),
         .dtlb_miss_o      (dtlb_miss_o                  ),
@@ -206,7 +205,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         .ptw_error_o            ( ptw_error             ),
         .ptw_access_exception_o ( ptw_access_exception  ),
 
-        .lsu_is_store_i         ( lsu_is_store_i        ),       
+        .lsu_is_store_i         ( lsu_is_store_i        ),
          // PTW memory interface
         .req_port_i             ( req_port_i            ),
         .req_port_o             ( req_port_o            ),
@@ -217,22 +216,22 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         .update_vaddr_o         ( update_vaddr          ),
 
         .asid_i                 ( asid_i                ),
-   
+
         // from shared TLB
         // did we miss?
         .shared_tlb_access_i    ( shared_tlb_access     ),
         .shared_tlb_hit_i       ( shared_tlb_hit        ),
         .shared_tlb_vaddr_i     ( shared_tlb_vaddr      ),
-    
+
         .itlb_req_i             ( itlb_req              ),
-    
+
         // from CSR file
        .satp_ppn_i              ( satp_ppn_i            ), // ppn from satp
        .mxr_i                   ( mxr_i                 ),
-       
+
        // Performance counters
        .shared_tlb_miss_o       (                       ), //open for now
-    
+
        // PMP
       .pmpcfg_i                 ( pmpcfg_i              ),
       .pmpaddr_i                ( pmpaddr_i             ),
@@ -269,7 +268,10 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     always_comb begin : instr_interface
         // MMU disabled: just pass through
         icache_areq_o.fetch_valid  = icache_areq_i.fetch_req;
-        icache_areq_o.fetch_paddr  = {{riscv::PLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr};// play through in case we disabled address translation
+        if (riscv::PLEN > riscv::VLEN)
+            icache_areq_o.fetch_paddr = {{riscv::PLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr};// play through in case we disabled address translation
+        else
+            icache_areq_o.fetch_paddr = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0];// play through in case we disabled address translation
         // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
@@ -378,8 +380,13 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         lsu_is_store_n        = lsu_is_store_i;
         dtlb_is_4M_n          = dtlb_is_4M;
 
-        lsu_paddr_o           = {{riscv::PLEN-riscv::VLEN{1'b0}}, lsu_vaddr_q};
-        lsu_dtlb_ppn_o        = {{riscv::PLEN-riscv::VLEN{1'b0}},lsu_vaddr_n[riscv::VLEN-1:12]};
+        if (riscv::PLEN > riscv::VLEN) begin
+            lsu_paddr_o           = {{riscv::PLEN-riscv::VLEN{1'b0}}, lsu_vaddr_q};
+            lsu_dtlb_ppn_o        = {{riscv::PLEN-riscv::VLEN{1'b0}},lsu_vaddr_n[riscv::VLEN-1:12]};
+        end else begin
+            lsu_paddr_o           = lsu_vaddr_q[riscv::PLEN-1:0];
+            lsu_dtlb_ppn_o        = lsu_vaddr_n[riscv::VLEN-1:12];
+        end
         lsu_valid_o           = lsu_req_q;
         lsu_exception_o       = misaligned_ex_q;
         pmp_access_type       = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;

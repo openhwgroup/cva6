@@ -306,6 +306,11 @@ independent requirements.
 |                                   |   run-time (selected through a    |
 |                                   |   register).*                     |
 +-----------------------------------+-----------------------------------+
+| ISA-120                           | CVA6 should support as an         |
+|                                   | **option** the **Zba**, **Zbb**,  |
+|                                   | **Zbc** and **Zbs** extensions    |
+|                                   | (bit manipulation), version 1.0.  |
++-----------------------------------+-----------------------------------+
 
 Note to ISA-60 and ISA-70: CV64A6 cannot support the D extension with
 the F extension.
