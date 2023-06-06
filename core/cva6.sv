@@ -193,6 +193,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     single_step_csr_commit;
   riscv::pmpcfg_t [15:0]    pmpcfg;
   logic [15:0][riscv::PLEN-3:0] pmpaddr;
+  logic [31:0]              mcountinhibit_csr_perf;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -554,7 +555,8 @@ module cva6 import ariane_pkg::*; #(
     .AsidWidth              ( ASID_WIDTH                    ),
     .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
     .NrCommitPorts          ( NR_COMMIT_PORTS               ),
-    .NrPMPEntries           ( ArianeCfg.NrPMPEntries        )
+    .NrPMPEntries           ( ArianeCfg.NrPMPEntries        ),
+    .MHPMCounterNum         ( MHPMCounterNum                )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),
@@ -601,6 +603,7 @@ module cva6 import ariane_pkg::*; #(
     .perf_we_o              ( we_csr_perf                   ),
     .pmpcfg_o               ( pmpcfg                        ),
     .pmpaddr_o              ( pmpaddr                       ),
+    .mcountinhibit_o        ( mcountinhibit_csr_perf        ),
     .debug_req_i,
     .ipi_i,
     .irq_i,
@@ -639,7 +642,8 @@ module cva6 import ariane_pkg::*; #(
     .l1_dcache_access_i  ( dcache_req_ports_ex_cache ),
     .miss_vld_bits_i     ( miss_vld_bits             ),
     .i_tlb_flush_i       ( flush_tlb_ctrl_ex         ),
-    .stall_issue_i       ( stall_issue               )
+    .stall_issue_i       ( stall_issue               ),
+    .mcountinhibit_i     ( mcountinhibit_csr_perf    )
   );
  end
 
