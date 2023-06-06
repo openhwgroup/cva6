@@ -48,7 +48,7 @@ module perf_counters import ariane_pkg::*; #(
   input  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]miss_vld_bits_i,  //For Cache eviction (3ports-LOAD,STORE,PTW)
   input  logic                                    i_tlb_flush_i,
   input  logic                                    stall_issue_i,  //stall-read operands
-  input  riscv::xlen_t                            mcountinhibit_i
+  input  logic[31:0]                              mcountinhibit_i
 );
 
   logic [63:0] generic_counter_d[6:1];

@@ -710,6 +710,7 @@ package ariane_pkg;
     // Performance counter
     // -------------------
     localparam bit PERF_COUNTER_EN = cva6_config_pkg::CVA6ConfigPerfCounterEn;
+    localparam int unsigned MHPMCounterNum = 6;
 
     // --------------------
     // Atomics

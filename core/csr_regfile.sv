@@ -17,7 +17,8 @@ module csr_regfile import ariane_pkg::*; #(
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
     parameter int unsigned NrCommitPorts   = 2,
-    parameter int unsigned NrPMPEntries    = 8
+    parameter int unsigned NrPMPEntries    = 8,
+    parameter int unsigned MHPMCounterNum  = 6
 ) (
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
@@ -86,7 +87,7 @@ module csr_regfile import ariane_pkg::*; #(
     // PMPs
     output riscv::pmpcfg_t [15:0] pmpcfg_o,   // PMP configuration containing pmpcfg for max 16 PMPs
     output logic [15:0][riscv::PLEN-3:0] pmpaddr_o,           // PMP addresses
-    output logic[riscv::XLEN-1:0] mcountinhibit_o
+    output logic [31:0] mcountinhibit_o
 );
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception, privilege_violation;
@@ -142,7 +143,7 @@ module csr_regfile import ariane_pkg::*; #(
 
     riscv::pmpcfg_t [15:0]    pmpcfg_q,  pmpcfg_d;
     logic [15:0][riscv::PLEN-3:0]        pmpaddr_q,  pmpaddr_d;
-    riscv::xlen_t mcountinhibit_d,mcountinhibit_q;
+    logic [MHPMCounterNum+3-1:0] mcountinhibit_d,mcountinhibit_q;
 
     assign pmpcfg_o = pmpcfg_q[15:0];
     assign pmpaddr_o = pmpaddr_q;
@@ -694,7 +695,7 @@ module csr_regfile import ariane_pkg::*; #(
                     mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
-                riscv::CSR_MCOUNTINHIBIT:      mcountinhibit_d = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
+                riscv::CSR_MCOUNTINHIBIT:      mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
                 // performance counters
                 riscv::CSR_MCYCLE:             cycle_d[riscv::XLEN-1:0] = csr_wdata;
                 riscv::CSR_MCYCLEH:            if (riscv::XLEN == 32) cycle_d[63:32] = csr_wdata; else update_access_exception = 1'b1;
@@ -1273,7 +1274,7 @@ module csr_regfile import ariane_pkg::*; #(
     assign mprv             = (debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
     assign debug_mode_o     = debug_mode_q;
     assign single_step_o    = dcsr_q.step;
-    assign mcountinhibit_o  = mcountinhibit_q;
+    assign mcountinhibit_o  = {{29-MHPMCounterNum{1'b0}}, mcountinhibit_q};
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin

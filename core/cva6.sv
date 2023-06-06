@@ -123,7 +123,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     fpu_ready_ex_id;
   logic                     fpu_valid_id_ex;
   logic [1:0]               fpu_fmt_id_ex;
-  logic [2:0]               fpu_rm_id_ex;
+  logic [2:0]               fpu_rm_iNR_COMMIT_PORTSd_ex;
   logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
   riscv::xlen_t             fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
@@ -193,7 +193,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     single_step_csr_commit;
   riscv::pmpcfg_t [15:0]    pmpcfg;
   logic [15:0][riscv::PLEN-3:0] pmpaddr;
-  logic [riscv::XLEN-1:0]   mcountinhibit_csr_perf;
+  logic [31:0]              mcountinhibit_csr_perf;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -555,7 +555,8 @@ module cva6 import ariane_pkg::*; #(
     .AsidWidth              ( ASID_WIDTH                    ),
     .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
     .NrCommitPorts          ( NR_COMMIT_PORTS               ),
-    .NrPMPEntries           ( ArianeCfg.NrPMPEntries        )
+    .NrPMPEntries           ( ArianeCfg.NrPMPEntries        ),
+    .MHPMCounterNum         ( MHPMCounterNum                )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),
