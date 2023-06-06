@@ -125,6 +125,12 @@ veri-testharness:
 	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.$(target).vcd
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
+questa-testharness:
+	mkdir -p $(path_var)/tmp
+	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)) batch-mode=1 elf-bin=$(elf) $(issrun_opts)
+	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
+
 ###############################################################################
 # UVM specific commands, variables
 ###############################################################################

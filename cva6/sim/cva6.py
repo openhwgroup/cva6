@@ -691,7 +691,7 @@ def compare_iss_log(iss_list, log_list, report, stop_on_first_error=0, exp=False
       csv_list.append(csv)
       if iss == "spike":
         process_spike_sim_log(log, csv)
-      elif "veri" in iss or "vsim" in iss or "vcs" in iss:
+      elif "veri" in iss or "vsim" in iss or "vcs" in iss or "questa" in iss:
         process_verilator_sim_log(log, csv)
       elif iss == "ovpsim":
         process_ovpsim_sim_log(log, csv, stop_on_first_error)
