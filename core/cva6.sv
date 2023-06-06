@@ -123,7 +123,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     fpu_ready_ex_id;
   logic                     fpu_valid_id_ex;
   logic [1:0]               fpu_fmt_id_ex;
-  logic [2:0]               fpu_rm_iNR_COMMIT_PORTSd_ex;
+  logic [2:0]               fpu_rm_id_ex;
   logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
   riscv::xlen_t             fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
