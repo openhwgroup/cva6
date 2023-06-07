@@ -602,6 +602,11 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
      - State dirty
      - read-only
      - The SD bit is a read\-only bit that summarizes whether either the FS, VS, or XS fields signal the presence of some dirty state that will require saving extended user context to memory\. If FS, XS, and VS are all read\-only zero, then SD is also always zero\.
+   * - 30:23
+     - WPRI3
+     - Reserved writes preserve values, reads ignore value
+     - read-write
+     - Reserved Writes Preserve Values, Reads Ignore Value
    * - 22 
      - TSR
      - Trap sret
@@ -663,25 +668,30 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
      - read-write
      - Indicates whether supervisor interrupts were enabled prior to trapping into supervisor mode\.
    * - 4 
-     - UPIE
-     - 
+     - WPRI2
+     - Reserved writes preserve values, reads ignore value
      - read-write
-     - indicates whether user\-level interrupts were enabled prior to taking a user\-level trap
+     - Reserved Writes Preserve Values, Reads Ignore Value
    * - 3 
      - MIE
      - Machine mode interrupt enable
      - read-write
      - Global interrupt\-enable bit for Machine mode\.
+   * - 2 
+     - WPRI1
+     - Reserved writes preserve values, reads ignore value
+     - read-write
+     - Reserved Writes Preserve Values, Reads Ignore Value
    * - 1 
      - SIE
      - Supervisor mode interrupt enable
      - read-write
      - Global interrupt\-enable bit for Supervisor mode\.
    * - 0 
-     - UIE
-     - 
+     - WPRI0
+     - Reserved writes preserve values, reads ignore value
      - read-write
-     - Global interrupt\-enable bits
+     - Reserved Writes Preserve Values, Reads Ignore Value
 
 Machine ISA Register 
 --------------------------
