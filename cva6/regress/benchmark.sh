@@ -8,8 +8,8 @@
 # Original Author: Guillaume Chauvon (guillaume.chauvon@thalesgroup.com)
 
 # where are the tools
-if ! [ -n "$RISCV_PREFIX" ]; then
-  echo "Error: RISCV_PREFIX variable undefined"
+if [ -z "$RISCV" ]; then
+  echo "Error: RISCV variable undefined"
   return
 fi
 
@@ -17,46 +17,52 @@ fi
 source ./cva6/regress/install-cva6.sh
 source ./cva6/regress/install-riscv-dv.sh
 
-if ! [ -n "$DV_SIMULATORS" ]; then
+if [ -z "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness,spike
 fi
 
-
-cd cva6/tests/riscv-tests/benchmarks
-
-if ! [ -n "$DV_TARGET" ]; then
+if [ -z "$DV_TARGET" ]; then
   DV_TARGET=cv64a6_imafdc_sv39
 fi
 
-make clean
-make
-
-for f in *.riscv; do
-    mv -- "$f" "${f%.riscv}.o"
-done
-
-cd -
 cd cva6/sim/
 
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/dhrystone.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/median.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/mm.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/mt-matmul.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/mt-vvadd.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/multiply.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/pmp.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/qsort.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/rsort.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/spmv.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/towers.o
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --elf_tests ../tests/riscv-tests/benchmarks/vvadd.o
+BDIR=../tests/riscv-tests/benchmarks/
+CVA6_FLAGS="--target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --linker ../tests/custom/common/test.ld"
+
+GCC_COMMON_SRC=(
+        ../tests/riscv-tests/benchmarks/common/syscalls.c
+        ../tests/riscv-tests/benchmarks/common/crt.S
+)
+
+GCC_CFLAGS=(
+        -fno-tree-loop-distribute-patterns
+        -nostdlib
+        -nostartfiles
+        -lgcc
+        -O3 --no-inline
+        -I../tests/custom/env
+        -I../tests/custom/common
+        -DNOPRINT
+)
+
+GCC_OPTS="${GCC_CFLAGS[*]} ${GCC_COMMON_SRC[*]}"
+
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/dhrystone/dhrystone.c   --gcc_opts "$GCC_OPTS -I$BDIR/dhrystone/    $BDIR/dhrystone/dhrystone_main.c"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/median/median.c         --gcc_opts "$GCC_OPTS -I$BDIR/median/       $BDIR/median/median_main.c"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/mm/mm.c                 --gcc_opts "$GCC_OPTS -I$BDIR/mm/           $BDIR/mm/mm_main.c"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/mt-matmul/mt-matmul.c   --gcc_opts "$GCC_OPTS -I$BDIR/mt-matmul/    $BDIR/mt-matmul/matmul.c"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/mt-vvadd/mt-vvadd.c     --gcc_opts "$GCC_OPTS -I$BDIR/mt-vvadd/     $BDIR/mt-vvadd/vvadd.c"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/multiply/multiply.c     --gcc_opts "$GCC_OPTS -I$BDIR/multiply/     $BDIR/multiply/multiply_main.c"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/pmp/pmp.c               --gcc_opts "$GCC_OPTS -I$BDIR/pmp/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/qsort/qsort_main.c      --gcc_opts "$GCC_OPTS -I$BDIR/qsort/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/rsort/rsort.c           --gcc_opts "$GCC_OPTS -I$BDIR/rsort/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/spmv/spmv_main.c        --gcc_opts "$GCC_OPTS -I$BDIR/spmv/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/towers/towers_main.c    --gcc_opts "$GCC_OPTS -I$BDIR/towers/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/vvadd/vvadd.c           --gcc_opts "$GCC_OPTS -I$BDIR/vvadd/        $BDIR/vvadd/vvadd_main.c"
 
 make -C ../../core-v-cores/cva6 clean
 make clean_all
+
 cd -
 
-cd cva6/tests/riscv-tests/benchmarks
-for f in *.o; do
-    mv -- "$f" "${f%.o}.riscv"
-done
-cd -

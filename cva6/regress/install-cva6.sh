@@ -8,13 +8,25 @@
 # Original Author: Jean-Roch COULON - Thales
 
 # Customise this to a fast local disk
-export ROOT_PROJECT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)
+export ROOT_PROJECT=$(readlink -f $(dirname "${BASH_SOURCE[0]}")/../../)
 export TOP="$ROOT_PROJECT/tools"
 
 # where to install the tools
-if ! [ -n "$RISCV" ]; then
+if [ -z "$RISCV" ]; then
   echo "Error: RISCV variable undefined."
   return
+fi
+
+if [ -z "$CV_SW_PREFIX" ]; then
+    export CV_SW_PREFIX="$(ls -1 -r $RISCV/bin/riscv*-gcc | head -n 1| grep gcc | rev | cut -d '/' -f 1 | cut -d '-' -f 2- | rev)-"
+fi
+
+if [ -z "$RISCV_GCC" ]; then
+    export RISCV_GCC=$RISCV/bin/${CV_SW_PREFIX}gcc
+fi
+
+if [ -z "$RISCV_OBJCOPY" ]; then
+    export RISCV_OBJCOPY=$RISCV/bin/${CV_SW_PREFIX}objcopy
 fi
 
 # Set up tool-related variables.
@@ -28,7 +40,7 @@ export CPLUS_INCLUDE_PATH="$RISCV/include"
 # Set VERILATOR_INSTALL_DIR to 'NO' to skip installation and checks
 # of Verilator (useful for CI jobs not depending on Verilator in any way).
 if [ "$VERILATOR_INSTALL_DIR" != "NO" ]; then
-  cva6/regress/install-verilator.sh
+  source cva6/regress/install-verilator.sh
 
   # Complain if the installation directory of Verilator still is not set
   # after running the installer.
@@ -42,8 +54,6 @@ if [ "$VERILATOR_INSTALL_DIR" != "NO" ]; then
   export C_INCLUDE_PATH="$VERILATOR_INSTALL_DIR/share/verilator/include:$C_INCLUDE_PATH"
   export CPLUS_INCLUDE_PATH="$VERILATOR_INSTALL_DIR/share/verilator/include:$CPLUS_INCLUDE_PATH"
 
-  # Check proper Verilator installation given current $PATH.
-  echo PATH=\"$PATH\"
   echo "Verilator version:"
   verilator --version || { echo "Error: Verilator not in \$PATH." ; return ; }
 else
@@ -54,7 +64,7 @@ fi
 export NUM_JOBS=24
 
 # install the required tools for cva6
-if ! [ -n "$CVA6_REPO" ]; then
+if [ -z "$CVA6_REPO" ]; then
   CVA6_REPO="https://github.com/openhwgroup/cva6.git"
   CVA6_BRANCH="master"
   CVA6_HASH="4f06aa620f75bcae369f05d0652283d45ef76a24"
@@ -67,16 +77,15 @@ echo $CVA6_PATCH
 
 if ! [ -d core-v-cores/cva6 ]; then
   git clone --recursive $CVA6_REPO -b $CVA6_BRANCH core-v-cores/cva6
-  cd core-v-cores/cva6; git checkout $CVA6_HASH;
+  git -C core-v-cores/cva6 checkout $CVA6_HASH
   echo -n "Using CVA6 commit "; git describe --always HEAD
-  if [ -f ../$CVA6_PATCH ]; then
-    git apply ../$CVA6_PATCH
+  if [[ -n "$CVA6_PATCH" && -f "$CVA6_PATCH" ]]; then
+    git -C core-v-cores/cva6 apply "$CVA6_PATCH"
   fi
-  cd -
 fi
 
 # install Spike
-if ! [ -n "$SPIKE_ROOT" ]; then
+if [ -z "$SPIKE_ROOT" ]; then
   export SPIKE_ROOT=$TOP/spike/
 fi
-cva6/regress/install-spike.sh
+source cva6/regress/install-spike.sh
