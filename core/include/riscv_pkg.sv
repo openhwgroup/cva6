@@ -77,6 +77,27 @@ package riscv;
 
     typedef struct packed {
         logic         sd;     // signal dirty state - read-only
+        logic [62:34] wpri6;  // writes preserved reads ignored
+        xlen_e        uxl;    // variable user mode xlen - hardwired to zero
+        logic [12:0]  wpri5;  // writes preserved reads ignored
+        logic         mxr;    // make executable readable
+        logic         sum;    // permit supervisor user memory access
+        logic         wpri4;  // writes preserved reads ignored
+        xs_t          xs;     // extension register - hardwired to zero
+        xs_t          fs;     // floating point extension register
+        logic [1:0]   wpri3;  // writes preserved reads ignored
+        xs_t          vs;     // vector extension register
+        logic         spp;    // holds the previous privilege mode up to supervisor
+        logic         wpri2;  // writes preserved reads ignored
+        logic         ube;    // UBE controls whether explicit load and store memory accesses made from U-mode are little-endian (UBE=0) or big-endian (UBE=1)
+        logic         spie;   // supervisor interrupts enable bit active prior to trap
+        logic [1:0]   wpri1;  // writes preserved reads ignored
+        logic         sie;    // supervisor interrupts enable
+        logic         wpri0;  // writes preserved reads ignored
+    } sstatus_rv_t;
+    
+    typedef struct packed {
+        logic         sd;     // signal dirty state - read-only
         logic [62:36] wpri4;  // writes preserved reads ignored
         xlen_e        sxl;    // variable supervisor mode xlen - hardwired to zero
         xlen_e        uxl;    // variable user mode xlen - hardwired to zero
@@ -90,17 +111,17 @@ package riscv;
         xs_t          xs;     // extension register - hardwired to zero
         xs_t          fs;     // floating point extension register
         priv_lvl_t    mpp;    // holds the previous privilege mode up to machine
-        logic [1:0]   wpri2;  // writes preserved reads ignored
+        xs_t          vs;     // vector extension register
         logic         spp;    // holds the previous privilege mode up to supervisor
         logic         mpie;   // machine interrupts enable bit active prior to trap
-        logic         wpri1;  // writes preserved reads ignored
+        logic         ube;    // UBE controls whether explicit load and store memory accesses made from U-mode are little-endian (UBE=0) or big-endian (UBE=1)
         logic         spie;   // supervisor interrupts enable bit active prior to trap
-        logic         upie;   // user interrupts enable bit active prior to trap - hardwired to zero
+        logic         wpri2;  // writes preserved reads ignored
         logic         mie;    // machine interrupts enable
-        logic         wpri0;  // writes preserved reads ignored
+        logic         wpri1;  // writes preserved reads ignored
         logic         sie;    // supervisor interrupts enable
-        logic         uie;    // user interrupts enable - hardwired to zero
-    } status_rv_t;
+        logic         wpri0;  // writes preserved reads ignored
+    } mstatus_rv_t;
 
     typedef struct packed {
         logic [ModeW-1:0] mode;

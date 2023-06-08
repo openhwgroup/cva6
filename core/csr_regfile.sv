@@ -102,7 +102,7 @@ module csr_regfile import ariane_pkg::*; #(
     logic  dret;  // return from debug mode
     // CSR write causes us to mark the FPU state as dirty
     logic  dirty_fp_state_csr;
-    riscv::status_rv_t    mstatus_q,  mstatus_d;
+    riscv::mstatus_rv_t    mstatus_q,  mstatus_d;
     riscv::xlen_t         mstatus_extended;
     riscv::satp_t         satp_q, satp_d;
     riscv::dcsr_t         dcsr_q,     dcsr_d;
@@ -159,13 +159,13 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------
     assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
-
+	
     always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
         read_access_exception = 1'b0;
         csr_rdata = '0;
         perf_addr_o = csr_addr.address[11:0];
-
+		
         if (csr_read) begin
             unique case (csr_addr.address)
                 riscv::CSR_FFLAGS: begin
@@ -649,8 +649,10 @@ module csr_regfile import ariane_pkg::*; #(
                     if (!FP_PRESENT) begin
                         mstatus_d.fs = riscv::Off;
                     end
-                    mstatus_d.upie = 1'b0;
-                    mstatus_d.uie  = 1'b0;
+                    mstatus_d.wpri3 = 8'b0;
+                    mstatus_d.wpri1 = 1'b0;
+                    mstatus_d.wpri2 = 1'b0;
+                    mstatus_d.wpri0  = 1'b0;
                     // this register has side-effects on other registers, flush the pipeline
                     flush_o        = 1'b1;
                 end

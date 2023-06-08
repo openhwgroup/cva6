@@ -815,6 +815,18 @@ component:
             bitWidth: '1'
             volatile: 'true'
             access: read-only
+          - name: WPRI3
+            displayName: Reserved Writes Preserve Values, Reads Ignore Value
+            description: Reserved Writes Preserve Values, Reads Ignore Value
+            bitOffset: '23'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '8'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
           - name: TSR
             displayName: Trap SRET
             description: The TSR bit supports intercepting the supervisor exception return instruction, SRET. When TSR=1, attempts to execute SRET while executing in S-mode will raise an illegal instruction exception. When TSR=0, this operation is permitted in S-mode.
@@ -976,8 +988,9 @@ component:
                 mask: '0x1'
             bitWidth: '1'
             access: read-write
-          - name: UPIE
-            description: indicates whether user-level interrupts were enabled prior to taking a user-level trap
+          - name: WPRI2
+            displayName: Reserved Writes Preserve Values, Reads Ignore Value
+            description: Reserved Writes Preserve Values, Reads Ignore Value
             bitOffset: '4'
             resets:
               reset:
@@ -985,6 +998,8 @@ component:
                 mask: '0x1'
             bitWidth: '1'
             access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
           - name: MIE
             displayName: Machine mode Interrupt Enable
             description: Global interrupt-enable bit for Machine mode.
@@ -995,6 +1010,18 @@ component:
                 mask: '0x1'
             bitWidth: '1'
             access: read-write
+          - name: WPRI1
+            displayName: Reserved Writes Preserve Values, Reads Ignore Value
+            description: Reserved Writes Preserve Values, Reads Ignore Value
+            bitOffset: '2'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
           - name: SIE
             displayName: Supervisor mode Interrupt Enable
             description: Global interrupt-enable bit for Supervisor mode.
@@ -1005,8 +1032,9 @@ component:
                 mask: '0x1'
             bitWidth: '1'
             access: read-write
-          - name: UIE
-            description: Global interrupt-enable bits
+          - name: WPRI0
+            displayName: Reserved Writes Preserve Values, Reads Ignore Value
+            description: Reserved Writes Preserve Values, Reads Ignore Value
             bitOffset: '0'
             resets:
               reset:
@@ -1014,6 +1042,8 @@ component:
                 mask: '0x1'
             bitWidth: '1'
             access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
           vendorExtensions:
             privilege_mode: M
         - name: misa
