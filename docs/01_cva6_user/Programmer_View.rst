@@ -20,17 +20,42 @@
 
 Programmer’s View
 =================
-RISC-V specifications allow many variations. This chapter provides more details about RISC-V variants available for the programmer. 
+RISC-V specifications allow many variations. This chapter provides more details about RISC-V variants available for the programmer.
 
 RISC-V Extensions
 -----------------
-Need for step1 verification.
-As CVA6 implements specified RISC-V extensions, this will be a short section, where we mention which extensions are always present or optional.
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Extension", "Optional", "RV32","RV64"
 
-RISC-V Privileges
+   "I- RV32i Base Integer Instruction Set",                             "No","✓","✓"
+   "A - Atomic Instructions",                                           "Yes","✓","✓"
+   "Zb* - Bit-Manipulation",                                            "Yes","✓","✓"
+   "C - Compressed Instructions ",                                      "Yes","✓","✓"
+   "D - Double precsision floating-point",                              "Yes","✗ ","✓"
+   "F - Single precsision floating-point",                              "Yes","✓","✓"
+   "M - Integer Multiply/Divide",                                       "No","✓","✓"
+   "Zicount - Performance Counters",                                    "Yes","✓","✓"
+   "Zicsr - Control and Status Register Instructions",                  "No","✓","✓"
+   "Zifencei - Instruction-Fetch Fence",                                "No","✓","✓"
+
+
+
+RISC-V Privileges.
 -----------------
-Need for step1 verification.
-We identify the supported RISC-V privileges
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Mode"
+
+   "M - Machine"
+   "S - Supervior"
+   "U - User"
+
+
+Note: The addition of the H Extension is in the process. After that, HS, VS, and VU modes will also be available.
+
 
 RISC-V Virtual Memory
 ---------------------
