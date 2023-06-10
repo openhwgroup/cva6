@@ -43,6 +43,7 @@ module decoder import ariane_pkg::*; (
 );
     logic illegal_instr;
     logic illegal_instr_bm;
+    logic illegal_instr_zic;
     logic illegal_instr_non_bm;
     // this instruction is an environment call (ecall), it is handled like an exception
     logic ecall;
@@ -73,6 +74,7 @@ module decoder import ariane_pkg::*; (
         illegal_instr               = 1'b0;
         illegal_instr_non_bm        = 1'b0;
         illegal_instr_bm            = 1'b0;
+        illegal_instr_zic           = 1'b0;
         instruction_o.pc            = pc_i;
         instruction_o.trans_id      = '0;
         instruction_o.fu            = NONE;
@@ -542,7 +544,22 @@ module decoder import ariane_pkg::*; (
                                 end
                             endcase
                         end
-                        illegal_instr = (ariane_pkg::BITMANIP) ? (illegal_instr_non_bm & illegal_instr_bm) : illegal_instr_non_bm;
+                        if (ariane_pkg::RCONDEXT) begin
+                            unique case ({instr.rtype.funct7, instr.rtype.funct3})
+                                //Conditional move
+                                {7'b000_0111, 3'b101}: instruction_o.op = ariane_pkg::CZERO_EQZ;     // czero.eqz
+                                {7'b000_0111, 3'b111}: instruction_o.op = ariane_pkg::CZERO_NEZ;      // czero.nez
+                                default: begin
+                                    illegal_instr_zic = 1'b1;
+                                end
+                            endcase
+                        end
+                        unique case ({ariane_pkg::BITMANIP, ariane_pkg::RCONDEXT})
+                          2'b00 : illegal_instr = illegal_instr_non_bm;
+                          2'b01 : illegal_instr = illegal_instr_non_bm & illegal_instr_zic;
+                          2'b10 : illegal_instr = illegal_instr_non_bm & illegal_instr_bm;
+                          2'b11 : illegal_instr = illegal_instr_non_bm & illegal_instr_bm & illegal_instr_zic;
+                        endcase
                     end
                 end
 
@@ -729,7 +746,7 @@ module decoder import ariane_pkg::*; (
                         3'b000: instruction_o.op  = ariane_pkg::SB;
                         3'b001: instruction_o.op  = ariane_pkg::SH;
                         3'b010: instruction_o.op  = ariane_pkg::SW;
-                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::SD; 
+                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::SD;
                                 else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
@@ -748,7 +765,7 @@ module decoder import ariane_pkg::*; (
                         3'b100: instruction_o.op  = ariane_pkg::LBU;
                         3'b101: instruction_o.op  = ariane_pkg::LHU;
                         3'b110: instruction_o.op  = ariane_pkg::LWU;
-                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::LD; 
+                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::LD;
                                 else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
