@@ -45,6 +45,7 @@ module decoder import ariane_pkg::*; #(
 );
     logic illegal_instr;
     logic illegal_instr_bm;
+    logic illegal_instr_zic;
     logic illegal_instr_non_bm;
     // this instruction is an environment call (ecall), it is handled like an exception
     logic ecall;
@@ -75,6 +76,7 @@ module decoder import ariane_pkg::*; #(
         illegal_instr               = 1'b0;
         illegal_instr_non_bm        = 1'b0;
         illegal_instr_bm            = 1'b0;
+        illegal_instr_zic           = 1'b0;
         instruction_o.pc            = pc_i;
         instruction_o.trans_id      = '0;
         instruction_o.fu            = NONE;
@@ -547,11 +549,24 @@ module decoder import ariane_pkg::*; #(
                                     illegal_instr_bm = 1'b1;
                                 end
                             endcase
-                            illegal_instr = illegal_instr_non_bm & illegal_instr_bm;
-                        //VCS coverage on
-                        end else begin
-                          illegal_instr = illegal_instr_non_bm;
                         end
+                        if (ariane_pkg::RCONDEXT) begin
+                            unique case ({instr.rtype.funct7, instr.rtype.funct3})
+                                //Conditional move
+                                {7'b000_0111, 3'b101}: instruction_o.op = ariane_pkg::CZERO_EQZ;     // czero.eqz
+                                {7'b000_0111, 3'b111}: instruction_o.op = ariane_pkg::CZERO_NEZ;      // czero.nez
+                                default: begin
+                                    illegal_instr_zic = 1'b1;
+                                end
+                            endcase
+                        end
+                        //VCS coverage on
+                        unique case ({ariane_pkg::BITMANIP, ariane_pkg::RCONDEXT})
+                          2'b00 : illegal_instr = illegal_instr_non_bm;
+                          2'b01 : illegal_instr = illegal_instr_non_bm & illegal_instr_zic;
+                          2'b10 : illegal_instr = illegal_instr_non_bm & illegal_instr_bm;
+                          2'b11 : illegal_instr = illegal_instr_non_bm & illegal_instr_bm & illegal_instr_zic;
+                        endcase
                     end
                 end
 
