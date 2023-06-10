@@ -311,6 +311,11 @@ package ariane_pkg;
     // ---------------
     localparam bit BITMANIP = cva6_config_pkg::CVA6ConfigBExtEn;
 
+    // ---------------
+    // Enable ZiCond
+    // ---------------
+    localparam bit RCONDEXT = cva6_config_pkg::CVA6ConfigCondExtEn;
+
     // Only use struct when signals have same direction
     // exception
     typedef struct packed {
@@ -546,7 +551,9 @@ package ariane_pkg;
                                // Shift with Add (Bitmanip)
                                SH1ADD, SH2ADD, SH3ADD,
                                // Bitmanip Logical with negate op (Bitmanip)
-                               ANDN, ORN, XNOR
+                               ANDN, ORN, XNOR,
+                               // Zicond instruction
+                               CZERO_EQZ, CZERO_NEZ
                              } fu_op;
 
     typedef struct packed {
