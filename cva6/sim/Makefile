@@ -38,6 +38,10 @@ issrun_opts     ?=
 isspostrun_opts ?=
 log             ?=
 variant         ?=
+# Set Spike step count limit if the caller provided a step count value in variable 'steps'.
+ifneq ($(steps),)
+  spike_stepout = --steps=$(steps)
+endif
 
 # TRACE_FAST, TRACE_COMPACT and VERDI are mutually exclusive and imply non-empty DEBUG.
 ifneq ($(TRACE_FAST),)
@@ -101,7 +105,7 @@ endif
 # Spike specific commands, variables
 ###############################################################################
 spike:
-	$(tool_path)/spike --log-commits --isa=$(variant) -l $(elf)
+	$(tool_path)/spike $(spike_stepout) --log-commits --isa=$(variant) -l $(elf)
 	cp $(log).iss $(log)
 
 ###############################################################################
