@@ -1153,6 +1153,23 @@ To select MODE=Bare, software must write zero to the remaining fields of ``satp`
                                                 <ipxact:access>read-only</ipxact:access>
                                         </ipxact:field>
                                         <ipxact:field>
+                                                <ipxact:name>WPRI3</ipxact:name>
+                                                <ipxact:displayName>Reserved Writes Preserve Values, Reads Ignore Value</ipxact:displayName>
+                                                <ipxact:description>Reserved Writes Preserve Values, Reads Ignore Value</ipxact:description>
+                                                <ipxact:bitOffset>23</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>8</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WPRI</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>TSR</ipxact:name>
                                                 <ipxact:displayName>Trap SRET</ipxact:displayName>
                                                 <ipxact:description>The TSR bit supports intercepting the supervisor exception return instruction, SRET. When TSR=1, attempts to execute SRET while executing in S-mode will raise an illegal instruction exception. When TSR=0, this operation is permitted in S-mode.</ipxact:description>
@@ -1378,8 +1395,9 @@ This field can be checked by a context switch routine to quickly determine wheth
                                                 <ipxact:access>read-write</ipxact:access>
                                         </ipxact:field>
                                         <ipxact:field>
-                                                <ipxact:name>UPIE</ipxact:name>
-                                                <ipxact:description>indicates whether user-level interrupts were enabled prior to taking a user-level trap</ipxact:description>
+                                                <ipxact:name>WPRI2</ipxact:name>
+                                                <ipxact:displayName>Reserved Writes Preserve Values, Reads Ignore Value</ipxact:displayName>
+                                                <ipxact:description>Reserved Writes Preserve Values, Reads Ignore Value</ipxact:description>
                                                 <ipxact:bitOffset>4</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -1389,6 +1407,9 @@ This field can be checked by a context switch routine to quickly determine wheth
                                                 </ipxact:resets>
                                                 <ipxact:bitWidth>1</ipxact:bitWidth>
                                                 <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WPRI</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>MIE</ipxact:name>
@@ -1405,6 +1426,23 @@ This field can be checked by a context switch routine to quickly determine wheth
                                                 <ipxact:access>read-write</ipxact:access>
                                         </ipxact:field>
                                         <ipxact:field>
+                                                <ipxact:name>WPRI1</ipxact:name>
+                                                <ipxact:displayName>Reserved Writes Preserve Values, Reads Ignore Value</ipxact:displayName>
+                                                <ipxact:description>Reserved Writes Preserve Values, Reads Ignore Value</ipxact:description>
+                                                <ipxact:bitOffset>2</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WPRI</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>SIE</ipxact:name>
                                                 <ipxact:displayName>Supervisor mode Interrupt Enable</ipxact:displayName>
                                                 <ipxact:description>Global interrupt-enable bit for Supervisor mode.</ipxact:description>
@@ -1419,8 +1457,9 @@ This field can be checked by a context switch routine to quickly determine wheth
                                                 <ipxact:access>read-write</ipxact:access>
                                         </ipxact:field>
                                         <ipxact:field>
-                                                <ipxact:name>UIE</ipxact:name>
-                                                <ipxact:description>Global interrupt-enable bits</ipxact:description>
+                                                <ipxact:name>WPRI0</ipxact:name>
+                                                <ipxact:displayName>Reserved Writes Preserve Values, Reads Ignore Value</ipxact:displayName>
+                                                <ipxact:description>Reserved Writes Preserve Values, Reads Ignore Value</ipxact:description>
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -1430,6 +1469,9 @@ This field can be checked by a context switch routine to quickly determine wheth
                                                 </ipxact:resets>
                                                 <ipxact:bitWidth>1</ipxact:bitWidth>
                                                 <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WPRI</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
                                         </ipxact:field>
                                         <ipxact:vendorExtensions>
                                                 <privilege_mode>M</privilege_mode>

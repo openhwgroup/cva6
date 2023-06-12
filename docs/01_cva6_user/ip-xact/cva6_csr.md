@@ -189,6 +189,7 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31 | SD | State dirty | read-only  | The SD bit is a read\-only bit that summarizes whether either the FS, VS, or XS fields signal the presence of some dirty state that will require saving extended user context to memory\. If FS, XS, and VS are all read\-only zero, then SD is also always zero\.|
+| 30:23 | WPRI3 | Reserved writes preserve values, reads ignore value | read-write  | Reserved Writes Preserve Values, Reads Ignore Value|
 | 22 | TSR | Trap sret | read-write  | The TSR bit supports intercepting the supervisor exception return instruction, SRET\. When TSR=1, attempts to execute SRET while executing in S\-mode will raise an illegal instruction exception\. When TSR=0, this operation is permitted in S\-mode\.|
 | 21 | TW | Timeout wait | read-write  | The TW bit supports intercepting the WFI instruction\. When TW=0, the WFI instruction may execute in lower privilege modes when not prevented for some other reason\. When TW=1, then if WFI is executed in any less\-privileged mode, and it does not complete within an implementation\-specific, bounded time limit, the WFI instruction causes an illegal instruction exception\. The time limit may always be 0, in which case WFI always causes an illegal instruction exception in less\-privileged modes when TW=1\.|
 | 20 | TVM | Trap virtual memory | read-write  | The TVM bit supports intercepting supervisor virtual\-memory management operations\. When TVM=1, attempts to read or write the ``satp`` CSR or execute an SFENCE\.VMA or SINVAL\.VMA instruction while executing in S\-mode will raise an illegal instruction exception\. When TVM=0, these operations are permitted in S\-mode\.|
@@ -201,10 +202,11 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
 | 8 | SPP | Supervisor mode prior privilege | read-write  | Holds the previous privilege mode for supervisor mode\.|
 | 7 | MPIE | Machine mode prior interrupt enable | read-write  | Indicates whether machine interrupts were enabled prior to trapping into machine mode\.|
 | 5 | SPIE | Supervisor mode prior interrupt enable | read-write  | Indicates whether supervisor interrupts were enabled prior to trapping into supervisor mode\.|
-| 4 | UPIE |  | read-write  | indicates whether user\-level interrupts were enabled prior to taking a user\-level trap|
+| 4 | WPRI2 | Reserved writes preserve values, reads ignore value | read-write  | Reserved Writes Preserve Values, Reads Ignore Value|
 | 3 | MIE | Machine mode interrupt enable | read-write  | Global interrupt\-enable bit for Machine mode\.|
+| 2 | WPRI1 | Reserved writes preserve values, reads ignore value | read-write  | Reserved Writes Preserve Values, Reads Ignore Value|
 | 1 | SIE | Supervisor mode interrupt enable | read-write  | Global interrupt\-enable bit for Supervisor mode\.|
-| 0 | UIE |  | read-write  | Global interrupt\-enable bits|
+| 0 | WPRI0 | Reserved writes preserve values, reads ignore value | read-write  | Reserved Writes Preserve Values, Reads Ignore Value|
 
 ## Machine ISA Register 
 ### *AddressOffset*: 'h301 

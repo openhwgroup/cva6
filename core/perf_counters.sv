@@ -47,7 +47,8 @@ module perf_counters import ariane_pkg::*; #(
   input  dcache_req_i_t[2:0]                      l1_dcache_access_i,
   input  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]miss_vld_bits_i,  //For Cache eviction (3ports-LOAD,STORE,PTW)
   input  logic                                    i_tlb_flush_i,
-  input  logic                                    stall_issue_i  //stall-read operands
+  input  logic                                    stall_issue_i,  //stall-read operands
+  input  logic[31:0]                              mcountinhibit_i
 );
 
   logic [63:0] generic_counter_d[6:1];
@@ -107,7 +108,7 @@ module perf_counters import ariane_pkg::*; #(
 
       for(int unsigned i = 1; i <= 6; i++) begin
          if ((!debug_mode_i) && (!we_i)) begin
-             if (events[i] == 1)begin
+             if ((events[i]) == 1 && (!mcountinhibit_i[i+2]))begin
                 generic_counter_d[i] = generic_counter_q[i] + 1'b1;end
             else begin
                 generic_counter_d[i] = 'b0;end

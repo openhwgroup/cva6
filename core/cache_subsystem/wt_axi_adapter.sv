@@ -136,7 +136,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_wr_be    = '0;
     axi_wr_lock  = '0;
     axi_wr_atop  = '0;
-    amo_off_d    = '0;
+    amo_off_d    = amo_off_q;
     amo_gen_r_d  = amo_gen_r_q;
 
     // read channel

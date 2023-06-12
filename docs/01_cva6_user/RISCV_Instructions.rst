@@ -451,10 +451,10 @@ Control Transfer Instructions
     **Format**: beq rs1, rs2, imm[12:1]
 
     **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are equal.
+    
+    **Pseudocode**: if (x[rs1] == x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
     **Invalid values**: NONE
-
-    **Pseudocode**: if (x[rs1] == x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
@@ -464,9 +464,9 @@ Control Transfer Instructions
 
     **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are not equal.
 
-    **Invalid values**: NONE
-
     **Pseudocode**: if (x[rs1] != x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
+       
+    **Invalid values**: NONE
 
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
@@ -476,10 +476,10 @@ Control Transfer Instructions
 
     **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 less than rs2 (using signed comparison).
 
-    **Invalid values**: NONE
-
     **Pseudocode**: if (x[rs1] < x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
+    **Invalid values**: NONE
+    
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 - **BLTU**: Branch Less Than Unsigned
@@ -488,9 +488,9 @@ Control Transfer Instructions
 
     **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 less than rs2 (using unsigned comparison).
 
-    **Invalid values**: NONE
-
     **Pseudocode**: if (x[rs1] <u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
+
+    **Invalid values**: NONE
 
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
@@ -512,9 +512,9 @@ Control Transfer Instructions
 
     **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 is greater than or equal rs2 (using unsigned comparison).
 
-    **Invalid values**: NONE
-
     **Pseudocode**: if (x[rs1] >=u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
+    
+    **Invalid values**: NONE
 
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
@@ -551,9 +551,9 @@ Load and Store Instructions
 
     **Description**: loads a 32-bit value from memory, then storing in rd (rd is calculated using signed arithmetic). The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset.
 
-    **Invalid values**: NONE
-
     **Pseudocode**: x[rd] = sext(M[x[rs1] + sext(imm[11:0])][31:0])
+
+    **Invalid values**: NONE
 
     **Exception raised**: loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded, also an exception is raised if the memory address isn't aligned (4-byte boundary).
 
@@ -983,7 +983,7 @@ Integer Computational Instructions
 
 - **C.ADDI4SPN**: Addition Immediate Scaled by 4, to Stack Pointer
 
-    **Format**: c.addi4spn nzimm[9:2]
+    **Format**: c.addi4spn rd', nzimm[9:2]
 
     **Description**: adds a zero-extended non-zero immediate, scaled by 4, to the stack pointer, x2, and writes the result to rd'. This instruction is used to generate pointers to stack-allocated variables.
 

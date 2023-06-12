@@ -507,7 +507,6 @@ module decoder import ariane_pkg::*; (
                             {7'b000_0001, 3'b101}: instruction_o.op = ariane_pkg::DIVU;
                             {7'b000_0001, 3'b110}: instruction_o.op = ariane_pkg::REM;
                             {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMU;
-                            {7'b000_0100, 3'b100}: instruction_o.op = ariane_pkg::ZEXTH;
                             default: begin
                                 illegal_instr_non_bm = 1'b1;
                             end
@@ -539,6 +538,8 @@ module decoder import ariane_pkg::*; (
                                 // Bitwise Shifting
                                 {7'b011_0000, 3'b001}: instruction_o.op = ariane_pkg::ROL;      // rol
                                 {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::ROR;      // ror
+                                // Zero Extend Op
+                                {7'b000_0100, 3'b100}: instruction_o.op = ariane_pkg::ZEXTH;
                                 default: begin
                                     illegal_instr_bm = 1'b1;
                                 end

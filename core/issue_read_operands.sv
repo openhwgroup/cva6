@@ -388,7 +388,7 @@ module issue_read_operands import ariane_pkg::*; #(
         end
         // after a multiplication was issued we can only issue another multiplication
         // otherwise we will get contentions on the fixed latency bus
-        if (mult_valid_q && issue_instr_i.fu != MULT) begin
+        if (mult_valid_q && issue_instr_i.fu inside {ALU, CTRL_FLOW, CSR}) begin
             issue_ack_o = 1'b0;
         end
     end
