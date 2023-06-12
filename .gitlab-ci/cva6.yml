@@ -546,22 +546,26 @@ pub_generated_tests:
     DASHBOARD_JOB_CATEGORY: "Code Coverage"
   parallel:
     matrix:
-      - list_num: 0
-        DASHBOARD_JOB_TITLE: "Generated Random tests"
-        DASHBOARD_JOB_DESCRIPTION: "Generate Random tests using the RISCV-DV"
       - list_num: 1
-        DASHBOARD_JOB_TITLE: "Generated Arithmetic tests"
+        DASHBOARD_JOB_TITLE: "Generated Random Arithmetic tests"
         DASHBOARD_JOB_DESCRIPTION: "Generate Random Arithmetic tests using the RISCV-DV"
       - list_num: 2
         DASHBOARD_JOB_TITLE: "Generated CSR tests"
         DASHBOARD_JOB_DESCRIPTION: "Generate Random CSR tests using the RISCV-DV"
+      - list_num: 3
+        DASHBOARD_JOB_TITLE: "Generated MMU tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random MMU tests using the RISCV-DV"
+      - list_num: 4
+        DASHBOARD_JOB_TITLE: "Generated Random Load_store tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random Load_store tests using the RISCV-DV"
+      - list_num: 5
+        DASHBOARD_JOB_TITLE: "Generated Jump tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random Arithmetic Jump tests using the RISCV-DV"
   script:
     - mkdir -p artifacts/coverage
     - mkdir -p artifacts/reports
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
-    - echo $SYN_VERDI_BASHRC; source $SYN_VERDI_BASHRC
-    - DV_TARGET=cv64a6_imafdc_sv39 #Specification target
     - source ./cva6/regress/dv-generated-tests.sh
     - mv cva6/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
     - mv cva6/sim/seedlist.yaml artifacts/coverage
@@ -575,6 +579,39 @@ pub_generated_tests:
     paths:
       - artifacts/coverage/simv.vdb
       - artifacts/coverage/seedlist.yaml
+      - "artifacts/reports/*.yml"
+    expire_in: 3 week
+
+pub_directed_isacov-tests:
+  stage: two
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: pub_smoke
+      artifacts: false
+  variables:
+    DASHBOARD_SORT_INDEX: 13
+    DASHBOARD_JOB_CATEGORY: "Functional Coverage"
+  parallel:
+    matrix:
+      - list_num: 0
+        DASHBOARD_JOB_TITLE: "Directed tests"
+        DASHBOARD_JOB_DESCRIPTION: "Execute directed tests to improve functional coverage of ISA"
+  script:
+    - mkdir -p artifacts/coverage
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - source ./cva6/regress/dv-generated-tests.sh
+    - mv cva6/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
+    - python3 .gitlab-ci/scripts/report_pass.py
+  rules:
+    - when: manual
+      allow_failure: true
+  timeout: 4h
+  artifacts:
+    when: always
+    paths:
+      - artifacts/coverage/simv.vdb
       - "artifacts/reports/*.yml"
     expire_in: 3 week
 
@@ -613,6 +650,8 @@ code_coverage-report:
   needs:
     - job: pub_generated_tests
       artifacts: true
+    - job: pub_directed_isacov-tests
+      artifacts: true
   variables:
     DASHBOARD_JOB_TITLE: "Report merge coverage"
     DASHBOARD_JOB_DESCRIPTION: "Report merge coverage of generated tests"
@@ -620,12 +659,12 @@ code_coverage-report:
     DASHBOARD_JOB_CATEGORY: "Code Coverage"
   script:
     - mkdir -p artifacts/reports
+    - mkdir -p artifacts/cov_reports/
     - python3 .gitlab-ci/scripts/report_fail.py
     - mkdir -p cva6/sim/vcs_results/default/vcs.d
     - mv artifacts/coverage/simv.vdb cva6/sim/vcs_results/default/vcs.d/
     - mv artifacts/coverage/seedlist.yaml cva6/sim/seedlist.yaml
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
-    - echo $SYN_VERDI_BASHRC; source $SYN_VERDI_BASHRC
     - make -C cva6/sim generate_cov_dash
     - mv cva6/sim/urgReport artifacts/cov_reports/
     - python3 .gitlab-ci/scripts/report_pass.py

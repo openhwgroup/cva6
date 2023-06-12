@@ -239,7 +239,7 @@ vcs-uvm:
           for i in `ls *.$(SIMV_TRACE_EXTN)` ; do mv $$i `dirname $(log)`/`basename $(log) .log`.$(target).$$i ; done || true
 
 generate_cov_dash:
-	urg -dir $(VCS_WORK_DIR)/simv.vdb
+	urg -dir $(VCS_WORK_DIR)/simv.vdb -group instcov_for_score
 
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"

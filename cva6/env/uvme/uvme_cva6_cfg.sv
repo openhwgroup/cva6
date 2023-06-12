@@ -106,7 +106,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       mode_u_supported       == 0;
 
       pmp_supported          == 0;
-      debug_supported        == 1;
+      debug_supported        == 0;
 
       unaligned_access_supported     == 0;
       unaligned_access_amo_supported == 0;
