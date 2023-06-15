@@ -17,12 +17,20 @@
  */
 class cvxif_custom_instr extends riscv_custom_instr;
 
+   riscv_instr_name_t            instr_name;
+
    rand riscv_reg_t rs1;
    rand riscv_reg_t rs2;
    rand riscv_reg_t rs3;
 
    `uvm_object_utils(cvxif_custom_instr)
    `uvm_object_new
+
+  static function bit register(riscv_instr_name_t instr_name);
+    `uvm_info("custom_cva6_instr", $sformatf("Registering %0s", instr_name.name()), UVM_LOW)
+    instr_registry[instr_name] = 1;
+    return 1;
+  endfunction : register
 
    virtual function string get_instr_name();
       get_instr_name = instr_name.name();
