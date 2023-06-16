@@ -12,13 +12,20 @@ import sys
 import os
 import report_builder as rb
 
-with open(str(sys.argv[1]), 'r') as f:
+log_path = str(sys.argv[1])
+with open(log_path, 'r') as f:
     log = f.read()
 
 with open(str(sys.argv[2]), 'r') as f:
     synthesis_log = f.read()
 
 kgate_ratio = int(os.environ["NAND2_AREA"])
+path_re = r'^core-v-cores/cva6/pd/synth/cva6_([^/]+)'
+expected = {
+    'cv64a6_imafdc_sv39': 545268,
+    'cv32a60x': 160809,
+    'cv32a6_embedded': 127691,
+}
 
 #Compile & elaborate log:
 log_metric = rb.LogMetric('Synthesis full log')
@@ -49,11 +56,24 @@ hier = pattern.findall(log)
 total_area = float(hier[0][1])
 
 result_metric = rb.TableMetric('Global results')
-label = f'{int(total_area/kgate_ratio)} kGates'
-result_metric.add_value("Total area", label)
+kgates = total_area / kgate_ratio
+gates = int(kgates * 1000)
+result_metric.add_value("Total area", f'{gates} Gates')
 for i in global_val:
     rel_area = 0 if total_area == 0 else int(float(i[1]) / total_area * 100)
     result_metric.add_value(i[0], f'{rel_area} %')
+match = re.match(path_re, log_path)
+if match:
+    target = match.group(1)
+    if target in expected:
+        diff = gates - expected[target]
+        if abs(diff) >= 100:
+            result_metric.fail()
+    else:
+        raise Exception("unexpected target: {target}")
+else:
+    raise Exception("unexpected file name: {log_path}")
+
 
 hier_metric = rb.TableMetric('Hierarchies details')
 for i in hier:
@@ -66,6 +86,7 @@ for i in hier:
         #int(float(i[5]))/int(float(i[1])*100),  # % black box
     )
 
-report = rb.Report(label)
+report = rb.Report(f'{int(kgates)} kGates')
 report.add_metric(result_metric, hier_metric, log_metric)
+
 report.dump()
