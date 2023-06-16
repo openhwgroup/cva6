@@ -27,7 +27,7 @@ package cva6_config_pkg;
     localparam CVA6ConfigCExtEn = 1;
     localparam CVA6ConfigAExtEn = 1;
     localparam CVA6ConfigBExtEn = 1;
-    localparam CVA6ConfigCondExtEn = 0;
+    localparam CVA6ConfigCondExtEn = 1;
 
     localparam CVA6ConfigAxiIdWidth = 4;
     localparam CVA6ConfigAxiAddrWidth = 64;
