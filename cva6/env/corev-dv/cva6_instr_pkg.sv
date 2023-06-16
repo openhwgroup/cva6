@@ -11,6 +11,19 @@
 
 package cva6_instr_pkg;
 
+  typedef enum {
+    // Add custom instruction name enum
+    CUS_ADD,
+    CUS_ADD_MULTI,
+    CUS_NOP,
+    CUS_ADD_RS3
+    // CUS_EXC,
+    // CUS_M_ADD,
+    // CUS_S_ADD,
+    // CUS_NOP_EXC,
+    // CUS_ISS_EXC,
+  } riscv_instr_name_t;
+
    import uvm_pkg::*;
    `include "cva6_defines.svh"
    import riscv_instr_pkg::*;
