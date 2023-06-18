@@ -563,24 +563,7 @@ module cva6 import ariane_pkg::*; #(
     .cvxif_req_o            ( cvxif_req_o                 ),
     .cvxif_resp_i           ( cvxif_resp_i                ),
     // Accelerator
-    .acc_req_o              ( acc_req                     ),
-    .acc_req_valid_o        ( acc_req_valid               ),
-    .acc_req_ready_i        ( acc_req_ready               ),
-    .acc_resp_i             ( acc_resp                    ),
-    .acc_resp_valid_i       ( acc_resp_valid              ),
-    .acc_resp_ready_o       ( acc_resp_ready              ),
-    .acc_ready_o            ( acc_ready_ex_id             ),
     .acc_valid_i            ( acc_valid_id_ex             ),
-    .acc_ld_disp_o          ( acc_ld_disp_ex_id           ),
-    .acc_st_disp_o          ( acc_st_disp_ex_id           ),
-    .acc_flush_undisp_o     ( acc_flush_undisp_ex_id      ),
-    .acc_commit_i           ( acc_commit_commit_ex        ),
-    .acc_commit_tran_id_i   ( acc_commit_trans_id         ), // from commit
-    .acc_trans_id_o         ( acc_trans_id_ex_id          ),
-    .acc_result_o           ( acc_result_ex_id            ),
-    .acc_valid_o            ( acc_valid_ex_id             ),
-    .acc_exception_o        ( acc_exception_ex_id         ),
-    .acc_cons_en_i          ( acc_cons_en_csr             ),
     // Performance counters
     .itlb_miss_o            ( itlb_miss_ex_perf           ),
     .dtlb_miss_o            ( dtlb_miss_ex_perf           ),
@@ -630,7 +613,6 @@ module cva6 import ariane_pkg::*; #(
     .flush_dcache_i         ( dcache_flush_ctrl_cache       ),
     .exception_o            ( ex_commit                     ),
     .dirty_fp_state_o       ( dirty_fp_state                ),
-    .dirty_v_state_o        ( dirty_v_state                 ),
     .single_step_i          ( single_step_csr_commit        ),
     .commit_instr_i         ( commit_instr_id_commit        ),
     .commit_ack_o           ( commit_ack                    ),
@@ -642,8 +624,6 @@ module cva6 import ariane_pkg::*; #(
     .commit_lsu_o           ( lsu_commit_commit_ex          ),
     .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
     .commit_tran_id_o       ( lsu_commit_trans_id           ),
-    .commit_acc_o           ( acc_commit_commit_ex          ),
-    .commit_acc_tran_id_o   ( acc_commit_trans_id           ),
     .amo_valid_commit_o     ( amo_valid_commit              ),
     .amo_resp_i             ( amo_resp                      ),
     .commit_csr_o           ( csr_commit_commit_ex          ),
@@ -904,6 +884,53 @@ module cva6 import ariane_pkg::*; #(
   assign dcache_commit_wbuffer_not_ni = 1'b1;
   assign inval_ready                  = 1'b1;
   end
+
+  // ----------------
+  // Accelerator
+  // ----------------
+
+  if (ENABLE_ACCELERATOR) begin: gen_accelerator
+    fu_data_t acc_data;
+    assign acc_data = acc_valid_id_ex ? fu_data_id_ex : '0;
+
+    acc_dispatcher i_acc_dispatcher (
+      .clk_i                ( clk_i                  ),
+      .rst_ni               ( rst_ni                 ),
+      .flush_i              ( flush_ctrl_ex          ),
+      .acc_cons_en_i        ( acc_cons_en_csr        ),
+      .fcsr_frm_i           ( frm_csr_id_issue_ex    ),
+      .dirty_v_state_o      ( dirty_v_state          ),
+      .acc_data_i           ( acc_data               ),
+      .acc_ready_o          ( acc_ready_ex_id        ),
+      .acc_valid_i          ( acc_valid_id_ex        ),
+      .commit_instr_i       ( commit_instr_id_commit ),
+      .acc_ld_disp_o        ( acc_ld_disp_ex_id      ),
+      .acc_st_disp_o        ( acc_st_disp_ex_id      ),
+      .acc_flush_undisp_o   ( acc_flush_undisp_ex_id ),
+      .acc_trans_id_o       ( acc_trans_id_ex_id     ),
+      .acc_result_o         ( acc_result_ex_id       ),
+      .acc_valid_o          ( acc_valid_ex_id        ),
+      .acc_exception_o      ( acc_exception_ex_id    ),
+      .commit_ack_i         ( commit_ack             ),
+      .acc_no_st_pending_i  ( no_st_pending_commit   ),
+      .acc_req_o            ( acc_req                ),
+      .acc_req_valid_o      ( acc_req_valid          ),
+      .acc_req_ready_i      ( acc_req_ready_i        ),
+      .acc_resp_i           ( acc_resp_i             ),
+      .acc_resp_valid_i     ( acc_resp_valid_i       ),
+      .acc_resp_ready_o     ( acc_resp_ready         )
+    );
+  end : gen_accelerator else begin: gen_no_accelerator
+    assign acc_req          = '0;
+    assign acc_req_valid    = 1'b0;
+    assign acc_resp_ready   = 1'b0;
+
+    assign acc_ready_ex_id     = '0;
+    assign acc_trans_id_ex_id  = '0;
+    assign acc_result_ex_id    = '0;
+    assign acc_valid_ex_id     = '0;
+    assign acc_exception_ex_id = '0;
+  end : gen_no_accelerator
 
   // -------------------
   // Parameter Check

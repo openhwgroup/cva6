@@ -19,11 +19,13 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     // Interface with the CSR regfile
     input  logic                                  acc_cons_en_i,        // Accelerator memory consistent mode
     // Interface with the CSRs
-    input logic                             [2:0] fcsr_frm_i,
+    input  logic                            [2:0] fcsr_frm_i,
+    output logic                                  dirty_v_state_o,
     // Interface with the issue stage
     input  fu_data_t                              acc_data_i,
     output logic                                  acc_ready_o,          // FU is ready
     input  logic                                  acc_valid_i,          // Output is valid
+    input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,
     output logic                                  acc_ld_disp_o,
     output logic                                  acc_st_disp_o,
     output logic                                  acc_flush_undisp_o,
@@ -32,9 +34,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     output logic                                  acc_valid_o,
     output exception_t                            acc_exception_o,
     // Interface with the commit stage
-    // This avoids sending speculative instructions to the accelerator.
-    input  logic                                  acc_commit_i,
-    input  logic              [TRANS_ID_BITS-1:0] acc_commit_trans_id_i,
+    input  logic            [NR_COMMIT_PORTS-1:0] commit_ack_i,
     // Interface with the load/store unit
     input  logic                                  acc_no_st_pending_i,
     // Accelerator interface
@@ -60,6 +60,8 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   logic                                            acc_insn_queue_pop;
   logic                                            acc_insn_queue_empty;
   logic     [idx_width(InstructionQueueDepth)-1:0] acc_insn_queue_usage;
+  logic                                            acc_commit;
+  logic     [TRANS_ID_BITS-1:0]                    acc_commit_trans_id;
 
   fifo_v3 #(
     .DEPTH       (InstructionQueueDepth),
@@ -112,9 +114,9 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
       insn_pending_d = '0;
 
     // An accelerator instruction is no longer speculative.
-    if (acc_commit_i && insn_pending_q[acc_commit_trans_id_i]) begin
-      insn_ready_d[acc_commit_trans_id_i]   = 1'b1;
-      insn_pending_d[acc_commit_trans_id_i] = 1'b0;
+    if (acc_commit && insn_pending_q[acc_commit_trans_id]) begin
+      insn_ready_d[acc_commit_trans_id]   = 1'b1;
+      insn_pending_d[acc_commit_trans_id] = 1'b0;
     end
 
     // An accelerator instruction was issued.
@@ -180,7 +182,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
       };
       // Wait until the instruction is no longer speculative.
       acc_req_valid      = insn_ready_q[acc_insn_queue_o.trans_id] ||
-                           (acc_commit_i && insn_pending_q[acc_commit_trans_id_i]);
+                           (acc_commit && insn_pending_q[acc_commit_trans_id]);
       acc_insn_queue_pop = acc_req_valid && acc_req_ready;
     end
   end
@@ -204,4 +206,31 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   // Signal dispatched load/store to issue stage
   assign acc_ld_disp_o = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
   assign acc_st_disp_o = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_STORE);
+
+  /**************************
+   *  Accelerator issue     *
+   **************************/
+  // Instruction can be issued to the (in-order) back-end if
+  // it reached the top of the scoreboard and it hasn't been
+  // issued yet
+  always_comb begin: accelerator_commit
+    acc_commit = 1'b0;
+    if (!commit_instr_i[0].valid && commit_instr_i[0].fu == ACCEL)
+        acc_commit = 1'b1;
+    if (commit_instr_i[0].valid &&
+        !commit_instr_i[1].valid && commit_instr_i[1].fu == ACCEL)
+        acc_commit = 1'b1;
+  end
+
+  // Dirty the V state if we are committing anything related to the vector accelerator
+  always_comb begin : dirty_v_state
+    dirty_v_state_o = 1'b0;
+    for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+      dirty_v_state_o |= commit_ack_i[i] & (commit_instr_i[i].fu == ACCEL);
+    end
+  end
+
+  assign acc_commit_trans_id = !commit_instr_i[0].valid ? commit_instr_i[0].trans_id
+                                                        : commit_instr_i[1].trans_id;
+
 endmodule : acc_dispatcher

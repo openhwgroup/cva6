@@ -90,26 +90,7 @@ module ex_stage import ariane_pkg::*; #(
     output logic                                   x_we_o,
     output cvxif_pkg::cvxif_req_t                  cvxif_req_o,
     input  cvxif_pkg::cvxif_resp_t                 cvxif_resp_i,
-    // Accelerator
-    output accelerator_req_t                       acc_req_o,
-    output logic                                   acc_req_valid_o,
-    input logic                                    acc_req_ready_i,
-    input accelerator_resp_t                       acc_resp_i,
-    input  logic                                   acc_resp_valid_i,
-    output logic                                   acc_resp_ready_o,
-
-    input  logic                                   acc_cons_en_i,    // Accelerator memory consistent mode
-    output logic                                   acc_ready_o,      // FU is ready
     input logic                                    acc_valid_i,      // Output is valid
-    input logic                                    acc_commit_i,
-    input  logic [TRANS_ID_BITS-1:0]               acc_commit_tran_id_i,
-    output logic                                   acc_ld_disp_o,
-    output logic                                   acc_st_disp_o,
-    output logic                                   acc_flush_undisp_o,
-    output logic [TRANS_ID_BITS-1:0]               acc_trans_id_o,
-    output riscv::xlen_t                           acc_result_o,
-    output logic                                   acc_valid_o,
-    output exception_t                             acc_exception_o,
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
@@ -399,51 +380,6 @@ module ex_stage import ariane_pkg::*; #(
         assign x_result_o    = '0;
         assign x_valid_o     = '0;
     end
-    // ----------------
-    // Accelerator
-    // ----------------
-
-    if (ENABLE_ACCELERATOR) begin: gen_accelerator
-        fu_data_t acc_data;
-        assign acc_data = acc_valid_i ? fu_data_i : '0;
-
-        acc_dispatcher i_acc_dispatcher (
-          .clk_i                (clk_i                                    ),
-          .rst_ni               (rst_ni                                   ),
-          .flush_i              (flush_i                                  ),
-          .acc_cons_en_i        (acc_cons_en_i                            ),
-          .fcsr_frm_i           (fpu_frm_i                                ),
-          .acc_data_i           (acc_data                                 ),
-          .acc_ready_o          (acc_ready_o                              ),
-          .acc_valid_i          (acc_valid_i                              ),
-          .acc_commit_i         (acc_commit_i                             ),
-          .acc_ld_disp_o        (acc_ld_disp_o                            ),
-          .acc_st_disp_o        (acc_st_disp_o                            ),
-          .acc_flush_undisp_o   (acc_flush_undisp_o                       ),
-          .acc_commit_trans_id_i(acc_commit_tran_id_i                     ),
-          .acc_trans_id_o       (acc_trans_id_o                           ),
-          .acc_result_o         (acc_result_o                             ),
-          .acc_valid_o          (acc_valid_o                              ),
-          .acc_exception_o      (acc_exception_o                          ),
-          .acc_no_st_pending_i  (dcache_wbuffer_empty_i && no_st_pending_o),
-          .acc_req_o            (acc_req_o                                ),
-          .acc_req_valid_o      (acc_req_valid_o                          ),
-          .acc_req_ready_i      (acc_req_ready_i                          ),
-          .acc_resp_i           (acc_resp_i                               ),
-          .acc_resp_valid_i     (acc_resp_valid_i                         ),
-          .acc_resp_ready_o     (acc_resp_ready_o                         )
-        );
-    end : gen_accelerator else begin: gen_no_accelerator
-        assign acc_req_o        = '0;
-        assign acc_req_valid_o  = 1'b0;
-        assign acc_resp_ready_o = 1'b0;
-
-        assign acc_ready_o     = '0;
-        assign acc_trans_id_o  = '0;
-        assign acc_result_o    = '0;
-        assign acc_valid_o     = '0;
-        assign acc_exception_o = '0;
-    end: gen_no_accelerator
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
