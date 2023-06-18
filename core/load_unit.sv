@@ -20,7 +20,6 @@ module load_unit import ariane_pkg::*; #(
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,   // Asynchronous reset active low
     input  logic                     flush_i,
-    input  logic                     stall_ld_i,
     // load unit input port
     input  logic                     valid_i,
     input  lsu_ctrl_t                lsu_ctrl_i,
@@ -86,12 +85,10 @@ module load_unit import ariane_pkg::*; #(
     logic not_commit_time;
     logic inflight_stores;
     logic stall_ni;
-    logic stall;
     assign paddr_ni = is_inside_nonidempotent_regions(ArianeCfg, {dtlb_ppn_i,12'd0});
     assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
     assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
     assign stall_ni = (inflight_stores || not_commit_time) && paddr_ni;
-    assign stall = stall_ni || stall_ld_i;
 
     // ---------------
     // Load Control
@@ -124,12 +121,12 @@ module load_unit import ariane_pkg::*; #(
                         if (!req_port_i.data_gnt) begin
                             state_d = WAIT_GNT;
                         end else begin
-                            if (dtlb_hit_i && !stall) begin
+                            if (dtlb_hit_i && !stall_ni) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 state_d = SEND_TAG;
                                 pop_ld_o = 1'b1;
                             // translation valid but this is to NC and the WB is not yet empty.
-                            end else if (dtlb_hit_i && stall) begin
+                            end else if (dtlb_hit_i && stall_ni) begin
                                 state_d = ABORT_TRANSACTION_NI;
                             end else begin // TLB miss
                                 state_d = ABORT_TRANSACTION;
@@ -163,7 +160,7 @@ module load_unit import ariane_pkg::*; #(
             // Wait until the write-back buffer is empty in the data cache.
             WAIT_WB_EMPTY: begin
                 // the write buffer is empty, so lets go and re-do the translation.
-                if (dcache_wbuffer_not_ni_i && !stall_ld_i) state_d = WAIT_TRANSLATION;
+                if (dcache_wbuffer_not_ni_i) state_d = WAIT_TRANSLATION;
             end
 
             WAIT_TRANSLATION: begin
@@ -181,11 +178,11 @@ module load_unit import ariane_pkg::*; #(
                 // we finally got a data grant
                 if (req_port_i.data_gnt) begin
                     // so we send the tag in the next cycle
-                    if (dtlb_hit_i && !stall) begin
+                    if (dtlb_hit_i && !stall_ni) begin
                         state_d = SEND_TAG;
                         pop_ld_o = 1'b1;
                     // translation valid but this is to NC and the WB is not yet empty.
-                    end else if (dtlb_hit_i && stall) begin
+                    end else if (dtlb_hit_i && stall_ni) begin
                         state_d = ABORT_TRANSACTION_NI;
                     end else begin
                     // should we not have hit on the TLB abort this transaction an retry later
@@ -212,12 +209,12 @@ module load_unit import ariane_pkg::*; #(
                             state_d = WAIT_GNT;
                         end else begin
                             // we got a grant so we can send the tag in the next cycle
-                            if (dtlb_hit_i && !stall) begin
+                            if (dtlb_hit_i && !stall_ni) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 state_d = SEND_TAG;
                                 pop_ld_o = 1'b1;
                             // translation valid but this is to NC and the WB is not yet empty.
-                            end else if (dtlb_hit_i && stall) begin
+                            end else if (dtlb_hit_i && stall_ni) begin
                                 state_d = ABORT_TRANSACTION_NI;
                             end else begin
                                 state_d = ABORT_TRANSACTION;// we missed on the TLB -> wait for the translation

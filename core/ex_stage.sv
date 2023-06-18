@@ -327,8 +327,6 @@ module ex_stage import ariane_pkg::*; #(
         .rst_ni,
         .flush_i,
         .no_st_pending_o,
-        .stall_ld_i            ( 1'b0 ),
-        .stall_st_i            ( 1'b0 ),
         .fu_data_i             ( lsu_data ),
         .lsu_ready_o,
         .lsu_valid_i,
