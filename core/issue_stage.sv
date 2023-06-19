@@ -26,6 +26,7 @@ module issue_stage import ariane_pkg::*; #(
     output logic                                     sb_full_o,
     input  logic                                     flush_unissued_instr_i,
     input  logic                                     flush_i,
+    input  logic                                     stall_i,   // Stall issue stage
     // from ISSUE
     input  scoreboard_entry_t                        decoded_instr_i,
     input  logic                                     decoded_instr_valid_i,
@@ -62,14 +63,10 @@ module issue_stage import ariane_pkg::*; #(
     output logic                                     x_issue_valid_o,
     input  logic                                     x_issue_ready_i,
     output logic [31:0]                              x_off_instr_o,
-    input  logic                                     acc_ready_i,
-    output logic                                     acc_valid_o,
-    input  logic                                     acc_ld_disp_i,
-    input  logic                                     acc_st_disp_i,
-    input  logic                                     acc_ld_complete_i,
-    input  logic                                     acc_st_complete_i,
-    input  logic                                     acc_flush_undisp_i,
-    input  logic                                     acc_cons_en_i,
+
+    // to accelerator dispatcher
+    output scoreboard_entry_t                        issue_instr_o,
+    output logic                                     issue_instr_hs_o,
 
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
@@ -127,6 +124,9 @@ module issue_stage import ariane_pkg::*; #(
 
     assign rs1_forwarding_o = rs1_forwarding_xlen[riscv::VLEN-1:0];
     assign rs2_forwarding_o = rs2_forwarding_xlen[riscv::VLEN-1:0];
+
+    assign issue_instr_o    = issue_instr_sb_iro;
+    assign issue_instr_hs_o = issue_instr_valid_sb_iro & issue_ack_iro_sb;
 
     // ---------------------------------------------------------
     // 1. Re-name

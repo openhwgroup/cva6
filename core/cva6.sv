@@ -146,10 +146,9 @@ module cva6 import ariane_pkg::*; #(
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
   // Accelerator
-  logic                     acc_ready_ex_id;
-  logic                     acc_valid_id_ex;
-  logic                     acc_ld_disp_ex_id;
-  logic                     acc_st_disp_ex_id;
+  logic                     stall_acc_id;
+  scoreboard_entry_t        issue_instr_id_acc;
+  logic                     issue_instr_hs_id_acc;
   logic                     acc_flush_undisp_ex_id;
   logic [TRANS_ID_BITS-1:0] acc_trans_id_ex_id;
   riscv::xlen_t             acc_result_ex_id;
@@ -182,6 +181,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     no_st_pending_commit;
   logic                     amo_valid_commit;
   // ACCEL Commit
+  logic                     acc_valid_acc_ex;
   logic                     acc_commit_commit_ex;
   logic [TRANS_ID_BITS-1:0] acc_commit_trans_id;
   // --------------
@@ -416,6 +416,7 @@ module cva6 import ariane_pkg::*; #(
     .sb_full_o                  ( sb_full                      ),
     .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id ),
     .flush_i                    ( flush_ctrl_id                ),
+    .stall_i                    ( stall_acc_id                 ),
     // ID Stage
     .decoded_instr_i            ( issue_entry_id_issue         ),
     .decoded_instr_valid_i      ( issue_entry_valid_id_issue   ),
@@ -452,14 +453,8 @@ module cva6 import ariane_pkg::*; #(
     .x_issue_ready_i            ( x_issue_ready_ex_id          ),
     .x_off_instr_o              ( x_off_instr_id_ex            ),
     // Accelerator
-    .acc_ready_i                ( acc_ready_ex_id              ),
-    .acc_valid_o                ( acc_valid_id_ex              ),
-    .acc_ld_disp_i              ( acc_ld_disp_ex_id            ),
-    .acc_st_disp_i              ( acc_st_disp_ex_id            ),
-    .acc_flush_undisp_i         ( acc_flush_undisp_ex_id       ),
-    .acc_ld_complete_i          ( acc_resp.load_complete       ),
-    .acc_st_complete_i          ( acc_resp.store_complete      ),
-    .acc_cons_en_i              ( acc_cons_en_csr              ),
+    .issue_instr_o              ( issue_instr_id_acc           ),
+    .issue_instr_hs_o           ( issue_instr_hs_id_acc        ),
     // Commit
     .resolved_branch_i          ( resolved_branch              ),
     .trans_id_i                 ( trans_id_ex_id               ),
@@ -564,7 +559,7 @@ module cva6 import ariane_pkg::*; #(
     .cvxif_req_o            ( cvxif_req_o                 ),
     .cvxif_resp_i           ( cvxif_resp_i                ),
     // Accelerator
-    .acc_valid_i            ( acc_valid_id_ex             ),
+    .acc_valid_i            ( acc_valid_acc_ex            ),
     // Performance counters
     .itlb_miss_o            ( itlb_miss_ex_perf           ),
     .dtlb_miss_o            ( dtlb_miss_ex_perf           ),
@@ -892,43 +887,42 @@ module cva6 import ariane_pkg::*; #(
 
   if (ENABLE_ACCELERATOR) begin: gen_accelerator
     fu_data_t acc_data;
-    assign acc_data = acc_valid_id_ex ? fu_data_id_ex : '0;
+    assign acc_data = acc_valid_acc_ex ? fu_data_id_ex : '0;
 
     acc_dispatcher i_acc_dispatcher (
-      .clk_i                ( clk_i                  ),
-      .rst_ni               ( rst_ni                 ),
-      .flush_i              ( flush_ctrl_ex          ),
-      .acc_cons_en_i        ( acc_cons_en_csr        ),
-      .fcsr_frm_i           ( frm_csr_id_issue_ex    ),
-      .dirty_v_state_o      ( dirty_v_state          ),
-      .acc_data_i           ( acc_data               ),
-      .acc_ready_o          ( acc_ready_ex_id        ),
-      .acc_valid_i          ( acc_valid_id_ex        ),
-      .commit_instr_i       ( commit_instr_id_commit ),
-      .commit_st_barrier_i  ( fence_i_commit_controller | fence_commit_controller ),
-      .acc_ld_disp_o        ( acc_ld_disp_ex_id      ),
-      .acc_st_disp_o        ( acc_st_disp_ex_id      ),
-      .acc_flush_undisp_o   ( acc_flush_undisp_ex_id ),
-      .acc_trans_id_o       ( acc_trans_id_ex_id     ),
-      .acc_result_o         ( acc_result_ex_id       ),
-      .acc_valid_o          ( acc_valid_ex_id        ),
-      .acc_exception_o      ( acc_exception_ex_id    ),
-      .commit_ack_i         ( commit_ack             ),
-      .acc_no_st_pending_i  ( no_st_pending_commit   ),
-      .ctrl_halt_o          ( halt_acc_ctrl          ),
-      .acc_req_o            ( acc_req                ),
-      .acc_req_valid_o      ( acc_req_valid          ),
-      .acc_req_ready_i      ( acc_req_ready_i        ),
-      .acc_resp_i           ( acc_resp_i             ),
-      .acc_resp_valid_i     ( acc_resp_valid_i       ),
-      .acc_resp_ready_o     ( acc_resp_ready         )
+      .clk_i                  ( clk_i                        ),
+      .rst_ni                 ( rst_ni                       ),
+      .flush_unissued_instr_i ( flush_unissued_instr_ctrl_id ),
+      .flush_ex_i             ( flush_ctrl_ex                ),
+      .acc_cons_en_i          ( acc_cons_en_csr              ),
+      .fcsr_frm_i             ( frm_csr_id_issue_ex          ),
+      .dirty_v_state_o        ( dirty_v_state                ),
+      .issue_instr_i          ( issue_instr_id_acc           ),
+      .issue_instr_hs_i       ( issue_instr_hs_id_acc        ),
+      .issue_stall_o          ( stall_acc_id                 ),
+      .acc_data_i             ( acc_data                     ),
+      .commit_instr_i         ( commit_instr_id_commit       ),
+      .commit_st_barrier_i    ( fence_i_commit_controller | fence_commit_controller ),
+      .acc_trans_id_o         ( acc_trans_id_ex_id           ),
+      .acc_result_o           ( acc_result_ex_id             ),
+      .acc_valid_o            ( acc_valid_ex_id              ),
+      .acc_exception_o        ( acc_exception_ex_id          ),
+      .acc_valid_ex_o         ( acc_valid_acc_ex             ),
+      .commit_ack_i           ( commit_ack                   ),
+      .acc_no_st_pending_i    ( no_st_pending_commit         ),
+      .ctrl_halt_o            ( halt_acc_ctrl                ),
+      .acc_req_o              ( acc_req                      ),
+      .acc_req_valid_o        ( acc_req_valid                ),
+      .acc_req_ready_i        ( acc_req_ready_i              ),
+      .acc_resp_i             ( acc_resp_i                   ),
+      .acc_resp_valid_i       ( acc_resp_valid_i             ),
+      .acc_resp_ready_o       ( acc_resp_ready               )
     );
   end : gen_accelerator else begin: gen_no_accelerator
     assign acc_req          = '0;
     assign acc_req_valid    = 1'b0;
     assign acc_resp_ready   = 1'b0;
 
-    assign acc_ready_ex_id     = '0;
     assign acc_trans_id_ex_id  = '0;
     assign acc_result_ex_id    = '0;
     assign acc_valid_ex_id     = '0;
