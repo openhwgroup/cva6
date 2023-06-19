@@ -201,16 +201,6 @@ sources:
         files:
           - common/local/util/tc_sram_fpga_wrapper.sv
 
-      - target: not(synthesis)
-        include_dirs:
-          - core/include
-        files:
-          # Tracer (behavioral code, not RTL)
-          - common/local/util/instr_tracer.sv
-          - common/local/util/instr_tracer_if.sv
-          - common/local/util/instr_trace_item.svh
-          - common/local/util/ex_trace_item.svh
-
     # TODO target define FPGA target + verification etc
     #   - target: test
     #     files:

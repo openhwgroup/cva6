@@ -645,11 +645,6 @@ check-torture:
 
 src_flist := $(addprefix $(root-dir), $(shell cat core/Flist.cva6|grep "$\{CVA6_REPO_DIR.\+sv"|sed "s/.*CVA6_REPO_DIR..//"|sed "s/..TARGET_CFG./$(target)/"))
 fpga_filter := $(addprefix $(root-dir), corev_apu/bootrom/bootrom.sv)
-fpga_filter += $(addprefix $(root-dir), core/include/instr_tracer_pkg.sv)
-fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
-fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
-fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer_if.sv)
-fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer.sv)
 fpga_filter += $(addprefix $(root-dir), vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/tc_sram_wrapper.sv)
 

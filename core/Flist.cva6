@@ -47,7 +47,6 @@ ${CVA6_REPO_DIR}/core/include/ariane_axi_pkg.sv
 ${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/axi_intf.sv
-${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
@@ -161,9 +160,7 @@ ${CVA6_REPO_DIR}/core/cache_subsystem/std_nbdcache.sv
 ${CVA6_REPO_DIR}/core/pmp/src/pmp.sv
 ${CVA6_REPO_DIR}/core/pmp/src/pmp_entry.sv
 
-// Tracer (behavioral code, not RTL)
-${CVA6_REPO_DIR}/common/local/util/instr_tracer_if.sv
-${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv
+// Sram
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv

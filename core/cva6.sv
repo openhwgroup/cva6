@@ -836,52 +836,6 @@ module cva6 import ariane_pkg::*; #(
   );
 `endif // PITON_ARIANE
 
-`ifndef VERILATOR
-  instr_tracer_if tracer_if (clk_i);
-  // assign instruction tracer interface
-  // control signals
-  assign tracer_if.rstn              = rst_ni;
-  assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
-  assign tracer_if.flush             = flush_ctrl_ex;
-  // fetch
-  assign tracer_if.instruction       = id_stage_i.fetch_entry_i.instruction;
-  assign tracer_if.fetch_valid       = id_stage_i.fetch_entry_valid_i;
-  assign tracer_if.fetch_ack         = id_stage_i.fetch_entry_ready_o;
-  // Issue
-  assign tracer_if.issue_ack         = issue_stage_i.i_scoreboard.issue_ack_i;
-  assign tracer_if.issue_sbe         = issue_stage_i.i_scoreboard.issue_instr_o;
-  // write-back
-  assign tracer_if.waddr             = waddr_commit_id;
-  assign tracer_if.wdata             = wdata_commit_id;
-  assign tracer_if.we_gpr            = we_gpr_commit_id;
-  assign tracer_if.we_fpr            = we_fpr_commit_id;
-  // commit
-  assign tracer_if.commit_instr      = commit_instr_id_commit;
-  assign tracer_if.commit_ack        = commit_ack;
-  // branch predict
-  assign tracer_if.resolve_branch    = resolved_branch;
-  // address translation
-  // stores
-  assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
-  assign tracer_if.st_paddr          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
-  // loads
-  assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid;
-  assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req;
-  assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.i_load_unit.paddr_i;
-  // exceptions
-  assign tracer_if.exception         = commit_stage_i.exception_o;
-  // assign current privilege level
-  assign tracer_if.priv_lvl          = priv_lvl;
-  assign tracer_if.debug_mode        = debug_mode;
-
-  instr_tracer instr_tracer_i (
-    .tracer_if(tracer_if),
-    .hart_id_i
-  );
-
-// mock tracer for Verilator, to be used with spike-dasm
-`else
-
   int f;
   logic [63:0] cycles;
 
@@ -925,7 +879,6 @@ module cva6 import ariane_pkg::*; #(
   final begin
     $fclose(f);
   end
-`endif // VERILATOR
 //pragma translate_on
 
   if (ariane_pkg::RVFI) begin

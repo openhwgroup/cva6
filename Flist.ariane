@@ -31,7 +31,6 @@ core/include/axi_intf.sv
 vendor/openhwgroup/cvfpu/src/fpnew_pkg.sv
 core/include/cvxif_pkg.sv
 vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
-core/include/instr_tracer_pkg.sv
 core/cvxif_example/include/cvxif_instr_pkg.sv
 corev_apu/rv_plic/rtl/rv_plic_reg_pkg.sv
 common/local/util/sram.sv
@@ -153,8 +152,6 @@ vendor/openhwgroup/cvfpu/src/fpnew_rounding.sv
 vendor/openhwgroup/cvfpu/src/fpnew_top.sv
 core/pmp/src/pmp.sv
 core/pmp/src/pmp_entry.sv
-common/local/util/instr_tracer.sv
-common/local/util/instr_tracer_if.sv
 core/cvxif_example/cvxif_example_coprocessor.sv
 core/cvxif_example/instr_decoder.sv
 vendor/pulp-platform/common_cells/src/counter.sv

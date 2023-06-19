@@ -22,7 +22,6 @@ ${CVA6_REPO_DIR}/core/include/ariane_axi_pkg.sv
 ${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/axi_intf.sv
-${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
 ${LIB_VERILOG}
 ${CVA6_REPO_DIR}/pd/synth/cva6_${TARGET_CFG}_synth_modified.v
