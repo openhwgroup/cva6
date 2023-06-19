@@ -35,8 +35,11 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     output exception_t                            acc_exception_o,
     // Interface with the commit stage
     input  logic            [NR_COMMIT_PORTS-1:0] commit_ack_i,
+    input  logic                                  commit_st_barrier_i,  // A store barrier was commited
     // Interface with the load/store unit
     input  logic                                  acc_no_st_pending_i,
+    // Interface with the controller
+    output logic                                  ctrl_halt_o,
     // Accelerator interface
     output accelerator_req_t                      acc_req_o,
     output logic                                  acc_req_valid_o,
@@ -232,5 +235,18 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
 
   assign acc_commit_trans_id = !commit_instr_i[0].valid ? commit_instr_i[0].trans_id
                                                         : commit_instr_i[1].trans_id;
+
+  /**************************
+   *  Accelerator barriers  *
+   **************************/
+  // On a store barrier (i.e. any barrier that requires preceeding stores to complete
+  // before continuing execution), halt execution while there are pending stores in
+  // the accelerator pipeline.
+  logic wait_acc_store_d, wait_acc_store_q;
+  `FF(wait_acc_store_q, wait_acc_store_d, '0)
+
+  // Set on store barrier. Clear when no store is pending.
+  assign wait_acc_store_d = (wait_acc_store_q | commit_st_barrier_i) & acc_resp_i.store_pending;
+  assign ctrl_halt_o      = wait_acc_store_q;
 
 endmodule : acc_dispatcher

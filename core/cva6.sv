@@ -155,6 +155,7 @@ module cva6 import ariane_pkg::*; #(
   riscv::xlen_t             acc_result_ex_id;
   logic                     acc_valid_ex_id;
   exception_t               acc_exception_ex_id;
+  logic                     halt_acc_ctrl;
   // CSR
   logic                     csr_valid_id_ex;
   // CVXIF
@@ -762,9 +763,9 @@ module cva6 import ariane_pkg::*; #(
     .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
     .flush_dcache_o         ( dcache_flush_ctrl_cache       ),
     .flush_dcache_ack_i     ( dcache_flush_ack_cache_ctrl   ),
-    .acc_store_pending_i    ( acc_resp.store_pending        ),
 
     .halt_csr_i             ( halt_csr_ctrl                 ),
+    .halt_acc_i             ( halt_acc_ctrl                 ),
     .halt_o                 ( halt_ctrl                     ),
     // control ports
     .eret_i                 ( eret                          ),
@@ -904,6 +905,7 @@ module cva6 import ariane_pkg::*; #(
       .acc_ready_o          ( acc_ready_ex_id        ),
       .acc_valid_i          ( acc_valid_id_ex        ),
       .commit_instr_i       ( commit_instr_id_commit ),
+      .commit_st_barrier_i  ( fence_i_commit_controller | fence_commit_controller ),
       .acc_ld_disp_o        ( acc_ld_disp_ex_id      ),
       .acc_st_disp_o        ( acc_st_disp_ex_id      ),
       .acc_flush_undisp_o   ( acc_flush_undisp_ex_id ),
@@ -913,6 +915,7 @@ module cva6 import ariane_pkg::*; #(
       .acc_exception_o      ( acc_exception_ex_id    ),
       .commit_ack_i         ( commit_ack             ),
       .acc_no_st_pending_i  ( no_st_pending_commit   ),
+      .ctrl_halt_o          ( halt_acc_ctrl          ),
       .acc_req_o            ( acc_req                ),
       .acc_req_valid_o      ( acc_req_valid          ),
       .acc_req_ready_i      ( acc_req_ready_i        ),
