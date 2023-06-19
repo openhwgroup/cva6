@@ -22,9 +22,9 @@ with open(str(sys.argv[2]), 'r') as f:
 kgate_ratio = int(os.environ["NAND2_AREA"])
 path_re = r'^core-v-cores/cva6/pd/synth/cva6_([^/]+)'
 expected = {
-    'cv64a6_imafdc_sv39': 545268,
-    'cv32a60x': 160809,
-    'cv32a6_embedded': 127691,
+    'cv64a6_imafdc_sv39': 545030,
+    'cv32a60x': 160467,
+    'cv32a6_embedded': 127410,
 }
 
 #Compile & elaborate log:
