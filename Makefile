@@ -103,7 +103,9 @@ ariane_pkg += core/include/riscv_pkg.sv                              \
               core/fpu/src/fpnew_pkg.sv                              \
               common/submodules/common_cells/src/cf_math_pkg.sv      \
               core/cvxif_example/include/cvxif_instr_pkg.sv          \
-              core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+              core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
+			  cv-hpdcache/rtl/src/hpdcache_pkg.sv					 \
+			  cv-hpdcache/rtl/src/hwpf_stride/hwpf_stride_pkg.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules

@@ -447,6 +447,7 @@ package ariane_pkg;
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
     localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
+    localparam int unsigned DCACHE_TID_WIDTH   = cva6_config_pkg::CVA6ConfigDcacheIdWidth;
 `else
     // I$
     localparam int unsigned CONFIG_L1I_SIZE    = 16*1024;
@@ -464,7 +465,6 @@ package ariane_pkg;
     localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
 `endif
-
     // ---------------
     // EX Stage
     // ---------------
@@ -791,6 +791,7 @@ package ariane_pkg;
         logic                          data_we;
         logic [(riscv::XLEN/8)-1:0]    data_be;
         logic [1:0]                    data_size;
+        logic [DCACHE_TID_WIDTH-1:0]   data_id;
         logic                          kill_req;
         logic                          tag_valid;
     } dcache_req_i_t;
@@ -798,6 +799,7 @@ package ariane_pkg;
     typedef struct packed {
         logic                          data_gnt;
         logic                          data_rvalid;
+        logic [DCACHE_TID_WIDTH-1:0]   data_rid;
         riscv::xlen_t                  data_rdata;
         logic [DCACHE_USER_WIDTH-1:0]  data_ruser;
     } dcache_req_o_t;

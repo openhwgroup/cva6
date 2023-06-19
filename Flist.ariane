@@ -34,6 +34,8 @@ common/submodules/common_cells/src/cf_math_pkg.sv
 core/include/instr_tracer_pkg.sv
 core/cvxif_example/include/cvxif_instr_pkg.sv
 corev_apu/rv_plic/rtl/rv_plic_reg_pkg.sv
+cv-hpdcache/rtl/src/hpdcache_pkg.sv
+cv-hpdcache/rtl/src/hwpf_stride/hwpf_stride_pkg.sv
 common/local/util/sram.sv
 common/submodules/common_cells/src/deprecated/rrarbiter.sv
 common/submodules/common_cells/src/deprecated/fifo_v1.sv
