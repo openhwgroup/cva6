@@ -34,12 +34,21 @@ branch:
   c.bnez     s1, branch
 branch1:
   c.beqz     s0, branch1
+branch2:
+  bge        zero, t5, branch2
+branch3:
+  bltu       a1, a1, branch3
+branch4:
+  beq        a1, zero, branch4
+branch5:
+  bne        t5, t5, branch5
   addi       a0, a0, 22
   srl        a4, a5, a0
   csrrsi     t4, 0x340, 0
   sltiu      t4, s9, 236
   remu       t4, tp, a1
   c.andi     a5, -1
+  lui        zero, 0
 # (example of) final self-check test
   li a0, 0xCAFE;
   li a1, 0xCAFE;
