@@ -27,5 +27,5 @@ if ! [ -n "$DV_SIMULATORS" ]; then
 fi
 
 cd cva6/sim
-python3 cva6.py --testlist=../tests/testlist_riscv-compliance-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS
+python3 cva6.py --testlist=../tests/testlist_riscv-compliance-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --isa_extension=zicsr,zifencei
 cd -
