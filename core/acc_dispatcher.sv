@@ -8,7 +8,8 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
-// Author: Matheus Cavalcante, ETH Zurich
+// Authors: Matheus Cavalcante, ETH Zurich
+//          Nils Wistoff, ETH Zurich
 // Date: 20.11.2020
 // Description: Functional unit that dispatches CVA6 instructions to accelerators.
 
@@ -56,6 +57,40 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
 
   logic acc_ready;
   logic acc_valid_d, acc_valid_q;
+
+  /**************************
+   *  Accelerator issue     *
+   **************************/
+
+  // Issue accelerator instructions
+  `FF(acc_valid_q, acc_valid_d, '0)
+
+  assign acc_valid_ex_o = acc_valid_q;
+  assign acc_valid_d    = ~issue_instr_i.ex.valid &
+                          issue_instr_hs_i &
+                          (issue_instr_i.fu == ACCEL) &
+                          ~flush_unissued_instr_i;
+
+  // Accelerator load/store pending signals
+  logic acc_no_ld_pending;
+  logic acc_no_st_pending;
+
+  // Stall issue stage in three cases:
+  always_comb begin : stall_issue
+    unique case (issue_instr_i.fu)
+      ACCEL:
+        // 1. We're issuing an accelerator instruction but the dispatcher isn't ready yet
+        issue_stall_o = ~acc_ready;
+      LOAD:
+        // 2. We're issuing a scalar load but there is an inflight accelerator store.
+        issue_stall_o = acc_cons_en_i & ~acc_no_st_pending;
+      STORE:
+        // 3. We're issuing a scalar store but there is an inflight accelerator load or store.
+        issue_stall_o = acc_cons_en_i & (~acc_no_st_pending | ~acc_no_ld_pending);
+      default:
+        issue_stall_o = 1'b0;
+    endcase
+  end
 
   /***********************
    *  Instruction queue  *
@@ -249,40 +284,6 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   // Set on store barrier. Clear when no store is pending.
   assign wait_acc_store_d = (wait_acc_store_q | commit_st_barrier_i) & acc_resp_i.store_pending;
   assign ctrl_halt_o      = wait_acc_store_q;
-
-  /**************************
-   *  Accelerator issue     *
-   **************************/
-
-  // Issue accelerator instructions
-  `FF(acc_valid_q, acc_valid_d, '0)
-
-  assign acc_valid_ex_o = acc_valid_q;
-  assign acc_valid_d    = ~issue_instr_i.ex.valid &
-                          issue_instr_hs_i &
-                          (issue_instr_i.fu == ACCEL) &
-                          ~flush_unissued_instr_i;
-
-  // Accelerator load/store pending signals
-  logic acc_no_ld_pending;
-  logic acc_no_st_pending;
-
-  // Stall issue stage in three cases:
-  always_comb begin : stall_issue
-    unique case (issue_instr_i.fu)
-      ACCEL:
-        // 1. We're issuing an accelerator instruction but the dispatcher isn't ready yet
-        issue_stall_o = ~acc_ready;
-      LOAD:
-        // 2. We're issuing a scalar load but there is an inflight accelerator store.
-        issue_stall_o = acc_cons_en_i & ~acc_no_st_pending;
-      STORE:
-        // 3. We're issuing a scalar store but there is an inflight accelerator load or store.
-        issue_stall_o = acc_cons_en_i & (~acc_no_st_pending | ~acc_no_ld_pending);
-      default:
-        issue_stall_o = 1'b0;
-    endcase
-  end
 
   /**************************
    *  Load/Store tracking   *
