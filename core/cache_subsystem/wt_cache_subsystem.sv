@@ -25,8 +25,8 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter int unsigned AxiAddrWidth = 0,
   parameter int unsigned AxiDataWidth = 0,
   parameter int unsigned AxiIdWidth   = 0,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter type noc_req_t = ariane_axi::req_t,
+  parameter type noc_resp_t = ariane_axi::resp_t
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -57,15 +57,9 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   // writebuffer status
   output logic                           wbuffer_empty_o,
   output logic                           wbuffer_not_ni_o,
-`ifdef PITON_ARIANE
-  // L15 (memory side)
-  output l15_req_t                       l15_req_o,
-  input  l15_rtrn_t                      l15_rtrn_i
-`else
   // memory side
-  output axi_req_t                       axi_req_o,
-  input  axi_rsp_t                       axi_resp_i
-`endif
+  output noc_req_t                       noc_req_o,
+  input  noc_resp_t                      noc_resp_i
   // TODO: interrupt interface
 );
 
@@ -153,16 +147,16 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
     .dcache_data_i      ( dcache_adapter          ),
     .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
     .dcache_rtrn_o      ( adapter_dcache          ),
-    .l15_req_o          ( l15_req_o               ),
-    .l15_rtrn_i         ( l15_rtrn_i              )
+    .l15_req_o          ( noc_req_o               ),
+    .l15_rtrn_i         ( noc_rtrn_i              )
   );
 `else
   wt_axi_adapter #(
     .AxiAddrWidth       ( AxiAddrWidth ),
     .AxiDataWidth       ( AxiDataWidth ),
     .AxiIdWidth         ( AxiIdWidth ),
-    .axi_req_t          ( axi_req_t ),
-    .axi_rsp_t          ( axi_rsp_t )
+    .axi_req_t          ( noc_req_t ),
+    .axi_rsp_t          ( noc_resp_t )
   ) i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
@@ -176,8 +170,8 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
     .dcache_data_i      ( dcache_adapter          ),
     .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
     .dcache_rtrn_o      ( adapter_dcache          ),
-    .axi_req_o          ( axi_req_o               ),
-    .axi_resp_i         ( axi_resp_i              )
+    .axi_req_o          ( noc_req_o               ),
+    .axi_resp_i         ( noc_resp_i              )
   );
 `endif
 

@@ -21,8 +21,8 @@ module cva6 import ariane_pkg::*; #(
   parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
   parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
   parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter type noc_req_t = ariane_axi::req_t,
+  parameter type noc_resp_t = ariane_axi::resp_t
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -39,14 +39,12 @@ module cva6 import ariane_pkg::*; #(
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output ariane_pkg::rvfi_port_t       rvfi_o,
+  // cvxif
   output cvxif_pkg::cvxif_req_t        cvxif_req_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
-  // L15 (memory side)
-  output wt_cache_pkg::l15_req_t       l15_req_o,
-  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i,
-  // memory side, AXI Master
-  output axi_req_t                     axi_req_o,
-  input  axi_rsp_t                     axi_resp_i
+  // memory side
+  output noc_req_t                     noc_req_o,
+  input  noc_resp_t                    noc_resp_i
 );
 
   // ------------------------------------------
@@ -691,8 +689,8 @@ module cva6 import ariane_pkg::*; #(
     .AxiAddrWidth         ( AxiAddrWidth ),
     .AxiDataWidth         ( AxiDataWidth ),
     .AxiIdWidth           ( AxiIdWidth ),
-    .axi_req_t            ( axi_req_t ),
-    .axi_rsp_t            ( axi_rsp_t )
+    .noc_req_t            ( noc_req_t ),
+    .noc_resp_t           ( noc_resp_t )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
@@ -720,14 +718,9 @@ module cva6 import ariane_pkg::*; #(
     // write buffer status
     .wbuffer_empty_o       ( dcache_commit_wbuffer_empty ),
     .wbuffer_not_ni_o      ( dcache_commit_wbuffer_not_ni ),
-`ifdef PITON_ARIANE
-    .l15_req_o             ( l15_req_o                   ),
-    .l15_rtrn_i            ( l15_rtrn_i                  )
-`else
     // memory side
-    .axi_req_o             ( axi_req_o                   ),
-    .axi_resp_i            ( axi_resp_i                  )
-`endif
+    .noc_req_o             ( noc_req_o                   ),
+    .noc_resp_i            ( noc_resp_i                  )
   );
   end else begin
 
@@ -742,8 +735,8 @@ module cva6 import ariane_pkg::*; #(
     .axi_ar_chan_t         ( axi_ar_chan_t               ),
     .axi_aw_chan_t         ( axi_aw_chan_t               ),
     .axi_w_chan_t          ( axi_w_chan_t                ),
-    .axi_req_t             ( axi_req_t                   ),
-    .axi_rsp_t             ( axi_rsp_t                   )
+    .axi_req_t             ( noc_req_t                   ),
+    .axi_rsp_t             ( noc_resp_t                  )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
@@ -771,8 +764,8 @@ module cva6 import ariane_pkg::*; #(
     .dcache_req_ports_i    ( dcache_req_ports_ex_cache   ),
     .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
     // memory side
-    .axi_req_o             ( axi_req_o                   ),
-    .axi_resp_i            ( axi_resp_i                  )
+    .axi_req_o             ( noc_req_o                   ),
+    .axi_resp_i            ( noc_resp_i                  )
   );
   assign dcache_commit_wbuffer_not_ni = 1'b1;
   end

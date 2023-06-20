@@ -194,7 +194,9 @@ module ariane_verilog_wrap
   };
 
   ariane #(
-    .ArianeCfg ( ArianeOpenPitonCfg )
+    .ArianeCfg ( ArianeOpenPitonCfg ),
+    .noc_req_t  ( wt_cache_pkg::l15_req_t ),
+    .noc_resp_t ( wt_cache_pkg::l15_rtrn_t )
   ) ariane (
     .clk_i       ( clk_i      ),
     .rst_ni      ( spc_grst_l ),
@@ -205,11 +207,11 @@ module ariane_verilog_wrap
     .time_irq_i  ( time_irq   ),
     .debug_req_i ( debug_req  ),
 `ifdef PITON_ARIANE
-    .l15_req_o   ( l15_req   ),
-    .l15_rtrn_i  ( l15_rtrn  )
+    .noc_req_o   ( l15_req   ),
+    .noc_resp_i  ( l15_rtrn  )
 `else
-    .axi_req_o   ( axi_req   ),
-    .axi_resp_i  ( axi_resp  )
+    .noc_req_o   ( axi_req   ),
+    .noc_resp_i  ( axi_resp  )
 `endif
   );
 

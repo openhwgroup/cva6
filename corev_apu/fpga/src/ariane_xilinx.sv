@@ -697,7 +697,9 @@ ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
-    .ArianeCfg ( ariane_soc::ArianeSocCfg )
+    .ArianeCfg ( ariane_soc::ArianeSocCfg ),
+    .noc_req_t    ( ariane_axi::req_t   ),
+    .noc_resp_t   ( ariane_axi::resp_t  )
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),
@@ -707,8 +709,8 @@ ariane #(
     .ipi_i        ( ipi                 ),
     .time_irq_i   ( timer_irq           ),
     .debug_req_i  ( debug_req_irq       ),
-    .axi_req_o    ( axi_ariane_req      ),
-    .axi_resp_i   ( axi_ariane_resp     )
+    .noc_req_o    ( axi_ariane_req      ),
+    .noc_resp_i   ( axi_ariane_resp     )
 );
 
 `AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)
