@@ -42,12 +42,8 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     input  logic                                  flush_unissued_instr_i,
     input  logic                                  flush_ex_i,
     // Accelerator interface
-    output accelerator_req_t                      acc_req_o,
-    output logic                                  acc_req_valid_o,
-    input  logic                                  acc_req_ready_i,
-    input  accelerator_resp_t                     acc_resp_i,
-    input  logic                                  acc_resp_valid_i,
-    output logic                                  acc_resp_ready_o
+    output acc_pkg::accelerator_req_t             acc_req_o,
+    input  acc_pkg::accelerator_resp_t            acc_resp_i
   );
 
   `include "common_cells/registers.svh"
@@ -128,7 +124,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     end
 
     // An accelerator instruction was issued.
-    if (acc_req_valid_o)
+    if (acc_req_o.req_valid)
       insn_ready_d[acc_req_o.trans_id] = 1'b0;
   end: p_non_speculative_ff
 
@@ -152,18 +148,16 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     .valid_i   (acc_req_valid  ),
     .ready_o   (acc_req_ready  ),
     .data_o    (acc_req_int    ),
-    .valid_o   (acc_req_valid_o),
-    .ready_i   (acc_req_ready_i)
+    .valid_o   (acc_req_o.req_valid),
+    .ready_i   (acc_resp_i.req_ready)
   );
 
-  assign acc_req_o = '{
-      insn         : acc_req_int.insn,
-      rs1          : acc_req_int.rs1,
-      rs2          : acc_req_int.rs2,
-      frm          : acc_req_int.frm,
-      trans_id     : acc_req_int.trans_id,
-      store_pending: !acc_no_st_pending_i && acc_cons_en_i
-    };
+  assign acc_req_o.insn          = acc_req_int.insn;
+  assign acc_req_o.rs1           = acc_req_int.rs1;
+  assign acc_req_o.rs2           = acc_req_int.rs2;
+  assign acc_req_o.frm           = acc_req_int.frm;
+  assign acc_req_o.trans_id      = acc_req_int.trans_id;
+  assign acc_req_o.store_pending = !acc_no_st_pending_i && acc_cons_en_i;
 
   always_comb begin: accelerator_req_dispatcher
     // Do not fetch from the instruction queue
@@ -202,14 +196,14 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   // Unpack the accelerator response
   assign acc_trans_id_o  = acc_resp_i.trans_id;
   assign acc_result_o    = acc_resp_i.result;
-  assign acc_valid_o     = acc_resp_valid_i;
+  assign acc_valid_o     = acc_resp_i.resp_valid;
   assign acc_exception_o = '{
       cause: riscv::ILLEGAL_INSTR,
       tval : '0,
       valid: acc_resp_i.error
     };
   // Always ready to receive responses
-  assign acc_resp_ready_o = 1'b1;
+  assign acc_req_o.resp_ready = 1'b1;
 
   // Signal dispatched load/store to issue stage
   assign acc_ld_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);

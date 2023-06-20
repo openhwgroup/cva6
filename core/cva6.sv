@@ -15,6 +15,8 @@
 
 module cva6 import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  parameter type cvxif_req_t  = cvxif_pkg::cvxif_req_t,
+  parameter type cvxif_resp_t = cvxif_pkg::cvxif_resp_t,
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
@@ -37,14 +39,6 @@ module cva6 import ariane_pkg::*; #(
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
 `ifdef ARIANE_ACCELERATOR_PORT
-  // Accelerator request port
-  output accelerator_req_t             acc_req_o,
-  output logic                         acc_req_valid_o,
-  input  logic                         acc_req_ready_i,
-  // Accelerator response port
-  input  accelerator_resp_t            acc_resp_i,
-  input  logic                         acc_resp_valid_i,
-  output logic                         acc_resp_ready_o,
   // Invalidation requests
   output logic                         acc_cons_en_o,
   input  logic [63:0]                  inval_addr_i,
@@ -54,8 +48,8 @@ module cva6 import ariane_pkg::*; #(
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output ariane_pkg::rvfi_port_t       rvfi_o,
-  output cvxif_pkg::cvxif_req_t        cvxif_req_o,
-  input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
+  output cvxif_req_t                   cvxif_req_o,
+  input  cvxif_resp_t                  cvxif_resp_i,
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
   input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i,
@@ -78,6 +72,8 @@ module cva6 import ariane_pkg::*; #(
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
   localparam NumPorts = 3;
+  cvxif_pkg::cvxif_req_t      cvxif_req;
+  cvxif_pkg::cvxif_resp_t     cvxif_resp;
 
   // --------------
   // PCGEN <-> CSR
@@ -155,6 +151,8 @@ module cva6 import ariane_pkg::*; #(
   logic                     acc_valid_ex_id;
   exception_t               acc_exception_ex_id;
   logic                     halt_acc_ctrl;
+  logic [4:0]               acc_resp_fflags;
+  logic                     acc_resp_fflags_valid;
   // CSR
   logic                     csr_valid_id_ex;
   // CVXIF
@@ -287,35 +285,19 @@ module cva6 import ariane_pkg::*; #(
   logic [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id;
 
   // Accelerator port
-  accelerator_req_t  acc_req;
-  logic              acc_req_valid;
-  logic              acc_req_ready;
-  accelerator_resp_t acc_resp;
-  logic              acc_resp_valid;
-  logic              acc_resp_ready;
   logic [63:0]       inval_addr;
   logic              inval_valid;
   logic              inval_ready;
 
 `ifdef ARIANE_ACCELERATOR_PORT
-  assign acc_req_o        = acc_req;
-  assign acc_req_valid_o  = acc_req_valid;
-  assign acc_req_ready    = acc_req_ready_i;
-  assign acc_resp         = acc_resp_i;
-  assign acc_resp_valid   = acc_resp_valid_i;
-  assign acc_resp_ready_o = acc_resp_ready;
   assign inval_addr       = inval_addr_i;
   assign inval_valid      = inval_valid_i;
   assign inval_ready_o    = inval_ready;
   assign acc_cons_en_o    = acc_cons_en_csr;
 `else
-  assign acc_req_ready    = '0;
-  assign acc_resp         = '0;
-  assign acc_resp_valid   = '0;
   assign inval_addr       = '0;
   assign inval_valid      = '0;
 `endif
-
 
   // --------------
   // Frontend
@@ -556,8 +538,8 @@ module cva6 import ariane_pkg::*; #(
     .x_result_o             ( x_result_ex_id              ),
     .x_valid_o              ( x_valid_ex_id               ),
     .x_we_o                 ( x_we_ex_id                  ),
-    .cvxif_req_o            ( cvxif_req_o                 ),
-    .cvxif_resp_i           ( cvxif_resp_i                ),
+    .cvxif_req_o            ( cvxif_req                   ),
+    .cvxif_resp_i           ( cvxif_resp                  ),
     // Accelerator
     .acc_valid_i            ( acc_valid_acc_ex            ),
     // Performance counters
@@ -668,8 +650,8 @@ module cva6 import ariane_pkg::*; #(
     .set_debug_pc_o         ( set_debug_pc                  ),
     .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
     .priv_lvl_o             ( priv_lvl                      ),
-    .acc_fflags_ex_i        ( acc_resp.fflags               ),
-    .acc_fflags_ex_valid_i  ( acc_resp.fflags_valid         ),
+    .acc_fflags_ex_i        ( acc_resp_fflags               ),
+    .acc_fflags_ex_valid_i  ( acc_resp_fflags_valid         ),
     .fs_o                   ( fs                            ),
     .fflags_o               ( fflags_csr_commit             ),
     .frm_o                  ( frm_csr_id_issue_ex           ),
@@ -911,22 +893,26 @@ module cva6 import ariane_pkg::*; #(
       .commit_ack_i           ( commit_ack                   ),
       .acc_no_st_pending_i    ( no_st_pending_commit         ),
       .ctrl_halt_o            ( halt_acc_ctrl                ),
-      .acc_req_o              ( acc_req                      ),
-      .acc_req_valid_o        ( acc_req_valid                ),
-      .acc_req_ready_i        ( acc_req_ready_i              ),
-      .acc_resp_i             ( acc_resp_i                   ),
-      .acc_resp_valid_i       ( acc_resp_valid_i             ),
-      .acc_resp_ready_o       ( acc_resp_ready               )
+      .acc_req_o              ( cvxif_req_o                  ),
+      .acc_resp_i             ( cvxif_resp_i                 )
     );
-  end : gen_accelerator else begin: gen_no_accelerator
-    assign acc_req          = '0;
-    assign acc_req_valid    = 1'b0;
-    assign acc_resp_ready   = 1'b0;
 
-    assign acc_trans_id_ex_id  = '0;
-    assign acc_result_ex_id    = '0;
-    assign acc_valid_ex_id     = '0;
-    assign acc_exception_ex_id = '0;
+    assign acc_resp_fflags = cvxif_resp_i.fflags;
+    assign acc_resp_fflags_valid = cvxif_resp_i.fflags_valid;
+
+    // Tie off cvxif
+    assign cvxif_resp = '0;
+  end : gen_accelerator else begin: gen_no_accelerator
+    assign acc_trans_id_ex_id    = '0;
+    assign acc_result_ex_id      = '0;
+    assign acc_valid_ex_id       = '0;
+    assign acc_exception_ex_id   = '0;
+    assign acc_resp_fflags       = '0;
+    assign acc_resp_fflags_valid = '0;
+
+    // Feed through cvxif
+    assign cvxif_req_o = cvxif_req;
+    assign cvxif_resp  = cvxif_resp_i;
   end : gen_no_accelerator
 
   // -------------------
