@@ -140,8 +140,14 @@ module cva6_tlb_sv32 import ariane_pkg::*; #(
     // PLRU - Pseudo Least Recently Used Replacement
     // -----------------------------------------------
     logic[2*(TLB_ENTRIES-1)-1:0] plru_tree_q, plru_tree_n;
+    logic en;
+    int unsigned idx_base, shift, new_index;
     always_comb begin : plru_replacement
         plru_tree_n = plru_tree_q;
+	      en = '0;
+	      idx_base = '0;
+	      shift = '0;
+	      new_index = '0;
         // The PLRU-tree indexing:
         // lvl0        0
         //            / \
@@ -166,7 +172,6 @@ module cva6_tlb_sv32 import ariane_pkg::*; #(
         // default: begin /* No hit */ end
         // endcase
         for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
-            automatic int unsigned idx_base, shift, new_index;
             // we got a hit so update the pointer as it was least recently used
             if (lu_hit[i] & lu_access_i) begin
                 // Set the nodes to the values we would expect
@@ -195,8 +200,6 @@ module cva6_tlb_sv32 import ariane_pkg::*; #(
         // the corresponding bit of the entry's index, this is
         // the next entry to replace.
         for (int unsigned i = 0; i < TLB_ENTRIES; i += 1) begin
-            automatic logic en;
-            automatic int unsigned idx_base, shift, new_index;
             en = 1'b1;
             for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
                 idx_base = $unsigned((2**lvl)-1);

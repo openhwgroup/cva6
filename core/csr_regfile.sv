@@ -144,6 +144,7 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::pmpcfg_t [15:0]    pmpcfg_q,  pmpcfg_d;
     logic [15:0][riscv::PLEN-3:0]        pmpaddr_q,  pmpaddr_d;
     logic [MHPMCounterNum+3-1:0] mcountinhibit_d,mcountinhibit_q;
+    int index;
 
     assign pmpcfg_o = pmpcfg_q[15:0];
     assign pmpaddr_o = pmpaddr_q;
@@ -159,13 +160,14 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------
     assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
-	
+
     always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
         read_access_exception = 1'b0;
         csr_rdata = '0;
         perf_addr_o = csr_addr.address[11:0];
-		
+        index = '0;
+
         if (csr_read) begin
             unique case (csr_addr.address)
                 riscv::CSR_FFLAGS: begin
@@ -290,7 +292,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MHPM_COUNTER_5,
                 riscv::CSR_MHPM_COUNTER_6,
                 riscv::CSR_MHPM_COUNTER_7,
-                riscv::CSR_MHPM_COUNTER_8,    
+                riscv::CSR_MHPM_COUNTER_8,
                 riscv::CSR_MHPM_COUNTER_9,
                 riscv::CSR_MHPM_COUNTER_10,
                 riscv::CSR_MHPM_COUNTER_11,
@@ -313,7 +315,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MHPM_COUNTER_28,
                 riscv::CSR_MHPM_COUNTER_29,
                 riscv::CSR_MHPM_COUNTER_30,
-                riscv::CSR_MHPM_COUNTER_31 :     csr_rdata   = perf_data_i;   
+                riscv::CSR_MHPM_COUNTER_31 :     csr_rdata   = perf_data_i;
 
                 riscv::CSR_MHPM_COUNTER_3H,
                 riscv::CSR_MHPM_COUNTER_4H,
@@ -351,7 +353,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_HPM_COUNTER_5,
                 riscv::CSR_HPM_COUNTER_6,
                 riscv::CSR_HPM_COUNTER_7,
-                riscv::CSR_HPM_COUNTER_8,    
+                riscv::CSR_HPM_COUNTER_8,
                 riscv::CSR_HPM_COUNTER_9,
                 riscv::CSR_HPM_COUNTER_10,
                 riscv::CSR_HPM_COUNTER_11,
@@ -432,7 +434,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_PMPADDR14,
                 riscv::CSR_PMPADDR15: begin
                     // index is specified by the last byte in the address
-                    automatic int index = csr_addr.csr_decode.address[3:0];
+                    index = csr_addr.csr_decode.address[3:0];
                     // Important: we only support granularity 8 bytes (G=1)
                     // -> last bit of pmpaddr must be set 0/1 based on the mode:
                     // NA4, NAPOT: 1
