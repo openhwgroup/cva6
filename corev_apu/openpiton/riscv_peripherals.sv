@@ -396,7 +396,7 @@ module riscv_peripherals #(
   assign rom_rdata = (ariane_boot_sel_i) ? rom_rdata_bm : rom_rdata_linux;
 
   noc_axilite_bridge #(
-    .SLAVE_RESP_BYTEWIDTH   ( 8             ),
+    .SLAVE_RESP_BYTEWIDTH   ( 0             ),
     .SWAP_ENDIANESS         ( SwapEndianess )
   ) i_bootrom_axilite_bridge (
     .clk                    ( clk_i                           ),
