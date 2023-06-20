@@ -423,7 +423,13 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_DCACHE:           csr_rdata = dcache_q;
                 riscv::CSR_ICACHE:           csr_rdata = icache_q;
                 // custom (non RISC-V) accelerator memory consistency mode
-                riscv::CSR_ACC_CONS:         csr_rdata = ENABLE_ACCELERATOR ? acc_cons_q : '0;
+                riscv::CSR_ACC_CONS: begin
+                    if (ENABLE_ACCELERATOR) begin
+                        csr_rdata = acc_cons_q;
+                    end else begin
+                        read_access_exception = 1'b1;
+                    end
+                end
                 // PMPs
                 riscv::CSR_PMPCFG0:          csr_rdata = pmpcfg_q[riscv::XLEN/8-1:0];
                 riscv::CSR_PMPCFG1:          if (riscv::XLEN == 32) csr_rdata = pmpcfg_q[7:4]; else read_access_exception = 1'b1;
@@ -819,7 +825,13 @@ module csr_regfile import ariane_pkg::*; #(
 
                 riscv::CSR_DCACHE:             dcache_d    = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
                 riscv::CSR_ICACHE:             icache_d    = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
-                riscv::CSR_ACC_CONS:           if (ENABLE_ACCELERATOR) acc_cons_d  = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
+                riscv::CSR_ACC_CONS: begin
+                    if (ENABLE_ACCELERATOR) begin
+                        acc_cons_d  = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
+                    end else begin
+                        update_access_exception = 1'b1;
+                    end
+                end
                 // PMP locked logic
                 // 1. refuse to update any locked entry
                 // 2. also refuse to update the entry below a locked TOR entry
@@ -892,7 +904,9 @@ module csr_regfile import ariane_pkg::*; #(
 
         // Update fflags as soon as a FP exception occurs in the accelerator
         // The exception is imprecise, and the fcsr.fflags update always happens immediately
-        fcsr_d.fflags |= acc_fflags_ex_valid_i ? acc_fflags_ex_i : 5'b0;
+        if (ENABLE_ACCELERATOR) begin
+            fcsr_d.fflags |= acc_fflags_ex_valid_i ? acc_fflags_ex_i : 5'b0;
+        end
 
         // ---------------------
         // External Interrupts
