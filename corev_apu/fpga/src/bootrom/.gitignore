@@ -3,3 +3,4 @@ venv
 *.o
 *.img
 *.bin
+*.sv
