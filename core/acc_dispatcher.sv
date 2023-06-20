@@ -228,6 +228,9 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
    *  Accelerator response  *
    **************************/
 
+  logic acc_ld_disp;
+  logic acc_st_disp;
+
   // Unpack the accelerator response
   assign acc_trans_id_o  = acc_resp_i.trans_id;
   assign acc_result_o    = acc_resp_i.result;
