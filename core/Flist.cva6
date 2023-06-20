@@ -70,6 +70,7 @@ ${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/axi_intf.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
+${CVA6_REPO_DIR}/core/include/acc_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
@@ -131,6 +132,7 @@ ${CVA6_REPO_DIR}/core/amo_buffer.sv
 ${CVA6_REPO_DIR}/core/store_unit.sv
 ${CVA6_REPO_DIR}/core/commit_stage.sv
 ${CVA6_REPO_DIR}/core/axi_shim.sv
+${CVA6_REPO_DIR}/core/acc_dispatcher.sv
 
 // What is "frontend"?
 ${CVA6_REPO_DIR}/core/frontend/btb.sv
