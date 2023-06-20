@@ -84,14 +84,14 @@ module  uvmt_cva6_axi_assert (uvma_axi_intf axi_assert, input bit clk, input rst
       @(posedge clk) disable iff (!rst_n) axi_assert.ar_valid |-> axi_assert.ar_burst == 1;
    endproperty
 
-   //Check if all write transaction performed by CVA6 are equal to 0 or 1
+   //Check if all write transaction performed by CVA6 are equal to 0
    property AXI4_CVA6_AWLEN;
       @(posedge clk) disable iff (!rst_n) axi_assert.aw_valid |-> axi_assert.aw_len == 0;
    endproperty
 
    //Check if all Read transaction performed by CVA6 are equal to 0 or 1
    property AXI4_CVA6_ARLEN;
-      @(posedge clk) disable iff (!rst_n) axi_assert.ar_valid |-> axi_assert.ar_len == 1;
+      @(posedge clk) disable iff (!rst_n) axi_assert.ar_valid |-> axi_assert.ar_len == 0 || axi_assert.ar_len == 1;
    endproperty
 
 /********************************************** Assert Property ******************************************************/
