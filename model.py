@@ -242,31 +242,42 @@ class Bht:
     def _index(self, addr):
         return (addr >> 1) % len(self.contents)
 
-Fu = Enum('Fu', ['ALU', 'MUL', 'BRANCH', 'LSU'])
+Fu = Enum('Fu', ['ALU', 'MUL', 'BRANCH', 'LDU', 'STU'])
+
+# We have
+# - FLU gathering ALU + BRANCH (+ CSR, not significant in CoreMark)
+# - LSU for loads and stores
+# - FP gathering MUL + second ALU (+ Floating, unused in CoreMark)
+# This way we do not have more write-back ports than currently with F
 
 def to_fu(instr):
     if instr.is_branch() or instr.is_regjump():
         return Fu.BRANCH
     if instr.is_muldiv():
         return Fu.MUL
-    if instr.is_load() or instr.is_store():
-        return Fu.LSU
+    if instr.is_load():
+        return Fu.LDU
+    if instr.is_store():
+        return Fu.STU
     return Fu.ALU
 
 class FusBusy:
     "Is each functional unit busy"
     def __init__(self):
-        self.alu = 0
-        self.mul = False
-        self.branch = False
-        self.lsu = False
+        self.flu = False
+        self.ldu = False
+        self.stu = False
+        self.fp = False
+        self.mul_this_cycle = False
+        self.mul_last_cycle = False
 
     def is_ready(self, fu):
         return {
-            Fu.MUL: not self.mul,
-            Fu.ALU: self.alu < 2,
-            Fu.BRANCH: not self.branch,
-            Fu.LSU: not self.lsu,
+            Fu.ALU: not ((self.fp or self.mul_last_cycle) and self.flu),
+            Fu.MUL: not self.mul_this_cycle,
+            Fu.BRANCH: not self.flu,
+            Fu.LDU: not (self.ldu or self.stu),
+            Fu.STU: not (self.ldu or self.stu),
         }[fu]
 
     def is_ready_for(self, instr):
@@ -274,30 +285,41 @@ class FusBusy:
 
     def issue(self, instr):
         return {
-            Fu.MUL: FusBusy.issue_mul,
             Fu.ALU: FusBusy.issue_alu,
+            Fu.MUL: FusBusy.issue_mul,
             Fu.BRANCH: FusBusy.issue_branch,
-            Fu.LSU: FusBusy.issue_lsu,
+            Fu.LDU: FusBusy.issue_ldu,
+            Fu.STU: FusBusy.issue_stu,
         }[to_fu(instr)](self)
 
     def issue_mul(self):
-        self.mul = True
+        self.fp = True
+        self.mul_this_cycle = True
 
     def issue_alu(self):
-        self.alu += 1
-        print(f'{self.alu} alu')
+        if not (self.fp or self.mul_last_cycle):
+            self.fp = True
+        elif not self.flu:
+            self.flu = True
+        else:
+            prout()
 
     def issue_branch(self):
-        self.branch = True
+        self.flu = True
 
-    def issue_lsu(self):
-        self.lsu = True
+    def issue_ldu(self):
+        self.ldu = True
+
+    def issue_stu(self):
+        self.stu = True
 
     def cycle(self):
-        self.alu = 0
-        self.mul = False
-        self.branch = False
-        self.lsu = False
+        self.mul_last_cycle = self.mul_this_cycle
+        self.flu = False
+        self.ldu = False
+        self.stu = False
+        self.fp = False
+        self.mul_this_cycle = False
 
 class Model:
     """Models the scheduling of CVA6"""
@@ -406,16 +428,10 @@ class Model:
 
     def find_structural_hazard(self, instr, cycle):
         """Detect and log structural hazards"""
-        found = False
         if not self.fus.is_ready_for(instr):
-            found = True
-        if self.last_issued is not None:
-            if self.last_issued.instr.is_muldiv() and not instr.is_muldiv():
-                if not (instr.is_load() or instr.is_store()):
-                    found = self.last_issued.issue_cycle == cycle - 1
-        if found:
             self.log_event_on(instr, EventKind.STRUCT, cycle)
-        return found
+            return True
+        return False
 
     def try_issue(self, cycle):
         """Try to issue an instruction"""
