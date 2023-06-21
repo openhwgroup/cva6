@@ -242,6 +242,63 @@ class Bht:
     def _index(self, addr):
         return (addr >> 1) % len(self.contents)
 
+Fu = Enum('Fu', ['ALU', 'MUL', 'BRANCH', 'LSU'])
+
+def to_fu(instr):
+    if instr.is_branch() or instr.is_regjump():
+        return Fu.BRANCH
+    if instr.is_muldiv():
+        return Fu.MUL
+    if instr.is_load() or instr.is_store():
+        return Fu.LSU
+    return Fu.ALU
+
+class FusBusy:
+    "Is each functional unit busy"
+    def __init__(self):
+        self.alu = 0
+        self.mul = False
+        self.branch = False
+        self.lsu = False
+
+    def is_ready(self, fu):
+        return {
+            Fu.MUL: not self.mul,
+            Fu.ALU: self.alu < 2,
+            Fu.BRANCH: not self.branch,
+            Fu.LSU: not self.lsu,
+        }[fu]
+
+    def is_ready_for(self, instr):
+        return self.is_ready(to_fu(instr))
+
+    def issue(self, instr):
+        return {
+            Fu.MUL: FusBusy.issue_mul,
+            Fu.ALU: FusBusy.issue_alu,
+            Fu.BRANCH: FusBusy.issue_branch,
+            Fu.LSU: FusBusy.issue_lsu,
+        }[to_fu(instr)](self)
+
+    def issue_mul(self):
+        self.mul = True
+
+    def issue_alu(self):
+        self.alu += 1
+        print(f'{self.alu} alu')
+
+    def issue_branch(self):
+        self.branch = True
+
+    def issue_lsu(self):
+        self.lsu = True
+
+    def cycle(self):
+        self.alu = 0
+        self.mul = False
+        self.branch = False
+        self.lsu = False
+
 class Model:
     """Models the scheduling of CVA6"""
 
@@ -262,6 +319,7 @@ class Model:
         self.bht = Bht()
         self.instr_queue = []
         self.scoreboard = []
+        self.fus = FusBusy()
         self.last_issued = None
         self.last_committed = None
         self.retired = []
@@ -349,6 +407,8 @@ class Model:
     def find_structural_hazard(self, instr, cycle):
         """Detect and log structural hazards"""
         found = False
+        if not self.fus.is_ready_for(instr):
+            found = True
         if self.last_issued is not None:
             if self.last_issued.instr.is_muldiv() and not instr.is_muldiv():
                 if not (instr.is_load() or instr.is_store()):
@@ -376,6 +436,7 @@ class Model:
             self.log_event_on(instr, EventKind.issue, cycle)
             entry = Entry(instr)
             self.scoreboard.append(entry)
+            self.fus.issue(instr)
             self.last_issued = LastIssue(instr, cycle)
             self.ras.resolve(instr)
 
@@ -406,6 +467,7 @@ class Model:
 
     def run_cycle(self, cycle):
         """Runs a cycle"""
+        self.fus.cycle()
         for _ in range(self.commit_width):
             self.try_commit(cycle)
         self.try_execute(cycle)
@@ -452,6 +514,10 @@ def write_trace(output_file, instructions):
         assert commit_event.kind == EventKind.commit
         cycle = commit_event.cycle
         annotated = re.sub(pattern, f"@ {cycle}", instr.line)
+        if EventKind.STRUCT in [e.kind for e in instr.events]:
+            annotated += " #STRUCT"
+        if EventKind.RAW in [e.kind for e in instr.events]:
+            annotated += " #RAW"
         lines.append(f"{annotated}\n")
 
     with open(output_file, 'w') as f:
@@ -546,7 +612,7 @@ def print_stats(instructions):
 def main(input_file: str):
     "Entry point"
 
-    model = Model(debug=True)
+    model = Model(debug=False, issue=2, commit=2)
     model.load_file(input_file)
     model.run()
 
