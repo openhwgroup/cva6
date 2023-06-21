@@ -604,10 +604,16 @@ module ariane_testharness #(
   // ---------------
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
-  ariane_pkg::rvfi_port_t  rvfi;
+  rvfi_pkg::rvfi_instr_t [1:0] rvfi;
 
   ariane #(
-    .ArianeCfg  ( ariane_soc::ArianeSocCfg )
+    .ArianeCfg ( ariane_soc::ArianeSocCfg ),
+    // RVFI
+    .RVFI ( 1 ),
+    .NRET ( 1 ),
+    .ILEN ( 32 ),
+    .rvfi_instr_t ( rvfi_pkg::rvfi_instr_t ),
+    .NR_COMMIT_PORTS ( 2 )
   ) i_ariane (
     .clk_i                ( clk_i               ),
     .rst_ni               ( ndmreset_n          ),
@@ -616,9 +622,7 @@ module ariane_testharness #(
     .irq_i                ( irqs                ),
     .ipi_i                ( ipi                 ),
     .time_irq_i           ( timer_irq           ),
-`ifdef RVFI_PORT
     .rvfi_o               ( rvfi                ),
-`endif
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
     .debug_req_i          ( 1'b0                ),

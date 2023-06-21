@@ -15,6 +15,13 @@
 
 module ariane import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  // RVFI
+  parameter RVFI = 0,
+  parameter NRET = 0,
+  parameter ILEN = 0,
+  parameter type rvfi_instr_t = logic,
+  parameter int unsigned NR_COMMIT_PORTS = 0,
+  //AXI
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
@@ -36,11 +43,9 @@ module ariane import ariane_pkg::*; #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
-`ifdef RVFI_PORT
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output rvfi_port_t                   rvfi_o,
-`endif
+  output rvfi_instr_t [NR_COMMIT_PORTS-1:0] rvfi_o,
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
@@ -57,6 +62,13 @@ module ariane import ariane_pkg::*; #(
 
   cva6 #(
     .ArianeCfg  ( ArianeCfg ),
+    // RVFI
+    .RVFI ( RVFI ),
+    .NRET ( NRET ),
+    .ILEN ( ILEN ),
+    .rvfi_instr_t ( rvfi_instr_t ),
+    .NR_COMMIT_PORTS ( NR_COMMIT_PORTS ),
+    // AXI
     .AxiAddrWidth ( AxiAddrWidth ),
     .AxiDataWidth ( AxiDataWidth ),
     .AxiIdWidth ( AxiIdWidth ),
@@ -74,11 +86,7 @@ module ariane import ariane_pkg::*; #(
     .ipi_i                ( ipi_i                     ),
     .time_irq_i           ( time_irq_i                ),
     .debug_req_i          ( debug_req_i               ),
-`ifdef RVFI_PORT
     .rvfi_o               ( rvfi_o                    ),
-`else
-    .rvfi_o               (                           ),
-`endif
     .cvxif_req_o          ( cvxif_req                 ),
     .cvxif_resp_i         ( cvxif_resp                ),
 `ifdef PITON_ARIANE

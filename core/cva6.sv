@@ -15,6 +15,36 @@
 
 module cva6 import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  // RVFI
+  parameter RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace,
+  parameter NRET = 1,
+  parameter ILEN = 32,
+  parameter type rvfi_instr_t = struct packed {
+    logic [NRET-1:0]                 valid;
+    logic [NRET*64-1:0]              order;
+    logic [NRET*ILEN-1:0]            insn;
+    logic [NRET-1:0]                 trap;
+    logic [NRET*riscv::XLEN-1:0]     cause;
+    logic [NRET-1:0]                 halt;
+    logic [NRET-1:0]                 intr;
+    logic [NRET*2-1:0]               mode;
+    logic [NRET*2-1:0]               ixl;
+    logic [NRET*5-1:0]               rs1_addr;
+    logic [NRET*5-1:0]               rs2_addr;
+    logic [NRET*riscv::XLEN-1:0]     rs1_rdata;
+    logic [NRET*riscv::XLEN-1:0]     rs2_rdata;
+    logic [NRET*5-1:0]               rd_addr;
+    logic [NRET*riscv::XLEN-1:0]     rd_wdata;
+    logic [NRET*riscv::XLEN-1:0]     pc_rdata;
+    logic [NRET*riscv::XLEN-1:0]     pc_wdata;
+    logic [NRET*riscv::VLEN-1:0]     mem_addr;
+    logic [NRET*riscv::PLEN-1:0]     mem_paddr;
+    logic [NRET*(riscv::XLEN/8)-1:0] mem_rmask;
+    logic [NRET*(riscv::XLEN/8)-1:0] mem_wmask;
+    logic [NRET*riscv::XLEN-1:0]     mem_rdata;
+    logic [NRET*riscv::XLEN-1:0]     mem_wdata; },
+  parameter int unsigned NR_COMMIT_PORTS = cva6_config_pkg::CVA6ConfigNrCommitPorts,
+  // AXI
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
@@ -38,7 +68,7 @@ module cva6 import ariane_pkg::*; #(
   input  logic                         debug_req_i,  // debug request (async)
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output ariane_pkg::rvfi_port_t       rvfi_o,
+  output rvfi_instr_t [NR_COMMIT_PORTS-1:0] rvfi_o,
   output cvxif_pkg::cvxif_req_t        cvxif_req_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
   // L15 (memory side)

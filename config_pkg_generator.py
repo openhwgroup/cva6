@@ -154,7 +154,6 @@ MapArgsToParameter={
   "PerfCounterEn": "CVA6ConfigPerfCounterEn",
   "DcacheType": "CVA6ConfigDcacheType",
   "MmuPresent": "CVA6ConfigMmuPresent",
-  "RvfiTrace": "RVFI_PORT",
   # Ignored parameters
   "ignored": "CVA6ConfigRvfiTrace",
 }
