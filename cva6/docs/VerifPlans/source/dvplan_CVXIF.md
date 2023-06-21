@@ -6,7 +6,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   The “instr” and “mode” signals remain stable during an Issue request transaction.
@@ -27,7 +27,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   When issue transaction starts, instruction and current CPU mode are provided
@@ -46,7 +46,7 @@
   
 #### Item: 001
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   Check “mode” signal values.
@@ -68,7 +68,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   During a transaction, each bit of “rs_valid” can transition from 0 to 1 but are not allowed to transition back to 0.
@@ -89,7 +89,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   If XLEN = X_RFR_WIDTH, then rs[X_NUM_RS-1:0] correspond to  rs1 and rs2 CPU registers (and rs3 if X_NUM_RS = 3).
@@ -108,7 +108,7 @@
   
 #### Item: 001
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   rs signals are only required to be stable during the part of a transaction in which these signals are considered to be valid.
@@ -127,13 +127,15 @@
   
 #### Item: 002
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   If XLEN != X_RFR_WIDTH , then rs[X_NUM_RS-1:0] correspond to even/odd register pair with rs1, rs2, (rs3) are even register and even register is provided in the 32 lower bits of rs signal.
 * **Verification Goals**
   
-  For every issue transaction check that rs signal correspond to the concatenation of rs1/rs1+1,rs2/rs2+1, (rs3/rs3+1) value in CPU register file and even register is in the 32 lower bits of rs.
+  For every issue transaction check that rs signal correspond to the concatenation of rs1/rs1+1,rs2/rs2+1, (rs3/rs3+1) value in CPU register file and even register is in the 32 lower bits of rs.  
+    
+  Can't be check XLEN == X_RFR_WIDTH
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
@@ -148,7 +150,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   If accept == 0 :  
@@ -170,7 +172,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   The CPU shall cause an illegal instruction if:  
@@ -194,7 +196,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   Check for issue id validity.
@@ -215,11 +217,11 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   Accept = 1 if:   
-  - coprocessor can handle the instruction based on decoding “instr”and "mode".  
+  - coprocessor can handle the instruction based on decoding “instr” and "mode".  
   - “issue_valid” == 1 and required bit(s) of “rs_valid” are 1.
 * **Verification Goals**
   
@@ -238,7 +240,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   “issue_resp” signals and “issue_req” signals are accepted when “issue_valid” == “issue_ready” == 1  
@@ -264,7 +266,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   The “commit_valid” == 1 exactly one clk cycle for every offloaded  Instruction by the coprocessor (whether accepted or not).
@@ -285,7 +287,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   There is a unique commit transaction for every issue transaction (unique until an instruction has "fully completed" = its result has been submitted).
@@ -306,7 +308,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   - The CPU shall perform a commit transaction for every issue transaction, independent of the accept value of the issue transaction.  
@@ -328,7 +330,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   The signals in commit are valid when commit_valid is 1.
@@ -352,7 +354,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   A coprocessor is not allowed to perform speculative result transactions.
@@ -373,7 +375,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   A coprocessor is allowed to provide results to the core in an out of order fashion.
@@ -394,7 +396,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   Each accepted offloaded (committed and not killed) instruction shall have exactly one result group transaction (even if no data needs to be written back to the CPU’s register file).
@@ -415,7 +417,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   The signals in result shall remain stable during a result transaction (except data ...)
@@ -436,7 +438,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   Data is only required to remain stable during result transactions in which "we" is not 0.
@@ -457,7 +459,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   The exc is used to signal synchronous exceptions. A synchronous exception will lead to a trap in CPU unless the corresponding instruction is killed.
@@ -476,7 +478,7 @@
   
 #### Item: 001
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   exccode provides the least significant bits of the exception code bitfield of the mcause CSR.
@@ -495,10 +497,10 @@
   
 #### Item: 002
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
-   "we" shall be driven to 0 by the coprocessor for synchronous exceptions.
+  "we" shall be driven to 0 by the coprocessor for synchronous exceptions.
 * **Verification Goals**
   
   Check that "we" signal == 0 when exc == 1.
@@ -516,13 +518,15 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
-  we is 2 bits wide when XLEN` = 32 and X_RFW_WIDTH = 64, and 1 bit wide otherwise. If "we" is 2 bits wide, then we[1] is only allowed to be 1 if we[0] is 1 as well (i.e. for dual writeback).
+  we is 2 bits wide when XLEN = 32 and X_RFW_WIDTH = 64, and 1 bit wide otherwise. If "we" is 2 bits wide, then we[1] is only allowed to be 1 if we[0] is 1 as well (i.e. for dual writeback).
 * **Verification Goals**
   
-  For dualwrite instruction, check that we[1]==1 is only allowed if we[0] == 1.
+  For dualwrite instruction, check that we[1]==1 is only allowed if we[0] == 1.  
+    
+  Dualwrite not supported (for now)
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
@@ -537,7 +541,7 @@
 
 #### Item: 000
 
-* **Requirement location:** 
+* **Requirement location:** https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 * **Feature Description**
   
   Result transaction starts in the cycle that result_valid = 1 and ends in the cycle that both result_valid == result_ready == 1.
