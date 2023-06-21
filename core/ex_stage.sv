@@ -15,6 +15,7 @@
 
 
 module ex_stage import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
     parameter int unsigned ASID_WIDTH = 1,
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
@@ -166,7 +167,9 @@ module ex_stage import ariane_pkg::*; #(
     fu_data_t alu_data;
     assign alu_data = (alu_valid_i | branch_valid_i) ? fu_data_i  : '0;
 
-    alu alu_i (
+    alu #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) alu_i (
         .clk_i,
         .rst_ni,
         .fu_data_i        ( alu_data       ),
@@ -177,7 +180,9 @@ module ex_stage import ariane_pkg::*; #(
     // 2. Branch Unit (combinatorial)
     // we don't silence the branch unit as this is already critical and we do
     // not want to add another layer of logic
-    branch_unit branch_unit_i (
+    branch_unit #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) branch_unit_i (
         .clk_i,
         .rst_ni,
         .debug_mode_i,
@@ -196,7 +201,9 @@ module ex_stage import ariane_pkg::*; #(
     );
 
     // 3. CSR (sequential)
-    csr_buffer csr_buffer_i (
+    csr_buffer #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) csr_buffer_i (
         .clk_i,
         .rst_ni,
         .flush_i,
@@ -237,7 +244,9 @@ module ex_stage import ariane_pkg::*; #(
     // input silencing of multiplier
     assign mult_data  = mult_valid_i ? fu_data_i  : '0;
 
-    mult i_mult (
+    mult #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) i_mult (
         .clk_i,
         .rst_ni,
         .flush_i,
@@ -290,6 +299,7 @@ module ex_stage import ariane_pkg::*; #(
     assign lsu_data  = lsu_valid_i ? fu_data_i  : '0;
 
     load_store_unit #(
+        .cva6_cfg   ( cva6_cfg   ),
         .ASID_WIDTH ( ASID_WIDTH ),
         .ArianeCfg ( ArianeCfg )
     ) lsu_i (
@@ -345,7 +355,9 @@ module ex_stage import ariane_pkg::*; #(
     if (CVXIF_PRESENT) begin : gen_cvxif
         fu_data_t cvxif_data;
         assign cvxif_data  = x_valid_i ? fu_data_i  : '0;
-        cvxif_fu cvxif_fu_i (
+        cvxif_fu #(
+            .cva6_cfg   ( cva6_cfg   )
+        ) cvxif_fu_i (
             .clk_i,
             .rst_ni,
             .fu_data_i,

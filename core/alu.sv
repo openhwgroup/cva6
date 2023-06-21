@@ -18,7 +18,9 @@
 // Description: Ariane ALU based on RI5CY's ALU
 
 
-module alu import ariane_pkg::*;(
+module alu import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0
+) (
     input  logic                     clk_i,          // Clock
     input  logic                     rst_ni,         // Asynchronous reset active low
     input  fu_data_t                 fu_data_i,

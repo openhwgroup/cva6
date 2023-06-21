@@ -50,6 +50,7 @@
 
 
 module wt_l15_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
   parameter bit          SwapEndianess = 1
 ) (
   input logic                  clk_i,

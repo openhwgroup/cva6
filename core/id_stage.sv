@@ -13,7 +13,9 @@
 // Description: Instruction decode, contains the logic for decode,
 //              issue and read operands.
 
-module id_stage (
+module id_stage #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0
+) (
     input  logic                          clk_i,
     input  logic                          rst_ni,
 
@@ -58,7 +60,9 @@ module id_stage (
       // ---------------------------------------------------------
       // 1. Check if they are compressed and expand in case they are
       // ---------------------------------------------------------
-      compressed_decoder compressed_decoder_i (
+      compressed_decoder #(
+          .cva6_cfg   ( cva6_cfg   )
+      ) compressed_decoder_i (
           .instr_i                 ( fetch_entry_i.instruction   ),
           .instr_o                 ( instruction                 ),
           .illegal_instr_o         ( is_illegal                  ),
@@ -72,7 +76,9 @@ module id_stage (
     // ---------------------------------------------------------
     // 2. Decode and emit instruction to issue stage
     // ---------------------------------------------------------
-    decoder decoder_i (
+    decoder #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) decoder_i (
         .debug_req_i,
         .irq_ctrl_i,
         .irq_i,

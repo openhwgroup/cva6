@@ -16,6 +16,7 @@
 //              checks for hit or miss on cache
 //
 module tag_cmp #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
     parameter int unsigned NR_PORTS          = 3,
     parameter int unsigned ADDR_WIDTH        = 64,
     parameter type l_data_t                  = std_cache_pkg::cache_line_t,

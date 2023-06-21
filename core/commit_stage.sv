@@ -14,6 +14,7 @@
 
 
 module commit_stage import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                    clk_i,
@@ -206,11 +207,11 @@ module commit_stage import ariane_pkg::*; #(
         end
 
         if (NR_COMMIT_PORTS > 1) begin
-        
+
             commit_ack_o[1]    = 1'b0;
             we_gpr_o[1]        = 1'b0;
             wdata_o[1]      = commit_instr_i[1].result;
-            
+
             // -----------------
             // Commit Port 2
             // -----------------

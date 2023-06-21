@@ -31,6 +31,10 @@ package ariane_pkg;
     // This is the new user config interface system. If you need to parameterize something
     // within Ariane add a field here and assign a default value to the config. Please make
     // sure to add a propper parameter check to the `check_cfg` function.
+    typedef struct packed {
+      int unsigned dummy;
+    } cva6_cfg_t;
+
     localparam NrMaxRules = 16;
     typedef struct packed {
       int                               RASDepth;

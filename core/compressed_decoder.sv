@@ -19,8 +19,9 @@
 //                 equivalent. This module is fully combinatorial.
 
 
-module compressed_decoder
-(
+module compressed_decoder #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0
+) (
     input  logic [31:0] instr_i,
     output logic [31:0] instr_o,
     output logic        illegal_instr_o,
@@ -110,7 +111,7 @@ module compressed_decoder
                         instr_o = {{6 {instr_i[12]}}, instr_i[12], instr_i[6:2], instr_i[11:7], 3'b0, instr_i[11:7], riscv::OpcodeOpImm};
                     end
 
-                    
+
                     riscv::OpcodeC1Addiw: begin // or riscv::OpcodeC1Jal for RV32IC
                         if (riscv::XLEN == 64) begin
                             // c.addiw -> addiw rd, rd, nzimm for RV64IC
@@ -124,7 +125,7 @@ module compressed_decoder
                             instr_o = {instr_i[12], instr_i[8], instr_i[10:9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5:3], {9 {instr_i[12]}}, 5'b1, riscv::OpcodeJal};
 
 
-             
+
                         end
                     end
 

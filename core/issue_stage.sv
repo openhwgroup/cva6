@@ -15,6 +15,7 @@
 
 
 module issue_stage import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
     parameter int unsigned NR_ENTRIES = 8,
     parameter int unsigned NR_WB_PORTS = 4,
     parameter int unsigned NR_COMMIT_PORTS = 2
@@ -122,7 +123,9 @@ module issue_stage import ariane_pkg::*; #(
     // ---------------------------------------------------------
     // 1. Re-name
     // ---------------------------------------------------------
-    re_name i_re_name (
+    re_name #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) i_re_name (
         .clk_i                  ( clk_i                        ),
         .rst_ni                 ( rst_ni                       ),
         .flush_i                ( flush_i                      ),
@@ -139,6 +142,7 @@ module issue_stage import ariane_pkg::*; #(
     // 2. Manage instructions in a scoreboard
     // ---------------------------------------------------------
     scoreboard #(
+        .cva6_cfg   ( cva6_cfg   ),
         .NR_ENTRIES (NR_ENTRIES ),
         .NR_WB_PORTS(NR_WB_PORTS),
         .NR_COMMIT_PORTS(NR_COMMIT_PORTS)
@@ -181,6 +185,7 @@ module issue_stage import ariane_pkg::*; #(
     // 3. Issue instruction and read operand, also commit
     // ---------------------------------------------------------
     issue_read_operands #(
+      .cva6_cfg   ( cva6_cfg   ),
       .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
     )i_issue_read_operands  (
         .flush_i             ( flush_unissued_instr_i          ),

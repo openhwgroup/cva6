@@ -14,6 +14,7 @@
 
 
 module load_store_unit import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
     parameter int unsigned ASID_WIDTH = 1,
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 )(
@@ -139,6 +140,7 @@ module load_store_unit import ariane_pkg::*; #(
     // -------------------
     if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
         mmu #(
+            .cva6_cfg              ( cva6_cfg   ),
             .INSTR_TLB_ENTRIES      ( ariane_pkg::INSTR_TLB_ENTRIES ),
             .DATA_TLB_ENTRIES       ( ariane_pkg::DATA_TLB_ENTRIES ),
             .ASID_WIDTH             ( ASID_WIDTH             ),
@@ -168,6 +170,7 @@ module load_store_unit import ariane_pkg::*; #(
         );
     end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
         cva6_mmu_sv32 #(
+            .cva6_cfg              ( cva6_cfg   ),
             .INSTR_TLB_ENTRIES      ( ariane_pkg::INSTR_TLB_ENTRIES ),
             .DATA_TLB_ENTRIES       ( ariane_pkg::DATA_TLB_ENTRIES ),
             .ASID_WIDTH             ( ASID_WIDTH             ),
@@ -242,7 +245,9 @@ module load_store_unit import ariane_pkg::*; #(
     // ------------------
     // Store Unit
     // ------------------
-    store_unit i_store_unit (
+    store_unit #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) i_store_unit (
         .clk_i,
         .rst_ni,
         .flush_i,
@@ -282,6 +287,7 @@ module load_store_unit import ariane_pkg::*; #(
     // Load Unit
     // ------------------
     load_unit #(
+        .cva6_cfg   ( cva6_cfg   ),
         .ArianeCfg ( ArianeCfg )
     ) i_load_unit (
         .valid_i               ( ld_valid_i           ),
@@ -470,7 +476,9 @@ module load_store_unit import ariane_pkg::*; #(
 
     assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operation, fu_data_i.trans_id};
 
-    lsu_bypass lsu_bypass_i (
+    lsu_bypass #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),
         .lsu_req_valid_i    ( lsu_valid_i ),
         .pop_ld_i           ( pop_ld      ),

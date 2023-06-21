@@ -9,7 +9,9 @@
 // Date: 03.10.2017
 // Description: Re-name registers
 
-module re_name import ariane_pkg::*; (
+module re_name import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0
+) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,  // Flush renaming state

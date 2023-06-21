@@ -16,6 +16,7 @@
 
 
 module serdiv import ariane_pkg::*; #(
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
   parameter WIDTH       = 64
 ) (
   input  logic                      clk_i,
@@ -84,7 +85,7 @@ module serdiv import ariane_pkg::*; #(
   assign op_b_zero    = lzc_b_no_one & ~op_b_sign;
   assign op_b_neg_one = lzc_b_no_one &  op_b_sign;
 
-  assign lzc_a_input = (opcode_i[0] & op_a_sign) ? {~op_a_i[$high(op_a_i)-1:0], 1'b1} : op_a_i; 
+  assign lzc_a_input = (opcode_i[0] & op_a_sign) ? {~op_a_i[$high(op_a_i)-1:0], 1'b1} : op_a_i;
   assign lzc_b_input = (opcode_i[0] & op_b_sign) ? ~op_b_i                            : op_b_i;
 
   lzc #(

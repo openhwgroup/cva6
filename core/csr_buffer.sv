@@ -14,7 +14,9 @@
 //              to the scoreboard.
 
 
-module csr_buffer import ariane_pkg::*; (
+module csr_buffer import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0
+) (
     input  logic                     clk_i,          // Clock
     input  logic                     rst_ni,         // Asynchronous reset active low
     input  logic                     flush_i,

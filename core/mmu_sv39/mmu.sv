@@ -16,6 +16,7 @@
 
 
 module mmu import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
     parameter int unsigned INSTR_TLB_ENTRIES     = 4,
     parameter int unsigned DATA_TLB_ENTRIES      = 4,
     parameter int unsigned ASID_WIDTH            = 1,
@@ -96,6 +97,7 @@ module mmu import ariane_pkg::*; #(
 
 
     tlb #(
+        .cva6_cfg        ( cva6_cfg                  ),
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
         .ASID_WIDTH       ( ASID_WIDTH                 )
     ) i_itlb (
@@ -118,6 +120,7 @@ module mmu import ariane_pkg::*; #(
     );
 
     tlb #(
+        .cva6_cfg        ( cva6_cfg                  ),
         .TLB_ENTRIES     ( DATA_TLB_ENTRIES             ),
         .ASID_WIDTH      ( ASID_WIDTH                   )
     ) i_dtlb (
@@ -129,8 +132,8 @@ module mmu import ariane_pkg::*; #(
 
         .lu_access_i      ( dtlb_lu_access              ),
         .lu_asid_i        ( asid_i                      ),
-	      .asid_to_be_flushed_i  ( asid_to_be_flushed_i   ),
-	      .vaddr_to_be_flushed_i ( vaddr_to_be_flushed_i  ),
+          .asid_to_be_flushed_i  ( asid_to_be_flushed_i   ),
+          .vaddr_to_be_flushed_i ( vaddr_to_be_flushed_i  ),
         .lu_vaddr_i       ( lsu_vaddr_i                 ),
         .lu_content_o     ( dtlb_content                ),
 
@@ -141,6 +144,7 @@ module mmu import ariane_pkg::*; #(
 
 
     ptw  #(
+        .cva6_cfg              ( cva6_cfg             ),
         .ASID_WIDTH             ( ASID_WIDTH            ),
         .ArianeCfg              ( ArianeCfg             )
     ) i_ptw (
@@ -271,6 +275,7 @@ module mmu import ariane_pkg::*; #(
 
     // Instruction fetch
     pmp #(
+        .cva6_cfg   ( cva6_cfg             ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
@@ -419,6 +424,7 @@ module mmu import ariane_pkg::*; #(
 
     // Load/store PMP check
     pmp #(
+        .cva6_cfg   ( cva6_cfg             ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )

@@ -13,7 +13,9 @@
 // Description: Flush controller
 
 
-module controller import ariane_pkg::*; (
+module controller import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0
+) (
     input  logic            clk_i,
     input  logic            rst_ni,
     output logic            set_pc_commit_o,        // Set PC om PC Gen
