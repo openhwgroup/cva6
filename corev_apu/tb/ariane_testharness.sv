@@ -609,7 +609,6 @@ module ariane_testharness #(
   ariane #(
     .ArianeCfg ( ariane_soc::ArianeSocCfg ),
     // RVFI
-    .RVFI ( 1 ),
     .NRET ( 1 ),
     .ILEN ( 32 ),
     .rvfi_instr_t ( rvfi_pkg::rvfi_instr_t ),

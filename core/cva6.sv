@@ -16,7 +16,6 @@
 module cva6 import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
   // RVFI
-  parameter RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace,
   parameter NRET = 1,
   parameter ILEN = 32,
   parameter type rvfi_instr_t = struct packed {
