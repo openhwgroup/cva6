@@ -76,7 +76,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // We have a new or pending read request
   assign axi_rd_req            = icache_mem_data_req | req_valid_q;
-  assign axi_rd_addr           = {{AxiAddrWidth-riscv::PLEN{1'b0}}, req_data_d.paddr};
+  assign axi_rd_addr           = AxiAddrWidth'(req_data_d.paddr);
 
   // Fetch a full cache line on a cache miss, or a single word on a bypassed access
   assign axi_rd_blen           = (req_data_d.nc) ? '0 : ariane_pkg::ICACHE_LINE_WIDTH/64-1;
