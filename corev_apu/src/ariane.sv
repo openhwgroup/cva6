@@ -36,21 +36,6 @@ module ariane import ariane_pkg::*; #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
-`ifdef ARIANE_ACCELERATOR_PORT
-  // Accelerator request port
-  output accelerator_req_t             acc_req_o,
-  output logic                         acc_req_valid_o,
-  input  logic                         acc_req_ready_i,
-  // Accelerator response port
-  input  accelerator_resp_t            acc_resp_i,
-  input  logic                         acc_resp_valid_i,
-  output logic                         acc_resp_ready_o,
-  // Invalidation requests
-  output logic                         acc_cons_en_o,
-  input  logic [63:0]                  inval_addr_i,
-  input  logic                         inval_valid_i,
-  output logic                         inval_ready_o,
-`endif
 `ifdef RVFI_PORT
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
@@ -89,18 +74,6 @@ module ariane import ariane_pkg::*; #(
     .ipi_i                ( ipi_i                     ),
     .time_irq_i           ( time_irq_i                ),
     .debug_req_i          ( debug_req_i               ),
-`ifdef ARIANE_ACCELERATOR_PORT
-    .acc_req_o            ( acc_req_o                 ),
-    .acc_req_valid_o      ( acc_req_valid_o           ),
-    .acc_req_ready_i      ( acc_req_ready_i           ),
-    .acc_resp_i           ( acc_resp_i                ),
-    .acc_resp_valid_i     ( acc_resp_valid_i          ),
-    .acc_resp_ready_o     ( acc_resp_ready_o          ),
-    .acc_cons_en_o        ( acc_cons_en_o             ),
-    .inval_addr_i         ( inval_addr_i              ),
-    .inval_valid_i        ( inval_valid_i             ),
-    .inval_ready_o        ( inval_ready_o             ),
-`endif
 `ifdef RVFI_PORT
     .rvfi_o               ( rvfi_o                    ),
 `else
