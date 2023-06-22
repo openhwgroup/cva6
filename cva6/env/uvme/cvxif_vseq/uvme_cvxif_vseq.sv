@@ -143,7 +143,7 @@ task uvme_cvxif_vseq_c::do_issue_resp();
           resp_item.issue_resp.exc        = 1;
         end
       "CUS_U_ADD" : begin
-          if (req_item.issue_req.mode == 2'b00 && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111) begin
+          if (req_item.issue_req.mode == PRIV_LVL_U && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111) begin
              resp_item.issue_resp.writeback  = 1;
              resp_item.issue_resp.accept     = 1;
           end
@@ -154,7 +154,7 @@ task uvme_cvxif_vseq_c::do_issue_resp();
           end
         end
       "CUS_S_ADD" : begin
-          if (req_item.issue_req.mode == 2'b01 && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111) begin
+          if (req_item.issue_req.mode == PRIV_LVL_S && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111) begin
              resp_item.issue_resp.writeback  = 1;
              resp_item.issue_resp.accept     = 1;
           end
@@ -237,7 +237,8 @@ task uvme_cvxif_vseq_c::do_instr_result();
         end
       "CUS_EXC":  begin
          resp_item.result.exc = 1;
-         resp_item.result.exccode[5:0] = req_item.issue_req.instr[12:7];
+         resp_item.result.exccode[4:0] = req_item.issue_req.instr[19:15];
+         resp_item.result.exccode[5] = 1'b0;
          `uvm_info(info_tag, $sformatf("EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
         end
       "CUS_ADD_RS3": begin
@@ -250,7 +251,7 @@ task uvme_cvxif_vseq_c::do_instr_result();
          end
         end
       "CUS_U_ADD": begin
-          if (req_item.issue_req.mode == 2'b11 && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111)
+          if (req_item.issue_req.mode == PRIV_LVL_U && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111)
              resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
           else begin
              resp_item.result.exc = 1;
@@ -259,7 +260,7 @@ task uvme_cvxif_vseq_c::do_instr_result();
           end
         end
       "CUS_S_ADD": begin
-          if (req_item.issue_req.mode == 2'b01 && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111)
+          if (req_item.issue_req.mode == PRIV_LVL_S && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111)
              resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
           else begin
              resp_item.result.exc = 1;

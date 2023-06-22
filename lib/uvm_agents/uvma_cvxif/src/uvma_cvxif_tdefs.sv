@@ -36,10 +36,16 @@ typedef struct packed {
    logic  [5:0]              exccode;
 } result_t ;
 
+typedef enum logic[1:0] {
+   PRIV_LVL_M = 2'b11,
+   PRIV_LVL_S = 2'b01,
+   PRIV_LVL_U = 2'b00
+  } priv_lvl_t;
+
 typedef struct packed {
    logic  [31:0]                          instr;
    logic  [X_ID_WIDTH-1:0]                id;
-   logic  [1:0]                           mode;
+   priv_lvl_t                             mode;
    logic  [X_NUM_RS-1:0][X_RFR_WIDTH-1:0] rs;
    logic  [X_NUM_RS-1:0]                  rs_valid;
 } x_issue_req;

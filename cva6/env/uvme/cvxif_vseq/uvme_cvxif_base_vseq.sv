@@ -75,13 +75,15 @@ function string uvme_cvxif_base_vseq_c::decode(input logic [31:0] instr);
          if (func7 == 7'b0000000 && rd == 0 && rs1 == 0 && rs2 == 0) begin
             return ("CUS_NOP");
          end
-         if (func7 == 7'b1000000 && instr[24:13] == 12'b000000000001) begin
-            return ("CUS_EXC");
-         end
       end
       if (func3 == 3'b001) begin
          if (func7 == 7'b0000000) begin
             return ("CUS_ADD");
+         end
+      end
+      if (func3 == 3'b010 && rd == 0 && rs2 == 0) begin
+         if (func7 == 7'b1100000) begin
+            return ("CUS_EXC");
          end
       end
    end
