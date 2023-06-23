@@ -38,13 +38,6 @@ module cva6 import ariane_pkg::*; #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
-`ifdef ARIANE_ACCELERATOR_PORT
-  // Invalidation requests
-  output logic                         acc_cons_en_o,
-  input  logic [63:0]                  inval_addr_i,
-  input  logic                         inval_valid_i,
-  output logic                         inval_ready_o,
-`endif
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output ariane_pkg::rvfi_port_t       rvfi_o,
@@ -288,16 +281,6 @@ module cva6 import ariane_pkg::*; #(
   logic [63:0]       inval_addr;
   logic              inval_valid;
   logic              inval_ready;
-
-`ifdef ARIANE_ACCELERATOR_PORT
-  assign inval_addr       = inval_addr_i;
-  assign inval_valid      = inval_valid_i;
-  assign inval_ready_o    = inval_ready;
-  assign acc_cons_en_o    = acc_cons_en_csr;
-`else
-  assign inval_addr       = '0;
-  assign inval_valid      = '0;
-`endif
 
   // --------------
   // Frontend
@@ -868,6 +851,7 @@ module cva6 import ariane_pkg::*; #(
   // ----------------
 
   if (ENABLE_ACCELERATOR) begin: gen_accelerator
+    acc_pkg::accelerator_req_t acc_req;
     fu_data_t acc_data;
     assign acc_data = acc_valid_acc_ex ? fu_data_id_ex : '0;
 
@@ -893,12 +877,20 @@ module cva6 import ariane_pkg::*; #(
       .commit_ack_i           ( commit_ack                   ),
       .acc_no_st_pending_i    ( no_st_pending_commit         ),
       .ctrl_halt_o            ( halt_acc_ctrl                ),
-      .acc_req_o              ( cvxif_req_o                  ),
+      .acc_req_o              ( acc_req                      ),
       .acc_resp_i             ( cvxif_resp_i                 )
     );
 
     assign acc_resp_fflags = cvxif_resp_i.fflags;
     assign acc_resp_fflags_valid = cvxif_resp_i.fflags_valid;
+
+    // Pack invalidation interface into accelerator interface
+    always_comb begin : pack_inval
+      inval_valid             = cvxif_resp_i.inval_valid;
+      inval_addr              = cvxif_resp_i.inval_addr;
+      cvxif_req_o             = acc_req;
+      cvxif_req_o.inval_ready = inval_ready;
+    end
 
     // Tie off cvxif
     assign cvxif_resp = '0;
@@ -909,6 +901,10 @@ module cva6 import ariane_pkg::*; #(
     assign acc_exception_ex_id   = '0;
     assign acc_resp_fflags       = '0;
     assign acc_resp_fflags_valid = '0;
+
+    // No invalidation interface
+    assign inval_valid = '0;
+    assign inval_addr  = '0;
 
     // Feed through cvxif
     assign cvxif_req_o = cvxif_req;
@@ -922,7 +918,6 @@ module cva6 import ariane_pkg::*; #(
   `ifndef VERILATOR
   initial ariane_pkg::check_cfg(ArianeCfg);
   `endif
-  initial ariane_pkg::acc_port_check();
   // pragma translate_on
 
   // -------------------

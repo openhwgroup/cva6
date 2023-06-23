@@ -22,6 +22,9 @@ package acc_pkg;
     fpnew_pkg::roundmode_e                frm;
     logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
     logic                                 store_pending;
+    // Invalidation interface
+    logic                                 acc_cons_en;
+    logic                                 inval_ready;
   } accelerator_req_t;
 
   typedef struct packed {
@@ -30,14 +33,15 @@ package acc_pkg;
     riscv::xlen_t                         result;
     logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
     logic                                 error;
-
     // Metadata
     logic                                 store_pending;
     logic                                 store_complete;
     logic                                 load_complete;
-
     logic [4:0]                           fflags;
     logic                                 fflags_valid;
+    // Invalidation interface
+    logic                                 inval_valid;
+    logic [63:0]                          inval_addr;
   } accelerator_resp_t;
 
 endpackage

@@ -176,17 +176,7 @@ package ariane_pkg;
     localparam bit RVV = cva6_config_pkg::CVA6ConfigVExtEn;
 
     // Is the accelerator enabled?
-`ifdef ARIANE_ACCELERATOR_PORT
-    localparam bit ENABLE_ACCELERATOR = `ARIANE_ACCELERATOR_PORT;
-`else
-    localparam bit ENABLE_ACCELERATOR = 1'b0;
-`endif
-
-    function automatic void acc_port_check();
-        if (RVV && !ENABLE_ACCELERATOR) begin : err_missing_acc_port
-            $error("V extension but no accelerator port enabled. Please define ARIANE_ACCELERATOR_PORT.");
-        end
-    endfunction
+    localparam bit ENABLE_ACCELERATOR = RVV; // Currently only used by V extension (Ara)
 
     // Transprecision floating-point extensions configuration
     localparam bit XF16    = cva6_config_pkg::CVA6ConfigF16En | RVV; // Is half-precision float extension (Xf16) enabled

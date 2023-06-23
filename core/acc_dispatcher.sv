@@ -193,6 +193,9 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   assign acc_req_o.frm           = acc_req_int.frm;
   assign acc_req_o.trans_id      = acc_req_int.trans_id;
   assign acc_req_o.store_pending = !acc_no_st_pending_i && acc_cons_en_i;
+  assign acc_req_o.acc_cons_en   = acc_cons_en_i;
+  // Will be overwritten by dcache
+  assign acc_req_o.inval_ready   = '0;
 
   always_comb begin: accelerator_req_dispatcher
     // Do not fetch from the instruction queue
