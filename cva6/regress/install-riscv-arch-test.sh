@@ -5,21 +5,31 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
+# Original Author: Jean-Roch COULON - Thales
+
+# riscv-arch-tests uses definition of RVMODEL_HALT provided by Spike.
+. cva6/regress/install-spike.sh
+if [ ! -d $SPIKE_SRC_DIR/arch_test_target ]; then
+  echo "*** Variable SPIKE_SRC_DIR must point to a source-based installation of Spike."
+  return 1
+fi
 
 if ! [ -n "$ARCH_TEST_REPO" ]; then
   ARCH_TEST_REPO=https://github.com/riscv-non-isa/riscv-arch-test
   ARCH_TEST_BRANCH=main
   ARCH_TEST_HASH=ad04e119a5d846a1c11159786ad3382cf5ad3649
 fi
-echo $ARCH_TEST_REPO
-echo $ARCH_TEST_BRANCH
-echo $ARCH_TEST_HASH
+echo "Repo:  " $ARCH_TEST_REPO
+echo "Branch:" $ARCH_TEST_BRANCH
+echo "Hash:  " $ARCH_TEST_HASH
+
 
 mkdir -p cva6/tests
 if ! [ -d cva6/tests/riscv-arch-test ]; then
   git clone $ARCH_TEST_REPO -b $ARCH_TEST_BRANCH cva6/tests/riscv-arch-test
   cd cva6/tests/riscv-arch-test; git checkout $ARCH_TEST_HASH;
+  # Copy Spike definitions to the corresponding riscv-target subdirectory.
+  cp -rpa $SPIKE_SRC_DIR/arch_test_target/spike riscv-target
   cd -
 fi
 

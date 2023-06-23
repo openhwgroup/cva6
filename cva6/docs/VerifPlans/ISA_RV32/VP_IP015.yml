@@ -1,0 +1,154 @@
+!Feature
+next_elt_id: 4
+name: Instruction execution sequences
+id: 15
+display_order: 15
+subfeatures: !!omap
+- 000_Instruction Execution: !Subfeature
+    name: 000_Instruction Execution
+    tag: VP_ISA_RV32_F015_S000
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F015_S000_I000
+        description: All suported instructions for the core are executed
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Instruction is executed
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F015_S000_I001
+        description: All suported instructions for the core are executed
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: All back-to-back supported instruction sequences are executed
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_Instruction Group Execution: !Subfeature
+    name: 001_Instruction Group Execution
+    tag: VP_ISA_RV32_F015_S001
+    next_elt_id: 2
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F015_S001_I000
+        description: All defined instruction groups for a core are executed
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: For the core under test, all instruction groups are executed
+          in the core
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F015_S001_I001
+        description: All defined instruction groups are executed in sequence
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Depending on the length of the pipeline in the processor, sequence
+          chains of 2,3,or 4 instruction groups are checked for execution
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_GPR Hazard: !Subfeature
+    name: 002_GPR Hazard
+    tag: VP_ISA_RV32_F015_S002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F015_S002_I000
+        description: An instruction reads from  register that was written to in the
+          previous instruction
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: All instruction groups are tested across GPR hazards
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_CSR Hazard: !Subfeature
+    name: 003_CSR Hazard
+    tag: VP_ISA_RV32_F015_S003
+    next_elt_id: 2
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F015_S003_I000
+        description: CSR writes from the program are executed in conjunction with
+          all instruction groups
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "CSR write instruction attempts to write to a supported CSR\n\
+          This does not include csr set or clear instructions where rs1 is x0 (bypassing\
+          \ the write)"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F015_S003_I001
+        description: CSR writes from the program are executed in conjunction with
+          all instruction groups
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Each instruction group is executed after each supported CSR is
+          written with a Zicsri write instructio
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

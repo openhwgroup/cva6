@@ -26,6 +26,8 @@ class uvma_cvxif_cfg_c extends uvm_object;
    rand bit   cov_model_enabled;
    rand bit   enabled;
 
+   rand bit dual_read_write_support_x;
+   rand bit load_store_support_x;
 
    constraint reasonable_values {
       soft uvma_cvxif_issue_ready inside     {[4:10]};
@@ -36,6 +38,11 @@ class uvma_cvxif_cfg_c extends uvm_object;
    constraint issue_ready {
       if (uvma_cvxif_issue_ready == 0   || uvma_cvxif_issue_not_ready==0)
           uvma_cvxif_issue_not_ready!=0 ||  uvma_cvxif_issue_ready != 0;
+   }
+
+   constraint support_feature { // The dual read & write also load store are enabled default
+      soft dual_read_write_support_x == 1;
+      soft load_store_support_x == 1;
    }
 
    constraint defaults_val {

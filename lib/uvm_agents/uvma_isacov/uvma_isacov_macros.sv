@@ -19,24 +19,30 @@
 `define __UVMA_ISACOV_MACROS_SV__
 
 // Macro to remove instrucitons that are not supported based on standard ext_*_supported variable names (from commmon core control cfg class)
+`ifdef UNSUPPORTED_WITH
+  `define WITH iff
+`else
+   `define WITH with
+`endif
+
 `define ISACOV_IGN_BINS \
     ignore_bins IGN_UNKNOWN = {UNKNOWN}; \
     ignore_bins IGN_M = {MUL, MULH, MULHSU, MULHU, \
-                         DIV, DIVU, REM, REMU} with (!ext_m_supported); \
+                         DIV, DIVU, REM, REMU} `WITH (!ext_m_supported); \
     ignore_bins IGN_C = {C_ADDI4SPN, C_LW, C_SW, C_NOP, \
                          C_ADDI, C_JAL, C_LI, C_ADDI16SP, C_LUI, C_SRLI, C_SRAI, \
                          C_ANDI, C_SUB, C_XOR, C_OR, C_AND, C_J, C_BEQZ, C_BNEZ, \
-                         C_SLLI, C_LWSP, C_JR, C_MV, C_EBREAK, C_JALR, C_ADD, C_SWSP} with (!ext_c_supported); \
+                         C_SLLI, C_LWSP, C_JR, C_MV, C_EBREAK, C_JALR, C_ADD, C_SWSP} `WITH (!ext_c_supported); \
     ignore_bins IGN_A = {LR_W, SC_W, \
                          AMOSWAP_W, AMOADD_W, AMOXOR_W, AMOAND_W, \
-                         AMOOR_W, AMOMIN_W, AMOMAX_W, AMOMINU_W, AMOMAXU_W} with (!ext_a_supported); \
-    ignore_bins IGN_ZBA = {SH1ADD,SH2ADD,SH3ADD} with (!ext_zba_supported); \
+                         AMOOR_W, AMOMIN_W, AMOMAX_W, AMOMINU_W, AMOMAXU_W} `WITH (!ext_a_supported); \
+    ignore_bins IGN_ZBA = {SH1ADD,SH2ADD,SH3ADD} `WITH (!ext_zba_supported); \
     ignore_bins IGN_ZBB = {CLZ,CTZ,CPOP,MIN,MINU,MAX,MAXU, \
                            SEXT_B,SEXT_H,ZEXT_H,ANDN,ORN,XNOR, \
-                           ROL,ROR,RORI,REV8,ORC_B} with (!ext_zbb_supported); \
-    ignore_bins IGN_ZBC = {CLMUL,CLMULH,CLMULR} with (!ext_zbc_supported); \
+                           ROL,ROR,RORI,REV8,ORC_B} `WITH (!ext_zbb_supported); \
+    ignore_bins IGN_ZBC = {CLMUL,CLMULH,CLMULR} `WITH (!ext_zbc_supported); \
     ignore_bins IGN_ZBS = {BSET,BSETI,BCLR,BCLRI, \
-                           BINV,BINVI,BEXT,BEXTI} with (!ext_zbs_supported);
+                           BINV,BINVI,BEXT,BEXTI} `WITH (!ext_zbs_supported);
 
 
 `define ISACOV_CP_BITWISE(name, field, iff_exp) \

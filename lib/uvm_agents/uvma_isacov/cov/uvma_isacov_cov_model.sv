@@ -15,6 +15,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
+`ifdef UNSUPPORTED_WITH //TODO - Remove ifdef when the issue in VCS simulator is fixed
+  `define WITH iff
+`else
+   `define WITH with
+`endif
+
 covergroup cg_executed_type(
     string name,
     instr_name_t instr_name
@@ -49,24 +55,24 @@ covergroup cg_zb_rstype(
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cross_rd_rs: cross cp_rd, cp_rs {
-    ignore_bins IGN_OFF = cross_rd_rs with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs `WITH (!reg_crosses_enabled);
   }
 
   cp_rs_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs_is_signed);
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   `ISACOV_CP_BITWISE(cp_rs_toggle, instr.rs1_value, 1)
@@ -90,18 +96,18 @@ covergroup cg_zb_itype_shift (
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cross_rd_rs: cross cp_rd, cp_rs {
-    ignore_bins IGN_OFF = cross_rd_rs with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs `WITH (!reg_crosses_enabled);
   }
 
   cp_rs_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs_is_signed);
   }
 
   cp_shamt: coverpoint instr.immi {
@@ -109,9 +115,9 @@ covergroup cg_zb_itype_shift (
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   `ISACOV_CP_BITWISE(cp_rs_toggle,  instr.rs1_value, 1)
@@ -137,23 +143,23 @@ covergroup cg_zb_rstype_ext(
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cp_rd_rs2_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs2);
   }
 
   cross_rd_rs1_rs2: cross cp_rd, cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rd_rs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_index: coverpoint instr.rs2[4:0] {
@@ -186,18 +192,18 @@ covergroup cg_zb_itype_ext(
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cross_rd_rs: cross cp_rd, cp_rs {
-    ignore_bins IGN_OFF = cross_rd_rs with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs `WITH (!reg_crosses_enabled);
   }
 
   cp_rs_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs_is_signed);
   }
 
   cp_shift: coverpoint instr.immi {
@@ -231,37 +237,37 @@ covergroup cg_rtype(
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cp_rd_rs2_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs2);
   }
 
   cross_rd_rs1_rs2: cross cp_rd, cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rd_rs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_rs2_value: coverpoint instr.rs2_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs2_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs2_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs2_is_signed);
   }
 
   cross_rs1_rs2_value: cross cp_rs1_value, cp_rs2_value;
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
@@ -274,7 +280,8 @@ covergroup cg_rtype_lr_w(
     string name,
     bit reg_hazards_enabled,
     bit rs1_is_signed,
-    bit rd_is_signed
+    bit rd_is_signed,
+    bit unaligned_access_amo_supported
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -285,23 +292,24 @@ covergroup cg_rtype_lr_w(
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
+    ignore_bins IGN_OFF = {[0:$]} `WITH (!unaligned_access_amo_supported);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -316,7 +324,8 @@ covergroup cg_rtype_sc_w (
     bit reg_crosses_enabled,
     bit reg_hazards_enabled,
     bit rs1_is_signed,
-    bit rs2_is_signed
+    bit rs2_is_signed,
+    bit unaligned_access_amo_supported
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -328,34 +337,35 @@ covergroup cg_rtype_sc_w (
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cp_rd_rs2_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs2);
   }
 
   cross_rd_rs1_rs2: cross cp_rd, cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rd_rs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_rs2_value: coverpoint instr.rs2_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs2_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs2_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs2_is_signed);
   }
 
   cross_rs1_rs2_value: cross cp_rs1_value, cp_rs2_value;
 
   cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
+    ignore_bins IGN_OFF = {[0:$]} `WITH (!unaligned_access_amo_supported);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -373,7 +383,8 @@ covergroup cg_rtype_amo (
     bit reg_crosses_enabled,
     bit reg_hazards_enabled,
     bit rs1_is_signed,
-    bit rd_is_signed
+    bit rd_is_signed,
+    bit unaligned_access_amo_supported
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -385,26 +396,27 @@ covergroup cg_rtype_amo (
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cp_rd_rs2_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs2);
   }
 
   cross_rd_rs1_rs2: cross cp_rd, cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rd_rs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
+    ignore_bins IGN_OFF = {[0:$]} `WITH (!unaligned_access_amo_supported);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -433,29 +445,29 @@ covergroup cg_rtype_slt(
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cp_rd_rs2_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs2);
   }
 
   cross_rd_rs1_rs2: cross cp_rd, cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rd_rs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_rs2_value: coverpoint instr.rs2_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs2_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs2_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs2_is_signed);
   }
 
   cross_rs1_rs2_value: cross cp_rs1_value, cp_rs2_value;
@@ -487,23 +499,23 @@ covergroup cg_rtype_shift (
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cp_rd_rs2_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs2);
   }
 
   cross_rd_rs1_rs2: cross cp_rd, cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rd_rs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_rs2_value: coverpoint (instr.rs2_value[4:0]) {
@@ -513,9 +525,9 @@ covergroup cg_rtype_shift (
   cross_rs1_rs2_value: cross cp_rs1_value, cp_rs2_value;
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
@@ -539,7 +551,11 @@ covergroup cg_div_special_results(
 
   cp_div_arithmetic_overflow : coverpoint instr.rs1_value {
     //ignore_bins IGN_OVERFLOW = {[0:$]} with (!check_overflow);
-    bins OFLOW = {32'h8000_0000} with (check_overflow) iff (instr.rs2_value == 32'hffff_ffff);
+    `ifdef UNSUPPORTED_WITH
+     bins OFLOW = {32'h8000_0000} iff (check_overflow && instr.rs2_value == 32'hffff_ffff); //TODO
+    `else
+     bins OFLOW = {32'h8000_0000} with (check_overflow) iff (instr.rs2_value == 32'hffff_ffff);
+    `endif
   }
 
 endgroup : cg_div_special_results
@@ -561,32 +577,32 @@ covergroup cg_itype(
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cross_rd_rs1: cross cp_rd, cp_rs1 {
-    ignore_bins IGN_OFF = cross_rd_rs1 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_immi_value: coverpoint instr.immi_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!immi_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!immi_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (immi_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!immi_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!immi_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (immi_is_signed);
   }
 
   cross_rs1_immi_value: cross cp_rs1_value, cp_immi_value;
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle,  instr.rs1_value, 1)
@@ -614,32 +630,32 @@ covergroup cg_itype_load (
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cross_rd_rs1: cross cp_rd, cp_rs1 {
-    ignore_bins IGN_OFF = cross_rd_rs1 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_immi_value: coverpoint instr.immi_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!immi_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!immi_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (immi_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!immi_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!immi_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (immi_is_signed);
   }
 
   cross_rs1_immi_value: cross cp_rs1_value, cp_immi_value;
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle,  instr.rs1_value, 1)
@@ -647,13 +663,13 @@ covergroup cg_itype_load (
   `ISACOV_CP_BITWISE(cp_rd_toggle,   instr.rd_value,  1)
 
   cp_align_halfword: coverpoint (instr.rvfi.mem_addr[0]) {
-    ignore_bins IGN_OFF = {[0:$]} with (!align_halfword);
+    ignore_bins IGN_OFF = {[0:$]} `WITH (!align_halfword);
     bins ALIGNED  = {0};
     bins UNALIGNED = {1};
   }
 
   cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
-    ignore_bins IGN_OFF = {[0:$]} with (!align_word);
+    ignore_bins IGN_OFF = {[0:$]} `WITH (!align_word);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -677,24 +693,24 @@ covergroup cg_itype_slt (
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cross_rd_rs1: cross cp_rd, cp_rs1 {
-    ignore_bins IGN_OFF = cross_rd_rs1 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_immi_value: coverpoint instr.immi_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!immi_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!immi_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (immi_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!immi_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!immi_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (immi_is_signed);
   }
 
   cross_rs1_immi_value: cross cp_rs1_value, cp_immi_value;
@@ -725,18 +741,18 @@ covergroup cg_itype_shift (
   cp_rd: coverpoint instr.rd;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cross_rd_rs1: cross cp_rd, cp_rs1 {
-    ignore_bins IGN_OFF = cross_rd_rs1 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1 `WITH (!reg_crosses_enabled);
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_immi_value: coverpoint (instr.immi[4:0]) {
@@ -746,9 +762,9 @@ covergroup cg_itype_shift (
   cross_rs1_immi_value: cross cp_rs1_value, cp_immi_value;
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle,  instr.rs1_value, 1)
@@ -771,7 +787,7 @@ covergroup cg_stype(
   cp_rs2: coverpoint instr.rs2;
 
   cross_rs1_rs2: cross cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   cp_imms_value: coverpoint instr.imms_value_type {
@@ -783,13 +799,13 @@ covergroup cg_stype(
   `ISACOV_CP_BITWISE_11_0(cp_imms_toggle, instr.imms, 1)
 
   cp_align_halfword: coverpoint (instr.rvfi.mem_addr[0]) {
-    ignore_bins IGN_OFF = {[0:$]} with (!align_halfword);
+    ignore_bins IGN_OFF = {[0:$]} `WITH (!align_halfword);
     bins ALIGNED  = {0};
     bins UNALIGNED = {1};
   }
 
   cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
-    ignore_bins IGN_OFF = {[0:$]} with (!align_word);
+    ignore_bins IGN_OFF = {[0:$]} `WITH (!align_word);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -810,7 +826,7 @@ covergroup cg_btype(
   cp_rs2: coverpoint instr.rs2;
 
   cross_rs1_rs2: cross cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   cp_immb_value: coverpoint instr.immb_value_type {
@@ -883,12 +899,12 @@ covergroup cg_csrtype(
   }
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
   cross_rd_rs1: cross cp_rd, cp_rs1 {
-    ignore_bins IGN_OFF = cross_rd_rs1 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1 `WITH (!reg_crosses_enabled);
   }
 endgroup : cg_csrtype
 
@@ -930,32 +946,32 @@ covergroup cg_cr(
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins  OFF     = cp_rs1_value    with (!has_rs1);
-    ignore_bins POS_OFF = {POSITIVE} with (!rdrs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rdrs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rdrs1_is_signed);
+    ignore_bins  OFF     = cp_rs1_value    `WITH (!has_rs1);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rdrs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rdrs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rdrs1_is_signed);
   }
 
   cp_rs2_value: coverpoint instr.rs2_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs2_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs2_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs2_is_signed);
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rdrs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rdrs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rdrs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rdrs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rdrs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rdrs1_is_signed);
   }
 
 
   cp_rd_rs2_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[1:31]} iff (instr.rd == instr.rs2);
   }
 
   cross_rdrs1_rs2: cross cp_c_rdrs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rdrs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rdrs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, has_rs1)
@@ -968,7 +984,7 @@ covergroup cg_cr_j(
     string name,
     bit reg_crosses_enabled,
     bit reg_hazards_enabled,
-    bit rdrs1_is_signed
+    bit rs1_is_signed
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -980,19 +996,12 @@ covergroup cg_cr_j(
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rdrs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rdrs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rdrs1_is_signed);
-  }
-
-  cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rdrs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rdrs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rdrs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
 
 endgroup : cg_cr_j
 
@@ -1011,23 +1020,23 @@ covergroup cg_ci(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins  OFF     = cp_rs1_value    with (!has_rs1);
-    illegal_bins POS_OFF = {POSITIVE}      with (!rs1_is_signed);
-    illegal_bins NEG_OFF = {NEGATIVE}      with (!rs1_is_signed);
-    illegal_bins NON_ZERO_OFF = {NON_ZERO} with ( rs1_is_signed);
+    ignore_bins  OFF     = cp_rs1_value    `WITH (!has_rs1);
+    illegal_bins POS_OFF = {POSITIVE}      `WITH (!rs1_is_signed);
+    illegal_bins NEG_OFF = {NEGATIVE}      `WITH (!rs1_is_signed);
+    illegal_bins NON_ZERO_OFF = {NON_ZERO} `WITH ( rs1_is_signed);
   }
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
-    illegal_bins POS_OFF      = {POSITIVE} with (!imm_is_signed);
-    illegal_bins NEG_OFF      = {NEGATIVE} with (!imm_is_signed);
-    illegal_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
-    ignore_bins  ZERO_OFF     = {ZERO}     with (imm_is_nonzero);  // Not illegal, because of HINT instrs
+    illegal_bins POS_OFF      = {POSITIVE} `WITH (!imm_is_signed);
+    illegal_bins NEG_OFF      = {NEGATIVE} `WITH (!imm_is_signed);
+    illegal_bins NON_ZERO_OFF = {NON_ZERO} `WITH (imm_is_signed);
+    ignore_bins  ZERO_OFF     = {ZERO}     `WITH (imm_is_nonzero);  // Not illegal, because of HINT instrs
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    illegal_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    illegal_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    illegal_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    illegal_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    illegal_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    illegal_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   cp_rdrs1: coverpoint instr.c_rdrs1 {
@@ -1051,15 +1060,15 @@ covergroup cg_ci_shift(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
   cp_shamt: coverpoint instr.get_field_imm() {
@@ -1123,15 +1132,15 @@ covergroup cg_css(
   cp_rs2: coverpoint instr.rs2;
 
   cp_rs2_value: coverpoint instr.rs2_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs2_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs2_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs2_is_signed);
   }
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!imm_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!imm_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (imm_is_signed);
   }
 
   `ISACOV_CP_BITWISE    (cp_rs2_toggle, instr.rs2_value,         1)
@@ -1147,7 +1156,7 @@ covergroup cg_ciw(
   option.per_instance = 1;
   option.name = name;
 
-  cp_rd: coverpoint instr.rd;
+  cp_rd: coverpoint instr.c_rdp;
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
   `ISACOV_CP_BITWISE_7_0(cp_imm_toggle, instr.get_field_imm(), 1)
@@ -1167,22 +1176,22 @@ covergroup cg_cl(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!imm_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!imm_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (imm_is_signed);
   }
 
-  cp_rs1: coverpoint instr.rs1;
-  cp_rd:  coverpoint instr.rd;
+  cp_rs1: coverpoint instr.c_rs1s;
+  cp_rd:  coverpoint instr.c_rdp;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
-    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} `WITH (!reg_hazards_enabled);
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
@@ -1205,19 +1214,19 @@ covergroup cg_cs(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_rs2_value: coverpoint instr.rs2_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs2_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs2_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs2_is_signed);
   }
 
-  cp_rs1: coverpoint instr.rs1;
-  cp_rs2: coverpoint instr.rs2;
+  cp_rs1: coverpoint instr.c_rs1s;
+  cp_rs2: coverpoint instr.c_rs2s;
 
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
@@ -1239,29 +1248,29 @@ covergroup cg_ca(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_rs2_value: coverpoint instr.rs2_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs2_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs2_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs2_is_signed);
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rd_is_signed);
   }
 
-  cp_rs1: coverpoint instr.rs1;
-  cp_rs2: coverpoint instr.rs2;
-  cp_rd: coverpoint instr.rd;
+  cp_rs1: coverpoint instr.c_rs1s;
+  cp_rs2: coverpoint instr.c_rs2s;
+  cp_rd: coverpoint instr.c_rdp;
 
   cross_rs1_rs2: cross cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rs1_rs2 with (!reg_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rs1_rs2 `WITH (!reg_crosses_enabled);
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
@@ -1281,18 +1290,18 @@ covergroup cg_cb(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!imm_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!imm_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (imm_is_signed);
   }
 
-  cp_rs1: coverpoint instr.rs1;
+  cp_rs1: coverpoint instr.c_rs1s;
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
   `ISACOV_CP_BITWISE_7_0(cp_imm_toggle, instr.get_field_imm(), 1)
@@ -1310,15 +1319,15 @@ covergroup cg_cb_andi(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!imm_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!imm_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (imm_is_signed);
   }
 
   cp_rs1: coverpoint instr.rs1;
@@ -1338,9 +1347,9 @@ covergroup cg_cb_shift(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (rs1_is_signed);
   }
 
   cp_shamt: coverpoint instr.get_field_imm() {
@@ -1364,9 +1373,9 @@ covergroup cg_cj(
   option.name = name;
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+    ignore_bins POS_OFF = {POSITIVE} `WITH (!imm_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} `WITH (!imm_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} `WITH (imm_is_signed);
   }
 
   `ISACOV_CP_BITWISE_10_0(cp_imm_toggle, instr.get_field_imm(), 1)
@@ -1400,32 +1409,32 @@ covergroup cg_sequential(string name,
 
   cp_instr_prev_x2: coverpoint(instr_prev.name) iff (instr_prev != null) {
     `ISACOV_IGN_BINS
-    ignore_bins IGN_X2_OFF = {[0:$]} with (!seq_instr_x2_enabled);
+    ignore_bins IGN_X2_OFF = {[0:$]} `WITH (!seq_instr_x2_enabled);
   }
 
   cross_seq_instr_x2: cross cp_instr, cp_instr_prev_x2;
 
   cp_group: coverpoint (instr.group) {
-    illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} with (!ext_m_supported);
-    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
+    illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} `WITH (!ext_m_supported);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} `WITH (!ext_a_supported);
   }
 
   cp_group_pipe_x2:  coverpoint (instr_prev.group) iff (instr_prev != null) {
-    ignore_bins IGN_X2_OFF = {[0:$]} with (!seq_instr_group_x2_enabled);
-    illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} with (!ext_m_supported);
-    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
+    ignore_bins IGN_X2_OFF = {[0:$]} `WITH (!seq_instr_group_x2_enabled);
+    illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} `WITH (!ext_m_supported);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} `WITH (!ext_a_supported);
   }
 
   cp_group_pipe_x3: coverpoint (instr_prev2.group) iff (instr_prev2 != null) {
-    ignore_bins IGN_X3_OFF = {[0:$]} with (!seq_instr_group_x3_enabled);
-    illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} with (!ext_m_supported);
-    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
+    ignore_bins IGN_X3_OFF = {[0:$]} `WITH (!seq_instr_group_x3_enabled);
+    illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} `WITH (!ext_m_supported);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} `WITH (!ext_a_supported);
   }
 
   cp_group_pipe_x4: coverpoint (instr_prev3.group) iff (instr_prev3 != null) {
-    ignore_bins IGN_X4_OFF = {[0:$]} with (!seq_instr_group_x4_enabled);
-    illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} with (!ext_m_supported);
-    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
+    ignore_bins IGN_X4_OFF = {[0:$]} `WITH (!seq_instr_group_x4_enabled);
+    illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} `WITH (!ext_m_supported);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} `WITH (!ext_a_supported);
   }
 
   cp_gpr_raw_hazard: coverpoint(raw_hazard) {
@@ -1710,7 +1719,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .rs1_is_signed(rs1_is_signed[LH]),
                             .immi_is_signed(immi_is_signed[LH]),
                             .rd_is_signed(rd_is_signed[LH]),
-                            .align_halfword(1),
+                            .align_halfword(cfg.core_cfg.unaligned_access_supported),
                             .align_word(0));
       rv32i_lw_cg     = new("rv32i_lw_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
@@ -1719,7 +1728,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .immi_is_signed(immi_is_signed[LW]),
                             .rd_is_signed(rd_is_signed[LW]),
                             .align_halfword(0),
-                            .align_word(1));
+                            .align_word(cfg.core_cfg.unaligned_access_supported));
       rv32i_lbu_cg    = new("rv32i_lbu_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
@@ -1734,7 +1743,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .rs1_is_signed(rs1_is_signed[LHU]),
                             .immi_is_signed(immi_is_signed[LHU]),
                             .rd_is_signed(rd_is_signed[LHU]),
-                            .align_halfword(1),
+                            .align_halfword(cfg.core_cfg.unaligned_access_supported),
                             .align_word(0));
 
       rv32i_sb_cg     = new("rv32i_sb_cg",
@@ -1743,12 +1752,12 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .align_word(0));
       rv32i_sh_cg     = new("rv32i_sh_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
-                            .align_halfword(1),
+                            .align_halfword(cfg.core_cfg.unaligned_access_supported),
                             .align_word(0));
       rv32i_sw_cg     = new("rv32i_sw_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .align_halfword(0),
-                            .align_word(1));
+                            .align_word(cfg.core_cfg.unaligned_access_supported));
 
       rv32i_addi_cg   = new("rv32i_addi_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
@@ -1982,11 +1991,11 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       rv32c_jr_cg       = new("rv32c_jr_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
-                              .rdrs1_is_signed(0));
+                              .rs1_is_signed(0));
       rv32c_jalr_cg     = new("rv32c_jalr_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
-                              .rdrs1_is_signed(0));
+                              .rs1_is_signed(0));
 
       rv32c_swsp_cg     = new("rv32c_swsp_cg",
                               .rs2_is_signed(0),
@@ -2089,57 +2098,68 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       rv32a_lr_w_cg = new("rv32a_lr_w_cg",
                           .reg_hazards_enabled(cfg.reg_hazards_enabled),
                           .rs1_is_signed(rs1_is_signed[LR_W]),
-                          .rd_is_signed(rd_is_signed[LR_W]));
+                          .rd_is_signed(rd_is_signed[LR_W]),
+                          .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_sc_w_cg = new("rv32a_sc_w_cg",
                           .reg_crosses_enabled(cfg.reg_crosses_enabled),
                           .reg_hazards_enabled(cfg.reg_hazards_enabled),
                           .rs1_is_signed(rs1_is_signed[SC_W]),
-                          .rs2_is_signed(rs2_is_signed[SC_W]));
+                          .rs2_is_signed(rs2_is_signed[SC_W]),
+                          .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoswap_w_cg = new("rv32a_amoswap_w_cg",
                                .reg_crosses_enabled(cfg.reg_crosses_enabled),
                                .reg_hazards_enabled(cfg.reg_hazards_enabled),
                                .rs1_is_signed(rs1_is_signed[AMOSWAP_W]),
-                               .rd_is_signed(rd_is_signed[AMOSWAP_W]));
+                               .rd_is_signed(rd_is_signed[AMOSWAP_W]),
+                               .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoadd_w_cg = new("rv32a_amoadd_w_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rs1_is_signed(rs1_is_signed[AMOADD_W]),
-                              .rd_is_signed(rd_is_signed[AMOADD_W]));
+                              .rd_is_signed(rd_is_signed[AMOADD_W]),
+                              .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoxor_w_cg = new("rv32a_amoxor_w_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rs1_is_signed(rs1_is_signed[AMOXOR_W]),
-                              .rd_is_signed(rd_is_signed[AMOXOR_W]));
+                              .rd_is_signed(rd_is_signed[AMOXOR_W]),
+                              .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoand_w_cg = new("rv32a_amoand_w_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rs1_is_signed(rs1_is_signed[AMOAND_W]),
-                              .rd_is_signed(rd_is_signed[AMOAND_W]));
+                              .rd_is_signed(rd_is_signed[AMOAND_W]),
+                              .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amoor_w_cg = new("rv32a_amoor_w_cg",
                              .reg_crosses_enabled(cfg.reg_crosses_enabled),
                              .reg_hazards_enabled(cfg.reg_hazards_enabled),
                              .rs1_is_signed(rs1_is_signed[AMOOR_W]),
-                             .rd_is_signed(rd_is_signed[AMOOR_W]));
+                             .rd_is_signed(rd_is_signed[AMOOR_W]),
+                             .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amomax_w_cg = new("rv32a_max_w_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rs1_is_signed(rs1_is_signed[AMOMAX_W]),
-                              .rd_is_signed(rd_is_signed[AMOSWAP_W]));
+                              .rd_is_signed(rd_is_signed[AMOSWAP_W]),
+                              .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amomin_w_cg = new("rv32a_amomin_w_cg",
                                .reg_crosses_enabled(cfg.reg_crosses_enabled),
                                .reg_hazards_enabled(cfg.reg_hazards_enabled),
                                .rs1_is_signed(rs1_is_signed[AMOMIN_W]),
-                               .rd_is_signed(rd_is_signed[AMOMIN_W]));
+                               .rd_is_signed(rd_is_signed[AMOMIN_W]),
+                               .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amomaxu_w_cg = new("rv32a_amomaxu_w_cg",
                                .reg_crosses_enabled(cfg.reg_crosses_enabled),
                                .reg_hazards_enabled(cfg.reg_hazards_enabled),
                                .rs1_is_signed(rs1_is_signed[AMOMAXU_W]),
-                               .rd_is_signed(rd_is_signed[AMOMAXU_W]));
+                               .rd_is_signed(rd_is_signed[AMOMAXU_W]),
+                               .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
       rv32a_amominu_w_cg = new("rv32a_amominu_w_cg",
                                .reg_crosses_enabled(cfg.reg_crosses_enabled),
                                .reg_hazards_enabled(cfg.reg_hazards_enabled),
                                .rs1_is_signed(rs1_is_signed[AMOMINU_W]),
-                               .rd_is_signed(rd_is_signed[AMOMINU_W]));
+                               .rd_is_signed(rd_is_signed[AMOMINU_W]),
+                               .unaligned_access_amo_supported(cfg.core_cfg.unaligned_access_amo_supported));
     end
 
     // ----------------------------------------------------------------------------------------
@@ -2689,7 +2709,3 @@ function bit uvma_isacov_cov_model_c::is_csr_hazard(uvma_isacov_instr_c instr,
 
   return 0;
 endfunction : is_csr_hazard
-
-
-
-

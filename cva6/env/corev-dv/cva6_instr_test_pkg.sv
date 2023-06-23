@@ -16,4 +16,7 @@ package cva6_instr_test_pkg;
    import riscv_instr_test_pkg::*;
    import cva6_instr_pkg::*;
 
+   `include "cva6_asm_program_gen.sv"
+   `include "cva6_instr_base_test.sv"
+
 endpackage : cva6_instr_test_pkg;

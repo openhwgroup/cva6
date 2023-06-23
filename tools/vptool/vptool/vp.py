@@ -20,22 +20,24 @@ from inspect import ismethod
 import pickle
 from collections import OrderedDict
 
+# Use Ruamel YAML support
+from ruamel.yaml import YAML, yaml_object
+global db_yaml_engine
+db_yaml_engine = YAML(typ='rt')
+
 # import cPickle as pickle
 # Configuration (env + Python + Yaml) is imported indirectly via vp_pack.
 from vp_pack import *
+
+db_yaml_engine.register_class(VerifItem)
+db_yaml_engine.register_class(Subfeature)
+db_yaml_engine.register_class(Feature)
+
 import os, sys, pwd, glob, subprocess
 from optparse import OptionParser, Option
 from PIL import Image, ImageTk
 import shutil
 import hashlib
-
-# PyYAML import: Use C backend (libyaml) if available.
-from yaml import load, dump
-
-try:
-    from yaml import CLoader as Loader, CDumper as Dumper
-except ImportError:
-    from yaml import Loader, Dumper
 
 global ip_list  # Dict Containing IPs->Prop->item. Eventually, it contains the whole DB
 global MASTER_LABEL_COLOR, SECONDARY_LABEL_COLOR, TERTIARY_LABEL_COLOR, BG_COLOR, LOCK_COLOR
@@ -557,6 +559,48 @@ class MyTextWidget(ttk.LabelFrame):
             text=vp_config.yaml_config["gui"]["requirement_loc"]["label"],
             style="enabled.TLabelframe",
         )
+        # Design doc information uses a grid layout.
+        # - first row is a URL of the document
+        # - second row contains selectors for page/section mode and value, and a 'View' button.
+        self.text1frame.grid(column=0, row=0, padx=20, pady=20)
+        url_label = ttk.Label(self.text1frame, text="Path or URL", anchor=tk.E)
+        url_label.grid(column=0, row=0, sticky=tk.E, padx=10, pady=10)
+        mode_label = ttk.Label(self.text1frame, text="Refer to...", anchor=tk.E)
+        mode_label.grid(column=0, row=1, sticky=tk.E, padx=10)
+        self.page_num_var = tk.StringVar(self)
+        page_entry = ttk.Entry(self.text1frame, textvariable=self.page_num_var, width=4)
+        page_entry.grid(column=2, row=1, sticky=tk.W)
+        # Use a callaback to update state upon changes to page number field.
+        self.page_num_var.trace("w", self.ref_page_num_changed)
+
+        self.section_num_var= tk.StringVar(self)
+        section_entry = ttk.Entry(self.text1frame, textvariable=self.section_num_var, width=4)
+        section_entry.grid(column=2, row=2, sticky=tk.W)
+        # Use a callaback to update state upon changes to section number field.
+        self.section_num_var.trace("w", self.ref_section_num_changed)
+
+        view_btn = ttk.Button(self.text1frame, text="View design doc", command=self.view_design_doc)
+        view_btn.grid(column=5, row=2, sticky=tk.E)
+        self.ref_mode_var = tk.StringVar(self)
+        ref_mode_names = ("(consecutive) page #", "section #")
+        ref_mode_values = ("page", "section")
+        row = 1
+        for (name, value) in zip(ref_mode_names, ref_mode_values):
+            btn = ttk.Radiobutton(self.text1frame, text=name, value=value, variable=self.ref_mode_var, command=self.refmode_btn_selected)
+            btn.grid(column=1, row=row, sticky=tk.W)
+            row +=1
+        # Label of the viewer selector buttons
+        viewer_label = ttk.Label(self.text1frame, text="Design doc viewer", anchor=tk.E)
+        viewer_label.grid(column=3, row=1, sticky=tk.E)
+        self.viewer_var = tk.StringVar(self)
+        viewer_names = ("Mozilla Firefox", "Evince PDF viewer")
+        viewer_values = ("firefox", "evince")
+        row = 1
+        for (name, value) in zip(viewer_names, viewer_values):
+            btn = ttk.Radiobutton(self.text1frame, text=name, value=value, variable=self.viewer_var, command=self.docviewer_btn_selected)
+            btn.grid(column=4, row=row, sticky=tk.W)
+            row += 1
+
         self.text3frame = ttk.LabelFrame(
             self,
             text=vp_config.yaml_config["gui"]["verif_goals"]["label"],
@@ -578,7 +622,7 @@ class MyTextWidget(ttk.LabelFrame):
             style="enabled.TLabelframe",
         )
         # Selectors of verif point properties (PFC, TT, CM) and applicable cores use a layout
-        # different from the surrounding widgets, so we pack the in a canvas of their own.
+        # different from the surrounding widgets, so we pack them in a canvas of their own.
         self.selector_canvas = tk.Canvas(self)
         self.settings_frame = ttk.LabelFrame(
             self.selector_canvas,
@@ -646,11 +690,12 @@ class MyTextWidget(ttk.LabelFrame):
             self.text1frame,
             cue_text=vp_config.yaml_config["gui"]["requirement_loc"]["cue_text"],
             state="disabled",
-            height=4,
+            height=2,
             bg=BG_COLOR,
             undo=True,
             wrap="word",
         )
+        self.text1.grid(column=1, row=0, sticky=tk.W, columnspan=5)
         self.text3 = MyText(
             self.text3frame,
             cue_text=vp_config.yaml_config["gui"]["verif_goals"]["cue_text"],
@@ -797,6 +842,68 @@ class MyTextWidget(ttk.LabelFrame):
         self.bcancel.pack(side="left")
         self.pack(side, padx, pady)
 
+    def ref_page_num_changed(self, *args):
+        """React to change in page number stringvar."""
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_page = self.page_num_var.get()
+
+    def ref_section_num_changed(self, *args):
+        """React to change in section number stringvar."""
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_section = self.section_num_var.get()
+
+    def view_design_doc(self):
+        """
+        View the requirement file (Design Doc) at the position specified in Requirement Location frame.
+        """
+        if self.viewer_var.get() == "firefox":
+            # Browser mode: use HREFs with suffix #<anchortype>=<value>.
+            if self.ref_mode_var.get() == "page":
+                ref_in_doc = f"#page={self.page_num_var.get().rstrip()}"
+            elif self.ref_mode_var.get() == "section":
+                ref_in_doc = f"#nameddest=section.{self.section_num_var.get().rstrip()}"
+            else:
+                ref_in_doc = ""
+            # Assume the location is a valid URL or an absolute path.
+            doc_location = self.text1.get(0.0, tk.END).rstrip()
+            # If no scheme (http://, file:// etc.) is given, treat it
+            # as an absolute file path.
+            if doc_location[0] == '/':
+                doc_location = "file://" + doc_location
+            command = [ "firefox", doc_location + ref_in_doc ]
+        elif self.viewer_var.get() == "evince":
+            # PDF viewer mode: use appropriate cmdline option.
+            if self.ref_mode_var.get() == "page":
+                ref_in_doc = ["-i", f"{self.page_num_var.get().rstrip()}" ]
+            elif self.ref_mode_var.get() == "section":
+                ref_in_doc = ["-n", f"section.{self.section_num_var.get().rstrip()}"]
+            else:
+                ref_in_doc = []
+            # The requirement location should be a valid path to a PDF file.
+            command = ["evince"] + ref_in_doc + [self.text1.get(0.0, tk.END).rstrip()]
+        print(f"### ==> command = {command}")
+        subprocess.Popen(command)
+
+    def refmode_btn_selected(self):
+        """
+        Callback to handle the selection of the Design Doc reference mode.
+        Sets the value of the corresponding item attribute.
+        """
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_mode = self.ref_mode_var.get()
+
+    def docviewer_btn_selected(self):
+        """
+        Callback to handle the selection of the design doc viewer.
+        Sets the value of the corresponding item attribute.
+        """
+        current_item = self.parent.item_widget.get_selection()
+        if current_item and not self.parent.get_current_item().is_locked():
+            self.parent.get_current_item().ref_viewer = self.viewer_var.get()
+
     def all_cores_btn_selected(self):
         print("### self.cores_all.get() = %d" % self.cores_all.get())
         if self.cores_all.get() == 1:
@@ -910,7 +1017,7 @@ class MyTextWidget(ttk.LabelFrame):
 
     def pack(self, side, padx, pady):
         self.text.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
-        self.text1.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
+        #self.text1.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text3.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text4.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
         self.text5.pack(side="top", padx=padx, pady=pady, fill="both", expand=True)
@@ -983,6 +1090,22 @@ class MyTextWidget(ttk.LabelFrame):
 
     def button_pack_forget(self):
         self.bframe.pack_forget()
+
+    def update_ref_mode(self, mode):
+        self.ref_mode = mode
+        self.ref_mode_var.set(mode)
+
+    def update_page_num(self, page):
+        self.page_num = page
+        self.page_num_var.set(page)
+
+    def update_section_num(self, section):
+        self.section_num = section
+        self.section_num_var.set(section)
+
+    def update_viewer(self, viewer):
+        self.viewer = viewer
+        self.viewer_var.set(viewer)
 
     def update_item_tag(self, in_text):
         self.text6.configure(state="normal")
@@ -1609,6 +1732,35 @@ class MyMain:
                 self.desc_widget.text5, current_item.coverage_loc
             )
             self.desc_widget.update_item_tag(current_item.tag)
+            # Update mode of reference to location inside design doc.
+            # DB migration: Assume 'page' as default if the field was not present.
+            try:
+                ref_mode = current_item.ref_mode
+            except AttributeError:
+                ref_mode = "page"
+            self.desc_widget.update_ref_mode(ref_mode)
+            # Update page number inside design doc.
+            # DB migration: Assume empty string as default if the field was not present.
+            try:
+                ref_page = current_item.ref_page
+            except AttributeError:
+                ref_page = ""
+            self.desc_widget.update_page_num(ref_page)
+            # Update section number inside design doc.
+            # DB migration: Assume empty string as default if the field was not present.
+            try:
+                ref_section = current_item.ref_section
+            except AttributeError:
+                ref_section = ""
+            self.desc_widget.update_section_num(ref_section)
+            # Update name of viewer app that should be used to display the design doc.
+            # DB migration: Assume empty string as default if the field was not present.
+            try:
+                ref_viewer = current_item.ref_viewer
+            except AttributeError:
+                ref_viewer = "firefox"
+            self.desc_widget.update_viewer(ref_viewer)
+
             pfc = current_item.pfc
             self.desc_widget.update_pfc(pfc)
             test_type = current_item.test_type
@@ -1651,6 +1803,22 @@ class MyMain:
     def desc_cancel(self):
         self.update_desc_widget()  # reprint current item initial value
         self.unfreeze_all()
+
+    def update_ref_mode(self):
+        self.get_current_item().ref_mode = self.desc_widget.ref_mode_var.get()
+        self.desc_widget.update_ref_mode(self.desc_widget.ref_mode_var.get())
+
+    def update_page_num(self):
+        self.get_current_item().ref_page = self.desc_widget.page_num_var.get()
+        self.desc_widget.update_page_num(self.desc_widget.page_num_var.get())
+
+    def update_section_num(self):
+        self.get_current_item().ref_section = self.desc_widget.section_num_var.get()
+        self.desc_widget.update_section_num(self.desc_widget.section_num_var.get())
+
+    def update_viewer(self):
+        self.get_current_item().ref_viewer = self.desc_widget.viewer_var.get()
+        self.desc_widget.update_viewer(self.desc_widget.viewer_var.get())
 
     def update_pfc(self):
         self.get_current_item().pfc = self.desc_widget.pfc.get()
@@ -1787,24 +1955,39 @@ class MyMain:
                         save_dir = os.path.dirname(vp_config.SAVED_DB_LOCATION)
                         saved_ip_str = ""
                         for ip_elt in pickle_ip_list:
+                            # Sign the IP with the current SHA1 of VPTOOL.
+                            ip_elt[1].vptool_gitrev = self.vptool_gitrev
+                            ip_elt[1].io_fmt_gitrev = vp_config.io_fmt_gitrev
+                            ip_elt[1].config_gitrev = vp_config.config_gitrev
+                            ip_elt[1].ymlcfg_gitrev = vp_config.yaml_config[
+                                "yaml_cfg_gitrev"
+                            ]
                             # Save individual IPs only if locked by user.
-                            if self.is_locked_by_user(current_ip_name=ip_elt[1].name):
-                                saved_ip_str += "\n  " + ip_elt[1].name
-                                # Sign the IP with the current SHA1 of VPTOOL.
-                                ip_elt[1].vptool_gitrev = self.vptool_gitrev
-                                ip_elt[1].io_fmt_gitrev = vp_config.io_fmt_gitrev
-                                ip_elt[1].config_gitrev = vp_config.config_gitrev
-                                ip_elt[1].ymlcfg_gitrev = vp_config.yaml_config[
-                                    "yaml_cfg_gitrev"
-                                ]
-                                with open(
-                                    save_dir
-                                    + "/VP_IP"
-                                    + str(ip_elt[1].ip_num).zfill(3)
-                                    + ".pck",
-                                    "wb",
-                                ) as output:
-                                    pickle.dump(ip_elt, output, 0)
+                            #if self.is_locked_by_user(current_ip_name=ip_elt[1].name):
+                            #    saved_ip_str += "\n  " + ip_elt[1].name
+                            #    with open(
+                            #        save_dir
+                            #        + "/VP_IP"
+                            #        + str(ip_elt[1].ip_num).zfill(3)
+                            #        + ".pck",
+                            #        "wb",
+                            #    ) as output:
+                            #        pickle.dump(ip_elt, output, 0)
+                            # TODO: Add translation of pickle_ip_list to new-gen
+                            # types *HERE*, after emitting Pickle.
+                            # Emit the Yaml output from the fixed structures,
+                            # skipping pickled ones.
+                            saved_ip_str += "\n  " + ip_elt[1].name
+                            # Write yaml output
+                            with open(
+                                save_dir
+                                + "/VP_IP"
+                                + str(ip_elt[1].ip_num).zfill(3)
+                                + ".yml",
+                                "wb",
+                            ) as output:
+                                db_yaml_engine.dump(ip_elt[1].to_Feature(), output)
+
                         if saved_ip_str:
                             tkinter.messagebox.showinfo(
                                 "Info",
@@ -1821,6 +2004,7 @@ class MyMain:
                                 % vp_config.yaml_config["gui"]["ip"]["label"].lower(),
                             )
                     else:
+                        # ZC FIXME Add support for Yaml in non-split-save mode.
                         with open(vp_config.SAVED_DB_LOCATION, "wb") as output:
                             pickle.dump(len(pickle_ip_list), output, 0)
                             for ip_elt in pickle_ip_list:
@@ -1869,7 +2053,7 @@ class MyMain:
                 tkinter.messagebox.showwarning("Warning", "No DB Loaded!")
         return need_to_load
 
-    def load_db_quiet(self):
+    def load_db_quiet(self, use_yaml_input=True):
         pickle_ip_list = []
         ip_num_next = 0
         if self.split_save:
@@ -1885,13 +2069,18 @@ class MyMain:
                         else "<generic>"
                     )
                     + ")",
-                    os.path.join(dir_to_load, "VP_IP*.pck"),
+                    os.path.join(dir_to_load, "VP_IP[0-9][0-9][0-9].%s" % ("yml" if use_yaml_input else "pck")),
                 )
             )
-            for filename in glob.glob(dir_to_load + "/VP_IP*pck"):
-                # print("---INFO: Loading "+filename)
-                with open(filename, "rb") as input:
-                    pickle_ip_list.append(pickle.load(input))
+            if not use_yaml_input:
+                for filename in glob.glob(dir_to_load + "/VP_IP[0-9][0-9][0-9].pck"):
+                    # print("---INFO: Loading "+filename)
+                    with open(filename, "rb") as input:
+                        pickle_ip_list.append(pickle.load(input))
+            else:
+                for filename in glob.glob(dir_to_load + "/VP_IP[0-9][0-9][0-9].yml"):
+                    with open(filename, "rb") as input:
+                        pickle_ip_list.append(db_yaml_engine.load(input))
             if pickle_ip_list:
                 # Find the lowest ip_num that can be used for newly created IPs.
                 # It has to be higher than the highest existing ip_num.
@@ -1899,7 +2088,8 @@ class MyMain:
                 ip_num_next = 1 + max(
                     [
                         (lambda e: e if isinstance(e, int) else int(e, base=10))(
-                            elt[1].ip_num
+                            elt.id if use_yaml_input # Yaml !!omap mode: list of objects
+                            else elt[1].ip_num
                         )
                         for elt in pickle_ip_list
                     ]
@@ -1917,10 +2107,18 @@ class MyMain:
                 for dummy in range(ip_num_next):
                     pickle_ip_list.append(pickle.load(input))
         # change list to dict
-        for ip_key, ip_elt in pickle_ip_list:
-            self.ip_list[ip_key] = ip_elt
-            # Seems pickle doesn't restore class attribute. Done manually here for IP
-            self.ip_list[ip_key].__class__._ip_count = ip_num_next
+        if use_yaml_input:
+            # Yaml mode: !!omap yields a list of elts when loaded.
+            for ip_elt in pickle_ip_list:
+                self.ip_list[ip_elt.name] = ip_elt.to_Ip()
+                # Seems pickle doesn't restore class attribute. Done manually here for IP
+                self.ip_list[ip_elt.name].__class__._ip_count = ip_num_next
+        else:
+            # Pickle mode: list of objects is a list of mappings as 2-elt lists
+            for ip_key, ip_elt in pickle_ip_list:
+                self.ip_list[ip_key] = ip_elt
+                # Seems pickle doesn't restore class attribute. Done manually here for IP
+                self.ip_list[ip_key].__class__._ip_count = ip_num_next
         self.prep_db_import()
         self.update_all_item_target_list()
         self.db_git_rev = self.get_db_gitrev()
@@ -2144,7 +2342,7 @@ class MyMain:
     ##### DB INTERACTIION FUNCTIONS
 
     ##### Main GUI Creation
-    def create_gui(self, theme):
+    def create_gui(self, theme, use_yaml_input):
         self.personalization()
 
         # TOP Widget
@@ -2252,7 +2450,7 @@ class MyMain:
         self.desc_widget.text1.bind("<Control-1>", self.im_up_des_ctrl_lock)
         self.desc_widget.text.bind("<Control-3>", self.im_up_des_tip_disp)
         self.item_widget.wlist.bind("<<ListboxSelect>>", self.im_up_item)
-        self.load_db_quiet()
+        self.load_db_quiet(use_yaml_input)
         self.load_lock_ip()
         self.update_ip_widget()
         self.top.bind("<Control-q>", self.main_exit_handler)
@@ -2283,13 +2481,31 @@ def __generate_option_parser():
         help="Select a GUI theme for this session",
         default=vp_config.yaml_config["gui"]["theme"],
     )
+    parser.add_option(
+        "-y",
+        "--yaml",
+        action="store_true",
+        dest="use_yaml_input",
+        help="Read database in Yaml format",
+        default=True,
+    )
+    parser.add_option(
+        "-p",
+        "--pickle",
+        action="store_false",
+        dest="use_yaml_input",
+        help="Read database in Pickle format",
+        default=True,
+    )
+
     return parser
 
 
 # Load YAML configuration if available.
 try:
     with open(os.path.join(os.path.dirname(__file__), YAML_CONFIG_FILE), "r") as f:
-        vp_config.init_yaml_config(load(f, Loader=Loader))
+        config_yaml_engine = YAML(typ='safe')
+        vp_config.init_yaml_config(config_yaml_engine.load(f))
         # print("YAML config = \n" + dump(vp_config.yaml_config, Dumper=Dumper))
 except Exception as e:
     print(
@@ -2308,4 +2524,4 @@ if os.path.exists(os.path.realpath(options.dataBase)):
     SAVED_DB_LOCATION = os.path.realpath(options.dataBase)
     print(SAVED_DB_LOCATION)
 
-top_gui.create_gui(options.theme)
+top_gui.create_gui(options.theme, options.use_yaml_input)

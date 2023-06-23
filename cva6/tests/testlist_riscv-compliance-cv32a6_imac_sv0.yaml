@@ -135,7 +135,7 @@
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32im/src/MUL.S
 
 - test: rv32im-DIV
-  iterations: 0 # see https://github.com/openhwgroup/cva6/issues/421
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32im/src/DIV.S
@@ -153,7 +153,7 @@
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32im/src/MULHU.S
 
 - test: rv32im-REM
-  iterations: 0 # see https://github.com/openhwgroup/cva6/issues/421
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32im/src/REM.S

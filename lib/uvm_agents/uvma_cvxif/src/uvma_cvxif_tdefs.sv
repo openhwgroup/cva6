@@ -31,7 +31,7 @@ typedef struct packed {
    logic  [X_ID_WIDTH-1:0]   id;
    logic  [X_DATAWIDTH-1:0]  data;
    logic  [4:0]              rd;
-   logic  [X_RFW_WIDTH-1:0]  we;
+   logic  [X_RFW_WIDTH/riscv::XLEN-1:0]  we;
    logic                     exc;
    logic  [5:0]              exccode;
 } result_t ;
@@ -41,6 +41,7 @@ typedef struct packed {
    logic  [X_ID_WIDTH-1:0]                id;
    logic  [1:0]                           mode;
    logic  [X_NUM_RS-1:0][X_RFR_WIDTH-1:0] rs;
+   logic  [X_NUM_RS-1:0]                  rs_valid;
 } x_issue_req;
 
 typedef struct packed {
@@ -55,15 +56,14 @@ typedef enum {
 
 typedef struct packed {
    logic                     result_valid;
+   logic                     result_ready;
    logic  [X_ID_WIDTH-1:0]   id;
    logic  [X_DATAWIDTH-1:0]  data;
    logic  [4:0]              rd;
-   logic  [X_RFW_WIDTH-1:0]  we;
+   logic  [X_RFW_WIDTH/riscv::XLEN-1:0]  we;
    logic                     exc;
    logic  [5:0]              exccode;
-   logic                     result_ready;
    int                       rnd_delay;
   } drv_result;
-
 
 `endif //__UVMA_CVXIF_TDEFS_SV__

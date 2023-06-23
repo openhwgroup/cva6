@@ -1,0 +1,868 @@
+!Feature
+next_elt_id: 16
+name: RV32C Integer Computational Instructions
+id: 10
+display_order: 10
+subfeatures: !!omap
+- 000_C.LI: !Subfeature
+    name: 000_C.LI
+    tag: VP_IP008_P000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S000_I000
+        description: "c.li rd, imm[5:0]\nx[rd] = sext(imm)\nExpands to addi rd, x0,\
+          \ imm[5:0]. Invalid when rd=x0.\nrd is calculated using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of imm[5:0] are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S000_I001
+        description: "c.li rd, imm[5:0]\nx[rd] = sext(imm)\nExpands to addi rd, x0,\
+          \ imm[5:0]. Invalid when rd=x0.\nrd is calculated using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_C.LUI: !Subfeature
+    name: 001_C.LUI
+    tag: VP_IP008_P001
+    next_elt_id: 2
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S001_I000
+        description: "c.lui rd, nzimm[17:12]\nx[rd] = sext(nzimm[17:12] << 12)\nExpands\
+          \ to lui rd, nzimm[17:12]. Invalid when rd = {x0, x2} or imm = 0.\nrd is\
+          \ calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of imm[17:12] are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S001_I001
+        description: "c.lui rd, nzimm[17:12]\nx[rd] = sext(nzimm[17:12] << 12)\nExpands\
+          \ to lui rd, nzimm[17:12]. Invalid when rd = {x0, x2} or imm = 0.\nrd is\
+          \ calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd[31:12] are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_C.ADDI: !Subfeature
+    name: 002_C.ADDI
+    tag: VP_IP008_P002
+    next_elt_id: 3
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S002_I000
+        description: "c.addi rd, nzimm[5:0]\nx[rd] = x[rd] + sext(nzimm[5:0])\nExpands\
+          \ to addi rd, rd, nzimm[5:0].\nInvalid when rd=x0 or nzimm = 0. Arithmetic\
+          \ overflow is lost and ignored.\nrd is calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S002_I001
+        description: "c.addi rd, nzimm[5:0]\nx[rd] = x[rd] + sext(nzimm[5:0])\nExpands\
+          \ to addi rd, rd, nzimm[5:0].\nInvalid when rd=x0 or nzimm = 0. Arithmetic\
+          \ overflow is lost and ignored.\nrd is calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll inputs bits of rd before instruction\
+          \ execution are toggled\nAll bits of nzimm are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S002_I002
+        description: "c.addi rd, nzimm[5:0]\nx[rd] = x[rd] + sext(nzimm[5:0])\nExpands\
+          \ to addi rd, rd, nzimm[5:0].\nInvalid when rd=x0 or nzimm = 0. Arithmetic\
+          \ overflow is lost and ignored.\nrd is calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_C.ADDI16SP: !Subfeature
+    name: 003_C.ADDI16SP
+    tag: VP_IP008_P003
+    next_elt_id: 3
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S003_I000
+        description: "c.addi16sp nzimm[9:4]\nx[2] = x[2] + sext(nzimm[9:4])\nExpands\
+          \ to addi x2, x2, nzimm[9:4]. Invalid when nzimm=0.\nrd is calculated using\
+          \ signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\n+ve and -ve values of nzimm are used\nAll\
+          \ bits of nzimm[9:4] are toggled\nAll bits of x2 before instruction execution\
+          \ are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S003_I001
+        description: "c.addi16sp nzimm[9:4]\nx[2] = x[2] + sext(nzimm[9:4])\nExpands\
+          \ to addi x2, x2, nzimm[9:4]. Invalid when nzimm=0.\nrd is calculated using\
+          \ signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of x2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_C.ADDI4SPN: !Subfeature
+    name: 004_C.ADDI4SPN
+    tag: VP_IP008_P004
+    next_elt_id: 3
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S004_I000
+        description: "c.addi4spn rd', nzuimm[9:2]\nx[8+rd'] = x[2] + nzuimm[9:2]\n\
+          Expands to addi rd', x2, nzuimm[9:2]. Invalid when nzuimm = 0.\nrd is calculated\
+          \ using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S004_I001
+        description: "c.addi4spn rd', nzuimm[9:2]\nx[8+rd'] = x[2] + nzuimm[9:2]\n\
+          Expands to addi rd', x2, nzuimm[9:2]. Invalid when nzuimm = 0.\nrd is calculated\
+          \ using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of nzuimm[9:2] are toggled\nAll\
+          \ bits of x2 before instruction execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S004_I002
+        description: "c.addi4spn rd', nzuimm[9:2]\nx[8+rd'] = x[2] + nzuimm[9:2]\n\
+          Expands to addi rd', x2, nzuimm[9:2]. Invalid when nzuimm = 0.\nrd is calculated\
+          \ using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd` are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_C.SLLI: !Subfeature
+    name: 005_C.SLLI
+    tag: VP_IP008_P005
+    next_elt_id: 3
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S005_I000
+        description: "c.slli rd, uimm[5:0]\nx[rd] = x[rd] << uimm[5:0]\nExpands to\
+          \ slli rd, rd, uimm[5:0]. Invalid when uimm[5] = 1, or uimm=0, or rd=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S005_I001
+        description: "c.slli rd, uimm[5:0]\nx[rd] = x[rd] << uimm[5:0]\nExpands to\
+          \ slli rd, rd, uimm[5:0]. Invalid when uimm[5] = 1, or uimm=0, or rd=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll shift amounts from [0:31] are used\n\
+          All bits of rd before instruction execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S005_I002
+        description: "c.slli rd, uimm[5:0]\nx[rd] = x[rd] << uimm[5:0]\nExpands to\
+          \ slli rd, rd, uimm[5:0]. Invalid when uimm[5] = 1, or uimm=0, or rd=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 006_C.SRLI: !Subfeature
+    name: 006_C.SRLI
+    tag: VP_IP008_P006
+    next_elt_id: 3
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S006_I000
+        description: "c.srli rd', uimm[5:0]\nx[8+rd'] = x[8+rd'] >>u uimm[5:0]\nExpands\
+          \ to srli rd', rd', uimm[5:0]. Invalid when uimm[5] = 1, or uimm=0,"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S006_I001
+        description: "c.srli rd', uimm[5:0]\nx[8+rd'] = x[8+rd'] >>u uimm[5:0]\nExpands\
+          \ to srli rd', rd', uimm[5:0]. Invalid when uimm[5] = 1, or uimm=0,"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll shift amounts from [0:31] are used\n\
+          All bits of rd before instruction execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S006_I002
+        description: "c.srli rd', uimm[5:0]\nx[8+rd'] = x[8+rd'] >>u uimm[5:0]\nExpands\
+          \ to srli rd', rd', uimm[5:0]. Invalid when uimm[5] = 1, or uimm=0,"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 007_C.SRAI: !Subfeature
+    name: 007_C.SRAI
+    tag: VP_IP008_P007
+    next_elt_id: 3
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S007_I000
+        description: "c.srai rd', uimm[5:0]\nx[8+rd'] = x[8+rd'] >> uimm[5:0]\nExpands\
+          \ to srai rd', rd', uimm[5:0]."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S007_I001
+        description: "c.srai rd', uimm[5:0]\nx[8+rd'] = x[8+rd'] >> uimm[5:0]\nExpands\
+          \ to srai rd', rd', uimm[5:0]."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll shift amounts from [0:31] are used\n\
+          +ve, -ve and zero values of rd` are used\nAll bits of rd` before instruction\
+          \ execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S007_I002
+        description: "c.srai rd', uimm[5:0]\nx[8+rd'] = x[8+rd'] >> uimm[5:0]\nExpands\
+          \ to srai rd', rd', uimm[5:0]."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd` are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 008_C.ANDI: !Subfeature
+    name: 008_C.ANDI
+    tag: VP_IP008_P008
+    next_elt_id: 3
+    display_order: 8
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S008_I000
+        description: "c.andi rd', imm[5:0]\nx[8+rd'] = x[8+rd'] & sext(imm[5:0])\n\
+          Expands to andi rd', rd', imm[5:0].\nimm treated as signed number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S008_I001
+        description: "c.andi rd', imm[5:0]\nx[8+rd'] = x[8+rd'] & sext(imm[5:0])\n\
+          Expands to andi rd', rd', imm[5:0].\nimm treated as signed number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll shift amounts from [0:31] are used\n\
+          +ve, -ve and zero values of imm are used\nAll bits of rd` before instruction\
+          \ execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S008_I002
+        description: "c.andi rd', imm[5:0]\nx[8+rd'] = x[8+rd'] & sext(imm[5:0])\n\
+          Expands to andi rd', rd', imm[5:0].\nimm treated as signed number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd` are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 009_C.MV: !Subfeature
+    name: 009_C.MV
+    tag: VP_IP008_P009
+    next_elt_id: 3
+    display_order: 9
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S009_I000
+        description: "c.mv rd, rs2\nx[rd] = x[rs2]\nExpands to add rd, x0, rs2\nInvalid\
+          \ when rs2=x0 or rd=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd registers are used.\n\
+          All possible register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S009_I001
+        description: "c.mv rd, rs2\nx[rd] = x[rs2]\nExpands to add rd, x0, rs2\nInvalid\
+          \ when rs2=x0 or rd=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S009_I002
+        description: "c.mv rd, rs2\nx[rd] = x[rs2]\nExpands to add rd, x0, rs2\nInvalid\
+          \ when rs2=x0 or rd=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 010_C.ADD: !Subfeature
+    name: 010_C.ADD
+    tag: VP_IP008_P010
+    next_elt_id: 3
+    display_order: 10
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S010_I000
+        description: "c.add rd, rs2\nx[rd] = x[rd] + x[rs2]\nExpands to add rd, rd,\
+          \ rs2. Invalid when rd=x0 or rs2=x0.\nArithmetic overflow is lost and ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S010_I001
+        description: "c.add rd, rs2\nx[rd] = x[rd] + x[rs2]\nExpands to add rd, rd,\
+          \ rs2. Invalid when rd=x0 or rs2=x0.\nArithmetic overflow is lost and ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\n+ve,-ve and zero values of rs2 are used\n\
+          +ve,-ve, and zero values of rdrs1 are used\nAll bits of rs2 are toggled\n\
+          All bits of rd before instruction execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S010_I002
+        description: "c.add rd, rs2\nx[rd] = x[rd] + x[rs2]\nExpands to add rd, rd,\
+          \ rs2. Invalid when rd=x0 or rs2=x0.\nArithmetic overflow is lost and ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd are toggled\n+ve,-ve and zero\
+          \ values of rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 011_C.AND: !Subfeature
+    name: 011_C.AND
+    tag: VP_IP008_P011
+    next_elt_id: 3
+    display_order: 11
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S011_I000
+        description: "c.and rd', rs2'\nx[8+rd'] = x[8+rd'] & x[8+rs2']\nExpands to\
+          \ and rd', rd', rs2'."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S011_I001
+        description: "c.and rd', rs2'\nx[8+rd'] = x[8+rd'] & x[8+rs2']\nExpands to\
+          \ and rd', rd', rs2'."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nNon-zero and zero values of rs2` are used\n\
+          Non-zero and zero values of rd` are used\nAll bits of rs2` are toggled\n\
+          All bits of rd` before instruction execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S011_I002
+        description: "c.and rd', rs2'\nx[8+rd'] = x[8+rd'] & x[8+rs2']\nExpands to\
+          \ and rd', rd', rs2'."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd` are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 012_C.OR: !Subfeature
+    name: 012_C.OR
+    tag: VP_IP008_P012
+    next_elt_id: 3
+    display_order: 12
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S012_I000
+        description: "c.or rd', rs2'\nx[8+rd'] = x[8+rd'] | x[8+rs2']\nExpands to\
+          \ or rd', rd', rs2'."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S012_I001
+        description: "c.or rd', rs2'\nx[8+rd'] = x[8+rd'] | x[8+rs2']\nExpands to\
+          \ or rd', rd', rs2'."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nNon-zero and zero values of rs2` are used\n\
+          Non-zero and zero values of rd` are used\nAll bits of rs2` are toggled\n\
+          All bits of rd` before instruction execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S012_I002
+        description: "c.or rd', rs2'\nx[8+rd'] = x[8+rd'] | x[8+rs2']\nExpands to\
+          \ or rd', rd', rs2'."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd` are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 013_C.XOR: !Subfeature
+    name: 013_C.XOR
+    tag: VP_IP008_P013
+    next_elt_id: 3
+    display_order: 13
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S013_I000
+        description: "c.xor rd', rs2'\nx[8+rd'] = x[8+rd'] ^ x[8+rs2']\nExpands to\
+          \ xor rd', rd', rs2'."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S013_I001
+        description: "c.xor rd', rs2'\nx[8+rd'] = x[8+rd'] ^ x[8+rs2']\nExpands to\
+          \ xor rd', rd', rs2'."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nNon-zero and zero values of rs2` are used\n\
+          Non-zero and zero values of rd` are used\nAll bits of rs2` are toggled\n\
+          All bits of rd` before instruction execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S013_I002
+        description: "c.xor rd', rs2'\nx[8+rd'] = x[8+rd'] ^ x[8+rs2']\nExpands to\
+          \ xor rd', rd', rs2'."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd` are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 014_C.SUB: !Subfeature
+    name: 014_C.SUB
+    tag: VP_IP008_P014
+    next_elt_id: 3
+    display_order: 14
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S014_I000
+        description: "c.sub rd', rs2'\nx[8+rd'] = x[8+rd'] - x[8+rs2']\nExpands to\
+          \ sub rd', rd', rs2'. Arithmetic underflow is ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F010_S014_I001
+        description: "c.sub rd', rs2'\nx[8+rd'] = x[8+rd'] - x[8+rs2']\nExpands to\
+          \ sub rd', rd', rs2'. Arithmetic underflow is ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\n+ve,-ve and zero values of rs2` are used\n\
+          +ve, -ve, and zero values of rd` are used\nAll bits of rs2` are toggled\n\
+          All bits of rd` before instruction execution are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F010_S014_I002
+        description: "c.sub rd', rs2'\nx[8+rd'] = x[8+rd'] - x[8+rs2']\nExpands to\
+          \ sub rd', rd', rs2'. Arithmetic underflow is ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd` are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 015_C.EBREAK: !Subfeature
+    name: 015_C.EBREAK
+    tag: VP_IP008_P015
+    next_elt_id: 1
+    display_order: 15
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F010_S015_I000
+        description: "c.ebreak\nRaiseException(Breakpoint)\nExpands to ebreak."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Instruction executed
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

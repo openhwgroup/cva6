@@ -16,8 +16,8 @@ variables:
   COMPLIANCE_HASH: 220e78542da4510e40eac31e31fdd4e77cdae437
   COMPLIANCE_PATCH: ../../../cva6/riscv-compliance.patch
   TESTS_REPO: https://github.com/riscv/riscv-tests.git
-  TEST_BRANCH: master
-  TEST_HASH: f92842f91644092960ac7946a61ec2895e543cec
+  TESTS_BRANCH: master
+  TESTS_HASH: f92842f91644092960ac7946a61ec2895e543cec
   DV_REPO: https://github.com/google/riscv-dv.git
   DV_BRANCH: master
   NUM_JOBS: 24

@@ -43,12 +43,18 @@ package uvme_cva6_pkg;
    import uvml_trn_pkg    ::*;
    import uvma_clknrst_pkg::*;
    import uvma_cvxif_pkg::*;
+   import uvma_axi_pkg::*;
+   import uvml_mem_pkg  ::*;
+   import uvma_core_cntrl_pkg::*;
+   import uvma_rvfi_pkg::*;
+   import uvma_isacov_pkg::*;
 
    // Constants / Structs / Enums
    `include "uvme_cva6_constants.sv"
    `include "uvme_cva6_tdefs.sv"
 
    // Objects
+   `include "uvma_cva6_core_cntrl_cntxt.sv"
    `include "uvme_cva6_cfg.sv"
    `include "uvme_cva6_cntxt.sv"
 
@@ -56,6 +62,8 @@ package uvme_cva6_pkg;
    `include "uvme_cva6_prd.sv"
 
    // Environment components
+   `include "uvma_cva6_core_cntrl_drv.sv"
+   `include "uvma_cva6_core_cntrl_agent.sv"
    `include "uvme_cva6_sb.sv"
    `include "uvme_cva6_vsqr.sv"
    `include "uvme_cvxif_covg.sv"
@@ -68,9 +76,8 @@ package uvme_cva6_pkg;
 //   `include "uvme_cva6_interrupt_noise_vseq.sv"
    `include "uvme_cva6_vseq_lib.sv"
 
-
-
 endpackage : uvme_cva6_pkg
 
+`include "uvme_cva6_core_cntrl_if.sv"
 
 `endif // __UVME_CVA6_PKG_SV__

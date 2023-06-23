@@ -47,7 +47,7 @@ import subprocess
 import pprint
 import yaml
 import re
-import distutils.spawn
+import shutil
 
 if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
@@ -243,7 +243,7 @@ if (args.verilator):
 elif (args.simulator == None):
     print ('Must specify a simulator.  Type `ci_check -h` to see how')
     exit(0)
-elif (not(distutils.spawn.find_executable(args.simulator))):
+elif (not(shutil.which(args.simulator))):
     print ('ERROR: simulator='+args.simulator+' but executable not found')
     exit(0)
 else:
