@@ -273,9 +273,9 @@ class FusBusy:
 
     def is_ready(self, fu):
         return {
-            Fu.ALU: not ((self.fp or self.mul_last_cycle) and self.flu),
+            Fu.ALU: not ((self.flu or self.mul_last_cycle) and self.fp),
             Fu.MUL: not self.mul_this_cycle,
-            Fu.BRANCH: not self.flu,
+            Fu.BRANCH: not (self.flu or self.mul_last_cycle),
             Fu.LDU: not (self.ldu or self.stu),
             Fu.STU: not (self.ldu or self.stu),
         }[fu]
@@ -297,9 +297,9 @@ class FusBusy:
         self.mul_this_cycle = True
 
     def issue_alu(self):
-        if not (self.fp or self.mul_last_cycle):
+        if not self.fp:
             self.fp = True
-        elif not self.flu:
+        elif not (self.flu or self.mul_last_cycle):
             self.flu = True
         else:
             prout()
