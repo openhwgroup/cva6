@@ -1459,10 +1459,23 @@ covergroup cg_sequential(string name,
   cross_seq_group_x3: cross cp_group, cp_group_pipe_x2, cp_group_pipe_x3;
   cross_seq_group_x4: cross cp_group, cp_group_pipe_x2, cp_group_pipe_x3, cp_group_pipe_x4;
 
-  // FIXME: This will need more filtering
   cross_seq_gpr_raw_hazard: cross cp_group, cp_group_pipe_x2, cp_gpr_raw_hazard {
     // Ignore non-hazard bins
     ignore_bins IGN_HAZ = binsof(cp_gpr_raw_hazard) intersect {0};
+    ignore_bins IGN_GROUP = binsof(cp_group) intersect {UNKNOWN_GROUP,
+                                                        FENCE_GROUP,
+                                                        FENCE_I_GROUP,
+                                                        RET_GROUP,
+                                                        WFI_GROUP,
+                                                        ENV_GROUP};
+    ignore_bins IGN_PREV_GROUP = binsof(cp_group_pipe_x2) intersect {UNKNOWN_GROUP,
+                                                                     FENCE_GROUP,
+                                                                     FENCE_I_GROUP,
+                                                                     RET_GROUP,
+                                                                     WFI_GROUP,
+                                                                     ENV_GROUP,
+                                                                     STORE_GROUP,
+                                                                     BRANCH_GROUP};
   }
 
   cross_seq_csr_hazard_x2: cross cp_csr, cp_instr, cp_csr_hazard {
