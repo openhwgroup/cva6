@@ -24,7 +24,7 @@ parameter int XLEN = 32;
 parameter satp_mode_t SATP_MODE = BARE;
 
 // Supported Privileged mode
-privileged_mode_t supported_privileged_mode[] = {MACHINE_MODE};
+privileged_mode_t supported_privileged_mode[] = {USER_MODE, SUPERVISOR_MODE, MACHINE_MODE};
 
 // Unsupported instructions
 riscv_instr_name_t unsupported_instr[];
@@ -99,8 +99,14 @@ interrupt_cause_t implemented_interrupt[] = {
 `else
 const interrupt_cause_t implemented_interrupt[] = {
 `endif
+    U_SOFTWARE_INTR,
+    S_SOFTWARE_INTR,
     M_SOFTWARE_INTR,
+    U_TIMER_INTR,
+    S_TIMER_INTR,
     M_TIMER_INTR,
+    U_EXTERNAL_INTR,
+    S_EXTERNAL_INTR,
     M_EXTERNAL_INTR
 };
 
@@ -109,10 +115,18 @@ exception_cause_t implemented_exception[] = {
 `else
 const exception_cause_t implemented_exception[] = {
 `endif
+    INSTRUCTION_ADDRESS_MISALIGNED,
     INSTRUCTION_ACCESS_FAULT,
     ILLEGAL_INSTRUCTION,
     BREAKPOINT,
     LOAD_ADDRESS_MISALIGNED,
     LOAD_ACCESS_FAULT,
-    ECALL_MMODE
+    STORE_AMO_ADDRESS_MISALIGNED,
+    STORE_AMO_ACCESS_FAULT,
+    ECALL_UMODE,
+    ECALL_SMODE,
+    ECALL_MMODE,
+    INSTRUCTION_PAGE_FAULT,
+    LOAD_PAGE_FAULT,
+    STORE_AMO_PAGE_FAULT
 };
