@@ -852,8 +852,6 @@ module cva6 import ariane_pkg::*; #(
 
   if (ENABLE_ACCELERATOR) begin: gen_accelerator
     acc_pkg::accelerator_req_t acc_req;
-    fu_data_t acc_data;
-    assign acc_data = acc_valid_acc_ex ? fu_data_id_ex : '0;
 
     acc_dispatcher i_acc_dispatcher (
       .clk_i                  ( clk_i                        ),
@@ -866,7 +864,7 @@ module cva6 import ariane_pkg::*; #(
       .issue_instr_i          ( issue_instr_id_acc           ),
       .issue_instr_hs_i       ( issue_instr_hs_id_acc        ),
       .issue_stall_o          ( stall_acc_id                 ),
-      .acc_data_i             ( acc_data                     ),
+      .fu_data_i              ( fu_data_id_ex                ),
       .commit_instr_i         ( commit_instr_id_commit       ),
       .commit_st_barrier_i    ( fence_i_commit_controller | fence_commit_controller ),
       .acc_trans_id_o         ( acc_trans_id_ex_id           ),

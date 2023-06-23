@@ -25,7 +25,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     input  scoreboard_entry_t                     issue_instr_i,
     input  logic                                  issue_instr_hs_i,
     output logic                                  issue_stall_o,
-    input  fu_data_t                              acc_data_i,
+    input  fu_data_t                              fu_data_i,
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,
     output logic              [TRANS_ID_BITS-1:0] acc_trans_id_o,
     output xlen_t                                 acc_result_o,
@@ -98,12 +98,15 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
 
   localparam InstructionQueueDepth = 3;
 
+  fu_data_t                                        acc_data;
   fu_data_t                                        acc_insn_queue_o;
   logic                                            acc_insn_queue_pop;
   logic                                            acc_insn_queue_empty;
   logic     [idx_width(InstructionQueueDepth)-1:0] acc_insn_queue_usage;
   logic                                            acc_commit;
   logic     [TRANS_ID_BITS-1:0]                    acc_commit_trans_id;
+
+  assign acc_data = acc_valid_ex_o ? fu_data_i : '0;
 
   fifo_v3 #(
     .DEPTH       (InstructionQueueDepth),
@@ -114,7 +117,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     .rst_ni    (rst_ni              ),
     .flush_i   (flush_ex_i          ),
     .testmode_i(1'b0                ),
-    .data_i    (acc_data_i          ),
+    .data_i    (fu_data_i           ),
     .push_i    (acc_valid_q         ),
     .full_o    (/* Unused */        ),
     .data_o    (acc_insn_queue_o    ),
@@ -147,7 +150,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
 
     // We received a new instruction
     if (acc_valid_q)
-      insn_pending_d[acc_data_i.trans_id] = 1'b1;
+      insn_pending_d[acc_data.trans_id] = 1'b1;
     // Flush all received instructions
     if (flush_ex_i)
       insn_pending_d = '0;
