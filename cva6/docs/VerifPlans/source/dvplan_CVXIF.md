@@ -558,3 +558,517 @@
   
   *(none)*  
   
+## Feature: Custom Instructions
+
+### Sub-feature: 000_CUS_ADD
+
+#### Item: 000
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_add works in all privilege modes
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rs1 registers are used.  
+  All possible rs2 registers are used.  
+  All possible rd registers are used.  
+  All possible register combinations where rs1 == rd are used  
+  All possible register combinations where rs2 == rd are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S000_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_add works in all privilege modes
+* **Verification Goals**
+  
+  Input operands:  
+    
+  rs1 value is +ve, -ve and zero  
+  rs2 value is +ve, -ve and zero  
+  All combinations of rs1 and rs2 +ve, -ve, and zero values are used  
+  All bits of rs1 are toggled  
+  All bits of rs2 are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S000_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_add works in all privilege modes
+* **Verification Goals**
+  
+  Output result:  
+    
+  rd value is +ve, -ve and zero  
+  All bits of rd are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S000_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 001_CUS_NOP
+
+#### Item: 000
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  No operation Instruction
+* **Verification Goals**
+  
+  Instruction executed
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S001_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 003_CUS_S_ADD
+
+#### Item: 000
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_s_add rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_s_add works in supervisor privilege mode
+* **Verification Goals**
+  
+  Register operands:  
+    
+  if (mode == s)  
+  All possible rs1 registers are used.  
+  All possible rs2 registers are used.  
+  All possible rd registers are used.  
+  All possible register combinations where rs1 == rd are used  
+  All possible register combinations where rs2 == rd are used  
+    
+  else if (mode != s)  
+  illegal exception raised on hte CPU
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S003_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_s_add rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_s_add works in supervisor privilege mode
+* **Verification Goals**
+  
+  Input operands:  
+    
+  if (mode == s)  
+  rs1 value is +ve, -ve and zero  
+  rs2 value is +ve, -ve and zero  
+  All combinations of rs1 and rs2 +ve, -ve, and zero values are used  
+  All bits of rs1 are toggled  
+  All bits of rs2 are toggled  
+    
+  else if (mode != s)  
+  illegal exception raised on the CPU
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S003_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_s_add rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_s_add works in supervisor privilege mode
+* **Verification Goals**
+  
+  Output operands:  
+    
+  if (mode == s)  
+  rd value is +ve, -ve and zero  
+  All bits of rd are toggled  
+    
+  else if (mode != s)  
+  illegal exception raised on the CPU
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S003_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 004_CUS_U_ADD
+
+#### Item: 000
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_u_add rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_u_add works in User privilege mode
+* **Verification Goals**
+  
+  Register operands:  
+    
+  if (mode == u)  
+  All possible rs1 registers are used.  
+  All possible rs2 registers are used.  
+  All possible rd registers are used.  
+  All possible register combinations where rs1 == rd are used  
+  All possible register combinations where rs2 == rd are used  
+    
+  else if (mode != u)  
+  illegal exception raised on hte CPU
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S004_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_u_add rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_u_add works in User privilege mode
+* **Verification Goals**
+  
+  Input operands:  
+    
+  if (mode == u)  
+  rs1 value is +ve, -ve and zero  
+  rs2 value is +ve, -ve and zero  
+  All combinations of rs1 and rs2 +ve, -ve, and zero values are used  
+  All bits of rs1 are toggled  
+  All bits of rs2 are toggled  
+    
+  else if (mode != u)  
+  illegal exception raised on the CPU
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S004_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_u_add rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_u_add works in User privilege mode
+* **Verification Goals**
+  
+  Output operands:  
+    
+  if (mode == u)  
+  rd value is +ve, -ve and zero  
+  All bits of rd are toggled  
+    
+  else if (mode != u)  
+  illegal exception raised on the CPU
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S004_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 005_CUS_ADD_MULTI
+
+#### Item: 000
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add_multi rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_add_multi works in all privilege modes
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rs1 registers are used.  
+  All possible rs2 registers are used.  
+  All possible rd registers are used.  
+  All possible register combinations where rs1 == rd are used  
+  All possible register combinations where rs2 == rd are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S005_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add_multi rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_add_multi works in all privilege modes
+* **Verification Goals**
+  
+  Input operands:  
+    
+  rs1 value is +ve, -ve and zero  
+  rs2 value is +ve, -ve and zero  
+  All combinations of rs1 and rs2 +ve, -ve, and zero values are used  
+  All bits of rs1 are toggled  
+  All bits of rs2 are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S005_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add_multi rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_add_multi works in all privilege modes
+* **Verification Goals**
+  
+  Output result:  
+    
+  rd value is +ve, -ve and zero  
+  All bits of rd are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S005_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 003
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add_multi rd, rs1, rs2  
+  rd = rs1 + rs2  
+  cus_add_multi works in all privilege modes
+* **Verification Goals**
+  
+  Check all delays from min to max
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S005_I003
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 006_CUS_EXC
+
+#### Item: 000
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_exc imm[5:0]  
+  mcause[5:0] = imm[5:0]  
+  cus_exc raise an exception on the CPU base on the imm value
+* **Verification Goals**
+  
+  Check all possible imm value
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S006_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 007_CUS_ADD_RS3
+
+#### Item: 000
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add_rs3 rd, rs1, rs2, rs3  
+  rd = rs1 + rs2 + rs3  
+  cus_add_rs3 works in all privilege modes  
+    
+  X_NUM_RS == 3
+* **Verification Goals**
+  
+  Register operands:  
+    
+  if (X_NUM_RS == 3)  
+  All possible rs1 registers are used.  
+  All possible rs2 registers are used.  
+  All possible rs3 registers are used.  
+  All possible rd registers are used.  
+  All possible register combinations where rs1 == rd are used  
+  All possible register combinations where rs2 == rd are used  
+  All possible register combinations where rs3 == rd are used  
+    
+    
+  else if (X_NUM_RS != 3)  
+  illegal exception raised on the CPU
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S007_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add_rs3 rd, rs1, rs2, rs3  
+  rd = rs1 + rs2 + rs3  
+  cus_add_rs3 works in all privilege modes  
+    
+  X_NUM_RS == 3
+* **Verification Goals**
+  
+  Input operands:  
+    
+  if (X_NUS_RS == 3)  
+  rs1 value is +ve, -ve and zero  
+  rs2 value is +ve, -ve and zero  
+  rs3 value is +ve, -ve and zero  
+  All combinations of rs1, rs2 and rs3 +ve, -ve, and zero values are used  
+  All bits of rs1 are toggled  
+  All bits of rs2 are toggled  
+  All bits of rs3 are toggled  
+    
+  else if (X_NUM_RS != 3)  
+  illegal exception raised on the CPU
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32E40P, CV32E40S, CV32E40X, CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S007_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./custom_instruction.rst
+* **Feature Description**
+  
+  cus_add_rs3 rd, rs1, rs2, rs3  
+  rd = rs1 + rs2 + rs3  
+  cus_add_rs3 works in all privilege modes  
+    
+  X_NUM_RS == 3
+* **Verification Goals**
+  
+  Output operands:  
+    
+  if (X_NUM_RS == 3)  
+  rd value is +ve, -ve and zero  
+  All bits of rd are toggled  
+    
+  else if (X_NUM_RS != 3)  
+  illegal exception raised on the CPU
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_CVXIF_F003_S007_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
