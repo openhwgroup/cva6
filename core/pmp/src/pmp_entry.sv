@@ -29,6 +29,9 @@ module pmp_entry #(
 );
     logic [PLEN-1:0] conf_addr_n;
     logic [$clog2(PLEN)-1:0] trail_ones;
+    logic [PLEN-1:0] base;
+    logic [PLEN-1:0] mask;
+    int unsigned size;
     assign conf_addr_n = ~conf_addr_i;
     lzc #(.WIDTH(PLEN), .MODE(1'b0)) i_lzc(
         .in_i    ( conf_addr_n ),
@@ -39,6 +42,9 @@ module pmp_entry #(
     always_comb begin
         case (conf_addr_mode_i)
             riscv::TOR:     begin
+                base = '0;
+                mask = '0;
+                size = '0;
                 // check that the requested address is in between the two
                 // configuration addresses
                 if (addr_i >= (conf_addr_prev_i << 2) && addr_i < (conf_addr_i << 2)) begin
@@ -55,9 +61,6 @@ module pmp_entry #(
 
             end
             riscv::NA4, riscv::NAPOT:   begin
-                logic [PLEN-1:0] base;
-                logic [PLEN-1:0] mask;
-                int unsigned size;
 
                 if (conf_addr_mode_i == riscv::NA4) size = 2;
                 else begin
@@ -100,8 +103,18 @@ module pmp_entry #(
                 // synthesis translate_on
 
             end
-            riscv::OFF: match_o = 1'b0;
-            default:    match_o = 0;
+	        riscv::OFF: begin
+                match_o = 1'b0;
+                base = '0;
+                mask = '0;
+                size = '0;
+	        end
+	        default: begin
+                match_o = 0;
+                base = '0;
+                mask = '0;
+                size = '0;
+	        end
         endcase
     end
 

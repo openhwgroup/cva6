@@ -73,9 +73,11 @@ module pmp #(
     end else assign allow_o = 1'b1;
 
     // synthesis translate_off
-    always @(*) begin
+    always_comb begin
+        logic no_locked;
+        no_locked = 1'b0;
         if(priv_lvl_i == riscv::PRIV_LVL_M) begin
-            static logic no_locked = 1'b1;
+            no_locked = 1'b1;
             for (int i = 0; i < NR_ENTRIES; i++) begin
                 if (conf_i[i].locked && conf_i[i].addr_mode != riscv::OFF) begin
                     no_locked &= 1'b0;
