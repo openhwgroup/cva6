@@ -868,12 +868,12 @@ def load_config(args, cwd):
     if args.target == "cv64a6_imafdc_sv39":
       args.mabi = "lp64d"
       args.isa  = "rv64gc"
-    elif args.target == "cv32a60x":
+    elif args.target == "cv32a60x": # step1 configuration
       args.mabi = "ilp32"
-      args.isa  = "rv32imc" # Step1 configuration has no A extension.
+      args.isa  = "rv32imac"
     elif args.target == "cv32a6_embedded":
       args.mabi = "ilp32"
-      args.isa  = "rv32imc" # Step1 configuration has no A extension.
+      args.isa  = "rv32imc"
     elif args.target == "cv32a6_imac_sv0":
       args.mabi = "ilp32"
       args.isa  = "rv32imac"
