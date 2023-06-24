@@ -72,6 +72,16 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   input wbuffer_t             [DCACHE_WBUF_DEPTH-1:0]       wbuffer_data_i
 );
 
+  // functions
+  function automatic logic [DCACHE_NUM_BANKS-1:0] dcache_cl_bin2oh (
+    input logic [DCACHE_NUM_BANKS_WIDTH-1:0] in
+  );
+    logic [DCACHE_NUM_BANKS-1:0] out;
+    out     = '0;
+    out[in] = 1'b1;
+    return out;
+  endfunction
+
   // number of bits needed to address AXI data. If AxiDataWidth equals XLEN this parameter
   // is not needed. Therefore, increment it by one to avoid reverse range select during elaboration.
   localparam AXI_OFFSET_WIDTH = AxiDataWidth == riscv::XLEN ? $clog2(AxiDataWidth/8)+1 : $clog2(AxiDataWidth/8);

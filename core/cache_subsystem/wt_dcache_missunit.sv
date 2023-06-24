@@ -71,6 +71,38 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   output dcache_req_t                                mem_data_o
 );
 
+  // functions
+  function automatic logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh (
+    input logic [L1D_WAY_WIDTH-1:0] in
+  );
+    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] out;
+    out     = '0;
+    out[in] = 1'b1;
+    return out;
+  endfunction
+
+  // align the physical address to the specified size:
+  // 000: bytes
+  // 001: hword
+  // 010: word
+  // 011: dword
+  // 111: DCACHE line
+  function automatic logic [riscv::PLEN-1:0] paddrSizeAlign(
+    input logic [riscv::PLEN-1:0] paddr,
+    input logic [2:0]  size
+  );
+    logic [riscv::PLEN-1:0] out;
+    out = paddr;
+    unique case (size)
+      3'b001: out[0:0]                     = '0;
+      3'b010: out[1:0]                     = '0;
+      3'b011: out[2:0]                     = '0;
+      3'b111: out[DCACHE_OFFSET_WIDTH-1:0] = '0;
+      default: ;
+    endcase
+    return out;
+  endfunction : paddrSizeAlign
+
   // controller FSM
   typedef enum logic[2:0] {IDLE, DRAIN, AMO,  FLUSH, STORE_WAIT, LOAD_WAIT, AMO_WAIT} state_e;
   state_e state_d, state_q;
@@ -251,7 +283,7 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign mem_data_o.amo_op = (amo_sel) ? amo_req_i.amo_op    : AMO_NONE;
 
   assign tmp_paddr         = (amo_sel) ? amo_req_i.operand_a[riscv::PLEN-1:0] : miss_paddr_i[miss_port_idx];
-  assign mem_data_o.paddr  = wt_cache_pkg::paddrSizeAlign(tmp_paddr, mem_data_o.size);
+  assign mem_data_o.paddr  = paddrSizeAlign(tmp_paddr, mem_data_o.size);
 
 ///////////////////////////////////////////////////////
 // back-off mechanism for LR/SC completion guarantee

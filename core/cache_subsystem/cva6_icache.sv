@@ -49,6 +49,16 @@ module cva6_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   output icache_req_t               mem_data_o
 );
 
+  // functions
+  function automatic logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh (
+    input logic [L1I_WAY_WIDTH-1:0] in
+  );
+    logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] out;
+    out     = '0;
+    out[in] = 1'b1;
+    return out;
+  endfunction
+
   // signals
   logic                                 cache_en_d, cache_en_q;       // cache is enabled
   logic [riscv::VLEN-1:0]               vaddr_d, vaddr_q;
