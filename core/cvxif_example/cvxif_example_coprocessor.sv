@@ -141,9 +141,9 @@ module cvxif_example_coprocessor import cvxif_pkg::*;
   );
 
   always_comb begin
+    x_result_o.data     = req_o.req.rs[0] + req_o.req.rs[1] + ( X_NUM_RS == 3 ? req_o.req.rs[2] : 0);
     x_result_valid_o    = (c == x_result_o.data[3:0]) && ~fifo_empty ? 1 : 0;
     x_result_o.id       = req_o.req.id;
-    x_result_o.data     = req_o.req.rs[0] + req_o.req.rs[1] + ( X_NUM_RS == 3 ? req_o.req.rs[2] : 0);
     x_result_o.rd       = req_o.req.instr[11:7];
     x_result_o.we       = req_o.resp.writeback & x_result_valid_o;
     x_result_o.exc      = 0;
