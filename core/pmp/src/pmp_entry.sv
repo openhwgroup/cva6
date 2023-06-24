@@ -13,7 +13,7 @@
 // Description: single PMP entry
 
 module pmp_entry #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
     parameter int unsigned PLEN = 56,
     parameter int unsigned PMP_LEN = 54
 ) (

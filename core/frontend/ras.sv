@@ -15,7 +15,7 @@
 
 // return address stack
 module ras #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
     parameter int unsigned DEPTH = 2
 )(
     input  logic             clk_i,

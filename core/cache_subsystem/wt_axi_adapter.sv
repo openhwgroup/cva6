@@ -15,7 +15,7 @@
 
 
 module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
   parameter int unsigned ReqFifoDepth  = 2,
   parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
   parameter int unsigned AxiAddrWidth = 0,

@@ -17,7 +17,7 @@
 // --------------
 
 module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
     parameter int unsigned NR_PORTS       = 3,
     parameter int unsigned AXI_ADDR_WIDTH = 0,
     parameter int unsigned AXI_DATA_WIDTH = 0,

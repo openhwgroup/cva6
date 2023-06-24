@@ -14,7 +14,7 @@
 
 
 module perf_counters import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
   parameter int unsigned                NumPorts      = 3    // number of miss ports
 ) (
   input  logic                                    clk_i,

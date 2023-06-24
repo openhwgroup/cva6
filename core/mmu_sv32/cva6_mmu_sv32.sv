@@ -27,7 +27,7 @@
 // =========================================================================== //
 
 module cva6_mmu_sv32 import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
     parameter int unsigned INSTR_TLB_ENTRIES     = 2,
     parameter int unsigned DATA_TLB_ENTRIES      = 2,
     parameter int unsigned ASID_WIDTH            = 1,

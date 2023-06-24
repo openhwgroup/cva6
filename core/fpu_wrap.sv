@@ -14,7 +14,7 @@
 
 
 module fpu_wrap import ariane_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0
 ) (
   input  logic                     clk_i,
   input  logic                     rst_ni,

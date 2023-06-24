@@ -20,7 +20,7 @@
 
 
 module compressed_decoder #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0
 ) (
     input  logic [31:0] instr_i,
     output logic [31:0] instr_o,

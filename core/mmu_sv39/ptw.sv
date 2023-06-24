@@ -16,7 +16,7 @@
 /* verilator lint_off WIDTH */
 
 module ptw import ariane_pkg::*; #(
-        parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+        parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
         parameter int ASID_WIDTH = 1,
         parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (

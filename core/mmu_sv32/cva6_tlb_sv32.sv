@@ -25,7 +25,7 @@
 // =========================================================================== //
 
 module cva6_tlb_sv32 import ariane_pkg::*; #(
-      parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+      parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
       parameter int unsigned TLB_ENTRIES = 4,
       parameter int unsigned ASID_WIDTH  = 1
   )(

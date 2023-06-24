@@ -10,7 +10,7 @@
 // Description: Re-name registers
 
 module re_name import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0
 ) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low

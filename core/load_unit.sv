@@ -14,7 +14,7 @@
 // Description: Load Unit, takes care of all load requests
 
 module load_unit import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
     input  logic                     clk_i,    // Clock

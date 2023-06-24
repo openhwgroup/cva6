@@ -26,7 +26,7 @@
 
 
 module cva6_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = 0,
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
   parameter logic [MEM_TID_WIDTH-1:0]   RdTxId             = 0,                                  // ID to be used for read transactions
   parameter ariane_pkg::ariane_cfg_t    ArianeCfg          = ariane_pkg::ArianeDefaultConfig     // contains cacheable regions
 ) (
