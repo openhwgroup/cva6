@@ -16,6 +16,7 @@ module cvxif_fu import ariane_pkg::*; #(
     input  logic                              clk_i,
     input  logic                              rst_ni,
     input  fu_data_t                          fu_data_i,
+    input  riscv::priv_lvl_t                  priv_lvl_i,
     //from issue
     input  logic                              x_valid_i,
     output logic                              x_ready_o,
@@ -42,6 +43,7 @@ module cvxif_fu import ariane_pkg::*; #(
       if (x_valid_i) begin
         cvxif_req_o.x_issue_valid          = x_valid_i;
         cvxif_req_o.x_issue_req.instr      = x_off_instr_i;
+        cvxif_req_o.x_issue_req.mode       = priv_lvl_i;
         cvxif_req_o.x_issue_req.id         = fu_data_i.trans_id;
         cvxif_req_o.x_issue_req.rs[0]      = fu_data_i.operand_a;
         cvxif_req_o.x_issue_req.rs[1]      = fu_data_i.operand_b;
