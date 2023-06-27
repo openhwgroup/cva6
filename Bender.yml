@@ -43,6 +43,7 @@ sources:
           - core/mmu_sv39/tlb.sv
           - core/mmu_sv39/mmu.sv
           - core/mmu_sv39/ptw.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
 
       - target: cv32a6_imac_sv0
         files:
@@ -54,6 +55,7 @@ sources:
           - core/mmu_sv32/cva6_tlb_sv32.sv
           - core/mmu_sv32/cva6_mmu_sv32.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
 
       - target: cv32a6_imac_sv32
         files:
@@ -65,6 +67,7 @@ sources:
           - core/mmu_sv32/cva6_tlb_sv32.sv
           - core/mmu_sv32/cva6_mmu_sv32.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
 
       - target: cv32a6_imafc_sv32
         files:
@@ -75,6 +78,7 @@ sources:
           - core/mmu_sv32/cva6_tlb_sv32.sv
           - core/mmu_sv32/cva6_mmu_sv32.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
 
       # included via target core/include/${TARGET_CFG}_config_pkg.sv
       # ariane_axi_pkg is dependent on this.
