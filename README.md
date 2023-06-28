@@ -2,6 +2,10 @@
 
 # :warning: We inform you that big RTL modifications are in process to better parametrize CVA6. For deeper information, please refer to the https://github.com/openhwgroup/cva6/issues/1233 github issue :warning:
 
+These changes will impact CVA6 interfaces (and top-level parameters). They will be performed progressively with several pull requests over a few weeks.
+To avoid integrating a moving target in their design, CVA6 users can therefore consider pointing to a specific GitHub hash during the changes
+(or investigate [vendorization](https://opentitan.org/book/util/doc/vendor.html)).
+
 # CVA6 RISC-V CPU
 
 CVA6 is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
