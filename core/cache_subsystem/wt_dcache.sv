@@ -14,7 +14,7 @@
 
 
 module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
   parameter int unsigned                 AxiDataWidth       = 0,
   parameter int unsigned                 NumPorts           = 3,    // number of miss ports
   // ID to be used for read and AMO transactions.

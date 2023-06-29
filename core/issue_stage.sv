@@ -15,7 +15,7 @@
 
 
 module issue_stage import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
     parameter int unsigned NR_ENTRIES = 8,
     parameter int unsigned NR_WB_PORTS = 4,
     parameter int unsigned NR_COMMIT_PORTS = 2

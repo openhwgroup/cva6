@@ -11,7 +11,7 @@
 
 
 module cvxif_fu import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0
 ) (
     input  logic                              clk_i,
     input  logic                              rst_ni,

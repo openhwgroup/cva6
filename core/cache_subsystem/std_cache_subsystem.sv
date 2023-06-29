@@ -16,7 +16,7 @@
 
 
 module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
     parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig,  // contains cacheable regions
     parameter int unsigned AxiAddrWidth = 0,
     parameter int unsigned AxiDataWidth = 0,

@@ -23,7 +23,7 @@
 //
 
 module ariane_regfile #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
   parameter int unsigned DATA_WIDTH     = 32,
   parameter int unsigned NR_READ_PORTS  = 2,
   parameter int unsigned NR_WRITE_PORTS = 2,

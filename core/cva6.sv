@@ -49,7 +49,7 @@ module cva6 import ariane_pkg::*; #(
   input  axi_rsp_t                     axi_resp_i
 );
 
-  localparam ariane_pkg::cva6_cfg_t cva6_cfg = '0;
+  localparam ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0;
 
   // ------------------------------------------
   // Global Signals

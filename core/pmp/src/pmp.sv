@@ -13,7 +13,7 @@
 // Description: purely combinatorial PMP unit (with extraction for more complex configs such as NAPOT)
 
 module pmp #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
     parameter int unsigned PLEN = 34,       // rv64: 56
     parameter int unsigned PMP_LEN = 32,    // rv64: 54
     parameter int unsigned NR_ENTRIES = 4

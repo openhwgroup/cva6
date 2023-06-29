@@ -13,7 +13,7 @@
 // Description: single PMP entry
 
 module pmp_entry #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
     parameter int unsigned PLEN = 56,
     parameter int unsigned PMP_LEN = 54
 ) (
@@ -104,18 +104,18 @@ module pmp_entry #(
                 // synthesis translate_on
 
             end
-	        riscv::OFF: begin
+            riscv::OFF: begin
                 match_o = 1'b0;
                 base = '0;
                 mask = '0;
                 size = '0;
-	        end
-	        default: begin
+            end
+            default: begin
                 match_o = 0;
                 base = '0;
                 mask = '0;
                 size = '0;
-	        end
+            end
         endcase
     end
 

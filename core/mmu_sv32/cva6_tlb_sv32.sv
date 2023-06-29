@@ -25,7 +25,7 @@
 // =========================================================================== //
 
 module cva6_tlb_sv32 import ariane_pkg::*; #(
-      parameter ariane_pkg::cva6_cfg_t cva6_cfg = '0,
+      parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
       parameter int unsigned TLB_ENTRIES = 4,
       parameter int unsigned ASID_WIDTH  = 1
   )(
@@ -145,10 +145,10 @@ module cva6_tlb_sv32 import ariane_pkg::*; #(
     int unsigned idx_base, shift, new_index;
     always_comb begin : plru_replacement
         plru_tree_n = plru_tree_q;
-	      en = '0;
-	      idx_base = '0;
-	      shift = '0;
-	      new_index = '0;
+          en = '0;
+          idx_base = '0;
+          shift = '0;
+          new_index = '0;
         // The PLRU-tree indexing:
         // lvl0        0
         //            / \
