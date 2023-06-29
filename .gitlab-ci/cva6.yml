@@ -154,9 +154,11 @@ pub_build_tools:
     - source cva6/regress/install-spike.sh
     # Strip locally built binaries and libraries to reduce artifact size.
     - '[ -f $(pwd)/tools/spike/bin/spike ] && strip $(pwd)/tools/spike/bin/spike* $(pwd)/tools/spike/lib/lib*.*'
+    - mkdir -p artifacts/tools/
+    - mv tools/spike artifacts/tools/
   artifacts:
     paths:
-      - tools/spike/
+      - artifacts/tools/spike/*
 
 pub_smoke:
   stage: one
