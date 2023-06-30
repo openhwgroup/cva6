@@ -294,34 +294,6 @@ package ariane_pkg;
                                                     | riscv::SSTATUS_FS
                                                     | riscv::SSTATUS_SUM
                                                     | riscv::SSTATUS_MXR;
-
-    // ----------------------
-    // Accelerator Interface
-    // ----------------------
-
-    typedef struct packed {
-      riscv::instruction_t      insn;
-      riscv::xlen_t             rs1;
-      riscv::xlen_t             rs2;
-      fpnew_pkg::roundmode_e    frm;
-      logic [TRANS_ID_BITS-1:0] trans_id;
-      logic                     store_pending;
-    } accelerator_req_t;
-
-    typedef struct packed {
-      riscv::xlen_t             result;
-      logic [TRANS_ID_BITS-1:0] trans_id;
-      logic                     error;
-
-      // Metadata
-      logic                     store_pending;
-      logic                     store_complete;
-      logic                     load_complete;
-
-      logic               [4:0] fflags;
-      logic                     fflags_valid;
-    } accelerator_resp_t;
-
     // ---------------
     // AXI
     // ---------------
