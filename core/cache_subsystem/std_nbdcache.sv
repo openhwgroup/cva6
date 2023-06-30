@@ -14,7 +14,7 @@
 
 
 module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
     parameter ariane_cfg_t ArianeCfg        = ArianeDefaultConfig, // contains cacheable regions
     parameter int unsigned AXI_ADDR_WIDTH   = 0,
     parameter int unsigned AXI_DATA_WIDTH   = 0,

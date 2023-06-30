@@ -25,7 +25,7 @@
 // =========================================================================== //
 
 module cva6_tlb_sv32 import ariane_pkg::*; #(
-      parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
+      parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
       parameter int unsigned TLB_ENTRIES = 4,
       parameter int unsigned ASID_WIDTH  = 1
   )(
@@ -110,7 +110,7 @@ module cva6_tlb_sv32 import ariane_pkg::*; #(
             if (flush_i) begin
                 // invalidate logic
                 // flush everything if ASID is 0 and vaddr is 0 ("SFENCE.VMA x0 x0" case)
-        if (asid_to_be_flushed_is0 && vaddr_to_be_flushed_is0 )
+                if (asid_to_be_flushed_is0 && vaddr_to_be_flushed_is0 )
                     tags_n[i].valid = 1'b0;
                 // flush vaddr in all addressing space ("SFENCE.VMA vaddr x0" case), it should happen only for leaf pages
                 else if (asid_to_be_flushed_is0 && ( (vaddr_vpn0_match[i] && vaddr_vpn1_match[i]) || (vaddr_vpn1_match[i] && tags_q[i].is_4M) ) && (~vaddr_to_be_flushed_is0))

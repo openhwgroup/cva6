@@ -20,7 +20,7 @@
 
 
 module axi_shim #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
   parameter int unsigned AxiUserWidth = 64, // data width in dwords, this is also the maximum burst length, must be >=2
   parameter int unsigned AxiNumWords = 4, // data width in dwords, this is also the maximum burst length, must be >=2
   parameter int unsigned AxiAddrWidth = 0,

@@ -35,7 +35,7 @@ package ariane_pkg;
       int unsigned dummy;
     } cva6_cfg_t;
 
-    localparam cva6_cfg_t cva6_cfg0 = {
+    localparam cva6_cfg_t cva6_cfg_empty = {
       '0
     };
 

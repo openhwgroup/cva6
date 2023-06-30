@@ -20,7 +20,7 @@
 
 
 module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
   parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig,  // contains cacheable regions
   parameter int unsigned NumPorts     = 3,
   parameter int unsigned AxiAddrWidth = 0,

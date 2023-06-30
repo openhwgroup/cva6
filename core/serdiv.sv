@@ -16,7 +16,7 @@
 
 
 module serdiv import ariane_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
   parameter WIDTH       = 64
 ) (
   input  logic                      clk_i,

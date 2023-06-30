@@ -14,7 +14,7 @@
 
 
 module commit_stage import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg0,
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                    clk_i,
