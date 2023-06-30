@@ -170,13 +170,13 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
    *  Accelerator request  *
    *************************/
 
-  accelerator_req_t acc_req;
-  logic             acc_req_valid;
-  logic             acc_req_ready;
+  acc_pkg::accelerator_req_t acc_req;
+  logic                      acc_req_valid;
+  logic                      acc_req_ready;
 
-  accelerator_req_t acc_req_int;
+  acc_pkg::accelerator_req_t acc_req_int;
   fall_through_register #(
-    .T(accelerator_req_t)
+    .T(acc_pkg::accelerator_req_t)
   ) i_accelerator_req_register (
     .clk_i     (clk_i          ),
     .rst_ni    (rst_ni         ),
