@@ -10,6 +10,7 @@
 import re
 import sys
 import os
+import yaml
 import report_builder as rb
 
 log_path = str(sys.argv[1])
@@ -21,11 +22,8 @@ with open(str(sys.argv[2]), 'r') as f:
 
 kgate_ratio = int(os.environ["NAND2_AREA"])
 path_re = r'^core-v-cores/cva6/pd/synth/cva6_([^/]+)'
-expected = {
-    'cv64a6_imafdc_sv39': 545030,
-    'cv32a60x': 160467,
-    'cv32a6_embedded': 127410,
-}
+with open("core-v-cores/cva6/.gitlab-ci/expected_synth.yml", "r") as f:
+    expected = yaml.safe_load(f)
 
 #Compile & elaborate log:
 log_metric = rb.LogMetric('Synthesis full log')
@@ -66,7 +64,7 @@ match = re.match(path_re, log_path)
 if match:
     target = match.group(1)
     if target in expected:
-        diff = gates - expected[target]
+        diff = gates - expected[target]['gates']
         if abs(diff) >= 100:
             result_metric.fail()
     else:
