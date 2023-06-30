@@ -413,7 +413,7 @@ module issue_read_operands import ariane_pkg::*; #(
     end
     if (ariane_pkg::FPGA_EN) begin : gen_fpga_regfile
         ariane_regfile_fpga #(
-            .cva6_cfg   ( cva6_cfg   ),
+            .cva6_cfg       ( cva6_cfg        ),
             .DATA_WIDTH     ( riscv::XLEN     ),
             .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
             .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
@@ -429,7 +429,7 @@ module issue_read_operands import ariane_pkg::*; #(
         );
     end else begin : gen_asic_regfile
         ariane_regfile #(
-            .cva6_cfg   ( cva6_cfg   ),
+            .cva6_cfg       ( cva6_cfg        ),
             .DATA_WIDTH     ( riscv::XLEN     ),
             .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
             .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
@@ -462,7 +462,7 @@ module issue_read_operands import ariane_pkg::*; #(
             end
             if (ariane_pkg::FPGA_EN) begin : gen_fpga_fp_regfile
                 ariane_regfile_fpga #(
-                    .cva6_cfg   ( cva6_cfg   ),
+                    .cva6_cfg       ( cva6_cfg        ),
                     .DATA_WIDTH     ( FLEN            ),
                     .NR_READ_PORTS  ( 3               ),
                     .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
@@ -478,7 +478,7 @@ module issue_read_operands import ariane_pkg::*; #(
                 );
             end else begin : gen_asic_fp_regfile
                 ariane_regfile #(
-                    .cva6_cfg   ( cva6_cfg   ),
+                    .cva6_cfg       ( cva6_cfg        ),
                     .DATA_WIDTH     ( FLEN            ),
                     .NR_READ_PORTS  ( 3               ),
                     .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),

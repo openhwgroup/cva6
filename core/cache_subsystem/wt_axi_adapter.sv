@@ -592,7 +592,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 ///////////////////////////////////////////////////////
 
   axi_shim #(
-    .cva6_cfg       ( cva6_cfg      ),
+    .cva6_cfg        ( cva6_cfg       ),
     .AxiNumWords     ( AxiNumWords    ),
     .AxiAddrWidth    ( AxiAddrWidth   ),
     .AxiDataWidth    ( AxiDataWidth   ),

@@ -68,7 +68,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     axi_rsp_t axi_resp_data;
 
     cva6_icache_axi_wrapper #(
-        .cva6_cfg    ( cva6_cfg    ),
+        .cva6_cfg     ( cva6_cfg     ),
         .ArianeCfg    ( ArianeCfg    ),
         .AxiAddrWidth ( AxiAddrWidth ),
         .AxiDataWidth ( AxiDataWidth ),
@@ -95,7 +95,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
    // Port 1: Load Unit
    // Port 2: Store Unit
    std_nbdcache #(
-      .cva6_cfg        ( cva6_cfg    ),
+      .cva6_cfg         ( cva6_cfg     ),
       .ArianeCfg        ( ArianeCfg    ),
       .AXI_ADDR_WIDTH   ( AxiAddrWidth ),
       .AXI_DATA_WIDTH   ( AxiDataWidth ),

@@ -113,7 +113,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
 ///////////////////////////////////////////////////////
 
   wt_dcache_missunit #(
-    .cva6_cfg    ( cva6_cfg              ),
+    .cva6_cfg     ( cva6_cfg               ),
     .AxiCompliant ( ArianeCfg.AxiCompliant ),
     .AmoTxId      ( RdAmoTxId              ),
     .NumPorts     ( NumPorts               ),
@@ -176,7 +176,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
     assign rd_prio[k] = 1'b1;
 
     wt_dcache_ctrl #(
-      .cva6_cfg     ( cva6_cfg     ),
+      .cva6_cfg      ( cva6_cfg      ),
       .RdTxId        ( RdAmoTxId     ),
       .ArianeCfg     ( ArianeCfg     )
     ) i_wt_dcache_ctrl (
@@ -222,7 +222,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign rd_prio[2] = 1'b0;
 
   wt_dcache_wbuffer #(
-    .cva6_cfg     ( cva6_cfg     ),
+    .cva6_cfg      ( cva6_cfg      ),
     .ArianeCfg     ( ArianeCfg     )
   ) i_wt_dcache_wbuffer (
     .clk_i           ( clk_i               ),
@@ -280,7 +280,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
 ///////////////////////////////////////////////////////
 
   wt_dcache_mem #(
-    .cva6_cfg    ( cva6_cfg              ),
+    .cva6_cfg     ( cva6_cfg               ),
     .AxiCompliant ( ArianeCfg.AxiCompliant ),
     .AxiDataWidth ( AxiDataWidth           ),
     .NumPorts     ( NumPorts               )

@@ -258,7 +258,7 @@ module cva6 import ariane_pkg::*; #(
   // Frontend
   // --------------
   frontend #(
-    .cva6_cfg   ( cva6_cfg   ),
+    .cva6_cfg  ( cva6_cfg  ),
     .ArianeCfg ( ArianeCfg )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
@@ -332,7 +332,7 @@ module cva6 import ariane_pkg::*; #(
   // Issue
   // ---------
   issue_stage #(
-    .cva6_cfg                  ( cva6_cfg                    ),
+    .cva6_cfg                   ( cva6_cfg                     ),
     .NR_ENTRIES                 ( NR_SB_ENTRIES                ),
     .NR_WB_PORTS                ( NR_WB_PORTS                  ),
     .NR_COMMIT_PORTS            ( NR_COMMIT_PORTS              )
@@ -520,7 +520,7 @@ module cva6 import ariane_pkg::*; #(
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
   commit_stage #(
-    .cva6_cfg   ( cva6_cfg   ),
+    .cva6_cfg        ( cva6_cfg        ),
     .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
   ) commit_stage_i (
     .clk_i,
@@ -560,7 +560,7 @@ module cva6 import ariane_pkg::*; #(
   // CSR
   // ---------
   csr_regfile #(
-    .cva6_cfg              ( cva6_cfg                     ),
+    .cva6_cfg               ( cva6_cfg                      ),
     .AsidWidth              ( ASID_WIDTH                    ),
     .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
     .NrCommitPorts          ( NR_COMMIT_PORTS               ),
@@ -625,7 +625,7 @@ module cva6 import ariane_pkg::*; #(
   // ------------------------
   if (PERF_COUNTER_EN) begin: gen_perf_counter
   perf_counters #(
-    .cva6_cfg           ( cva6_cfg                 ),
+    .cva6_cfg            ( cva6_cfg                  ),
     .NumPorts            ( NumPorts                  )
   ) perf_counters_i (
     .clk_i               ( clk_i                     ),
@@ -698,7 +698,7 @@ module cva6 import ariane_pkg::*; #(
   if (DCACHE_TYPE == int'(cva6_config_pkg::WT)) begin
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
-    .cva6_cfg            ( cva6_cfg   ),
+    .cva6_cfg             ( cva6_cfg  ),
     .ArianeCfg            ( ArianeCfg ),
     .NumPorts             ( NumPorts  ),
     .AxiAddrWidth         ( AxiAddrWidth ),
@@ -748,7 +748,7 @@ module cva6 import ariane_pkg::*; #(
     // note: this only works with one cacheable region
     // not as important since this cache subsystem is about to be
     // deprecated
-    .cva6_cfg             ( cva6_cfg                   ),
+    .cva6_cfg              ( cva6_cfg                    ),
     .ArianeCfg             ( ArianeCfg                   ),
     .AxiAddrWidth          ( AxiAddrWidth                ),
     .AxiDataWidth          ( AxiDataWidth                ),

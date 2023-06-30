@@ -97,7 +97,7 @@ module mmu import ariane_pkg::*; #(
 
 
     tlb #(
-        .cva6_cfg        ( cva6_cfg                  ),
+        .cva6_cfg         ( cva6_cfg                   ),
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
         .ASID_WIDTH       ( ASID_WIDTH                 )
     ) i_itlb (
@@ -120,7 +120,7 @@ module mmu import ariane_pkg::*; #(
     );
 
     tlb #(
-        .cva6_cfg        ( cva6_cfg                  ),
+        .cva6_cfg        ( cva6_cfg                     ),
         .TLB_ENTRIES     ( DATA_TLB_ENTRIES             ),
         .ASID_WIDTH      ( ASID_WIDTH                   )
     ) i_dtlb (
@@ -144,7 +144,7 @@ module mmu import ariane_pkg::*; #(
 
 
     ptw  #(
-        .cva6_cfg              ( cva6_cfg             ),
+        .cva6_cfg               ( cva6_cfg              ),
         .ASID_WIDTH             ( ASID_WIDTH            ),
         .ArianeCfg              ( ArianeCfg             )
     ) i_ptw (
@@ -275,7 +275,7 @@ module mmu import ariane_pkg::*; #(
 
     // Instruction fetch
     pmp #(
-        .cva6_cfg   ( cva6_cfg             ),
+        .cva6_cfg   ( cva6_cfg               ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
@@ -424,7 +424,7 @@ module mmu import ariane_pkg::*; #(
 
     // Load/store PMP check
     pmp #(
-        .cva6_cfg   ( cva6_cfg             ),
+        .cva6_cfg   ( cva6_cfg               ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )

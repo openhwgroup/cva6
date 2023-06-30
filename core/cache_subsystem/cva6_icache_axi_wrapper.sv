@@ -101,7 +101,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   // -------
   cva6_icache #(
     // use ID 0 for icache reads
-    .cva6_cfg          ( cva6_cfg   ),
+    .cva6_cfg           ( cva6_cfg      ),
     .RdTxId             ( 0             ),
     .ArianeCfg          ( ArianeCfg     )
   ) i_cva6_icache (
@@ -125,7 +125,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   // AXI shim
   // --------
     axi_shim #(
-    .cva6_cfg       ( cva6_cfg      ),
+    .cva6_cfg        ( cva6_cfg       ),
     .AxiNumWords     ( AxiNumWords    ),
     .AxiAddrWidth    ( AxiAddrWidth   ),
     .AxiDataWidth    ( AxiDataWidth   ),

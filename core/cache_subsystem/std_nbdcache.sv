@@ -94,7 +94,7 @@ import std_cache_pkg::*;
     generate
         for (genvar i = 0; i < 3; i++) begin : master_ports
             cache_ctrl  #(
-                .cva6_cfg             ( cva6_cfg            ),
+                .cva6_cfg              ( cva6_cfg             ),
                 .ArianeCfg             ( ArianeCfg            )
             ) i_cache_ctrl (
                 .bypass_i              ( ~enable_i            ),
@@ -134,7 +134,7 @@ import std_cache_pkg::*;
     // Miss Handling Unit
     // ------------------
     miss_handler #(
-        .cva6_cfg              ( cva6_cfg            ),
+        .cva6_cfg               ( cva6_cfg             ),
         .NR_PORTS               ( 3                    ),
         .AXI_ADDR_WIDTH         ( AXI_ADDR_WIDTH       ),
         .AXI_DATA_WIDTH         ( AXI_DATA_WIDTH       ),
@@ -248,7 +248,7 @@ import std_cache_pkg::*;
     // Tag Comparison and memory arbitration
     // ------------------------------------------------
     tag_cmp #(
-        .cva6_cfg          ( cva6_cfg          ),
+        .cva6_cfg           ( cva6_cfg           ),
         .NR_PORTS           ( 4                  ),
         .ADDR_WIDTH         ( DCACHE_INDEX_WIDTH ),
         .DCACHE_SET_ASSOC   ( DCACHE_SET_ASSOC   )

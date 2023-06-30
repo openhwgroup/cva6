@@ -142,7 +142,7 @@ module issue_stage import ariane_pkg::*; #(
     // 2. Manage instructions in a scoreboard
     // ---------------------------------------------------------
     scoreboard #(
-        .cva6_cfg   ( cva6_cfg   ),
+        .cva6_cfg   ( cva6_cfg  ),
         .NR_ENTRIES (NR_ENTRIES ),
         .NR_WB_PORTS(NR_WB_PORTS),
         .NR_COMMIT_PORTS(NR_COMMIT_PORTS)
@@ -185,7 +185,7 @@ module issue_stage import ariane_pkg::*; #(
     // 3. Issue instruction and read operand, also commit
     // ---------------------------------------------------------
     issue_read_operands #(
-      .cva6_cfg   ( cva6_cfg   ),
+      .cva6_cfg        ( cva6_cfg        ),
       .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
     )i_issue_read_operands  (
         .flush_i             ( flush_unissued_instr_i          ),

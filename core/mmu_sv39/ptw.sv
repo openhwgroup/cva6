@@ -139,7 +139,7 @@ module ptw import ariane_pkg::*; #(
     assign bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
 
     pmp #(
-        .cva6_cfg   ( cva6_cfg             ),
+        .cva6_cfg   ( cva6_cfg               ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )

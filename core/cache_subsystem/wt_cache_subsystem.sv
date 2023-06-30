@@ -81,7 +81,7 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   cva6_icache #(
     // use ID 0 for icache reads
-    .cva6_cfg          ( cva6_cfg     ),
+    .cva6_cfg           ( cva6_cfg      ),
     .RdTxId             ( 0             ),
     .ArianeCfg          ( ArianeCfg     )
   ) i_cva6_icache (
@@ -107,7 +107,7 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   // they have equal prio and are RR arbited
   // Port 2 is write only and goes into the merging write buffer
   wt_dcache #(
-    .cva6_cfg       ( cva6_cfg     ),
+    .cva6_cfg        ( cva6_cfg      ),
     .AxiDataWidth    ( AxiDataWidth  ),
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
@@ -142,7 +142,7 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
 
 `ifdef PITON_ARIANE
   wt_l15_adapter #(
-    .cva6_cfg       ( cva6_cfg   ),
+    .cva6_cfg        ( cva6_cfg                ),
     .SwapEndianess   ( ArianeCfg.SwapEndianess )
   ) i_adapter (
     .clk_i              ( clk_i                   ),
@@ -162,7 +162,7 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   );
 `else
   wt_axi_adapter #(
-    .cva6_cfg          ( cva6_cfg   ),
+    .cva6_cfg           ( cva6_cfg ),
     .AxiAddrWidth       ( AxiAddrWidth ),
     .AxiDataWidth       ( AxiDataWidth ),
     .AxiIdWidth         ( AxiIdWidth ),

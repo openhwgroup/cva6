@@ -110,7 +110,7 @@ module mult import ariane_pkg::*; #(
     // Serial Divider
     // ---------------------
     serdiv #(
-        .cva6_cfg   ( cva6_cfg   ),
+        .cva6_cfg    ( cva6_cfg    ),
         .WIDTH       ( riscv::XLEN )
     ) i_div (
         .clk_i       ( clk_i                ),
