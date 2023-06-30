@@ -138,7 +138,6 @@ module cva6 import ariane_pkg::*; #(
   logic                     stall_acc_id;
   scoreboard_entry_t        issue_instr_id_acc;
   logic                     issue_instr_hs_id_acc;
-  logic                     acc_flush_undisp_ex_id;
   logic [TRANS_ID_BITS-1:0] acc_trans_id_ex_id;
   riscv::xlen_t             acc_result_ex_id;
   logic                     acc_valid_ex_id;
@@ -173,8 +172,6 @@ module cva6 import ariane_pkg::*; #(
   logic                     amo_valid_commit;
   // ACCEL Commit
   logic                     acc_valid_acc_ex;
-  logic                     acc_commit_commit_ex;
-  logic [TRANS_ID_BITS-1:0] acc_commit_trans_id;
   // --------------
   // ID <-> COMMIT
   // --------------
@@ -899,6 +896,10 @@ module cva6 import ariane_pkg::*; #(
     assign acc_exception_ex_id   = '0;
     assign acc_resp_fflags       = '0;
     assign acc_resp_fflags_valid = '0;
+    assign stall_acc_id          = '0;
+    assign dirty_v_state         = '0;
+    assign acc_valid_acc_ex      = '0;
+    assign halt_acc_ctrl         = '0;
 
     // No invalidation interface
     assign inval_valid = '0;
