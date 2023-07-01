@@ -15,6 +15,7 @@
 
 
 module issue_read_operands import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                   clk_i,    // Clock
@@ -78,7 +79,7 @@ module issue_read_operands import ariane_pkg::*; #(
     // input  scoreboard_entry     commit_instr_i,
     // output logic                commit_ack_o
 );
-    logic stall;   
+    logic stall;
     logic fu_busy; // functional unit is busy
     riscv::xlen_t    operand_a_regfile, operand_b_regfile;  // operands coming from regfile
     rs3_len_t operand_c_regfile; // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
@@ -412,6 +413,7 @@ module issue_read_operands import ariane_pkg::*; #(
     end
     if (ariane_pkg::FPGA_EN) begin : gen_fpga_regfile
         ariane_regfile_fpga #(
+            .cva6_cfg       ( cva6_cfg        ),
             .DATA_WIDTH     ( riscv::XLEN     ),
             .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
             .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
@@ -427,6 +429,7 @@ module issue_read_operands import ariane_pkg::*; #(
         );
     end else begin : gen_asic_regfile
         ariane_regfile #(
+            .cva6_cfg       ( cva6_cfg        ),
             .DATA_WIDTH     ( riscv::XLEN     ),
             .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
             .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
@@ -459,6 +462,7 @@ module issue_read_operands import ariane_pkg::*; #(
             end
             if (ariane_pkg::FPGA_EN) begin : gen_fpga_fp_regfile
                 ariane_regfile_fpga #(
+                    .cva6_cfg       ( cva6_cfg        ),
                     .DATA_WIDTH     ( FLEN            ),
                     .NR_READ_PORTS  ( 3               ),
                     .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
@@ -474,6 +478,7 @@ module issue_read_operands import ariane_pkg::*; #(
                 );
             end else begin : gen_asic_fp_regfile
                 ariane_regfile #(
+                    .cva6_cfg       ( cva6_cfg        ),
                     .DATA_WIDTH     ( FLEN            ),
                     .NR_READ_PORTS  ( 3               ),
                     .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),

@@ -10,7 +10,9 @@
 // Functional Unit for the logic of the CoreV-X-Interface
 
 
-module cvxif_fu import ariane_pkg::*; (
+module cvxif_fu import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty
+) (
     input  logic                              clk_i,
     input  logic                              rst_ni,
     input  fu_data_t                          fu_data_i,

@@ -26,6 +26,7 @@
 //
 // branch target buffer
 module btb #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
     parameter int NR_ENTRIES = 8
 )(
     input  logic                        clk_i,           // Clock
@@ -48,12 +49,12 @@ module btb #(
     localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
     // prevent aliasing to degrade performance
     localparam ANTIALIAS_BITS = 8;
-    // number of bits par word in the bram 
+    // number of bits par word in the bram
     localparam BRAM_WORD_BITS = $bits(ariane_pkg::btb_prediction_t);
     // we are not interested in all bits of the address
     unread i_unread (.d_i(|vpc_i));
 
-    
+
     logic [$clog2(NR_ROWS)-1:0]  index, update_pc;
     logic [ROW_INDEX_BITS-1:0]    update_row_index;
 

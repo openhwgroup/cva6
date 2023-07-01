@@ -15,7 +15,9 @@
 // ------------------------------
 // Instruction Scanner
 // ------------------------------
-module instr_scan (
+module instr_scan #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty
+) (
     input  logic [31:0] instr_i,        // expect aligned instruction, compressed or not
     output logic        rvi_return_o,
     output logic        rvi_call_o,

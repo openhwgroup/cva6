@@ -19,7 +19,9 @@
 //              This also includes all the forwarding logic
 //
 
-module decoder import ariane_pkg::*; (
+module decoder import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty
+) (
     input  logic               debug_req_i,             // external debug request
     input  logic [riscv::VLEN-1:0] pc_i,                // PC from IF
     input  logic               is_compressed_i,         // is a compressed instruction

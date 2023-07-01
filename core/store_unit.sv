@@ -13,7 +13,9 @@
 // Description: Store Unit, takes care of all store requests and atomic memory operations (AMOs)
 
 
-module store_unit import ariane_pkg::*; (
+module store_unit import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty
+) (
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,  // Asynchronous reset active low
     input  logic                     flush_i,
@@ -213,7 +215,9 @@ module store_unit import ariane_pkg::*; (
     // ---------------
     // Store Queue
     // ---------------
-    store_buffer store_buffer_i (
+    store_buffer #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) store_buffer_i (
         .clk_i,
         .rst_ni,
         .flush_i,
@@ -240,7 +244,9 @@ module store_unit import ariane_pkg::*; (
         .req_port_o            ( req_port_o             )
     );
 
-    amo_buffer i_amo_buffer (
+    amo_buffer #(
+        .cva6_cfg   ( cva6_cfg   )
+    ) i_amo_buffer (
         .clk_i,
         .rst_ni,
         .flush_i,

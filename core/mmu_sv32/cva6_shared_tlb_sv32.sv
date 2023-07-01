@@ -11,13 +11,14 @@
 // Author: Sebastien Jacq - Thales Research & Technology
 // Date: 08/03/2023
 //
-// Description: N-way associative shared TLB, it allows to reduce the number 
+// Description: N-way associative shared TLB, it allows to reduce the number
 //              of ITLB and DTLB entries.
 //
 
 /* verilator lint_off WIDTH */
 
 module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
+        parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
         parameter int SHARED_TLB_DEPTH = 64,
         parameter int SHARED_TLB_WAYS = 2,
         parameter int ASID_WIDTH = 1,
@@ -25,7 +26,7 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
 ) (
     input  logic                    clk_i,                  // Clock
     input  logic                    rst_ni,                 // Asynchronous reset active low
-    input  logic                    flush_i,               
+    input  logic                    flush_i,
 
     input  logic                    enable_translation_i,   // CSRs indicate to enable SV32
     input  logic                    en_ld_st_translation_i, // enable virtual memory translation for load/stores
@@ -49,13 +50,13 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
     // Performance counters
     output logic                    itlb_miss_o,
     output logic                    dtlb_miss_o,
-    
+
     output logic                    shared_tlb_access_o,
     output logic                    shared_tlb_hit_o,
     output logic [riscv::VLEN-1:0]  shared_tlb_vaddr_o,
-    
+
     output logic                    itlb_req_o,
-    
+
     // Update shared TLB in case of miss
     input  tlb_update_sv32_t        shared_tlb_update_i
 
@@ -97,7 +98,7 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
     logic [SHARED_TLB_WAYS-1:0]          pte_wr_en;
     logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_wr_addr;
     logic [$bits(riscv::pte_sv32_t)-1:0] pte_wr_data;
-     
+
     logic [SHARED_TLB_WAYS-1:0]          pte_rd_en;
     logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_rd_addr;
     logic [$bits(riscv::pte_sv32_t)-1:0] pte_rd_data [SHARED_TLB_WAYS-1:0];
@@ -105,20 +106,20 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
     logic [SHARED_TLB_WAYS-1:0]          pte_req;
     logic [SHARED_TLB_WAYS-1:0]          pte_we;
     logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_addr;
-    
+
     logic [9:0] vpn0_d, vpn1_d, vpn0_q, vpn1_q;
 
     riscv::pte_sv32_t [SHARED_TLB_WAYS-1:0] pte;
 
     logic [riscv::VLEN-1-12:0]  itlb_vpn_q;
     logic [riscv::VLEN-1-12:0]  dtlb_vpn_q;
-    
+
     logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_d;
-    
+
     logic                   shared_tlb_access_q, shared_tlb_access_d;
     logic                   shared_tlb_hit_d;
     logic [riscv::VLEN-1:0] shared_tlb_vaddr_q, shared_tlb_vaddr_d;
-    
+
     logic itlb_req_d, itlb_req_q;
     logic dtlb_req_d, dtlb_req_q;
 
@@ -134,12 +135,12 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
     assign shared_tlb_access_o = shared_tlb_access_q;
     assign shared_tlb_hit_o = shared_tlb_hit_d;
     assign shared_tlb_vaddr_o = shared_tlb_vaddr_q;
-    
+
     assign itlb_req_o = itlb_req_q;
-    
+
     ///////////////////////////////////////////////////////
     // tag comparison, hit generation
-    ///////////////////////////////////////////////////////   
+    ///////////////////////////////////////////////////////
     always_comb begin : itlb_dtlb_miss
         itlb_miss_o     = 1'b0;
         dtlb_miss_o     = 1'b0;
@@ -166,18 +167,18 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
             tag_rd_addr      = itlb_vaddr_i[12+:$clog2(SHARED_TLB_DEPTH)];
             pte_rd_en        = '1;
             pte_rd_addr      = itlb_vaddr_i[12+:$clog2(SHARED_TLB_DEPTH)];
-        
+
             vpn0_d           = itlb_vaddr_i[21:12];
             vpn1_d           = itlb_vaddr_i[31:22];
-        
+
             itlb_miss_o      = 1'b1;
             itlb_req_d       = 1'b1;
-         
+
             tlb_update_asid_d   = asid_i;
-            
+
             shared_tlb_access_d = 1'b1;
             shared_tlb_vaddr_d  = itlb_vaddr_i;
-              
+
         // we got an DTLB miss
         end else if (en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i) begin
             tag_rd_en        = '1;
@@ -187,14 +188,14 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
 
             vpn0_d           = dtlb_vaddr_i[21:12];
             vpn1_d           = dtlb_vaddr_i[31:22];
-        
+
             dtlb_miss_o      = 1'b1;
             dtlb_req_d       = 1'b1;
-            
+
             tlb_update_asid_d   = asid_i;
-            
+
             shared_tlb_access_d = 1'b1;
-            shared_tlb_vaddr_d  = dtlb_vaddr_i;      
+            shared_tlb_vaddr_d  = dtlb_vaddr_i;
         end
     end //itlb_dtlb_miss
 
@@ -224,7 +225,7 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
             end
         end
     end //tag_comparison
- 
+
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
@@ -261,9 +262,9 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
         shared_tag_valid_d = shared_tag_valid_q;
         tag_wr_en = '0;
         pte_wr_en = '0;
-        
+
         if (flush_i) begin
-	    shared_tag_valid_d = '0;
+        shared_tag_valid_d = '0;
         end else if (shared_tlb_update_i.valid) begin
             for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
                 if (repl_way_oh_d[i]) begin
@@ -281,7 +282,7 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
     assign shared_tag_wr.is_4M = shared_tlb_update_i.is_4M;
 
     assign tag_wr_addr = shared_tlb_update_i.vpn[$clog2(SHARED_TLB_DEPTH)-1:0];
-    assign tag_wr_data = shared_tag_wr;  
+    assign tag_wr_data = shared_tag_wr;
 
     assign pte_wr_addr = shared_tlb_update_i.vpn[$clog2(SHARED_TLB_DEPTH)-1:0];
     assign pte_wr_data = shared_tlb_update_i.content;
@@ -340,7 +341,7 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
         );
 
         assign shared_tag_rd[i] = shared_tag_t'(tag_rd_data[i]);
-    
+
         // PTE RAM
         sram #(
             .DATA_WIDTH ( $bits(riscv::pte_sv32_t) ),

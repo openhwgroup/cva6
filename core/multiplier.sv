@@ -15,7 +15,9 @@
 //
 
 
-module multiplier import ariane_pkg::*; (
+module multiplier import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty
+) (
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,

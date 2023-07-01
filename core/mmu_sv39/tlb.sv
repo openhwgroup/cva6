@@ -16,6 +16,7 @@
 
 
 module tlb import ariane_pkg::*; #(
+      parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
       parameter int unsigned TLB_ENTRIES = 4,
       parameter int unsigned ASID_WIDTH  = 1
   )(
@@ -103,7 +104,7 @@ module tlb import ariane_pkg::*; #(
     assign asid_to_be_flushed_is0 =  ~(|asid_to_be_flushed_i);
     assign vaddr_to_be_flushed_is0 = ~(|vaddr_to_be_flushed_i);
 
-	  // ------------------
+      // ------------------
     // Update and Flush
     // ------------------
     always_comb begin : update_flush
@@ -119,17 +120,17 @@ module tlb import ariane_pkg::*; #(
             if (flush_i) begin
                 // invalidate logic
                 // flush everything if ASID is 0 and vaddr is 0 ("SFENCE.VMA x0 x0" case)
-        				if (asid_to_be_flushed_is0 && vaddr_to_be_flushed_is0 )
+                        if (asid_to_be_flushed_is0 && vaddr_to_be_flushed_is0 )
                     tags_n[i].valid = 1'b0;
                 // flush vaddr in all addressing space ("SFENCE.VMA vaddr x0" case), it should happen only for leaf pages
                 else if (asid_to_be_flushed_is0 && ((vaddr_vpn0_match[i] && vaddr_vpn1_match[i] && vaddr_vpn2_match[i]) || (vaddr_vpn2_match[i] && tags_q[i].is_1G) || (vaddr_vpn1_match[i] && vaddr_vpn2_match[i] && tags_q[i].is_2M) ) && (~vaddr_to_be_flushed_is0))
                     tags_n[i].valid = 1'b0;
                 // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
                 else if ((!content_q[i].g) && ((vaddr_vpn0_match[i] && vaddr_vpn1_match[i] && vaddr_vpn2_match[i]) || (vaddr_vpn2_match[i] && tags_q[i].is_1G) || (vaddr_vpn1_match[i] && vaddr_vpn2_match[i] && tags_q[i].is_2M)) && (asid_to_be_flushed_i == tags_q[i].asid) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
-				          	tags_n[i].valid = 1'b0;
+                            tags_n[i].valid = 1'b0;
                 // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
-				        else if ((!content_q[i].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i == tags_q[i].asid) && (!asid_to_be_flushed_is0))
-				        	  tags_n[i].valid = 1'b0;
+                        else if ((!content_q[i].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i == tags_q[i].asid) && (!asid_to_be_flushed_is0))
+                              tags_n[i].valid = 1'b0;
             // normal replacement
             end else if (update_i.valid & replace_en[i]) begin
                 // update tag array

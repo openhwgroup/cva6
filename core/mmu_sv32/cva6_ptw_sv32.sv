@@ -27,6 +27,7 @@
 /* verilator lint_off WIDTH */
 
 module cva6_ptw_sv32 import ariane_pkg::*; #(
+        parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
         parameter int ASID_WIDTH = 1,
         parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
@@ -51,21 +52,21 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
     output logic [riscv::VLEN-1:0]  update_vaddr_o,
 
     input  logic [ASID_WIDTH-1:0]   asid_i,
-    
+
     // from shared TLB
     input  logic                    shared_tlb_access_i,
     input  logic                    shared_tlb_hit_i,
     input  logic [riscv::VLEN-1:0]  shared_tlb_vaddr_i,
-    
+
     input logic                     itlb_req_i,
-    
+
     // from CSR file
     input  logic [riscv::PPNW-1:0]  satp_ppn_i, // ppn from satp
     input  logic                    mxr_i,
 
     // Performance counters
     output logic                    shared_tlb_miss_o,
-    
+
     // PMP
     input  riscv::pmpcfg_t [15:0]   pmpcfg_i,
     input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
@@ -143,6 +144,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
     assign bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
 
     pmp #(
+        .cva6_cfg   ( cva6_cfg               ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
@@ -341,7 +343,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
             WAIT_RVALID: begin
                 if (data_rvalid_q)
                     state_d = IDLE;
-            end       
+            end
             LATENCY: begin
                 state_d     = IDLE;
             end

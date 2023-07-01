@@ -14,6 +14,7 @@
 
 
 module perf_counters import ariane_pkg::*; #(
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
   parameter int unsigned                NumPorts      = 3    // number of miss ports
 ) (
   input  logic                                    clk_i,
@@ -103,8 +104,8 @@ module perf_counters import ariane_pkg::*; #(
         generic_counter_d = generic_counter_q;
         data_o = 'b0;
         mhpmevent_d = mhpmevent_q;
-	    read_access_exception =  1'b0;
-	    update_access_exception =  1'b0;
+        read_access_exception =  1'b0;
+        update_access_exception =  1'b0;
 
       for(int unsigned i = 1; i <= 6; i++) begin
          if ((!debug_mode_i) && (!we_i)) begin

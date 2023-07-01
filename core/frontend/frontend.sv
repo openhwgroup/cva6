@@ -16,6 +16,7 @@
 // change request from the back-end and does branch prediction.
 
 module frontend import ariane_pkg::*; #(
+  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
   parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic               clk_i,              // Clock
@@ -110,7 +111,9 @@ module frontend import ariane_pkg::*; #(
 
     logic serving_unaligned;
     // Re-align instructions
-    instr_realign i_instr_realign (
+    instr_realign #(
+      .cva6_cfg   ( cva6_cfg   )
+    ) i_instr_realign (
       .clk_i               ( clk_i                 ),
       .rst_ni              ( rst_ni                ),
       .flush_i             ( icache_dreq_o.kill_s2 ),
