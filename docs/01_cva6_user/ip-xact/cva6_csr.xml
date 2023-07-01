@@ -2640,7 +2640,7 @@ If ``mtval`` is written with a nonzero value when an instruction access-fault or
                                         <ipxact:name>icache</ipxact:name>
                                         <ipxact:displayName>Instuction Cache</ipxact:displayName>
                                         <ipxact:description>Custom Register to enable/disable for Icache [bit 0]</ipxact:description>
-                                        <ipxact:addressOffset>'h700</ipxact:addressOffset>
+                                        <ipxact:addressOffset>'h7C0</ipxact:addressOffset>
                                         <ipxact:size>32</ipxact:size>
                                         <ipxact:access>read-write</ipxact:access>
                                         <ipxact:field>
@@ -2665,7 +2665,7 @@ If ``mtval`` is written with a nonzero value when an instruction access-fault or
                                         <ipxact:name>dcache</ipxact:name>
                                         <ipxact:displayName>Data Cache</ipxact:displayName>
                                         <ipxact:description>Custom Register to enable/disable for Dcache [bit 0]</ipxact:description>
-                                        <ipxact:addressOffset>'h701</ipxact:addressOffset>
+                                        <ipxact:addressOffset>'h7C1</ipxact:addressOffset>
                                         <ipxact:size>32</ipxact:size>
                                         <ipxact:access>read-write</ipxact:access>
                                         <ipxact:field>

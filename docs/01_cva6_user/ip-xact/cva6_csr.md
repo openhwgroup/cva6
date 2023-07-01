@@ -411,7 +411,7 @@ Address register for Physical Memory Protection.
 | 31:0 | address | Address | read-write  | Address register for Physical Memory Protection\.|
 
 ## Instuction Cache Register 
-### *AddressOffset*: 'h700 
+### *AddressOffset*: 'h7C0 
 ### *Description*:
 Custom Register to enable/disable for Icache [bit 0]
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
@@ -419,7 +419,7 @@ Custom Register to enable/disable for Icache [bit 0]
 | 0 | icache | Instruction cache | read-write  | Custom Register to enable/disable for Icache \[bit 0\]|
 
 ## Data Cache Register 
-### *AddressOffset*: 'h701 
+### *AddressOffset*: 'h7C1 
 ### *Description*:
 Custom Register to enable/disable for Dcache [bit 0]
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |

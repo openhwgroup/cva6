@@ -1882,7 +1882,7 @@ component:
         - name: icache
           displayName: Instuction Cache
           description: Custom Register to enable/disable for Icache [bit 0]
-          addressOffset: "'h700"
+          addressOffset: "'h7C0"
           size: '32'
           access: read-write
           field:
@@ -1901,7 +1901,7 @@ component:
         - name: dcache
           displayName: Data Cache
           description: Custom Register to enable/disable for Dcache [bit 0]
-          addressOffset: "'h701"
+          addressOffset: "'h7C1"
           size: '32'
           access: read-write
           field:

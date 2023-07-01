@@ -1350,7 +1350,7 @@ Address register for Physical Memory Protection.
 
 Instuction Cache Register 
 --------------------------
-AddressOffset: 'h700 
+AddressOffset: 'h7C0 
 --------------------------
 Description:
 --------------------------
@@ -1373,7 +1373,7 @@ Custom Register to enable/disable for Icache [bit 0]
 
 Data Cache Register 
 --------------------------
-AddressOffset: 'h701 
+AddressOffset: 'h7C1 
 --------------------------
 Description:
 --------------------------
