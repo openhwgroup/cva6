@@ -1,0 +1,19 @@
+# Configuration file for ReadTheDocs, used to render the CVA6
+# User Manual to https://docs.openhwgroup.org/projects/cva6-user-manual.
+# SPDX-License-Identifier:Apache-2.0 WITH SHL-2.1
+
+version: 2
+
+#build:
+#  os: "ubuntu-20.04"
+#  tools:
+#    python: "3.9"
+
+# Build from the docs directory with Sphinx
+sphinx:
+  configuration: docs/conf.py
+
+# Explicitly set the Python requirements
+python:
+  install:
+    - requirements: docs/requirements.txt
