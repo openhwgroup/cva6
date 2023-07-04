@@ -1,5 +1,16 @@
 # Global Owners
-*  @zarubaf
+*  @JeanRochCoulon @zarubaf
 
-# FPU owners
-src/fpu_wrap.sv @stmach
+# Core
+
+core/mmu_sv39 @sjthales
+core/cvxif_example @Gchauvon
+core/cvxif_fu.sv @Gchauvon
+
+# APU
+
+corev_apu/openpiton @Jbalkind
+
+## Documentation
+
+docs/ @jquevremont
