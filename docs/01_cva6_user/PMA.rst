@@ -20,5 +20,45 @@
 
 PMA
 ===
-Gap for step1 verification. Reuse DVplan from CV32E40S? Mike will reach out to some people who could help.
 
+An underlying system can have multiple physical memory attributes (PMA). CVA6
+supports three main access properties:
+
+- Non-idempotent regions (I/O regions): Regions marked as non-idempotent will
+  not be queried speculatively. Typical registers of that kind would be the UART
+  or an interrupt claim register.
+- Executable regions (Main memory): Regions marked as executable will be
+  considered as code regions. This will allow the core to fetch instructions
+  from that region.
+- Cacheable regions (Main memory): Regions marked as cacheable will be
+  considered as data and instruction regions. This will allow the core to fetch,
+  load, and store data from that region.
+
+The regions are instantiation-time parameters, they can not be changed during
+runtime. CVA6 uses the following fields in the `ariane_cfg_t` configuration
+structure to describe the PMA regions statically:
+
+- `ArianeCfg.NrNonIdempotentRules`: Number of active non-idempotent regions.
+   - `ArianeCfg.NonIdempotentAddrBase`: Base address of the non-idempotent region.
+   - `ArianeCfg.NonIdempotentLength`: Length of the non-idempotent region.
+- `ArianeCfg.NrExecuteRegionRules`: Number of active executable regions.
+   - `ArianeCfg.ExecuteRegionAddrBase`: Base address of the executable region.
+   - `ArianeCfg.ExecuteRegionLength`: Length of the executable region.
+- `ArianeCfg.NrCachedRegionRules`: Number of active cacheable regions.
+   - `ArianeCfg.CachedRegionAddrBase`: Base address of the cacheable region.
+   - `ArianeCfg.CachedRegionLength`: Length of the cacheable region.
+
+Unsupported PMAs
+-------
+
+Currently the following RISC-V defined PMAs are not supported:
+
+- Coherence: CVA6 does not support any coherence protocol. All memory accesses
+  are considered as non-coherent.
+- Atomicity: Atomicity is delegated to the underlying system. It is up the
+  subordinate device to decide whether atomicity is supported or not.
+- Reservability: Reservability is delegated to the underlying system. It is up the
+  subordinate device to decide whether atomicity is supported or not.
+- Vacant Regions: It is up to the underlying system to decide whether a region
+  is vacant or not. CVA6 will not check for vacant regions. An AXI Decode Error
+  or Slave Error is expected on vacant regions.
