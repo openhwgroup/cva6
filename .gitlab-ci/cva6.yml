@@ -178,7 +178,6 @@ pub_smoke:
   script:
     - mkdir -p artifacts/reports artifacts/logs
     - mv artifacts/tools/spike tools
-    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     # In order to capture logs in case of test failure, the test script cannot fail.
