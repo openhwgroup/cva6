@@ -322,7 +322,7 @@ package ariane_pkg;
     // ---------------
     // Enable ZiCond
     // ---------------
-    localparam bit RCONDEXT = cva6_config_pkg::CVA6ConfigCondExtEn;
+    localparam bit RCONDEXT = cva6_config_pkg::CVA6ConfigZiCondExtEn;
 
     // Only use struct when signals have same direction
     // exception
