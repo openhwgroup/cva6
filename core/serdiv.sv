@@ -144,7 +144,7 @@ module serdiv import ariane_pkg::*; #(
 /////////////////////////////////////
 
   assign cnt_zero = (cnt_q == 0);
-  assign cnt_d    = (load_en)   ? div_shift  :
+  assign cnt_d    = (load_en)   ? div_shift[$clog2(WIDTH)-1:0]  :
                     (~cnt_zero) ? cnt_q - 1  : cnt_q;
 
   always_comb begin : p_fsm

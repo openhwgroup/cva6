@@ -78,7 +78,7 @@ package std_cache_pkg;
     function automatic logic [$clog2(ariane_pkg::DCACHE_SET_ASSOC)-1:0] one_hot_to_bin (
         input logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] in
     );
-        for (int unsigned i = 0; i < ariane_pkg::DCACHE_SET_ASSOC; i++) begin
+        for (logic [$clog2(ariane_pkg::DCACHE_SET_ASSOC)-1:0] i = 0; i < ariane_pkg::DCACHE_SET_ASSOC; i++) begin
             if (in[i])
                 return i;
         end

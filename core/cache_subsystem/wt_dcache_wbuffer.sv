@@ -117,7 +117,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   logic [riscv::XLEN_ALIGN_BYTES-1:0] bdirty_off;
   logic [(riscv::XLEN/8)-1:0] tx_be;
-  logic [riscv::PLEN-1:0] wr_paddr, rd_paddr;
+  logic [riscv::PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
   logic [DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
   logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
   logic check_en_d, check_en_q, check_en_q1;
@@ -280,7 +280,8 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 // cache readout & update
 ///////////////////////////////////////////////////////
 
-  assign rd_tag_d   = rd_paddr>>DCACHE_INDEX_WIDTH;
+  assign extract_tag   = rd_paddr>>DCACHE_INDEX_WIDTH;
+  assign rd_tag_d      = extract_tag[DCACHE_TAG_WIDTH-1:0];
 
   // trigger TAG readout in cache
   assign rd_tag_only_o = 1'b1;
@@ -422,7 +423,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
     // TAG lookup returns, mark corresponding word
     if (check_en_q1) begin
-      if (wbuffer_q[check_ptr_q1].valid) begin
+      if (|wbuffer_q[check_ptr_q1].valid) begin
         wbuffer_d[check_ptr_q1].checked = 1'b1;
         wbuffer_d[check_ptr_q1].hit_oh = rd_hit_oh_q;
       end

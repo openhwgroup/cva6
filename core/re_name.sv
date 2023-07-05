@@ -49,22 +49,22 @@ module re_name import ariane_pkg::*; #(
         if (issue_ack_i && !flush_unissied_instr_i) begin
             // if we acknowledge the instruction tic the corresponding destination register
             if (is_rd_fpr(issue_instr_i.op))
-                re_name_table_fpr_n[issue_instr_i.rd] = re_name_table_fpr_q[issue_instr_i.rd] ^ 1'b1;
+                re_name_table_fpr_n[issue_instr_i.rd[4:0]] = re_name_table_fpr_q[issue_instr_i.rd[4:0]] ^ 1'b1;
             else
-                re_name_table_gpr_n[issue_instr_i.rd] = re_name_table_gpr_q[issue_instr_i.rd] ^ 1'b1;
+                re_name_table_gpr_n[issue_instr_i.rd[4:0]] = re_name_table_gpr_q[issue_instr_i.rd[4:0]] ^ 1'b1;
         end
 
         // select name bit according to the register file used for source operands
-        name_bit_rs1 = is_rs1_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rs1]
-                                                    : re_name_table_gpr_q[issue_instr_i.rs1];
-        name_bit_rs2 = is_rs2_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rs2]
-                                                    : re_name_table_gpr_q[issue_instr_i.rs2];
+        name_bit_rs1 = is_rs1_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rs1[4:0]]
+                                                    : re_name_table_gpr_q[issue_instr_i.rs1[4:0]];
+        name_bit_rs2 = is_rs2_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rs2[4:0]]
+                                                    : re_name_table_gpr_q[issue_instr_i.rs2[4:0]];
         // rs3 is only used in certain FP operations and held like an immediate
         name_bit_rs3 = re_name_table_fpr_q[issue_instr_i.result[4:0]]; // make sure only the addr bits are read
 
         // select name bit according to the state it will have after renaming
-        name_bit_rd = is_rd_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rd] ^ 1'b1
-                                                  : re_name_table_gpr_q[issue_instr_i.rd] ^ (issue_instr_i.rd != '0); // don't rename x0
+        name_bit_rd = is_rd_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rd[4:0]] ^ 1'b1
+                                                  : re_name_table_gpr_q[issue_instr_i.rd[4:0]] ^ (issue_instr_i.rd != '0); // don't rename x0
 
         // re-name the source registers
         issue_instr_o.rs1 = { ENABLE_RENAME & name_bit_rs1, issue_instr_i.rs1[4:0] };
