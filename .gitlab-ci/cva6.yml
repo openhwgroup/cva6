@@ -13,8 +13,8 @@
 # - In this pipeline, job artifacts must be only defined in a folder named "artifacts" at the root of the job's workdir.
 # - In this pipeline, do not define before_script and after_script in the global section (avoid in job too).
 # - Please prefix all jobs in this file with "pub_" which stands for "public" job.
-
-
+      
+    
 variables:
   GIT_STRATEGY: fetch
   GIT_SUBMODULE_STRATEGY: recursive
@@ -177,6 +177,8 @@ pub_smoke:
     DASHBOARD_JOB_CATEGORY: "Basic"
   script:
     - mkdir -p artifacts/reports artifacts/logs
+    - mv artifacts/tools/spike tools
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     # In order to capture logs in case of test failure, the test script cannot fail.
@@ -212,6 +214,7 @@ pub_riscv_arch_test:
     DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-arch-test.sh
@@ -241,6 +244,7 @@ csr_test:
     DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-csr-access-test.sh
@@ -271,6 +275,7 @@ pub_hwconfig:
     DASHBOARD_JOB_CATEGORY: "Basic"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source ./cva6/regress/hwconfig_tests.sh
@@ -300,6 +305,7 @@ pub_compliance:
     DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-compliance.sh
@@ -331,6 +337,7 @@ pub_tests-v:
     DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-tests.sh
@@ -362,6 +369,7 @@ pub_tests-p:
     DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-tests.sh
@@ -472,6 +480,7 @@ pub_coremark:
     DASHBOARD_JOB_CATEGORY: "Performance"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - bash cva6/regress/coremark.sh --no-print
     - python3 .gitlab-ci/scripts/report_benchmark.py --coremark cva6/sim/out_*/veri-testharness_sim/core_main.log
@@ -496,6 +505,7 @@ pub_dhrystone:
     DASHBOARD_JOB_CATEGORY: "Performance"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - bash cva6/regress/dhrystone.sh
     - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone cva6/sim/out_*/veri-testharness_sim/dhrystone_main.log
@@ -566,6 +576,7 @@ pub_generated_tests:
   script:
     - mkdir -p artifacts/coverage
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source ./cva6/regress/dv-generated-tests.sh
