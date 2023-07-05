@@ -160,20 +160,13 @@ covergroup cg_result(
    }
 
    cp_exccode : coverpoint resp_item.result.exccode {
-    bins EXCCODE [] = {[0:$]};
+    bins EXCCODE [] = {[0:9],[11:13],15,24}; //Supported Exception code
    }
 
-   cp_result_valid : coverpoint resp_item.result_valid {
-    bins RESULT_VALID [] = {[0:$]};
+   cross_result : cross cp_rd, cp_id, cp_we, cp_exc, cp_exccode {
+   illegal_bins ILLEGAL_BINS = binsof(cp_we) intersect{1} &&
+                               binsof(cp_exc) intersect{1};
    }
-
-   cp_result_ready : coverpoint resp_item.result_ready {
-    bins RESULT_READY [] = {[0:$]};
-   }
-
-    cross_result : cross cp_id, cp_we, cp_exc, cp_exccode;
-    cross_valid_ready : cross cp_result_valid, cp_result_ready;
-
 endgroup: cg_result
 
 class uvma_cvxif_cov_model_c extends uvm_component;

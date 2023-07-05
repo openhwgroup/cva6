@@ -30,10 +30,10 @@ covergroup cg_executed(
      wildcard bins CUS_ADD        = {32'b0000000??????????001?????1111011};
      wildcard bins CUS_ADD_RS3    = {32'b?????01??????????000?????1111011};
      wildcard bins CUS_ADD_MULTI  = {32'b0001000??????????000?????1111011};
-     wildcard bins CUS_U_ADD      = {32'b0000100??????????000?????1111011};
+     wildcard bins CUS_U_ADD      = {32'b0000010??????????000?????1111011};
      wildcard bins CUS_S_ADD      = {32'b0000110??????????000?????1111011};
      wildcard bins CUS_NOP        = {32'b00000000000000000000000001111011};
-     wildcard bins CUS_EXC        = {32'b10000000000000000000000001111011};
+     wildcard bins CUS_EXC        = {32'b110000000000?????010000001111011};
    }
 
    cp_prev_instr : coverpoint prev_req_item.issue_req.instr iff (prev_req_item != null) {
@@ -41,10 +41,10 @@ covergroup cg_executed(
      wildcard bins CUS_ADD        = {32'b0000000??????????001?????1111011};
      wildcard bins CUS_ADD_RS3    = {32'b?????01??????????000?????1111011};
      wildcard bins CUS_ADD_MULTI  = {32'b0001000??????????000?????1111011};
-     wildcard bins CUS_U_ADD      = {32'b0000100??????????000?????1111011};
+     wildcard bins CUS_U_ADD      = {32'b0000010??????????000?????1111011};
      wildcard bins CUS_S_ADD      = {32'b0000110??????????000?????1111011};
      wildcard bins CUS_NOP        = {32'b00000000000000000000000001111011};
-     wildcard bins CUS_EXC        = {32'b10000000000000000000000001111011};
+     wildcard bins CUS_EXC        = {32'b110000000000?????010000001111011};
    }
 
    cross_seq_cus_instr_x2 : cross cp_instr, cp_prev_instr;
@@ -61,7 +61,7 @@ covergroup cg_cus_add_instr(
    option.name = name;
 
    cp_rd : coverpoint req_item.issue_req.instr[11:7] {
-    bins RD[] = {[1:31]};
+    bins RD[] = {[0:31]};
    }
 
    cp_rs1 : coverpoint req_item.issue_req.instr[19:15] {
@@ -102,7 +102,9 @@ covergroup cg_cus_instr(
    option.per_instance = 1;
    option.name = name;
 
-   `CVXIF_IMM_BITWISE(cp_imm_toggle, req_item.issue_req.instr[12:7], 1)
+   cp_rs1 : coverpoint req_item.issue_req.instr[19:15] {
+    bins RS1[] = {[0:31]};
+   }
 
 endgroup: cg_cus_instr
 
@@ -115,7 +117,8 @@ class uvme_cvxif_covg_c extends uvm_component;
    uvme_cva6_cfg_c         cfg      ;
    uvme_cva6_cntxt_c       cntxt    ;
 
-   uvma_cvxif_req_item_c    req_item ;
+   uvma_cvxif_req_item_c    req_item;
+   uvma_cvxif_req_item_c    prev_req_item;
 
    // TLM
    uvm_tlm_analysis_fifo#(uvma_cvxif_req_item_c )  req_item_fifo;
@@ -174,7 +177,7 @@ function void uvme_cvxif_covg_c::build_phase(uvm_phase phase);
    cus_add_multi_cg = new("cus_add_multi_cg",
                     .reg_cus_crosses_enabled(cfg.cvxif_cfg.reg_cus_crosses_enabled),
                     .rs3_valid(0));
-   cus_add_u_cg = new("cus_add_m_cg",
+   cus_add_u_cg = new("cus_add_u_cg",
                     .reg_cus_crosses_enabled(cfg.cvxif_cfg.reg_cus_crosses_enabled),
                     .rs3_valid(0));
    cus_add_s_cg = new("cus_add_s_cg",
@@ -203,8 +206,7 @@ endtask : run_phase
 
 task uvme_cvxif_covg_c::sample_cvxif_req(uvma_cvxif_req_item_c req_item);
 
-   uvma_cvxif_req_item_c prev_req_item;
-   logic                 have_sample;
+   logic                 have_sample = 0;
    bit [6:0] opcode    = req_item.issue_req.instr [6:0];
    bit [6:0] custom3   = 7'b1111011;
    bit [6:0] func7     = req_item.issue_req.instr [31:25];
@@ -263,8 +265,10 @@ task uvme_cvxif_covg_c::sample_cvxif_req(uvma_cvxif_req_item_c req_item);
             prev_req_item  = req_item;
             have_sample = 1;
          end
-         if (func7 == 7'b1000000 && req_item.issue_req.instr[24:13] == 12'b000000000001) begin
-            cus_exc_cg.sample(req_item);
+      end
+      if (func3 == 3'b001) begin
+         if (func7 == 7'b0000000) begin
+            cus_add_cg.sample(req_item);
             cus_seq_cg.sample(req_item,
                               prev_req_item);
               // Move instructions down the pipeline
@@ -272,9 +276,9 @@ task uvme_cvxif_covg_c::sample_cvxif_req(uvma_cvxif_req_item_c req_item);
             have_sample = 1;
          end
       end
-      if (func3 == 3'b001) begin
-         if (func7 == 7'b0000000) begin
-            cus_add_cg.sample(req_item);
+      if (func3 == 3'b010 && rd == 0 && rs2 == 0) begin
+         if (func7 == 7'b1100000) begin
+            cus_exc_cg.sample(req_item);
             cus_seq_cg.sample(req_item,
                               prev_req_item);
               // Move instructions down the pipeline
