@@ -13,8 +13,8 @@
 # - In this pipeline, job artifacts must be only defined in a folder named "artifacts" at the root of the job's workdir.
 # - In this pipeline, do not define before_script and after_script in the global section (avoid in job too).
 # - Please prefix all jobs in this file with "pub_" which stands for "public" job.
-      
-    
+
+
 variables:
   GIT_STRATEGY: fetch
   GIT_SUBMODULE_STRATEGY: recursive
