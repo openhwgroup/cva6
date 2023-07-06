@@ -441,9 +441,9 @@ module csr_regfile import ariane_pkg::*; #(
                     // NA4, NAPOT: 1
                     // TOR, OFF:   0
                     if (pmpcfg_q[index].addr_mode[1] == 1'b1)
-                        csr_rdata = {10'b0, pmpaddr_q[index][riscv::PLEN-3:0]};
+                        csr_rdata = pmpaddr_q[index][riscv::PLEN-3:0];
                     else
-                        csr_rdata = {10'b0, pmpaddr_q[index][riscv::PLEN-3:1], 1'b0};
+                        csr_rdata = {pmpaddr_q[index][riscv::PLEN-3:1], 1'b0};
                 end
                 default: read_access_exception = 1'b1;
             endcase

@@ -196,7 +196,7 @@ module compressed_decoder #(
                                         // 100: c.subw
                                         // 101: c.addw
                                         illegal_instr_o = 1'b1;
-                                        instr_o = {16'b0, instr_i};
+                                        instr_o = instr_i;
                                     end
                                 endcase
                             end

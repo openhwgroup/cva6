@@ -969,9 +969,9 @@ module cva6 import ariane_pkg::*; #(
         rvfi_o[i].cause    = ex_commit.cause;
         rvfi_o[i].mode     = debug_mode ? 2'b10 : priv_lvl;
         rvfi_o[i].ixl      = riscv::XLEN == 64 ? 2 : 1;
-        rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1;
-        rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2;
-        rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd;
+        rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1[4:0];
+        rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2[4:0];
+        rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd[4:0];
         rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
         rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
 
