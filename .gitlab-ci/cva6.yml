@@ -385,6 +385,8 @@ pub_synthesis:
   extends:
     - .template_job_always_manual
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   parallel:
@@ -432,6 +434,8 @@ pub_smoke-gate:
   extends:
     - .template_job_always_manual
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_synthesis
       artifacts: true
   parallel:
@@ -533,7 +537,6 @@ pub_fpga-build:
       - TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   script:
     - mkdir -p artifacts/reports
-    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $VIVADO_SETUP
     - source cva6/regress/install-cva6.sh
@@ -601,6 +604,8 @@ pub_directed_isacov-tests:
   stage: two
   tags: [$TAGS_RUNNER]
   needs:
+    - job: pub_build_tools
+      artifacts: true
     - job: pub_smoke
       artifacts: false
   variables:
@@ -646,7 +651,6 @@ pub_fpga-boot:
     DASHBOARD_JOB_CATEGORY: "Synthesis"
   script:
     - mkdir -p artifacts/reports
-    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - source cva6/regress/install-cva6.sh
     - source $VIVADO2022_SETUP
