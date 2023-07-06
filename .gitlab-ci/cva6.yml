@@ -63,37 +63,33 @@ variables:
     - when: manual
       allow_failure: true
 
-
 stages:
-  - .pre
-  - build_tools
-  - one
-  - two
-  - three
-
+  - init env
+  - build tools
+  - smoke tests
+  - verif tests
+  - backend tests
+  - report
 
 # In the scope of a CI triggered by core-v-verif repository:
 # This job will get the HASH of the given CVA6 branch
 # This HASH will be used by the next jobs instead of the CVA6 given BRANCH name
 # This prevents CI to not use the same version of CVA6 in case of new commit in CVA6 branch during the execution of the CI
-initjob:
-  stage: .pre
+pub_initjob:
+  stage: init env
   extends:
     - .template_job_low_footprint
     - .template_job_init_cva6
-  needs: []
   script:
     - '[[ -e ./cva6 ]] && rm -rf cva6'
     - git clone $CVA6_REPO -b $CVA6_BRANCH --depth=1 cva6
-    - cd cva6
-    - echo CVA6_HASH=$(git rev-parse origin/$CVA6_BRANCH) > ../.env
-    - cd ..
+    - echo CVA6_HASH=$(git -C cva6 rev-parse origin/$CVA6_BRANCH) > .env
   artifacts:
     reports:
       dotenv: .env
 
 pub_check_env:
-  stage: .pre
+  stage: build tools
   extends:
     - .template_job_low_footprint
     - .template_job_full_ci
@@ -136,10 +132,9 @@ pub_check_env:
     - echo $LIB_VERILOG
 
 pub_build_tools:
-  stage: build_tools
+  stage: build tools
   extends:
     - .template_job_full_ci
-  needs: []
   script:
     # ROOT_PROJECT is used by Spike installer and designates the toplevel of core-v-verif tree.
     - 'export ROOT_PROJECT=$(pwd)'
@@ -161,12 +156,9 @@ pub_build_tools:
       - artifacts/tools/spike/*
 
 pub_smoke:
-  stage: one
+  stage: smoke tests
   extends:
     - .template_job_full_ci
-  needs:
-    - job: pub_build_tools
-      artifacts: true
   parallel:
     matrix:
       - DV_SIMULATORS: ["veri-testharness,spike","vcs-testharness,spike","vcs-uvm,spike" ]
@@ -194,14 +186,9 @@ pub_smoke:
       - artifacts/logs/*.log.iss.head
 
 pub_riscv_arch_test:
-  stage: two
+  stage: verif tests
   extends:
     - .template_job_short_ci
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   parallel:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
@@ -224,14 +211,9 @@ pub_riscv_arch_test:
       - "artifacts/reports/*.yml"
 
 csr_test:
-  stage: two
+  stage: verif tests
   extends:
     - .template_job_short_ci
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   parallel:
     matrix:
       - DV_TARGET: [cv32a60x]
@@ -254,14 +236,9 @@ csr_test:
       - "artifacts/reports/*.yml"
 
 pub_hwconfig:
-  stage: two
+  stage: verif tests
   extends:
     - .template_job_short_ci
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   parallel:
     matrix:
       - DV_SIMULATORS: ["veri-testharness,spike"]
@@ -285,14 +262,9 @@ pub_hwconfig:
       - artifacts/reports/*.yml
 
 pub_compliance:
-  stage: two
+  stage: verif tests
   extends:
     - .template_job_short_ci
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   parallel:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
@@ -316,14 +288,9 @@ pub_compliance:
 
 
 pub_tests-v:
-  stage: two
+  stage: verif tests
   extends:
     - .template_job_short_ci
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   parallel:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39]
@@ -348,14 +315,9 @@ pub_tests-v:
 
 
 pub_tests-p:
-  stage: two
+  stage: verif tests
   extends:
     - .template_job_short_ci
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   parallel:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
@@ -380,15 +342,10 @@ pub_tests-p:
 
 
 pub_synthesis:
-  stage: two
+  stage: verif tests
   timeout: 2 hours
   extends:
     - .template_job_always_manual
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   parallel:
     matrix:
       - TARGET: [cv32a6_embedded]
@@ -476,14 +433,12 @@ pub_synthesis_others:
 
 
 pub_smoke-gate:
-  stage: three
+  stage: backend tests
+  needs:
+    - pub_build_tools
+    - pub_synthesis
   extends:
     - .template_job_always_manual
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_synthesis
-      artifacts: true
   parallel:
     matrix:
       - TARGET: [cv32a6_embedded]
@@ -516,14 +471,9 @@ pub_smoke-gate:
       - "artifacts/reports/*.yml"
 
 pub_coremark:
-  stage: two
+  stage: verif tests
   extends:
     - .template_job_full_ci
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   variables:
     DASHBOARD_JOB_TITLE: "CoreMark"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
@@ -541,14 +491,9 @@ pub_coremark:
       - "artifacts/reports/*.yml"
 
 pub_dhrystone:
-  stage: two
+  stage: verif tests
   extends:
     - .template_job_full_ci
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   variables:
     DASHBOARD_JOB_TITLE: "Dhrystone"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
@@ -566,13 +511,10 @@ pub_dhrystone:
       - "artifacts/reports/*.yml"
 
 pub_fpga-build:
-  stage: two
+  stage: verif tests
   timeout: 90 minutes
   extends:
     - .template_job_short_ci
-  needs:
-    - job: pub_smoke
-      artifacts: false
   variables:
     DASHBOARD_JOB_TITLE: "FPGA Build $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Test of FPGA build flow"
@@ -597,13 +539,8 @@ pub_fpga-build:
       - "artifacts/reports/*.yml"
 
 pub_generated_tests:
-  stage: two
+  stage: verif tests
   tags: [$TAGS_RUNNER]
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   variables:
     DASHBOARD_SORT_INDEX: 11
     DASHBOARD_JOB_CATEGORY: "Code Coverage"
@@ -647,13 +584,8 @@ pub_generated_tests:
     expire_in: 3 week
 
 pub_directed_isacov-tests:
-  stage: two
+  stage: verif tests
   tags: [$TAGS_RUNNER]
-  needs:
-    - job: pub_build_tools
-      artifacts: true
-    - job: pub_smoke
-      artifacts: false
   variables:
     DASHBOARD_SORT_INDEX: 13
     DASHBOARD_JOB_CATEGORY: "Functional Coverage"
@@ -683,11 +615,11 @@ pub_directed_isacov-tests:
     expire_in: 3 week
 
 pub_fpga-boot:
-  stage: three
   tags: [fpga,shell]
+  stage: backend tests
   needs:
-    - job: pub_fpga-build
-      artifacts: true
+    - pub_build_tools
+    - pub_fpga-build
   variables:
     VERILATOR_INSTALL_DIR: "NO" # Skip install and checks of verilator
     SPIKE_ROOT: "NO"  # Skip install and checks of spike
@@ -697,6 +629,7 @@ pub_fpga-boot:
     DASHBOARD_JOB_CATEGORY: "Synthesis"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - source cva6/regress/install-cva6.sh
     - source $VIVADO2022_SETUP
@@ -712,13 +645,11 @@ pub_fpga-boot:
       - "artifacts/reports/*.yml"
 
 code_coverage-report:
-  stage: three
   tags: [$TAGS_RUNNER]
+  stage: backend tests
   needs:
-    - job: pub_generated_tests
-      artifacts: true
-    - job: pub_directed_isacov-tests
-      artifacts: true
+    - pub_generated_tests
+    - pub_directed_isacov-tests
   variables:
     DASHBOARD_JOB_TITLE: "Report merge coverage"
     DASHBOARD_JOB_DESCRIPTION: "Report merge coverage of generated tests"
@@ -744,8 +675,8 @@ code_coverage-report:
       - "artifacts/reports/*.yml"
     expire_in: 3 week
 
-merge_report:
-  stage: .post
+merge reports:
+  stage: report
   tags: [$TAGS_RUNNER]
   rules:
     - if: '$DASHBOARD_URL'
