@@ -139,8 +139,13 @@ class cvxif_t : public cvxif_extn_t
       
       case FUNC3_2:
         //Actually only CUS_EXC using func3 equal to one, we don't need to add another switch case
-        p -> put_csr(CSR_MCAUSE, (reg_t) ((insn.bits() >> 7) & 0x1f));
-        raise_exception(insn, (reg_t) ((insn.bits() >> 7) & 0x1f));
+        if (r_insn.rs2 != 0 || r_insn.rd != 0){
+          illegal_instruction();
+        } else {
+          p -> put_csr(CSR_MCAUSE, (reg_t) ((insn.bits() >> 7) & 0x1f));
+          raise_exception(insn, (reg_t) ((insn.bits() >> 7) & 0x1f));
+        }
+        
 
       default:
         illegal_instruction();
