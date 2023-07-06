@@ -404,6 +404,7 @@ pub_synthesis:
     DASHBOARD_JOB_CATEGORY: "Synthesis"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     #ack trick to manage float gitlab-ci variables that seems to support only string or integer
     - echo $(echo $SYNTH_PERIOD)
@@ -443,6 +444,7 @@ pub_smoke-gate:
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $LIB_VERILOG
     - echo $FOUNDRY_PATH
@@ -531,6 +533,7 @@ pub_fpga-build:
       - TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $VIVADO_SETUP
     - source cva6/regress/install-cva6.sh
@@ -611,6 +614,7 @@ pub_directed_isacov-tests:
   script:
     - mkdir -p artifacts/coverage
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source ./cva6/regress/dv-generated-tests.sh
@@ -642,6 +646,7 @@ pub_fpga-boot:
     DASHBOARD_JOB_CATEGORY: "Synthesis"
   script:
     - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
     - python3 .gitlab-ci/scripts/report_fail.py
     - source cva6/regress/install-cva6.sh
     - source $VIVADO2022_SETUP
