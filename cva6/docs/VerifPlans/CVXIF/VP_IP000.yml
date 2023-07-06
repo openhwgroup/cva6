@@ -1,0 +1,285 @@
+!Feature
+next_elt_id: 9
+name: Issue Interface
+id: 0
+display_order: 0
+subfeatures: !!omap
+- 000_issue_req signals stable: !Subfeature
+    name: 000_issue_req signals stable
+    tag: VP_CVXIF_F000_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F000_S000_I000
+        description: The “instr” and “mode” signals remain stable during an Issue
+          request transaction.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that “mode” and “instr” are stable during an issue transaction
+          (cannot be modified by an instruction when transaction issue is in process)
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_mode signal value: !Subfeature
+    name: 001_mode signal value
+    tag: VP_CVXIF_F000_S001
+    next_elt_id: 2
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F000_S001_I000
+        description: When issue transaction starts, instruction and current CPU mode
+          are provided
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that a mode modification coming from execution of a first
+          instruction is well provided to the following offloaded instruction
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_CVXIF_F000_S001_I001
+        description: Check “mode” signal values.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Check that mode take a value that the CPU supports : Privilege\
+          \ level (2’b00 = User, 2’b01 = Supervisor, 2’b10 = Reserved,\n 2’b11 = Machine)."
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_rs_valid signal transition order: !Subfeature
+    name: 002_rs_valid signal transition order
+    tag: VP_CVXIF_F000_S002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F000_S002_I000
+        description: During a transaction, each bit of “rs_valid” can transition from
+          0 to 1 but are not allowed to transition back to 0.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: For issue transaction which lasts more than one cycle, check
+          that asserted “rs_valid” signals do not transition back to 0.(for i in [0;2]
+          if rs_valid[i] = 1 then rs_valid[i] → 0 cannot happen)
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_rs signal value: !Subfeature
+    name: 003_rs signal value
+    tag: VP_CVXIF_F000_S003
+    next_elt_id: 3
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F000_S003_I000
+        description: If XLEN = X_RFR_WIDTH, then rs[X_NUM_RS-1:0] correspond to  rs1
+          and rs2 CPU registers (and rs3 if X_NUM_RS = 3).
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: For every issue transaction check that rs signal correspond to
+          rs1,rs2(rs3) value in CPU register file.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_CVXIF_F000_S003_I001
+        description: rs signals are only required to be stable during the part of
+          a transaction in which these signals are considered to be valid.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that rs signals are stable when issue_valid==1 && the corresponding
+          bit in rs_valid is 1.
+        pfc: 4
+        test_type: -1
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_CVXIF_F000_S003_I002
+        description: If XLEN != X_RFR_WIDTH , then rs[X_NUM_RS-1:0] correspond to
+          even/odd register pair with rs1, rs2, (rs3) are even register and even register
+          is provided in the 32 lower bits of rs signal.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "For every issue transaction check that rs signal correspond\
+          \ to the concatenation of rs1/rs1+1,rs2/rs2+1, (rs3/rs3+1) value in CPU\
+          \ register file and even register is in the 32 lower bits of rs.\n\nCan't\
+          \ be check XLEN == X_RFR_WIDTH"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_Default value for unaccepted instruction: !Subfeature
+    name: 004_Default value for unaccepted instruction
+    tag: VP_CVXIF_F000_S004
+    next_elt_id: 1
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F000_S004_I000
+        description: "If accept == 0 :\nWriteback == 0; dualwrite == 0; dualread ==\
+          \ 0; loadstore == 0; exc = 0."
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that for writeback; dualwrite; dualread; loadstore; exc
+          signals if accept == 0 then all those signals are 0.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_Illegal Instruction causes: !Subfeature
+    name: 005_Illegal Instruction causes
+    tag: VP_CVXIF_F000_S005
+    next_elt_id: 1
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F000_S005_I000
+        description: "The CPU shall cause an illegal instruction if:\n- an instruction\
+          \ is considered to be valid by the CPU and accepted by the coprocessor (accept\
+          \ = 1)\n- neither to be valid by the CPU nor accepted by the coprocessor\
+          \ (accept = 0)"
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "- CPU causes illegal instruction for instruction accepted by\
+          \ the core and the coprocessor.\n- CPU causes illegal instruction exception\
+          \ for instruction that are not valid for coprocessor and CPU"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 006_issue uniquness: !Subfeature
+    name: 006_issue uniquness
+    tag: VP_CVXIF_F000_S006
+    next_elt_id: 1
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F000_S006_I000
+        description: Check for issue id validity.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that the issue interface doesn't issue an "id" that isn't
+          legal to be used (has not fully completed).
+        pfc: 11
+        test_type: 3
+        cov_method: 10
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 007_coprocessor decoding: !Subfeature
+    name: 007_coprocessor decoding
+    tag: VP_CVXIF_F000_S007
+    next_elt_id: 1
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F000_S007_I000
+        description: "Accept = 1 if: \n- coprocessor can handle the instruction based\
+          \ on decoding “instr” and \"mode\".\n- “issue_valid” == 1 and required bit(s)\
+          \ of “rs_valid” are 1."
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: To be checked in coprocessor.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 008_Transaction definition: !Subfeature
+    name: 008_Transaction definition
+    tag: VP_CVXIF_F000_S008
+    next_elt_id: 1
+    display_order: 8
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F000_S008_I000
+        description: "“issue_resp” signals and “issue_req” signals are accepted when\
+          \ “issue_valid” == “issue_ready” == 1\n“issue_resp” is valid when \"valid==ready==1\"\
+          .\n“issue_req” is valid when \"valid==1\""
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "The definition of a transaction. \nNot to be verified."
+        pfc: 11
+        test_type: 10
+        cov_method: 10
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
