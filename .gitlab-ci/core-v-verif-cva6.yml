@@ -1,0 +1,5 @@
+before_script:
+  - echo no need to enter core-v-verif, already in it
+
+after_script:
+  - echo no need to move artifacts, already in core-v-verif
