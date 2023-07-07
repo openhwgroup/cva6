@@ -142,11 +142,10 @@ class cvxif_t : public cvxif_extn_t
         if (r_insn.rs2 != 0 || r_insn.rd != 0){
           illegal_instruction();
         } else {
-          p -> put_csr(CSR_MCAUSE, (reg_t) ((insn.bits() >> 7) & 0x1f));
-          raise_exception(insn, (reg_t) ((insn.bits() >> 7) & 0x1f));
+          p -> put_csr(CSR_MCAUSE, r_insn.rs1);
+          raise_exception(insn, (reg_t) (r_insn.rs1));
         }
-        
-
+        break;
       default:
         illegal_instruction();
     }
