@@ -678,6 +678,9 @@ package ariane_pkg;
 `endif
     } scoreboard_entry_t;
 
+    //  Maximum number of inflight memory load requests
+    localparam int unsigned NR_LOAD_BUFFER_ENTRIES = cva6_config_pkg::CVA6ConfigNrLoadBufEntries;
+
     // ---------------
     // MMU instanciation
     // ---------------
