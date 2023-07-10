@@ -17,7 +17,7 @@
 // --------------
 
 module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter int unsigned NR_PORTS       = 3,
     parameter int unsigned AXI_ADDR_WIDTH = 0,
     parameter int unsigned AXI_DATA_WIDTH = 0,
@@ -570,7 +570,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     assign bypass_addr = bypass_adapter_req.addr;
 
     axi_adapter #(
-        .cva6_cfg              ( cva6_cfg           ),
+        .CVA6Cfg               ( CVA6Cfg            ),
         .DATA_WIDTH            ( 64                 ),
         .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET ),
         .AXI_ADDR_WIDTH        ( AXI_ADDR_WIDTH     ),
@@ -608,7 +608,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     assign miss_addr = req_fsm_miss_addr;
 
     axi_adapter  #(
-        .cva6_cfg              ( cva6_cfg           ),
+        .CVA6Cfg               ( CVA6Cfg            ),
         .DATA_WIDTH            ( DCACHE_LINE_WIDTH  ),
         .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET ),
         .AXI_ADDR_WIDTH        ( AXI_ADDR_WIDTH     ),

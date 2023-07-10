@@ -14,7 +14,7 @@
 
 
 module csr_regfile import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
     parameter int unsigned NrCommitPorts   = 2,

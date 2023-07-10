@@ -24,7 +24,7 @@
 //
 
 module ariane_regfile_lol #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter int unsigned DATA_WIDTH     = 32,
   parameter int unsigned NR_READ_PORTS  = 2,
   parameter int unsigned NR_WRITE_PORTS = 2,

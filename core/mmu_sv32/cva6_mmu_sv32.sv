@@ -27,7 +27,7 @@
 // =========================================================================== //
 
 module cva6_mmu_sv32 import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter int unsigned INSTR_TLB_ENTRIES     = 2,
     parameter int unsigned DATA_TLB_ENTRIES      = 2,
     parameter int unsigned ASID_WIDTH            = 1,
@@ -112,7 +112,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
 
 
     cva6_tlb_sv32 #(
-        .cva6_cfg         ( cva6_cfg                   ),
+        .CVA6Cfg          ( CVA6Cfg                    ),
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
         .ASID_WIDTH       ( ASID_WIDTH                 )
     ) i_itlb (
@@ -134,7 +134,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     );
 
     cva6_tlb_sv32 #(
-        .cva6_cfg        ( cva6_cfg                    ),
+        .CVA6Cfg         ( CVA6Cfg                     ),
         .TLB_ENTRIES     ( DATA_TLB_ENTRIES            ),
         .ASID_WIDTH      ( ASID_WIDTH                  )
     ) i_dtlb (
@@ -156,7 +156,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     );
 
     cva6_shared_tlb_sv32 #(
-        .cva6_cfg         ( cva6_cfg ),
+        .CVA6Cfg          ( CVA6Cfg  ),
         .SHARED_TLB_DEPTH ( 64 ),
         .SHARED_TLB_WAYS  ( 2 ),
         .ASID_WIDTH ( ASID_WIDTH )
@@ -197,7 +197,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     );
 
     cva6_ptw_sv32  #(
-        .cva6_cfg               ( cva6_cfg              ),
+        .CVA6Cfg                ( CVA6Cfg               ),
         .ASID_WIDTH             ( ASID_WIDTH            ),
         .ArianeCfg              ( ArianeCfg             )
     ) i_ptw (

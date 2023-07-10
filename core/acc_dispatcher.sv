@@ -14,6 +14,7 @@
 // Description: Functional unit that dispatches CVA6 instructions to accelerators.
 
 module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter type acc_req_t  = acc_pkg::accelerator_req_t,
     parameter type acc_resp_t = acc_pkg::accelerator_resp_t
 ) (

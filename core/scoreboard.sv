@@ -13,7 +13,7 @@
 // Description: Scoreboard - keeps track of all decoded, issued and committed instructions
 
 module scoreboard #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter int unsigned NR_ENTRIES      = 8, // must be a power of 2
   parameter int unsigned NR_WB_PORTS     = 1,
   parameter int unsigned NR_COMMIT_PORTS = 2

@@ -19,7 +19,7 @@
 // branch history table - 2 bit saturation counter
 
 module bht #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter int unsigned NR_ENTRIES = 1024
 )(
     input  logic                        clk_i,

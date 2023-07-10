@@ -15,7 +15,7 @@
 
 
 module issue_read_operands import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                   clk_i,    // Clock
@@ -415,7 +415,7 @@ module issue_read_operands import ariane_pkg::*; #(
     end
     if (ariane_pkg::FPGA_EN) begin : gen_fpga_regfile
         ariane_regfile_fpga #(
-            .cva6_cfg       ( cva6_cfg        ),
+            .CVA6Cfg        ( CVA6Cfg         ),
             .DATA_WIDTH     ( riscv::XLEN     ),
             .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
             .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
@@ -431,7 +431,7 @@ module issue_read_operands import ariane_pkg::*; #(
         );
     end else begin : gen_asic_regfile
         ariane_regfile #(
-            .cva6_cfg       ( cva6_cfg        ),
+            .CVA6Cfg        ( CVA6Cfg         ),
             .DATA_WIDTH     ( riscv::XLEN     ),
             .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
             .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
@@ -464,7 +464,7 @@ module issue_read_operands import ariane_pkg::*; #(
             end
             if (ariane_pkg::FPGA_EN) begin : gen_fpga_fp_regfile
                 ariane_regfile_fpga #(
-                    .cva6_cfg       ( cva6_cfg        ),
+                    .CVA6Cfg        ( CVA6Cfg         ),
                     .DATA_WIDTH     ( FLEN            ),
                     .NR_READ_PORTS  ( 3               ),
                     .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
@@ -480,7 +480,7 @@ module issue_read_operands import ariane_pkg::*; #(
                 );
             end else begin : gen_asic_fp_regfile
                 ariane_regfile #(
-                    .cva6_cfg       ( cva6_cfg        ),
+                    .CVA6Cfg        ( CVA6Cfg         ),
                     .DATA_WIDTH     ( FLEN            ),
                     .NR_READ_PORTS  ( 3               ),
                     .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),

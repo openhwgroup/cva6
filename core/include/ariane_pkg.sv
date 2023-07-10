@@ -32,11 +32,11 @@ package ariane_pkg;
     // within Ariane add a field here and assign a default value to the config. Please make
     // sure to add a propper parameter check to the `check_cfg` function.
     typedef struct packed {
-      int unsigned dummy;
+      int unsigned NrCommitPorts;
     } cva6_cfg_t;
 
     localparam cva6_cfg_t cva6_cfg_empty = {
-      '0
+      unsigned'(0)
     };
 
     localparam NrMaxRules = 16;
