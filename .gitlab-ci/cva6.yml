@@ -14,6 +14,8 @@
 # - In this pipeline, do not define before_script and after_script in the global section (avoid in job too).
 # - Please prefix all jobs in this file with "pub_" which stands for "public" job.
 
+# Please refer to .gitlab-ci/README.md to add jobs
+
 
 variables:
   GIT_STRATEGY: fetch
