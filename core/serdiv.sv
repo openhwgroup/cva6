@@ -17,7 +17,8 @@
 
 module serdiv import ariane_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
-  parameter WIDTH       = 64
+  parameter WIDTH            = 64,
+  parameter STABLE_HANDSHAKE = 0             // Guarantee a stable in_rdy_o during the input handshake. Keep it at 0 in CVA6
 ) (
   input  logic                      clk_i,
   input  logic                      rst_ni,
@@ -162,7 +163,9 @@ module serdiv import ariane_pkg::*; #(
         in_rdy_o    = 1'b1;
 
         if (in_vld_i) begin
-          in_rdy_o  = 1'b0;// there is a cycle delay until the valid signal is asserted by the id stage
+          // CVA6: there is a cycle delay until the valid signal is asserted by the id stage
+          // Ara:  we need a stable handshake
+          in_rdy_o  = (STABLE_HANDSHAKE) ? 1'b1 : 1'b0;
           a_reg_en  = 1'b1;
           b_reg_en  = 1'b1;
           load_en   = 1'b1;

@@ -37,6 +37,7 @@ module decoder import ariane_pkg::*; #(
     input  logic               debug_mode_i,            // we are in debug mode
     input  riscv::xs_t         fs_i,                    // floating point extension status
     input  logic [2:0]         frm_i,                   // floating-point dynamic rounding mode
+    input  riscv::xs_t         vs_i,                    // vector extension status
     input  logic               tvm_i,                   // trap virtual memory
     input  logic               tw_i,                    // timeout wait
     input  logic               tsr_i,                   // trap sret
@@ -68,6 +69,34 @@ module decoder import ariane_pkg::*; #(
     riscv::xlen_t imm_uj_type;
     riscv::xlen_t imm_bi_type;
 
+    // ---------------------------------------
+    // Accelerator instructions' first-pass decoder
+    // ---------------------------------------
+    logic              is_accel;
+    scoreboard_entry_t acc_instruction;
+    logic              acc_illegal_instr;
+    logic              acc_is_control_flow_instr;
+
+    if (ENABLE_ACCELERATOR) begin: gen_accel_decoder
+        // This module is responsible for a light-weight decoding of accelerator instructions,
+        // identifying them, but also whether they read/write scalar registers.
+        // Accelerators are supposed to define this module.
+        cva6_accel_first_pass_decoder i_accel_decoder (
+            .instruction_i(instruction_i),
+            .fs_i(fs_i),
+            .vs_i(vs_i),
+            .is_accel_o(is_accel),
+            .instruction_o(acc_instruction),
+            .illegal_instr_o(acc_illegal_instr),
+            .is_control_flow_instr_o(acc_is_control_flow_instr)
+        );
+    end: gen_accel_decoder else begin
+        assign is_accel                  = 1'b0;
+        assign acc_instruction           = '0;
+        assign acc_illegal_instr         = 1'b1; // this should never propagate
+        assign acc_is_control_flow_instr = 1'b0;
+    end
+
     always_comb begin : decoder
 
         imm_select                  = NOIMM;
@@ -86,6 +115,7 @@ module decoder import ariane_pkg::*; #(
         instruction_o.is_compressed = is_compressed_i;
         instruction_o.use_zimm      = 1'b0;
         instruction_o.bp            = branch_predict_i;
+        instruction_o.vfp           = 1'b0;
         ecall                       = 1'b0;
         ebreak                      = 1'b0;
         check_fprm                  = 1'b0;
@@ -1153,6 +1183,21 @@ module decoder import ariane_pkg::*; #(
                 imm_select          = RS3;
             end
         end
+
+        // Accelerator instructions.
+        // These can overwrite the previous decoding entirely.
+        if (ENABLE_ACCELERATOR) begin // only generate decoder if accelerators are enabled (static)
+            if (is_accel) begin
+                instruction_o.fu        = acc_instruction.fu;
+                instruction_o.vfp       = acc_instruction.vfp;
+                instruction_o.rs1       = acc_instruction.rs1;
+                instruction_o.rs2       = acc_instruction.rs2;
+                instruction_o.rd        = acc_instruction.rd;
+                instruction_o.op        = acc_instruction.op;
+                illegal_instr           = acc_illegal_instr;
+                is_control_flow_instr_o = acc_is_control_flow_instr;
+            end
+        end
     end
 
     // --------------------------------
@@ -1199,6 +1244,13 @@ module decoder import ariane_pkg::*; #(
                 instruction_o.use_imm = 1'b0;
             end
         endcase
+
+        if (ENABLE_ACCELERATOR) begin
+            if (is_accel) begin
+                instruction_o.result  = acc_instruction.result;
+                instruction_o.use_imm = acc_instruction.use_imm;
+            end
+        end
     end
 
     // ---------------------

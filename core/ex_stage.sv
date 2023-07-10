@@ -90,6 +90,7 @@ module ex_stage import ariane_pkg::*; #(
     output logic                                   x_we_o,
     output cvxif_pkg::cvxif_req_t                  cvxif_req_o,
     input  cvxif_pkg::cvxif_resp_t                 cvxif_resp_i,
+    input logic                                    acc_valid_i,      // Output is valid
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
@@ -190,7 +191,7 @@ module ex_stage import ariane_pkg::*; #(
         .pc_i,
         .is_compressed_instr_i,
         // any functional unit is valid, check that there is no accidental mis-predict
-        .fu_valid_i ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i ) ,
+        .fu_valid_i ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i || acc_valid_i ) ,
         .branch_valid_i,
         .branch_comp_res_i ( alu_branch_res ),
         .branch_result_o   ( branch_result ),

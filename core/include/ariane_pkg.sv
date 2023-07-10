@@ -173,9 +173,13 @@ package ariane_pkg;
     localparam bit RVD = (riscv::IS_XLEN64 ? 1:0) & riscv::FPU_EN;              // Is D extension enabled for only 64 bit CPU
 `endif
     localparam bit RVA = cva6_config_pkg::CVA6ConfigAExtEn; // Is A extension enabled
+    localparam bit RVV = cva6_config_pkg::CVA6ConfigVExtEn;
+
+    // Is the accelerator enabled?
+    localparam bit ENABLE_ACCELERATOR = RVV; // Currently only used by V extension (Ara)
 
     // Transprecision floating-point extensions configuration
-    localparam bit XF16    = cva6_config_pkg::CVA6ConfigF16En; // Is half-precision float extension (Xf16) enabled
+    localparam bit XF16    = cva6_config_pkg::CVA6ConfigF16En | RVV; // Is half-precision float extension (Xf16) enabled
     localparam bit XF16ALT = cva6_config_pkg::CVA6ConfigF16AltEn; // Is alternative half-precision float extension (Xf16alt) enabled
     localparam bit XF8     = cva6_config_pkg::CVA6ConfigF8En; // Is quarter-precision float extension (Xf8) enabled
     localparam bit XFVEC   = cva6_config_pkg::CVA6ConfigFVecEn; // Is vectorial float extension (Xfvec) enabled
@@ -223,6 +227,7 @@ package ariane_pkg;
                                       | (riscv::XLEN'(0  ) << 13)                         // N - User level interrupts supported
                                       | (riscv::XLEN'(1  ) << 18)                         // S - Supervisor mode implemented
                                       | (riscv::XLEN'(1  ) << 20)                         // U - User mode implemented
+                                      | (riscv::XLEN'(RVV) << 21)                         // V - Vector extension
                                       | (riscv::XLEN'(NSX) << 23)                         // X - Non-standard extensions present
                                       | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN-2);  // MXL
 
@@ -231,8 +236,8 @@ package ariane_pkg;
 
     localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
 
-    // when cvx interface is present, use an additional writeback port
-    localparam NR_WB_PORTS = CVXIF_PRESENT ? 5 : 4;
+    // when cvx interface or the accelerator port is present, use an additional writeback port
+    localparam NR_WB_PORTS = (CVXIF_PRESENT || ENABLE_ACCELERATOR) ? 5 : 4;
 
     // Read ports for general purpose register files
     localparam NR_RGPR_PORTS = 2;
@@ -399,7 +404,8 @@ package ariane_pkg;
         CSR,       // 6
         FPU,       // 7
         FPU_VEC,   // 8
-        CVXIF      // 9
+        CVXIF,     // 9
+        ACCEL      // 10
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -554,7 +560,9 @@ package ariane_pkg;
                                // Shift with Add (Bitmanip)
                                SH1ADD, SH2ADD, SH3ADD,
                                // Bitmanip Logical with negate op (Bitmanip)
-                               ANDN, ORN, XNOR
+                               ANDN, ORN, XNOR,
+                               // Accelerator operations
+                               ACCEL_OP, ACCEL_OP_FS1, ACCEL_OP_FD, ACCEL_OP_LOAD, ACCEL_OP_STORE
                              } fu_op;
 
     typedef struct packed {
@@ -586,7 +594,8 @@ package ariane_pkg;
                 FMV_F2X,                         // FPR-GPR Moves
                 FCMP,                            // Comparisons
                 FCLASS,                          // Classifications
-                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
+                [VFMIN:VFCPKCD_D],               // Additional Vectorial FP ops
+                ACCEL_OP_FS1      : return 1'b1; // Accelerator instructions
                 default           : return 1'b0; // all other ops
             endcase
         end else
@@ -632,7 +641,8 @@ package ariane_pkg;
                 FSGNJ,                               // Sign Injections
                 FMV_X2F,                             // GPR-FPR Moves
                 [VFMIN:VFSGNJX],                     // Vectorial MIN/MAX and SGNJ
-                [VFCPKAB_S:VFCPKCD_D] : return 1'b1; // Vectorial FP cast and pack ops
+                [VFCPKAB_S:VFCPKCD_D],               // Vectorial FP cast and pack ops
+                ACCEL_OP_FD           : return 1'b1; // Accelerator instructions
                 default               : return 1'b0; // all other ops
             endcase
         end else
@@ -704,6 +714,7 @@ package ariane_pkg;
         logic [(riscv::XLEN/8)-1:0] lsu_rmask;   // information needed by RVFI
         logic [(riscv::XLEN/8)-1:0] lsu_wmask;   // information needed by RVFI
         riscv::xlen_t               lsu_wdata;   // information needed by RVFI
+        logic                       vfp;         // is this a vector floating-point instruction?
     } scoreboard_entry_t;
 
     // ---------------

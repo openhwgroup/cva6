@@ -22,6 +22,8 @@ module issue_read_operands import ariane_pkg::*; #(
     input  logic                                   rst_ni,   // Asynchronous reset active low
     // flush
     input  logic                                   flush_i,
+    // stall
+    input  logic                                   stall_i,
     // coming from rename
     input  scoreboard_entry_t                      issue_instr_i,
     input  logic                                   issue_instr_valid_i,
@@ -161,7 +163,7 @@ module issue_read_operands import ariane_pkg::*; #(
     // check that all operands are available, otherwise stall
     // forward corresponding register
     always_comb begin : operands_available
-        stall = 1'b0;
+        stall = stall_i;
         // operand forwarding signals
         forward_rs1 = 1'b0;
         forward_rs2 = 1'b0;
@@ -248,9 +250,9 @@ module issue_read_operands import ariane_pkg::*; #(
             // zero extend operand a
             operand_a_n = {{riscv::XLEN-5{1'b0}}, issue_instr_i.rs1[4:0]};
         end
-        // or is it an immediate (including PC), this is not the case for a store and control flow instructions
+        // or is it an immediate (including PC), this is not the case for a store, control flow, and accelerator instructions
         // also make sure operand B is not already used as an FP operand
-        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW) && !is_rs2_fpr(issue_instr_i.op)) begin
+        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW) && (issue_instr_i.fu != ACCEL) && !is_rs2_fpr(issue_instr_i.op)) begin
             operand_b_n = issue_instr_i.result;
         end
     end

@@ -21,6 +21,18 @@ frozen: true
 
 sources:
   - files:
+      - target: cv64a6_imafdcv_sv39
+        files:
+          - core/include/cv64a6_imafdcv_sv39_config_pkg.sv
+          - core/include/riscv_pkg.sv
+          - common/local/rvfi/rvfi_pkg.sv
+          - core/include/ariane_dm_pkg.sv
+          - core/include/ariane_pkg.sv
+          - core/mmu_sv39/tlb.sv
+          - core/mmu_sv39/mmu.sv
+          - core/mmu_sv39/ptw.sv
+          - corev_apu/tb/common/mock_uart.sv
+
       - target: cv64a6_imafdc_sv39
         files:
           - core/include/cv64a6_imafdc_sv39_config_pkg.sv
@@ -31,6 +43,7 @@ sources:
           - core/mmu_sv39/tlb.sv
           - core/mmu_sv39/mmu.sv
           - core/mmu_sv39/ptw.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
 
       - target: cv32a6_imac_sv0
         files:
@@ -42,6 +55,7 @@ sources:
           - core/mmu_sv32/cva6_tlb_sv32.sv
           - core/mmu_sv32/cva6_mmu_sv32.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
 
       - target: cv32a6_imac_sv32
         files:
@@ -53,6 +67,7 @@ sources:
           - core/mmu_sv32/cva6_tlb_sv32.sv
           - core/mmu_sv32/cva6_mmu_sv32.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
 
       - target: cv32a6_imafc_sv32
         files:
@@ -63,6 +78,7 @@ sources:
           - core/mmu_sv32/cva6_tlb_sv32.sv
           - core/mmu_sv32/cva6_mmu_sv32.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
 
       # included via target core/include/${TARGET_CFG}_config_pkg.sv
       # ariane_axi_pkg is dependent on this.
@@ -73,6 +89,7 @@ sources:
       - core/include/wt_cache_pkg.sv
       - core/include/std_cache_pkg.sv
       - core/include/axi_intf.sv
+      - core/include/acc_pkg.sv
 
       # for all the below files use Flist.cva6 as baseline and also look at Makefile pd/synth
 
@@ -141,6 +158,7 @@ sources:
       - core/instr_realign.sv
       - core/id_stage.sv
       - core/issue_read_operands.sv
+      - core/acc_dispatcher.sv
       - core/issue_stage.sv
       - core/load_unit.sv
       - core/load_store_unit.sv

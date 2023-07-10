@@ -15,6 +15,8 @@
 
 module cva6 import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  parameter type cvxif_req_t  = cvxif_pkg::cvxif_req_t,
+  parameter type cvxif_resp_t = cvxif_pkg::cvxif_resp_t,
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
@@ -39,8 +41,8 @@ module cva6 import ariane_pkg::*; #(
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output ariane_pkg::rvfi_port_t       rvfi_o,
-  output cvxif_pkg::cvxif_req_t        cvxif_req_o,
-  input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
+  output cvxif_req_t                   cvxif_req_o,
+  input  cvxif_resp_t                  cvxif_resp_i,
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
   input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i,
@@ -63,6 +65,8 @@ module cva6 import ariane_pkg::*; #(
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
   localparam NumPorts = 3;
+  cvxif_pkg::cvxif_req_t      cvxif_req;
+  cvxif_pkg::cvxif_resp_t     cvxif_resp;
 
   // --------------
   // PCGEN <-> CSR
@@ -130,6 +134,17 @@ module cva6 import ariane_pkg::*; #(
   riscv::xlen_t             fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
+  // Accelerator
+  logic                     stall_acc_id;
+  scoreboard_entry_t        issue_instr_id_acc;
+  logic                     issue_instr_hs_id_acc;
+  logic [TRANS_ID_BITS-1:0] acc_trans_id_ex_id;
+  riscv::xlen_t             acc_result_ex_id;
+  logic                     acc_valid_ex_id;
+  exception_t               acc_exception_ex_id;
+  logic                     halt_acc_ctrl;
+  logic [4:0]               acc_resp_fflags;
+  logic                     acc_resp_fflags_valid;
   // CSR
   logic                     csr_valid_id_ex;
   // CVXIF
@@ -147,6 +162,7 @@ module cva6 import ariane_pkg::*; #(
   // CSR Commit
   logic                     csr_commit_commit_ex;
   logic                     dirty_fp_state;
+  logic                     dirty_v_state;
   // LSU Commit
   logic                     lsu_commit_commit_ex;
   logic                     lsu_commit_ready_ex_commit;
@@ -154,6 +170,8 @@ module cva6 import ariane_pkg::*; #(
   logic                     no_st_pending_ex;
   logic                     no_st_pending_commit;
   logic                     amo_valid_commit;
+  // ACCEL Commit
+  logic                     acc_valid_acc_ex;
   // --------------
   // ID <-> COMMIT
   // --------------
@@ -172,6 +190,7 @@ module cva6 import ariane_pkg::*; #(
   riscv::xs_t               fs;
   logic [2:0]               frm_csr_id_issue_ex;
   logic [6:0]               fprec_csr_ex;
+  riscv::xs_t               vs;
   logic                     enable_translation_csr_ex;
   logic                     en_ld_st_translation_csr_ex;
   riscv::priv_lvl_t         ld_st_priv_lvl_csr_ex;
@@ -191,6 +210,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     dcache_en_csr_nbdcache;
   logic                     csr_write_fflags_commit_cs;
   logic                     icache_en_csr;
+  logic                     acc_cons_en_csr;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
   riscv::pmpcfg_t [15:0]    pmpcfg;
@@ -254,6 +274,11 @@ module cva6 import ariane_pkg::*; #(
   logic [(riscv::XLEN/8)-1:0]           lsu_wmask;
   logic [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id;
 
+  // Accelerator port
+  logic [63:0]       inval_addr;
+  logic              inval_valid;
+  logic              inval_ready;
+
   // --------------
   // Frontend
   // --------------
@@ -304,6 +329,7 @@ module cva6 import ariane_pkg::*; #(
     .priv_lvl_i                 ( priv_lvl                   ),
     .fs_i                       ( fs                         ),
     .frm_i                      ( frm_csr_id_issue_ex        ),
+    .vs_i                       ( vs                         ),
     .irq_i                      ( irq_i                      ),
     .irq_ctrl_i                 ( irq_ctrl_csr_id            ),
     .debug_mode_i               ( debug_mode                 ),
@@ -322,12 +348,22 @@ module cva6 import ariane_pkg::*; #(
     assign wbdata_ex_id   = {x_result_ex_id, flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id};
     assign ex_ex_ex_id    = {x_exception_ex_id, flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id};
     assign wt_valid_ex_id = {x_valid_ex_id, flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
+  end else if (ENABLE_ACCELERATOR) begin
+    assign trans_id_ex_id = {flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id, acc_trans_id_ex_id};
+    assign wbdata_ex_id   = {flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id, acc_result_ex_id};
+    assign ex_ex_ex_id    = {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id, acc_exception_ex_id};
+    assign wt_valid_ex_id = {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id, acc_valid_ex_id};
   end else begin
     assign trans_id_ex_id = {flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id};
     assign wbdata_ex_id   = {flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id};
     assign ex_ex_ex_id    = {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id};
     assign wt_valid_ex_id = {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
   end
+
+  if (CVXIF_PRESENT && ENABLE_ACCELERATOR) begin : gen_err_xif_and_acc
+    $error("X-interface and accelerator port cannot be enabled at the same time.");
+  end
+
   // ---------
   // Issue
   // ---------
@@ -342,6 +378,7 @@ module cva6 import ariane_pkg::*; #(
     .sb_full_o                  ( sb_full                      ),
     .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id ),
     .flush_i                    ( flush_ctrl_id                ),
+    .stall_i                    ( stall_acc_id                 ),
     // ID Stage
     .decoded_instr_i            ( issue_entry_id_issue         ),
     .decoded_instr_valid_i      ( issue_entry_valid_id_issue   ),
@@ -377,6 +414,9 @@ module cva6 import ariane_pkg::*; #(
     .x_issue_valid_o            ( x_issue_valid_id_ex          ),
     .x_issue_ready_i            ( x_issue_ready_ex_id          ),
     .x_off_instr_o              ( x_off_instr_id_ex            ),
+    // Accelerator
+    .issue_instr_o              ( issue_instr_id_acc           ),
+    .issue_instr_hs_o           ( issue_instr_hs_id_acc        ),
     // Commit
     .resolved_branch_i          ( resolved_branch              ),
     .trans_id_i                 ( trans_id_ex_id               ),
@@ -478,8 +518,10 @@ module cva6 import ariane_pkg::*; #(
     .x_result_o             ( x_result_ex_id              ),
     .x_valid_o              ( x_valid_ex_id               ),
     .x_we_o                 ( x_we_ex_id                  ),
-    .cvxif_req_o            ( cvxif_req_o                   ),
-    .cvxif_resp_i           ( cvxif_resp_i                  ),
+    .cvxif_req_o            ( cvxif_req                   ),
+    .cvxif_resp_i           ( cvxif_resp                  ),
+    // Accelerator
+    .acc_valid_i            ( acc_valid_acc_ex            ),
     // Performance counters
     .itlb_miss_o            ( itlb_miss_ex_perf           ),
     .dtlb_miss_o            ( dtlb_miss_ex_perf           ),
@@ -577,6 +619,7 @@ module cva6 import ariane_pkg::*; #(
     .csr_op_i               ( csr_op_commit_csr             ),
     .csr_write_fflags_i     ( csr_write_fflags_commit_cs    ),
     .dirty_fp_state_i       ( dirty_fp_state                ),
+    .dirty_v_state_i        ( dirty_v_state                 ),
     .csr_addr_i             ( csr_addr_ex_csr               ),
     .csr_wdata_i            ( csr_wdata_commit_csr          ),
     .csr_rdata_o            ( csr_rdata_csr_commit          ),
@@ -587,10 +630,13 @@ module cva6 import ariane_pkg::*; #(
     .set_debug_pc_o         ( set_debug_pc                  ),
     .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
     .priv_lvl_o             ( priv_lvl                      ),
+    .acc_fflags_ex_i        ( acc_resp_fflags               ),
+    .acc_fflags_ex_valid_i  ( acc_resp_fflags_valid         ),
     .fs_o                   ( fs                            ),
     .fflags_o               ( fflags_csr_commit             ),
     .frm_o                  ( frm_csr_id_issue_ex           ),
     .fprec_o                ( fprec_csr_ex                  ),
+    .vs_o                   ( vs                            ),
     .irq_ctrl_o             ( irq_ctrl_csr_id               ),
     .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
     .en_translation_o       ( enable_translation_csr_ex     ),
@@ -606,6 +652,7 @@ module cva6 import ariane_pkg::*; #(
     .single_step_o          ( single_step_csr_commit        ),
     .dcache_en_o            ( dcache_en_csr_nbdcache        ),
     .icache_en_o            ( icache_en_csr                 ),
+    .acc_cons_en_o          ( acc_cons_en_csr               ),
     .perf_addr_o            ( addr_csr_perf                 ),
     .perf_data_o            ( data_csr_perf                 ),
     .perf_data_i            ( data_perf_csr                 ),
@@ -675,6 +722,7 @@ module cva6 import ariane_pkg::*; #(
     .flush_dcache_ack_i     ( dcache_flush_ack_cache_ctrl   ),
 
     .halt_csr_i             ( halt_csr_ctrl                 ),
+    .halt_acc_i             ( halt_acc_ctrl                 ),
     .halt_o                 ( halt_ctrl                     ),
     // control ports
     .eret_i                 ( eret                          ),
@@ -735,12 +783,15 @@ module cva6 import ariane_pkg::*; #(
     .wbuffer_not_ni_o      ( dcache_commit_wbuffer_not_ni ),
 `ifdef PITON_ARIANE
     .l15_req_o             ( l15_req_o                   ),
-    .l15_rtrn_i            ( l15_rtrn_i                  )
+    .l15_rtrn_i            ( l15_rtrn_i                  ),
 `else
     // memory side
     .axi_req_o             ( axi_req_o                   ),
-    .axi_resp_i            ( axi_resp_i                  )
+    .axi_resp_i            ( axi_resp_i                  ),
 `endif
+    .inval_addr_i          ( inval_addr                  ),
+    .inval_valid_i         ( inval_valid                 ),
+    .inval_ready_o         ( inval_ready                 )
   );
   end else begin
 
@@ -789,7 +840,75 @@ module cva6 import ariane_pkg::*; #(
     .axi_resp_i            ( axi_resp_i                  )
   );
   assign dcache_commit_wbuffer_not_ni = 1'b1;
+  assign inval_ready                  = 1'b1;
   end
+
+  // ----------------
+  // Accelerator
+  // ----------------
+
+  if (ENABLE_ACCELERATOR) begin: gen_accelerator
+    acc_pkg::accelerator_req_t acc_req;
+
+    acc_dispatcher i_acc_dispatcher (
+      .clk_i                  ( clk_i                        ),
+      .rst_ni                 ( rst_ni                       ),
+      .flush_unissued_instr_i ( flush_unissued_instr_ctrl_id ),
+      .flush_ex_i             ( flush_ctrl_ex                ),
+      .acc_cons_en_i          ( acc_cons_en_csr              ),
+      .fcsr_frm_i             ( frm_csr_id_issue_ex          ),
+      .dirty_v_state_o        ( dirty_v_state                ),
+      .issue_instr_i          ( issue_instr_id_acc           ),
+      .issue_instr_hs_i       ( issue_instr_hs_id_acc        ),
+      .issue_stall_o          ( stall_acc_id                 ),
+      .fu_data_i              ( fu_data_id_ex                ),
+      .commit_instr_i         ( commit_instr_id_commit       ),
+      .commit_st_barrier_i    ( fence_i_commit_controller | fence_commit_controller ),
+      .acc_trans_id_o         ( acc_trans_id_ex_id           ),
+      .acc_result_o           ( acc_result_ex_id             ),
+      .acc_valid_o            ( acc_valid_ex_id              ),
+      .acc_exception_o        ( acc_exception_ex_id          ),
+      .acc_valid_ex_o         ( acc_valid_acc_ex             ),
+      .commit_ack_i           ( commit_ack                   ),
+      .acc_no_st_pending_i    ( no_st_pending_commit         ),
+      .ctrl_halt_o            ( halt_acc_ctrl                ),
+      .acc_req_o              ( acc_req                      ),
+      .acc_resp_i             ( cvxif_resp_i                 )
+    );
+
+    assign acc_resp_fflags = cvxif_resp_i.fflags;
+    assign acc_resp_fflags_valid = cvxif_resp_i.fflags_valid;
+
+    // Pack invalidation interface into accelerator interface
+    always_comb begin : pack_inval
+      inval_valid             = cvxif_resp_i.inval_valid;
+      inval_addr              = cvxif_resp_i.inval_addr;
+      cvxif_req_o             = acc_req;
+      cvxif_req_o.inval_ready = inval_ready;
+    end
+
+    // Tie off cvxif
+    assign cvxif_resp = '0;
+  end : gen_accelerator else begin: gen_no_accelerator
+    assign acc_trans_id_ex_id    = '0;
+    assign acc_result_ex_id      = '0;
+    assign acc_valid_ex_id       = '0;
+    assign acc_exception_ex_id   = '0;
+    assign acc_resp_fflags       = '0;
+    assign acc_resp_fflags_valid = '0;
+    assign stall_acc_id          = '0;
+    assign dirty_v_state         = '0;
+    assign acc_valid_acc_ex      = '0;
+    assign halt_acc_ctrl         = '0;
+
+    // No invalidation interface
+    assign inval_valid = '0;
+    assign inval_addr  = '0;
+
+    // Feed through cvxif
+    assign cvxif_req_o = cvxif_req;
+    assign cvxif_resp  = cvxif_resp_i;
+  end : gen_no_accelerator
 
   // -------------------
   // Parameter Check

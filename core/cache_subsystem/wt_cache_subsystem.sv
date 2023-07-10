@@ -61,12 +61,16 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output l15_req_t                       l15_req_o,
-  input  l15_rtrn_t                      l15_rtrn_i
+  input  l15_rtrn_t                      l15_rtrn_i,
 `else
   // memory side
   output axi_req_t                       axi_req_o,
-  input  axi_rsp_t                       axi_resp_i
+  input  axi_rsp_t                       axi_resp_i,
 `endif
+  // Invalidations
+  input  logic [63:0]                    inval_addr_i,
+  input  logic                           inval_valid_i,
+  output logic                           inval_ready_o
   // TODO: interrupt interface
 );
 
@@ -182,7 +186,10 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
     .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
     .dcache_rtrn_o      ( adapter_dcache          ),
     .axi_req_o          ( axi_req_o               ),
-    .axi_resp_i         ( axi_resp_i              )
+    .axi_resp_i         ( axi_resp_i              ),
+    .inval_addr_i       ( inval_addr_i            ),
+    .inval_valid_i      ( inval_valid_i           ),
+    .inval_ready_o      ( inval_ready_o           )
   );
 `endif
 

@@ -30,6 +30,7 @@ module controller import ariane_pkg::*; #(
     output logic            flush_tlb_o,            // Flush TLBs
 
     input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
+    input  logic            halt_acc_i,             // Halt request from accelerator dispatcher
     output logic            halt_o,                 // Halt signal to commit stage
     input  logic            eret_i,                 // Return from exception
     input  logic            ex_valid_i,             // We got an exception, flush the pipeline
@@ -165,7 +166,7 @@ module controller import ariane_pkg::*; #(
     // ----------------------
     always_comb begin
         // halt the core if the fence is active
-        halt_o = halt_csr_i || fence_active_q;
+        halt_o = halt_csr_i || halt_acc_i || fence_active_q;
     end
 
     // ----------------------

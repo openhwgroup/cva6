@@ -79,6 +79,8 @@ module commit_stage import ariane_pkg::*; #(
       dirty_fp_state_o = 1'b0;
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
         dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || is_rd_fpr(commit_instr_i[i].op));
+        // Check if we issued a vector floating-point instruction to the accellerator
+        dirty_fp_state_o |= commit_instr_i[i].fu == ACCEL && commit_instr_i[i].vfp;
       end
     end
 
