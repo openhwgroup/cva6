@@ -26,8 +26,8 @@ module perf_counters import ariane_pkg::*; #(
   input  riscv::xlen_t                            data_i,   // data to write
   output riscv::xlen_t                            data_o,   // data to read
   // from commit stage
-  input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
-  input  logic [NR_COMMIT_PORTS-1:0]              commit_ack_i,       // acknowledge that we are indeed committing
+  input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,     // the instruction we want to commit
+  input  logic [CVA6Cfg.NrCommitPorts-1:0]              commit_ack_i,       // acknowledge that we are indeed committing
   // from L1 caches
   input  logic                                    l1_icache_miss_i,
   input  logic                                    l1_dcache_miss_i,
@@ -74,25 +74,25 @@ module perf_counters import ariane_pkg::*; #(
            5'b00010 : events[i] = l1_dcache_miss_i;//L1 D-Cache misses
            5'b00011 : events[i] = itlb_miss_i;//ITLB misses
            5'b00100 : events[i] = dtlb_miss_i;//DTLB misses
-           5'b00101 : for (int unsigned j = 0; j < NR_COMMIT_PORTS; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == LOAD;//Load accesses
-           5'b00110 : for (int unsigned j = 0; j < NR_COMMIT_PORTS; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == STORE;//Store accesses
+           5'b00101 : for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == LOAD;//Load accesses
+           5'b00110 : for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == STORE;//Store accesses
            5'b00111 : events[i] = ex_i.valid;//Exceptions
            5'b01000 : events[i] = eret_i;//Exception handler returns
-           5'b01001 : for (int unsigned j = 0; j < NR_COMMIT_PORTS; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == CTRL_FLOW;//Branch instructions
+           5'b01001 : for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == CTRL_FLOW;//Branch instructions
            5'b01010 : events[i] = resolved_branch_i.valid && resolved_branch_i.is_mispredict;//Branch mispredicts
            5'b01011 : events[i] = branch_exceptions_i.valid;//Branch exceptions
                    // The standard software calling convention uses register x1 to hold the return address on a call
                    // the unconditional jump is decoded as ADD op
-           5'b01100 : for (int unsigned j = 0; j < NR_COMMIT_PORTS; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == CTRL_FLOW && (commit_instr_i[j].op == ADD || commit_instr_i[j].op == JALR) && (commit_instr_i[j].rd == 'd1 || commit_instr_i[j].rd == 'd5);//Call
-           5'b01101 : for (int unsigned j = 0; j < NR_COMMIT_PORTS; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].op == JALR && commit_instr_i[j].rd == 'd0;//Return
+           5'b01100 : for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == CTRL_FLOW && (commit_instr_i[j].op == ADD || commit_instr_i[j].op == JALR) && (commit_instr_i[j].rd == 'd1 || commit_instr_i[j].rd == 'd5);//Call
+           5'b01101 : for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].op == JALR && commit_instr_i[j].rd == 'd0;//Return
            5'b01110 : events[i] = sb_full_i;//MSB Full
            5'b01111 : events[i] = if_empty_i;//Instruction fetch Empty
            5'b10000 : events[i] = l1_icache_access_i.req;//L1 I-Cache accesses
            5'b10001 : events[i] = l1_dcache_access_i[0].data_req || l1_dcache_access_i[1].data_req || l1_dcache_access_i[2].data_req;//L1 D-Cache accesses
            5'b10010 : events[i] = (l1_dcache_miss_i && miss_vld_bits_i[0] == 8'hFF) || (l1_dcache_miss_i && miss_vld_bits_i[1] == 8'hFF) || (l1_dcache_miss_i && miss_vld_bits_i[2] == 8'hFF);//eviction
            5'b10011 : events[i] = i_tlb_flush_i;//I-TLB flush
-           5'b10100 : for (int unsigned j = 0; j < NR_COMMIT_PORTS; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == ALU || commit_instr_i[j].fu == MULT;//Integer instructions
-           5'b10101 : for (int unsigned j = 0; j < NR_COMMIT_PORTS; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == FPU || commit_instr_i[j].fu == FPU_VEC;//Floating Point Instructions
+           5'b10100 : for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == ALU || commit_instr_i[j].fu == MULT;//Integer instructions
+           5'b10101 : for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) if (commit_ack_i[j]) events[i] = commit_instr_i[j].fu == FPU || commit_instr_i[j].fu == FPU_VEC;//Floating Point Instructions
            5'b10110 : events[i] = stall_issue_i;//Pipeline bubbles
            default:   events[i] = 0;
          endcase

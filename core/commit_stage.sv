@@ -14,8 +14,7 @@
 
 
 module commit_stage import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
-    parameter int unsigned NR_COMMIT_PORTS = 2
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
 )(
     input  logic                                    clk_i,
     input  logic                                    rst_ni,
@@ -25,13 +24,13 @@ module commit_stage import ariane_pkg::*; #(
     output logic                                    dirty_fp_state_o,   // mark the F state as dirty
     input  logic                                    single_step_i,      // we are in single step debug mode
     // from scoreboard
-    input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
-    output logic [NR_COMMIT_PORTS-1:0]              commit_ack_o,       // acknowledge that we are indeed committing
+    input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,     // the instruction we want to commit
+    output logic [CVA6Cfg.NrCommitPorts-1:0]              commit_ack_o,       // acknowledge that we are indeed committing
     // to register file
-    output  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_o,            // register file write address
-    output  logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_o,       // register file write data
-    output  logic [NR_COMMIT_PORTS-1:0]             we_gpr_o,           // register file write enable
-    output  logic [NR_COMMIT_PORTS-1:0]             we_fpr_o,           // floating point register enable
+    output  logic [CVA6Cfg.NrCommitPorts-1:0][4:0]        waddr_o,            // register file write address
+    output  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_o,       // register file write data
+    output  logic [CVA6Cfg.NrCommitPorts-1:0]             we_gpr_o,           // register file write enable
+    output  logic [CVA6Cfg.NrCommitPorts-1:0]             we_fpr_o,           // floating point register enable
     // Atomic memory operations
     input  amo_resp_t                               amo_resp_i,         // result of AMO operation
     // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
@@ -69,7 +68,7 @@ module commit_stage import ariane_pkg::*; #(
 //     .probe9(1'b0) // input wire [0:0]  probe9
 // );
 
-    for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_waddr
+    for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_waddr
       assign waddr_o[i] = commit_instr_i[i].rd[4:0];
     end
 
@@ -77,7 +76,7 @@ module commit_stage import ariane_pkg::*; #(
     // Dirty the FP state if we are committing anything related to the FPU
     always_comb begin : dirty_fp_state
       dirty_fp_state_o = 1'b0;
-      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+      for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
         dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || is_rd_fpr(commit_instr_i[i].op));
         // Check if we issued a vector floating-point instruction to the accellerator
         dirty_fp_state_o |= commit_instr_i[i].fu == ACCEL && commit_instr_i[i].vfp;
@@ -208,7 +207,7 @@ module commit_stage import ariane_pkg::*; #(
             end
         end
 
-        if (NR_COMMIT_PORTS > 1) begin
+        if (CVA6Cfg.NrCommitPorts > 1) begin
 
             commit_ack_o[1]    = 1'b0;
             we_gpr_o[1]        = 1'b0;

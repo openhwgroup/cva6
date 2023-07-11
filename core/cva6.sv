@@ -64,7 +64,7 @@ module cva6 import ariane_pkg::*; #(
   bp_resolve_t                resolved_branch;
   logic [riscv::VLEN-1:0]     pc_commit;
   logic                       eret;
-  logic [NR_COMMIT_PORTS-1:0] commit_ack;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
 
   localparam NumPorts = 3;
   cvxif_pkg::cvxif_req_t      cvxif_req;
@@ -177,14 +177,14 @@ module cva6 import ariane_pkg::*; #(
   // --------------
   // ID <-> COMMIT
   // --------------
-  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_id_commit;
+  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_id_commit;
   // --------------
   // COMMIT <-> ID
   // --------------
-  logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_commit_id;
-  logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_commit_id;
-  logic [NR_COMMIT_PORTS-1:0]       we_gpr_commit_id;
-  logic [NR_COMMIT_PORTS-1:0]       we_fpr_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0][4:0]  waddr_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0]       we_gpr_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0]       we_fpr_commit_id;
   // --------------
   // CSR <-> *
   // --------------
@@ -372,8 +372,7 @@ module cva6 import ariane_pkg::*; #(
   issue_stage #(
     .CVA6Cfg                    ( CVA6Cfg                      ),
     .NR_ENTRIES                 ( NR_SB_ENTRIES                ),
-    .NR_WB_PORTS                ( NR_WB_PORTS                  ),
-    .NR_COMMIT_PORTS            ( NR_COMMIT_PORTS              )
+    .NR_WB_PORTS                ( NR_WB_PORTS                  )
   ) issue_stage_i (
     .clk_i,
     .rst_ni,
@@ -564,8 +563,7 @@ module cva6 import ariane_pkg::*; #(
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
   commit_stage #(
-    .CVA6Cfg         ( CVA6Cfg         ),
-    .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
+    .CVA6Cfg         ( CVA6Cfg         )
   ) commit_stage_i (
     .clk_i,
     .rst_ni,
@@ -607,7 +605,6 @@ module cva6 import ariane_pkg::*; #(
     .CVA6Cfg                ( CVA6Cfg                       ),
     .AsidWidth              ( ASID_WIDTH                    ),
     .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
-    .NrCommitPorts          ( NR_COMMIT_PORTS               ),
     .NrPMPEntries           ( ArianeCfg.NrPMPEntries        ),
     .MHPMCounterNum         ( MHPMCounterNum                )
   ) csr_regfile_i (
@@ -923,10 +920,10 @@ module cva6 import ariane_pkg::*; #(
 
   logic        piton_pc_vld;
   logic [riscv::VLEN-1:0] piton_pc;
-  logic [NR_COMMIT_PORTS-1:0][riscv::VLEN-1:0] pc_data;
-  logic [NR_COMMIT_PORTS-1:0] pc_pop, pc_empty;
+  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] pc_data;
+  logic [CVA6Cfg.NrCommitPorts-1:0] pc_pop, pc_empty;
 
-  for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_pc_fifo
+  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_pc_fifo
     fifo_v3 #(
       .DATA_WIDTH(64),
       .DEPTH(PC_QUEUE_DEPTH))
@@ -946,7 +943,7 @@ module cva6 import ariane_pkg::*; #(
   end
 
   rr_arb_tree #(
-    .NumIn(NR_COMMIT_PORTS),
+    .NumIn(CVA6Cfg.NrCommitPorts),
     .DataWidth(64))
   i_rr_arb_tree (
     .clk_i   ( clk_i        ),
@@ -1030,7 +1027,7 @@ module cva6 import ariane_pkg::*; #(
         default: ; // Do nothing
         endcase
       end
-      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+      for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
         if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
           $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
         end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
@@ -1057,7 +1054,7 @@ module cva6 import ariane_pkg::*; #(
 
   if (ariane_pkg::RVFI) begin
     always_comb begin
-      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+      for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
         logic exception, mem_exception;
         exception = commit_instr_id_commit[i].valid && ex_commit.valid;
         mem_exception = exception &&
