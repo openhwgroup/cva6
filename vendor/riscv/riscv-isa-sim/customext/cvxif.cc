@@ -142,7 +142,6 @@ class cvxif_t : public cvxif_extn_t
         if (r_insn.rs2 != 0 || r_insn.rd != 0){
           illegal_instruction();
         } else {
-          p -> put_csr(CSR_MCAUSE, r_insn.rs1);
           raise_exception(insn, (reg_t) (r_insn.rs1));
         }
         break;
@@ -161,6 +160,12 @@ class cvxif_t : public cvxif_extn_t
   void raise_exception(insn_t insn, reg_t exc_index)
   {
     switch (exc_index) {
+      case CAUSE_MISALIGNED_FETCH:
+        throw trap_instruction_address_misaligned((p ? p->get_state()->v : false), 1, 0, 0);
+      case CAUSE_FETCH_ACCESS:
+        throw trap_instruction_access_fault((p ? p->get_state()->v : false), 1, 0, 0);
+      case CAUSE_BREAKPOINT:
+        throw trap_breakpoint((p ? p->get_state()->v : false), 1);
       case CAUSE_MISALIGNED_LOAD:
         // Use 0x1 as perfectly unaligned address;-)
         throw trap_load_address_misaligned((p ? p->get_state()->v : false), 1, 0, 0);
@@ -173,12 +178,30 @@ class cvxif_t : public cvxif_extn_t
       case CAUSE_STORE_ACCESS:
         // Use 0x1 as invalid address.
         throw trap_store_access_fault((p ? p->get_state()->v : false), 1, 0, 0);
+      case CAUSE_USER_ECALL:
+        throw trap_user_ecall();
+      case CAUSE_SUPERVISOR_ECALL:
+        throw trap_supervisor_ecall();
+      case CAUSE_VIRTUAL_SUPERVISOR_ECALL:
+        throw trap_virtual_supervisor_ecall();
+      case CAUSE_MACHINE_ECALL:
+        throw trap_machine_ecall();
+      case CAUSE_FETCH_PAGE_FAULT:
+        throw trap_instruction_page_fault((p ? p->get_state()->v : false), 1, 0, 0);
       case CAUSE_LOAD_PAGE_FAULT:
         // Use 0x1 as always-faulting address.
         throw trap_load_page_fault((p ? p->get_state()->v : false), 1, 0, 0);
       case CAUSE_STORE_PAGE_FAULT:
         // Use 0x1 as always-faulting address.
         throw trap_store_page_fault((p ? p->get_state()->v : false), 1, 0, 0);
+      case CAUSE_FETCH_GUEST_PAGE_FAULT:
+        throw trap_instruction_guest_page_fault(1, 0, 0);
+      case CAUSE_LOAD_GUEST_PAGE_FAULT:
+        throw trap_load_guest_page_fault( 1, 0, 0);
+      case CAUSE_VIRTUAL_INSTRUCTION:
+        throw trap_virtual_instruction(1);
+      case CAUSE_STORE_GUEST_PAGE_FAULT:
+        throw trap_store_guest_page_fault(1, 0, 0);
       default:
         illegal_instruction();
     }
