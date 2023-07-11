@@ -63,6 +63,7 @@ class uvma_cvxif_cfg_c extends uvm_object;
       `uvm_field_int ( dual_read_write_support_x,      UVM_DEFAULT)
       `uvm_field_int ( load_store_support_x,           UVM_DEFAULT)
       `uvm_field_int ( seq_cus_instr_x2_enabled,       UVM_DEFAULT)
+      `uvm_field_int ( reg_cus_crosses_enabled,        UVM_DEFAULT)
    `uvm_object_utils_end
 
    /**
