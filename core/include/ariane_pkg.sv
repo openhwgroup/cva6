@@ -434,6 +434,10 @@ package ariane_pkg;
     `define CONFIG_L1D_SIZE 32*1024
 `endif
 
+`ifndef L15_THREADID_WIDTH
+    `define L15_THREADID_WIDTH 3
+`endif
+
     // I$
     localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
     localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
@@ -448,6 +452,8 @@ package ariane_pkg;
     localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
     localparam int unsigned DCACHE_TID_WIDTH   = cva6_config_pkg::CVA6ConfigDcacheIdWidth;
+
+    localparam int unsigned MEM_TID_WIDTH      = 3; //Minimum for the HPDC with single channel to MM, OP can only support `L15_THREADID_WIDTH;
 `else
     // I$
     localparam int unsigned CONFIG_L1I_SIZE    = 16*1024;
@@ -464,6 +470,8 @@ package ariane_pkg;
     localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
     localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : 128; // in bit
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
+
+    localparam int unsigned MEM_TID_WIDTH      = cva6_config_pkg::CVA6ConfigMemTidWidth;
 `endif
     // ---------------
     // EX Stage
