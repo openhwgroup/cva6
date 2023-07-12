@@ -62,6 +62,10 @@ union cvxif_insn_t
   insn_t i;
 };
 
+enum Func3 {FUNC3_0, FUNC3_1, FUNC3_2};
+enum Need_rs3 {NO_RS3, RS3_IN};
+enum Cus {CUS_NOP = 0, CUS_U_ADD = 2, CUS_S_ADD = 6, CUS_ADD_MULTI = 8};
+
 class cvxif_extn_t : public extension_t
 {
  public:

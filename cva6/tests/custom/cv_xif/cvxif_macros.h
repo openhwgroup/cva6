@@ -10,12 +10,12 @@
 
 #define LOAD_RS(rs,value) li rs, value
 #define COMP_RS(rs1,rs2,rd) xor rd, rs1, rs2
-#define CUS_ADD(rs1,rs2,rs3,rd) .word 0b##0000000##rs2####rs1##000##rd##1111011
+#define CUS_ADD(rs1,rs2,rs3,rd) .word 0b##0000000##rs2####rs1##001##rd##1111011
 #define CUS_NOP(rs1,rs2,rs3,rd) .word 0b##0000000##00000####00000##000##00000##1111011
 #define CUS_NOP_EXC(rs1,rs2,rs3,rd) .word 0b##0100000##00000####00000##000##00000##1111011
-#define CUS_ISS_EXC(rs1,rs2,rs3,rd) .word 0b##1100000##00000####00000##000##00000##1111011
+#define CUS_ISS_EXC(rs1,rs2,rs3,rd) .word 0b##1100000##00000####00000##010##00000##1111011
 #define CUS_ADD_RS3(rs1,rs2,rs3,rd) .word 0b##rs3##01##rs2####rs1##000##rd##1111011
 #define CUS_ADD_MULTI(rs1,rs2,rs3,rd) .word 0b##0001000##rs2####rs1##000##rd##1111011
-#define CUS_EXC(rs1,rs2,rs3,rd) .word 0b####1000000##00000####rs1##000##00000##1111011
+#define CUS_EXC(rs1,rs2,rs3,rd) .word 0b####1100000##rs2####rs1##010##rd##1111011
 #define CUS_M_ADD(rs1,rs2,rs3,rd) .word 0b####0000010##rs2####rs1##011##rd##1111011
 #define CUS_S_ADD(rs1,rs2,rs3,rd) .word 0b####0000110##rs2####rs1##001##rd##1111011
