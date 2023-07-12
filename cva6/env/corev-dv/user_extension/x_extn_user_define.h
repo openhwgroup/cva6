@@ -27,14 +27,14 @@
     .insn r CUSTOM_3, 0x0, 0x1, \rd, \rs1, \rs2, \rs3
 .endm
 
-# CUS_U_ADD rd, rs1, rs2 -> .insn r CUSTOM_3, 0x0, 0x6, rd, rs1, rs2
-.macro  cus_m_add rd, rs1, rs2
-    .insn r CUSTOM_3, 0x0, 0x6, \rd, \rs1, \rs2
+# CUS_U_ADD rd, rs1, rs2 -> .insn r CUSTOM_3, 0x0, 0x2, rd, rs1, rs2
+.macro  cus_u_add rd, rs1, rs2
+    .insn r CUSTOM_3, 0x0, 0x2, \rd, \rs1, \rs2
 .endm
 
-# CUS_S_ADD rd, rs1, rs2 -> .insn r CUSTOM_3, 0x0, 0x2, rd, rs1, rs2
+# CUS_S_ADD rd, rs1, rs2 -> .insn r CUSTOM_3, 0x0, 0x6, rd, rs1, rs2
 .macro  cus_s_add rd, rs1, rs2
-    .insn r CUSTOM_3, 0x0, 0x2, \rd, \rs1, \rs2
+    .insn r CUSTOM_3, 0x0, 0x6, \rd, \rs1, \rs2
 .endm
 
 # CUS_ADD_MULTI rd, rs1, rs2 -> .insn r CUSTOM_3, 0x0, 0x8, rd, rs1, rs2
@@ -42,9 +42,8 @@
     .insn r CUSTOM_3, 0x0, 0x8, \rd, \rs1, \rs2
 .endm
 
-# CUS_EXC rd, rs1, rs2 -> .insn r CUSTOM_3, 0x0, 0x40, rd, rs1, rs2
+# CUS_EXC rd, rs1, rs2 -> .insn r CUSTOM_3, 0x2, 0x60, rd, rs1, rs2
 .macro  cus_exc rd, rs1, rs2
-    .insn r CUSTOM_3, 0x0, 0x40, \rd, \rs1, \rs2
+    .insn r CUSTOM_3, 0x2, 0x60, \rd, \rs1, \rs2
 .endm
-
 

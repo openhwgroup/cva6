@@ -10,21 +10,6 @@
 // -------------------------------------------------------------------------------------------
 
 // Custom extension instruction for CVXIF
-`define INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
-    static bit valid = cvxif_custom_instr::register(instr_n);  \
-    `uvm_object_utils(riscv_``instr_n``_instr)  \
-    function new(string name = "");  \
-      super.new(name);  \
-      this.instr_name = ``instr_n; \
-      this.format = ``instr_format;  \
-      this.group = ``instr_group;  \
-      this.category = ``instr_category;  \
-      this.imm_type = ``imm_tp;  \
-      set_imm_len(); \
-      set_rand_mode(); \
-    endfunction \
-  endclass
-
 `define DEFINE_CVXIF_CUSTOM_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
    class riscv_``instr_n``_instr extends cvxif_custom_instr;  \
       `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)

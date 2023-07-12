@@ -15,6 +15,6 @@
 +incdir+${CVA6_DV_ROOT}/user_extension
 
 // SOURCES
-${CVA6_DV_ROOT}/cva6_instr_pkg.sv
+${CVA6_DV_ROOT}/cva6_signature_pkg.sv
 ${CVA6_DV_ROOT}/cva6_instr_test_pkg.sv
 
