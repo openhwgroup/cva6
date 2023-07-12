@@ -96,7 +96,7 @@ module scoreboard #(
   ariane_pkg::scoreboard_entry_t decoded_instr;
   always_comb begin
     decoded_instr = decoded_instr_i;
-    if (ariane_pkg::RVFI) begin
+    if (CVA6Cfg.IsRVFI) begin
       decoded_instr.rs1_rdata = rs1_forwarding_i;
       decoded_instr.rs2_rdata = rs2_forwarding_i;
       decoded_instr.lsu_addr  = '0;
@@ -155,7 +155,7 @@ module scoreboard #(
     // ------------
     // Write Back
     // ------------
-    if (ariane_pkg::RVFI) begin
+    if (CVA6Cfg.IsRVFI) begin
       if (lsu_rmask_i != 0) begin
         mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
         mem_n[lsu_addr_trans_id_i].sbe.lsu_rmask = lsu_rmask_i;

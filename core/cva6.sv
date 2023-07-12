@@ -14,6 +14,36 @@
 
 
 module cva6 import ariane_pkg::*; #(
+  // Pipeline
+  parameter int unsigned NrCommitPorts = cva6_config_pkg::CVA6ConfigNrCommitPorts,
+  // RVFI
+  parameter int unsigned IsRVFI = cva6_config_pkg::CVA6ConfigRvfiTrace,
+  parameter type rvfi_instr_t = struct packed {
+    logic [ariane_pkg::NRET-1:0]                  valid;
+    logic [ariane_pkg::NRET*64-1:0]               order;
+    logic [ariane_pkg::NRET*ariane_pkg::ILEN-1:0] insn;
+    logic [ariane_pkg::NRET-1:0]                  trap;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      cause;
+    logic [ariane_pkg::NRET-1:0]                  halt;
+    logic [ariane_pkg::NRET-1:0]                  intr;
+    logic [ariane_pkg::NRET*2-1:0]                mode;
+    logic [ariane_pkg::NRET*2-1:0]                ixl;
+    logic [ariane_pkg::NRET*5-1:0]                rs1_addr;
+    logic [ariane_pkg::NRET*5-1:0]                rs2_addr;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
+    logic [ariane_pkg::NRET*5-1:0]                rd_addr;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
+    logic [ariane_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
+    logic [ariane_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
+    logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
+    logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata; },
+  parameter type rvfi_port_t = rvfi_instr_t [NrCommitPorts-1:0],
+  //
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
   parameter type cvxif_req_t  = cvxif_pkg::cvxif_req_t,
   parameter type cvxif_resp_t = cvxif_pkg::cvxif_resp_t,
@@ -31,7 +61,6 @@ module cva6 import ariane_pkg::*; #(
   // Core ID, Cluster ID and boot address are considered more or less static
   input  logic [riscv::VLEN-1:0]       boot_addr_i,  // reset boot address
   input  logic [riscv::XLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
-
   // Interrupt inputs
   input  logic [1:0]                   irq_i,        // level sensitive IR lines, mip & sip (async)
   input  logic                         ipi_i,        // inter-processor interrupts (async)
@@ -40,7 +69,7 @@ module cva6 import ariane_pkg::*; #(
   input  logic                         debug_req_i,  // debug request (async)
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output ariane_pkg::rvfi_port_t       rvfi_o,
+  output rvfi_port_t                   rvfi_o,
   output cvxif_req_t                   cvxif_req_o,
   input  cvxif_resp_t                  cvxif_resp_i,
   // L15 (memory side)
@@ -52,7 +81,8 @@ module cva6 import ariane_pkg::*; #(
 );
 
   localparam ariane_pkg::cva6_cfg_t CVA6Cfg = {
-    int'(NR_COMMIT_PORTS)
+    int'(NrCommitPorts),
+    int'(IsRVFI)
   };
 
   // ------------------------------------------
@@ -1052,7 +1082,7 @@ module cva6 import ariane_pkg::*; #(
 `endif // VERILATOR
 //pragma translate_on
 
-  if (ariane_pkg::RVFI) begin
+  if (CVA6Cfg.IsRVFI) begin
     always_comb begin
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
         logic exception, mem_exception;

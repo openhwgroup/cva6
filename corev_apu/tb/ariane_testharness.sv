@@ -604,7 +604,7 @@ module ariane_testharness #(
   // ---------------
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
-  ariane_pkg::rvfi_port_t  rvfi;
+  rvfi_pkg::rvfi_instr_t [ariane_pkg::NR_COMMIT_PORTS-1:0] rvfi;
 
   ariane #(
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )

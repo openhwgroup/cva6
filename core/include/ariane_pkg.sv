@@ -31,11 +31,16 @@ package ariane_pkg;
     // This is the new user config interface system. If you need to parameterize something
     // within Ariane add a field here and assign a default value to the config. Please make
     // sure to add a propper parameter check to the `check_cfg` function.
+    localparam int unsigned ILEN = 32;
+    localparam int unsigned NRET = 1;
+
     typedef struct packed {
       int unsigned NrCommitPorts;
+      int unsigned IsRVFI;
     } cva6_cfg_t;
 
     localparam cva6_cfg_t cva6_cfg_empty = {
+      unsigned'(0),
       unsigned'(0)
     };
 
