@@ -371,8 +371,8 @@ module issue_read_operands import ariane_pkg::*; #(
                 // or check that the target destination register will be written in this cycle by the
                 // commit stage
                 for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++)
-                    if (is_rd_fpr(issue_instr_i.op) ? (we_fpr_i[i] && waddr_i[i] == issue_instr_i.rd)
-                                                    : (we_gpr_i[i] && waddr_i[i] == issue_instr_i.rd)) begin
+                    if (is_rd_fpr(issue_instr_i.op) ? (we_fpr_i[i] && waddr_i[i] == issue_instr_i.rd[4:0])
+                                                    : (we_gpr_i[i] && waddr_i[i] == issue_instr_i.rd[4:0])) begin
                         issue_ack_o = 1'b1;
                     end
             end

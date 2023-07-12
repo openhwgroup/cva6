@@ -293,16 +293,16 @@ module decoder import ariane_pkg::*; #(
                             // decode vectorial FP instruction
                             unique case (instr.rvftype.vecfltop)
                                 5'b00001 : begin
-                                    instruction_o.op  = ariane_pkg::FADD; // vfadd.vfmt - Vectorial FP Addition
-                                    instruction_o.rs1 = '0;                // Operand A is set to 0
-                                    instruction_o.rs2 = instr.rvftype.rs1; // Operand B is set to rs1
-                                    imm_select        = IIMM;              // Operand C is set to rs2
+                                    instruction_o.op       = ariane_pkg::FADD; // vfadd.vfmt - Vectorial FP Addition
+                                    instruction_o.rs1      = '0;                // Operand A is set to 0
+                                    instruction_o.rs2[4:0] = instr.rvftype.rs1; // Operand B is set to rs1
+                                    imm_select             = IIMM;              // Operand C is set to rs2
                                 end
                                 5'b00010 : begin
-                                    instruction_o.op  = ariane_pkg::FSUB; // vfsub.vfmt - Vectorial FP Subtraction
-                                    instruction_o.rs1 = '0;                // Operand A is set to 0
-                                    instruction_o.rs2 = instr.rvftype.rs1; // Operand B is set to rs1
-                                    imm_select        = IIMM;              // Operand C is set to rs2
+                                    instruction_o.op       = ariane_pkg::FSUB; // vfsub.vfmt - Vectorial FP Subtraction
+                                    instruction_o.rs1      = '0;                // Operand A is set to 0
+                                    instruction_o.rs2[4:0] = instr.rvftype.rs1; // Operand B is set to rs1
+                                    imm_select             = IIMM;              // Operand C is set to rs2
                                 end
                                 5'b00011 : instruction_o.op = ariane_pkg::FMUL; // vfmul.vfmt - Vectorial FP Multiplication
                                 5'b00100 : instruction_o.op = ariane_pkg::FDIV; // vfdiv.vfmt - Vectorial FP Division
@@ -330,7 +330,7 @@ module decoder import ariane_pkg::*; #(
                                 5'b01100 : begin
                                     unique case (instr.rvftype.rs2) inside // operation encoded in rs2, `inside` for matching ?
                                         5'b00000 : begin
-                                            instruction_o.rs2 = instr.rvftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
+                                            instruction_o.rs2[4:0] = instr.rvftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
                                             if (instr.rvftype.repl)
                                                 instruction_o.op = ariane_pkg::FMV_X2F; // vfmv.vfmt.x - GPR to FPR Move
                                             else
@@ -345,9 +345,9 @@ module decoder import ariane_pkg::*; #(
                                         5'b00010 : instruction_o.op = ariane_pkg::FCVT_F2I; // vfcvt.x.vfmt - Vectorial FP to Int Conversion
                                         5'b00011 : instruction_o.op = ariane_pkg::FCVT_I2F; // vfcvt.vfmt.x - Vectorial Int to FP Conversion
                                         5'b001?? : begin
-                                            instruction_o.op  = ariane_pkg::FCVT_F2F; // vfcvt.vfmt.vfmt - Vectorial FP to FP Conversion
-                                            instruction_o.rs2 = instr.rvftype.rd; // set rs2 = rd as target vector for conversion
-                                            imm_select        = IIMM;     // rs2 holds part of the intruction
+                                            instruction_o.op       = ariane_pkg::FCVT_F2F; // vfcvt.vfmt.vfmt - Vectorial FP to FP Conversion
+                                            instruction_o.rs2[4:0] = instr.rvftype.rd; // set rs2 = rd as target vector for conversion
+                                            imm_select             = IIMM;     // rs2 holds part of the intruction
                                             // TODO CHECK R bit for valid fmt combinations
                                             // determine source format
                                             unique case (instr.rvftype.rs2[21:20])
@@ -515,9 +515,9 @@ module decoder import ariane_pkg::*; #(
                         end else begin
                             instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
                         end
-                        instruction_o.rs1 = instr.rtype.rs1;
-                        instruction_o.rs2 = instr.rtype.rs2;
-                        instruction_o.rd  = instr.rtype.rd;
+                        instruction_o.rs1[4:0] = instr.rtype.rs1;
+                        instruction_o.rs2[4:0] = instr.rtype.rs2;
+                        instruction_o.rd[4:0]  = instr.rtype.rd;
 
                         unique case ({instr.rtype.funct7, instr.rtype.funct3})
                             {7'b000_0000, 3'b000}: instruction_o.op = ariane_pkg::ADD;   // Add
@@ -813,8 +813,8 @@ module decoder import ariane_pkg::*; #(
                     if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = STORE;
                         imm_select = SIMM;
-                        instruction_o.rs1        = instr.stype.rs1;
-                        instruction_o.rs2        = instr.stype.rs2;
+                        instruction_o.rs1[4:0] = instr.stype.rs1;
+                        instruction_o.rs2[4:0] = instr.stype.rs2;
                         // determine store size
                         unique case (instr.stype.funct3)
                             // Only process instruction if corresponding extension is active (static)
@@ -836,8 +836,8 @@ module decoder import ariane_pkg::*; #(
                     if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = LOAD;
                         imm_select = IIMM;
-                        instruction_o.rs1       = instr.itype.rs1;
-                        instruction_o.rd        = instr.itype.rd;
+                        instruction_o.rs1[4:0] = instr.itype.rs1;
+                        instruction_o.rd[4:0]  = instr.itype.rd;
                         // determine load size
                         unique case (instr.itype.funct3)
                             // Only process instruction if corresponding extension is active (static)
@@ -863,12 +863,12 @@ module decoder import ariane_pkg::*; #(
                 riscv::OpcodeNmsub,
                 riscv::OpcodeNmadd: begin
                     if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
-                        instruction_o.fu  = FPU;
-                        instruction_o.rs1 = instr.r4type.rs1;
-                        instruction_o.rs2 = instr.r4type.rs2;
-                        instruction_o.rd  = instr.r4type.rd;
-                        imm_select        = RS3; // rs3 into result field
-                        check_fprm        = 1'b1;
+                        instruction_o.fu       = FPU;
+                        instruction_o.rs1[4:0] = instr.r4type.rs1;
+                        instruction_o.rs2[4:0] = instr.r4type.rs2;
+                        instruction_o.rd[4:0]  = instr.r4type.rd;
+                        imm_select             = RS3; // rs3 into result field
+                        check_fprm             = 1'b1;
                         // select the correct fused operation
                         unique case (instr.r4type.opcode)
                             default:      instruction_o.op = ariane_pkg::FMADD;  // fmadd.fmt - FP Fused multiply-add
@@ -916,24 +916,24 @@ module decoder import ariane_pkg::*; #(
 
                 riscv::OpcodeOpFp: begin
                     if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
-                        instruction_o.fu  = FPU;
-                        instruction_o.rs1 = instr.rftype.rs1;
-                        instruction_o.rs2 = instr.rftype.rs2;
-                        instruction_o.rd  = instr.rftype.rd;
-                        check_fprm        = 1'b1;
+                        instruction_o.fu       = FPU;
+                        instruction_o.rs1[4:0] = instr.rftype.rs1;
+                        instruction_o.rs2[4:0] = instr.rftype.rs2;
+                        instruction_o.rd[4:0]  = instr.rftype.rd;
+                        check_fprm             = 1'b1;
                         // decode FP instruction
                         unique case (instr.rftype.funct5)
                             5'b00000: begin
-                                instruction_o.op  = ariane_pkg::FADD;             // fadd.fmt - FP Addition
-                                instruction_o.rs1 = '0;               // Operand A is set to 0
-                                instruction_o.rs2 = instr.rftype.rs1; // Operand B is set to rs1
-                                imm_select        = IIMM;             // Operand C is set to rs2
+                                instruction_o.op       = ariane_pkg::FADD; // fadd.fmt - FP Addition
+                                instruction_o.rs1      = '0;               // Operand A is set to 0
+                                instruction_o.rs2[4:0] = instr.rftype.rs1; // Operand B is set to rs1
+                                imm_select             = IIMM;             // Operand C is set to rs2
                             end
                             5'b00001: begin
-                                instruction_o.op  = ariane_pkg::FSUB;  // fsub.fmt - FP Subtraction
-                                instruction_o.rs1 = '0;               // Operand A is set to 0
-                                instruction_o.rs2 = instr.rftype.rs1; // Operand B is set to rs1
-                                imm_select        = IIMM;             // Operand C is set to rs2
+                                instruction_o.op       = ariane_pkg::FSUB;  // fsub.fmt - FP Subtraction
+                                instruction_o.rs1      = '0;               // Operand A is set to 0
+                                instruction_o.rs2[4:0] = instr.rftype.rs1; // Operand B is set to rs1
+                                imm_select             = IIMM;             // Operand C is set to rs2
                             end
                             5'b00010: instruction_o.op = ariane_pkg::FMUL;  // fmul.fmt - FP Multiplication
                             5'b00011: instruction_o.op = ariane_pkg::FDIV;  // fdiv.fmt - FP Division
@@ -965,9 +965,9 @@ module decoder import ariane_pkg::*; #(
                                 end
                             end
                             5'b01000: begin
-                                instruction_o.op  = ariane_pkg::FCVT_F2F; // fcvt.fmt.fmt - FP to FP Conversion
-                                instruction_o.rs2 = instr.rvftype.rs1; // tie rs2 to rs1 to be safe (vectors use rs2)
-                                imm_select        = IIMM;     // rs2 holds part of the intruction
+                                instruction_o.op       = ariane_pkg::FCVT_F2F; // fcvt.fmt.fmt - FP to FP Conversion
+                                instruction_o.rs2[4:0] = instr.rvftype.rs1; // tie rs2 to rs1 to be safe (vectors use rs2)
+                                imm_select             = IIMM;     // rs2 holds part of the intruction
                                 if (|instr.rftype.rs2[24:23]) illegal_instr = 1'b1; // bits [22:20] used, other bits must be 0
                                 // check source format
                                 unique case (instr.rftype.rs2[22:20])
@@ -1002,8 +1002,8 @@ module decoder import ariane_pkg::*; #(
                                 if (|instr.rftype.rs2[24:22]) illegal_instr = 1'b1; // bits [21:20] used, other bits must be 0
                             end
                             5'b11100: begin
-                                instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
-                                check_fprm        = 1'b0; // instruction encoded in rm, do the check here
+                                instruction_o.rs2[4:0] = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
+                                check_fprm             = 1'b0; // instruction encoded in rm, do the check here
                                 if (instr.rftype.rm == 3'b000 || (XF16ALT && instr.rftype.rm == 3'b100)) // FP16ALT has separate encoding
                                     instruction_o.op = ariane_pkg::FMV_F2X;       // fmv.ifmt.fmt - FPR to GPR Move
                                 else if (instr.rftype.rm == 3'b001 || (XF16ALT && instr.rftype.rm == 3'b101)) // FP16ALT has separate encoding
@@ -1014,8 +1014,8 @@ module decoder import ariane_pkg::*; #(
                             end
                             5'b11110: begin
                                 instruction_o.op = ariane_pkg::FMV_X2F;   // fmv.fmt.ifmt - GPR to FPR Move
-                                instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
-                                check_fprm       = 1'b0; // instruction encoded in rm, do the check here
+                                instruction_o.rs2[4:0] = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
+                                check_fprm             = 1'b0; // instruction encoded in rm, do the check here
                                 if (!(instr.rftype.rm == 3'b000 || (XF16ALT && instr.rftype.rm == 3'b100)))
                                     illegal_instr = 1'b1;
                                 // rs2 must be zero
@@ -1175,12 +1175,12 @@ module decoder import ariane_pkg::*; #(
         end
         if (CVXIF_PRESENT) begin
             if (is_illegal_i || illegal_instr) begin
-                instruction_o.fu    = CVXIF;
-                instruction_o.rs1   = instr.r4type.rs1;
-                instruction_o.rs2   = instr.r4type.rs2;
-                instruction_o.rd    = instr.r4type.rd;
-                instruction_o.op    = ariane_pkg::OFFLOAD;
-                imm_select          = RS3;
+                instruction_o.fu       = CVXIF;
+                instruction_o.rs1[4:0] = instr.r4type.rs1;
+                instruction_o.rs2[4:0] = instr.r4type.rs2;
+                instruction_o.rd[4:0]  = instr.r4type.rd;
+                instruction_o.op       = ariane_pkg::OFFLOAD;
+                imm_select             = RS3;
             end
         end
 
