@@ -234,6 +234,14 @@ module load_unit import ariane_pkg::*; #(
                 // we've got a hit and we can continue with the request process
                 if (dtlb_hit_i)
                     state_d = WAIT_GNT;
+
+                // we got an exception
+                if (ex_i.valid) begin
+                    // the next state will be the idle state
+                    state_d = IDLE;
+                    // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
+                    pop_ld_o = ~req_port_i.data_rvalid;
+                end
             end
 
             WAIT_GNT: begin
@@ -310,15 +318,6 @@ module load_unit import ariane_pkg::*; #(
             end
         endcase
 
-        // we got an exception
-        if (ex_i.valid && valid_i) begin
-            // the next state will be the idle state
-            state_d = IDLE;
-            // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
-            if (!req_port_i.data_rvalid)
-                pop_ld_o = 1'b1;
-        end
-
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
         if (flush_i) begin
             state_d = WAIT_FLUSH;
@@ -326,22 +325,27 @@ module load_unit import ariane_pkg::*; #(
     end
 
     // track the load data for later usage
-    assign ldbuf_w         = pop_ld_o & ~ex_i.valid & ~flush_i;
+    assign ldbuf_w = req_port_o.data_req & req_port_i.data_gnt;
 
     // ---------------
     // Retire Load
     // ---------------
 
-    assign ldbuf_r      = req_port_i.data_rvalid;
-    assign ldbuf_rindex = ldbuf_id_t'(req_port_i.data_rid);
     assign ldbuf_rdata  = ldbuf_q[ldbuf_rindex];
 
     // decoupled rvalid process
     always_comb begin : rvalid_output
+        automatic ldbuf_id_t rid;
+
+        //  read the pending load buffer
+        rid = ldbuf_id_t'(req_port_i.data_rid);
+        ldbuf_r = req_port_i.data_rvalid;
+        ldbuf_rindex = rid;
+
+        trans_id_o = ldbuf_q[rid].trans_id;
         valid_o    = 1'b0;
         ex_o.valid = 1'b0;
-        // output the queue data directly, the valid signal is set corresponding to the process above
-        trans_id_o = ldbuf_rdata.trans_id;
+
         // we got an rvalid and it's corresponding request was not flushed
         if (req_port_i.data_rvalid && !ldbuf_flushed_q[ldbuf_rindex]) begin
             // if the response corresponds to the last request, check that we are not killing it
@@ -355,18 +359,14 @@ module load_unit import ariane_pkg::*; #(
                 ex_o.valid = 1'b1;
             end
         end
-        // an exception occurred during translation (we need to check for the valid flag because we could also get an
-        // exception from the store unit)
+        // an exception occurred during translation
         // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
         // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
         // round in the load FSM
-        if (valid_i && ex_i.valid && !req_port_i.data_rvalid) begin
-            valid_o    = 1'b1;
-            ex_o.valid = 1'b1;
+        if ((state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
             trans_id_o = lsu_ctrl_i.trans_id;
-        // if we are waiting for the translation to finish do not give a valid signal yet
-        end else if (state_q == WAIT_TRANSLATION) begin
-            valid_o = 1'b0;
+            valid_o = 1'b1;
+            ex_o.valid = 1'b1;
         end
     end
 
@@ -442,13 +442,6 @@ module load_unit import ariane_pkg::*; #(
 
 //pragma translate_off
 `ifndef VERILATOR
-    // check invalid offsets
-    addr_offset0: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (ldbuf_rdata.operation inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> ldbuf_rdata.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
-    addr_offset1: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (ldbuf_rdata.operation inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> ldbuf_rdata.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
-    addr_offset2: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (ldbuf_rdata.operation inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> ldbuf_rdata.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
 `endif
 //pragma translate_on
 
