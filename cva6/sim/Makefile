@@ -105,7 +105,7 @@ endif
 # Spike specific commands, variables
 ###############################################################################
 spike:
-	$(tool_path)/spike $(spike_stepout) --log-commits --isa=$(variant) -l $(elf)
+	$(tool_path)/spike $(spike_stepout) --extension=cvxif --log-commits --isa=$(variant) -l $(elf)
 	cp $(log).iss $(log)
 
 ###############################################################################
