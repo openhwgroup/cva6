@@ -182,7 +182,7 @@ The table blow resume what’s missing in ISACOV agent fucntionnal coverage :
 
 **Conventions and Terminology :**
 
-*RVFI limitation\** : the RVFI in the CVA6 get his information from the commit stage, that mean the ISACOV can gat onlt information of valid instruction, so any instruction that raise an exception can’t be cover.
+*RVFI limitation\** : the RVFI in the CVA6 get it's information from the commit stage, that means the ISACOV agent can get only information of valid instruction (committed instruction), so any instruction raising an exception or can’t be cover.
 
 *Need CSR tests*\** : we can get what has been done in CSR verification task.
 
