@@ -704,8 +704,8 @@ module cva6 import ariane_pkg::*; #(
     .dcache_amo_req_i      ( amo_req                     ),
     .dcache_amo_resp_o     ( amo_resp                    ),
     //  CMO interface
-    //.dcache_cmo_req_i(),    
-    //.dcache_cmo_resp_o(),     
+    .dcache_cmo_req_i      (/*Unused*/),    
+    .dcache_cmo_resp_o     (/*Unused*/),     
     //  Request ports
     .dcache_req_ports_i    ( dcache_req_ports_ex_cache   ),
     .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
