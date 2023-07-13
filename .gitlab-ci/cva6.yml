@@ -447,22 +447,50 @@ pub_generated_tests:
     matrix:
       - list_num: 1
         DASHBOARD_JOB_TITLE: "Generated Random Arithmetic tests"
-        DASHBOARD_JOB_DESCRIPTION: "Generate Random Arithmetic tests using the RISCV-DV"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random Arithmetic tests using CVA6-DV"
       - list_num: 2
-        DASHBOARD_JOB_TITLE: "Generated CSR tests"
-        DASHBOARD_JOB_DESCRIPTION: "Generate Random CSR tests using the RISCV-DV"
+        DASHBOARD_JOB_TITLE: "Generated Hazard Arithmetic tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Hazard register (RAW) Arithmetic tests using CVA6-DV"
       - list_num: 3
-        DASHBOARD_JOB_TITLE: "Generated MMU tests"
-        DASHBOARD_JOB_DESCRIPTION: "Generate Random MMU tests using the RISCV-DV"
+        DASHBOARD_JOB_TITLE: "Generated CSR tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random CSR tests using CVA6-DV"
       - list_num: 4
-        DASHBOARD_JOB_TITLE: "Generated Random Load_store tests"
-        DASHBOARD_JOB_DESCRIPTION: "Generate Random Load_store tests using the RISCV-DV"
+        DASHBOARD_JOB_TITLE: "Generated MMU tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random MMU tests using CVA6-DV"
       - list_num: 5
+        DASHBOARD_JOB_TITLE: "Generated Random Load_store tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random Load_store tests using CVA6-DV"
+      - list_num: 6
         DASHBOARD_JOB_TITLE: "Generated Jump tests"
-        DASHBOARD_JOB_DESCRIPTION: "Generate Random Arithmetic Jump tests using the RISCV-DV"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random Arithmetic Jump tests using CVA6-DV"
   script:
     - mkdir -p artifacts/coverage
     - source ./cva6/regress/dv-generated-tests.sh
+    - mv cva6/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
+    - mv cva6/sim/seedlist.yaml artifacts/coverage
+    - python3 .gitlab-ci/scripts/report_pass.py
+  rules:
+    - when: manual
+      allow_failure: true
+  timeout: 4h
+  artifacts:
+    expire_in: 3 week
+
+pub_generated_xif_tests:
+  tags: [$TAGS_RUNNER]
+  extends:
+    - .verif_test
+  variables:
+    DASHBOARD_SORT_INDEX: 12
+    DASHBOARD_JOB_CATEGORY: "Code Coverage"
+  parallel:
+    matrix:
+      - list_num: 1
+        DASHBOARD_JOB_TITLE: "Generated Random xif tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random tests for cvxif using CVA6-DV"
+  script:
+    - mkdir -p artifacts/coverage
+    - source ./cva6/regress/dv-generated-xif-tests.sh
     - mv cva6/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
     - mv cva6/sim/seedlist.yaml artifacts/coverage
     - python3 .gitlab-ci/scripts/report_pass.py
@@ -488,6 +516,30 @@ pub_directed_isacov-tests:
   script:
     - mkdir -p artifacts/coverage
     - source ./cva6/regress/dv-generated-tests.sh
+    - mv cva6/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
+    - python3 .gitlab-ci/scripts/report_pass.py
+  rules:
+    - when: manual
+      allow_failure: true
+  timeout: 4h
+  artifacts:
+    expire_in: 3 week
+
+pub_directed_xif-tests:
+  tags: [$TAGS_RUNNER]
+  extends:
+    - .verif_test
+  variables:
+    DASHBOARD_SORT_INDEX: 15
+    DASHBOARD_JOB_CATEGORY: "Functional Coverage"
+  parallel:
+    matrix:
+      - list_num: 0
+        DASHBOARD_JOB_TITLE: "Directed tests"
+        DASHBOARD_JOB_DESCRIPTION: "Execute directed tests to improve functional coverage of cvxif"
+  script:
+    - mkdir -p artifacts/coverage
+    - source ./cva6/regress/dv-generated-xif-tests.sh
     - mv cva6/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
     - python3 .gitlab-ci/scripts/report_pass.py
   rules:
@@ -530,10 +582,12 @@ code_coverage-report:
     - *initjob
     - pub_generated_tests
     - pub_directed_isacov-tests
+    - pub_generated_xif_tests
+    - pub_directed_xif-tests
   variables:
     DASHBOARD_JOB_TITLE: "Report merge coverage"
     DASHBOARD_JOB_DESCRIPTION: "Report merge coverage of generated tests"
-    DASHBOARD_SORT_INDEX: 12
+    DASHBOARD_SORT_INDEX: 14
     DASHBOARD_JOB_CATEGORY: "Code Coverage"
   script:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
