@@ -525,7 +525,7 @@ xrun-ci: xrun-asm-tests xrun-amo-tests xrun-mul-tests xrun-fp-tests xrun-benchma
 verilate_command := $(verilator) verilator_config.vlt                                                            \
                     -f core/Flist.cva6                                                                           \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
-                    $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                  \
+                    $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(filter-out %_config_pkg.sv, $(src))))    \
                     +define+$(defines)$(if $(TRACE_FAST),+VM_TRACE)$(if $(TRACE_COMPACT),+VM_TRACE+VM_TRACE_FST) \
                     corev_apu/tb/common/mock_uart.sv                                                             \
                     +incdir+corev_apu/axi_node                                                                   \
