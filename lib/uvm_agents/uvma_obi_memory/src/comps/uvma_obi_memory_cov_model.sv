@@ -49,23 +49,23 @@ covergroup cg_obi(string name,
    option.name         = name;
 
    we: coverpoint (trn.access_type) {
-      ignore_bins IGN_WRITE = {UVMA_OBI_MEMORY_ACCESS_WRITE} with ((item>1) && (!write_enabled));
-      ignore_bins IGN_READ  = {UVMA_OBI_MEMORY_ACCESS_READ}  with ((item>1) && (!read_enabled));
+      ignore_bins IGN_WRITE = {UVMA_OBI_MEMORY_ACCESS_WRITE} with ((item >= 0) && (!write_enabled));
+      ignore_bins IGN_READ  = {UVMA_OBI_MEMORY_ACCESS_READ}  with ((item >= 0) && (!read_enabled));
       bins WRITE = {UVMA_OBI_MEMORY_ACCESS_WRITE};
       bins READ = {UVMA_OBI_MEMORY_ACCESS_READ};
    }
 
    memtype: coverpoint (trn.memtype) {
-      ignore_bins IGN_MEMTYPE = {[0:$]} with ((item>1) && (!is_1p2));
+      ignore_bins IGN_MEMTYPE = {[0:$]} with ((item >= 0) && (!is_1p2));
    }
 
    prot: coverpoint (trn.prot) {
-      ignore_bins IGN_MEMTYPE = {[0:$]} with ((item>1) && (!is_1p2));
+      ignore_bins IGN_MEMTYPE = {[0:$]} with ((item >= 0) && (!is_1p2));
       ignore_bins IGN_RSVD_PRIV = {3'b100, 3'b101};
    }
 
    err: coverpoint (trn.err) {
-      ignore_bins IGN_ERR = {[0:$]} with ((item>1) && (!is_1p2));
+      ignore_bins IGN_ERR = {[0:$]} with ((item >=0 ) && (!is_1p2));
    }
 
 endgroup : cg_obi
