@@ -162,7 +162,7 @@ VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
                         -sv_lib $(abspath $(SVLIB_LIB))
 
 # Simulate using latest elab
-VCS_RUN_FLAGS        ?=
+VCS_RUN_FLAGS         = -assert nopostproc
 VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
