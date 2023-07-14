@@ -43,8 +43,8 @@ module ariane_testharness #(
     logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
     logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata; },
-  parameter type rvfi_port_t = rvfi_instr_t [NrCommitPorts-1:0],
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+  },
   //
   parameter int unsigned AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH,
   parameter int unsigned AXI_USER_EN       = ariane_pkg::AXI_USER_EN,
@@ -640,7 +640,6 @@ module ariane_testharness #(
     .NrCommitPorts        ( NrCommitPorts       ),
     .IsRVFI               ( IsRVFI              ),
     .rvfi_instr_t         ( rvfi_instr_t        ),
-    .rvfi_port_t          ( rvfi_instr_t [NrCommitPorts-1:0] ),
     .ArianeCfg            ( ariane_soc::ArianeSocCfg )
   ) i_ariane (
     .clk_i                ( clk_i               ),
@@ -650,9 +649,7 @@ module ariane_testharness #(
     .irq_i                ( irqs                ),
     .ipi_i                ( ipi                 ),
     .time_irq_i           ( timer_irq           ),
-`ifdef RVFI_PORT
     .rvfi_o               ( rvfi                ),
-`endif
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
     .debug_req_i          ( 1'b0                ),
@@ -684,10 +681,12 @@ module ariane_testharness #(
   end
 
   rvfi_tracer  #(
+    .NrCommitPorts(NrCommitPorts),
+    .rvfi_instr_t(rvfi_instr_t),
+    //
     .HART_ID(hart_id),
     .DEBUG_START(0),
-    .DEBUG_STOP(0),
-    .NrCommitPorts(NrCommitPorts)
+    .DEBUG_STOP(0)
   ) rvfi_tracer_i (
     .clk_i(clk_i),
     .rst_ni(rst_ni),

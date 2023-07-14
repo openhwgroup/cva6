@@ -41,8 +41,8 @@ module cva6 import ariane_pkg::*; #(
     logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
     logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata; },
-  parameter type rvfi_port_t = rvfi_instr_t [NrCommitPorts-1:0],
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+  },
   //
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
   parameter type cvxif_req_t  = cvxif_pkg::cvxif_req_t,
@@ -69,7 +69,7 @@ module cva6 import ariane_pkg::*; #(
   input  logic                         debug_req_i,  // debug request (async)
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output rvfi_port_t                   rvfi_o,
+  output rvfi_instr_t [NrCommitPorts-1:0] rvfi_o,
   output cvxif_req_t                   cvxif_req_o,
   input  cvxif_resp_t                  cvxif_resp_i,
   // L15 (memory side)

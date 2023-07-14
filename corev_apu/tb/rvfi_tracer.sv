@@ -8,14 +8,18 @@
 // Original Author: Jean-Roch COULON - Thales
 
 module rvfi_tracer #(
+  // Pipeline
+  parameter int unsigned NrCommitPorts = 0,
+  // RVFI
+  parameter type rvfi_instr_t = logic,
+  //
   parameter logic [7:0] HART_ID      = '0,
   parameter int unsigned DEBUG_START = 0,
-  parameter int unsigned NrCommitPorts = 0,
   parameter int unsigned DEBUG_STOP  = 0
 )(
   input logic                           clk_i,
   input logic                           rst_ni,
-  input rvfi_pkg::rvfi_instr_t[NrCommitPorts-1:0]           rvfi_i,
+  input rvfi_instr_t[NrCommitPorts-1:0] rvfi_i,
   output logic[31:0]                    end_of_test_o
 );
 

@@ -146,7 +146,6 @@ package ariane_pkg;
                                                       // to uniquely identify the entry in the scoreboard
     localparam ASID_WIDTH    = (riscv::XLEN == 64) ? 16 : 1;
     localparam BITS_SATURATION_COUNTER = 2;
-    localparam NR_COMMIT_PORTS = cva6_config_pkg::CVA6ConfigNrCommitPorts;
 
     localparam ENABLE_RENAME = cva6_config_pkg::CVA6ConfigRenameEn;
 
@@ -690,7 +689,6 @@ package ariane_pkg;
     // ---------------
 
     localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
-    typedef rvfi_pkg::rvfi_instr_t [NR_COMMIT_PORTS-1:0] rvfi_port_t;
 
     typedef struct packed {
         logic [riscv::VLEN-1:0]   pc;            // PC of instruction
