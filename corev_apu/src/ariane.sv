@@ -66,7 +66,7 @@ module ariane import ariane_pkg::*; #(
     .NrCommitPorts ( NrCommitPorts ),
     .IsRVFI ( IsRVFI ),
     .rvfi_instr_t ( rvfi_instr_t ),
-    .rvfi_port_t ( rvfi_instr_t [NrCommitPorts-1:0] ),
+    .rvfi_port_t ( rvfi_port_t ),
     //
     .ArianeCfg  ( ArianeCfg ),
     .AxiAddrWidth ( AxiAddrWidth ),
