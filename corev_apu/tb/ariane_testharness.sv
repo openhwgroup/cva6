@@ -16,6 +16,36 @@
 `include "axi/assign.svh"
 
 module ariane_testharness #(
+  // Pipeline
+  parameter int unsigned NrCommitPorts = cva6_config_pkg::CVA6ConfigNrCommitPorts,
+  // RVFI
+  parameter int unsigned IsRVFI = cva6_config_pkg::CVA6ConfigRvfiTrace,
+  parameter type rvfi_instr_t = struct packed {
+    logic [ariane_pkg::NRET-1:0]                  valid;
+    logic [ariane_pkg::NRET*64-1:0]               order;
+    logic [ariane_pkg::NRET*ariane_pkg::ILEN-1:0] insn;
+    logic [ariane_pkg::NRET-1:0]                  trap;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      cause;
+    logic [ariane_pkg::NRET-1:0]                  halt;
+    logic [ariane_pkg::NRET-1:0]                  intr;
+    logic [ariane_pkg::NRET*2-1:0]                mode;
+    logic [ariane_pkg::NRET*2-1:0]                ixl;
+    logic [ariane_pkg::NRET*5-1:0]                rs1_addr;
+    logic [ariane_pkg::NRET*5-1:0]                rs2_addr;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
+    logic [ariane_pkg::NRET*5-1:0]                rd_addr;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
+    logic [ariane_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
+    logic [ariane_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
+    logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
+    logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
+    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata; },
+  parameter type rvfi_port_t = rvfi_instr_t [NrCommitPorts-1:0],
+  //
   parameter int unsigned AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH,
   parameter int unsigned AXI_USER_EN       = ariane_pkg::AXI_USER_EN,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
@@ -604,10 +634,14 @@ module ariane_testharness #(
   // ---------------
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
-  rvfi_pkg::rvfi_instr_t [ariane_pkg::NR_COMMIT_PORTS-1:0] rvfi;
+  rvfi_instr_t [NrCommitPorts-1:0] rvfi;
 
   ariane #(
-    .ArianeCfg  ( ariane_soc::ArianeSocCfg )
+    .NrCommitPorts        ( NrCommitPorts       ),
+    .IsRVFI               ( IsRVFI              ),
+    .rvfi_instr_t         ( rvfi_instr_t        ),
+    .rvfi_port_t          ( rvfi_instr_t [NrCommitPorts-1:0] ),
+    .ArianeCfg            ( ariane_soc::ArianeSocCfg )
   ) i_ariane (
     .clk_i                ( clk_i               ),
     .rst_ni               ( ndmreset_n          ),
@@ -652,7 +686,8 @@ module ariane_testharness #(
   rvfi_tracer  #(
     .HART_ID(hart_id),
     .DEBUG_START(0),
-    .DEBUG_STOP(0)
+    .DEBUG_STOP(0),
+    .NrCommitPorts(NrCommitPorts)
   ) rvfi_tracer_i (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
