@@ -30,4 +30,5 @@ vars:
 	@echo "   RISCV            = $(RISCV)"
 	@echo "   RISCV_EXE_PREFIX = $(RISCV_EXE_PREFIX)"
 	@echo "   RISCV_GCC        = $(RISCV_GCC)"
+	@echo "   RISCV_MARCH      = $(RISCV_MARCH)"
 
