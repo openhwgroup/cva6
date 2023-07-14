@@ -13,11 +13,16 @@
 // Date: 20.11.2020
 // Description: Functional unit that dispatches CVA6 instructions to accelerators.
 
-module acc_dispatcher import ariane_pkg::*; import riscv::*; (
+module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
+    parameter type acc_req_t  = acc_pkg::accelerator_req_t,
+    parameter type acc_resp_t = acc_pkg::accelerator_resp_t
+) (
     input  logic                                  clk_i,
     input  logic                                  rst_ni,
     // Interface with the CSR regfile
     input  logic                                  acc_cons_en_i,        // Accelerator memory consistent mode
+    output logic                                  acc_fflags_valid_o,
+    output logic                            [4:0] acc_fflags_o,
     // Interface with the CSRs
     input  logic                            [2:0] fcsr_frm_i,
     output logic                                  dirty_v_state_o,
@@ -42,9 +47,13 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     output logic                                  ctrl_halt_o,
     input  logic                                  flush_unissued_instr_i,
     input  logic                                  flush_ex_i,
+    // Interface with cache subsystem
+    input  logic                                  inval_ready_i,
+    output logic                                  inval_valid_o,
+    output logic                           [63:0] inval_addr_o,
     // Accelerator interface
-    output acc_pkg::accelerator_req_t             acc_req_o,
-    input  acc_pkg::accelerator_resp_t            acc_resp_i
+    output acc_req_t                              acc_req_o,
+    input  acc_resp_t                             acc_resp_i
   );
 
   `include "common_cells/registers.svh"
@@ -197,8 +206,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   assign acc_req_o.trans_id      = acc_req_int.trans_id;
   assign acc_req_o.store_pending = !acc_no_st_pending_i && acc_cons_en_i;
   assign acc_req_o.acc_cons_en   = acc_cons_en_i;
-  // Will be overwritten by dcache
-  assign acc_req_o.inval_ready   = '0;
+  assign acc_req_o.inval_ready   = inval_ready_i;
 
   always_comb begin: accelerator_req_dispatcher
     // Do not fetch from the instruction queue
@@ -238,20 +246,26 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   logic acc_st_disp;
 
   // Unpack the accelerator response
-  assign acc_trans_id_o  = acc_resp_i.trans_id;
-  assign acc_result_o    = acc_resp_i.result;
-  assign acc_valid_o     = acc_resp_i.resp_valid;
-  assign acc_exception_o = '{
+  assign acc_trans_id_o     = acc_resp_i.trans_id;
+  assign acc_result_o       = acc_resp_i.result;
+  assign acc_valid_o        = acc_resp_i.resp_valid;
+  assign acc_exception_o    = '{
       cause: riscv::ILLEGAL_INSTR,
       tval : '0,
       valid: acc_resp_i.error
     };
+  assign acc_fflags_valid_o = acc_resp_i.fflags_valid;
+  assign acc_fflags_o       = acc_resp_i.fflags;
   // Always ready to receive responses
   assign acc_req_o.resp_ready = 1'b1;
 
   // Signal dispatched load/store to issue stage
   assign acc_ld_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
   assign acc_st_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_STORE);
+
+  // Cache invalidation
+  assign inval_valid_o = acc_resp_i.inval_valid;
+  assign inval_addr_o  = acc_resp_i.inval_addr;
 
   /**************************
    *  Accelerator commit    *

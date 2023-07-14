@@ -848,14 +848,17 @@ module cva6 import ariane_pkg::*; #(
   // ----------------
 
   if (ENABLE_ACCELERATOR) begin: gen_accelerator
-    acc_pkg::accelerator_req_t acc_req;
-
-    acc_dispatcher i_acc_dispatcher (
+    acc_dispatcher #(
+      .acc_req_t  ( cvxif_req_t  ),
+      .acc_resp_t ( cvxif_resp_t )
+    ) i_acc_dispatcher (
       .clk_i                  ( clk_i                        ),
       .rst_ni                 ( rst_ni                       ),
       .flush_unissued_instr_i ( flush_unissued_instr_ctrl_id ),
       .flush_ex_i             ( flush_ctrl_ex                ),
       .acc_cons_en_i          ( acc_cons_en_csr              ),
+      .acc_fflags_valid_o     ( acc_resp_fflags_valid        ),
+      .acc_fflags_o           ( acc_resp_fflags              ),
       .fcsr_frm_i             ( frm_csr_id_issue_ex          ),
       .dirty_v_state_o        ( dirty_v_state                ),
       .issue_instr_i          ( issue_instr_id_acc           ),
@@ -872,23 +875,12 @@ module cva6 import ariane_pkg::*; #(
       .commit_ack_i           ( commit_ack                   ),
       .acc_no_st_pending_i    ( no_st_pending_commit         ),
       .ctrl_halt_o            ( halt_acc_ctrl                ),
-      .acc_req_o              ( acc_req                      ),
+      .inval_ready_i          ( inval_ready                  ),
+      .inval_valid_o          ( inval_valid                  ),
+      .inval_addr_o           ( inval_addr                   ),
+      .acc_req_o              ( cvxif_req_o                  ),
       .acc_resp_i             ( cvxif_resp_i                 )
     );
-
-    assign acc_resp_fflags = cvxif_resp_i.fflags;
-    assign acc_resp_fflags_valid = cvxif_resp_i.fflags_valid;
-
-    // Pack invalidation interface into accelerator interface
-    always_comb begin : pack_inval
-      inval_valid             = cvxif_resp_i.inval_valid;
-      inval_addr              = cvxif_resp_i.inval_addr;
-      cvxif_req_o             = acc_req;
-      cvxif_req_o.inval_ready = inval_ready;
-    end
-
-    // Tie off cvxif
-    assign cvxif_resp = '0;
   end : gen_accelerator else begin: gen_no_accelerator
     assign acc_trans_id_ex_id    = '0;
     assign acc_result_ex_id      = '0;
