@@ -135,16 +135,28 @@ class cvxif_t : public cvxif_extn_t
         break;
       case FUNC3_1:
         //Actually only CUS_ADD using func3 equal to one, we don't need to add another switch case
-        return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
+        switch(r_insn.funct7) {
+          case 0:
+            return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
+            break;
+          default:
+            illegal_instruction();
+        }
+        
       
       case FUNC3_2:
         //Actually only CUS_EXC using func3 equal to one, we don't need to add another switch case
-        if (r_insn.rs2 != 0 || r_insn.rd != 0){
-          illegal_instruction();
-        } else {
-          raise_exception(insn, (reg_t) (r_insn.rs1));
-        }
-        break;
+        switch (r_insn.funct7) {
+          case (0x60):
+            if (r_insn.rs2 != 0 || r_insn.rd != 0){
+              illegal_instruction();
+            } else {
+              raise_exception(insn, (reg_t) (r_insn.rs1));
+            }
+            break;
+          default:
+            illegal_instruction();
+          }
       default:
         illegal_instruction();
     }
