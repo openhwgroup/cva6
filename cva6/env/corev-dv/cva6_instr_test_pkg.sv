@@ -18,8 +18,10 @@ package cva6_instr_test_pkg;
    import cva6_signature_pkg::*;
 
    `include "cva6_instr_gen_config.sv"
+   `include "cva6_reg_hazard_stream.sv"
    `include "cva6_asm_program_gen.sv"
    `include "cva6_instr_base_test.sv"
+   `include "cva6_instr_hazard_test.sv"
    `include "cvxif_custom_instr.sv"
    `include "rv32x_instr.sv"
    
