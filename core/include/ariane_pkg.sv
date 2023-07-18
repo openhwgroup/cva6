@@ -36,7 +36,7 @@ package ariane_pkg;
     } cva6_cfg_t;
 
     localparam cva6_cfg_t cva6_cfg_empty = {
-      '0
+      32'b0
     };
 
     localparam NrMaxRules = 16;
@@ -104,7 +104,7 @@ package ariane_pkg;
     function automatic logic range_check(logic[63:0] base, logic[63:0] len, logic[63:0] address);
       // if len is a power of two, and base is properly aligned, this check could be simplified
       // Extend base by one bit to prevent an overflow.
-      return (address >= base) && (address < (65'(base)+len));
+      return (address >= base) && (({1'b0, address}) < (65'(base)+len));
     endfunction : range_check
 
     function automatic logic is_inside_nonidempotent_regions (ariane_cfg_t Cfg, logic[63:0] address);
