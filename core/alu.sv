@@ -275,16 +275,16 @@ module alu import ariane_pkg::*; #(
 
                 // Single bit instructions operations
                 BCLR, BCLRI: result_o = fu_data_i.operand_a & ~bit_indx;
-                BEXT, BEXTI: result_o = |(fu_data_i.operand_a & bit_indx);
+                BEXT, BEXTI: result_o = {{riscv::XLEN-1{1'b0}}, |(fu_data_i.operand_a & bit_indx)};
                 BINV, BINVI: result_o = fu_data_i.operand_a ^ bit_indx;
                 BSET, BSETI: result_o = fu_data_i.operand_a | bit_indx;
 
                 // Count Leading/Trailing Zeros
                 CLZ, CTZ  :  result_o = (lz_tz_empty) ? (lz_tz_count + 1) : lz_tz_count;
-                CLZW, CTZW:  result_o = (lz_tz_wempty) ? 32 : lz_tz_wcount;
+                CLZW, CTZW:  result_o = (lz_tz_wempty) ? 32 : {{riscv::XLEN-5{1'b0}}, lz_tz_wcount};
 
                 // Count population
-                CPOP, CPOPW: result_o = cpop;
+                CPOP, CPOPW: result_o = {{(riscv::XLEN-($clog2(riscv::XLEN))){1'b0}}, cpop};
 
                 // Sign and Zero Extend
                 SEXTB: result_o = {{riscv::XLEN-8{fu_data_i.operand_a[7]}}, fu_data_i.operand_a[7:0]};
