@@ -391,10 +391,6 @@ pub_synthesis:
       artifacts: false
   parallel:
     matrix:
-      - TARGET: [cv64a6_imafdc_sv39]
-        PERIOD: ["1.1"]
-      - TARGET: [cv32a60x]
-        PERIOD: ["0.95"]
       - TARGET: [cv32a6_embedded]
         PERIOD: ["0.85"]
   variables:
@@ -428,6 +424,56 @@ pub_synthesis:
       - artifacts/cva6_${TARGET}_synth_modified.v
       - "artifacts/reports/*.yml"
 
+pub_synthesis_others:
+  stage: two
+  timeout: 2 hours
+  extends:
+    - .template_job_always_manual
+  needs:
+    - job: pub_build_tools
+      artifacts: true
+    - job: pub_smoke
+      artifacts: false
+  parallel:
+    matrix:
+      - TARGET: [cv64a6_imafdc_sv39]
+        PERIOD: ["1.1"]
+      - TARGET: [cv32a60x]
+        PERIOD: ["0.95"]
+  variables:
+    INPUT_DELAY: "0.46"
+    OUTPUT_DELAY: "0.11"
+    DASHBOARD_JOB_TITLE: "ASIC Synthesis $TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Synthesis indicator with specific Techno"
+    DASHBOARD_SORT_INDEX: 5
+    DASHBOARD_JOB_CATEGORY: "Synthesis"
+  script:
+    - mkdir -p artifacts/reports
+    - mv artifacts/tools/spike tools
+    - python3 .gitlab-ci/scripts/report_fail.py
+    #ack trick to manage float gitlab-ci variables that seems to support only string or integer
+    - echo $(echo $SYNTH_PERIOD)
+    - echo $(echo $INPUT_DELAY)
+    - echo $(echo $OUTPUT_DELAY)
+    - echo $(echo $NAND2_AREA)
+    - echo $FOUNDRY_PATH
+    - echo $PERIOD
+    - echo $TECH_NAME
+    - echo $TARGET
+    - source ./cva6/regress/install-cva6.sh
+    - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
+    - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$(echo $PERIOD) NAND2_AREA=$(echo $NAND2_AREA) FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$(echo $INPUT_DELAY) OUTPUT_DELAY=$(echo $OUTPUT_DELAY) TARGET=$TARGET
+    - mv core-v-cores/cva6/pd/synth/cva6_${TARGET}_synth_modified.v artifacts/cva6_${TARGET}_synth_modified.v
+    - python3 .gitlab-ci/scripts/report_synth.py core-v-cores/cva6/pd/synth/cva6_${TARGET}/reports/$PERIOD/cva6_$(echo $TECH_NAME)_synth_area.rpt core-v-cores/cva6/pd/synth/synthesis_batch.log
+  artifacts:
+    when: always
+    paths:
+      - artifacts/cva6_${TARGET}_synth_modified.v
+      - "artifacts/reports/*.yml"
+  rules:
+    - when: manual
+      allow_failure: true
+
 
 pub_smoke-gate:
   stage: three
@@ -440,7 +486,7 @@ pub_smoke-gate:
       artifacts: true
   parallel:
     matrix:
-      - TARGET: [cv64a6_imafdc_sv39, cv32a60x]
+      - TARGET: [cv32a6_embedded]
   variables:
     DASHBOARD_JOB_TITLE: "Smoke Gate $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
