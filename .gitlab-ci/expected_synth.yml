@@ -1,6 +1,6 @@
 cv64a6_imafdc_sv39:
   gates: 545030
 cv32a60x:
-  gates: 160467
+  gates: 160719
 cv32a6_embedded:
   gates: 127410
