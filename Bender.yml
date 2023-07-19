@@ -93,6 +93,7 @@ sources:
       - vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv
 
       # CVXIF
+      - core/include/instr_tracer_pkg.sv
       - core/include/cvxif_pkg.sv
       - core/cvxif_example/include/cvxif_instr_pkg.sv
       - core/cvxif_fu.sv
