@@ -1353,6 +1353,23 @@ This field can be checked by a context switch routine to quickly determine wheth
                                                 <ipxact:access>read-write</ipxact:access>
                                         </ipxact:field>
                                         <ipxact:field>
+                                                <ipxact:name>VS</ipxact:name>
+                                                <ipxact:displayName>Vector extension State</ipxact:displayName>
+                                                <ipxact:description>V extension is not supported VS=0.</ipxact:description>
+                                                <ipxact:bitOffset>9</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x3</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>2</ipxact:bitWidth>
+                                                <ipxact:access>read-only</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>SPP</ipxact:name>
                                                 <ipxact:displayName>Supervisor mode Prior Privilege</ipxact:displayName>
                                                 <ipxact:description>Holds the previous privilege mode for supervisor mode.</ipxact:description>
@@ -1379,6 +1396,23 @@ This field can be checked by a context switch routine to quickly determine wheth
                                                 </ipxact:resets>
                                                 <ipxact:bitWidth>1</ipxact:bitWidth>
                                                 <ipxact:access>read-write</ipxact:access>
+                                        </ipxact:field>
+                                        <ipxact:field>
+                                                <ipxact:name>UBE</ipxact:name>
+                                                <ipxact:displayName>User Breakpoint Enable</ipxact:displayName>
+                                                <ipxact:description>UBE controls whether explicit load and store memory accesses made from U-mode are little-endian (UBE=0) or big-endian (UBE=1).</ipxact:description>
+                                                <ipxact:bitOffset>6</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>SPIE</ipxact:name>

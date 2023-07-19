@@ -958,6 +958,18 @@ component:
                 mask: '0x3'
             bitWidth: '2'
             access: read-write
+          - name: VS
+            displayName: Vector extension State
+            description: V extension is not supported VS=0.
+            bitOffset: '9'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x3'
+            bitWidth: '2'
+            access: read-only
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: SPP
             displayName: Supervisor mode Prior Privilege
             description: Holds the previous privilege mode for supervisor mode.
@@ -978,6 +990,18 @@ component:
                 mask: '0x1'
             bitWidth: '1'
             access: read-write
+          - name: UBE
+            displayName: User Breakpoint Enable
+            description: UBE controls whether explicit load and store memory accesses made from U-mode are little-endian (UBE=0) or big-endian (UBE=1).
+            bitOffset: '6'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: SPIE
             displayName: Supervisor mode Prior Interrupt Enable
             description: Indicates whether supervisor interrupts were enabled prior to trapping into supervisor mode.
