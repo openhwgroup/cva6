@@ -14,10 +14,10 @@
 
 
 module cva6 import ariane_pkg::*; #(
-  // Pipeline
-  parameter int unsigned NrCommitPorts = cva6_config_pkg::CVA6ConfigNrCommitPorts,
-  // RVFI
-  parameter int unsigned IsRVFI = cva6_config_pkg::CVA6ConfigRvfiTrace,
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
+    int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),
+    int'(cva6_config_pkg::CVA6ConfigRvfiTrace)
+  },
   parameter type rvfi_instr_t = struct packed {
     logic [ariane_pkg::NRET-1:0]                  valid;
     logic [ariane_pkg::NRET*64-1:0]               order;
@@ -69,7 +69,7 @@ module cva6 import ariane_pkg::*; #(
   input  logic                         debug_req_i,  // debug request (async)
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output rvfi_instr_t [NrCommitPorts-1:0] rvfi_o,
+  output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
   output cvxif_req_t                   cvxif_req_o,
   input  cvxif_resp_t                  cvxif_resp_i,
   // L15 (memory side)
@@ -79,11 +79,6 @@ module cva6 import ariane_pkg::*; #(
   output axi_req_t                     axi_req_o,
   input  axi_rsp_t                     axi_resp_i
 );
-
-  localparam ariane_pkg::cva6_cfg_t CVA6Cfg = {
-    int'(NrCommitPorts),
-    int'(IsRVFI)
-  };
 
   // ------------------------------------------
   // Global Signals

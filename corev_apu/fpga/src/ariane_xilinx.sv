@@ -155,10 +155,10 @@ module ariane_xilinx (
 );
 
 // cva6 configuration
-// Pipeline
-localparam int unsigned NrCommitPorts = cva6_config_pkg::CVA6ConfigNrCommitPorts;
-// RVFI
-localparam int unsigned IsRVFI = 0;
+parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
+  int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),
+  int'(0)
+};
 localparam type rvfi_instr_t = logic;
 
 
@@ -707,8 +707,7 @@ ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
-    .NrCommitPorts ( NrCommitPorts ),
-    .IsRVFI ( IsRVFI ),
+    .CVA6Cfg ( CVA6Cfg ),
     .rvfi_instr_t ( rvfi_instr_t ),
     .ArianeCfg ( ariane_soc::ArianeSocCfg )
 ) i_ariane (

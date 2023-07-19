@@ -14,10 +14,7 @@
 
 
 module ariane import ariane_pkg::*; #(
-  // Pipeline
-  parameter int unsigned NrCommitPorts = 0,
-  // RVFI
-  parameter int unsigned IsRVFI = 0,
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
   //
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
@@ -44,7 +41,7 @@ module ariane import ariane_pkg::*; #(
   input  logic                         debug_req_i,  // debug request (async)
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
-  output rvfi_instr_t [NrCommitPorts-1:0] rvfi_o,
+  output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
@@ -60,8 +57,7 @@ module ariane import ariane_pkg::*; #(
   cvxif_pkg::cvxif_resp_t cvxif_resp;
 
   cva6 #(
-    .NrCommitPorts ( NrCommitPorts ),
-    .IsRVFI ( IsRVFI ),
+    .CVA6Cfg ( CVA6Cfg ),
     .rvfi_instr_t ( rvfi_instr_t ),
     //
     .ArianeCfg  ( ArianeCfg ),
