@@ -652,6 +652,11 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
      - Machine mode prior privilege
      - read-write
      - Holds the previous privilege mode for machine mode\.
+   * - 10:9
+     - VS
+     - Vector extension state
+     - read-only
+     - V extension is not supported VS=0\.
    * - 8 
      - SPP
      - Supervisor mode prior privilege
@@ -662,6 +667,11 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
      - Machine mode prior interrupt enable
      - read-write
      - Indicates whether machine interrupts were enabled prior to trapping into machine mode\.
+   * - 6 
+     - UBE
+     - User breakpoint enable 
+     - read-write
+     - UBE controls whether explicit load and store memory accesses made from U\-mode are little\-endian \(UBE=0\) or big\-endian \(UBE=1\)\.
    * - 5 
      - SPIE
      - Supervisor mode prior interrupt enable
