@@ -17,7 +17,6 @@ module csr_regfile import ariane_pkg::*; #(
     parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
-    parameter int unsigned NrCommitPorts   = 2,
     parameter int unsigned NrPMPEntries    = 8,
     parameter int unsigned MHPMCounterNum  = 6
 ) (
@@ -28,8 +27,8 @@ module csr_regfile import ariane_pkg::*; #(
     output logic                  flush_o,
     output logic                  halt_csr_o,                 // halt requested
     // commit acknowledge
-    input  scoreboard_entry_t [NrCommitPorts-1:0] commit_instr_i, // the instruction we want to commit
-    input  logic [NrCommitPorts-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
+    input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i, // the instruction we want to commit
+    input  logic [CVA6Cfg.NrCommitPorts-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
     input  logic[riscv::VLEN-1:0] boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
     input  logic[riscv::XLEN-1:0] hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
@@ -488,7 +487,7 @@ module csr_regfile import ariane_pkg::*; #(
         instret_d = instret_q;
         if (!debug_mode_q) begin
             // increase instruction retired counter
-            for (int i = 0; i < NrCommitPorts; i++) begin
+            for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
                 if (commit_ack_i[i] && !ex_i.valid && !mcountinhibit_q[2]) instret++;
             end
             instret_d = instret;
