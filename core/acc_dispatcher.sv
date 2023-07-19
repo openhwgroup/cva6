@@ -14,6 +14,7 @@
 // Description: Functional unit that dispatches CVA6 instructions to accelerators.
 
 module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter type acc_req_t  = acc_pkg::accelerator_req_t,
     parameter type acc_resp_t = acc_pkg::accelerator_resp_t
 ) (
@@ -31,7 +32,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
     input  logic                                  issue_instr_hs_i,
     output logic                                  issue_stall_o,
     input  fu_data_t                              fu_data_i,
-    input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,
+    input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     output logic              [TRANS_ID_BITS-1:0] acc_trans_id_o,
     output xlen_t                                 acc_result_o,
     output logic                                  acc_valid_o,
@@ -39,7 +40,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
     // Interface with the execute stage
     output logic                                  acc_valid_ex_o,       // FU executed
     // Interface with the commit stage
-    input  logic            [NR_COMMIT_PORTS-1:0] commit_ack_i,
+    input  logic      [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     input  logic                                  commit_st_barrier_i,  // A store barrier was commited
     // Interface with the load/store unit
     input  logic                                  acc_no_st_pending_i,
@@ -286,7 +287,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
   // Dirty the V state if we are committing anything related to the vector accelerator
   always_comb begin : dirty_v_state
     dirty_v_state_o = 1'b0;
-    for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+    for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       dirty_v_state_o |= commit_ack_i[i] & (commit_instr_i[i].fu == ACCEL);
     end
   end

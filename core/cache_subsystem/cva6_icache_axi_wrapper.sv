@@ -14,7 +14,7 @@
 //
 
 module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig,  // contains cacheable regions
   parameter int unsigned AxiAddrWidth = 0,
   parameter int unsigned AxiDataWidth = 0,
@@ -101,7 +101,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   // -------
   cva6_icache #(
     // use ID 0 for icache reads
-    .cva6_cfg           ( cva6_cfg      ),
+    .CVA6Cfg            ( CVA6Cfg       ),
     .RdTxId             ( 0             ),
     .ArianeCfg          ( ArianeCfg     )
   ) i_cva6_icache (
@@ -125,7 +125,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   // AXI shim
   // --------
     axi_shim #(
-    .cva6_cfg        ( cva6_cfg       ),
+    .CVA6Cfg         ( CVA6Cfg        ),
     .AxiNumWords     ( AxiNumWords    ),
     .AxiAddrWidth    ( AxiAddrWidth   ),
     .AxiDataWidth    ( AxiDataWidth   ),

@@ -26,10 +26,9 @@
 //
 
 module ariane_regfile_fpga #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter int unsigned DATA_WIDTH     = 32,
   parameter int unsigned NR_READ_PORTS  = 2,
-  parameter int unsigned NR_WRITE_PORTS = 2,
   parameter bit          ZERO_REG_ZERO  = 0
 )(
   // clock and reset
@@ -41,25 +40,25 @@ module ariane_regfile_fpga #(
   input  logic [NR_READ_PORTS-1:0][4:0]             raddr_i,
   output logic [NR_READ_PORTS-1:0][DATA_WIDTH-1:0]  rdata_o,
   // write port
-  input  logic [NR_WRITE_PORTS-1:0][4:0]            waddr_i,
-  input  logic [NR_WRITE_PORTS-1:0][DATA_WIDTH-1:0] wdata_i,
-  input  logic [NR_WRITE_PORTS-1:0]                 we_i
+  input  logic [CVA6Cfg.NrCommitPorts-1:0][4:0]            waddr_i,
+  input  logic [CVA6Cfg.NrCommitPorts-1:0][DATA_WIDTH-1:0] wdata_i,
+  input  logic [CVA6Cfg.NrCommitPorts-1:0]                 we_i
 );
 
   localparam ADDR_WIDTH = 5;
   localparam NUM_WORDS  = 2**ADDR_WIDTH;
-  localparam LOG_NR_WRITE_PORTS = NR_WRITE_PORTS == 1 ? 1 : $clog2(NR_WRITE_PORTS);
+  localparam LOG_NR_WRITE_PORTS = CVA6Cfg.NrCommitPorts == 1 ? 1 : $clog2(CVA6Cfg.NrCommitPorts);
 
   // Distributed RAM usually supports one write port per block - duplicate for each write port.
-  logic [NUM_WORDS-1:0][DATA_WIDTH-1:0]     mem [NR_WRITE_PORTS];
+  logic [NUM_WORDS-1:0][DATA_WIDTH-1:0]     mem [CVA6Cfg.NrCommitPorts];
 
-  logic [NR_WRITE_PORTS-1:0][NUM_WORDS-1:0]     we_dec;
+  logic [CVA6Cfg.NrCommitPorts-1:0][NUM_WORDS-1:0]     we_dec;
   logic [NUM_WORDS-1:0][LOG_NR_WRITE_PORTS-1:0] mem_block_sel;
   logic [NUM_WORDS-1:0][LOG_NR_WRITE_PORTS-1:0] mem_block_sel_q;
 
   // write adress decoder (for block selector)
   always_comb begin
-    for (int unsigned j = 0; j < NR_WRITE_PORTS; j++) begin
+    for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) begin
       for (int unsigned i = 0; i < NUM_WORDS; i++) begin
         if (waddr_i[j] == i) begin
           we_dec[j][i] = we_i[j];
@@ -77,7 +76,7 @@ module ariane_regfile_fpga #(
   always_comb begin
     mem_block_sel = mem_block_sel_q;
     for (int i = 0; i<NUM_WORDS; i++) begin
-      for (int j = 0; j<NR_WRITE_PORTS; j++) begin
+      for (int j = 0; j<CVA6Cfg.NrCommitPorts; j++) begin
         if (we_dec[j][i] == 1'b1) begin
           mem_block_sel[i] = LOG_NR_WRITE_PORTS'(j);
         end
@@ -95,8 +94,8 @@ module ariane_regfile_fpga #(
   end
 
   // distributed RAM blocks
-  logic [NR_READ_PORTS-1:0] [DATA_WIDTH-1:0] mem_read [NR_WRITE_PORTS];
-  for (genvar j=0; j<NR_WRITE_PORTS; j++) begin : regfile_ram_block
+  logic [NR_READ_PORTS-1:0] [DATA_WIDTH-1:0] mem_read [CVA6Cfg.NrCommitPorts];
+  for (genvar j=0; j<CVA6Cfg.NrCommitPorts; j++) begin : regfile_ram_block
     always_ff @(posedge clk_i) begin
       if (we_i[j] && ~waddr_i[j] != 0) begin
         mem[j][waddr_i[j]] <= wdata_i[j];
@@ -118,7 +117,7 @@ module ariane_regfile_fpga #(
   // random initialization of the memory to suppress assert warnings on Questa.
   initial
   begin
-    for(int i = 0; i < NR_WRITE_PORTS; i++) begin
+    for(int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       for(int j = 0; j < NUM_WORDS; j++) begin
         mem[i][j] = $random();
       end

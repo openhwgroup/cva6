@@ -14,7 +14,7 @@
 //              issue and read operands.
 
 module id_stage #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
 ) (
     input  logic                          clk_i,
     input  logic                          rst_ni,
@@ -62,7 +62,7 @@ module id_stage #(
       // 1. Check if they are compressed and expand in case they are
       // ---------------------------------------------------------
       compressed_decoder #(
-          .cva6_cfg   ( cva6_cfg   )
+          .CVA6Cfg   ( CVA6Cfg   )
       ) compressed_decoder_i (
           .instr_i                 ( fetch_entry_i.instruction   ),
           .instr_o                 ( instruction                 ),
@@ -78,7 +78,7 @@ module id_stage #(
     // 2. Decode and emit instruction to issue stage
     // ---------------------------------------------------------
     decoder #(
-        .cva6_cfg   ( cva6_cfg   )
+        .CVA6Cfg   ( CVA6Cfg   )
     ) decoder_i (
         .debug_req_i,
         .irq_ctrl_i,

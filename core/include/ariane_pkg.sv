@@ -31,12 +31,17 @@ package ariane_pkg;
     // This is the new user config interface system. If you need to parameterize something
     // within Ariane add a field here and assign a default value to the config. Please make
     // sure to add a propper parameter check to the `check_cfg` function.
+    localparam int unsigned ILEN = 32;
+    localparam int unsigned NRET = 1;
+
     typedef struct packed {
-      int unsigned dummy;
+      int unsigned NrCommitPorts;
+      int unsigned IsRVFI;
     } cva6_cfg_t;
 
     localparam cva6_cfg_t cva6_cfg_empty = {
-      32'b0
+      unsigned'(0),
+      unsigned'(0)
     };
 
     localparam NrMaxRules = 16;
@@ -141,7 +146,6 @@ package ariane_pkg;
                                                       // to uniquely identify the entry in the scoreboard
     localparam ASID_WIDTH    = (riscv::XLEN == 64) ? 16 : 1;
     localparam BITS_SATURATION_COUNTER = 2;
-    localparam NR_COMMIT_PORTS = cva6_config_pkg::CVA6ConfigNrCommitPorts;
 
     localparam ENABLE_RENAME = cva6_config_pkg::CVA6ConfigRenameEn;
 
@@ -685,7 +689,6 @@ package ariane_pkg;
     // ---------------
 
     localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
-    typedef rvfi_pkg::rvfi_instr_t [NR_COMMIT_PORTS-1:0] rvfi_port_t;
 
     typedef struct packed {
         logic [riscv::VLEN-1:0]   pc;            // PC of instruction

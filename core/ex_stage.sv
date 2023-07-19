@@ -15,7 +15,7 @@
 
 
 module ex_stage import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter int unsigned ASID_WIDTH = 1,
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
@@ -169,7 +169,7 @@ module ex_stage import ariane_pkg::*; #(
     assign alu_data = (alu_valid_i | branch_valid_i) ? fu_data_i  : '0;
 
     alu #(
-        .cva6_cfg   ( cva6_cfg   )
+        .CVA6Cfg   ( CVA6Cfg   )
     ) alu_i (
         .clk_i,
         .rst_ni,
@@ -182,7 +182,7 @@ module ex_stage import ariane_pkg::*; #(
     // we don't silence the branch unit as this is already critical and we do
     // not want to add another layer of logic
     branch_unit #(
-        .cva6_cfg   ( cva6_cfg   )
+        .CVA6Cfg   ( CVA6Cfg   )
     ) branch_unit_i (
         .clk_i,
         .rst_ni,
@@ -203,7 +203,7 @@ module ex_stage import ariane_pkg::*; #(
 
     // 3. CSR (sequential)
     csr_buffer #(
-        .cva6_cfg   ( cva6_cfg   )
+        .CVA6Cfg   ( CVA6Cfg   )
     ) csr_buffer_i (
         .clk_i,
         .rst_ni,
@@ -246,7 +246,7 @@ module ex_stage import ariane_pkg::*; #(
     assign mult_data  = mult_valid_i ? fu_data_i  : '0;
 
     mult #(
-        .cva6_cfg   ( cva6_cfg   )
+        .CVA6Cfg   ( CVA6Cfg   )
     ) i_mult (
         .clk_i,
         .rst_ni,
@@ -300,7 +300,7 @@ module ex_stage import ariane_pkg::*; #(
     assign lsu_data  = lsu_valid_i ? fu_data_i  : '0;
 
     load_store_unit #(
-        .cva6_cfg   ( cva6_cfg   ),
+        .CVA6Cfg    ( CVA6Cfg    ),
         .ASID_WIDTH ( ASID_WIDTH ),
         .ArianeCfg ( ArianeCfg )
     ) lsu_i (
@@ -357,7 +357,7 @@ module ex_stage import ariane_pkg::*; #(
         fu_data_t cvxif_data;
         assign cvxif_data  = x_valid_i ? fu_data_i  : '0;
         cvxif_fu #(
-            .cva6_cfg   ( cva6_cfg   )
+            .CVA6Cfg   ( CVA6Cfg   )
         ) cvxif_fu_i (
             .clk_i,
             .rst_ni,

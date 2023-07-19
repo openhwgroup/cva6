@@ -13,10 +13,9 @@
 // Description: Scoreboard - keeps track of all decoded, issued and committed instructions
 
 module scoreboard #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter int unsigned NR_ENTRIES      = 8, // must be a power of 2
-  parameter int unsigned NR_WB_PORTS     = 1,
-  parameter int unsigned NR_COMMIT_PORTS = 2
+  parameter int unsigned NR_WB_PORTS     = 1
 ) (
   input  logic                                                  clk_i,    // Clock
   input  logic                                                  rst_ni,   // Asynchronous reset active low
@@ -42,8 +41,8 @@ module scoreboard #(
   output logic                                                  rs3_valid_o,
 
   // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
-  output ariane_pkg::scoreboard_entry_t [NR_COMMIT_PORTS-1:0]   commit_instr_o,
-  input  logic              [NR_COMMIT_PORTS-1:0]               commit_ack_i,
+  output ariane_pkg::scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0]   commit_instr_o,
+  input  logic              [CVA6Cfg.NrCommitPorts-1:0]               commit_ack_i,
 
   // instruction to put on top of scoreboard e.g.: top pointer
   // we can always put this instruction to the top unless we signal with asserted full_o
@@ -85,8 +84,8 @@ module scoreboard #(
   logic                    issue_full, issue_en;
   logic [BITS_ENTRIES:0]   issue_cnt_n,      issue_cnt_q;
   logic [BITS_ENTRIES-1:0] issue_pointer_n,  issue_pointer_q;
-  logic [NR_COMMIT_PORTS-1:0][BITS_ENTRIES-1:0] commit_pointer_n, commit_pointer_q;
-  logic [$clog2(NR_COMMIT_PORTS):0] num_commit;
+  logic [CVA6Cfg.NrCommitPorts-1:0][BITS_ENTRIES-1:0] commit_pointer_n, commit_pointer_q;
+  logic [$clog2(CVA6Cfg.NrCommitPorts):0] num_commit;
 
   // the issue queue is full don't issue any new instructions
   // works since aligned to power of 2
@@ -97,7 +96,7 @@ module scoreboard #(
   ariane_pkg::scoreboard_entry_t decoded_instr;
   always_comb begin
     decoded_instr = decoded_instr_i;
-    if (ariane_pkg::RVFI) begin
+    if (CVA6Cfg.IsRVFI) begin
       decoded_instr.rs1_rdata = rs1_forwarding_i;
       decoded_instr.rs2_rdata = rs2_forwarding_i;
       decoded_instr.lsu_addr  = '0;
@@ -109,7 +108,7 @@ module scoreboard #(
 
   // output commit instruction directly
   always_comb begin : commit_ports
-    for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++) begin
+    for (int unsigned i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       commit_instr_o[i] = mem_q[commit_pointer_q[i]].sbe;
       commit_instr_o[i].trans_id = commit_pointer_q[i];
     end
@@ -156,7 +155,7 @@ module scoreboard #(
     // ------------
     // Write Back
     // ------------
-    if (ariane_pkg::RVFI) begin
+    if (CVA6Cfg.IsRVFI) begin
       if (lsu_rmask_i != 0) begin
         mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
         mem_n[lsu_addr_trans_id_i].sbe.lsu_rmask = lsu_rmask_i;
@@ -191,7 +190,7 @@ module scoreboard #(
     // Commit Port
     // ------------
     // we've got an acknowledge from commit
-    for (logic [NR_COMMIT_PORTS-1:0] i = 0; i < NR_COMMIT_PORTS; i++) begin
+    for (logic [CVA6Cfg.NrCommitPorts-1:0] i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       if (commit_ack_i[i]) begin
         // this instruction is no longer in issue e.g.: it is considered finished
         mem_n[commit_pointer_q[i]].issued     = 1'b0;
@@ -213,14 +212,14 @@ module scoreboard #(
   end
 
   // FIFO counter updates
-  assign num_commit = (NR_COMMIT_PORTS == 2) ? commit_ack_i[1] + commit_ack_i[0] : commit_ack_i[0];
+  assign num_commit = (CVA6Cfg.NrCommitPorts == 2) ? commit_ack_i[1] + commit_ack_i[0] : commit_ack_i[0];
 
   assign issue_cnt_n         = (flush_i) ? '0 : issue_cnt_q         - num_commit + issue_en;
   assign commit_pointer_n[0] = (flush_i) ? '0 : commit_pointer_q[0] + num_commit;
   assign issue_pointer_n     = (flush_i) ? '0 : issue_pointer_q     + issue_en;
 
   // precompute offsets for commit slots
-  for (genvar k=1; k < NR_COMMIT_PORTS; k++) begin : gen_cnt_incr
+  for (genvar k=1; k < CVA6Cfg.NrCommitPorts; k++) begin : gen_cnt_incr
     assign commit_pointer_n[k] = (flush_i) ? '0 : commit_pointer_n[0] + unsigned'(k);
   end
 

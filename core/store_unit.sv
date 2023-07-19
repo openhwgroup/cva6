@@ -14,7 +14,7 @@
 
 
 module store_unit import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
 ) (
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,  // Asynchronous reset active low
@@ -216,7 +216,7 @@ module store_unit import ariane_pkg::*; #(
     // Store Queue
     // ---------------
     store_buffer #(
-        .cva6_cfg   ( cva6_cfg   )
+        .CVA6Cfg   ( CVA6Cfg   )
     ) store_buffer_i (
         .clk_i,
         .rst_ni,
@@ -245,7 +245,7 @@ module store_unit import ariane_pkg::*; #(
     );
 
     amo_buffer #(
-        .cva6_cfg   ( cva6_cfg   )
+        .CVA6Cfg   ( CVA6Cfg   )
     ) i_amo_buffer (
         .clk_i,
         .rst_ni,

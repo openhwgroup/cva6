@@ -24,10 +24,9 @@
 //
 
 module ariane_regfile_lol #(
-  parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter int unsigned DATA_WIDTH     = 32,
   parameter int unsigned NR_READ_PORTS  = 2,
-  parameter int unsigned NR_WRITE_PORTS = 2,
   parameter bit          ZERO_REG_ZERO  = 0
 )(
   // clock and reset
@@ -39,9 +38,9 @@ module ariane_regfile_lol #(
   input  logic [NR_READ_PORTS-1:0][4:0]             raddr_i,
   output logic [NR_READ_PORTS-1:0][DATA_WIDTH-1:0]  rdata_o,
   // write port
-  input  logic [NR_WRITE_PORTS-1:0][4:0]            waddr_i,
-  input  logic [NR_WRITE_PORTS-1:0][DATA_WIDTH-1:0] wdata_i,
-  input  logic [NR_WRITE_PORTS-1:0]                 we_i
+  input  logic [CVA6Cfg.NrCommitPorts-1:0][4:0]            waddr_i,
+  input  logic [CVA6Cfg.NrCommitPorts-1:0][DATA_WIDTH-1:0] wdata_i,
+  input  logic [CVA6Cfg.NrCommitPorts-1:0]                 we_i
 );
 
     localparam ADDR_WIDTH = 5;
@@ -50,8 +49,8 @@ module ariane_regfile_lol #(
     logic [NUM_WORDS-1:ZERO_REG_ZERO]          mem_clocks;
 
     logic [DATA_WIDTH-1:0]                     mem[NUM_WORDS];
-    logic [NR_WRITE_PORTS-1:0][NUM_WORDS-1:1]  waddr_onehot,waddr_onehot_q;
-    logic [NR_WRITE_PORTS-1:0][DATA_WIDTH-1:0] wdata_q;
+    logic [CVA6Cfg.NrCommitPorts-1:0][NUM_WORDS-1:1]  waddr_onehot,waddr_onehot_q;
+    logic [CVA6Cfg.NrCommitPorts-1:0][DATA_WIDTH-1:0] wdata_q;
 
 
     // decode addresses
@@ -62,7 +61,7 @@ module ariane_regfile_lol #(
         if (~rst_ni) begin
             wdata_q <= '0;
         end else begin
-            for (int unsigned i = 0; i < NR_WRITE_PORTS; i++)
+            for (int unsigned i = 0; i < CVA6Cfg.NrCommitPorts; i++)
                 // enable flipflop will most probably infer clock gating
                 if (we_i[i]) begin
                     wdata_q[i]     <= wdata_i[i];
@@ -73,7 +72,7 @@ module ariane_regfile_lol #(
 
     // WRITE : Write Address Decoder (WAD), combinatorial process
     always_comb begin : decode_write_addess
-        for (int unsigned i = 0; i < NR_WRITE_PORTS; i++) begin
+        for (int unsigned i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
             for (int unsigned j = 1; j < NUM_WORDS; j++) begin
                 if (we_i[i] && (waddr_i[i] == j))
                     waddr_onehot[i][j] = 1'b1;
@@ -86,9 +85,9 @@ module ariane_regfile_lol #(
     // WRITE : Clock gating (if integrated clock-gating cells are available)
     for (genvar x = ZERO_REG_ZERO; x < NUM_WORDS; x++) begin
 
-        logic [NR_WRITE_PORTS-1:0] waddr_ored;
+        logic [CVA6Cfg.NrCommitPorts-1:0] waddr_ored;
 
-        for (genvar i = 0; i < NR_WRITE_PORTS; i++)
+        for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++)
           assign waddr_ored[i] = waddr_onehot[i][x];
 
         cluster_clock_gating i_cg (
@@ -111,7 +110,7 @@ module ariane_regfile_lol #(
         if (ZERO_REG_ZERO)
             mem[0] = '0;
 
-        for (int unsigned i = 0; i < NR_WRITE_PORTS; i++) begin
+        for (int unsigned i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
             for (int unsigned k = ZERO_REG_ZERO; k < NUM_WORDS; k++) begin
                 if (mem_clocks[k] && waddr_onehot_q[i][k])
                     mem[k] = wdata_q[i];

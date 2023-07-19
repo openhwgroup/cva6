@@ -12,6 +12,7 @@
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 module ariane_xilinx (
+// WARNING: Do not define input parameters. This causes the FPGA build to fail.
 `ifdef GENESYSII
   input  logic         sys_clk_p   ,
   input  logic         sys_clk_n   ,
@@ -152,6 +153,15 @@ module ariane_xilinx (
   input  logic        rx          ,
   output logic        tx
 );
+
+// cva6 configuration
+// Pipeline
+localparam int unsigned NrCommitPorts = cva6_config_pkg::CVA6ConfigNrCommitPorts;
+// RVFI
+localparam int unsigned IsRVFI = 0;
+localparam type rvfi_instr_t = logic;
+
+
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
 localparam NBSlave = 2; // debug, ariane
@@ -697,6 +707,9 @@ ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
+    .NrCommitPorts ( NrCommitPorts ),
+    .IsRVFI ( IsRVFI ),
+    .rvfi_instr_t ( rvfi_instr_t ),
     .ArianeCfg ( ariane_soc::ArianeSocCfg )
 ) i_ariane (
     .clk_i        ( clk                 ),

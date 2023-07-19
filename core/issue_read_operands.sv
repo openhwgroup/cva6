@@ -15,8 +15,7 @@
 
 
 module issue_read_operands import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
-    parameter int unsigned NR_COMMIT_PORTS = 2
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
 )(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -70,10 +69,10 @@ module issue_read_operands import ariane_pkg::*; #(
     input  logic                                   cvxif_ready_i,
     output logic [31:0]                            cvxif_off_instr_o,
     // commit port
-    input  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_i,
-    input  logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_i,
-    input  logic [NR_COMMIT_PORTS-1:0]             we_gpr_i,
-    input  logic [NR_COMMIT_PORTS-1:0]             we_fpr_i,
+    input  logic [CVA6Cfg.NrCommitPorts-1:0][4:0]        waddr_i,
+    input  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_i,
+    input  logic [CVA6Cfg.NrCommitPorts-1:0]             we_gpr_i,
+    input  logic [CVA6Cfg.NrCommitPorts-1:0]             we_fpr_i,
 
     output logic                                   stall_issue_o  // stall signal, we do not want to fetch any more entries
     // committing instruction instruction
@@ -370,7 +369,7 @@ module issue_read_operands import ariane_pkg::*; #(
                 end
                 // or check that the target destination register will be written in this cycle by the
                 // commit stage
-                for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++)
+                for (int unsigned i = 0; i < CVA6Cfg.NrCommitPorts; i++)
                     if (is_rd_fpr(issue_instr_i.op) ? (we_fpr_i[i] && waddr_i[i] == issue_instr_i.rd[4:0])
                                                     : (we_gpr_i[i] && waddr_i[i] == issue_instr_i.rd[4:0])) begin
                         issue_ack_o = 1'b1;
@@ -403,22 +402,21 @@ module issue_read_operands import ariane_pkg::*; #(
     logic [NR_RGPR_PORTS-1:0][4:0]  raddr_pack;
 
     // pack signals
-    logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_pack;
-    logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_pack;
-    logic [NR_COMMIT_PORTS-1:0]       we_pack;
+    logic [CVA6Cfg.NrCommitPorts-1:0][4:0]  waddr_pack;
+    logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_pack;
+    logic [CVA6Cfg.NrCommitPorts-1:0]       we_pack;
     assign raddr_pack = NR_RGPR_PORTS == 3 ? {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]}
                                            : {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
-    for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_write_back_port
+    for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_write_back_port
         assign waddr_pack[i] = waddr_i[i];
         assign wdata_pack[i] = wdata_i[i];
         assign we_pack[i]    = we_gpr_i[i];
     end
     if (ariane_pkg::FPGA_EN) begin : gen_fpga_regfile
         ariane_regfile_fpga #(
-            .cva6_cfg       ( cva6_cfg        ),
+            .CVA6Cfg        ( CVA6Cfg         ),
             .DATA_WIDTH     ( riscv::XLEN     ),
             .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
-            .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
             .ZERO_REG_ZERO  ( 1               )
         ) i_ariane_regfile_fpga (
             .test_en_i ( 1'b0       ),
@@ -431,10 +429,9 @@ module issue_read_operands import ariane_pkg::*; #(
         );
     end else begin : gen_asic_regfile
         ariane_regfile #(
-            .cva6_cfg       ( cva6_cfg        ),
+            .CVA6Cfg        ( CVA6Cfg         ),
             .DATA_WIDTH     ( riscv::XLEN     ),
             .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
-            .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
             .ZERO_REG_ZERO  ( 1               )
         ) i_ariane_regfile (
             .test_en_i ( 1'b0       ),
@@ -454,20 +451,19 @@ module issue_read_operands import ariane_pkg::*; #(
 
     // pack signals
     logic [2:0][4:0]  fp_raddr_pack;
-    logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] fp_wdata_pack;
+    logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] fp_wdata_pack;
 
     generate
         if (FP_PRESENT) begin : float_regfile_gen
             assign fp_raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
-            for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_fp_wdata_pack
+            for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_fp_wdata_pack
                 assign fp_wdata_pack[i] = {wdata_i[i][FLEN-1:0]};
             end
             if (ariane_pkg::FPGA_EN) begin : gen_fpga_fp_regfile
                 ariane_regfile_fpga #(
-                    .cva6_cfg       ( cva6_cfg        ),
+                    .CVA6Cfg        ( CVA6Cfg         ),
                     .DATA_WIDTH     ( FLEN            ),
                     .NR_READ_PORTS  ( 3               ),
-                    .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
                     .ZERO_REG_ZERO  ( 0               )
                 ) i_ariane_fp_regfile_fpga (
                     .test_en_i ( 1'b0          ),
@@ -480,10 +476,9 @@ module issue_read_operands import ariane_pkg::*; #(
                 );
             end else begin : gen_asic_fp_regfile
                 ariane_regfile #(
-                    .cva6_cfg       ( cva6_cfg        ),
+                    .CVA6Cfg        ( CVA6Cfg         ),
                     .DATA_WIDTH     ( FLEN            ),
                     .NR_READ_PORTS  ( 3               ),
-                    .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
                     .ZERO_REG_ZERO  ( 0               )
                 ) i_ariane_fp_regfile (
                     .test_en_i ( 1'b0          ),
