@@ -18,9 +18,6 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter int unsigned ReqFifoDepth  = 2,
   parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
-  parameter int unsigned AxiAddrWidth = 0,
-  parameter int unsigned AxiDataWidth = 0,
-  parameter int unsigned AxiIdWidth   = 0,
   parameter type axi_req_t = ariane_axi::req_t,
   parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
@@ -54,8 +51,8 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 );
 
   // support up to 512bit cache lines
-  localparam AxiNumWords = (ariane_pkg::ICACHE_LINE_WIDTH/AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH > ariane_pkg::DCACHE_LINE_WIDTH)  +
-                           (ariane_pkg::DCACHE_LINE_WIDTH/AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH <= ariane_pkg::DCACHE_LINE_WIDTH) ;
+  localparam AxiNumWords = (ariane_pkg::ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH > ariane_pkg::DCACHE_LINE_WIDTH)  +
+                           (ariane_pkg::DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH <= ariane_pkg::DCACHE_LINE_WIDTH) ;
 
 
   ///////////////////////////////////////////////////////
@@ -74,18 +71,18 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic axi_wr_req, axi_wr_gnt;
   logic axi_wr_valid, axi_rd_valid, axi_rd_rdy, axi_wr_rdy;
   logic axi_rd_lock, axi_wr_lock, axi_rd_exokay, axi_wr_exokay, wr_exokay;
-  logic [AxiAddrWidth-1:0] axi_rd_addr, axi_wr_addr;
+  logic [CVA6Cfg.AxiAddrWidth-1:0] axi_rd_addr, axi_wr_addr;
   logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
   logic [2:0] axi_rd_size, axi_wr_size;
-  logic [AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
-  logic [AxiNumWords-1:0][AxiDataWidth-1:0] axi_wr_data;
-  logic [AxiNumWords-1:0][AXI_USER_WIDTH-1:0] axi_wr_user;
-  logic [AxiDataWidth-1:0] axi_rd_data;
-  logic [AXI_USER_WIDTH-1:0] axi_rd_user;
-  logic [AxiNumWords-1:0][(AxiDataWidth/8)-1:0]  axi_wr_be;
+  logic [CVA6Cfg.AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
+  logic [AxiNumWords-1:0][CVA6Cfg.AxiDataWidth-1:0] axi_wr_data;
+  logic [AxiNumWords-1:0][CVA6Cfg.AxiUserWidth-1:0] axi_wr_user;
+  logic [CVA6Cfg.AxiDataWidth-1:0] axi_rd_data;
+  logic [CVA6Cfg.AxiUserWidth-1:0] axi_rd_user;
+  logic [AxiNumWords-1:0][(CVA6Cfg.AxiDataWidth/8)-1:0]  axi_wr_be;
   logic [5:0] axi_wr_atop;
   logic invalidate;
-  logic [$clog2(AxiDataWidth/8)-1:0] amo_off_d, amo_off_q;
+  logic [$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] amo_off_d, amo_off_q;
   // AMO generates r beat
   logic amo_gen_r_d, amo_gen_r_q;
 
@@ -132,7 +129,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   always_comb begin : p_axi_req
     // write channel
     axi_wr_id_in = arb_idx;
-    axi_wr_data  = {(AxiDataWidth/riscv::XLEN){dcache_data.data}};
+    axi_wr_data  = {(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
     axi_wr_user  = dcache_data.user;
     // Cast to AXI address width
     axi_wr_addr  = dcache_data.paddr;
@@ -152,9 +149,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_rd_blen  = '0;
 
     if (dcache_data.paddr[2] == 1'b0) begin
-      axi_wr_user  = {{64-AXI_USER_WIDTH{1'b0}}, dcache_data.user};
+      axi_wr_user  = {{64-CVA6Cfg.AxiUserWidth{1'b0}}, dcache_data.user};
     end else begin
-      axi_wr_user  = {dcache_data.user, {64-AXI_USER_WIDTH{1'b0}}};
+      axi_wr_user  = {dcache_data.user, {64-CVA6Cfg.AxiUserWidth{1'b0}}};
     end
 
     // arbiter mux
@@ -162,16 +159,16 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
       // Cast to AXI address width
       axi_rd_addr = dcache_data.paddr;
       // If dcache_data.size MSB is set, we want to read as much as possible
-      axi_rd_size  = dcache_data.size[2] ? $clog2(AxiDataWidth/8) : dcache_data.size;
+      axi_rd_size  = dcache_data.size[2] ? $clog2(CVA6Cfg.AxiDataWidth/8) : dcache_data.size;
       if (dcache_data.size[2]) begin
-        axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH/AxiDataWidth-1;
+        axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1;
       end
     end else begin
       // Cast to AXI address width
       axi_rd_addr = icache_data.paddr;
-      axi_rd_size  = $clog2(AxiDataWidth/8); // always request max number of words in case of ifill
+      axi_rd_size  = $clog2(CVA6Cfg.AxiDataWidth/8); // always request max number of words in case of ifill
       if (!icache_data.nc) begin
-        axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/AxiDataWidth-1;
+        axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1;
       end
     end
 
@@ -197,10 +194,10 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
             axi_wr_req   = 1'b1;
             axi_wr_be    = '0;
             unique case(dcache_data.size[1:0])
-              2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0]]       = '1;  // byte
-              2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
-              2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
-              default: axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword                                                    = '1; // dword
+              2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]]       = '1;  // byte
+              2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
+              2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
+              default: axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword                                                    = '1; // dword
             endcase
           end
           //////////////////////////////////////
@@ -214,10 +211,10 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
             axi_wr_req   = 1'b1;
             axi_wr_be    = '0;
             unique case(dcache_data.size[1:0])
-              2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0]]       = '1;  // byte
-              2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
-              2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
-              default: axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword
+              2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]]       = '1;  // byte
+              2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
+              2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
+              default: axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword
             endcase
             amo_gen_r_d  = 1'b1;
             // need to use a separate ID here, so concat an additional bit
@@ -237,15 +234,15 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
                 amo_gen_r_d  = 1'b0;
                 // needed to properly encode success. store the result at offset within the returned
                 // AXI data word aligned with the requested word size.
-                amo_off_d = dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] & ~((1 << dcache_data.size[1:0]) - 1);
+                amo_off_d = dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] & ~((1 << dcache_data.size[1:0]) - 1);
               end
               // RISC-V atops have a load semantic
               AMO_SWAP: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ATOMICSWAP};
               AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
               AMO_AND:  begin
                 // in this case we need to invert the data to get a "CLR"
-                axi_wr_data  = ~{(AxiDataWidth/riscv::XLEN){dcache_data.data}};
-                axi_wr_user  = ~{(AxiDataWidth/riscv::XLEN){dcache_data.user}};
+                axi_wr_data  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
+                axi_wr_user  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.user}};
                 axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
               end
               AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
@@ -369,7 +366,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign b_push              = axi_wr_valid & axi_wr_rdy;
 
   fifo_v3 #(
-    .DATA_WIDTH   ( AxiIdWidth + 1 ),
+    .DATA_WIDTH   ( CVA6Cfg.AxiIdWidth + 1 ),
     .DEPTH        ( MetaFifoDepth              ),
     .FALL_THROUGH ( 1'b1                       )
   ) i_b_fifo (
@@ -388,10 +385,10 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // buffer read responses in shift regs
   logic icache_first_d, icache_first_q, dcache_first_d, dcache_first_q;
-  logic [ICACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:0][AXI_USER_WIDTH-1:0] icache_rd_shift_user_d, icache_rd_shift_user_q;
-  logic [DCACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:0][AXI_USER_WIDTH-1:0] dcache_rd_shift_user_d, dcache_rd_shift_user_q;
-  logic [ICACHE_LINE_WIDTH/AxiDataWidth-1:0][AxiDataWidth-1:0] icache_rd_shift_d, icache_rd_shift_q;
-  logic [DCACHE_LINE_WIDTH/AxiDataWidth-1:0][AxiDataWidth-1:0] dcache_rd_shift_d, dcache_rd_shift_q;
+  logic [ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0] icache_rd_shift_user_d, icache_rd_shift_user_q;
+  logic [DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0] dcache_rd_shift_user_d, dcache_rd_shift_user_q;
+  logic [ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0] icache_rd_shift_d, icache_rd_shift_q;
+  logic [DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0] dcache_rd_shift_d, dcache_rd_shift_q;
   wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
   wt_cache_pkg::dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
   logic dcache_sc_rtrn, axi_rd_last;
@@ -423,12 +420,12 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 
     if (icache_rtrn_rd_en) begin
       icache_first_d    = axi_rd_last;
-      if (ICACHE_LINE_WIDTH == AxiDataWidth) begin
+      if (ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         icache_rd_shift_d = axi_rd_data;
       end else begin
-        icache_rd_shift_d = {axi_rd_data, icache_rd_shift_q[ICACHE_LINE_WIDTH/AxiDataWidth-1:1]};
+        icache_rd_shift_d = {axi_rd_data, icache_rd_shift_q[ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]};
       end
-      icache_rd_shift_user_d = {axi_rd_user, icache_rd_shift_user_q[ICACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:1]};
+      icache_rd_shift_user_d = {axi_rd_user, icache_rd_shift_user_q[ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]};
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (icache_first_q) begin
         icache_rd_shift_d[0] = axi_rd_data;
@@ -438,12 +435,12 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 
     if (dcache_rtrn_rd_en) begin
       dcache_first_d    = axi_rd_last;
-      if (DCACHE_LINE_WIDTH == AxiDataWidth) begin
+      if (DCACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         dcache_rd_shift_d = axi_rd_data;
       end else begin
-        dcache_rd_shift_d = {axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/AxiDataWidth-1:1]};
+        dcache_rd_shift_d = {axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]};
       end
-      dcache_rd_shift_user_d = {axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/AXI_USER_WIDTH-1:1]};
+      dcache_rd_shift_user_d = {axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]};
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (dcache_first_q) begin
         dcache_rd_shift_d[0] = axi_rd_data;
@@ -608,10 +605,6 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   axi_shim #(
     .CVA6Cfg         ( CVA6Cfg        ),
     .AxiNumWords     ( AxiNumWords    ),
-    .AxiAddrWidth    ( AxiAddrWidth   ),
-    .AxiDataWidth    ( AxiDataWidth   ),
-    .AxiIdWidth      ( AxiIdWidth     ),
-    .AxiUserWidth    ( AXI_USER_WIDTH ),
     .axi_req_t       ( axi_req_t      ),
     .axi_rsp_t       ( axi_rsp_t      )
   ) i_axi_shim (

@@ -23,9 +23,6 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig,  // contains cacheable regions
   parameter int unsigned NumPorts     = 3,
-  parameter int unsigned AxiAddrWidth = 0,
-  parameter int unsigned AxiDataWidth = 0,
-  parameter int unsigned AxiIdWidth   = 0,
   parameter type axi_req_t = ariane_axi::req_t,
   parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
@@ -112,7 +109,6 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   // Port 2 is write only and goes into the merging write buffer
   wt_dcache #(
     .CVA6Cfg         ( CVA6Cfg       ),
-    .AxiDataWidth    ( AxiDataWidth  ),
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
     .RdAmoTxId       ( 1             ),
@@ -167,9 +163,6 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
 `else
   wt_axi_adapter #(
     .CVA6Cfg            ( CVA6Cfg  ),
-    .AxiAddrWidth       ( AxiAddrWidth ),
-    .AxiDataWidth       ( AxiDataWidth ),
-    .AxiIdWidth         ( AxiIdWidth ),
     .axi_req_t          ( axi_req_t ),
     .axi_rsp_t          ( axi_rsp_t )
   ) i_adapter (

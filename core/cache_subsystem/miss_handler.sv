@@ -19,9 +19,6 @@
 module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
     parameter int unsigned NR_PORTS       = 3,
-    parameter int unsigned AXI_ADDR_WIDTH = 0,
-    parameter int unsigned AXI_DATA_WIDTH = 0,
-    parameter int unsigned AXI_ID_WIDTH   = 0,
     parameter type axi_req_t = ariane_axi::req_t,
     parameter type axi_rsp_t = ariane_axi::resp_t
 )(
@@ -573,9 +570,6 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .CVA6Cfg               ( CVA6Cfg            ),
         .DATA_WIDTH            ( 64                 ),
         .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET ),
-        .AXI_ADDR_WIDTH        ( AXI_ADDR_WIDTH     ),
-        .AXI_DATA_WIDTH        ( AXI_DATA_WIDTH     ),
-        .AXI_ID_WIDTH          ( AXI_ID_WIDTH       ),
         .axi_req_t             ( axi_req_t          ),
         .axi_rsp_t             ( axi_rsp_t          )
     ) i_bypass_axi_adapter (
@@ -584,7 +578,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .req_i                (bypass_adapter_req.req),
         .type_i               (bypass_adapter_req.reqtype),
         .amo_i                (bypass_adapter_req.amo),
-        .id_i                 (({{AXI_ID_WIDTH-4{1'b0}}, bypass_adapter_req.id})),
+        .id_i                 (({{CVA6Cfg.AxiIdWidth-4{1'b0}}, bypass_adapter_req.id})),
         .addr_i               (bypass_addr),
         .wdata_i              (bypass_adapter_req.wdata),
         .we_i                 (bypass_adapter_req.we),
@@ -611,9 +605,6 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .CVA6Cfg               ( CVA6Cfg            ),
         .DATA_WIDTH            ( DCACHE_LINE_WIDTH  ),
         .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET ),
-        .AXI_ADDR_WIDTH        ( AXI_ADDR_WIDTH     ),
-        .AXI_DATA_WIDTH        ( AXI_DATA_WIDTH     ),
-        .AXI_ID_WIDTH          ( AXI_ID_WIDTH       ),
         .axi_req_t             ( axi_req_t          ),
         .axi_rsp_t             ( axi_rsp_t          )
     ) i_miss_axi_adapter (
@@ -628,7 +619,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .wdata_i             ( req_fsm_miss_wdata ),
         .be_i                ( req_fsm_miss_be    ),
         .size_i              ( req_fsm_miss_size  ),
-        .id_i                ( {{AXI_ID_WIDTH-4{1'b0}}, 4'b1100} ),
+        .id_i                ( {{CVA6Cfg.AxiIdWidth-4{1'b0}}, 4'b1100} ),
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),

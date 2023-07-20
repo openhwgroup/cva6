@@ -21,9 +21,6 @@ module axi_adapter #(
   parameter int unsigned DATA_WIDTH            = 256,
   parameter logic        CRITICAL_WORD_FIRST   = 0, // the AXI subsystem needs to support wrapping reads for this feature
   parameter int unsigned CACHELINE_BYTE_OFFSET = 8,
-  parameter int unsigned AXI_ADDR_WIDTH        = 0,
-  parameter int unsigned AXI_DATA_WIDTH        = 0,
-  parameter int unsigned AXI_ID_WIDTH          = 0,
   parameter type axi_req_t = ariane_axi::req_t,
   parameter type axi_rsp_t = ariane_axi::resp_t
 )(
@@ -36,23 +33,23 @@ module axi_adapter #(
   output logic                             gnt_o,
   input  logic [riscv::XLEN-1:0]           addr_i,
   input  logic                             we_i,
-  input  logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0][AXI_DATA_WIDTH-1:0]      wdata_i,
-  input  logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0][(AXI_DATA_WIDTH/8)-1:0]  be_i,
+  input  logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0]      wdata_i,
+  input  logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][(CVA6Cfg.AxiDataWidth/8)-1:0]  be_i,
   input  logic [1:0]                       size_i,
-  input  logic [AXI_ID_WIDTH-1:0]          id_i,
+  input  logic [CVA6Cfg.AxiIdWidth-1:0]    id_i,
   // read port
   output logic                             valid_o,
-  output logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0][AXI_DATA_WIDTH-1:0] rdata_o,
-  output logic [AXI_ID_WIDTH-1:0]          id_o,
+  output logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0] rdata_o,
+  output logic [CVA6Cfg.AxiIdWidth-1:0]    id_o,
   // critical word - read port
-  output logic [AXI_DATA_WIDTH-1:0]        critical_word_o,
+  output logic [CVA6Cfg.AxiDataWidth-1:0]  critical_word_o,
   output logic                             critical_word_valid_o,
   // AXI port
   output axi_req_t                 axi_req_o,
   input  axi_rsp_t                 axi_resp_i
 );
-  localparam BURST_SIZE = (DATA_WIDTH/AXI_DATA_WIDTH)-1;
-  localparam ADDR_INDEX = ($clog2(DATA_WIDTH/AXI_DATA_WIDTH) > 0) ? $clog2(DATA_WIDTH/AXI_DATA_WIDTH) : 1;
+  localparam BURST_SIZE = (DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1;
+  localparam ADDR_INDEX = ($clog2(DATA_WIDTH/CVA6Cfg.AxiDataWidth) > 0) ? $clog2(DATA_WIDTH/CVA6Cfg.AxiDataWidth) : 1;
 
   enum logic [3:0] {
     IDLE, WAIT_B_VALID, WAIT_AW_READY, WAIT_LAST_W_READY, WAIT_LAST_W_READY_AW_READY, WAIT_AW_READY_BURST,
@@ -61,10 +58,10 @@ module axi_adapter #(
 
   // counter for AXI transfers
   logic [ADDR_INDEX-1:0] cnt_d, cnt_q;
-  logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0][AXI_DATA_WIDTH-1:0] cache_line_d, cache_line_q;
+  logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0] cache_line_d, cache_line_q;
   // save the address for a read, as we allow for non-cacheline aligned accesses
-  logic [(DATA_WIDTH/AXI_DATA_WIDTH)-1:0] addr_offset_d, addr_offset_q;
-  logic [AXI_ID_WIDTH-1:0]    id_d, id_q;
+  logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0] addr_offset_d, addr_offset_q;
+  logic [CVA6Cfg.AxiIdWidth-1:0]    id_d, id_q;
   logic [ADDR_INDEX-1:0]      index;
   // save the atomic operation and size
   ariane_pkg::amo_t amo_d, amo_q;

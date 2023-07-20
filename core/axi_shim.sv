@@ -21,11 +21,7 @@
 
 module axi_shim #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
-  parameter int unsigned AxiUserWidth = 64, // data width in dwords, this is also the maximum burst length, must be >=2
   parameter int unsigned AxiNumWords = 4, // data width in dwords, this is also the maximum burst length, must be >=2
-  parameter int unsigned AxiAddrWidth = 0,
-  parameter int unsigned AxiDataWidth = 0,
-  parameter int unsigned AxiIdWidth   = 0,
   parameter type axi_req_t = ariane_axi::req_t,
   parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
@@ -35,35 +31,35 @@ module axi_shim #(
   // request
   input  logic                            rd_req_i,
   output logic                            rd_gnt_o,
-  input  logic [AxiAddrWidth-1:0]         rd_addr_i,
+  input  logic [CVA6Cfg.AxiAddrWidth-1:0] rd_addr_i,
   input  logic [$clog2(AxiNumWords)-1:0]  rd_blen_i, // axi convention: LEN-1
   input  logic [2:0]                      rd_size_i,
-  input  logic [AxiIdWidth-1:0]           rd_id_i,   // use same ID for reads, or make sure you only have one outstanding read tx
+  input  logic [CVA6Cfg.AxiIdWidth-1:0]   rd_id_i,   // use same ID for reads, or make sure you only have one outstanding read tx
   input  logic                            rd_lock_i,
   // read response (we have to unconditionally sink the response)
   input  logic                            rd_rdy_i,
   output logic                            rd_last_o,
   output logic                            rd_valid_o,
-  output logic [AxiDataWidth-1:0]         rd_data_o,
-  output logic [AxiUserWidth-1:0]         rd_user_o,
-  output logic [AxiIdWidth-1:0]           rd_id_o,
+  output logic [CVA6Cfg.AxiDataWidth-1:0] rd_data_o,
+  output logic [CVA6Cfg.AxiUserWidth-1:0] rd_user_o,
+  output logic [CVA6Cfg.AxiIdWidth-1:0]   rd_id_o,
   output logic                            rd_exokay_o, // indicates whether exclusive tx succeeded
   // write channel
   input  logic                            wr_req_i,
   output logic                            wr_gnt_o,
-  input  logic [AxiAddrWidth-1:0]         wr_addr_i,
-  input  logic [AxiNumWords-1:0][AxiDataWidth-1:0]     wr_data_i,
-  input  logic [AxiNumWords-1:0][AxiUserWidth-1:0]     wr_user_i,
-  input  logic [AxiNumWords-1:0][(AxiDataWidth/8)-1:0] wr_be_i,
+  input  logic [CVA6Cfg.AxiAddrWidth-1:0] wr_addr_i,
+  input  logic [AxiNumWords-1:0][CVA6Cfg.AxiDataWidth-1:0]     wr_data_i,
+  input  logic [AxiNumWords-1:0][CVA6Cfg.AxiUserWidth-1:0]     wr_user_i,
+  input  logic [AxiNumWords-1:0][(CVA6Cfg.AxiDataWidth/8)-1:0] wr_be_i,
   input  logic [$clog2(AxiNumWords)-1:0]  wr_blen_i, // axi convention: LEN-1
   input  logic [2:0]                      wr_size_i,
-  input  logic [AxiIdWidth-1:0]           wr_id_i,
+  input  logic [CVA6Cfg.AxiIdWidth-1:0]   wr_id_i,
   input  logic                            wr_lock_i,
   input  logic [5:0]                      wr_atop_i,
   // write response
   input  logic                            wr_rdy_i,
   output logic                            wr_valid_o,
-  output logic [AxiIdWidth-1:0]           wr_id_o,
+  output logic [CVA6Cfg.AxiIdWidth-1:0]   wr_id_o,
   output logic                            wr_exokay_o, // indicates whether exclusive tx succeeded
   // AXI port
   output axi_req_t                        axi_req_o,
@@ -87,7 +83,7 @@ module axi_shim #(
 
   // address
   assign axi_req_o.aw.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
-  assign axi_req_o.aw.addr   = wr_addr_i[AxiAddrWidth-1:0];
+  assign axi_req_o.aw.addr   = wr_addr_i[CVA6Cfg.AxiAddrWidth-1:0];
   assign axi_req_o.aw.size   = wr_size_i;
   assign axi_req_o.aw.len    = wr_blen_i;
   assign axi_req_o.aw.id     = wr_id_i;
@@ -246,7 +242,7 @@ module axi_shim #(
   // in case of a wrapping transfer we can simply begin at the address, if we want to request a cache-line
   // with an incremental transfer we need to output the corresponding base address of the cache line
   assign axi_req_o.ar.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
-  assign axi_req_o.ar.addr   = rd_addr_i[AxiAddrWidth-1:0];
+  assign axi_req_o.ar.addr   = rd_addr_i[CVA6Cfg.AxiAddrWidth-1:0];
   assign axi_req_o.ar.size   = rd_size_i;
   assign axi_req_o.ar.len    = rd_blen_i;
   assign axi_req_o.ar.id     = rd_id_i;
@@ -297,7 +293,7 @@ module axi_shim #(
 initial begin
   assert (AxiNumWords >= 1) else
     $fatal(1, "[axi adapter] AxiNumWords must be >= 1");
-  assert (AxiIdWidth >= 2) else
+  assert (CVA6Cfg.AxiIdWidth >= 2) else
     $fatal(1, "[axi adapter] AXI id width must be at least 2 bit wide");
 end
 //pragma translate_on

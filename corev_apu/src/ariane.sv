@@ -61,9 +61,6 @@ module ariane import ariane_pkg::*; #(
     .rvfi_instr_t ( rvfi_instr_t ),
     //
     .ArianeCfg  ( ArianeCfg ),
-    .AxiAddrWidth ( AxiAddrWidth ),
-    .AxiDataWidth ( AxiDataWidth ),
-    .AxiIdWidth ( AxiIdWidth ),
     .axi_ar_chan_t (axi_ar_chan_t),
     .axi_aw_chan_t (axi_aw_chan_t),
     .axi_w_chan_t (axi_w_chan_t),

@@ -16,7 +16,11 @@
 module cva6 import ariane_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
     int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-    int'(cva6_config_pkg::CVA6ConfigRvfiTrace)       // IsRVFI
+    int'(cva6_config_pkg::CVA6ConfigRvfiTrace),      // IsRVFI
+    int'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
+    int'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
+    int'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
+    int'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // AxiUserWidth
   },
   parameter type rvfi_instr_t = struct packed {
     logic [ariane_pkg::NRET-1:0]                  valid;
@@ -43,18 +47,75 @@ module cva6 import ariane_pkg::*; #(
     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
   },
+  // AXI types
+  parameter type axi_ar_chan_t = struct packed {
+        logic [CVA6Cfg.AxiIdWidth-1:0]       id;
+        logic [CVA6Cfg.AxiAddrWidth-1:0]     addr;
+        axi_pkg::len_t                       len;
+        axi_pkg::size_t                      size;
+        axi_pkg::burst_t                     burst;
+        logic                                lock;
+        axi_pkg::cache_t                     cache;
+        axi_pkg::prot_t                      prot;
+        axi_pkg::qos_t                       qos;
+        axi_pkg::region_t                    region;
+        logic [CVA6Cfg.AxiUserWidth-1:0]     user;
+  },
+  parameter type axi_aw_chan_t = struct packed {
+        logic [CVA6Cfg.AxiIdWidth-1:0]       id;
+        logic [CVA6Cfg.AxiAddrWidth-1:0]     addr;
+        axi_pkg::len_t                       len;
+        axi_pkg::size_t                      size;
+        axi_pkg::burst_t                     burst;
+        logic                                lock;
+        axi_pkg::cache_t                     cache;
+        axi_pkg::prot_t                      prot;
+        axi_pkg::qos_t                       qos;
+        axi_pkg::region_t                    region;
+        axi_pkg::atop_t                      atop;
+        logic [CVA6Cfg.AxiUserWidth-1:0]     user;
+  },
+  parameter type axi_w_chan_t = struct packed {
+        logic [CVA6Cfg.AxiDataWidth-1:0]     data;
+        logic [(CVA6Cfg.AxiDataWidth/8)-1:0] strb;
+        logic                                last;
+        logic [CVA6Cfg.AxiUserWidth-1:0]     user;
+  },
+  parameter type b_chan_t = struct packed {
+        logic [CVA6Cfg.AxiIdWidth-1:0]       id;
+        axi_pkg::resp_t                      resp;
+        logic [CVA6Cfg.AxiUserWidth-1:0]     user;
+  },
+  parameter type r_chan_t = struct packed {
+        logic [CVA6Cfg.AxiIdWidth-1:0]       id;
+        logic [CVA6Cfg.AxiDataWidth-1:0]     data;
+        axi_pkg::resp_t                      resp;
+        logic                                last;
+        logic [CVA6Cfg.AxiUserWidth-1:0]     user;
+  },
+  parameter type axi_req_t = struct packed {
+        axi_aw_chan_t                aw;
+        logic                        aw_valid;
+        axi_w_chan_t                 w;
+        logic                        w_valid;
+        logic                        b_ready;
+        axi_ar_chan_t                ar;
+        logic                        ar_valid;
+        logic                        r_ready;
+  },
+  parameter type axi_rsp_t = struct packed {
+        logic                        aw_ready;
+        logic                        ar_ready;
+        logic                        w_ready;
+        logic                        b_valid;
+        b_chan_t                     b;
+        logic                        r_valid;
+        r_chan_t                     r;
+  },
   //
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
   parameter type cvxif_req_t  = cvxif_pkg::cvxif_req_t,
-  parameter type cvxif_resp_t = cvxif_pkg::cvxif_resp_t,
-  parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
-  parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
-  parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
-  parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
-  parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
-  parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter type cvxif_resp_t = cvxif_pkg::cvxif_resp_t
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -773,9 +834,6 @@ module cva6 import ariane_pkg::*; #(
     .CVA6Cfg              ( CVA6Cfg   ),
     .ArianeCfg            ( ArianeCfg ),
     .NumPorts             ( NumPorts  ),
-    .AxiAddrWidth         ( AxiAddrWidth ),
-    .AxiDataWidth         ( AxiDataWidth ),
-    .AxiIdWidth           ( AxiIdWidth ),
     .axi_req_t            ( axi_req_t ),
     .axi_rsp_t            ( axi_rsp_t )
   ) i_cache_subsystem (
@@ -825,9 +883,6 @@ module cva6 import ariane_pkg::*; #(
     // deprecated
     .CVA6Cfg               ( CVA6Cfg                     ),
     .ArianeCfg             ( ArianeCfg                   ),
-    .AxiAddrWidth          ( AxiAddrWidth                ),
-    .AxiDataWidth          ( AxiDataWidth                ),
-    .AxiIdWidth            ( AxiIdWidth                  ),
     .axi_ar_chan_t         ( axi_ar_chan_t               ),
     .axi_aw_chan_t         ( axi_aw_chan_t               ),
     .axi_w_chan_t          ( axi_w_chan_t                ),

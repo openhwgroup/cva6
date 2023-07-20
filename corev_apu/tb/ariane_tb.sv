@@ -31,7 +31,11 @@ module ariane_tb;
     // cva6 configuration
     localparam ariane_pkg::cva6_cfg_t CVA6Cfg = {
       int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-      int'(cva6_config_pkg::CVA6ConfigRvfiTrace)       // IsRVFI
+      int'(cva6_config_pkg::CVA6ConfigRvfiTrace),      // IsRVFI
+      int'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
+      int'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
+      int'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
+      int'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // AxiUserWidth
     };
     localparam type rvfi_instr_t = struct packed {
         logic [ariane_pkg::NRET-1:0]                  valid;

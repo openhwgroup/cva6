@@ -37,11 +37,19 @@ package ariane_pkg;
     typedef struct packed {
       int unsigned NrCommitPorts;
       int unsigned IsRVFI;
+      int unsigned AxiAddrWidth;
+      int unsigned AxiDataWidth;
+      int unsigned AxiIdWidth;
+      int unsigned AxiUserWidth;
     } cva6_cfg_t;
 
     localparam cva6_cfg_t cva6_cfg_empty = {
       unsigned'(0),  // NrCommitPorts
-      unsigned'(0)   // IsRVFI
+      unsigned'(0),  // IsRVFI
+      unsigned'(0),  // AxiAddrWidth
+      unsigned'(0),  // AxiDataWidth
+      unsigned'(0),  // AxiIdWidth
+      unsigned'(0)   // AxiUserWidth
     };
 
     localparam NrMaxRules = 16;

@@ -18,7 +18,11 @@
 module ariane_testharness #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
     int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-    int'(cva6_config_pkg::CVA6ConfigRvfiTrace)       // IsRVFI
+    int'(cva6_config_pkg::CVA6ConfigRvfiTrace),      // IsRVFI
+    int'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
+    int'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
+    int'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
+    int'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // AxiUserWidth
   },
   parameter type rvfi_instr_t = struct packed {
     logic [ariane_pkg::NRET-1:0]                  valid;
@@ -314,10 +318,8 @@ module ariane_testharness #(
   `AXI_ASSIGN_TO_RESP(dm_axi_m_resp, slave[1])
 
   axi_adapter #(
+    .CVA6Cfg               ( CVA6Cfg                   ),
     .DATA_WIDTH            ( AXI_DATA_WIDTH            ),
-    .AXI_ADDR_WIDTH        ( ariane_axi_soc::AddrWidth ),
-    .AXI_DATA_WIDTH        ( ariane_axi_soc::DataWidth ),
-    .AXI_ID_WIDTH          ( ariane_soc::IdWidth       ),
     .axi_req_t             ( ariane_axi::req_t         ),
     .axi_rsp_t             ( ariane_axi::resp_t        )
   ) i_dm_axi_master (
