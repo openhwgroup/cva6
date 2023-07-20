@@ -49,7 +49,7 @@ The ``sstatus`` register is a subset of the ``mstatus`` register.
 | 19 | MXR | Make executable readable | read-write  | The MXR bit modifies the privilege with which loads access virtual memory\. When MXR=0, only loads from pages marked readable will succeed\. When MXR=1, loads from pages marked either readable or executable \(R=1 or X=1\) will succeed\. MXR has no effect when page\-based virtual memory is not in effect\.|
 | 18 | SUM | Supervisor user memory | read-write  | The SUM \(permit Supervisor User Memory access\) bit modifies the privilege with which S\-mode loads and stores access virtual memory\. When SUM=0, S\-mode memory accesses to pages that are accessible by U\-mode will fault\. When SUM=1, these accesses are permitted\. SUM has no effect when page\-based virtual memory is not in effect\. Note that, while SUM is ordinarily ignored when not executing in S\-mode, it \*is\* in effect when MPRV=1 and MPP=S\. SUM is read\-only 0 if S\-mode is not supported or if ``satp``\.MODE is read\-only 0\.|
 | 16:15 | XS | Extension state | read-only  | The XS field is used to reduce the cost of context save and restore by setting and tracking the current state of the user\-mode extensions\. The XS field encodes the status of the additional user\-mode extensions and associated state\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
-| 14:13 | FS | Floating-point unit state | read-write  | The FS field is used to reduce the cost of context save and restore by setting and tracking the current state of the floating\-point unit\. The FS field encodes the status of the floating\-point unit state, including the floating\-point registers ``f0–f31`` and the CSRs ``fcsr``, ``frm``, and ``fflags``\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
+| 14:13 | FS | Floating-point unit state | read-write,WARL  | The FS field is used to reduce the cost of context save and restore by setting and tracking the current state of the floating\-point unit\. The FS field encodes the status of the floating\-point unit state, including the floating\-point registers ``f0–f31`` and the CSRs ``fcsr``, ``frm``, and ``fflags``\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
 | 8 | SPP | Supervisor mode prior privilege | read-write  | SPP bit indicates the privilege level at which a hart was executing before entering supervisor mode\. When a trap is taken, SPP is set to 0 if the trap originated from user mode, or 1 otherwise\. When an SRET instruction is executed to return from the trap handler, the privilege level is set to user mode if the SPP bit is 0, or supervisor mode if the SPP bit is 1; SPP is then set to 0\.|
 | 5 | SPIE | Supervisor mode prior interrupt enable | read-write  | The SPIE bit indicates whether supervisor interrupts were enabled prior to trapping into supervisor mode\. When a trap is taken into supervisor mode, SPIE is set to SIE, and SIE is set to 0\. When an SRET instruction is executed, SIE is set to SPIE, then SPIE is set to 1\.|
 | 4 | UPIE |  | read-write  | When a URET instruction is executed, UIE is set to UPIE, and UPIE is set to 1\.|
@@ -62,12 +62,12 @@ The ``sstatus`` register is a subset of the ``mstatus`` register.
 The ``sie`` is the register containing supervisor interrupt enable bits.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 9 | SEIE | Supervisor-level external interrupt enable | read-write  | SEIE is the interrupt\-enable bit for supervisor\-level external interrupts\.|
-| 8 | UEIE |  | read-write  | User\-level external interrupts are disabled when the UEIE bit in the sie register is clear\.|
-| 5 | STIE | Supervisor-level timer interrupt enable | read-write  | STIE is the interrupt\-enable bit for supervisor\-level timer interrupts\.|
-| 4 | UTIE |  | read-write  | User\-level timer interrupts are disabled when the UTIE bit in the sie register is clear\.|
-| 1 | SSIE | Supervisor-level software interrupt enable | read-write  | SSIE is the interrupt\-enable bit for supervisor\-level software interrupts\.|
-| 0 | USIE |  | read-write  | User\-level software interrupts are disabled when the USIE bit in the sie register is clear|
+| 9 | SEIE | Supervisor-level external interrupt enable | read-write,WARL  | SEIE is the interrupt\-enable bit for supervisor\-level external interrupts\.|
+| 8 | UEIE |  | read-write,WARL  | User\-level external interrupts are disabled when the UEIE bit in the sie register is clear\.|
+| 5 | STIE | Supervisor-level timer interrupt enable | read-write,WARL  | STIE is the interrupt\-enable bit for supervisor\-level timer interrupts\.|
+| 4 | UTIE |  | read-write,WARL  | User\-level timer interrupts are disabled when the UTIE bit in the sie register is clear\.|
+| 1 | SSIE | Supervisor-level software interrupt enable | read-write,WARL  | SSIE is the interrupt\-enable bit for supervisor\-level software interrupts\.|
+| 0 | USIE |  | read-write,WARL  | User\-level software interrupts are disabled when the USIE bit in the sie register is clear|
 
 ## Supervisor Trap Vector Base Address Register 
 ### *AddressOffset*: 'h105 
@@ -75,8 +75,8 @@ The ``sie`` is the register containing supervisor interrupt enable bits.
 The ``stvec`` register holds trap vector configuration, consisting of a vector base address (BASE) and a vector mode (MODE).
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:2 | BASE |  | read-write  | The BASE field in stvec is a WARL field that can hold any valid virtual or physical address, subject to the following alignment constraints: the address must be 4\-byte aligned, and MODE settings other than Direct might impose additional alignment constraints on the value in the BASE field\.|
-| 1:0 | MODE |  | read-write  | When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field\. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
+| 31:2 | BASE |  | read-write,WARL  | The BASE field in stvec is a WARL field that can hold any valid virtual or physical address, subject to the following alignment constraints: the address must be 4\-byte aligned, and MODE settings other than Direct might impose additional alignment constraints on the value in the BASE field\.|
+| 1:0 | MODE |  | read-write,WARL  | When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field\. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
 
 ## Supervisor Counter Enable Register 
 ### *AddressOffset*: 'h106 
@@ -103,7 +103,7 @@ The ``sscratch`` register is dedicated for use by the supervisor.
 When a trap is taken into S-mode, ``sepc`` is written with the virtual address of the instruction that was interrupted or that encountered the exception. Otherwise, ``sepc`` is never written by the implementation, though it may be explicitly written by software.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:0 | SEPC | Supervisor exception program counter | read-write  | When a trap is taken into S\-mode, ``sepc`` is written with the virtual address of the instruction that was interrupted or that encountered the exception\. Otherwise, ``sepc`` is never written by the implementation, though it may be explicitly written by software\.|
+| 31:0 | SEPC | Supervisor exception program counter | read-write,WARL  | When a trap is taken into S\-mode, ``sepc`` is written with the virtual address of the instruction that was interrupted or that encountered the exception\. Otherwise, ``sepc`` is never written by the implementation, though it may be explicitly written by software\.|
 
 ## Supervisor Cause Register 
 ### *AddressOffset*: 'h142 
@@ -144,7 +144,7 @@ Supervisor cause register (``scause``) values after trap are shown in the follow
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31 | Interrupt |  | read-write  | The Interrupt bit in the ``scause`` register is set if the trap was caused by an interrupt\.|
-| 30:0 | Exception_Code | Exception code | read-write  | The Exception Code field contains a code identifying the last exception or interrupt\.|
+| 30:0 | Exception_Code | Exception code | read-write,WLRL  | The Exception Code field contains a code identifying the last exception or interrupt\.|
 
 ## Supervisor Trap Value Register 
 ### *AddressOffset*: 'h143 
@@ -152,7 +152,7 @@ Supervisor cause register (``scause``) values after trap are shown in the follow
 When a trap is taken into S-mode, ``stval`` is written with exception-specific information to assist software in handling the trap. Otherwise, ``stval`` is never written by the implementation, though it may be explicitly written by software. The hardware platform will specify which exceptions must set ``stval`` informatively and which may unconditionally set it to zero.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:0 | STVAL | Supervisor trap value | read-write  | When a trap is taken into S\-mode, ``stval`` is written with exception\-specific information to assist software in handling the trap\. Otherwise, ``stval`` is never written by the implementation, though it may be explicitly written by software\. The hardware platform will specify which exceptions must set ``stval`` informatively and which may unconditionally set it to zero\.|
+| 31:0 | STVAL | Supervisor trap value | read-write,WARL  | When a trap is taken into S\-mode, ``stval`` is written with exception\-specific information to assist software in handling the trap\. Otherwise, ``stval`` is never written by the implementation, though it may be explicitly written by software\. The hardware platform will specify which exceptions must set ``stval`` informatively and which may unconditionally set it to zero\.|
 
 ## Supervisor Interrupt Pending Register 
 ### *AddressOffset*: 'h144 
@@ -160,12 +160,12 @@ When a trap is taken into S-mode, ``stval`` is written with exception-specific i
 The ``sip`` register contains information on pending interrupts.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 9 | SEIP | Supervisor-level external interrupt pending | read-only  | SEIP is the interrupt\-pending bit for supervisor\-level external interrupts\.|
-| 8 | UEIP |  | read-write  | UEIP may be written by S\-mode software to indicate to U\-mode that an external interrupt is pending\.|
-| 5 | STIP | Supervisor-level timer interrupt pending | read-only  | SEIP is the interrupt\-pending bit for supervisor\-level timer interrupts\.|
-| 4 | UTIP |  | read-write  | A user\-level timer interrupt is pending if the UTIP bit in the sip register is set|
-| 1 | SSIP | Supervisor-level software interrupt pending | read-only  | SSIP is the interrupt\-pending bit for supervisor\-level software interrupts\.|
-| 0 | USIP |  | read-write  | A user\-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt\-pending \(USIP\) bit|
+| 9 | SEIP | Supervisor-level external interrupt pending | read-only,WARL  | SEIP is the interrupt\-pending bit for supervisor\-level external interrupts\.|
+| 8 | UEIP |  | read-write,WARL  | UEIP may be written by S\-mode software to indicate to U\-mode that an external interrupt is pending\.|
+| 5 | STIP | Supervisor-level timer interrupt pending | read-only,WARL  | SEIP is the interrupt\-pending bit for supervisor\-level timer interrupts\.|
+| 4 | UTIP |  | read-write,WARL  | A user\-level timer interrupt is pending if the UTIP bit in the sip register is set|
+| 1 | SSIP | Supervisor-level software interrupt pending | read-only,WARL  | SSIP is the interrupt\-pending bit for supervisor\-level software interrupts\.|
+| 0 | USIP |  | read-write,WARL  | A user\-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt\-pending \(USIP\) bit|
 
 ## Supervisor Address Translation and Protection Register 
 ### *AddressOffset*: 'h180 
@@ -178,9 +178,9 @@ The ``satp`` register is considered active when the effective privilege mode is 
   Writing ``satp`` does not imply any ordering constraints between page-table updates and subsequent address translations, nor does it imply any invalidation of address-translation caches. If the new address space’s page tables have been modified, or if an ASID is reused, it may be necessary to execute an SFENCE.VMA instruction after, or in some cases before, writing ``satp``.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:31 | MODE | Mode | read-write  | This bitfield selects the current address\-translation scheme\.  When MODE=Bare, supervisor virtual addresses are equal to supervisor physical addresses, and there is no additional memory protection beyond the physical memory protection scheme\.  To select MODE=Bare, software must write zero to the remaining fields of ``satp`` \(bits 30–0\)\. Attempting to select MODE=Bare with a nonzero pattern in the remaining fields has an ``unspecified`` effect on the value that the remaining fields assume and an ``unspecified`` effect on address translation and protection behavior\. // ``Enumerated Values``( "Bare" :0 ) ( "Sv32" :1 ) |
-| 30:22 | ASID | Address space identifier | read-write  | This bitfield facilitates address\-translation fences on a per\-address\-space basis\.|
-| 21:0 | PPN | Physical page number | read-write  | This bitfield holds the root page table, i\.e\., its supervisor physical address divided by 4 KiB\.|
+| 31 | MODE | Mode | read-write,WARL  | This bitfield selects the current address\-translation scheme\.  When MODE=Bare, supervisor virtual addresses are equal to supervisor physical addresses, and there is no additional memory protection beyond the physical memory protection scheme\.  To select MODE=Bare, software must write zero to the remaining fields of ``satp`` \(bits 30–0\)\. Attempting to select MODE=Bare with a nonzero pattern in the remaining fields has an ``unspecified`` effect on the value that the remaining fields assume and an ``unspecified`` effect on address translation and protection behavior\. // ``Enumerated Values``( "Bare" :0 ) ( "Sv32" :1 ) |
+| 30:22 | ASID | Address space identifier | read-write,WARL  | This bitfield facilitates address\-translation fences on a per\-address\-space basis\.|
+| 21:0 | PPN | Physical page number | read-write,WARL  | This bitfield holds the root page table, i\.e\., its supervisor physical address divided by 4 KiB\.|
 
 ## Machine Status Register 
 ### *AddressOffset*: 'h300 
@@ -189,26 +189,26 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31 | SD | State dirty | read-only  | The SD bit is a read\-only bit that summarizes whether either the FS, VS, or XS fields signal the presence of some dirty state that will require saving extended user context to memory\. If FS, XS, and VS are all read\-only zero, then SD is also always zero\.|
-| 30:23 | WPRI3 | Reserved writes preserve values, reads ignore value | read-write  | Reserved Writes Preserve Values, Reads Ignore Value|
-| 22 | TSR | Trap sret | read-write  | The TSR bit supports intercepting the supervisor exception return instruction, SRET\. When TSR=1, attempts to execute SRET while executing in S\-mode will raise an illegal instruction exception\. When TSR=0, this operation is permitted in S\-mode\.|
-| 21 | TW | Timeout wait | read-write  | The TW bit supports intercepting the WFI instruction\. When TW=0, the WFI instruction may execute in lower privilege modes when not prevented for some other reason\. When TW=1, then if WFI is executed in any less\-privileged mode, and it does not complete within an implementation\-specific, bounded time limit, the WFI instruction causes an illegal instruction exception\. The time limit may always be 0, in which case WFI always causes an illegal instruction exception in less\-privileged modes when TW=1\.|
-| 20 | TVM | Trap virtual memory | read-write  | The TVM bit supports intercepting supervisor virtual\-memory management operations\. When TVM=1, attempts to read or write the ``satp`` CSR or execute an SFENCE\.VMA or SINVAL\.VMA instruction while executing in S\-mode will raise an illegal instruction exception\. When TVM=0, these operations are permitted in S\-mode\.|
+| 30:23 | WPRI3 | Reserved writes preserve values, reads ignore value | read-write,WPRI  | Reserved Writes Preserve Values, Reads Ignore Value|
+| 22 | TSR | Trap sret | read-write,WARL  | The TSR bit supports intercepting the supervisor exception return instruction, SRET\. When TSR=1, attempts to execute SRET while executing in S\-mode will raise an illegal instruction exception\. When TSR=0, this operation is permitted in S\-mode\.|
+| 21 | TW | Timeout wait | read-write,WARL  | The TW bit supports intercepting the WFI instruction\. When TW=0, the WFI instruction may execute in lower privilege modes when not prevented for some other reason\. When TW=1, then if WFI is executed in any less\-privileged mode, and it does not complete within an implementation\-specific, bounded time limit, the WFI instruction causes an illegal instruction exception\. The time limit may always be 0, in which case WFI always causes an illegal instruction exception in less\-privileged modes when TW=1\.|
+| 20 | TVM | Trap virtual memory | read-write,WARL  | The TVM bit supports intercepting supervisor virtual\-memory management operations\. When TVM=1, attempts to read or write the ``satp`` CSR or execute an SFENCE\.VMA or SINVAL\.VMA instruction while executing in S\-mode will raise an illegal instruction exception\. When TVM=0, these operations are permitted in S\-mode\.|
 | 19 | MXR | Make executable readable | read-write  | The MXR bit modifies the privilege with which loads access virtual memory\. When MXR=0, only loads from pages marked readable will succeed\. When MXR=1, loads from pages marked either readable or executable \(R=1 or X=1\) will succeed\. MXR has no effect when page\-based virtual memory is not in effect\.|
 | 18 | SUM | Supervisor user memory | read-write  | The SUM \(permit Supervisor User Memory access\) bit modifies the privilege with which S\-mode loads and stores access virtual memory\. When SUM=0, S\-mode memory accesses to pages that are accessible by U\-mode will fault\. When SUM=1, these accesses are permitted\. SUM has no effect when page\-based virtual memory is not in effect\. Note that, while SUM is ordinarily ignored when not executing in S\-mode, it is in effect when MPRV=1 and MPP=S\.|
 | 17 | MPRV | Modify privilege | read-write  | The MPRV \(Modify PRiVilege\) bit modifies the effective privilege mode, i\.e\., the privilege level at which loads and stores execute\. When MPRV=0, loads and stores behave as normal, using the translation and protection mechanisms of the current privilege mode\. When MPRV=1, load and store memory addresses are translated and protected, and endianness is applied, as though the current privilege mode were set to MPP\. Instruction address\-translation and protection are unaffected by the setting of MPRV\.|
 | 16:15 | XS | Extension state | read-only  | The XS field is used to reduce the cost of context save and restore by setting and tracking the current state of the user\-mode extensions\. The XS field encodes the status of the additional user\-mode extensions and associated state\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
-| 14:13 | FS | Floating-point unit state | read-write  | The FS field is used to reduce the cost of context save and restore by setting and tracking the current state of the floating\-point unit\. The FS field encodes the status of the floating\-point unit state, including the floating\-point registers ``f0–f31`` and the CSRs ``fcsr``, ``frm``, and ``fflags``\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
+| 14:13 | FS | Floating-point unit state | read-write,WARL  | The FS field is used to reduce the cost of context save and restore by setting and tracking the current state of the floating\-point unit\. The FS field encodes the status of the floating\-point unit state, including the floating\-point registers ``f0–f31`` and the CSRs ``fcsr``, ``frm``, and ``fflags``\.  This field can be checked by a context switch routine to quickly determine whether a state save or restore is required\. If a save or restore is required, additional instructions and CSRs are typically required to effect and optimize the process\. // ``Enumerated Values``( "Off" :0 ) ( "Initial" :1 ) ( "Clean" :2 ) ( "Dirty" :3 ) |
 | 12:11 | MPP | Machine mode prior privilege | read-write  | Holds the previous privilege mode for machine mode\.|
-| 10:9 | VS | Vector extension state | read-only  | V extension is not supported VS=0\.|
+| 10:9 | VS | Vector extension state | read-only,WARL  | V extension is not supported VS=0\.|
 | 8 | SPP | Supervisor mode prior privilege | read-write  | Holds the previous privilege mode for supervisor mode\.|
 | 7 | MPIE | Machine mode prior interrupt enable | read-write  | Indicates whether machine interrupts were enabled prior to trapping into machine mode\.|
-| 6 | UBE | User breakpoint enable | read-write  | UBE controls whether explicit load and store memory accesses made from U\-mode are little\-endian \(UBE=0\) or big\-endian \(UBE=1\)\.|
+| 6 | UBE | User breakpoint enable | read-write,WARL  | UBE controls whether explicit load and store memory accesses made from U\-mode are little\-endian \(UBE=0\) or big\-endian \(UBE=1\)\.|
 | 5 | SPIE | Supervisor mode prior interrupt enable | read-write  | Indicates whether supervisor interrupts were enabled prior to trapping into supervisor mode\.|
-| 4 | WPRI2 | Reserved writes preserve values, reads ignore value | read-write  | Reserved Writes Preserve Values, Reads Ignore Value|
+| 4 | WPRI2 | Reserved writes preserve values, reads ignore value | read-write,WPRI  | Reserved Writes Preserve Values, Reads Ignore Value|
 | 3 | MIE | Machine mode interrupt enable | read-write  | Global interrupt\-enable bit for Machine mode\.|
-| 2 | WPRI1 | Reserved writes preserve values, reads ignore value | read-write  | Reserved Writes Preserve Values, Reads Ignore Value|
+| 2 | WPRI1 | Reserved writes preserve values, reads ignore value | read-write,WPRI  | Reserved Writes Preserve Values, Reads Ignore Value|
 | 1 | SIE | Supervisor mode interrupt enable | read-write  | Global interrupt\-enable bit for Supervisor mode\.|
-| 0 | WPRI0 | Reserved writes preserve values, reads ignore value | read-write  | Reserved Writes Preserve Values, Reads Ignore Value|
+| 0 | WPRI0 | Reserved writes preserve values, reads ignore value | read-write,WPRI  | Reserved Writes Preserve Values, Reads Ignore Value|
 
 ## Machine ISA Register 
 ### *AddressOffset*: 'h301 
@@ -216,8 +216,8 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
 The misa CSR is reporting the ISA supported by the hart.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:30 | MXL | Machine xlen | read-write  | The MXL field encodes the native base integer ISA width\. // ``Enumerated Values``( "XLEN_32" :1 ) ( "XLEN_64" :2 ) ( "XLEN_128" :3 ) |
-| 25:0 | Extensions | Extensions | read-write  | The Extensions field encodes the presence of the standard extensions, with a single bit per letter of the alphabet\. // ``Enumerated Values``( "A" :1 ) ( "B" :2 ) ( "C" :4 ) ( "D" :8 ) ( "E" :16 ) ( "F" :32 ) ( "G" :64 ) ( "H" :128 ) ( "I" :256 ) ( "J" :512 ) ( "K" :1024 ) ( "L" :2048 ) ( "M" :4096 ) ( "N" :8192 ) ( "O" :16384 ) ( "P" :32768 ) ( "Q" :65536 ) ( "R" :131072 ) ( "S" :262144 ) ( "T" :524288 ) ( "U" :1048576 ) ( "V" :2097152 ) ( "W" :4194304 ) ( "X" :8388608 ) ( "Y" :16777216 ) ( "Z" :33554432 ) |
+| 31:30 | MXL | Machine xlen | read-write,WARL  | The MXL field encodes the native base integer ISA width\. // ``Enumerated Values``( "XLEN_32" :1 ) ( "XLEN_64" :2 ) ( "XLEN_128" :3 ) |
+| 25:0 | Extensions | Extensions | read-write,WARL  | The Extensions field encodes the presence of the standard extensions, with a single bit per letter of the alphabet\. // ``Enumerated Values``( "A" :1 ) ( "B" :2 ) ( "C" :4 ) ( "D" :8 ) ( "E" :16 ) ( "F" :32 ) ( "G" :64 ) ( "H" :128 ) ( "I" :256 ) ( "J" :512 ) ( "K" :1024 ) ( "L" :2048 ) ( "M" :4096 ) ( "N" :8192 ) ( "O" :16384 ) ( "P" :32768 ) ( "Q" :65536 ) ( "R" :131072 ) ( "S" :262144 ) ( "T" :524288 ) ( "U" :1048576 ) ( "V" :2097152 ) ( "W" :4194304 ) ( "X" :8388608 ) ( "Y" :16777216 ) ( "Z" :33554432 ) |
 
 ## Machine Exception Delegation Register 
 ### *AddressOffset*: 'h302 
@@ -225,7 +225,7 @@ The misa CSR is reporting the ISA supported by the hart.
 Provides individual read/write bits to indicate that certain exceptions should be processed directly by a lower privilege level.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:0 | Synchronous_Exceptions | Synchronous exceptions | read-write  | Provides individual read/write bits to indicate that certain exceptions should be processed directly by a lower privilege level\.|
+| 31:0 | Synchronous_Exceptions | Synchronous exceptions | read-write,WARL  | Provides individual read/write bits to indicate that certain exceptions should be processed directly by a lower privilege level\.|
 
 ## Machine Interrupt Delegation Register 
 ### *AddressOffset*: 'h303 
@@ -241,15 +241,15 @@ Provides individual read/write bits to indicate that certain interrupts should b
 This register contains machine interrupt enable bits.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 11 | MEIE | M-mode external interrupt enable | read-write  | Enables machine mode external interrupts\.|
-| 9 | SEIE | S-mode external interrupt enable | read-write  | Enables supervisor mode external interrupts\.|
-| 8 | UEIE |  | read-write  | enables U\-mode external interrupts|
-| 7 | MTIE | M-mode timer interrupt enable | read-write  | Enables machine mode timer interrupts\.|
-| 5 | STIE | S-mode timer interrupt enable | read-write  | Enables supervisor mode timer interrupts\.|
-| 4 | UTIE |  | read-write  | timer interrupt\-enable bit for U\-mode|
+| 11 | MEIE | M-mode external interrupt enable | read-write,WARL  | Enables machine mode external interrupts\.|
+| 9 | SEIE | S-mode external interrupt enable | read-write,WARL  | Enables supervisor mode external interrupts\.|
+| 8 | UEIE |  | read-write,WARL  | enables U\-mode external interrupts|
+| 7 | MTIE | M-mode timer interrupt enable | read-write,WARL  | Enables machine mode timer interrupts\.|
+| 5 | STIE | S-mode timer interrupt enable | read-write,WARL  | Enables supervisor mode timer interrupts\.|
+| 4 | UTIE |  | read-write,WARL  | timer interrupt\-enable bit for U\-mode|
 | 3 | MSIE | M-mode software interrupt enable | read-write  | Enables machine mode software interrupts\.|
-| 1 | SSIE | S-mode software interrupt enable | read-write  | Enables supervisor mode software interrupts\.|
-| 0 | USIE |  | read-write  | enable U\-mode software interrrupts|
+| 1 | SSIE | S-mode software interrupt enable | read-write,WARL  | Enables supervisor mode software interrupts\.|
+| 0 | USIE |  | read-write,WARL  | enable U\-mode software interrrupts|
 
 ## Machine Trap Vector Register 
 ### *AddressOffset*: 'h305 
@@ -257,8 +257,8 @@ This register contains machine interrupt enable bits.
 This register holds trap vector configuration, consisting of a vector base address and a vector mode.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:2 | BASE |  | read-write  | Holds the vector base address\. The value in the BASE field must always be aligned on a 4\-byte boundary\.|
-| 1:0 | MODE |  | read-write  | Imposes additional alignment constraints on the value in the BASE field\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
+| 31:2 | BASE |  | read-write,WARL  | Holds the vector base address\. The value in the BASE field must always be aligned on a 4\-byte boundary\.|
+| 1:0 | MODE |  | read-write,WARL  | Imposes additional alignment constraints on the value in the BASE field\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
 
 ## Machine Counter Enable Register 
 ### *AddressOffset*: 'h306 
@@ -266,7 +266,7 @@ This register holds trap vector configuration, consisting of a vector base addre
 This register controls the availability of the hardware performance-monitoring counters to the next-lowest privileged mode.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:3 | HPMn | Hpmcountern | read-write  | When HPMn is clear, attempts to read the ``hpmcountern`` register while executing in S\-mode or U\-mode will cause an illegal instruction exception\. When this bit is set, access to the corresponding register is permitted in the next implemented privilege mode\.|
+| 31:3 | HPMn | Hpmcountern | read-write,WARL  | When HPMn is clear, attempts to read the ``hpmcountern`` register while executing in S\-mode or U\-mode will cause an illegal instruction exception\. When this bit is set, access to the corresponding register is permitted in the next implemented privilege mode\.|
 | 2 | IR | Instret | read-write  | When IR is clear, attempts to read the ``instret`` register while executing in S\-mode or U\-mode will cause an illegal instruction exception\. When this bit is set, access to the corresponding register is permitted in the next implemented privilege mode\.|
 | 1 | TM | Time | read-write  | When TM is clear, attempts to read the ``time`` register while executing in S\-mode or U\-mode will cause an illegal instruction exception\. When this bit is set, access to the corresponding register is permitted in the next implemented privilege mode\.|
 | 0 | CY | Cycle | read-write  | When CY is clear, attempts to read the ``cycle`` register while executing in S\-mode or U\-mode will cause an illegal instruction exception\. When this bit is set, access to the corresponding register is permitted in the next implemented privilege mode\.|
@@ -277,7 +277,7 @@ This register controls the availability of the hardware performance-monitoring c
 This register controls which event causes the corresponding counter to increment.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 4:0 | mhpmevent |  | read-write  | This register controls which event causes the corresponding counter to increment\.|
+| 4:0 | mhpmevent |  | read-write,WARL  | This register controls which event causes the corresponding counter to increment\.|
 
 ## Machine Scratch Register 
 ### *AddressOffset*: 'h340 
@@ -293,7 +293,7 @@ This register is used to hold a value dedicated to Machine mode. Attempts to acc
 This register must be able to hold all valid virtual addresses.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:0 | mepc | Machine exception program counter | read-write  | This register must be able to hold all valid virtual addresses\.|
+| 31:0 | mepc | Machine exception program counter | read-write,WARL  | This register must be able to hold all valid virtual addresses\.|
 
 ## Machine Cause Register 
 ### *AddressOffset*: 'h342 
@@ -334,7 +334,7 @@ Machine cause register (``mcause``) values after trap are shown in the following
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31 | Interrupt | Interrupt | read-write  | This bit is set if the trap was caused by an interrupt\.|
-| 30:0 | exception_code | Exception code | read-write  | This field contains a code identifying the last exception or interrupt\.|
+| 30:0 | exception_code | Exception code | read-write,WLRL  | This field contains a code identifying the last exception or interrupt\.|
 
 ## Machine Trap Value Register 
 ### *AddressOffset*: 'h343 
@@ -342,7 +342,7 @@ Machine cause register (``mcause``) values after trap are shown in the following
 When a trap is taken into M-mode, mtval is either set to zero or written with exception-specific information to assist software in handling the trap.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:0 | mtval | Machine trap value | read-write  | When a trap is taken into M\-mode, mtval is either set to zero or written with exception\-specific information to assist software in handling the trap\.|
+| 31:0 | mtval | Machine trap value | read-write,WARL  | When a trap is taken into M\-mode, mtval is either set to zero or written with exception\-specific information to assist software in handling the trap\.|
 
 ## Machine Interrupt Pending Register 
 ### *AddressOffset*: 'h344 
@@ -410,7 +410,7 @@ Holds configuration 12-15.
 Address register for Physical Memory Protection.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
-| 31:0 | address | Address | read-write  | Address register for Physical Memory Protection\.|
+| 31:0 | address | Address | read-write,WARL  | Address register for Physical Memory Protection\.|
 
 ## Instuction Cache Register 
 ### *AddressOffset*: 'h7C0 
@@ -443,7 +443,7 @@ Trigger-specific data.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31:28 | type | Type | read-write  | Type of trigger\. // ``Enumerated Values``( "no_trigger" :0 ) ( "legacy_address_match_trigger" :1 ) ( "address_data_match_trigger" :2 ) ( "instruction_count_trigger" :3 ) ( "interrupt_trigger" :4 ) ( "exception_trigger" :5 ) ( "Reserved_6" :6 ) ( "Reserved_7" :7 ) ( "Reserved_8" :8 ) ( "Reserved_9" :9 ) ( "Reserved_10" :10 ) ( "Reserved_11" :11 ) ( "Reserved_12" :12 ) ( "Reserved_13" :13 ) ( "Reserved_14" :14 ) ( "trigger_exists" :15 ) |
-| 27:27 | dmode | Debug mode | read-write  | This bit is only writable from Debug Mode\. // ``Enumerated Values``( "D_and_M_mode" :0 ) ( "M_mode_only" :1 ) |
+| 27 | dmode | Debug mode | read-write  | This bit is only writable from Debug Mode\. // ``Enumerated Values``( "D_and_M_mode" :0 ) ( "M_mode_only" :1 ) |
 | 26:0 | data | Data | read-write  | Trigger\-specific data\.|
 
 ## Trigger Data 2 Register 
@@ -477,14 +477,14 @@ Debug ontrol and status register.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31:28 | xdebugver | Debug version | read-only  | Shows the version of the debug support\. // ``Enumerated Values``( "no_ext_debug" :0 ) ( "ext_debug_spec" :4 ) ( "ext_debug_no_spec" :15 ) |
-| 15:15 | ebreakm | Environment breakpoint m-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in machine mode\. // ``Enumerated Values``( "break_as_spec" :0 ) ( "break_to_debug" :1 ) |
-| 13:13 | ebreaks | Environment breakpoint s-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in supervisor mode\. // ``Enumerated Values``( "break_as_spec" :0 ) ( "break_to_debug" :1 ) |
-| 12:12 | ebreaku | Environment breakpoint u-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in user mode\. // ``Enumerated Values``( "break_as_spec" :0 ) ( "break_to_debug" :1 ) |
-| 11:11 | stepie | Stepping interrupt enable | read-write  | Enables/disables interrupts for single stepping\.  The debugger must not change the value of this bit while the hart is running\. // ``Enumerated Values``( "disabled" :0 ) ( "enabled" :1 ) |
-| 10:10 | stopcount | Stop counters | read-write  | Starts/stops incrementing counters in debug mode\. // ``Enumerated Values``( "increment_counters" :0 ) ( "dont_increment_counters" :1 ) |
-| 9:9 | stoptime | Stop timers | read-write  | Starts/stops incrementing timers in debug mode\. // ``Enumerated Values``( "increment_timers" :0 ) ( "dont_increment_timers" :1 ) |
+| 15 | ebreakm | Environment breakpoint m-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in machine mode\. // ``Enumerated Values``( "break_as_spec" :0 ) ( "break_to_debug" :1 ) |
+| 13 | ebreaks | Environment breakpoint s-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in supervisor mode\. // ``Enumerated Values``( "break_as_spec" :0 ) ( "break_to_debug" :1 ) |
+| 12 | ebreaku | Environment breakpoint u-mode | read-write  | Shows the behvior of the ``ebreak`` instruction in user mode\. // ``Enumerated Values``( "break_as_spec" :0 ) ( "break_to_debug" :1 ) |
+| 11 | stepie | Stepping interrupt enable | read-write,WARL  | Enables/disables interrupts for single stepping\.  The debugger must not change the value of this bit while the hart is running\. // ``Enumerated Values``( "disabled" :0 ) ( "enabled" :1 ) |
+| 10 | stopcount | Stop counters | read-write,WARL  | Starts/stops incrementing counters in debug mode\. // ``Enumerated Values``( "increment_counters" :0 ) ( "dont_increment_counters" :1 ) |
+| 9 | stoptime | Stop timers | read-write,WARL  | Starts/stops incrementing timers in debug mode\. // ``Enumerated Values``( "increment_timers" :0 ) ( "dont_increment_timers" :1 ) |
 | 8:6 | cause | Cause | read-write  | Explains why Debug Mode was entered\.  When there are multiple reasons to enter Debug Mode in a single cycle, hardware sets ``cause`` to the cause with the highest priority\. // ``Enumerated Values``( "ebreak_instruction" :1 ) ( "trigger_module" :2 ) ( "debugger_request" :3 ) ( "single_step" :4 ) ( "reset_halt" :5 ) |
-| 4:4 | mprven | Modify privilege enable | read-write  | Enables/disables the modify privilege setting in debug mode\. // ``Enumerated Values``( "disable_mprv" :0 ) ( "enable_mprv" :1 ) |
+| 4 | mprven | Modify privilege enable | read-write,WARL  | Enables/disables the modify privilege setting in debug mode\. // ``Enumerated Values``( "disable_mprv" :0 ) ( "enable_mprv" :1 ) |
 | 3 | nmip | Non-maskable interrupt pending | read-only  | When set, there is a Non\-Maskable\-Interrupt \(NMI\) pending for the hart\.|
 | 2 | step | Step | read-write  | When set and not in Debug Mode, the hart will only execute a single instruction and then enter Debug Mode\. If the instruction does not complete due to an exception, the hart will immediately enter Debug Mode before executing the trap handler, with appropriate exception registers set\. The debugger must not change the value of this bit while the hart is running\.|
 | 1:0 | prv | Privilege level | read-write  | Contains the privilege level the hart was operating in when Debug Mode was entered\. A debugger can change this value to change the hart’s privilege level when exiting Debug Mode\. // ``Enumerated Values``( "User" :0 ) ( "Supervisor" :1 ) ( "Machine" :3 ) |
