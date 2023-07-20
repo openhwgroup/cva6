@@ -16,10 +16,10 @@
 `include "axi/assign.svh"
 
 module ariane_testharness #(
-  // Pipeline
-  parameter int unsigned NrCommitPorts = cva6_config_pkg::CVA6ConfigNrCommitPorts,
-  // RVFI
-  parameter int unsigned IsRVFI = cva6_config_pkg::CVA6ConfigRvfiTrace,
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
+    int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
+    int'(cva6_config_pkg::CVA6ConfigRvfiTrace)       // IsRVFI
+  },
   parameter type rvfi_instr_t = struct packed {
     logic [ariane_pkg::NRET-1:0]                  valid;
     logic [ariane_pkg::NRET*64-1:0]               order;
@@ -634,11 +634,10 @@ module ariane_testharness #(
   // ---------------
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
-  rvfi_instr_t [NrCommitPorts-1:0] rvfi;
+  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi;
 
   ariane #(
-    .NrCommitPorts        ( NrCommitPorts       ),
-    .IsRVFI               ( IsRVFI              ),
+    .CVA6Cfg              ( CVA6Cfg             ),
     .rvfi_instr_t         ( rvfi_instr_t        ),
     .ArianeCfg            ( ariane_soc::ArianeSocCfg )
   ) i_ariane (
@@ -681,7 +680,7 @@ module ariane_testharness #(
   end
 
   rvfi_tracer  #(
-    .NrCommitPorts(NrCommitPorts),
+    .CVA6Cfg(CVA6Cfg),
     .rvfi_instr_t(rvfi_instr_t),
     //
     .HART_ID(hart_id),

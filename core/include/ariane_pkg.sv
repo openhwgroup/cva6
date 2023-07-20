@@ -40,8 +40,8 @@ package ariane_pkg;
     } cva6_cfg_t;
 
     localparam cva6_cfg_t cva6_cfg_empty = {
-      unsigned'(0),
-      unsigned'(0)
+      unsigned'(0),  // NrCommitPorts
+      unsigned'(0)   // IsRVFI
     };
 
     localparam NrMaxRules = 16;
