@@ -35,9 +35,8 @@ import "DPI-C" function byte get_section(output longint address, output longint 
 import "DPI-C" context function void read_section(input longint address, inout byte buffer[]);
 
 module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
-  // RVFI
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
-  parameter int unsigned NrCommitPorts = 0,
   //
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_USER_EN       = 0,
@@ -49,7 +48,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   input  logic                         rst_ni,
   input  logic [XLEN-1:0]              boot_addr_i,
   output logic [31:0]                  tb_exit_o,
-  output rvfi_instr_t [NrCommitPorts-1:0] rvfi_o,
+  output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
   uvma_axi_intf                        axi_slave,
@@ -62,13 +61,11 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
   string binary = "";
 
-  rvfi_instr_t [NrCommitPorts-1:0]  rvfi;
+  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi;
   assign rvfi_o = rvfi;
 
   cva6 #(
-     // RVFI
-     .rvfi_instr_t ( rvfi_instr_t ),
-     .NrCommitPorts ( NrCommitPorts ),
+     .CVA6Cfg ( CVA6Cfg ),
      //
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
   ) i_cva6 (
@@ -92,7 +89,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   //----------------------------------------------------------------------------
 
   rvfi_tracer  #(
-    .NrCommitPorts(NrCommitPorts),
+    .CVA6Cfg(CVA6Cfg),
     .rvfi_instr_t(rvfi_instr_t),
     //
     .HART_ID(8'h0),

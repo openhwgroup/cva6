@@ -22,11 +22,10 @@
 
 
 interface uvmt_rvfi_if #(
-                    // RVFI
-                    parameter type rvfi_instr_t = logic,
-                    parameter int unsigned NrCommitPorts = 0
+                    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+                    parameter type rvfi_instr_t = logic
 ) (
-                    output rvfi_instr_t [NrCommitPorts-1:0] rvfi_o,
+                    output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
                     output logic[31:0] tb_exit_o
                                  );
 
