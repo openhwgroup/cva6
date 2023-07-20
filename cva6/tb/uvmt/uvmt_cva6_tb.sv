@@ -30,35 +30,36 @@ module uvmt_cva6_tb;
    import uvmt_cva6_pkg::*;
    import uvme_cva6_pkg::*;
 
-   // cva6 Configuration
-   // RVFI
-   localparam int unsigned ILEN = 32;
-   localparam int unsigned NRET = 1;
-   typedef struct packed {
-     logic [NRET-1:0]                 valid;
-     logic [NRET*64-1:0]              order;
-     logic [NRET*ILEN-1:0]            insn;
-     logic [NRET-1:0]                 trap;
-     logic [NRET*riscv::XLEN-1:0]     cause;
-     logic [NRET-1:0]                 halt;
-     logic [NRET-1:0]                 intr;
-     logic [NRET*2-1:0]               mode;
-     logic [NRET*2-1:0]               ixl;
-     logic [NRET*5-1:0]               rs1_addr;
-     logic [NRET*5-1:0]               rs2_addr;
-     logic [NRET*riscv::XLEN-1:0]     rs1_rdata;
-     logic [NRET*riscv::XLEN-1:0]     rs2_rdata;
-     logic [NRET*5-1:0]               rd_addr;
-     logic [NRET*riscv::XLEN-1:0]     rd_wdata;
-     logic [NRET*riscv::XLEN-1:0]     pc_rdata;
-     logic [NRET*riscv::XLEN-1:0]     pc_wdata;
-     logic [NRET*riscv::VLEN-1:0]     mem_addr;
-     logic [NRET*riscv::PLEN-1:0]     mem_paddr;
-     logic [NRET*(riscv::XLEN/8)-1:0] mem_rmask;
-     logic [NRET*(riscv::XLEN/8)-1:0] mem_wmask;
-     logic [NRET*riscv::XLEN-1:0]     mem_rdata;
-     logic [NRET*riscv::XLEN-1:0]     mem_wdata; } rvfi_instr_t;
-   localparam int unsigned NrCommitPorts = cva6_config_pkg::CVA6ConfigNrCommitPorts;
+   // cva6 configuration
+   localparam ariane_pkg::cva6_cfg_t CVA6Cfg = {
+     int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),
+     int'(cva6_config_pkg::CVA6ConfigRvfiTrace)
+   };
+   localparam type rvfi_instr_t = struct packed {
+     logic [ariane_pkg::NRET-1:0]                  valid;
+     logic [ariane_pkg::NRET*64-1:0]               order;
+     logic [ariane_pkg::NRET*ariane_pkg::ILEN-1:0] insn;
+     logic [ariane_pkg::NRET-1:0]                  trap;
+     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      cause;
+     logic [ariane_pkg::NRET-1:0]                  halt;
+     logic [ariane_pkg::NRET-1:0]                  intr;
+     logic [ariane_pkg::NRET*2-1:0]                mode;
+     logic [ariane_pkg::NRET*2-1:0]                ixl;
+     logic [ariane_pkg::NRET*5-1:0]                rs1_addr;
+     logic [ariane_pkg::NRET*5-1:0]                rs2_addr;
+     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
+     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
+     logic [ariane_pkg::NRET*5-1:0]                rd_addr;
+     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
+     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
+     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
+     logic [ariane_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
+     logic [ariane_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
+     logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
+     logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
+     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
+     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+   };
 
    localparam AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH;
    localparam AXI_USER_EN       = ariane_pkg::AXI_USER_EN;
@@ -106,7 +107,7 @@ module uvmt_cva6_tb;
    uvmt_rvfi_if #(
      // RVFI
      .rvfi_instr_t      ( rvfi_instr_t ),
-     .NrCommitPorts     ( NrCommitPorts )
+     .CVA6Cfg           ( CVA6Cfg      )
    ) rvfi_if(
                                                  .rvfi_o(),
                                                  .tb_exit_o()
@@ -117,9 +118,8 @@ module uvmt_cva6_tb;
    */
 
    uvmt_cva6_dut_wrap #(
-     // RVFI
-     .rvfi_instr_t      ( rvfi_instr_t ),
-     .NrCommitPorts     ( NrCommitPorts ),
+     .CVA6Cfg           ( CVA6Cfg       ),
+     .rvfi_instr_t      ( rvfi_instr_t  ),
      //
      .AXI_USER_WIDTH    (AXI_USER_WIDTH),
      .AXI_USER_EN       (AXI_USER_EN),

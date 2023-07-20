@@ -15,9 +15,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 module uvmt_cva6_dut_wrap # (
-  // RVFI
+  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
-  parameter int unsigned NrCommitPorts = 0,
   //
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_USER_EN       = 0,
@@ -33,15 +32,14 @@ module uvmt_cva6_dut_wrap # (
                             uvmt_axi_switch_intf                axi_switch_vif,
                             uvme_cva6_core_cntrl_if             core_cntrl_if,
                             output logic[31:0]                  tb_exit_o,
-                            output rvfi_instr_t [NrCommitPorts-1:0] rvfi_o
+                            output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o
                            );
 
 
 
     cva6_tb_wrapper #(
-     // RVFI
+     .CVA6Cfg ( CVA6Cfg ),
      .rvfi_instr_t ( rvfi_instr_t ),
-     .NrCommitPorts ( NrCommitPorts ),
      //
      .AXI_USER_WIDTH    (AXI_USER_WIDTH),
      .AXI_USER_EN       (AXI_USER_EN),
