@@ -156,8 +156,8 @@ module ariane_xilinx (
 
 // cva6 configuration
 parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
-  int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),
-  int'(0)
+  int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
+  int'(0)                                          // IsRVFI
 };
 localparam type rvfi_instr_t = logic;
 

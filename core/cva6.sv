@@ -15,8 +15,8 @@
 
 module cva6 import ariane_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
-    int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),
-    int'(cva6_config_pkg::CVA6ConfigRvfiTrace)
+    int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
+    int'(cva6_config_pkg::CVA6ConfigRvfiTrace)       // IsRVFI
   },
   parameter type rvfi_instr_t = struct packed {
     logic [ariane_pkg::NRET-1:0]                  valid;
