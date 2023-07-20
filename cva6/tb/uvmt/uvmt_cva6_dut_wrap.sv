@@ -18,10 +18,7 @@ module uvmt_cva6_dut_wrap # (
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
   //
-  parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_USER_EN       = 0,
-  parameter int unsigned AXI_ADDRESS_WIDTH = 64,
-  parameter int unsigned AXI_DATA_WIDTH    = 64,
   parameter int unsigned NUM_WORDS         = 2**25
 )
 
@@ -41,10 +38,7 @@ module uvmt_cva6_dut_wrap # (
      .CVA6Cfg ( CVA6Cfg ),
      .rvfi_instr_t ( rvfi_instr_t ),
      //
-     .AXI_USER_WIDTH    (AXI_USER_WIDTH),
      .AXI_USER_EN       (AXI_USER_EN),
-     .AXI_ADDRESS_WIDTH (AXI_ADDRESS_WIDTH),
-     .AXI_DATA_WIDTH    (AXI_DATA_WIDTH),
      .NUM_WORDS         (NUM_WORDS)
 )
     cva6_tb_wrapper_i        (

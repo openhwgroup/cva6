@@ -38,10 +38,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
   //
-  parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_USER_EN       = 0,
-  parameter int unsigned AXI_ADDRESS_WIDTH = 64,
-  parameter int unsigned AXI_DATA_WIDTH    = 64,
   parameter int unsigned NUM_WORDS         = 2**25
 ) (
   input  logic                         clk_i,
@@ -108,12 +105,12 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
   logic                         req;
   logic                         we;
-  logic [AXI_ADDRESS_WIDTH-1:0] addr;
-  logic [AXI_DATA_WIDTH/8-1:0]  be;
-  logic [AXI_DATA_WIDTH-1:0]    wdata;
-  logic [AXI_USER_WIDTH-1:0]    wuser;
-  logic [AXI_DATA_WIDTH-1:0]    rdata;
-  logic [AXI_USER_WIDTH-1:0]    ruser;
+  logic [CVA6Cfg.AxiAddrWidth-1:0] addr;
+  logic [CVA6Cfg.AxiDataWidth/8-1:0]  be;
+  logic [CVA6Cfg.AxiDataWidth-1:0]    wdata;
+  logic [CVA6Cfg.AxiUserWidth-1:0]    wuser;
+  logic [CVA6Cfg.AxiDataWidth-1:0]    rdata;
+  logic [CVA6Cfg.AxiUserWidth-1:0]    ruser;
 
   //Response structs
    assign axi_ariane_resp.aw_ready = (axi_switch_vif.active) ? axi_slave.aw_ready : cva6_axi_bus.aw_ready;
@@ -186,10 +183,10 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_ADDR_WIDTH ( CVA6Cfg.AxiAddrWidth     ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.AxiDataWidth     ),
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_USER_WIDTH ( CVA6Cfg.AxiUserWidth     )
   ) cva6_axi_bus();
 
   axi_master_connect #(
@@ -201,9 +198,9 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
   axi2mem #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_ADDR_WIDTH ( CVA6Cfg.AxiAddrWidth     ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.AxiDataWidth     ),
+    .AXI_USER_WIDTH ( CVA6Cfg.AxiUserWidth     )
   ) i_cva6_axi2mem (
     .clk_i  ( clk_i       ),
     .rst_ni ( rst_ni      ),
@@ -219,8 +216,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   );
 
   sram #(
-    .USER_WIDTH ( AXI_USER_WIDTH ),
-    .DATA_WIDTH ( AXI_DATA_WIDTH ),
+    .USER_WIDTH ( CVA6Cfg.AxiUserWidth ),
+    .DATA_WIDTH ( CVA6Cfg.AxiDataWidth ),
     .USER_EN    ( AXI_USER_EN    ),
     .SIM_INIT   ( "zeros"        ),
     .NUM_WORDS  ( NUM_WORDS      )
@@ -229,7 +226,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .rst_ni     ( rst_ni                                                                      ),
     .req_i      ( req                                                                         ),
     .we_i       ( we                                                                          ),
-    .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(AXI_DATA_WIDTH/8):$clog2(AXI_DATA_WIDTH/8)] ),
+    .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(CVA6Cfg.AxiDataWidth/8):$clog2(CVA6Cfg.AxiDataWidth/8)] ),
     .wuser_i    ( wuser                                                                       ),
     .wdata_i    ( wdata                                                                       ),
     .be_i       ( be                                                                          ),

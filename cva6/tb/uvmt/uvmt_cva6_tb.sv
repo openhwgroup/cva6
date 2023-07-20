@@ -32,8 +32,12 @@ module uvmt_cva6_tb;
 
    // cva6 configuration
    localparam ariane_pkg::cva6_cfg_t CVA6Cfg = {
-     int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),
-     int'(cva6_config_pkg::CVA6ConfigRvfiTrace)
+     int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
+     int'(cva6_config_pkg::CVA6ConfigRvfiTrace),      // IsRVFI
+     int'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
+     int'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
+     int'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
+     int'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // AxiUserWidth
    };
    localparam type rvfi_instr_t = struct packed {
      logic [ariane_pkg::NRET-1:0]                  valid;
@@ -61,10 +65,7 @@ module uvmt_cva6_tb;
      logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
    };
 
-   localparam AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH;
    localparam AXI_USER_EN       = ariane_pkg::AXI_USER_EN;
-   localparam AXI_ADDRESS_WIDTH = 64;
-   localparam AXI_DATA_WIDTH    = 64;
    localparam NUM_WORDS         = 2**24;
 
    // ENV (testbench) parameters
@@ -121,10 +122,7 @@ module uvmt_cva6_tb;
      .CVA6Cfg           ( CVA6Cfg       ),
      .rvfi_instr_t      ( rvfi_instr_t  ),
      //
-     .AXI_USER_WIDTH    (AXI_USER_WIDTH),
      .AXI_USER_EN       (AXI_USER_EN),
-     .AXI_ADDRESS_WIDTH (AXI_ADDRESS_WIDTH),
-     .AXI_DATA_WIDTH    (AXI_DATA_WIDTH),
      .NUM_WORDS         (NUM_WORDS)
    ) cva6_dut_wrap (
                     .clknrst_if(clknrst_if),
