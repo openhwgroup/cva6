@@ -77,8 +77,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .rvfi_o               ( rvfi                      ),
     .cvxif_req_o          ( cvxif_req                 ),
     .cvxif_resp_i         ( cvxif_resp                ),
-    .axi_req_o            ( axi_ariane_req            ),
-    .axi_resp_i           ( axi_ariane_resp           )
+    .noc_req_o            ( axi_ariane_req            ),
+    .noc_resp_i           ( axi_ariane_resp           )
   );
 
   //----------------------------------------------------------------------------
