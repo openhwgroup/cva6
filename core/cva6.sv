@@ -114,6 +114,8 @@ module cva6 import ariane_pkg::*; #(
   },
   //
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  parameter type      acc_cfg_t = logic,
+  parameter acc_cfg_t AccCfg    = '0,
   parameter type cvxif_req_t  = cvxif_pkg::cvxif_req_t,
   parameter type cvxif_resp_t = cvxif_pkg::cvxif_resp_t
 ) (
@@ -925,6 +927,8 @@ module cva6 import ariane_pkg::*; #(
 
   if (ENABLE_ACCELERATOR) begin: gen_accelerator
     acc_dispatcher #(
+      .acc_cfg_t  ( acc_cfg_t    ),
+      .AccCfg     ( AccCfg       ),
       .acc_req_t  ( cvxif_req_t  ),
       .acc_resp_t ( cvxif_resp_t )
     ) i_acc_dispatcher (
