@@ -40,7 +40,8 @@ module controller import ariane_pkg::*; #(
     input  logic            fence_i_i,              // fence.i in
     input  logic            fence_i,                // fence in
     input  logic            sfence_vma_i,           // We got an instruction to flush the TLBs and pipeline
-    input  logic            flush_commit_i          // Flush request from commit stage
+    input  logic            flush_commit_i,         // Flush request from commit stage
+    input  logic            flush_acc_i             // Flush request from accelerator
 );
 
     // active fence - high if we are currently flushing the dcache
@@ -132,8 +133,8 @@ module controller import ariane_pkg::*; #(
             flush_tlb_o            = 1'b1;
         end
 
-        // Set PC to commit stage and flush pipleine
-        if (flush_csr_i || flush_commit_i) begin
+        // Set PC to commit stage and flush pipeline
+        if (flush_csr_i || flush_commit_i || flush_acc_i) begin
             set_pc_commit_o        = 1'b1;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;

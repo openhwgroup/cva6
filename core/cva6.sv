@@ -336,6 +336,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     dcache_flush_ack_cache_ctrl;
   logic                     set_debug_pc;
   logic                     flush_commit;
+  logic                     flush_acc;
 
   icache_areq_i_t           icache_areq_ex_cache;
   icache_areq_o_t           icache_areq_cache_ex;
@@ -818,6 +819,7 @@ module cva6 import ariane_pkg::*; #(
     .fence_i                ( fence_commit_controller       ),
     .sfence_vma_i           ( sfence_vma_commit_controller  ),
     .flush_commit_i         ( flush_commit                  ),
+    .flush_acc_i            ( flush_acc                     ),
 
     .flush_icache_o         ( icache_flush_ctrl_cache       ),
     .*
@@ -966,6 +968,7 @@ module cva6 import ariane_pkg::*; #(
     assign acc_valid_acc_ex      = '0;
     assign halt_acc_ctrl         = '0;
     assign stall_st_pending_ex   = '0;
+    assign flush_acc             = '0;
 
     // No invalidation interface
     assign inval_valid = '0;
