@@ -66,6 +66,7 @@ module ex_stage import ariane_pkg::*; #(
     input  logic                                   lsu_commit_i,
     output logic                                   lsu_commit_ready_o, // commit queue is ready to accept another commit request
     input  logic [TRANS_ID_BITS-1:0]               commit_tran_id_i,
+    input  logic                                   stall_st_pending_i,
     output logic                                   no_st_pending_o,
     input  logic                                   amo_valid_commit_i,
     // FPU
@@ -307,6 +308,7 @@ module ex_stage import ariane_pkg::*; #(
         .clk_i,
         .rst_ni,
         .flush_i,
+        .stall_st_pending_i,
         .no_st_pending_o,
         .fu_data_i             ( lsu_data ),
         .lsu_ready_o,

@@ -252,6 +252,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     lsu_commit_commit_ex;
   logic                     lsu_commit_ready_ex_commit;
   logic [TRANS_ID_BITS-1:0] lsu_commit_trans_id;
+  logic                     stall_st_pending_ex;
   logic                     no_st_pending_ex;
   logic                     no_st_pending_commit;
   logic                     amo_valid_commit;
@@ -578,6 +579,7 @@ module cva6 import ariane_pkg::*; #(
     .lsu_commit_i           ( lsu_commit_commit_ex        ), // from commit
     .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
     .commit_tran_id_i       ( lsu_commit_trans_id         ), // from commit
+    .stall_st_pending_i     ( stall_st_pending_ex         ),
     .no_st_pending_o        ( no_st_pending_ex            ),
     // FPU
     .fpu_ready_o            ( fpu_ready_ex_id             ),
@@ -963,6 +965,7 @@ module cva6 import ariane_pkg::*; #(
     assign dirty_v_state         = '0;
     assign acc_valid_acc_ex      = '0;
     assign halt_acc_ctrl         = '0;
+    assign stall_st_pending_ex   = '0;
 
     // No invalidation interface
     assign inval_valid = '0;

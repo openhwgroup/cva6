@@ -21,6 +21,7 @@ module store_buffer import ariane_pkg::*; #(
     input logic          rst_ni,          // Asynchronous reset active low
     input logic          flush_i,         // if we flush we need to pause the transactions on the memory
                                           // otherwise we will run in a deadlock with the memory arbiter
+    input  logic         stall_st_pending_i, // Stall issuing non-speculative request
     output logic         no_st_pending_o, // non-speculative queue is empty (e.g.: everything is committed to the memory hierarchy)
     output logic         store_buffer_empty_o, // there is no store pending in neither the speculative unit or the non-speculative queue
 
@@ -161,7 +162,7 @@ module store_buffer import ariane_pkg::*; #(
 
         // there should be no commit when we are flushing
         // if the entry in the commit queue is valid and not speculative anymore we can issue this instruction
-        if (commit_queue_q[commit_read_pointer_q].valid) begin
+        if (commit_queue_q[commit_read_pointer_q].valid && !stall_st_pending_i) begin
             req_port_o.data_req = 1'b1;
             if (req_port_i.data_gnt) begin
                 // we can evict it from the commit buffer
