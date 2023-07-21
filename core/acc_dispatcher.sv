@@ -43,11 +43,14 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
     input  logic      [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     input  logic                                  commit_st_barrier_i,  // A store barrier was commited
     // Interface with the load/store unit
+    output logic                                  acc_stall_st_pending_o,
     input  logic                                  acc_no_st_pending_i,
+    input  dcache_req_i_t                   [2:0] dcache_req_ports_i,
     // Interface with the controller
     output logic                                  ctrl_halt_o,
     input  logic                                  flush_unissued_instr_i,
     input  logic                                  flush_ex_i,
+    output logic                                  flush_pipeline_o,
     // Interface with cache subsystem
     input  logic                                  inval_ready_i,
     output logic                                  inval_valid_o,
@@ -400,5 +403,12 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
   acc_dispatcher_no_store_overflow: assert property (
       @(posedge clk_i) disable iff (~rst_ni) (acc_spec_stores_overflow == 1'b0) && (acc_disp_stores_overflow == 1'b0) )
   else $error("[acc_dispatcher] Too many pending stores.");
+
+  /**************************
+   * Tie Off Unused Signals *
+   **************************/
+
+  assign acc_stall_st_pending_o = 1'b0;
+  assign flush_pipeline_o       = 1'b0;
 
 endmodule : acc_dispatcher
