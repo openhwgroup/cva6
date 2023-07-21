@@ -163,7 +163,7 @@ covergroup cg_result(
     bins EXCCODE [] = {[0:9],[11:13],15,24}; //Supported Exception code
    }
 
-   cross_result : cross cp_rd, cp_id, cp_we, cp_exc, cp_exccode {
+   cross_result : cross cp_id, cp_we, cp_exc, cp_exccode {
    illegal_bins ILLEGAL_BINS = binsof(cp_we) intersect{1} &&
                                binsof(cp_exc) intersect{1};
    }
