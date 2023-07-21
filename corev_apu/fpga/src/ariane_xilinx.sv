@@ -156,12 +156,12 @@ module ariane_xilinx (
 
 // cva6 configuration
 localparam ariane_pkg::cva6_cfg_t CVA6Cfg = {
-  int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-  int'(0),                                         // IsRVFI
-  int'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
-  int'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
-  int'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
-  int'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // DataUserWidth
+  unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
+  unsigned'(0),                                         // IsRVFI
+  unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
+  unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
+  unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
+  unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // DataUserWidth
 };
 localparam type rvfi_instr_t = logic;
 
@@ -721,8 +721,8 @@ ariane #(
     .ipi_i        ( ipi                 ),
     .time_irq_i   ( timer_irq           ),
     .debug_req_i  ( debug_req_irq       ),
-    .axi_req_o    ( axi_ariane_req      ),
-    .axi_resp_i   ( axi_ariane_resp     )
+    .noc_req_o    ( axi_ariane_req      ),
+    .noc_resp_i   ( axi_ariane_resp     )
 );
 
 `AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)

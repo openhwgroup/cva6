@@ -81,10 +81,8 @@ sources:
       # - vendor/pulp-platform/axi/src/axi_pkg.sv
 
       # Packages
-      - core/include/ariane_axi_pkg.sv
       - core/include/wt_cache_pkg.sv
       - core/include/std_cache_pkg.sv
-      - core/include/axi_intf.sv
       - core/include/acc_pkg.sv
 
       # for all the below files use Flist.cva6 as baseline and also look at Makefile pd/synth

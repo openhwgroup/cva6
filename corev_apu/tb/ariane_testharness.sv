@@ -17,12 +17,12 @@
 
 module ariane_testharness #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
-    int'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-    int'(cva6_config_pkg::CVA6ConfigRvfiTrace),      // IsRVFI
-    int'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
-    int'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
-    int'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
-    int'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // AxiUserWidth
+    unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
+    unsigned'(cva6_config_pkg::CVA6ConfigRvfiTrace),      // IsRVFI
+    unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
+    unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
+    unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
+    unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // AxiUserWidth
   },
   parameter type rvfi_instr_t = struct packed {
     logic [ariane_pkg::NRET-1:0]                  valid;
@@ -641,7 +641,9 @@ module ariane_testharness #(
   ariane #(
     .CVA6Cfg              ( CVA6Cfg             ),
     .rvfi_instr_t         ( rvfi_instr_t        ),
-    .ArianeCfg            ( ariane_soc::ArianeSocCfg )
+    .ArianeCfg            ( ariane_soc::ArianeSocCfg ),
+    .noc_req_t            ( ariane_axi::req_t   ),
+    .noc_resp_t           ( ariane_axi::resp_t  )
   ) i_ariane (
     .clk_i                ( clk_i               ),
     .rst_ni               ( ndmreset_n          ),
@@ -657,8 +659,8 @@ module ariane_testharness #(
 `else
     .debug_req_i          ( debug_req_core      ),
 `endif
-    .axi_req_o            ( axi_ariane_req      ),
-    .axi_resp_i           ( axi_ariane_resp     )
+    .noc_req_o            ( axi_ariane_req      ),
+    .noc_resp_i           ( axi_ariane_resp     )
   );
 
   `AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)

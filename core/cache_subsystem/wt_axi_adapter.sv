@@ -197,7 +197,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
               2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]]       = '1;  // byte
               2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
               2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
-              default: axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword                                                    = '1; // dword
+              default: axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword
             endcase
           end
           //////////////////////////////////////

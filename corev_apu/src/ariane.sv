@@ -24,8 +24,8 @@ module ariane import ariane_pkg::*; #(
   parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
   parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
   parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
-  parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter type noc_req_t = ariane_axi::req_t,
+  parameter type noc_resp_t = ariane_axi::resp_t
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -42,15 +42,9 @@ module ariane import ariane_pkg::*; #(
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
-`ifdef PITON_ARIANE
-  // L15 (memory side)
-  output wt_cache_pkg::l15_req_t       l15_req_o,
-  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
-`else
-  // memory side, AXI Master
-  output axi_req_t                     axi_req_o,
-  input  axi_rsp_t                     axi_resp_i
-`endif
+  // memory side
+  output noc_req_t                     noc_req_o,
+  input  noc_resp_t                    noc_resp_i
 );
 
   cvxif_pkg::cvxif_req_t  cvxif_req;
@@ -64,8 +58,8 @@ module ariane import ariane_pkg::*; #(
     .axi_ar_chan_t (axi_ar_chan_t),
     .axi_aw_chan_t (axi_aw_chan_t),
     .axi_w_chan_t (axi_w_chan_t),
-    .axi_req_t (axi_req_t),
-    .axi_rsp_t (axi_rsp_t)
+    .noc_req_t (noc_req_t),
+    .noc_resp_t (noc_resp_t)
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
@@ -78,17 +72,8 @@ module ariane import ariane_pkg::*; #(
     .rvfi_o               ( rvfi_o                    ),
     .cvxif_req_o          ( cvxif_req                 ),
     .cvxif_resp_i         ( cvxif_resp                ),
-`ifdef PITON_ARIANE
-    .l15_req_o            ( l15_req_o                 ),
-    .l15_rtrn_i           ( l15_rtrn_i                ),
-    .axi_req_o            (                           ),
-    .axi_resp_i           ( '0                        )
-`else
-    .l15_req_o            (                           ),
-    .l15_rtrn_i           ( '0                        ),
-    .axi_req_o            ( axi_req_o                 ),
-    .axi_resp_i           ( axi_resp_i                )
-`endif
+    .noc_req_o            ( noc_req_o                 ),
+    .noc_resp_i           ( noc_resp_i                )
   );
 
   if (ariane_pkg::CVXIF_PRESENT) begin : gen_example_coprocessor
