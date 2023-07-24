@@ -100,7 +100,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd):
   for entry in yaml_data:
     if entry['iss'] == iss:
       logging.info("Found matching ISS: %s" % entry['iss'])
-      m = re.search(r"rv(?P<xlen>[0-9]+?)(?P<variant>[a-z]+?)$", isa)
+      m = re.search(r"rv(?P<xlen>[0-9]+?)(?P<variant>[a-z]+(_[szx]\w+)*)$", isa)
       if m: logging.info("ISA %0s" % isa)
       else: logging.error("Illegal ISA %0s" % isa)
 
@@ -349,7 +349,9 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
       asm = prefix + ".S"
       elf = prefix + ".o"
       binary = prefix + ".bin"
-      test_isa = isa
+      test_isa=re.match("[a-z0-9A-Z]+", isa)
+      test_isa=test_isa.group()
+      isa_ext=isa
       if not os.path.isfile(asm) and not debug_cmd:
         logging.error("Cannot find assembly test: %s\n", asm)
         sys.exit(RET_FAIL)
@@ -366,10 +368,15 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
         # Disable compressed instruction
         if re.search('disable_compressed_instr=1', test['gen_opts']):
           test_isa = re.sub("c",  "", test_isa)
+          #add z,s,x extensions to the isa if there are some
+          if isa_extension_list !=['none']:
+            for i in isa_extension_list:
+              test_isa += (f"_{i}")
+          isa_ext=test_isa
       # If march/mabi is not defined in the test gcc_opts, use the default
       # setting from the command line.
       if not re.search('march', cmd):
-        cmd += (" -march=%s" % test_isa)
+        cmd += (" -march=%s" % isa_ext)
       if not re.search('mabi', cmd):
         cmd += (" -mabi=%s" % mabi)
       logging.info("Compiling %s" % asm)
@@ -542,7 +549,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   report = ("%s/iss_regr.log" % output_dir).rstrip()
   c = re.sub(r"^.*\/", "", c_test)
   c = re.sub(r"\.c$", "", c)
-  prefix = ("%s/directed_c_tests/%s"  % (output_dir, c))
+  prefix = (f"{output_dir}/directed_c_tests/{c}")
   elf = prefix + ".o"
   binary = prefix + ".bin"
   iss_list = iss_opts.split(",")
@@ -553,9 +560,9 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   cmd = ("%s -mcmodel=medany -nostdlib \
          -nostartfiles %s \
          -I%s/dv/user_extension \
-         -T%s %s -o %s " % \
-         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), c_test, cwd,
-                      linker, gcc_opts, elf))
+          -T%s %s -o %s " % \
+         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), c_test, cwd, 
+					  linker, gcc_opts, elf))
   cmd += (" -march=%s" % isa)
   cmd += (" -mabi=%s" % mabi)
   run_cmd(cmd, debug_cmd = debug_cmd)
@@ -829,6 +836,8 @@ def setup_parser():
                       help="Run test N times with random seed")
   parser.add_argument("--sv_seed", type=str, default="1",
                       help="Run test with a specific seed")
+  parser.add_argument("--isa_extension", type=str, default="zicsr",
+                      help="Choose additional z, s, x extensions")
   return parser
 
 
@@ -840,6 +849,11 @@ def load_config(args, cwd):
   Returns:
       Loaded configuration dictionary.
   """
+  
+  global isa_extension_list
+  isa_extension_list = args.isa_extension.split(",")  
+  
+  
   if args.debug:
     args.debug = open(args.debug, "w")
   if not args.csr_yaml:
@@ -975,6 +989,13 @@ def main():
     os.environ["CVA6_DV_ROOT"]  = cwd + "/../env/corev-dv"
     setup_logging(args.verbose)
     logg = logging.getLogger()
+    #print environment softwares
+    gcc_version=get_env_var("RISCV_GCC")
+    logging.info("GCC Version : %s" % (gcc_version))
+    spike_version=get_env_var("SPIKE_ROOT")
+    logging.info("Spike Version : %s" % (spike_version))
+    verilator_version=run_cmd("verilator --version")
+    logging.info("Verilator Version : %s" % (verilator_version))
     # create file handler which logs even debug messages
     fh = logging.FileHandler('logfile.log')
     fh.setLevel(logging.DEBUG)
@@ -987,7 +1008,12 @@ def main():
     cfg = load_config(args, cwd)
     # Create output directory
     output_dir = create_output(args.o, args.noclean, cwd+"/out_")
-
+    
+    #add z,s,x extensions to the isa if there are some
+    if isa_extension_list !=['none']:
+      for i in isa_extension_list:
+        args.isa += (f"_{i}")
+        
     if args.verilog_style_check:
       logging.debug("Run style check")
       style_err = run_cmd("verilog_style/run.sh")
