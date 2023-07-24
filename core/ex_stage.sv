@@ -104,8 +104,8 @@ module ex_stage import ariane_pkg::*; #(
     input  logic [riscv::PPNW-1:0]                 satp_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
     // icache translation requests
-    input  icache_areq_o_t                         icache_areq_i,
-    output icache_areq_i_t                         icache_areq_o,
+    input  icache_arsp_t                         icache_areq_i,
+    output icache_areq_t                         icache_areq_o,
 
     // interface to dcache
     input  dcache_req_o_t [2:0]                    dcache_req_ports_i,

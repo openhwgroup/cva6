@@ -127,13 +127,13 @@ The module is connected to:
    * - ``icache_dreq_o``
      - out
      - CACHES
-     - icache_dreq_i_t
+     - icache_dreq_t
      - Handshake between CACHE and FRONTEND (fetch)
 
    * - ``icache_dreq_i``
      - in
      - CACHES
-     - icache_dreq_o_t
+     - icache_drsp_t
      - Handshake between CACHE and FRONTEND (fetch)
 
    * - ``fetch_entry_o``

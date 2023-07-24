@@ -39,8 +39,8 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     input  logic                            enable_translation_i,
     input  logic                            en_ld_st_translation_i,   // enable virtual memory translation for load/stores
     // IF interface
-    input  icache_areq_o_t                  icache_areq_i,
-    output icache_areq_i_t                  icache_areq_o,
+    input  icache_arsp_t                  icache_areq_i,
+    output icache_areq_t                  icache_areq_o,
     // LSU interface
     // this is a more minimalistic interface because the actual addressing logic is handled
     // in the LSU as we distinguish load and stores, what we do here is simple address translation

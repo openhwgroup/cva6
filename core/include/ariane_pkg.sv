@@ -796,12 +796,12 @@ package ariane_pkg;
         logic                     fetch_valid;     // address translation valid
         logic [riscv::PLEN-1:0]   fetch_paddr;     // physical address in
         exception_t               fetch_exception; // exception occurred during fetch
-    } icache_areq_i_t;
+    } icache_areq_t;
 
     typedef struct packed {
         logic                     fetch_req;       // address translation request
         logic [riscv::VLEN-1:0]   fetch_vaddr;     // virtual address out
-    } icache_areq_o_t;
+    } icache_arsp_t;
 
     // I$ data requests
     typedef struct packed {
@@ -810,7 +810,7 @@ package ariane_pkg;
         logic                     kill_s2;                // kill the last request
         logic                     spec;                   // request is speculative
         logic [riscv::VLEN-1:0]   vaddr;                  // 1st cycle: 12 bit index is taken for lookup
-    } icache_dreq_i_t;
+    } icache_dreq_t;
 
     typedef struct packed {
         logic                     ready;                  // icache is ready
@@ -819,7 +819,7 @@ package ariane_pkg;
         logic [FETCH_USER_WIDTH-1:0] user;                // User bits
         logic [riscv::VLEN-1:0]   vaddr;                  // virtual address out
         exception_t               ex;                     // we've encountered an exception
-    } icache_dreq_o_t;
+    } icache_drsp_t;
 
     // AMO request going to cache. this request is unconditionally valid as soon
     // as request goes high.

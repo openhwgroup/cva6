@@ -340,10 +340,10 @@ module cva6 import ariane_pkg::*; #(
   logic                     flush_commit;
   logic                     flush_acc;
 
-  icache_areq_i_t           icache_areq_ex_cache;
-  icache_areq_o_t           icache_areq_cache_ex;
-  icache_dreq_i_t           icache_dreq_if_cache;
-  icache_dreq_o_t           icache_dreq_cache_if;
+  icache_areq_t           icache_areq_ex_cache;
+  icache_arsp_t           icache_areq_cache_ex;
+  icache_dreq_t           icache_dreq_if_cache;
+  icache_drsp_t           icache_dreq_cache_if;
 
   amo_req_t                 amo_req;
   amo_resp_t                amo_resp;

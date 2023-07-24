@@ -25,8 +25,8 @@ module tlb_emul import ariane_pkg::*; import wt_cache_pkg::*; #(
   input logic [63:0]     tlb_offset_i,
 
   // icache interface
-  input  icache_areq_o_t req_i,
-  output icache_areq_i_t req_o
+  input  icache_arsp_t req_i,
+  output icache_areq_t req_o
 );
 
 logic tlb_ready_d, tlb_ready_q;

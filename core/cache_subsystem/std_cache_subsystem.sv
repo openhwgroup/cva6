@@ -32,11 +32,11 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     input  logic                           icache_flush_i,         // flush the icache, flush and kill have to be asserted together
     output logic                           icache_miss_o,          // to performance counter
     // address translation requests
-    input  icache_areq_i_t                 icache_areq_i,          // to/from frontend
-    output icache_areq_o_t                 icache_areq_o,
+    input  icache_areq_t                 icache_areq_i,          // to/from frontend
+    output icache_arsp_t                 icache_areq_o,
     // data requests
-    input  icache_dreq_i_t                 icache_dreq_i,          // to/from frontend
-    output icache_dreq_o_t                 icache_dreq_o,
+    input  icache_dreq_t                 icache_dreq_i,          // to/from frontend
+    output icache_drsp_t                 icache_dreq_o,
     // AMOs
     input  amo_req_t                       amo_req_i,
     output amo_resp_t                      amo_resp_o,

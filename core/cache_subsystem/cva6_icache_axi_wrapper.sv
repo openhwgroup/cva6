@@ -27,11 +27,11 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  logic              en_i,        // enable icache
   output logic              miss_o,      // to performance counter
   // address translation requests
-  input  icache_areq_i_t    areq_i,
-  output icache_areq_o_t    areq_o,
+  input  icache_areq_t    areq_i,
+  output icache_arsp_t    areq_o,
   // data requests
-  input  icache_dreq_i_t    dreq_i,
-  output icache_dreq_o_t    dreq_o,
+  input  icache_dreq_t    dreq_i,
+  output icache_drsp_t    dreq_o,
   // AXI refill port
   output axi_req_t          axi_req_o,
   input  axi_rsp_t          axi_resp_i
