@@ -927,6 +927,7 @@ module cva6 import ariane_pkg::*; #(
 
   if (ENABLE_ACCELERATOR) begin: gen_accelerator
     acc_dispatcher #(
+      .CVA6Cfg    ( CVA6Cfg      ),
       .acc_cfg_t  ( acc_cfg_t    ),
       .AccCfg     ( AccCfg       ),
       .acc_req_t  ( cvxif_req_t  ),
