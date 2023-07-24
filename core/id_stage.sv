@@ -57,7 +57,7 @@ module id_stage #(
     logic                [31:0] instruction;
     logic                is_compressed;
 
-    if (ariane_pkg::RVC) begin
+    if (CVA6Cfg.RVC) begin
       // ---------------------------------------------------------
       // 1. Check if they are compressed and expand in case they are
       // ---------------------------------------------------------

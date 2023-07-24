@@ -14,8 +14,8 @@
 
 module scoreboard #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
-  parameter int unsigned NR_ENTRIES      = 8, // must be a power of 2
-  parameter int unsigned NR_WB_PORTS     = 1
+  parameter type rs3_len_t = logic,
+  parameter int unsigned NR_ENTRIES      = 8  // must be a power of 2
 ) (
   input  logic                                                  clk_i,    // Clock
   input  logic                                                  rst_ni,   // Asynchronous reset active low
@@ -37,7 +37,7 @@ module scoreboard #(
   output logic                                                  rs2_valid_o,
 
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs3_i,
-  output ariane_pkg::rs3_len_t                                  rs3_o,
+  output rs3_len_t                                              rs3_o,
   output logic                                                  rs3_valid_o,
 
   // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
@@ -57,10 +57,10 @@ module scoreboard #(
 
   // write-back port
   input ariane_pkg::bp_resolve_t                                resolved_branch_i,
-  input logic [NR_WB_PORTS-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
-  input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]                wbdata_i,    // write data in
-  input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
-  input logic [NR_WB_PORTS-1:0]                                 wt_valid_i,  // data in is valid
+  input logic [CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
+  input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]                wbdata_i,    // write data in
+  input ariane_pkg::exception_t [CVA6Cfg.NrWbPorts-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
+  input logic [CVA6Cfg.NrWbPorts-1:0]                                 wt_valid_i,  // data in is valid
   input logic                                                   x_we_i,      // cvxif we for writeback
 
   // RVFI
@@ -166,7 +166,7 @@ module scoreboard #(
       end
     end
 
-    for (int unsigned i = 0; i < NR_WB_PORTS; i++) begin
+    for (int unsigned i = 0; i < CVA6Cfg.NrWbPorts; i++) begin
       // check if this instruction was issued (e.g.: it could happen after a flush that there is still
       // something in the pipeline e.g. an incomplete memory operation)
       if (wt_valid_i[i] && mem_q[trans_id_i[i]].issued) begin
@@ -297,33 +297,33 @@ module scoreboard #(
   // Read Operands (a.k.a forwarding)
   // ----------------------------------
   // read operand interface: same logic as register file
-  logic [NR_ENTRIES+NR_WB_PORTS-1:0] rs1_fwd_req, rs2_fwd_req, rs3_fwd_req;
-  logic [NR_ENTRIES+NR_WB_PORTS-1:0][riscv::XLEN-1:0] rs_data;
+  logic [NR_ENTRIES+CVA6Cfg.NrWbPorts-1:0] rs1_fwd_req, rs2_fwd_req, rs3_fwd_req;
+  logic [NR_ENTRIES+CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] rs_data;
   logic rs1_valid, rs2_valid, rs3_valid;
 
   // WB ports have higher prio than entries
-  for (genvar k = 0; unsigned'(k) < NR_WB_PORTS; k++) begin : gen_rs_wb
+  for (genvar k = 0; unsigned'(k) < CVA6Cfg.NrWbPorts; k++) begin : gen_rs_wb
     assign rs1_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs1_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == ariane_pkg::is_rs1_fpr(issue_instr_o.op));
     assign rs2_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs2_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == ariane_pkg::is_rs2_fpr(issue_instr_o.op));
     assign rs3_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs3_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == ariane_pkg::is_imm_fpr(issue_instr_o.op));
     assign rs_data[k]     = wbdata_i[k];
   end
   for (genvar k = 0; unsigned'(k) < NR_ENTRIES; k++) begin : gen_rs_entries
-    assign rs1_fwd_req[k+NR_WB_PORTS] = (mem_q[k].sbe.rd == rs1_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_rs1_fpr(issue_instr_o.op));
-    assign rs2_fwd_req[k+NR_WB_PORTS] = (mem_q[k].sbe.rd == rs2_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_rs2_fpr(issue_instr_o.op));
-    assign rs3_fwd_req[k+NR_WB_PORTS] = (mem_q[k].sbe.rd == rs3_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_imm_fpr(issue_instr_o.op));
-    assign rs_data[k+NR_WB_PORTS]     = mem_q[k].sbe.result;
+    assign rs1_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs1_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_rs1_fpr(issue_instr_o.op));
+    assign rs2_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs2_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_rs2_fpr(issue_instr_o.op));
+    assign rs3_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs3_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_imm_fpr(issue_instr_o.op));
+    assign rs_data[k+CVA6Cfg.NrWbPorts]     = mem_q[k].sbe.result;
   end
 
   // check whether we are accessing GPR[0]
   assign rs1_valid_o = rs1_valid & ((|rs1_i) | ariane_pkg::is_rs1_fpr(issue_instr_o.op));
   assign rs2_valid_o = rs2_valid & ((|rs2_i) | ariane_pkg::is_rs2_fpr(issue_instr_o.op));
-  assign rs3_valid_o = ariane_pkg::NR_RGPR_PORTS == 3 ? rs3_valid & ((|rs3_i) | ariane_pkg::is_imm_fpr(issue_instr_o.op)) : rs3_valid;
+  assign rs3_valid_o = CVA6Cfg.NrRgprPorts == 3 ? rs3_valid & ((|rs3_i) | ariane_pkg::is_imm_fpr(issue_instr_o.op)) : rs3_valid;
 
   // use fixed prio here
   // this implicitly gives higher prio to WB ports
   rr_arb_tree #(
-    .NumIn(NR_ENTRIES+NR_WB_PORTS),
+    .NumIn(NR_ENTRIES+CVA6Cfg.NrWbPorts),
     .DataWidth(riscv::XLEN),
     .ExtPrio(1'b1),
     .AxiVldRdy(1'b1)
@@ -342,7 +342,7 @@ module scoreboard #(
   );
 
   rr_arb_tree #(
-    .NumIn(NR_ENTRIES+NR_WB_PORTS),
+    .NumIn(NR_ENTRIES+CVA6Cfg.NrWbPorts),
     .DataWidth(riscv::XLEN),
     .ExtPrio(1'b1),
     .AxiVldRdy(1'b1)
@@ -363,7 +363,7 @@ module scoreboard #(
   riscv::xlen_t           rs3;
 
   rr_arb_tree #(
-    .NumIn(NR_ENTRIES+NR_WB_PORTS),
+    .NumIn(NR_ENTRIES+CVA6Cfg.NrWbPorts),
     .DataWidth(riscv::XLEN),
     .ExtPrio(1'b1),
     .AxiVldRdy(1'b1)
@@ -381,10 +381,10 @@ module scoreboard #(
     .idx_o   (             )
   );
 
-  if (ariane_pkg::NR_RGPR_PORTS == 3) begin : gen_gp_three_port
+  if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_three_port
       assign rs3_o = rs3[riscv::XLEN-1:0];
   end else begin : gen_fp_three_port
-      assign rs3_o = rs3[ariane_pkg::FLEN-1:0];
+      assign rs3_o = rs3[CVA6Cfg.FLen-1:0];
   end
 
 
@@ -428,8 +428,8 @@ module scoreboard #(
 
   // there should never be more than one instruction writing the same destination register (except x0)
   // check that no functional unit is retiring with the same transaction id
-  for (genvar i = 0; i < NR_WB_PORTS; i++) begin
-    for (genvar j = 0; j < NR_WB_PORTS; j++)  begin
+  for (genvar i = 0; i < CVA6Cfg.NrWbPorts; i++) begin
+    for (genvar j = 0; j < CVA6Cfg.NrWbPorts; j++)  begin
       assert property (
         @(posedge clk_i) disable iff (!rst_ni) wt_valid_i[i] && wt_valid_i[j] && (i != j) |-> (trans_id_i[i] != trans_id_i[j]))
         else $fatal (1,"Two or more functional units are retiring instructions with the same transaction id!");

@@ -14,14 +14,39 @@
 
 
 module cva6 import ariane_pkg::*; #(
+  // CVA6 config
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
     unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
     unsigned'(cva6_config_pkg::CVA6ConfigRvfiTrace),      // IsRVFI
     unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
     unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
     unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
-    unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // AxiUserWidth
+    unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth),  // AxiUserWidth
+    bit'(cva6_config_pkg::CVA6ConfigFpuEn),               // FpuEn
+    bit'(cva6_config_pkg::CVA6ConfigF16En),               // XF16
+    bit'(cva6_config_pkg::CVA6ConfigF16AltEn),            // XF16ALT
+    bit'(cva6_config_pkg::CVA6ConfigF8En),                // XF8
+    bit'(cva6_config_pkg::CVA6ConfigAExtEn),              // RVA
+    bit'(cva6_config_pkg::CVA6ConfigVExtEn),              // RVV
+    bit'(cva6_config_pkg::CVA6ConfigCExtEn),              // RVC
+    bit'(cva6_config_pkg::CVA6ConfigFVecEn),              // XFVec
+    bit'(cva6_config_pkg::CVA6ConfigCvxifEn),             // CvxifEn
+    // Extended
+    bit'(0),                                              // RVF
+    bit'(0),                                              // RVD
+    bit'(0),                                              // FpPresent
+    riscv::XLEN'(0),                                      // IsaCode
+    bit'(0),                                              // NSX
+    unsigned'(0),                                         // FLen
+    bit'(0),                                              // RVFVec
+    bit'(0),                                              // XF16Vec
+    bit'(0),                                              // XF16ALTVec
+    bit'(0),                                              // XF8Vec
+    unsigned'(0),                                         // NrRgprPorts
+    unsigned'(0),                                         // NrWbPorts
+    bit'(0)                                               // EnableAccelerator
   },
+  // RVFI
   parameter type rvfi_instr_t = struct packed {
     logic [ariane_pkg::NRET-1:0]                  valid;
     logic [ariane_pkg::NRET*64-1:0]               order;
@@ -139,6 +164,77 @@ module cva6 import ariane_pkg::*; #(
   output noc_req_t                     noc_req_o,
   input  noc_resp_t                    noc_resp_i
 );
+
+  // ------------------------------------------
+  // CVA6 configuration
+  // ------------------------------------------
+  // Extended config
+  localparam bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & CVA6Cfg.FpuEn;
+  localparam bit RVD = (riscv::IS_XLEN64 ? 1:0) & CVA6Cfg.FpuEn;
+  localparam bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
+  localparam bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
+  localparam riscv::xlen_t IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
+                                   | (riscv::XLEN'(CVA6Cfg.RVC) <<  2)                // C - Compressed extension
+                                   | (riscv::XLEN'(RVD) <<  3)                        // D - Double precsision floating-point extension
+                                   | (riscv::XLEN'(RVF) <<  5)                        // F - Single precsision floating-point extension
+                                   | (riscv::XLEN'(1  ) <<  8)                        // I - RV32I/64I/128I base ISA
+                                   | (riscv::XLEN'(1  ) << 12)                        // M - Integer Multiply/Divide extension
+                                   | (riscv::XLEN'(0  ) << 13)                        // N - User level interrupts supported
+                                   | (riscv::XLEN'(1  ) << 18)                        // S - Supervisor mode implemented
+                                   | (riscv::XLEN'(1  ) << 20)                        // U - User mode implemented
+                                   | (riscv::XLEN'(CVA6Cfg.RVV) << 21)                // V - Vector extension
+                                   | (riscv::XLEN'(NSX) << 23)                        // X - Non-standard extensions present
+                                   | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN-2);  // MXL
+  localparam int unsigned FLen = RVD     ? 64 : // D ext.
+                                 RVF     ? 32 : // F ext.
+                                 CVA6Cfg.XF16    ? 16 : // Xf16 ext.
+                                 CVA6Cfg.XF16ALT ? 16 : // Xf16alt ext.
+                                 CVA6Cfg.XF8     ? 8 :  // Xf8 ext.
+                                 1;             // Unused in case of no FP
+
+  // Transprecision floating-point extensions configuration
+  localparam bit RVFVec     = RVF             & CVA6Cfg.XFVec & FLen>32; // FP32 vectors available if vectors and larger fmt enabled
+  localparam bit XF16Vec    = CVA6Cfg.XF16    & CVA6Cfg.XFVec & FLen>16; // FP16 vectors available if vectors and larger fmt enabled
+  localparam bit XF16ALTVec = CVA6Cfg.XF16ALT & CVA6Cfg.XFVec & FLen>16; // FP16ALT vectors available if vectors and larger fmt enabled
+  localparam bit XF8Vec     = CVA6Cfg.XF8     & CVA6Cfg.XFVec & FLen>8;  // FP8 vectors available if vectors and larger fmt enabled
+
+  localparam bit EnableAccelerator = CVA6Cfg.RVV; // Currently only used by V extension (Ara)
+  localparam int unsigned NrWbPorts = (CVA6Cfg.CvxifEn || EnableAccelerator) ? 5 : 4;
+
+  localparam NrRgprPorts = 2;
+
+  localparam ariane_pkg::cva6_cfg_t CVA6ExtendCfg = {
+    CVA6Cfg.NrCommitPorts,
+    CVA6Cfg.IsRVFI,
+    CVA6Cfg.AxiAddrWidth,
+    CVA6Cfg.AxiDataWidth,
+    CVA6Cfg.AxiIdWidth,
+    CVA6Cfg.AxiUserWidth,
+    CVA6Cfg.FpuEn,
+    CVA6Cfg.XF16,
+    CVA6Cfg.XF16ALT,
+    CVA6Cfg.XF8,
+    CVA6Cfg.RVA,
+    CVA6Cfg.RVV,
+    CVA6Cfg.RVC,
+    CVA6Cfg.XFVec,
+    CVA6Cfg.CvxifEn,
+    // Extended
+    bit'(RVF),
+    bit'(RVD),
+    bit'(FpPresent),
+    riscv::xlen_t'(IsaCode),
+    bit'(NSX),
+    unsigned'(FLen),
+    bit'(RVFVec),
+    bit'(XF16Vec),
+    bit'(XF16ALTVec),
+    bit'(XF8Vec),
+    unsigned'(NrRgprPorts),
+    unsigned'(NrWbPorts),
+    bit'(EnableAccelerator)
+  };
+
 
   // ------------------------------------------
   // Global Signals
@@ -372,7 +468,7 @@ module cva6 import ariane_pkg::*; #(
   // Frontend
   // --------------
   frontend #(
-    .CVA6Cfg   ( CVA6Cfg   ),
+    .CVA6Cfg   ( CVA6ExtendCfg ),
     .ArianeCfg ( ArianeCfg )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
@@ -400,7 +496,7 @@ module cva6 import ariane_pkg::*; #(
   // ID
   // ---------
   id_stage #(
-    .CVA6Cfg    ( CVA6Cfg    )
+    .CVA6Cfg    ( CVA6ExtendCfg )
   ) id_stage_i (
     .clk_i,
     .rst_ni,
@@ -428,17 +524,17 @@ module cva6 import ariane_pkg::*; #(
     .tsr_i                      ( tsr_csr_id                 )
   );
 
-  logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
-  logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]   wbdata_ex_id;
-  exception_t [NR_WB_PORTS-1:0]              ex_ex_ex_id; // exception from execute, ex_stage to id_stage
-  logic [NR_WB_PORTS-1:0]                    wt_valid_ex_id;
+  logic [NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
+  logic [NrWbPorts-1:0][riscv::XLEN-1:0]   wbdata_ex_id;
+  exception_t [NrWbPorts-1:0]              ex_ex_ex_id; // exception from execute, ex_stage to id_stage
+  logic [NrWbPorts-1:0]                    wt_valid_ex_id;
 
-  if (CVXIF_PRESENT) begin
+  if (CVA6Cfg.CvxifEn) begin
     assign trans_id_ex_id = {x_trans_id_ex_id, flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id};
     assign wbdata_ex_id   = {x_result_ex_id, flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id};
     assign ex_ex_ex_id    = {x_exception_ex_id, flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id};
     assign wt_valid_ex_id = {x_valid_ex_id, flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
-  end else if (ENABLE_ACCELERATOR) begin
+  end else if (CVA6Cfg.Enable_Accelerator) begin
     assign trans_id_ex_id = {flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id, acc_trans_id_ex_id};
     assign wbdata_ex_id   = {flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id, acc_result_ex_id};
     assign ex_ex_ex_id    = {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id, acc_exception_ex_id};
@@ -450,7 +546,7 @@ module cva6 import ariane_pkg::*; #(
     assign wt_valid_ex_id = {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
   end
 
-  if (CVXIF_PRESENT && ENABLE_ACCELERATOR) begin : gen_err_xif_and_acc
+  if (CVA6Cfg.CvxifEn && CVA6Cfg.EnableAccelerator) begin : gen_err_xif_and_acc
     $error("X-interface and accelerator port cannot be enabled at the same time.");
   end
 
@@ -458,9 +554,8 @@ module cva6 import ariane_pkg::*; #(
   // Issue
   // ---------
   issue_stage #(
-    .CVA6Cfg                    ( CVA6Cfg                      ),
-    .NR_ENTRIES                 ( NR_SB_ENTRIES                ),
-    .NR_WB_PORTS                ( NR_WB_PORTS                  )
+    .CVA6Cfg                    ( CVA6ExtendCfg                ),
+    .NR_ENTRIES                 ( NR_SB_ENTRIES                )
   ) issue_stage_i (
     .clk_i,
     .rst_ni,
@@ -534,7 +629,7 @@ module cva6 import ariane_pkg::*; #(
   // EX
   // ---------
   ex_stage #(
-    .CVA6Cfg    ( CVA6Cfg    ),
+    .CVA6Cfg    ( CVA6ExtendCfg ),
     .ASID_WIDTH ( ASID_WIDTH ),
     .ArianeCfg  ( ArianeCfg  )
   ) ex_stage_i (
@@ -652,7 +747,7 @@ module cva6 import ariane_pkg::*; #(
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
   commit_stage #(
-    .CVA6Cfg         ( CVA6Cfg         )
+    .CVA6Cfg         ( CVA6ExtendCfg )
   ) commit_stage_i (
     .clk_i,
     .rst_ni,
@@ -691,7 +786,7 @@ module cva6 import ariane_pkg::*; #(
   // CSR
   // ---------
   csr_regfile #(
-    .CVA6Cfg                ( CVA6Cfg                       ),
+    .CVA6Cfg                ( CVA6ExtendCfg                 ),
     .AsidWidth              ( ASID_WIDTH                    ),
     .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
     .NrPMPEntries           ( ArianeCfg.NrPMPEntries        ),
@@ -760,7 +855,7 @@ module cva6 import ariane_pkg::*; #(
   // ------------------------
   if (PERF_COUNTER_EN) begin: gen_perf_counter
   perf_counters #(
-    .CVA6Cfg             ( CVA6Cfg                   ),
+    .CVA6Cfg             ( CVA6ExtendCfg             ),
     .NumPorts            ( NumPorts                  )
   ) perf_counters_i (
     .clk_i               ( clk_i                     ),
@@ -798,7 +893,7 @@ module cva6 import ariane_pkg::*; #(
   // Controller
   // ------------
   controller #(
-    .CVA6Cfg    ( CVA6Cfg    )
+    .CVA6Cfg    ( CVA6ExtendCfg )
   ) controller_i (
     // flush ports
     .set_pc_commit_o        ( set_pc_ctrl_pcgen             ),
@@ -837,7 +932,7 @@ module cva6 import ariane_pkg::*; #(
   if (DCACHE_TYPE == int'(cva6_config_pkg::WT)) begin : gen_cache_wt
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
-    .CVA6Cfg              ( CVA6Cfg   ),
+    .CVA6Cfg              ( CVA6ExtendCfg ),
     .ArianeCfg            ( ArianeCfg ),
     .NumPorts             ( NumPorts  ),
     .noc_req_t            ( noc_req_t ),
@@ -882,7 +977,7 @@ module cva6 import ariane_pkg::*; #(
     // note: this only works with one cacheable region
     // not as important since this cache subsystem is about to be
     // deprecated
-    .CVA6Cfg               ( CVA6Cfg                     ),
+    .CVA6Cfg               ( CVA6ExtendCfg               ),
     .ArianeCfg             ( ArianeCfg                   ),
     .axi_ar_chan_t         ( axi_ar_chan_t               ),
     .axi_aw_chan_t         ( axi_aw_chan_t               ),
@@ -927,7 +1022,7 @@ module cva6 import ariane_pkg::*; #(
   // Accelerator
   // ----------------
 
-  if (ENABLE_ACCELERATOR) begin: gen_accelerator
+  if (CVA6Cfg.EnableAccelerator) begin: gen_accelerator
     acc_dispatcher #(
       .CVA6Cfg    ( CVA6Cfg      ),
       .acc_cfg_t  ( acc_cfg_t    ),

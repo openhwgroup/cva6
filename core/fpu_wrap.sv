@@ -28,7 +28,7 @@ module fpu_wrap import ariane_pkg::*; #(
   input  logic [2:0]               fpu_frm_i,
   input  logic [6:0]               fpu_prec_i,
   output logic [TRANS_ID_BITS-1:0] fpu_trans_id_o,
-  output logic [FLEN-1:0]          result_o,
+  output logic [CVA6Cfg.FLen-1:0]          result_o,
   output logic                     fpu_valid_o,
   output exception_t               fpu_exception_o
 );
@@ -36,13 +36,13 @@ module fpu_wrap import ariane_pkg::*; #(
   // this is a workaround
   // otherwise compilation might issue an error if FLEN=0
   enum logic {READY, STALL} state_q, state_d;
-  if (FP_PRESENT) begin : fpu_gen
-    logic [FLEN-1:0] operand_a_i;
-    logic [FLEN-1:0] operand_b_i;
-    logic [FLEN-1:0] operand_c_i;
-    assign operand_a_i = fu_data_i.operand_a[FLEN-1:0];
-    assign operand_b_i = fu_data_i.operand_b[FLEN-1:0];
-    assign operand_c_i = fu_data_i.imm[FLEN-1:0];
+  if (CVA6Cfg.FpPresent) begin : fpu_gen
+    logic [CVA6Cfg.FLen-1:0] operand_a_i;
+    logic [CVA6Cfg.FLen-1:0] operand_b_i;
+    logic [CVA6Cfg.FLen-1:0] operand_c_i;
+    assign operand_a_i = fu_data_i.operand_a[CVA6Cfg.FLen-1:0];
+    assign operand_b_i = fu_data_i.operand_b[CVA6Cfg.FLen-1:0];
+    assign operand_c_i = fu_data_i.imm[CVA6Cfg.FLen-1:0];
 
     //-----------------------------------
     // FPnew config from FPnew package
@@ -54,10 +54,10 @@ module fpu_wrap import ariane_pkg::*; #(
     // Features (enabled formats, vectors etc.)
     localparam fpnew_pkg::fpu_features_t FPU_FEATURES = '{
       Width:         unsigned'(riscv::XLEN), // parameterized using XLEN
-      EnableVectors: ariane_pkg::XFVEC,
+      EnableVectors: CVA6Cfg.XFVec,
       EnableNanBox:  1'b1,
-      FpFmtMask:     {RVF, RVD, XF16, XF8, XF16ALT},
-      IntFmtMask:    {XFVEC && XF8, XFVEC && (XF16 || XF16ALT), 1'b1, 1'b1}
+      FpFmtMask:     {CVA6Cfg.RVF, CVA6Cfg.RVD, CVA6Cfg.XF16, CVA6Cfg.XF8, CVA6Cfg.XF16ALT},
+      IntFmtMask:    {CVA6Cfg.XFVec && CVA6Cfg.XF8, CVA6Cfg.XFVec && (CVA6Cfg.XF16 || CVA6Cfg.XF16ALT), 1'b1, 1'b1}
     };
 
     // Implementation (number of registers etc)
@@ -81,9 +81,9 @@ module fpu_wrap import ariane_pkg::*; #(
     //-------------------------------------------------
     // Inputs to the FPU and protocol inversion buffer
     //-------------------------------------------------
-    logic [FLEN-1:0]     operand_a_d,  operand_a_q,  operand_a;
-    logic [FLEN-1:0]     operand_b_d,  operand_b_q,  operand_b;
-    logic [FLEN-1:0]     operand_c_d,  operand_c_q,  operand_c;
+    logic [CVA6Cfg.FLen-1:0]     operand_a_d,  operand_a_q,  operand_a;
+    logic [CVA6Cfg.FLen-1:0]     operand_b_d,  operand_b_q,  operand_b;
+    logic [CVA6Cfg.FLen-1:0]     operand_c_d,  operand_c_q,  operand_c;
     logic [OPBITS-1:0]   fpu_op_d,     fpu_op_q,     fpu_op;
     logic                fpu_op_mod_d, fpu_op_mod_q, fpu_op_mod;
     logic [FMTBITS-1:0]  fpu_srcfmt_d, fpu_srcfmt_q, fpu_srcfmt;
@@ -395,18 +395,18 @@ module fpu_wrap import ariane_pkg::*; #(
       if (fpu_vec_op_d && vec_replication) begin
         if (replicate_c) begin
           unique case (fpu_dstfmt_d)
-            fpnew_pkg::FP32:    operand_c_d = RVD ? {2{operand_c_i[31:0]}} : operand_c_i;
+            fpnew_pkg::FP32:    operand_c_d = CVA6Cfg.RVD ? {2{operand_c_i[31:0]}} : operand_c_i;
             fpnew_pkg::FP16,
-            fpnew_pkg::FP16ALT: operand_c_d = RVD ? {4{operand_c_i[15:0]}} : {2{operand_c_i[15:0]}};
-            fpnew_pkg::FP8:     operand_c_d = RVD ? {8{operand_c_i[7:0]}}  : {4{operand_c_i[7:0]}};
+            fpnew_pkg::FP16ALT: operand_c_d = CVA6Cfg.RVD ? {4{operand_c_i[15:0]}} : {2{operand_c_i[15:0]}};
+            fpnew_pkg::FP8:     operand_c_d = CVA6Cfg.RVD ? {8{operand_c_i[7:0]}}  : {4{operand_c_i[7:0]}};
             default: ; // Do nothing
           endcase // fpu_dstfmt_d
         end else begin
           unique case (fpu_dstfmt_d)
-            fpnew_pkg::FP32:    operand_b_d = RVD ? {2{operand_b_i[31:0]}} : operand_b_i;
+            fpnew_pkg::FP32:    operand_b_d = CVA6Cfg.RVD ? {2{operand_b_i[31:0]}} : operand_b_i;
             fpnew_pkg::FP16,
-            fpnew_pkg::FP16ALT: operand_b_d = RVD ? {4{operand_b_i[15:0]}} : {2{operand_b_i[15:0]}};
-            fpnew_pkg::FP8:     operand_b_d = RVD ? {8{operand_b_i[7:0]}}  : {4{operand_b_i[7:0]}};
+            fpnew_pkg::FP16ALT: operand_b_d = CVA6Cfg.RVD ? {4{operand_b_i[15:0]}} : {2{operand_b_i[15:0]}};
+            fpnew_pkg::FP8:     operand_b_d = CVA6Cfg.RVD ? {8{operand_b_i[7:0]}}  : {4{operand_b_i[7:0]}};
             default: ; // Do nothing
           endcase // fpu_dstfmt_d
         end
@@ -508,7 +508,7 @@ module fpu_wrap import ariane_pkg::*; #(
     assign fpu_tag    = use_hold ? fpu_tag_q    : fpu_tag_d;
 
     // Consolidate operands
-    logic [2:0][FLEN-1:0] fpu_operands;
+    logic [2:0][CVA6Cfg.FLen-1:0] fpu_operands;
 
     assign fpu_operands[0] = operand_a;
     assign fpu_operands[1] = operand_b;

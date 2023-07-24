@@ -15,7 +15,8 @@
 
 
 module issue_read_operands import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
+    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+    parameter type rs3_len_t = logic
 )(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -130,8 +131,8 @@ module issue_read_operands import ariane_pkg::*; #(
     assign fpu_valid_o         = fpu_valid_q;
     assign fpu_fmt_o           = fpu_fmt_q;
     assign fpu_rm_o            = fpu_rm_q;
-    assign cvxif_valid_o       = CVXIF_PRESENT ? cvxif_valid_q : '0;
-    assign cvxif_off_instr_o   = CVXIF_PRESENT ? cvxif_off_instr_q : '0;
+    assign cvxif_valid_o       = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
+    assign cvxif_off_instr_o   = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
     assign stall_issue_o       = stall;
     // ---------------
     // Issue Stage
@@ -200,7 +201,7 @@ module issue_read_operands import ariane_pkg::*; #(
 
     // Only check clobbered gpr for OFFLOADED instruction
         if (is_imm_fpr(issue_instr_i.op) ? rd_clobber_fpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE
-                     : issue_instr_i.op == OFFLOAD && NR_RGPR_PORTS == 3 ? rd_clobber_gpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
+                     : issue_instr_i.op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ? rd_clobber_gpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
             if (rs3_valid_i) begin
                 forward_rs3 = 1'b1;
@@ -217,11 +218,11 @@ module issue_read_operands import ariane_pkg::*; #(
         operand_b_n = operand_b_regfile;
         // immediates are the third operands in the store case
         // for FP operations, the imm field can also be the third operand from the regfile
-        if (NR_RGPR_PORTS == 3) begin
-            imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} :
+        if (CVA6Cfg.NrRgprPorts == 3) begin
+            imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, operand_c_regfile} :
                                                     issue_instr_i.op == OFFLOAD ? operand_c_regfile : issue_instr_i.result;
         end else begin
-            imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} : issue_instr_i.result;
+            imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, operand_c_regfile} : issue_instr_i.result;
         end
         trans_id_n = issue_instr_i.trans_id;
         fu_n       = issue_instr_i.fu;
@@ -236,7 +237,7 @@ module issue_read_operands import ariane_pkg::*; #(
         end
 
         if (forward_rs3) begin
-            imm_n  = NR_RGPR_PORTS == 3 ? rs3_i : {{riscv::XLEN-FLEN{1'b0}}, rs3_i};;
+            imm_n  = CVA6Cfg.NrRgprPorts == 3 ? rs3_i : {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, rs3_i};;
         end
 
         // use the PC as operand a
@@ -323,7 +324,7 @@ module issue_read_operands import ariane_pkg::*; #(
       end
     end
 
-    if (CVXIF_PRESENT) begin
+    if (CVA6Cfg.CvxifEn) begin
       always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
           cvxif_valid_q  <= 1'b0;
@@ -398,14 +399,14 @@ module issue_read_operands import ariane_pkg::*; #(
     // ----------------------
     // Integer Register File
     // ----------------------
-    logic [NR_RGPR_PORTS-1:0][riscv::XLEN-1:0] rdata;
-    logic [NR_RGPR_PORTS-1:0][4:0]  raddr_pack;
+    logic [CVA6Cfg.NrRgprPorts-1:0][riscv::XLEN-1:0] rdata;
+    logic [CVA6Cfg.NrRgprPorts-1:0][4:0]  raddr_pack;
 
     // pack signals
     logic [CVA6Cfg.NrCommitPorts-1:0][4:0]  waddr_pack;
     logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_pack;
     logic [CVA6Cfg.NrCommitPorts-1:0]       we_pack;
-    assign raddr_pack = NR_RGPR_PORTS == 3 ? {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]}
+    assign raddr_pack = CVA6Cfg.NrRgprPorts == 3 ? {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]}
                                            : {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
     for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_write_back_port
         assign waddr_pack[i] = waddr_i[i];
@@ -416,7 +417,7 @@ module issue_read_operands import ariane_pkg::*; #(
         ariane_regfile_fpga #(
             .CVA6Cfg        ( CVA6Cfg         ),
             .DATA_WIDTH     ( riscv::XLEN     ),
-            .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
+            .NR_READ_PORTS  ( CVA6Cfg.NrRgprPorts   ),
             .ZERO_REG_ZERO  ( 1               )
         ) i_ariane_regfile_fpga (
             .test_en_i ( 1'b0       ),
@@ -431,7 +432,7 @@ module issue_read_operands import ariane_pkg::*; #(
         ariane_regfile #(
             .CVA6Cfg        ( CVA6Cfg         ),
             .DATA_WIDTH     ( riscv::XLEN     ),
-            .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
+            .NR_READ_PORTS  ( CVA6Cfg.NrRgprPorts   ),
             .ZERO_REG_ZERO  ( 1               )
         ) i_ariane_regfile (
             .test_en_i ( 1'b0       ),
@@ -447,22 +448,22 @@ module issue_read_operands import ariane_pkg::*; #(
     // -----------------------------
     // Floating-Point Register File
     // -----------------------------
-    logic [2:0][FLEN-1:0] fprdata;
+    logic [2:0][CVA6Cfg.FLen-1:0] fprdata;
 
     // pack signals
     logic [2:0][4:0]  fp_raddr_pack;
     logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] fp_wdata_pack;
 
     generate
-        if (FP_PRESENT) begin : float_regfile_gen
+        if (CVA6Cfg.FpPresent) begin : float_regfile_gen
             assign fp_raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
             for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_fp_wdata_pack
-                assign fp_wdata_pack[i] = {wdata_i[i][FLEN-1:0]};
+                assign fp_wdata_pack[i] = {wdata_i[i][CVA6Cfg.FLen-1:0]};
             end
             if (ariane_pkg::FPGA_EN) begin : gen_fpga_fp_regfile
                 ariane_regfile_fpga #(
                     .CVA6Cfg        ( CVA6Cfg         ),
-                    .DATA_WIDTH     ( FLEN            ),
+                    .DATA_WIDTH     ( CVA6Cfg.FLen    ),
                     .NR_READ_PORTS  ( 3               ),
                     .ZERO_REG_ZERO  ( 0               )
                 ) i_ariane_fp_regfile_fpga (
@@ -477,7 +478,7 @@ module issue_read_operands import ariane_pkg::*; #(
             end else begin : gen_asic_fp_regfile
                 ariane_regfile #(
                     .CVA6Cfg        ( CVA6Cfg         ),
-                    .DATA_WIDTH     ( FLEN            ),
+                    .DATA_WIDTH     ( CVA6Cfg.FLen    ),
                     .NR_READ_PORTS  ( 3               ),
                     .ZERO_REG_ZERO  ( 0               )
                 ) i_ariane_fp_regfile (
@@ -495,9 +496,9 @@ module issue_read_operands import ariane_pkg::*; #(
         end
     endgenerate
 
-    assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[0]} : rdata[0];
-    assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[1]} : rdata[1];
-    assign operand_c_regfile = NR_RGPR_PORTS == 3 ? (is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[2]} : rdata[2])
+    assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[0];
+    assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[1];
+    assign operand_c_regfile = CVA6Cfg.NrRgprPorts == 3 ? (is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[2]} : rdata[2])
                                                   : fprdata[2];
 
     // ----------------------
@@ -529,7 +530,7 @@ module issue_read_operands import ariane_pkg::*; #(
 
     //pragma translate_off
     initial begin
-        assert (NR_RGPR_PORTS == 2 || (NR_RGPR_PORTS == 3 && CVXIF_PRESENT))
+        assert (CVA6Cfg.NrRgprPorts == 2 || (CVA6Cfg.NrRgprPorts == 3 && CVA6Cfg.CvxifEn))
         else $fatal(1, "If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports.");
     end
 

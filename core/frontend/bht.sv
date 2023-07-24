@@ -32,12 +32,12 @@ module bht #(
     output ariane_pkg::bht_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] bht_prediction_o
 );
     // the last bit is always zero, we don't need it for indexing
-    localparam OFFSET = ariane_pkg::RVC == 1'b1 ? 1 : 2;
+    localparam OFFSET = CVA6Cfg.RVC == 1'b1 ? 1 : 2;
     // re-shape the branch history table
     localparam NR_ROWS = NR_ENTRIES / ariane_pkg::INSTR_PER_FETCH;
     // number of bits needed to index the row
     localparam ROW_ADDR_BITS = $clog2(ariane_pkg::INSTR_PER_FETCH);
-    localparam ROW_INDEX_BITS = ariane_pkg::RVC == 1'b1 ? $clog2(ariane_pkg::INSTR_PER_FETCH) : 1;
+    localparam ROW_INDEX_BITS = CVA6Cfg.RVC == 1'b1 ? $clog2(ariane_pkg::INSTR_PER_FETCH) : 1;
     // number of bits we should use for prediction
     localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
     // we are not interested in all bits of the address
@@ -53,7 +53,7 @@ module bht #(
 
     assign index     = vpc_i[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
     assign update_pc = bht_update_i.pc[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
-    if (ariane_pkg::RVC) begin : gen_update_row_index
+    if (CVA6Cfg.RVC) begin : gen_update_row_index
       assign update_row_index = bht_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
     end else begin
       assign update_row_index = '0;
@@ -131,7 +131,7 @@ module bht #(
       ariane_pkg::bht_t [ariane_pkg::INSTR_PER_FETCH-1:0]        bht;
       ariane_pkg::bht_t [ariane_pkg::INSTR_PER_FETCH-1:0]        bht_updated;
 
-      if (ariane_pkg::RVC) begin : gen_row_index
+      if (CVA6Cfg.RVC) begin : gen_row_index
         assign row_index        = vpc_i[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
       end else begin
         assign row_index = '0;

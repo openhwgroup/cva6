@@ -35,7 +35,30 @@ module ariane_tb;
         unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
         unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
         unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
-        unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // AxiUserWidth
+        unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth),  // AxiUserWidth
+        bit'(cva6_config_pkg::CVA6ConfigFpuEn),               // FpuEn
+        bit'(cva6_config_pkg::CVA6ConfigF16En),               // XF16
+        bit'(cva6_config_pkg::CVA6ConfigF16AltEn),            // XF16ALT
+        bit'(cva6_config_pkg::CVA6ConfigF8En),                // XF8
+        bit'(cva6_config_pkg::CVA6ConfigAExtEn),              // RVA
+        bit'(cva6_config_pkg::CVA6ConfigVExtEn),              // RVV
+        bit'(cva6_config_pkg::CVA6ConfigCExtEn),              // RVC
+        bit'(cva6_config_pkg::CVA6ConfigFVecEn),              // XFVEC
+        bit'(cva6_config_pkg::CVA6ConfigCvxifEn),             // CvxifEn
+        // Extended
+        bit'(0),                                              // RVF
+        bit'(0),                                              // RVD
+        bit'(0),                                              // FpPresent
+        riscv::XLEN'(0),                                      // IsaCode
+        bit'(0),                                              // NSX
+        unsigned'(0),                                         // FLen
+        bit'(0),                                              // RVFVec
+        bit'(0),                                              // XF16Vec
+        bit'(0),                                              // XF16ALTVec
+        bit'(0),                                              // XF8Vec
+        unsigned'(0),                                         // NR_RGPR_PORTS
+        unsigned'(0),                                         // NrWbPorts
+        bit'(0)                                               // EnableAccelerator
     };
     localparam type rvfi_instr_t = struct packed {
         logic [ariane_pkg::NRET-1:0]                  valid;
