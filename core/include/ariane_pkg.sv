@@ -37,11 +37,19 @@ package ariane_pkg;
     typedef struct packed {
       int unsigned NrCommitPorts;
       int unsigned IsRVFI;
+      int unsigned AxiAddrWidth;
+      int unsigned AxiDataWidth;
+      int unsigned AxiIdWidth;
+      int unsigned AxiUserWidth;
     } cva6_cfg_t;
 
     localparam cva6_cfg_t cva6_cfg_empty = {
       unsigned'(0),  // NrCommitPorts
-      unsigned'(0)   // IsRVFI
+      unsigned'(0),  // IsRVFI
+      unsigned'(0),  // AxiAddrWidth
+      unsigned'(0),  // AxiDataWidth
+      unsigned'(0),  // AxiIdWidth
+      unsigned'(0)   // AxiUserWidth
     };
 
     localparam NrMaxRules = 16;
@@ -302,15 +310,14 @@ package ariane_pkg;
     // AXI
     // ---------------
 
-    localparam AXI_ID_WIDTH = cva6_config_pkg::CVA6ConfigAxiIdWidth;
-    localparam AXI_ADDR_WIDTH = cva6_config_pkg::CVA6ConfigAxiAddrWidth;
-    localparam AXI_DATA_WIDTH = cva6_config_pkg::CVA6ConfigAxiDataWidth;
     localparam FETCH_USER_WIDTH = cva6_config_pkg::CVA6ConfigFetchUserWidth;
     localparam DATA_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
     localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
     localparam AXI_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
     localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
     localparam FETCH_USER_EN = cva6_config_pkg::CVA6ConfigFetchUserEn;
+
+    typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } ad_req_t;
 
     // ---------------
     // Fetch Stage

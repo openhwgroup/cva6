@@ -17,13 +17,10 @@
 
 package ariane_axi;
 
-    // used in axi_adapter.sv
-    typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } ad_req_t;
-
-    localparam IdWidth   = ariane_pkg::AXI_ID_WIDTH; // Recommended by AXI standard
-    localparam UserWidth = ariane_pkg::AXI_USER_WIDTH;
-    localparam AddrWidth = ariane_pkg::AXI_ADDR_WIDTH;
-    localparam DataWidth = ariane_pkg::AXI_DATA_WIDTH;
+    localparam IdWidth   = cva6_config_pkg::CVA6ConfigAxiIdWidth; // Recommended by AXI standard
+    localparam UserWidth = cva6_config_pkg::CVA6ConfigDataUserWidth;
+    localparam AddrWidth = cva6_config_pkg::CVA6ConfigAxiAddrWidth;
+    localparam DataWidth = cva6_config_pkg::CVA6ConfigAxiDataWidth;
     localparam StrbWidth = DataWidth / 8;
 
     typedef logic [IdWidth-1:0]   id_t;

@@ -29,7 +29,6 @@
 module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
   parameter bit          AxiCompliant  = 1'b0, // set this to 1 when using in conjunction with AXI bus adapter
-  parameter int unsigned AxiDataWidth  = 0,
   parameter int unsigned NumPorts      = 3
 ) (
   input  logic                                              clk_i,
@@ -85,7 +84,7 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // number of bits needed to address AXI data. If AxiDataWidth equals XLEN this parameter
   // is not needed. Therefore, increment it by one to avoid reverse range select during elaboration.
-  localparam AXI_OFFSET_WIDTH = AxiDataWidth == riscv::XLEN ? $clog2(AxiDataWidth/8)+1 : $clog2(AxiDataWidth/8);
+  localparam AXI_OFFSET_WIDTH = CVA6Cfg.AxiDataWidth == riscv::XLEN ? $clog2(CVA6Cfg.AxiDataWidth/8)+1 : $clog2(CVA6Cfg.AxiDataWidth/8);
 
   logic [DCACHE_NUM_BANKS-1:0]                                             bank_req;
   logic [DCACHE_NUM_BANKS-1:0]                                             bank_we;
@@ -259,7 +258,7 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   if (AxiCompliant) begin : gen_axi_off
       // In case of an uncached read, return the desired XLEN-bit segment of the most recent AXI read
-      assign wr_cl_off     = (wr_cl_nc_i) ? (AxiDataWidth == riscv::XLEN) ? '0 :
+      assign wr_cl_off     = (wr_cl_nc_i) ? (CVA6Cfg.AxiDataWidth == riscv::XLEN) ? '0 :
                               wr_cl_off_i[AXI_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES] :
                               wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES];
   end else begin  : gen_piton_off
@@ -356,12 +355,12 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
 //pragma translate_off
 `ifndef VERILATOR
   initial begin
-    cach_line_width_axi: assert (DCACHE_LINE_WIDTH >= AxiDataWidth)
+    cach_line_width_axi: assert (DCACHE_LINE_WIDTH >= CVA6Cfg.AxiDataWidth)
       else $fatal(1, "[l1 dcache] cache line size needs to be greater or equal AXI data width");
   end
 
   initial begin
-    axi_xlen: assert (AxiDataWidth >= riscv::XLEN)
+    axi_xlen: assert (CVA6Cfg.AxiDataWidth >= riscv::XLEN)
       else $fatal(1, "[l1 dcache] AXI data width needs to be greater or equal XLEN");
   end
 

@@ -52,32 +52,18 @@ module ariane_verilog_wrap
   input                       time_irq_i,   // timer interrupt in (async)
   input                       debug_req_i,  // debug request (async)
 
-`ifdef PITON_ARIANE
   // L15 (memory side)
   output [$size(wt_cache_pkg::l15_req_t)-1:0]  l15_req_o,
   input  [$size(wt_cache_pkg::l15_rtrn_t)-1:0] l15_rtrn_i
-`else
-  // AXI (memory side)
-  output [$size(ariane_axi::req_t)-1:0]             axi_req_o,
-  input  [$size(ariane_axi::resp_t)-1:0]            axi_resp_i
-`endif
  );
 
 // assign bitvector to packed struct and vice versa
-`ifdef PITON_ARIANE
   // L15 (memory side)
   wt_cache_pkg::l15_req_t  l15_req;
   wt_cache_pkg::l15_rtrn_t l15_rtrn;
 
   assign l15_req_o = l15_req;
   assign l15_rtrn  = l15_rtrn_i;
-`else
-  ariane_axi::req_t             axi_req;
-  ariane_axi::resp_t            axi_resp;
-
-  assign axi_req_o = axi_req;
-  assign axi_resp  = axi_resp_i;
-`endif
 
 
   /////////////////////////////
@@ -194,7 +180,9 @@ module ariane_verilog_wrap
   };
 
   ariane #(
-    .ArianeCfg ( ArianeOpenPitonCfg )
+    .ArianeCfg ( ArianeOpenPitonCfg ),
+    .noc_req_t  ( wt_cache_pkg::l15_req_t ),
+    .noc_resp_t ( wt_cache_pkg::l15_rtrn_t )
   ) ariane (
     .clk_i       ( clk_i      ),
     .rst_ni      ( spc_grst_l ),
@@ -204,13 +192,8 @@ module ariane_verilog_wrap
     .ipi_i       ( ipi        ),
     .time_irq_i  ( time_irq   ),
     .debug_req_i ( debug_req  ),
-`ifdef PITON_ARIANE
-    .l15_req_o   ( l15_req   ),
-    .l15_rtrn_i  ( l15_rtrn  )
-`else
-    .axi_req_o   ( axi_req   ),
-    .axi_resp_i  ( axi_resp  )
-`endif
+    .noc_req_o   ( l15_req    ),
+    .noc_resp_i  ( l15_rtrn   )
   );
 
 endmodule // ariane_verilog_wrap

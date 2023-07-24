@@ -21,13 +21,14 @@
 
 core/include/cv64a6_imafdc_sv39_openpiton_config_pkg.sv
 core/include/riscv_pkg.sv
-corev_apu/riscv-dbg/src/dm_pkg.sv
+core/include/ariane_dm_pkg.sv
+common/local/rvfi/rvfi_pkg.sv
 core/include/ariane_pkg.sv
 corev_apu/tb/ariane_soc_pkg.sv
 vendor/pulp-platform/axi/src/axi_pkg.sv
-core/include/ariane_axi_pkg.sv
+corev_apu/tb/include/ariane_axi_pkg.sv
 core/include/wt_cache_pkg.sv
-core/include/axi_intf.sv
+corev_apu/tb/axi_intf.sv
 vendor/openhwgroup/cvfpu/src/fpnew_pkg.sv
 core/include/cvxif_pkg.sv
 vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
@@ -55,7 +56,7 @@ vendor/pulp-platform/tech_cells_generic/src/deprecated/pulp_clk_cells.sv
 common/local/util/tc_sram_wrapper.sv
 vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv
-core/axi_adapter.sv
+core/cache_subsystem/axi_adapter.sv
 core/alu.sv
 core/fpu_wrap.sv
 corev_apu/src/ariane.sv
@@ -106,6 +107,7 @@ core/cache_subsystem/wt_cache_subsystem.sv
 corev_apu/clint/clint.sv
 corev_apu/clint/axi_lite_interface.sv
 corev_apu/riscv-dbg/debug_rom/debug_rom.sv
+corev_apu/riscv-dbg/src/dm_pkg.sv
 corev_apu/riscv-dbg/src/dm_csrs.sv
 corev_apu/riscv-dbg/src/dm_mem.sv
 corev_apu/riscv-dbg/src/dm_top.sv
