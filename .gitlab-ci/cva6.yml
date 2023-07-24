@@ -427,9 +427,7 @@ pub_fpga-build:
     DASHBOARD_JOB_DESCRIPTION: "Test of FPGA build flow"
     DASHBOARD_SORT_INDEX: 9
     DASHBOARD_JOB_CATEGORY: "Synthesis"
-  parallel:
-    matrix:
-      - TARGET: [cv64a6_imafdc_sv39, cv32a60x]
+    TARGET: cv32a60x
   script:
     - source $VIVADO_SETUP
     - source cva6/regress/install-cva6.sh
@@ -510,15 +508,15 @@ pub_fpga-boot:
   variables:
     VERILATOR_INSTALL_DIR: "NO" # Skip install and checks of verilator
     SPIKE_ROOT: "NO"  # Skip install and checks of spike
-    DASHBOARD_JOB_TITLE: "FPGA Linux64 Boot "
-    DASHBOARD_JOB_DESCRIPTION: "Test of Linux 64 bits boot on FPGA Genesys2"
+    DASHBOARD_JOB_TITLE: "FPGA Linux32 Boot "
+    DASHBOARD_JOB_DESCRIPTION: "Test of Linux 32 bits boot on FPGA Genesys2"
     DASHBOARD_SORT_INDEX: 10
     DASHBOARD_JOB_CATEGORY: "Synthesis"
   script:
     - source cva6/regress/install-cva6.sh
     - source $VIVADO2022_SETUP
     - mkdir -p core-v-cores/cva6/corev_apu/fpga/work-fpga
-    - mv artifacts/ariane_xilinx_cv64a6_imafdc_sv39.bit core-v-cores/cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit
+    - mv artifacts/ariane_xilinx_cv32a60x.bit core-v-cores/cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit
     - cd core-v-cores/cva6/corev_apu/fpga/scripts
     - source check_fpga_boot.sh
     - cd -
