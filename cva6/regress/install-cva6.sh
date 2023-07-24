@@ -77,11 +77,13 @@ echo $CVA6_PATCH
 
 if ! [ -d core-v-cores/cva6 ]; then
   git clone --recursive $CVA6_REPO -b $CVA6_BRANCH core-v-cores/cva6
-  git -C core-v-cores/cva6 checkout $CVA6_HASH
+  pushd core-v-cores/cva6
+  git checkout $CVA6_HASH
   echo -n "Using CVA6 commit "; git describe --always HEAD
   if [[ -n "$CVA6_PATCH" && -f "$CVA6_PATCH" ]]; then
-    git -C core-v-cores/cva6 apply "$CVA6_PATCH"
+    git apply "$CVA6_PATCH"
   fi
+  popd
 fi
 
 # install Spike
