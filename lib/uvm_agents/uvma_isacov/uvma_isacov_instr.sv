@@ -189,7 +189,7 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, x2, %0d", this.decode_rd_c($signed(this.rvfi.insn)), this.get_data_imm());
   end
   if (itype == CL_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d, %0d", this.decode_rd_c($signed(this.rvfi.insn)), this.decode_rs1_c($signed(this.rvfi.insn)), get_data_imm());
+    instr_str = $sformatf("x%0d, %0d(x%0d)", this.decode_rd_c($signed(this.rvfi.insn)), this.get_data_imm(), this.decode_rs1_c($signed(this.rvfi.insn)));
   end
   if (itype == CS_TYPE) begin
     instr_str = $sformatf("x%0d, %0d(x%0d)", this.decode_rs2_c($signed(this.rvfi.insn)), this.get_data_imm(), this.decode_rs1_c($signed(this.rvfi.insn)));
@@ -492,7 +492,7 @@ function  int  uvma_isacov_instr_c::get_data_imm();
   bit [63:0] instr = $signed(this.rvfi.insn);
   int        imm   = this.get_field_imm();
 
-  if (this.itype inside {CSS_TYPE, CIW_TYPE, CS_TYPE}) begin
+  if (this.itype inside {CSS_TYPE, CIW_TYPE, CS_TYPE, CL_TYPE}) begin
     return {imm, 2'b 00};
   end
   if (this.itype inside {CJ_TYPE} || this.name inside {C_BEQZ, C_BNEZ}) begin
