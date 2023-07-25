@@ -33,6 +33,8 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
   input logic           rst_ni,
 
   // to testbench master
+  input  logic          half_i,
+  input  logic [1:0]    max_size_i,
   ref   string          test_name_i,
   input  logic [6:0]    req_rate_i,
   input  seq_t          seq_type_i,
@@ -66,13 +68,13 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
     automatic logic [CVA6Cfg.XLEN/8-1:0]  be;
     automatic logic [1:0]  size;
 
-    void'(randomize(size) with {size <= $clog2(CVA6Cfg.XLEN/8);});
+    void'(randomize(size) with {size >= 2'b00; size <= max_size_i; size <= $clog2(CVA6Cfg.XLEN/8);});
     // align to size, set correct byte enables
     be = '0;
     unique case(size)
-      2'b00: be[paddr[2:0]    +: 1] = '1;
-      2'b01: be[paddr[2:1]<<1 +: 2] = '1;
-      2'b10: be[paddr[2:2]<<2 +: 4] = '1;
+      2'b00: be[int'(paddr[2:0]) +: 1] = '1;
+      2'b01: be[int'(paddr[2:1]<<1) +: 2] = '1;
+      2'b10: be[int'(paddr[2:2]<<2) +: 4] = '1;
       2'b11: be = '1;
       default: ;
     endcase
@@ -112,6 +114,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
         dut_req_port_o.data_req = 1'b1;
         // generate random address
         void'(randomize(paddr) with {paddr >= 0; paddr < (MemWords<<$clog2(CVA6Cfg.XLEN/8));}); 
+        if (seq_type_i == HALF_SEQ) paddr[int'(max_size_i)] = half_i;
         applyRandData();
         `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
       end
@@ -279,6 +282,11 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
       unique case(seq_type_i)
         RANDOM_SEQ: begin
           $display("%s> start random sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
+          genRandReq();
+        end
+        HALF_SEQ: begin
+          $display("%s> start half random sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
+          $display("%s> half = %b and max size = %b", PortName, half_i, max_size_i);
           genRandReq();
         end
         LINEAR_SEQ: begin

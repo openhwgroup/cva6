@@ -49,18 +49,20 @@ module std_nbdcache
 
   import std_cache_pkg::*;
 
-  localparam DCACHE_DIRTY_WIDTH = CVA6Cfg.DCACHE_SET_ASSOC * 2;
-
   localparam type cache_line_t = struct packed {
-    logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
-    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;   // data array
-    logic                                 valid;  // state array
-    logic                                 dirty;  // state array
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]          tag;    // tag array
+    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]         data;   // data array
+    logic                                         valid;  // state array
+    logic [(CVA6Cfg.DCACHE_LINE_WIDTH-1+7)/8-1:0] dirty;  // state array
   };
+  typedef struct packed {
+    logic [CVA6Cfg.DCACHE_LINE_WIDTH/8-1:0] dirty;
+    logic                                   valid;
+  } vldrty_t;
   localparam type cl_be_t = struct packed {
-    logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
-    logic [(CVA6Cfg.DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
-    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
+    logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0]  tag;     // byte enable into tag array
+    logic [(CVA6Cfg.DCACHE_LINE_WIDTH+7)/8-1:0] data;    // byte enable into data array
+    vldrty_t [CVA6Cfg.DCACHE_SET_ASSOC-1:0]     vldrty;  // bit enable into state array
   };
 
   // -------------------------------
@@ -107,6 +109,7 @@ module std_nbdcache
   cache_line_t                                                                  wdata_ram;
   cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 rdata_ram;
   cl_be_t                                                                       be_ram;
+  vldrty_t     [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 be_valid_dirty_ram;
 
   // Busy signals
   logic                                                                         miss_handler_busy;
@@ -243,21 +246,20 @@ module std_nbdcache
   // Valid/Dirty Regs
   // ----------------
 
-  // align each valid/dirty bit pair to a byte boundary in order to leverage byte enable signals.
-  // note: if you have an SRAM that supports flat bit enables for your target technology,
-  // you can use it here to save the extra 4x overhead introduced by this workaround.
-  logic [4*DCACHE_DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
+  vldrty_t [CVA6Cfg.DCACHE_SET_ASSOC-1:0] dirty_wdata, dirty_rdata;
 
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
-    assign dirty_wdata[8*i]   = wdata_ram.dirty;
-    assign dirty_wdata[8*i+1] = wdata_ram.valid;
-    assign rdata_ram[i].dirty = dirty_rdata[8*i];
-    assign rdata_ram[i].valid = dirty_rdata[8*i+1];
+    assign dirty_wdata[i]              = '{dirty: wdata_ram.dirty, valid: wdata_ram.valid};
+    assign rdata_ram[i].dirty          = dirty_rdata[i].dirty;
+    assign rdata_ram[i].valid          = dirty_rdata[i].valid;
+    assign be_valid_dirty_ram[i].valid = be_ram.vldrty[i].valid;
+    assign be_valid_dirty_ram[i].dirty = be_ram.vldrty[i].dirty;
   end
 
   sram #(
       .USER_WIDTH(1),
-      .DATA_WIDTH(4 * DCACHE_DIRTY_WIDTH),
+      .DATA_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * $bits(vldrty_t)),
+      .BYTE_WIDTH(1),
       .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
   ) valid_dirty_sram (
       .clk_i  (clk_i),
@@ -267,7 +269,7 @@ module std_nbdcache
       .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
       .wuser_i('0),
       .wdata_i(dirty_wdata),
-      .be_i   (be_ram.vldrty),
+      .be_i   (be_valid_dirty_ram),
       .ruser_o(),
       .rdata_o(dirty_rdata)
   );

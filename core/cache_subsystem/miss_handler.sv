@@ -183,7 +183,7 @@ module miss_handler
     automatic logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] evict_way, valid_way;
 
     for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
-      evict_way[i] = data_i[i].valid & data_i[i].dirty;
+      evict_way[i] = data_i[i].valid & (|data_i[i].dirty);
       valid_way[i] = data_i[i].valid;
     end
     // ----------------------
@@ -295,10 +295,11 @@ module miss_handler
           lfsr_enable = 1'b1;
           evict_way_d = lfsr_oh;
           // do we need to write back the cache line?
-          if (data_i[lfsr_bin].dirty) begin
+          if (|data_i[lfsr_bin].dirty) begin
             state_d = WB_CACHELINE_MISS;
             evict_cl_d.tag = data_i[lfsr_bin].tag;
             evict_cl_d.data = data_i[lfsr_bin].data;
+            evict_cl_d.dirty = data_i[lfsr_bin].dirty;
             cnt_d = mshr_q.addr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
             // no - we can request a cache line now
           end else state_d = REQ_CACHELINE;
@@ -331,12 +332,15 @@ module miss_handler
           addr_o = mshr_q.addr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
           req_o = evict_way_q;
           we_o = 1'b1;
-          be_o = '1;
-          be_o.vldrty = evict_way_q;
+          be_o.tag = '1;
+          be_o.data = '1;
+          for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
+            if (evict_way_q[i]) be_o.vldrty[i] = '1;
+          end
           data_o.tag   = mshr_q.addr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
           data_o.data = data_miss_fsm;
           data_o.valid = 1'b1;
-          data_o.dirty = 1'b0;
+          data_o.dirty = '0;
 
           // is this a write?
           if (mshr_q.we) begin
@@ -346,7 +350,7 @@ module miss_handler
               if (mshr_q.be[i]) data_o.data[(cl_offset+i*8)+:8] = mshr_q.wdata[i];
             end
             // its immediately dirty if we write
-            data_o.dirty = 1'b1;
+            data_o.dirty[cl_offset>>3+:8] = mshr_q.be;
           end
           // reset MSHR
           mshr_d.valid = 1'b0;
@@ -367,7 +371,7 @@ module miss_handler
           cnt_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH],
           {{CVA6Cfg.DCACHE_OFFSET_WIDTH} {1'b0}}
         };
-        req_fsm_miss_be = '1;
+        req_fsm_miss_be = evict_cl_q.dirty;
         req_fsm_miss_we = 1'b1;
         req_fsm_miss_wdata = evict_cl_q.data;
 
@@ -379,9 +383,11 @@ module miss_handler
           we_o         = 1'b1;
           data_o.valid = INVALIDATE_ON_FLUSH ? 1'b0 : 1'b1;
           // invalidate
-          be_o.vldrty  = evict_way_q;
+          for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
+            if (evict_way_q[i]) be_o.vldrty[i] = '1;
+          end
           // go back to handling the miss or flushing, depending on where we came from
-          state_d      = (state_q == WB_CACHELINE_MISS) ? MISS : FLUSH_REQ_STATUS;
+          state_d = (state_q == WB_CACHELINE_MISS) ? MISS : FLUSH_REQ_STATUS;
         end
       end
 

@@ -39,12 +39,23 @@ hdl/cv64a6_config_pkg.sv
 ../../../vendor/pulp-platform/common_cells/src/stream_demux.sv
 ../../../core/cache_subsystem/axi_adapter.sv
 ../../../common/local/util/sram.sv
+../../../common/local/util/tc_sram_wrapper.sv
+../../src/tech_cells_generic/src/rtl/tc_sram.sv
 ../../../vendor/pulp-platform/axi_riscv_atomics/src/axi_res_tbl.sv
 ../../../vendor/pulp-platform/axi_riscv_atomics/src/axi_riscv_amos.sv
 ../../../vendor/pulp-platform/axi_riscv_atomics/src/axi_riscv_amos_alu.sv
 ../../../vendor/pulp-platform/axi_riscv_atomics/src/axi_riscv_lrsc.sv
 ../../../vendor/pulp-platform/axi_riscv_atomics/src/axi_riscv_atomics.sv
 ../../../vendor/pulp-platform/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv
+../../../common/submodules/common_cells/src/id_queue.sv
+../../../common/submodules/common_cells/src/stream_fork.sv
+../../../common/submodules/common_cells/src/stream_filter.sv
+../../../common/submodules/common_cells/src/fall_through_register.sv
+../../../common/submodules/common_cells/src/stream_register.sv
+../../../common/submodules/common_cells/src/spill_register_flushable.sv
+../../../common/submodules/common_cells/src/spill_register.sv
+../../../common/submodules/common_cells/src/onehot_to_bin.sv
+../../axi/src/axi_multicut.sv
 
 ../common/tb_dcache_pkg.sv
 ../common/tb_readport.sv

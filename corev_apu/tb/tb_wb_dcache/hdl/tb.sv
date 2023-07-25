@@ -118,6 +118,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #(
   seq_t [2:0] seq_type;
   logic [3:0] seq_done;
   logic [6:0] req_rate[2:0];
+  logic half;
+  logic [1:0] max_size;
   logic seq_run, seq_last;
   logic end_of_sim;
 
@@ -258,6 +260,37 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #(
     flush[2]      = 0'b0;
     `APPL_WAIT_CYC(clk_i, 1)
   endtask : flushCache
+
+  //integer fd = $fopen("extern_write.txt","w");
+  // Write directly the tb memory
+  function automatic void external_writer(int unsigned pos, int unsigned half);
+    automatic logic[7:0] val;
+    for (int k=0; k<cva6_config_pkg::MemBytes; k++) begin
+      //$fdisplay(fd,"------------------- k = 0b%b",k);
+      if (half&&(k & (1 << pos)) || !half&&!(k & (1 << pos))) begin
+        void'(std::randomize(val));
+        //$display("+++++++++++++++++++ k = 0b%b",k);
+        tb_mem_port_t::shadow_q[k] <= val;
+        tb_mem_port_t::memory_q[k] <= val;
+      end
+    end
+  endfunction
+
+  integer fd_monitor_store_state = $fopen("monitor_store_state.txt","w");
+  // Monitor dirty bit
+  task automatic monitor_store_state();
+    forever begin
+      @(posedge(clk_i));
+      #1
+      //
+      if(i_dut.master_ports[2].i_cache_ctrl.state_q == 4'h5 && i_dut.master_ports[2].i_cache_ctrl.state_d == 4'h0 ) begin
+        if((|i_dut.master_ports[2].i_cache_ctrl.data_o.dirty[3:0]) || (|i_dut.master_ports[2].i_cache_ctrl.data_o.dirty[11:8])) begin
+          $fdisplay(fd_monitor_store_state,"[%0t ns]ERROR: dirty bits = %b  be = %b  index = %b",$time,i_dut.master_ports[2].i_cache_ctrl.data_o.dirty,i_dut.master_ports[2].i_cache_ctrl.mem_req_q.be[7:0],i_dut.master_ports[2].i_cache_ctrl.mem_req_q.index);
+        end
+      end
+    end
+
+  endtask : monitor_store_state
 
 ///////////////////////////////////////////////////////////////////////////////
 // Clock Process
@@ -598,6 +631,8 @@ axi_riscv_atomics_wrap #(
     .clk_i          ( clk_i               ),
     .rst_ni         ( rst_ni              ),
     .test_name_i    ( test_name           ),
+    .half_i         ( half                ),
+    .max_size_i     ( max_size            ),
     .req_rate_i     ( req_rate[2]         ),
     .seq_type_i     ( seq_type[2]         ),
     .seq_run_i      ( seq_run             ),
@@ -670,6 +705,8 @@ axi_riscv_atomics_wrap #(
 
   initial begin : p_stim
     test_name        = "";
+    half             = 0;
+    max_size         = 2'b11;
     seq_type         = '{default: RANDOM_SEQ};
     req_rate         = '{default: 7'd75};
     seq_run          = 1'b0;
@@ -1005,6 +1042,191 @@ axi_riscv_atomics_wrap #(
     tb_mem_port_t::check_mem();
 
     /////////////////////////////////////////////
+    test_name    = "TEST 19 -- random write on half memory(LSB) and external writer on the other half -- max size = 64b -- enabled cache + tlb, mem contentions + invalidations";
+
+    // Config
+    enable_i     = 1;
+    tlb_rand_en  = 1;
+    mem_rand_en  = 1;
+    inv_rand_en  = 1;
+    max_size     = 2'b11;
+    half         = 0;
+    seq_type     = '{HALF_SEQ, RANDOM_SEQ, RANDOM_SEQ};
+    req_rate     = '{default:50};
+
+    // cache enabled ~> requests to cached region should use cache port,
+    // those to uncached regions should use bypass port
+    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
+
+    runSeq(0,nWriteVectors,0);
+    external_writer(int'(max_size),int'(!half));
+    flushCache();
+    tb_mem_port_t::check_mem();
+
+    //////////////////////////////////////////////
+    test_name    = "TEST 20 -- random write on half memory(MSB) and external writer on the other half -- max size = 64b -- enabled cache + tlb, mem contentions + invalidations";
+
+    // Config
+    enable_i     = 1;
+    tlb_rand_en  = 1;
+    mem_rand_en  = 1;
+    inv_rand_en  = 1;
+    max_size     = 2'b11;
+    half         = 1;
+    seq_type     = '{HALF_SEQ, RANDOM_SEQ, RANDOM_SEQ};
+    req_rate     = '{default:50};
+
+    // cache enabled ~> requests to cached region should use cache port,
+    // those to uncached regions should use bypass port
+    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
+
+    runSeq(0,nWriteVectors,0);
+    external_writer(int'(max_size),int'(!half));
+    flushCache();
+    tb_mem_port_t::check_mem();
+
+    //////////////////////////////////////////////
+    test_name    = "TEST 21 -- random write on half memory(LSB) and external writer on the other half -- max size = 32b -- enabled cache + tlb, mem contentions + invalidations";
+
+    // Config
+    enable_i     = 1;
+    tlb_rand_en  = 1;
+    mem_rand_en  = 1;
+    inv_rand_en  = 1;
+    max_size     = 2'b10;
+    half         = 0;
+    seq_type     = '{HALF_SEQ, RANDOM_SEQ, RANDOM_SEQ};
+    req_rate     = '{default:50};
+
+    // cache enabled ~> requests to cached region should use cache port,
+    // those to uncached regions should use bypass port
+    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
+
+    runSeq(0,nWriteVectors,0);
+    external_writer(int'(max_size),int'(!half));
+    flushCache();
+    tb_mem_port_t::check_mem();
+
+    //////////////////////////////////////////////
+    test_name    = "TEST 22 -- random write on half memory(MSB) and external writer on the other half -- max size = 32b -- enabled cache + tlb, mem contentions + invalidations";
+
+    // Config
+    enable_i     = 1;
+    tlb_rand_en  = 1;
+    mem_rand_en  = 1;
+    inv_rand_en  = 1;
+    max_size     = 2'b10;
+    half         = 1;
+    seq_type     = '{HALF_SEQ, RANDOM_SEQ, RANDOM_SEQ};
+    req_rate     = '{default:50};
+
+    // cache enabled ~> requests to cached region should use cache port,
+    // those to uncached regions should use bypass port
+    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
+
+    runSeq(0,nWriteVectors,0);
+    external_writer(int'(max_size),int'(!half));
+    flushCache();
+    tb_mem_port_t::check_mem();
+
+    //////////////////////////////////////////////
+    test_name    = "TEST 23 -- random write on half memory(LSB) and external writer on the other half -- max size = 16b -- enabled cache + tlb, mem contentions + invalidations";
+
+    // Config
+    enable_i     = 1;
+    tlb_rand_en  = 1;
+    mem_rand_en  = 1;
+    inv_rand_en  = 1;
+    max_size     = 2'b01;
+    half         = 0;
+    seq_type     = '{HALF_SEQ, RANDOM_SEQ, RANDOM_SEQ};
+    req_rate     = '{default:50};
+
+    // cache enabled ~> requests to cached region should use cache port,
+    // those to uncached regions should use bypass port
+    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
+
+    runSeq(0,nWriteVectors,0);
+    external_writer(int'(max_size),int'(!half));
+    flushCache();
+    tb_mem_port_t::check_mem();
+
+    //////////////////////////////////////////////
+    test_name    = "TEST 24 -- random write on half memory(MSB) and external writer on the other half -- max size = 16b -- enabled cache + tlb, mem contentions + invalidations";
+
+    // Config
+    enable_i     = 1;
+    tlb_rand_en  = 1;
+    mem_rand_en  = 1;
+    inv_rand_en  = 1;
+    max_size     = 2'b01;
+    half         = 1;
+    seq_type     = '{HALF_SEQ, RANDOM_SEQ, RANDOM_SEQ};
+    req_rate     = '{default:50};
+
+    // cache enabled ~> requests to cached region should use cache port,
+    // those to uncached regions should use bypass port
+    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
+
+    runSeq(0,nWriteVectors,0);
+    external_writer(int'(max_size),int'(!half));
+    flushCache();
+    tb_mem_port_t::check_mem();
+
+    //////////////////////////////////////////////
+    test_name    = "TEST 25 -- random write on half memory(LSB) and external writer on the other half -- max size = 8b -- enabled cache + tlb, mem contentions + invalidations";
+
+    // Config
+    enable_i     = 1;
+    tlb_rand_en  = 1;
+    mem_rand_en  = 1;
+    inv_rand_en  = 1;
+    max_size     = 2'b00;
+    half         = 0;
+    seq_type     = '{HALF_SEQ, RANDOM_SEQ, RANDOM_SEQ};
+    req_rate     = '{default:50};
+
+    // cache enabled ~> requests to cached region should use cache port,
+    // those to uncached regions should use bypass port
+    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
+
+    runSeq(0,nWriteVectors,0);
+    external_writer(int'(max_size),int'(!half));
+    flushCache();
+    tb_mem_port_t::check_mem();
+
+    //////////////////////////////////////////////
+    test_name    = "TEST 26 -- random write on half memory(MSB) and external writer on the other half -- max size = 8b -- enabled cache + tlb, mem contentions + invalidations";
+
+    // Config
+    enable_i     = 1;
+    tlb_rand_en  = 1;
+    mem_rand_en  = 1;
+    inv_rand_en  = 1;
+    max_size     = 2'b00;
+    half         = 1;
+    seq_type     = '{HALF_SEQ, RANDOM_SEQ, RANDOM_SEQ};
+    req_rate     = '{default:50};
+
+    // cache enabled ~> requests to cached region should use cache port,
+    // those to uncached regions should use bypass port
+    bypass_mem_port.set_region(0, CachedAddrBeg - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
+
+    runSeq(0,nWriteVectors,1);
+    external_writer(int'(max_size),int'(!half));
+    flushCache();
+    tb_mem_port_t::check_mem();
+
+    //////////////////////////////////////////////
+
     end_of_sim = 1;
     $display("TB> end test sequences");
     tb_mem_port_t::report_mem();
