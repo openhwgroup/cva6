@@ -205,15 +205,9 @@ module miss_handler
         // lowest priority are AMOs, wait until everything else is served before going for the AMOs
         if (amo_req_i.req && !busy_i) begin
           // 1. Flush the cache
-          if (!serve_amo_q) begin
-            state_d = FLUSH_REQ_STATUS;
-            serve_amo_d = 1'b1;
-            cnt_d = '0;
-            // 2. Do the AMO
-          end else begin
-            state_d = AMO_REQ;
-            serve_amo_d = 1'b0;
-          end
+          state_d = FLUSH_REQ_STATUS;
+          serve_amo_d = 1'b1;
+          cnt_d = '0;
         end
         // check if we want to flush and can flush e.g.: we are not busy anymore
         // TODO: Check that the busy flag is indeed needed
@@ -380,7 +374,13 @@ module miss_handler
           if (cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == DCACHE_NUM_WORDS - 1) begin
             // only acknowledge if the flush wasn't triggered by an atomic
             flush_ack_o = ~serve_amo_q;
-            state_d     = IDLE;
+            // if we are flushing because of an AMO go to serve it
+            if (serve_amo_q) begin
+              state_d = AMO_REQ;
+              serve_amo_d = 1'b0;
+            end else begin
+              state_d = IDLE;
+            end
           end
         end
       end
