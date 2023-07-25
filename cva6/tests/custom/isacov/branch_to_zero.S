@@ -39,7 +39,7 @@ branch2:
 branch3:
   bltu       a1, a1, branch3
 branch4:
-  beq        a1, zero, branch4
+  beq        zero, a1, branch4
 branch5:
   bne        t5, t5, branch5
   addi       a0, a0, 22
