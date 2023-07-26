@@ -19,13 +19,25 @@ There are README files in each directory with additional information.
 ## Prerequisites
 To execute tests on CVA6 core, you need a RISC-V toolchain.
 
-For instance, you can use the gcc 10 toolchain.
-To build and install it, use scripts located at
-https://github.com/ThalesGroup/cva6-tools
+Be aware that only gcc 11.1.0 or newer are supported in core-v-verif repository.
+To build and install riscv gcc compiler in local, you can use the following commands :
 
-Once the toolchain is installed, set the `RISCV` environment variable
-to your toolchain installation path e.g. `RISCV = /path/to/gcc-10.2`
-to run the test scripts.
+- `git clone https://github.com/riscv-collab/riscv-gnu-toolchain`
+- `cd riscv-gnu-toolchain`
+- `git clone https://github.com/gcc-mirror/gcc -b releases/gcc-13 gcc-13`
+- ```./configure –prefix:/path/to/installation/directory --with-multilib-generator="rv32e-ilp32e--;rv32i-ilp32--;rv32im-ilp32--;rv32iac-ilp32--;rv32imac-ilp32--;rv32imafc-ilp32f--;rv32imafdc-ilp32d--;rv64i-lp64--;rv64ic-lp64--;rv64iac-lp64--;rv64imac-lp64--;rv64imafdc-lp64d--;rv64im-lp64--;" --with-gcc-src=`pwd`/gcc-13```
+- `make –j32`
+
+These commands will install the riscv gcc 13.1.0 compiler which is the latest version.
+Once running the previous commands, your environment must be updated with :
+
+- `export RISCV=/path/to/installation/directory`
+- `export RISCV_PREFIX=/path/to/installation/directory/bin/riscv64-unknown-`
+- `export RISCV_GCC=/path/to/installation/directory/bin/riscv64-unknown-gcc`
+- `export CV_SW_PREFIX=riscv64-unknown-elf-`
+
+This 4 variables will ensure you use correctly the new gcc compiler you have just installed.
+You will now be able to run the test scripts.
 
 ## Test execution
 Run one of the shell scripts:
