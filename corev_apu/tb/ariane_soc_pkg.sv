@@ -72,7 +72,7 @@ package ariane_soc;
   // cva6 configuration
   localparam ariane_pkg::cva6_cfg_t CVA6SoCCfg = '{
     NrCommitPorts: cva6_config_pkg::CVA6ConfigNrCommitPorts,
-    IsRVFI:        0,
+    IsRVFI:        cva6_config_pkg::CVA6ConfigRvfiTrace,
     AxiAddrWidth:  cva6_config_pkg::CVA6ConfigAxiAddrWidth,
     AxiDataWidth:  cva6_config_pkg::CVA6ConfigAxiDataWidth,
     AxiIdWidth:    cva6_config_pkg::CVA6ConfigAxiIdWidth,
