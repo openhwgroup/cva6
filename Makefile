@@ -142,7 +142,7 @@ CFLAGS += -I$(QUESTASIM_HOME)/include         \
           -I$(VL_INC_DIR)/vltstd              \
           -I$(RISCV)/include                  \
           -I$(SPIKE_INSTALL_DIR)/include      \
-          -std=c++17 -I../corev_apu/tb/dpi -O3
+          -std=c++17 -Icorev_apu/tb/dpi -O3
 
 ifdef XCELIUM_HOME
 CFLAGS += -I$(XCELIUM_HOME)/tools/include
@@ -434,9 +434,9 @@ XRUN_COMPL_LOG     ?= xrun_compl.log
 XRUN_RUN_LOG       ?= xrun_run.log
 CVA6_HOME	   ?= $(realpath -s $(root-dir))
 
-XRUN_INCDIR :=+incdir+$(CVA6_HOME)/src/axi_node 	\
-	+incdir+$(CVA6_HOME)/src/common_cells/include 	\
-	+incdir+$(CVA6_HOME)/src/util
+XRUN_INCDIR :=+incdir+$(CVA6_HOME)/core/include 			\
+	+incdir+$(CVA6_HOME)/vendor/pulp-platform/axi/include/		\
+	+incdir+$(CVA6_HOME)/corev_apu/register_interface/include
 XRUN_TB := $(addprefix $(CVA6_HOME)/, corev_apu/tb/ariane_tb.sv)
 
 XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc 			\
@@ -491,7 +491,10 @@ xrun_sim: xrun_comp
 		$(XRUN_RUN)			\
 		+MAX_CYCLES=$(max_cycles)	\
 		+UVM_TESTNAME=$(test_case)	\
+		+time_out=2000000000            \
+		+tohost_addr=80001000           \
 		-l $(XRUN_RUN_LOG)		\
+		+gui				\
 		+permissive-off			\
 		++$(elf_file)
 
