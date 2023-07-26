@@ -132,7 +132,9 @@ l15_rtrn_t rtrn_fifo_data;
 
 
   // openpiton is big endian
-  assign l15_req_o.l15_data = swendian64(dcache_data.data);
+  if (CVA6Cfg.NOCType == ariane_pkg::NOC_TYPE_L15_BIG_ENDIAN) assign l15_req_o.l15_data = swendian64(dcache_data.data);
+  else if (CVA6Cfg.NOCType == ariane_pkg::NOC_TYPE_L15_LITTLE_ENDIAN) assign l15_req_o.l15_data = dcache_data.data;
+  else $fatal(1,"[wt_l15_adapter] Unsupported NOC type");
 
   // arbiter
   rrarbiter #(

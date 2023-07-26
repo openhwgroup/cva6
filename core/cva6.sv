@@ -1079,7 +1079,7 @@ module cva6 import ariane_pkg::*; #(
   // -------------------
   // pragma translate_off
   `ifndef VERILATOR
-  initial ariane_pkg::check_cfg(CVA6Cfg);
+  initial config_pkg::check_cfg(CVA6Cfg);
   `endif
   // pragma translate_on
 

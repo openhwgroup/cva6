@@ -28,47 +28,6 @@
 /// moved out to favour a fully parameterizable core.
 package ariane_pkg;
 
-    /// Utility function being called to check parameters. Not all values make
-    /// sense for all parameters, here is the place to sanity check them.
-    function automatic void check_cfg (cva6_cfg_t Cfg);
-      // pragma translate_off
-      `ifndef VERILATOR
-        assert(Cfg.RASDepth > 0);
-        assert(2**$clog2(Cfg.BTBEntries)  == Cfg.BTBEntries);
-        assert(2**$clog2(Cfg.BHTEntries)  == Cfg.BHTEntries);
-        assert(Cfg.NrNonIdempotentRules <= NrMaxRules);
-        assert(Cfg.NrExecuteRegionRules <= NrMaxRules);
-        assert(Cfg.NrCachedRegionRules  <= NrMaxRules);
-        assert(Cfg.NrPMPEntries <= 16);
-      `endif
-      // pragma translate_on
-    endfunction
-
-    function automatic logic range_check(logic[63:0] base, logic[63:0] len, logic[63:0] address);
-      // if len is a power of two, and base is properly aligned, this check could be simplified
-      // Extend base by one bit to prevent an overflow.
-      return (address >= base) && (({1'b0, address}) < (65'(base)+len));
-    endfunction : range_check
-
-    function automatic logic is_inside_nonidempotent_regions (cva6_cfg_t Cfg, logic[63:0] address);
-      logic[NrMaxRules-1:0] pass;
-      pass = '0;
-      for (int unsigned k = 0; k < Cfg.NrNonIdempotentRules; k++) begin
-        pass[k] = range_check(Cfg.NonIdempotentAddrBase[k], Cfg.NonIdempotentLength[k], address);
-      end
-      return |pass;
-    endfunction : is_inside_nonidempotent_regions
-
-    function automatic logic is_inside_execute_regions (cva6_cfg_t Cfg, logic[63:0] address);
-      // if we don't specify any region we assume everything is accessible
-      logic[NrMaxRules-1:0] pass;
-      pass = '0;
-      for (int unsigned k = 0; k < Cfg.NrExecuteRegionRules; k++) begin
-        pass[k] = range_check(Cfg.ExecuteRegionAddrBase[k], Cfg.ExecuteRegionLength[k], address);
-      end
-      return |pass;
-    endfunction : is_inside_execute_regions
-
     function automatic logic is_inside_cacheable_regions (cva6_cfg_t Cfg, logic[63:0] address);
       automatic logic[NrMaxRules-1:0] pass;
       pass = '0;

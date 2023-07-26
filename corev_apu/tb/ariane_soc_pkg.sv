@@ -82,7 +82,7 @@ package ariane_soc;
     BHTEntries:    cva6_config_pkg::CVA6ConfigBHTEntries,
     DmBaseAddress: DebugBase,
     NrPMPEntries:  unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries),
-    BusType:       ariane_pkg::BUS_TYPE_AXI4_ATOP,
+    NOCType:       ariane_pkg::NOC_TYPE_AXI4_ATOP,
     // idempotent region
     NrNonIdempotentRules:  unsigned'(1),
     NonIdempotentAddrBase: 1024'({64'b0}),

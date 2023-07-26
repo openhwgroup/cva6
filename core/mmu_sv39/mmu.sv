@@ -269,7 +269,7 @@ module mmu import ariane_pkg::*; #(
     end
 
     // check for execute flag on memory
-    assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(CVA6Cfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
+    assign match_any_execute_region = config_pkg::is_inside_execute_regions(CVA6Cfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
 
     // Instruction fetch
     pmp #(

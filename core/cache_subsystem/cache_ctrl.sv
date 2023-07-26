@@ -250,7 +250,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                     // -------------------------
                     // Check for cache-ability
                     // -------------------------
-                    if (!is_inside_cacheable_regions(CVA6Cfg, {{{64-riscv::PLEN}{1'b0}}, tag_o, {DCACHE_INDEX_WIDTH{1'b0}}})) begin
+                    if (!config_pkg::is_inside_cacheable_regions(CVA6Cfg, {{{64-riscv::PLEN}{1'b0}}, tag_o, {DCACHE_INDEX_WIDTH{1'b0}}})) begin
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
                     end
