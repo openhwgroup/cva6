@@ -836,7 +836,7 @@ def setup_parser():
                       help="Run test N times with random seed")
   parser.add_argument("--sv_seed", type=str, default="1",
                       help="Run test with a specific seed")
-  parser.add_argument("--isa_extension", type=str, default="zicsr",
+  parser.add_argument("--isa_extension", type=str, default="",
                       help="Choose additional z, s, x extensions")
   return parser
 
@@ -852,8 +852,9 @@ def load_config(args, cwd):
   
   global isa_extension_list
   isa_extension_list = args.isa_extension.split(",")  
-  
-  
+  isa_extension_list.append("zicsr")
+  isa_extension_list.append("zifencei")
+
   if args.debug:
     args.debug = open(args.debug, "w")
   if not args.csr_yaml:
@@ -989,14 +990,22 @@ def main():
     os.environ["CVA6_DV_ROOT"]  = cwd + "/../env/corev-dv"
     setup_logging(args.verbose)
     logg = logging.getLogger()
+    #Check gcc version
+    gcc_path=get_env_var("RISCV_GCC")
+    version=run_cmd("%s --version" % gcc_path)
+    gcc_version=re.match(".*\s(\d+\.\d+\.\d+).*", version)
+    gcc_version=gcc_version.group(1)
+    version_number=gcc_version.split('.')
+    if int(version_number[0])<11 :
+      logging.error('Your are currently using version %s of gcc, please update your version to version 11.1.0 or more to use all features of this script' % gcc_version)
+      sys.exit(RET_FAIL)
     #print environment softwares
-    gcc_version=get_env_var("RISCV_GCC")
     logging.info("GCC Version : %s" % (gcc_version))
     spike_version=get_env_var("SPIKE_ROOT")
     logging.info("Spike Version : %s" % (spike_version))
     verilator_version=run_cmd("verilator --version")
     logging.info("Verilator Version : %s" % (verilator_version))
-    # create file handler which logs even debug messages
+    # create file handler which logs even debug messages13.1.1
     fh = logging.FileHandler('logfile.log')
     fh.setLevel(logging.DEBUG)
     # create formatter and add it to the handlers
@@ -1010,9 +1019,10 @@ def main():
     output_dir = create_output(args.o, args.noclean, cwd+"/out_")
     
     #add z,s,x extensions to the isa if there are some
-    if isa_extension_list !=['none']:
+    if isa_extension_list !=['']:	
       for i in isa_extension_list:
-        args.isa += (f"_{i}")
+        if i!= "":
+          args.isa += (f"_{i}")
         
     if args.verilog_style_check:
       logging.debug("Run style check")
@@ -1212,3 +1222,4 @@ if __name__ == "__main__":
   sys.path.append(os.getcwd()+"/../../core-v-cores/cva6")
   from config_pkg_generator import *
   main()
+
