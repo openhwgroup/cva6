@@ -15,6 +15,8 @@ package config_pkg;
     localparam int unsigned ILEN = 32;
     localparam int unsigned NRET = 1;
 
+    localparam NrMaxRules = 16;
+
     typedef struct packed {
       int unsigned NrCommitPorts;
       int unsigned AxiAddrWidth;
@@ -50,6 +52,19 @@ package config_pkg;
       // address to which a hart should jump when it was requested to halt
       logic [63:0] HaltAddress;
       logic [63:0] ExceptionAddress;
+      // PMAs
+      int unsigned                      NrNonIdempotentRules;  // Number of non idempotent rules
+      logic [NrMaxRules-1:0][63:0]      NonIdempotentAddrBase; // base which needs to match
+      logic [NrMaxRules-1:0][63:0]      NonIdempotentLength;   // bit mask which bits to consider when matching the rule
+      int unsigned                      NrExecuteRegionRules;  // Number of regions which have execute property
+      logic [NrMaxRules-1:0][63:0]      ExecuteRegionAddrBase; // base which needs to match
+      logic [NrMaxRules-1:0][63:0]      ExecuteRegionLength;   // bit mask which bits to consider when matching the rule
+      int unsigned                      NrCachedRegionRules;   // Number of regions which have cached property
+      logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;  // base which needs to match
+      logic [NrMaxRules-1:0][63:0]      CachedRegionLength;    // bit mask which bits to consider when matching the rule
+      // cache config
+      bit                               AxiCompliant;          // set to 1 when using in conjunction with 64bit AXI bus adapter
+      bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
     } cva6_cfg_t;
 
     localparam cva6_cfg_t cva6_cfg_default = {
@@ -87,40 +102,9 @@ package config_pkg;
       64'h808            // ExceptionAddress
     } ;
 
-    localparam cva6_cfg_t cva6_cfg_empty = {
-      unsigned'(0),      // NrCommitPorts
-      unsigned'(0),      // AxiAddrWidth
-      unsigned'(0),      // AxiDataWidth
-      unsigned'(0),      // AxiIdWidth
-      unsigned'(0),      // AxiUserWidth
-      unsigned'(0),      // NrLoadBufEntries
-      bit'(0),           // FpuEn
-      bit'(0),           // XF16
-      bit'(0),           // XF16ALT
-      bit'(0),           // XF8
-      bit'(0),           // RVA
-      bit'(0),           // RVV
-      bit'(0),           // RVC
-      bit'(0),           // RVZCB
-      bit'(0),           // XFVec
-      bit'(0),           // CvxifEn
-      bit'(0),           // EnableZiCond
-      // Extended
-      bit'(0),           // RVF
-      bit'(0),           // RVD
-      bit'(0),           // FpPresent
-      bit'(0),           // NSX
-      unsigned'(0),      // FLen
-      bit'(0),           // RVFVec
-      bit'(0),           // XF16Vec
-      bit'(0),           // XF16ALTVec
-      bit'(0),           // XF8Vec
-      unsigned'(0),      // NrRgprPorts
-      unsigned'(0),      // NrWbPorts
-      bit'(0),           // EnableAccelerator
-      64'h0,             // HaltAddress
-      64'h0              // ExceptionAddress
-    } ;
+    /// Empty configuration to sanity check proper parameter passing. Whenever
+    /// you develop a module that resides within the core, assign this constant.
+    localparam cva6_cfg_t cva6_cfg_empty = '0;
 
 
 endpackage

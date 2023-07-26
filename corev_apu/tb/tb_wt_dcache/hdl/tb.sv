@@ -39,9 +39,6 @@ module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
   localparam ariane_cfg_t ArianeDefaultConfig = '{
-    RASDepth: 2,
-    BTBEntries: 32,
-    BHTEntries: 128,
     // idempotent region
     NrNonIdempotentRules:  0,
     NonIdempotentAddrBase: {64'b0},
@@ -57,9 +54,6 @@ module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
     // cache config
     AxiCompliant:          1'b1,
     SwapEndianess:         1'b0,
-    // debug
-    DmBaseAddress:         64'h0,
-    NrPMPEntries:          0
   };
 
   // contention and invalidation rates (in %)

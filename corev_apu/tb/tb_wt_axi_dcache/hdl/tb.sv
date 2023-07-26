@@ -377,9 +377,6 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
 ///////////////////////////////////////////////////////////////////////////////
 
   localparam ariane_cfg_t ArianeDefaultConfig = '{
-    RASDepth: 2,
-    BTBEntries: 32,
-    BHTEntries: 128,
     // idempotent region
     NrNonIdempotentRules:  0,
     NonIdempotentAddrBase: {64'b0},
@@ -395,9 +392,6 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
     // cache config
     AxiCompliant:          1'b1,
     SwapEndianess:         1'b0,
-    // debug
-    DmBaseAddress:         64'h0,
-    NrPMPEntries:          0
   };
 
   wt_cache_subsystem  #(

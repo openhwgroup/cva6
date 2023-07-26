@@ -16,8 +16,7 @@
 // change request from the back-end and does branch prediction.
 
 module frontend import ariane_pkg::*; #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
   input  logic               clk_i,              // Clock
   input  logic               rst_ni,             // Asynchronous reset active low
@@ -354,7 +353,7 @@ module frontend import ariane_pkg::*; #(
       end
       // 7. Debug
       // enter debug on a hard-coded base-address
-      if (set_debug_pc_i) npc_d = ArianeCfg.DmBaseAddress[riscv::VLEN-1:0] + CVA6Cfg.HaltAddress[riscv::VLEN-1:0];
+      if (set_debug_pc_i) npc_d = CVA6Cfg.DmBaseAddress[riscv::VLEN-1:0] + CVA6Cfg.HaltAddress[riscv::VLEN-1:0];
       icache_dreq_o.vaddr = fetch_address;
     end
 
@@ -396,12 +395,12 @@ module frontend import ariane_pkg::*; #(
       end
     end
 
-    if (ArianeCfg.RASDepth == 0) begin
+    if (CVA6Cfg.RASDepth == 0) begin
       assign ras_predict = '0;
     end else begin : ras_gen
       ras #(
         .CVA6Cfg ( CVA6Cfg ),
-        .DEPTH  ( ArianeCfg.RASDepth  )
+        .DEPTH  ( CVA6Cfg.RASDepth  )
       ) i_ras (
         .clk_i,
         .rst_ni,
@@ -418,12 +417,12 @@ module frontend import ariane_pkg::*; #(
     //and can be read at the same cycle.
     assign vpc_btb = (ariane_pkg::FPGA_EN) ? icache_dreq_i.vaddr : icache_vaddr_q;
 
-    if (ArianeCfg.BTBEntries == 0) begin
+    if (CVA6Cfg.BTBEntries == 0) begin
       assign btb_prediction = '0;
     end else begin : btb_gen
       btb #(
         .CVA6Cfg          ( CVA6Cfg                ),
-        .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
+        .NR_ENTRIES       ( CVA6Cfg.BTBEntries   )
       ) i_btb (
         .clk_i,
         .rst_ni,
@@ -435,12 +434,12 @@ module frontend import ariane_pkg::*; #(
       );
     end
 
-    if (ArianeCfg.BHTEntries == 0) begin
+    if (CVA6Cfg.BHTEntries == 0) begin
       assign bht_prediction = '0;
     end else begin : bht_gen
       bht #(
         .CVA6Cfg          ( CVA6Cfg                ),
-        .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
+        .NR_ENTRIES       ( CVA6Cfg.BHTEntries   )
       ) i_bht (
         .clk_i,
         .rst_ni,

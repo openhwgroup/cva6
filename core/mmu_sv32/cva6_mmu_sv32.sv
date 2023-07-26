@@ -344,7 +344,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     pmp #(
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
-        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
+        .NR_ENTRIES ( CVA6Cfg.NrPMPEntries   )
     ) i_pmp_if (
         .addr_i        ( icache_areq_o.fetch_paddr ),
         .priv_lvl_i,

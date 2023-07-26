@@ -433,7 +433,6 @@ module cva6 import ariane_pkg::*; #(
   // --------------
   frontend #(
     .CVA6Cfg   ( CVA6ExtendCfg ),
-    .ArianeCfg ( ArianeCfg )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),
@@ -753,8 +752,6 @@ module cva6 import ariane_pkg::*; #(
   csr_regfile #(
     .CVA6Cfg                ( CVA6ExtendCfg                 ),
     .AsidWidth              ( ASID_WIDTH                    ),
-    .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
-    .NrPMPEntries           ( ArianeCfg.NrPMPEntries        ),
     .MHPMCounterNum         ( MHPMCounterNum                )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
@@ -1086,7 +1083,7 @@ module cva6 import ariane_pkg::*; #(
   // -------------------
   // pragma translate_off
   `ifndef VERILATOR
-  initial ariane_pkg::check_cfg(ArianeCfg);
+  initial ariane_pkg::check_cfg(ArianeCfg, CVA6Cfg);
   `endif
   // pragma translate_on
 

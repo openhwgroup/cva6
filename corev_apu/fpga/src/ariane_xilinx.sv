@@ -567,7 +567,7 @@ logic [1:0]    axi_adapter_size;
 assign axi_adapter_size = (riscv::XLEN == 64) ? 2'b11 : 2'b10;
 
 axi_adapter #(
-    .CVA6Cfg               ( CVA6Cfg                  ),
+    .CVA6Cfg               ( ariane_soc::CVA6SoCCfg   ),
     .DATA_WIDTH            ( riscv::XLEN              ),
     .axi_req_t             ( ariane_axi::req_t        ),
     .axi_rsp_t             ( ariane_axi::resp_t       )

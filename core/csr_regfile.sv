@@ -15,9 +15,7 @@
 
 module csr_regfile import ariane_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
-    parameter int unsigned NrPMPEntries    = 8,
     parameter int unsigned MHPMCounterNum  = 6
 ) (
     input  logic                  clk_i,                      // Clock
@@ -1269,7 +1267,7 @@ module csr_regfile import ariane_pkg::*; #(
 
         // if we are in debug mode jump to a specific address
         if (debug_mode_q) begin
-            trap_vector_base_o = DmBaseAddress[riscv::VLEN-1:0] + CVA6Cfg.ExceptionAddress[riscv::VLEN-1:0];
+            trap_vector_base_o = CVA6Cfg.DmBaseAddress[riscv::VLEN-1:0] + CVA6Cfg.ExceptionAddress[riscv::VLEN-1:0];
         end
 
         // check if we are in vectored mode, if yes then do BASE + 4 * cause we
@@ -1442,7 +1440,7 @@ module csr_regfile import ariane_pkg::*; #(
             wfi_q                  <= wfi_d;
             // pmp
             for(int i = 0; i < 16; i++) begin
-                if(i < NrPMPEntries) begin
+                if(i < CVA6Cfg.NrPMPEntries) begin
                     // We only support >=8-byte granularity, NA4 is disabled
                     if(pmpcfg_d[i].addr_mode != riscv::NA4 && !(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1)) begin
                         pmpcfg_q[i] <= pmpcfg_d[i];

@@ -27,9 +27,6 @@ package ariane_pkg;
 
     localparam NrMaxRules = 16;
     typedef struct packed {
-      int                               RASDepth;
-      int                               BTBEntries;
-      int                               BHTEntries;
       // PMAs
       int unsigned                      NrNonIdempotentRules;  // Number of non idempotent rules
       logic [NrMaxRules-1:0][63:0]      NonIdempotentAddrBase; // base which needs to match
@@ -43,15 +40,9 @@ package ariane_pkg;
       // cache config
       bit                               AxiCompliant;          // set to 1 when using in conjunction with 64bit AXI bus adapter
       bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
-      //
-      logic [63:0]                      DmBaseAddress;         // offset of the debug module
-      int unsigned                      NrPMPEntries;          // Number of PMP entries
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
-      RASDepth:   int'(cva6_config_pkg::CVA6ConfigRASDepth),
-      BTBEntries: int'(cva6_config_pkg::CVA6ConfigBTBEntries),
-      BHTEntries: int'(cva6_config_pkg::CVA6ConfigBHTEntries),
       // idempotent region
       NrNonIdempotentRules:  unsigned'(2),
       NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
@@ -66,23 +57,34 @@ package ariane_pkg;
       CachedRegionLength:    1024'({64'h40000000}),
       //  cache config
       AxiCompliant:           1'b1,
-      SwapEndianess:          1'b0,
-      // debug
-      DmBaseAddress:          64'h0,
-      NrPMPEntries:           unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries)
+      SwapEndianess:          1'b0
+    };
+
+    localparam cva6_cfg_t CVA6DefaultCfg = '{
+      NrCommitPorts: unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),
+      IsRVFI:        unsigned'(cva6_config_pkg::CVA6ConfigRvfiTrace),
+      AxiAddrWidth:  unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),
+      AxiDataWidth:  unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),
+      AxiIdWidth:    unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),
+      AxiUserWidth:  unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth),
+      RASDepth:      unsigned'(cva6_config_pkg::CVA6ConfigRASDepth),
+      BTBEntries:    unsigned'(cva6_config_pkg::CVA6ConfigBTBEntries),
+      BHTEntries:    unsigned'(cva6_config_pkg::CVA6ConfigBHTEntries),
+      DmBaseAddress: 64'h0,
+      NrPMPEntries:  unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries)
     };
 
     // Function being called to check parameters
-    function automatic void check_cfg (ariane_cfg_t Cfg);
+    function automatic void check_cfg (ariane_cfg_t Cfg, cva6_cfg_t CfgCVA6);
       // pragma translate_off
       `ifndef VERILATOR
-        assert(Cfg.RASDepth > 0);
-        assert(2**$clog2(Cfg.BTBEntries)  == Cfg.BTBEntries);
-        assert(2**$clog2(Cfg.BHTEntries)  == Cfg.BHTEntries);
+        assert(CfgCVA6.RASDepth > 0);
+        assert(2**$clog2(CfgCVA6.BTBEntries)  == CfgCVA6.BTBEntries);
+        assert(2**$clog2(CfgCVA6.BHTEntries)  == CfgCVA6.BHTEntries);
         assert(Cfg.NrNonIdempotentRules <= NrMaxRules);
         assert(Cfg.NrExecuteRegionRules <= NrMaxRules);
         assert(Cfg.NrCachedRegionRules  <= NrMaxRules);
-        assert(Cfg.NrPMPEntries <= 16);
+        assert(CfgCVA6.NrPMPEntries <= 16);
       `endif
       // pragma translate_on
     endfunction

@@ -278,7 +278,7 @@ module mmu import ariane_pkg::*; #(
         .CVA6Cfg    ( CVA6Cfg                ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
-        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
+        .NR_ENTRIES ( CVA6Cfg.NrPMPEntries   )
     ) i_pmp_if (
         .addr_i        ( icache_areq_o.fetch_paddr ),
         .priv_lvl_i,
@@ -427,7 +427,7 @@ module mmu import ariane_pkg::*; #(
         .CVA6Cfg    ( CVA6Cfg                ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
-        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
+        .NR_ENTRIES ( CVA6Cfg.NrPMPEntries   )
     ) i_pmp_data (
         .addr_i        ( lsu_paddr_o         ),
         .priv_lvl_i    ( ld_st_priv_lvl_i    ),
