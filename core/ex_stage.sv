@@ -364,7 +364,7 @@ module ex_stage import ariane_pkg::*; #(
             .clk_i,
             .rst_ni,
             .fu_data_i,
-            .priv_lvl_i,
+            .priv_lvl_i (ld_st_priv_lvl_i),
             .x_valid_i,
             .x_ready_o,
             .x_off_instr_i,
