@@ -15,7 +15,6 @@
 
 module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter ariane_cfg_t ArianeCfg        = ArianeDefaultConfig, // contains cacheable regions
     parameter int unsigned NumPorts = 4,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
@@ -93,8 +92,7 @@ import std_cache_pkg::*;
     generate
         for (genvar i = 0; i < NumPorts; i++) begin : master_ports
             cache_ctrl  #(
-                .CVA6Cfg               ( CVA6Cfg              ),
-                .ArianeCfg             ( ArianeCfg            )
+                .CVA6Cfg               ( CVA6Cfg              )
             ) i_cache_ctrl (
                 .bypass_i              ( ~enable_i            ),
                 .busy_o                ( busy            [i]  ),

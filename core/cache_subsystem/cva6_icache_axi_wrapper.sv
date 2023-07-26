@@ -15,7 +15,6 @@
 
 module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig,  // contains cacheable regions
   parameter type axi_req_t = logic,
   parameter type axi_rsp_t = logic
 ) (
@@ -99,8 +98,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   cva6_icache #(
     // use ID 0 for icache reads
     .CVA6Cfg            ( CVA6Cfg       ),
-    .RdTxId             ( 0             ),
-    .ArianeCfg          ( ArianeCfg     )
+    .RdTxId             ( 0             )
   ) i_cva6_icache (
     .clk_i              ( clk_i               ),
     .rst_ni             ( rst_ni              ),

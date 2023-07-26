@@ -291,7 +291,7 @@ checked during the page table walk as well. During a page walk, all
 memory access must pass the PMP rules.
 
 The amount of entries is parametrizable under the
-`ArianeCfg.NrPMPEntries` parameter. However, the core only supports
+`CVA6Cfg.NrPMPEntries` parameter. However, the core only supports
 granularity 8 (G=8). This simplifies the implementation since we do
 not have to worry about any unaligned accesses. There are a total of
 three distinct PMP units in the design. They verify instruction

@@ -376,26 +376,8 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
 // MUT
 ///////////////////////////////////////////////////////////////////////////////
 
-  localparam ariane_cfg_t ArianeDefaultConfig = '{
-    // idempotent region
-    NrNonIdempotentRules:  0,
-    NonIdempotentAddrBase: {64'b0},
-    NonIdempotentLength:   {64'b0},
-    // executable region
-    NrExecuteRegionRules:  0,
-    ExecuteRegionAddrBase: {64'h0},
-    ExecuteRegionLength:   {64'h0},
-    // cached region
-    NrCachedRegionRules:   1,
-    CachedRegionAddrBase:  {CachedAddrBeg},//1/8th of the memory is NC
-    CachedRegionLength:    {CachedAddrEnd-CachedAddrBeg+64'b1},
-    // cache config
-    AxiCompliant:          1'b1,
-    SwapEndianess:         1'b0,
-  };
-
   wt_cache_subsystem  #(
-    .ArianeCfg    ( ArianeDefaultConfig ),
+    .CVA6Cfg      ( ariane_pkg::CVA6DefaultCfg ),
     .AxiAddrWidth ( TbAxiAddrWidthFull  ),
     .AxiDataWidth ( TbAxiDataWidthFull  ),
     .AxiIdWidth   ( TbAxiIdWidthFull    ),

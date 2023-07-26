@@ -32,8 +32,8 @@ Instantiation
      - Value
      - Description
 
-   * - ``ArianeCfg``
-     - ariane_pkg::ariane_cfg_t
+   * - ``CVA6Cfg``
+     - ariane_pkg::cva6_cfg_t
      - ariane_pkg::v0.1.0_Config
      - CVA6 v0.1.0 configuration
 

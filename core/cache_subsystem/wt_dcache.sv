@@ -18,9 +18,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter int unsigned                 NumPorts           = 4,    // number of miss ports
   // ID to be used for read and AMO transactions.
   // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
-  parameter logic [CACHE_ID_WIDTH-1:0]   RdAmoTxId          = 1,
-  // contains cacheable regions
-  parameter ariane_pkg::ariane_cfg_t     ArianeCfg          = ariane_pkg::ArianeDefaultConfig
+  parameter logic [CACHE_ID_WIDTH-1:0]   RdAmoTxId          = 1
 ) (
   input  logic                           clk_i,       // Clock
   input  logic                           rst_ni,      // Asynchronous reset active low
@@ -113,7 +111,6 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   wt_dcache_missunit #(
     .CVA6Cfg      ( CVA6Cfg                ),
-    .AxiCompliant ( ArianeCfg.AxiCompliant ),
     .AmoTxId      ( RdAmoTxId              ),
     .NumPorts     ( NumPorts               )
   ) i_wt_dcache_missunit (
@@ -175,8 +172,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
 
     wt_dcache_ctrl #(
       .CVA6Cfg       ( CVA6Cfg       ),
-      .RdTxId        ( RdAmoTxId     ),
-      .ArianeCfg     ( ArianeCfg     )
+      .RdTxId        ( RdAmoTxId     )
     ) i_wt_dcache_ctrl (
       .clk_i           ( clk_i             ),
       .rst_ni          ( rst_ni            ),
@@ -220,8 +216,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign rd_prio[NumPorts-1] = 1'b0;
 
   wt_dcache_wbuffer #(
-    .CVA6Cfg       ( CVA6Cfg       ),
-    .ArianeCfg     ( ArianeCfg     )
+    .CVA6Cfg       ( CVA6Cfg       )
   ) i_wt_dcache_wbuffer (
     .clk_i           ( clk_i                       ),
     .rst_ni          ( rst_ni                      ),
@@ -279,7 +274,6 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   wt_dcache_mem #(
     .CVA6Cfg      ( CVA6Cfg                ),
-    .AxiCompliant ( ArianeCfg.AxiCompliant ),
     .NumPorts     ( NumPorts               )
   ) i_wt_dcache_mem (
     .clk_i             ( clk_i              ),

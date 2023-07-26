@@ -38,24 +38,6 @@ module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
   parameter logic [63:0] CachedAddrBeg = MemBytes>>3;//1/8th of the memory is NC
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
-  localparam ariane_cfg_t ArianeDefaultConfig = '{
-    // idempotent region
-    NrNonIdempotentRules:  0,
-    NonIdempotentAddrBase: {64'b0},
-    NonIdempotentLength:   {64'b0},
-    // executable region
-    NrExecuteRegionRules:  0,
-    ExecuteRegionAddrBase: {64'h0},
-    ExecuteRegionLength:   {64'h0},
-    // cached region
-    NrCachedRegionRules:   1,
-    CachedRegionAddrBase:  {CachedAddrBeg},//1/8th of the memory is NC
-    CachedRegionLength:    {CachedAddrEnd-CachedAddrBeg+64'b1},
-    // cache config
-    AxiCompliant:          1'b1,
-    SwapEndianess:         1'b0,
-  };
-
   // contention and invalidation rates (in %)
   parameter MemRandHitRate   = 75;
   parameter MemRandInvRate   = 10;
@@ -220,7 +202,7 @@ module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
 ///////////////////////////////////////////////////////////////////////////////
 
   wt_dcache  #(
-    .ArianeCfg ( ArianeDefaultConfig )
+    .CVA6Cfg ( ariane_pkg::CVA6DefaultCfg )
   ) i_dut (
     .clk_i           ( clk_i           ),
     .rst_ni          ( rst_ni          ),

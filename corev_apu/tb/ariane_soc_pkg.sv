@@ -69,23 +69,6 @@ package ariane_soc;
   localparam NrRegion = 1;
   localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};
 
-  localparam ariane_pkg::ariane_cfg_t ArianeSocCfg = '{
-    // idempotent region
-    NrNonIdempotentRules:  unsigned'(1),
-    NonIdempotentAddrBase: 1024'({64'b0}),
-    NonIdempotentLength:   1024'({DRAMBase}),
-    NrExecuteRegionRules:  unsigned'(3),
-    ExecuteRegionAddrBase: 1024'({DRAMBase,   ROMBase,   DebugBase}),
-    ExecuteRegionLength:   1024'({DRAMLength, ROMLength, DebugLength}),
-    // cached region
-    NrCachedRegionRules:   unsigned'(1),
-    CachedRegionAddrBase:  1024'({DRAMBase}),
-    CachedRegionLength:    1024'({DRAMLength}),
-    //  cache config
-    AxiCompliant:           1'b1,
-    SwapEndianess:          1'b0
-  };
-
   // cva6 configuration
   localparam ariane_pkg::cva6_cfg_t CVA6SoCCfg = '{
     NrCommitPorts: cva6_config_pkg::CVA6ConfigNrCommitPorts,
@@ -98,7 +81,19 @@ package ariane_soc;
     BTBEntries:    cva6_config_pkg::CVA6ConfigBTBEntries,
     BHTEntries:    cva6_config_pkg::CVA6ConfigBHTEntries,
     DmBaseAddress: DebugBase,
-    NrPMPEntries:  unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries)
+    NrPMPEntries:  unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries),
+    BusType:       ariane_pkg::BUS_TYPE_AXI4_ATOP,
+    // idempotent region
+    NrNonIdempotentRules:  unsigned'(1),
+    NonIdempotentAddrBase: 1024'({64'b0}),
+    NonIdempotentLength:   1024'({DRAMBase}),
+    NrExecuteRegionRules:  unsigned'(3),
+    ExecuteRegionAddrBase: 1024'({DRAMBase,   ROMBase,   DebugBase}),
+    ExecuteRegionLength:   1024'({DRAMLength, ROMLength, DebugLength}),
+    // cached region
+    NrCachedRegionRules:   unsigned'(1),
+    CachedRegionAddrBase:  1024'({DRAMBase}),
+    CachedRegionLength:    1024'({DRAMLength})
   };
 
 endpackage

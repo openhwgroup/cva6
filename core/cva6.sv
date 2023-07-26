@@ -109,7 +109,6 @@ module cva6 import ariane_pkg::*; #(
         r_chan_t                     r;
   },
   //
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
   parameter type      acc_cfg_t = logic,
   parameter acc_cfg_t AccCfg    = '0,
   parameter type cvxif_req_t  = cvxif_pkg::cvxif_req_t,
@@ -594,8 +593,7 @@ module cva6 import ariane_pkg::*; #(
   // ---------
   ex_stage #(
     .CVA6Cfg    ( CVA6ExtendCfg ),
-    .ASID_WIDTH ( ASID_WIDTH ),
-    .ArianeCfg  ( ArianeCfg  )
+    .ASID_WIDTH ( ASID_WIDTH )
   ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
@@ -920,7 +918,6 @@ module cva6 import ariane_pkg::*; #(
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
     .CVA6Cfg              ( CVA6ExtendCfg ),
-    .ArianeCfg            ( ArianeCfg ),
     .NumPorts             ( NumPorts  ),
     .noc_req_t            ( noc_req_t ),
     .noc_resp_t           ( noc_resp_t )
@@ -965,7 +962,6 @@ module cva6 import ariane_pkg::*; #(
     // not as important since this cache subsystem is about to be
     // deprecated
     .CVA6Cfg               ( CVA6ExtendCfg               ),
-    .ArianeCfg             ( ArianeCfg                   ),
     .NumPorts              ( NumPorts                    ),
     .axi_ar_chan_t         ( axi_ar_chan_t               ),
     .axi_aw_chan_t         ( axi_aw_chan_t               ),
@@ -1083,7 +1079,7 @@ module cva6 import ariane_pkg::*; #(
   // -------------------
   // pragma translate_off
   `ifndef VERILATOR
-  initial ariane_pkg::check_cfg(ArianeCfg, CVA6Cfg);
+  initial ariane_pkg::check_cfg(CVA6Cfg);
   `endif
   // pragma translate_on
 

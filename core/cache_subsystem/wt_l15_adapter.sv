@@ -50,8 +50,7 @@
 
 
 module wt_l15_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter bit          SwapEndianess = 1
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
   input logic                  clk_i,
   input logic                  rst_ni,
@@ -133,8 +132,7 @@ l15_rtrn_t rtrn_fifo_data;
 
 
   // openpiton is big endian
-  if (SwapEndianess) assign l15_req_o.l15_data = swendian64(dcache_data.data);
-  else               assign l15_req_o.l15_data = dcache_data.data;
+  assign l15_req_o.l15_data = swendian64(dcache_data.data);
 
   // arbiter
   rrarbiter #(

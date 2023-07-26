@@ -16,8 +16,7 @@
 
 module ex_stage import ariane_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter int unsigned ASID_WIDTH = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter int unsigned ASID_WIDTH = 1
 ) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -304,8 +303,7 @@ module ex_stage import ariane_pkg::*; #(
 
     load_store_unit #(
         .CVA6Cfg    ( CVA6Cfg    ),
-        .ASID_WIDTH ( ASID_WIDTH ),
-        .ArianeCfg ( ArianeCfg )
+        .ASID_WIDTH ( ASID_WIDTH )
     ) lsu_i (
         .clk_i,
         .rst_ni,

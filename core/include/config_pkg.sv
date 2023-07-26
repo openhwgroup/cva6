@@ -52,19 +52,38 @@ package config_pkg;
       // address to which a hart should jump when it was requested to halt
       logic [63:0] HaltAddress;
       logic [63:0] ExceptionAddress;
-      // PMAs
-      int unsigned                      NrNonIdempotentRules;  // Number of non idempotent rules
-      logic [NrMaxRules-1:0][63:0]      NonIdempotentAddrBase; // base which needs to match
-      logic [NrMaxRules-1:0][63:0]      NonIdempotentLength;   // bit mask which bits to consider when matching the rule
-      int unsigned                      NrExecuteRegionRules;  // Number of regions which have execute property
-      logic [NrMaxRules-1:0][63:0]      ExecuteRegionAddrBase; // base which needs to match
-      logic [NrMaxRules-1:0][63:0]      ExecuteRegionLength;   // bit mask which bits to consider when matching the rule
-      int unsigned                      NrCachedRegionRules;   // Number of regions which have cached property
-      logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;  // base which needs to match
-      logic [NrMaxRules-1:0][63:0]      CachedRegionLength;    // bit mask which bits to consider when matching the rule
-      // cache config
-      bit                               AxiCompliant;          // set to 1 when using in conjunction with 64bit AXI bus adapter
-      bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
+      /// Return address stack depth, good values are around 2 to 4.
+      int unsigned RASDepth;
+      /// Branch target buffer entries.
+      int unsigned BTBEntries;
+      /// Branch history (2-bit saturation counter) size, to keep track of
+      /// branch otucomes.
+      int unsigned BHTEntries;
+      /// Offset of the debug module.
+      logic [63:0] DmBaseAddress;
+      /// Number of PMP entries.
+      int unsigned NrPMPEntries;
+      /// Set to the bus type in use.
+      bus_type_e   BusType;
+      /// Physical Memory Attributes (PMAs)
+      /// Number of non idempotent rules.
+      int unsigned                      NrNonIdempotentRules;
+      /// Base which needs to match.
+      logic [NrMaxRules-1:0][63:0]      NonIdempotentAddrBase;
+      /// Bit mask which bits to consider when matching the rule.
+      logic [NrMaxRules-1:0][63:0]      NonIdempotentLength;
+      /// Number of regions which have execute property.
+      int unsigned                      NrExecuteRegionRules;
+      /// Base which needs to match.
+      logic [NrMaxRules-1:0][63:0]      ExecuteRegionAddrBase;
+      /// Bit mask which bits to consider when matching the rule.
+      logic [NrMaxRules-1:0][63:0]      ExecuteRegionLength;
+      /// Number of regions which have cached property.
+      int unsigned                      NrCachedRegionRules;
+      /// Base which needs to match.
+      logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;
+      /// Bit mask which bits to consider when matching the rule.
+      logic [NrMaxRules-1:0][63:0]      CachedRegionLength;
     } cva6_cfg_t;
 
     localparam cva6_cfg_t cva6_cfg_default = {

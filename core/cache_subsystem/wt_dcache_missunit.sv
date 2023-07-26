@@ -16,7 +16,6 @@
 
 module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter bit                         AxiCompliant  = 1'b0, // set this to 1 when using in conjunction with AXI bus adapter
   parameter logic [CACHE_ID_WIDTH-1:0]  AmoTxId       = 1,    // TX id to be used for AMOs
   parameter int unsigned                NumPorts      = 4     // number of miss ports
 ) (
@@ -255,7 +254,7 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   end
 
   // note: openpiton returns a full cacheline!
-  if (AxiCompliant) begin : gen_axi_rtrn_mux
+  if (CVA6Cfg.BusType == ariane_pkg::BUS_TYPE_AXI4_ATOP) begin : gen_axi_rtrn_mux
     if (CVA6Cfg.AxiDataWidth > 64) begin
       assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[$clog2(CVA6Cfg.AxiDataWidth/8)-1:3]*64 +: 64];
     end else begin

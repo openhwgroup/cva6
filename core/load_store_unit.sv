@@ -15,8 +15,7 @@
 
 module load_store_unit import ariane_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter int unsigned ASID_WIDTH = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter int unsigned ASID_WIDTH = 1
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
@@ -144,8 +143,7 @@ module load_store_unit import ariane_pkg::*; #(
             .CVA6Cfg                ( CVA6Cfg                ),
             .INSTR_TLB_ENTRIES      ( ariane_pkg::INSTR_TLB_ENTRIES ),
             .DATA_TLB_ENTRIES       ( ariane_pkg::DATA_TLB_ENTRIES ),
-            .ASID_WIDTH             ( ASID_WIDTH             ),
-            .ArianeCfg              ( ArianeCfg              )
+            .ASID_WIDTH             ( ASID_WIDTH             )
         ) i_cva6_mmu (
             // misaligned bypass
             .misaligned_ex_i        ( misaligned_exception   ),
@@ -174,8 +172,7 @@ module load_store_unit import ariane_pkg::*; #(
             .CVA6Cfg                ( CVA6Cfg                ),
             .INSTR_TLB_ENTRIES      ( ariane_pkg::INSTR_TLB_ENTRIES ),
             .DATA_TLB_ENTRIES       ( ariane_pkg::DATA_TLB_ENTRIES ),
-            .ASID_WIDTH             ( ASID_WIDTH             ),
-            .ArianeCfg              ( ArianeCfg              )
+            .ASID_WIDTH             ( ASID_WIDTH             )
         ) i_cva6_mmu (
             // misaligned bypass
             .misaligned_ex_i        ( misaligned_exception   ),
@@ -289,8 +286,7 @@ module load_store_unit import ariane_pkg::*; #(
     // Load Unit
     // ------------------
     load_unit #(
-        .CVA6Cfg   ( CVA6Cfg   ),
-        .ArianeCfg ( ArianeCfg )
+        .CVA6Cfg   ( CVA6Cfg   )
     ) i_load_unit (
         .valid_i               ( ld_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
