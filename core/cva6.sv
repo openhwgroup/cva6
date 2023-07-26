@@ -114,6 +114,8 @@ module cva6 import ariane_pkg::*; #(
   },
   //
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  parameter type      acc_cfg_t = logic,
+  parameter acc_cfg_t AccCfg    = '0,
   parameter type cvxif_req_t  = cvxif_pkg::cvxif_req_t,
   parameter type cvxif_resp_t = cvxif_pkg::cvxif_resp_t
 ) (
@@ -252,6 +254,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     lsu_commit_commit_ex;
   logic                     lsu_commit_ready_ex_commit;
   logic [TRANS_ID_BITS-1:0] lsu_commit_trans_id;
+  logic                     stall_st_pending_ex;
   logic                     no_st_pending_ex;
   logic                     no_st_pending_commit;
   logic                     amo_valid_commit;
@@ -335,6 +338,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     dcache_flush_ack_cache_ctrl;
   logic                     set_debug_pc;
   logic                     flush_commit;
+  logic                     flush_acc;
 
   icache_areq_i_t           icache_areq_ex_cache;
   icache_areq_o_t           icache_areq_cache_ex;
@@ -373,6 +377,7 @@ module cva6 import ariane_pkg::*; #(
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),
+    .halt_i              ( halt_ctrl                     ),
     .debug_mode_i        ( debug_mode                    ),
     .boot_addr_i         ( boot_addr_i[riscv::VLEN-1:0]  ),
     .icache_dreq_i       ( icache_dreq_cache_if          ),
@@ -578,6 +583,7 @@ module cva6 import ariane_pkg::*; #(
     .lsu_commit_i           ( lsu_commit_commit_ex        ), // from commit
     .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
     .commit_tran_id_i       ( lsu_commit_trans_id         ), // from commit
+    .stall_st_pending_i     ( stall_st_pending_ex         ),
     .no_st_pending_o        ( no_st_pending_ex            ),
     // FPU
     .fpu_ready_o            ( fpu_ready_ex_id             ),
@@ -816,6 +822,7 @@ module cva6 import ariane_pkg::*; #(
     .fence_i                ( fence_commit_controller       ),
     .sfence_vma_i           ( sfence_vma_commit_controller  ),
     .flush_commit_i         ( flush_commit                  ),
+    .flush_acc_i            ( flush_acc                     ),
 
     .flush_icache_o         ( icache_flush_ctrl_cache       ),
     .*
@@ -920,6 +927,9 @@ module cva6 import ariane_pkg::*; #(
 
   if (ENABLE_ACCELERATOR) begin: gen_accelerator
     acc_dispatcher #(
+      .CVA6Cfg    ( CVA6Cfg      ),
+      .acc_cfg_t  ( acc_cfg_t    ),
+      .AccCfg     ( AccCfg       ),
       .acc_req_t  ( cvxif_req_t  ),
       .acc_resp_t ( cvxif_resp_t )
     ) i_acc_dispatcher (
@@ -927,6 +937,7 @@ module cva6 import ariane_pkg::*; #(
       .rst_ni                 ( rst_ni                       ),
       .flush_unissued_instr_i ( flush_unissued_instr_ctrl_id ),
       .flush_ex_i             ( flush_ctrl_ex                ),
+      .flush_pipeline_o       ( flush_acc                    ),
       .acc_cons_en_i          ( acc_cons_en_csr              ),
       .acc_fflags_valid_o     ( acc_resp_fflags_valid        ),
       .acc_fflags_o           ( acc_resp_fflags              ),
@@ -944,7 +955,9 @@ module cva6 import ariane_pkg::*; #(
       .acc_exception_o        ( acc_exception_ex_id          ),
       .acc_valid_ex_o         ( acc_valid_acc_ex             ),
       .commit_ack_i           ( commit_ack                   ),
+      .acc_stall_st_pending_o ( stall_st_pending_ex          ),
       .acc_no_st_pending_i    ( no_st_pending_commit         ),
+      .dcache_req_ports_i     ( dcache_req_ports_ex_cache    ),
       .ctrl_halt_o            ( halt_acc_ctrl                ),
       .inval_ready_i          ( inval_ready                  ),
       .inval_valid_o          ( inval_valid                  ),
@@ -963,6 +976,8 @@ module cva6 import ariane_pkg::*; #(
     assign dirty_v_state         = '0;
     assign acc_valid_acc_ex      = '0;
     assign halt_acc_ctrl         = '0;
+    assign stall_st_pending_ex   = '0;
+    assign flush_acc             = '0;
 
     // No invalidation interface
     assign inval_valid = '0;

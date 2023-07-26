@@ -23,6 +23,7 @@ module frontend import ariane_pkg::*; #(
   input  logic               rst_ni,             // Asynchronous reset active low
   input  logic               flush_i,            // flush request for PCGEN
   input  logic               flush_bp_i,         // flush branch prediction
+  input  logic               halt_i,             // halt commit stage
   input  logic               debug_mode_i,
   // global input
   input  logic [riscv::VLEN-1:0]        boot_addr_i,
@@ -338,12 +339,14 @@ module frontend import ariane_pkg::*; #(
       // 6. Pipeline Flush because of CSR side effects
       // On a pipeline flush start fetching from the next address
       // of the instruction in the commit stage
-      // we came here from a flush request of a CSR instruction or AMO,
-      // as CSR or AMO instructions do not exist in a compressed form
+      // we either came here from a flush request of a CSR instruction or AMO,
+      // so as CSR or AMO instructions do not exist in a compressed form
       // we can unconditionally do PC + 4 here
+      // or if the commit stage is halted, just take the current pc of the
+      // instruction in the commit stage
       // TODO(zarubaf) This adder can at least be merged with the one in the csr_regfile stage
       if (set_pc_commit_i) begin
-        npc_d = pc_commit_i + {{riscv::VLEN-3{1'b0}}, 3'b100};
+        npc_d = pc_commit_i + (halt_i ? '0 : {{riscv::VLEN-3{1'b0}}, 3'b100});
       end
       // 7. Debug
       // enter debug on a hard-coded base-address
