@@ -28,15 +28,6 @@
 /// moved out to favour a fully parameterizable core.
 package ariane_pkg;
 
-    function automatic logic is_inside_cacheable_regions (cva6_cfg_t Cfg, logic[63:0] address);
-      automatic logic[NrMaxRules-1:0] pass;
-      pass = '0;
-      for (int unsigned k = 0; k < Cfg.NrCachedRegionRules; k++) begin
-        pass[k] = range_check(Cfg.CachedRegionAddrBase[k], Cfg.CachedRegionLength[k], address);
-      end
-      return |pass;
-    endfunction : is_inside_cacheable_regions
-
     // TODO: Slowly move those parameters to the new system.
     localparam NR_SB_ENTRIES = cva6_config_pkg::CVA6ConfigNrScoreboardEntries; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
