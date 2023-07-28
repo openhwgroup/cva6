@@ -1,6 +1,7 @@
 ![Build Status](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml/badge.svg?branch=master)
 
-# :warning: We inform you that big RTL modifications are in process to better parametrize CVA6. For deeper information, please refer to the https://github.com/openhwgroup/cva6/issues/1233 github issue :warning:
+> **Warning**
+> We inform you that big RTL modifications are in process to better parametrize CVA6. For deeper information, please refer to the https://github.com/openhwgroup/cva6/issues/1233 github issue :warning:
 
 These changes will impact CVA6 interfaces (and top-level parameters). They will be performed progressively with several pull requests over a few weeks.
 To avoid integrating a moving target in their design, CVA6 users can therefore consider pointing to a specific GitHub hash during the changes
@@ -8,9 +9,9 @@ To avoid integrating a moving target in their design, CVA6 users can therefore c
 
 # CVA6 RISC-V CPU
 
-CVA6 is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
+CVA6 is a 6-stage, single-issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore, it is compliant to the draft external debug spec 0.13.
 
-It has configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
+It has a configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
 
 ![](docs/01_cva6_user/_static/ariane_overview.png)
 
@@ -26,7 +27,9 @@ The top-level directories of this repo:
 * **core**: Source code for the CVA6 Core only. There should be no sources in this directory used to build anything other than the CVA6 core.
 * **corev_apu**: Source code for the CVA6 APU, exclusive of the CVA6 core. There should be no sources in this directory used to build the CVA6 core.
 * **docs**: Documentation.
-* **scripts**: General scriptware.
+* **pd**: Example and CI scripts to synthesis CVA6.
+* **util**: General utility scriptware.
+* **vendor**: Third-party IP maintained outside the repository.
 
 ## Verification
 The verification environment for the CVA6 is _not_ in this Repository.
@@ -48,6 +51,10 @@ and create a new issue if your problem is not yet tracked.
 
 If you use CVA6 in your academic work you can cite us:
 
+<details>
+<summary>CVA6 Publication</summary>
+<p>
+
 ```
 @article{zaruba2019cost,
    author={F. {Zaruba} and L. {Benini}},
@@ -63,31 +70,40 @@ If you use CVA6 in your academic work you can cite us:
 }
 ```
 
+</p>
+</details>
+
 CVA6 User Documentation
 =======================
 
-   * [CVA6 RISC-V CPU](#cva6-risc-v-cpu)
-   * [Table of Contents](#table-of-contents)
-      * [Getting Started](#getting-started)
-        * [Checkout Repo](#checkout-repo)
-        * [Install Verilator Simulation Flow](#install-verilator-simulation-flow)
-        * [Build Model and Run Simulations](#build-model-and-run-simulations)
-        * [Running User-Space Applications](#running-user-space-applications)
-      * [Physical Implementation](#physical-implementation)
-         * [ASIC Synthesis](#asic-synthesis)
-         * [ASIC Gate Simulation with core-v-verif repository](#asic-gate-simulation-with-core-v-verif-repository)
-      * [FPGA Emulation](#fpga-emulation)
-         * [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
-         * [Preparing the SD Card](#preparing-the-sd-card)
-         * [Generating a Bitstream](#generating-a-bitstream)
-         * [Debugging](#debugging)
-         * [Preliminary Support for OpenPiton Cache System](#preliminary-support-for-openpiton-cache-system)
-      * [Planned Improvements](#planned-improvements)
-      * [Going Beyond](#going-beyond)
-         * [CI Testsuites and Randomized Constrained Testing with Torture](#ci-testsuites-and-randomized-constrained-testing-with-torture)
-         * [Re-generating the Bootcode (ZSBL)](#re-generating-the-bootcode-zsbl)
-   * [Contributing](#contributing)
-   * [Acknowledgements](#acknowledgements)
+- [CVA6 RISC-V CPU](#cva6-risc-v-cpu)
+  - [Directory Structure:](#directory-structure)
+  - [Verification](#verification)
+  - [Contributing](#contributing)
+  - [Issues and Troubleshooting](#issues-and-troubleshooting)
+  - [Publication](#publication)
+- [CVA6 User Documentation](#cva6-user-documentation)
+  - [Getting Started](#getting-started)
+    - [Checkout Repo](#checkout-repo)
+    - [Install Verilator Simulation Flow](#install-verilator-simulation-flow)
+    - [Build Model and Run Simulations](#build-model-and-run-simulations)
+    - [Running User-Space Applications](#running-user-space-applications)
+  - [Physical Implementation](#physical-implementation)
+    - [ASIC Synthesis](#asic-synthesis)
+    - [ASIC Gate Simulation with `core-v-verif` repository](#asic-gate-simulation-with-core-v-verif-repository)
+  - [COREV-APU FPGA Emulation](#corev-apu-fpga-emulation)
+    - [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
+    - [Preparing the SD Card](#preparing-the-sd-card)
+    - [Generating a Bitstream](#generating-a-bitstream)
+    - [Debugging](#debugging)
+    - [Preliminary Support for OpenPiton Cache System](#preliminary-support-for-openpiton-cache-system)
+  - [Planned Improvements](#planned-improvements)
+  - [Going Beyond](#going-beyond)
+    - [CI Testsuites and Randomized Constrained Testing with Torture](#ci-testsuites-and-randomized-constrained-testing-with-torture)
+    - [Memory Preloading](#memory-preloading)
+    - [Re-generating the Bootcode (ZSBL)](#re-generating-the-bootcode-zsbl)
+- [Contributing](#contributing-1)
+- [Acknowledgements](#acknowledgements)
 
 Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 

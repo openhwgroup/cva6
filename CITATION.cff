@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Zaruba"
+  given-names: "Florian"
+  orcid: "https://orcid.org/0000-0002-8194-6521"
+- family-names: "Benini"
+  given-names: "Luca"
+  orcid: "https://orcid.org/0000-0001-8068-3806"
+title: "The Cost of Application-Class Processing: Energy and Performance Analysis of a Linux-Ready 1.7-GHz 64-Bit RISC-V Core in 22-nm FDSOI Technology"
+version: 2.0.4
+doi: 10.1109/TVLSI.2019.2926114
+date-released: 2019-07-26
+url: "https://github.com/openhwgroup/cva6"

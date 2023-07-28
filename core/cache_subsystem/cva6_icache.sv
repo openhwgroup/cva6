@@ -27,21 +27,26 @@
 
 module cva6_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
-  parameter logic [MEM_TID_WIDTH-1:0]   RdTxId             = 0,                                  // ID to be used for read transactions
-  parameter ariane_pkg::ariane_cfg_t    ArianeCfg          = ariane_pkg::ArianeDefaultConfig     // contains cacheable regions
+  /// ID to be used for read transactions
+  parameter logic [MEM_TID_WIDTH-1:0]   RdTxId = 0,
+  /// Contains cacheable regions
+  parameter ariane_pkg::ariane_cfg_t    ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic                      clk_i,
   input  logic                      rst_ni,
 
-  input  logic                      flush_i,              // flush the icache, flush and kill have to be asserted together
-  input  logic                      en_i,                 // enable icache
-  output logic                      miss_o,               // to performance counter
+  /// flush the icache, flush and kill have to be asserted together
+  input  logic                      flush_i,
+  /// enable icache
+  input  logic                      en_i,
+  /// to performance counter
+  output logic                      miss_o,
   // address translation requests
-  input  icache_areq_i_t            areq_i,
-  output icache_areq_o_t            areq_o,
+  input  icache_areq_t              areq_i,
+  output icache_arsp_t              areq_o,
   // data requests
-  input  icache_dreq_i_t            dreq_i,
-  output icache_dreq_o_t            dreq_o,
+  input  icache_dreq_t              dreq_i,
+  output icache_drsp_t              dreq_o,
   // refill port
   input  logic                      mem_rtrn_vld_i,
   input  icache_rtrn_t              mem_rtrn_i,

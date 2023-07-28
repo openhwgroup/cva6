@@ -47,8 +47,8 @@ module load_store_unit import ariane_pkg::*; #(
     input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores
 
     // icache translation requests
-    input  icache_areq_o_t           icache_areq_i,
-    output icache_areq_i_t           icache_areq_o,
+    input  icache_arsp_t           icache_areq_i,
+    output icache_areq_t           icache_areq_o,
 
     input  riscv::priv_lvl_t         priv_lvl_i,               // From CSR register file
     input  riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file

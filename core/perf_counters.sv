@@ -44,7 +44,7 @@ module perf_counters import ariane_pkg::*; #(
   input  bp_resolve_t                             resolved_branch_i,
   // for newly added events
   input  exception_t                              branch_exceptions_i,  //Branch exceptions->execute unit-> branch_exception_o
-  input  icache_dreq_i_t                          l1_icache_access_i,
+  input  icache_dreq_t                          l1_icache_access_i,
   input  dcache_req_i_t[2:0]                      l1_dcache_access_i,
   input  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]miss_vld_bits_i,  //For Cache eviction (3ports-LOAD,STORE,PTW)
   input  logic                                    i_tlb_flush_i,

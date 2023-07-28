@@ -40,8 +40,8 @@ module frontend import ariane_pkg::*; #(
   input  logic               ex_valid_i,         // exception is valid - from commit
   input  logic               set_debug_pc_i,     // jump to debug address
   // Instruction Fetch
-  output icache_dreq_i_t     icache_dreq_o,
-  input  icache_dreq_o_t     icache_dreq_i,
+  output icache_dreq_t     icache_dreq_o,
+  input  icache_drsp_t     icache_dreq_i,
   // instruction output port -> to processor back-end
   output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
   output logic               fetch_entry_valid_o, // instruction in IF is valid
