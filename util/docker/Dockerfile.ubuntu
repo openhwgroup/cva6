@@ -1,0 +1,89 @@
+ARG RISCV="/opt/riscv"
+
+FROM ubuntu:22.10 as toolchain-build
+
+ARG RISCV
+ENV RISCV=$RISCV
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive \
+    && apt-get install --no-install-recommends -y \
+    autoconf \
+    automake \
+    autotools-dev \
+    curl \
+    python3 \
+    python3-pip \
+    libmpc-dev \
+    libmpfr-dev \
+    libgmp-dev \
+    gawk \
+    build-essential \
+    bison \
+    flex \
+    texinfo \
+    gperf \
+    libtool \
+    patchutils \
+    bc \
+    zlib1g-dev \
+    libexpat-dev \
+    ninja-build \
+    git \
+    cmake \
+    libglib2.0-dev
+
+RUN git clone https://github.com/riscv/riscv-gnu-toolchain
+RUN cd riscv-gnu-toolchain && git checkout 2023.07.07 && ./configure --prefix=${RISCV} --enable-multilib && make -j$(nproc)
+
+# Buld the final image
+FROM ubuntu:22.10
+
+ARG VERILATOR_VERSION="v5.012"
+ARG FESVR_VERSION="35d50bc40e59ea1d5566fbd3d9226023821b1bb6"
+ARG RISCV
+
+ENV PATH="${RISCV}/bin:${PATH}"
+ENV RISCV=$RISCV
+
+LABEL org.opencontainers.image.authors="florian.zaruba@openhwgroup.org"
+LABEL org.opencontainers.image.source https://github.com/openhwgroup/cva6
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive \
+    && apt-get install --no-install-recommends -y \
+    autoconf \
+    bc \
+    bison \
+    build-essential \
+    ca-certificates \
+    ccache \
+    flex \
+    git \
+    g++ \
+    help2man \
+    libfl2 \
+    libfl-dev \
+    libgoogle-perftools-dev \
+    numactl \
+    perl \
+    perl-doc \
+    python3 \
+    zlib1g \
+    zlib1g-dev \
+    device-tree-compiler \
+    wget \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install a RISC-V toolchain
+COPY --from=toolchain-build ${RISCV} ${RISCV}
+
+# Build and install Verilator
+RUN git clone https://github.com/verilator/verilator verilator && cd verilator && \
+    git checkout "${VERILATOR_VERSION}" && autoconf && ./configure && make && make install && cd .. && rm -rf verilator
+
+# Install FESVR
+RUN git clone https://github.com/riscv/riscv-isa-sim.git && cd riscv-isa-sim && \
+    git checkout ${FESVR_VERSION} && mkdir -p build && cd build && \
+    ../configure --prefix="${RISCV}/" && make install-config-hdrs install-hdrs libfesvr.a && mkdir -p ${RISCV}/lib && cp libfesvr.a ${RISCV}/lib
