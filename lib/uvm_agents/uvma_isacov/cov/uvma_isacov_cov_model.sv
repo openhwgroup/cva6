@@ -1194,7 +1194,6 @@ covergroup cg_cl(
     bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
   }
 
-  `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
   `ISACOV_CP_BITWISE_4_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
