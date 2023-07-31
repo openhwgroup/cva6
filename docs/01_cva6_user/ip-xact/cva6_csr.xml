@@ -532,6 +532,23 @@ an SRET instruction is executed, SIE is set to SPIE, then SPIE is set to 1.</ipx
                                         <ipxact:size>32</ipxact:size>
                                         <ipxact:access>read-write</ipxact:access>
                                         <ipxact:field>
+                                                <ipxact:name>Reserved_10</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>10</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>5</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>SEIE</ipxact:name>
                                                 <ipxact:displayName>Supervisor-level External Interrupt Enable</ipxact:displayName>
                                                 <ipxact:description>SEIE is the interrupt-enable bit for supervisor-level external interrupts.</ipxact:description>
@@ -550,7 +567,7 @@ an SRET instruction is executed, SIE is set to SPIE, then SPIE is set to 1.</ipx
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>UEIE</ipxact:name>
-                                                <ipxact:description>User-level external interrupts are disabled when the UEIE bit in the sie register is clear.</ipxact:description>
+                                                <ipxact:description>User-level external interrupts are disabled when the UEIE bit in the sie register is clear.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>8</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -559,6 +576,23 @@ an SRET instruction is executed, SIE is set to SPIE, then SPIE is set to 1.</ipx
                                                         </ipxact:reset>
                                                 </ipxact:resets>
                                                 <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
+                                                <ipxact:name>Reserved_6</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>6</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>2</ipxact:bitWidth>
                                                 <ipxact:access>read-write</ipxact:access>
                                                 <ipxact:vendorExtensions>
                                                         <RISCV_behavior>WARL</RISCV_behavior>
@@ -583,7 +617,7 @@ an SRET instruction is executed, SIE is set to SPIE, then SPIE is set to 1.</ipx
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>UTIE</ipxact:name>
-                                                <ipxact:description>User-level timer interrupts are disabled when the UTIE bit in the sie register is clear.</ipxact:description>
+                                                <ipxact:description>User-level timer interrupts are disabled when the UTIE bit in the sie register is clear.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>4</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -592,6 +626,23 @@ an SRET instruction is executed, SIE is set to SPIE, then SPIE is set to 1.</ipx
                                                         </ipxact:reset>
                                                 </ipxact:resets>
                                                 <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
+                                                <ipxact:name>Reserved_2</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>2</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>2</ipxact:bitWidth>
                                                 <ipxact:access>read-write</ipxact:access>
                                                 <ipxact:vendorExtensions>
                                                         <RISCV_behavior>WARL</RISCV_behavior>
@@ -616,7 +667,7 @@ an SRET instruction is executed, SIE is set to SPIE, then SPIE is set to 1.</ipx
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>USIE</ipxact:name>
-                                                <ipxact:description>User-level software interrupts are disabled when the USIE bit in the sie register is clear</ipxact:description>
+                                                <ipxact:description>User-level software interrupts are disabled when the USIE bit in the sie register is clear.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -941,6 +992,23 @@ The value loaded into ``stval`` on an illegal-instruction exception is right-jus
                                         <ipxact:volatile>true</ipxact:volatile>
                                         <ipxact:access>read-write</ipxact:access>
                                         <ipxact:field>
+                                                <ipxact:name>Reserved_10</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>10</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>5</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>SEIP</ipxact:name>
                                                 <ipxact:displayName>Supervisor-level External Interrupt Pending</ipxact:displayName>
                                                 <ipxact:description>SEIP is the interrupt-pending bit for supervisor-level external interrupts.</ipxact:description>
@@ -960,7 +1028,7 @@ The value loaded into ``stval`` on an illegal-instruction exception is right-jus
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>UEIP</ipxact:name>
-                                                <ipxact:description>UEIP may be written by S-mode software to indicate to U-mode that an external interrupt is pending.</ipxact:description>
+                                                <ipxact:description>UEIP may be written by S-mode software to indicate to U-mode that an external interrupt is pending.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>8</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -969,6 +1037,23 @@ The value loaded into ``stval`` on an illegal-instruction exception is right-jus
                                                         </ipxact:reset>
                                                 </ipxact:resets>
                                                 <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
+                                                <ipxact:name>Reserved_6</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>6</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>2</ipxact:bitWidth>
                                                 <ipxact:access>read-write</ipxact:access>
                                                 <ipxact:vendorExtensions>
                                                         <RISCV_behavior>WARL</RISCV_behavior>
@@ -994,7 +1079,7 @@ The value loaded into ``stval`` on an illegal-instruction exception is right-jus
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>UTIP</ipxact:name>
-                                                <ipxact:description>A user-level timer interrupt is pending if the UTIP bit in the sip register is set</ipxact:description>
+                                                <ipxact:description>A user-level timer interrupt is pending if the UTIP bit in the sip register is set.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>4</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -1003,6 +1088,23 @@ The value loaded into ``stval`` on an illegal-instruction exception is right-jus
                                                         </ipxact:reset>
                                                 </ipxact:resets>
                                                 <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
+                                                <ipxact:name>Reserved_2</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>2</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>2</ipxact:bitWidth>
                                                 <ipxact:access>read-write</ipxact:access>
                                                 <ipxact:vendorExtensions>
                                                         <RISCV_behavior>WARL</RISCV_behavior>
@@ -1028,7 +1130,7 @@ The value loaded into ``stval`` on an illegal-instruction exception is right-jus
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>USIP</ipxact:name>
-                                                <ipxact:description>A user-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt-pending (USIP) bit</ipxact:description>
+                                                <ipxact:description>A user-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt-pending (USIP) bit.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -1764,10 +1866,44 @@ with the index of the bit position equal to the value returned in the ``mcause``
                                         <ipxact:size>32</ipxact:size>
                                         <ipxact:access>read-write</ipxact:access>
                                         <ipxact:field>
+                                                <ipxact:name>Reserved_12</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>12</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>4</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>MEIE</ipxact:name>
                                                 <ipxact:displayName>M-mode External Interrupt Enable</ipxact:displayName>
                                                 <ipxact:description>Enables machine mode external interrupts.</ipxact:description>
                                                 <ipxact:bitOffset>11</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
+                                                <ipxact:name>Reserved_10</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>10</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
                                                                 <ipxact:value>0x0</ipxact:value>
@@ -1799,7 +1935,7 @@ with the index of the bit position equal to the value returned in the ``mcause``
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>UEIE</ipxact:name>
-                                                <ipxact:description>enables U-mode external interrupts</ipxact:description>
+                                                <ipxact:description>enables U-mode external interrupts.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>8</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -1831,6 +1967,23 @@ with the index of the bit position equal to the value returned in the ``mcause``
                                                 </ipxact:vendorExtensions>
                                         </ipxact:field>
                                         <ipxact:field>
+                                                <ipxact:name>Reserved_6</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>6</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>STIE</ipxact:name>
                                                 <ipxact:displayName>S-mode Timer Interrupt Enable</ipxact:displayName>
                                                 <ipxact:description>Enables supervisor mode timer interrupts.</ipxact:description>
@@ -1849,7 +2002,7 @@ with the index of the bit position equal to the value returned in the ``mcause``
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>UTIE</ipxact:name>
-                                                <ipxact:description>timer interrupt-enable bit for U-mode</ipxact:description>
+                                                <ipxact:description>timer interrupt-enable bit for U-mode.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>4</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -1878,6 +2031,23 @@ with the index of the bit position equal to the value returned in the ``mcause``
                                                 <ipxact:access>read-write</ipxact:access>
                                         </ipxact:field>
                                         <ipxact:field>
+                                                <ipxact:name>Reserved_2</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>2</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>SSIE</ipxact:name>
                                                 <ipxact:displayName>S-mode Software Interrupt Enable</ipxact:displayName>
                                                 <ipxact:description>Enables supervisor mode software interrupts.</ipxact:description>
@@ -1896,7 +2066,7 @@ with the index of the bit position equal to the value returned in the ``mcause``
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>USIE</ipxact:name>
-                                                <ipxact:description>enable U-mode software interrrupts</ipxact:description>
+                                                <ipxact:description>enable U-mode software interrrupts.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -2244,6 +2414,23 @@ If ``mtval`` is written with a nonzero value when an instruction access-fault or
                                         <ipxact:volatile>true</ipxact:volatile>
                                         <ipxact:access>read-write</ipxact:access>
                                         <ipxact:field>
+                                                <ipxact:name>Reserved_12</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>12</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>4</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>MEIP</ipxact:name>
                                                 <ipxact:displayName>M-mode External Interrupt Pending</ipxact:displayName>
                                                 <ipxact:description>The interrupt-pending bit for machine-level external interrupts.</ipxact:description>
@@ -2257,6 +2444,23 @@ If ``mtval`` is written with a nonzero value when an instruction access-fault or
                                                 <ipxact:bitWidth>1</ipxact:bitWidth>
                                                 <ipxact:volatile>true</ipxact:volatile>
                                                 <ipxact:access>read-only</ipxact:access>
+                                        </ipxact:field>
+                                        <ipxact:field>
+                                                <ipxact:name>Reserved_10</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>10</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>SEIP</ipxact:name>
@@ -2274,7 +2478,7 @@ If ``mtval`` is written with a nonzero value when an instruction access-fault or
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>UEIP</ipxact:name>
-                                                <ipxact:description>enables external interrupts</ipxact:description>
+                                                <ipxact:description>enables external interrupts.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>8</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -2301,6 +2505,23 @@ If ``mtval`` is written with a nonzero value when an instruction access-fault or
                                                 <ipxact:access>read-only</ipxact:access>
                                         </ipxact:field>
                                         <ipxact:field>
+                                                <ipxact:name>Reserved_6</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>6</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>STIP</ipxact:name>
                                                 <ipxact:displayName>S-mode Timer Interrupt Pending</ipxact:displayName>
                                                 <ipxact:description>The interrupt-pending bit for supervisor-level timer interrupts.</ipxact:description>
@@ -2316,7 +2537,7 @@ If ``mtval`` is written with a nonzero value when an instruction access-fault or
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>UTIP</ipxact:name>
-                                                <ipxact:description>Correspond to timer interrupt-pending bits for user interrupt</ipxact:description>
+                                                <ipxact:description>Correspond to timer interrupt-pending bits for user interrupt.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>4</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -2343,6 +2564,23 @@ If ``mtval`` is written with a nonzero value when an instruction access-fault or
                                                 <ipxact:access>read-only</ipxact:access>
                                         </ipxact:field>
                                         <ipxact:field>
+                                                <ipxact:name>Reserved_2</ipxact:name>
+                                                <ipxact:displayName>Reserved</ipxact:displayName>
+                                                <ipxact:description>Reserved.``Legal Values:``0.</ipxact:description>
+                                                <ipxact:bitOffset>2</ipxact:bitOffset>
+                                                <ipxact:resets>
+                                                        <ipxact:reset>
+                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:mask>0x1</ipxact:mask>
+                                                        </ipxact:reset>
+                                                </ipxact:resets>
+                                                <ipxact:bitWidth>1</ipxact:bitWidth>
+                                                <ipxact:access>read-write</ipxact:access>
+                                                <ipxact:vendorExtensions>
+                                                        <RISCV_behavior>WARL</RISCV_behavior>
+                                                </ipxact:vendorExtensions>
+                                        </ipxact:field>
+                                        <ipxact:field>
                                                 <ipxact:name>SSIP</ipxact:name>
                                                 <ipxact:displayName>S-mode Software Interrupt Pending</ipxact:displayName>
                                                 <ipxact:description>The interrupt-pending bit for supervisor-level software interrupts.</ipxact:description>
@@ -2358,7 +2596,7 @@ If ``mtval`` is written with a nonzero value when an instruction access-fault or
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>USIP</ipxact:name>
-                                                <ipxact:description>A hart to directly write its own USIP bits when running in the appropriate mode</ipxact:description>
+                                                <ipxact:description>A hart to directly write its own USIP bits when running in the appropriate mode.``Legal Values:``0.</ipxact:description>
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
