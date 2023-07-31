@@ -245,6 +245,7 @@ package wt_cache_pkg;
     logic [63:0]                       l15_data_3;                // currently only used for I$
     logic                              l15_inval_icache_all_way;  // invalidate all ways
     logic                              l15_inval_dcache_all_way;  // unused in openpiton
+    logic [`L15_PADDR_MASK]            l15_transducer_address;
     logic [15:4]                       l15_inval_address_15_4;    // invalidate selected cacheline
     logic                              l15_cross_invalidate;      // unused in openpiton
     logic [L15_WAY_WIDTH-1:0]          l15_cross_invalidate_way;  // unused in openpiton
