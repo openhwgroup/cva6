@@ -659,7 +659,7 @@ an SRET instruction is executed, SIE is set to SPIE, then SPIE is set to 1.</ipx
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>MODE</ipxact:name>
-                                                <ipxact:description>When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number.</ipxact:description>
+                                                <ipxact:description>When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number.``Legal Values :``0.</ipxact:description>
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
@@ -1939,7 +1939,7 @@ with the index of the bit position equal to the value returned in the ``mcause``
                                         </ipxact:field>
                                         <ipxact:field>
                                                 <ipxact:name>MODE</ipxact:name>
-                                                <ipxact:description>Imposes additional alignment constraints on the value in the BASE field.</ipxact:description>
+                                                <ipxact:description>Imposes additional alignment constraints on the value in the BASE field.``Legal Values :``0.</ipxact:description>
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>

@@ -263,7 +263,7 @@ The ``stvec`` register holds trap vector configuration, consisting of a vector b
      - MODE
      - 
      - read-write,WARL
-     - When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field\. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number\.  ``Enumerated Values``( "Direct" :0)( "Vectored" :1)( "Reserved_2" :2)( "Reserved_3" :3)'\n'
+     - When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field\. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number\.``Legal Values :``0\.  ``Enumerated Values``( "Direct" :0)( "Vectored" :1)( "Reserved_2" :2)( "Reserved_3" :3)'\n'
 
 Supervisor Counter Enable Register 
 --------------------------
@@ -866,7 +866,7 @@ This register holds trap vector configuration, consisting of a vector base addre
      - MODE
      - 
      - read-write,WARL
-     - Imposes additional alignment constraints on the value in the BASE field\.  ``Enumerated Values``( "Direct" :0)( "Vectored" :1)( "Reserved_2" :2)( "Reserved_3" :3)'\n'
+     - Imposes additional alignment constraints on the value in the BASE field\.``Legal Values :``0\.  ``Enumerated Values``( "Direct" :0)( "Vectored" :1)( "Reserved_2" :2)( "Reserved_3" :3)'\n'
 
 Machine Counter Enable Register 
 --------------------------

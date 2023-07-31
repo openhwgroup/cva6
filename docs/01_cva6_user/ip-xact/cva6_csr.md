@@ -76,7 +76,7 @@ The ``stvec`` register holds trap vector configuration, consisting of a vector b
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31:2 | BASE |  | read-write,WARL  | The BASE field in stvec is a WARL field that can hold any valid virtual or physical address, subject to the following alignment constraints: the address must be 4\-byte aligned, and MODE settings other than Direct might impose additional alignment constraints on the value in the BASE field\.|
-| 1:0 | MODE |  | read-write,WARL  | When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field\. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
+| 1:0 | MODE |  | read-write,WARL  | When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field\. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number\.``Legal Values :``0\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
 
 ## Supervisor Counter Enable Register 
 ### *AddressOffset*: 'h106 
@@ -258,7 +258,7 @@ This register holds trap vector configuration, consisting of a vector base addre
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31:2 | BASE |  | read-write,WARL  | Holds the vector base address\. The value in the BASE field must always be aligned on a 4\-byte boundary\.|
-| 1:0 | MODE |  | read-write,WARL  | Imposes additional alignment constraints on the value in the BASE field\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
+| 1:0 | MODE |  | read-write,WARL  | Imposes additional alignment constraints on the value in the BASE field\.``Legal Values :``0\. // ``Enumerated Values``( "Direct" :0 ) ( "Vectored" :1 ) ( "Reserved_2" :2 ) ( "Reserved_3" :3 ) |
 
 ## Machine Counter Enable Register 
 ### *AddressOffset*: 'h306 
