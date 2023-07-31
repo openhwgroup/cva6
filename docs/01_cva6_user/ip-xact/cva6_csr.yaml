@@ -478,7 +478,7 @@ component:
           access: read-write
           field:
           - name: BASE
-            description: 'The BASE field in stvec is a WARL field that can hold any valid virtual or physical address, subject to the following alignment constraints: the address must be 4-byte aligned, and MODE settings other than Direct might impose additional alignment constraints on the value in the BASE field.'
+            description: 'The BASE field in stvec is a WARL field that can hold any valid virtual or physical address, subject to the following alignment constraints: when MODE=Direct the address must be 4-byte aligned, and when MODE=Vectored the address must be 256-byte aligned.'
             bitOffset: '2'
             resets:
               reset:
@@ -489,7 +489,7 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: MODE
-            description: When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number.``Legal Values :``0.
+            description: When MODE=Direct, all traps into supervisor mode cause the ``pc`` to be set to the address in the BASE field. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the ``pc`` to be set to the address in the BASE field, whereas interrupts cause the ``pc`` to be set to the address in the BASE field plus four times the interrupt cause number.``Legal Values :``0,1.
             bitOffset: '0'
             resets:
               reset:
@@ -1380,7 +1380,7 @@ component:
           access: read-write
           field:
           - name: BASE
-            description: Holds the vector base address. The value in the BASE field must always be aligned on a 4-byte boundary.
+            description: 'The BASE field in mtvec is a WARL field that can hold any valid virtual or physical address, subject to the following alignment constraints: when MODE=Direct the address must be 4-byte aligned, and when MODE=Vectored the address must be 256-byte aligned.'
             bitOffset: '2'
             resets:
               reset:
@@ -1391,7 +1391,7 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: MODE
-            description: Imposes additional alignment constraints on the value in the BASE field.``Legal Values :``0.
+            description: Imposes additional alignment constraints on the value in the BASE field.``Legal Values :``0,1.
             bitOffset: '0'
             resets:
               reset:
