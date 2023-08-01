@@ -547,8 +547,8 @@ verilate_command := $(verilator) verilator_config.vlt                           
                     $(if ($(PRELOAD)!=""), -DPRELOAD=1,)                                                         \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG), --trace-structs,)                                                             \
-                    $(if $(TRACE_COMPACT), --trace-fst $(VERILATOR_ROOT)/include/verilated_fst_c.cpp)            \
-                    $(if $(TRACE_FAST), --trace $(VERILATOR_ROOT)/include/verilated_vcd_c.cpp,)                  \
+                    $(if $(TRACE_COMPACT), --trace-fst $(VERILATOR_INSTALL_DIR)/share/verilator/include/verilated_fst_c.cpp) \
+                    $(if $(TRACE_FAST), --trace $(VERILATOR_INSTALL_DIR)/share/verilator/include/verilated_vcd_c.cpp) \
                     -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr$(if $(PROFILE), -g -pg,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) -DVL_DEBUG"                                      \
                     --cc  --vpi                                                                                  \
