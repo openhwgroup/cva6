@@ -394,7 +394,7 @@ module frontend import ariane_pkg::*; #(
 
     if (ArianeCfg.RASDepth == 0) begin
       assign ras_predict = '0;
-    end else begin
+    end else begin : ras_gen
       ras #(
         .DEPTH  ( ArianeCfg.RASDepth  )
       ) i_ras (
@@ -415,7 +415,7 @@ module frontend import ariane_pkg::*; #(
 
     if (ArianeCfg.BTBEntries == 0) begin
       assign btb_prediction = '0;
-    end else begin
+    end else begin : btb_gen
       btb #(
         .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
       ) i_btb (
@@ -431,7 +431,7 @@ module frontend import ariane_pkg::*; #(
 
     if (ArianeCfg.BHTEntries == 0) begin
       assign bht_prediction = '0;
-    end else begin
+    end else begin : bht_gen
       bht #(
         .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
       ) i_bht (
