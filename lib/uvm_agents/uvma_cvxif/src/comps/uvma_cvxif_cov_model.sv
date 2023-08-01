@@ -166,6 +166,7 @@ covergroup cg_result(
    cross_result : cross cp_id, cp_we, cp_exc, cp_exccode {
    illegal_bins ILLEGAL_BINS = binsof(cp_we) intersect{1} &&
                                binsof(cp_exc) intersect{1};
+   ignore_bins IGN_BINS = binsof(cp_exc) intersect{0}; //if exc=0 that means no exception
    }
 endgroup: cg_result
 
