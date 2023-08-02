@@ -134,7 +134,6 @@ class cvxif_t : public cvxif_extn_t
         }
         break;
       case FUNC3_1:
-        //Actually only CUS_ADD using func3 equal to one, we don't need to add another switch case
         switch(r_insn.funct7) {
           case 0:
             return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
@@ -142,10 +141,8 @@ class cvxif_t : public cvxif_extn_t
           default:
             illegal_instruction();
         }
-        
       
       case FUNC3_2:
-        //Actually only CUS_EXC using func3 equal to one, we don't need to add another switch case
         switch (r_insn.funct7) {
           case (0x60):
             if (r_insn.rs2 != 0 || r_insn.rd != 0){
@@ -207,15 +204,15 @@ class cvxif_t : public cvxif_extn_t
         // Use 0x1 as always-faulting address.
         throw trap_store_page_fault((p ? p->get_state()->v : false), 1, 0, 0);
       case CAUSE_FETCH_GUEST_PAGE_FAULT:
-        throw trap_instruction_guest_page_fault(1, 0, 0);
+        throw trap_instruction_guest_page_fault(0, 0, 0);
       case CAUSE_LOAD_GUEST_PAGE_FAULT:
-        throw trap_load_guest_page_fault( 1, 0, 0);
+        throw trap_load_guest_page_fault(0, 0, 0);
       case CAUSE_VIRTUAL_INSTRUCTION:
-        throw trap_virtual_instruction(1);
+        throw trap_virtual_instruction(0);
       case CAUSE_STORE_GUEST_PAGE_FAULT:
-        throw trap_store_guest_page_fault(1, 0, 0);
+        throw trap_store_guest_page_fault(0, 0, 0);
       default:
-        illegal_instruction();
+        throw trap_unknown_instruction(exc_index, (reg_t)0);
     }
   }
 
