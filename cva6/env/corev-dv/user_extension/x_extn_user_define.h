@@ -42,8 +42,8 @@
     .insn r CUSTOM_3, 0x0, 0x8, \rd, \rs1, \rs2
 .endm
 
-# CUS_EXC rd, rs1, rs2 -> .insn r CUSTOM_3, 0x2, 0x60, rd, rs1, rs2
-.macro  cus_exc rd, rs1, rs2
-    .insn r CUSTOM_3, 0x2, 0x60, \rd, \rs1, \rs2
+# CUS_EXC rs1 -> .insn r CUSTOM_3, 0x2, 0x60, x0, rs1, x0
+.macro  cus_exc rs1
+    .insn r CUSTOM_3, 0x2, 0x60, x0, \rs1, x0
 .endm
 
