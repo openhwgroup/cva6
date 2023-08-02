@@ -36,7 +36,7 @@ RUN apt-get update \
 RUN git clone https://github.com/riscv/riscv-gnu-toolchain
 RUN cd riscv-gnu-toolchain && git checkout 2023.07.07 && ./configure --prefix=${RISCV} --enable-multilib && make -j$(nproc)
 
-# Buld the final image
+# Build the final image
 FROM ubuntu:22.10
 
 ARG VERILATOR_VERSION="v5.012"
