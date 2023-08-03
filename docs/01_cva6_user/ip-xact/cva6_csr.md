@@ -62,12 +62,15 @@ The ``sstatus`` register is a subset of the ``mstatus`` register.
 The ``sie`` is the register containing supervisor interrupt enable bits.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
+| 14:10 | Reserved_10 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 9 | SEIE | Supervisor-level external interrupt enable | read-write,WARL  | SEIE is the interrupt\-enable bit for supervisor\-level external interrupts\.|
-| 8 | UEIE |  | read-write,WARL  | User\-level external interrupts are disabled when the UEIE bit in the sie register is clear\.|
+| 8 | UEIE |  | read-write,WARL  | User\-level external interrupts are disabled when the UEIE bit in the sie register is clear\.``Legal Values:``0\.|
+| 7:6 | Reserved_6 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 5 | STIE | Supervisor-level timer interrupt enable | read-write,WARL  | STIE is the interrupt\-enable bit for supervisor\-level timer interrupts\.|
-| 4 | UTIE |  | read-write,WARL  | User\-level timer interrupts are disabled when the UTIE bit in the sie register is clear\.|
+| 4 | UTIE |  | read-write,WARL  | User\-level timer interrupts are disabled when the UTIE bit in the sie register is clear\.``Legal Values:``0\.|
+| 3:2 | Reserved_2 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 1 | SSIE | Supervisor-level software interrupt enable | read-write,WARL  | SSIE is the interrupt\-enable bit for supervisor\-level software interrupts\.|
-| 0 | USIE |  | read-write,WARL  | User\-level software interrupts are disabled when the USIE bit in the sie register is clear|
+| 0 | USIE |  | read-write,WARL  | User\-level software interrupts are disabled when the USIE bit in the sie register is clear\.``Legal Values:``0\.|
 
 ## Supervisor Trap Vector Base Address Register 
 ### *AddressOffset*: 'h105 
@@ -160,12 +163,15 @@ When a trap is taken into S-mode, ``stval`` is written with exception-specific i
 The ``sip`` register contains information on pending interrupts.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
+| 14:10 | Reserved_10 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 9 | SEIP | Supervisor-level external interrupt pending | read-only,WARL  | SEIP is the interrupt\-pending bit for supervisor\-level external interrupts\.|
-| 8 | UEIP |  | read-write,WARL  | UEIP may be written by S\-mode software to indicate to U\-mode that an external interrupt is pending\.|
+| 8 | UEIP |  | read-write,WARL  | UEIP may be written by S\-mode software to indicate to U\-mode that an external interrupt is pending\.``Legal Values:``0\.|
+| 7:6 | Reserved_6 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 5 | STIP | Supervisor-level timer interrupt pending | read-only,WARL  | SEIP is the interrupt\-pending bit for supervisor\-level timer interrupts\.|
-| 4 | UTIP |  | read-write,WARL  | A user\-level timer interrupt is pending if the UTIP bit in the sip register is set|
+| 4 | UTIP |  | read-write,WARL  | A user\-level timer interrupt is pending if the UTIP bit in the sip register is set\.``Legal Values:``0\.|
+| 3:2 | Reserved_2 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 1 | SSIP | Supervisor-level software interrupt pending | read-only,WARL  | SSIP is the interrupt\-pending bit for supervisor\-level software interrupts\.|
-| 0 | USIP |  | read-write,WARL  | A user\-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt\-pending \(USIP\) bit|
+| 0 | USIP |  | read-write,WARL  | A user\-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt\-pending \(USIP\) bit\.``Legal Values:``0\.|
 
 ## Supervisor Address Translation and Protection Register 
 ### *AddressOffset*: 'h180 
@@ -241,15 +247,19 @@ Provides individual read/write bits to indicate that certain interrupts should b
 This register contains machine interrupt enable bits.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
+| 15:12 | Reserved_12 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 11 | MEIE | M-mode external interrupt enable | read-write,WARL  | Enables machine mode external interrupts\.|
+| 10 | Reserved_10 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 9 | SEIE | S-mode external interrupt enable | read-write,WARL  | Enables supervisor mode external interrupts\.|
-| 8 | UEIE |  | read-write,WARL  | enables U\-mode external interrupts|
+| 8 | UEIE |  | read-write,WARL  | enables U\-mode external interrupts\.``Legal Values:``0\.|
 | 7 | MTIE | M-mode timer interrupt enable | read-write,WARL  | Enables machine mode timer interrupts\.|
+| 6 | Reserved_6 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 5 | STIE | S-mode timer interrupt enable | read-write,WARL  | Enables supervisor mode timer interrupts\.|
-| 4 | UTIE |  | read-write,WARL  | timer interrupt\-enable bit for U\-mode|
+| 4 | UTIE |  | read-write,WARL  | timer interrupt\-enable bit for U\-mode\.``Legal Values:``0\.|
 | 3 | MSIE | M-mode software interrupt enable | read-write  | Enables machine mode software interrupts\.|
+| 2 | Reserved_2 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 1 | SSIE | S-mode software interrupt enable | read-write,WARL  | Enables supervisor mode software interrupts\.|
-| 0 | USIE |  | read-write,WARL  | enable U\-mode software interrrupts|
+| 0 | USIE |  | read-write,WARL  | enable U\-mode software interrrupts\.``Legal Values:``0\.|
 
 ## Machine Trap Vector Register 
 ### *AddressOffset*: 'h305 
@@ -350,15 +360,19 @@ When a trap is taken into M-mode, mtval is either set to zero or written with ex
 This register contains machine interrupt pending bits.
 | BIT |  NAME       | displayName        | RIGHT  | Description                                                          |
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
+| 15:12 | Reserved_12 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 11 | MEIP | M-mode external interrupt pending | read-only  | The interrupt\-pending bit for machine\-level external interrupts\.|
+| 10 | Reserved_10 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 9 | SEIP | S-mode external interrupt pending | read-write  | The interrupt\-pending bit for supervisor\-level external interrupts\.|
-| 8 | UEIP |  | read-write  | enables external interrupts|
+| 8 | UEIP |  | read-write  | enables external interrupts\.``Legal Values:``0\.|
 | 7 | MTIP | M-mode timer interrupt pending | read-only  | The interrupt\-pending bit for machine\-level timer interrupts\.|
+| 6 | Reserved_6 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 5 | STIP | S-mode timer interrupt pending | read-write  | The interrupt\-pending bit for supervisor\-level timer interrupts\.|
-| 4 | UTIP |  | read-write  | Correspond to timer interrupt\-pending bits for user interrupt|
+| 4 | UTIP |  | read-write  | Correspond to timer interrupt\-pending bits for user interrupt\.``Legal Values:``0\.|
 | 3 | MSIP | M-mode software interrupt pending | read-only  | The interrupt\-pending bit for machine\-level software interrupts\.|
+| 2 | Reserved_2 | Reserved | read-write,WARL  | Reserved\.``Legal Values:``0\.|
 | 1 | SSIP | S-mode software interrupt pending | read-write  | The interrupt\-pending bit for supervisor\-level software interrupts\.|
-| 0 | USIP |  | read-write  | A hart to directly write its own USIP bits when running in the appropriate mode|
+| 0 | USIP |  | read-write  | A hart to directly write its own USIP bits when running in the appropriate mode\.``Legal Values:``0\.|
 
 ## Physical Memory Protection Config 0 Register 
 ### *AddressOffset*: 'h3A0 

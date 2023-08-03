@@ -399,6 +399,18 @@ component:
           size: '32'
           access: read-write
           field:
+          - name: Reserved_10
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '10'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '5'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: SEIE
             displayName: Supervisor-level External Interrupt Enable
             description: SEIE is the interrupt-enable bit for supervisor-level external interrupts.
@@ -412,13 +424,25 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: UEIE
-            description: User-level external interrupts are disabled when the UEIE bit in the sie register is clear.
+            description: User-level external interrupts are disabled when the UEIE bit in the sie register is clear.``Legal Values:``0.
             bitOffset: '8'
             resets:
               reset:
                 value: '0x0'
                 mask: '0x1'
             bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: Reserved_6
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '6'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '2'
             access: read-write
             vendorExtensions:
               RISCV_behavior: WARL
@@ -435,13 +459,25 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: UTIE
-            description: User-level timer interrupts are disabled when the UTIE bit in the sie register is clear.
+            description: User-level timer interrupts are disabled when the UTIE bit in the sie register is clear.``Legal Values:``0.
             bitOffset: '4'
             resets:
               reset:
                 value: '0x0'
                 mask: '0x1'
             bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: Reserved_2
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '2'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '2'
             access: read-write
             vendorExtensions:
               RISCV_behavior: WARL
@@ -458,7 +494,7 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: USIE
-            description: User-level software interrupts are disabled when the USIE bit in the sie register is clear
+            description: User-level software interrupts are disabled when the USIE bit in the sie register is clear.``Legal Values:``0.
             bitOffset: '0'
             resets:
               reset:
@@ -667,6 +703,18 @@ component:
           volatile: 'true'
           access: read-write
           field:
+          - name: Reserved_10
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '10'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '5'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: SEIP
             displayName: Supervisor-level External Interrupt Pending
             description: SEIP is the interrupt-pending bit for supervisor-level external interrupts.
@@ -681,13 +729,25 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: UEIP
-            description: UEIP may be written by S-mode software to indicate to U-mode that an external interrupt is pending.
+            description: UEIP may be written by S-mode software to indicate to U-mode that an external interrupt is pending.``Legal Values:``0.
             bitOffset: '8'
             resets:
               reset:
                 value: '0x0'
                 mask: '0x1'
             bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: Reserved_6
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '6'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '2'
             access: read-write
             vendorExtensions:
               RISCV_behavior: WARL
@@ -705,13 +765,25 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: UTIP
-            description: A user-level timer interrupt is pending if the UTIP bit in the sip register is set
+            description: A user-level timer interrupt is pending if the UTIP bit in the sip register is set.``Legal Values:``0.
             bitOffset: '4'
             resets:
               reset:
                 value: '0x0'
                 mask: '0x1'
             bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: Reserved_2
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '2'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '2'
             access: read-write
             vendorExtensions:
               RISCV_behavior: WARL
@@ -729,7 +801,7 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: USIP
-            description: A user-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt-pending (USIP) bit
+            description: A user-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt-pending (USIP) bit.``Legal Values:``0.
             bitOffset: '0'
             resets:
               reset:
@@ -1267,10 +1339,34 @@ component:
           size: '32'
           access: read-write
           field:
+          - name: Reserved_12
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '12'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '4'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: MEIE
             displayName: M-mode External Interrupt Enable
             description: Enables machine mode external interrupts.
             bitOffset: '11'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: Reserved_10
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '10'
             resets:
               reset:
                 value: '0x0'
@@ -1292,7 +1388,7 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: UEIE
-            description: enables U-mode external interrupts
+            description: enables U-mode external interrupts.``Legal Values:``0.
             bitOffset: '8'
             resets:
               reset:
@@ -1314,6 +1410,18 @@ component:
             access: read-write
             vendorExtensions:
               RISCV_behavior: WARL
+          - name: Reserved_6
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '6'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: STIE
             displayName: S-mode Timer Interrupt Enable
             description: Enables supervisor mode timer interrupts.
@@ -1327,7 +1435,7 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: UTIE
-            description: timer interrupt-enable bit for U-mode
+            description: timer interrupt-enable bit for U-mode.``Legal Values:``0.
             bitOffset: '4'
             resets:
               reset:
@@ -1347,6 +1455,18 @@ component:
                 mask: '0x1'
             bitWidth: '1'
             access: read-write
+          - name: Reserved_2
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '2'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: SSIE
             displayName: S-mode Software Interrupt Enable
             description: Enables supervisor mode software interrupts.
@@ -1360,7 +1480,7 @@ component:
             vendorExtensions:
               RISCV_behavior: WARL
           - name: USIE
-            description: enable U-mode software interrrupts
+            description: enable U-mode software interrrupts.``Legal Values:``0.
             bitOffset: '0'
             resets:
               reset:
@@ -1593,6 +1713,18 @@ component:
           volatile: 'true'
           access: read-write
           field:
+          - name: Reserved_12
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '12'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '4'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: MEIP
             displayName: M-mode External Interrupt Pending
             description: The interrupt-pending bit for machine-level external interrupts.
@@ -1604,6 +1736,18 @@ component:
             bitWidth: '1'
             volatile: 'true'
             access: read-only
+          - name: Reserved_10
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '10'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: SEIP
             displayName: S-mode External Interrupt Pending
             description: The interrupt-pending bit for supervisor-level external interrupts.
@@ -1615,7 +1759,7 @@ component:
             bitWidth: '1'
             access: read-write
           - name: UEIP
-            description: enables external interrupts
+            description: enables external interrupts.``Legal Values:``0.
             bitOffset: '8'
             resets:
               reset:
@@ -1634,6 +1778,18 @@ component:
             bitWidth: '1'
             volatile: 'true'
             access: read-only
+          - name: Reserved_6
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '6'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: STIP
             displayName: S-mode Timer Interrupt Pending
             description: The interrupt-pending bit for supervisor-level timer interrupts.
@@ -1645,7 +1801,7 @@ component:
             bitWidth: '1'
             access: read-write
           - name: UTIP
-            description: Correspond to timer interrupt-pending bits for user interrupt
+            description: Correspond to timer interrupt-pending bits for user interrupt.``Legal Values:``0.
             bitOffset: '4'
             resets:
               reset:
@@ -1664,6 +1820,18 @@ component:
             bitWidth: '1'
             volatile: 'true'
             access: read-only
+          - name: Reserved_2
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '2'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
           - name: SSIP
             displayName: S-mode Software Interrupt Pending
             description: The interrupt-pending bit for supervisor-level software interrupts.
@@ -1675,7 +1843,7 @@ component:
             bitWidth: '1'
             access: read-write
           - name: USIP
-            description: A hart to directly write its own USIP bits when running in the appropriate mode
+            description: A hart to directly write its own USIP bits when running in the appropriate mode.``Legal Values:``0.
             bitOffset: '0'
             resets:
               reset:

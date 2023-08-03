@@ -206,6 +206,11 @@ The ``sie`` is the register containing supervisor interrupt enable bits.
      - **displayName**
      - **RIGHT**
      - **Description**
+   * - 14:10
+     - Reserved_10
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 9 
      - SEIE
      - Supervisor-level external interrupt enable
@@ -215,7 +220,12 @@ The ``sie`` is the register containing supervisor interrupt enable bits.
      - UEIE
      - 
      - read-write,WARL
-     - User\-level external interrupts are disabled when the UEIE bit in the sie register is clear\.
+     - User\-level external interrupts are disabled when the UEIE bit in the sie register is clear\.``Legal Values:``0\.
+   * - 7:6
+     - Reserved_6
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 5 
      - STIE
      - Supervisor-level timer interrupt enable
@@ -225,7 +235,12 @@ The ``sie`` is the register containing supervisor interrupt enable bits.
      - UTIE
      - 
      - read-write,WARL
-     - User\-level timer interrupts are disabled when the UTIE bit in the sie register is clear\.
+     - User\-level timer interrupts are disabled when the UTIE bit in the sie register is clear\.``Legal Values:``0\.
+   * - 3:2
+     - Reserved_2
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 1 
      - SSIE
      - Supervisor-level software interrupt enable
@@ -235,7 +250,7 @@ The ``sie`` is the register containing supervisor interrupt enable bits.
      - USIE
      - 
      - read-write,WARL
-     - User\-level software interrupts are disabled when the USIE bit in the sie register is clear
+     - User\-level software interrupts are disabled when the USIE bit in the sie register is clear\.``Legal Values:``0\.
 
 Supervisor Trap Vector Base Address Register 
 --------------------------
@@ -511,6 +526,11 @@ The ``sip`` register contains information on pending interrupts.
      - **displayName**
      - **RIGHT**
      - **Description**
+   * - 14:10
+     - Reserved_10
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 9 
      - SEIP
      - Supervisor-level external interrupt pending
@@ -520,7 +540,12 @@ The ``sip`` register contains information on pending interrupts.
      - UEIP
      - 
      - read-write,WARL
-     - UEIP may be written by S\-mode software to indicate to U\-mode that an external interrupt is pending\.
+     - UEIP may be written by S\-mode software to indicate to U\-mode that an external interrupt is pending\.``Legal Values:``0\.
+   * - 7:6
+     - Reserved_6
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 5 
      - STIP
      - Supervisor-level timer interrupt pending
@@ -530,7 +555,12 @@ The ``sip`` register contains information on pending interrupts.
      - UTIP
      - 
      - read-write,WARL
-     - A user\-level timer interrupt is pending if the UTIP bit in the sip register is set
+     - A user\-level timer interrupt is pending if the UTIP bit in the sip register is set\.``Legal Values:``0\.
+   * - 3:2
+     - Reserved_2
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 1 
      - SSIP
      - Supervisor-level software interrupt pending
@@ -540,7 +570,7 @@ The ``sip`` register contains information on pending interrupts.
      - USIP
      - 
      - read-write,WARL
-     - A user\-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt\-pending \(USIP\) bit
+     - A user\-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt\-pending \(USIP\) bit\.``Legal Values:``0\.
 
 Supervisor Address Translation and Protection Register 
 --------------------------
@@ -794,11 +824,21 @@ This register contains machine interrupt enable bits.
      - **displayName**
      - **RIGHT**
      - **Description**
+   * - 15:12
+     - Reserved_12
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 11 
      - MEIE
      - M-mode external interrupt enable
      - read-write,WARL
      - Enables machine mode external interrupts\.
+   * - 10 
+     - Reserved_10
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 9 
      - SEIE
      - S-mode external interrupt enable
@@ -808,12 +848,17 @@ This register contains machine interrupt enable bits.
      - UEIE
      - 
      - read-write,WARL
-     - enables U\-mode external interrupts
+     - enables U\-mode external interrupts\.``Legal Values:``0\.
    * - 7 
      - MTIE
      - M-mode timer interrupt enable
      - read-write,WARL
      - Enables machine mode timer interrupts\.
+   * - 6 
+     - Reserved_6
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 5 
      - STIE
      - S-mode timer interrupt enable
@@ -823,12 +868,17 @@ This register contains machine interrupt enable bits.
      - UTIE
      - 
      - read-write,WARL
-     - timer interrupt\-enable bit for U\-mode
+     - timer interrupt\-enable bit for U\-mode\.``Legal Values:``0\.
    * - 3 
      - MSIE
      - M-mode software interrupt enable
      - read-write
      - Enables machine mode software interrupts\.
+   * - 2 
+     - Reserved_2
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 1 
      - SSIE
      - S-mode software interrupt enable
@@ -838,7 +888,7 @@ This register contains machine interrupt enable bits.
      - USIE
      - 
      - read-write,WARL
-     - enable U\-mode software interrrupts
+     - enable U\-mode software interrrupts\.``Legal Values:``0\.
 
 Machine Trap Vector Register 
 --------------------------
@@ -1137,11 +1187,21 @@ This register contains machine interrupt pending bits.
      - **displayName**
      - **RIGHT**
      - **Description**
+   * - 15:12
+     - Reserved_12
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 11 
      - MEIP
      - M-mode external interrupt pending
      - read-only
      - The interrupt\-pending bit for machine\-level external interrupts\.
+   * - 10 
+     - Reserved_10
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 9 
      - SEIP
      - S-mode external interrupt pending
@@ -1151,12 +1211,17 @@ This register contains machine interrupt pending bits.
      - UEIP
      - 
      - read-write
-     - enables external interrupts
+     - enables external interrupts\.``Legal Values:``0\.
    * - 7 
      - MTIP
      - M-mode timer interrupt pending
      - read-only
      - The interrupt\-pending bit for machine\-level timer interrupts\.
+   * - 6 
+     - Reserved_6
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 5 
      - STIP
      - S-mode timer interrupt pending
@@ -1166,12 +1231,17 @@ This register contains machine interrupt pending bits.
      - UTIP
      - 
      - read-write
-     - Correspond to timer interrupt\-pending bits for user interrupt
+     - Correspond to timer interrupt\-pending bits for user interrupt\.``Legal Values:``0\.
    * - 3 
      - MSIP
      - M-mode software interrupt pending
      - read-only
      - The interrupt\-pending bit for machine\-level software interrupts\.
+   * - 2 
+     - Reserved_2
+     - Reserved
+     - read-write,WARL
+     - Reserved\.``Legal Values:``0\.
    * - 1 
      - SSIP
      - S-mode software interrupt pending
@@ -1181,7 +1251,7 @@ This register contains machine interrupt pending bits.
      - USIP
      - 
      - read-write
-     - A hart to directly write its own USIP bits when running in the appropriate mode
+     - A hart to directly write its own USIP bits when running in the appropriate mode\.``Legal Values:``0\.
 
 Physical Memory Protection Config 0 Register 
 --------------------------
