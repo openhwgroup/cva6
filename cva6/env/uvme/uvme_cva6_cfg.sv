@@ -179,6 +179,11 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
     */
    extern virtual function void sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
 
+   /**
+    * Set unsupported_csr_mask based on extensions/modes supported
+    */
+   extern virtual function void set_unsupported_csr_mask();
+
 endclass : uvme_cva6_cfg_c
 
 
@@ -226,5 +231,14 @@ function void uvme_cva6_cfg_c::sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
       //~ pma_cfg.regions[i] = pma_regions[i];
 
 endfunction : sample_parameters
+
+function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
+
+   super.set_unsupported_csr_mask();
+
+   // Remove unsupported CSRs for STEP1 configuration
+   unsupported_csr_mask[uvma_core_cntrl_pkg::MCOUNTINHIBIT] = 1;
+
+endfunction : set_unsupported_csr_mask
 
 `endif // __UVME_CVA6_CFG_SV__
