@@ -35,6 +35,7 @@ core/include/cvxif_pkg.sv
 vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
 core/include/instr_tracer_pkg.sv
 core/cvxif_example/include/cvxif_instr_pkg.sv
+core/acc_dispatcher.sv
 corev_apu/rv_plic/rtl/rv_plic_reg_pkg.sv
 common/local/util/sram.sv
 vendor/pulp-platform/common_cells/src/deprecated/rrarbiter.sv
