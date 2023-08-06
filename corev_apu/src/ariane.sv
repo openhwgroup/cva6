@@ -16,6 +16,8 @@
 module ariane import ariane_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
+  parameter type cvxif_req_t = acc_pkg::accelerator_req_t,
+  parameter type cvxif_resp_t = acc_pkg::accelerator_resp_t,
   //
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
@@ -42,24 +44,26 @@ module ariane import ariane_pkg::*; #(
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
+  //
+  output cvxif_pkg::cvxif_req_t        cvxif_req_o,
+  input cvxif_pkg::cvxif_resp_t        cvxif_resp_i,
+
   // memory side
   output noc_req_t                     noc_req_o,
   input  noc_resp_t                    noc_resp_i
 );
 
-  cvxif_pkg::cvxif_req_t  cvxif_req;
-  cvxif_pkg::cvxif_resp_t cvxif_resp;
-
   cva6 #(
-    .CVA6Cfg ( CVA6Cfg ),
-    .rvfi_instr_t ( rvfi_instr_t ),
-    //
-    .ArianeCfg  ( ArianeCfg ),
-    .axi_ar_chan_t (axi_ar_chan_t),
-    .axi_aw_chan_t (axi_aw_chan_t),
-    .axi_w_chan_t (axi_w_chan_t),
-    .noc_req_t (noc_req_t),
-    .noc_resp_t (noc_resp_t)
+    .CVA6Cfg              (CVA6Cfg       ),
+    .rvfi_instr_t         (rvfi_instr_t  ),
+    .cvxif_req_t          (cvxif_req_t   ),
+    .cvxif_resp_t         (cvxif_resp_t  ),
+    .ArianeCfg            (ArianeCfg     ),
+    .axi_ar_chan_t        (axi_ar_chan_t ),
+    .axi_aw_chan_t        (axi_aw_chan_t ),
+    .axi_w_chan_t         (axi_w_chan_t  ),
+    .noc_req_t            (noc_req_t     ),
+    .noc_resp_t           (noc_resp_t    )
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
@@ -70,8 +74,8 @@ module ariane import ariane_pkg::*; #(
     .time_irq_i           ( time_irq_i                ),
     .debug_req_i          ( debug_req_i               ),
     .rvfi_o               ( rvfi_o                    ),
-    .cvxif_req_o          ( cvxif_req                 ),
-    .cvxif_resp_i         ( cvxif_resp                ),
+    .cvxif_req_o          ( cvxif_req_o               ),
+    .cvxif_resp_i         ( cvxif_resp_i              ),
     .noc_req_o            ( noc_req_o                 ),
     .noc_resp_i           ( noc_resp_i                )
   );
