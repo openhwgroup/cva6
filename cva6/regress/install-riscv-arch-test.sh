@@ -29,7 +29,7 @@ if ! [ -d cva6/tests/riscv-arch-test ]; then
   git clone $ARCH_TEST_REPO -b $ARCH_TEST_BRANCH cva6/tests/riscv-arch-test
   cd cva6/tests/riscv-arch-test; git checkout $ARCH_TEST_HASH;
   # Copy Spike definitions to the corresponding riscv-target subdirectory.
-  cp -rpa $SPIKE_SRC_DIR/arch_test_target/spike riscv-target
+  cp -rpa $SPIKE_SRC_DIR/arch_test_target riscv-target
   cd -
 fi
 
