@@ -17,7 +17,7 @@ fi
 if ! [ -n "$ARCH_TEST_REPO" ]; then
   ARCH_TEST_REPO=https://github.com/riscv-non-isa/riscv-arch-test
   ARCH_TEST_BRANCH=main
-  ARCH_TEST_HASH=ad04e119a5d846a1c11159786ad3382cf5ad3649
+  ARCH_TEST_HASH="46cf99d0e020887e398508fc776928a1adad7c23"
 fi
 echo "Repo:  " $ARCH_TEST_REPO
 echo "Branch:" $ARCH_TEST_BRANCH
