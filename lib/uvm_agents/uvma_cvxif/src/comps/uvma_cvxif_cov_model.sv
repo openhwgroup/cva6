@@ -59,7 +59,9 @@ covergroup cg_request(
 
    cross_req : cross cp_id, cp_rs_valid, cp_mode;
    cross_valid_ready : cross cp_valid, cp_ready;
-   cross_commit : cross cp_commit_valid, cp_commit_kill, cp_commit_id;
+   cross_commit : cross cp_commit_valid, cp_commit_kill, cp_commit_id {
+   ignore_bins IGN_BINS = binsof(cp_commit_valid) intersect{0}; //commit signals are valid when commmit_valid is assert
+   }
 
 endgroup: cg_request
 
