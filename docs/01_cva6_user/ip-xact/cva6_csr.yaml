@@ -1155,7 +1155,7 @@ component:
             bitOffset: '30'
             resets:
               reset:
-                value: '0x0'
+                value: '0x1'
                 mask: '0x3'
             bitWidth: '2'
             access: read-write
@@ -1178,7 +1178,7 @@ component:
             bitOffset: '0'
             resets:
               reset:
-                value: '0x0'
+                value: '0x141104'
                 mask: '0x3ffffff'
             bitWidth: '26'
             access: read-write
