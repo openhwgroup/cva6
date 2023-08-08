@@ -1627,7 +1627,7 @@ This field can be checked by a context switch routine to quickly determine wheth
                                                 <ipxact:bitOffset>30</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
-                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:value>0x1</ipxact:value>
                                                                 <ipxact:mask>0x3</ipxact:mask>
                                                         </ipxact:reset>
                                                 </ipxact:resets>
@@ -1658,7 +1658,7 @@ This field can be checked by a context switch routine to quickly determine wheth
                                                 <ipxact:bitOffset>0</ipxact:bitOffset>
                                                 <ipxact:resets>
                                                         <ipxact:reset>
-                                                                <ipxact:value>0x0</ipxact:value>
+                                                                <ipxact:value>0x141104</ipxact:value>
                                                                 <ipxact:mask>0x3ffffff</ipxact:mask>
                                                         </ipxact:reset>
                                                 </ipxact:resets>
