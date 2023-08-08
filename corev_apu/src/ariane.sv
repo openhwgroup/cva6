@@ -45,8 +45,8 @@ module ariane import ariane_pkg::*; #(
   // Can be left open when formal tracing is not needed.
   output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
   //
-  output cvxif_pkg::cvxif_req_t        cvxif_req_o,
-  input cvxif_pkg::cvxif_resp_t        cvxif_resp_i,
+  output cvxif_req_t        cvxif_req_o,
+  input  cvxif_resp_t        cvxif_resp_i,
 
   // memory side
   output noc_req_t                     noc_req_o,
