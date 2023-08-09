@@ -126,22 +126,26 @@ module frontend import ariane_pkg::*; #(
       .addr_o              ( addr                  ),
       .instr_o             ( instr                 )
     );
+
     // --------------------
     // Branch Prediction
     // --------------------
     // select the right branch prediction result
     // in case we are serving an unaligned instruction in instr[0] we need to take
     // the prediction we saved from the previous fetch
-    assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][1]];
-    assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][1]];
-
     if (ariane_pkg::RVC) begin : gen_btb_prediction_shifted
+      assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][$clog2(INSTR_PER_FETCH):1]];
+      assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][$clog2(INSTR_PER_FETCH):1]];
+
       // for all other predictions we can use the generated address to index
       // into the branch prediction data structures
       for (genvar i = 1; i < INSTR_PER_FETCH; i++) begin : gen_prediction_address
         assign bht_prediction_shifted[i] = bht_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
         assign btb_prediction_shifted[i] = btb_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
       end
+    end else begin
+      assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][1]];
+      assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][1]];
     end;
 
     // for the return address stack it doens't matter as we have the
