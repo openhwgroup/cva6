@@ -30,9 +30,7 @@ class cvxif_custom_instr extends riscv_custom_instr;
 
    constraint cus_rx {
       if (instr_name inside {CUS_EXC}) {
-         rd == 0;
-         rs1 inside {[0:9],[11:13],15};
-         rs2 == 0;
+         rs1 dist { [0:9] := 10, 10 := 2, [11:13] := 10, 14 := 2, 15 := 10, [16:23] := 2, [25:31] := 2 };
       }
    }
 
@@ -47,7 +45,7 @@ class cvxif_custom_instr extends riscv_custom_instr;
          CUS_NOP:       asm_str = "cus_nop";
          CUS_S_ADD:     asm_str = $sformatf("%0s %0s, %0s, %0s", asm_str, rd.name(),  rs1.name(),  rs2.name());
          CUS_U_ADD:     asm_str = $sformatf("%0s %0s, %0s, %0s", asm_str, rd.name(),  rs1.name(),  rs2.name());
-         CUS_EXC:       asm_str = $sformatf("%0s %0s, %0s, %0s",      asm_str, rd.name(),  rs1.name(),  rs2.name());
+         CUS_EXC:       asm_str = $sformatf("%0s %0s",      asm_str, rs1.name());
       endcase
       comment = {get_instr_name(), " ", comment};
       if (comment != "") begin
@@ -96,7 +94,13 @@ class cvxif_custom_instr extends riscv_custom_instr;
       case (instr_name) inside
          "CUS_NOP": begin
             has_rd  = 1'b0;
+            has_rs1 = 1'b0;
             has_rs2 = 1'b0;
+            has_imm = 1'b0;
+         end
+         "CUS_EXC": begin
+            has_rd  = 1'b0;
+            has_rs1 = 1'b1;
             has_rs2 = 1'b0;
             has_imm = 1'b0;
          end
