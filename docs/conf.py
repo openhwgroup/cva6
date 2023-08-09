@@ -71,3 +71,4 @@ html_static_path = []
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
+master_doc = 'index'
