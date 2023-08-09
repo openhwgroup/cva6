@@ -39,16 +39,19 @@ module instr_scan #(
     logic rv32_rvc_jal;
     assign rv32_rvc_jal = (riscv::XLEN == 32) & ((instr_i[15:13] == riscv::OpcodeC1Jal) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1));
 
+    logic is_xret;
+    assign is_xret = logic'(instr_i[31:30] == 2'b00) & logic'(instr_i[28:0] == 29'b10000001000000000000001110011);
+
     // check that rs1 is either x1 or x5 and that rd is not rs1
     assign rvi_return_o = rvi_jalr_o & ((instr_i[19:15] == 5'd1) | instr_i[19:15] == 5'd5)
                                      & (instr_i[19:15] != instr_i[11:7]);
     // Opocde is JAL[R] and destination register is either x1 or x5
     assign rvi_call_o   = (rvi_jalr_o | rvi_jump_o) & ((instr_i[11:7] == 5'd1) | instr_i[11:7] == 5'd5);
     // differentiates between JAL and BRANCH opcode, JALR comes from BHT
-    assign rvi_imm_o    = (instr_i[3]) ? ariane_pkg::uj_imm(instr_i) : ariane_pkg::sb_imm(instr_i);
+    assign rvi_imm_o    = is_xret ? '0 : (instr_i[3]) ? ariane_pkg::uj_imm(instr_i) : ariane_pkg::sb_imm(instr_i);
     assign rvi_branch_o = (instr_i[6:0] == riscv::OpcodeBranch);
     assign rvi_jalr_o   = (instr_i[6:0] == riscv::OpcodeJalr);
-    assign rvi_jump_o   = (instr_i[6:0] == riscv::OpcodeJal);
+    assign rvi_jump_o   = logic'(instr_i[6:0] == riscv::OpcodeJal) | is_xret;
 
     // opcode JAL
     assign rvc_jump_o   = ((instr_i[15:13] == riscv::OpcodeC1J) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1)) | rv32_rvc_jal;
