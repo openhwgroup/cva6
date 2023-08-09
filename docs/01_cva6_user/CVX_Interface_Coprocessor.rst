@@ -21,6 +21,9 @@
 CV-X-IF Interface and Coprocessor
 =================================
 
+The CV-X-IF interface of CVA6 allows to extend its supported instruction set
+with external coprocessors.
+
 CV-X-IF interface specification
 -------------------------------
 
@@ -39,7 +42,7 @@ Core-V-eXtension-Interface (XIF, CVXIF, CV-X-IF, X-interface) in the CVA6 core.
 
 The specification of the CV-X-IF bus protocol can be found at [CV-X-IF].
 
-CORE-V X-Interface aims to:
+CV-X-IF aims to:
 
 * Create interfaces to connect a coprocessor to the CVA6 to execute instructions.
 * Offload CVA6 illegal instrutions to the coprocessor to be executed.
@@ -179,15 +182,12 @@ How to use CVA6 without CV-X-IF interface
 -----------------------------------------
 Select a configuration with ``CVA6ConfigCvxifEn`` parameter disabled or change it for your configuration.
 
-How to use CV-X-IF with CVA6
-----------------------------
-We don’t commit yet to write this section. We expect the audience to be power users.
-
-Use CVA6 with CV-X-IF interface
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Never let the CV-X-IF interface unconnected with the ``CVA6ConfigCvxifEn`` parameter enabled.
 
 How to design a coprocessor for the CV-X-IF interface
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------------------
+*The team is looking for a contributor to write this section.*
 
 How to program a CV-X-IF coprocessor
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
+*The team is looking for a contributor to write this section.*
