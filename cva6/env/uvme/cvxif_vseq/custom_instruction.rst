@@ -87,14 +87,14 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
 
 - **CUS_EXC**: Custom Exception
 
-    **Format**: cus_exc rd, rs1, rs2 -> |1100000|rs2|rs1|010|rd|111_1011|
+    **Format**: cus_exc rs1 -> |1100000|00000|rs1|010|00000|111_1011|
 
     **Description**: raise an exception.
 
     **Pseudocode**: mcause[5:0] = rs1
 
-    **Invalid values**: rd = 0x0 & rs2 = 0x0
+    **Invalid values**: NONE
 
-    **Exception raised**: raise an exception based on the rs1 register address,also raised an illegal instruction exception if rd != 0x0 or rs2 != 0x0
+    **Exception raised**: raise an exception based on the rs1 register address.
 
 When a CV-X-IF exception is raised, mcause[5:0] of the corresponding CORE-V hart is assumed set to exccode[5:0] of CV-X-IF.
