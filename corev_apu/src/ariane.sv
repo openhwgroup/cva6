@@ -16,8 +16,8 @@
 module ariane import ariane_pkg::*; #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
-  parameter type cvxif_req_t = acc_pkg::accelerator_req_t,
-  parameter type cvxif_resp_t = acc_pkg::accelerator_resp_t,
+  parameter type cvxif_req_t = logic,
+  parameter type cvxif_resp_t = logic,
   //
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
