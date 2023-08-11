@@ -128,17 +128,19 @@
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
 
-- test: riscv_load_store_hint_test
+- test: riscv_load_store_hazard_test
   description: >
-    Unaligned load/store test
+    Arithmetic instruction test, no load/store/branch instructions no compressed
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
-    +no_load_store=0
-    +no_branch_jump=0
-    +directed_instr_0=riscv_load_store_rand_instr_stream,20
-    +directed_instr_1=riscv_load_store_hazard_instr_stream,50
-    +hint_instr_ratio=500
+    +no_fence=1
+    +directed_instr_1=riscv_multi_page_load_store_instr_stream,20
+    +no_data_page=0
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +disable_compressed_instr=0
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -149,7 +151,6 @@
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
-    +directed_instr_0=riscv_int_numeric_corner_stream,4
     +no_fence=1
     +no_data_page=1
     +no_branch_jump=1
@@ -157,6 +158,52 @@
     +no_csr_instr=1
     +enable_x_extension=1
     +disable_compressed_instr=1
+    +tvec_alignment=8
+  iterations: 2
+  gen_test: cva6_instr_base_test_c
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_xif_illegal_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +enable_x_extension=1
+    +illegal_instr_ratio=100
+    +tvec_alignment=8
+  iterations: 2
+  gen_test: cva6_instr_base_test_c
+  rtl_test: core_base_test
+
+- test: riscv_load_store_xif_test
+  description: >
+    Unaligned load/store test
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +no_load_store=0
+    +no_branch_jump=1
+    +directed_instr_0=riscv_load_store_rand_instr_stream,20
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,50
+    +tvec_alignment=8
+    +enable_x_extension=1
+  iterations: 2
+  gen_test: cva6_instr_base_test_c
+  rtl_test: core_base_test
+
+- test: riscv_rand_jump_xif_test
+  description: >
+    Jump among large number of sub-programs, stress testing iTLB operations.
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +directed_instr_1=riscv_jal_instr,70
+    +enable_x_extension=1
     +tvec_alignment=8
   iterations: 2
   gen_test: cva6_instr_base_test_c
@@ -248,14 +295,16 @@
   gcc_opts: >
     -mno-strict-align
   gen_opts: >
-    +instr_cnt=300
-    +num_of_sub_program=5
+    +instr_cnt=100
+    +num_of_sub_program=0
+    +no_branch_jump=1
+    +no_data_page=0
     +directed_instr_0=riscv_load_store_rand_instr_stream,20
     +directed_instr_1=riscv_load_store_hazard_instr_stream,20
-    +directed_instr_2=riscv_multi_page_load_store_instr_stream,5
-    +directed_instr_3=riscv_mem_region_stress_test,5
     +enable_unaligned_load_store=1
     +tvec_alignment=8
+    +disable_compressed_instr=1
+    +enable_x_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -403,4 +452,55 @@
     +tvec_alignment=8
   iterations: 2
   gen_test: cva6_instr_base_test_c
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_same_reg_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions no compressed
+  gen_opts: >
+    +instr_cnt=1000
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +enable_same_reg=1
+    +disable_compressed_instr=1
+  iterations: 2
+  gen_test: cva6_instr_hazard_test_c
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_hazard_rdrs1_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions no compressed
+  gen_opts: >
+    +instr_cnt=1000
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +enable_rdrs1_hazard=1
+    +disable_compressed_instr=1
+  iterations: 2
+  gen_test: cva6_instr_hazard_test_c
+  rtl_test: core_base_test
+  
+- test: riscv_arithmetic_basic_hazard_rdrs2_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions no compressed
+  gen_opts: >
+    +instr_cnt=1000
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +enable_rdrs2_hazard=1
+    +disable_compressed_instr=1
+  iterations: 2
+  gen_test: cva6_instr_hazard_test_c
   rtl_test: core_base_test

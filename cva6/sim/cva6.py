@@ -421,7 +421,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   cmd = ("%s -static -mcmodel=medany \
          -fvisibility=hidden -nostdlib \
          -nostartfiles %s \
-         -I%s/dv/user_extension \
+         -I%s/../env/corev-dv/user_extension \
          -T%s %s -o %s " % \
          (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm_test, cwd, linker,
                       gcc_opts, elf))

@@ -1,4 +1,4 @@
-# Copyright 2022 Thales DIS SAS
+# Copyright 2023 Thales DIS SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,57 +37,18 @@ key_word="Mismatch[1]:"
 #Read from the iss_regr.log to detect the failed tests
 logfile=out_$dd/iss_regr.log
 TESTLIST_FILE=cva6_base_testlist.yaml
-DIRECTED_TESTLIST=../tests/testlist_isacov.yaml
+DIRECTED_TESTLIST=../tests/testlist_cvxif.yaml
 j=0;
 rm -rf out_$dd
 
 if [[ "$list_num" = 1 ]];then
   TEST_NAME=(
-           "riscv_arithmetic_basic_test_no_comp"
-           "riscv_arithmetic_basic_test_bcomp"
-           "riscv_arithmetic_basic_illegal"
-           "riscv_arithmetic_basic_test_comp"
-           "riscv_arithmetic_basic_illegal_hint_test"
-           "riscv_arithmetic_basic_loop_test"
+           "riscv_arithmetic_basic_xif_test"
+           "riscv_arithmetic_basic_xif_illegal_test"
+           "riscv_load_store_xif_test"
+           "riscv_rand_jump_xif_test"
            );
-   I=(100 100 20 100 20 20);
-elif [[ "$list_num" = 2 ]];then
-  TEST_NAME=(
-           "riscv_arithmetic_basic_same_reg_test"
-           "riscv_arithmetic_basic_hazard_rdrs1_test"
-           "riscv_arithmetic_basic_hazard_rdrs2_test"
-           );
-   I=(100 100 100);
-elif [[ "$list_num" = 3 ]];then
-  TEST_NAME=(
-           "riscv_arithmetic_basic_csr_dummy"
-           "riscv_arithmetic_basic_Randcsr_test"
-           "riscv_arithmetic_basic_ebreak_dret_test"
-           "riscv_arithmetic_basic_illegal_csr"
-           );
-   I=(20 20 20 20);
-elif [[ "$list_num" = 4 ]];then
-	TEST_NAME=(
-           "riscv_mmu_stress_hint_test"
-           "riscv_mmu_stress_test"
-           );
-	I=(100 100);
-elif [[ "$list_num" = 5 ]];then
-  TEST_NAME=(
-           "riscv_load_store_test"
-           "riscv_load_store_cmp_test"
-           "riscv_load_store_hazard_test"
-           "riscv_unaligned_load_store_test"
-           );
-   I=(50 50 50 50);
-elif [[ "$list_num" = 6 ]];then
-	TEST_NAME=(
-           "riscv_rand_jump_hint_comp_test"
-           "riscv_rand_jump_no_cmp_test"
-           "riscv_rand_jump_illegal_test"
-           "riscv_arithmetic_basic_sub_prog_test"
-           );
-	I=(75 75 50 20);
+   I=(100 100 100 100);
 fi
 
 if [[ "$list_num" != 0 ]];then
@@ -112,7 +73,7 @@ printf "+=======================================================================
 j=0
 while [[ $j -lt ${#TEST_NAME[@]} ]];do
   cp ../env/corev-dv/custom/riscv_custom_instr_enum.sv ./dv/src/isa/custom/
-  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imac/ --mabi ilp32 --isa rv32imac --simulator_yaml ../env/corev-dv/simulator.yaml --iss=vcs-uvm,spike -i ${I[j]} -bz 1 --iss_timeout 300
+  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imc/ --mabi ilp32 --isa rv32imc --simulator_yaml ../env/corev-dv/simulator.yaml --iss=vcs-uvm,spike -i ${I[j]} -bz 1 --iss_timeout 300
   n=0
   echo "Generate the test: ${TEST_NAME[j]}"
 #this while loop detects the failed tests from the log file and remove them
