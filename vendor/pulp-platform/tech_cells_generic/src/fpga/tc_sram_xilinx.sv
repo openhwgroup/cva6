@@ -24,6 +24,7 @@ module tc_sram #(
   parameter int unsigned Latency      = 32'd1,    // Latency when the read data is available
   parameter              SimInit      = "zeros",  // Simulation initialization, fixed to zero here!
   parameter bit          PrintSimCfg  = 1'b0,     // Print configuration
+  parameter              ImplKey      = "none",   // Reference to specific implementation
   // DEPENDENT PARAMETERS, DO NOT OVERWRITE!
   parameter int unsigned AddrWidth = (NumWords > 32'd1) ? $clog2(NumWords) : 32'd1,
   parameter int unsigned BeWidth   = (DataWidth + ByteWidth - 32'd1) / ByteWidth, // ceil_div
@@ -43,29 +44,38 @@ module tc_sram #(
   output data_t [NumPorts-1:0] rdata_o     // read data
 );
 
-  localparam int unsigned DataWidthAligned = ByteWidth * BeWidth;
+
+  // XPM only supports a byte width of 8. Hence, map each input byte to a multiple of 8 bit
+  // Number of 8-bit bytes (memory bytes) per data byte
+  localparam int unsigned BytesPerByte     = (ByteWidth + 7) / 8;
+  // Number of allocated memory bits per data byte
+  localparam int unsigned ByteWidthAligned = BytesPerByte * 8;
+  // Resulting memory width and size
+  localparam int unsigned DataWidthAligned = ByteWidthAligned * BeWidth;
   localparam int unsigned Size             = NumWords * DataWidthAligned;
 
-  typedef logic [DataWidthAligned-1:0] data_aligned_t;
+  typedef logic [DataWidthAligned-1:0]     data_aligned_t;
+  typedef logic [BytesPerByte*BeWidth-1:0] be_aligned_t;
 
+  data_aligned_t [NumPorts-1:0] wdata_pad;
+  data_aligned_t [NumPorts-1:0] rdata_pad;
   data_aligned_t [NumPorts-1:0] wdata_al;
   data_aligned_t [NumPorts-1:0] rdata_al;
-  be_t           [NumPorts-1:0] we;
+  be_aligned_t   [NumPorts-1:0] be_al;
+  be_aligned_t   [NumPorts-1:0] we_al;
 
-  // pad with 0 to next byte for inferable macro below, as the macro wants
-  // READ_DATA_WIDTH_A be a multiple of BYTE_WRITE_WIDTH_A
-  always_comb begin : p_align
-    wdata_al = '0;
-    for (int unsigned i = 0; i < NumPorts; i++) begin
-      wdata_al[i][DataWidth-1:0] = wdata_i[i];
+  for (genvar i = 0; i < NumPorts; i++) begin : gen_align
+    // Zero-pad data to allow bit select
+    assign wdata_pad[i] = data_aligned_t'(wdata_i[i]);
+    assign rdata_o[i]   = data_t'(rdata_pad[i]);
+    for (genvar j = 0; j < BeWidth; j++) begin
+        // Unpack data
+        assign wdata_al[i][j*ByteWidthAligned+:ByteWidthAligned] = ByteWidthAligned'(wdata_pad[i][j*ByteWidth+:ByteWidth]);
+        assign rdata_pad[i][j*ByteWidth+:ByteWidth]              = ByteWidth'(rdata_al[i][j*ByteWidthAligned+:ByteWidthAligned]);
+        // In case ByteWidth > 8, let each be_i drive the corresponding number of memory be
+        assign be_al[i][j*BytesPerByte+:BytesPerByte]            = {BytesPerByte{be_i[i][j]}};
+        assign we_al[i][j*BytesPerByte+:BytesPerByte]            = {BytesPerByte{be_i[i][j] & we_i[i]}};
     end
-  end
-
-  for (genvar i = 0; i < NumPorts; i++) begin : gen_port_assign
-    for (genvar j = 0; j < BeWidth; j++) begin : gen_we_assign
-      assign we[i][j] = be_i[i][j] & we_i[i];
-    end
-    assign rdata_o[i] = data_t'(rdata_al[i]);
   end
 
   if (NumPorts == 32'd1) begin : gen_1_ports
@@ -74,7 +84,7 @@ module tc_sram #(
     xpm_memory_spram#(
       .ADDR_WIDTH_A        ( AddrWidth        ), // DECIMAL
       .AUTO_SLEEP_TIME     ( 0                ), // DECIMAL
-      .BYTE_WRITE_WIDTH_A  ( ByteWidth        ), // DECIMAL
+      .BYTE_WRITE_WIDTH_A  ( 8                ), // DECIMAL
       .ECC_MODE            ( "no_ecc"         ), // String
       .MEMORY_INIT_FILE    ( "none"           ), // String
       .MEMORY_INIT_PARAM   ( "0"              ), // String
@@ -102,7 +112,7 @@ module tc_sram #(
       .regcea   ( 1'b1         ), // 1-bit input: Clock Enable for the last register
       .rsta     ( ~rst_ni      ), // 1-bit input: Reset signal for the final port A output
       .sleep    ( 1'b0         ), // 1-bit input: sleep signal to enable the dynamic power save
-      .wea      ( we[0]        )
+      .wea      ( we_al[0]     )
     );
   end else if (NumPorts == 32'd2) begin : gen_2_ports
     // xpm_memory_tdpram: True Dual Port RAM
@@ -111,8 +121,8 @@ module tc_sram #(
       .ADDR_WIDTH_A            ( AddrWidth        ), // DECIMAL
       .ADDR_WIDTH_B            ( AddrWidth        ), // DECIMAL
       .AUTO_SLEEP_TIME         ( 0                ), // DECIMAL
-      .BYTE_WRITE_WIDTH_A      ( ByteWidth        ), // DECIMAL
-      .BYTE_WRITE_WIDTH_B      ( ByteWidth        ), // DECIMAL
+      .BYTE_WRITE_WIDTH_A      ( 8                ), // DECIMAL
+      .BYTE_WRITE_WIDTH_B      ( 8                ), // DECIMAL
       .CLOCKING_MODE           ( "common_clock"   ), // String
       .ECC_MODE                ( "no_ecc"         ), // String
       .MEMORY_INIT_FILE        ( "none"           ), // String
@@ -158,8 +168,8 @@ module tc_sram #(
       .rsta     ( ~rst_ni      ), // 1-bit input: Reset signal for the final port A output
       .rstb     ( ~rst_ni      ), // 1-bit input: Reset signal for the final port B output
       .sleep    ( 1'b0         ), // 1-bit input: sleep signal to enable the dynamic power
-      .wea      ( we[0]        ), // WRITE_DATA_WIDTH_A-bit input: Write enable vector for port A
-      .web      ( we[1]        )  // WRITE_DATA_WIDTH_B-bit input: Write enable vector for port B
+      .wea      ( we_al[0]     ), // WRITE_DATA_WIDTH_A-bit input: Write enable vector for port A
+      .web      ( we_al[1]     )  // WRITE_DATA_WIDTH_B-bit input: Write enable vector for port B
     );
   end else begin : gen_err_ports
     $fatal(1, "Not supported port parametrization for NumPorts: %0d", NumPorts);
