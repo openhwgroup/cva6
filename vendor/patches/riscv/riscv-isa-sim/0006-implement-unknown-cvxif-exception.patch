@@ -1,0 +1,85 @@
+diff --git a/vendor/riscv/riscv-isa-sim/customext/cvxif.cc b/vendor/riscv/riscv-isa-sim/customext/cvxif.cc
+index ae92b1cc..b1bef8e6 100644
+--- a/vendor/riscv/riscv-isa-sim/customext/cvxif.cc
++++ b/vendor/riscv/riscv-isa-sim/customext/cvxif.cc
+@@ -134,17 +134,26 @@ class cvxif_t : public cvxif_extn_t
+         }
+         break;
+       case FUNC3_1:
+-        //Actually only CUS_ADD using func3 equal to one, we don't need to add another switch case
+-        return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
++        switch(r_insn.funct7) {
++          case 0:
++            return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
++            break;
++          default:
++            illegal_instruction();
++        }
+       
+       case FUNC3_2:
+-        //Actually only CUS_EXC using func3 equal to one, we don't need to add another switch case
+-        if (r_insn.rs2 != 0 || r_insn.rd != 0){
+-          illegal_instruction();
+-        } else {
+-          raise_exception(insn, (reg_t) (r_insn.rs1));
+-        }
+-        break;
++        switch (r_insn.funct7) {
++          case (0x60):
++            if (r_insn.rs2 != 0 || r_insn.rd != 0){
++              illegal_instruction();
++            } else {
++              raise_exception(insn, (reg_t) (r_insn.rs1));
++            }
++            break;
++          default:
++            illegal_instruction();
++          }
+       default:
+         illegal_instruction();
+     }
+@@ -195,15 +204,15 @@ class cvxif_t : public cvxif_extn_t
+         // Use 0x1 as always-faulting address.
+         throw trap_store_page_fault((p ? p->get_state()->v : false), 1, 0, 0);
+       case CAUSE_FETCH_GUEST_PAGE_FAULT:
+-        throw trap_instruction_guest_page_fault(1, 0, 0);
++        throw trap_instruction_guest_page_fault(0, 0, 0);
+       case CAUSE_LOAD_GUEST_PAGE_FAULT:
+-        throw trap_load_guest_page_fault( 1, 0, 0);
++        throw trap_load_guest_page_fault(0, 0, 0);
+       case CAUSE_VIRTUAL_INSTRUCTION:
+-        throw trap_virtual_instruction(1);
++        throw trap_virtual_instruction(0);
+       case CAUSE_STORE_GUEST_PAGE_FAULT:
+-        throw trap_store_guest_page_fault(1, 0, 0);
++        throw trap_store_guest_page_fault(0, 0, 0);
+       default:
+-        illegal_instruction();
++        throw trap_unknown_instruction(exc_index, (reg_t)0);
+     }
+   }
+ 
+diff --git a/vendor/riscv/riscv-isa-sim/riscv/trap.h b/vendor/riscv/riscv-isa-sim/riscv/trap.h
+index 54948fdd..78b549cf 100644
+--- a/vendor/riscv/riscv-isa-sim/riscv/trap.h
++++ b/vendor/riscv/riscv-isa-sim/riscv/trap.h
+@@ -82,6 +82,12 @@ class mem_trap_t : public trap_t
+   std::string name() { return "trap_"#x; } \
+ };
+ 
++#define DECLARE_CUSTOM_TRAP(x) class trap_##x : public insn_trap_t { \
++ public: \
++  trap_##x(reg_t n, reg_t tval) : insn_trap_t(n, false, tval) {} \
++  std::string name() { return "trap_"#x; } \
++};
++
+ #define DECLARE_INST_WITH_GVA_TRAP(n, x) class trap_##x : public insn_trap_t {  \
+  public: \
+   trap_##x(bool gva, reg_t tval) : insn_trap_t(n, gva, tval) {} \
+@@ -119,5 +125,6 @@ DECLARE_MEM_GVA_TRAP(CAUSE_FETCH_GUEST_PAGE_FAULT, instruction_guest_page_fault)
+ DECLARE_MEM_GVA_TRAP(CAUSE_LOAD_GUEST_PAGE_FAULT, load_guest_page_fault)
+ DECLARE_INST_TRAP(CAUSE_VIRTUAL_INSTRUCTION, virtual_instruction)
+ DECLARE_MEM_GVA_TRAP(CAUSE_STORE_GUEST_PAGE_FAULT, store_guest_page_fault)
++DECLARE_CUSTOM_TRAP(unknown_instruction)
+ 
+ #endif

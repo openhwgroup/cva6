@@ -82,6 +82,12 @@ class mem_trap_t : public trap_t
   std::string name() { return "trap_"#x; } \
 };
 
+#define DECLARE_CUSTOM_TRAP(x) class trap_##x : public insn_trap_t { \
+ public: \
+  trap_##x(reg_t n, reg_t tval) : insn_trap_t(n, false, tval) {} \
+  std::string name() { return "trap_"#x; } \
+};
+
 #define DECLARE_INST_WITH_GVA_TRAP(n, x) class trap_##x : public insn_trap_t {  \
  public: \
   trap_##x(bool gva, reg_t tval) : insn_trap_t(n, gva, tval) {} \
@@ -119,5 +125,6 @@ DECLARE_MEM_GVA_TRAP(CAUSE_FETCH_GUEST_PAGE_FAULT, instruction_guest_page_fault)
 DECLARE_MEM_GVA_TRAP(CAUSE_LOAD_GUEST_PAGE_FAULT, load_guest_page_fault)
 DECLARE_INST_TRAP(CAUSE_VIRTUAL_INSTRUCTION, virtual_instruction)
 DECLARE_MEM_GVA_TRAP(CAUSE_STORE_GUEST_PAGE_FAULT, store_guest_page_fault)
+DECLARE_CUSTOM_TRAP(unknown_instruction)
 
 #endif
