@@ -790,7 +790,9 @@ module cva6 import ariane_pkg::*; #(
     .stall_issue_i       ( stall_issue               ),
     .mcountinhibit_i     ( mcountinhibit_csr_perf    )
   );
- end
+  end : gen_perf_counter else begin: gen_no_perf_counter
+    assign data_perf_csr    = '0;
+  end : gen_no_perf_counter
 
   // ------------
   // Controller
