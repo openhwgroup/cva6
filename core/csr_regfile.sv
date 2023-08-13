@@ -241,6 +241,7 @@ module csr_regfile import ariane_pkg::*; #(
                 end
                 // machine mode registers
                 riscv::CSR_MSTATUS:            csr_rdata = mstatus_extended;
+                riscv::CSR_MSTATUSH:           if (riscv::XLEN == 32) csr_rdata = '0; else read_access_exception = 1'b1;
                 riscv::CSR_MISA:               csr_rdata = ISA_CODE;
                 riscv::CSR_MEDELEG:            csr_rdata = medeleg_q;
                 riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
@@ -684,6 +685,7 @@ module csr_regfile import ariane_pkg::*; #(
                     // this register has side-effects on other registers, flush the pipeline
                     flush_o        = 1'b1;
                 end
+                riscv::CSR_MSTATUSH: if (riscv::XLEN != 32) update_access_exception = 1'b1;
                 // MISA is WARL (Write Any Value, Reads Legal Value)
                 riscv::CSR_MISA:;
                 // machine exception delegation register
