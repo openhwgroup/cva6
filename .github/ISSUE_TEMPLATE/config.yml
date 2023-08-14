@@ -1,7 +1,0 @@
-contact_links:
-  - name: Tasks
-    url: https://github.com/openhwgroup/core-v-verif/issues/new?template=task.md
-    about: Tasks to create new or modify existing verification code.
-  - name: Bugs
-    url: https://github.com/openhwgroup/core-v-verif/issues/new?template=bug.md
-    about: Bugs against existing verification code.

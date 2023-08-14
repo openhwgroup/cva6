@@ -1,7 +1,0 @@
-{%- macro yesorno(val) -%}
-{%- if val == '0' -%}NO{%- elif val == '1' -%}YES{%- elif val == True-%}YES{%- else -%}{{val}}{%- endif -%}
-{%- endmacro -%}
-
-{%- macro cv_results(arg) -%}
-{%- if arg -%}CV_RESULTS={{arg}}{%- endif -%}
-{%- endmacro -%}
