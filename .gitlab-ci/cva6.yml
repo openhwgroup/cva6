@@ -71,6 +71,7 @@ stages:
   - smoke tests
   - verif tests
   - backend tests
+  - find failures
   - report
 
 .verif_test:
@@ -602,6 +603,24 @@ code_coverage-report:
     - when: on_success
   artifacts:
     expire_in: 3 week
+
+check gitlab jobs status:
+  stage: find failures
+  tags: [$TAGS_RUNNER]
+  rules:
+    - if: '$DASHBOARD_URL'
+      when: on_failure
+    - when: never
+  variables:
+    DASHBOARD_JOB_TITLE: "Environment check"
+    DASHBOARD_JOB_DESCRIPTION: "Detect environment issues"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Environment"
+  script:
+    - rm -rf artifacts/
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_envfail.py
+  artifacts: *artifacts
 
 merge reports:
   stage: report
