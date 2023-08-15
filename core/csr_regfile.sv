@@ -872,7 +872,7 @@ module csr_regfile import ariane_pkg::*; #(
                     // index is specified by the last byte in the address
                     automatic int index = csr_addr.csr_decode.address[3:0];
                     // check if the entry or the entry above is locked
-                    if (!pmpcfg_q[index].locked && !(pmpcfg_q[index].locked && pmpcfg_q[index].addr_mode == riscv::TOR)) begin
+                    if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index].addr_mode == riscv::TOR)) begin
                         pmpaddr_d[index] = csr_wdata[riscv::PLEN-3:0];
                     end
                 end
