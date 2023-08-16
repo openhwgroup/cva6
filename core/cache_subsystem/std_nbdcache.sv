@@ -16,6 +16,7 @@
 module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter ariane_cfg_t ArianeCfg        = ArianeDefaultConfig, // contains cacheable regions
+    parameter int unsigned NumPorts = 4,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
 )(
@@ -30,8 +31,8 @@ module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; #(
     input  amo_req_t                       amo_req_i,
     output amo_resp_t                      amo_resp_o,
     // Request ports
-    input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
-    output dcache_req_o_t [2:0]            req_ports_o,  // request ports
+    input  dcache_req_i_t [NumPorts-1:0]   req_ports_i,  // request ports
+    output dcache_req_o_t [NumPorts-1:0]   req_ports_o,  // request ports
     // Cache AXI refill port
     output axi_req_t                       axi_data_o,
     input  axi_rsp_t                       axi_data_i,
@@ -47,34 +48,35 @@ import std_cache_pkg::*;
     // 1. Miss handler
     // 2. PTW
     // 3. Load Unit
-    // 4. Store unit
-    logic        [3:0][DCACHE_SET_ASSOC-1:0]  req;
-    logic        [3:0][DCACHE_INDEX_WIDTH-1:0]addr;
-    logic        [3:0]                        gnt;
-    cache_line_t [DCACHE_SET_ASSOC-1:0]       rdata;
-    logic        [3:0][DCACHE_TAG_WIDTH-1:0]  tag;
+    // 4. Accelerator
+    // 5. Store unit
+    logic        [NumPorts:0][DCACHE_SET_ASSOC-1:0]  req;
+    logic        [NumPorts:0][DCACHE_INDEX_WIDTH-1:0]addr;
+    logic        [NumPorts:0]                        gnt;
+    cache_line_t [DCACHE_SET_ASSOC-1:0]              rdata;
+    logic        [NumPorts:0][DCACHE_TAG_WIDTH-1:0]  tag;
 
-    cache_line_t [3:0]                        wdata;
-    logic        [3:0]                        we;
-    cl_be_t      [3:0]                        be;
-    logic        [DCACHE_SET_ASSOC-1:0]       hit_way;
+    cache_line_t [NumPorts:0]                        wdata;
+    logic        [NumPorts:0]                        we;
+    cl_be_t      [NumPorts:0]                        be;
+    logic        [DCACHE_SET_ASSOC-1:0]              hit_way;
     // -------------------------------
     // Controller <-> Miss unit
     // -------------------------------
-    logic [2:0]                        busy;
-    logic [2:0][55:0]                  mshr_addr;
-    logic [2:0]                        mshr_addr_matches;
-    logic [2:0]                        mshr_index_matches;
-    logic [63:0]                       critical_word;
-    logic                              critical_word_valid;
+    logic [NumPorts-1:0]                        busy;
+    logic [NumPorts-1:0][55:0]                  mshr_addr;
+    logic [NumPorts-1:0]                        mshr_addr_matches;
+    logic [NumPorts-1:0]                        mshr_index_matches;
+    logic [63:0]                                critical_word;
+    logic                                       critical_word_valid;
 
-    logic [2:0][$bits(miss_req_t)-1:0] miss_req;
-    logic [2:0]                        miss_gnt;
-    logic [2:0]                        active_serving;
+    logic [NumPorts-1:0][$bits(miss_req_t)-1:0] miss_req;
+    logic [NumPorts-1:0]                        miss_gnt;
+    logic [NumPorts-1:0]                        active_serving;
 
-    logic [2:0]                        bypass_gnt;
-    logic [2:0]                        bypass_valid;
-    logic [2:0][63:0]                  bypass_data;
+    logic [NumPorts-1:0]                        bypass_gnt;
+    logic [NumPorts-1:0]                        bypass_valid;
+    logic [NumPorts-1:0][63:0]                  bypass_data;
     // -------------------------------
     // Arbiter <-> Datram,
     // -------------------------------
@@ -89,7 +91,7 @@ import std_cache_pkg::*;
     // Cache Controller
     // ------------------
     generate
-        for (genvar i = 0; i < 3; i++) begin : master_ports
+        for (genvar i = 0; i < NumPorts; i++) begin : master_ports
             cache_ctrl  #(
                 .CVA6Cfg               ( CVA6Cfg              ),
                 .ArianeCfg             ( ArianeCfg            )
@@ -132,7 +134,7 @@ import std_cache_pkg::*;
     // ------------------
     miss_handler #(
         .CVA6Cfg                ( CVA6Cfg              ),
-        .NR_PORTS               ( 3                    ),
+        .NR_PORTS               ( NumPorts             ),
         .axi_req_t              ( axi_req_t            ),
         .axi_rsp_t              ( axi_rsp_t            )
     ) i_miss_handler (
@@ -243,7 +245,7 @@ import std_cache_pkg::*;
     // ------------------------------------------------
     tag_cmp #(
         .CVA6Cfg            ( CVA6Cfg            ),
-        .NR_PORTS           ( 4                  ),
+        .NR_PORTS           ( NumPorts+1         ),
         .ADDR_WIDTH         ( DCACHE_INDEX_WIDTH ),
         .DCACHE_SET_ASSOC   ( DCACHE_SET_ASSOC   )
     ) i_tag_cmp (

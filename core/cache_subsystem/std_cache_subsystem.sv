@@ -18,6 +18,7 @@
 module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig,  // contains cacheable regions
+    parameter int unsigned NumPorts = 4,
     parameter type axi_ar_chan_t = logic,
     parameter type axi_aw_chan_t = logic,
     parameter type axi_w_chan_t  = logic,
@@ -48,8 +49,8 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     output logic                           dcache_miss_o,          // we missed on a ld/st
     output logic                           wbuffer_empty_o,        // statically set to 1, as there is no wbuffer in this cache system
     // Request ports
-    input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
-    output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
+    input  dcache_req_i_t [NumPorts-1:0]   dcache_req_ports_i,     // to/from LSU
+    output dcache_req_o_t [NumPorts-1:0]   dcache_req_ports_o,     // to/from LSU
     // memory side
     output axi_req_t                       axi_req_o,
     input  axi_rsp_t                       axi_resp_i
@@ -87,10 +88,12 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
    // decreasing priority
    // Port 0: PTW
    // Port 1: Load Unit
-   // Port 2: Store Unit
+   // Port 2: Accelerator
+   // Port 3: Store Unit
    std_nbdcache #(
       .CVA6Cfg          ( CVA6Cfg      ),
       .ArianeCfg        ( ArianeCfg    ),
+      .NumPorts         ( NumPorts     ),
       .axi_req_t        ( axi_req_t    ),
       .axi_rsp_t        ( axi_rsp_t    )
    ) i_nbdcache (
@@ -151,10 +154,10 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     // to forward the correct write data.
     always_comb begin
         w_select = 0;
-        unique case (axi_req_o.aw.id)
-            4'b1100:                            w_select = 2; // dcache
-            4'b1000, 4'b1001, 4'b1010, 4'b1011: w_select = 1; // bypass
-            default:                            w_select = 0; // icache
+        unique casez (axi_req_o.aw.id)
+            4'b0111: w_select = 2; // dcache
+            4'b1???: w_select = 1; // bypass
+            default: w_select = 0; // icache
         endcase
     end
 
@@ -199,9 +202,9 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     );
 
     // Route responses based on ID
-    // 0000            -> I$
-    // 10[00|10|01|11] -> Bypass
-    // 1100            -> D$
+    // 0000 -> I$
+    // 0111 -> D$
+    // 1??? -> Bypass
     // R Channel
     assign axi_resp_icache.r = axi_resp_i.r;
     assign axi_resp_bypass.r = axi_resp_i.r;
@@ -211,11 +214,11 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
 
     always_comb begin
         r_select = 0;
-        unique case (axi_resp_i.r.id)
-            4'b1100:                            r_select = 0; // dcache
-            4'b1000, 4'b1001, 4'b1010, 4'b1011: r_select = 1; // bypass
-            4'b0000:                            r_select = 2; // icache
-            default:                            r_select = 0;
+        unique casez (axi_resp_i.r.id)
+            4'b0111: r_select = 0; // dcache
+            4'b1???: r_select = 1; // bypass
+            4'b0000: r_select = 2; // icache
+            default: r_select = 0;
         endcase
     end
 
@@ -238,11 +241,11 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
 
     always_comb begin
         b_select = 0;
-        unique case (axi_resp_i.b.id)
-            4'b1100:                            b_select = 0; // dcache
-            4'b1000, 4'b1001, 4'b1010, 4'b1011: b_select = 1; // bypass
-            4'b0000:                            b_select = 2; // icache
-            default:                            b_select = 0;
+        unique casez (axi_resp_i.b.id)
+            4'b0111: b_select = 0; // dcache
+            4'b1???: b_select = 1; // bypass
+            4'b0000: b_select = 2; // icache
+            default: b_select = 0;
         endcase
     end
 
@@ -269,11 +272,11 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
         icache_dreq_o.vaddr, icache_dreq_o.data);
 
   a_invalid_write_data: assert property (
-    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[NumPorts-1].data_req |-> |dcache_req_ports_i[NumPorts-1].data_be |-> (|dcache_req_ports_i[NumPorts-1].data_wdata) !== 1'hX)
       else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X",
-        {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
+        {dcache_req_ports_i[NumPorts-1].address_tag, dcache_req_ports_i[NumPorts-1].address_index}, dcache_req_ports_i[NumPorts-1].data_be, dcache_req_ports_i[NumPorts-1].data_wdata);
   generate
-      for(genvar j=0; j<2; j++) begin
+      for(genvar j=0; j<NumPorts-1; j++) begin
         a_invalid_read_data: assert property (
           @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
             else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X",
