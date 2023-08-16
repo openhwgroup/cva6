@@ -22,7 +22,7 @@
 module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig,  // contains cacheable regions
-  parameter int unsigned NumPorts     = 3,
+  parameter int unsigned NumPorts     = 4,
   parameter type noc_req_t = logic,
   parameter type noc_resp_t = logic
 ) (
@@ -50,8 +50,8 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   input amo_req_t                        dcache_amo_req_i,
   output amo_resp_t                      dcache_amo_resp_o,
   // Request ports
-  input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
-  output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
+  input  dcache_req_i_t [NumPorts-1:0]   dcache_req_ports_i,     // to/from LSU
+  output dcache_req_o_t [NumPorts-1:0]   dcache_req_ports_o,     // to/from LSU
   // writebuffer status
   output logic                           wbuffer_empty_o,
   output logic                           wbuffer_not_ni_o,
@@ -193,13 +193,13 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   for (genvar j=0; j<riscv::XLEN/8; j++) begin : gen_invalid_write_assertion
     a_invalid_write_data: assert property (
-      @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[2].data_req |-> dcache_req_ports_i[2].data_be[j] |-> (|dcache_req_ports_i[2].data_wdata[j*8+:8] !== 1'hX))
+      @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[NumPorts-1].data_req |-> dcache_req_ports_i[NumPorts-1].data_be[j] |-> (|dcache_req_ports_i[NumPorts-1].data_wdata[j*8+:8] !== 1'hX))
     else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X, databe=%016X",
-      {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata, dcache_req_ports_i[2].data_be & dcache_req_ports_i[2].data_wdata);
+      {dcache_req_ports_i[NumPorts-1].address_tag, dcache_req_ports_i[NumPorts-1].address_index}, dcache_req_ports_i[NumPorts-1].data_be, dcache_req_ports_i[NumPorts-1].data_wdata, dcache_req_ports_i[NumPorts-1].data_be & dcache_req_ports_i[NumPorts-1].data_wdata);
   end
 
 
-  for (genvar j=0; j<2; j++) begin : gen_assertion
+  for (genvar j=0; j<NumPorts-1; j++) begin : gen_assertion
     a_invalid_read_data: assert property (
       @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_o[j].data_rvalid && ~dcache_req_ports_i[j].kill_req |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
     else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X",
