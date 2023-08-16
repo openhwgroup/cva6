@@ -17,7 +17,7 @@ module cva6 import ariane_pkg::*; #(
   // CVA6 config
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
     unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-    unsigned'(cva6_config_pkg::CVA6ConfigRvfiTrace),      // IsRVFI
+    bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),           // IsRVFI
     unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
     unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
     unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
