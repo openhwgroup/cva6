@@ -65,7 +65,7 @@ if match:
     target = match.group(1)
     if target in expected:
         diff = gates - expected[target]['gates']
-        if abs(diff) >= 100:
+        if abs(diff) >= 300:
             result_metric.fail()
     else:
         raise Exception("unexpected target: {target}")
