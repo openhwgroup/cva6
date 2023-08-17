@@ -464,6 +464,7 @@ module cva6 import ariane_pkg::*; #(
   logic              inval_valid;
   logic              inval_ready;
 
+
   // --------------
   // Frontend
   // --------------
@@ -1266,7 +1267,7 @@ module cva6 import ariane_pkg::*; #(
         rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1[4:0];
         rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2[4:0];
         rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd[4:0];
-        rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
+        rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr_cfg(commit_instr_id_commit[i].op, CVA6Cfg.FpPresent) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
         rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
 
         rvfi_o[i].mem_addr  = commit_instr_id_commit[i].lsu_addr;

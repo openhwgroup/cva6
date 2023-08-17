@@ -580,7 +580,14 @@ package ariane_pkg;
     // -------------------------------
     // Extract Src/Dst FP Reg from Op
     // -------------------------------
+    // function used in instr_trace svh
+    // is_rd_fpr function is kept to allow cva6 compilation with instr_trace feature
     function automatic logic is_rs1_fpr (input fu_op op);
+        return is_rs1_fpr_cfg (op, 1);
+    endfunction
+
+    function automatic logic is_rs1_fpr_cfg (input fu_op op, input bit FpPresent);
+        if (FpPresent) begin
             unique case (op) inside
                 [FMUL:FNMADD],                   // Computational Operations (except ADD/SUB)
                 FCVT_F2I,                        // Float-Int Casts
@@ -593,9 +600,19 @@ package ariane_pkg;
                 ACCEL_OP_FS1      : return 1'b1; // Accelerator instructions
                 default           : return 1'b0; // all other ops
             endcase
+        end else begin
+            return 1'b0;
+        end
     endfunction
 
+    // function used in instr_trace svh
+    // is_rd_fpr function is kept to allow cva6 compilation with instr_trace feature
     function automatic logic is_rs2_fpr (input fu_op op);
+        return is_rs2_fpr_cfg (op, 1);
+    endfunction
+
+    function automatic logic is_rs2_fpr_cfg (input fu_op op, input bit FpPresent);
+        if (FpPresent) begin
             unique case (op) inside
                 [FSD:FSB],                       // FP Stores
                 [FADD:FMIN_MAX],                 // Computational Operations (no sqrt)
@@ -606,19 +623,39 @@ package ariane_pkg;
                 [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
                 default           : return 1'b0; // all other ops
             endcase
+        end else begin
+            return 1'b0;
+        end
     endfunction
 
+    // function used in instr_trace svh
+    // is_rd_fpr function is kept to allow cva6 compilation with instr_trace feature
     // ternary operations encode the rs3 address in the imm field, also add/sub
     function automatic logic is_imm_fpr (input fu_op op);
+        return is_imm_fpr_cfg (op, 1);
+    endfunction
+
+    function automatic logic is_imm_fpr_cfg (input fu_op op, input bit FpPresent);
+        if (FpPresent) begin
             unique case (op) inside
                 [FADD:FSUB],                         // ADD/SUB need inputs as Operand B/C
                 [FMADD:FNMADD],                      // Fused Computational Operations
                 [VFCPKAB_S:VFCPKCD_D] : return 1'b1; // Vectorial FP cast and pack ops
                 default               : return 1'b0; // all other ops
             endcase
+        end else begin
+            return 1'b0;
+        end
     endfunction
 
+    // function used in instr_trace svh
+    // is_rd_fpr function is kept to allow cva6 compilation with instr_trace feature
     function automatic logic is_rd_fpr (input fu_op op);
+        return is_rd_fpr_cfg (op, 1);
+    endfunction
+
+    function automatic logic is_rd_fpr_cfg (input fu_op op, input bit FpPresent);
+        if (FpPresent) begin
             unique case (op) inside
                 [FLD:FLB],                           // FP Loads
                 [FADD:FNMADD],                       // Computational Operations
@@ -631,6 +668,9 @@ package ariane_pkg;
                 ACCEL_OP_FD           : return 1'b1; // Accelerator instructions
                 default               : return 1'b0; // all other ops
             endcase
+        end else begin
+            return 1'b0;
+        end
     endfunction
 
     function automatic logic is_amo (fu_op op);
