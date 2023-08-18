@@ -122,7 +122,6 @@ module issue_stage import ariane_pkg::*; #(
     riscv::xlen_t              rs1_forwarding_xlen;
     riscv::xlen_t              rs2_forwarding_xlen;
 
-
     assign rs1_forwarding_o = rs1_forwarding_xlen[riscv::VLEN-1:0];
     assign rs2_forwarding_o = rs2_forwarding_xlen[riscv::VLEN-1:0];
 

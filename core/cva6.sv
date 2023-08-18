@@ -464,7 +464,6 @@ module cva6 import ariane_pkg::*; #(
   logic              inval_valid;
   logic              inval_ready;
 
-
   // --------------
   // Frontend
   // --------------
