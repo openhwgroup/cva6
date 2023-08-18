@@ -834,7 +834,7 @@ module cva6 import ariane_pkg::*; #(
   // Cache Subsystem
   // -------------------
 
-  if (DCACHE_TYPE == int'(cva6_config_pkg::WT)) begin
+  if (DCACHE_TYPE == int'(cva6_config_pkg::WT)) begin : gen_cache_wt
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
     .CVA6Cfg              ( CVA6Cfg   ),
@@ -876,7 +876,7 @@ module cva6 import ariane_pkg::*; #(
     .inval_valid_i         ( inval_valid                 ),
     .inval_ready_o         ( inval_ready                 )
   );
-  end else begin
+  end else begin : gen_cache_wb
 
   std_cache_subsystem #(
     // note: this only works with one cacheable region
