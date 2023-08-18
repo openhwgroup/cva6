@@ -54,6 +54,8 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
     input  logic                                  flush_ex_i,
     output logic                                  flush_pipeline_o,
     // Interface with cache subsystem
+    output dcache_req_i_t                   [1:0] acc_dcache_req_ports_o,
+    input  dcache_req_o_t                   [1:0] acc_dcache_req_ports_i,
     input  logic                                  inval_ready_i,
     output logic                                  inval_valid_o,
     output logic                           [63:0] inval_addr_o,
@@ -412,5 +414,6 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
 
   assign acc_stall_st_pending_o = 1'b0;
   assign flush_pipeline_o       = 1'b0;
+  assign acc_dcache_req_ports_o = '0;
 
 endmodule : acc_dispatcher
