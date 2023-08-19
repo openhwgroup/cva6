@@ -18,7 +18,6 @@
 module ariane_testharness #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
     unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-    bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),           // IsRVFI
     unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
     unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
     unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
@@ -47,6 +46,7 @@ module ariane_testharness #(
     unsigned'(0),                                         // NrWbPorts
     bit'(0)                                               // EnableAccelerator
   },
+  parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
   parameter type rvfi_instr_t = struct packed {
     logic [ariane_pkg::NRET-1:0]                  valid;
     logic [ariane_pkg::NRET*64-1:0]               order;
@@ -663,6 +663,7 @@ module ariane_testharness #(
 
   ariane #(
     .CVA6Cfg              ( CVA6Cfg             ),
+    .IsRVFI               ( IsRVFI              ),
     .rvfi_instr_t         ( rvfi_instr_t        ),
     .ArianeCfg            ( ariane_soc::ArianeSocCfg ),
     .noc_req_t            ( ariane_axi::req_t   ),

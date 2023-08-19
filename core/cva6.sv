@@ -17,7 +17,6 @@ module cva6 import ariane_pkg::*; #(
   // CVA6 config
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
     unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-    bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),           // IsRVFI
     unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
     unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
     unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
@@ -46,6 +45,7 @@ module cva6 import ariane_pkg::*; #(
     unsigned'(0),                                         // NrWbPorts
     bit'(0)                                               // EnableAccelerator
   },
+  parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
   // RVFI
   parameter type rvfi_instr_t = struct packed {
     logic [ariane_pkg::NRET-1:0]                  valid;
@@ -205,7 +205,6 @@ module cva6 import ariane_pkg::*; #(
 
   localparam ariane_pkg::cva6_cfg_t CVA6ExtendCfg = {
     CVA6Cfg.NrCommitPorts,
-    CVA6Cfg.IsRVFI,
     CVA6Cfg.AxiAddrWidth,
     CVA6Cfg.AxiDataWidth,
     CVA6Cfg.AxiIdWidth,
@@ -555,6 +554,7 @@ module cva6 import ariane_pkg::*; #(
   // ---------
   issue_stage #(
     .CVA6Cfg                    ( CVA6ExtendCfg                ),
+    .IsRVFI                     ( IsRVFI                       ),
     .NR_ENTRIES                 ( NR_SB_ENTRIES                )
   ) issue_stage_i (
     .clk_i,
@@ -1236,7 +1236,7 @@ module cva6 import ariane_pkg::*; #(
 `endif // VERILATOR
 //pragma translate_on
 
-  if (CVA6Cfg.IsRVFI) begin
+  if (IsRVFI) begin
     always_comb begin
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
         logic exception, mem_exception;

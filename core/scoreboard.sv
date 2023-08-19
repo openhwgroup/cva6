@@ -14,6 +14,7 @@
 
 module scoreboard #(
   parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+  parameter bit IsRVFI = 0,
   parameter type rs3_len_t = logic,
   parameter int unsigned NR_ENTRIES      = 8  // must be a power of 2
 ) (
@@ -96,7 +97,7 @@ module scoreboard #(
   ariane_pkg::scoreboard_entry_t decoded_instr;
   always_comb begin
     decoded_instr = decoded_instr_i;
-    if (CVA6Cfg.IsRVFI) begin
+    if (IsRVFI) begin
       decoded_instr.rs1_rdata = rs1_forwarding_i;
       decoded_instr.rs2_rdata = rs2_forwarding_i;
       decoded_instr.lsu_addr  = '0;
@@ -155,7 +156,7 @@ module scoreboard #(
     // ------------
     // Write Back
     // ------------
-    if (CVA6Cfg.IsRVFI) begin
+    if (IsRVFI) begin
       if (lsu_rmask_i != 0) begin
         mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
         mem_n[lsu_addr_trans_id_i].sbe.lsu_rmask = lsu_rmask_i;

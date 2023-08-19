@@ -16,6 +16,7 @@
 
 module issue_stage import ariane_pkg::*; #(
     parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+    parameter bit IsRVFI = 0,
     parameter int unsigned NR_ENTRIES = 8
 )(
     input  logic                                     clk_i,     // Clock
@@ -151,6 +152,7 @@ module issue_stage import ariane_pkg::*; #(
     // ---------------------------------------------------------
     scoreboard #(
         .CVA6Cfg    ( CVA6Cfg   ),
+        .IsRVFI     ( IsRVFI    ),
         .rs3_len_t  ( rs3_len_t ),
         .NR_ENTRIES (NR_ENTRIES )
     ) i_scoreboard (

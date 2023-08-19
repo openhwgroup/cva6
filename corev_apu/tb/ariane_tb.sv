@@ -31,7 +31,6 @@ module ariane_tb;
     // cva6 configuration
     localparam ariane_pkg::cva6_cfg_t CVA6Cfg = {
         unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-        bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),           // IsRVFI
         unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
         unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
         unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
@@ -60,6 +59,7 @@ module ariane_tb;
         unsigned'(0),                                         // NrWbPorts
         bit'(0)                                               // EnableAccelerator
     };
+    localparam bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace);
     localparam type rvfi_instr_t = struct packed {
         logic [ariane_pkg::NRET-1:0]                  valid;
         logic [ariane_pkg::NRET*64-1:0]               order;
@@ -106,6 +106,7 @@ module ariane_tb;
 
     ariane_testharness #(
         .CVA6Cfg ( CVA6Cfg ),
+        .IsRVFI ( IsRVFI ),
         .rvfi_instr_t ( rvfi_instr_t ),
         //
         .NUM_WORDS         ( NUM_WORDS ),

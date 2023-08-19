@@ -36,7 +36,6 @@ package ariane_pkg;
 
     typedef struct packed {
       int unsigned NrCommitPorts;
-      bit IsRVFI;
       int unsigned AxiAddrWidth;
       int unsigned AxiDataWidth;
       int unsigned AxiIdWidth;
@@ -68,7 +67,6 @@ package ariane_pkg;
 
     localparam cva6_cfg_t cva6_cfg_empty = {
       unsigned'(0),      // NrCommitPorts
-      bit'(0),           // IsRVFI
       unsigned'(0),      // AxiAddrWidth
       unsigned'(0),      // AxiDataWidth
       unsigned'(0),      // AxiIdWidth
