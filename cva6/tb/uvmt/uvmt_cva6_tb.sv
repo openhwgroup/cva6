@@ -31,61 +31,32 @@ module uvmt_cva6_tb;
    import uvme_cva6_pkg::*;
 
    // CVA6 config
-   localparam ariane_pkg::cva6_cfg_t CVA6Cfg = {
-     unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-     unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
-     unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
-     unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
-     unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth),  // AxiUserWidth
-     bit'(cva6_config_pkg::CVA6ConfigFpuEn),               // FpuEn
-     bit'(cva6_config_pkg::CVA6ConfigF16En),               // XF16
-     bit'(cva6_config_pkg::CVA6ConfigF16AltEn),            // XF16ALT
-     bit'(cva6_config_pkg::CVA6ConfigF8En),                // XF8
-     bit'(cva6_config_pkg::CVA6ConfigAExtEn),              // RVA
-     bit'(cva6_config_pkg::CVA6ConfigVExtEn),              // RVV
-     bit'(cva6_config_pkg::CVA6ConfigCExtEn),              // RVC
-     bit'(cva6_config_pkg::CVA6ConfigFVecEn),              // XFVEC
-     bit'(cva6_config_pkg::CVA6ConfigCvxifEn),             // CvxifEn
-     // Extended
-     bit'(0),                                              // RVF
-     bit'(0),                                              // RVD
-     bit'(0),                                              // FpPresent
-     riscv::XLEN'(0),                                      // IsaCode
-     bit'(0),                                              // NSX
-     unsigned'(0),                                         // FLen
-     bit'(0),                                              // RVFVec
-     bit'(0),                                              // XF16Vec
-     bit'(0),                                              // XF16ALTVec
-     bit'(0),                                              // XF8Vec
-     unsigned'(0),                                         // NR_RGPR_PORTS
-     unsigned'(0),                                         // NrWbPorts
-     bit'(0)                                               // EnableAccelerator
-   };
+   localparam config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg;
    localparam bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace);
    localparam type rvfi_instr_t = struct packed {
-     logic [ariane_pkg::NRET-1:0]                  valid;
-     logic [ariane_pkg::NRET*64-1:0]               order;
-     logic [ariane_pkg::NRET*ariane_pkg::ILEN-1:0] insn;
-     logic [ariane_pkg::NRET-1:0]                  trap;
-     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      cause;
-     logic [ariane_pkg::NRET-1:0]                  halt;
-     logic [ariane_pkg::NRET-1:0]                  intr;
-     logic [ariane_pkg::NRET*2-1:0]                mode;
-     logic [ariane_pkg::NRET*2-1:0]                ixl;
-     logic [ariane_pkg::NRET*5-1:0]                rs1_addr;
-     logic [ariane_pkg::NRET*5-1:0]                rs2_addr;
-     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
-     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
-     logic [ariane_pkg::NRET*5-1:0]                rd_addr;
-     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
-     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
-     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
-     logic [ariane_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
-     logic [ariane_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
-     logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
-     logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
-     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
-     logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+     logic [config_pkg::NRET-1:0]                  valid;
+     logic [config_pkg::NRET*64-1:0]               order;
+     logic [config_pkg::NRET*config_pkg::ILEN-1:0] insn;
+     logic [config_pkg::NRET-1:0]                  trap;
+     logic [config_pkg::NRET*riscv::XLEN-1:0]      cause;
+     logic [config_pkg::NRET-1:0]                  halt;
+     logic [config_pkg::NRET-1:0]                  intr;
+     logic [config_pkg::NRET*2-1:0]                mode;
+     logic [config_pkg::NRET*2-1:0]                ixl;
+     logic [config_pkg::NRET*5-1:0]                rs1_addr;
+     logic [config_pkg::NRET*5-1:0]                rs2_addr;
+     logic [config_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
+     logic [config_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
+     logic [config_pkg::NRET*5-1:0]                rd_addr;
+     logic [config_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
+     logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
+     logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
+     logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
+     logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
+     logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
+     logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
+     logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
+     logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
    };
 
    localparam AXI_USER_EN       = ariane_pkg::AXI_USER_EN;

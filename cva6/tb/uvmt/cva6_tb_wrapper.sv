@@ -35,7 +35,7 @@ import "DPI-C" function byte get_section(output longint address, output longint 
 import "DPI-C" context function void read_section(input longint address, inout byte buffer[]);
 
 module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter bit IsRVFI = 1'b0,
   parameter type rvfi_instr_t = logic,
   //
