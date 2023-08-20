@@ -14,7 +14,7 @@
 
 
 module ariane import ariane_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = cva6_cfg_empty,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter bit IsRVFI = 1'b0,
   parameter type rvfi_instr_t = logic,
   //

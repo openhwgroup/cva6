@@ -15,62 +15,33 @@
 
 module cva6 import ariane_pkg::*; #(
   // CVA6 config
-  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = {
-    unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-    unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
-    unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
-    unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
-    unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth),  // AxiUserWidth
-    bit'(cva6_config_pkg::CVA6ConfigFpuEn),               // FpuEn
-    bit'(cva6_config_pkg::CVA6ConfigF16En),               // XF16
-    bit'(cva6_config_pkg::CVA6ConfigF16AltEn),            // XF16ALT
-    bit'(cva6_config_pkg::CVA6ConfigF8En),                // XF8
-    bit'(cva6_config_pkg::CVA6ConfigAExtEn),              // RVA
-    bit'(cva6_config_pkg::CVA6ConfigVExtEn),              // RVV
-    bit'(cva6_config_pkg::CVA6ConfigCExtEn),              // RVC
-    bit'(cva6_config_pkg::CVA6ConfigFVecEn),              // XFVec
-    bit'(cva6_config_pkg::CVA6ConfigCvxifEn),             // CvxifEn
-    // Extended
-    bit'(0),                                              // RVF
-    bit'(0),                                              // RVD
-    bit'(0),                                              // FpPresent
-    riscv::XLEN'(0),                                      // IsaCode
-    bit'(0),                                              // NSX
-    unsigned'(0),                                         // FLen
-    bit'(0),                                              // RVFVec
-    bit'(0),                                              // XF16Vec
-    bit'(0),                                              // XF16ALTVec
-    bit'(0),                                              // XF8Vec
-    unsigned'(0),                                         // NrRgprPorts
-    unsigned'(0),                                         // NrWbPorts
-    bit'(0)                                               // EnableAccelerator
-  },
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_default,
   parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
   // RVFI
   parameter type rvfi_instr_t = struct packed {
-    logic [ariane_pkg::NRET-1:0]                  valid;
-    logic [ariane_pkg::NRET*64-1:0]               order;
-    logic [ariane_pkg::NRET*ariane_pkg::ILEN-1:0] insn;
-    logic [ariane_pkg::NRET-1:0]                  trap;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      cause;
-    logic [ariane_pkg::NRET-1:0]                  halt;
-    logic [ariane_pkg::NRET-1:0]                  intr;
-    logic [ariane_pkg::NRET*2-1:0]                mode;
-    logic [ariane_pkg::NRET*2-1:0]                ixl;
-    logic [ariane_pkg::NRET*5-1:0]                rs1_addr;
-    logic [ariane_pkg::NRET*5-1:0]                rs2_addr;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
-    logic [ariane_pkg::NRET*5-1:0]                rd_addr;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
-    logic [ariane_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
-    logic [ariane_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
-    logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
-    logic [ariane_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
-    logic [ariane_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+    logic [config_pkg::NRET-1:0]                  valid;
+    logic [config_pkg::NRET*64-1:0]               order;
+    logic [config_pkg::NRET*config_pkg::ILEN-1:0] insn;
+    logic [config_pkg::NRET-1:0]                  trap;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      cause;
+    logic [config_pkg::NRET-1:0]                  halt;
+    logic [config_pkg::NRET-1:0]                  intr;
+    logic [config_pkg::NRET*2-1:0]                mode;
+    logic [config_pkg::NRET*2-1:0]                ixl;
+    logic [config_pkg::NRET*5-1:0]                rs1_addr;
+    logic [config_pkg::NRET*5-1:0]                rs2_addr;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
+    logic [config_pkg::NRET*5-1:0]                rd_addr;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
+    logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
+    logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
+    logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
+    logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
   },
   // AXI types
   parameter type axi_ar_chan_t = struct packed {
@@ -173,18 +144,6 @@ module cva6 import ariane_pkg::*; #(
   localparam bit RVD = (riscv::IS_XLEN64 ? 1:0) & CVA6Cfg.FpuEn;
   localparam bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
   localparam bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
-  localparam riscv::xlen_t IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
-                                   | (riscv::XLEN'(CVA6Cfg.RVC) <<  2)                // C - Compressed extension
-                                   | (riscv::XLEN'(RVD) <<  3)                        // D - Double precsision floating-point extension
-                                   | (riscv::XLEN'(RVF) <<  5)                        // F - Single precsision floating-point extension
-                                   | (riscv::XLEN'(1  ) <<  8)                        // I - RV32I/64I/128I base ISA
-                                   | (riscv::XLEN'(1  ) << 12)                        // M - Integer Multiply/Divide extension
-                                   | (riscv::XLEN'(0  ) << 13)                        // N - User level interrupts supported
-                                   | (riscv::XLEN'(1  ) << 18)                        // S - Supervisor mode implemented
-                                   | (riscv::XLEN'(1  ) << 20)                        // U - User mode implemented
-                                   | (riscv::XLEN'(CVA6Cfg.RVV) << 21)                // V - Vector extension
-                                   | (riscv::XLEN'(NSX) << 23)                        // X - Non-standard extensions present
-                                   | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN-2);  // MXL
   localparam int unsigned FLen = RVD     ? 64 : // D ext.
                                  RVF     ? 32 : // F ext.
                                  CVA6Cfg.XF16    ? 16 : // Xf16 ext.
@@ -203,7 +162,7 @@ module cva6 import ariane_pkg::*; #(
 
   localparam NrRgprPorts = 2;
 
-  localparam ariane_pkg::cva6_cfg_t CVA6ExtendCfg = {
+  localparam config_pkg::cva6_cfg_t CVA6ExtendCfg = {
     CVA6Cfg.NrCommitPorts,
     CVA6Cfg.AxiAddrWidth,
     CVA6Cfg.AxiDataWidth,
@@ -222,7 +181,6 @@ module cva6 import ariane_pkg::*; #(
     bit'(RVF),
     bit'(RVD),
     bit'(FpPresent),
-    riscv::xlen_t'(IsaCode),
     bit'(NSX),
     unsigned'(FLen),
     bit'(RVFVec),

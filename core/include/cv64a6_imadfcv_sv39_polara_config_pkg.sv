@@ -76,4 +76,34 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigRvfiTrace = 1;
 
+    localparam config_pkg::cva6_cfg_t cva6_cfg = {
+      unsigned'(CVA6ConfigNrCommitPorts),  // NrCommitPorts
+      unsigned'(CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
+      unsigned'(CVA6ConfigAxiDataWidth),   // AxiDataWidth
+      unsigned'(CVA6ConfigAxiIdWidth),     // AxiIdWidth
+      unsigned'(CVA6ConfigDataUserWidth),  // AxiUserWidth
+      bit'(CVA6ConfigFpuEn),               // FpuEn
+      bit'(CVA6ConfigF16En),               // XF16
+      bit'(CVA6ConfigF16AltEn),            // XF16ALT
+      bit'(CVA6ConfigF8En),                // XF8
+      bit'(CVA6ConfigAExtEn),              // RVA
+      bit'(CVA6ConfigVExtEn),              // RVV
+      bit'(CVA6ConfigCExtEn),              // RVC
+      bit'(CVA6ConfigFVecEn),              // XFVec
+      bit'(CVA6ConfigCvxifEn),             // CvxifEn
+      // Extended
+      bit'(0),           // RVF
+      bit'(0),           // RVD
+      bit'(0),           // FpPresent
+      bit'(0),           // NSX
+      unsigned'(0),      // FLen
+      bit'(0),           // RVFVec
+      bit'(0),           // XF16Vec
+      bit'(0),           // XF16ALTVec
+      bit'(0),           // XF8Vec
+      unsigned'(0),      // NrRgprPorts
+      unsigned'(0),      // NrWbPorts
+      bit'(0)            // EnableAccelerator
+    } ;
+
 endpackage

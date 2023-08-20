@@ -18,7 +18,7 @@
 /* verilator lint_off WIDTH */
 
 module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
-        parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+        parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
         parameter int SHARED_TLB_DEPTH = 64,
         parameter int SHARED_TLB_WAYS = 2,
         parameter int ASID_WIDTH = 1,

@@ -8,7 +8,7 @@
 // Original Author: Jean-Roch COULON - Thales
 
 module rvfi_tracer #(
-  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
   //
   parameter logic [7:0] HART_ID      = '0,

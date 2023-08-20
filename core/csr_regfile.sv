@@ -14,7 +14,7 @@
 
 
 module csr_regfile import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
     parameter int unsigned NrPMPEntries    = 8,
@@ -155,6 +155,19 @@ module csr_regfile import ariane_pkg::*; #(
     logic [MHPMCounterNum+3-1:0] mcountinhibit_d,mcountinhibit_q;
     int index;
 
+    localparam riscv::xlen_t IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
+                                     | (riscv::XLEN'(CVA6Cfg.RVC) <<  2)                // C - Compressed extension
+                                     | (riscv::XLEN'(CVA6Cfg.RVD) <<  3)                // D - Double precsision floating-point extension
+                                     | (riscv::XLEN'(CVA6Cfg.RVF) <<  5)                // F - Single precsision floating-point extension
+                                     | (riscv::XLEN'(1  ) <<  8)                        // I - RV32I/64I/128I base ISA
+                                     | (riscv::XLEN'(1  ) << 12)                        // M - Integer Multiply/Divide extension
+                                     | (riscv::XLEN'(0  ) << 13)                        // N - User level interrupts supported
+                                     | (riscv::XLEN'(1  ) << 18)                        // S - Supervisor mode implemented
+                                     | (riscv::XLEN'(1  ) << 20)                        // U - User mode implemented
+                                     | (riscv::XLEN'(CVA6Cfg.RVV) << 21)                // V - Vector extension
+                                     | (riscv::XLEN'(CVA6Cfg.NSX) << 23)                // X - Non-standard extensions present
+                                     | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN-2);  // MXL
+
     assign pmpcfg_o = pmpcfg_q[15:0];
     assign pmpaddr_o = pmpaddr_q;
 
@@ -170,6 +183,7 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------
     assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
+
 
     always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
@@ -242,7 +256,7 @@ module csr_regfile import ariane_pkg::*; #(
                 // machine mode registers
                 riscv::CSR_MSTATUS:            csr_rdata = mstatus_extended;
                 riscv::CSR_MSTATUSH:           if (riscv::XLEN == 32) csr_rdata = '0; else read_access_exception = 1'b1;
-                riscv::CSR_MISA:               csr_rdata = CVA6Cfg.IsaCode;
+                riscv::CSR_MISA:               csr_rdata = IsaCode;
                 riscv::CSR_MEDELEG:            csr_rdata = medeleg_q;
                 riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
                 riscv::CSR_MIE:                csr_rdata = mie_q;
