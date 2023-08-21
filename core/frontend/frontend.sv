@@ -400,6 +400,7 @@ module frontend import ariane_pkg::*; #(
       assign ras_predict = '0;
     end else begin : ras_gen
       ras #(
+        .CVA6Cfg ( CVA6Cfg ),
         .DEPTH  ( ArianeCfg.RASDepth  )
       ) i_ras (
         .clk_i,
@@ -421,6 +422,7 @@ module frontend import ariane_pkg::*; #(
       assign btb_prediction = '0;
     end else begin : btb_gen
       btb #(
+        .CVA6Cfg          ( CVA6Cfg                ),
         .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
       ) i_btb (
         .clk_i,
@@ -437,6 +439,7 @@ module frontend import ariane_pkg::*; #(
       assign bht_prediction = '0;
     end else begin : bht_gen
       bht #(
+        .CVA6Cfg          ( CVA6Cfg                ),
         .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
       ) i_bht (
         .clk_i,
