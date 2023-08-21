@@ -508,7 +508,7 @@ package ariane_pkg;
     // Extract Src/Dst FP Reg from Op
     // -------------------------------
     // function used in instr_trace svh
-    // is_rd_fpr function is kept to allow cva6 compilation with instr_trace feature
+    // is_rs1_fpr function is kept to allow cva6 compilation with instr_trace feature
     function automatic logic is_rs1_fpr (input fu_op op);
         return is_rs1_fpr_cfg (op, 1);
     endfunction
@@ -533,7 +533,7 @@ package ariane_pkg;
     endfunction
 
     // function used in instr_trace svh
-    // is_rd_fpr function is kept to allow cva6 compilation with instr_trace feature
+    // is_rs2_fpr function is kept to allow cva6 compilation with instr_trace feature
     function automatic logic is_rs2_fpr (input fu_op op);
         return is_rs2_fpr_cfg (op, 1);
     endfunction
@@ -556,7 +556,7 @@ package ariane_pkg;
     endfunction
 
     // function used in instr_trace svh
-    // is_rd_fpr function is kept to allow cva6 compilation with instr_trace feature
+    // is_imm_fpr function is kept to allow cva6 compilation with instr_trace feature
     // ternary operations encode the rs3 address in the imm field, also add/sub
     function automatic logic is_imm_fpr (input fu_op op);
         return is_imm_fpr_cfg (op, 1);
