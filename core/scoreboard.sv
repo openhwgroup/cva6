@@ -14,7 +14,7 @@
 
 module scoreboard #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter bit IsRVFI = 0,
+  parameter bit IsRVFI = bit'(0),
   parameter type rs3_len_t = logic,
   parameter int unsigned NR_ENTRIES      = 8  // must be a power of 2
 ) (

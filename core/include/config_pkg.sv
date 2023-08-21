@@ -1,4 +1,4 @@
-// Copyright 2022 Thales DIS design services SAS
+// Copyright 2023 Thales DIS France SAS
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.

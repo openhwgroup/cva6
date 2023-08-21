@@ -16,7 +16,7 @@
 
 module issue_stage import ariane_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter bit IsRVFI = 0,
+    parameter bit IsRVFI = bit'(0),
     parameter int unsigned NR_ENTRIES = 8
 )(
     input  logic                                     clk_i,     // Clock
