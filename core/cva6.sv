@@ -202,7 +202,7 @@ module cva6 import ariane_pkg::*; #(
   bp_resolve_t                resolved_branch;
   logic [riscv::VLEN-1:0]     pc_commit;
   logic                       eret;
-  logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
+  logic [CVA6ExtendCfg.NrCommitPorts-1:0] commit_ack;
 
   localparam NumPorts = 3;
   cvxif_pkg::cvxif_req_t      cvxif_req;
@@ -316,14 +316,14 @@ module cva6 import ariane_pkg::*; #(
   // --------------
   // ID <-> COMMIT
   // --------------
-  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_id_commit;
+  scoreboard_entry_t [CVA6ExtendCfg.NrCommitPorts-1:0] commit_instr_id_commit;
   // --------------
   // COMMIT <-> ID
   // --------------
-  logic [CVA6Cfg.NrCommitPorts-1:0][4:0]  waddr_commit_id;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_commit_id;
-  logic [CVA6Cfg.NrCommitPorts-1:0]       we_gpr_commit_id;
-  logic [CVA6Cfg.NrCommitPorts-1:0]       we_fpr_commit_id;
+  logic [CVA6ExtendCfg.NrCommitPorts-1:0][4:0]  waddr_commit_id;
+  logic [CVA6ExtendCfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_commit_id;
+  logic [CVA6ExtendCfg.NrCommitPorts-1:0]       we_gpr_commit_id;
+  logic [CVA6ExtendCfg.NrCommitPorts-1:0]       we_fpr_commit_id;
   // --------------
   // CSR <-> *
   // --------------
@@ -486,12 +486,12 @@ module cva6 import ariane_pkg::*; #(
   exception_t [NrWbPorts-1:0]              ex_ex_ex_id; // exception from execute, ex_stage to id_stage
   logic [NrWbPorts-1:0]                    wt_valid_ex_id;
 
-  if (CVA6Cfg.CvxifEn) begin
+  if (CVA6ExtendCfg.CvxifEn) begin
     assign trans_id_ex_id = {x_trans_id_ex_id, flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id};
     assign wbdata_ex_id   = {x_result_ex_id, flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id};
     assign ex_ex_ex_id    = {x_exception_ex_id, flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id};
     assign wt_valid_ex_id = {x_valid_ex_id, flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
-  end else if (CVA6Cfg.EnableAccelerator) begin
+  end else if (CVA6ExtendCfg.EnableAccelerator) begin
     assign trans_id_ex_id = {flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id, acc_trans_id_ex_id};
     assign wbdata_ex_id   = {flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id, acc_result_ex_id};
     assign ex_ex_ex_id    = {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id, acc_exception_ex_id};
@@ -503,7 +503,7 @@ module cva6 import ariane_pkg::*; #(
     assign wt_valid_ex_id = {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
   end
 
-  if (CVA6Cfg.CvxifEn && CVA6Cfg.EnableAccelerator) begin : gen_err_xif_and_acc
+  if (CVA6ExtendCfg.CvxifEn && CVA6ExtendCfg.EnableAccelerator) begin : gen_err_xif_and_acc
     $error("X-interface and accelerator port cannot be enabled at the same time.");
   end
 
@@ -980,9 +980,9 @@ module cva6 import ariane_pkg::*; #(
   // Accelerator
   // ----------------
 
-  if (CVA6Cfg.EnableAccelerator) begin: gen_accelerator
+  if (CVA6ExtendCfg.EnableAccelerator) begin: gen_accelerator
     acc_dispatcher #(
-      .CVA6Cfg    ( CVA6Cfg      ),
+      .CVA6Cfg    ( CVA6ExtendCfg),
       .acc_cfg_t  ( acc_cfg_t    ),
       .AccCfg     ( AccCfg       ),
       .acc_req_t  ( cvxif_req_t  ),
@@ -1062,10 +1062,10 @@ module cva6 import ariane_pkg::*; #(
 
   logic        piton_pc_vld;
   logic [riscv::VLEN-1:0] piton_pc;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] pc_data;
-  logic [CVA6Cfg.NrCommitPorts-1:0] pc_pop, pc_empty;
+  logic [CVA6ExtendCfg.NrCommitPorts-1:0][riscv::VLEN-1:0] pc_data;
+  logic [CVA6ExtendCfg.NrCommitPorts-1:0] pc_pop, pc_empty;
 
-  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_pc_fifo
+  for (genvar i = 0; i < CVA6ExtendCfg.NrCommitPorts; i++) begin : gen_pc_fifo
     fifo_v3 #(
       .DATA_WIDTH(64),
       .DEPTH(PC_QUEUE_DEPTH))
@@ -1085,7 +1085,7 @@ module cva6 import ariane_pkg::*; #(
   end
 
   rr_arb_tree #(
-    .NumIn(CVA6Cfg.NrCommitPorts),
+    .NumIn(CVA6ExtendCfg.NrCommitPorts),
     .DataWidth(64))
   i_rr_arb_tree (
     .clk_i   ( clk_i        ),
@@ -1169,7 +1169,7 @@ module cva6 import ariane_pkg::*; #(
         default: ; // Do nothing
         endcase
       end
-      for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
+      for (int i = 0; i < CVA6ExtendCfg.NrCommitPorts; i++) begin
         if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
           $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
         end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
@@ -1196,7 +1196,7 @@ module cva6 import ariane_pkg::*; #(
 
   if (IsRVFI) begin
     always_comb begin
-      for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
+      for (int i = 0; i < CVA6ExtendCfg.NrCommitPorts; i++) begin
         logic exception, mem_exception;
         exception = commit_instr_id_commit[i].valid && ex_commit.valid;
         mem_exception = exception &&
@@ -1224,7 +1224,7 @@ module cva6 import ariane_pkg::*; #(
         rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1[4:0];
         rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2[4:0];
         rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd[4:0];
-        rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr_cfg(commit_instr_id_commit[i].op, CVA6Cfg.FpPresent) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
+        rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr_cfg(commit_instr_id_commit[i].op, CVA6ExtendCfg.FpPresent) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
         rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
 
         rvfi_o[i].mem_addr  = commit_instr_id_commit[i].lsu_addr;
