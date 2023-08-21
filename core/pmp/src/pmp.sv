@@ -38,6 +38,7 @@ module pmp #(
             assign conf_addr_prev = (i == 0) ? '0 : conf_addr_i[i-1];
 
             pmp_entry #(
+                .CVA6Cfg ( CVA6Cfg ),
                 .PLEN    ( PLEN    ),
                 .PMP_LEN ( PMP_LEN )
             ) i_pmp_entry(

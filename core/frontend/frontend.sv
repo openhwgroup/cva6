@@ -455,7 +455,9 @@ module frontend import ariane_pkg::*; #(
     // we need to inspect up to INSTR_PER_FETCH instructions for branches
     // and jumps
     for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin : gen_instr_scan
-      instr_scan i_instr_scan (
+      instr_scan #(
+        .CVA6Cfg      ( CVA6Cfg       )
+      ) i_instr_scan (
         .instr_i      ( instr[i]      ),
         .rvi_return_o ( rvi_return[i] ),
         .rvi_call_o   ( rvi_call[i]   ),
@@ -473,7 +475,9 @@ module frontend import ariane_pkg::*; #(
       );
     end
 
-    instr_queue i_instr_queue (
+    instr_queue #(
+      .CVA6Cfg             ( CVA6Cfg              )
+    ) i_instr_queue (
       .clk_i               ( clk_i                ),
       .rst_ni              ( rst_ni               ),
       .flush_i             ( flush_i              ),
