@@ -15,7 +15,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 module uvmt_cva6_dut_wrap # (
-  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+  parameter bit IsRVFI = 1'b0,
   parameter type rvfi_instr_t = logic,
   //
   parameter int unsigned AXI_USER_EN       = 0,
@@ -36,6 +37,7 @@ module uvmt_cva6_dut_wrap # (
 
     cva6_tb_wrapper #(
      .CVA6Cfg ( CVA6Cfg ),
+     .IsRVFI ( IsRVFI ),
      .rvfi_instr_t ( rvfi_instr_t ),
      //
      .AXI_USER_EN       (AXI_USER_EN),
