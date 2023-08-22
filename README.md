@@ -131,20 +131,34 @@ couple of cycles simulation time.)
 
 ### Build Model and Run Simulations
 
+#### Build default model
 Build the Verilator model of CVA6 by using the Makefile:
 ```
 make verilate
 ```
 
-To build the verilator model with support for vcd files run
+#### Build model with VCD support
+To build the verilator model with support for vcd files:
+- Install Verilator from source (tested on v4.110):
+  - https://verilator.org/guide/latest/install.html#run-in-place-from-verilator-root
+  - You can use the [run-in-place feature](https://verilator.org/guide/latest/install.html#run-in-place-from-verilator-root). No need to install the software. Please note that Makefile needs a C++ file from Verilator sources.
+  - Set `VERILATOR_ROOT` to the repository root (for instance `export VERILATOR_ROOT=/opt/<verilator_repo>`).
+
+You can finally generate the model:
 ```
-make verilate DEBUG=1
+make verilate DEBUG=1 TRACE_FAST=1
 ```
 
+#### Run simulations
 This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
 
 ```
 work-ver/Variane_testharness rv64um-v-divuw
+```
+
+**Note:** If you want to generate the VCD for the same software (`-v` to specify the VCD filename):
+```bash
+work-ver/Variane_testharness -v output.vcd rv64um-v-divuw
 ```
 
 The Verilator testbench makes use of the `riscv-fesvr`. This means that you can use the `riscv-tests` repository as well as `riscv-pk` out-of-the-box. As a general rule of thumb the Verilator model will behave like Spike (exception for being orders of magnitudes slower).
