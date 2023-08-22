@@ -13,7 +13,7 @@
 // Description: Branch target calculation and comparison
 
 module branch_unit #(
-    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     input  logic                      clk_i,
     input  logic                      rst_ni,

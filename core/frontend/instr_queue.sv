@@ -44,7 +44,7 @@
 // can not be pushed at once.
 
 module instr_queue import ariane_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
   input  logic                                               clk_i,
   input  logic                                               rst_ni,

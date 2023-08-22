@@ -10,7 +10,7 @@
 // Description: Re-name registers
 
 module re_name import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -48,30 +48,30 @@ module re_name import ariane_pkg::*; #(
 
         if (issue_ack_i && !flush_unissied_instr_i) begin
             // if we acknowledge the instruction tic the corresponding destination register
-            if (is_rd_fpr(issue_instr_i.op))
+            if (ariane_pkg::is_rd_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent))
                 re_name_table_fpr_n[issue_instr_i.rd[4:0]] = re_name_table_fpr_q[issue_instr_i.rd[4:0]] ^ 1'b1;
             else
                 re_name_table_gpr_n[issue_instr_i.rd[4:0]] = re_name_table_gpr_q[issue_instr_i.rd[4:0]] ^ 1'b1;
         end
 
         // select name bit according to the register file used for source operands
-        name_bit_rs1 = is_rs1_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rs1[4:0]]
+        name_bit_rs1 = is_rs1_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? re_name_table_fpr_q[issue_instr_i.rs1[4:0]]
                                                     : re_name_table_gpr_q[issue_instr_i.rs1[4:0]];
-        name_bit_rs2 = is_rs2_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rs2[4:0]]
+        name_bit_rs2 = is_rs2_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? re_name_table_fpr_q[issue_instr_i.rs2[4:0]]
                                                     : re_name_table_gpr_q[issue_instr_i.rs2[4:0]];
         // rs3 is only used in certain FP operations and held like an immediate
         name_bit_rs3 = re_name_table_fpr_q[issue_instr_i.result[4:0]]; // make sure only the addr bits are read
 
         // select name bit according to the state it will have after renaming
-        name_bit_rd = is_rd_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rd[4:0]] ^ 1'b1
-                                                  : re_name_table_gpr_q[issue_instr_i.rd[4:0]] ^ (issue_instr_i.rd != '0); // don't rename x0
+        name_bit_rd = ariane_pkg::is_rd_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? re_name_table_fpr_q[issue_instr_i.rd[4:0]] ^ 1'b1
+                                                                     : re_name_table_gpr_q[issue_instr_i.rd[4:0]] ^ (issue_instr_i.rd != '0); // don't rename x0
 
         // re-name the source registers
         issue_instr_o.rs1 = { ENABLE_RENAME & name_bit_rs1, issue_instr_i.rs1[4:0] };
         issue_instr_o.rs2 = { ENABLE_RENAME & name_bit_rs2, issue_instr_i.rs2[4:0] };
 
         // re-name the third operand in imm if it's actually an operand
-        if (is_imm_fpr(issue_instr_i.op) || (issue_instr_i.op == OFFLOAD && ariane_pkg::NR_RGPR_PORTS == 3)) begin
+        if (is_imm_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) || (issue_instr_i.op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3)) begin
             issue_instr_o.result = { ENABLE_RENAME & name_bit_rs3, issue_instr_i.result[4:0]};
         end
         // re-name the destination register

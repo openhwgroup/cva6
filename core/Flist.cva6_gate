@@ -8,6 +8,7 @@
 # Original Author: Jean-Roch COULON - Thales
 #
 
+${CVA6_REPO_DIR}/core/include/config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/${TARGET_CFG}_config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_dm_pkg.sv

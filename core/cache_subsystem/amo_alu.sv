@@ -12,7 +12,7 @@
 // Date: 15.09.2018
 // Description: Combinatorial AMO unit
 module amo_alu #(
-        parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
+        parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
         // AMO interface
         input  ariane_pkg::amo_t  amo_op_i,

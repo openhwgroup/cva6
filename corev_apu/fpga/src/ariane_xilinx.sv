@@ -154,15 +154,9 @@ module ariane_xilinx (
   output logic        tx
 );
 
-// cva6 configuration
-localparam ariane_pkg::cva6_cfg_t CVA6Cfg = {
-  unsigned'(cva6_config_pkg::CVA6ConfigNrCommitPorts),  // NrCommitPorts
-  unsigned'(0),                                         // IsRVFI
-  unsigned'(cva6_config_pkg::CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
-  unsigned'(cva6_config_pkg::CVA6ConfigAxiDataWidth),   // AxiDataWidth
-  unsigned'(cva6_config_pkg::CVA6ConfigAxiIdWidth),     // AxiIdWidth
-  unsigned'(cva6_config_pkg::CVA6ConfigDataUserWidth)   // DataUserWidth
-};
+// CVA6 config
+localparam bit IsRVFI = bit'(0);
+localparam config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg;
 localparam type rvfi_instr_t = logic;
 
 
@@ -710,6 +704,7 @@ ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
     .CVA6Cfg ( CVA6Cfg ),
+    .IsRVFI ( IsRVFI ),
     .rvfi_instr_t ( rvfi_instr_t ),
     .ArianeCfg ( ariane_soc::ArianeSocCfg )
 ) i_ariane (

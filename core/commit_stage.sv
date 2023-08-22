@@ -14,7 +14,7 @@
 
 
 module commit_stage import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 )(
     input  logic                                    clk_i,
     input  logic                                    rst_ni,
@@ -77,7 +77,7 @@ module commit_stage import ariane_pkg::*; #(
     always_comb begin : dirty_fp_state
       dirty_fp_state_o = 1'b0;
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-        dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || is_rd_fpr(commit_instr_i[i].op));
+        dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || ariane_pkg::is_rd_fpr_cfg(commit_instr_i[i].op, CVA6Cfg.FpPresent));
         // Check if we issued a vector floating-point instruction to the accellerator
         dirty_fp_state_o |= commit_instr_i[i].fu == ACCEL && commit_instr_i[i].vfp;
       end
@@ -117,7 +117,7 @@ module commit_stage import ariane_pkg::*; #(
             // we can definitely write the register file
             // if the instruction is not committing anything the destination
             commit_ack_o[0] = 1'b1;
-            if (is_rd_fpr(commit_instr_i[0].op)) begin
+            if (ariane_pkg::is_rd_fpr_cfg(commit_instr_i[0].op, CVA6Cfg.FpPresent)) begin
                 we_fpr_o[0] = 1'b1;
             end else begin
                 we_gpr_o[0] = 1'b1;
@@ -197,7 +197,7 @@ module commit_stage import ariane_pkg::*; #(
             // ------------------
             // AMO
             // ------------------
-            if (RVA && instr_0_is_amo) begin
+            if (CVA6Cfg.RVA && instr_0_is_amo) begin
                 // AMO finished
                 commit_ack_o[0] = amo_resp_i.ack;
                 // flush the pipeline
@@ -229,7 +229,7 @@ module commit_stage import ariane_pkg::*; #(
                 if (!exception_o.valid && !commit_instr_i[1].ex.valid
                                        && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
 
-                    if (is_rd_fpr(commit_instr_i[1].op))
+                    if (ariane_pkg::is_rd_fpr_cfg(commit_instr_i[1].op, CVA6Cfg.FpPresent))
                         we_fpr_o[1] = 1'b1;
                     else
                         we_gpr_o[1] = 1'b1;

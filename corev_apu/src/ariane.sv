@@ -14,7 +14,8 @@
 
 
 module ariane import ariane_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = cva6_cfg_empty,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+  parameter bit IsRVFI = bit'(0),
   parameter type rvfi_instr_t = logic,
   //
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
@@ -52,6 +53,7 @@ module ariane import ariane_pkg::*; #(
 
   cva6 #(
     .CVA6Cfg ( CVA6Cfg ),
+    .IsRVFI ( IsRVFI ),
     .rvfi_instr_t ( rvfi_instr_t ),
     //
     .ArianeCfg  ( ArianeCfg ),
@@ -76,7 +78,7 @@ module ariane import ariane_pkg::*; #(
     .noc_resp_i           ( noc_resp_i                )
   );
 
-  if (ariane_pkg::CVXIF_PRESENT) begin : gen_example_coprocessor
+  if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor
     cvxif_example_coprocessor i_cvxif_coprocessor (
       .clk_i                ( clk_i                          ),
       .rst_ni               ( rst_ni                         ),

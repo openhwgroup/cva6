@@ -15,7 +15,7 @@
 
 
 module ex_stage import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned ASID_WIDTH = 1,
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
@@ -264,11 +264,13 @@ module ex_stage import ariane_pkg::*; #(
     // FPU
     // ----------------
     generate
-        if (FP_PRESENT) begin : fpu_gen
+        if (CVA6Cfg.FpPresent) begin : fpu_gen
             fu_data_t fpu_data;
             assign fpu_data  = fpu_valid_i ? fu_data_i  : '0;
 
-            fpu_wrap fpu_i (
+            fpu_wrap #(
+                .CVA6Cfg ( CVA6Cfg )
+            ) fpu_i (
                 .clk_i,
                 .rst_ni,
                 .flush_i,
@@ -355,7 +357,7 @@ module ex_stage import ariane_pkg::*; #(
         .lsu_addr_trans_id_o
     );
 
-    if (CVXIF_PRESENT) begin : gen_cvxif
+    if (CVA6Cfg.CvxifEn) begin : gen_cvxif
         fu_data_t cvxif_data;
         assign cvxif_data  = x_valid_i ? fu_data_i  : '0;
         cvxif_fu #(

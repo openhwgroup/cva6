@@ -14,7 +14,7 @@
 
 
 module csr_regfile import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
     parameter int unsigned NrPMPEntries    = 8,
@@ -155,6 +155,19 @@ module csr_regfile import ariane_pkg::*; #(
     logic [MHPMCounterNum+3-1:0] mcountinhibit_d,mcountinhibit_q;
     int index;
 
+    localparam riscv::xlen_t IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
+                                     | (riscv::XLEN'(CVA6Cfg.RVC) <<  2)                // C - Compressed extension
+                                     | (riscv::XLEN'(CVA6Cfg.RVD) <<  3)                // D - Double precsision floating-point extension
+                                     | (riscv::XLEN'(CVA6Cfg.RVF) <<  5)                // F - Single precsision floating-point extension
+                                     | (riscv::XLEN'(1  ) <<  8)                        // I - RV32I/64I/128I base ISA
+                                     | (riscv::XLEN'(1  ) << 12)                        // M - Integer Multiply/Divide extension
+                                     | (riscv::XLEN'(0  ) << 13)                        // N - User level interrupts supported
+                                     | (riscv::XLEN'(1  ) << 18)                        // S - Supervisor mode implemented
+                                     | (riscv::XLEN'(1  ) << 20)                        // U - User mode implemented
+                                     | (riscv::XLEN'(CVA6Cfg.RVV) << 21)                // V - Vector extension
+                                     | (riscv::XLEN'(CVA6Cfg.NSX) << 23)                // X - Non-standard extensions present
+                                     | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN-2);  // MXL
+
     assign pmpcfg_o = pmpcfg_q[15:0];
     assign pmpaddr_o = pmpaddr_q;
 
@@ -170,6 +183,7 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------
     assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
+
 
     always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
@@ -242,7 +256,7 @@ module csr_regfile import ariane_pkg::*; #(
                 // machine mode registers
                 riscv::CSR_MSTATUS:            csr_rdata = mstatus_extended;
                 riscv::CSR_MSTATUSH:           if (riscv::XLEN == 32) csr_rdata = '0; else read_access_exception = 1'b1;
-                riscv::CSR_MISA:               csr_rdata = ISA_CODE;
+                riscv::CSR_MISA:               csr_rdata = IsaCode;
                 riscv::CSR_MEDELEG:            csr_rdata = medeleg_q;
                 riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
                 riscv::CSR_MIE:                csr_rdata = mie_q;
@@ -424,7 +438,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_ICACHE:           csr_rdata = icache_q;
                 // custom (non RISC-V) accelerator memory consistency mode
                 riscv::CSR_ACC_CONS: begin
-                    if (ENABLE_ACCELERATOR) begin
+                    if (CVA6Cfg.EnableAccelerator) begin
                         csr_rdata = acc_cons_q;
                     end else begin
                         read_access_exception = 1'b1;
@@ -622,11 +636,11 @@ module csr_regfile import ariane_pkg::*; #(
                     mask = ariane_pkg::SMODE_STATUS_WRITE_MASK[riscv::XLEN-1:0];
                     mstatus_d = (mstatus_q & ~{{64-riscv::XLEN{1'b0}}, mask}) | {{64-riscv::XLEN{1'b0}}, (csr_wdata & mask)};
                     // hardwire to zero if floating point extension is not present
-                    if (!FP_PRESENT) begin
+                    if (!CVA6Cfg.FpPresent) begin
                         mstatus_d.fs = riscv::Off;
                     end
                     // hardwire to zero if vector extension is not present
-                    if (!RVV) begin
+                    if (!CVA6Cfg.RVV) begin
                         mstatus_d.vs = riscv::Off;
                     end
                     // this instruction has side-effects
@@ -672,10 +686,10 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MSTATUS: begin
                     mstatus_d      = {{64-riscv::XLEN{1'b0}}, csr_wdata};
                     mstatus_d.xs   = riscv::Off;
-                    if (!FP_PRESENT) begin
+                    if (!CVA6Cfg.FpPresent) begin
                         mstatus_d.fs = riscv::Off;
                     end
-                    if (!RVV) begin
+                    if (!CVA6Cfg.RVV) begin
                         mstatus_d.vs = riscv::Off;
                     end
                     mstatus_d.wpri3 = 8'b0;
@@ -827,7 +841,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_DCACHE:             dcache_d    = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
                 riscv::CSR_ICACHE:             icache_d    = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
                 riscv::CSR_ACC_CONS: begin
-                    if (ENABLE_ACCELERATOR) begin
+                    if (CVA6Cfg.EnableAccelerator) begin
                         acc_cons_d  = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
                     end else begin
                         update_access_exception = 1'b1;
@@ -884,11 +898,11 @@ module csr_regfile import ariane_pkg::*; #(
         mstatus_d.uxl  = riscv::XLEN_64;
 
         // mark the floating point extension register as dirty
-        if (FP_PRESENT && (dirty_fp_state_csr || dirty_fp_state_i)) begin
+        if (CVA6Cfg.FpPresent && (dirty_fp_state_csr || dirty_fp_state_i)) begin
             mstatus_d.fs = riscv::Dirty;
         end
         // mark the vector extension register as dirty
-        if (RVV && dirty_v_state_i) begin
+        if (CVA6Cfg.RVV && dirty_v_state_i) begin
             mstatus_d.vs = riscv::Dirty;
         end
         // hardwired extension registers
@@ -905,7 +919,7 @@ module csr_regfile import ariane_pkg::*; #(
 
         // Update fflags as soon as a FP exception occurs in the accelerator
         // The exception is imprecise, and the fcsr.fflags update always happens immediately
-        if (ENABLE_ACCELERATOR) begin
+        if (CVA6Cfg.EnableAccelerator) begin
             fcsr_d.fflags |= acc_fflags_ex_valid_i ? acc_fflags_ex_i : 5'b0;
         end
 
@@ -1323,7 +1337,7 @@ module csr_regfile import ariane_pkg::*; #(
     assign icache_en_o      = icache_q[0] & (~debug_mode_q);
 `endif
     assign dcache_en_o      = dcache_q[0];
-    assign acc_cons_en_o    = ENABLE_ACCELERATOR ? acc_cons_q[0] : 1'b0;
+    assign acc_cons_en_o    = CVA6Cfg.EnableAccelerator ? acc_cons_q[0] : 1'b0;
 
     // determine if mprv needs to be considered if in debug mode
     assign mprv             = (debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
@@ -1362,7 +1376,7 @@ module csr_regfile import ariane_pkg::*; #(
             dcache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
             icache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
             mcountinhibit_q        <= '0;
-            acc_cons_q             <= {{riscv::XLEN-1{1'b0}}, ENABLE_ACCELERATOR};
+            acc_cons_q             <= {{riscv::XLEN-1{1'b0}}, CVA6Cfg.EnableAccelerator};
             // supervisor mode registers
             sepc_q                 <= {riscv::XLEN{1'b0}};
             scause_q               <= {riscv::XLEN{1'b0}};

@@ -14,7 +14,7 @@
 //              issue and read operands.
 
 module id_stage #(
-    parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     input  logic                          clk_i,
     input  logic                          rst_ni,
@@ -57,7 +57,7 @@ module id_stage #(
     logic                [31:0] instruction;
     logic                is_compressed;
 
-    if (ariane_pkg::RVC) begin
+    if (CVA6Cfg.RVC) begin
       // ---------------------------------------------------------
       // 1. Check if they are compressed and expand in case they are
       // ---------------------------------------------------------

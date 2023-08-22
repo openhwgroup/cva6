@@ -16,7 +16,7 @@
 // change request from the back-end and does branch prediction.
 
 module frontend import ariane_pkg::*; #(
-  parameter ariane_pkg::cva6_cfg_t CVA6Cfg = ariane_pkg::cva6_cfg_empty,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic               clk_i,              // Clock
@@ -70,7 +70,7 @@ module frontend import ariane_pkg::*; #(
     // shift amount
     logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
     // address will always be 16 bit aligned, make this explicit here
-    if (ariane_pkg::RVC) begin : gen_shamt
+    if (CVA6Cfg.RVC) begin : gen_shamt
       assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
     end else begin
       assign shamt = 1'b0;
@@ -133,7 +133,7 @@ module frontend import ariane_pkg::*; #(
     // select the right branch prediction result
     // in case we are serving an unaligned instruction in instr[0] we need to take
     // the prediction we saved from the previous fetch
-    if (ariane_pkg::RVC) begin : gen_btb_prediction_shifted
+    if (CVA6Cfg.RVC) begin : gen_btb_prediction_shifted
       assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][$clog2(INSTR_PER_FETCH):1]];
       assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][$clog2(INSTR_PER_FETCH):1]];
 
@@ -400,6 +400,7 @@ module frontend import ariane_pkg::*; #(
       assign ras_predict = '0;
     end else begin : ras_gen
       ras #(
+        .CVA6Cfg ( CVA6Cfg ),
         .DEPTH  ( ArianeCfg.RASDepth  )
       ) i_ras (
         .clk_i,
@@ -421,6 +422,7 @@ module frontend import ariane_pkg::*; #(
       assign btb_prediction = '0;
     end else begin : btb_gen
       btb #(
+        .CVA6Cfg          ( CVA6Cfg                ),
         .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
       ) i_btb (
         .clk_i,
@@ -437,6 +439,7 @@ module frontend import ariane_pkg::*; #(
       assign bht_prediction = '0;
     end else begin : bht_gen
       bht #(
+        .CVA6Cfg          ( CVA6Cfg                ),
         .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
       ) i_bht (
         .clk_i,
@@ -452,7 +455,9 @@ module frontend import ariane_pkg::*; #(
     // we need to inspect up to INSTR_PER_FETCH instructions for branches
     // and jumps
     for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin : gen_instr_scan
-      instr_scan i_instr_scan (
+      instr_scan #(
+        .CVA6Cfg      ( CVA6Cfg       )
+      ) i_instr_scan (
         .instr_i      ( instr[i]      ),
         .rvi_return_o ( rvi_return[i] ),
         .rvi_call_o   ( rvi_call[i]   ),
@@ -470,7 +475,9 @@ module frontend import ariane_pkg::*; #(
       );
     end
 
-    instr_queue i_instr_queue (
+    instr_queue #(
+      .CVA6Cfg             ( CVA6Cfg              )
+    ) i_instr_queue (
       .clk_i               ( clk_i                ),
       .rst_ni              ( rst_ni               ),
       .flush_i             ( flush_i              ),
