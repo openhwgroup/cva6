@@ -1,0 +1,33 @@
+!Feature
+next_elt_id: 1
+name: Load x0
+id: 1
+display_order: 1
+subfeatures: !!omap
+- 000_load_x0: !Subfeature
+    name: 000_load_x0
+    tag: VP_traps_F001_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F001_S000_I000
+        description: '`x0` register cannot have a value loaded into it but does not
+          generate an exception when that is attempted, as the exception is not implemented.'
+        reqt_doc: Unprivileged ISA Version 20191213, Chapter 2.6
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that loading to `x0` register does not cause an exception.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

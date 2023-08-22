@@ -29,4 +29,5 @@ CV32A6-step1 Design Verification Plan
    dvplan_AXI
    dvplan_FENCEI
    dvplan_csr-access
+   dvplan_traps
 

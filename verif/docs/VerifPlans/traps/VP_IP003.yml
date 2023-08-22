@@ -1,0 +1,36 @@
+!Feature
+next_elt_id: 1
+name: Machine Trap Vector
+id: 3
+display_order: 3
+subfeatures: !!omap
+- 000_mtvec: !Subfeature
+    name: 000_mtvec
+    tag: VP_traps_F003_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F003_S000_I000
+        description: '`mtvec` provides the starting value of the Interrupt Vector
+          Table as well as the mode (Direct or Vectored) number at the time. Mode
+          number is not relevant to exceptions as it only affects the value jumped
+          to by interrupts.'
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.1.7
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that exceptions jump to the base value defined in `mtvec`
+          CSR.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

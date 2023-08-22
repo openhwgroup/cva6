@@ -1,0 +1,79 @@
+!Feature
+next_elt_id: 1
+name: Breakpoint
+id: 12
+display_order: 12
+subfeatures: !!omap
+- 000_instr_bkp: !Subfeature
+    name: 000_instr_bkp
+    tag: VP_traps_F012_S000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F012_S000_I000
+        description: When an instruction address has a trigger set for it and `mcontrol6.action
+          == 0` then a breakpoint exception is taken.
+        reqt_doc: Debug Specification Version 1.0, Chapter 5.6.12
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Breakpoint exception is entered with `mcause` set to 0x3.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 48
+        coverage_loc: ''
+        comments: Need debug support
+- 001_data_bkp: !Subfeature
+    name: 001_data_bkp
+    tag: VP_traps_F012_S001
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F012_S001_I000
+        description: When a load/store/AMO address has a trigger set for it and `mcontrol6.action
+          == 0` then a breakpoint exception is taken.
+        reqt_doc: Debug Specification Version 1.0, Chapter 5.6.12
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Breakpoint exception is entered with `mcause` set to 0x3.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 48
+        coverage_loc: ''
+        comments: Need debug support
+- 002_environment_break: !Subfeature
+    name: 002_environment_break
+    tag: VP_traps_F012_S002
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F012_S002_I000
+        description: If an `EBREAK` or `C.EBREAK` is executed and `dcsr.ebreakm` is
+          0 then a breakpoint exception is taken.
+        reqt_doc: Debug Specification Version 1.0, Chapter 4.9.1
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Breakpoint exception is entered with `mcause` set to 0x3.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 48
+        coverage_loc: ''
+        comments: Need debug support
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
