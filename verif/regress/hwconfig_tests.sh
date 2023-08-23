@@ -14,17 +14,17 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install the required tools
-source ./cva6/regress/install-cva6.sh
-source ./cva6/regress/install-riscv-dv.sh
-source ./cva6/regress/install-riscv-tests.sh
+source verif/regress/install-cva6.sh
+source verif/regress/install-riscv-dv.sh
+source verif/regress/install-riscv-tests.sh
 
 if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness,spike
 fi
 
-cd cva6/sim/
+cd verif/sim/
 python3 cva6.py --testlist=../tests/testlist_hwconfig.yaml --iss_yaml cva6.yaml --target hwconfig --hwconfig_opts="$DV_HWCONFIG_OPTS" --iss=$DV_SIMULATORS
-make -C ../../core-v-cores/cva6 clean
+make -C ../.. clean
 make clean_all
 
 cd -

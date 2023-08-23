@@ -14,9 +14,9 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install the required tools
-source ./cva6/regress/install-cva6.sh
-source ./cva6/regress/install-riscv-dv.sh
-source ./cva6/regress/install-riscv-compliance.sh
+source verif/regress/install-cva6.sh
+source verif/regress/install-riscv-dv.sh
+source verif/regress/install-riscv-compliance.sh
 
 if ! [ -n "$DV_SIMULATORS" ]; then
   echo "Error DV_SIMULATORS variable undefined"
@@ -25,9 +25,9 @@ if ! [ -n "$DV_TARGET" ]; then
   echo "Error DV_TARGET variable undefined"
 fi
 
-cd cva6/sim/
+cd verif/sim/
 python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --testlist=../tests/testlist_riscv-compliance-$DV_TARGET.yaml --test rv32ui-addi
-make -C ../../core-v-cores/cva6 clean
-make clean_all
+make clean
+make -C verif/sim clean_all
 
 cd -

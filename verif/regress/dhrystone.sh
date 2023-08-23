@@ -14,19 +14,19 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install the required tools
-source ./cva6/regress/install-cva6.sh
-source ./cva6/regress/install-riscv-dv.sh
-source ./cva6/regress/install-riscv-compliance.sh
-source ./cva6/regress/install-riscv-tests.sh
+source verif/regress/install-cva6.sh
+source verif/regress/install-riscv-dv.sh
+source verif/regress/install-riscv-compliance.sh
+source verif/regress/install-riscv-tests.sh
 
 if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness
 fi
 
-cd cva6/sim/
+cd verif/sim
 
-make -C ../../core-v-cores/cva6 clean
-make clean_all
+make clean
+make -C verif/sim clean_all
 
 src0=../tests/riscv-tests/benchmarks/dhrystone/dhrystone_main.c
 srcA=(

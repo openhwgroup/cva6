@@ -14,9 +14,9 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install the required tools
-source ./cva6/regress/install-cva6.sh
-source ./cva6/regress/install-riscv-dv.sh
-source ./cva6/regress/install-riscv-tests.sh
+source verif/regress/install-cva6.sh
+source verif/regress/install-riscv-dv.sh
+source verif/regress/install-riscv-tests.sh
 
 if ! [ -n "$DV_TARGET" ]; then
   DV_TARGET=cv64a6_imafdc_sv39
@@ -31,7 +31,7 @@ if ! [ -n "$DV_TESTLISTS" ]; then
                 ../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
 fi
 
-cd cva6/sim
+cd verif/sim
 for TESTLIST in $DV_TESTLISTS
 do
   python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml $DV_OPTS

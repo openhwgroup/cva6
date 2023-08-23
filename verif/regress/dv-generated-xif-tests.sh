@@ -13,9 +13,9 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install the required tools
-source ./cva6/regress/install-cva6.sh
-source ./cva6/regress/install-riscv-dv.sh
-source ./cva6/regress/install-spike.sh
+source verif/regress/install-cva6.sh
+source verif/regress/install-riscv-dv.sh
+source verif/regress/install-spike.sh
 
 if ! [ -n "$DV_TARGET" ]; then
   DV_TARGET=cv32a60x
@@ -32,7 +32,7 @@ fi
 export cov=1 #enable the Code Coverage
 export cvxif=1 #enable cvxif extension for Spike
 
-cd cva6/sim/
+cd verif/sim/
 dd=$(date '+%Y-%m-%d')
 key_word="Mismatch[1]:"
 #Read from the iss_regr.log to detect the failed tests

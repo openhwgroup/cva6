@@ -12,9 +12,8 @@ root-dir    := $(dir $(mkfile_path))
 
 ifndef CVA6_REPO_DIR
 $(warning must set CVA6_REPO_DIR to point at the root of CVA6 sources and CVA6_TB_DIR to point here -- doing it for you...)
-export CVA6_REPO_DIR = $(abspath $(root-dir)../../core-v-cores/cva6/)
+export CVA6_REPO_DIR = $(abspath $(root-dir)../..)
 export CVA6_TB_DIR   = $(root-dir)/../tb/core
-export CORE_V_VERIF  = $(root-dir)/../..
 endif
 ifndef TARGET_CFG
 export TARGET_CFG = $(target)
@@ -144,65 +143,65 @@ questa-testharness:
 # UVM specific commands, variables
 ###############################################################################
 ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+all -lca,) -sverilog -full64 -timescale=1ns/1ns
-VCS_WORK_DIR            = $(CORE_V_VERIF)/cva6/sim/vcs_results/default/vcs.d
+VCS_WORK_DIR            = $(CVA6_REPO_DIR)/verif/sim/vcs_results/default/vcs.d
 SIMV                    = $(VCS_WORK_DIR)/simv
 
-export CVA6_UVMT_DIR          = $(CORE_V_VERIF)/cva6/tb/uvmt
-export CVA6_UVMT_PATH         = $(CORE_V_VERIF)/cva6/tb/uvmt
-export CVA6_UVME_PATH         = $(CORE_V_VERIF)/cva6/env/uvme
+export CVA6_UVMT_DIR          = $(CVA6_REPO_DIR)/verif/tb/uvmt
+export CVA6_UVMT_PATH         = $(CVA6_REPO_DIR)/verif/tb/uvmt
+export CVA6_UVME_PATH         = $(CVA6_REPO_DIR)/verif/env/uvme
 export CV_CORE_LC             = cva6
 export CV_CORE_UC             = CVA6
-export DV_UVMT_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt
-export DV_UVME_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme
-export DV_UVML_HRTBT_PATH     = $(CORE_V_VERIF)/lib/uvm_libs/uvml_hrtbt
-export DV_UVMA_CORE_CNTRL_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_core_cntrl
-export DV_UVMA_RVFI_PATH      = $(CORE_V_VERIF)/lib/uvm_agents/uvma_rvfi
-export DV_UVMA_ISACOV_PATH    = $(CORE_V_VERIF)/lib/uvm_agents/uvma_isacov
-export DV_UVMA_CLKNRST_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
-export DV_UVMA_CVXIF_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_cvxif
-export DV_UVMA_AXI_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_axi
-export DV_UVMA_INTERRUPT_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
-export DV_UVMA_DEBUG_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
-export DV_UVMA_OBI_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi
-export DV_UVML_TRN_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
-export DV_UVML_MEM_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_mem
-export DV_UVML_LOGS_PATH      = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
-export DV_UVML_SB_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
-export CV_CORE_PKG            = $(CORE_V_VERIF)/core-v-cores/$(CV_CORE_LC)
+export DV_UVMT_PATH           = $(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/tb/uvmt
+export DV_UVME_PATH           = $(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/env/uvme
+export DV_UVML_HRTBT_PATH     = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_libs/uvml_hrtbt
+export DV_UVMA_CORE_CNTRL_PATH = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_core_cntrl
+export DV_UVMA_RVFI_PATH      = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_rvfi
+export DV_UVMA_ISACOV_PATH    = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_isacov
+export DV_UVMA_CLKNRST_PATH   = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_clknrst
+export DV_UVMA_CVXIF_PATH     = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_cvxif
+export DV_UVMA_AXI_PATH       = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_axi
+export DV_UVMA_INTERRUPT_PATH = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_interrupt
+export DV_UVMA_DEBUG_PATH     = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_debug
+export DV_UVMA_OBI_PATH       = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_obi
+export DV_UVML_TRN_PATH       = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_libs/uvml_trn
+export DV_UVML_MEM_PATH       = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_libs/uvml_mem
+export DV_UVML_LOGS_PATH      = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_libs/uvml_logs
+export DV_UVML_SB_PATH        = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_libs/uvml_sb
+export CV_CORE_PKG            = $(CVA6_REPO_DIR)/verif/core-v-verif/core-v-cores/$(CV_CORE_LC)
 export DESIGN_RTL_DIR         = $(CV_CORE_PKG)/rtl
 
-DPI_DASM_PKG                  = $(CORE_V_VERIF)/lib/dpi_dasm
-DPI_DASM_SPIKE_PKG            = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/dpi_dasm_spike
+DPI_DASM_PKG                  = $(CVA6_REPO_DIR)/verif/core-v-verif/lib/dpi_dasm
+DPI_DASM_SPIKE_PKG            = $(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/vendor_lib/dpi_dasm_spike
 export DPI_DASM_ROOT          = $(DPI_DASM_PKG)
 export DPI_DASM_SPIKE_ROOT    = $(DPI_DASM_SPIKE_PKG)
-export TBSRC_HOME             = $(CORE_V_VERIF)/cva6/tb
-export DV_OVPM_HOME           = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/imperas
+export TBSRC_HOME             = $(CVA6_REPO_DIR)/verif/tb
+export DV_OVPM_HOME           = $(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/vendor_lib/imperas
 export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)_OVPsim
 export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/design
 
 ALL_UVM_FLAGS           = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
 	  $(VCS_HOME)/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
 	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+$(VCS_HOME)/etc/uvm/src \
-	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
+	  +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/tb/uvmt \
 	  $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb) $(if $(TRACE_COMPACT),+vcs+fsdbon))
 
 ALL_SIMV_UVM_FLAGS      = -licwait 20 $(issrun_opts) \
-		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
+		-sv_lib $(CVA6_REPO_DIR)/verif/core-v-verif/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
 		+UVM_TESTNAME=uvmt_cva6_firmware_test_c
 
 ifneq ($(DEBUG),)               # If RTL DEBUG support requested
   ifneq ($(VERDI),)             #   If VERDI interactive mode requested, use GUI and do not run simulation
   ALL_SIMV_UVM_FLAGS       += \
-                 -gui -do $(CORE_V_VERIF)/cva6/sim/init_uvm.do
+                 -gui -do $(CVA6_REPO_DIR)/verif/sim/init_uvm.do
   else                          #   else: *not* VERDI, use CLI mode and appropriate batch dump controls
     ifneq ($(TRACE_FAST),)      #     TRACE_FAST: Generate waveform trace in VPD format
       ALL_SIMV_UVM_FLAGS   += \
-                 -ucli -do $(CORE_V_VERIF)/cva6/sim/init_run_uvm_vpd.do
+                 -ucli -do $(CVA6_REPO_DIR)/verif/sim/init_run_uvm_vpd.do
       SIMV_TRACE_EXTN      = vpd
     endif
     ifneq ($(TRACE_COMPACT),)   #     TRACE_COMPACT: Generate waveform trace in FSDB format
       ALL_SIMV_UVM_FLAGS   += \
-                 -ucli -do $(CORE_V_VERIF)/cva6/sim/init_run_uvm_fsdb.do
+                 -ucli -do $(CVA6_REPO_DIR)/verif/sim/init_run_uvm_fsdb.do
       SIMV_TRACE_EXTN      = fsdb
     endif
   endif
@@ -234,9 +233,9 @@ vcs_uvm_run:
 	+tohost_addr=$(shell $$RISCV/bin/riscv-none-elf-nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	-sv_lib $(dpi-library)/ariane_dpi \
 	$(cov-run-opt) $(issrun_opts) && \
-	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/ && \
+	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CVA6_REPO_DIR)/verif/sim/ && \
 	{ [ -z "`ls $(VCS_WORK_DIR)/*.$(SIMV_TRACE_EXTN)`" ] || \
-	  for i in `ls $(VCS_WORK_DIR)/*.$(SIMV_TRACE_EXTN)` ; do mv $$i $(CORE_V_VERIF)/cva6/sim/`basename $$i` ; done || \
+	  for i in `ls $(VCS_WORK_DIR)/*.$(SIMV_TRACE_EXTN)` ; do mv $$i $(CVA6_REPO_DIR)/verif/sim/`basename $$i` ; done || \
 	  true ; }
 
 vcs-uvm:
@@ -252,7 +251,7 @@ generate_cov_dash:
 
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
-	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.fsdb *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
+	rm -rf $(CVA6_REPO_DIR)/verif/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.fsdb *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
 
 ###############################################################################
 # Common targets and rules

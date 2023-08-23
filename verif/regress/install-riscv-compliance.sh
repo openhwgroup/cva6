@@ -11,17 +11,17 @@ if ! [ -n "$COMPLIANCE_REPO" ]; then
   COMPLIANCE_REPO="https://github.com/riscv-non-isa/riscv-arch-test.git"
   COMPLIANCE_BRANCH="main"
   COMPLIANCE_HASH="220e78542da4510e40eac31e31fdd4e77cdae437"
-  COMPLIANCE_PATCH="../../../cva6/regress/riscv-compliance.patch"
+  COMPLIANCE_PATCH="../../../verif/regress/riscv-compliance.patch"
 fi
 echo "Repo:  " $COMPLIANCE_REPO
 echo "Branch:" $COMPLIANCE_BRANCH
 echo "Hash:  " $COMPLIANCE_HASH
 echo "Patch: " $COMPLIANCE_PATCH
 
-mkdir -p cva6/tests
-if ! [ -d cva6/tests/riscv-compliance ]; then
-  git clone $COMPLIANCE_REPO -b $COMPLIANCE_BRANCH cva6/tests/riscv-compliance
-  cd cva6/tests/riscv-compliance; git checkout $COMPLIANCE_HASH;
+mkdir -p verif/tests
+if ! [ -d verif/tests/riscv-compliance ]; then
+  git clone $COMPLIANCE_REPO -b $COMPLIANCE_BRANCH verif/tests/riscv-compliance
+  cd verif/tests/riscv-compliance; git checkout $COMPLIANCE_HASH;
   if [[ -n "$COMPLIANCE_PATCH" && -f "$COMPLIANCE_PATCH" ]]; then
     echo "Applying patch $COMPLIANCE_PATCH in $PWD..."
     git apply "$COMPLIANCE_PATCH"

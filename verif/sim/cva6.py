@@ -936,7 +936,7 @@ def load_config(args, cwd):
       args.isa  = "rv64imc"
     elif args.target == "hwconfig":
       current_path = os.getcwd()
-      os.chdir(os.getcwd()+"/../../core-v-cores/cva6")
+      os.chdir(os.getcwd()+"/../../")
       [args.isa,args.mabi, args.target, args.hwconfig_opts] = generate_config(args.hwconfig_opts.split())
       os.chdir(current_path)
     else:
@@ -1219,7 +1219,7 @@ def main():
     sys.exit(130)
 
 if __name__ == "__main__":
-  sys.path.append(os.getcwd()+"/../../core-v-cores/cva6/util")
+  sys.path.append(os.getcwd()+"/../../util")
   from config_pkg_generator import *
   main()
 

@@ -16,11 +16,11 @@ echo "Repo:  " $TESTS_REPO
 echo "Branch:" $TESTS_BRANCH
 echo "Hash:  " $TESTS_HASH
 
-mkdir -p cva6/tests
-if ! [ -d cva6/tests/riscv-tests ]; then
-  git clone $TESTS_REPO -b $TESTS_BRANCH cva6/tests/riscv-tests
-  cd cva6/tests/riscv-tests; git checkout $TESTS_HASH;
+mkdir -p verif/tests
+if ! [ -d verif/tests/riscv-tests ]; then
+  git clone $TESTS_REPO -b $TESTS_BRANCH verif/tests/riscv-tests
+  cd verif/tests/riscv-tests; git checkout $TESTS_HASH;
   git submodule update --init --recursive
-  git apply --directory=env ../../../cva6/regress/riscv-tests-env.patch
+  git apply --directory=env ../../../verif/regress/riscv-tests-env.patch
   cd -
 fi

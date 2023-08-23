@@ -14,8 +14,8 @@ if [ -z "$RISCV" ]; then
 fi
 
 # install the required tools
-source ./cva6/regress/install-cva6.sh
-source ./cva6/regress/install-riscv-dv.sh
+source verif/regress/install-cva6.sh
+source verif/regress/install-riscv-dv.sh
 
 if [ -z "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness,spike
@@ -25,7 +25,7 @@ if [ -z "$DV_TARGET" ]; then
   DV_TARGET=cv64a6_imafdc_sv39
 fi
 
-cd cva6/sim/
+cd verif/sim/
 
 BDIR=../tests/riscv-tests/benchmarks/
 CVA6_FLAGS="--target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --linker ../tests/custom/common/test.ld"
@@ -61,8 +61,8 @@ python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/spmv/spmv_main.c        --gcc_opts "
 python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/towers/towers_main.c    --gcc_opts "$GCC_OPTS -I$BDIR/towers/"
 python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/vvadd/vvadd.c           --gcc_opts "$GCC_OPTS -I$BDIR/vvadd/        $BDIR/vvadd/vvadd_main.c"
 
-make -C ../../core-v-cores/cva6 clean
-make clean_all
+make clean
+make -C verif/sim clean_all
 
 cd -
 

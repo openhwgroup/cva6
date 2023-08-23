@@ -14,9 +14,9 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install the required tools
-source ./cva6/regress/install-cva6.sh
-source ./cva6/regress/install-riscv-dv.sh
-source ./cva6/regress/install-riscv-arch-test.sh
+source verif/regress/install-cva6.sh
+source verif/regress/install-riscv-dv.sh
+source verif/regress/install-riscv-arch-test.sh
 
 if ! [ -n "$DV_TARGET" ]; then
   DV_TARGET=cv32a60x
@@ -26,7 +26,7 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness,spike
 fi
 
-cd cva6/sim
+cd verif/sim
 python3 cva6.py --testlist=../tests/testlist_riscv-csr-access-test-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../sim/link.ld
 
 cd -

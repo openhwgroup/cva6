@@ -16,9 +16,9 @@ if [ -z "$RISCV_OBJCOPY" ]; then
   export RISCV_OBJCOPY="$RISCV_TOOLCHAIN/bin/riscv-none-elf-objcopy"
 fi
 export SPIKE_PATH=$SPIKE_ROOT/bin
-export RTL_PATH=$ROOT_PROJECT/core-v-cores/cva6
-export TB_PATH=$ROOT_PROJECT/cva6/tb/core
-export TESTS_PATH=$ROOT_PROJECT/cva6/tests
+export RTL_PATH=$ROOT_PROJECT/
+export TB_PATH=$ROOT_PROJECT/verif/tb/core
+export TESTS_PATH=$ROOT_PROJECT/verif/tests
 
 if [ -z "$DV_REPO" ]; then
   export DV_REPO="https://github.com/google/riscv-dv.git"
@@ -31,15 +31,15 @@ echo "Branch:" $DV_BRANCH
 echo "Hash:  " $DV_HASH
 echo "Patch: " $DV_PATCH
 
-mkdir -p cva6/sim
-if ! [ -d cva6/sim/dv ]; then
-  git clone $DV_REPO -b $DV_BRANCH cva6/sim/dv
-  cd cva6/sim/dv; git checkout $DV_HASH;
+mkdir -p verif/sim
+if ! [ -d verif/sim/dv ]; then
+  git clone $DV_REPO -b $DV_BRANCH verif/sim/dv
+  cd verif/sim/dv; git checkout $DV_HASH;
   if [[ -n "$DV_PATCH" && -f "$DV_PATCH" ]]; then
     git apply "$DV_PATCH"
   fi
   cd -
   # install riscv-dv dependencies
-  cd cva6/sim/dv; pip3 install -r requirements.txt; cd -
+  cd verif/sim/dv; pip3 install -r requirements.txt; cd -
 fi
 

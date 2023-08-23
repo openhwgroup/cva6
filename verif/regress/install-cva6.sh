@@ -40,7 +40,7 @@ export CPLUS_INCLUDE_PATH="$RISCV/include"
 # Set VERILATOR_INSTALL_DIR to 'NO' to skip installation and checks
 # of Verilator (useful for CI jobs not depending on Verilator in any way).
 if [ "$VERILATOR_INSTALL_DIR" != "NO" ]; then
-  source cva6/regress/install-verilator.sh
+  source verif/regress/install-verilator.sh
 
   # Complain if the installation directory of Verilator still is not set
   # after running the installer.
@@ -75,19 +75,8 @@ echo $CVA6_BRANCH
 echo $CVA6_HASH
 echo $CVA6_PATCH
 
-if ! [ -d core-v-cores/cva6 ]; then
-  git clone --recursive $CVA6_REPO -b $CVA6_BRANCH core-v-cores/cva6
-  pushd core-v-cores/cva6
-  git checkout $CVA6_HASH
-  echo -n "Using CVA6 commit "; git describe --always HEAD
-  if [[ -n "$CVA6_PATCH" && -f "$CVA6_PATCH" ]]; then
-    git apply "$CVA6_PATCH"
-  fi
-  popd
-fi
-
 # install Spike
 if [ -z "$SPIKE_ROOT" ]; then
   export SPIKE_ROOT=$TOP/spike/
 fi
-source cva6/regress/install-spike.sh
+source verif/regress/install-spike.sh
