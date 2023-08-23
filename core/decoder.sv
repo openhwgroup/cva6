@@ -799,7 +799,8 @@ module decoder import ariane_pkg::*; #(
                         3'b010: instruction_o.op  = ariane_pkg::LW;
                         3'b100: instruction_o.op  = ariane_pkg::LBU;
                         3'b101: instruction_o.op  = ariane_pkg::LHU;
-                        3'b110: instruction_o.op  = ariane_pkg::LWU;
+                        3'b110: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::LWU;
+                                else illegal_instr = 1'b1;
                         3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::LD;
                                 else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
