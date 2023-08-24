@@ -21,8 +21,8 @@ with open(str(sys.argv[2]), 'r') as f:
     synthesis_log = f.read()
 
 kgate_ratio = int(os.environ["NAND2_AREA"])
-path_re = r'^core-v-cores/cva6/pd/synth/cva6_([^/]+)'
-with open("core-v-cores/cva6/.gitlab-ci/expected_synth.yml", "r") as f:
+path_re = r'^pd/synth/cva6_([^/]+)'
+with open(".gitlab-ci/expected_synth.yml", "r") as f:
     expected = yaml.safe_load(f)
 
 #Compile & elaborate log:
@@ -68,9 +68,9 @@ if match:
         if abs(diff) >= 300:
             result_metric.fail()
     else:
-        raise Exception("unexpected target: {target}")
+        raise Exception(f"unexpected target: {target}")
 else:
-    raise Exception("unexpected file name: {log_path}")
+    raise Exception(f"unexpected file name: {log_path}")
 
 
 hier_metric = rb.TableMetric('Hierarchies details')

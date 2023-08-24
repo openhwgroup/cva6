@@ -46,20 +46,13 @@ if workflow_type == 'github':  # (from wrapper)
     cvv_sha = os.environ['CORE_V_VERIF_HASH'].strip('\'\"')
     cva6_branch = os.environ['CVA6_BRANCH'].strip('\'\"')
     cva6_sha = os.environ['CVA6_HASH'].strip('\'\"')
-else:  # gitlab (from core-v-verif or cva6 repositories)
+else:  # gitlab
     workflow_uid = os.environ['CI_PIPELINE_ID'].strip('\'\"')
-    if os.environ['SCOPE_CVV'] == 'true':
-        workflow_repo = 'core-v-verif'
-        cvv_branch = os.environ['CI_COMMIT_REF_NAME'].strip('\'\"')
-        cvv_sha = os.environ['CI_COMMIT_SHA'].strip('\'\"')
-        cva6_branch = os.environ['CVA6_BRANCH'].strip('\'\"')
-        cva6_sha = os.environ['CVA6_HASH'].strip('\'\"')
-    else:
-        workflow_repo = 'cva6'
-        cvv_branch = os.environ['CORE_V_VERIF_BRANCH'].strip('\'\"')
-        cvv_sha = os.environ['CORE_V_VERIF_HASH'].strip('\'\"')
-        cva6_branch = os.environ['CI_COMMIT_REF_NAME'].strip('\'\"')
-        cva6_sha = os.environ['CI_COMMIT_SHA'].strip('\'\"')
+    workflow_repo = 'cva6'
+    cvv_branch = 'none'
+    cvv_sha = '0000000'
+    cva6_branch = os.environ['CI_COMMIT_REF_NAME'].strip('\'\"')
+    cva6_sha = os.environ['CI_COMMIT_SHA'].strip('\'\"')
     workflow_commit_subject = os.environ['CI_COMMIT_MESSAGE'].strip('\'\"')
     workflow_commit_author = os.environ['CI_COMMIT_AUTHOR'].strip('\'\"')
 
