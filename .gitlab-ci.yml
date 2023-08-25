@@ -7,20 +7,54 @@
 #
 # Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
 
-# Guidlines:
-
-# This pipeline can be also be triggerd underneath by CI of CVA6 repository, this requires to respected some rules:
-# - In this pipeline, job artifacts must be only defined in a folder named "artifacts" at the root of the job's workdir.
-# - In this pipeline, do not define before_script and after_script in the global section (avoid in job too).
-# - Please prefix all jobs in this file with "pub_" which stands for "public" job.
-
 # Please refer to .gitlab-ci/README.md to add jobs
 
+# Project maintainers must define following variables to adapt this CI to their runtime environment (Settings > CI/CD > Variables)
+# - SETUP_CI_CVV_BRANCH: master (the main branch of CVA6 repository)
+
+# A git repository named "setup-ci" must be created in the same namespace as cva6 and must contain the following file:
+# - 'cva6/core-v-verif-cva6.yml'
+#
+# This file must at least contain the variables necessary for the execution of
+# this pipeline.
+# Other elements such as new jobs can be added to overload the associated
+# downstream pipeline included in this repository.
+# Example can be found in ".gitlab-ci/setup-ci-example/"
+
+include:
+  - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+    ref: '$SETUP_CI_CVV_BRANCH'
+    file: 'cva6/core-v-verif-cva6.yml'
+
+workflow:
+  rules:
+    - if: '$CI_WEIGHT == "forced" && $CI_COMMIT_REF_NAME =~ /^cvvdev\/.*/' #bypass workflow + cvvdev
+      variables:
+        CORE_V_VERIF_BRANCH: $CI_COMMIT_REF_NAME
+    - if: '$CI_WEIGHT == "forced"' #bypass workflow
+    - if: '$CI_COMMIT_REF_NAME =~ /^master.*|^hotfix.*|^rc.*|^github-pr.*/'
+      variables:
+        CI_WEIGHT: "full"
+    - if: '$CI_COMMIT_REF_NAME =~ /^dev.*|^feature.*/'
+      variables:
+        CI_WEIGHT: "short"
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/master.*|^cvvdev\/hotfix.*|^cvvdev\/rc.*/'
+      variables:
+        CI_WEIGHT: "full"
+        CORE_V_VERIF_BRANCH: $CI_COMMIT_REF_NAME
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/dev.*|^cvvdev\/feature.*/'
+      variables:
+        CI_WEIGHT: "lite"
+        CORE_V_VERIF_BRANCH: $CI_COMMIT_REF_NAME
+    - when: never
 
 variables:
   GIT_STRATEGY: fetch
   GIT_SUBMODULE_STRATEGY: recursive
-
+  TAGS_RUNNER: $TAGS_RUNNER
+  SCOPE_CVV: "true"
+  DASHBOARD: "cva6"
+  WORKFLOW_EVENT: $CI_PIPELINE_SOURCE
 
 # macro: job that does not require cloning anythings
 .template_job_low_footprint:
