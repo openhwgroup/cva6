@@ -101,11 +101,15 @@ else
 	cov-run-opt  =
 endif
 
+ifdef cvxif
+	spike_extension = --extension=cvxif
+endif
+
 ###############################################################################
 # Spike specific commands, variables
 ###############################################################################
 spike:
-	$(tool_path)/spike $(spike_stepout) --extension=cvxif --log-commits --isa=$(variant) -l $(elf)
+	$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) -l $(elf)
 	cp $(log).iss $(log)
 
 ###############################################################################
