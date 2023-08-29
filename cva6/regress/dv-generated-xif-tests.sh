@@ -30,6 +30,7 @@ if ! [ -n "$list_num" ]; then
 fi
 
 export cov=1 #enable the Code Coverage
+export cvxif=1 #enable cvxif extension for Spike
 
 cd cva6/sim/
 dd=$(date '+%Y-%m-%d')
