@@ -208,6 +208,30 @@ pub_smoke:
     - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
   artifacts: *artifacts
 
+pub_gen_smoke:
+  stage: smoke tests
+  extends:
+    - .template_job_full_ci
+  parallel:
+    matrix:
+      - DV_SIMULATORS: ["vcs-uvm,spike"]
+  variables:
+    DASHBOARD_JOB_TITLE: "Smoke Generated test $DV_SIMULATORS"
+    DASHBOARD_JOB_DESCRIPTION: "Short generated tests to challenge the CVA6-DV on STEP1 configuration"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Basic"
+  before_script:
+    - !reference [.verif_test, before_script]
+  script:
+    # In order to capture logs in case of test failure, the test script cannot fail.
+    - source cva6/regress/smoke-gen_tests.sh || true
+    # The list of files must NOT fail on various DV_SIMULATORS values, so use 'v*_sim' to match
+    # 'veri-testharness_sim', 'vcs-testharness_sim' and 'vcs-uvm_sim' (one of them always applies,
+    # at least until new RTL simulator configurations are added.)
+    - for i in cva6/sim/*/v*_sim/*.log.iss ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
+  artifacts: *artifacts
+
 pub_riscv_arch_test:
   extends:
     - .verif_test
