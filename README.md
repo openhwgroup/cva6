@@ -30,14 +30,7 @@ The top-level directories of this repo:
 * **pd**: Example and CI scripts to synthesis CVA6.
 * **util**: General utility scriptware.
 * **vendor**: Third-party IP maintained outside the repository.
-
-## Verification
-The verification environment for the CVA6 is _not_ in this Repository.
-
-The verification environment for this core as well as other cores in the OpenHW Group CORE-V family is at the
-[core-v-verif](https://github.com/openhwgroup/core-v-verif) repository on GitHub.
-
-The Makefiles supported in the **core-v-verif** project automatically clone the appropriate version of the **CVA6**  RTL sources.
+* **verif**: Verification environment for the CVA6. The verification files shared with other cores are in the [core-v-verif](https://github.com/openhwgroup/core-v-verif) repository on GitHub. core-v-verif is defined as a cva6 submodule.
 
 ## Contributing
 We highly appreciate community contributions.
@@ -85,8 +78,11 @@ CVA6 User Documentation
 - [CVA6 User Documentation](#cva6-user-documentation)
   - [Getting Started](#getting-started)
     - [Checkout Repo](#checkout-repo)
-    - [Install Verilator Simulation Flow](#install-verilator-simulation-flow)
-    - [Build Model and Run Simulations](#build-model-and-run-simulations)
+    - [Build Model and Run Simulations with verif directory](#build-model-and-run-simulations-with-verif-directory)
+      - [Directories](#directories)
+      - [Prerequisites](#prerequisites)
+      - [Environent setup](#environent-setup)
+      - [Test execution](#test-execution)
     - [Running User-Space Applications](#running-user-space-applications)
   - [Physical Implementation](#physical-implementation)
     - [ASIC Synthesis](#asic-synthesis)
@@ -114,70 +110,92 @@ The following instructions will allow you to compile and run a Verilator model o
 ### Checkout Repo
 
 Checkout the repository and initialize all submodules
-```
+```sh
 git clone https://github.com/openhwgroup/cva6.git
+cd cva6
 git submodule update --init --recursive
 ```
 
-### Install Verilator Simulation Flow
+### Build Model and Run Simulations with verif directory
 
-1. Setup install directory `RISCV` environment variable i.e. `export RISCV=/YOUR/TOOLCHAIN/INSTALLATION/DIRECTORY`
-2. Run `./ci/setup.sh` to install all required tools (i.e. verilator, device-tree-compiler, riscv64-unknown-elf-*, ..)
+#### verif Directories
+- **bsp**:     board support package for test-programs compiled/assembled/linked for the CVA6.
+This BSP is used by both `core` testbench and `uvmt_cva6` UVM verification environment.
+- **regress**: scripts to install tools, test suites, CVA6 code and to execute tests
+- **sim**:     simulation environment (e.g. riscv-dv)
+- **tb**:      testbench module instancing the core
+- **tests**:   source of test cases and test lists
 
-You can install verilator from source using `./ci/install-verilator.sh` or by manually installing `verilator >= 4.002`
-Note: There is currently a known issue with version 4.106 and 4.108. 4.106 does not compile and 4.108 hangs after a
-couple of cycles simulation time.)
+There are README files in each directory with additional information.
 
+#### Prerequisites
+To execute tests on CVA6 core, you need a RISC-V toolchain.
 
-### Build Model and Run Simulations
+Be aware that only gcc 11.1.0 or newer are supported in core-v-verif repository.
+To build and install riscv gcc compiler in local, you can use the following commands :
 
-#### Build default model
-Build the Verilator model of CVA6 by using the Makefile:
-```
-make verilate
-```
-
-#### Build model with VCD support
-To build the verilator model with support for vcd files:
-- Install Verilator from source (tested on v4.110):
-  - https://verilator.org/guide/latest/install.html#run-in-place-from-verilator-root
-  - You can use the [run-in-place feature](https://verilator.org/guide/latest/install.html#run-in-place-from-verilator-root). No need to install the software. Please note that Makefile needs a C++ file from Verilator sources.
-  - Set `VERILATOR_ROOT` to the repository root (for instance `export VERILATOR_ROOT=/opt/<verilator_repo>`).
-
-You can finally generate the model:
-```
-make verilate DEBUG=1 TRACE_FAST=1
+```sh
+git clone https://github.com/riscv-collab/riscv-gnu-toolchain
+cd riscv-gnu-toolchain
+git clone https://github.com/gcc-mirror/gcc -b releases/gcc-13 gcc-13
+./configure –prefix:/path/to/installation/directory --with-multilib-generator="rv32e-ilp32e--;rv32i-ilp32--;rv32im-ilp32--;rv32iac-ilp32--;rv32imac-ilp32--;rv32imafc-ilp32f--;rv32imafdc-ilp32d--;rv64i-lp64--;rv64ic-lp64--;rv64iac-lp64--;rv64imac-lp64--;rv64imafdc-lp64d--;rv64im-lp64--;" --with-gcc-src=`pwd`/gcc-13
+make –j32
 ```
 
-#### Run simulations
-This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
+These commands will install the riscv gcc 13.1.0 compiler which is the latest version.
+Once running the previous commands, your environment must be updated with :
 
-```
-work-ver/Variane_testharness rv64um-v-divuw
-```
-
-**Note:** If you want to generate the VCD for the same software (`-v` to specify the VCD filename):
-```bash
-work-ver/Variane_testharness -v output.vcd rv64um-v-divuw
+```sh
+export RISCV=/path/to/installation/directory
+export RISCV_PREFIX=$RISCV/bin/riscv-none-
+export RISCV_GCC=$RISCV_PREFIXgcc
+export CV_SW_PREFIX=riscv-none-elf-
 ```
 
-The Verilator testbench makes use of the `riscv-fesvr`. This means that you can use the `riscv-tests` repository as well as `riscv-pk` out-of-the-box. As a general rule of thumb the Verilator model will behave like Spike (exception for being orders of magnitudes slower).
+This 4 variables will ensure you use correctly the new gcc compiler you have just installed.
+You will now be able to run the test scripts.
 
-Both, the Verilator model as well as the Questa simulation will produce trace logs. The Verilator trace is more basic but you can feed the log to `spike-dasm` to resolve instructions to mnemonics. Unfortunately value inspection is currently not possible for the Verilator trace file.
+#### Environent setup
 
-```
-spike-dasm < trace_hart_00.dasm > logfile.txt
+To run simulation, several tools and repositories are needed:
+- Gcc as compiler,
+- Spike as instruction set simulator,
+- Verilator as simulator (if used as simulator to simulate),
+- [riscv-dv](https://github.com/google/riscv-dv) as simulation environment.
+
+If you would like to use a precompiled Verilator, please setup the path to the installation directory
+```sh
+export VERILATOR_INSTALL_DIR=/path/to/installation/directory
 ```
 
-To build, compile and run the CVA6 core-only in its example testbench using Verilator (known to work with V4.108):
+The smoke_tests execution will end up the installation by installing Verilator, Spike, tests from regression suites as arch-test, riscv-dv. Then it runs the smoke_tests test.
+
+Three simulation types are supported:
+- **veri-testharness**: verilator with corev_apu/testharness testbench,
+- **vcs-testharness**: vcs with corev_apu/testharness testbench,
+- **vcs-uvm**: vcs with UVM testbench.
+To check the RTL cva6 behaviour, the RTL simulation trace is compared to spike trace. `DV_SIMULATORS` need to be setup to define which simulators are used.
+
+```sh
+export DV_SIMULATORS=veri-testharness,spike
+sh verif/regress/smoke-tests.sh
 ```
-$ cd core/example_tb
-$ make veri_run
+
+#### Test execution
+
+Run one of the shell scripts:
+
+```sh
+# riscv-compliance (https://github.com/riscv/riscv-compliance) test suite:
+sh verif/regress/dv-riscv-compliance.sh
+# riscv-tests (https://github.com/riscv/riscv-tests) test suite:
+sh verif/regress/dv-riscv-tests.sh
 ```
-`make help` will print all supported targets.
 
 
 ### Running User-Space Applications
+
+> :warning: **Warning**: this chapter needs to be updated. See Github issue https://github.com/openhwgroup/cva6/issues/1358.
 
 It is possible to run user-space binaries on CVA6 with ([RISC-V Proxy Kernel and Boot Loader](https://github.com/riscv/riscv-pk)).
 RISC-V PK can be installed by running: `./ci/install-riscvpk.sh`
@@ -228,11 +246,13 @@ Reports are under: pd/synth/ariane/reports
 
 ### ASIC Gate Simulation with `core-v-verif` repository
 
-```
+> :warning: **Warning**: this chapter needs to be updated. See Github issue https://github.com/openhwgroup/cva6/issues/1358.
+
+```sh
 export DV_SIMULATORS=veri-testharness,spike
 cva6/regress/smoke-tests.sh
-make -C core-v-cores/cva6/pd/synth cva6_synth FOUNDRY_PATH=/your/techno/basepath/ TECH_NAME=yourTechnoName TARGET_LIBRARY_FILES="yourLib1.db\ yourLib2.db" PERIOD=10 NAND2_AREA=650 TARGET=cv64a6_imafdc_sv39 ADDITIONAL_SEARCH_PATH="others/libs/paths/one\ others/libs/paths/two"
-sed 's/module SyncSpRamBeNx64_1/module SyncSpRamBeNx64_2/' core-v-cores/cva6/pd/synth/ariane_synth.v > core-v-cores/cva6/pd/synth/ariane_synth_modified.v
+make -C pd/synth cva6_synth FOUNDRY_PATH=/your/techno/basepath/ TECH_NAME=yourTechnoName TARGET_LIBRARY_FILES="yourLib1.db\ yourLib2.db" PERIOD=10 NAND2_AREA=650 TARGET=cv64a6_imafdc_sv39 ADDITIONAL_SEARCH_PATH="others/libs/paths/one\ others/libs/paths/two"
+sed 's/module SyncSpRamBeNx64_1/module SyncSpRamBeNx64_2/' pd/synth/ariane_synth.v > pd/synth/ariane_synth_modified.v
 cd cva6/sim
 make vcs_clean
 python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-core-gate $DV_OPTS
