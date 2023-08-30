@@ -109,7 +109,8 @@ endif
 # Spike specific commands, variables
 ###############################################################################
 spike:
-	$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) -l $(elf)
+	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
+		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) -l $(elf)
 	cp $(log).iss $(log)
 
 ###############################################################################
