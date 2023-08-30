@@ -73,11 +73,11 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft sys_clk_period         == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
    }
 
-   constraint cvxif_feature { //CVA6 do not support dual read & write also the memory interface
+   constraint cvxif_feature { //CV32A60X do not support dual read & write also the memory interface
       cvxif_cfg.dual_read_write_support_x == 0;
       cvxif_cfg.load_store_support_x == 0;
       cvxif_cfg.seq_cus_instr_x2_enabled == 1;
-      cvxif_cfg.reg_cus_crosses_enabled == 1;
+      cvxif_cfg.reg_cus_crosses_enabled == 0;
    }
    constraint cva6_riscv_cons {
       xlen == uvma_core_cntrl_pkg::MXL_32;
@@ -145,7 +145,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.seq_instr_group_x3_enabled == 0;
       isacov_cfg.seq_instr_group_x4_enabled == 0;
       isacov_cfg.seq_instr_x2_enabled       == 1;
-      isacov_cfg.reg_crosses_enabled        == 1;
+      isacov_cfg.reg_crosses_enabled        == 0;
       isacov_cfg.reg_hazards_enabled        == 1;
       rvfi_cfg.nret                         == RVFI_NRET;
       
