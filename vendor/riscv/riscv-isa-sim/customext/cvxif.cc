@@ -101,7 +101,7 @@ class cvxif_t : public cvxif_extn_t
       case FUNC3_0:
         switch (r_insn.funct7 & 0x1) {
           case NO_RS3:
-            switch (r_insn.funct7 & 0xe) {
+            switch (r_insn.funct7 & 0x7e) {
               case CUS_NOP:
                 break;
               case CUS_U_ADD:
