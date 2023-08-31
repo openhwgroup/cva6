@@ -147,7 +147,9 @@ module issue_read_operands import ariane_pkg::*; #(
             ALU, CTRL_FLOW, CSR, MULT:
                 fu_busy = ~flu_ready_i;
             FPU, FPU_VEC:
-                fu_busy = ~fpu_ready_i;
+                if(CVA6Cfg.FpPresent) begin
+                   fu_busy = ~fpu_ready_i;
+                end
             LOAD, STORE:
                 fu_busy = ~lsu_ready_i;
             CVXIF:
@@ -177,22 +179,22 @@ module issue_read_operands import ariane_pkg::*; #(
         //    as this is an immediate we do not have to wait on anything here
         // 1. check if the source registers are clobbered --> check appropriate clobber list (gpr/fpr)
         // 2. poll the scoreboard
-        if (!issue_instr_i.use_zimm && (is_rs1_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? rd_clobber_fpr_i[issue_instr_i.rs1] != NONE
+        if (!issue_instr_i.use_zimm && ((CVA6Cfg.FpPresent && is_rs1_fpr(issue_instr_i.op)) ? rd_clobber_fpr_i[issue_instr_i.rs1] != NONE
                                                                      : rd_clobber_gpr_i[issue_instr_i.rs1] != NONE)) begin
             // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
             // be fetched through the register file since they can't be forwarded
             // if the operand is available, forward it. CSRs don't write to/from FPR
-            if (rs1_valid_i && (is_rs1_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i.rs1] != CSR) || (issue_instr_i.op == SFENCE_VMA)))) begin
+            if (rs1_valid_i && (CVA6Cfg.FpPresent && is_rs1_fpr(issue_instr_i.op) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i.rs1] != CSR) || (issue_instr_i.op == SFENCE_VMA)))) begin
                 forward_rs1 = 1'b1;
             end else begin // the operand is not available -> stall
                 stall = 1'b1;
             end
         end
 
-        if (is_rs2_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? rd_clobber_fpr_i[issue_instr_i.rs2] != NONE
+        if ((CVA6Cfg.FpPresent && is_rs2_fpr(issue_instr_i.op)) ? rd_clobber_fpr_i[issue_instr_i.rs2] != NONE
                                              : rd_clobber_gpr_i[issue_instr_i.rs2] != NONE) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR
-            if (rs2_valid_i && (is_rs2_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? 1'b1 : ( (rd_clobber_gpr_i[issue_instr_i.rs2] != CSR) || (issue_instr_i.op == SFENCE_VMA))))  begin
+            if (rs2_valid_i && (CVA6Cfg.FpPresent && is_rs2_fpr(issue_instr_i.op) ? 1'b1 : ( (rd_clobber_gpr_i[issue_instr_i.rs2] != CSR) || (issue_instr_i.op == SFENCE_VMA))))  begin
                 forward_rs2 = 1'b1;
             end else begin // the operand is not available -> stall
                 stall = 1'b1;
@@ -200,7 +202,7 @@ module issue_read_operands import ariane_pkg::*; #(
         end
 
     // Only check clobbered gpr for OFFLOADED instruction
-        if (is_imm_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? rd_clobber_fpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE
+        if ((CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i.op)) ? rd_clobber_fpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE
                      : issue_instr_i.op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ? rd_clobber_gpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
             if (rs3_valid_i) begin
@@ -219,10 +221,10 @@ module issue_read_operands import ariane_pkg::*; #(
         // immediates are the third operands in the store case
         // for FP operations, the imm field can also be the third operand from the regfile
         if (CVA6Cfg.NrRgprPorts == 3) begin
-            imm_n  = is_imm_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, operand_c_regfile} :
+            imm_n  = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i.op)) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, operand_c_regfile} :
                                                     issue_instr_i.op == OFFLOAD ? operand_c_regfile : issue_instr_i.result;
         end else begin
-            imm_n  = is_imm_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, operand_c_regfile} : issue_instr_i.result;
+            imm_n  = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i.op)) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, operand_c_regfile} : issue_instr_i.result;
         end
         trans_id_n = issue_instr_i.trans_id;
         fu_n       = issue_instr_i.fu;
@@ -252,7 +254,7 @@ module issue_read_operands import ariane_pkg::*; #(
         end
         // or is it an immediate (including PC), this is not the case for a store, control flow, and accelerator instructions
         // also make sure operand B is not already used as an FP operand
-        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW) && (issue_instr_i.fu != ACCEL) && !is_rs2_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent)) begin
+        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW) && (issue_instr_i.fu != ACCEL) && !(CVA6Cfg.FpPresent && is_rs2_fpr(issue_instr_i.op))) begin
             operand_b_n = issue_instr_i.result;
         end
     end
@@ -293,14 +295,18 @@ module issue_read_operands import ariane_pkg::*; #(
                     mult_valid_q   <= 1'b1;
                 end
                 FPU : begin
-                    fpu_valid_q    <= 1'b1;
-                    fpu_fmt_q      <= orig_instr.rftype.fmt; // fmt bits from instruction
-                    fpu_rm_q       <= orig_instr.rftype.rm;  // rm bits from instruction
+                    if(CVA6Cfg.FpPresent) begin
+                        fpu_valid_q    <= 1'b1;
+                        fpu_fmt_q      <= orig_instr.rftype.fmt; // fmt bits from instruction
+                        fpu_rm_q       <= orig_instr.rftype.rm;  // rm bits from instruction
+                    end
                 end
                 FPU_VEC : begin
-                    fpu_valid_q    <= 1'b1;
-                    fpu_fmt_q      <= orig_instr.rvftype.vfmt;         // vfmt bits from instruction
-                    fpu_rm_q       <= {2'b0, orig_instr.rvftype.repl}; // repl bit from instruction
+                    if(CVA6Cfg.FpPresent) begin
+                        fpu_valid_q    <= 1'b1;
+                        fpu_fmt_q      <= orig_instr.rvftype.vfmt;         // vfmt bits from instruction
+                        fpu_rm_q       <= {2'b0, orig_instr.rvftype.repl}; // repl bit from instruction
+                    end
                 end
                 LOAD, STORE: begin
                     lsu_valid_q    <= 1'b1;
@@ -364,17 +370,18 @@ module issue_read_operands import ariane_pkg::*; #(
                 // WAW - Write After Write Dependency Check
                 // -----------------------------------------
                 // no other instruction has the same destination register -> issue the instruction
-                if (ariane_pkg::is_rd_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? (rd_clobber_fpr_i[issue_instr_i.rd] == NONE)
+                if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(issue_instr_i.op)) ? (rd_clobber_fpr_i[issue_instr_i.rd] == NONE)
                                                                                    : (rd_clobber_gpr_i[issue_instr_i.rd] == NONE)) begin
                     issue_ack_o = 1'b1;
                 end
                 // or check that the target destination register will be written in this cycle by the
                 // commit stage
                 for (int unsigned i = 0; i < CVA6Cfg.NrCommitPorts; i++)
-                    if (ariane_pkg::is_rd_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? (we_fpr_i[i] && waddr_i[i] == issue_instr_i.rd[4:0])
+                    if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(issue_instr_i.op)) ? (we_fpr_i[i] && waddr_i[i] == issue_instr_i.rd[4:0])
                                                                                        : (we_gpr_i[i] && waddr_i[i] == issue_instr_i.rd[4:0])) begin
                         issue_ack_o = 1'b1;
                     end
+
             end
             // we can also issue the instruction under the following two circumstances:
             // we can do this even if we are stalled or no functional unit is ready (as we don't need one)
@@ -496,9 +503,9 @@ module issue_read_operands import ariane_pkg::*; #(
         end
     endgenerate
 
-    assign operand_a_regfile = is_rs1_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[0];
-    assign operand_b_regfile = is_rs2_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[1];
-    assign operand_c_regfile = CVA6Cfg.NrRgprPorts == 3 ? (is_imm_fpr_cfg(issue_instr_i.op, CVA6Cfg.FpPresent) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[2]} : rdata[2])
+    assign operand_a_regfile = (CVA6Cfg.FpPresent && is_rs1_fpr(issue_instr_i.op)) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[0];
+    assign operand_b_regfile = (CVA6Cfg.FpPresent && is_rs2_fpr(issue_instr_i.op)) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[1];
+    assign operand_c_regfile = CVA6Cfg.NrRgprPorts == 3 ? ((CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i.op)) ? {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[2]} : rdata[2])
                                                   : fprdata[2];
 
     // ----------------------
