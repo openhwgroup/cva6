@@ -1073,7 +1073,7 @@ module decoder import ariane_pkg::*; #(
                     instruction_o.rd[4:0]  = instr.atype.rd;
                     // TODO(zarubaf): Ordering
                     // words
-                    if (riscv::IS_XLEN64 && CVA6Cfg.RVA && instr.stype.funct3 == 3'h2) begin
+                    if (CVA6Cfg.RVA && instr.stype.funct3 == 3'h2) begin
                         unique case (instr.instr[31:27])
                             5'h0:  instruction_o.op = ariane_pkg::AMO_ADDW;
                             5'h1:  instruction_o.op = ariane_pkg::AMO_SWAPW;
@@ -1092,7 +1092,7 @@ module decoder import ariane_pkg::*; #(
                             default: illegal_instr = 1'b1;
                         endcase
                     // double words
-                    end else if (CVA6Cfg.RVA && instr.stype.funct3 == 3'h3) begin
+                    end else if (riscv::IS_XLEN64 && CVA6Cfg.RVA && instr.stype.funct3 == 3'h3) begin
                         unique case (instr.instr[31:27])
                             5'h0:  instruction_o.op = ariane_pkg::AMO_ADDD;
                             5'h1:  instruction_o.op = ariane_pkg::AMO_SWAPD;
