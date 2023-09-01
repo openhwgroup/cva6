@@ -97,7 +97,7 @@ module store_unit import ariane_pkg::*; #(
                     pop_st_o = 1'b1;
                     // check if translation was valid and we have space in the store buffer
                     // otherwise simply stall
-                    if (!dtlb_hit_i) begin
+                    if (ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
                         state_d = WAIT_TRANSLATION;
                         pop_st_o = 1'b0;
                     end
@@ -124,7 +124,7 @@ module store_unit import ariane_pkg::*; #(
                     state_d = VALID_STORE;
                     pop_st_o = 1'b1;
 
-                    if (!dtlb_hit_i) begin
+                    if(ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
                         state_d = WAIT_TRANSLATION;
                         pop_st_o = 1'b0;
                     end
@@ -153,10 +153,12 @@ module store_unit import ariane_pkg::*; #(
             // but we know that the store queue is not full as we could only have landed here if
             // it wasn't full
             WAIT_TRANSLATION: begin
-                translation_req_o = 1'b1;
+                if(ariane_pkg::MMU_PRESENT) begin
+                    translation_req_o = 1'b1;
 
-                if (dtlb_hit_i) begin
-                    state_d = IDLE;
+                    if (dtlb_hit_i) begin
+                        state_d = IDLE;
+                    end
                 end
             end
         endcase
