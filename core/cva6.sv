@@ -168,6 +168,7 @@ module cva6 import ariane_pkg::*; #(
     CVA6Cfg.AxiDataWidth,
     CVA6Cfg.AxiIdWidth,
     CVA6Cfg.AxiUserWidth,
+    CVA6Cfg.NrLoadBufEntries,
     CVA6Cfg.FpuEn,
     CVA6Cfg.XF16,
     CVA6Cfg.XF16ALT,

@@ -53,6 +53,7 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigNrCommitPorts = 2;
     localparam CVA6ConfigNrScoreboardEntries = 8;
+    localparam CVA6ConfigNrLoadBufEntries = 2;
 
     localparam CVA6ConfigFPGAEn = 0;
 
@@ -77,20 +78,21 @@ package cva6_config_pkg;
     localparam CVA6ConfigRvfiTrace = 1;
 
     localparam config_pkg::cva6_cfg_t cva6_cfg = {
-      unsigned'(CVA6ConfigNrCommitPorts),  // NrCommitPorts
-      unsigned'(CVA6ConfigAxiAddrWidth),   // AxiAddrWidth
-      unsigned'(CVA6ConfigAxiDataWidth),   // AxiDataWidth
-      unsigned'(CVA6ConfigAxiIdWidth),     // AxiIdWidth
-      unsigned'(CVA6ConfigDataUserWidth),  // AxiUserWidth
-      bit'(CVA6ConfigFpuEn),               // FpuEn
-      bit'(CVA6ConfigF16En),               // XF16
-      bit'(CVA6ConfigF16AltEn),            // XF16ALT
-      bit'(CVA6ConfigF8En),                // XF8
-      bit'(CVA6ConfigAExtEn),              // RVA
-      bit'(CVA6ConfigVExtEn),              // RVV
-      bit'(CVA6ConfigCExtEn),              // RVC
-      bit'(CVA6ConfigFVecEn),              // XFVec
-      bit'(CVA6ConfigCvxifEn),             // CvxifEn
+      unsigned'(CVA6ConfigNrCommitPorts),    // NrCommitPorts
+      unsigned'(CVA6ConfigAxiAddrWidth),     // AxiAddrWidth
+      unsigned'(CVA6ConfigAxiDataWidth),     // AxiDataWidth
+      unsigned'(CVA6ConfigAxiIdWidth),       // AxiIdWidth
+      unsigned'(CVA6ConfigDataUserWidth),    // AxiUserWidth
+      unsigned'(CVA6ConfigNrLoadBufEntries), // NrLoadBufEntries
+      bit'(CVA6ConfigFpuEn),                 // FpuEn
+      bit'(CVA6ConfigF16En),                 // XF16
+      bit'(CVA6ConfigF16AltEn),              // XF16ALT
+      bit'(CVA6ConfigF8En),                  // XF8
+      bit'(CVA6ConfigAExtEn),                // RVA
+      bit'(CVA6ConfigVExtEn),                // RVV
+      bit'(CVA6ConfigCExtEn),                // RVC
+      bit'(CVA6ConfigFVecEn),                // XFVec
+      bit'(CVA6ConfigCvxifEn),               // CvxifEn
       // Extended
       bit'(0),           // RVF
       bit'(0),           // RVD
