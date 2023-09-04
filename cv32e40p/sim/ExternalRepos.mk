@@ -18,7 +18,7 @@ CV_CORE_BRANCH ?= master
 CV_CORE_HASH   ?= fcd5968
 CV_CORE_TAG    ?= none
 # The CV_CORE_HASH above points to version of the RTL that is newer, but
-# ilogically equivalent RTL with respect to v1.0.0 RTL freeze version.
+# logically equivalent RTL with respect to v1.0.0 RTL freeze version.
 # There are some implementation and testbench updates in the above hash.
 # Set CV_CORE_TAG as below to point to the exact cv32e40p repo as that used at RTL freeze
 #CV_CORE_TAG    ?= cv32e40p_v1.0.0
@@ -35,6 +35,13 @@ COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
 COMPLIANCE_BRANCH ?= master
 # 2020-08-19
 COMPLIANCE_HASH   ?= c21a2e86afa3f7d4292a2dd26b759f3f29cde497
+
+# This Spike repo is only cloned when the DPI disassembler needs to be rebuilt.
+# Typically users can simply use the checked-in shared library.
+# Should you need to, the command is "make dpi_dasm".
+DPI_DASM_SPIKE_REPO   ?= https://github.com/riscv/riscv-isa-sim.git
+DPI_DASM_SPIKE_BRANCH ?= master
+DPI_DASM_SPIKE_HASH   ?= 8faa928819fb551325e76b463fc0c978e22f5be3
 
 # SVLIB
 SVLIB_REPO       ?= https://bitbucket.org/verilab/svlib/src/master/svlib

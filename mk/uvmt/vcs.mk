@@ -30,12 +30,15 @@ endif
 
 # Executables
 VCS              = $(CV_SIM_PREFIX) vcs
-SIMV             = $(CV_TOOL_PREFIX) simv -licwait 20
+#SIMV             = $(CV_TOOL_PREFIX) simv -licwait 20
+SIMV             = simv -licwait 20
 DVE              = $(CV_TOOL_PREFIX) dve
 #VERDI            = $(CV_TOOL_PREFIX)verdi
 URG               = $(CV_SIM_PREFIX) urg
 
 # Paths
+VCS_RESULTS     ?= vcs_results
+VCS_OUT         ?= $(SIM_CFG_RESULTS)/vcs_out
 VCS_DIR         ?= $(SIM_CFG_RESULTS)/vcs.d
 VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/$(MAKECMDGOALS).vdb
 
@@ -47,12 +50,14 @@ VCS_UVM_VERBOSITY ?= UVM_MEDIUM
 
 # Flags
 #VCS_UVMHOME_ARG ?= /opt/uvm/1800.2-2017-0.9/
-VCS_UVMHOME_ARG ?= /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm
-VCS_UVM_ARGS          ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) -ntb_opts uvm-1.2
+#VCS_UVMHOME_ARG ?= /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm
+VCS_UVMHOME_ARG  ?= /synopsys/vcs/S-2021.09-SP1/etc/uvm
+VCS_UVM_ARGS     ?= +define+UVM +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) -ntb_opts uvm-1.2
 
 VCS_COMP_FLAGS  ?= -lca -sverilog \
-										$(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
-										-assert svaext -race=all -ignore unique_checks -full64
+                   $(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
+                   -assert svaext -race=all -ignore unique_checks -full64
+
 VCS_GUI         ?=
 VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert -cm_dir $(MAKECMDGOALS).vdb
 
@@ -61,6 +66,13 @@ VCS_PMA_INC += +incdir+$(TBSRC_HOME)/uvmt \
                +incdir+$(CV_CORE_PKG)/rtl/include \
                +incdir+$(CV_CORE_COREVDV_PKG)/ldgen \
                +incdir+$(abspath $(MAKE_PATH)/../../../lib/mem_region_gen)
+
+# Need to re-define the LIB paths for VCS to drop the "*.so" extension.
+DPI_DASM_LIB = $(DPI_DASM_PKG)/lib/$(DPI_DASM_ARCH)/libdpi_dasm
+SVLIB_LIB    = $(SVLIB_PKG)/../svlib_dpi
+
+# Required by dpi_dasm target
+DPI_INCLUDE ?= $(shell dirname $(shell which vcs))/../include
 
 ###############################################################################
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
@@ -145,20 +157,16 @@ endif
 
 VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
                         $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) \
-						-sv_lib $(VCS_OVP_MODEL_DPI) \
-						-sv_lib $(DPI_DASM_LIB) \
-						-sv_lib $(abspath $(SVLIB_LIB))
+                        -sv_lib $(VCS_OVP_MODEL_DPI) \
+                        -sv_lib $(DPI_DASM_LIB) \
+                        -sv_lib $(abspath $(SVLIB_LIB))
 
 # Simulate using latest elab
-VCS_RUN_FLAGS        ?=
+VCS_RUN_FLAGS         = -assert nopostproc
 VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
 VCS_RUN_FLAGS        += $(USER_RUN_FLAGS)
-
-# Special var to point to tool and installation dependent path of DPI headers.
-# Used to recompile dpi_dasm_spike if needed (by default, not needed).
-DPI_INCLUDE          ?= $(shell dirname $(shell which vcs))/../lib
 
 ###############################################################################
 # Targets
@@ -190,11 +198,12 @@ VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(UVM_PLUSARGS)
 
 comp: mk_vcs_dir $(CV_CORE_PKG) $(SVLIB_PKG) $(OVP_MODEL_DPI)
-	cd $(SIM_CFG_RESULTS)/$(CFG) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
 	@echo "$(BANNER)"
-	@echo "* $(SIMULATOR) compile complete"
+	@echo "* $(SIMULATOR) compile"
 	@echo "* Log: $(SIM_CFG_RESULTS)/vcs.log"
 	@echo "$(BANNER)"
+	mkdir -p $(VCS_OUT)
+	cd $(VCS_OUT) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
 
 ifneq ($(call IS_NO,$(COMP)),NO)
 VCS_SIM_PREREQ = comp
@@ -218,21 +227,22 @@ gen_ovpsim_ic:
 export IMPERAS_TOOLS=$(SIM_RUN_RESULTS)/ovpsim.ic
 
 ################################################################################
-# The new general test target
-
+# The general test target
 test: $(VCS_SIM_PREREQ) hex gen_ovpsim_ic
-	echo $(IMPERAS_TOOLS)
-	mkdir -p $(SIM_RUN_RESULTS)
+	@echo "$(BANNER)"
+	@echo "* Running simulation with $(SIMULATOR)"
+	@echo "$(BANNER)"
+	mkdir -p $(SIM_RUN_RESULTS) && \
 	cd $(SIM_RUN_RESULTS) && \
-		$(VCS_RESULTS)/$(CFG)/$(SIMV) \
-			-l vcs-$(TEST_NAME).log \
-			-cm_name $(TEST_NAME) $(VCS_RUN_FLAGS) \
-			$(CFG_PLUSARGS) \
-			$(TEST_PLUSARGS) \
-			+UVM_TESTNAME=$(TEST_UVM_TEST) \
-    		+elf_file=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
-			+firmware=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
-			+itb_file=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
+	$(VCS_OUT)/$(SIMV) \
+		-l vcs-$(TEST_NAME).log \
+		-cm_name $(TEST_NAME) $(VCS_RUN_FLAGS) \
+		$(CFG_PLUSARGS) \
+		$(TEST_PLUSARGS) \
+		+UVM_TESTNAME=$(TEST_UVM_TEST) \
+		+elf_file=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
+		+firmware=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
+		+itb_file=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
 
 ###############################################################################
 # Run a single test-program from the RISC-V Compliance Test-suite. The parent
@@ -303,7 +313,7 @@ gen_corev-dv:
 			$(GEN_PLUSARGS)
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		cp -f ${BSP}/link_corev-dv.ld ${SIM_TEST_RESULTS}/$$idx/test_program/link.ld; \
-		cp ${VCS_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${SIM_TEST_RESULTS}/$$idx/test_program; \
+		cp ${SIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${SIM_TEST_RESULTS}/$$idx/test_program; \
 	done
 
 ################################################################################
@@ -354,5 +364,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_svlib
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean_bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_svlib
 	rm -rf $(CV_CORE_PKG)
