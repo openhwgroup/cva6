@@ -159,8 +159,8 @@ package ariane_pkg;
     localparam riscv::xlen_t OPENHWGROUP_MVENDORID = {{riscv::XLEN-32{1'b0}}, 32'h0602};
     localparam riscv::xlen_t ARIANE_MARCHID = {{riscv::XLEN-32{1'b0}}, 32'd3};
 
-    // 32 registers + 1 bit for re-naming = 6
-    localparam REG_ADDR_SIZE = 6;
+    // 32 registers
+    localparam REG_ADDR_SIZE = 5;
 
     // Read ports for general purpose register files
     localparam NR_RGPR_PORTS = 2;
