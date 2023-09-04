@@ -112,10 +112,6 @@ module issue_stage import ariane_pkg::*; #(
     rs3_len_t                  rs3_sb_iro;
     logic                      rs3_valid_iro_sb;
 
-    scoreboard_entry_t         issue_instr_rename_sb;
-    logic                      issue_instr_valid_rename_sb;
-    logic                      issue_ack_sb_rename;
-
     scoreboard_entry_t         issue_instr_sb_iro;
     logic                      issue_instr_valid_sb_iro;
     logic                      issue_ack_iro_sb;
@@ -129,23 +125,6 @@ module issue_stage import ariane_pkg::*; #(
     assign issue_instr_o    = issue_instr_sb_iro;
     assign issue_instr_hs_o = issue_instr_valid_sb_iro & issue_ack_iro_sb;
 
-    // ---------------------------------------------------------
-    // 1. Re-name
-    // ---------------------------------------------------------
-    re_name #(
-        .CVA6Cfg    ( CVA6Cfg    )
-    ) i_re_name (
-        .clk_i                  ( clk_i                        ),
-        .rst_ni                 ( rst_ni                       ),
-        .flush_i                ( flush_i                      ),
-        .flush_unissied_instr_i ( flush_unissued_instr_i       ),
-        .issue_instr_i          ( decoded_instr_i              ),
-        .issue_instr_valid_i    ( decoded_instr_valid_i        ),
-        .issue_ack_o            ( decoded_instr_ack_o          ),
-        .issue_instr_o          ( issue_instr_rename_sb        ),
-        .issue_instr_valid_o    ( issue_instr_valid_rename_sb  ),
-        .issue_ack_i            ( issue_ack_sb_rename          )
-    );
 
     // ---------------------------------------------------------
     // 2. Manage instructions in a scoreboard
@@ -170,9 +149,9 @@ module issue_stage import ariane_pkg::*; #(
         .rs3_o                 ( rs3_sb_iro                                ),
         .rs3_valid_o           ( rs3_valid_iro_sb                          ),
 
-        .decoded_instr_i       ( issue_instr_rename_sb                     ),
-        .decoded_instr_valid_i ( issue_instr_valid_rename_sb               ),
-        .decoded_instr_ack_o   ( issue_ack_sb_rename                       ),
+        .decoded_instr_i       ( decoded_instr_i                           ),
+        .decoded_instr_valid_i ( decoded_instr_valid_i                     ),
+        .decoded_instr_ack_o   ( decoded_instr_ack_o                       ),
         .issue_instr_o         ( issue_instr_sb_iro                        ),
         .issue_instr_valid_o   ( issue_instr_valid_sb_iro                  ),
         .issue_ack_i           ( issue_ack_iro_sb                          ),

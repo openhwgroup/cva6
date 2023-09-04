@@ -24,7 +24,7 @@ module issue_read_operands import ariane_pkg::*; #(
     input  logic                                   flush_i,
     // stall
     input  logic                                   stall_i,
-    // coming from rename
+    // coming from decoder
     input  scoreboard_entry_t                      issue_instr_i,
     input  logic                                   issue_instr_valid_i,
     output logic                                   issue_ack_o,
