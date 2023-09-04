@@ -128,8 +128,6 @@ package ariane_pkg;
     localparam ASID_WIDTH    = (riscv::XLEN == 64) ? 16 : 1;
     localparam BITS_SATURATION_COUNTER = 2;
 
-    localparam ENABLE_RENAME = cva6_config_pkg::CVA6ConfigRenameEn;
-
     localparam ISSUE_WIDTH = 1;
 
     // depth of store-buffers, this needs to be a power of two

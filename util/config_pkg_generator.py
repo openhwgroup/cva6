@@ -55,8 +55,6 @@ def setup_parser_config_generator():
                       help="Data User enable ? 1 : enable, 0 : disable")
   parser.add_argument("--duser_w", type=int, default=None, choices=list(range(1,64)),
                       help="Data User Width ? [1-64]")
-  parser.add_argument("--RenameEn", type=int, default=None, choices=[0,1],
-                      help="RenameEn ? 1 : enable, 0 : disable")
   parser.add_argument("--IcacheByteSize", type=int, default=None,
                       help="Instruction cache size in bytes")
   parser.add_argument("--IcacheSetAssoc", type=int, default=None,
@@ -131,7 +129,6 @@ MapArgsToParameter={
   "iuser_w" : "CVA6ConfigFetchUserWidth",
   "duser_en" : "CVA6ConfigDataUserEn",
   "duser_w" : "CVA6ConfigDataUserWidth",
-  "RenameEn" : "CVA6ConfigRenameEn",
   "IcacheByteSize" : "CVA6ConfigIcacheByteSize",
   "IcacheSetAssoc" : "CVA6ConfigIcacheSetAssoc",
   "IcacheLineWidth" : "CVA6ConfigIcacheLineWidth",
