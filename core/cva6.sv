@@ -205,7 +205,7 @@ module cva6 import ariane_pkg::*; #(
   logic                       eret;
   logic [CVA6ExtendCfg.NrCommitPorts-1:0] commit_ack;
 
-  localparam NumPorts = 3;
+  localparam NumPorts = 4;
   cvxif_pkg::cvxif_req_t      cvxif_req;
   cvxif_pkg::cvxif_resp_t     cvxif_resp;
 
@@ -408,6 +408,8 @@ module cva6 import ariane_pkg::*; #(
   // ----------------
   dcache_req_i_t [2:0]      dcache_req_ports_ex_cache;
   dcache_req_o_t [2:0]      dcache_req_ports_cache_ex;
+  dcache_req_i_t [1:0]      dcache_req_ports_acc_cache;
+  dcache_req_o_t [1:0]      dcache_req_ports_cache_acc;
   logic                     dcache_commit_wbuffer_empty;
   logic                     dcache_commit_wbuffer_not_ni;
 
@@ -888,6 +890,31 @@ module cva6 import ariane_pkg::*; #(
   // Cache Subsystem
   // -------------------
 
+  // Acc dispatcher and store buffer share a dcache request port.
+  // Store buffer always has priority access over acc dipsatcher.
+  dcache_req_i_t [NumPorts-1:0] dcache_req_to_cache;
+  dcache_req_o_t [NumPorts-1:0] dcache_req_from_cache;
+
+  // D$ request
+  assign dcache_req_to_cache[0] = dcache_req_ports_ex_cache[0];
+  assign dcache_req_to_cache[1] = dcache_req_ports_ex_cache[1];
+  assign dcache_req_to_cache[2] = dcache_req_ports_acc_cache[0];
+  assign dcache_req_to_cache[3] = dcache_req_ports_ex_cache[2].data_req ? dcache_req_ports_ex_cache [2] :
+                                                                          dcache_req_ports_acc_cache[1];
+
+  // D$ response
+  assign dcache_req_ports_cache_ex [0] = dcache_req_from_cache[0];
+  assign dcache_req_ports_cache_ex [1] = dcache_req_from_cache[1];
+  assign dcache_req_ports_cache_acc[0] = dcache_req_from_cache[2];
+  always_comb begin : gen_dcache_req_store_data_gnt
+    dcache_req_ports_cache_ex [2] = dcache_req_from_cache[3];
+    dcache_req_ports_cache_acc[1] = dcache_req_from_cache[3];
+
+    // Set gnt signal
+    dcache_req_ports_cache_ex [2].data_gnt &=  dcache_req_ports_ex_cache[2].data_req;
+    dcache_req_ports_cache_acc[1].data_gnt &= !dcache_req_ports_ex_cache[2].data_req;
+  end
+
   if (DCACHE_TYPE == int'(cva6_config_pkg::WT)) begin : gen_cache_wt
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
@@ -918,8 +945,8 @@ module cva6 import ariane_pkg::*; #(
     // from PTW, Load Unit  and Store Unit
     .dcache_miss_o         ( dcache_miss_cache_perf      ),
     .miss_vld_bits_o       ( miss_vld_bits               ),
-    .dcache_req_ports_i    ( dcache_req_ports_ex_cache   ),
-    .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
+    .dcache_req_ports_i    ( dcache_req_to_cache         ),
+    .dcache_req_ports_o    ( dcache_req_from_cache       ),
     // write buffer status
     .wbuffer_empty_o       ( dcache_commit_wbuffer_empty ),
     .wbuffer_not_ni_o      ( dcache_commit_wbuffer_not_ni ),
@@ -938,6 +965,7 @@ module cva6 import ariane_pkg::*; #(
     // deprecated
     .CVA6Cfg               ( CVA6ExtendCfg               ),
     .ArianeCfg             ( ArianeCfg                   ),
+    .NumPorts              ( NumPorts                    ),
     .axi_ar_chan_t         ( axi_ar_chan_t               ),
     .axi_aw_chan_t         ( axi_aw_chan_t               ),
     .axi_w_chan_t          ( axi_w_chan_t                ),
@@ -967,8 +995,8 @@ module cva6 import ariane_pkg::*; #(
     // this is statically set to 1 as the std_cache does not have a wbuffer
     .wbuffer_empty_o       ( dcache_commit_wbuffer_empty ),
     // from PTW, Load Unit  and Store Unit
-    .dcache_req_ports_i    ( dcache_req_ports_ex_cache   ),
-    .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
+    .dcache_req_ports_i    ( dcache_req_to_cache         ),
+    .dcache_req_ports_o    ( dcache_req_from_cache       ),
     // memory side
     .axi_req_o             ( noc_req_o                   ),
     .axi_resp_i            ( noc_resp_i                  )
@@ -1015,6 +1043,8 @@ module cva6 import ariane_pkg::*; #(
       .acc_no_st_pending_i    ( no_st_pending_commit         ),
       .dcache_req_ports_i     ( dcache_req_ports_ex_cache    ),
       .ctrl_halt_o            ( halt_acc_ctrl                ),
+      .acc_dcache_req_ports_o ( dcache_req_ports_acc_cache   ),
+      .acc_dcache_req_ports_i ( dcache_req_ports_cache_acc   ),
       .inval_ready_i          ( inval_ready                  ),
       .inval_valid_o          ( inval_valid                  ),
       .inval_addr_o           ( inval_addr                   ),
@@ -1034,6 +1064,9 @@ module cva6 import ariane_pkg::*; #(
     assign halt_acc_ctrl         = '0;
     assign stall_st_pending_ex   = '0;
     assign flush_acc             = '0;
+
+    // D$ connection is unused
+    assign dcache_req_ports_acc_cache = '0;
 
     // No invalidation interface
     assign inval_valid = '0;

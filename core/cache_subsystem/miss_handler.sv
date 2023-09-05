@@ -18,7 +18,7 @@
 
 module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter int unsigned NR_PORTS       = 3,
+    parameter int unsigned NR_PORTS       = 4,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
 )(
@@ -524,7 +524,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
             bypass_ports_req[id].req     = miss_req_valid[id] & miss_req_bypass[id];
             bypass_ports_req[id].reqtype = ariane_pkg::SINGLE_REQ;
             bypass_ports_req[id].amo     = AMO_NONE;
-            bypass_ports_req[id].id      = {2'b10, id};
+            bypass_ports_req[id].id      = 4'b1000 | 4'(id);
             bypass_ports_req[id].addr    = miss_req_addr[id];
             bypass_ports_req[id].wdata   = miss_req_wdata[id];
             bypass_ports_req[id].we      = miss_req_we[id];
@@ -619,7 +619,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .wdata_i             ( req_fsm_miss_wdata ),
         .be_i                ( req_fsm_miss_be    ),
         .size_i              ( req_fsm_miss_size  ),
-        .id_i                ( {{CVA6Cfg.AxiIdWidth-4{1'b0}}, 4'b1100} ),
+        .id_i                ( {{CVA6Cfg.AxiIdWidth-4{1'b0}}, 4'b0111} ),
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),
