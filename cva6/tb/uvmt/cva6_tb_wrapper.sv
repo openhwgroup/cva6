@@ -34,20 +34,19 @@ import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
 import "DPI-C" context function void read_section(input longint address, inout byte buffer[]);
 
-module cva6_tb_wrapper
- import uvmt_cva6_pkg::*;
-#(
-  parameter int unsigned AXI_USER_WIDTH    = 1,
+module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+  parameter bit IsRVFI = 1'b0,
+  parameter type rvfi_instr_t = logic,
+  //
   parameter int unsigned AXI_USER_EN       = 0,
-  parameter int unsigned AXI_ADDRESS_WIDTH = 64,
-  parameter int unsigned AXI_DATA_WIDTH    = 64,
   parameter int unsigned NUM_WORDS         = 2**25
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
   input  logic [XLEN-1:0]              boot_addr_i,
   output logic [31:0]                  tb_exit_o,
-  output ariane_pkg::rvfi_port_t       rvfi_o,
+  output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
   uvma_axi_intf                        axi_slave,
@@ -60,10 +59,13 @@ module cva6_tb_wrapper
   static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
   string binary = "";
 
-  ariane_pkg::rvfi_port_t  rvfi;
+  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi;
   assign rvfi_o = rvfi;
 
   cva6 #(
+     .CVA6Cfg ( CVA6Cfg ),
+     .IsRVFI ( IsRVFI ),
+     //
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
@@ -77,8 +79,8 @@ module cva6_tb_wrapper
     .rvfi_o               ( rvfi                      ),
     .cvxif_req_o          ( cvxif_req                 ),
     .cvxif_resp_i         ( cvxif_resp                ),
-    .axi_req_o            ( axi_ariane_req            ),
-    .axi_resp_i           ( axi_ariane_resp           )
+    .noc_req_o            ( axi_ariane_req            ),
+    .noc_resp_i           ( axi_ariane_resp           )
   );
 
   //----------------------------------------------------------------------------
@@ -86,10 +88,12 @@ module cva6_tb_wrapper
   //----------------------------------------------------------------------------
 
   rvfi_tracer  #(
+    .CVA6Cfg(CVA6Cfg),
+    .rvfi_instr_t(rvfi_instr_t),
+    //
     .HART_ID(8'h0),
     .DEBUG_START(0),
-    .DEBUG_STOP(0),
-    .NR_COMMIT_PORTS(ariane_pkg::NR_COMMIT_PORTS)
+    .DEBUG_STOP(0)
   ) rvfi_tracer_i (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -103,12 +107,12 @@ module cva6_tb_wrapper
 
   logic                         req;
   logic                         we;
-  logic [AXI_ADDRESS_WIDTH-1:0] addr;
-  logic [AXI_DATA_WIDTH/8-1:0]  be;
-  logic [AXI_DATA_WIDTH-1:0]    wdata;
-  logic [AXI_USER_WIDTH-1:0]    wuser;
-  logic [AXI_DATA_WIDTH-1:0]    rdata;
-  logic [AXI_USER_WIDTH-1:0]    ruser;
+  logic [CVA6Cfg.AxiAddrWidth-1:0] addr;
+  logic [CVA6Cfg.AxiDataWidth/8-1:0]  be;
+  logic [CVA6Cfg.AxiDataWidth-1:0]    wdata;
+  logic [CVA6Cfg.AxiUserWidth-1:0]    wuser;
+  logic [CVA6Cfg.AxiDataWidth-1:0]    rdata;
+  logic [CVA6Cfg.AxiUserWidth-1:0]    ruser;
 
   //Response structs
    assign axi_ariane_resp.aw_ready = (axi_switch_vif.active) ? axi_slave.aw_ready : cva6_axi_bus.aw_ready;
@@ -181,10 +185,10 @@ module cva6_tb_wrapper
 
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_ADDR_WIDTH ( CVA6Cfg.AxiAddrWidth     ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.AxiDataWidth     ),
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_USER_WIDTH ( CVA6Cfg.AxiUserWidth     )
   ) cva6_axi_bus();
 
   axi_master_connect #(
@@ -196,9 +200,9 @@ module cva6_tb_wrapper
 
   axi2mem #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_ADDR_WIDTH ( CVA6Cfg.AxiAddrWidth     ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.AxiDataWidth     ),
+    .AXI_USER_WIDTH ( CVA6Cfg.AxiUserWidth     )
   ) i_cva6_axi2mem (
     .clk_i  ( clk_i       ),
     .rst_ni ( rst_ni      ),
@@ -214,8 +218,8 @@ module cva6_tb_wrapper
   );
 
   sram #(
-    .USER_WIDTH ( AXI_USER_WIDTH ),
-    .DATA_WIDTH ( AXI_DATA_WIDTH ),
+    .USER_WIDTH ( CVA6Cfg.AxiUserWidth ),
+    .DATA_WIDTH ( CVA6Cfg.AxiDataWidth ),
     .USER_EN    ( AXI_USER_EN    ),
     .SIM_INIT   ( "zeros"        ),
     .NUM_WORDS  ( NUM_WORDS      )
@@ -224,7 +228,7 @@ module cva6_tb_wrapper
     .rst_ni     ( rst_ni                                                                      ),
     .req_i      ( req                                                                         ),
     .we_i       ( we                                                                          ),
-    .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(AXI_DATA_WIDTH/8):$clog2(AXI_DATA_WIDTH/8)] ),
+    .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(CVA6Cfg.AxiDataWidth/8):$clog2(CVA6Cfg.AxiDataWidth/8)] ),
     .wuser_i    ( wuser                                                                       ),
     .wdata_i    ( wdata                                                                       ),
     .be_i       ( be                                                                          ),

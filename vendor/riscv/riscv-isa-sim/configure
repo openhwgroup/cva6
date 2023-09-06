@@ -715,10 +715,6 @@ with_isa
 with_priv
 with_varch
 with_target
-enable_commitlog
-enable_histogram
-enable_dirty
-enable_misaligned
 enable_dual_endian
 '
       ac_precious_vars='build_alias
@@ -1362,12 +1358,6 @@ Optional Features:
   --enable-stow           Enable stow-based install
   --enable-optional-subprojects
                           Enable all optional subprojects
-  --enable-commitlog      Enable commit log generation
-  --enable-histogram      Enable PC histogram generation
-  --enable-dirty          Enable hardware management of PTE accessed and dirty
-                          bits
-  --enable-misaligned     Enable hardware support for misaligned loads and
-                          stores
   --enable-dual-endian    Enable support for running target in either
                           endianness
 
@@ -1391,7 +1381,8 @@ Optional Packages:
                           use the Regex library from boost - it is possible to
                           specify a certain library for the linker e.g.
                           --with-boost-regex=boost_regex-gcc-mt-d-1_33_1
-  --with-isa=RV64IMAFDC   Sets the default RISC-V ISA
+  --with-isa=RV64IMAFDC_zicntr_zihpm
+                          Sets the default RISC-V ISA
   --with-priv=MSU         Sets the default RISC-V privilege modes supported
   --with-varch=vlen:128,elen:64
                           Sets the default vector config
@@ -5886,7 +5877,7 @@ _ACEOF
 else
 
 cat >>confdefs.h <<_ACEOF
-#define DEFAULT_ISA "RV64IMAFDC"
+#define DEFAULT_ISA "RV64IMAFDC_zicntr_zihpm"
 _ACEOF
 
 fi
@@ -6053,58 +6044,6 @@ else
   as_fn_error $? "libpthread is required" "$LINENO" 5
 fi
 
-
-# Check whether --enable-commitlog was given.
-if test "${enable_commitlog+set}" = set; then :
-  enableval=$enable_commitlog;
-fi
-
-if test "x$enable_commitlog" = "xyes"; then :
-
-
-$as_echo "#define RISCV_ENABLE_COMMITLOG /**/" >>confdefs.h
-
-
-fi
-
-# Check whether --enable-histogram was given.
-if test "${enable_histogram+set}" = set; then :
-  enableval=$enable_histogram;
-fi
-
-if test "x$enable_histogram" = "xyes"; then :
-
-
-$as_echo "#define RISCV_ENABLE_HISTOGRAM /**/" >>confdefs.h
-
-
-fi
-
-# Check whether --enable-dirty was given.
-if test "${enable_dirty+set}" = set; then :
-  enableval=$enable_dirty;
-fi
-
-if test "x$enable_dirty" = "xyes"; then :
-
-
-$as_echo "#define RISCV_ENABLE_DIRTY /**/" >>confdefs.h
-
-
-fi
-
-# Check whether --enable-misaligned was given.
-if test "${enable_misaligned+set}" = set; then :
-  enableval=$enable_misaligned;
-fi
-
-if test "x$enable_misaligned" = "xyes"; then :
-
-
-$as_echo "#define RISCV_ENABLE_MISALIGNED /**/" >>confdefs.h
-
-
-fi
 
 # Check whether --enable-dual-endian was given.
 if test "${enable_dual_endian+set}" = set; then :

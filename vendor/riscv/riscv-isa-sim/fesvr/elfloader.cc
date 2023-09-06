@@ -1,5 +1,6 @@
 // See LICENSE for license details.
 
+#include "config.h"
 #include "elf.h"
 #include "memif.h"
 #include "byteorder.h"
@@ -16,22 +17,28 @@
 #include <vector>
 #include <map>
 
-std::map<std::string, uint64_t> load_elf(const char* fn, memif_t* memif, reg_t* entry)
+std::map<std::string, uint64_t> load_elf(const char* fn, memif_t* memif, reg_t* entry, unsigned required_xlen = 0)
 {
   int fd = open(fn, O_RDONLY);
   struct stat s;
-  assert(fd != -1);
+  if (fd == -1)
+      throw std::invalid_argument(std::string("Specified ELF can't be opened: ") + strerror(errno));
   if (fstat(fd, &s) < 0)
     abort();
   size_t size = s.st_size;
 
   char* buf = (char*)mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-  assert(buf != MAP_FAILED);
+  if (buf == MAP_FAILED)
+      throw std::invalid_argument(std::string("Specified ELF can't be mapped: ") + strerror(errno));
   close(fd);
 
   assert(size >= sizeof(Elf64_Ehdr));
   const Elf64_Ehdr* eh64 = (const Elf64_Ehdr*)buf;
   assert(IS_ELF32(*eh64) || IS_ELF64(*eh64));
+  unsigned xlen = IS_ELF32(*eh64) ? 32 : 64;
+  if (required_xlen != 0 && required_xlen != xlen) {
+    throw incompat_xlen(required_xlen, xlen);
+  }
   assert(IS_ELFLE(*eh64) || IS_ELFBE(*eh64));
   assert(IS_ELF_EXEC(*eh64));
   assert(IS_ELF_RISCV(*eh64) || IS_ELF_EM_NONE(*eh64));
@@ -94,7 +101,9 @@ std::map<std::string, uint64_t> load_elf(const char* fn, memif_t* memif, reg_t* 
   } while (0)
 
   if (IS_ELFLE(*eh64)) {
-    memif->set_target_endianness(memif_endianness_little);
+    if (memif->get_target_endianness() != endianness_little) {
+      throw std::invalid_argument("Specified ELF is little endian, but system uses a big-endian memory system. Rerun without --big-endian");
+    }
     if (IS_ELF32(*eh64))
       LOAD_ELF(Elf32_Ehdr, Elf32_Phdr, Elf32_Shdr, Elf32_Sym, from_le);
     else
@@ -103,7 +112,9 @@ std::map<std::string, uint64_t> load_elf(const char* fn, memif_t* memif, reg_t* 
 #ifndef RISCV_ENABLE_DUAL_ENDIAN
     throw std::invalid_argument("Specified ELF is big endian.  Configure with --enable-dual-endian to enable support");
 #else
-    memif->set_target_endianness(memif_endianness_big);
+    if (memif->get_target_endianness() != endianness_big) {
+      throw std::invalid_argument("Specified ELF is big endian, but system uses a little-endian memory system. Rerun with --big-endian");
+    }
     if (IS_ELF32(*eh64))
       LOAD_ELF(Elf32_Ehdr, Elf32_Phdr, Elf32_Shdr, Elf32_Sym, from_be);
     else

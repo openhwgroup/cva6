@@ -73,9 +73,11 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft sys_clk_period         == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
    }
 
-   constraint cvxif_feature { //CVA6 do not support dual read & write also the memory interface
-      soft cvxif_cfg.dual_read_write_support_x == 0;
-      soft cvxif_cfg.load_store_support_x == 0;
+   constraint cvxif_feature { //CV32A60X do not support dual read & write also the memory interface
+      cvxif_cfg.dual_read_write_support_x == 0;
+      cvxif_cfg.load_store_support_x == 0;
+      cvxif_cfg.seq_cus_instr_x2_enabled == 1;
+      cvxif_cfg.reg_cus_crosses_enabled == 0;
    }
    constraint cva6_riscv_cons {
       xlen == uvma_core_cntrl_pkg::MXL_32;
@@ -106,7 +108,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       mode_u_supported       == 0;
 
       pmp_supported          == 0;
-      debug_supported        == 1;
+      debug_supported        == 0;
 
       unaligned_access_supported     == 0;
       unaligned_access_amo_supported == 0;
@@ -143,7 +145,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.seq_instr_group_x3_enabled == 0;
       isacov_cfg.seq_instr_group_x4_enabled == 0;
       isacov_cfg.seq_instr_x2_enabled       == 1;
-      isacov_cfg.reg_crosses_enabled        == 1;
+      isacov_cfg.reg_crosses_enabled        == 0;
       isacov_cfg.reg_hazards_enabled        == 1;
       rvfi_cfg.nret                         == RVFI_NRET;
       
@@ -176,6 +178,11 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
     * Sample the parameters of the DUT via the virtual interface in a context
     */
    extern virtual function void sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
+
+   /**
+    * Set unsupported_csr_mask based on extensions/modes supported
+    */
+   extern virtual function void set_unsupported_csr_mask();
 
 endclass : uvme_cva6_cfg_c
 
@@ -224,5 +231,14 @@ function void uvme_cva6_cfg_c::sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
       //~ pma_cfg.regions[i] = pma_regions[i];
 
 endfunction : sample_parameters
+
+function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
+
+   super.set_unsupported_csr_mask();
+
+   // Remove unsupported CSRs for STEP1 configuration
+   unsupported_csr_mask[uvma_core_cntrl_pkg::MCOUNTINHIBIT] = 1;
+
+endfunction : set_unsupported_csr_mask
 
 `endif // __UVME_CVA6_CFG_SV__

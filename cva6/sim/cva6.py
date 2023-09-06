@@ -100,7 +100,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd):
   for entry in yaml_data:
     if entry['iss'] == iss:
       logging.info("Found matching ISS: %s" % entry['iss'])
-      m = re.search(r"rv(?P<xlen>[0-9]+?)(?P<variant>[a-z]+?)$", isa)
+      m = re.search(r"rv(?P<xlen>[0-9]+?)(?P<variant>[a-z]+(_[szx]\w+)*)$", isa)
       if m: logging.info("ISA %0s" % isa)
       else: logging.error("Illegal ISA %0s" % isa)
 
@@ -349,7 +349,9 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
       asm = prefix + ".S"
       elf = prefix + ".o"
       binary = prefix + ".bin"
-      test_isa = isa
+      test_isa=re.match("[a-z0-9A-Z]+", isa)
+      test_isa=test_isa.group()
+      isa_ext=isa
       if not os.path.isfile(asm) and not debug_cmd:
         logging.error("Cannot find assembly test: %s\n", asm)
         sys.exit(RET_FAIL)
@@ -366,13 +368,18 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
         # Disable compressed instruction
         if re.search('disable_compressed_instr=1', test['gen_opts']):
           test_isa = re.sub("c",  "", test_isa)
+          #add z,s,x extensions to the isa if there are some
+          if isa_extension_list !=['none']:
+            for i in isa_extension_list:
+              test_isa += (f"_{i}")
+          isa_ext=test_isa
       # If march/mabi is not defined in the test gcc_opts, use the default
       # setting from the command line.
       if not re.search('march', cmd):
-        cmd += (" -march=%s" % test_isa)
+        cmd += (" -march=%s" % isa_ext)
       if not re.search('mabi', cmd):
         cmd += (" -mabi=%s" % mabi)
-      logging.info("Compiling %s" % asm)
+      logging.info("Compiling test : %s" % asm)
       run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
       elf2bin(elf, binary, debug_cmd)
 
@@ -414,7 +421,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   cmd = ("%s -static -mcmodel=medany \
          -fvisibility=hidden -nostdlib \
          -nostartfiles %s \
-         -I%s/dv/user_extension \
+         -I%s/../env/corev-dv/user_extension \
          -T%s %s -o %s " % \
          (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm_test, cwd, linker,
                       gcc_opts, elf))
@@ -426,7 +433,10 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   # ISS simulation
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
-    log = ("%s/%s_sim/%s.log" % (output_dir, iss, asm))
+    if log_format == 1:
+      log = ("%s/%s_sim/%s_%d.log" % (output_dir, iss, asm, test_iteration))
+    else:
+      log = ("%s/%s_sim/%s.log" % (output_dir, iss, asm))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
@@ -539,7 +549,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   report = ("%s/iss_regr.log" % output_dir).rstrip()
   c = re.sub(r"^.*\/", "", c_test)
   c = re.sub(r"\.c$", "", c)
-  prefix = ("%s/directed_c_tests/%s"  % (output_dir, c))
+  prefix = (f"{output_dir}/directed_c_tests/{c}")
   elf = prefix + ".o"
   binary = prefix + ".bin"
   iss_list = iss_opts.split(",")
@@ -550,9 +560,9 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   cmd = ("%s -mcmodel=medany -nostdlib \
          -nostartfiles %s \
          -I%s/dv/user_extension \
-         -T%s %s -o %s " % \
-         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), c_test, cwd,
-                      linker, gcc_opts, elf))
+          -T%s %s -o %s " % \
+         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), c_test, cwd, 
+					  linker, gcc_opts, elf))
   cmd += (" -march=%s" % isa)
   cmd += (" -mabi=%s" % mabi)
   run_cmd(cmd, debug_cmd = debug_cmd)
@@ -561,7 +571,10 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   # ISS simulation
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
-    log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
+    if log_format == 1:
+      log = ("%s/%s_sim/%s_%d.log" % (output_dir, iss, c, test_iteration))
+    else:
+      log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
@@ -675,6 +688,7 @@ def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp, debug_cmd):
 def compare_iss_log(iss_list, log_list, report, stop_on_first_error=0, exp=False):
   if (len(iss_list) != 2 or len(log_list) != 2) :
     logging.error("Only support comparing two ISS logs")
+    logging.info("len(iss_list) = %s len(log_list) = %s" % (len(iss_list), len(log_list)))
   else:
     csv_list = []
     for i in range(2):
@@ -684,7 +698,7 @@ def compare_iss_log(iss_list, log_list, report, stop_on_first_error=0, exp=False
       csv_list.append(csv)
       if iss == "spike":
         process_spike_sim_log(log, csv)
-      elif "veri" in iss or "vsim" in iss or "vcs" in iss:
+      elif "veri" in iss or "vsim" in iss or "vcs" in iss or "questa" in iss:
         process_verilator_sim_log(log, csv)
       elif iss == "ovpsim":
         process_ovpsim_sim_log(log, csv, stop_on_first_error)
@@ -818,6 +832,12 @@ def setup_parser():
                       help="Path for the link.ld")
   parser.add_argument("--axi_active", type=str, default="",
                       help="switch AXI agent mode: yes for Active, no for Passive")
+  parser.add_argument("--gen_sv_seed", type=int, default=0,
+                      help="Run test N times with random seed")
+  parser.add_argument("--sv_seed", type=str, default="1",
+                      help="Run test with a specific seed")
+  parser.add_argument("--isa_extension", type=str, default="",
+                      help="Choose additional z, s, x extensions")
   return parser
 
 
@@ -829,6 +849,12 @@ def load_config(args, cwd):
   Returns:
       Loaded configuration dictionary.
   """
+  
+  global isa_extension_list
+  isa_extension_list = args.isa_extension.split(",")  
+  isa_extension_list.append("zicsr")
+  isa_extension_list.append("zifencei")
+
   if args.debug:
     args.debug = open(args.debug, "w")
   if not args.csr_yaml:
@@ -857,12 +883,12 @@ def load_config(args, cwd):
     if args.target == "cv64a6_imafdc_sv39":
       args.mabi = "lp64d"
       args.isa  = "rv64gc"
-    elif args.target == "cv32a60x":
+    elif args.target == "cv32a60x": # step1 configuration
       args.mabi = "ilp32"
-      args.isa  = "rv32imc" # Step1 configuration has no A extension.
+      args.isa  = "rv32imac"
     elif args.target == "cv32a6_embedded":
       args.mabi = "ilp32"
-      args.isa  = "rv32imc" # Step1 configuration has no A extension.
+      args.isa  = "rv32imc"
     elif args.target == "cv32a6_imac_sv0":
       args.mabi = "ilp32"
       args.isa  = "rv32imac"
@@ -933,10 +959,26 @@ def main():
     parser = setup_parser()
     args = parser.parse_args()
     global issrun_opts
+    global test_iteration
+    global log_format
     if args.axi_active == "yes":
       args.issrun_opts = args.issrun_opts + " +uvm_set_config_int=*uvm_test_top,force_axi_mode,1"
     elif args.axi_active == "no":
       args.issrun_opts = args.issrun_opts + " +uvm_set_config_int=uvm_test_top,force_axi_mode,0"
+
+    if args.gen_sv_seed > 0 and args.sv_seed != "1":
+      logging.error('You cannot use gen_sv_seed and sv_seed options at the same time')
+
+    if args.gen_sv_seed > 0:
+      args.issrun_opts = args.issrun_opts + " +ntb_random_seed_automatic"
+      log_format = 1
+    elif args.gen_sv_seed == 0:
+      args.issrun_opts = args.issrun_opts + " +ntb_random_seed=" + args.sv_seed
+      args.gen_sv_seed = 1
+      log_format = 0
+    else:
+      logging.error('gen_sv_seed can not take a negative value')
+
     issrun_opts = "\""+args.issrun_opts+"\""
 
     global isspostrun_opts
@@ -948,7 +990,22 @@ def main():
     os.environ["CVA6_DV_ROOT"]  = cwd + "/../env/corev-dv"
     setup_logging(args.verbose)
     logg = logging.getLogger()
-    # create file handler which logs even debug messages
+    #Check gcc version
+    gcc_path=get_env_var("RISCV_GCC")
+    version=run_cmd("%s --version" % gcc_path)
+    gcc_version=re.match(".*\s(\d+\.\d+\.\d+).*", version)
+    gcc_version=gcc_version.group(1)
+    version_number=gcc_version.split('.')
+    if int(version_number[0])<11 :
+      logging.error('Your are currently using version %s of gcc, please update your version to version 11.1.0 or more to use all features of this script' % gcc_version)
+      sys.exit(RET_FAIL)
+    #print environment softwares
+    logging.info("GCC Version : %s" % (gcc_version))
+    spike_version=get_env_var("SPIKE_ROOT")
+    logging.info("Spike Version : %s" % (spike_version))
+    verilator_version=run_cmd("verilator --version")
+    logging.info("Verilator Version : %s" % (verilator_version))
+    # create file handler which logs even debug messages13.1.1
     fh = logging.FileHandler('logfile.log')
     fh.setLevel(logging.DEBUG)
     # create formatter and add it to the handlers
@@ -960,188 +1017,201 @@ def main():
     cfg = load_config(args, cwd)
     # Create output directory
     output_dir = create_output(args.o, args.noclean, cwd+"/out_")
-
+    
+    #add z,s,x extensions to the isa if there are some
+    if isa_extension_list !=['']:	
+      for i in isa_extension_list:
+        if i!= "":
+          args.isa += (f"_{i}")
+        
     if args.verilog_style_check:
       logging.debug("Run style check")
       style_err = run_cmd("verilog_style/run.sh")
       if style_err: logging.info("Found style error: \nERROR: " + style_err)
 
-    # Run any handcoded/directed assembly tests specified by args.asm_tests
-    if args.asm_tests != "":
-      asm_test = args.asm_tests.split(',')
-      for path_asm_test in asm_test:
-        full_path = os.path.expanduser(path_asm_test)
-        # path_asm_test is a directory
-        if os.path.isdir(full_path):
-          run_assembly_from_dir(full_path, args.iss_yaml, args.isa, args.mabi,
-                                args.gcc_opts, args.iss, output_dir,
-                                args.core_setting_dir, args.debug)
-        # path_asm_test is an assembly file
-        elif os.path.isfile(full_path) or args.debug:
-          run_assembly(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
-                       args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
-        else:
-          logging.error('%s does not exist' % full_path)
-          sys.exit(RET_FAIL)
-      return
+    for i in range(args.gen_sv_seed):
+      test_executed = 0
+      test_iteration = i
+      print("")
+      logging.info("Execution numero : %s" % (i+1))
+      # Run any handcoded/directed assembly tests specified by args.asm_tests
+      if args.asm_tests != "":
+        asm_test = args.asm_tests.split(',')
+        for path_asm_test in asm_test:
+          full_path = os.path.expanduser(path_asm_test)
+          # path_asm_test is a directory
+          if os.path.isdir(full_path):
+            run_assembly_from_dir(full_path, args.iss_yaml, args.isa, args.mabi,
+                                  args.gcc_opts, args.iss, output_dir,
+                                  args.core_setting_dir, args.debug)
+          # path_asm_test is an assembly file
+          elif os.path.isfile(full_path) or args.debug:
+            run_assembly(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
+                         args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
+          else:
+            logging.error('%s does not exist' % full_path)
+            sys.exit(RET_FAIL)
+          test_executed = 1
 
-    # Run any handcoded/directed c tests specified by args.c_tests
-    if args.c_tests != "":
-      c_test = args.c_tests.split(',')
-      for path_c_test in c_test:
-        full_path = os.path.expanduser(path_c_test)
-        # path_c_test is a directory
-        if os.path.isdir(full_path):
-          run_c_from_dir(full_path, args.iss_yaml, args.isa, args.mabi,
-                         args.gcc_opts, args.iss, output_dir,
-                         args.core_setting_dir, args.debug)
-        # path_c_test is a c file
-        elif os.path.isfile(full_path) or args.debug:
-          run_c(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
-                args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
-        else:
-          logging.error('%s does not exist' % full_path)
-          sys.exit(RET_FAIL)
-      return
+      # Run any handcoded/directed c tests specified by args.c_tests
+      if args.c_tests != "":
+        c_test = args.c_tests.split(',')
+        for path_c_test in c_test:
+          full_path = os.path.expanduser(path_c_test)
+          # path_c_test is a directory
+          if os.path.isdir(full_path):
+            run_c_from_dir(full_path, args.iss_yaml, args.isa, args.mabi,
+                           args.gcc_opts, args.iss, output_dir,
+                           args.core_setting_dir, args.debug)
+          # path_c_test is a c file
+          elif os.path.isfile(full_path) or args.debug:
+            run_c(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
+                  args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
+          else:
+            logging.error('%s does not exist' % full_path)
+            sys.exit(RET_FAIL)
+          test_executed = 1
 
-    # Run any handcoded/directed elf tests specified by args.elf_tests
-    if args.elf_tests != "":
-      elf_test = args.elf_tests.split(',')
-      for path_elf_test in elf_test:
-        full_path = os.path.expanduser(path_elf_test)
-        # path_elf_test is an elf file
-        if os.path.isfile(full_path) or args.debug:
-          run_elf(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
-                args.iss, output_dir, args.core_setting_dir, args.debug)
-        else:
-          logging.error('%s does not exist' % full_path)
-          sys.exit(RET_FAIL)
-      return
+      # Run any handcoded/directed elf tests specified by args.elf_tests
+      if args.elf_tests != "":
+        elf_test = args.elf_tests.split(',')
+        for path_elf_test in elf_test:
+          full_path = os.path.expanduser(path_elf_test)
+          # path_elf_test is an elf file
+          if os.path.isfile(full_path) or args.debug:
+            run_elf(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
+                  args.iss, output_dir, args.core_setting_dir, args.debug)
+          else:
+            logging.error('%s does not exist' % full_path)
+            sys.exit(RET_FAIL)
+          test_executed = 1
 
-    run_cmd_output(["mkdir", "-p", ("%s/asm_tests" % output_dir)])
-    # Process regression test list
-    matched_list = []
-    # Any tests in the YAML test list that specify a directed assembly test
-    asm_directed_list = []
-    # Any tests in the YAML test list that specify a directed c test
-    c_directed_list = []
+      run_cmd_output(["mkdir", "-p", ("%s/asm_tests" % output_dir)])
+      # Process regression test list
+      matched_list = []
+      # Any tests in the YAML test list that specify a directed assembly test
+      asm_directed_list = []
+      # Any tests in the YAML test list that specify a directed c test
+      c_directed_list = []
 
-    if not args.co:
-      process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
-      logging.info('CVA6 Configuration is %s'% cfg["hwconfig_opts"])
-      for entry in list(matched_list):
-        yaml_needs = entry["needs"] if "needs" in entry else []
-        if yaml_needs:
-          needs = dict()
-          for i in range(len(yaml_needs)):
-            needs.update(yaml_needs[i])
-          for keys in needs.keys():
-            if cfg["hwconfig_opts"][keys] != needs[keys]:
-              logging.info('Removing test %s CVA6 configuration can not run it' % entry['test'])
-              matched_list.remove(entry)
-              break
-      for t in list(matched_list):
-        try:
-          t['gcc_opts'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['gcc_opts'])
-        except KeyError:
-          continue
+      if test_executed ==0:
+        if not args.co:
+          process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
+          logging.info('CVA6 Configuration is %s'% cfg["hwconfig_opts"])
+          for entry in list(matched_list):
+            yaml_needs = entry["needs"] if "needs" in entry else []
+            if yaml_needs:
+              needs = dict()
+              for i in range(len(yaml_needs)):
+                needs.update(yaml_needs[i])
+              for keys in needs.keys():
+                if cfg["hwconfig_opts"][keys] != needs[keys]:
+                  logging.info('Removing test %s CVA6 configuration can not run it' % entry['test'])
+                  matched_list.remove(entry)
+                  break
+          for t in list(matched_list):
+            try:
+              t['gcc_opts'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['gcc_opts'])
+            except KeyError:
+              continue
 
-        # Check mutual exclusive between gen_test, asm_tests, and c_tests
-        if 'asm_tests' in t:
-          if 'gen_test' in t or 'c_tests' in t:
-            logging.error('asm_tests must not be defined in the testlist '
-                          'together with the gen_test or c_tests field')
-            sys.exit(RET_FATAL)
-          t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
-          asm_directed_list.append(t)
-          matched_list.remove(t)
+            # Check mutual exclusive between gen_test, asm_tests, and c_tests
+            if 'asm_tests' in t:
+              if 'gen_test' in t or 'c_tests' in t:
+                logging.error('asm_tests must not be defined in the testlist '
+                              'together with the gen_test or c_tests field')
+                sys.exit(RET_FATAL)
+              t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
+              asm_directed_list.append(t)
+              matched_list.remove(t)
 
-        if 'c_tests' in t:
-          if 'gen_test' in t or 'asm_tests' in t:
-            logging.error('c_tests must not be defined in the testlist '
-                          'together with the gen_test or asm_tests field')
-            sys.exit(RET_FATAL)
-          t['c_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['c_tests'])
-          c_directed_list.append(t)
-          matched_list.remove(t)
+            if 'c_tests' in t:
+              if 'gen_test' in t or 'asm_tests' in t:
+                logging.error('c_tests must not be defined in the testlist '
+                              'together with the gen_test or asm_tests field')
+                sys.exit(RET_FATAL)
+              t['c_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['c_tests'])
+              c_directed_list.append(t)
+              matched_list.remove(t)
 
-      if len(matched_list) == 0 and len(asm_directed_list) == 0 and len(c_directed_list) == 0:
-        sys.exit("Cannot find %s in %s" % (args.test, args.testlist))
+          if len(matched_list) == 0 and len(asm_directed_list) == 0 and len(c_directed_list) == 0:
+            sys.exit("Cannot find %s in %s" % (args.test, args.testlist))
 
-      for t in c_directed_list:
-        copy = re.sub(r'(.*)\/(.*).c$', r'cp \1/\2.c \1/', t['c_tests'])+t['test']+'.c'
-        run_cmd("%s" % copy)
-        t['c_tests'] = re.sub(r'(.*)\/(.*).c$', r'\1/', t['c_tests'])+t['test']+'.c'
-    # Run instruction generator
-    if args.steps == "all" or re.match(".*gen.*", args.steps):
-      # Run any handcoded/directed assembly tests specified in YAML format
-      if len(asm_directed_list) != 0:
-        for test_entry in asm_directed_list:
-          gcc_opts = args.gcc_opts
-          gcc_opts += test_entry.get('gcc_opts', '')
-          path_asm_test = os.path.expanduser(test_entry.get('asm_tests'))
-          if path_asm_test:
-            # path_asm_test is a directory
-            if os.path.isdir(path_asm_test):
-              run_assembly_from_dir(path_asm_test, args.iss_yaml, args.isa, args.mabi,
-                                    gcc_opts, args.iss, output_dir,
-                                    args.core_setting_dir, args.debug)
-            # path_asm_test is an assembly file
-            elif os.path.isfile(path_asm_test):
-              run_assembly(path_asm_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
-                           args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
-            else:
-              if not args.debug:
-                logging.error('%s does not exist' % path_asm_test)
-                sys.exit(RET_FAIL)
+          for t in c_directed_list:
+            copy = re.sub(r'(.*)\/(.*).c$', r'cp \1/\2.c \1/', t['c_tests'])+t['test']+'.c'
+            run_cmd("%s" % copy)
+            t['c_tests'] = re.sub(r'(.*)\/(.*).c$', r'\1/', t['c_tests'])+t['test']+'.c'
 
-      # Run any handcoded/directed C tests specified in YAML format
-      if len(c_directed_list) != 0:
-        for test_entry in c_directed_list:
-          gcc_opts = args.gcc_opts
-          gcc_opts += test_entry.get('gcc_opts', '')
+      # Run instruction generator
+      if args.steps == "all" or re.match(".*gen.*", args.steps):
+        # Run any handcoded/directed assembly tests specified in YAML format
+        if len(asm_directed_list) != 0:
+          for test_entry in asm_directed_list:
+            gcc_opts = args.gcc_opts
+            gcc_opts += test_entry.get('gcc_opts', '')
+            path_asm_test = os.path.expanduser(test_entry.get('asm_tests'))
+            if path_asm_test:
+              # path_asm_test is a directory
+              if os.path.isdir(path_asm_test):
+                run_assembly_from_dir(path_asm_test, args.iss_yaml, args.isa, args.mabi,
+                                      gcc_opts, args.iss, output_dir,
+                                      args.core_setting_dir, args.debug)
+              # path_asm_test is an assembly file
+              elif os.path.isfile(path_asm_test):
+                run_assembly(path_asm_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
+                             args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
+              else:
+                if not args.debug:
+                  logging.error('%s does not exist' % path_asm_test)
+                  sys.exit(RET_FAIL)
 
-          if 'sim_do' in test_entry:
-            sim_do = test_entry['sim_do'].split(';')
-            with open("sim.do", "w") as fd:
-              for cmd in sim_do:
-                fd.write(cmd + "\n")
-            logging.info('sim.do: %s' % sim_do)
+        # Run any handcoded/directed C tests specified in YAML format
+        if len(c_directed_list) != 0:
+          for test_entry in c_directed_list:
+            gcc_opts = args.gcc_opts
+            gcc_opts += test_entry.get('gcc_opts', '')
 
-          path_c_test = os.path.expanduser(test_entry.get('c_tests'))
-          if path_c_test:
-            # path_c_test is a directory
-            if os.path.isdir(path_c_test):
-              run_c_from_dir(path_c_test, args.iss_yaml, args.isa, args.mabi,
-                             gcc_opts, args.iss, output_dir,
-                             args.core_setting_dir, args.debug)
-            # path_c_test is a C file
-            elif os.path.isfile(path_c_test):
-              run_c(path_c_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
-                    args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
-            else:
-              if not args.debug:
-                logging.error('%s does not exist' % path_c_test)
-                sys.exit(RET_FAIL)
+            if 'sim_do' in test_entry:
+              sim_do = test_entry['sim_do'].split(';')
+              with open("sim.do", "w") as fd:
+                for cmd in sim_do:
+                  fd.write(cmd + "\n")
+              logging.info('sim.do: %s' % sim_do)
 
-      # Run remaining tests using the instruction generator
-      gen(matched_list, cfg, output_dir, cwd)
+            path_c_test = os.path.expanduser(test_entry.get('c_tests'))
+            if path_c_test:
+              # path_c_test is a directory
+              if os.path.isdir(path_c_test):
+                run_c_from_dir(path_c_test, args.iss_yaml, args.isa, args.mabi,
+                               gcc_opts, args.iss, output_dir,
+                               args.core_setting_dir, args.debug)
+              # path_c_test is a C file
+              elif os.path.isfile(path_c_test):
+                run_c(path_c_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
+                      args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
+              else:
+                if not args.debug:
+                  logging.error('%s does not exist' % path_c_test)
+                  sys.exit(RET_FAIL)
 
-    if not args.co:
-      # Compile the assembly program to ELF, convert to plain binary
-      if args.steps == "all" or re.match(".*gcc_compile.*", args.steps):
-        gcc_compile(matched_list, output_dir, args.isa, args.mabi,
-                    args.gcc_opts, args.debug, args.linker)
+        # Run remaining tests using the instruction generator
+        gen(matched_list, cfg, output_dir, cwd)
 
-      # Run ISS simulation
-      if args.steps == "all" or re.match(".*iss_sim.*", args.steps):
-        iss_sim(matched_list, output_dir, args.iss, args.iss_yaml, args.iss_opts,
-                args.isa, args.target, args.core_setting_dir, args.iss_timeout, args.debug)
+      if not args.co:
+        # Compile the assembly program to ELF, convert to plain binary
+        if args.steps == "all" or re.match(".*gcc_compile.*", args.steps):
+          gcc_compile(matched_list, output_dir, args.isa, args.mabi,
+                      args.gcc_opts, args.debug, args.linker)
 
-      # Compare ISS simulation result
-      if args.steps == "all" or re.match(".*iss_cmp.*", args.steps):
-        iss_cmp(matched_list, args.iss, output_dir, args.stop_on_first_error,
-                args.exp, args.debug)
+        # Run ISS simulation
+        if args.steps == "all" or re.match(".*iss_sim.*", args.steps):
+          iss_sim(matched_list, output_dir, args.iss, args.iss_yaml, args.iss_opts,
+                  args.isa, args.target, args.core_setting_dir, args.iss_timeout, args.debug)
+
+        # Compare ISS simulation result
+        if args.steps == "all" or re.match(".*iss_cmp.*", args.steps):
+          iss_cmp(matched_list, args.iss, output_dir, args.stop_on_first_error,
+                  args.exp, args.debug)
 
     sys.exit(RET_SUCCESS)
   except KeyboardInterrupt:
@@ -1149,6 +1219,7 @@ def main():
     sys.exit(130)
 
 if __name__ == "__main__":
-  sys.path.append(os.getcwd()+"/../../core-v-cores/cva6")
+  sys.path.append(os.getcwd()+"/../../core-v-cores/cva6/util")
   from config_pkg_generator import *
   main()
+

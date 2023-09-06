@@ -15,9 +15,10 @@ fi
 # install the required tools
 source ./cva6/regress/install-cva6.sh
 source ./cva6/regress/install-riscv-dv.sh
+source ./cva6/regress/install-spike.sh
 
 if ! [ -n "$DV_TARGET" ]; then
-  DV_TARGET=cv64a6_imafdc_sv39
+  DV_TARGET=cv32a60x
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
@@ -34,46 +35,68 @@ cd cva6/sim/
 dd=$(date '+%Y-%m-%d')
 key_word="Mismatch[1]:"
 #Read from the iss_regr.log to detect the failed tests
-logfile=out_$dd/iss_regr.log      
+logfile=out_$dd/iss_regr.log
+TESTLIST_FILE=cva6_base_testlist.yaml
+DIRECTED_TESTLIST=../tests/testlist_isacov.yaml
 j=0;
 rm -rf out_$dd
 
-if [[ "$list_num" = 0 ]];then
-  TEST_NAME=(
-           "riscv_arithmetic_basic_test"
-           "riscv_unaligned_load_store_test"
-           );
-   I=(50 10);
-   #this list re-use tests from the base_testlist in the riscv-dv
-   #Just the tests in the riscv-dv YAML file
-   TESTLIST_FILE=dv/yaml/base_testlist.yaml 
-elif [[ "$list_num" = 1 ]];then
+if [[ "$list_num" = 1 ]];then
   TEST_NAME=(
            "riscv_arithmetic_basic_test_no_comp"
-           "riscv_arithmetic_basic_illegal_test"
+           "riscv_arithmetic_basic_test_bcomp"
+           "riscv_arithmetic_basic_illegal"
+           "riscv_arithmetic_basic_test_comp"
            "riscv_arithmetic_basic_illegal_hint_test"
-           "riscv_arithmetic_basic_dret"
+           "riscv_arithmetic_basic_loop_test"
            );
-   I=(50 10 10 20);
-   TESTLIST_FILE=cva6_base_testlist.yaml 
-elif [[ "$list_num" = 2 ]];then	
-	TEST_NAME=(
-           "riscv_arithmetic_basic_csr_test"
-           "riscv_arithmetic_basic_hint_csr_test"
-           "riscv_arithmetic_basic_rand_prvl"
+   I=(100 100 20 100 20 20);
+elif [[ "$list_num" = 2 ]];then
+  TEST_NAME=(
+           "riscv_arithmetic_basic_same_reg_test"
+           "riscv_arithmetic_basic_hazard_rdrs1_test"
+           "riscv_arithmetic_basic_hazard_rdrs2_test"
+           );
+   I=(100 100 100);
+elif [[ "$list_num" = 3 ]];then
+  TEST_NAME=(
            "riscv_arithmetic_basic_csr_dummy"
+           "riscv_arithmetic_basic_Randcsr_test"
+           "riscv_arithmetic_basic_ebreak_dret_test"
+           "riscv_arithmetic_basic_illegal_csr"
            );
-	I=(100 100 40 20);
-	TESTLIST_FILE=cva6_base_testlist.yaml
+   I=(20 20 20 20);
+elif [[ "$list_num" = 4 ]];then
+	TEST_NAME=(
+           "riscv_mmu_stress_hint_test"
+           "riscv_mmu_stress_test"
+           );
+	I=(100 100);
+elif [[ "$list_num" = 5 ]];then
+  TEST_NAME=(
+           "riscv_load_store_test"
+           "riscv_load_store_cmp_test"
+           "riscv_load_store_hazard_test"
+           "riscv_unaligned_load_store_test"
+           );
+   I=(50 50 50 50);
+elif [[ "$list_num" = 6 ]];then
+	TEST_NAME=(
+           "riscv_rand_jump_hint_comp_test"
+           "riscv_rand_jump_no_cmp_test"
+           "riscv_rand_jump_illegal_test"
+           "riscv_arithmetic_basic_sub_prog_test"
+           );
+	I=(75 75 50 20);
 fi
 
+if [[ "$list_num" != 0 ]];then
 if [[ ${#TEST_NAME[@]} != ${#I[@]} ]];then
   echo "***********ERROR***************"
-  echo "The length of TEST_NAME and I should be equal !!!!"
+  echo "The length of TEST_NAME and Iteration should be equal !!!!"
   echo "Fix the length of one of the arrays"
   exit 
 fi
-
 printf "+====================================================================================+"
 header="\n %-50s %-20s %s\n"
 format=" %-50s %-20d %d\n"
@@ -87,20 +110,20 @@ while [[ $j -lt ${#TEST_NAME[@]} ]];do
 done
 printf "+====================================================================================+\n"
 j=0
-
 while [[ $j -lt ${#TEST_NAME[@]} ]];do
-  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET --iss=vcs-uvm,spike -i ${I[j]} -bz 1 --iss_timeout 300
+  cp ../env/corev-dv/custom/riscv_custom_instr_enum.sv ./dv/src/isa/custom/
+  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imac/ --mabi ilp32 --isa rv32imac --simulator_yaml ../env/corev-dv/simulator.yaml --iss=vcs-uvm,spike -i ${I[j]} -bz 1 --iss_timeout 300
   n=0
-  echo "Generate the test : ${TEST_NAME[j]}"
+  echo "Generate the test: ${TEST_NAME[j]}"
 #this while loop detects the failed tests from the log file and remove them
-  echo "Deleting failed tests : "
+  echo "Deleting failed tests: "
   while read line;do
     if [[ "$line" = "" ]];then
       n=$((n+1))
     fi
     for word in $line;do
       if [[ "$word" = "$key_word" ]];then
-        echo -e ""${TEST_NAME[j]}"_"$n" : Failed"
+        echo -e ""${TEST_NAME[j]}"_"$n": Failed"
         rm -rf vcs_results/default/vcs.d/simv.vdb/snps/coverage/db/testdata/"${TEST_NAME[j]}"_"$n"/
       fi
     done
@@ -108,4 +131,10 @@ while [[ $j -lt ${#TEST_NAME[@]} ]];do
   rm -rf out_$dd
   j=$((j+1))
 done
+#Execute directed tests to improve functional coverage of ISA
+j=0
+elif [[ "$list_num" = 0 ]];then
+   printf "==== Execute Directed tests to improve functional coverage of isa, by hitting corners !!! ====\n\n"
+   python3 cva6.py --testlist=$DIRECTED_TESTLIST --iss_yaml cva6.yaml --target $DV_TARGET --iss=vcs-uvm,spike
+fi
 cd -

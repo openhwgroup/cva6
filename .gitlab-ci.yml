@@ -104,6 +104,7 @@ cva6:
       - project: '$CI_PROJECT_NAMESPACE/setup-ci'
         ref: '$SETUP_CI_CVA6_BRANCH'
         file: 'cva6/core-v-verif-cva6.yml'
+      - local: .gitlab-ci/core-v-verif-cva6.yml
     strategy: depend
   variables:
     TAGS_RUNNER: $TAGS_RUNNER

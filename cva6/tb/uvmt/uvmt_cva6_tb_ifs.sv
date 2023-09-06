@@ -21,8 +21,11 @@
 `define __UVMT_CVA6_TB_IFS_SV__
 
 
-interface uvmt_rvfi_if (
-                    output ariane_pkg::rvfi_port_t  rvfi_o,
+interface uvmt_rvfi_if #(
+                    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+                    parameter type rvfi_instr_t = logic
+) (
+                    output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
                     output logic[31:0] tb_exit_o
                                  );
 

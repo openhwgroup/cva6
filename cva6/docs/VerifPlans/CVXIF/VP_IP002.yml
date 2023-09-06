@@ -1,0 +1,238 @@
+!Feature
+next_elt_id: 8
+name: Result Interface
+id: 2
+display_order: 2
+subfeatures: !!omap
+- 000_no speculative result transaction: !Subfeature
+    name: 000_no speculative result transaction
+    tag: VP_CVXIF_F002_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F002_S000_I000
+        description: A coprocessor is not allowed to perform speculative result transactions.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: There is no result transaction for instructions that haven't
+          been committed. Check that Result valid is only asserted for instructions
+          that were committed (commit_valid == 1 && commit_kill == 0).
+        pfc: 11
+        test_type: 10
+        cov_method: 10
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_out of order result transaction: !Subfeature
+    name: 001_out of order result transaction
+    tag: VP_CVXIF_F002_S001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F002_S001_I000
+        description: A coprocessor is allowed to provide results to the core in an
+          out of order fashion.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that the CPU is able to receive the result in an out of
+          order fashion.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_result transaction uniquness: !Subfeature
+    name: 002_result transaction uniquness
+    tag: VP_CVXIF_F002_S002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F002_S002_I000
+        description: Each accepted offloaded (committed and not killed) instruction
+          shall have exactly one result group transaction (even if no data needs to
+          be written back to the CPU’s register file).
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: There is an unique result transaction for every accepted and
+          commit instruction.
+        pfc: 11
+        test_type: 10
+        cov_method: 10
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_result packet stability: !Subfeature
+    name: 003_result packet stability
+    tag: VP_CVXIF_F002_S003
+    next_elt_id: 1
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F002_S003_I000
+        description: The signals in result shall remain stable during a result transaction
+          (except data ...)
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that result signals (except data) are stable during result
+          transaction (result_valid==1 jusqu'à valid==ready ==1)
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_data stability: !Subfeature
+    name: 004_data stability
+    tag: VP_CVXIF_F002_S004
+    next_elt_id: 1
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F002_S004_I000
+        description: Data is only required to remain stable during result transactions
+          in which "we" is not 0.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that "data" remains stable when we==1.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_synchronous exception: !Subfeature
+    name: 005_synchronous exception
+    tag: VP_CVXIF_F002_S005
+    next_elt_id: 3
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F002_S005_I000
+        description: The exc is used to signal synchronous exceptions. A synchronous
+          exception will lead to a trap in CPU unless the corresponding instruction
+          is killed.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that synchronous exception (exc ==1) leads to a trap in
+          the CPU if the instruction is committed.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_CVXIF_F002_S005_I001
+        description: exccode provides the least significant bits of the exception
+          code bitfield of the mcause CSR.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that exccode signal is the value of the mcause CSR when
+          exc == 1.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_CVXIF_F002_S005_I002
+        description: '"we" shall be driven to 0 by the coprocessor for synchronous
+          exceptions.'
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that "we" signal == 0 when exc == 1.
+        pfc: 4
+        test_type: -1
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 006_"we" value when dualwrite: !Subfeature
+    name: 006_"we" value when dualwrite
+    tag: VP_CVXIF_F002_S006
+    next_elt_id: 1
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F002_S006_I000
+        description: we is 2 bits wide when XLEN = 32 and X_RFW_WIDTH = 64, and 1
+          bit wide otherwise. If "we" is 2 bits wide, then we[1] is only allowed to
+          be 1 if we[0] is 1 as well (i.e. for dual writeback).
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "For dualwrite instruction, check that we[1]==1 is only allowed\
+          \ if we[0] == 1.\n\nDualwrite not supported (for now)"
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 007_proper result transaction: !Subfeature
+    name: 007_proper result transaction
+    tag: VP_CVXIF_F002_S007
+    next_elt_id: 1
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F002_S007_I000
+        description: Result transaction starts in the cycle that result_valid = 1
+          and ends in the cycle that both result_valid == result_ready == 1.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that result transaction ends properly.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

@@ -1,0 +1,12 @@
+diff --git a/fesvr/fesvr.mk.in b/fesvr/fesvr.mk.in
+index 695de5278..43aed6786 100644
+--- a/fesvr/fesvr.mk.in
++++ b/fesvr/fesvr.mk.in
+@@ -20,6 +20,7 @@ fesvr_install_hdrs = $(fesvr_hdrs)
+ fesvr_install_config_hdr = yes
+ 
+ fesvr_install_lib = yes
++fesvr_install_shared_lib = yes
+ 
+ fesvr_srcs = \
+   elfloader.cc \

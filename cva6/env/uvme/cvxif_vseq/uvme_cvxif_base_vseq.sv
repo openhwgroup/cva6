@@ -53,32 +53,36 @@ function string uvme_cvxif_base_vseq_c::decode(input logic [31:0] instr);
    bit [6:0] custom3   = 7'b1111011;
    bit [6:0] func7     = instr [31:25];
    bit [1:0] func2     = instr [26:25];
-   bit [1:0] func3     = instr [14:12];
+   bit [2:0] func3     = instr [14:12];
    bit [4:0] rd        = instr [11:7];
    bit [4:0] rs1       = instr [19:15];
    bit [4:0] rs2       = instr [24:20];
 
    if (opcode == custom3) begin
-      if (func3 == 0) begin
-         if (func7 == 7'b0000000 && rd != 0) begin
-            return ("CUS_ADD");
-         end
-         if (func7 == 7'b0001000 && rd != 0) begin
+      if (func3 == 3'b000) begin
+         if (func7 == 7'b0001000) begin
             return ("CUS_ADD_MULTI");
          end
-         if (func2 == 2'b01 && rd != 0) begin
+         if (func2 == 2'b01) begin
             return ("CUS_ADD_RS3");
          end
-         if (func7 == 7'b0000010 && rd != 0) begin
-            return ("CUS_M_ADD");
+         if (func7 == 7'b0000010) begin
+            return ("CUS_U_ADD");
          end
-         if (func7 == 7'b0000110 && rd != 0) begin
+         if (func7 == 7'b0000110) begin
             return ("CUS_S_ADD");
          end
          if (func7 == 7'b0000000 && rd == 0 && rs1 == 0 && rs2 == 0) begin
             return ("CUS_NOP");
          end
-         if (func7 == 7'b1000000 && rd == 0 && rs2[4:1] == 0) begin
+      end
+      if (func3 == 3'b001) begin
+         if (func7 == 7'b0000000) begin
+            return ("CUS_ADD");
+         end
+      end
+      if (func3 == 3'b010 && rd == 0 && rs2 == 0) begin
+         if (func7 == 7'b1100000) begin
             return ("CUS_EXC");
          end
       end

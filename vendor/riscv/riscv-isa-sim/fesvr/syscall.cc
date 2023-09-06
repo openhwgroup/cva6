@@ -1,5 +1,6 @@
 // See LICENSE for license details.
 
+#include "config.h"
 #include "syscall.h"
 #include "htif.h"
 #include "byteorder.h"
@@ -16,6 +17,10 @@
 using namespace std::placeholders;
 
 #define RISCV_AT_FDCWD -100
+
+#ifdef __GNUC__
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 
 struct riscv_stat
 {
@@ -169,9 +174,16 @@ syscall_t::syscall_t(htif_t* htif)
   if (stdin_fd < 0 || stdout_fd0 < 0 || stdout_fd1 < 0)
     throw std::runtime_error("could not dup stdin/stdout");
 
-  fds.alloc(stdin_fd); // stdin -> stdin
-  fds.alloc(stdout_fd0); // stdout -> stdout
-  fds.alloc(stdout_fd1); // stderr -> stdout
+  fds_index.push_back(fds.alloc(stdin_fd)); // stdin -> stdin
+  fds_index.push_back(fds.alloc(stdout_fd0)); // stdout -> stdout
+  fds_index.push_back(fds.alloc(stdout_fd1)); // stderr -> stdout
+}
+
+syscall_t::~syscall_t() {
+  for (auto i: fds_index) {
+    close(fds.lookup(i));
+    fds.dealloc(i);
+  }
 }
 
 std::string syscall_t::do_chroot(const char* fn)

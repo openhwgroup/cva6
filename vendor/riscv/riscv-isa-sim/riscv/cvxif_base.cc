@@ -4,6 +4,8 @@
 //
 // Original Author: Zbigniew CHAMSKI <zbigniew.chamski@thalesgroup.com>
 
+#define DECODE_MACRO_USAGE_LOGGED 1
+#include "decode_macros.h"
 #include "cvxif.h"
 #include "trap.h"
 #include <cstdlib>
