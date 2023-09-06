@@ -117,7 +117,8 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     // Arbitrate AXI Ports
     // -----------------------
     logic [1:0] w_select, w_select_fifo, w_select_arbiter;
-    logic w_fifo_empty;
+    logic [1:0] w_fifo_usage;
+    logic w_fifo_empty, w_fifo_full;
 
 
     // AR Channel
@@ -161,20 +162,20 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
         endcase
     end
 
-    // TODO(zarubaf): This causes a cycle delay, might be optimize-able, FALL_THROUGH
-    // option made problems during synthesis (timing loop)
+    // W Channel
     fifo_v3 #(
       .DATA_WIDTH   ( 2    ),
       // we can have a maximum of 4 oustanding transactions as each port is blocking
-      .DEPTH        ( 4    )
+      .DEPTH        ( 4    ),
+      .FALL_THROUGH ( 1'b1 )
     ) i_fifo_w_channel (
       .clk_i      ( clk_i           ),
       .rst_ni     ( rst_ni          ),
       .flush_i    ( 1'b0            ),
       .testmode_i ( 1'b0            ),
-      .full_o     (                 ), // leave open
-      .empty_o    ( w_fifo_empty    ),
-      .usage_o    (                 ), // leave open
+      .full_o     ( w_fifo_full     ),
+      .empty_o    (                 ), // leave open
+      .usage_o    ( w_fifo_usage    ),
       .data_i     ( w_select        ),
       // a new transaction was requested and granted
       .push_i     ( axi_req_o.aw_valid & axi_resp_i.aw_ready ),
@@ -184,9 +185,13 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
       .pop_i      ( axi_req_o.w_valid & axi_resp_i.w_ready & axi_req_o.w.last )
     );
 
+    // In fall-through mode, the empty_o will be low when push_i is high (on zero usage).
+    // We do not want this here. Also, usage_o is missing the MSB, so on full fifo, usage_o is zero.
+    assign w_fifo_empty = w_fifo_usage == 0 && !w_fifo_full;
+
     // icache will never write so select it as default (e.g.: when no arbitration is active)
     // this is equal to setting it to zero
-    assign w_select_arbiter = (w_fifo_empty) ? 0 : w_select_fifo;
+    assign w_select_arbiter = w_fifo_empty ? (axi_req_o.aw_valid ? w_select : 0) : w_select_fifo;
 
     stream_mux #(
         .DATA_T ( axi_w_chan_t ),
