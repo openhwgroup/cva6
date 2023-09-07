@@ -49,7 +49,6 @@ workflow:
     - when: never
 
 variables:
-  GIT_STRATEGY: fetch
   GIT_SUBMODULE_STRATEGY: recursive
   TAGS_RUNNER: $TAGS_RUNNER
   DASHBOARD: "cva6"
