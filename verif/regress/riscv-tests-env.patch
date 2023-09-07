@@ -1,0 +1,43 @@
+diff --git a/p/riscv_test.h b/p/riscv_test.h
+index 88ca6c1..61c53ca 100644
+--- a/p/riscv_test.h
++++ b/p/riscv_test.h
+@@ -236,9 +236,8 @@ reset_vector:                                                           \
+ #define RVTEST_PASS                                                     \
+         fence;                                                          \
+         li TESTNUM, 1;                                                  \
+-        li a7, 93;                                                      \
+-        li a0, 0;                                                       \
+-        ecall
++        sw TESTNUM, tohost, t5;                                         \
++42:     j 42b
+ 
+ #define TESTNUM gp
+ #define RVTEST_FAIL                                                     \
+@@ -246,9 +245,8 @@ reset_vector:                                                           \
+ 1:      beqz TESTNUM, 1b;                                               \
+         sll TESTNUM, TESTNUM, 1;                                        \
+         or TESTNUM, TESTNUM, 1;                                         \
+-        li a7, 93;                                                      \
+-        addi a0, TESTNUM, 0;                                            \
+-        ecall
++        sw TESTNUM, tohost, t5;                                         \
++42:     j 42b
+ 
+ //-----------------------------------------------------------------------
+ // Data Section Macro
+diff --git a/v/vm.c b/v/vm.c
+index 6bf05f7..71700f5 100644
+--- a/v/vm.c
++++ b/v/vm.c
+@@ -17,8 +17,8 @@
+ void trap_entry();
+ void pop_tf(trapframe_t*);
+ 
+-volatile uint64_t tohost;
+-volatile uint64_t fromhost;
++extern volatile uint64_t tohost;
++extern volatile uint64_t fromhost;
+ 
+ static void do_tohost(uint64_t tohost_value)
+ {

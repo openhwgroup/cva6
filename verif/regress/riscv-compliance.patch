@@ -1,0 +1,94 @@
+diff --git a/riscv-test-env/p/riscv_test.h b/riscv-test-env/p/riscv_test.h
+index eaa6758..887408a 100644
+--- a/riscv-test-env/p/riscv_test.h
++++ b/riscv-test-env/p/riscv_test.h
+@@ -162,7 +162,7 @@ handle_exception:                                                       \
+   1:    ori TESTNUM, TESTNUM, 1337;                                     \
+   write_tohost:                                                         \
+         sw TESTNUM, tohost, t5;                                         \
+-        j write_tohost;                                                 \
++  2:    j 2b;                                                           \
+ reset_vector:                                                           \
+         RISCV_MULTICORE_DISABLE;                                        \
+         INIT_SPTBR;                                                     \
+@@ -215,7 +215,7 @@ end_testcode:                                                           \
+         RVTEST_SYNC;                                                    \
+         li TESTNUM, 1;                                                  \
+         SWSIG (0, TESTNUM);                                             \
+-        ecall
++        j write_tohost;
+ 
+ #define TESTNUM gp
+ #define RVTEST_FAIL                                                     \
+@@ -224,7 +224,7 @@ end_testcode:                                                           \
+         sll TESTNUM, TESTNUM, 1;                                        \
+         or TESTNUM, TESTNUM, 1;                                         \
+         SWSIG (0, TESTNUM);                                             \
+-        ecall
++        j write_tohost;
+ 
+ //-----------------------------------------------------------------------
+ // Data Section Macro
+diff --git a/riscv-test-env/v/vm.c b/riscv-test-env/v/vm.c
+index 6ab7fd1..fc01b94 100644
+--- a/riscv-test-env/v/vm.c
++++ b/riscv-test-env/v/vm.c
+@@ -9,8 +9,8 @@
+ void trap_entry();
+ void pop_tf(trapframe_t*);
+ 
+-volatile uint64_t tohost;
+-volatile uint64_t fromhost;
++extern volatile uint64_t tohost;
++extern volatile uint64_t fromhost;
+ 
+ static void do_tohost(uint64_t tohost_value)
+ {
+diff --git a/riscv-test-suite/rv32i/src/I-EBREAK-01.S b/riscv-test-suite/rv32i/src/I-EBREAK-01.S
+index 958eebc..b84559f 100644
+--- a/riscv-test-suite/rv32i/src/I-EBREAK-01.S
++++ b/riscv-test-suite/rv32i/src/I-EBREAK-01.S
+@@ -71,6 +71,7 @@ RV_COMPLIANCE_CODE_BEGIN
+ 
+     # ---------------------------------------------------------------------------------------------
+     # Exception handler
++    .align 2
+ _trap_handler:
+     # increment return address
+     csrr    x30, mepc
+diff --git a/riscv-test-suite/rv32i/src/I-ECALL-01.S b/riscv-test-suite/rv32i/src/I-ECALL-01.S
+index 5278207..d181526 100644
+--- a/riscv-test-suite/rv32i/src/I-ECALL-01.S
++++ b/riscv-test-suite/rv32i/src/I-ECALL-01.S
+@@ -73,6 +73,7 @@ RV_COMPLIANCE_CODE_BEGIN
+ 
+     # ---------------------------------------------------------------------------------------------
+     # Exception handler
++    .align 2
+ _trap_handler:
+     # increment return address
+     csrr    x30, mepc
+diff --git a/riscv-test-suite/rv32i/src/I-MISALIGN_JMP-01.S b/riscv-test-suite/rv32i/src/I-MISALIGN_JMP-01.S
+index 8f54534..a09cf76 100644
+--- a/riscv-test-suite/rv32i/src/I-MISALIGN_JMP-01.S
++++ b/riscv-test-suite/rv32i/src/I-MISALIGN_JMP-01.S
+@@ -277,6 +277,7 @@ RV_COMPLIANCE_CODE_BEGIN
+ 
+     # ---------------------------------------------------------------------------------------------
+     # Exception handler
++    .align 2
+ _trap_handler:
+     # increment return address
+     csrr    x30, mbadaddr
+diff --git a/riscv-test-suite/rv32i/src/I-MISALIGN_LDST-01.S b/riscv-test-suite/rv32i/src/I-MISALIGN_LDST-01.S
+index 5a20187..0eeb9d1 100644
+--- a/riscv-test-suite/rv32i/src/I-MISALIGN_LDST-01.S
++++ b/riscv-test-suite/rv32i/src/I-MISALIGN_LDST-01.S
+@@ -188,6 +188,7 @@ RV_COMPLIANCE_CODE_BEGIN
+ 
+     # ---------------------------------------------------------------------------------------------
+     # Exception handler
++    .align 2
+ _trap_handler:
+     # increment return address
+     csrr    x30, mepc

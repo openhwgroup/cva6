@@ -1,0 +1,286 @@
+!Feature
+next_elt_id: 6
+name: RV32C Control Transfer Instructions
+id: 11
+display_order: 11
+subfeatures: !!omap
+- 000_C.J: !Subfeature
+    name: 000_C.J
+    tag: VP_IP010_P000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F011_S000_I000
+        description: "c.j imm[11:1]\npc += sext(imm)\npc is calculated using signed\
+          \ arithmetic\nExpands to jal x0, imm[11:1]."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nuimm value is non-zero and zero\nAll bits\
+          \ of uimm are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_C.JAL: !Subfeature
+    name: 001_C.JAL
+    tag: VP_IP010_P001
+    next_elt_id: 2
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F011_S001_I000
+        description: "c.jal imm[11:1]\nx[1] = pc+2; pc += sext(imm)\npc is calculated\
+          \ using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nuimm value is non-zero and zero\nAll bits\
+          \ of uimm are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F011_S001_I001
+        description: "c.jal imm[11:1]\nx[1] = pc+2; pc += sext(imm)\npc is calculated\
+          \ using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of x1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_C.JR: !Subfeature
+    name: 002_C.JR
+    tag: VP_IP010_P002
+    next_elt_id: 2
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F011_S002_I000
+        description: "c.jr rs1\npc = x[rs1]\nExpands to jalr x0, 0(rs1). \nInvalid\
+          \ when rs1=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F011_S002_I001
+        description: "c.jr rs1\npc = x[rs1]\nExpands to jalr x0, 0(rs1). \nInvalid\
+          \ when rs1=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_C.JALR: !Subfeature
+    name: 003_C.JALR
+    tag: VP_IP010_P003
+    next_elt_id: 3
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F011_S003_I000
+        description: "c.jalr rs1\nt = pc + 2; pc = x[rs1]; x[1] = t\nExpands to jalr\
+          \ x1, 0(rs1). \nInvalid when rs1=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F011_S003_I001
+        description: "c.jalr rs1\nt = pc + 2; pc = x[rs1]; x[1] = t\nExpands to jalr\
+          \ x1, 0(rs1). \nInvalid when rs1=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F011_S003_I002
+        description: "c.jalr rs1\nt = pc + 2; pc = x[rs1]; x[1] = t\nExpands to jalr\
+          \ x1, 0(rs1). \nInvalid when rs1=x0."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of x1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_C.BEQZ: !Subfeature
+    name: 004_C.BEQZ
+    tag: VP_IP010_P004
+    next_elt_id: 3
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F011_S004_I000
+        description: "c.beqz rs1', imm[8:1]\nif (x[8+rs1'] == 0) pc += sext(imm)\n\
+          Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F011_S004_I001
+        description: "c.beqz rs1', imm[8:1]\nif (x[8+rs1'] == 0) pc += sext(imm)\n\
+          Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1` are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F011_S004_I002
+        description: "c.beqz rs1', imm[8:1]\nif (x[8+rs1'] == 0) pc += sext(imm)\n\
+          Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nBranch taken or not-taken"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_C.BNEZ: !Subfeature
+    name: 005_C.BNEZ
+    tag: VP_IP010_P005
+    next_elt_id: 3
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F011_S005_I000
+        description: "c.bnez  rs1', imm[8:1]\nif (x[8+rs1'] ≠ 0) pc += sext(imm)\n\
+          Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F011_S005_I001
+        description: "c.bnez  rs1', imm[8:1]\nif (x[8+rs1'] ≠ 0) pc += sext(imm)\n\
+          Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F011_S005_I002
+        description: "c.bnez  rs1', imm[8:1]\nif (x[8+rs1'] ≠ 0) pc += sext(imm)\n\
+          Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nBranch taken or not-taken"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

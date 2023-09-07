@@ -1,0 +1,65 @@
+# Copyright 2021 Thales DIS design services SAS
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Jean-Roch COULON - Thales
+
+###############################################################################
+# Spike
+###############################################################################
+- iss: spike
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  # Set a limit of 2M steps for Spike to match the RVFI 2M cycles RTL timeout.
+  # Always keep this value in sync with the settings of RTL simulators (cf.
+  # <issrun_opts> values below).
+  cmd: >
+    make spike steps=2000000 variant=<variant> elf=<elf> tool_path=<tool_path> log=<log>
+
+###############################################################################
+# Verilator
+###############################################################################
+- iss: veri-testharness
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  cmd: >
+    make veri-testharness target=<target> variant=<variant> elf=<elf> path_var=<path_var> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
+
+###############################################################################
+# Synopsys VCS specific commands, variables
+###############################################################################
+- iss: vcs-testharness
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  cmd: >
+    make vcs-testharness target=<target> variant=<variant> elf=<elf> path_var=<path_var> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
+
+- iss: vcs-gate
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  cmd: >
+    make vcs-uvm target=<target> gate=1 cov=${cov} variant=<variant> elf=<elf> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
+
+- iss: vcs-uvm
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  cmd: >
+    make vcs-uvm target=<target> cov=${cov} variant=<variant> elf=<elf> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
+
+###############################################################################
+# Questasim specific commands, variables
+###############################################################################
+- iss: questa-testharness
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  cmd: >
+    make questa-testharness target=<target> variant=<variant> elf=<elf> path_var=<path_var> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>

@@ -1,0 +1,110 @@
+diff --git a/vendor/riscv/riscv-isa-sim/riscv/sim.cc b/vendor/riscv/riscv-isa-sim/riscv/sim.cc
+index dcbd469d3..8863a5f78 100644
+--- a/vendor/riscv/riscv-isa-sim/riscv/sim.cc
++++ b/vendor/riscv/riscv-isa-sim/riscv/sim.cc
+@@ -40,7 +40,8 @@ sim_t::sim_t(const cfg_t *cfg, bool halted,
+              const char *log_path,
+              bool dtb_enabled, const char *dtb_file,
+              bool socket_enabled,
+-             FILE *cmd_file) // needed for command line option --cmd
++             FILE *cmd_file, // needed for command line option --cmd
++             size_t max_steps)
+   : htif_t(args),
+     isa(cfg->isa(), cfg->priv()),
+     cfg(cfg),
+@@ -52,6 +53,8 @@ sim_t::sim_t(const cfg_t *cfg, bool halted,
+     cmd_file(cmd_file),
+     sout_(nullptr),
+     current_step(0),
++    total_steps(0),
++    max_steps(max_steps),
+     current_proc(0),
+     debug(false),
+     histogram_enabled(false),
+@@ -236,6 +239,21 @@ void sim_t::step(size_t n)
+     procs[current_proc]->step(steps);
+ 
+     current_step += steps;
++    total_steps += steps;
++
++    // max_steps must be non-zero to act as an execution limit.
++    if (max_steps && total_steps >= max_steps)
++    {
++      // "Stepout": max step count reached/exceeded.
++      std::cerr << "*** Maximum step count reached (total_steps = "
++                << std::dec << total_steps << ", max_steps = "
++                << max_steps << "), exiting!" << std::endl;
++      // TODO FIXME: Determine the best method of terminating.
++      // FORNOW: Exit successfully and let the caller of Spike
++      // decide how to proceed in view of simulation results.
++      exit(0);
++    }
++
+     if (current_step == INTERLEAVE)
+     {
+       current_step = 0;
+diff --git a/vendor/riscv/riscv-isa-sim/riscv/sim.h b/vendor/riscv/riscv-isa-sim/riscv/sim.h
+index 3109173f1..377e96514 100644
+--- a/vendor/riscv/riscv-isa-sim/riscv/sim.h
++++ b/vendor/riscv/riscv-isa-sim/riscv/sim.h
+@@ -32,7 +32,8 @@ public:
+         const debug_module_config_t &dm_config, const char *log_path,
+         bool dtb_enabled, const char *dtb_file,
+         bool socket_enabled,
+-        FILE *cmd_file); // needed for command line option --cmd
++        FILE *cmd_file, // needed for command line option --cmd
++        size_t max_steps);
+   ~sim_t();
+ 
+   // run the simulation to completion
+@@ -88,6 +89,8 @@ private:
+   static const size_t INSNS_PER_RTC_TICK = 100; // 10 MHz clock for 1 BIPS core
+   static const size_t CPU_HZ = 1000000000; // 1GHz CPU
+   size_t current_step;
++  size_t total_steps;
++  size_t max_steps;
+   size_t current_proc;
+   bool debug;
+   bool histogram_enabled; // provide a histogram of PCs
+diff --git a/vendor/riscv/riscv-isa-sim/spike_main/spike.cc b/vendor/riscv/riscv-isa-sim/spike_main/spike.cc
+index 7290f38bb..657533cb1 100644
+--- a/vendor/riscv/riscv-isa-sim/spike_main/spike.cc
++++ b/vendor/riscv/riscv-isa-sim/spike_main/spike.cc
+@@ -86,6 +86,8 @@ static void help(int exit_code = 1)
+   fprintf(stderr, "  --dm-no-halt-groups   Debug module won't support halt groups\n");
+   fprintf(stderr, "  --dm-no-impebreak     Debug module won't support implicit ebreak in program buffer\n");
+   fprintf(stderr, "  --blocksz=<size>      Cache block size (B) for CMO operations(powers of 2) [default 64]\n");
++  fprintf(stderr, "  --steps=<n>           Stop simulation after reaching specified number of steps "
++          "(default: unlimited)\n");
+ 
+   exit(exit_code);
+ }
+@@ -361,6 +363,7 @@ int main(int argc, char** argv)
+     .support_haltgroups = true,
+     .support_impebreak = true
+   };
++  size_t max_steps = 0;
+   cfg_arg_t<size_t> nprocs(1);
+ 
+   cfg_t cfg(/*default_initrd_bounds=*/std::make_pair((reg_t)0, (reg_t)0),
+@@ -465,6 +468,7 @@ int main(int argc, char** argv)
+       exit(-1);
+     }
+   });
++  parser.option(0, "steps", 1, [&](const char* s){max_steps = strtoull(s, 0, 0);});
+   parser.option(0, "dm-progsize", 1,
+       [&](const char* s){dm_config.progbufsize = atoul_safe(s);});
+   parser.option(0, "dm-no-impebreak", 0,
+@@ -564,9 +568,9 @@ int main(int argc, char** argv)
+   }
+ 
+   sim_t s(&cfg, halted,
+-      mems, plugin_devices, htif_args, dm_config, log_path, dtb_enabled, dtb_file,
+-      socket,
+-      cmd_file);
++          mems, plugin_devices, htif_args, dm_config, log_path, dtb_enabled, dtb_file,
++          socket,
++          cmd_file, max_steps);
+   std::unique_ptr<remote_bitbang_t> remote_bitbang((remote_bitbang_t *) NULL);
+   std::unique_ptr<jtag_dtm_t> jtag_dtm(
+       new jtag_dtm_t(&s.debug_module, dmi_rti));

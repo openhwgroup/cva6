@@ -1,0 +1,104 @@
+!Feature
+next_elt_id: 1
+name: StoresVisible
+id: 1
+display_order: 1
+subfeatures: !!omap
+- 000_StoresVisible: !Subfeature
+    name: 000_StoresVisible
+    tag: VP_FENCEI_F001_S000
+    next_elt_id: 4
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F001_S000_I000
+        description: After a fence.i instruction has been executed, all preceding
+          store instructions shall have their effects visible to the instruction fetch
+          of the instructions that are to be executed after the fence.i instruction.
+        reqt_doc: "The RISC-V Instruction Set Manual\nVolume I: Unprivileged ISA\n\
+          Document Version 20191213\nhttps://riscv.org/wp-content/uploads/2019/12/riscv-spec-20191213.pdf"
+        ref_mode: section
+        ref_page: '31'
+        ref_section: Chapter 3
+        ref_viewer: firefox
+        verif_goals: Do a fencei, but right before the fencei do a store to the instruction
+          following the fencei, then see that the newly stored value is executed instead
+          of the old instruction (e.g. change addi to use a different immediate).
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: TODO must be added to regression lists!
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_FENCEI_F001_S000_I001
+        description: After a fence.i instruction has been executed, all preceding
+          store instructions shall have their effects visible to the instruction fetch
+          of the instructions that are to be executed after the fence.i instruction.
+        reqt_doc: "The RISC-V Instruction Set Manual\nVolume I: Unprivileged ISA\n\
+          Document Version 20191213\nhttps://riscv.org/wp-content/uploads/2019/12/riscv-spec-20191213.pdf"
+        ref_mode: section
+        ref_page: '31'
+        ref_section: Chapter 3
+        ref_viewer: firefox
+        verif_goals: Do a fencei followed by any instruction, but let the environment
+          detect when the fencei is being executed and change the memory holding the
+          next instruction, then see that the old instruction is not executed.
+        pfc: -1
+        test_type: 2
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: TODO missing cover!
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_FENCEI_F001_S000_I002
+        description: After a fence.i instruction has been executed, all preceding
+          store instructions shall have their effects visible to the instruction fetch
+          of the instructions that are to be executed after the fence.i instruction.
+        reqt_doc: "The RISC-V Instruction Set Manual\nVolume I: Unprivileged ISA\n\
+          Document Version 20191213\nhttps://riscv.org/wp-content/uploads/2019/12/riscv-spec-20191213.pdf"
+        ref_mode: section
+        ref_page: '31'
+        ref_section: Chapter 3
+        ref_viewer: firefox
+        verif_goals: Let the instruction right before a fence.i write a different
+          instruction to the address following the fence.i, then observe that the
+          written instruction is executed instead of the original one and that no
+          side-effects (csr updates or otherwise) occur (can possibly mix 16bit/32bit
+          instructions to force a noticable difference).
+        pfc: 1
+        test_type: 1
+        cov_method: 0
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_FENCEI_F001_S000_I003
+        description: After a fence.i instruction has been executed, all preceding
+          store instructions shall have their effects visible to the instruction fetch
+          of the instructions that are to be executed after the fence.i instruction.
+        reqt_doc: "The RISC-V Instruction Set Manual\nVolume I: Unprivileged ISA\n\
+          Document Version 20191213\nhttps://riscv.org/wp-content/uploads/2019/12/riscv-spec-20191213.pdf"
+        ref_mode: section
+        ref_page: '31'
+        ref_section: Chapter 3
+        ref_viewer: firefox
+        verif_goals: Check that after having read one value from an address, then
+          after storing a value to that same address, if executing that address then
+          the value shall always be that which was written (should work well in both
+          sim/formal).
+        pfc: 4
+        test_type: 4
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: TODO missing assert. (Note was ignored because of the difficulty
+          of writing this as an assert for fv.)!
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

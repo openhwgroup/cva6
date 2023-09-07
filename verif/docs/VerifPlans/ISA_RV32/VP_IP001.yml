@@ -1,0 +1,665 @@
+!Feature
+next_elt_id: 10
+name: RV32I Register-Register Instructions
+id: 1
+display_order: 1
+subfeatures: !!omap
+- 000_ADD: !Subfeature
+    name: 000_ADD
+    tag: VP_IP001_P000
+    next_elt_id: 4
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S000_I000
+        description: "add rd, rs1, rs2\nrd = rs1 + rs2\nArithmetic overflow is lost\
+          \ and ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_add_cg.cp_rs1\nisacov.rv32i_add_cg.cp_rs2\nisacov.rv32i_add_cg.cp_rd\n\
+          isacov.rv32i_add_cg.cp_rd_rs1_hazard\nisacov.rv32i_add_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S000_I001
+        description: "add rd, rs1, rs2\nrd = rs1 + rs2\nArithmetic overflow is lost\
+          \ and ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_add_cg.cp_rs1_value\nisacov.rv32i_add_cg.cp_rs2_value\n\
+          isacov.rv32i_add_cg.cross_rs1_rs2_value\nisacov.rv32i_add_cg.cp_rs1_toggle\n\
+          isacov.rv32i_add_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S000_I002
+        description: "add rd, rs1, rs2\nrd = rs1 + rs2\nArithmetic overflow is lost\
+          \ and ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_add_cg.cp_rd_value\nisacov.rv32i_add_cg.cp_rd_toggle"
+        comments: ''
+- 001_SUB: !Subfeature
+    name: 001_SUB
+    tag: VP_IP001_P001
+    next_elt_id: 3
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S001_I000
+        description: "sub rd, rs1, rs2\nrd = rs1 - rs2\nArithmetic underflow is ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sub_cg.cp_rs1\nisacov.rv32i_sub_cg.cp_rs2\nisacov.rv32i_sub_cg.cp_rd\n\
+          isacov.rv32i_sub_cg.cp_rd_rs1_hazard\nisacov.rv32i_sub_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S001_I001
+        description: "sub rd, rs1, rs2\nrd = rs1 - rs2\nArithmetic underflow is ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sub_cg.cp_rs1_value\nisacov.rv32i_sub_cg.cp_rs2_value\n\
+          isacov.rv32i_sub_cg.cross_rs1_rs2_value\nisacov.rv32i_sub_cg.cp_rs1_toggle\n\
+          isacov.rv32i_sub_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S001_I002
+        description: "sub rd, rs1, rs2\nrd = rs1 - rs2\nArithmetic underflow is ignored"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sub_cg.cp_rd_value\nisacov.rv32i_sub_cg.cp_rd_toggle"
+        comments: ''
+- 002_AND: !Subfeature
+    name: 002_AND
+    tag: VP_IP001_P002
+    next_elt_id: 3
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S002_I000
+        description: "and rd, rs1, rs2\nrd = rs1 & rs2\nNote: this is a bitwise, not\
+          \ logical operation"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_and_cg.cp_rs1\nisacov.rv32i_and_cg.cp_rs2\nisacov.rv32i_and_cg.cp_rd\n\
+          isacov.rv32i_and_cg.cp_rd_rs1_hazard\nisacov.rv32i_and_cg.cp_rd_rs2_hazard\n\
+          isacov.rv32i_and_cg.cp_rs1\nisacov.rv32i_and_cg.cp_rs2\nisacov.rv32i_and_cg.cp_rd\n\
+          isacov.rv32i_and_cg.cp_rd_rs1_hazard\nisacov.rv32i_and_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S002_I001
+        description: "and rd, rs1, rs2\nrd = rs1 & rs2\nNote: this is a bitwise, not\
+          \ logical operation"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_and_cg.cp_rs1_value\nisacov.rv32i_and_cg.cp_rs2_value\n\
+          isacov.rv32i_and_cg.cross_rs1_rs2_value\nisacov.rv32i_and_cg.cp_rs1_toggle\n\
+          isacov.rv32i_and_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S002_I002
+        description: "and rd, rs1, rs2\nrd = rs1 & rs2\nNote: this is a bitwise, not\
+          \ logical operation"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_and_cg.cp_rd_value\nisacov.rv32i_and_cg.cp_rd_toggle"
+        comments: ''
+- 003_OR: !Subfeature
+    name: 003_OR
+    tag: VP_IP001_P003
+    next_elt_id: 3
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S003_I000
+        description: "or rd, rs1, rs2\nrd = rs1 | rs2\nNote: this is a bitwise, not\
+          \ logical operation"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_or_cg.cp_rs1\nisacov.rv32i_or_cg.cp_rs2\nisacov.rv32i_or_cg.cp_rd\n\
+          isacov.rv32i_or_cg.cp_rd_rs1_hazard\nisacov.rv32i_or_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S003_I001
+        description: "or rd, rs1, rs2\nrd = rs1 | rs2\nNote: this is a bitwise, not\
+          \ logical operation"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_or_cg.cp_rs1_value\nisacov.rv32i_or_cg.cp_rs2_value\n\
+          isacov.rv32i_or_cg.cross_rs1_rs2_value\nisacov.rv32i_or_cg.cp_rs1_toggle\n\
+          isacov.rv32i_or_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S003_I002
+        description: "or rd, rs1, rs2\nrd = rs1 | rs2\nNote: this is a bitwise, not\
+          \ logical operation"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_or_cg.cp_rd_value\nisacov.rv32i_or_cg.cp_rd_toggle"
+        comments: ''
+- 004_XOR: !Subfeature
+    name: 004_XOR
+    tag: VP_IP001_P004
+    next_elt_id: 3
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S004_I000
+        description: "xor rd, rs1, rs2\nrd = rs1 ^ rs2\nNote: this is a bitwise, not\
+          \ logical operation"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_xor_cg.cp_rs1\nisacov.rv32i_xor_cg.cp_rs2\nisacov.rv32i_xor_cg.cp_rd\n\
+          isacov.rv32i_xor_cg.rd_rs1_hazard\nisacov.rv32i_xor_cg.rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S004_I001
+        description: "xor rd, rs1, rs2\nrd = rs1 ^ rs2\nNote: this is a bitwise, not\
+          \ logical operation"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_xor_cg.cp_rs1_value\nisacov.rv32i_xor_cg.cp_rs2_value\n\
+          isacov.rv32i_xor_cg.cross_rs1_rs2_value\nisacov.rv32i_xor_cg.cp_rs1_toggle\n\
+          isacov.rv32i_xor_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S004_I002
+        description: "xor rd, rs1, rs2\nrd = rs1 ^ rs2\nNote: this is a bitwise, not\
+          \ logical operation"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: "isacov.rv32i_xor_cg.cp_rd_value\nisacov.rv32i_xor_cg.cp_rd_toggle"
+        comments: ''
+- 005_SLT: !Subfeature
+    name: 005_SLT
+    tag: VP_IP001_P005
+    next_elt_id: 3
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S005_I000
+        description: "slt rd, rs1, rs2\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1 ad rs2\
+          \ treated as signed numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_slt_cg.cp_rs1\nisacov.rv32i_slt_cg.cp_rs2\nisacov.rv32i_slt_cg.cp_rd\n\
+          isacov.rv32i_slt_cg.cp_rd_rs1_hazard\nisacov.rv32i_slt_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S005_I001
+        description: "slt rd, rs1, rs2\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1 ad rs2\
+          \ treated as signed numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_slt_cg.cp_rs1_value\nisacov.rv32i_slt_cg.cp_rs2_value\n\
+          isacov.rv32i_slt_cg.cross_rs1_rs2_value\nisacov.rv32i_slt_cg.cp_rs1_toggle\n\
+          isacov.rv32i_slt_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S005_I002
+        description: "slt rd, rs1, rs2\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1 ad rs2\
+          \ treated as signed numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is [0,1]"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: isacov.rv32i_slt_cg.cp_rd_value
+        comments: ''
+- 006_SLTU: !Subfeature
+    name: 006_SLTU
+    tag: VP_IP001_P006
+    next_elt_id: 3
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S006_I000
+        description: "sltu rd, rs1, imm[11:0]\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1\
+          \ and rs2 treated as unsigned numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sltu_cg.cp_rs1\nisacov.rv32i_sltu_cg.cp_rs2\n\
+          isacov.rv32i_sltu_cg.cp_rd\nisacov.rv32i_sltu_cg.cp_rd_rs1_hazard\nisacov.rv32i_sltu_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S006_I001
+        description: "sltu rd, rs1, imm[11:0]\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1\
+          \ and rs2 treated as unsigned numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
+          \ is non-zero and zero\nAll combinations of rs1 and rs2 non-zero and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sltu_cg.cp_rs1_value\nisacov.rv32i_sltu_cg.cp_rs2_value\n\
+          isacov.rv32i_sltu_cg.cross_rs1_rs2_value\nisacov.rv32i_sltu_cg.cp_rs1_toggle\n\
+          isacov.rv32i_sltu_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S006_I002
+        description: "sltu rd, rs1, imm[11:0]\nrd = (rs1 < rs2) ? 1 : 0\nBoth rs1\
+          \ and rs2 treated as unsigned numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is [0,1]"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: isacov.rv32i_sltu_cg.cp_rd_value
+        comments: ''
+- 007_SLL: !Subfeature
+    name: 007_SLL
+    tag: VP_IP001_P007
+    next_elt_id: 3
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S007_I000
+        description: "sll rd, rs1, rs2\nrd = rs1 << rs2[4:0]\nZeros are shirfted into\
+          \ lower bits"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sll_cg.cp_rs1\nisacov.rv32i_sll_cg.cp_rs2\nisacov.rv32i_sll_cg.cp_rd\n\
+          isacov.rv32i_sll_cg.cp_rd_rs1_hazard\nisacov.rv32i_sll_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S007_I001
+        description: "sll rd, rs1, rs2\nrd = rs1 << rs2[4:0]\nZeros are shirfted into\
+          \ lower bits"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
+          \ is tested from [0,31]\nAll combinations of rs1 and rs2 non-zero and zero\
+          \ values with all shift values are used\nAll bits of rs1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sll_cg.cp_rs1_value\nisacov.rv32i_sll_cg.cp_rs2_value\n\
+          isacov.rv32i_sll_cg.cross_rs1_rs2_value\nisacov.rv32i_sll_cg.cp_rs1_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S007_I002
+        description: "sll rd, rs1, rs2\nrd = rs1 << rs2[4:0]\nZeros are shirfted into\
+          \ lower bits"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is non-zero and zero.\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sll_cg.cp_rd_value\nisacov.rv32i_sll_cg.cp_rd_toggle\n\
+          isacov.rv32i_sll_cg.cp_rd_value\nisacov.rv32i_sll_cg.cp_rd_toggle"
+        comments: ''
+- 008_SRL: !Subfeature
+    name: 008_SRL
+    tag: VP_IP001_P008
+    next_elt_id: 3
+    display_order: 8
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S008_I000
+        description: "srl rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
+          \ upper bits"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_srl_cg.cp_rs1\nisacov.rv32i_srl_cg.cp_rs2\nisacov.rv32i_srl_cg.cp_rd\n\
+          isacov.rv32i_srl_cg.cp_rd_rs1_hazard\nisacov.rv32i_srl_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S008_I001
+        description: "srl rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
+          \ upper bits"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
+          \ is tested from [0,31]\nAll combinations of rs1 and rs2 non-zero and zero\
+          \ values with all shift values are used\nAll bits of rs1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_srl_cg.cp_rs1_value\nisacov.rv32i_srl_cg.cp_rs2_value\n\
+          isacov.rv32i_srl_cg.cross_rs1_rs2_value\nisacov.rv32i_srl_cg.cp_rs1_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S008_I002
+        description: "srl rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
+          \ upper bits"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is non-zero and zero.\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_srl_cg.cp_rd_value\nisacov.rv32i_srl_cg.cp_rd_toggle"
+        comments: ''
+- 009_SRA: !Subfeature
+    name: 009_SRA
+    tag: VP_IP001_P009
+    next_elt_id: 3
+    display_order: 9
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F001_S009_I000
+        description: "sra rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nThe original sign bit\
+          \ is copied into the vacated upper bits"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sra_cg.cp_rs1\nisacov.rv32i_sra_cg.cp_rs2\nisacov.rv32i_sra_cg.cp_rd\n\
+          isacov.rv32i_sra_cg.cp_rd_rs1_hazard\nisacov.rv32i_sra_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F001_S009_I001
+        description: "sra rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nThe original sign bit\
+          \ is copied into the vacated upper bits"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve, and zero\nrs2 value\
+          \ is tested from [0,31]\nAll combinations of rs1 and rs2 +ve, -ve and zero\
+          \ values with all shift values are used\nAll bits of rs1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sra_cg.cp_rs1_value\nisacov.rv32i_sra_cg.cp_rs2_value\n\
+          isacov.rv32i_sra_cg.cross_rs1_rs2_value\nisacov.rv32i_sra_cg.cp_rs1_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F001_S009_I002
+        description: "sra rd, rs1, rs2\nrd = rs1 >> rs2[4:0]\nZeros are shirfted into\
+          \ upper bits"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve, and zero.\nAll bits\
+          \ of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sra_cg.cp_rd_value\nisacov.rv32i_sra_cg.cp_rd_toggle"
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

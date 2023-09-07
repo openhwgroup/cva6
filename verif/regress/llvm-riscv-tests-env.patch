@@ -1,0 +1,47 @@
+diff --git a/p/riscv_test.h b/p/riscv_test.h
+index 88ca6c1..3bd4767 100644
+--- a/p/riscv_test.h
++++ b/p/riscv_test.h
+@@ -110,7 +110,7 @@
+ #define INIT_SATP                                                      \
+   la t0, 1f;                                                            \
+   csrw mtvec, t0;                                                       \
+-  csrwi sptbr, 0;                                                       \
++  csrwi satp, 0;                                                        \
+   .align 2;                                                             \
+ 1:
+ 
+diff --git a/v/entry.S b/v/entry.S
+index fa492e6..5924ee9 100644
+--- a/v/entry.S
++++ b/v/entry.S
+@@ -148,12 +148,12 @@ trap_entry:
+   csrrw  t0,sscratch,sp
+   STORE  t0,2*REGBYTES(sp)
+ 
+-  # get sr, epc, badvaddr, cause
++  # get sr, epc, tval, cause
+   csrr   t0,sstatus
+   STORE  t0,32*REGBYTES(sp)
+   csrr   t0,sepc
+   STORE  t0,33*REGBYTES(sp)
+-  csrr   t0,sbadaddr
++  csrr   t0,stval
+   STORE  t0,34*REGBYTES(sp)
+   csrr   t0,scause
+   STORE  t0,35*REGBYTES(sp)
+diff --git a/v/vm.c b/v/vm.c
+index 6bf05f7..71700f5 100644
+--- a/v/vm.c
++++ b/v/vm.c
+@@ -17,8 +17,8 @@
+ void trap_entry();
+ void pop_tf(trapframe_t*);
+ 
+-volatile uint64_t tohost;
+-volatile uint64_t fromhost;
++extern volatile uint64_t tohost;
++extern volatile uint64_t fromhost;
+ 
+ static void do_tohost(uint64_t tohost_value)
+ {

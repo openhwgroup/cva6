@@ -1,0 +1,37 @@
+!Feature
+next_elt_id: 1
+name: Flush
+id: 5
+display_order: 5
+subfeatures: !!omap
+- 000_Flush: !Subfeature
+    name: 000_Flush
+    tag: VP_FENCEI_F005_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F005_S000_I000
+        description: When fence.i is executed, then any prefetched instructions shall
+          be flushed; meaning that pipeline stages are flushed, prefetcher is flushed,
+          write buffer is flushed, and data_req_o is eventually supressed.
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fence
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that a fence.i will cause flushing of the pipeline, prefetcher,
+          write buffer, and data_req_o.
+        pfc: 4
+        test_type: 4
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: TODO missing assert. (Have not checked/covered that the pipeline/writebuffer
+          content is actually purged. Or that any memory change WILL be the next instr
+          word.)!
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

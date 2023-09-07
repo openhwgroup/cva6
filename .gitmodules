@@ -34,3 +34,6 @@
 [submodule "corev_apu/tb/common_verification"]
 	path = corev_apu/tb/common_verification
 	url = https://github.com/pulp-platform/common_verification.git
+[submodule "verif/core-v-verif"]
+	path = verif/core-v-verif
+	url = https://github.com/openhwgroup/core-v-verif

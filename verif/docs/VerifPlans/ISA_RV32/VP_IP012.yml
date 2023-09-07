@@ -1,0 +1,218 @@
+!Feature
+next_elt_id: 4
+name: RV32C Load and Store Instructions
+id: 12
+display_order: 12
+subfeatures: !!omap
+- 000_C.LWSP: !Subfeature
+    name: 000_C.LWSP
+    tag: VP_IP009_P000
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F012_S000_I000
+        description: "c.lwsp rd, uimm(x2)\nx[rd] = sext(M[x[2] + uimm][0:31])\nExpands\
+          \ to lw rd, uimm[7:2](x2). \nInvalid when rd=x0.\nuimm treated as unsigned\
+          \ number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F012_S000_I001
+        description: "c.lwsp rd, uimm(x2)\nx[rd] = sext(M[x[2] + uimm][0:31])\nExpands\
+          \ to lw rd, uimm[7:2](x2). \nInvalid when rd=x0.\nuimm treated as unsigned\
+          \ number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nuimm value is non-zero and zero\nAll bits\
+          \ of uimm are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F012_S000_I002
+        description: "c.lwsp rd, uimm(x2)\nx[rd] = sext(M[x[2] + uimm][0:31])\nExpands\
+          \ to lw rd, uimm[7:2](x2). \nInvalid when rd=x0.\nuimm treated as unsigned\
+          \ number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is non-zero and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_C.SWSP: !Subfeature
+    name: 001_C.SWSP
+    tag: VP_IP009_P001
+    next_elt_id: 2
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F012_S001_I000
+        description: "c.swsp rs2, uimm(x2)\nM[x[2] + uimm][0:31] = x[rs2]\nExpands\
+          \ to sw rs2, uimm[7:2](x2).\nuimm treated as unsigned number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs2 registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F012_S001_I001
+        description: "c.swsp rs2, uimm(x2)\nM[x[2] + uimm][0:31] = x[rs2]\nExpands\
+          \ to sw rs2, uimm[7:2](x2).\nuimm treated as unsigned number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nuimm value is non-zero and zero\nAll bits\
+          \ of uimm are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_C.LW: !Subfeature
+    name: 002_C.LW
+    tag: VP_IP009_P002
+    next_elt_id: 3
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F012_S002_I000
+        description: "c.lw rd', uimm(rs1')\nx[rd] = sext(M[x[rs1] + uimm][0:31]),\
+          \ where rd=8+rd' and rs1=8+rs1'\nExpands to lw rd', uimm[6:2](rs1')"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1` registers are used.\n\
+          All possible rd` registers are used.\nAll possible register combinations\
+          \ where rs1` == rd` are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F012_S002_I001
+        description: "c.lw rd', uimm(rs1')\nx[rd] = sext(M[x[rs1] + uimm][0:31]),\
+          \ where rd=8+rd' and rs1=8+rs1'\nExpands to lw rd', uimm[6:2](rs1')"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nuimm value is non-zero and zero\nAll bits\
+          \ of uimm are toggled\nAll bits of rs1` are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F012_S002_I002
+        description: "c.lw rd', uimm(rs1')\nx[rd] = sext(M[x[rs1] + uimm][0:31]),\
+          \ where rd=8+rd' and rs1=8+rs1'\nExpands to lw rd', uimm[6:2](rs1')"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd` value is non-zero and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_C.SW: !Subfeature
+    name: 003_C.SW
+    tag: VP_IP009_P003
+    next_elt_id: 2
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F012_S003_I000
+        description: "c.sw rs2', uimm(rs1')\nM[x[rs1] + uimm][0:31] = x[rs2], where\
+          \ rs2=8+rs2' and rs1=8+rs1'\nExpands to sw rs2', uimm[6:2](rs1')."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1` registers are used.\n\
+          All possible rd` registers are used.\nAll possible register combinations\
+          \ where rs1` == rd` are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F012_S003_I001
+        description: "c.sw rs2', uimm(rs1')\nM[x[rs1] + uimm][0:31] = x[rs2], where\
+          \ rs2=8+rs2' and rs1=8+rs1'\nExpands to sw rs2', uimm[6:2](rs1')."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nuimm value is non-zero and zero\nAll bits\
+          \ of uimm are toggled\nAll bits of rs1` are toggled\nAll bits of rs2` are\
+          \ toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

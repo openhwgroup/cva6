@@ -1,0 +1,14 @@
+diff --git a/vendor/riscv/riscv-isa-sim/riscv/sim.cc b/vendor/riscv/riscv-isa-sim/riscv/sim.cc
+index 8863a5f7..9179ee4e 100644
+--- a/vendor/riscv/riscv-isa-sim/riscv/sim.cc
++++ b/vendor/riscv/riscv-isa-sim/riscv/sim.cc
+@@ -257,7 +257,8 @@ void sim_t::step(size_t n)
+     if (current_step == INTERLEAVE)
+     {
+       current_step = 0;
+-      procs[current_proc]->get_mmu()->yield_load_reservation();
++      if (procs.size() > 1)
++        procs[current_proc]->get_mmu()->yield_load_reservation();
+       if (++current_proc == procs.size()) {
+         current_proc = 0;
+         if (clint) clint->increment(INTERLEAVE / INSNS_PER_RTC_TICK);

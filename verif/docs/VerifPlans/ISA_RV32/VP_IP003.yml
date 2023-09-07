@@ -1,0 +1,454 @@
+!Feature
+next_elt_id: 8
+name: RV32I Load and Store Instructions
+id: 3
+display_order: 3
+subfeatures: !!omap
+- 000_LB: !Subfeature
+    name: 000_LB
+    tag: VP_IP003_P000
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F003_S000_I000
+        description: "lb rd, rs1, imm\nrd = Sext(M[rs1+imm][0:7])\nrd is calculated\
+          \ using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rd registers are used.\nAll possible register combinations\
+          \ where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lb_cg.cp_rs1\nisacov.rv32i_lb_cg.cp_rd\nisacov.rv32i_lb_cg.cp_rd_rs1_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F003_S000_I001
+        description: "lb rd, rs1, imm\nrd = Sext(M[rs1+imm][0:7])\nrd is calculated\
+          \ using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nimmi value is +ve, -ve and zero\nAll combinations\
+          \ of rs1 and immi +ve, -ve, and zero values are used\nAll bits of rs1 are\
+          \ toggled\nAll bits of immi are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lb_cg.cp_immi_value\nisacov.rv32i_lb_cg.cp_rs1_toggle\n\
+          isacov.rv32i_lb_cg.cp_immi_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F003_S000_I002
+        description: "lb rd, rs1, imm\nrd = Sext(M[rs1+imm][0:7])\nrd is calculated\
+          \ using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lb_cg.cp_rd_value\nisacov.rv32i_lb_cg.cp_rd_toggle"
+        comments: ''
+- 001_LH: !Subfeature
+    name: 001_LH
+    tag: VP_IP003_P001
+    next_elt_id: 3
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F003_S001_I000
+        description: "lh rd, rs1, imm\nrd = Sext(M[rs1+imm][0:15])\nrd is calculated\
+          \ using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rd registers are used.\nAll possible register combinations\
+          \ where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lh_cg.cp_rs1\nisacov.rv32i_lh_cg.cp_rd\nisacov.rv32i_lh_cg.cp_rd_rs1_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F003_S001_I001
+        description: "lh rd, rs1, imm\nrd = Sext(M[rs1+imm][0:15])\nrd is calculated\
+          \ using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nimmi value is +ve, -ve and zero\nAll combinations\
+          \ of rs1 and immi +ve, -ve, and zero values are used\nAll bits of rs1 are\
+          \ toggled\nAll bits of immi are toggled\nUnaligned and aligned accesses\
+          \ from memory"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lh_cg.cp_immi_value\nisacov.rv32i_lh_cg.cp_rs1_toggle\n\
+          isacov.rv32i_lh_cg.cp_immi_toggle\nisacov.rv32i_lh_cg.cp_aligned"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F003_S001_I002
+        description: "lh rd, rs1, imm\nrd = Sext(M[rs1+imm][0:15])\nrd is calculated\
+          \ using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lh_cg.cp_rd_value\nisacov.rv32i_lh_cg.cp_rd_toggle"
+        comments: ''
+- 002_LW: !Subfeature
+    name: 002_LW
+    tag: VP_IP003_P002
+    next_elt_id: 3
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F003_S002_I000
+        description: "lw rd, rs1, imm\nrd = Sext(M[rs1+imm][0:31])\nrd is calculated\
+          \ using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rd registers are used.\nAll possible register combinations\
+          \ where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lw_cg.cp_rs1\nisacov.rv32i_lw_cg.cp_rd\nisacov.rv32i_lw_cg.cp_rd_rs1_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F003_S002_I001
+        description: "lw rd, rs1, imm\nrd = Sext(M[rs1+imm][0:31])\nrd is calculated\
+          \ using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nimmi value is +ve, -ve and zero\nAll combinations\
+          \ of rs1 and immi +ve, -ve, and zero values are used\nAll bits of rs1 are\
+          \ toggled\nAll bits of immi are toggled\nUnaligned and aligned accesses\
+          \ from memory"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lw_cg.cp_immi_value\nisacov.rv32i_lw_cg.cp_rs1_toggle\n\
+          isacov.rv32i_lw_cg.cp_immi_toggle\nisacov.rv32i_lw_cg.cp_aligned"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F003_S002_I002
+        description: "lw rd, rs1, imm\nrd = Sext(M[rs1+imm][0:31])\nrd is calculated\
+          \ using signed arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lw_cg.cp_rd_value\nisacov.rv32i_lw_cg.cp_rd_toggle"
+        comments: ''
+- 003_LBU: !Subfeature
+    name: 003_LBU
+    tag: VP_IP003_P003
+    next_elt_id: 3
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F003_S003_I000
+        description: "lbu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:7])\nrd is calculated\
+          \ using unsigned arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rd registers are used.\nAll possible register combinations\
+          \ where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lbu_cg.cp_rs1\nisacov.rv32i_lbu_cg.cp_rd\nisacov.rv32i_lbu_cg.cp_rd_rs1_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F003_S003_I001
+        description: "lbu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:7])\nrd is calculated\
+          \ using unsigned arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nimmi value is +ve, -ve and zero\nAll combinations\
+          \ of rs1 and immi +ve, -ve, and zero values are used\nAll bits of rs1 are\
+          \ toggled\nAll bits of immi are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lbu_cg.cp_immi_value\nisacov.rv32i_lbu_cg.cp_rs1_toggle\n\
+          isacov.rv32i_lbu_cg.cp_immi_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F003_S003_I002
+        description: "lbu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:7])\nrd is calculated\
+          \ using unsigned arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd[7:0] are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lbu_cg.cp_rd_value\nisacov.rv32i_lbu_cg.cp_rd_toggle"
+        comments: ''
+- 004_LHU: !Subfeature
+    name: 004_LHU
+    tag: VP_IP003_P004
+    next_elt_id: 3
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F003_S004_I000
+        description: "lhu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:15])\nrd is calculated\
+          \ using unsigned arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rd registers are used.\nAll possible register combinations\
+          \ where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lhu_cg.cp_rs1\nisacov.rv32i_lhu_cg.cp_rd\nisacov.rv32i_lhu_cg.cp_rd_rs1_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F003_S004_I001
+        description: "lhu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:15])\nrd is calculated\
+          \ using unsigned arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nimmi value is +ve, -ve and zero\nAll combinations\
+          \ of rs1 and immi +ve, -ve, and zero values are used\nAll bits of rs1 are\
+          \ toggled\nAll bits of immi are toggled\nUnaligned and aligned accesses\
+          \ from memory"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lhu_cg.cp_immi_value\nisacov.rv32i_lhu_cg.cp_rs1_toggle\n\
+          isacov.rv32i_lhu_cg.cp_immi_toggle\nisacov.rv32i_lhu_cg.cp_aligned"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F003_S004_I002
+        description: "lhu rd, rs1, imm\nrd = Zext(M[rs1+imm][0:15])\nrd is calculated\
+          \ using unsigned arithmetic"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd[15:0] are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_lhu_cg.cp_rd_value\nisacov.rv32i_lhu_cg.cp_rd_toggle"
+        comments: ''
+- 005_SB: !Subfeature
+    name: 005_SB
+    tag: VP_IP003_P005
+    next_elt_id: 3
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F003_S005_I000
+        description: "sb rs1, rs2, imm\nM[rs1+imm][0:7] = rs2[0:7]"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sb_cg.cp_rs1\nisacov.rv32i_sb_cg.cp_rs2"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F003_S005_I001
+        description: "sb rs1, rs2, imm\nM[rs1+imm][0:7] = rs2[0:7]"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nimms value is +ve, -ve and zero\nAll bits\
+          \ of rs1 are toggled\nAll bits of rs2 are toggled\nAll bits of imms are\
+          \ toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sb_cg.cp_imms_value\nisacov.rv32i_sb_cg.cp_rs1_toggle\n\
+          isacov.rv32i_sb_cg.cp_rs2_toggle\nisacov.rv32i_sb_cg.cp_imms_toggle"
+        comments: ''
+- 006_SH: !Subfeature
+    name: 006_SH
+    tag: VP_IP003_P006
+    next_elt_id: 2
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F003_S006_I000
+        description: "sh rs1, rs2, imm\nM[rs1+imm][0:15] = rs2[0:15]"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sh_cg.cp_rs1\nisacov.rv32i_sh_cg.cp_rs2"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F003_S006_I001
+        description: "sh rs1, rs2, imm\nM[rs1+imm][0:15] = rs2[0:15]"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nimms value is +ve, -ve and zero\nAll bits\
+          \ of rs1 are toggled\nAll bits of rs2 are toggled\nAll bits of imms are\
+          \ toggled\nUnaligned and aligned accesses to memory"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sh_cg.cp_imms_value\nisacov.rv32i_sh_cg.cp_rs1_toggle\n\
+          isacov.rv32i_sh_cg.cp_rs2_toggle\nisacov.rv32i_sh_cg.cp_imms_toggle\nisacov.rv32i_sh_cg.cp_aligned"
+        comments: ''
+- 007_SW: !Subfeature
+    name: 007_SW
+    tag: VP_IP003_P007
+    next_elt_id: 2
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F003_S007_I000
+        description: "sw rs1, rs2, imm\nM[rs1+imm][0:31] = rs2[0:31]"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sw_cg.cp_rs1\nisacov.rv32i_sw_cg.cp_rs2"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F003_S007_I001
+        description: "sw rs1, rs2, imm\nM[rs1+imm][0:31] = rs2[0:31]"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nimms value is +ve, -ve and zero\nAll bits\
+          \ of rs1 are toggled\nAll bits of rs2 are toggled\nAll bits of imms are\
+          \ toggled\nUnaligned and aligned accesses to memory"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32i_sw_cg.cp_imms_value\nisacov.rv32i_sw_cg.cp_rs1_toggle\n\
+          isacov.rv32i_sw_cg.cp_rs2_toggle\nisacov.rv32i_sw_cg.cp_imms_toggle\nisacov.rv32i_sw_cg.cp_aligned"
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

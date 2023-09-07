@@ -1,0 +1,141 @@
+!Feature
+next_elt_id: 3
+name: Handshake_Process
+id: 8
+display_order: 8
+subfeatures: !!omap
+- '000_Stability ': !Subfeature
+    name: '000_Stability '
+    tag: VP_IP008_P000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F008_S000_I000
+        description: All signals must remain stable when [Ax | x]VALID is asserted
+          and [Ax | x]READY is LOW
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A3.2.2)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that all the signals does not change while [Ax | x]VALID
+          is asserted and [Ax | x]READY not yet asserted.
+        pfc: 4
+        test_type: 4
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_1_F008_S000_I001
+        description: '[Ax | x]VALID must remain asserted until [Ax | x]READY is HIGH'
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A3.2.1)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that [Ax | x]VALID does not change while [Ax | x]READY
+          is low.
+        pfc: 4
+        test_type: 4
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_Timing: !Subfeature
+    name: 001_Timing
+    tag: VP_IP008_P001
+    next_elt_id: 8
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F008_S001_I000
+        description: The Manager must not wait for the Subordinate to assert ARREADY
+          before asserting ARVALID
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A3.3.1)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Ensure that no errors are encountered as the testbench injects\
+          \ random Ready-to-Valid delays.  There are two cases to consider:\n\nARREADY\
+          \ is asserted on or after same cycle as ARVALID\nARREADY is asserted and\
+          \ deasserted during an interval when ARVALID is de-asserted"
+        pfc: 0
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_1_F008_S001_I002
+        description: The Manager must not wait for the Subordinate to assert AWREADY
+          before asserting AWVALID or WVALID.
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A3.3.1)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Ensure that no errors are encountered as the testbench injects\
+          \ random Ready-to-Valid delays. There are four cases to consider:  \n  \
+          \                                      \nAWREADY is asserted on or after\
+          \ same cycle as AWVALID and WVALID is de-asserted\nAWREADY is asserted on\
+          \ or after same cycle as WVALID  and AWVALID is de-asserted\nAWREADY is\
+          \ asserted on or after same cycle as AWVALID and WVALID\nAWREADY is asserted\
+          \ and deasserted during an interval when AWVALID and WVALID is de-asserted"
+        pfc: 0
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_1_F008_S001_I003
+        description: The Manager must not wait for the Subordinate to assert WREADY
+          before asserting AWVALID or WVALID.
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A3.3.1)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Ensure that no errors are encountered as the testbench injects\
+          \ random Ready-to-Valid delays. There are four cases to consider:  \n  \
+          \                                              \nWREADY is asserted on or\
+          \ after same cycle as AWVALID and WVALID is de-asserted\nWREADY is asserted\
+          \ on or after same cycle as WVALID  and AWVALID is de-asserted\nWREADY is\
+          \ asserted on or after same cycle as AWVALID and WVALID\nWREADY is asserted\
+          \ and deasserted during an interval when AWVALID and WVALID is de-asserted"
+        pfc: 0
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '005': !VerifItem
+        name: '005'
+        tag: VP_1_F008_S001_I005
+        description: The Subordinate must not wait for the Manager to assert [B |
+          R]READY before asserting [B | R]VALID
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A3.3.1)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: No specific “observable checks” to be made in simulation. Testbench
+          will always provide response data independently of [B | R]READY.
+        pfc: 0
+        test_type: 10
+        cov_method: 10
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: 03047594b4818fcbd06a40669e637081ff1d4fb9 $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
