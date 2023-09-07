@@ -1,0 +1,275 @@
+!Feature
+next_elt_id: 7
+name: RV32M Multiplication Operations
+id: 6
+display_order: 6
+subfeatures: !!omap
+- 000_MUL: !Subfeature
+    name: 000_MUL
+    tag: VP_IP000_P000
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F006_S000_I000
+        description: "mul rd, rs1, rs2\nx[rd] = x[rs1] * x[rs2]\nArithmetic overflow\
+          \ is ignored."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mul_cg.cp_rs1\nisacov.rv32m_mul_cg.cp_rs2\nisacov.rv32m_mul_cg.cp_rd\n\
+          isacov.rv32m_mul_cg.cp_rd_rs1_hazard\nisacov.rv32m_mul_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F006_S000_I001
+        description: "mul rd, rs1, rs2\nx[rd] = x[rs1] * x[rs2]\nArithmetic overflow\
+          \ is ignored."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
+          \ is non-zero and zero\nAll combinations of rs1 and rs2 non-zero and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mul_cg.cp_rs1_value\nisacov.rv32m_mul_cg.cp_rs2_value\n\
+          isacov.rv32m_mul_cg.cross_rs1_rs2_value\nisacov.rv32m_mul_cg.cp_rs1_toggle\
+          \ \nisacov.rv32m_mul_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F006_S000_I002
+        description: "mul rd, rs1, rs2\nx[rd] = x[rs1] * x[rs2]\nArithmetic overflow\
+          \ is ignored."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is non-zero and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mul_cg.cp_rd_value\nisacov.rv32m_mul_cg.cp_rd_toggle"
+        comments: ''
+- 001_MULH: !Subfeature
+    name: 001_MULH
+    tag: VP_IP000_P001
+    next_elt_id: 3
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F006_S001_I000
+        description: "mulh rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nBoth\
+          \ rs1 and rs2 treated as signed numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 32
+        coverage_loc: "isacov.rv32m_mulh_cg.cp_rs1\nisacov.rv32m_mulh_cg.cp_rs2\n\
+          isacov.rv32m_mulh_cg.cp_rd\nisacov.rv32m_mulh_cg.cp_rd_rs1_hazard\nisacov.rv32m_mulh_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F006_S001_I001
+        description: "mulh rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nBoth\
+          \ rs1 and rs2 treated as signed numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 32
+        coverage_loc: "isacov.rv32m_mulh_cg.cp_rs1_value\nisacov.rv32m_mulh_cg.cp_rs2_value\n\
+          isacov.rv32m_mulh_cg.cross_rs1_rs2_value\nisacov.rv32m_mulh_cg.cp_rs1_toggle\
+          \ \nisacov.rv32m_mulh_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F006_S001_I002
+        description: "mulh rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nBoth\
+          \ rs1 and rs2 treated as signed numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mulh_cg.cp_rd_value\nisacov.rv32m_mulh_cg.cp_rd_toggle"
+        comments: ''
+- 002_MULHU: !Subfeature
+    name: 002_MULHU
+    tag: VP_IP000_P002
+    next_elt_id: 3
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F006_S002_I000
+        description: "mulhu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >> XLEN\nBoth\
+          \ rs1 and rs2 treated as unsigned numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mulhu_cg.cp_rs1\nisacov.rv32m_mulhu_cg.cp_rs2\n\
+          isacov.rv32m_mulhu_cg.cp_rd\nisacov.rv32m_mulhu_cg.cp_rd_rs1_hazard\nisacov.rv32m_mulhu_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F006_S002_I001
+        description: "mulhu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >> XLEN\nBoth\
+          \ rs1 and rs2 treated as unsigned numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is non-zero and zero\nrs2 value\
+          \ is non-zero and zero\nAll combinations of rs1 and rs2 non-zero and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mulhu_cg.cp_rs1_value\nisacov.rv32m_mulhu_cg.cp_rs2_value\n\
+          isacov.rv32m_mulhu_cg.cross_rs1_rs2_value\nisacov.rv32m_mulhu_cg.cp_rs1_toggle\
+          \ \nisacov.rv32m_mulhu_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F006_S002_I002
+        description: "mulhu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >> XLEN\nBoth\
+          \ rs1 and rs2 treated as unsigned numbers"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is non-zero and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mulhu_cg.cp_rd_value\nisacov.rv32m_mulhu_cg.cp_rd_toggle"
+        comments: ''
+- 003_MULHSU: !Subfeature
+    name: 003_MULHSU
+    tag: VP_IP000_P003
+    next_elt_id: 3
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F006_S003_I000
+        description: "mulhsu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nrs1\
+          \ treated as signed number, rs2 treated as unsigned number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mulhsu_cg.cp_rs1\nisacov.rv32m_mulhsu_cg.cp_rs2\n\
+          isacov.rv32m_mulhsu_cg.cp_rd\nisacov.rv32m_mulhsu_cg.cp_rd_rs1_hazard\n\
+          isacov.rv32m_mulhsu_cg.cp_rd_rs2_hazard"
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F006_S003_I001
+        description: "mulhsu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nrs1\
+          \ treated as signed number, rs2 treated as unsigned number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is non-zero and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mulhsu_cg.cp_rs1_value\nisacov.rv32m_mulhsu_cg.cp_rs2_value\n\
+          isacov.rv32m_mulhsu_cg.cross_rs1_rs2_value\nisacov.rv32m_mulhsu_cg.cp_rs1_toggle\
+          \ \nisacov.rv32m_mulhsu_cg.cp_rs2_toggle"
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F006_S003_I002
+        description: "mulhsu rd, rs1, rs2\nx[rd] = (x[rs1] * x[rs2]) >>s XLEN\nrs1\
+          \ treated as signed number, rs2 treated as unsigned number"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: "isacov.rv32m_mulhsu_cg.cp_rd_value\nisacov.rv32m_mulhsu_cg.cp_rd_toggle"
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

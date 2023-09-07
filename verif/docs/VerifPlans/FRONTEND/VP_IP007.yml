@@ -1,0 +1,66 @@
+!Feature
+next_elt_id: 2
+name: Instr_realign
+id: 7
+display_order: 7
+subfeatures: !!omap
+- 000_C extension: !Subfeature
+    name: 000_C extension
+    tag: VP_IP007_P000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F007_S000_I000
+        description: The 32-bit aligned block coming from the CACHE sub-system enters
+          the instr_realign module. This module extracts the instructions from the
+          32-bit blocks, up to two instructions because it is possible to fetch two
+          instructions when C extension is used. If the instructions are not compressed,
+          it is possible that the instruction is not aligned on the block size but
+          rather interleaved with two cache blocks. In that case, two cache accesses
+          are needed. The instr_realign module provides at maximum one instruction
+          per cycle. Not complete instruction is stored in instr_realign module before
+          being provided in the next cycles.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/Instr_realign
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Execute program compiled with C extension. Cover the case when\
+          \ 2 instructions are fetched in the same cache block and when an instruction\
+          \ is interleaved with two cache block\n\n[NO NEED TO VERIFY THIS CASE]"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 0
+        coverage_loc: ''
+        comments: ''
+- 001_Flush: !Subfeature
+    name: 001_Flush
+    tag: VP_IP007_P001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F007_S001_I000
+        description: In case of mispredict, flush, replay or branch predict, the instr_realign
+          is re-initialized, the internal register storing the instruction alignment
+          state is reset.
+        reqt_doc: FRONTEND sub-system/Architecture and Modules/Instr_realign
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: '[NO NEED TO VERIFY THIS CASE]'
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 0
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: 755afe774cedc2d4910aa802ee20a1f485c1236e $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

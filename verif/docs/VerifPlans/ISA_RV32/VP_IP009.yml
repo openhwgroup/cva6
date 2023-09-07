@@ -1,0 +1,788 @@
+!Feature
+next_elt_id: 9
+name: RV32A Atomic Memory Operations
+id: 9
+display_order: 9
+subfeatures: !!omap
+- 000_AMOSWAP.W: !Subfeature
+    name: 000_AMOSWAP.W
+    tag: VP_IP009_P000
+    next_elt_id: 4
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F009_S000_I000
+        description: "amoswap.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2\nA load occurs\
+          \ from the address at rs1 into rd.\nThe value at rs2 is then written back\
+          \ to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll possible rs1 registers are used.\nAll\
+          \ possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F009_S000_I001
+        description: "amoswap.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2\nA load occurs\
+          \ from the address at rs1 into rd.\nThe value at rs2 is then written back\
+          \ to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled\nZero and non-zero values of rs2 are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F009_S000_I002
+        description: "amoswap.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2\nA load occurs\
+          \ from the address at rs1 into rd.\nThe value at rs2 is then written back\
+          \ to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Output result: \n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F009_S000_I003
+        description: "amoswap.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2\nA load occurs\
+          \ from the address at rs1 into rd.\nThe value at rs2 is then written back\
+          \ to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_AMOADD.W: !Subfeature
+    name: 001_AMOADD.W
+    tag: VP_IP009_P001
+    next_elt_id: 4
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F009_S001_I000
+        description: "amoadd.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 + [rs1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and added using signed arithmetic and the result iis then written back\
+          \ to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll possible rs1 registers are used.\nAll\
+          \ possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F009_S001_I001
+        description: "amoadd.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 + [rs1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and added using signed arithmetic and the result iis then written back\
+          \ to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled\n+ve, -ve and zero values of rs2 are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F009_S001_I002
+        description: "amoadd.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 + [rs1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and added using signed arithmetic and the result iis then written back\
+          \ to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result: \n\n+ve, -ve and zero values of rd are used\n\
+          All bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F009_S001_I003
+        description: "amoadd.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 + [rs1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and added using signed arithmetic and the result iis then written back\
+          \ to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_AMOAND.W: !Subfeature
+    name: 002_AMOAND.W
+    tag: VP_IP009_P002
+    next_elt_id: 4
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F009_S002_I000
+        description: "amoand.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 & rs[1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and bit-wise ANDed and the result iis then written back to the address\
+          \ at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll possible rs1 registers are used.\nAll\
+          \ possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F009_S002_I001
+        description: "amoand.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 & rs[1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and bit-wise ANDed and the result iis then written back to the address\
+          \ at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled\nZero and non-zero values of rs2 are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F009_S002_I002
+        description: "amoand.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 & rs[1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and bit-wise ANDed and the result iis then written back to the address\
+          \ at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result: \n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F009_S002_I003
+        description: "amoand.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 & rs[1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and bit-wise ANDed and the result iis then written back to the address\
+          \ at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_AMOOR.W: !Subfeature
+    name: 003_AMOOR.W
+    tag: VP_IP009_P003
+    next_elt_id: 4
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F009_S003_I000
+        description: "amoor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 | [rs1]\nA load\
+          \ occurs from the address at rs1 into rd.\nThe values in rd and rs2 and\
+          \ bit-wise ORed and the result iis then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll possible rs1 registers are used.\nAll\
+          \ possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F009_S003_I001
+        description: "amoor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 | [rs1]\nA load\
+          \ occurs from the address at rs1 into rd.\nThe values in rd and rs2 and\
+          \ bit-wise ORed and the result iis then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled\nZero and non-zero values of rs2 are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F009_S003_I002
+        description: "amoor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 | [rs1]\nA load\
+          \ occurs from the address at rs1 into rd.\nThe values in rd and rs2 and\
+          \ bit-wise ORed and the result iis then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result: \n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F009_S003_I003
+        description: "amoor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 | [rs1]\nA load\
+          \ occurs from the address at rs1 into rd.\nThe values in rd and rs2 and\
+          \ bit-wise ORed and the result iis then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_AMOXOR.W: !Subfeature
+    name: 004_AMOXOR.W
+    tag: VP_IP009_P004
+    next_elt_id: 4
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F009_S004_I000
+        description: "amoxor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 ^ [rs1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and bit-wise XORRed and the result iis then written back to the address\
+          \ at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll possible rs1 registers are used.\nAll\
+          \ possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F009_S004_I001
+        description: "amoxor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 ^ [rs1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and bit-wise XORRed and the result iis then written back to the address\
+          \ at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled\nZero and non-zero values of rs2 are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F009_S004_I002
+        description: "amoxor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 ^ [rs1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and bit-wise XORRed and the result iis then written back to the address\
+          \ at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result: \n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F009_S004_I003
+        description: "amoxor.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = rs2 ^ [rs1]\nA\
+          \ load occurs from the address at rs1 into rd.\nThe values in rd and rs2\
+          \ and bit-wise XORRed and the result iis then written back to the address\
+          \ at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_AMOMAX.W: !Subfeature
+    name: 005_AMOMAX.W
+    tag: VP_IP009_P005
+    next_elt_id: 4
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F009_S005_I000
+        description: "amomax.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_signed(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming signed numbers and the largest value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll possible rs1 registers are used.\nAll\
+          \ possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F009_S005_I001
+        description: "amomax.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_signed(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming signed numbers and the largest value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled\n+ve, -ve and zero values of rs2 are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F009_S005_I002
+        description: "amomax.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_signed(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming signed numbers and the largest value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result: \n\n+ve, -ve and zero values of rd are used\n\
+          All bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F009_S005_I003
+        description: "amomax.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_signed(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming signed numbers and the largest value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 006_AMOMAXU.W: !Subfeature
+    name: 006_AMOMAXU.W
+    tag: VP_IP009_P006
+    next_elt_id: 4
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F009_S006_I000
+        description: "amomaxu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_unsigned(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming unsigned numbers and the largest value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll possible rs1 registers are used.\nAll\
+          \ possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F009_S006_I001
+        description: "amomaxu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_unsigned(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming unsigned numbers and the largest value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F009_S006_I002
+        description: "amomaxu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_unsigned(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming unsigned numbers and the largest value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result: \n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F009_S006_I003
+        description: "amomaxu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = max_unsigned(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming unsigned numbers and the largest value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 007_AMOMIN.W: !Subfeature
+    name: 007_AMOMIN.W
+    tag: VP_IP009_P007
+    next_elt_id: 4
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F009_S007_I000
+        description: "amomin.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_signed(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming signed numbers and the smaller value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll possible rs1 registers are used.\nAll\
+          \ possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F009_S007_I001
+        description: "amomin.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_signed(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming signed numbers and the smaller value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F009_S007_I002
+        description: "amomin.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_signed(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming signed numbers and the smaller value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result: \n\n+ve, -ve and zero values of rd are used\n\
+          All bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F009_S007_I003
+        description: "amomin.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_signed(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming signed numbers and the smaller value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 008_AMOMINU.W: !Subfeature
+    name: 008_AMOMINU.W
+    tag: VP_IP009_P008
+    next_elt_id: 4
+    display_order: 8
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F009_S008_I000
+        description: "amominu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_unsigned(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming unsigned numbers and the smaller value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll possible rs1 registers are used.\nAll\
+          \ possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F009_S008_I001
+        description: "amominu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_unsigned(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming unsigned numbers and the smaller value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F009_S008_I002
+        description: "amominu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_unsigned(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming unsigned numbers and the smaller value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result: \n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F009_S008_I003
+        description: "amominu.w rd, rs2, (rs1)\nrd = [rs1]\n[rs1] = min_unsigned(rs2,\
+          \ [rs1])\nA load occurs from the address at rs1 into rd.\nThe values in\
+          \ rd and rs2 and compared assuming unsigned numbers and the smaller value\
+          \ is then written back to the address at (rs1)"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

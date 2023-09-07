@@ -1,0 +1,402 @@
+!Feature
+next_elt_id: 8
+name: Custom Instructions
+id: 3
+display_order: 3
+subfeatures: !!omap
+- 000_CUS_ADD: !Subfeature
+    name: 000_CUS_ADD
+    tag: VP_CVXIF_F003_S000
+    next_elt_id: 4
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F003_S000_I000
+        description: "cus_add rd, rs1, rs2\nrd = rs1 + rs2\ncus_add works in all privilege\
+          \ modes"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_CVXIF_F003_S000_I001
+        description: "cus_add rd, rs1, rs2\nrd = rs1 + rs2\ncus_add works in all privilege\
+          \ modes"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_CVXIF_F003_S000_I002
+        description: "cus_add rd, rs1, rs2\nrd = rs1 + rs2\ncus_add works in all privilege\
+          \ modes"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_CUS_NOP: !Subfeature
+    name: 001_CUS_NOP
+    tag: VP_CVXIF_F003_S001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F003_S001_I000
+        description: No operation Instruction
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Instruction executed
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_CUS_S_ADD: !Subfeature
+    name: 003_CUS_S_ADD
+    tag: VP_CVXIF_F003_S003
+    next_elt_id: 3
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F003_S003_I000
+        description: "cus_s_add rd, rs1, rs2\nrd = rs1 + rs2\ncus_s_add works in supervisor\
+          \ privilege mode"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nif (mode == s)\nAll possible rs1 registers\
+          \ are used.\nAll possible rs2 registers are used.\nAll possible rd registers\
+          \ are used.\nAll possible register combinations where rs1 == rd are used\n\
+          All possible register combinations where rs2 == rd are used\n\nelse if (mode\
+          \ != s)\nillegal exception raised on hte CPU"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_CVXIF_F003_S003_I001
+        description: "cus_s_add rd, rs1, rs2\nrd = rs1 + rs2\ncus_s_add works in supervisor\
+          \ privilege mode"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nif (mode == s)\nrs1 value is +ve, -ve and\
+          \ zero\nrs2 value is +ve, -ve and zero\nAll combinations of rs1 and rs2\
+          \ +ve, -ve, and zero values are used\nAll bits of rs1 are toggled\nAll bits\
+          \ of rs2 are toggled\n\nelse if (mode != s)\nillegal exception raised on\
+          \ the CPU"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_CVXIF_F003_S003_I002
+        description: "cus_s_add rd, rs1, rs2\nrd = rs1 + rs2\ncus_s_add works in supervisor\
+          \ privilege mode"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output operands:\n\nif (mode == s)\nrd value is +ve, -ve and\
+          \ zero\nAll bits of rd are toggled\n\nelse if (mode != s)\nillegal exception\
+          \ raised on the CPU"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_CUS_U_ADD: !Subfeature
+    name: 004_CUS_U_ADD
+    tag: VP_CVXIF_F003_S004
+    next_elt_id: 3
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F003_S004_I000
+        description: "cus_u_add rd, rs1, rs2\nrd = rs1 + rs2\ncus_u_add works in User\
+          \ privilege mode"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nif (mode == u)\nAll possible rs1 registers\
+          \ are used.\nAll possible rs2 registers are used.\nAll possible rd registers\
+          \ are used.\nAll possible register combinations where rs1 == rd are used\n\
+          All possible register combinations where rs2 == rd are used\n\nelse if (mode\
+          \ != u)\nillegal exception raised on hte CPU"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_CVXIF_F003_S004_I001
+        description: "cus_u_add rd, rs1, rs2\nrd = rs1 + rs2\ncus_u_add works in User\
+          \ privilege mode"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nif (mode == u)\nrs1 value is +ve, -ve and\
+          \ zero\nrs2 value is +ve, -ve and zero\nAll combinations of rs1 and rs2\
+          \ +ve, -ve, and zero values are used\nAll bits of rs1 are toggled\nAll bits\
+          \ of rs2 are toggled\n\nelse if (mode != u)\nillegal exception raised on\
+          \ the CPU"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_CVXIF_F003_S004_I002
+        description: "cus_u_add rd, rs1, rs2\nrd = rs1 + rs2\ncus_u_add works in User\
+          \ privilege mode"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output operands:\n\nif (mode == u)\nrd value is +ve, -ve and\
+          \ zero\nAll bits of rd are toggled\n\nelse if (mode != u)\nillegal exception\
+          \ raised on the CPU"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_CUS_ADD_MULTI: !Subfeature
+    name: 005_CUS_ADD_MULTI
+    tag: VP_CVXIF_F003_S005
+    next_elt_id: 4
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F003_S005_I000
+        description: "cus_add_multi rd, rs1, rs2\nrd = rs1 + rs2\ncus_add_multi works\
+          \ in all privilege modes"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n\
+          All possible register combinations where rs1 == rd are used\nAll possible\
+          \ register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_CVXIF_F003_S005_I001
+        description: "cus_add_multi rd, rs1, rs2\nrd = rs1 + rs2\ncus_add_multi works\
+          \ in all privilege modes"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value\
+          \ is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero\
+          \ values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_CVXIF_F003_S005_I002
+        description: "cus_add_multi rd, rs1, rs2\nrd = rs1 + rs2\ncus_add_multi works\
+          \ in all privilege modes"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of\
+          \ rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_CVXIF_F003_S005_I003
+        description: "cus_add_multi rd, rs1, rs2\nrd = rs1 + rs2\ncus_add_multi works\
+          \ in all privilege modes"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check all delays from min to max
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 006_CUS_EXC: !Subfeature
+    name: 006_CUS_EXC
+    tag: VP_CVXIF_F003_S006
+    next_elt_id: 1
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F003_S006_I000
+        description: "cus_exc imm[5:0]\nmcause[5:0] = imm[5:0]\ncus_exc raise an exception\
+          \ on the CPU base on the imm value"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check all possible imm value
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 007_CUS_ADD_RS3: !Subfeature
+    name: 007_CUS_ADD_RS3
+    tag: VP_CVXIF_F003_S007
+    next_elt_id: 3
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F003_S007_I000
+        description: "cus_add_rs3 rd, rs1, rs2, rs3\nrd = rs1 + rs2 + rs3\ncus_add_rs3\
+          \ works in all privilege modes\n\nX_NUM_RS == 3"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nif (X_NUM_RS == 3)\nAll possible rs1 registers\
+          \ are used.\nAll possible rs2 registers are used.\nAll possible rs3 registers\
+          \ are used.\nAll possible rd registers are used.\nAll possible register\
+          \ combinations where rs1 == rd are used\nAll possible register combinations\
+          \ where rs2 == rd are used\nAll possible register combinations where rs3\
+          \ == rd are used\n\n\nelse if (X_NUM_RS != 3)\nillegal exception raised\
+          \ on the CPU"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_CVXIF_F003_S007_I001
+        description: "cus_add_rs3 rd, rs1, rs2, rs3\nrd = rs1 + rs2 + rs3\ncus_add_rs3\
+          \ works in all privilege modes\n\nX_NUM_RS == 3"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nif (X_NUS_RS == 3)\nrs1 value is +ve, -ve\
+          \ and zero\nrs2 value is +ve, -ve and zero\nrs3 value is +ve, -ve and zero\n\
+          All combinations of rs1, rs2 and rs3 +ve, -ve, and zero values are used\n\
+          All bits of rs1 are toggled\nAll bits of rs2 are toggled\nAll bits of rs3\
+          \ are toggled\n\nelse if (X_NUM_RS != 3)\nillegal exception raised on the\
+          \ CPU"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: -1
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_CVXIF_F003_S007_I002
+        description: "cus_add_rs3 rd, rs1, rs2, rs3\nrd = rs1 + rs2 + rs3\ncus_add_rs3\
+          \ works in all privilege modes\n\nX_NUM_RS == 3"
+        reqt_doc: ./custom_instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output operands:\n\nif (X_NUM_RS == 3)\nrd value is +ve, -ve\
+          \ and zero\nAll bits of rd are toggled\n\nelse if (X_NUM_RS != 3)\nillegal\
+          \ exception raised on the CPU"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

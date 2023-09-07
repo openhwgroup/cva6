@@ -1,0 +1,64 @@
+!Feature
+next_elt_id: 1
+name: Clock and Reset
+id: 7
+display_order: 7
+subfeatures: !!omap
+- 000_Signals_Value: !Subfeature
+    name: 000_Signals_Value
+    tag: VP_IP007_P000
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_1_F007_S000_I000
+        description: A value of X on [Ax | x]VALID is not permitted when not in reset
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A3.1.2)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that reset && [Ax | x]VALID != X is always true
+        pfc: 4
+        test_type: 4
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_1_F007_S000_I001
+        description: A value of X on [Ax | x]READY is not permitted when not in reset
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Section A3.1.2)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that reset && [Ax | x]READY != X is always true
+        pfc: 4
+        test_type: 4
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_1_F007_S000_I002
+        description: '[Ax | x]VALID is LOW for the first cycle after RESET goes HIGH'
+        reqt_doc: https://developer.arm.com/documentation/ihi0022/hc - (Figure A3-1)
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Ensure that [Ax | x]VALID is low the first cycle after RESET
+        pfc: 4
+        test_type: 4
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: 03047594b4818fcbd06a40669e637081ff1d4fb9 $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

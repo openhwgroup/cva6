@@ -1,0 +1,533 @@
+diff --git a/customext/customext.mk.in b/customext/customext.mk.in
+index a14e771c2..888634b46 100644
+--- a/customext/customext.mk.in
++++ b/customext/customext.mk.in
+@@ -7,5 +7,6 @@ customext_subproject_deps = \
+ customext_srcs = \
+ 	dummy_rocc.cc \
+ 	cflush.cc \
++	cvxif.cc \
+ 
+ customext_install_shared_lib = yes
+diff --git a/customext/cvxif.cc b/customext/cvxif.cc
+new file mode 100644
+index 000000000..dd1a7329a
+--- /dev/null
++++ b/customext/cvxif.cc
+@@ -0,0 +1,226 @@
++// Copyright (C) 2022 Thales DIS Design Services SAS
++//
++// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
++//
++// Original Author: Zbigniew CHAMSKI <zbigniew.chamski@thalesgroup.com>
++
++#include "cvxif.h"
++#include "mmu.h"
++#include <cstring>
++
++// Define custom insns templates.
++// The insn-level wrapper is 'c##n' (default implementation,
++// writeback disabled), the default implementation
++// is 'custom##n': illegal instruction, return 0.
++// The writeback controller 'cvxif_extn_t::do_writeback_p'
++// is in charge of determining if writeback is required or not.
++// Expected instruction encoding is 4 bytes.
++#define customX(n) \
++static reg_t c##n(processor_t* p, insn_t insn, reg_t pc) \
++  { \
++    cvxif_t* cvxif = static_cast<cvxif_t*>(p->get_extension()); \
++    cvxif_insn_t custom_insn; \
++    custom_insn.i = insn; \
++    reg_t xd = cvxif->default_custom##n(custom_insn); \
++    if (cvxif->do_writeback_p(custom_insn)) \
++      WRITE_RD(xd); \
++    return pc+4; \
++  } \
++  \
++  reg_t default_custom##n(cvxif_insn_t insn) \
++  { \
++    return custom##n(insn); \
++  }
++
++// This class instantiates the CV-X-IF interface.
++class cvxif_t : public cvxif_extn_t
++{
++ public:
++  const char* name() { return "cvxif_spike"; }
++
++  bool do_writeback_p(cvxif_insn_t copro_insn)
++  {
++    // INSN_R personality serves to simplify access to standard encoding fields.
++    cvxif_r_insn_t insn_r = copro_insn.r_type;
++
++    if (insn_r.opcode != MATCH_CUSTOM3)
++      return false;
++    else switch (insn_r.funct3)
++    {
++      case 0b000:
++        // CUSTOM_NOP and CUSTOM_EXC have rd == x0.
++        // Return TRUE if destination is NOT x0.
++        return (insn_r.rd != 0x0);
++
++      case 0b010:
++        // Return false for CUS_SD.
++        return false;
++
++      default:
++        // All other cases: writeback is assumed REQUIRED.
++        return true;
++    }
++  }
++
++  // Custom0 instructions: default behaviour.
++  reg_t custom0(cvxif_insn_t incoming_insn)
++  {
++    illegal_instruction();
++    return -1;
++  }
++
++  // Custom1 instructions: default behaviour.
++  reg_t custom1(cvxif_insn_t incoming_insn)
++  {
++    illegal_instruction();
++    return -1;
++  }
++
++  // Custom2 instructions: default behaviour.
++  reg_t custom2(cvxif_insn_t incoming_insn)
++  {
++    illegal_instruction();
++    return -1;
++  }
++
++  // Custom3 instructions: provide an explicit implementation of decode+exec.
++  reg_t custom3(cvxif_insn_t incoming_insn)
++  {
++    // Assume R-type insn: it shares opcode and funct3 fields with other CVXIF insn formats.
++    cvxif_r_insn_t r_insn = incoming_insn.r_type;
++    // INSN_T simplifies access to register values.
++    insn_t insn = incoming_insn.i;
++
++    switch (r_insn.funct3)
++    {
++      case 0:
++
++        // funct7[1:0] == 0b01: three-input RV add.
++        // If rd is x0: illegal instruction.
++        if ((r_insn.funct7 & 0x3) == 0b01)
++        {
++          if (insn.rd() == 0x0)
++            illegal_instruction();
++
++          // Destination is not x0: R4-type insn performing a 3-operand RV add
++          return (reg_t) ((reg_t) RS1 + (reg_t) RS2 + (reg_t) RS3);
++        }
++
++        // Non-memory operations (including NOP and EXC)
++        switch (r_insn.funct7 & 0b1111001)
++        {
++          case 0:
++            {
++              // Single-cycle RV addition with privilege: all non-privilege bits are zero.
++              // funct7[2:1] == 0x0 (PRV_U): CUS_ADD (single-cycle RV ADD, any mode)
++              // funct7[2:1] == 0x1 (PRV_S): CUS_S_ADD (single-cycle S-/M-mode RV ADD)
++              // funct7[2:1] == 0x2 (PRV_HS): ILLEGAL
++              // funct7[2:1] == 0x3 (PRV_M): CUS_M_ADD (single-cycle M-mode RV ADD)
++              reg_t required_priv = (r_insn.funct7 & 0x6) >> 1;
++              if (required_priv != PRV_HS && (p->get_state()->prv & required_priv) == required_priv)
++                return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
++              else
++                illegal_instruction();
++            }
++
++          case 0x8:
++            // Multi-cycle RV add.
++            // TODO FIXME: Represent delay.
++            return (reg_t) ((reg_t) RS1 + (reg_t) RS2);
++
++          case 0x40:
++            // Exception. MCAUSE[4:0] encoded in RS1, MCAUSE[5] assumed to be 0.
++            if (insn.rd() == 0x0 && insn.rs2() == 0x0)
++            {
++              // Raise an exception only if registers rd and rs2 are both x0 (no 'bit 5' extension yet).
++              raise_exception(insn, insn.rs1());
++              // Writeback will be disabled by 'do_writeback_p'.
++              return (reg_t) -1;
++            }
++            else
++              // Illegal instruction.
++              illegal_instruction();
++
++          default:
++            illegal_instruction();
++        }
++
++      case 1:
++        // Perform RV load.  If runtime XLEN is not 64, assume 32.
++        if (p->get_xlen() == 64)
++          return MMU.load_int64(RS1 + insn.i_imm());
++        else
++          return MMU.load_int32(RS1 + insn.i_imm());
++
++      case 2:
++        // Perform RV store.  If runtime XLEN is not 64, assume 32.
++        if (p->get_xlen() == 64)
++          MMU.store_uint64(RS1 + insn.s_imm(), RS2);
++        else
++          MMU.store_uint32(RS1 + insn.s_imm(), RS2);
++
++        // Writeback will be disabled by 'do_writeback_p'.
++        break;
++
++      default:
++        illegal_instruction();
++    }
++
++    // FORNOW: Return 0xf......f to simplify debugging.
++    return (reg_t) -1;
++  }
++
++  cvxif_t()
++  {
++  }
++
++  void raise_exception(insn_t insn, reg_t exc_index)
++  {
++    switch (exc_index) {
++      case CAUSE_MISALIGNED_LOAD:
++        // Use 0x1 as perfectly unaligned address;-)
++        throw trap_load_address_misaligned((p ? p->get_state()->v : false), 1, 0, 0);
++      case CAUSE_LOAD_ACCESS:
++        // Use 0x1 as invalid address.
++        throw trap_load_access_fault((p ? p->get_state()->v : false), 1, 0, 0);
++      case CAUSE_MISALIGNED_STORE:
++        // Use 0x1 as perfectly unaligned address;-)
++        throw trap_store_address_misaligned((p ? p->get_state()->v : false), 1, 0, 0);
++      case CAUSE_STORE_ACCESS:
++        // Use 0x1 as invalid address.
++        throw trap_store_access_fault((p ? p->get_state()->v : false), 1, 0, 0);
++      case CAUSE_LOAD_PAGE_FAULT:
++        // Use 0x1 as always-faulting address.
++        throw trap_load_page_fault((p ? p->get_state()->v : false), 1, 0, 0);
++      case CAUSE_STORE_PAGE_FAULT:
++        // Use 0x1 as always-faulting address.
++        throw trap_store_page_fault((p ? p->get_state()->v : false), 1, 0, 0);
++      default:
++        illegal_instruction();
++    }
++  }
++
++  // Define templates of new instructions.
++  customX(0)
++  customX(1)
++  customX(2)
++  customX(3)
++
++  // Set instruction handlers for customN opcode patterns.
++  // NOTE: This method may need revisiting if multiple custom extensions are to be loaded
++  //       simultaneously in the future.
++  std::vector<insn_desc_t> get_instructions()
++  {
++    std::vector<insn_desc_t> insns;
++    insns.push_back((insn_desc_t){0x0b, 0x7f, &::illegal_instruction, c0});
++    insns.push_back((insn_desc_t){0x2b, 0x7f, &::illegal_instruction, c1});
++    insns.push_back((insn_desc_t){0x5b, 0x7f, &::illegal_instruction, c2});
++    insns.push_back((insn_desc_t){0x7b, 0x7f, &c3,                    c3});
++    return insns;
++  }
++
++private:
++  // State variables go here.
++};
++
++REGISTER_EXTENSION(cvxif, []() { return new cvxif_t; })
+diff --git a/customext/cvxif_test.c b/customext/cvxif_test.c
+new file mode 100644
+index 000000000..d39ca2229
+--- /dev/null
++++ b/customext/cvxif_test.c
+@@ -0,0 +1,111 @@
++// Copyright (C) 2022 Thales DIS Design Services SAS
++//
++// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
++//
++// Original Author: Zbigniew CHAMSKI <zbigniew.chamski@thalesgroup.com>
++//
++// The following is a RISC-V program to test the functionality of the
++// basic CVXIF accelerator interface on the Core-V side.
++// Compile using "riscv-none-elf-gcc -O2 cvxif_test.elf cvxif_test.c"
++// with -march=/-mabi= settings appropriate for your project.
++// Run using "spike -l --extension=cvxif cvxif_test.elf", adding
++// an --isa= setting appropriate for your project.
++//
++// Upon simulating the compiled program, the trace should contain five
++// instances of custom3 instructions (the third one being decoded as
++// 'unknown').
++// The last occurrence of 'custom3' instruction in the trace, encoded as
++// 0x8002007b, should be immediately followed by exception
++// 'trap_load_address_misaligned' with a tval equal to 0x1 and the
++// execution should terminate correctly with exit code 0.
++//
++// In 64-bit mode, the trace of the last occurrence of custom3
++// instruction should be equivalent to
++//
++//      core   0: 0x0000000080002686 (0x8002007b) custom3 (args unknown)
++//      core   0: exception trap_load_address_misaligned, epc 0x0000000080002686
++//      core   0:           tval 0x0000000000000001
++//
++// The corresponding trace in 32-bit mode should be equivalent to
++//
++//       core   0: 0x8000205a (0x8002007b) custom3 (args unknown)
++//       core   0: exception trap_load_address_misaligned, epc 0x8000205a
++//       core   0:           tval 0x00000001
++
++#include <assert.h>
++#include <stdio.h>
++#include <stdint.h>
++#include <stdlib.h>
++
++// Values of MCAUSE corresponding to exceptions coming from the coprocessor I/F
++#define CAUSE_MISALIGNED_LOAD 0x4
++#define CAUSE_LOAD_ACCESS 0x5
++#define CAUSE_MISALIGNED_STORE 0x6
++#define CAUSE_STORE_ACCESS 0x7
++#define CAUSE_LOAD_PAGE_FAULT 0xd
++#define CAUSE_STORE_PAGE_FAULT 0xf
++#define CAUSE_COPROCESSOR_EXCEPTION 0x20
++
++// Value of TVAL to pass around.
++#define COPRO_TVAL_TEST 0x1a
++
++// Macro to read a CSR (from spike's "encoding.h")
++#define read_csr(reg) ({ unsigned long __tmp; \
++  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
++  __tmp; })
++
++int main() {
++  // "unsigned long int" is always XLEN bits wide.
++  unsigned long int x = 123, y = 456, z = 0, t = 0;
++  static unsigned long int amem = 111, bmem = 0;
++  unsigned long a;
++
++  // Add x + y into z.  Funct7 == 0, funct3 == 0x0.
++  asm volatile (".insn r CUSTOM_3, 0, 0, %0, %1, %2" : "=r"(z) : "r"(x), "r"(y));
++  if (z != 123 + 456)
++  {
++    //  printf("FAILURE!!!\n");
++    return 1;
++  }
++
++  // Add three operands in a single R4-type add.
++  // Leverage current values of x, y and z (z == x + y).
++  asm volatile (".insn r CUSTOM_3, 0, 0x1, %0, %1, %2, %3" : "=r"(t) : "r"(x), "r"(y), "r"(z));
++  if (t != x + y + z)
++  {
++    // printf("FAILURE");
++    return 2;
++  }
++  // Load 'a' from 'amem'. CUSTOM_LD: opcode == CUSTOM_3, insn_type == I, funct3 == 0x1.
++  asm volatile (".insn i CUSTOM_3, 0x1, %0, %1" : "=r"(a) : "m"(amem), "I"(0));
++  if (a != 111)
++  {
++    //  printf("FAILURE!!!\n");
++    return 3;
++  }
++
++  // Store 'a' in 'bmem'. CUSTOM_SD: opcode == CUSTOM_3, insn_type == S, funct3 == 0x2.
++  asm volatile (".insn s CUSTOM_3, 0x2, %0, %1" : : "r"(a), "m"(bmem));
++  if (bmem != 111)
++  {
++    //  printf("FAILURE!!!\n");
++    return 4;
++  }
++
++  // Generate a misaligned load exception (mcause == 0x4).
++  asm volatile  (".insn r CUSTOM_3, 0x0, 0x40, x0, x4, x0" : : );
++
++  // If we get here, then the exception test failed ==> exit with general failure code.
++  exit(1337);
++}
++
++// Override default trap handler.
++uintptr_t handle_trap(uintptr_t cause, uintptr_t epc, uintptr_t regs[32])
++{
++  if (cause == CAUSE_MISALIGNED_LOAD)
++    // Successfully terminate.
++    exit(0);
++  else
++    // Fail with explicit retcode.
++    exit(5);
++}
+diff --git a/riscv/cvxif.h b/riscv/cvxif.h
+new file mode 100644
+index 000000000..e3a6fba1d
+--- /dev/null
++++ b/riscv/cvxif.h
+@@ -0,0 +1,77 @@
++// Copyright (C) 2022 Thales DIS Design Services SAS
++//
++// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
++//
++// Original Author: Zbigniew CHAMSKI <zbigniew.chamski@thalesgroup.com>
++
++#ifndef _RISCV_CVXIF_H
++#define _RISCV_CVXIF_H
++
++#include "extension.h"
++
++// R-type instruction format
++struct cvxif_r_insn_t
++{
++  unsigned opcode : 7;
++  unsigned rd : 5;
++  unsigned funct3 : 3;
++  unsigned rs1 : 5;
++  unsigned rs2 : 5;
++  unsigned funct7 : 7;
++};
++
++// R4-type instruction format
++struct cvxif_r4_insn_t
++{
++  unsigned opcode : 7;
++  unsigned rd : 5;
++  unsigned funct3 : 3;
++  unsigned rs1 : 5;
++  unsigned rs2 : 5;
++  unsigned funct2 : 2;
++  unsigned rs3 : 5;
++};
++
++// I-type instruction format
++struct cvxif_i_insn_t
++{
++  unsigned opcode : 7;
++  unsigned rd : 5;
++  unsigned funct3 : 3;
++  unsigned rs1 : 5;
++  unsigned imm : 12;
++};
++
++// S-type instruction format
++struct cvxif_s_insn_t
++{
++  unsigned opcode : 7;
++  unsigned imm_low : 5;
++  unsigned funct3 : 3;
++  unsigned rs1 : 5;
++  unsigned rs2 : 5;
++  unsigned imm_high : 7;
++};
++
++union cvxif_insn_t
++{
++  cvxif_r_insn_t r_type;
++  cvxif_r4_insn_t r4_type;
++  cvxif_i_insn_t i_type;
++  cvxif_s_insn_t s_type;
++  insn_t i;
++};
++
++class cvxif_extn_t : public extension_t
++{
++ public:
++  virtual bool do_writeback_p(cvxif_insn_t insn);
++  virtual reg_t custom0(cvxif_insn_t insn);
++  virtual reg_t custom1(cvxif_insn_t insn);
++  virtual reg_t custom2(cvxif_insn_t insn);
++  virtual reg_t custom3(cvxif_insn_t insn);
++  std::vector<insn_desc_t> get_instructions();
++  std::vector<disasm_insn_t*> get_disasms();
++};
++
++#endif
+diff --git a/riscv/cvxif_base.cc b/riscv/cvxif_base.cc
+new file mode 100644
+index 000000000..5097344c5
+--- /dev/null
++++ b/riscv/cvxif_base.cc
+@@ -0,0 +1,64 @@
++// Copyright (C) 2022 Thales DIS Design Services SAS
++//
++// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
++//
++// Original Author: Zbigniew CHAMSKI <zbigniew.chamski@thalesgroup.com>
++
++#include "cvxif.h"
++#include "trap.h"
++#include <cstdlib>
++
++// Virtual base class of CVXIF.
++
++// Return true if writeback is required.
++// Be on the safe side, disable writeback.
++bool cvxif_extn_t::do_writeback_p(cvxif_insn_t insn)
++{
++  return false;
++}
++
++// Define custom insns templates.
++// The insn-level wrapper is 'c##n' (default implementation,
++// writeback disabled), the default implementation
++// is 'custom##n': illegal instruction, return 0.
++// The writeback controller 'cvxif_extn_t::do_writeback_p'
++// is in charge of determining if writeback is required or not.
++// Expected instruction encoding is 4 bytes.
++#define customX(n) \
++static reg_t c##n(processor_t* p, insn_t insn, reg_t pc) \
++  { \
++    cvxif_extn_t* cvxif = static_cast<cvxif_extn_t*>(p->get_extension()); \
++    cvxif_insn_t custom_insn; \
++    custom_insn.i = insn; \
++    reg_t xd = cvxif->custom##n(custom_insn); \
++    if (cvxif->do_writeback_p(custom_insn)) \
++      WRITE_RD(xd); \
++    return pc+4; \
++  } \
++  \
++  reg_t cvxif_extn_t::custom##n(cvxif_insn_t insn) \
++  { \
++    illegal_instruction(); \
++    return -1; \
++  }
++
++customX(0)
++customX(1)
++customX(2)
++customX(3)
++
++std::vector<insn_desc_t> cvxif_extn_t::get_instructions()
++{
++  std::vector<insn_desc_t> insns;
++  insns.push_back((insn_desc_t){0x0b, 0x7f, &::illegal_instruction, c0});
++  insns.push_back((insn_desc_t){0x2b, 0x7f, &::illegal_instruction, c1});
++  insns.push_back((insn_desc_t){0x5b, 0x7f, &::illegal_instruction, c2});
++  insns.push_back((insn_desc_t){0x7b, 0x7f, &::illegal_instruction, c3});
++  return insns;
++}
++
++std::vector<disasm_insn_t*> cvxif_extn_t::get_disasms()
++{
++  std::vector<disasm_insn_t*> insns;
++  return insns;
++}
+diff --git a/riscv/riscv.mk.in b/riscv/riscv.mk.in
+index 56014662c..3da5f6d8b 100644
+--- a/riscv/riscv.mk.in
++++ b/riscv/riscv.mk.in
+@@ -26,6 +26,7 @@ riscv_hdrs = \
+ 	cfg.h \
+ 	common.h \
+ 	csrs.h \
++	cvxif.h \
+ 	debug_defines.h \
+ 	debug_module.h \
+ 	debug_rom_defines.h \
+@@ -58,6 +59,7 @@
+ 	extension.cc \
+ 	extensions.cc \
+ 	rocc.cc \
++	cvxif_base.cc \
+ 	devices.cc \
+ 	rom.cc \
+ 	clint.cc \

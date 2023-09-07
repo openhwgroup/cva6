@@ -1,0 +1,422 @@
+!Feature
+next_elt_id: 10
+name: PC generation stage
+id: 3
+display_order: 3
+subfeatures: !!omap
+- 001_BTB: !Subfeature
+    name: 001_BTB
+    tag: VP_IP003_P001
+    next_elt_id: 6
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F003_S001_I000
+        description: If instruction is a JALR and BTB (Branch Target Buffer) returns
+          a valid address, next PC is predicted by BTB. Else JALR is not considered
+          as a control flow instruction, which will generate a mispredict.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Branch Predict
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a JALR instruction with a valid address in BTB which
+          is not a misprediction. Check that instruction queue is not flushed.
+        pfc: 4
+        test_type: 0
+        cov_method: 1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_FRONTEND_F003_S001_I001
+        description: If instruction is a JALR and BTB (Branch Target Buffer) returns
+          a valid address, next PC is predicted by BTB. Else JALR is not considered
+          as a control flow instruction, which will generate a mispredict.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Branch Predict
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a JALR instruction with a valid address in BTB which
+          is a misprediction.
+        pfc: 3
+        test_type: 0
+        cov_method: 1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_FRONTEND_F003_S001_I002
+        description: "If instruction is a JALR and BTB (Branch Target Buffer) returns\
+          \ a valid address, next PC is predicted by BTB.\n\nElse JALR is not considered\
+          \ as a control flow instruction, which will generate a mispredict."
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Branch Predict
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: 'Execute test with JALR instructions. Functional cov: JALR is
+          executed and BTB output is not valid.'
+        pfc: 3
+        test_type: 0
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 002_BHT: !Subfeature
+    name: 002_BHT
+    tag: VP_IP003_P002
+    next_elt_id: 4
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F003_S002_I000
+        description: If instruction is a branch and BTH (Branch History table) returns
+          a valid address, next PC is predicted by BHT. Else branch is not considered
+          as an control flow instruction, which will generate a mispredict when branch
+          is taken.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Branch Predict
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a BRANCH instruction with a valid address in BHT which
+          is not a misprediction. Check that instruction queue is not flushed.
+        pfc: 4
+        test_type: 0
+        cov_method: 1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_FRONTEND_F003_S002_I001
+        description: If instruction is a branch and BTH (Branch History table) returns
+          a valid address, next PC is predicted by BHT. Else branch is not considered
+          as an control flow instruction, which will generate a mispredict when branch
+          is taken.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Branch Predict
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a BRANCH instruction with a valid address in BHT which
+          is a misprediction.
+        pfc: 3
+        test_type: 0
+        cov_method: 1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_FRONTEND_F003_S002_I002
+        description: If instruction is a branch and BTH (Branch History table) returns
+          a valid address, next PC is predicted by BHT. Else branch is not considered
+          as an control flow instruction, which will generate a mispredict when branch
+          is taken.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Branch Predict
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: 'Execute test with BRANCH instructions. Functional cov: a BRANCH
+          is executed, BTB output is not valid and the branch is taken.'
+        pfc: 3
+        test_type: 0
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 003_RAS: !Subfeature
+    name: 003_RAS
+    tag: VP_IP003_P003
+    next_elt_id: 4
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F003_S003_I000
+        description: If instruction is a RET and RAS (Return Address Stack) returns
+          a valid address and RET has already been consummed by instruction queue.
+          Else RET is considered as a control flow instruction but next PC is not
+          predicted. A mispredict wil be generated.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Branch Predict
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a RET instruction with a valid address in RAS. Check
+          that instruction queue is not flushed.
+        pfc: 3
+        test_type: 0
+        cov_method: 1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_FRONTEND_F003_S003_I001
+        description: If instruction is a RET and RAS (Return Address Stack) returns
+          a valid address and RET has already been consummed by instruction queue.
+          Else RET is considered as a control flow instruction but next PC is not
+          predicted. A mispredict wil be generated.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Branch Predict
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a RET instruction with a valid address in RAS which is
+          a misprediction.
+        pfc: 3
+        test_type: 0
+        cov_method: 1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_FRONTEND_F003_S003_I002
+        description: If instruction is a RET and RAS (Return Address Stack) returns
+          a valid address and RET has already been consummed by instruction queue.
+          Else RET is considered as a control flow instruction but next PC is not
+          predicted. A mispredict wil be generated.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Branch Predict
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: 'Execute test with RET instructions. Functional cov: RET is executed
+          and RAS output is not valid.'
+        pfc: 3
+        test_type: 0
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 004_Return from environment call: !Subfeature
+    name: 004_Return from environment call
+    tag: VP_IP003_P004
+    next_elt_id: 2
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F003_S004_I000
+        description: When CSR asks a return from an environment call, the PC is assigned
+          to the successive PC to the one stored in the CSR [m-s]epc register.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Return from
+          env call
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Set two different addresses for mepc and sepc in CSR registers.\
+          \ Use a arc_test returning from machine env call.\n\n* Check by assertion\
+          \ that when machine return occurs the mepc address is fetched.\n* Functional\
+          \ cov: execute a machine return."
+        pfc: 4
+        test_type: 0
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_FRONTEND_F003_S004_I001
+        description: When CSR asks a return from an environment call, the PC is assigned
+          to the successive PC to the one stored in the CSR [m-s]epc register.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Return from
+          env call
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: "Set two different addresses for mepc and sepc in CSR registers.\
+          \ Use a returning from supervisor env call.\n\n* Check by assertion that\
+          \ when supervisor return occurs the sepc address is fetched.\n* Functional\
+          \ cov: execute a supervisor return."
+        pfc: 4
+        test_type: 0
+        cov_method: 1
+        cores: 24
+        coverage_loc: ''
+        comments: ''
+- 005_Exception/Interrupt: !Subfeature
+    name: 005_Exception/Interrupt
+    tag: VP_IP003_P005
+    next_elt_id: 2
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F003_S005_I000
+        description: If an exception (or interrupt, which is in the context of RISC-V
+          systems quite similar) is triggered by the COMMIT, the next PC Gen is assigned
+          to the CSR trap vector base address. The trap vector base address can be
+          different depending on whether the exception traps to S-Mode or M-Mode (user
+          mode exceptions are currently not supported)
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Exception
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: 'Set two different addresses for machine and supervisor handlers
+          in CSR registers. Use a test which executes in machine mode and generates
+          a machine exception by UVM. Check by assertion that when machine exception
+          occurs the machine address is fetched. Functional cov: exception occurs
+          in machine mode.'
+        pfc: 4
+        test_type: 0
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_FRONTEND_F003_S005_I001
+        description: If an exception (or interrupt, which is in the context of RISC-V
+          systems quite similar) is triggered by the COMMIT, the next PC Gen is assigned
+          to the CSR trap vector base address. The trap vector base address can be
+          different depending on whether the exception traps to S-Mode or M-Mode (user
+          mode exceptions are currently not supported)
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Exception
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: 'Set two different addresses for machine and supervisor handlers
+          in CSR registers. Use a test which executes in supervisor mode and generates
+          a supervisor exception by UVM. Check by assertion that when supervisor exception
+          occurs the supervisor address is fetched. functional cov: exception occurs
+          in supervisor mode.'
+        pfc: 3
+        test_type: 0
+        cov_method: 1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+- 006_Pipeline flush: !Subfeature
+    name: 006_Pipeline flush
+    tag: VP_IP003_P006
+    next_elt_id: 2
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F003_S006_I000
+        description: FRONTEND starts fetching from the next instruction again in order
+          to take the up-dated information into account
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Pipeline flush
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: '[no need to verify this point]'
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 007_Debug: !Subfeature
+    name: 007_Debug
+    tag: VP_IP003_P007
+    next_elt_id: 1
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F003_S007_I000
+        description: The debug jump is requested by CSR. The address to be jumped
+          into is HW coded.
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage/Debug
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: 'UVM generates a debug request to jump into debug handler. Check
+          by assertion that the HW coded debug address is fetched. Functional cov:
+          debug mode occurs'
+        pfc: 4
+        test_type: 0
+        cov_method: 1
+        cores: 32
+        coverage_loc: ''
+        comments: ''
+- 008_Address mapping change: !Subfeature
+    name: 008_Address mapping change
+    tag: VP_IP003_P008
+    next_elt_id: 1
+    display_order: 8
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F003_S008_I000
+        description: All program counters are logical addressed. If the logical to
+          physical mapping changes a fence.vm instruction should used to flush the
+          pipeline and TLBs
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: Execute a address mapping change, then execute a fence.vm instruction,
+          and continue the execution.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+- 009_Pc gen priority: !Subfeature
+    name: 009_Pc gen priority
+    tag: VP_IP003_P009
+    next_elt_id: 3
+    display_order: 9
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FRONTEND_F003_S009_I000
+        description: The next PC can originate from the following sources (listed
+          in order of precedence)
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: 'Use arc_test executing return from env call and generate Exceptions
+          by UVM during reset, Branch predict, default, mispredict, replay and return
+          from env call. Functional cov: monitor the 6 events'
+        pfc: 3
+        test_type: 0
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_FRONTEND_F003_S009_I002
+        description: The next PC can originate from the following sources (listed
+          in order of precedence)
+        reqt_doc: FRONTEND sub-system/functionality/PC generation stage
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: ''
+        verif_goals: '[other cases to be elaborated]'
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: 755afe774cedc2d4910aa802ee20a1f485c1236e $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

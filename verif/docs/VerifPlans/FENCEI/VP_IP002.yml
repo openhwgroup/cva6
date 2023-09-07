@@ -1,0 +1,279 @@
+!Feature
+next_elt_id: 10
+name: ExternalHandshake
+id: 2
+display_order: 2
+subfeatures: !!omap
+- 000_ReqHigh: !Subfeature
+    name: 000_ReqHigh
+    tag: VP_FENCEI_F002_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S000_I000
+        description: When executing a fence.i instruction, fencei_flush_req_o shall
+          rise sometime before executing the next instruction.
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fence
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that when executing a fence.i instruction there will be
+          a rising req before has retired.
+        pfc: 4
+        test_type: 4
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_ReqWaitLsu: !Subfeature
+    name: 001_ReqWaitLsu
+    tag: VP_FENCEI_F002_S001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S001_I000
+        description: When executing a fence.i instruction, if there is an ongoing
+          store instruction (not limited to rv32i) that has not completed (data_rvalid_i
+          clocked in as 1), then fencei_flush_req_o shall be low.
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fenceThis
+          is a pointer to the source Requirements document of the Features in question.  The
+          pointer should state the version of the target document.  It is free-form,
+          so it can also indicate the specific section/page/paragraph.
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Make sure a store instruction is run right before a fence.i,
+          and (possibly using obi stalls) ensure that the fence.i is pending retirement
+          but holds off until the store's data_rvalid_i is clocked in and that fencei_flush_req_o
+          was low until this point where it now goes high.
+        pfc: 4
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: TODO missing cover!
+- 002_ReqWaitWritebuffer: !Subfeature
+    name: 002_ReqWaitWritebuffer
+    tag: VP_FENCEI_F002_S002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S002_I000
+        description: When executing a fence.i instruction, if the write buffer is
+          not empty, then fencei_flush_req_o shall be low until the write buffer has
+          been emptied and the corresponding data_rvalid_i have been clocked in as
+          1.
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fence
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Fill up the write buffer prior to executing a fence.i and ensure
+          that fencei_flush_req_o holds off going high until the write buffer to has
+          been emptied.
+        pfc: 4
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: TODO missing cover!
+- 003_ReqWaitXinterface: !Subfeature
+    name: 003_ReqWaitXinterface
+    tag: VP_FENCEI_F002_S003
+    next_elt_id: 1
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S003_I000
+        description: When executing a fence.i instruction, if the X interface is busy
+          with any store operations, then  fencei_flush_req_o shall be low until all
+          the store operations are done
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fence
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Issue one or more store instructions that uses the X interface
+          and ensure that fencei_flush_req_o waits until the stores have all completed
+          before going high.
+        pfc: 4
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_ReqWaitObi: !Subfeature
+    name: 004_ReqWaitObi
+    tag: VP_FENCEI_F002_S004
+    next_elt_id: 1
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S004_I000
+        description: fencei_flush_req_o shall not go high while there are outstanding
+          stores on the obi bus.
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fenceThis
+          is a pointer to the source Requirements document of the Features in question.  The
+          pointer should state the version of the target document.  It is free-form,
+          so it can also indicate the specific section/page/paragraph.
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check vs the OBI monitors that there are no outstanding stores
+          at the time fencei_flush_req_o goes high.
+        pfc: 4
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_ReqLow: !Subfeature
+    name: 005_ReqLow
+    tag: VP_FENCEI_F002_S005
+    next_elt_id: 1
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S005_I000
+        description: When fencei_flush_req_o is high, it shall stay high until fencei_flush_req_o
+          and fencei_flush_ack_i has been sampled high simultaneously, and then then
+          it shall go low.
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fenceThis
+          is a pointer to the source Requirements document of the Features in question.  The
+          pointer should state the version of the target document.  It is free-form,
+          so it can also indicate the specific section/page/paragraph.
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that when fencei_flush_req_o is high, then it behaves correctly
+          with regards to fencei_flush_ack_i.
+        pfc: 4
+        test_type: 4
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 006_AckChange: !Subfeature
+    name: 006_AckChange
+    tag: VP_FENCEI_F002_S006
+    next_elt_id: 1
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S006_I000
+        description: 'fencei_flush_ack_i is allowed to change freely on any clock
+          cycle: It can be permanently high, go high without fence.i and retract,
+          go high at the same cycle as the req, it can delay arbitrarily after req
+          and then go high, etc'
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fenceThis
+          is a pointer to the source Requirements document of the Features in question.  The
+          pointer should state the version of the target document.  It is free-form,
+          so it can also indicate the specific section/page/paragraph.
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Drive ack to test all permutations of rising/falling before/after/on
+          req, acking without req, retracting an early ack, delaying ack after req,
+          etc.
+        pfc: 0
+        test_type: 4
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 007_AckWithold: !Subfeature
+    name: 007_AckWithold
+    tag: VP_FENCEI_F002_S007
+    next_elt_id: 1
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S007_I000
+        description: If req is high, but ack never comes, then the core keeps on stalling
+          and the fence.i is blocked from completing.
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fence
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Upon a req, try witholding ack for a long time and see that the
+          fence.i can be stalled arbitrarily long (should have covers for ack delays
+          of at least {[0:5]}).
+        pfc: 4
+        test_type: 4
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 008_BranchInitiated: !Subfeature
+    name: 008_BranchInitiated
+    tag: VP_FENCEI_F002_S008
+    next_elt_id: 1
+    display_order: 8
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S008_I000
+        description: After req and ack has been sampled simultaneously high and when
+          req is low again, then the core takes a branch to the instruction after
+          the fence.i instruction.
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fenceThis
+          is a pointer to the source Requirements document of the Features in question.  The
+          pointer should state the version of the target document.  It is free-form,
+          so it can also indicate the specific section/page/paragraph.
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that the branch is taken at the point after req and ack
+          has been simultaneously high.
+        pfc: 4
+        test_type: 4
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 009_ShadowingBranch: !Subfeature
+    name: 009_ShadowingBranch
+    tag: VP_FENCEI_F002_S009
+    next_elt_id: 1
+    display_order: 9
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F002_S009_I000
+        description: If the fence.i ends up not retiring because it was preceeded
+          by a taken branch or a jump, then the fencei_flush_req_o shall not go high
+        reqt_doc: CVA6 User Manual; https://cva6.readthedocs.io/en/latest/01_cva6_user/RISCV_Instructions.html#rv32zifencei-instruction-fetch-fence
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Take a branch or do a jump to skip a fence.i, and ensure that
+          fencei_flush_req_o doesn't go high.
+        pfc: 4
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

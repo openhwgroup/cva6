@@ -1,0 +1,179 @@
+!Feature
+next_elt_id: 2
+name: RV32A Load-Reserved/Store-Conditional Instructions
+id: 8
+display_order: 8
+subfeatures: !!omap
+- 000_LR.W: !Subfeature
+    name: 000_LR.W
+    tag: VP_IP008_P000
+    next_elt_id: 4
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F008_S000_I000
+        description: "lr.w rd, (rs1)\nrd = [rs1]\nA load occurs to address at rs1\
+          \ with the results loaded to rd.\nMisaligned address should cause an exception"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rd registers are used.\nAll possible register combinations\
+          \ where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F008_S000_I001
+        description: "lr.w rd, (rs1)\nrd = [rs1]\nA load occurs to address at rs1\
+          \ with the results loaded to rd.\nMisaligned address should cause an exception"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F008_S000_I002
+        description: "lr.w rd, (rs1)\nrd = [rs1]\nA load occurs to address at rs1\
+          \ with the results loaded to rd.\nMisaligned address should cause an exception"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F008_S000_I003
+        description: "lr.w rd, (rs1)\nrd = [rs1]\nA load occurs to address at rs1\
+          \ with the results loaded to rd.\nMisaligned address should cause an exception"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exceptio"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_SC.W: !Subfeature
+    name: 001_SC.W
+    tag: VP_IP008_P001
+    next_elt_id: 4
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F008_S001_I000
+        description: "sc.w rd, rs2, (rs1)\n[rs1] = rs2\nrd = exokay ? 0 : 1\nA store\
+          \ occurs to address at rs1  with data from rs2.\nIf the reservation set\
+          \ from a previous LR.W fails, then rd is set to a non-zero value and the\
+          \ store does not occur.\nIf the reservation set passes, then rd is set to\
+          \ a zero-value and the store succeeds."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n\
+          All possible rd registers are used.\nAll possible register combinations\
+          \ where rs1 == rd are used\nAll possible register combinations where rs2\
+          \ == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F008_S001_I001
+        description: "sc.w rd, rs2, (rs1)\n[rs1] = rs2\nrd = exokay ? 0 : 1\nA store\
+          \ occurs to address at rs1  with data from rs2.\nIf the reservation set\
+          \ from a previous LR.W fails, then rd is set to a non-zero value and the\
+          \ store does not occur.\nIf the reservation set passes, then rd is set to\
+          \ a zero-value and the store succeeds."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs1 are toggled\nAll bits of\
+          \ rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F008_S001_I002
+        description: "sc.w rd, rs2, (rs1)\n[rs1] = rs2\nrd = exokay ? 0 : 1\nA store\
+          \ occurs to address at rs1  with data from rs2.\nIf the reservation set\
+          \ from a previous LR.W fails, then rd is set to a non-zero value and the\
+          \ store does not occur.\nIf the reservation set passes, then rd is set to\
+          \ a zero-value and the store succeeds."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd is either zero or non-zero to indicate\
+          \ success or failure, respectively"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_ISA_RV32_F008_S001_I003
+        description: "sc.w rd, rs2, (rs1)\n[rs1] = rs2\nrd = exokay ? 0 : 1\nA store\
+          \ occurs to address at rs1  with data from rs2.\nIf the reservation set\
+          \ from a previous LR.W fails, then rd is set to a non-zero value and the\
+          \ store does not occur.\nIf the reservation set passes, then rd is set to\
+          \ a zero-value and the store succeeds."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: ''
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Exception:\n\nMisaligned address (non-32-bit aligned) will always\
+          \ cause exception"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

@@ -1,0 +1,110 @@
+!Feature
+next_elt_id: 4
+name: Commit Interface
+id: 1
+display_order: 1
+subfeatures: !!omap
+- 000_commit_valid pulse: !Subfeature
+    name: 000_commit_valid pulse
+    tag: VP_CVXIF_F001_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F001_S000_I000
+        description: The “commit_valid” == 1 exactly one clk cycle for every offloaded  Instruction
+          by the coprocessor (whether accepted or not).
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: For every offloaded  instruction, check that commit_valid is
+          asserted exactly one clk cycle ( is a pulse ).
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_commit transaction uniquness: !Subfeature
+    name: 001_commit transaction uniquness
+    tag: VP_CVXIF_F001_S001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F001_S001_I000
+        description: There is a unique commit transaction for every issue transaction
+          (unique until an instruction has "fully completed" = its result has been
+          submitted).
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that the commit interface doesn't commit an "id" that isn't
+          legal to be used (hasn't been seen in earlier stages, or has not fully completed).
+        pfc: 1
+        test_type: 10
+        cov_method: 10
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_commit transaction for every issue transaction: !Subfeature
+    name: 002_commit transaction for every issue transaction
+    tag: VP_CVXIF_F001_S002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F001_S002_I000
+        description: "- The CPU shall perform a commit transaction for every issue\
+          \ transaction, independent of the accept value of the issue transaction.\n\
+          - For each offloaded and accepted instruction the core is guaranteed to\
+          \ (eventually) signal that such an instruction is either no longer speculative\
+          \ and can be committed (commit_valid is 1 and commit_kill is 0) or that\
+          \ the instruction must be killed (commit_valid is 1 and commit_kill is 1)."
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that for each issue transaction, the commit transaction
+          is sent at the same clock cycle than the issue transaction, or at any clock
+          cycle after the issue transaction.
+        pfc: 4
+        test_type: 3
+        cov_method: 2
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_Transaction definition: !Subfeature
+    name: 003_Transaction definition
+    tag: VP_CVXIF_F001_S003
+    next_elt_id: 1
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CVXIF_F001_S003_I000
+        description: The signals in commit are valid when commit_valid is 1.
+        reqt_doc: https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "The definition of a transaction.\nNot to be verified."
+        pfc: 11
+        test_type: -1
+        cov_method: 10
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

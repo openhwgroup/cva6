@@ -1,0 +1,9 @@
+- test: MSCRATCH_CSR
+  iterations: 1
+  path_var: TESTS_PATH
+  # Prerequisite: install riscv-arch-test (== run 'cva6/regress/install-riscv-arch-test.sh') first.
+  # It will populate '<path_var>/riscv-arch-test/riscv-target/spike/' using the current Spike installation.
+  gcc_opts: "-DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-target/spike/"
+  asm_tests: <path_var>/custom/csr_access_tests/riscv_mscratch_csr_test_0.S
+  
+

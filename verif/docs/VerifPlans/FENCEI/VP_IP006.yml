@@ -1,0 +1,35 @@
+!Feature
+next_elt_id: 1
+name: UnusedFields
+id: 6
+display_order: 6
+subfeatures: !!omap
+- 000_UnusedFields: !Subfeature
+    name: 000_UnusedFields
+    tag: VP_FENCEI_F006_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_FENCEI_F006_S000_I000
+        description: imm[11:0], rs1, rd are reserved for future extensions, and implementations
+          shall ignore them
+        reqt_doc: "The RISC-V Instruction Set Manual\nVolume I: Unprivileged ISA\n\
+          Document Version 20191213\nhttps://riscv.org/wp-content/uploads/2019/12/riscv-spec-20191213.pdf"
+        ref_mode: section
+        ref_page: '31'
+        ref_section: Chapter 3
+        ref_viewer: firefox
+        verif_goals: Try giving random values in those fields and see that all else
+          works as expected
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
