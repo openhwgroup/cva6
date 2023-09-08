@@ -122,6 +122,9 @@ ariane_pkg::FETCH_FIFO_DEPTH
   // Registers
   // output FIFO select, one-hot
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] idx_ds_d, idx_ds_q;
+  // rotated by N
+  logic [ariane_pkg::SUPERSCALAR+1:0][CVA6Cfg.INSTR_PER_FETCH-1:0] idx_ds;
+
   logic [CVA6Cfg.VLEN-1:0] pc_d, pc_q;  // current PC
   logic reset_address_d, reset_address_q;  // we need to re-set the address because of a flush
 
@@ -300,6 +303,17 @@ ariane_pkg::FETCH_FIFO_DEPTH
     assign fetch_entry_valid_o[1] = 1'b0;
   end
 
+  assign idx_ds[0] = idx_ds_q;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    if (CVA6Cfg.INSTR_PER_FETCH > 1) begin
+      assign idx_ds[i+1] = {
+        idx_ds[i][CVA6Cfg.INSTR_PER_FETCH-2:0], idx_ds[i][CVA6Cfg.INSTR_PER_FETCH-1]
+      };
+    end else begin
+      assign idx_ds[i+1] = idx_ds[i];
+    end
+  end
+
   if (ariane_pkg::RVC) begin : gen_downstream_itf_with_c
     always_comb begin
       idx_ds_d  = idx_ds_q;
@@ -323,7 +337,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
       // output mux select
       for (int unsigned i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
         // TODO handle fetch_entry_o[1] if superscalar
-        if (idx_ds_q[i]) begin
+        if (idx_ds[0][i]) begin
           if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
             fetch_entry_o[0].ex.cause = riscv::INSTR_ACCESS_FAULT;
           end else if (CVA6Cfg.RVH && instr_data_out[i].ex == ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT) begin
@@ -348,7 +362,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
       end
       // rotate the pointer left
       if (fetch_entry_ready_i[0]) begin
-        idx_ds_d = {idx_ds_q[CVA6Cfg.INSTR_PER_FETCH-2:0], idx_ds_q[CVA6Cfg.INSTR_PER_FETCH-1]};
+        idx_ds_d = idx_ds[1];
       end
     end
   end else begin : gen_downstream_itf_without_c
