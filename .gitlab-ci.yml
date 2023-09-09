@@ -203,6 +203,19 @@ csr_test:
   script: source verif/regress/dv-riscv-csr-access-test.sh
   after_script: *simu_after_script
 
+mmu_sv32_tests:
+  extends:
+    - .regress_test
+  variables:
+    DASHBOARD_JOB_TITLE: "mmu_sv32_tests $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "MMU SV32 regression suite"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+    DV_SIMULATORS: "veri-testharness,spike"
+    DV_TARGET: cv32a60x
+  script: source verif/regress/dv-riscv-mmu-sv32-test.sh
+  after_script: *simu_after_script
+
 hwconfig:
   extends:
     - .regress_test
