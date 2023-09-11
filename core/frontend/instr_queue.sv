@@ -119,6 +119,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   logic                                            address_overflow;
   // input stream counter
   logic [CVA6Cfg.LOG2_INSTR_PER_FETCH-1:0] idx_is_d, idx_is_q;
+
   // Registers
   // output FIFO select, one-hot
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] idx_ds_d, idx_ds_q;
@@ -126,7 +127,10 @@ ariane_pkg::FETCH_FIFO_DEPTH
   logic [ariane_pkg::SUPERSCALAR+1:0][CVA6Cfg.INSTR_PER_FETCH-1:0] idx_ds;
 
   logic [CVA6Cfg.VLEN-1:0] pc_d, pc_q;  // current PC
+  logic [ariane_pkg::SUPERSCALAR+1:0][CVA6Cfg.VLEN-1:0] pc_j;
   logic reset_address_d, reset_address_q;  // we need to re-set the address because of a flush
+
+  logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_is_cf, fetch_entry_fire;
 
   logic [CVA6Cfg.INSTR_PER_FETCH*2-2:0] branch_mask_extended;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] branch_mask;
@@ -298,9 +302,9 @@ ariane_pkg::FETCH_FIFO_DEPTH
   // ----------------------
   // as long as there is at least one queue which can take the value we have a valid instruction
   assign fetch_entry_valid_o[0] = ~(&instr_queue_empty);
-  if (ariane_pkg::SUPERSCALAR) begin
-    // TODO switch to local change: fetch_entry_valid_o[i] = !instr_queue_empty[j] where j is got like for output data assignments
-    assign fetch_entry_valid_o[1] = 1'b0;
+  if (ariane_pkg::SUPERSCALAR) begin : gen_fetch_entry_valid_1
+    // TODO Maybe this additional fetch_entry_is_cf check is useless as issue-stage already performs it?
+    assign fetch_entry_valid_o[1] = ~|(instr_queue_empty & idx_ds[1]) & ~(&fetch_entry_is_cf);
   end
 
   assign idx_ds[0] = idx_ds_q;
@@ -322,7 +326,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
       // assemble fetch entry
       for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
         fetch_entry_o[i].instruction = '0;
-        fetch_entry_o[i].address = pc_q;
+        fetch_entry_o[i].address = pc_j[i];
         fetch_entry_o[i].ex.valid = 1'b0;
         fetch_entry_o[i].ex.cause = '0;
 
@@ -357,13 +361,29 @@ ariane_pkg::FETCH_FIFO_DEPTH
             fetch_entry_o[0].ex.gva   = instr_data_out[i].ex_gva;
           end
           fetch_entry_o[0].branch_predict.cf = instr_data_out[i].cf;
-          pop_instr[i] = fetch_entry_valid_o[0] & fetch_entry_ready_i[0];
+          pop_instr[i] = fetch_entry_fire[0];
+        end
+
+        if (ariane_pkg::SUPERSCALAR) begin
+          if (idx_ds[1][i]) begin
+            if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
+              fetch_entry_o[1].ex.cause = riscv::INSTR_ACCESS_FAULT;
+            end else begin
+              fetch_entry_o[1].ex.cause = riscv::INSTR_PAGE_FAULT;
+            end
+            fetch_entry_o[1].instruction = instr_data_out[i].instr;
+            fetch_entry_o[1].ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
+            fetch_entry_o[1].ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[i].ex_vaddr};
+            fetch_entry_o[1].branch_predict.cf = instr_data_out[i].cf;
+            // Cannot output two CF the same cycle.
+            pop_instr[i] = fetch_entry_fire[1];
+          end
         end
       end
       // rotate the pointer left
-      if (fetch_entry_ready_i[0]) begin
+      if (fetch_entry_fire[0]) begin
         if (ariane_pkg::SUPERSCALAR) begin
-          idx_ds_d = fetch_entry_ready_i[1] ? idx_ds[2] : idx_ds[1];
+          idx_ds_d = fetch_entry_fire[1] ? idx_ds[2] : idx_ds[1];
         end else begin
           idx_ds_d = idx_ds[1];
         end
@@ -402,28 +422,35 @@ ariane_pkg::FETCH_FIFO_DEPTH
     end
   end
 
-  // TODO(zarubaf): This needs to change for dual-issue
-  // if the handshaking is successful and we had a prediction pop one address entry
-  assign pop_address = ((fetch_entry_o[0].branch_predict.cf != ariane_pkg::NoCF) & |pop_instr);
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign fetch_entry_is_cf[i] = fetch_entry_o[i].branch_predict.cf != ariane_pkg::NoCF;
+    assign fetch_entry_fire[i]  = fetch_entry_valid_o[i] & fetch_entry_ready_i[i];
+  end
+
+  assign pop_address = |(fetch_entry_is_cf & fetch_entry_fire);
 
   // ----------------------
   // Calculate (Next) PC
   // ----------------------
+  assign pc_j[0] = pc_q;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign pc_j[i+1] = fetch_entry_is_cf[i] ? address_out : (
+      pc_j[i] + ((fetch_entry_o[i].instruction[1:0] != 2'b11) ? 'd2 : 'd4)
+    );
+  end
+
   always_comb begin
     pc_d = pc_q;
     reset_address_d = flush_i ? 1'b1 : reset_address_q;
 
-    if (fetch_entry_ready_i[0]) begin
-      // TODO(zarubaf): This needs to change for a dual issue implementation
-      // advance the PC
-      if (ariane_pkg::RVC == 1'b1) begin : gen_pc_with_c_extension
-        pc_d = pc_q + ((fetch_entry_o[0].instruction[1:0] != 2'b11) ? 'd2 : 'd4);
-      end else begin : gen_pc_without_c_extension
-        pc_d = pc_q + 'd4;
+    if (fetch_entry_fire[0]) begin
+      pc_d = pc_j[1];
+      if (ariane_pkg::SUPERSCALAR) begin
+        if (fetch_entry_fire[1]) begin
+          pc_d = pc_j[2];
+        end
       end
     end
-
-    if (pop_address) pc_d = address_out;
 
     // we previously flushed so we need to reset the address
     if (valid_i[0] && reset_address_q) begin
