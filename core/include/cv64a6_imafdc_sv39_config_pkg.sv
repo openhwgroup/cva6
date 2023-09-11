@@ -103,7 +103,9 @@ package cva6_config_pkg;
       bit'(0),           // XF8Vec
       unsigned'(0),      // NrRgprPorts
       unsigned'(0),      // NrWbPorts
-      bit'(0)            // EnableAccelerator
+      bit'(0),           // EnableAccelerator
+      64'h804,           // HaltAddress
+      64'h808            // ExceptionAddress            // EnableAccelerator
     } ;
 
 endpackage
