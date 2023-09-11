@@ -44,3 +44,4 @@ xrun_results/
 __pycache__
 .bender/
 Bender.lock
+/tools/
