@@ -908,6 +908,9 @@ module csr_regfile import ariane_pkg::*; #(
         // hardwired extension registers
         mstatus_d.sd   = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
 
+        // reserve PMPCFG bits 5 and 6 (hardwire to 0)
+        for (int i = 0; i < NrPMPEntries; i++) pmpcfg_d[i].reserved = 2'b0;
+
         // write the floating point status register
         if (csr_write_fflags_i) begin
             fcsr_d.fflags = csr_wdata_i[4:0] | fcsr_q.fflags;
