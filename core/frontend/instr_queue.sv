@@ -362,7 +362,11 @@ ariane_pkg::FETCH_FIFO_DEPTH
       end
       // rotate the pointer left
       if (fetch_entry_ready_i[0]) begin
-        idx_ds_d = idx_ds[1];
+        if (ariane_pkg::SUPERSCALAR) begin
+          idx_ds_d = fetch_entry_ready_i[1] ? idx_ds[2] : idx_ds[1];
+        end else begin
+          idx_ds_d = idx_ds[1];
+        end
       end
     end
   end else begin : gen_downstream_itf_without_c
