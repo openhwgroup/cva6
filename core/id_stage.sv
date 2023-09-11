@@ -38,15 +38,15 @@ module id_stage #(
     // Handshake's ready between fetch and decode - FRONTEND
     output logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_ready_o,
     // Handshake's data between decode and issue - ISSUE
-    output scoreboard_entry_t issue_entry_o,
+    output scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0] issue_entry_o,
     // Instruction value - ISSUE
-    output logic [31:0] orig_instr_o,
+    output logic [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr_o,
     // Handshake's valid between decode and issue - ISSUE
-    output logic issue_entry_valid_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] issue_entry_valid_o,
     // Report if instruction is a control flow instruction - ISSUE
-    output logic is_ctrl_flow_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] is_ctrl_flow_o,
     // Handshake's acknowlege between decode and issue - ISSUE
-    input logic issue_instr_ack_i,
+    input logic [ariane_pkg::SUPERSCALAR:0] issue_instr_ack_i,
     // Information dedicated to RVFI - RVFI
     output logic [ariane_pkg::SUPERSCALAR:0] rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
@@ -85,7 +85,7 @@ module id_stage #(
     logic [31:0]       orig_instr;
     logic              is_ctrl_flow;
   } issue_struct_t;
-  issue_struct_t issue_n, issue_q;
+  issue_struct_t [ariane_pkg::SUPERSCALAR:0] issue_n, issue_q;
 
   logic              [ariane_pkg::SUPERSCALAR:0]       is_control_flow_instr;
   scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_instruction;
@@ -129,7 +129,7 @@ module id_stage #(
           .instr_o                   (instruction[0]),
           .illegal_instr_i           (is_illegal[0]),
           .is_compressed_i           (is_compressed[0]),
-          .issue_ack_i               (issue_instr_ack_i),
+          .issue_ack_i               (issue_instr_ack_i[0]),
           .illegal_instr_o           (is_illegal_cmp[0]),
           .is_compressed_o           (is_compressed_cmp[0]),
           .fetch_stall_o             (stall_instr_fetch),
@@ -207,34 +207,76 @@ module id_stage #(
   // ------------------
   // Pipeline Register
   // ------------------
-  always_comb begin
-    issue_entry_o = issue_q.sbe;
-    issue_entry_valid_o = issue_q.valid;
-    is_ctrl_flow_o = issue_q.is_ctrl_flow;
-    orig_instr_o = issue_q.orig_instr;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign issue_entry_o[i] = issue_q[i].sbe;
+    assign issue_entry_valid_o[i] = issue_q[i].valid;
+    assign is_ctrl_flow_o[i] = issue_q[i].is_ctrl_flow;
+    assign orig_instr_o[i] = issue_q[i].orig_instr;
   end
 
-  always_comb begin
-    issue_n             = issue_q;
-    fetch_entry_ready_o = '0;
+  if (ariane_pkg::SUPERSCALAR) begin
+    always_comb begin
+      issue_n = issue_q;
+      fetch_entry_ready_o = '0;
 
-    // Clear the valid flag if issue has acknowledged the instruction
-    if (issue_instr_ack_i) issue_n.valid = 1'b0;
-
-    // if we have a space in the register and the fetch is valid, go get it
-    // or the issue stage is currently acknowledging an instruction, which means that we will have space
-    // for a new instruction
-    if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i[0]) begin
-      if (stall_instr_fetch) begin
-        fetch_entry_ready_o[0] = 1'b0;
-      end else begin
-        fetch_entry_ready_o[0] = 1'b1;
+      // Clear the valid flag if issue has acknowledged the instruction
+      if (issue_instr_ack_i[0]) begin
+        issue_n[0].valid = 1'b0;
       end
-      issue_n = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
-    end
+      if (issue_instr_ack_i[1]) begin
+        issue_n[1].valid = 1'b0;
+      end
 
-    // invalidate the pipeline register on a flush
-    if (flush_i) issue_n.valid = 1'b0;
+      if (!issue_n[0].valid) begin
+        if (issue_n[1].valid) begin
+          issue_n[0] = issue_n[1];
+          issue_n[1].valid = 1'b0;
+        end else if (fetch_entry_valid_i[0]) begin
+          fetch_entry_ready_o[0] = 1'b1;
+          issue_n[0] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
+        end
+      end
+
+      if (!issue_n[1].valid) begin
+        if (fetch_entry_ready_o[0]) begin
+          if (fetch_entry_valid_i[1]) begin
+            fetch_entry_ready_o[1] = 1'b1;
+            issue_n[1] = '{1'b1, decoded_instruction[1], orig_instr[1], is_control_flow_instr[1]};
+          end
+        end else if (fetch_entry_valid_i[0]) begin
+          fetch_entry_ready_o[0] = 1'b1;
+          issue_n[1] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
+        end
+      end
+
+      if (flush_i) begin
+        issue_n[0].valid = 1'b0;
+        issue_n[1].valid = 1'b0;
+      end
+    end
+  end else begin
+    always_comb begin
+      issue_n             = issue_q;
+      fetch_entry_ready_o = '0;
+
+      // Clear the valid flag if issue has acknowledged the instruction
+      if (issue_instr_ack_i[0]) issue_n[0].valid = 1'b0;
+
+      // if we have a space in the register and the fetch is valid, go get it
+      // or the issue stage is currently acknowledging an instruction, which means that we will have space
+      // for a new instruction
+      if ((!issue_q[0].valid || issue_instr_ack_i[0]) && fetch_entry_valid_i[0]) begin
+        if (stall_instr_fetch) begin
+          fetch_entry_ready_o[0] = 1'b0;
+        end else begin
+          fetch_entry_ready_o[0] = 1'b1;
+        end
+        issue_n[0] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
+      end
+
+      // invalidate the pipeline register on a flush
+      if (flush_i) issue_n[0].valid = 1'b0;
+    end
   end
   // -------------------------
   // Registers (ID <-> Issue)

@@ -361,11 +361,11 @@ module cva6
   // --------------
   // ID <-> ISSUE
   // --------------
-  scoreboard_entry_t issue_entry_id_issue;
-  logic [31:0] orig_instr_id_issue;
-  logic issue_entry_valid_id_issue;
-  logic is_ctrl_fow_id_issue;
-  logic issue_instr_issue_id;
+  scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0] issue_entry_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0] issue_entry_valid_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0] is_ctrl_fow_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0] issue_instr_issue_id;
 
   // --------------
   // ISSUE <-> EX
