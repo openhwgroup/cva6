@@ -236,7 +236,7 @@ pub_hwconfig:
     matrix:
       - DV_SIMULATORS: ["veri-testharness,spike"]
         DV_HWCONFIG_OPTS:
-          - "--default_config=cv32a60x --isa=rv32imac --RenameEn=1"
+          - "--default_config=cv32a60x --isa=rv32imac"
   variables:
     DASHBOARD_JOB_TITLE: "HW config $DV_SIMULATORS $DV_HWCONFIG_OPTS"
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge target configurations"
