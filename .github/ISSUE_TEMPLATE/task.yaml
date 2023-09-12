@@ -18,6 +18,36 @@ body:
     required: true
 - type: textarea
   attributes:
+    label: Required Changes
+    description: A concise description of specific modifications, updates, or actions that are necessary to complete the task, helping to clarify the necessary actions.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Current Status
+    description: A concise description of the current status
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Risks
+    description: List of the potential challenges, obstacles, or issues that could arise while working on the task, helping to anticipate and mitigate potential problems.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Prerequisites
+    description: This outlines any dependencies or conditions that must be met before starting or progressing with the task, ensuring a smooth workflow.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: KPI (KEY Performance Indicators)
+    description: List of the specific metrics or measures that will be used to assess the success or completion of the task, providing clear criteria for evaluation.
+  validations:
+    required: false
+- type: textarea
+  attributes:
     label: Description of Done
     description: What are the criteria for completion of this task?
   validations:
