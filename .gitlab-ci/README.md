@@ -9,7 +9,7 @@ You may obtain a copy of the License at https://solderpad.org/licenses/
 Original Author: Côme ALLART - Thales
 -->
 
-# GitLab CI for core-v-verif + CVA6
+# GitLab CI for CVA6
 
 This document describes the different steps performed automatically when a branch is pushed to a repository.
 It is not meant to be a complete description.
@@ -21,67 +21,30 @@ Only the GitLab-related tasks are described here.
 
 ## Before the branch reaches GitLab
 
-CVA6 and core-v-verif repositories are mirrored into GitLab repositories owned by Thales, to perform regression tests on pull requests.
-
-> Note: in CVA6 regression tests are also run on the `master` branch, and in core-v-verif on the `cva6/dev` branch.
+CVA6 repository is mirrored into a GitLab instance owned by Thales to perform regression tests on pull requests and `master` branch.
 
 
 ## Pipeline boot
 
 When a branch is pushed, the entry point of the CI is the `.gitlab-ci.yml` file at the repository root.
 
-> See [`core-v-verif/.gitlab-ci.yml`] and [`cva6/.gitlab-ci.yml`]
+> See [`.gitlab-ci.yml`]
 
-[`core-v-verif/.gitlab-ci.yml`]: https://github.com/openhwgroup/core-v-verif/blob/cva6/dev/.gitlab-ci.yml
-[`cva6/.gitlab-ci.yml`]: https://github.com/openhwgroup/cva6/blob/master/.gitlab-ci.yml
+[`.gitlab-ci.yml`]: https://github.com/openhwgroup/cva6/blob/master/.gitlab-ci.yml
 
-Both source files from a `setup-ci` project (to locate tools etc.), define workflow rules and perform a small environment check.
-
-All pipelines need both CVA6 and core-v-verif to run tests.
-By default the branches used are:
-
-- The one from the PR
-- The main branch from the other repository.
-  The main branch is defined in `setup-ci` (`master` for CVA6 and `cva6/dev` for core-v-verif).
-
-However, the entry points also detect the `cvvdev/*` pattern in the branch name to run CVA6 and core-v-verif pipelines on branches with the same name.
-It is useful to consistently test PRs impacting both repositories.
-
-In the CVA6 pipeline:
-
-1. The `core-v-verif-build` job gets the current commit hash of core-v-verif to set it as an environment variable.
-   It gets the list of tests to run [`core-v-verif/.gitlab-ci/cva6.yml`] (see next steps).
-2. The `core-v-verif` job triggers a child pipeline using:
-   - [`core-v-verif/.gitlab-ci/cva6.yml`] fetched by `core-v-verif-build`
-   - [`cva6/.gitlab-ci/core-v-verif-cva6.yml`] which defines a `before_script` and an `after_script` to `cd` the core-v-verif repository with the hash defined by `core-v-verif-build`
-
-[`core-v-verif/.gitlab-ci/cva6.yml`]: https://github.com/openhwgroup/core-v-verif/blob/cva6/dev/.gitlab-ci/cva6.yml
-[`cva6/.gitlab-ci/core-v-verif-cva6.yml`]: https://github.com/openhwgroup/cva6/blob/master/.gitlab-ci/core-v-verif-cva6.yml
-
-In core-v-verif pipelines, the `cva6` job triggers a child pipeline using:
-
-- [`core-v-verif/.gitlab-ci/cva6.yml`] (the list of tests)
-- [`core-v-verif/.gitlab-ci/core-v-verif-cva6.yml`] (global `before_script` and `after_script`).
-
-[`core-v-verif/.gitlab-ci/core-v-verif-cva6.yml`]: https://github.com/openhwgroup/core-v-verif/blob/cva6/dev/.gitlab-ci/core-v-verif-cva6.yml
+It includes a file from a `setup-ci` project (to locate tools etc.), defines workflow rules and tests.
 
 
 ## Running the tests
 
-Thanks to the previous step, in pipelines from both CVA6 and core-v-verif, the current working directory is core-v-verif, with CVA6 checked out in `core-v-cores/cva6`.
-
-The tests are described in [`core-v-verif/.gitlab-ci/cva6.yml`].
-
 Stages are defined as below (order matters):
 
-- `init env`: only contains `pub_initjob`, which sets a hash for CVA6 as an environment variable, so that it is the same one for all jobs of this pipeline.
-  It is only run in core-v-verif pipelines as CVA6 pipelines already have the CVA6 commit hash of the pipeline!
-- `build tools`: `pub_build_tools` build Spike and `pub_check_env` prints some environment variable for debugging.
-- `smoke tests`: `pub_smoke` runs smoke tests.
-- `verif tests`: many jobs runs different verif tests.
+- `build tools`: `pub_build_tools` build Spike and `pub_check_env` prints environment variables for debugging.
+- `smoke tests`: `pub_smoke` and `pub_gen_smoke` jobs run smoke tests.
+- `verif tests`: many jobs run different verif tests.
   The template for them is described later in this document.
 - `backend tests`: jobs which use results of `verif tests`, often synthesis results.
-- `report`: `merge reports` merges all reports into a single yaml.
+- `report`: `merge reports` merges all reports into a single yaml file.
 
 
 ### Adding a verif test
@@ -99,7 +62,7 @@ pub_<name>:
     DASHBOARD_SORT_INDEX: <index to sort jobs in dashboard>
     DASHBOARD_JOB_CATEGORY: "<job category for dashboard>"
   script:
-    - source cva6/regress/<my-script>.sh
+    - source verif/regress/<my-script>.sh
     - python3 .gitlab-ci/scripts/report_<kind>.py <args...>
 ```
 
@@ -107,15 +70,15 @@ pub_<name>:
   - The job goes in `verif tests` stage
   - Before running the script part, additionally to the global `before_script`:
     - Spike is got from `pub_build_tools`
-    - Artifacts are cleaned, `artifacts/reports` and `artifacts/logs` are created
-    - A "failure" report is created by default (in case the script exists early)
+    - Artifacts are cleaned, `artifacts/reports/` and `artifacts/logs/` are created
+    - A "failure" report is created by default (in case the script exits early)
     - `$SYN_VCS_BASHRC` is sourced
   - All the contents of the `artifacts/` folder will be considered as artifacts (even if the job fails)
-- `.template_job_short_ci` tells in which pipeline mode the job should run
+- `.template_job_short_ci` tells under which conditions the job should run
 - `variables` defines environment variables.
-  The 4 above are needed to generate the report for the dashboard.
+  The 4 variables above are needed to generate the report for the dashboard.
 - `script` defines the script to run:
-  1. Run the test, for instance sourcing a script in `cva6/regress/`
+  1. Run the test, for instance sourcing a script in `verif/regress/`
   2. Generate a report running a script from `.gitlab-ci/scripts/reports_*.py`
 
 > Notes:
@@ -142,7 +105,6 @@ pub_<name>:
 ```yml
 pub_<name>:
   needs:
-    - *initjob
     - pub_<other_job>
     - <...>
   extends:
@@ -158,12 +120,11 @@ pub_<name>:
 
 Backend tests are like verif tests, differences are:
 
-- `needs` list is needed to specify in which conditions the test is run (with `.template_job_*`).
+- `needs` list is needed to specify when the test is run.
+  Without a `needs` list, all jobs from all previous stages are considered as needed.
+  However, when a `needs` list is declared, all useful dependencies must be specified by hand, which is more complex.
   It contains:
-  - `*initjob` to be sure the correct CVA6 commit is used.
-    Without a `needs` list, all jobs from all previous stages are considered as needed.
-    However, when a `needs` list is declared, all useful dependencies must be specified by hand, which is more complex.
-  - `pub_build_tools` if you need spike (don't forget to `mv` it from the artifacts!)
+  - `pub_build_tools` if you need spike (don't forget to `mv` it from the artifacts or it will be re-built!)
   - The jobs you need artifacts from
 - `.backend_test` indicates that:
   - The job goes in `backend tests` stage
@@ -224,16 +185,15 @@ Failures are propagated:
 
 ## Dashboard
 
-The `merge reports` job merges the report from all jobs of the pipeline into a single file.
+The `merge reports` job merges the reports from all jobs of the pipeline into a single file.
 It pushes this file to a repository.
 This repository has a CI which produces HTML dashboard pages from the latest files.
 These HTML pages are published on <https://riscv-ci.pages.thales-invia.fr/dashboard/>
 
-- Main pages [`dashboard_cva6_0.html`] and [`dashboard_core-v-verif_0.html`] gather results from all processed pipelines.
-- Each page `dashboard_<project>_<PR id>.html` gathers results from all pipelines of one PR.
+- Main page [`index.html`] gathers results from all processed pipelines.
+- Each page `dashboard_cva6_<PR id>.html` gathers results from all pipelines of one PR.
 
-[`dashboard_cva6_0.html`]: https://riscv-ci.pages.thales-invia.fr/dashboard/dashboard_cva6_0.html
-[`dashboard_core-v-verif_0.html`]: https://riscv-ci.pages.thales-invia.fr/dashboard/dashboard_core-v-verif_0.html
+[`index.html`]: https://riscv-ci.pages.thales-invia.fr/dashboard/index.html
 
 
 ## PR comment
@@ -242,10 +202,9 @@ The `merge reports` job gets the list of open PRs.
 It compares the name of the current branch with the name of each PR branch to find the PR.
 If a PR matches, it triggers the GitHub workflow `dashboard-done.yml` in this repository, providing the PR number and the success/fail status.
 
-> See [`core-v-verif/.github/workflows/dashboard-done.yml`] and [`cva6/.github/workflows/dashboard-done.yml`]
+> See [`.github/workflows/dashboard-done.yml`]
 
-[`core-v-verif/.github/workflows/dashboard-done.yml`]: https://github.com/openhwgroup/core-v-verif/blob/cva6/dev/.github/workflows/dashboard-done.yml
-[`cva6/.github/workflows/dashboard-done.yml`]: https://github.com/openhwgroup/cva6/blob/master/.github/workflows/dashboard-done.yml
+[`.github/workflows/dashboard-done.yml`]: https://github.com/openhwgroup/cva6/blob/master/.github/workflows/dashboard-done.yml
 
 This GitHub workflow creates a comment in the PR with the success/fail status and a link to the dashboard page.
 
