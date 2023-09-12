@@ -23,10 +23,10 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness
 fi
 
-cd verif/sim
-
 make clean
 make -C verif/sim clean_all
+
+cd verif/sim
 
 src0=../tests/riscv-tests/benchmarks/dhrystone/dhrystone_main.c
 srcA=(
