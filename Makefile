@@ -51,6 +51,8 @@ support_verilator_4 := $(shell ($(verilator) --version | grep '4\.') > /dev/null
 ifeq ($(support_verilator_4), 0)
 	verilator_threads := 1
 endif
+# Location of Verilator headers and optional source files
+VL_INC_DIR := $(VERILATOR_INSTALL_DIR)/share/verilator/include
 
 ifndef RISCV
 $(error RISCV not set - please point your RISCV variable to your RISCV installation)
@@ -527,7 +529,7 @@ xrun-ci: xrun-asm-tests xrun-amo-tests xrun-mul-tests xrun-fp-tests xrun-benchma
 verilate_command := $(verilator) verilator_config.vlt                                                            \
                     -f core/Flist.cva6                                                                           \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
-                    $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(filter-out %_config_pkg.sv, $(src))))    \
+                    $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(filter-out %_config_pkg.sv, $(src))))   \
                     +define+$(defines)$(if $(TRACE_FAST),+VM_TRACE)$(if $(TRACE_COMPACT),+VM_TRACE+VM_TRACE_FST) \
                     corev_apu/tb/common/mock_uart.sv                                                             \
                     +incdir+corev_apu/axi_node                                                                   \
@@ -547,8 +549,8 @@ verilate_command := $(verilator) verilator_config.vlt                           
                     $(if ($(PRELOAD)!=""), -DPRELOAD=1,)                                                         \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG), --trace-structs,)                                                             \
-                    $(if $(TRACE_COMPACT), --trace-fst $(VERILATOR_INSTALL_DIR)/share/verilator/include/verilated_fst_c.cpp) \
-                    $(if $(TRACE_FAST), --trace $(VERILATOR_INSTALL_DIR)/share/verilator/include/verilated_vcd_c.cpp) \
+                    $(if $(TRACE_COMPACT), --trace-fst $(VL_INC_DIR)/verilated_fst_c.cpp)                        \
+                    $(if $(TRACE_FAST), --trace $(VL_INC_DIR)/include/verilated_vcd_c.cpp)                       \
                     -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr$(if $(PROFILE), -g -pg,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) -DVL_DEBUG"                                      \
                     --cc  --vpi                                                                                  \
