@@ -609,6 +609,8 @@ check gitlab jobs status:
 merge reports:
   stage: report
   tags: [$TAGS_RUNNER]
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
   rules:
     - if: '$DASHBOARD_URL'
       when: always
