@@ -104,7 +104,7 @@ package cva6_config_pkg;
       unsigned'(0),      // NrRgprPorts
       unsigned'(0),      // NrWbPorts
       bit'(0),           // EnableAccelerator
-      64'h804,           // HaltAddress
+      64'h800,           // HaltAddress
       64'h808            // ExceptionAddress
     } ;
 
