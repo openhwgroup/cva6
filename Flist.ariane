@@ -22,7 +22,6 @@
 core/include/cv64a6_imafdc_sv39_openpiton_config_pkg.sv
 core/include/riscv_pkg.sv
 corev_apu/riscv-dbg/src/dm_pkg.sv
-core/include/ariane_dm_pkg.sv
 vendor/openhwgroup/cvfpu/src/fpnew_pkg.sv
 core/include/ariane_pkg.sv
 core/include/acc_pkg.sv

@@ -190,7 +190,9 @@ module cva6 import ariane_pkg::*; #(
     bit'(XF8Vec),
     unsigned'(NrRgprPorts),
     unsigned'(NrWbPorts),
-    bit'(EnableAccelerator)
+    bit'(EnableAccelerator),
+    CVA6Cfg.HaltAddress,
+    CVA6Cfg.ExceptionAddress
   };
 
 

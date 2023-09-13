@@ -103,6 +103,10 @@ def setup_parser_config_generator():
                       help="Cache type (WB or WT)")
   parser.add_argument("--MmuPresent", type=int, default=None, choices=[0, 1],
                       help="Use an MMU ? 1 : enable, 0 : disable")
+  parser.add_argument("--HaltAddress", type=int, default=0x804,
+                      help="Address which the core should jump in case of a debug request.")
+  parser.add_argument("--ExceptionAddress", type=int, default=0x808,
+                      help="Address which the core should jump in case of an exception during debug mode.")
   parser.add_argument("--RvfiTrace", type=int, default=None, choices=[0, 1],
                       help="Output an RVFI trace ? 1 : enable, 0 : disable")
   return parser
@@ -156,6 +160,8 @@ MapArgsToParameter={
   "MmuPresent": "CVA6ConfigMmuPresent",
   # Ignored parameters
   "ignored": "CVA6ConfigRvfiTrace",
+  "HaltAddress": "CVA6HaltAddress",
+  "ExceptionAddress": "CVA6ExceptionAddress",
 }
 MapParametersToArgs = {i:k for k, i in MapArgsToParameter.items()} #reverse map
 

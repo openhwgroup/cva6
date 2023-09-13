@@ -25,7 +25,6 @@ sources:
         files:
           - core/include/cv64a6_imafdcv_sv39_config_pkg.sv
           - core/include/riscv_pkg.sv
-          - core/include/ariane_dm_pkg.sv
           - core/include/ariane_pkg.sv
           - core/mmu_sv39/tlb.sv
           - core/mmu_sv39/mmu.sv
@@ -36,7 +35,6 @@ sources:
         files:
           - core/include/cv64a6_imafdc_sv39_config_pkg.sv
           - core/include/riscv_pkg.sv
-          - core/include/ariane_dm_pkg.sv
           - core/include/ariane_pkg.sv
           - core/mmu_sv39/tlb.sv
           - core/mmu_sv39/mmu.sv
@@ -47,7 +45,6 @@ sources:
         files:
           - core/include/cv32a6_imac_sv0_config_pkg.sv
           - core/include/riscv_pkg.sv
-          - core/include/ariane_dm_pkg.sv
           - core/include/ariane_pkg.sv
           - core/mmu_sv32/cva6_tlb_sv32.sv
           - core/mmu_sv32/cva6_mmu_sv32.sv
@@ -58,7 +55,6 @@ sources:
         files:
           - core/include/cv32a6_imac_sv32_config_pkg.sv
           - core/include/riscv_pkg.sv
-          - core/include/ariane_dm_pkg.sv
           - core/include/ariane_pkg.sv
           - core/mmu_sv32/cva6_tlb_sv32.sv
           - core/mmu_sv32/cva6_mmu_sv32.sv
@@ -69,7 +65,6 @@ sources:
         files:
           - core/include/cv32a6_imafc_sv32_config_pkg.sv
           - core/include/riscv_pkg.sv
-          - core/include/ariane_dm_pkg.sv
           - core/include/ariane_pkg.sv
           - core/mmu_sv32/cva6_tlb_sv32.sv
           - core/mmu_sv32/cva6_mmu_sv32.sv
