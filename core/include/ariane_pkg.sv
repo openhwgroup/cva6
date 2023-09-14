@@ -245,7 +245,6 @@ package ariane_pkg;
     // ---------------
     localparam bit BITMANIP = cva6_config_pkg::CVA6ConfigBExtEn;
 
-
     // Only use struct when signals have same direction
     // exception
     typedef struct packed {

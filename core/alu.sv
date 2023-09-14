@@ -302,7 +302,6 @@ module alu import ariane_pkg::*; #(
                 default: ; // default case to suppress unique warning
             endcase
         end
-
         if (CVA6Cfg.RCONDEXT) begin
            unique case (fu_data_i.operation)
            CZERO_EQZ : result_o = (|fu_data_i.operand_b) ? fu_data_i.operand_a : '0;  // move zero to rd if rs2 is equal to zero else rs1
