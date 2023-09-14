@@ -33,7 +33,7 @@ try:
 except KeyError:
     workflow_type = "gitlab"
 
-workflow_action = os.environ['WORKFLOW_EVENT'].strip('\'\"')
+workflow_action = os.environ['CI_PIPELINE_SOURCE'].strip('\'\"')
 
 if workflow_type == 'github':  # (from wrapper)
     
