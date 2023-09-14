@@ -34,12 +34,12 @@ package config_pkg;
       /// ports than issue ports, for the scoreboard to empty out in case one
       /// instruction stalls a little longer.
       int unsigned NrCommitPorts;
-      int unsigned IsRVFI;
       /// AXI parameters.
       int unsigned AxiAddrWidth;
       int unsigned AxiDataWidth;
       int unsigned AxiIdWidth;
       int unsigned AxiUserWidth;
+      int unsigned NrLoadBufEntries;
       bit FpuEn;
       bit XF16;
       bit XF16ALT;
@@ -135,11 +135,11 @@ package config_pkg;
       EnableAccelerator: bit'(0),
       HaltAddress: 64'h800,
       ExceptionAddress: 64'h808,
-      RASDepth:      unsigned'(cva6_config_pkg::CVA6ConfigRASDepth),
-      BTBEntries:    unsigned'(cva6_config_pkg::CVA6ConfigBTBEntries),
-      BHTEntries:    unsigned'(cva6_config_pkg::CVA6ConfigBHTEntries),
+      RASDepth:      2,
+      BTBEntries:    32,
+      BHTEntries:    128,
       DmBaseAddress: 64'h0,
-      NrPMPEntries:  unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries),
+      NrPMPEntries:  8,
       NOCType:       NOC_TYPE_AXI4_ATOP,
       // idempotent region
       NrNonIdempotentRules:  unsigned'(2),

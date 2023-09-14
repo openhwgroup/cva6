@@ -193,7 +193,22 @@ module cva6 import ariane_pkg::*; #(
     unsigned'(NrWbPorts),
     bit'(EnableAccelerator),
     CVA6Cfg.HaltAddress,
-    CVA6Cfg.ExceptionAddress
+    CVA6Cfg.ExceptionAddress,
+    CVA6Cfg.RASDepth,
+    CVA6Cfg.BTBEntries,
+    CVA6Cfg.BHTEntries,
+    CVA6Cfg.DmBaseAddress,
+    CVA6Cfg.NrPMPEntries,
+    CVA6Cfg.NOCType,
+    CVA6Cfg.NrNonIdempotentRules,
+    CVA6Cfg.NonIdempotentAddrBase,
+    CVA6Cfg.NonIdempotentLength,
+    CVA6Cfg.NrExecuteRegionRules,
+    CVA6Cfg.ExecuteRegionAddrBase,
+    CVA6Cfg.ExecuteRegionLength,
+    CVA6Cfg.NrCachedRegionRules,
+    CVA6Cfg.CachedRegionAddrBase,
+    CVA6Cfg.CachedRegionLength
   };
 
 
@@ -431,7 +446,7 @@ module cva6 import ariane_pkg::*; #(
   // Frontend
   // --------------
   frontend #(
-    .CVA6Cfg   ( CVA6ExtendCfg ),
+    .CVA6Cfg   ( CVA6ExtendCfg )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),

@@ -254,7 +254,7 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   end
 
   // note: openpiton returns a full cacheline!
-  if (CVA6Cfg.NOCType == ariane_pkg::NOC_TYPE_AXI4_ATOP) begin : gen_axi_rtrn_mux
+  if (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_AXI4_ATOP) begin : gen_axi_rtrn_mux
     if (CVA6Cfg.AxiDataWidth > 64) begin
       assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[$clog2(CVA6Cfg.AxiDataWidth/8)-1:3]*64 +: 64];
     end else begin
