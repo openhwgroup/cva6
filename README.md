@@ -132,24 +132,29 @@ There are README files in each directory with additional information.
 To execute tests on CVA6 core, you need a RISC-V toolchain.
 
 Be aware that only gcc 11.1.0 or newer are supported in core-v-verif repository.
-To build and install riscv gcc compiler in local, you can use the following commands :
+To build and install RISC-V GCC compiler in locally, you can use the toolchain generation scripts
+located under `util/gcc-toolchain-builder`.
+
+**NOTE:** Building the toolchain locally may require the installation of several system-wide packages,
+which in turn may necessitate support from your local system administrator.
+The lists of required packages and the commands to install them on various Linux flavors and on macOS are
+provided in the [toolchain README file](file:util/gcc-toolchain-builder/README.md).
 
 ```sh
-git clone https://github.com/riscv-collab/riscv-gnu-toolchain
-cd riscv-gnu-toolchain
-git clone https://github.com/gcc-mirror/gcc -b releases/gcc-13 gcc-13
-./configure –prefix:/path/to/installation/directory --with-multilib-generator="rv32e-ilp32e--;rv32i-ilp32--;rv32im-ilp32--;rv32iac-ilp32--;rv32imac-ilp32--;rv32imafc-ilp32f--;rv32imafdc-ilp32d--;rv64i-lp64--;rv64ic-lp64--;rv64iac-lp64--;rv64imac-lp64--;rv64imafdc-lp64d--;rv64im-lp64--;" --with-gcc-src=`pwd`/gcc-13
-make –j32
-```
-
-These commands will install the riscv gcc 13.1.0 compiler which is the latest version.
-Once running the previous commands, your environment must be updated with :
-
-```sh
-export RISCV=/path/to/installation/directory
-export RISCV_PREFIX=$RISCV/bin/riscv-none-
-export RISCV_GCC=$RISCV_PREFIXgcc
+# Setp  environment variables. The toolchain can be installed
+# in any user-writable directory.
+export RISCV=/path/to/toolchain/installation/directory
 export CV_SW_PREFIX=riscv-none-elf-
+export RISCV_PREFIX=$RISCV/bin/$CW_SW_PREFIX
+export RISCV_GCC=$RISCV_PREFIXgcc
+
+# Get the source code of toolchain components from public repositiories.
+bash util/gcc-toolchain-builder/get-toolchain.sh
+
+# For the build prerequisites, see util/gcc-toolchain-builder/README.md.
+
+# Build and install the GCC toolchain.
+bash util/gcc-toolchain-builder/build-toolchain.sh $RISCV
 ```
 
 This 4 variables will ensure you use correctly the new gcc compiler you have just installed.
