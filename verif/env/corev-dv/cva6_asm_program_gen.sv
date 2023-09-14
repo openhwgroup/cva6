@@ -395,14 +395,43 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
     end
  endfunction
 
-  // ECALL trap handler
-  virtual function void gen_ecall_handler(int hart);
+  // Illegal instruction trap handler
+  virtual function void gen_illegal_instr_handler(int hart);
     string instr[$];
-    gen_signature_handshake(instr, CORE_STATUS, ECALL_EXCEPTION);
+    string str = format_string("illegal_instr_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, illegal_instr_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
+    };
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
+    instr.push_back("mret");
+    gen_section(get_label("illegal_instr_handler", hart), instr);
+  endfunction
+
+  // ECALL trap handler
+  virtual function void gen_ecall_handler(int hart);
+    string instr[$];
+    string str = format_string("ecall_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
+    gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
+    instr = {instr,
+            $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, ecall_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
@@ -413,11 +442,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
   // TODO: handshake correct csr based on delegation
   virtual function void gen_instr_fault_handler(int hart);
     string instr[$];
-    gen_signature_handshake(instr, CORE_STATUS, INSTR_FAULT_EXCEPTION);
+    string str = format_string("instr_fault_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, instr_fault_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
@@ -428,11 +464,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
   // TODO: handshake correct csr based on delegation
   virtual function void gen_load_fault_handler(int hart);
     string instr[$];
+    string str = format_string("load_fault_handler_incr_mepc2:", LABEL_STR_LEN);
     gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, load_fault_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
@@ -443,11 +486,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
   // TODO: handshake correct csr based on delegation
   virtual function void gen_store_fault_handler(int hart);
     string instr[$];
-    gen_signature_handshake(instr, CORE_STATUS, STORE_FAULT_EXCEPTION);
+    string str = format_string("store_fault_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, store_fault_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
@@ -457,11 +507,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
 
   virtual function void gen_pt_instr_fault_handler(int hart);
     string instr[$];
-    gen_signature_handshake(instr, CORE_STATUS, INSTR_PAGE_FAULT_EXCEPTION);
+    string str = format_string("pt_instr_fault_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, pt_instr_fault_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
@@ -471,11 +528,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
 
   virtual function void gen_pt_load_fault_handler(int hart);
     string instr[$];
-    gen_signature_handshake(instr, CORE_STATUS, LOAD_PAGE_FAULT_EXCEPTION);
+    string str = format_string("pt_load_fault_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, pt_load_fault_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
@@ -485,11 +549,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
 
   virtual function void gen_pt_store_fault_handler(int hart);
     string instr[$];
-    gen_signature_handshake(instr, CORE_STATUS, STORE_PAGE_FAULT_EXCEPTION);
+    string str = format_string("pt_store_fault_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, pt_store_fault_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
@@ -499,11 +570,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
 
   virtual function void gen_load_misaligned_handler(int hart);
     string instr[$];
-    gen_signature_handshake(instr, CORE_STATUS, LD_MISALIGNED_EXCEPTION);
+    string str = format_string("load_misaligned_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, load_misaligned_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
@@ -513,11 +591,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
 
   virtual function void gen_store_misaligned_handler(int hart);
     string instr[$];
-    gen_signature_handshake(instr, CORE_STATUS, ST_MISALIGNED_EXCEPTION);
+    string str = format_string("store_misaligned_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, store_misaligned_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
@@ -527,11 +612,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
 
   virtual function void gen_instr_misaligned_handler(int hart);
     string instr[$];
-    gen_signature_handshake(instr, CORE_STATUS, INSTR_MISALIGNED_EXCEPTION);
+    string str = format_string("instr_misaligned_handler_incr_mepc2:", LABEL_STR_LEN);
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
             $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
-            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("lbu  x%0d, 0(x%0d)", cfg.gpr[3],cfg.gpr[0]),
+            $sformatf("li  x%0d, 0x3", cfg.gpr[2]),
+            $sformatf("and  x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("bne  x%0d, x%0d, instr_misaligned_handler_incr_mepc2", cfg.gpr[3], cfg.gpr[2]),
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            str,
+            $sformatf("addi  x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
             $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
