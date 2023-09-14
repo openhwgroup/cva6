@@ -305,8 +305,8 @@ module alu import ariane_pkg::*; #(
 
         if (ariane_pkg::RCONDEXT) begin
            unique case (fu_data_i.operation)
-           CZERO_EQZ : result_o = (fu_data_i.operand_b) ? (fu_data_i.operand_a) : (0) ; // move zero to rd if rs2 is equal to zero else rs1
-           CZERO_NEZ : result_o = (fu_data_i.operand_b) ? (0) : (fu_data_i.operand_a) ; // move zero to rd if rs2 is nonzero else rs1
+           CZERO_EQZ : result_o = (|fu_data_i.operand_b) ? fu_data_i.operand_a : '0;  // move zero to rd if rs2 is equal to zero else rs1
+           CZERO_NEZ : result_o = (|fu_data_i.operand_b) ? '0 : fu_data_i.operand_a; // move zero to rd if rs2 is nonzero else rs1
            endcase
         end
         //VCS coverage on
