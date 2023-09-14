@@ -45,7 +45,7 @@ print_usage()
     echo "        your-favorite-shell $0 [CONFIG_NAME]"
     echo ""
     echo "        CONFIG_NAME    Use configuration from file config/CONFIG_NAME.sh"
-}   
+}
 
 # Helper function to parse the cmdline args.
 # Takes the complete list of positional args as input, drops them locally as they get parsed.
@@ -58,7 +58,7 @@ parse_cmdline()
 	print_usage
 	exit 11
     fi
-	
+
     # The only, optional arg is supposed to be the config name.
     if [ $# -eq 1 ]; then
 	CONFIG_NAME=$1

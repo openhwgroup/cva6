@@ -35,8 +35,8 @@ BINUTILS_COMMIT=binutils-2_40
 BINUTILS_CONFIGURE_OPTS="\
 	--prefix=$PREFIX \
 	--target=$TARGET \
- 	--disable-nls \
- 	--disable-werror"
+	--disable-nls \
+	--disable-werror"
 
 # GCC
 GCC_DIR=src/gcc

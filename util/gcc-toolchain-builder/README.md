@@ -30,10 +30,10 @@ upstream GCC toolchain (default: 13.1.0) for bare-metal 32-bit and 64-bit applic
 
     # 1. Select an installation location for the toolchain (here: the default RISC-V tooling directory $RISCV).
     INSTALL_DIR=$RISCV
-    
+
     # 2. Fetch the source code of the toolchain (assumes Internet access.)
     sh get-toolchain.sh
-    
+
     # 3. Build and install the toolchain (requires write+create permissions for $INSTALL_DIR.)
     sh build-toolchain.sh $INSTALL_DIR
 
@@ -90,7 +90,7 @@ an _installation location_ (an "install prefix"):
 
  * the toolchain configuration name must match one of the predefined `config/CONFIG_NAME.sh`
 files under `config` directory.
- 
+
  * the installation location can be an arbitrary path.  It needs not to exist
 yet: any missing directories will be created during the building process. _The user running the
 `build-toolchain.sh` script must have sufficient permissions to create the
@@ -144,7 +144,7 @@ configuration files in subdirectory `config/` under a different name and
 adjusting the values of per-component variables.  Taking `GCC` as an example:
 
  * `GCC_DIR` defines the location of GCC source code.
- * `GCC_REPO` selects the Git repository to fetch GCC code from. 
+ * `GCC_REPO` selects the Git repository to fetch GCC code from.
  * `GCC_COMMIT` identifies the revision of source code to use: a specific commit,
    tag, or branch. \
    _**NOTE:** If you set `GCC_COMMIT` to the name of a branch, the

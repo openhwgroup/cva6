@@ -52,7 +52,7 @@ print_usage()
     echo "  INSTALL_PREFIX   Path where the toolchain should be installed"
     echo "                     (relative paths will be converted to absolute ones,"
     echo "                     missing parent directories will be created as needed.)"
-}   
+}
 
 # Helper function to parse the cmdline args.
 # Takes the complete list of positional args, drops them as they get parsed.
@@ -166,7 +166,7 @@ cd $ROOT_DIR/build/binutils-gdb
     make -j all && make install || \
 	{ echo "*** Could not build binutils, bailing out!" ; exit 2; }
 cd -
-									
+
 # Configure and build GCC (required by newlib).
 # If an initial configure failed (e.g., due to a change in PREFIX),
 # try making 'distclean' target and configuring again.
@@ -212,6 +212,6 @@ export CFLAGS="-mcmodel=medium"
     make -j all && make install || \
 	{ echo "*** Could not build newlib, bailing out!" ; exit 2; }
 cd -
-								       
+
 # Exit happily.
 exit 0
