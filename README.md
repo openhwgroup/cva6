@@ -131,17 +131,11 @@ There are README files in each directory with additional information.
 #### Prerequisites
 To execute tests on CVA6 core, you need a RISC-V toolchain.
 
-Be aware that only gcc 11.1.0 or newer are supported in core-v-verif repository.
-To build and install RISC-V GCC compiler in locally, you can use the toolchain generation scripts
+To build and install RISC-V GCC compiler locally, you can use the toolchain generation scripts
 located under `util/gcc-toolchain-builder`.
 
-**NOTE:** Building the toolchain locally may require the installation of several system-wide packages,
-which in turn may necessitate support from your local system administrator.
-The lists of required packages and the commands to install them on various Linux flavors and on macOS are
-provided in the [toolchain README file](file:util/gcc-toolchain-builder/README.md).
-
 ```sh
-# Setp  environment variables. The toolchain can be installed
+# Set environment variables. The toolchain can be installed
 # in any user-writable directory.
 export RISCV=/path/to/toolchain/installation/directory
 export CV_SW_PREFIX=riscv-none-elf-
@@ -149,15 +143,19 @@ export RISCV_PREFIX=$RISCV/bin/$CW_SW_PREFIX
 export RISCV_GCC=$RISCV_PREFIXgcc
 
 # Get the source code of toolchain components from public repositiories.
-bash util/gcc-toolchain-builder/get-toolchain.sh
+cd util/gcc-toolchain-builder
+bash ./get-toolchain.sh
 
-# For the build prerequisites, see util/gcc-toolchain-builder/README.md.
+# For the build prerequisites, see the local README.md.
 
 # Build and install the GCC toolchain.
-bash util/gcc-toolchain-builder/build-toolchain.sh $RISCV
+bash ./build-toolchain.sh $RISCV
+
+# Return to the toplevel CVA6 directory.
+cd -
 ```
 
-This 4 variables will ensure you use correctly the new gcc compiler you have just installed.
+These four variables will ensure you use correctly the new gcc compiler you have just installed.
 You will now be able to run the test scripts.
 
 #### Environent setup
