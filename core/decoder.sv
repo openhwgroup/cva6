@@ -580,7 +580,7 @@ module decoder import ariane_pkg::*; #(
                                 end
                             endcase
                         end
-                        if (ariane_pkg::RCONDEXT) begin
+                        if (CVA6Cfg.RCONDEXT) begin
                             unique case ({instr.rtype.funct7, instr.rtype.funct3})
                                 //Conditional move
                                 {7'b000_0111, 3'b101}: instruction_o.op = ariane_pkg::CZERO_EQZ;     // czero.eqz
@@ -591,7 +591,7 @@ module decoder import ariane_pkg::*; #(
                             endcase
                         end
                         //VCS coverage on
-                        unique case ({ariane_pkg::BITMANIP, ariane_pkg::RCONDEXT})
+                        unique case ({ariane_pkg::BITMANIP, CVA6Cfg.RCONDEXT})
                           2'b00 : illegal_instr = illegal_instr_non_bm;
                           2'b01 : illegal_instr = illegal_instr_non_bm & illegal_instr_zic;
                           2'b10 : illegal_instr = illegal_instr_non_bm & illegal_instr_bm;
