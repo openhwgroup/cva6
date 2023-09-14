@@ -30,7 +30,6 @@ export TARGET=riscv-none-elf
 
 # Binutils
 BINUTILS_DIR=src/binutils-gdb
-#BINUTILS_REPO=https://gitlab-issm.gemalto.com/community/binutils-gdb/binutils-gdb
 BINUTILS_REPO=https://sourceware.org/git/binutils-gdb.git
 BINUTILS_COMMIT=binutils-2_41
 BINUTILS_CONFIGURE_OPTS="\
@@ -41,7 +40,7 @@ BINUTILS_CONFIGURE_OPTS="\
 
 # GCC
 GCC_DIR=src/gcc
-GCC_REPO=https://gitlab-issm.gemalto.com/community/gcc/gcc
+GCC_REPO=https://github.com/gcc-mirror/gcc.git
 GCC_COMMIT=master
 GCC_CONFIGURE_OPTS="\
 	--prefix=$PREFIX \
@@ -53,7 +52,7 @@ GCC_CONFIGURE_OPTS="\
 
 # newlib
 NEWLIB_DIR=src/newlib
-NEWLIB_REPO=https://gitlab-issm.gemalto.com/community/newlib-cygwin/newlib-cygwin
+NEWLIB_REPO=https://sourceware.org/git/newlib-cygwin.git
 NEWLIB_COMMIT=newlib-4.3.0
 
 NEWLIB_CONFIGURE_OPTS="\
