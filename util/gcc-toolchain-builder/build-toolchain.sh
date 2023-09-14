@@ -115,7 +115,7 @@ fi
 
 # ======== Parse the command line.  Drop each successfully parsed arg. ========
 echo "### Parsing the cmdline..."
-parse_cmdline $@
+parse_cmdline "$@"
 
 # ======== Check if config file exists, and load it if it does ========
 # Check for the presence of source code and build configuration.

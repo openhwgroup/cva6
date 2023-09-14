@@ -72,7 +72,7 @@ parse_cmdline()
 CONFIG_NAME="gcc-13.1.0-baremetal"
 
 # ======== Parse the command line ========
-parse_cmdline $@
+parse_cmdline "$@"
 
 # ======== Read configuration information =========
 # Check for the presence of source code and build configuration file.
