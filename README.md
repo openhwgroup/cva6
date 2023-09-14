@@ -131,28 +131,31 @@ There are README files in each directory with additional information.
 #### Prerequisites
 To execute tests on CVA6 core, you need a RISC-V toolchain.
 
-Be aware that only gcc 11.1.0 or newer are supported in core-v-verif repository.
-To build and install riscv gcc compiler in local, you can use the following commands :
+To build and install RISC-V GCC compiler locally, you can use the toolchain generation scripts
+located under `util/gcc-toolchain-builder`.
 
 ```sh
-git clone https://github.com/riscv-collab/riscv-gnu-toolchain
-cd riscv-gnu-toolchain
-git clone https://github.com/gcc-mirror/gcc -b releases/gcc-13 gcc-13
-./configure –prefix:/path/to/installation/directory --with-multilib-generator="rv32e-ilp32e--;rv32i-ilp32--;rv32im-ilp32--;rv32iac-ilp32--;rv32imac-ilp32--;rv32imafc-ilp32f--;rv32imafdc-ilp32d--;rv64i-lp64--;rv64ic-lp64--;rv64iac-lp64--;rv64imac-lp64--;rv64imafdc-lp64d--;rv64im-lp64--;" --with-gcc-src=`pwd`/gcc-13
-make –j32
-```
-
-These commands will install the riscv gcc 13.1.0 compiler which is the latest version.
-Once running the previous commands, your environment must be updated with :
-
-```sh
-export RISCV=/path/to/installation/directory
-export RISCV_PREFIX=$RISCV/bin/riscv-none-
-export RISCV_GCC=$RISCV_PREFIXgcc
+# Set environment variables. The toolchain can be installed
+# in any user-writable directory.
+export RISCV=/path/to/toolchain/installation/directory
 export CV_SW_PREFIX=riscv-none-elf-
+export RISCV_PREFIX=$RISCV/bin/$CW_SW_PREFIX
+export RISCV_GCC=$RISCV_PREFIXgcc
+
+# Get the source code of toolchain components from public repositiories.
+cd util/gcc-toolchain-builder
+bash ./get-toolchain.sh
+
+# For the build prerequisites, see the local README.md.
+
+# Build and install the GCC toolchain.
+bash ./build-toolchain.sh $RISCV
+
+# Return to the toplevel CVA6 directory.
+cd -
 ```
 
-This 4 variables will ensure you use correctly the new gcc compiler you have just installed.
+These four variables will ensure you use correctly the new gcc compiler you have just installed.
 You will now be able to run the test scripts.
 
 #### Environent setup
