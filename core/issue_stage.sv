@@ -184,9 +184,9 @@ module issue_stage
       .rs3_o              (rs3_sb_iro),
       .rs3_valid_o        (rs3_valid_iro_sb),
 
-      .decoded_instr_i      (decoded_instr_i[0]),
-      .decoded_instr_valid_i(decoded_instr_valid_i[0]),
-      .decoded_instr_ack_o  (decoded_instr_ack_o[0]),
+      .decoded_instr_i      (decoded_instr_i),
+      .decoded_instr_valid_i(decoded_instr_valid_i),
+      .decoded_instr_ack_o  (decoded_instr_ack_o),
       .issue_instr_o        (issue_instr_sb_iro),
       .orig_instr_o         (orig_instr_sb_iro),
       .issue_instr_valid_o  (issue_instr_valid_sb_iro),
@@ -198,9 +198,6 @@ module issue_stage
       .ex_i             (ex_ex_i),
       .*
   );
-  if (SUPERSCALAR) begin
-    assign decoded_instr_ack_o[1] = 1'b0;
-  end
 
   // ---------------------------------------------------------
   // 3. Issue instruction and read operand, also commit
