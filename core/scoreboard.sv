@@ -114,6 +114,8 @@ module scoreboard #(
   logic issue_full, issue_en;
   logic [CVA6Cfg.TRANS_ID_BITS:0] issue_cnt_n, issue_cnt_q;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_n, issue_pointer_q;
+  logic [ariane_pkg::SUPERSCALAR+1:0][CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
+
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer_n, commit_pointer_q;
   logic [$clog2(CVA6Cfg.NrCommitPorts):0] num_commit;
 
@@ -136,13 +138,18 @@ module scoreboard #(
     end
   end
 
+  assign issue_pointer[0] = issue_pointer_q;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign issue_pointer[i+1] = issue_pointer[i] + 'd1;
+  end
+
   // an instruction is ready for issue if we have place in the issue FIFO and it the decoder says it is valid
   always_comb begin
     decoded_instr_ack_o    = '0;
     issue_instr_o          = decoded_instr_i[0];
     orig_instr_o           = orig_instr_i[0];
     // make sure we assign the correct trans ID
-    issue_instr_o.trans_id = issue_pointer_q;
+    issue_instr_o.trans_id = issue_pointer[0];
     // we are ready if we are not full and don't have any unresolved branches, but it can be
     // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
     issue_instr_valid_o    = decoded_instr_valid_i[0] & ~unresolved_branch_i & ~issue_full;
@@ -161,7 +168,7 @@ module scoreboard #(
       // the decoded instruction we put in there is valid (1st bit)
       // increase the issue counter and advance issue pointer
       issue_en = 1'b1;
-      mem_n[issue_pointer_q] = {
+      mem_n[issue_pointer[0]] = {
         1'b1,  // valid bit
         (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
           decoded_instr_i[0].op
@@ -248,7 +255,7 @@ module scoreboard #(
       CVA6Cfg.NrCommitPorts
   ) {1'b0}}, num_commit} + {{CVA6Cfg.TRANS_ID_BITS - 1{1'b0}}, issue_en};
   assign commit_pointer_n[0] = (flush_i) ? '0 : commit_pointer_q[0] + num_commit;
-  assign issue_pointer_n = (flush_i) ? '0 : issue_pointer_q + issue_en;
+  assign issue_pointer_n = (flush_i) ? '0 : issue_pointer[issue_en];
 
   // precompute offsets for commit slots
   for (genvar k = 1; k < CVA6Cfg.NrCommitPorts; k++) begin : gen_cnt_incr
