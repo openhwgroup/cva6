@@ -28,6 +28,7 @@ module uvmt_cva6_dut_wrap # (
                             uvma_cvxif_intf                     cvxif_if,
                             uvma_axi_intf                       axi_if,
                             uvmt_axi_switch_intf                axi_switch_vif,
+                            uvmt_default_inputs_intf            default_inputs_vif,
                             uvme_cva6_core_cntrl_if             core_cntrl_if,
                             output logic[31:0]                  tb_exit_o,
                             output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o
@@ -51,6 +52,7 @@ module uvmt_cva6_dut_wrap # (
          .cvxif_req              ( cvxif_if.cvxif_req_i           ),
          .axi_slave              ( axi_if                         ),
          .axi_switch_vif         ( axi_switch_vif                 ),
+         .default_inputs_vif     ( default_inputs_vif             ),
          .tb_exit_o              ( tb_exit_o                      ),
          .rvfi_o                 ( rvfi_o                         )
 );
