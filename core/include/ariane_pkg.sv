@@ -253,6 +253,9 @@ package ariane_pkg;
     // Fetch Stage
     // ---------------
 
+    // Enable Zcb
+    localparam bit COMPRESSEDB = cva6_config_pkg::CVA6ConfigZCbExtEn;
+
     // leave as is (fails with >8 entries and wider fetch width)
     localparam int unsigned FETCH_FIFO_DEPTH  = 4;
     localparam int unsigned FETCH_WIDTH       = 32;
