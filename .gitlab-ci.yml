@@ -124,11 +124,8 @@ smoke:
         - "vcs-testharness,spike"
         - "vcs-uvm,spike"
   script:
-    # In order to capture logs in case of test failure, the test script cannot fail.
-    - source verif/regress/smoke-tests.sh || true
-    # The list of files must NOT fail on various DV_SIMULATORS values, so use 'v*_sim' to match
-    # 'veri-testharness_sim', 'vcs-testharness_sim' and 'vcs-uvm_sim' (one of them always applies,
-    # at least until new RTL simulator configurations are added.)
+    - source verif/regress/smoke-tests.sh
+  after_script: &simu_after_script
     - for i in verif/sim/*/v*_sim/*.log.iss ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
     - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
 
@@ -141,14 +138,8 @@ gen_smoke:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "vcs-uvm,spike"
-  script:
-    # In order to capture logs in case of test failure, the test script cannot fail.
-    - source verif/regress/smoke-gen_tests.sh || true
-    # The list of files must NOT fail on various DV_SIMULATORS values, so use 'v*_sim' to match
-    # 'veri-testharness_sim', 'vcs-testharness_sim' and 'vcs-uvm_sim' (one of them always applies,
-    # at least until new RTL simulator configurations are added.)
-    - for i in verif/sim/*/v*_sim/*.log.iss ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
-    - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+  script: source verif/regress/smoke-gen_tests.sh
+  after_script: *simu_after_script
 
 coremark:
   extends:
@@ -196,9 +187,8 @@ riscv_arch_test:
   parallel:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
-  script:
-    - source verif/regress/dv-riscv-arch-test.sh
-    - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+  script: source verif/regress/dv-riscv-arch-test.sh
+  after_script: *simu_after_script
 
 csr_test:
   extends:
@@ -210,9 +200,8 @@ csr_test:
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TARGET: cv32a60x
-  script:
-    - source verif/regress/dv-riscv-csr-access-test.sh
-    - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+  script: source verif/regress/dv-riscv-csr-access-test.sh
+  after_script: *simu_after_script
 
 hwconfig:
   extends:
@@ -240,9 +229,8 @@ compliance:
   parallel:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
-  script:
-    - source verif/regress/dv-riscv-compliance.sh
-    - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+  script: source verif/regress/dv-riscv-compliance.sh
+  after_script: *simu_after_script
 
 tests-v:
   extends:
@@ -255,9 +243,8 @@ tests-v:
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TARGET: cv64a6_imafdc_sv39
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
-  script:
-    - source verif/regress/dv-riscv-tests.sh
-    - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+  script: source verif/regress/dv-riscv-tests.sh
+  after_script: *simu_after_script
 
 tests-p:
   extends:
@@ -272,9 +259,8 @@ tests-p:
   parallel:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
-  script:
-    - source verif/regress/dv-riscv-tests.sh
-    - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+  script: source verif/regress/dv-riscv-tests.sh
+  after_script: *simu_after_script
 
 synthesis_others:
   timeout: 2 hours
@@ -353,8 +339,7 @@ smoke-gate:
     - cd verif/sim
     - make vcs_clean_all
     - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target $TARGET --iss=spike,vcs-gate $DV_OPTS
-    - cd -
-    - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+  after_script: *simu_after_script
 
 fpga-build:
   timeout: 90 minutes
