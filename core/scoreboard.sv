@@ -29,8 +29,6 @@ module scoreboard #(
     input logic flush_unissued_instr_i,
     // Flush whole scoreboard - TO_BE_COMPLETED
     input logic flush_i,
-    // We have an unresolved branch - TO_BE_COMPLETED
-    input logic unresolved_branch_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_gpr_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -152,7 +150,7 @@ module scoreboard #(
     issue_instr_o.trans_id = issue_pointer[0];
     // we are ready if we are not full and don't have any unresolved branches, but it can be
     // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
-    issue_instr_valid_o    = decoded_instr_valid_i[0] & ~unresolved_branch_i & ~issue_full;
+    issue_instr_valid_o    = decoded_instr_valid_i[0] & ~issue_full;
     decoded_instr_ack_o[0] = issue_ack_i & ~issue_full;
   end
 
