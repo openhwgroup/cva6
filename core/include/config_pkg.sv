@@ -31,6 +31,7 @@ package config_pkg;
       bit RVC;
       bit XFVec;
       bit CvxifEn;
+      bit RCONDEXT;
       // Calculated
       bit RVF;
       bit RVD;
@@ -66,6 +67,7 @@ package config_pkg;
       bit'(1),           // RVC
       bit'(0),           // XFVec
       bit'(1),           // CvxifEn
+      bit'(0),           // EnableZiCond
       // Extended
       bit'(0),           // RVF
       bit'(0),           // RVD
@@ -99,6 +101,7 @@ package config_pkg;
       bit'(0),           // RVC
       bit'(0),           // XFVec
       bit'(0),           // CvxifEn
+      bit'(0),           // EnableZiCond
       // Extended
       bit'(0),           // RVF
       bit'(0),           // RVD
