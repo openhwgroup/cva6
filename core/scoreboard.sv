@@ -74,13 +74,13 @@ module scoreboard #(
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
     // Issue scoreboard entry - ACC_DISPATCHER
-    output scoreboard_entry_t        issue_instr_o,
+    output scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       issue_instr_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic              [31:0] orig_instr_o,
+    output logic              [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic                     issue_instr_valid_o,
+    output logic              [ariane_pkg::SUPERSCALAR:0]       issue_instr_valid_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                     issue_ack_i,
+    input  logic              [ariane_pkg::SUPERSCALAR:0]       issue_ack_i,
 
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input bp_resolve_t resolved_branch_i,
@@ -138,15 +138,18 @@ module scoreboard #(
 
   // an instruction is ready for issue if we have place in the issue FIFO and it the decoder says it is valid
   always_comb begin
-    decoded_instr_ack_o    = '0;
-    issue_instr_o          = decoded_instr_i[0];
-    orig_instr_o           = orig_instr_i[0];
-    // make sure we assign the correct trans ID
-    issue_instr_o.trans_id = issue_pointer[0];
-    // we are ready if we are not full and don't have any unresolved branches, but it can be
-    // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
-    issue_instr_valid_o    = decoded_instr_valid_i[0] & ~issue_full;
-    decoded_instr_ack_o[0] = issue_ack_i & ~issue_full;
+    decoded_instr_ack_o = '0;
+    issue_instr_o       = decoded_instr_i;
+    orig_instr_o        = orig_instr_i;
+    for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+      // make sure we assign the correct trans ID
+      issue_instr_o[i].trans_id = issue_pointer[i];
+
+      // we are ready if we are not full and don't have any unresolved branches, but it can be
+      // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
+      issue_instr_valid_o[i]    = decoded_instr_valid_i[i] & ~issue_full;
+      decoded_instr_ack_o[i]    = issue_ack_i[i] & ~issue_full;
+    end
   end
 
   // maintain a FIFO with issued instructions
@@ -340,38 +343,38 @@ module scoreboard #(
   // WB ports have higher prio than entries
   for (genvar k = 0; unsigned'(k) < CVA6Cfg.NrWbPorts; k++) begin : gen_rs_wb
     assign rs1_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs1_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
-        issue_instr_o.op
+        issue_instr_o[0].op
     )));
     assign rs2_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs2_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
-        issue_instr_o.op
+        issue_instr_o[0].op
     )));
     assign rs3_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs3_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
-        issue_instr_o.op
+        issue_instr_o[0].op
     )));
     assign rs_data[k] = wbdata_i[k];
   end
   for (genvar k = 0; unsigned'(k) < CVA6Cfg.NR_SB_ENTRIES; k++) begin : gen_rs_entries
     assign rs1_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs1_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
-        issue_instr_o.op
+        issue_instr_o[0].op
     )));
     assign rs2_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs2_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
-        issue_instr_o.op
+        issue_instr_o[0].op
     )));
     assign rs3_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs3_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
-        issue_instr_o.op
+        issue_instr_o[0].op
     )));
     assign rs_data[k+CVA6Cfg.NrWbPorts] = mem_q[k].sbe.result;
   end
 
   // check whether we are accessing GPR[0]
   assign rs1_valid_o = rs1_valid & ((|rs1_i) | (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
-      issue_instr_o.op
+      issue_instr_o[0].op
   )));
   assign rs2_valid_o = rs2_valid & ((|rs2_i) | (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
-      issue_instr_o.op
+      issue_instr_o[0].op
   )));
   assign rs3_valid_o = CVA6Cfg.NrRgprPorts == 3 ? rs3_valid & ((|rs3_i) | (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
-      issue_instr_o.op
+      issue_instr_o[0].op
   ))) : rs3_valid;
 
   // use fixed prio here
@@ -480,8 +483,11 @@ module scoreboard #(
     else $fatal(1, "Commit acknowledged but instruction is not valid");
   end
   // assert that we never give an issue ack signal if the instruction is not valid
-  assert property (@(posedge clk_i) disable iff (!rst_ni) issue_ack_i |-> issue_instr_valid_o)
-  else $fatal(1, "Issue acknowledged but instruction is not valid");
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assert property (
+      @(posedge clk_i) disable iff (!rst_ni) issue_ack_i[i] |-> issue_instr_valid_o[i])
+    else $fatal(1, "Issue acknowledged but instruction is not valid");
+  end
 
   // there should never be more than one instruction writing the same destination register (except x0)
   // check that no functional unit is retiring with the same transaction id
