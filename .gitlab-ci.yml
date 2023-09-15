@@ -35,6 +35,10 @@ workflow:
       variables:
         CI_KIND: regress
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^dev.*/
+      variables:
+        CI_KIND: dev
+    - variables:
+        CI_KIND: none
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -48,24 +52,35 @@ default:
       - artifacts/
 
 stages:
-  - build tools
+  - setup
   - smoke tests
   - verif tests
   - backend tests
   - find failures
   - report
 
+.setup_job:
+  stage: setup
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  rules: &on_dev
+    - if: $CI_KIND == "regress"
+    - if: $CI_KIND == "verif"
+    - if: $CI_KIND == "dev"
+    - when: manual
+      allow_failure: true
+
 check_env:
-  stage: build tools
+  extends:
+    - .setup_job
   variables:
     GIT_STRATEGY: none
   script:
     - env
 
 build_tools:
-  stage: build tools
-  variables:
-    GIT_SUBMODULE_STRATEGY: none
+  extends:
+    - .setup_job
   script:
     # ROOT_PROJECT is used by Spike installer and designates the toplevel of core-v-verif tree.
     - 'export ROOT_PROJECT=$(pwd)'
@@ -85,6 +100,7 @@ build_tools:
 
 .smoke_test:
   stage: smoke tests
+  rules: *on_dev
   before_script:
     - mkdir -p tools
     - mv artifacts/tools/spike tools
