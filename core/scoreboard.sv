@@ -123,11 +123,6 @@ module scoreboard #(
 
   assign sb_full_o  = issue_full;
 
-  scoreboard_entry_t decoded_instr;
-  always_comb begin
-    decoded_instr = decoded_instr_i[0];
-  end
-
   // output commit instruction directly
   always_comb begin : commit_ports
     for (int unsigned i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
@@ -162,17 +157,19 @@ module scoreboard #(
     issue_en = 1'b0;
 
     // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
-    if (decoded_instr_valid_i[0] && decoded_instr_ack_o[0] && !flush_unissued_instr_i) begin
-      // the decoded instruction we put in there is valid (1st bit)
-      // increase the issue counter and advance issue pointer
-      issue_en = 1'b1;
-      mem_n[issue_pointer[0]] = {
-        1'b1,  // valid bit
-        (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
-          decoded_instr_i[0].op
-        )),  // whether rd goes to the fpr
-        decoded_instr  // decoded instruction record
-      };
+    for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+      if (decoded_instr_valid_i[i] && decoded_instr_ack_o[i] && !flush_unissued_instr_i) begin
+        // the decoded instruction we put in there is valid (1st bit)
+        // increase the issue counter and advance issue pointer
+        issue_en = 1'b1;
+        mem_n[issue_pointer[i]] = {
+          1'b1,  // valid bit
+          (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
+            decoded_instr_i[i].op
+          )),  // whether rd goes to the fpr
+          decoded_instr_i[i]  // decoded instruction record
+        };
+      end
     end
 
     // ------------
