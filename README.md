@@ -178,7 +178,7 @@ To check the RTL cva6 behaviour, the RTL simulation trace is compared to spike t
 
 ```sh
 export DV_SIMULATORS=veri-testharness,spike
-sh verif/regress/smoke-tests.sh
+bash verif/regress/smoke-tests.sh
 ```
 
 #### Test execution
@@ -187,9 +187,9 @@ Run one of the shell scripts:
 
 ```sh
 # riscv-compliance (https://github.com/riscv/riscv-compliance) test suite:
-sh verif/regress/dv-riscv-compliance.sh
+bash verif/regress/dv-riscv-compliance.sh
 # riscv-tests (https://github.com/riscv/riscv-tests) test suite:
-sh verif/regress/dv-riscv-tests.sh
+bash verif/regress/dv-riscv-tests.sh
 ```
 
 
