@@ -523,9 +523,8 @@ merge reports:
   variables:
     GIT_SUBMODULE_STRATEGY: none
   rules:
-    - if: '$DASHBOARD_URL'
+    - if: $DASHBOARD_URL && $CI_KIND != "none"
       when: always
-    - when: never
   script:
     - mkdir -p artifacts/reports
     - ls -al artifacts/reports
