@@ -75,7 +75,7 @@ module compressed_decoder #(
                     end
 
                     riscv::OpcodeC0Zcb: begin
-                        if (ariane_pkg::COMPRESSEDB) begin
+                        if (CVA6Cfg.RZCB) begin
                             unique case (instr_i[12:10])
                                 3'b000: begin
                                     // c.lbu -> lbu rd', uimm(rs1') 
@@ -98,7 +98,7 @@ module compressed_decoder #(
                                 end
 
                                 3'b011: begin
-                                    // c.sh -> sb rs2', uimm(rs1')
+                                    // c.sh -> sh rs2', uimm(rs1')
                                     instr_o = {7'b0, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b001, 3'b0, instr_i[5], 1'b0, riscv::OpcodeStore};
                                 end
 
@@ -218,7 +218,7 @@ module compressed_decoder #(
 
                                     3'b011: begin
                                         // c.and -> and rd', rd', rs2'
-                                        instr_o = {7'b0, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b111, 2'b01, instr_i[9:7], riscv::OpcodeOp};
+                                      instr_o = {7'b0, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b111, 2'b01, instr_i[9:7], riscv::OpcodeOp};
                                     end
 
                                     3'b100: begin
@@ -231,7 +231,7 @@ module compressed_decoder #(
                                     end
 
                                     3'b110: begin
-                                        if (ariane_pkg::COMPRESSEDB) begin
+                                        if (CVA6Cfg.RZCB) begin
                                             // c.mul -> mul rd', rd', rs2'
                                             instr_o = {6'b0, 1'b1, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b000, 2'b01, instr_i[9:7], riscv::OpcodeOp};
                                         end else begin
@@ -241,7 +241,7 @@ module compressed_decoder #(
                                     end
 
                                     3'b111: begin
-                                        if (ariane_pkg::COMPRESSEDB) begin
+                                        if (CVA6Cfg.RZCB) begin
 
                                             unique case (instr_i[4:2])
                                                 3'b000: begin
