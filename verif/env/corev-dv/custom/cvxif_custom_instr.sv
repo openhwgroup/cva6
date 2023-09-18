@@ -105,13 +105,23 @@ class cvxif_custom_instr extends riscv_custom_instr;
             has_imm = 1'b0;
          end
       endcase
-  endfunction
+   endfunction
 
    function void pre_randomize();
       rd.rand_mode(has_rd);
       rs1.rand_mode(has_rs1);
       rs2.rand_mode(has_rs2);
       imm.rand_mode(has_imm);
+   endfunction
+
+   virtual function bit is_supported(riscv_instr_gen_config cfg);
+      cva6_instr_gen_config_c cfg_cva6;
+      `DV_CHECK_FATAL($cast(cfg_cva6, cfg), "Could not cast cfg into cfg_cva6")
+      return cfg_cva6.enable_x_extension && (
+             instr_name inside {
+                CUS_ADD_MULTI,CUS_NOP,CUS_ADD_RS3,
+                CUS_EXC,CUS_U_ADD,CUS_S_ADD
+                               });
    endfunction
 
 endclass
