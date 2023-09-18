@@ -13,3 +13,8 @@
 `define DEFINE_CVXIF_CUSTOM_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
    class riscv_``instr_n``_instr extends cvxif_custom_instr;  \
       `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
+
+// Zicond extension instruction
+`define DEFINE_ZICOND_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+   class riscv_``instr_n``_instr extends riscv_zicond_instr_c;  \
+      `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)

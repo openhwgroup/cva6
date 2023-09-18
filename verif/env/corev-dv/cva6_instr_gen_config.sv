@@ -30,6 +30,7 @@ class cva6_instr_gen_config_c extends riscv_instr_gen_config;
   bit                     enable_rdrs1_hazard;
   bit                     enable_rdrs2_hazard;
   bit                     enable_same_reg;
+  bit                     enable_zicond_extension;
 
   constraint hazard_reg_c {
     if (enable_same_reg) {
@@ -43,6 +44,7 @@ class cva6_instr_gen_config_c extends riscv_instr_gen_config;
       `uvm_field_int(enable_rdrs1_hazard, UVM_DEFAULT)
       `uvm_field_int(enable_rdrs2_hazard, UVM_DEFAULT)
       `uvm_field_int(enable_same_reg, UVM_DEFAULT)
+      `uvm_field_int(enable_zicond_extension, UVM_DEFAULT)
     `uvm_object_utils_end
 
   function new (string name = "");
@@ -51,6 +53,7 @@ class cva6_instr_gen_config_c extends riscv_instr_gen_config;
     get_bool_arg_value("+enable_rdrs1_hazard=", enable_rdrs1_hazard);
     get_bool_arg_value("+enable_rdrs2_hazard=", enable_rdrs2_hazard);
     get_bool_arg_value("+enable_same_reg=", enable_same_reg);
+    get_bool_arg_value("+enable_zicond_extension=", enable_zicond_extension);
   endfunction
 
 endclass : cva6_instr_gen_config_c
