@@ -209,10 +209,10 @@ module issue_stage
       .rs3_len_t(rs3_len_t)
   ) i_issue_read_operands (
       .flush_i            (flush_unissued_instr_i),
-      .issue_instr_i      (issue_instr_sb_iro[0]),
-      .orig_instr_i       (orig_instr_sb_iro[0]),
-      .issue_instr_valid_i(issue_instr_valid_sb_iro[0]),
-      .issue_ack_o        (issue_ack_iro_sb[0]),
+      .issue_instr_i      (issue_instr_sb_iro),
+      .orig_instr_i       (orig_instr_sb_iro),
+      .issue_instr_valid_i(issue_instr_valid_sb_iro),
+      .issue_ack_o        (issue_ack_iro_sb),
       .fu_data_o          (fu_data_o),
       .flu_ready_i        (flu_ready_i),
       .rs1_o              (rs1_iro_sb),
@@ -239,8 +239,5 @@ module issue_stage
       .tinst_o            (tinst_o),
       .*
   );
-  if (SUPERSCALAR) begin
-    assign issue_ack_iro_sb[1] = 1'b0;
-  end
 
 endmodule
