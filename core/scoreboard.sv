@@ -109,7 +109,8 @@ module scoreboard #(
   } sb_mem_t;
   sb_mem_t [CVA6Cfg.NR_SB_ENTRIES-1:0] mem_q, mem_n;
 
-  logic issue_full, issue_en;
+  logic                             issue_full;
+  logic [ariane_pkg::SUPERSCALAR:0] num_issue;
   logic [CVA6Cfg.TRANS_ID_BITS:0] issue_cnt_n, issue_cnt_q;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_n, issue_pointer_q;
   logic [ariane_pkg::SUPERSCALAR+1:0][CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
@@ -156,15 +157,15 @@ module scoreboard #(
   // keep track of all issued instructions
   always_comb begin : issue_fifo
     // default assignment
-    mem_n    = mem_q;
-    issue_en = 1'b0;
+    mem_n     = mem_q;
+    num_issue = '0;
 
     // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
     for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
       if (decoded_instr_valid_i[i] && decoded_instr_ack_o[i] && !flush_unissued_instr_i) begin
         // the decoded instruction we put in there is valid (1st bit)
         // increase the issue counter and advance issue pointer
-        issue_en = 1'b1;
+        num_issue += 'd1;
         mem_n[issue_pointer[i]] = {
           1'b1,  // valid bit
           (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
@@ -251,9 +252,9 @@ module scoreboard #(
 
   assign issue_cnt_n = (flush_i) ? '0 : issue_cnt_q - {{CVA6Cfg.TRANS_ID_BITS - $clog2(
       CVA6Cfg.NrCommitPorts
-  ) {1'b0}}, num_commit} + {{CVA6Cfg.TRANS_ID_BITS - 1{1'b0}}, issue_en};
+  ) {1'b0}}, num_commit} + num_issue;
   assign commit_pointer_n[0] = (flush_i) ? '0 : commit_pointer_q[0] + num_commit;
-  assign issue_pointer_n = (flush_i) ? '0 : issue_pointer[issue_en];
+  assign issue_pointer_n = (flush_i) ? '0 : issue_pointer[num_issue];
 
   // precompute offsets for commit slots
   for (genvar k = 1; k < CVA6Cfg.NrCommitPorts; k++) begin : gen_cnt_incr
