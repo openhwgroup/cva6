@@ -120,9 +120,13 @@ module scoreboard #(
 
   // the issue queue is full don't issue any new instructions
   // works since aligned to power of 2
-  assign issue_full = (issue_cnt_q[CVA6Cfg.TRANS_ID_BITS] == 1'b1);
+  if (ariane_pkg::SUPERSCALAR) begin
+    assign issue_full = (issue_cnt_q[CVA6Cfg.TRANS_ID_BITS] == 1'b1) || &issue_cnt_q[CVA6Cfg.TRANS_ID_BITS-1:0];
+  end else begin
+    assign issue_full = (issue_cnt_q[CVA6Cfg.TRANS_ID_BITS] == 1'b1);
+  end
 
-  assign sb_full_o  = issue_full;
+  assign sb_full_o = issue_full;
 
   // output commit instruction directly
   always_comb begin : commit_ports
