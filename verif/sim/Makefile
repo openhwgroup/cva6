@@ -182,7 +182,7 @@ export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/design
 ALL_UVM_FLAGS           = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
 	  $(VCS_HOME)/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
 	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+$(VCS_HOME)/etc/uvm/src \
-	  +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/tb/uvmt \
+	  +incdir+$(CVA6_REPO_DIR)/verif/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/tb/uvmt \
 	  $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb) $(if $(TRACE_COMPACT),+vcs+fsdbon))
 
 ALL_SIMV_UVM_FLAGS      = -licwait 20 $(issrun_opts) \
