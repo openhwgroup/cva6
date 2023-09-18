@@ -39,7 +39,7 @@ RISC-V Extensions
    "Zicount - Performance Counters",                                    "Yes","✓","✓"
    "Zicsr - Control and Status Register Instructions",                  "No","✓","✓"
    "Zifencei - Instruction-Fetch Fence",                                "No","✓","✓"
-   "Zicond - Integer Conditional Operations",                           "Yes","✓","✓"
+   "Zicond - Integer Conditional Operations(Ratification pending)",     "Yes","✓","✓"
 
 
 

@@ -313,7 +313,8 @@ independent requirements.
 +-----------------------------------+-----------------------------------+
 | ISA-130                           | CVA6 should support as an         |
 |                                   | **option** the **Zicond**         |
-|                                   | extension, version 1.0.           |
+|                                   | extension(ratification pending)   |
+|                                   | version 1.0.                      |
 +-----------------------------------+-----------------------------------+
 
 
