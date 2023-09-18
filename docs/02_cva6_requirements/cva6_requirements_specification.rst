@@ -311,6 +311,11 @@ independent requirements.
 |                                   | **Zbc** and **Zbs** extensions    |
 |                                   | (bit manipulation), version 1.0.  |
 +-----------------------------------+-----------------------------------+
+| ISA-130                           | CVA6 should support as an         |
+|                                   | **option** the **Zicond**         |
+|                                   | extension, version 1.0.           |
++-----------------------------------+-----------------------------------+
+
 
 Note to ISA-60 and ISA-70: CV64A6 cannot support the D extension with
 the F extension.
