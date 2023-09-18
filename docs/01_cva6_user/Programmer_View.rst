@@ -20,7 +20,7 @@
 
 Programmer’s View
 =================
-RISC-V specifications allow many variations. This chapter provides more details about RISC-V variants available for the programmer. 
+RISC-V specifications allow many variations. This chapter provides more details about RISC-V variants available for the programmer.
 
 RISC-V Extensions
 -----------------
@@ -39,6 +39,7 @@ RISC-V Extensions
    "Zicount - Performance Counters",                                    "Yes","✓","✓"
    "Zicsr - Control and Status Register Instructions",                  "No","✓","✓"
    "Zifencei - Instruction-Fetch Fence",                                "No","✓","✓"
+   "Zicond - Integer Conditional Operations(Ratification pending)",     "Yes","✓","✓"
 
 
 
