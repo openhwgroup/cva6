@@ -50,7 +50,7 @@ package config_pkg;
       bit RVZCB;
       bit XFVec;
       bit CvxifEn;
-      bit RCONDEXT;
+      bit ZiCondExtEn;
       // Calculated
       bit RVF;
       bit RVD;
@@ -119,7 +119,7 @@ package config_pkg;
       RVZCB: bit'(1),
       XFVec: bit'(0),
       CvxifEn: bit'(1),
-      EnableZiCond: bit'(0),
+      ZiCondExtEn: bit'(0),
       // Extended
       RVF: bit'(0),
       RVD: bit'(0),

@@ -178,7 +178,7 @@ module cva6 import ariane_pkg::*; #(
     CVA6Cfg.RVZCB,
     CVA6Cfg.XFVec,
     CVA6Cfg.CvxifEn,
-    CVA6Cfg.RCONDEXT,
+    CVA6Cfg.ZiCondExtEn,
     // Extended
     bit'(RVF),
     bit'(RVD),
