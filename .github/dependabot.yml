@@ -4,6 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      time: "19:30"
+      timezone: "Europe/Paris"
     allow:
       - dependency-name: "verif/core-v-verif"
     labels:
