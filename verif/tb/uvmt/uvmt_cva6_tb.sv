@@ -86,6 +86,8 @@ module uvmt_cva6_tb;
 
     uvma_rvfi_csr_if#(uvme_cva6_pkg::XLEN)       rvfi_csr_if [uvme_cva6_pkg::RVFI_NRET-1:0]();
 
+   uvmt_default_inputs_intf         default_inputs_vif();
+
    //bind assertion module for cvxif interface
    bind uvmt_cva6_dut_wrap
       uvma_cvxif_assert          cvxif_assert(.cvxif_assert(cvxif_if),
@@ -124,6 +126,7 @@ module uvmt_cva6_tb;
                     .cvxif_if  (cvxif_if),
                     .axi_if    (axi_if),
                     .axi_switch_vif    (axi_switch_vif),
+                    .default_inputs_vif    (default_inputs_vif),
                     .core_cntrl_if(core_cntrl_if),
                     .tb_exit_o(rvfi_if.tb_exit_o),
                     .rvfi_o(rvfi_if.rvfi_o)
@@ -154,6 +157,12 @@ module uvmt_cva6_tb;
       assign  rvfi_instr_if[i].rvfi_mem_wdata = rvfi_if.rvfi_o[i].mem_wdata;
       assign  rvfi_instr_if[i].rvfi_mem_wmask = rvfi_if.rvfi_o[i].mem_wmask;
    end
+
+   assign  default_inputs_vif.hart_id   = 64'h0000_0000_0000_0000;
+   assign  default_inputs_vif.irq       = 2'b00;
+   assign  default_inputs_vif.ipi       = 1'b0;
+   assign  default_inputs_vif.time_irq  = 1'b0;
+   assign  default_inputs_vif.debug_req = 1'b0;
 
 
    for (genvar i = 0; i < uvme_cva6_pkg::RVFI_NRET; i++) begin

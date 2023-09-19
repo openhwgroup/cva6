@@ -50,7 +50,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
   uvma_axi_intf                        axi_slave,
-  uvmt_axi_switch_intf                 axi_switch_vif
+  uvmt_axi_switch_intf                 axi_switch_vif,
+  uvmt_default_inputs_intf             default_inputs_vif
 );
 
   ariane_axi::req_t    axi_ariane_req;
@@ -71,11 +72,11 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
     .boot_addr_i          ( boot_addr_i               ),//Driving the boot_addr value from the core control agent
-    .hart_id_i            ( 64'h0000_0000_0000_0000   ),
-    .irq_i                ( 2'b00 /*irqs*/            ),
-    .ipi_i                ( 1'b0  /*ipi*/             ),
-    .time_irq_i           ( 1'b0  /*timer_irq*/       ),
-    .debug_req_i          ( 1'b0                      ),
+    .hart_id_i            ( default_inputs_vif.hart_id   ),
+    .irq_i                ( default_inputs_vif.irq       ),
+    .ipi_i                ( default_inputs_vif.ipi       ),
+    .time_irq_i           ( default_inputs_vif.time_irq  ),
+    .debug_req_i          ( default_inputs_vif.debug_req ),
     .rvfi_o               ( rvfi                      ),
     .cvxif_req_o          ( cvxif_req                 ),
     .cvxif_resp_i         ( cvxif_resp                ),

@@ -28,6 +28,7 @@
 `include "uvmt_cva6_macros.sv"
 
 `include "uvmt_axi_switch_intf.sv"
+`include "uvmt_default_inputs_intf.sv"
 
 /**
  * Encapsulates all the types and test cases for the verification of an
