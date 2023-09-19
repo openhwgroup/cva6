@@ -190,20 +190,20 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   EnableAccelerator:     bit'(0),
   HaltAddress:           dm::HaltAddress,
   ExceptionAddress:      dm::ExceptionAddress,
-  DmBaseAddress:         DebugBase,
+  DmBaseAddress:         ariane_soc::DebugBase,
   NrPMPEntries:          unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries),
   NOCType:               config_pkg::NOC_TYPE_AXI4_ATOP,
   // idempotent region
   NrNonIdempotentRules:  unsigned'(1),
   NonIdempotentAddrBase: 1024'({64'b0}),
-  NonIdempotentLength:   1024'({DRAMBase}),
+  NonIdempotentLength:   1024'({ariane_soc::DRAMBase}),
   NrExecuteRegionRules:  unsigned'(3),
-  ExecuteRegionAddrBase: 1024'({DRAMBase,   ROMBase,   DebugBase}),
-  ExecuteRegionLength:   1024'({DRAMLength, ROMLength, DebugLength}),
+  ExecuteRegionAddrBase: 1024'({ariane_soc::DRAMBase,   ariane_soc::ROMBase,   ariane_soc::DebugBase}),
+  ExecuteRegionLength:   1024'({ariane_soc::DRAMLength, ariane_soc::ROMLength, ariane_soc::DebugLength}),
   // cached region
   NrCachedRegionRules:   unsigned'(1),
-  CachedRegionAddrBase:  1024'({DRAMBase}),
-  CachedRegionLength:    1024'({DRAMLength})
+  CachedRegionAddrBase:  1024'({ariane_soc::DRAMBase}),
+  CachedRegionLength:    1024'({ariane_soc::DRAMLength})
 };
 
 localparam type rvfi_instr_t = logic;
