@@ -157,7 +157,7 @@ module ariane_xilinx (
 // CVA6 config
 localparam bit IsRVFI = bit'(0);
 // CVA6 Xilinx configuration
-localparam ariane_pkg::cva6_cfg_t CVA6Cfg = '{
+localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   NrCommitPorts:         cva6_config_pkg::CVA6ConfigNrCommitPorts,
   AxiAddrWidth:          cva6_config_pkg::CVA6ConfigAxiAddrWidth,
   AxiDataWidth:          cva6_config_pkg::CVA6ConfigAxiDataWidth,
@@ -175,6 +175,7 @@ localparam ariane_pkg::cva6_cfg_t CVA6Cfg = '{
   RVC:                   bit'(cva6_config_pkg::CVA6ConfigCExtEn),
   XFVec:                 bit'(cva6_config_pkg::CVA6ConfigFVecEn),
   CvxifEn:               bit'(cva6_config_pkg::CVA6ConfigCvxifEn),
+  ZiCondExtEn:           bit'(0),
   RVF:                   bit'(0),
   RVD:                   bit'(0),
   FpPresent:             bit'(0),
