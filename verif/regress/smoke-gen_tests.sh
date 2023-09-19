@@ -16,7 +16,6 @@ fi
 # install the required tools
 source verif/regress/install-cva6.sh
 source verif/regress/install-riscv-dv.sh
-source verif/regress/install-riscv-isa-sim.sh
 
 if ! [ -n "$DV_TARGET" ]; then
   DV_TARGET=cv32a60x
