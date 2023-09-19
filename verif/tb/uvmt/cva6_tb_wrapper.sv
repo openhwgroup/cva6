@@ -65,9 +65,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
   cva6 #(
      .CVA6Cfg ( CVA6Cfg ),
-     .IsRVFI ( IsRVFI ),
-     //
-    .ArianeCfg  ( ariane_soc::ArianeSocCfg )
+     .IsRVFI ( IsRVFI )
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
