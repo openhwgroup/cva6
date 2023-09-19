@@ -228,15 +228,15 @@ module load_store_unit import ariane_pkg::*; #(
         assign dtlb_ppn    = mmu_vaddr_plen[riscv::PLEN-1:12];
         assign dtlb_hit    = 1'b1;
 
-        assign mmu_exception = '0;
-
         always_ff @(posedge clk_i or negedge rst_ni) begin
             if (~rst_ni) begin
                 mmu_paddr         <= '0;
                 translation_valid <= '0;
+                mmu_exception     <= '0;
             end else begin
                 mmu_paddr         <=  mmu_vaddr_plen;
                 translation_valid <= translation_req;
+                mmu_exception     <= misaligned_exception;
             end
         end
     end
