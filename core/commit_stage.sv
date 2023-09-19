@@ -77,7 +77,7 @@ module commit_stage import ariane_pkg::*; #(
     always_comb begin : dirty_fp_state
       dirty_fp_state_o = 1'b0;
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-        dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || ariane_pkg::is_rd_fpr_cfg(commit_instr_i[i].op, CVA6Cfg.FpPresent));
+        dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[i].op)));
         // Check if we issued a vector floating-point instruction to the accellerator
         dirty_fp_state_o |= commit_instr_i[i].fu == ACCEL && commit_instr_i[i].vfp;
       end
@@ -117,7 +117,7 @@ module commit_stage import ariane_pkg::*; #(
             // we can definitely write the register file
             // if the instruction is not committing anything the destination
             commit_ack_o[0] = 1'b1;
-            if (ariane_pkg::is_rd_fpr_cfg(commit_instr_i[0].op, CVA6Cfg.FpPresent)) begin
+            if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[0].op)) begin
                 we_fpr_o[0] = 1'b1;
             end else begin
                 we_gpr_o[0] = 1'b1;
@@ -136,11 +136,13 @@ module commit_stage import ariane_pkg::*; #(
             // ---------
             // FPU Flags
             // ---------
-            if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
-                // write the CSR with potential exception flags from retiring floating point instruction
-                csr_wdata_o = {{riscv::XLEN-5{1'b0}}, commit_instr_i[0].ex.cause[4:0]};
-                csr_write_fflags_o = 1'b1;
-                commit_ack_o[0] = 1'b1;
+            if(CVA6Cfg.FpPresent) begin
+                if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
+                    // write the CSR with potential exception flags from retiring floating point instruction
+                    csr_wdata_o = {{riscv::XLEN-5{1'b0}}, commit_instr_i[0].ex.cause[4:0]};
+                    csr_write_fflags_o = 1'b1;
+                    commit_ack_o[0] = 1'b1;
+                end
             end
             // ---------
             // CSR Logic
@@ -229,7 +231,7 @@ module commit_stage import ariane_pkg::*; #(
                 if (!exception_o.valid && !commit_instr_i[1].ex.valid
                                        && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
 
-                    if (ariane_pkg::is_rd_fpr_cfg(commit_instr_i[1].op, CVA6Cfg.FpPresent))
+                    if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[1].op))
                         we_fpr_o[1] = 1'b1;
                     else
                         we_gpr_o[1] = 1'b1;
@@ -238,7 +240,7 @@ module commit_stage import ariane_pkg::*; #(
 
                     // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
                     // exception flags
-                    if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
+                    if (CVA6Cfg.FpPresent && commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
                         if (csr_write_fflags_o)
                             csr_wdata_o = {{riscv::XLEN-5{1'b0}}, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
                         else

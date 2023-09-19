@@ -195,32 +195,32 @@ module csr_regfile import ariane_pkg::*; #(
         if (csr_read) begin
             unique case (csr_addr.address)
                 riscv::CSR_FFLAGS: begin
-                    if (mstatus_q.fs == riscv::Off) begin
-                        read_access_exception = 1'b1;
-                    end else begin
+                    if(CVA6Cfg.FpPresent) begin
                         csr_rdata = {{riscv::XLEN-5{1'b0}}, fcsr_q.fflags};
+                    end else begin
+                        read_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_FRM: begin
-                    if (mstatus_q.fs == riscv::Off) begin
-                        read_access_exception = 1'b1;
-                    end else begin
+                    if(CVA6Cfg.FpPresent) begin
                         csr_rdata = {{riscv::XLEN-3{1'b0}}, fcsr_q.frm};
+                    end else begin
+                        read_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_FCSR: begin
-                    if (mstatus_q.fs == riscv::Off) begin
-                        read_access_exception = 1'b1;
-                    end else begin
+                    if(CVA6Cfg.FpPresent) begin
                         csr_rdata = {{riscv::XLEN-8{1'b0}}, fcsr_q.frm, fcsr_q.fflags};
+                    end else begin
+                        read_access_exception = 1'b1;
                     end
                 end
                 // non-standard extension
                 riscv::CSR_FTRAN: begin
-                    if (mstatus_q.fs == riscv::Off) begin
-                        read_access_exception = 1'b1;
-                    end else begin
+                    if(CVA6Cfg.FpPresent) begin
                         csr_rdata = {{riscv::XLEN-7{1'b0}}, fcsr_q.fprec};
+                    end else begin
+                        read_access_exception = 1'b1;
                     end
                 end
                 // debug registers
@@ -574,43 +574,43 @@ module csr_regfile import ariane_pkg::*; #(
             unique case (csr_addr.address)
                 // Floating-Point
                 riscv::CSR_FFLAGS: begin
-                    if (mstatus_q.fs == riscv::Off) begin
-                        update_access_exception = 1'b1;
-                    end else begin
+                    if(CVA6Cfg.FpPresent) begin
                         dirty_fp_state_csr = 1'b1;
                         fcsr_d.fflags = csr_wdata[4:0];
                         // this instruction has side-effects
                         flush_o = 1'b1;
+                    end else begin
+                        update_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_FRM: begin
-                    if (mstatus_q.fs == riscv::Off) begin
-                        update_access_exception = 1'b1;
-                    end else begin
+                    if(CVA6Cfg.FpPresent) begin
                         dirty_fp_state_csr = 1'b1;
                         fcsr_d.frm    = csr_wdata[2:0];
                         // this instruction has side-effects
                         flush_o = 1'b1;
+                    end else begin
+                        update_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_FCSR: begin
-                    if (mstatus_q.fs == riscv::Off) begin
-                        update_access_exception = 1'b1;
-                    end else begin
+                    if(CVA6Cfg.FpPresent) begin
                         dirty_fp_state_csr = 1'b1;
                         fcsr_d[7:0] = csr_wdata[7:0]; // ignore writes to reserved space
                         // this instruction has side-effects
                         flush_o = 1'b1;
+                    end else begin
+                        update_access_exception = 1'b1;
                     end
                 end
                 riscv::CSR_FTRAN: begin
-                    if (mstatus_q.fs == riscv::Off) begin
-                        update_access_exception = 1'b1;
-                    end else begin
+                    if(CVA6Cfg.FpPresent) begin
                         dirty_fp_state_csr = 1'b1;
                         fcsr_d.fprec = csr_wdata[6:0]; // ignore writes to reserved space
                         // this instruction has side-effects
                         flush_o = 1'b1;
+                    end else begin
+                        update_access_exception = 1'b1;
                     end
                 end
                 // debug CSR
@@ -912,7 +912,7 @@ module csr_regfile import ariane_pkg::*; #(
         for (int i = 0; i < NrPMPEntries; i++) pmpcfg_d[i].reserved = 2'b0;
 
         // write the floating point status register
-        if (csr_write_fflags_i) begin
+        if (CVA6Cfg.FpPresent && csr_write_fflags_i) begin
             fcsr_d.fflags = csr_wdata_i[4:0] | fcsr_q.fflags;
         end
 

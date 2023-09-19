@@ -455,9 +455,25 @@ module load_unit import ariane_pkg::*; #(
     // result mux
     always_comb begin
         unique case (ldbuf_rdata.operation)
-            ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::FLW: result_o = {{riscv::XLEN-32{rdata_sign_bit}}, shifted_data[31:0]};
-            ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::FLH: result_o = {{riscv::XLEN-32+16{rdata_sign_bit}}, shifted_data[15:0]};
-            ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::FLB: result_o = {{riscv::XLEN-32+24{rdata_sign_bit}}, shifted_data[7:0]};
+            ariane_pkg::LW, ariane_pkg::LWU:    result_o = {{riscv::XLEN-32{rdata_sign_bit}}, shifted_data[31:0]};
+            ariane_pkg::LH, ariane_pkg::LHU:    result_o = {{riscv::XLEN-32+16{rdata_sign_bit}}, shifted_data[15:0]};
+            ariane_pkg::LB, ariane_pkg::LBU:    result_o = {{riscv::XLEN-32+24{rdata_sign_bit}}, shifted_data[7:0]};
+            ariane_pkg::FLW: begin
+                if(CVA6Cfg.FpPresent) begin
+                   result_o = {{riscv::XLEN-32{rdata_sign_bit}}, shifted_data[31:0]};
+                end
+            end
+            ariane_pkg::FLH: begin
+                if(CVA6Cfg.FpPresent) begin
+                   result_o = {{riscv::XLEN-32+16{rdata_sign_bit}}, shifted_data[15:0]};
+                end
+            end
+            ariane_pkg::FLB: begin
+                if(CVA6Cfg.FpPresent) begin
+                   result_o = {{riscv::XLEN-32+24{rdata_sign_bit}}, shifted_data[7:0]};
+                end
+            end
+
             default:                                          result_o = shifted_data[riscv::XLEN-1:0];
         endcase
     end

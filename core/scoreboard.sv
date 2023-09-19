@@ -139,7 +139,7 @@ module scoreboard #(
       // increase the issue counter and advance issue pointer
       issue_en = 1'b1;
       mem_n[issue_pointer_q] = {1'b1,                                      // valid bit
-                                ariane_pkg::is_rd_fpr_cfg(decoded_instr_i.op, CVA6Cfg.FpPresent),   // whether rd goes to the fpr
+                                (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(decoded_instr_i.op)),   // whether rd goes to the fpr
                                 decoded_instr                              // decoded instruction record
                                 };
     end
@@ -182,8 +182,9 @@ module scoreboard #(
         if (ex_i[i].valid)
           mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
         // write the fflags back from the FPU (exception valid is never set), leave tval intact
-        else if (mem_q[trans_id_i[i]].sbe.fu inside {ariane_pkg::FPU, ariane_pkg::FPU_VEC})
-          mem_n[trans_id_i[i]].sbe.ex.cause = ex_i[i].cause;
+        else if(CVA6Cfg.FpPresent && mem_q[trans_id_i[i]].sbe.fu inside {ariane_pkg::FPU, ariane_pkg::FPU_VEC}) begin
+            mem_n[trans_id_i[i]].sbe.ex.cause = ex_i[i].cause;
+        end
       end
     end
 
@@ -274,24 +275,26 @@ module scoreboard #(
       .data_o  ( rd_clobber_gpr_o[k] ),
       .idx_o   (                     )
     );
-    rr_arb_tree #(
-      .NumIn(NR_ENTRIES+1),
-      .DataType(ariane_pkg::fu_t),
-      .ExtPrio(1'b1),
-      .AxiVldRdy(1'b1)
-    ) i_sel_fpr_clobbers (
-      .clk_i   ( clk_i               ),
-      .rst_ni  ( rst_ni              ),
-      .flush_i ( 1'b0                ),
-      .rr_i    ( '0                  ),
-      .req_i   ( fpr_clobber_vld[k]  ),
-      .gnt_o   (                     ),
-      .data_i  ( clobber_fu          ),
-      .gnt_i   ( 1'b1                ),
-      .req_o   (                     ),
-      .data_o  ( rd_clobber_fpr_o[k] ),
-      .idx_o   (                     )
-    );
+    if(CVA6Cfg.FpPresent) begin
+        rr_arb_tree #(
+          .NumIn(NR_ENTRIES+1),
+          .DataType(ariane_pkg::fu_t),
+          .ExtPrio(1'b1),
+          .AxiVldRdy(1'b1)
+        ) i_sel_fpr_clobbers (
+          .clk_i   ( clk_i               ),
+          .rst_ni  ( rst_ni              ),
+          .flush_i ( 1'b0                ),
+          .rr_i    ( '0                  ),
+          .req_i   ( fpr_clobber_vld[k]  ),
+          .gnt_o   (                     ),
+          .data_i  ( clobber_fu          ),
+          .gnt_i   ( 1'b1                ),
+          .req_o   (                     ),
+          .data_o  ( rd_clobber_fpr_o[k] ),
+          .idx_o   (                     )
+        );
+    end
   end
 
   // ----------------------------------
@@ -304,22 +307,22 @@ module scoreboard #(
 
   // WB ports have higher prio than entries
   for (genvar k = 0; unsigned'(k) < CVA6Cfg.NrWbPorts; k++) begin : gen_rs_wb
-    assign rs1_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs1_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == ariane_pkg::is_rs1_fpr_cfg(issue_instr_o.op, CVA6Cfg.FpPresent));
-    assign rs2_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs2_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == ariane_pkg::is_rs2_fpr_cfg(issue_instr_o.op, CVA6Cfg.FpPresent));
-    assign rs3_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs3_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == ariane_pkg::is_imm_fpr_cfg(issue_instr_o.op, CVA6Cfg.FpPresent));
+    assign rs1_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs1_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(issue_instr_o.op)));
+    assign rs2_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs2_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(issue_instr_o.op)));
+    assign rs3_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs3_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(issue_instr_o.op)));
     assign rs_data[k]     = wbdata_i[k];
   end
   for (genvar k = 0; unsigned'(k) < NR_ENTRIES; k++) begin : gen_rs_entries
-    assign rs1_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs1_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_rs1_fpr_cfg(issue_instr_o.op, CVA6Cfg.FpPresent));
-    assign rs2_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs2_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_rs2_fpr_cfg(issue_instr_o.op, CVA6Cfg.FpPresent));
-    assign rs3_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs3_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_imm_fpr_cfg(issue_instr_o.op, CVA6Cfg.FpPresent));
+    assign rs1_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs1_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(issue_instr_o.op)));
+    assign rs2_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs2_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(issue_instr_o.op)));
+    assign rs3_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs3_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(issue_instr_o.op)));
     assign rs_data[k+CVA6Cfg.NrWbPorts]     = mem_q[k].sbe.result;
   end
 
   // check whether we are accessing GPR[0]
-  assign rs1_valid_o = rs1_valid & ((|rs1_i) | ariane_pkg::is_rs1_fpr_cfg(issue_instr_o.op, CVA6Cfg.FpPresent));
-  assign rs2_valid_o = rs2_valid & ((|rs2_i) | ariane_pkg::is_rs2_fpr_cfg(issue_instr_o.op, CVA6Cfg.FpPresent));
-  assign rs3_valid_o = CVA6Cfg.NrRgprPorts == 3 ? rs3_valid & ((|rs3_i) | ariane_pkg::is_imm_fpr_cfg(issue_instr_o.op, CVA6Cfg.FpPresent)) : rs3_valid;
+  assign rs1_valid_o = rs1_valid & ((|rs1_i) | (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(issue_instr_o.op)));
+  assign rs2_valid_o = rs2_valid & ((|rs2_i) | (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(issue_instr_o.op)));
+  assign rs3_valid_o = CVA6Cfg.NrRgprPorts == 3 ? rs3_valid & ((|rs3_i) | (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(issue_instr_o.op))) : rs3_valid;
 
   // use fixed prio here
   // this implicitly gives higher prio to WB ports
