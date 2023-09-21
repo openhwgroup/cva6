@@ -103,7 +103,7 @@ build_tools:
     - mkdir -p artifacts/tools/
     - mv tools/spike artifacts/tools/
 
-.smoke_test:
+.fe_smoke_test:
   stage: light tests
   rules: *on_dev
   before_script:
@@ -116,7 +116,7 @@ build_tools:
 
 smoke:
   extends:
-    - .smoke_test
+    - .fe_smoke_test
   variables:
     DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS"
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
@@ -136,7 +136,7 @@ smoke:
 
 gen_smoke:
   extends:
-    - .smoke_test
+    - .fe_smoke_test
   variables:
     DASHBOARD_JOB_TITLE: "Smoke Generated test $DV_SIMULATORS"
     DASHBOARD_JOB_DESCRIPTION: "Short generated tests to challenge the CVA6-DV on STEP1 configuration"
@@ -148,7 +148,7 @@ gen_smoke:
 
 coremark:
   extends:
-    - .smoke_test
+    - .fe_smoke_test
   variables:
     DASHBOARD_JOB_TITLE: "CoreMark"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
@@ -158,72 +158,9 @@ coremark:
     - bash verif/regress/coremark.sh --no-print
     - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/veri-testharness_sim/core_main.log
 
-dhrystone:
-  extends:
-    - .smoke_test
-  variables:
-    DASHBOARD_JOB_TITLE: "Dhrystone"
-    DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
-    DASHBOARD_SORT_INDEX: 5
-    DASHBOARD_JOB_CATEGORY: "Performance"
-  script:
-    - bash verif/regress/dhrystone.sh
-    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.log
-
-.regress_test:
-  stage: heavy tests
-  before_script:
-    - !reference [.smoke_test, before_script]
-  rules: &on_regress
-    - if: $CI_KIND == "regress"
-    - if: $CI_KIND == "verif"
-    - when: manual
-      allow_failure: true
-
-riscv_arch_test:
-  extends:
-    - .regress_test
-  variables:
-    DASHBOARD_JOB_TITLE: "arch_test $DV_TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
-    DASHBOARD_SORT_INDEX: 0
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
-  parallel:
-    matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
-  script: source verif/regress/dv-riscv-arch-test.sh
-  after_script: *simu_after_script
-
-csr_test:
-  extends:
-    - .regress_test
-  variables:
-    DASHBOARD_JOB_TITLE: "csr_test $DV_TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "CSR regression suite"
-    DASHBOARD_SORT_INDEX: 0
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
-    DV_TARGET: cv32a60x
-  script: source verif/regress/dv-riscv-csr-access-test.sh
-  after_script: *simu_after_script
-
-mmu_sv32_tests:
-  extends:
-    - .regress_test
-  variables:
-    DASHBOARD_JOB_TITLE: "mmu_sv32_tests $DV_TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "MMU SV32 regression suite"
-    DASHBOARD_SORT_INDEX: 0
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
-    DV_TARGET: cv32a60x
-  script: source verif/regress/dv-riscv-mmu-sv32-test.sh
-  after_script: *simu_after_script
-
 hwconfig:
   extends:
-    - .regress_test
+    - .fe_smoke_test
   variables:
     DASHBOARD_JOB_TITLE: "HW config $DV_SIMULATORS $DV_HWCONFIG_OPTS"
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge target configurations"
@@ -235,62 +172,23 @@ hwconfig:
     - source verif/regress/hwconfig_tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
 
-compliance:
-  extends:
-    - .regress_test
-  variables:
-    DASHBOARD_JOB_TITLE: "Compliance $DV_TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
-    DASHBOARD_SORT_INDEX: 2
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
-  parallel:
-    matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
-  script: source verif/regress/dv-riscv-compliance.sh
-  after_script: *simu_after_script
-
-tests-v:
-  extends:
-    - .regress_test
-  variables:
-    DASHBOARD_JOB_TITLE: "Riscv-test $DV_TARGET (virtual)"
-    DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (virtual)"
-    DASHBOARD_SORT_INDEX: 3
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
-    DV_TARGET: cv64a6_imafdc_sv39
-    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
-  script: source verif/regress/dv-riscv-tests.sh
-  after_script: *simu_after_script
-
-tests-p:
-  extends:
-    - .regress_test
-  variables:
-    DASHBOARD_JOB_TITLE: "Riscv-test $DV_TARGET (physical)"
-    DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (physical)"
-    DASHBOARD_SORT_INDEX: 4
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
-    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
-  parallel:
-    matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
-  script: source verif/regress/dv-riscv-tests.sh
-  after_script: *simu_after_script
-
-synthesis:
+.synthesis_test:
+  stage: heavy tests
   timeout: 2 hours
+  before_script:
+    - !reference [.fe_smoke_test, before_script]
+  rules: *on_dev
+
+asic-synthesis:
   extends:
-    - .regress_test
+    - .synthesis_test
   variables:
-    INPUT_DELAY: "0.46"
-    OUTPUT_DELAY: "0.11"
     DASHBOARD_JOB_TITLE: "ASIC Synthesis $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Synthesis indicator with specific Techno"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Synthesis"
+    INPUT_DELAY: "0.46"
+    OUTPUT_DELAY: "0.11"
     TARGET: cv32a6_embedded
     PERIOD: "0.85"
   script:
@@ -308,46 +206,9 @@ synthesis:
     - mv pd/synth/cva6_${TARGET}_synth_modified.v artifacts/cva6_${TARGET}_synth_modified.v
     - python3 .gitlab-ci/scripts/report_synth.py pd/synth/cva6_${TARGET}/reports/$PERIOD/cva6_$(echo $TECH_NAME)_synth_area.rpt pd/synth/synthesis_batch.log
 
-.backend_test:
-  stage: backend tests
-  before_script:
-    - mkdir -p artifacts/{reports,logs}
-    - python3 .gitlab-ci/scripts/report_fail.py
-
-smoke-gate:
-  extends:
-    - .backend_test
-  needs:
-    - build_tools
-    - synthesis
-  rules: *on_regress
-  variables:
-    DASHBOARD_JOB_TITLE: "Smoke Gate $TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
-    DASHBOARD_SORT_INDEX: 6
-    DASHBOARD_JOB_CATEGORY: "Post Synthesis"
-    TARGET: cv32a6_embedded
-  script:
-    - mkdir -p tools
-    - mv artifacts/tools/spike tools
-    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
-    - echo $LIB_VERILOG
-    - echo $FOUNDRY_PATH
-    - echo $PERIOD
-    - echo $TECH_NAME
-    - source verif/regress/install-cva6.sh
-    - source verif/regress/install-riscv-dv.sh
-    - source verif/regress/install-riscv-tests.sh
-    - mv artifacts/cva6_${TARGET}_synth_modified.v pd/synth/cva6_${TARGET}_synth_modified.v
-    - cd verif/sim
-    - make vcs_clean_all
-    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target $TARGET --iss=spike,vcs-gate $DV_OPTS
-  after_script: *simu_after_script
-
 fpga-build:
-  timeout: 90 minutes
   extends:
-    - .regress_test
+    - .synthesis_test
   variables:
     DASHBOARD_JOB_TITLE: "FPGA Build $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Test of FPGA build flow"
@@ -362,6 +223,88 @@ fpga-build:
     - mv corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
     - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt
 
+.regress_test:
+  stage: heavy tests
+  before_script:
+    - !reference [.fe_smoke_test, before_script]
+  rules: &on_regress
+    - if: $CI_KIND == "regress"
+    - if: $CI_KIND == "verif"
+    - when: manual
+      allow_failure: true
+
+dhrystone:
+  extends:
+    - .regress_test
+  variables:
+    DASHBOARD_JOB_TITLE: "Dhrystone"
+    DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
+    DASHBOARD_SORT_INDEX: 5
+    DASHBOARD_JOB_CATEGORY: "Performance"
+  script:
+    - bash verif/regress/dhrystone.sh
+    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.log
+
+riscv_arch_test:
+  extends:
+    - .regress_test
+  variables:
+    DASHBOARD_JOB_TITLE: "arch_test $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+    DV_SIMULATORS: "veri-testharness,spike"
+  parallel:
+    matrix:
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
+  script: source verif/regress/dv-riscv-arch-test.sh
+  after_script: *simu_after_script
+
+compliance:
+  extends:
+    - .regress_test
+  variables:
+    DASHBOARD_JOB_TITLE: "Compliance $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
+    DASHBOARD_SORT_INDEX: 2
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+    DV_SIMULATORS: "veri-testharness,spike"
+  parallel:
+    matrix:
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
+  script: source verif/regress/dv-riscv-compliance.sh
+  after_script: *simu_after_script
+
+riscv-tests-v:
+  extends:
+    - .regress_test
+  variables:
+    DASHBOARD_JOB_TITLE: "Riscv-test $DV_TARGET (virtual)"
+    DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (virtual)"
+    DASHBOARD_SORT_INDEX: 3
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+    DV_SIMULATORS: "veri-testharness,spike"
+    DV_TARGET: cv64a6_imafdc_sv39
+    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
+  script: source verif/regress/dv-riscv-tests.sh
+  after_script: *simu_after_script
+
+riscv-tests-p:
+  extends:
+    - .regress_test
+  variables:
+    DASHBOARD_JOB_TITLE: "Riscv-test $DV_TARGET (physical)"
+    DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (physical)"
+    DASHBOARD_SORT_INDEX: 4
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+    DV_SIMULATORS: "veri-testharness,spike"
+    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
+  parallel:
+    matrix:
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
+  script: source verif/regress/dv-riscv-tests.sh
+  after_script: *simu_after_script
+
 .verif_test:
   extends:
     - .regress_test
@@ -370,6 +313,32 @@ fpga-build:
     - when: manual
       allow_failure: true
   timeout: 4h
+
+csr_test:
+  extends:
+    - .verif_test
+  variables:
+    DASHBOARD_JOB_TITLE: "csr_test $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "CSR regression suite"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+    DV_SIMULATORS: "veri-testharness,spike"
+    DV_TARGET: cv32a60x
+  script: source verif/regress/dv-riscv-csr-access-test.sh
+  after_script: *simu_after_script
+
+mmu_sv32_tests:
+  extends:
+    - .verif_test
+  variables:
+    DASHBOARD_JOB_TITLE: "mmu_sv32_tests $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "MMU SV32 regression suite"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+    DV_SIMULATORS: "veri-testharness,spike"
+    DV_TARGET: cv32a60x
+  script: source verif/regress/dv-riscv-mmu-sv32-test.sh
+  after_script: *simu_after_script
 
 generated_tests:
   extends:
@@ -456,6 +425,42 @@ directed_xif-tests:
     - mv verif/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
     - python3 .gitlab-ci/scripts/report_pass.py
 
+.backend_test:
+  stage: backend tests
+  before_script:
+    - mkdir -p artifacts/{reports,logs}
+    - python3 .gitlab-ci/scripts/report_fail.py
+
+smoke-gate:
+  extends:
+    - .backend_test
+  needs:
+    - build_tools
+    - asic-synthesis
+  rules: *on_dev
+  variables:
+    DASHBOARD_JOB_TITLE: "Smoke Gate $TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
+    DASHBOARD_SORT_INDEX: 6
+    DASHBOARD_JOB_CATEGORY: "Post Synthesis"
+    TARGET: cv32a6_embedded
+  script:
+    - mkdir -p tools
+    - mv artifacts/tools/spike tools
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - echo $LIB_VERILOG
+    - echo $FOUNDRY_PATH
+    - echo $PERIOD
+    - echo $TECH_NAME
+    - source verif/regress/install-cva6.sh
+    - source verif/regress/install-riscv-dv.sh
+    - source verif/regress/install-riscv-tests.sh
+    - mv artifacts/cva6_${TARGET}_synth_modified.v pd/synth/cva6_${TARGET}_synth_modified.v
+    - cd verif/sim
+    - make vcs_clean_all
+    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target $TARGET --iss=spike,vcs-gate $DV_OPTS
+  after_script: *simu_after_script
+
 fpga-boot:
   extends:
     - .backend_test
@@ -463,7 +468,7 @@ fpga-boot:
   needs:
     - build_tools
     - fpga-build
-  rules: *on_regress
+  rules: *on_dev
   variables:
     DASHBOARD_JOB_TITLE: "FPGA Linux32 Boot "
     DASHBOARD_JOB_DESCRIPTION: "Test of Linux 32 bits boot on FPGA Genesys2"
