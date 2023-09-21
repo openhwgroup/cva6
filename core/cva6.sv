@@ -176,7 +176,7 @@ module cva6 import ariane_pkg::*; #(
     CVA6Cfg.RVA,
     CVA6Cfg.RVV,
     CVA6Cfg.RVC,
-    CVA6Cfg.RZCB,
+    CVA6Cfg.RVZCB,
     CVA6Cfg.XFVec,
     CVA6Cfg.CvxifEn,
     CVA6Cfg.RCONDEXT,

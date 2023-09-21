@@ -90,7 +90,7 @@ package cva6_config_pkg;
       bit'(CVA6ConfigAExtEn),                // RVA
       bit'(CVA6ConfigVExtEn),                // RVV
       bit'(CVA6ConfigCExtEn),                // RVC
-      bit'(CVA6ConfigZcbExtEn),              // RZCB
+      bit'(CVA6ConfigZcbExtEn),              // RVZCB
       bit'(CVA6ConfigFVecEn),                // XFVec
       bit'(CVA6ConfigCvxifEn),               // CvxifEn
       bit'(CVA6ConfigZiCondExtEn),           // ZiCondExtEn

@@ -75,7 +75,7 @@ module compressed_decoder #(
                     end
 
                     riscv::OpcodeC0Zcb: begin
-                        if (CVA6Cfg.RZCB) begin
+                        if (CVA6Cfg.RVZCB) begin
                             unique case (instr_i[12:10])
                                 3'b000: begin
                                     // c.lbu -> lbu rd', uimm(rs1') 
@@ -231,7 +231,7 @@ module compressed_decoder #(
                                     end
 
                                     3'b110: begin
-                                        if (CVA6Cfg.RZCB) begin
+                                        if (CVA6Cfg.RVZCB) begin
                                             // c.mul -> mul rd', rd', rs2'
                                             instr_o = {6'b0, 1'b1, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b000, 2'b01, instr_i[9:7], riscv::OpcodeOp};
                                         end else begin
@@ -241,7 +241,7 @@ module compressed_decoder #(
                                     end
 
                                     3'b111: begin
-                                        if (CVA6Cfg.RZCB) begin
+                                        if (CVA6Cfg.RVZCB) begin
 
                                             unique case (instr_i[4:2])
                                                 3'b000: begin
