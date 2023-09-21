@@ -56,8 +56,8 @@ default:
 
 stages:
   - setup
-  - smoke tests
-  - verif tests
+  - light tests
+  - heavy tests
   - backend tests
   - find failures
   - report
@@ -104,7 +104,7 @@ build_tools:
     - mv tools/spike artifacts/tools/
 
 .smoke_test:
-  stage: smoke tests
+  stage: light tests
   rules: *on_dev
   before_script:
     - mkdir -p tools
@@ -171,7 +171,7 @@ dhrystone:
     - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.log
 
 .regress_test:
-  stage: verif tests
+  stage: heavy tests
   before_script:
     - !reference [.smoke_test, before_script]
   rules: &on_regress
