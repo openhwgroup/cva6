@@ -80,6 +80,8 @@ check_env:
     GIT_STRATEGY: none
   script:
     - env
+  artifacts:
+    paths: []
 
 build_tools:
   extends:
