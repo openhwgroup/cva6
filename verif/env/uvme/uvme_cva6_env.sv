@@ -336,7 +336,12 @@ endtask
 
 function void uvme_cva6_env_c::connect_coverage_model();
 
-   cvxif_agent.monitor.req_ap.connect(cov_model.cvxif_covg.req_item_fifo.analysis_export);
+   if (cfg.cov_cvxif_model_enabled) begin
+      cvxif_agent.monitor.req_ap.connect(cov_model.cvxif_covg.req_item_fifo.analysis_export);
+   end
+   if (cfg.cov_isa_model_enabled) begin
+      isacov_agent.monitor.ap.connect(cov_model.isa_covg.mon_trn_fifo.analysis_export);
+   end
    foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_imp);
    end

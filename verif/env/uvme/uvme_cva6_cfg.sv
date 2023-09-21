@@ -33,6 +33,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
    rand bit                      scoreboarding_enabled;
    rand bit                      cov_model_enabled;
+   rand bit                      cov_cvxif_model_enabled;
+   rand bit                      cov_isa_model_enabled;
    rand bit                      trn_log_enabled;
    rand int unsigned             sys_clk_period;
 
@@ -43,12 +45,16 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN)       rvfi_cfg;
    rand uvma_isacov_cfg_c                 isacov_cfg;
 
+   // Zicond extension
+   rand bit                      ext_zicond_supported;
+
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
       `uvm_field_int (                         scoreboarding_enabled       , UVM_DEFAULT          )
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
+      `uvm_field_int (                         ext_zicond_supported        , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
 
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
@@ -65,12 +71,12 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
 
    constraint defaults_cons {
-      soft enabled                == 0;
-      soft is_active              == UVM_ACTIVE;
-      soft scoreboarding_enabled  == 1;
-      soft cov_model_enabled      == 1;
-      soft trn_log_enabled        == 1;
-      soft sys_clk_period         == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
+      soft enabled                 == 1;
+      soft is_active               == UVM_ACTIVE;
+      soft scoreboarding_enabled   == 1;
+      soft cov_model_enabled       == 1;
+      soft trn_log_enabled         == 1;
+      soft sys_clk_period          == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
    }
 
    constraint cvxif_feature { //CV32A60X do not support dual read & write also the memory interface
@@ -103,6 +109,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_zbt_supported      == 0;
       ext_zifencei_supported == 1;
       ext_zicsr_supported    == 1;
+      ext_zicond_supported   == 1;
 
       mode_s_supported       == 0;
       mode_u_supported       == 0;
@@ -165,6 +172,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       if (cov_model_enabled) {
          cvxif_cfg.cov_model_enabled  == 1;
          isacov_cfg.cov_model_enabled == 1;
+         //env coverage models
+         cov_cvxif_model_enabled == 1;
+         cov_isa_model_enabled   == 1;
       }
 
    }
