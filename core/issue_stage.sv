@@ -130,28 +130,28 @@ module issue_stage
   // ---------------------------------------------------
   typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? CVA6Cfg.XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
 
-  fu_t               [2**REG_ADDR_SIZE-1:0]       rd_clobber_gpr_sb_iro;
-  fu_t               [2**REG_ADDR_SIZE-1:0]       rd_clobber_fpr_sb_iro;
+  fu_t               [2**REG_ADDR_SIZE-1:0]                    rd_clobber_gpr_sb_iro;
+  fu_t               [2**REG_ADDR_SIZE-1:0]                    rd_clobber_fpr_sb_iro;
 
-  logic              [   REG_ADDR_SIZE-1:0]       rs1_iro_sb;
-  logic              [    CVA6Cfg.XLEN-1:0]       rs1_sb_iro;
-  logic                                           rs1_valid_sb_iro;
+  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs1_iro_sb;
+  logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs1_sb_iro;
+  logic              [       SUPERSCALAR:0]                    rs1_valid_sb_iro;
 
-  logic              [   REG_ADDR_SIZE-1:0]       rs2_iro_sb;
-  logic              [    CVA6Cfg.XLEN-1:0]       rs2_sb_iro;
-  logic                                           rs2_valid_iro_sb;
+  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs2_iro_sb;
+  logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs2_sb_iro;
+  logic              [       SUPERSCALAR:0]                    rs2_valid_iro_sb;
 
-  logic              [   REG_ADDR_SIZE-1:0]       rs3_iro_sb;
-  rs3_len_t                                       rs3_sb_iro;
-  logic                                           rs3_valid_iro_sb;
+  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs3_iro_sb;
+  rs3_len_t          [       SUPERSCALAR:0]                    rs3_sb_iro;
+  logic              [       SUPERSCALAR:0]                    rs3_valid_iro_sb;
 
-  scoreboard_entry_t [       SUPERSCALAR:0]       issue_instr_sb_iro;
-  logic              [       SUPERSCALAR:0][31:0] orig_instr_sb_iro;
-  logic              [       SUPERSCALAR:0]       issue_instr_valid_sb_iro;
-  logic              [       SUPERSCALAR:0]       issue_ack_iro_sb;
+  scoreboard_entry_t [       SUPERSCALAR:0]                    issue_instr_sb_iro;
+  logic              [       SUPERSCALAR:0][             31:0] orig_instr_sb_iro;
+  logic              [       SUPERSCALAR:0]                    issue_instr_valid_sb_iro;
+  logic              [       SUPERSCALAR:0]                    issue_ack_iro_sb;
 
-  logic              [    CVA6Cfg.XLEN-1:0]       rs1_forwarding_xlen;
-  logic              [    CVA6Cfg.XLEN-1:0]       rs2_forwarding_xlen;
+  logic              [    CVA6Cfg.XLEN-1:0]                    rs1_forwarding_xlen;
+  logic              [    CVA6Cfg.XLEN-1:0]                    rs2_forwarding_xlen;
 
   assign rs1_forwarding_o = rs1_forwarding_xlen[CVA6Cfg.VLEN-1:0];
   assign rs2_forwarding_o = rs2_forwarding_xlen[CVA6Cfg.VLEN-1:0];

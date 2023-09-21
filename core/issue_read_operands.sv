@@ -40,23 +40,23 @@ module issue_read_operands
     // Issue stage acknowledge - TO_BE_COMPLETED
     output logic [SUPERSCALAR:0] issue_ack_o,
     // rs1 operand address - scoreboard
-    output logic [REG_ADDR_SIZE-1:0] rs1_o,
+    output logic [SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs1_o,
     // rs1 operand - scoreboard
-    input logic [CVA6Cfg.XLEN-1:0] rs1_i,
+    input logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs1_i,
     // rs1 operand is valid - scoreboard
-    input logic rs1_valid_i,
+    input logic [SUPERSCALAR:0] rs1_valid_i,
     // rs2 operand address - scoreboard
-    output logic [REG_ADDR_SIZE-1:0] rs2_o,
+    output logic [SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs2_o,
     // rs2 operand - scoreboard
-    input logic [CVA6Cfg.XLEN-1:0] rs2_i,
+    input logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs2_i,
     // rs2 operand is valid - scoreboard
-    input logic rs2_valid_i,
+    input logic [SUPERSCALAR:0] rs2_valid_i,
     // rs3 operand address - scoreboard
-    output logic [REG_ADDR_SIZE-1:0] rs3_o,
+    output logic [SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs3_o,
     // rs3 operand - scoreboard
-    input rs3_len_t rs3_i,
+    input rs3_len_t [SUPERSCALAR:0] rs3_i,
     // rs3 operand is valid - scoreboard
-    input logic rs3_valid_i,
+    input logic [SUPERSCALAR:0] rs3_valid_i,
     // get clobber input
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_i,
@@ -206,10 +206,12 @@ module issue_read_operands
     forward_rs1 = 1'b0;
     forward_rs2 = 1'b0;
     forward_rs3 = 1'b0;  // FPR only
-    // poll the scoreboard for those values
-    rs1_o = issue_instr_i[0].rs1;
-    rs2_o = issue_instr_i[0].rs2;
-    rs3_o = issue_instr_i[0].result[REG_ADDR_SIZE-1:0];  // rs3 is encoded in imm field
+    for (int unsigned i = 0; i <= SUPERSCALAR; i++) begin
+      // poll the scoreboard for those values
+      rs1_o[i] = issue_instr_i[i].rs1;
+      rs2_o[i] = issue_instr_i[i].rs2;
+      rs3_o[i] = issue_instr_i[i].result[REG_ADDR_SIZE-1:0];  // rs3 is encoded in imm field
+    end
 
     // 0. check that we are not using the zimm type in RS1
     //    as this is an immediate we do not have to wait on anything here
@@ -222,7 +224,7 @@ module issue_read_operands
       // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
       // be fetched through the register file since they can't be forwarded
       // if the operand is available, forward it. CSRs don't write to/from FPR
-      if (rs1_valid_i && (CVA6Cfg.FpPresent && is_rs1_fpr(
+      if (rs1_valid_i[0] && (CVA6Cfg.FpPresent && is_rs1_fpr(
               issue_instr_i[0].op
           ) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i[0].rs1] != CSR) ||
                       (CVA6Cfg.RVS && issue_instr_i[0].op == SFENCE_VMA)))) begin
@@ -237,7 +239,7 @@ module issue_read_operands
         )) ? rd_clobber_fpr_i[issue_instr_i[0].rs2] != NONE :
             rd_clobber_gpr_i[issue_instr_i[0].rs2] != NONE) begin
       // if the operand is available, forward it. CSRs don't write to/from FPR
-      if (rs2_valid_i && (CVA6Cfg.FpPresent && is_rs2_fpr(
+      if (rs2_valid_i[0] && (CVA6Cfg.FpPresent && is_rs2_fpr(
               issue_instr_i[0].op
           ) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i[0].rs2] != CSR) ||
                       (CVA6Cfg.RVS && issue_instr_i[0].op == SFENCE_VMA)))) begin
@@ -254,7 +256,7 @@ module issue_read_operands
             issue_instr_i[0].op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ?
             rd_clobber_gpr_i[issue_instr_i[0].result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
       // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
-      if (rs3_valid_i) begin
+      if (rs3_valid_i[0]) begin
         forward_rs3 = 1'b1;
       end else begin  // the operand is not available -> stall
         stall = 1'b1;
@@ -264,9 +266,9 @@ module issue_read_operands
 
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_rs3
-    assign imm_forward_rs3 = rs3_i;
+    assign imm_forward_rs3 = rs3_i[0];
   end else begin : gen_fp_rs3
-    assign imm_forward_rs3 = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, rs3_i};
+    assign imm_forward_rs3 = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, rs3_i[0]};
   end
 
   // Forwarding/Output MUX
@@ -292,11 +294,11 @@ module issue_read_operands
     end
     // or should we forward
     if (forward_rs1) begin
-      operand_a_n = rs1_i;
+      operand_a_n = rs1_i[0];
     end
 
     if (forward_rs2) begin
-      operand_b_n = rs2_i;
+      operand_b_n = rs2_i[0];
     end
 
     if (CVA6Cfg.FpPresent && forward_rs3) begin

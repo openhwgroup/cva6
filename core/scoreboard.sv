@@ -35,25 +35,25 @@ module scoreboard #(
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_fpr_o,
 
     // rs1 operand address - issue_read_operands
-    input  logic [ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
+    input  logic [ariane_pkg::SUPERSCALAR:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
     // rs1 operand - issue_read_operands
-    output logic [             CVA6Cfg.XLEN-1:0] rs1_o,
+    output logic [ariane_pkg::SUPERSCALAR:0][             CVA6Cfg.XLEN-1:0] rs1_o,
     // rs1 operand is valid - issue_read_operands
-    output logic                                 rs1_valid_o,
+    output logic [ariane_pkg::SUPERSCALAR:0]                                rs1_valid_o,
 
     // rs2 operand address - issue_read_operands
-    input  logic [ariane_pkg::REG_ADDR_SIZE-1:0] rs2_i,
+    input  logic [ariane_pkg::SUPERSCALAR:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs2_i,
     // rs2 operand - issue_read_operands
-    output logic [             CVA6Cfg.XLEN-1:0] rs2_o,
+    output logic [ariane_pkg::SUPERSCALAR:0][             CVA6Cfg.XLEN-1:0] rs2_o,
     // rs2 operand is valid - issue_read_operands
-    output logic                                 rs2_valid_o,
+    output logic [ariane_pkg::SUPERSCALAR:0]                                rs2_valid_o,
 
     // rs3 operand address - issue_read_operands
-    input  logic     [ariane_pkg::REG_ADDR_SIZE-1:0] rs3_i,
+    input  logic     [ariane_pkg::SUPERSCALAR:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs3_i,
     // rs3 operand - issue_read_operands
-    output rs3_len_t                                 rs3_o,
+    output rs3_len_t [ariane_pkg::SUPERSCALAR:0]                                rs3_o,
     // rs3 operand is valid - issue_read_operands
-    output logic                                     rs3_valid_o,
+    output logic     [ariane_pkg::SUPERSCALAR:0]                                rs3_valid_o,
 
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -339,112 +339,114 @@ module scoreboard #(
   // Read Operands (a.k.a forwarding)
   // ----------------------------------
   // read operand interface: same logic as register file
-  logic [CVA6Cfg.NR_SB_ENTRIES+CVA6Cfg.NrWbPorts-1:0] rs1_fwd_req, rs2_fwd_req, rs3_fwd_req;
-  logic [CVA6Cfg.NR_SB_ENTRIES+CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] rs_data;
-  logic rs1_valid, rs2_valid, rs3_valid;
+  logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.NR_SB_ENTRIES+CVA6Cfg.NrWbPorts-1:0] rs1_fwd_req, rs2_fwd_req, rs3_fwd_req;
+  logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.NR_SB_ENTRIES+CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] rs_data;
+  logic [ariane_pkg::SUPERSCALAR:0] rs1_valid, rs2_valid, rs3_valid;
 
   // WB ports have higher prio than entries
-  for (genvar k = 0; unsigned'(k) < CVA6Cfg.NrWbPorts; k++) begin : gen_rs_wb
-    assign rs1_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs1_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
-        issue_instr_o[0].op
-    )));
-    assign rs2_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs2_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
-        issue_instr_o[0].op
-    )));
-    assign rs3_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs3_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
-        issue_instr_o[0].op
-    )));
-    assign rs_data[k] = wbdata_i[k];
-  end
-  for (genvar k = 0; unsigned'(k) < CVA6Cfg.NR_SB_ENTRIES; k++) begin : gen_rs_entries
-    assign rs1_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs1_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
-        issue_instr_o[0].op
-    )));
-    assign rs2_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs2_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
-        issue_instr_o[0].op
-    )));
-    assign rs3_fwd_req[k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs3_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
-        issue_instr_o[0].op
-    )));
-    assign rs_data[k+CVA6Cfg.NrWbPorts] = mem_q[k].sbe.result;
-  end
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    for (genvar k = 0; unsigned'(k) < CVA6Cfg.NrWbPorts; k++) begin : gen_rs_wb
+      assign rs1_fwd_req[i][k] = (mem_q[trans_id_i[k]].sbe.rd == rs1_i[i]) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
+          issue_instr_o[i].op
+      )));
+      assign rs2_fwd_req[i][k] = (mem_q[trans_id_i[k]].sbe.rd == rs2_i[i]) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
+          issue_instr_o[i].op
+      )));
+      assign rs3_fwd_req[i][k] = (mem_q[trans_id_i[k]].sbe.rd == rs3_i[i]) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
+          issue_instr_o[i].op
+      )));
+      assign rs_data[i][k] = wbdata_i[k];
+    end
+    for (genvar k = 0; unsigned'(k) < CVA6Cfg.NR_SB_ENTRIES; k++) begin : gen_rs_entries
+      assign rs1_fwd_req[i][k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs1_i[i]) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
+          issue_instr_o[i].op
+      )));
+      assign rs2_fwd_req[i][k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs2_i[i]) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
+          issue_instr_o[i].op
+      )));
+      assign rs3_fwd_req[i][k+CVA6Cfg.NrWbPorts] = (mem_q[k].sbe.rd == rs3_i[i]) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
+          issue_instr_o[i].op
+      )));
+      assign rs_data[i][k+CVA6Cfg.NrWbPorts] = mem_q[k].sbe.result;
+    end
 
-  // check whether we are accessing GPR[0]
-  assign rs1_valid_o = rs1_valid & ((|rs1_i) | (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
-      issue_instr_o[0].op
-  )));
-  assign rs2_valid_o = rs2_valid & ((|rs2_i) | (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
-      issue_instr_o[0].op
-  )));
-  assign rs3_valid_o = CVA6Cfg.NrRgprPorts == 3 ? rs3_valid & ((|rs3_i) | (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
-      issue_instr_o[0].op
-  ))) : rs3_valid;
+    // check whether we are accessing GPR[0]
+    assign rs1_valid_o[i] = rs1_valid[i] & ((|rs1_i[i]) | (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
+        issue_instr_o[i].op
+    )));
+    assign rs2_valid_o[i] = rs2_valid[i] & ((|rs2_i[i]) | (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
+        issue_instr_o[i].op
+    )));
+    assign rs3_valid_o[i] = CVA6Cfg.NrRgprPorts == 3 ? rs3_valid[i] & ((|rs3_i[i]) | (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
+        issue_instr_o[i].op
+    ))) : rs3_valid[i];
 
-  // use fixed prio here
-  // this implicitly gives higher prio to WB ports
-  rr_arb_tree #(
-      .NumIn(CVA6Cfg.NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),
-      .DataWidth(CVA6Cfg.XLEN),
-      .ExtPrio(1'b1),
-      .AxiVldRdy(1'b1)
-  ) i_sel_rs1 (
-      .clk_i  (clk_i),
-      .rst_ni (rst_ni),
-      .flush_i(1'b0),
-      .rr_i   ('0),
-      .req_i  (rs1_fwd_req),
-      .gnt_o  (),
-      .data_i (rs_data),
-      .gnt_i  (1'b1),
-      .req_o  (rs1_valid),
-      .data_o (rs1_o),
-      .idx_o  ()
-  );
+    // use fixed prio here
+    // this implicitly gives higher prio to WB ports
+    rr_arb_tree #(
+        .NumIn(CVA6Cfg.NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),
+        .DataWidth(CVA6Cfg.XLEN),
+        .ExtPrio(1'b1),
+        .AxiVldRdy(1'b1)
+    ) i_sel_rs1 (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .flush_i(1'b0),
+        .rr_i   ('0),
+        .req_i  (rs1_fwd_req[i]),
+        .gnt_o  (),
+        .data_i (rs_data[i]),
+        .gnt_i  (1'b1),
+        .req_o  (rs1_valid[i]),
+        .data_o (rs1_o[i]),
+        .idx_o  ()
+    );
 
-  rr_arb_tree #(
-      .NumIn(CVA6Cfg.NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),
-      .DataWidth(CVA6Cfg.XLEN),
-      .ExtPrio(1'b1),
-      .AxiVldRdy(1'b1)
-  ) i_sel_rs2 (
-      .clk_i  (clk_i),
-      .rst_ni (rst_ni),
-      .flush_i(1'b0),
-      .rr_i   ('0),
-      .req_i  (rs2_fwd_req),
-      .gnt_o  (),
-      .data_i (rs_data),
-      .gnt_i  (1'b1),
-      .req_o  (rs2_valid),
-      .data_o (rs2_o),
-      .idx_o  ()
-  );
+    rr_arb_tree #(
+        .NumIn(CVA6Cfg.NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),
+        .DataWidth(CVA6Cfg.XLEN),
+        .ExtPrio(1'b1),
+        .AxiVldRdy(1'b1)
+    ) i_sel_rs2 (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .flush_i(1'b0),
+        .rr_i   ('0),
+        .req_i  (rs2_fwd_req[i]),
+        .gnt_o  (),
+        .data_i (rs_data[i]),
+        .gnt_i  (1'b1),
+        .req_o  (rs2_valid[i]),
+        .data_o (rs2_o[i]),
+        .idx_o  ()
+    );
 
-  logic [CVA6Cfg.XLEN-1:0] rs3;
+    logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs3;
 
-  rr_arb_tree #(
-      .NumIn(CVA6Cfg.NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),
-      .DataWidth(CVA6Cfg.XLEN),
-      .ExtPrio(1'b1),
-      .AxiVldRdy(1'b1)
-  ) i_sel_rs3 (
-      .clk_i  (clk_i),
-      .rst_ni (rst_ni),
-      .flush_i(1'b0),
-      .rr_i   ('0),
-      .req_i  (rs3_fwd_req),
-      .gnt_o  (),
-      .data_i (rs_data),
-      .gnt_i  (1'b1),
-      .req_o  (rs3_valid),
-      .data_o (rs3),
-      .idx_o  ()
-  );
+    rr_arb_tree #(
+        .NumIn(CVA6Cfg.NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),
+        .DataWidth(CVA6Cfg.XLEN),
+        .ExtPrio(1'b1),
+        .AxiVldRdy(1'b1)
+    ) i_sel_rs3 (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .flush_i(1'b0),
+        .rr_i   ('0),
+        .req_i  (rs3_fwd_req[i]),
+        .gnt_o  (),
+        .data_i (rs_data[i]),
+        .gnt_i  (1'b1),
+        .req_o  (rs3_valid[i]),
+        .data_o (rs3[i]),
+        .idx_o  ()
+    );
 
-  if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_three_port
-    assign rs3_o = rs3[CVA6Cfg.XLEN-1:0];
-  end else begin : gen_fp_three_port
-    assign rs3_o = rs3[CVA6Cfg.FLen-1:0];
+    if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_three_port
+      assign rs3_o[i] = rs3[i][riscv::XLEN-1:0];
+    end else begin : gen_fp_three_port
+      assign rs3_o[i] = rs3[i][CVA6Cfg.FLen-1:0];
+    end
   end
 
 
