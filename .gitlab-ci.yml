@@ -31,10 +31,13 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       variables:
         CI_KIND: verif
+    - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        CI_KIND: regress
     - if: $CI_COMMIT_BRANCH =~ /.*_PR_.*/
       variables:
         CI_KIND: regress
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^dev.*/
+    - if: $CI_COMMIT_BRANCH =~ /^dev.*/
       variables:
         CI_KIND: dev
     - variables:
@@ -77,6 +80,8 @@ check_env:
     GIT_STRATEGY: none
   script:
     - env
+  artifacts:
+    paths: []
 
 build_tools:
   extends:
