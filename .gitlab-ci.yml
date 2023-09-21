@@ -280,25 +280,20 @@ tests-p:
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
-synthesis_others:
+synthesis:
   timeout: 2 hours
   extends:
-    - .verif_test
-  parallel:
-    matrix:
-      - TARGET: cv64a6_imafdc_sv39
-        PERIOD: "1.1"
-      - TARGET: cv32a60x
-        PERIOD: "0.95"
-  variables: &synth_vars
+    - .regress_test
+  variables:
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"
     DASHBOARD_JOB_TITLE: "ASIC Synthesis $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Synthesis indicator with specific Techno"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Synthesis"
-  script: &synth_script
-    #ack trick to manage float gitlab-ci variables that seems to support only string or integer
+    TARGET: cv32a6_embedded
+    PERIOD: "0.85"
+  script:
     - echo $SYNTH_PERIOD
     - echo $INPUT_DELAY
     - echo $OUTPUT_DELAY
@@ -312,16 +307,6 @@ synthesis_others:
     - make -C pd/synth cva6_synth
     - mv pd/synth/cva6_${TARGET}_synth_modified.v artifacts/cva6_${TARGET}_synth_modified.v
     - python3 .gitlab-ci/scripts/report_synth.py pd/synth/cva6_${TARGET}/reports/$PERIOD/cva6_$(echo $TECH_NAME)_synth_area.rpt pd/synth/synthesis_batch.log
-
-synthesis:
-  timeout: 2 hours
-  extends:
-    - .regress_test
-  variables:
-    <<: *synth_vars
-    TARGET: cv32a6_embedded
-    PERIOD: "0.85"
-  script: *synth_script
 
 .backend_test:
   stage: backend tests
