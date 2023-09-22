@@ -75,7 +75,6 @@ module alu import ariane_pkg::*; #(
     always_comb begin
       operand_a_bitmanip = fu_data_i.operand_a;
 
-      //VCS coverage off
       if (ariane_pkg::BITMANIP) begin
         unique case (fu_data_i.operation)
           SH1ADD   : operand_a_bitmanip = fu_data_i.operand_a << 1;
@@ -90,7 +89,6 @@ module alu import ariane_pkg::*; #(
           default  : ;
         endcase
       end
-      //VCS coverage on
     end
 
     // prepare operand a
@@ -191,7 +189,6 @@ module alu import ariane_pkg::*; #(
         less = ($signed({sgn & fu_data_i.operand_a[riscv::XLEN-1], fu_data_i.operand_a})  <  $signed({sgn & fu_data_i.operand_b[riscv::XLEN-1], fu_data_i.operand_b}));
     end
 
-    //VCS coverage off
     if (ariane_pkg::BITMANIP) begin : gen_bitmanip
         // Count Population + Count population Word
 
@@ -222,7 +219,6 @@ module alu import ariane_pkg::*; #(
           .empty_o (lz_tz_wempty)
         );
     end
-    //VCS coverage on
 
     // -----------
     // Result MUX
@@ -255,7 +251,6 @@ module alu import ariane_pkg::*; #(
             default: ; // default case to suppress unique warning
         endcase
 
-        //VCS coverage off
         if (ariane_pkg::BITMANIP) begin
             // Index for Bitwise Rotation
             bit_indx = 1 << (fu_data_i.operand_b & (riscv::XLEN-1));
@@ -309,6 +304,5 @@ module alu import ariane_pkg::*; #(
            default: ; // default case to suppress unique warning
            endcase
         end
-        //VCS coverage on
     end
 endmodule
