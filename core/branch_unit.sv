@@ -86,11 +86,21 @@ module branch_unit #(
     end
     // use ALU exception signal for storing instruction fetch exceptions if
     // the target address is not aligned to a 2 byte boundary
+    //
+    logic jump_taken;
     always_comb begin : exception_handling
+        
+        // Do a jump if it is either unconditional jump (JAL | JALR) or `taken` conditional jump
+        jump_taken = !(ariane_pkg::op_is_branch(fu_data_i.operation)) || 
+            ((ariane_pkg::op_is_branch(fu_data_i.operation)) && branch_comp_res_i);
         branch_exception_o.cause = riscv::INSTR_ADDR_MISALIGNED;
         branch_exception_o.valid = 1'b0;
         branch_exception_o.tval  = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
-        // only throw exception if this is indeed a branch
-        if (branch_valid_i && target_address[0] != 1'b0) branch_exception_o.valid = 1'b1;
+        // Only throw instruction address misaligned exception if this is indeed a `taken` conditional branch or
+        // an unconditional jump
+        if (branch_valid_i && 
+            target_address[0] != 1'b0 && 
+            jump_taken)
+            branch_exception_o.valid = 1'b1;
     end
 endmodule
