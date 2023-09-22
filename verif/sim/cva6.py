@@ -1001,7 +1001,7 @@ def main():
       sys.exit(RET_FAIL)
     #print environment softwares
     logging.info("GCC Version : %s" % (gcc_version))
-    spike_version=get_env_var("SPIKE_ROOT")
+    spike_version=get_env_var("SPIKE_INSTALL_DIR")
     logging.info("Spike Version : %s" % (spike_version))
     verilator_version=run_cmd("verilator --version")
     logging.info("Verilator Version : %s" % (verilator_version))
