@@ -1,0 +1,114 @@
+!Feature
+next_elt_id: 4
+name: CVA6_Supervisor_mode_RW_CSRs(sstatus,stvec, sip, sie, scounteren, sscratch,
+  sepc, scause, stval, satp)
+id: 2
+display_order: 4
+subfeatures: !!omap
+- 000_Power-on-reset (POR) values of CSR: !Subfeature
+    name: 000_Power-on-reset (POR) values of CSR
+    tag: VP_CSR_VERIFICATION_F004_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CSR_VERIFICATION_F004_S000_I000
+        description: Upon reset, RISC-V CVA6 Supervisor mode RW CSRs must initialize
+          to their respective POR value.
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Verify that the Supervisor Mode RW CSRs POR value must match
+          with the value specified in the RISC-V CVA6 user manual.
+        pfc: 1
+        test_type: 1
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 001_Testing CSR with inverted reset value: !Subfeature
+    name: 001_Testing CSR with inverted reset value
+    tag: VP_csr-access_F004_S003
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: Inverted PoR value
+        description: Check the behaviour of the RISC-V Supervisor mode CVA6 CSRs,when
+          reset inverted values are written to respective CSRs.
+        reqt_doc: ''
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Ensure that the written value can be read back (that is, the
+          R/W CSR actually stored the value of ~PoR).
+        pfc: 3
+        test_type: 1
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 002_CSR write and read operations: !Subfeature
+    name: 002_CSR write and read operations
+    tag: VP_CSR_VERIFICATION_F004_S001
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CSR_VERIFICATION_F004_S001_I000
+        description: Check the correctness of RISCV CVA6 Supervisor Mode RW CSR by
+          writing random values like 0xa5a5a5a5, 0x5a5a5a5a, 0xffa1ae40.. and read
+          using the CSR instructions defined in the instruction set architecture (ISA).
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "1.Verify that CSR can be written using the appropriate CSR write
+          instructions.\n2.Ensure correct read operations using CSR read instructions.\n
+          3.Ensure that read values of the CSR should be as per CVA6 user manual."
+        pfc: 1
+        test_type: 1
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 003_CSR access in different privilege modes: !Subfeature
+    name: 003_CSR access in different privilege modes
+    tag: VP_CSR_VERIFICATION_F004_S002
+    next_elt_id: 1
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CSR_VERIFICATION_F004_S002_I000
+        description: Accessing RISC-V CVA6 Supervisor Mode CSRs in different privilege
+          modes (User,Supervisor and Machine modes).
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "1.Ensure that Supervisor Mode CSRs can only be accessed in supervisor
+          mode and in higher privilege mode according to the RISCV specification.\n
+          2.Verify that trying to access a Supervisor Mode CSR in an lower privilege
+          mode raises an illegal instruction exception."
+        pfc: 1
+        test_type: 1
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
