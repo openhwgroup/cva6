@@ -460,6 +460,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 *   **Verification Goals**
     
     Verify that the User Mode counter CSR POR value must match with the value specified in the RISC-V CVA6 user manual.
+    As cycle will increment on the posedge of each clock and instret will increment after every instruction is retired. For these CSRs, the best technique to check reset value is by "visual inspection".
     
 *   **Pass/Fail Criteria:** Self-Check
     
@@ -596,6 +597,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 *   **Verification Goals**
     
     Verify that the Machine Mode counter CSR POR value must match with the value specified in the RISC-V CVA6 user manual.
+    As cycle will increment on the posedge of each clock and instret will increment after every instruction is retired. For these CSRs, the best technique to check reset value is by "visual inspection".
     
 *   **Pass/Fail Criteria:** Self-Check
     
