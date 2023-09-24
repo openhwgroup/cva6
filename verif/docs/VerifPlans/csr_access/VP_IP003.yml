@@ -21,9 +21,11 @@ subfeatures: !!omap
         ref_page: ''
         ref_section: ''
         ref_viewer: firefox
-        verif_goals: Verify that the User Mode counter CSR POR value must match with
-          the value specified in the RISC-V CVA6 user manual.
-          As cycle will increment on the posedge of each clock and instret will increment after every instruction is retired. For these CSRs, the best technique to check reset value is by "visual inspection".
+        verif_goals: "Verify that the User Mode counter CSR POR value must match with
+          the value specified in the RISC-V CVA6 user manual.\nAs cycle will increment
+          on the posedge of each clock and instret will increment after every instruction
+          is retired. For these CSRs, the best technique to check reset value is by
+          \"visual inspection\""
         pfc: 1
         test_type: 1
         cov_method: -1
