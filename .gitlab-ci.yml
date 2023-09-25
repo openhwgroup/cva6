@@ -114,6 +114,10 @@ build_tools:
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
 
+.simu_after_script: &simu_after_script
+  - for i in verif/sim/*/v*_sim/*.log.iss ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
+  - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+
 smoke:
   extends:
     - .fe_smoke_test
@@ -130,9 +134,7 @@ smoke:
         - "vcs-uvm,spike"
   script:
     - source verif/regress/smoke-tests.sh
-  after_script: &simu_after_script
-    - for i in verif/sim/*/v*_sim/*.log.iss ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
-    - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+    - !reference [.simu_after_script]
 
 gen_smoke:
   extends:
@@ -143,8 +145,9 @@ gen_smoke:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "vcs-uvm,spike"
-  script: source verif/regress/smoke-gen_tests.sh
-  after_script: *simu_after_script
+  script:
+    - source verif/regress/smoke-gen_tests.sh
+    - !reference [.simu_after_script]
 
 coremark:
   extends:

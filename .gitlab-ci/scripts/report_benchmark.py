@@ -63,3 +63,6 @@ if diff != 0:
 report = rb.Report(f'{cycles//1000} kCycles')
 report.add_metric(score_metric)
 report.dump()
+
+if report.failed:
+    sys.exit(1)
