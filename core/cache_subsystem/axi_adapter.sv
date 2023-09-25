@@ -21,6 +21,7 @@ module axi_adapter #(
     parameter int unsigned DATA_WIDTH = 256,
     parameter logic        CRITICAL_WORD_FIRST   = 0, // the AXI subsystem needs to support wrapping reads for this feature
     parameter int unsigned CACHELINE_BYTE_OFFSET = 8,
+    parameter int unsigned MAX_OUTSTANDING_AW    = 0,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
 ) (
@@ -54,6 +55,9 @@ module axi_adapter #(
   ) > 0) ? $clog2(
       DATA_WIDTH / CVA6Cfg.AxiDataWidth
   ) : 1;
+  localparam MAX_OUTSTANDING_AW_CNT_WIDTH = $clog2(MAX_OUTSTANDING_AW + 1) > 0 ? $clog2(MAX_OUTSTANDING_AW + 1) : 1;
+
+  typedef logic [MAX_OUTSTANDING_AW_CNT_WIDTH-1:0] outstanding_aw_cnt_t;
 
   enum logic [3:0] {
     IDLE,
@@ -80,6 +84,11 @@ module axi_adapter #(
   // save the atomic operation and size
   ariane_pkg::amo_t amo_d, amo_q;
   logic [1:0] size_d, size_q;
+  // outstanding write transactions counter
+  outstanding_aw_cnt_t outstanding_aw_cnt_q, outstanding_aw_cnt_d;
+  logic any_outstanding_aw;
+
+  assign any_outstanding_aw = outstanding_aw_cnt_q != '0;
 
   always_comb begin : axi_fsm
     // Default assignments
@@ -143,6 +152,8 @@ module axi_adapter #(
     size_d = size_q;
     index = '0;
 
+    outstanding_aw_cnt_d = outstanding_aw_cnt_q;
+
     case (state_q)
 
       IDLE: begin
@@ -152,72 +163,81 @@ module axi_adapter #(
           // is this a read or write?
           // write
           if (we_i) begin
-            // the data is valid
-            axi_req_o.aw_valid = 1'b1;
-            axi_req_o.w_valid  = 1'b1;
-            // store-conditional requires exclusive access
-            axi_req_o.aw.lock  = amo_i == ariane_pkg::AMO_SC;
-            // its a single write
-            if (type_i == ariane_pkg::SINGLE_REQ) begin
-              // only a single write so the data is already the last one
-              axi_req_o.w.last = 1'b1;
-              // single req can be granted here
-              gnt_o = axi_resp_i.aw_ready & axi_resp_i.w_ready;
-              case ({
-                axi_resp_i.aw_ready, axi_resp_i.w_ready
-              })
-                2'b11:   state_d = WAIT_B_VALID;
-                2'b01:   state_d = WAIT_AW_READY;
-                2'b10:   state_d = WAIT_LAST_W_READY;
-                default: state_d = IDLE;
-              endcase
+            // multiple outstanding write transactions are only
+            // allowed if they are guaranteed not to be reordered
+            // i.e. same ID
+            if (!any_outstanding_aw || ((id_i == id_q) && (amo_i == ariane_pkg::AMO_NONE))) begin
+              // the data is valid
+              axi_req_o.aw_valid = 1'b1;
+              axi_req_o.w_valid  = 1'b1;
+              // store-conditional requires exclusive access
+              axi_req_o.aw.lock  = amo_i == ariane_pkg::AMO_SC;
+              // its a single write
+              if (type_i == ariane_pkg::SINGLE_REQ) begin
+                // only a single write so the data is already the last one
+                axi_req_o.w.last = 1'b1;
+                // single req can be granted here
+                gnt_o = axi_resp_i.aw_ready & axi_resp_i.w_ready;
+                case ({
+                  axi_resp_i.aw_ready, axi_resp_i.w_ready
+                })
+                  2'b11:   state_d = WAIT_B_VALID;
+                  2'b01:   state_d = WAIT_AW_READY;
+                  2'b10:   state_d = WAIT_LAST_W_READY;
+                  default: state_d = IDLE;
+                endcase
 
-              if (axi_resp_i.aw_ready) begin
-                amo_d  = amo_i;
-                size_d = size_i;
+                if (axi_resp_i.aw_ready) begin
+                  id_d   = id_i;
+                  amo_d  = amo_i;
+                  size_d = size_i;
+                end
+
+                // its a request for the whole cache line
+              end else begin
+                // bursts of AMOs unsupported
+                assert (amo_i == ariane_pkg::AMO_NONE)
+                else $fatal("Bursts of atomic operations are not supported");
+
+                axi_req_o.aw.len = BURST_SIZE[7:0];  // number of bursts to do
+                axi_req_o.w.data = wdata_i[0];
+                axi_req_o.w.strb = be_i[0];
+
+                if (axi_resp_i.w_ready) cnt_d = BURST_SIZE[ADDR_INDEX-1:0] - 1;
+                else cnt_d = BURST_SIZE[ADDR_INDEX-1:0];
+
+                case ({
+                  axi_resp_i.aw_ready, axi_resp_i.w_ready
+                })
+                  2'b11:   state_d = WAIT_LAST_W_READY;
+                  2'b01:   state_d = WAIT_LAST_W_READY_AW_READY;
+                  2'b10:   state_d = WAIT_LAST_W_READY;
+                  default: ;
+                endcase
               end
-
-              // its a request for the whole cache line
-            end else begin
-              // bursts of AMOs unsupported
-              assert (amo_i == ariane_pkg::AMO_NONE)
-              else $fatal("Bursts of atomic operations are not supported");
-
-              axi_req_o.aw.len = BURST_SIZE[7:0];  // number of bursts to do
-              axi_req_o.w.data = wdata_i[0];
-              axi_req_o.w.strb = be_i[0];
-
-              if (axi_resp_i.w_ready) cnt_d = BURST_SIZE[ADDR_INDEX-1:0] - 1;
-              else cnt_d = BURST_SIZE[ADDR_INDEX-1:0];
-
-              case ({
-                axi_resp_i.aw_ready, axi_resp_i.w_ready
-              })
-                2'b11:   state_d = WAIT_LAST_W_READY;
-                2'b01:   state_d = WAIT_LAST_W_READY_AW_READY;
-                2'b10:   state_d = WAIT_LAST_W_READY;
-                default: ;
-              endcase
             end
             // read
           end else begin
+            // only multiple outstanding write transactions are allowed
+            if (!any_outstanding_aw) begin
 
-            axi_req_o.ar_valid = 1'b1;
-            // load-reserved requires exclusive access
-            axi_req_o.ar.lock = amo_i == ariane_pkg::AMO_LR;
+              axi_req_o.ar_valid = 1'b1;
+              // load-reserved requires exclusive access
+              axi_req_o.ar.lock = amo_i == ariane_pkg::AMO_LR;
 
-            gnt_o = axi_resp_i.ar_ready;
-            if (type_i != ariane_pkg::SINGLE_REQ) begin
-              assert (amo_i == ariane_pkg::AMO_NONE)
-              else $fatal("Bursts of atomic operations are not supported");
+              gnt_o = axi_resp_i.ar_ready;
+              if (type_i != ariane_pkg::SINGLE_REQ) begin
+                assert (amo_i == ariane_pkg::AMO_NONE)
+                else $fatal("Bursts of atomic operations are not supported");
 
-              axi_req_o.ar.len = BURST_SIZE[7:0];
-              cnt_d = BURST_SIZE[ADDR_INDEX-1:0];
-            end
+                axi_req_o.ar.len = BURST_SIZE[7:0];
+                cnt_d = BURST_SIZE[ADDR_INDEX-1:0];
+              end
 
-            if (axi_resp_i.ar_ready) begin
-              state_d = (type_i == ariane_pkg::SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
-              addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
+              if (axi_resp_i.ar_ready) begin
+                state_d = (type_i == ariane_pkg::SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
+                addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
+              end
             end
           end
         end
@@ -230,6 +250,7 @@ module axi_adapter #(
         if (axi_resp_i.aw_ready) begin
           gnt_o   = 1'b1;
           state_d = WAIT_B_VALID;
+          id_d    = id_i;
           amo_d   = amo_i;
           size_d  = size_i;
         end
@@ -314,7 +335,7 @@ module axi_adapter #(
         id_o = axi_resp_i.b.id;
 
         // Write is valid
-        if (axi_resp_i.b_valid) begin
+        if (axi_resp_i.b_valid && !any_outstanding_aw) begin
           axi_req_o.b_ready = 1'b1;
 
           // some atomics must wait for read data
@@ -347,6 +368,13 @@ module axi_adapter #(
                 rdata_o = size_q == 2'b10 ? (1'b1 << 32) | 64'b1 : 64'b1;
               end
             end
+          end
+        // if the request was not an atomic we can possibly issue
+        // other requests while waiting for the response
+        end else begin
+          if ((amo_q == ariane_pkg::AMO_NONE) && (outstanding_aw_cnt_q != MAX_OUTSTANDING_AW)) begin
+            state_d = IDLE;
+            outstanding_aw_cnt_d = outstanding_aw_cnt_q + 1;
           end
         end
       end
@@ -410,6 +438,16 @@ module axi_adapter #(
 
       default: state_d = IDLE;
     endcase
+
+    // This process handles B responses when accepting
+    // multiple outstanding write transactions
+    if (any_outstanding_aw && axi_resp_i.b_valid) begin
+      axi_req_o.b_ready = 1'b1;
+      valid_o = 1'b1;
+      // Right hand side contains non-registered signal as we want
+      // to preserve a possible increment from the WAIT_B_VALID state
+      outstanding_aw_cnt_d = outstanding_aw_cnt_d - 1;
+    end
   end
 
   // ----------------
@@ -418,21 +456,23 @@ module axi_adapter #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       // start in flushing state and initialize the memory
-      state_q       <= IDLE;
-      cnt_q         <= '0;
-      cache_line_q  <= '0;
-      addr_offset_q <= '0;
-      id_q          <= '0;
-      amo_q         <= ariane_pkg::AMO_NONE;
-      size_q        <= '0;
+      state_q              <= IDLE;
+      cnt_q                <= '0;
+      cache_line_q         <= '0;
+      addr_offset_q        <= '0;
+      id_q                 <= '0;
+      amo_q                <= ariane_pkg::AMO_NONE;
+      size_q               <= '0;
+      outstanding_aw_cnt_q <= '0;
     end else begin
-      state_q       <= state_d;
-      cnt_q         <= cnt_d;
-      cache_line_q  <= cache_line_d;
-      addr_offset_q <= addr_offset_d;
-      id_q          <= id_d;
-      amo_q         <= amo_d;
-      size_q        <= size_d;
+      state_q              <= state_d;
+      cnt_q                <= cnt_d;
+      cache_line_q         <= cache_line_d;
+      addr_offset_q        <= addr_offset_d;
+      id_q                 <= id_d;
+      amo_q                <= amo_d;
+      size_q               <= size_d;
+      outstanding_aw_cnt_q <= outstanding_aw_cnt_d;
     end
   end
 
