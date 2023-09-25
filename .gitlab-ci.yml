@@ -46,6 +46,7 @@ workflow:
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   DASHBOARD: cva6
+  DV_TARGET: cv32a6_embedded
 
 default:
   tags: [$TAGS_RUNNER]
@@ -186,13 +187,12 @@ asic-synthesis:
   extends:
     - .synthesis_test
   variables:
-    DASHBOARD_JOB_TITLE: "ASIC Synthesis $TARGET"
+    DASHBOARD_JOB_TITLE: "ASIC Synthesis $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Synthesis indicator with specific Techno"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Synthesis"
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"
-    TARGET: cv32a6_embedded
     PERIOD: "0.85"
   script:
     - echo $SYNTH_PERIOD
@@ -202,12 +202,12 @@ asic-synthesis:
     - echo $FOUNDRY_PATH
     - echo $PERIOD
     - echo $TECH_NAME
-    - echo $TARGET
+    - echo $DV_TARGET
     - source verif/regress/install-cva6.sh
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
-    - make -C pd/synth cva6_synth
-    - mv pd/synth/cva6_${TARGET}_synth_modified.v artifacts/cva6_${TARGET}_synth_modified.v
-    - python3 .gitlab-ci/scripts/report_synth.py pd/synth/cva6_${TARGET}/reports/$PERIOD/cva6_$(echo $TECH_NAME)_synth_area.rpt pd/synth/synthesis_batch.log
+    - make -C pd/synth cva6_synth TARGET="$DV_TARGET"
+    - mv pd/synth/cva6_${DV_TARGET}_synth_modified.v artifacts/cva6_${DV_TARGET}_synth_modified.v
+    - python3 .gitlab-ci/scripts/report_synth.py pd/synth/cva6_${DV_TARGET}/reports/$PERIOD/cva6_$(echo $TECH_NAME)_synth_area.rpt pd/synth/synthesis_batch.log
 
 fpga-build:
   extends:
@@ -257,9 +257,6 @@ riscv_arch_test:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-  parallel:
-    matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   script: source verif/regress/dv-riscv-arch-test.sh
   after_script: *simu_after_script
 
@@ -272,9 +269,6 @@ compliance:
     DASHBOARD_SORT_INDEX: 2
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-  parallel:
-    matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   script: source verif/regress/dv-riscv-compliance.sh
   after_script: *simu_after_script
 
@@ -302,9 +296,6 @@ riscv-tests-p:
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
-  parallel:
-    matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
@@ -326,7 +317,6 @@ csr_test:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-    DV_TARGET: cv32a60x
   script: source verif/regress/dv-riscv-csr-access-test.sh
   after_script: *simu_after_script
 
@@ -442,11 +432,10 @@ smoke-gate:
     - asic-synthesis
   rules: *on_dev
   variables:
-    DASHBOARD_JOB_TITLE: "Smoke Gate $TARGET"
+    DASHBOARD_JOB_TITLE: "Smoke Gate $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
-    TARGET: cv32a6_embedded
   script:
     - mkdir -p tools
     - mv artifacts/tools/spike tools
@@ -458,10 +447,10 @@ smoke-gate:
     - source verif/regress/install-cva6.sh
     - source verif/regress/install-riscv-dv.sh
     - source verif/regress/install-riscv-tests.sh
-    - mv artifacts/cva6_${TARGET}_synth_modified.v pd/synth/cva6_${TARGET}_synth_modified.v
+    - mv artifacts/cva6_${DV_TARGET}_synth_modified.v pd/synth/cva6_${DV_TARGET}_synth_modified.v
     - cd verif/sim
     - make vcs_clean_all
-    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target $TARGET --iss=spike,vcs-gate $DV_OPTS
+    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target $DV_TARGET --iss=spike,vcs-gate $DV_OPTS
   after_script: *simu_after_script
 
 fpga-boot:
