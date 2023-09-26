@@ -485,7 +485,6 @@ fpga-boot:
     DASHBOARD_SORT_INDEX: 10
     DASHBOARD_JOB_CATEGORY: "Synthesis"
     VERILATOR_INSTALL_DIR: "NO" # Skip install and checks of verilator
-    SPIKE_ROOT: "NO"  # Skip install and checks of spike [Remove after PR #1468 that phases out SPIKE_ROOT is merged]
     SPIKE_INSTALL_DIR: "NO"  # Skip install and checks of spike
   script:
     - source verif/regress/install-cva6.sh
