@@ -755,7 +755,7 @@ ariane_axi::resp_t   axi_ariane_resp;
 ariane #(
     .CVA6Cfg ( CVA6Cfg ),
     .IsRVFI ( IsRVFI ),
-    .rvfi_instr_t ( rvfi_instr_t ),
+    .rvfi_instr_t ( rvfi_instr_t )
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),
