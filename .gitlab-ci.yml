@@ -485,7 +485,7 @@ fpga-boot:
     DASHBOARD_SORT_INDEX: 10
     DASHBOARD_JOB_CATEGORY: "Synthesis"
     VERILATOR_INSTALL_DIR: "NO" # Skip install and checks of verilator
-    SPIKE_ROOT: "NO"  # Skip install and checks of spike
+    SPIKE_INSTALL_DIR: "NO"  # Skip install and checks of spike
   script:
     - source verif/regress/install-cva6.sh
     - source $VIVADO2022_SETUP

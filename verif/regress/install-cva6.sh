@@ -17,14 +17,17 @@ if [ -z "$RISCV" ]; then
   return
 fi
 
+# Auto-detect RISC-V tool name prefix if not explicitly given.
 if [ -z "$CV_SW_PREFIX" ]; then
     export CV_SW_PREFIX="$(ls -1 -r $RISCV/bin/riscv*-gcc | head -n 1| grep gcc | rev | cut -d '/' -f 1 | cut -d '-' -f 2- | rev)-"
 fi
 
+# Default to auto-detected GCC name if not explicitly given.
 if [ -z "$RISCV_GCC" ]; then
     export RISCV_GCC=$RISCV/bin/${CV_SW_PREFIX}gcc
 fi
 
+# Default to auto-detected OBJCOPY name if not explicitly given.
 if [ -z "$RISCV_OBJCOPY" ]; then
     export RISCV_OBJCOPY=$RISCV/bin/${CV_SW_PREFIX}objcopy
 fi
@@ -76,7 +79,7 @@ echo $CVA6_HASH
 echo $CVA6_PATCH
 
 # install Spike
-if [ -z "$SPIKE_ROOT" ]; then
-  export SPIKE_ROOT=$TOP/spike/
+if [ -z "$SPIKE_INSTALL_DIR" ]; then
+  export SPIKE_INSTALL_DIR=$TOP/spike/
 fi
 source verif/regress/install-spike.sh

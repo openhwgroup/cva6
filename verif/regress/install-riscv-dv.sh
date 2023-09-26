@@ -15,7 +15,7 @@ fi
 if [ -z "$RISCV_OBJCOPY" ]; then
   export RISCV_OBJCOPY="$RISCV_TOOLCHAIN/bin/riscv-none-elf-objcopy"
 fi
-export SPIKE_PATH=$SPIKE_ROOT/bin
+export SPIKE_PATH=$SPIKE_INSTALL_DIR/bin
 export RTL_PATH=$ROOT_PROJECT/
 export TB_PATH=$ROOT_PROJECT/verif/tb/core
 export TESTS_PATH=$ROOT_PROJECT/verif/tests

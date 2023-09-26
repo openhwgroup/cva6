@@ -59,7 +59,7 @@ The default values are:
 - `RISCV_GCC`: `$RISCV/bin/riscv-none-elf-gcc`
 - `RISCV_OBJCOPY`: `$RISCV/bin/riscv-none-elf-objcopy`
 - `VERILATOR_ROOT`: `../tools/verilator-4.110` to install in core-v-verif/tools
-- `SPIKE_ROOT`: `../tools/spike` to install in core-v-verif/tools
+- `SPIKE_INSTALL_DIR`: `../tools/spike` to install in core-v-verif/tools
 
 - `CVA6_REPO`: `https://github.com/openhwgroup/cva6.git`
 - `CVA6_BRANCH`: `master`
