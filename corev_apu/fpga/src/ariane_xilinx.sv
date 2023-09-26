@@ -163,6 +163,7 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   AxiDataWidth:          cva6_config_pkg::CVA6ConfigAxiDataWidth,
   AxiIdWidth:            cva6_config_pkg::CVA6ConfigAxiIdWidth,
   AxiUserWidth:          cva6_config_pkg::CVA6ConfigDataUserWidth,
+  NrLoadBufEntries:      cva6_config_pkg::CVA6ConfigNrLoadBufEntries,
   RASDepth:              cva6_config_pkg::CVA6ConfigRASDepth,
   BTBEntries:            cva6_config_pkg::CVA6ConfigBTBEntries,
   BHTEntries:            cva6_config_pkg::CVA6ConfigBHTEntries,
