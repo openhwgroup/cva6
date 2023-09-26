@@ -144,7 +144,7 @@ module issue_read_operands
   logic [SUPERSCALAR:0][31:0] tinst_n, tinst_q;  // transformed instruction
 
   // forwarding signals
-  logic forward_rs1, forward_rs2, forward_rs3;
+  logic [SUPERSCALAR:0] forward_rs1, forward_rs2, forward_rs3;
 
   // original instruction
   riscv::instruction_t orig_instr;
@@ -203,63 +203,64 @@ module issue_read_operands
   always_comb begin : operands_available
     stall = stall_i;
     // operand forwarding signals
-    forward_rs1 = 1'b0;
-    forward_rs2 = 1'b0;
-    forward_rs3 = 1'b0;  // FPR only
+    forward_rs1 = '0;
+    forward_rs2 = '0;
+    forward_rs3 = '0;  // FPR only
+
     for (int unsigned i = 0; i <= SUPERSCALAR; i++) begin
       // poll the scoreboard for those values
       rs1_o[i] = issue_instr_i[i].rs1;
       rs2_o[i] = issue_instr_i[i].rs2;
       rs3_o[i] = issue_instr_i[i].result[REG_ADDR_SIZE-1:0];  // rs3 is encoded in imm field
-    end
 
-    // 0. check that we are not using the zimm type in RS1
-    //    as this is an immediate we do not have to wait on anything here
-    // 1. check if the source registers are clobbered --> check appropriate clobber list (gpr/fpr)
-    // 2. poll the scoreboard
-    if (!issue_instr_i[0].use_zimm && ((CVA6Cfg.FpPresent && is_rs1_fpr(
-            issue_instr_i[0].op
-        )) ? rd_clobber_fpr_i[issue_instr_i[0].rs1] != NONE :
-            rd_clobber_gpr_i[issue_instr_i[0].rs1] != NONE)) begin
-      // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
-      // be fetched through the register file since they can't be forwarded
-      // if the operand is available, forward it. CSRs don't write to/from FPR
-      if (rs1_valid_i[0] && (CVA6Cfg.FpPresent && is_rs1_fpr(
-              issue_instr_i[0].op
-          ) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i[0].rs1] != CSR) ||
-                      (CVA6Cfg.RVS && issue_instr_i[0].op == SFENCE_VMA)))) begin
-        forward_rs1 = 1'b1;
-      end else begin  // the operand is not available -> stall
-        stall = 1'b1;
+      // 0. check that we are not using the zimm type in RS1
+      //    as this is an immediate we do not have to wait on anything here
+      // 1. check if the source registers are clobbered --> check appropriate clobber list (gpr/fpr)
+      // 2. poll the scoreboard
+      if (!issue_instr_i[i].use_zimm && ((CVA6Cfg.FpPresent && is_rs1_fpr(
+              issue_instr_i[i].op
+          )) ? rd_clobber_fpr_i[issue_instr_i[i].rs1] != NONE :
+              rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE)) begin
+        // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
+        // be fetched through the register file since they can't be forwarded
+        // if the operand is available, forward it. CSRs don't write to/from FPR
+        if (rs1_valid_i[i] && (CVA6Cfg.FpPresent && is_rs1_fpr(
+                issue_instr_i[i].op
+            ) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i[i].rs1] != CSR) ||
+                        (CVA6Cfg.RVS && issue_instr_i[i].op == SFENCE_VMA)))) begin
+          forward_rs1[i] = 1'b1;
+        end else begin  // the operand is not available -> stall
+          stall = 1'b1;
+        end
       end
-    end
 
-    if ((CVA6Cfg.FpPresent && is_rs2_fpr(
-            issue_instr_i[0].op
-        )) ? rd_clobber_fpr_i[issue_instr_i[0].rs2] != NONE :
-            rd_clobber_gpr_i[issue_instr_i[0].rs2] != NONE) begin
-      // if the operand is available, forward it. CSRs don't write to/from FPR
-      if (rs2_valid_i[0] && (CVA6Cfg.FpPresent && is_rs2_fpr(
-              issue_instr_i[0].op
-          ) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i[0].rs2] != CSR) ||
-                      (CVA6Cfg.RVS && issue_instr_i[0].op == SFENCE_VMA)))) begin
-        forward_rs2 = 1'b1;
-      end else begin  // the operand is not available -> stall
-        stall = 1'b1;
+      if ((CVA6Cfg.FpPresent && is_rs2_fpr(
+              issue_instr_i[i].op
+          )) ? rd_clobber_fpr_i[issue_instr_i[i].rs2] != NONE :
+              rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE) begin
+        // if the operand is available, forward it. CSRs don't write to/from FPR
+        if (rs2_valid_i[i] && (CVA6Cfg.FpPresent && is_rs2_fpr(
+                issue_instr_i[i].op
+            ) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i[i].rs2] != CSR) ||
+                        (CVA6Cfg.RVS && issue_instr_i[i].op == SFENCE_VMA)))) begin
+          forward_rs2[i] = 1'b1;
+        end else begin  // the operand is not available -> stall
+          stall = 1'b1;
+        end
       end
-    end
 
-    // Only check clobbered gpr for OFFLOADED instruction
-    if ((CVA6Cfg.FpPresent && is_imm_fpr(
-            issue_instr_i[0].op
-        )) ? rd_clobber_fpr_i[issue_instr_i[0].result[REG_ADDR_SIZE-1:0]] != NONE :
-            issue_instr_i[0].op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ?
-            rd_clobber_gpr_i[issue_instr_i[0].result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
-      // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
-      if (rs3_valid_i[0]) begin
-        forward_rs3 = 1'b1;
-      end else begin  // the operand is not available -> stall
-        stall = 1'b1;
+      // Only check clobbered gpr for OFFLOADED instruction
+      if ((CVA6Cfg.FpPresent && is_imm_fpr(
+              issue_instr_i[i].op
+          )) ? rd_clobber_fpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE :
+              issue_instr_i[i].op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ?
+              rd_clobber_gpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
+        // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
+        if (rs3_valid_i[i]) begin
+          forward_rs3[i] = 1'b1;
+        end else begin  // the operand is not available -> stall
+          stall = 1'b1;
+        end
       end
     end
   end
@@ -293,15 +294,15 @@ module issue_read_operands
       tinst_n[0] = issue_instr_i[0].ex.tinst;
     end
     // or should we forward
-    if (forward_rs1) begin
+    if (forward_rs1[0]) begin
       operand_a_n = rs1_i[0];
     end
 
-    if (forward_rs2) begin
+    if (forward_rs2[0]) begin
       operand_b_n = rs2_i[0];
     end
 
-    if (CVA6Cfg.FpPresent && forward_rs3) begin
+    if (CVA6Cfg.FpPresent && forward_rs3[0]) begin
       imm_n = imm_forward_rs3;
     end
 
