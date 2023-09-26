@@ -174,6 +174,7 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   RVA:                   bit'(cva6_config_pkg::CVA6ConfigAExtEn),
   RVV:                   bit'(cva6_config_pkg::CVA6ConfigVExtEn),
   RVC:                   bit'(cva6_config_pkg::CVA6ConfigCExtEn),
+  RVZCB:                 bit'(cva6_config_pkg::CVA6ConfigZcbExtEn),
   XFVec:                 bit'(cva6_config_pkg::CVA6ConfigFVecEn),
   CvxifEn:               bit'(cva6_config_pkg::CVA6ConfigCvxifEn),
   ZiCondExtEn:           bit'(0),
