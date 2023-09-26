@@ -74,6 +74,45 @@ module compressed_decoder #(
                         end
                     end
 
+                    riscv::OpcodeC0Zcb: begin
+                        if (CVA6Cfg.RVZCB) begin
+                            unique case (instr_i[12:10])
+                                3'b000: begin
+                                    // c.lbu -> lbu rd', uimm(rs1') 
+                                    instr_o = {10'b0, instr_i[5], instr_i[6], 2'b01, instr_i[9:7], 3'b100, 2'b01, instr_i[4:2], riscv::OpcodeLoad};
+                                end
+                                
+                                3'b001: begin
+                                    if (instr_i[6])begin
+                                        // c.lh -> lh rd', uimm(rs1') 
+                                        instr_o = {10'b0, instr_i[5], 1'b0, 2'b01, instr_i[9:7], 3'b001, 2'b01, instr_i[4:2], riscv::OpcodeLoad};
+                                    end else begin
+                                        // c.lhu -> lhu rd', uimm(rs1')
+                                        instr_o = {10'b0, instr_i[5], 1'b0, 2'b01, instr_i[9:7], 3'b101, 2'b01, instr_i[4:2], riscv::OpcodeLoad};
+                                    end
+                                end
+
+                                3'b010: begin
+                                    // c.sb -> sb rs2', uimm(rs1') 
+                                    instr_o = {7'b0, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b000, 3'b0, instr_i[5], instr_i[6], riscv::OpcodeStore};
+                                end
+
+                                3'b011: begin
+                                    // c.sh -> sh rs2', uimm(rs1')
+                                    instr_o = {7'b0, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b001, 3'b0, instr_i[5], 1'b0, riscv::OpcodeStore};
+                                end
+
+                                default: begin
+                                    illegal_instr_o = 1'b1;
+                                end
+                            endcase
+
+                        end else begin
+                            instr_o = instr_i;
+                            illegal_instr_o = 1'b1;
+                        end
+                    end
+
                     riscv::OpcodeC0Fsd: begin
                         // c.fsd -> fsd rs2', imm(rs1')
                         instr_o = {4'b0, instr_i[6:5], instr_i[12], 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b011, instr_i[11:10], 3'b000, riscv::OpcodeStoreFp};
@@ -179,7 +218,7 @@ module compressed_decoder #(
 
                                     3'b011: begin
                                         // c.and -> and rd', rd', rs2'
-                                        instr_o = {7'b0, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b111, 2'b01, instr_i[9:7], riscv::OpcodeOp};
+                                      instr_o = {7'b0, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b111, 2'b01, instr_i[9:7], riscv::OpcodeOp};
                                     end
 
                                     3'b100: begin
@@ -191,12 +230,72 @@ module compressed_decoder #(
                                         instr_o = {2'b00, 5'b0, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b000, 2'b01, instr_i[9:7], riscv::OpcodeOp32};
                                     end
 
-                                    3'b110,
+                                    3'b110: begin
+                                        if (CVA6Cfg.RVZCB) begin
+                                            // c.mul -> mul rd', rd', rs2'
+                                            instr_o = {6'b0, 1'b1, 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b000, 2'b01, instr_i[9:7], riscv::OpcodeOp};
+                                        end else begin
+                                            instr_o = instr_i;
+                                            illegal_instr_o = 1'b1;
+                                        end
+                                    end
+
                                     3'b111: begin
-                                        // 100: c.subw
-                                        // 101: c.addw
-                                        illegal_instr_o = 1'b1;
-                                        instr_o = instr_i;
+                                        if (CVA6Cfg.RVZCB) begin
+
+                                            unique case (instr_i[4:2])
+                                                3'b000: begin
+                                                    // c.zext.b -> andi rd', rd', 0xff
+                                                    instr_o = {4'b0, 8'hFF, 2'b01, instr_i[9:7], 3'b111, 2'b01, instr_i[9:7], riscv::OpcodeOpImm};
+                                                end
+
+                                                3'b001: begin
+                                                    if (ariane_pkg::BITMANIP) begin
+                                                        // c.sext.b -> sext.b rd', rd'
+                                                        instr_o = {7'h30, 5'h4, 2'b01, instr_i[9:7], 3'b001, 2'b01, instr_i[9:7], riscv::OpcodeOpImm};
+                                                    end else illegal_instr_o = 1'b1;
+                                                end
+
+                                                3'b010: begin
+                                                    if (ariane_pkg::BITMANIP) begin
+                                                        // c.zext.h -> zext.h rd', rd'
+                                                        if (riscv::XLEN == 64) begin
+                                                            instr_o = {7'h4, 5'h0, 2'b01, instr_i[9:7], 3'b100, 2'b01, instr_i[9:7], riscv::OpcodeOp32};
+                                                        end else begin
+                                                            instr_o = {7'h4, 5'h0, 2'b01, instr_i[9:7], 3'b100, 2'b01, instr_i[9:7], riscv::OpcodeOp};
+                                                        end
+                                                    end else illegal_instr_o = 1'b1;
+                                                end
+
+                                                3'b011: begin
+                                                    if (ariane_pkg::BITMANIP) begin
+                                                        // c.sext.h -> sext.h rd', rd'
+                                                        instr_o = {7'h30, 5'h5, 2'b01, instr_i[9:7], 3'b001, 2'b01, instr_i[9:7], riscv::OpcodeOpImm};
+                                                    end else illegal_instr_o = 1'b1;
+                                                end
+
+                                                3'b100: begin
+                                                    if (ariane_pkg::BITMANIP) begin
+                                                        // c.zext.w -> add.uw
+                                                        if (riscv::XLEN == 64) begin
+                                                            instr_o = {7'h4, 5'h0, 2'b01, instr_i[9:7], 3'b000, 2'b01, instr_i[9:7], riscv::OpcodeOp32};
+                                                        end else begin
+                                                            illegal_instr_o = 1'b1;
+                                                        end
+                                                    end else illegal_instr_o = 1'b1;
+                                                end
+
+                                                3'b101: begin
+                                                    // c.not -> xori rd', rd', -1
+                                                    instr_o = {12'hFFF, 2'b01, instr_i[9:7], 3'b100, 2'b01, instr_i[9:7], riscv::OpcodeOpImm};
+                                                end
+
+                                                default: begin
+                                                    instr_o = instr_i;
+                                                    illegal_instr_o = 1;
+                                                end
+                                            endcase
+                                        end
                                     end
                                 endcase
                             end

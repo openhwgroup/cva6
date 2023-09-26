@@ -37,6 +37,8 @@ def setup_parser_config_generator():
                       help="CoreV-X-Interface enable ? 1 : enable, 0 : disable")
   parser.add_argument("--c_ext", type=int, default=None, choices=[0,1],
                       help="C extension enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--zcb_ext", type=int, default=None, choices=[0,1],
+                      help="Zcb extension enable ? 1 : enable, 0 : disable")
   parser.add_argument("--a_ext", type=int, default=None, choices=[0,1],
                       help="A extension enable ? 1 : enable, 0 : disable")
   parser.add_argument("--b_ext", type=int, default=None, choices=[0,1],
@@ -124,6 +126,7 @@ MapArgsToParameter={
   "FVecEn" : "CVA6ConfigFVecEn",
   "cvxif" : "CVA6ConfigCvxifEn",
   "c_ext" : "CVA6ConfigCExtEn",
+  "zcb_ext" : "CVA6ConfigZCbExtEn",
   "a_ext" : "CVA6ConfigAExtEn",
   "b_ext" : "CVA6ConfigBExtEn",
   "AxiIdWidth" : "CVA6ConfigAxiIdWidth",

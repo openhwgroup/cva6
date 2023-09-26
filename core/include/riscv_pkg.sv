@@ -263,7 +263,7 @@ package riscv;
     localparam OpcodeC0Fld          = 3'b001;
     localparam OpcodeC0Lw           = 3'b010;
     localparam OpcodeC0Ld           = 3'b011;
-    localparam OpcodeC0Rsrvd        = 3'b100;
+    localparam OpcodeC0Zcb          = 3'b100;
     localparam OpcodeC0Fsd          = 3'b101;
     localparam OpcodeC0Sw           = 3'b110;
     localparam OpcodeC0Sd           = 3'b111;
