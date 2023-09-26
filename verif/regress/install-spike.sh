@@ -46,7 +46,7 @@ else
   # Do not clean up the destination directory: leave that to the user (real or CI job).
 
   # Rebuild Spike or reuse an existing Spike build.
-  if [ ! -d "$SPIKE_INSTALL_DIR" -o ! -f "$SPIKE_INSTALL_DIR/bin/spike" ]; then
+  if ! [ -f "$SPIKE_INSTALL_DIR/bin/spike" ]; then
     # Keep track of current working dir.
     CALLER_DIR="$(pwd)"
     # Enter the vendorized tree.  It already captures the desired Spike config.
