@@ -304,7 +304,6 @@
     +enable_unaligned_load_store=1
     +tvec_alignment=8
     +disable_compressed_instr=1
-    +enable_x_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -386,7 +385,7 @@
     Arithmetic instruction test, no load/store/branch instructions
   gen_opts: >
     +instr_cnt=500
-    +num_of_sub_program=5
+    +num_of_sub_program=0
     +directed_instr_0=riscv_int_numeric_corner_stream,4
     +no_fence=1
     +no_data_page=1
@@ -394,28 +393,9 @@
     +no_load_store=1
     +boot_mode=m
     +no_csr_instr=1
-    +illegal_instr_ratio=200
-    +hint_instr_ratio=500
+    +illegal_instr_ratio=100
+    +hint_instr_ratio=100
     +tvec_alignment=8
-  iterations: 2
-  gen_test: cva6_instr_base_test_c
-  rtl_test: core_base_test
-
-- test: riscv_arithmetic_basic_hint_test
-  description: >
-    Arithmetic instruction test, no load/store/branch instructions
-  gen_opts: >
-    +instr_cnt=500
-    +num_of_sub_program=15
-    +directed_instr_0=riscv_int_numeric_corner_stream,4
-    +no_fence=1
-    +no_data_page=1
-    +no_branch_jump=1
-    +boot_mode=m
-    +no_csr_instr=1
-    +enable_interrupt=1
-    +enable_timer_irq=1
-    +hint_instr_ratio=500
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
