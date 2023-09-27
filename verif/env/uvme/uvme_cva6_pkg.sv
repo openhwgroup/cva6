@@ -61,6 +61,12 @@ package uvme_cva6_pkg;
    // Predictor
    `include "uvme_cva6_prd.sv"
 
+   //CSR REG
+   `include "reg/cva6_csr_reg_file.sv"
+   `include "reg/cva6_csr_reg_block.sv"
+   `include "reg/cva6_csr_reg_adapter.sv"
+   `include "reg/cva6_csr_reg_predictor.sv"
+
    // Environment components
    `include "uvma_cva6_core_cntrl_drv.sv"
    `include "uvma_cva6_core_cntrl_agent.sv"
@@ -68,6 +74,7 @@ package uvme_cva6_pkg;
    `include "uvme_cva6_vsqr.sv"
    `include "uvme_cvxif_covg.sv"
    `include "uvme_isa_covg.sv"
+   `include "uvme_cva6_config_covg.sv"
    `include "uvme_cva6_cov_model.sv"
    `include "uvme_cva6_env.sv"
 

@@ -195,12 +195,14 @@ plan "CVA6 Plan";
             feature "Startup reset";
                 description = "Hard reset on startup";
                 measure Group reset;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.reset_cg.cp_reset", "group instance: uvme_cva6_pkg.uvme_cva6_pkg.reset_cg.cp_reset_duration_ps";
                 endmeasure
             endfeature
             feature "On the fly reset";
                 description = "Recover from on the fly reset during simulation";
                 CVA6_VERSION = STEP1;
-                measure Group reset;
+                measure Group onthefly;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.reset_cg.cp_reset_onthefly_assert";
                 endmeasure
             endfeature
         endfeature
@@ -1464,7 +1466,7 @@ plan "CVA6 Plan";
                 endmeasure
             endfeature
             feature MMU;
-                description = "Memory Management Unit support";
+                description = "Memory Management Unit\r support";
                 CVA6_VERSION = STEP1;
                 MMU_ENABLED = 1;
                 measure Group MMU;

@@ -35,7 +35,7 @@ class uvme_cva6_cov_model_c extends uvm_component;
    uvme_cva6_config_covg_c  config_covg;
    
    //
-   uvm_analysis_export#(uvma_clknrst_mon_trn_c)  reset_ae;
+   uvm_analysis_export#(uvma_clknrst_mon_trn_c)  reset_export;
 
    `uvm_component_utils_begin(uvme_cva6_cov_model_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -80,7 +80,7 @@ endclass : uvme_cva6_cov_model_c
 function uvme_cva6_cov_model_c::new(string name="uvme_cva6_cov_model", uvm_component parent=null);
 
    super.new(name, parent);
-
+   reset_export = new("reset_export");
 endfunction : new
 
 function void uvme_cva6_cov_model_c::build_phase(uvm_phase phase);
@@ -118,7 +118,7 @@ endfunction : build_phase
 function void uvme_cva6_cov_model_c::connect_phase(uvm_phase phase);
 
    super.connect_phase(phase);
-   reset_ae.connect(config_covg.reset_imp);
+   reset_export.connect(config_covg.reset_imp);
 
 endfunction : connect_phase
 

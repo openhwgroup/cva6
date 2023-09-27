@@ -49,7 +49,10 @@ class uvme_cva6_env_c extends uvm_env;
    // Handle to agent switch interface
    virtual uvmt_axi_switch_intf  axi_switch_vif;
 
-
+   //CSR register model
+   cva6_csr_reg_block                             csr_reg_block;   
+   cva6_csr_reg_adapter                           csr_reg_adapter;
+   cva6_csr_reg_predictor#(uvma_isacov_mon_trn_c) csr_reg_predictor;
 
    `uvm_component_utils_begin(uvme_cva6_env_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -176,6 +179,14 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
       end
    end
 
+   if (csr_reg_block == null) begin
+      uvm_reg::include_coverage("*", UVM_CVR_ALL); //Enable uvm_reg coverage
+      csr_reg_block     = cva6_csr_reg_block::type_id::create("csr_reg_block", this);
+      csr_reg_predictor = cva6_csr_reg_predictor#(uvma_isacov_mon_trn_c)::type_id::create("csr_reg_predictor", this);
+      csr_reg_adapter   = cva6_csr_reg_adapter::type_id::create("csr_reg_adapter",, get_full_name());
+      csr_reg_block.build(); 
+    end
+
 endfunction : build_phase
 
 
@@ -195,6 +206,14 @@ function void uvme_cva6_env_c::connect_phase(uvm_phase phase);
      if (cfg.cov_model_enabled) begin
          connect_coverage_model();
       end
+   end
+   
+   if (csr_reg_block.get_parent() == null) begin
+      csr_reg_block.default_map.set_base_addr('h0);
+      csr_reg_predictor.map     = csr_reg_block.default_map;
+      csr_reg_predictor.adapter = csr_reg_adapter;
+      csr_reg_block.default_map.set_auto_predict(0);
+      isacov_agent.monitor.ap.connect(csr_reg_predictor.bus_in);
    end
 
 endfunction: connect_phase
@@ -345,6 +364,8 @@ function void uvme_cva6_env_c::connect_coverage_model();
    foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_imp);
    end
+   
+   clknrst_agent.mon_ap.connect(cov_model.reset_export);
 
 endfunction: connect_coverage_model
 

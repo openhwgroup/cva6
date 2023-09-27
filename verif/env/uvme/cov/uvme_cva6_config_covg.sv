@@ -219,15 +219,25 @@ covergroup cg_cva6_clock_period_cg(string name) with function sample(int clock_p
    }
 endgroup: cg_cva6_clock_period_cg
 
-covergroup cg_cva6_reset_cg(string name) with function sample();
+covergroup cg_cva6_reset_cg(string name,int clock_period_ps) with function sample(uvma_clknrst_mon_trn_c trn);
    option.per_instance = 1;
    option.name = name;
    
-   cp_reset_assert_time : coverpoint cntxt.clknrst_cntxt.mon_reset_assert_timestamp {
-      bins LOW   = {[0:1500]};
-      bins HIGH  = {[1501:6670]};
+   cp_reset : coverpoint trn.event_type {
+      bins ASSERTED   = {UVMA_CLKNRST_MON_TRN_EVENT_RESET_ASSERTED};
+      bins DEASSERTED = {UVMA_CLKNRST_MON_TRN_EVENT_RESET_DEASSERTED};
    }
-endgroup: cg_cva6_clock_period_cg
+
+   cp_reset_duration_ps : coverpoint int'(trn.reset_pulse_length/1ps) iff(trn.event_type == UVMA_CLKNRST_MON_TRN_EVENT_RESET_DEASSERTED) {
+      bins SHORT = {[0:clock_period_ps]};
+      bins LONG  = {[clock_period_ps+1:$]};
+   }
+
+   cp_reset_onthefly_assert : coverpoint trn.event_type {
+      bins onthefly_assert   = (UVMA_CLKNRST_MON_TRN_EVENT_RESET_DEASSERTED=>UVMA_CLKNRST_MON_TRN_EVENT_RESET_ASSERTED=>UVMA_CLKNRST_MON_TRN_EVENT_RESET_DEASSERTED);
+   }
+
+endgroup: cg_cva6_reset_cg
 
 class uvme_cva6_config_covg_c extends uvm_component;
 
@@ -253,14 +263,14 @@ class uvme_cva6_config_covg_c extends uvm_component;
    extern function void build_phase(uvm_phase phase);
    extern task run_phase(uvm_phase phase);
    extern function void sample_cva6_config();
-   extern function void write_reset();
+   extern function void write_reset(uvma_clknrst_mon_trn_c trn);
 
 endclass : uvme_cva6_config_covg_c
 
 function uvme_cva6_config_covg_c::new(string name = "uvme_cva6_config_covg_c", uvm_component parent = null);
 
    super.new(name, parent);
-
+   reset_imp = new("rest_imp", this);
 endfunction : new
 
 function void uvme_cva6_config_covg_c::build_phase(uvm_phase phase);
@@ -280,7 +290,7 @@ function void uvme_cva6_config_covg_c::build_phase(uvm_phase phase);
    config_cg       = new("config_cg");
    boot_addr_cg    = new("boot_addr_cg");
    clock_period_cg = new("clock_period_cg");
-   reset_cg        = new("reset_cg");
+   reset_cg        = new("reset_cg",cfg.sys_clk_period);
    
 endfunction : build_phase
 
@@ -289,20 +299,13 @@ function void uvme_cva6_config_covg_c::sample_cva6_config();
    config_cg.sample();
    boot_addr_cg.sample(cfg.boot_addr);
    clock_period_cg.sample(cfg.sys_clk_period);
-   fork
-      begin
-         bit prev_mon_reset_assert_timestamp = 0;
-         forever begin
-            @(cntxt.vif.reset_n);
-            reset_cg.sample();
-         end
-      end
-   join_none
    
 endfunction : sample_cva6_config
 
-virtual function void uvme_cva6_config_covg_c::write_reset(seq_item req);
-   $display("OK reset")
+function void uvme_cva6_config_covg_c::write_reset(uvma_clknrst_mon_trn_c trn);
+
+   reset_cg.sample(trn); 
+
 endfunction
 
 task uvme_cva6_config_covg_c::run_phase(uvm_phase phase);
