@@ -119,8 +119,8 @@ class cvxif_custom_instr extends riscv_custom_instr;
       `DV_CHECK_FATAL($cast(cfg_cva6, cfg), "Could not cast cfg into cfg_cva6")
       return cfg_cva6.enable_x_extension && (
              instr_name inside {
-                CUS_ADD_MULTI,CUS_NOP,CUS_ADD_RS3,
-                CUS_EXC,CUS_U_ADD,CUS_S_ADD
+                CUS_ADD, CUS_ADD_MULTI, CUS_NOP, CUS_ADD_RS3,
+                CUS_EXC, CUS_U_ADD, CUS_S_ADD
                                });
    endfunction
 
