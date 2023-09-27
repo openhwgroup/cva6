@@ -203,21 +203,14 @@ plan "CVA6 Plan";
             feature "Startup reset";
                 description = "Hard reset on startup";
                 measure Group reset;
-<<<<<<< HEAD
                     source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.reset_cg.cp_reset", "group instance: uvme_cva6_pkg.uvme_cva6_pkg.reset_cg.cp_reset_duration_ps";
-=======
->>>>>>> b1d2afed (vplan sanity coverage implementation)
                 endmeasure
             endfeature
             feature "On the fly reset";
                 description = "Recover from on the fly reset during simulation";
                 CVA6_VERSION = STEP1;
-<<<<<<< HEAD
                 measure Group onthefly;
                     source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.reset_cg.cp_reset_onthefly_assert";
-=======
-                measure Group reset;
->>>>>>> b1d2afed (vplan sanity coverage implementation)
                 endmeasure
             endfeature
         endfeature
@@ -247,11 +240,7 @@ plan "CVA6 Plan";
     feature "Functional features";
         description = "CVA6 Functional features";
         feature "RSIC-V standard instructions";
-<<<<<<< HEAD
             description = "Compliance RISC-V Instruction Set Manual, Volume I and Volume 2:\nExtensions: RV32I + M + A + C + Zicsr + Zifencei + Zicond + Zcb";
-=======
-            description = "Compliance RISC-V Instruction Set Manual, Volume I and Volume 2:\nExtensions: RV32I + M + A + C + Zicsr + Zifencei";
->>>>>>> b1d2afed (vplan sanity coverage implementation)
             feature RV32I;
                 description = "I extension";
                 feature ADD;
@@ -714,7 +703,6 @@ plan "CVA6 Plan";
                     source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zifencei_fence_i_cg";
                 endmeasure
             endfeature
-<<<<<<< HEAD
             feature RV32ZICOND;
                 description = "ZICOND extension";
                 ISA_ZICOND_EXTENSION = 1;
@@ -746,11 +734,6 @@ plan "CVA6 Plan";
             feature "Instructions execution sequences";
                 description = "Instructions sequences";
                 measure Group sequences;
-=======
-            feature "Instructions sequences";
-                description = "Instructions sequences";
-                measure Group Sequential;
->>>>>>> b1d2afed (vplan sanity coverage implementation)
                     source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rev32_seq_cg";
                 endmeasure
             endfeature
@@ -1449,16 +1432,11 @@ plan "CVA6 Plan";
                     endmeasure
                 endfeature
                 feature Assertions;
-<<<<<<< HEAD
                     measure Assert axi_protocol_assertion;
                         source = "property: **.axi_ar_assert.*", "property: **.axi_aw_assert.*", "property: **.axi_b_assert.*", "property: **.axi_r_assert.*", "property: **.axi_w_assert.*";
                     endmeasure
                     measure Assert cva6_axi_assertions;
                         source = "property: **.cva6_axi_assert.*";
-=======
-                    measure Group Measure_1;
-                        source = "property: **.axi_*_assert.*";
->>>>>>> b1d2afed (vplan sanity coverage implementation)
                     endmeasure
                 endfeature
             endfeature
@@ -1527,11 +1505,7 @@ plan "CVA6 Plan";
                 endmeasure
             endfeature
             feature MMU;
-<<<<<<< HEAD
-                description = "Memory Management Unit\r support";
-=======
-                description = "Memory Management Unit support";
->>>>>>> b1d2afed (vplan sanity coverage implementation)
+                description = "Memory Management Unit support";
                 CVA6_VERSION = STEP1;
                 MMU_ENABLED = 1;
                 measure Group MMU;
