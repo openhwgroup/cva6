@@ -3,12 +3,20 @@ plan "CVA6 Plan";
 
     attribute enum{EMBEDDED,STEP1} CVA6_VERSION = EMBEDDED;
     attribute integer ISA_M_EXTENSION = 0;
+    ISA_M_EXTENSION.description = "M extension support";
     attribute integer ISA_C_EXTENSION = 0;
+    ISA_C_EXTENSION.description = "C extension support";
     attribute integer ISA_ZICSR_EXTENSION = 0;
+    ISA_ZICSR_EXTENSION.description = "ZICSR extension support";
     attribute integer ISA_ZIFENCEI_EXTENSION = 0;
+    ISA_ZIFENCEI_EXTENSION.description = "ZIFENCEI extension support";
     attribute integer MMU_ENABLED = 0;
     attribute integer FPU_ENABLED = 0;
     attribute integer PMP_ENABLED = 0;
+    attribute integer ISA_ZICOND_EXTENSION = 0;
+    ISA_ZICOND_EXTENSION.description = "ZICOND extension support";
+    attribute integer ISA_ZCB_EXTENSION = 0;
+    ISA_ZCB_EXTENSION.description = "ZCB extension support";
 
     description = "CVA6 features";
     feature "Sanity features";
@@ -232,7 +240,7 @@ plan "CVA6 Plan";
     feature "Functional features";
         description = "CVA6 Functional features";
         feature "RSIC-V standard instructions";
-            description = "Compliance RISC-V Instruction Set Manual, Volume I and Volume 2:\nExtensions: RV32I + M + A + C + Zicsr + Zifencei";
+            description = "Compliance RISC-V Instruction Set Manual, Volume I and Volume 2:\nExtensions: RV32I + M + A + C + Zicsr + Zifencei + Zicond + Zcb";
             feature RV32I;
                 description = "I extension";
                 feature ADD;
@@ -693,6 +701,34 @@ plan "CVA6 Plan";
                 ISA_ZIFENCEI_EXTENSION = 1;
                 measure Group FEINCE_I;
                     source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zifencei_fence_i_cg";
+                endmeasure
+            endfeature
+            feature RV32ZICOND;
+                description = "ZICOND extension";
+                ISA_ZICOND_EXTENSION = 1;
+                measure Group CZERO_EQZ;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.rv32zicond_czero_eqz_cg";
+                endmeasure
+                measure Group CZERO_NEZ;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.rv32zicond_czero_nez_cg";
+                endmeasure
+            endfeature
+            feature RV32ZCB;
+                description = "ZB extension";
+                ISA_ZCB_EXTENSION = 1;
+                measure Group C_MUL;
+                endmeasure
+                measure Group C_ZEXT_B;
+                endmeasure
+                measure Group C_SEXT_B;
+                endmeasure
+                measure Group C_ZEXT_H;
+                endmeasure
+                measure Group C_SEXT_H;
+                endmeasure
+                measure Group C_ZEXT_W;
+                endmeasure
+                measure Group C_NOT;
                 endmeasure
             endfeature
             feature "Instructions sequences";
