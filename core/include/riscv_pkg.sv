@@ -457,6 +457,7 @@ package riscv;
         CSR_MARCHID        = 12'hF12,
         CSR_MIMPID         = 12'hF13,
         CSR_MHARTID        = 12'hF14,
+        CSR_MCONFIGPTR     = 12'hF15,
         CSR_MCYCLE         = 12'hB00,
         CSR_MCYCLEH        = 12'hB80,
         CSR_MINSTRET       = 12'hB02,
