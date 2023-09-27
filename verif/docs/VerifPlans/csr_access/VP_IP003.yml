@@ -1,0 +1,125 @@
+!Feature
+next_elt_id: 4
+name: CVA6_User_Mode_Counter_CSRs(cycle, instret, cycleh, instreth)
+id: 3
+display_order: 3
+subfeatures: !!omap
+- 000_Power-on-reset (POR) values of CSR: !Subfeature
+    name: 000_Power-on-reset (POR) values of CSR
+    tag: VP_CSR_VERIFICATION_F003_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CSR_VERIFICATION_F003_S000_I000
+        description: Upon reset, RISC-V CVA6 User mode counter CSRs must initialize
+          to their respective POR value.
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Verify that the User Mode counter CSR POR value must match with
+          the value specified in the RISC-V CVA6 user manual.\nAs cycle will increment
+          on the posedge of each clock and instret will increment after every instruction
+          is retired. For these CSRs, the best technique to check reset value is by
+          \"visual inspection\""
+        pfc: 1
+        test_type: 1
+        cov_method: -1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 001_Counter _CSRs_functionality_checking: !Subfeature
+    name: 001_Counter _CSRs_functionality_checking
+    tag: VP_CSR_VERIFICATION_F003_S001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CSR_VERIFICATION_F003_S001_I000
+        description: "This feature pertains to the verification of functionality of
+          RISC-V cycle, cycleh, instret and instreth Control Status Register (CSR).
+          In a RISC-V architecture\n\n1.’cycle’ and ‘cycleh’ are user-level CSR that
+          hold low 32 bits and high 32 bits respectively of the count of clock cycles
+          executed by the processor.\n2.’instret’ and ‘instreth’ are also user-level
+          CSR that count the total number of instructions executed by the processor.\n
+          \nThe functionality of user mode counter CSR is being tested by performing
+          two continuous reads and checking whether the value in the second read is
+          greater than the value in the first read."
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "1.Verify that these CSR are properly initialized.\n2.Initiate
+          a second read from the counter CSR immediately after the first read.\n3.Ensure
+          that the value of the second read from counter CSR is greater than the value
+          of the initial read.\n4.Confirm that user mode counter CSRs are incrementing.\n
+          \nNote: This algorithm is only an \"approximate test\" of the functionality
+          of these CSRs."
+        pfc: 1
+        test_type: 1
+        cov_method: -1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- 002_CSR access in different privilege modes: !Subfeature
+    name: 002_CSR access in different privilege modes
+    tag: VP_CSR_VERIFICATION_F003_S002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_CSR_VERIFICATION_F003_S002_I000
+        description: Accessing RISC-V CVA6 user Mode counter CSR in different privilege
+          modes (User, Supervisor and Machine modes).
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Ensure that User mode counter CSRs can be accessed in user and
+          Supervisor modes by configuring MCOUNTEREN CSR.
+        pfc: 1
+        test_type: 1
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+- ? "003_Verify the user mode counter CSRs behaviour after reaching maximum values\n"
+  : !Subfeature
+    name: "003_Verify the user mode counter CSRs behaviour after reaching maximum
+      values\n"
+    tag: VP_csr-access_F003_S003
+    next_elt_id: 1
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_csr-access_F003_S003_I000
+        description: check the behaviour of the RISC-V User mode counter CSRs when
+          it reaches to maximum value.
+        reqt_doc: ''
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Ensure that user mode counter CSRs is updated to reset value
+          as mentioned in CVA6 user manual after reaching to maximum value.
+        pfc: 1
+        test_type: 1
+        cov_method: 1
+        cores: 8
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
