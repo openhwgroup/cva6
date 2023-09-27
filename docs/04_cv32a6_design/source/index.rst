@@ -20,10 +20,11 @@ CV32A6 Design Document
 Editor: **Jean Roch Coulon**
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
    :caption: Contents:
 
    cv32a6_intro
    cv32a6_subsystem
    cv32a6_frontend
+   cv32a6_execute
    cv32a6_glossary
