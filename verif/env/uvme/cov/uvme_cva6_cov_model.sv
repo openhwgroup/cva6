@@ -30,8 +30,12 @@ class uvme_cva6_cov_model_c extends uvm_component;
    uvme_cva6_cntxt_c  cntxt;
 
    // Components
-   uvme_cvxif_covg_c  cvxif_covg;
-   uvme_isa_cov_model_c isa_covg;
+   uvme_cvxif_covg_c        cvxif_covg;
+   uvme_isa_cov_model_c     isa_covg;
+   uvme_cva6_config_covg_c  config_covg;
+   
+   //
+   uvm_analysis_export#(uvma_clknrst_mon_trn_c)  reset_ae;
 
    `uvm_component_utils_begin(uvme_cva6_cov_model_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -52,6 +56,11 @@ class uvme_cva6_cov_model_c extends uvm_component;
     * Describe uvme_cva6_cov_model_c::run_phase()
     */
    extern virtual task run_phase(uvm_phase phase);
+
+   /**
+    * Ensures cfg & cntxt handles are not null.
+    */
+   extern virtual function void connect_phase(uvm_phase phase);
 
    /**
     * TODO Describe uvme_cva6_cov_model_c::sample_cfg()
@@ -99,8 +108,19 @@ function void uvme_cva6_cov_model_c::build_phase(uvm_phase phase);
    end
 
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "cvxif_covg", "cntxt", cntxt);
+   
+   config_covg = uvme_cva6_config_covg_c::type_id::create("config_covg", this);
+   uvm_config_db#(uvme_cva6_cfg_c)::set(this, "config_covg", "cfg", cfg);
+   uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "config_covg", "cntxt", cntxt);
 
 endfunction : build_phase
+
+function void uvme_cva6_cov_model_c::connect_phase(uvm_phase phase);
+
+   super.connect_phase(phase);
+   reset_ae.connect(config_covg.reset_imp);
+
+endfunction : connect_phase
 
 
 task uvme_cva6_cov_model_c::run_phase(uvm_phase phase);
