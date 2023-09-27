@@ -186,7 +186,7 @@ ALL_UVM_FLAGS           = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
 	  $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb) $(if $(TRACE_COMPACT),+vcs+fsdbon))\
 	  -cm_seqnoconst -diag noconst
 
-ALL_SIMV_UVM_FLAGS      = -licwait 20 $(issrun_opts) \
+ALL_SIMV_UVM_FLAGS      = +vcs+lic+wait $(issrun_opts) \
 		-sv_lib $(CVA6_REPO_DIR)/verif/core-v-verif/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
 		+UVM_TESTNAME=uvmt_cva6_firmware_test_c
 
