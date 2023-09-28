@@ -1,0 +1,58 @@
+// Copyright 2023 Thales 
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+
+- csr: CSR_MVENDORID
+  description: >
+    Implementation ID
+  address: 0xF11
+  privilege_mode: M
+  rv32:
+    - field_name: Implementation
+      description: >
+        Provides unique encoding of the version of the processor implementation
+      type: R
+      reset_val: 0x602
+      msb: 31
+      lsb: 0
+
+- csr: CSR_MARCHID
+  description: >
+    Architecture ID
+  address: 0xF12
+  privilege_mode: M
+  rv32:
+    - field_name: Architecture ID
+      description: >
+        Provide Encoding the base microarchitecture of the hart        
+      type: R
+      reset_val: 3
+      msb: 31
+      lsb: 0
+
+- csr: CSR_MIMPID
+  description: >
+    Implementation ID
+  address: 0xF13
+  privilege_mode: M
+  rv32:
+    - field_name: Implementation
+      description: >
+        Provides unique encoding of the version of the processor implementation
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
+
+- csr: CSR_MHARTID
+  description: >
+    Hardware Thread ID
+  address: 0xF14
+  privilege_mode: M
+  rv32:
+    - field_name: Hart ID
+      description: >
+        contains the integer ID of the hardware thread running the code
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
