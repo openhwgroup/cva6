@@ -37,6 +37,12 @@ ROOT_DIR=$(dirname $(readlink -f $0))
 # Builds of individual tools are performed under the matching
 # build/... subdirectories
 
+# Provide a means of throttling parallel 'make' executions.
+# Use a conservative setting to avoid overloading the host machine.
+if [ -z "${NUM_JOBS}" ]; then
+    NUM_JOBS=1
+fi
+
 # Helper function to print usage information.
 print_usage()
 {
@@ -163,7 +169,7 @@ cd $ROOT_DIR/build/binutils-gdb
 	      { echo "Could not configure binutils-gdb, bailing out!" ; \
 		exit 2 ; } ; } && \
     { [ -d gas/doc ] || mkdir -p gas/doc; } && \
-    make -j all && make install || \
+    make -j${NUM_JOBS} all && make install || \
 	{ echo "*** Could not build binutils, bailing out!" ; exit 2; }
 cd -
 
@@ -182,8 +188,8 @@ cd $ROOT_DIR/build/gcc
 	  ../../$GCC_DIR/configure $GCC_CONFIGURE_OPTS || \
 	      { echo "Could not configure GCC, bailing out!" ; \
 		exit 2 ; } ; } && \
-	make -j all || { rm -rf $TARGET && \
-			     make -j all ; } && make install || \
+	make -j${NUM_JOBS} all || { rm -rf $TARGET && \
+			     make -j${NUM_JOBS} all ; } && make install || \
 	{ echo "*** Could not build GCC (even after removing target dirs), bailing out!" ; exit 2; }
 cd -
 
@@ -209,7 +215,7 @@ export CFLAGS="-mcmodel=medium"
 	  ../../$NEWLIB_DIR/configure $NEWLIB_CONFIGURE_OPTS || \
 	      { echo "Could not configure newlib, bailing out!" ; \
 		exit 2 ; } ; } && \
-    make -j all && make install || \
+    make -j${NUM_JOBS} all && make install || \
 	{ echo "*** Could not build newlib, bailing out!" ; exit 2; }
 cd -
 

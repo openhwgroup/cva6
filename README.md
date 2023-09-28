@@ -162,6 +162,14 @@ located under `util/gcc-toolchain-builder`.  Please make sure beforehand that yo
 installed all the required *toolchain build* dependencies (see
 [the toolchain README file](file:util/gcc-toolchain-builder/README.md).)
 
+To control the load of your host machine when building the toolchain, you can use
+the environment variable `NUM_JOBS` to limit the number of concurrent jobs launched
+by `make`:
+- if left undefined, `NUM_JOBS` will default to 1, resulting in a sequential execution
+of `make` jobs;
+- when setting `NUM_JOBS` to an explicit value, it is recommended not to exceed 2/3 of
+the total nuber of virtual cores available on your system.
+
 ```sh
 # Set environment variable RISCV to the desired installation location.
 # The toolchain can be installed in any user-writable directory.
