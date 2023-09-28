@@ -1,0 +1,381 @@
+// Copyright 2023 Thales 
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+
+- csr: CSR_SSTATUS
+  description: >
+    Supervisor status register
+  address: 0x100
+  privilege_mode: S
+  rv32:
+    - field_name: SD
+      description: >
+        SD
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 31
+    - field_name: Reserved
+      description: >
+       reserved for future use 
+      type: R
+      reset_val: 0
+      msb: 30
+      lsb: 20
+    - field_name: MXR
+      description: >
+        The MXR bit modifies the privilege with which loads access virtual memory
+      type: RW
+      reset_val: 0
+      msb: 19
+      lsb: 19
+    - field_name: SUM
+      description: >
+        The SUM bit modifies the privilege with which S-mode loads and stores access virtual memory.
+      type: RW
+      reset_val: 0
+      msb: 18
+      lsb: 18
+    - field_name: Reserved
+      description: >
+       reserved for future use 
+      type: R
+      reset_val: 0
+      msb: 17
+      lsb: 17
+    - field_name: XS
+      description: >
+        Extension state
+      type: R
+      reset_val: 0
+      msb: 16
+      lsb: 15
+    - field_name: FS
+      description: >
+        Floationd point State
+      type: RW
+      reset_val: 0
+      msb: 14
+      lsb: 13
+    - field_name: Reserved
+      description: >
+       reserved for future use 
+      type: R
+      reset_val: 0
+      msb: 12
+      lsb: 9
+    - field_name: SPP
+      description: >
+        SPP bit indicates the privilege level at which a hart was executing before entering supervisor mode.
+      type: RW
+      reset_val: 0
+      msb: 8
+      lsb: 8
+    - field_name: Reserved
+      description: >
+        reserved for future use
+      type: R
+      reset_val: 0
+      msb: 7
+      lsb: 6
+    - field_name: SPIE
+      description: >
+        The SPIE bit indicates whether supervisor interrupts were enabled prior to trappin into supervisor mode.
+      type: RW
+      reset_val: 0
+      msb: 5
+      lsb: 5
+    - field_name: UPIE
+      description: >
+        When a URET instruction is executed, UIE is set to UPIE, and UPIE is set to 1. 
+      type: R
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: reserved
+      description: >
+        reserved for future use
+      type: WPRI
+      reset_val: 0
+      msb: 3
+      lsb: 2
+    - field_name: SIE
+      description: >
+        The SIE bit enables or disables all interrupts in supervisor mode. 
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: UIE
+      description: >
+        The UIE bit enables or disables user-mode interrupts.
+      type: R
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_SIE
+  description: >
+    Supervisor Interrupt enable register
+  address: 0x104
+  privilege_mode: S
+  rv32:
+    - field_name: WPRI 
+      description: >
+          reserved for future use
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 10
+    - field_name: SEIE 
+      description: >
+        Supervisorlevel external interrupts are disabled when the SEIE bit        
+      type: RW
+      reset_val: 0
+      msb: 9
+      lsb: 9
+    - field_name: UEIE 
+      description: >
+        User-level external interrupts are disabled when the UEIE bit in the sie register is clear.
+      type: R
+      reset_val: 0
+      msb: 8
+      lsb: 8
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: R
+      reset_val: 0
+      msb: 7
+      lsb: 6
+    - field_name: STIE
+      description: >
+        Supervisorlevel timer interrupts are disabled when the STIE bit in the sie register is clear.        
+      type: RW
+      reset_val: 0
+      msb: 5
+      lsb: 5
+    - field_name: UTIE
+      description: >
+        User-level timer interrupts are disabled when the UTIE bit in the sie register is clear.        
+      type: R
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: WPRI 
+      description: >
+        reserved for future use
+      type: R
+      reset_val: 0
+      msb: 3
+      lsb: 2
+    - field_name: SSIE 
+      description: >
+        Supervisor-level software interrupts are disabled when the SSIE bit in the sie register is clear.
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: USIE 
+      description: >
+        User-level software interrupts are disabled when the USIE bit in the sie register is clear        
+      type: R
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_STVEC
+  description: >
+    Supervisor trap handler base address
+  address: 0x105
+  privilege_mode: S
+  rv32:
+    - field_name: BASE
+      description: >
+        The BASE field in stvec is a WARL field that can hold any valid virtual or physical address, subject to alignment constraints
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 2
+    - field_name: MODE
+      description: >
+        When MODE=Direct, all traps into supervisor mode cause the pc to be set to the address in the BASE field. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the pc to be set to the address in the BASE field, whereas interrupts cause the pc to be set to the address in the BASE field plus four times the interrupt cause number.
+      type: R
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: MODE
+      description: >
+        When MODE=Direct, all traps into supervisor mode cause the pc to be set to the address in the BASE field. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the pc to be set to the address in the BASE field, whereas interrupts cause the pc to be set to the address in the BASE field plus four times the interrupt cause number.
+      type: RW
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_SCOUNTEREN
+  description: >
+    Supervisor counter enable
+  address: 0x106
+  privilege_mode: S
+  rv32:
+    - field_name: HPMn
+      description: >
+        When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted.
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 3
+    - field_name: IR
+      description: >
+         When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted
+      type: RW
+      reset_val: 0
+      msb: 2
+      lsb: 2
+    - field_name: TM
+      description: >
+         When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted        
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: CY
+      description: >
+         When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted
+      type: RW
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_SSCRATCH
+  description: >
+    Scartch Register for supervisor trap handlers
+  address: 0x140
+  privilege_mode: S
+  rv32:
+    - field_name: SSCRATCH
+      description: >
+        it is used to hold a pointer to the hart-local supervisor context while the hart is executing user code.
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
+
+- csr: CSR_SEPC
+  description: >
+    Supervisor exception program counter
+  address: 0x141
+  privilege_mode: S
+  rv32:
+    - field_name: SEPC
+      description: >
+        On implementations that support only IALIGN=32, the two low bits (sepc[1:0]) are always zero
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
+
+- csr: CSR_SCAUSE
+  description: >
+    Supervisor trap cause
+  address: 0x142
+  privilege_mode: S
+  rv32:
+    - field_name: Interrupt
+      description: >
+        The Interrupt bit in the scause register is set if the trap was caused by an interrupt.
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 31
+    - field_name: Exception Code
+      description: >
+        The Exception Code field contains a code identifying the last exception     
+      type: rw
+      reset_val: 0
+      msb: 30
+      lsb: 0
+
+- csr: CSR_STVAL
+  description: >
+    Supervisor bad address or instruction
+  address: 0x143
+  privilege_mode: S
+  rv32:
+    - field_name: Count
+      description: >
+        when a trap is taken into S-mode, stval is written with exception-specific information to assist software in handling the trap. 
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
+      
+- csr: CSR_SIP
+  description: >
+    Supervisor interrupt pending
+  address: 0x144
+  privilege_mode: S
+  rv32:
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 10
+    - field_name: SEIP
+      description: >
+        A supervisor-level external interrupt is pending if the SEIP bit in the sip register is set.
+      type: R
+      reset_val: 0
+      msb: 9
+      lsb: 9
+    - field_name: UEIP
+      description: >
+        UEIP may be written by S-mode software to indicate to U-mode that an external interrupt is pending.        
+      type: R
+      reset_val: 0
+      msb: 8
+      lsb: 8
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: R
+      reset_val: 0
+      msb: 7
+      lsb: 6
+    - field_name: STIP
+      description: >
+        A supervisor-level timer interrupt is pending if the STIP bit in the sip register is set
+      type: R
+      reset_val: 0
+      msb: 5
+      lsb: 5
+    - field_name: UTIP
+      description: >
+        A user-level timer interrupt is pending if the UTIP bit in the sip register is set
+      type: R
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: R
+      reset_val: 0
+      msb: 3
+      lsb: 2
+    - field_name: SSIP
+      description: >
+        A supervisor-level software interrupt is triggered on the current hart by writing 1 to its supervisor software interrupt-pending (SSIP) bit 
+      type: R
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: USIP
+      description: >
+        A user-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt-pending (USIP) bit 
+      type: R
+      reset_val: 0
+      msb: 0
+      lsb: 0
+      
