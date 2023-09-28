@@ -23,103 +23,10 @@
   `include "l15.tmp.h"
 `endif
 
+/// This package contains `functions` and global defines for CVA6.
+/// *Note*: There are some parameters here as well which will eventually be
+/// moved out to favour a fully parameterizable core.
 package ariane_pkg;
-
-    localparam NrMaxRules = 16;
-    typedef struct packed {
-      int                               RASDepth;
-      int                               BTBEntries;
-      int                               BHTEntries;
-      // PMAs
-      int unsigned                      NrNonIdempotentRules;  // Number of non idempotent rules
-      logic [NrMaxRules-1:0][63:0]      NonIdempotentAddrBase; // base which needs to match
-      logic [NrMaxRules-1:0][63:0]      NonIdempotentLength;   // bit mask which bits to consider when matching the rule
-      int unsigned                      NrExecuteRegionRules;  // Number of regions which have execute property
-      logic [NrMaxRules-1:0][63:0]      ExecuteRegionAddrBase; // base which needs to match
-      logic [NrMaxRules-1:0][63:0]      ExecuteRegionLength;   // bit mask which bits to consider when matching the rule
-      int unsigned                      NrCachedRegionRules;   // Number of regions which have cached property
-      logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;  // base which needs to match
-      logic [NrMaxRules-1:0][63:0]      CachedRegionLength;    // bit mask which bits to consider when matching the rule
-      // cache config
-      bit                               AxiCompliant;          // set to 1 when using in conjunction with 64bit AXI bus adapter
-      bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
-      //
-      logic [63:0]                      DmBaseAddress;         // offset of the debug module
-      int unsigned                      NrPMPEntries;          // Number of PMP entries
-    } ariane_cfg_t;
-
-    localparam ariane_cfg_t ArianeDefaultConfig = '{
-      RASDepth:   int'(cva6_config_pkg::CVA6ConfigRASDepth),
-      BTBEntries: int'(cva6_config_pkg::CVA6ConfigBTBEntries),
-      BHTEntries: int'(cva6_config_pkg::CVA6ConfigBHTEntries),
-      // idempotent region
-      NrNonIdempotentRules:  unsigned'(2),
-      NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
-      NonIdempotentLength:   1024'({64'b0, 64'b0}),
-      NrExecuteRegionRules:  unsigned'(3),
-      //                      DRAM,          Boot ROM,   Debug Module
-      ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
-      ExecuteRegionLength:   1024'({64'h40000000,  64'h10000,  64'h1000}),
-      // cached region
-      NrCachedRegionRules:   unsigned'(1),
-      CachedRegionAddrBase:  1024'({64'h8000_0000}),
-      CachedRegionLength:    1024'({64'h40000000}),
-      //  cache config
-      AxiCompliant:           1'b1,
-      SwapEndianess:          1'b0,
-      // debug
-      DmBaseAddress:          64'h0,
-      NrPMPEntries:           unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries)
-    };
-
-    // Function being called to check parameters
-    function automatic void check_cfg (ariane_cfg_t Cfg);
-      // pragma translate_off
-      `ifndef VERILATOR
-        assert(Cfg.RASDepth > 0);
-        assert(2**$clog2(Cfg.BTBEntries)  == Cfg.BTBEntries);
-        assert(2**$clog2(Cfg.BHTEntries)  == Cfg.BHTEntries);
-        assert(Cfg.NrNonIdempotentRules <= NrMaxRules);
-        assert(Cfg.NrExecuteRegionRules <= NrMaxRules);
-        assert(Cfg.NrCachedRegionRules  <= NrMaxRules);
-        assert(Cfg.NrPMPEntries <= 16);
-      `endif
-      // pragma translate_on
-    endfunction
-
-    function automatic logic range_check(logic[63:0] base, logic[63:0] len, logic[63:0] address);
-      // if len is a power of two, and base is properly aligned, this check could be simplified
-      // Extend base by one bit to prevent an overflow.
-      return (address >= base) && (({1'b0, address}) < (65'(base)+len));
-    endfunction : range_check
-
-    function automatic logic is_inside_nonidempotent_regions (ariane_cfg_t Cfg, logic[63:0] address);
-      logic[NrMaxRules-1:0] pass;
-      pass = '0;
-      for (int unsigned k = 0; k < Cfg.NrNonIdempotentRules; k++) begin
-        pass[k] = range_check(Cfg.NonIdempotentAddrBase[k], Cfg.NonIdempotentLength[k], address);
-      end
-      return |pass;
-    endfunction : is_inside_nonidempotent_regions
-
-    function automatic logic is_inside_execute_regions (ariane_cfg_t Cfg, logic[63:0] address);
-      // if we don't specify any region we assume everything is accessible
-      logic[NrMaxRules-1:0] pass;
-      pass = '0;
-      for (int unsigned k = 0; k < Cfg.NrExecuteRegionRules; k++) begin
-        pass[k] = range_check(Cfg.ExecuteRegionAddrBase[k], Cfg.ExecuteRegionLength[k], address);
-      end
-      return |pass;
-    endfunction : is_inside_execute_regions
-
-    function automatic logic is_inside_cacheable_regions (ariane_cfg_t Cfg, logic[63:0] address);
-      automatic logic[NrMaxRules-1:0] pass;
-      pass = '0;
-      for (int unsigned k = 0; k < Cfg.NrCachedRegionRules; k++) begin
-        pass[k] = range_check(Cfg.CachedRegionAddrBase[k], Cfg.CachedRegionLength[k], address);
-      end
-      return |pass;
-    endfunction : is_inside_cacheable_regions
 
     // TODO: Slowly move those parameters to the new system.
     localparam NR_SB_ENTRIES = cva6_config_pkg::CVA6ConfigNrScoreboardEntries; // number of scoreboard entries

@@ -77,39 +77,56 @@ package cva6_config_pkg;
 
     localparam CVA6ConfigRvfiTrace = 1;
 
-    localparam config_pkg::cva6_cfg_t cva6_cfg = {
-      unsigned'(CVA6ConfigNrCommitPorts),    // NrCommitPorts
-      unsigned'(CVA6ConfigAxiAddrWidth),     // AxiAddrWidth
-      unsigned'(CVA6ConfigAxiDataWidth),     // AxiDataWidth
-      unsigned'(CVA6ConfigAxiIdWidth),       // AxiIdWidth
-      unsigned'(CVA6ConfigDataUserWidth),    // AxiUserWidth
-      unsigned'(CVA6ConfigNrLoadBufEntries), // NrLoadBufEntries
-      bit'(CVA6ConfigFpuEn),                 // FpuEn
-      bit'(CVA6ConfigF16En),                 // XF16
-      bit'(CVA6ConfigF16AltEn),              // XF16ALT
-      bit'(CVA6ConfigF8En),                  // XF8
-      bit'(CVA6ConfigAExtEn),                // RVA
-      bit'(CVA6ConfigVExtEn),                // RVV
-      bit'(CVA6ConfigCExtEn),                // RVC
-      bit'(CVA6ConfigZcbExtEn),              // RVZCB
-      bit'(CVA6ConfigFVecEn),                // XFVec
-      bit'(CVA6ConfigCvxifEn),               // CvxifEn
-      bit'(CVA6ConfigZiCondExtEn),           // ZiCondExtEn
+    localparam config_pkg::cva6_cfg_t cva6_cfg = '{
+      NrCommitPorts: unsigned'(CVA6ConfigNrCommitPorts),
+      AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
+      AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
+      AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),
+      AxiUserWidth: unsigned'(CVA6ConfigDataUserWidth),
+      NrLoadBufEntries: unsigned'(CVA6ConfigNrLoadBufEntries),
+      FpuEn: bit'(CVA6ConfigFpuEn),
+      XF16: bit'(CVA6ConfigF16En),
+      XF16ALT: bit'(CVA6ConfigF16AltEn),
+      XF8: bit'(CVA6ConfigF8En),
+      RVA: bit'(CVA6ConfigAExtEn),
+      RVV: bit'(CVA6ConfigVExtEn),
+      RVC: bit'(CVA6ConfigCExtEn),
+      RVZCB: bit'(CVA6ConfigZcbExtEn),
+      XFVec: bit'(CVA6ConfigFVecEn),
+      CvxifEn: bit'(CVA6ConfigCvxifEn),
+      ZiCondExtEn: bit'(CVA6ConfigZiCondExtEn),
       // Extended
-      bit'(0),           // RVF
-      bit'(0),           // RVD
-      bit'(0),           // FpPresent
-      bit'(0),           // NSX
-      unsigned'(0),      // FLen
-      bit'(0),           // RVFVec
-      bit'(0),           // XF16Vec
-      bit'(0),           // XF16ALTVec
-      bit'(0),           // XF8Vec
-      unsigned'(0),      // NrRgprPorts
-      unsigned'(0),      // NrWbPorts
-      bit'(0),           // EnableAccelerator
-      64'h800,           // HaltAddress
-      64'h808            // ExceptionAddress
-    } ;
-
+      RVF: bit'(0),
+      RVD: bit'(0),
+      FpPresent: bit'(0),
+      NSX: bit'(0),
+      FLen: unsigned'(0),
+      RVFVec: bit'(0),
+      XF16Vec: bit'(0),
+      XF16ALTVec: bit'(0),
+      XF8Vec: bit'(0),
+      NrRgprPorts: unsigned'(0),
+      NrWbPorts: unsigned'(0),
+      EnableAccelerator: bit'(0),
+      HaltAddress: 64'h800,
+      ExceptionAddress: 64'h808,
+      RASDepth:      unsigned'(CVA6ConfigRASDepth),
+      BTBEntries:    unsigned'(CVA6ConfigBTBEntries),
+      BHTEntries:    unsigned'(CVA6ConfigBHTEntries),
+      DmBaseAddress: 64'h0,
+      NrPMPEntries:  unsigned'(CVA6ConfigNrPMPEntries),
+      NOCType:       config_pkg::NOC_TYPE_AXI4_ATOP,
+      // idempotent region
+      NrNonIdempotentRules:  unsigned'(2),
+      NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
+      NonIdempotentLength:   1024'({64'b0, 64'b0}),
+      NrExecuteRegionRules:  unsigned'(3),
+      //                      DRAM,          Boot ROM,   Debug Module
+      ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
+      ExecuteRegionLength:   1024'({64'h40000000,  64'h10000,  64'h1000}),
+      // cached region
+      NrCachedRegionRules:   unsigned'(1),
+      CachedRegionAddrBase:  1024'({64'h8000_0000}),
+      CachedRegionLength:    1024'({64'h40000000})
+    };
 endpackage

@@ -39,18 +39,18 @@ supports three main access properties:
   load, and store data from that region.
 
 The regions are instantiation-time parameters, they can not be changed during
-runtime. CVA6 uses the following fields in the ``ariane_cfg_t`` configuration
+runtime. CVA6 uses the following fields in the ``cva6_cfg_t`` configuration
 structure to describe the PMA regions statically:
 
-- ``ArianeCfg.NrNonIdempotentRules``: Number of active non-idempotent regions.
-   - ``ArianeCfg.NonIdempotentAddrBase``: Base address of the non-idempotent region.
-   - ``ArianeCfg.NonIdempotentLength``: Length of the non-idempotent region.
-- ``ArianeCfg.NrExecuteRegionRules``: Number of active executable regions.
-   - ``ArianeCfg.ExecuteRegionAddrBase``: Base address of the executable region.
-   - ``ArianeCfg.ExecuteRegionLength``: Length of the executable region.
-- ``ArianeCfg.NrCachedRegionRules``: Number of active cacheable regions.
-   - ``ArianeCfg.CachedRegionAddrBase``: Base address of the cacheable region.
-   - ``ArianeCfg.CachedRegionLength``: Length of the cacheable region.
+- ``CVA6Cfg.NrNonIdempotentRules``: Number of active non-idempotent regions.
+   - ``CVA6Cfg.NonIdempotentAddrBase``: Base address of the non-idempotent region.
+   - ``CVA6Cfg.NonIdempotentLength``: Length of the non-idempotent region.
+- ``CVA6Cfg.NrExecuteRegionRules``: Number of active executable regions.
+   - ``CVA6Cfg.ExecuteRegionAddrBase``: Base address of the executable region.
+   - ``CVA6Cfg.ExecuteRegionLength``: Length of the executable region.
+- ``CVA6Cfg.NrCachedRegionRules``: Number of active cacheable regions.
+   - ``CVA6Cfg.CachedRegionAddrBase``: Base address of the cacheable region.
+   - ``CVA6Cfg.CachedRegionLength``: Length of the cacheable region.
 
 Unsupported PMAs
 -------

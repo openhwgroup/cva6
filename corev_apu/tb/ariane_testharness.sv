@@ -636,7 +636,6 @@ module ariane_testharness #(
     .CVA6Cfg              ( CVA6Cfg             ),
     .IsRVFI               ( IsRVFI              ),
     .rvfi_instr_t         ( rvfi_instr_t        ),
-    .ArianeCfg            ( ariane_soc::ArianeSocCfg ),
     .noc_req_t            ( ariane_axi::req_t   ),
     .noc_resp_t           ( ariane_axi::resp_t  )
   ) i_ariane (

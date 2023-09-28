@@ -19,8 +19,7 @@ module mmu import ariane_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned INSTR_TLB_ENTRIES     = 4,
     parameter int unsigned DATA_TLB_ENTRIES      = 4,
-    parameter int unsigned ASID_WIDTH            = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter int unsigned ASID_WIDTH            = 1
 ) (
     input  logic                            clk_i,
     input  logic                            rst_ni,
@@ -145,8 +144,7 @@ module mmu import ariane_pkg::*; #(
 
     ptw  #(
         .CVA6Cfg                ( CVA6Cfg               ),
-        .ASID_WIDTH             ( ASID_WIDTH            ),
-        .ArianeCfg              ( ArianeCfg             )
+        .ASID_WIDTH             ( ASID_WIDTH            )
     ) i_ptw (
         .clk_i                  ( clk_i                 ),
         .rst_ni                 ( rst_ni                ),
@@ -271,14 +269,14 @@ module mmu import ariane_pkg::*; #(
     end
 
     // check for execute flag on memory
-    assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
+    assign match_any_execute_region = config_pkg::is_inside_execute_regions(CVA6Cfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
 
     // Instruction fetch
     pmp #(
         .CVA6Cfg    ( CVA6Cfg                ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
-        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
+        .NR_ENTRIES ( CVA6Cfg.NrPMPEntries   )
     ) i_pmp_if (
         .addr_i        ( icache_areq_o.fetch_paddr ),
         .priv_lvl_i,
@@ -427,7 +425,7 @@ module mmu import ariane_pkg::*; #(
         .CVA6Cfg    ( CVA6Cfg                ),
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
-        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
+        .NR_ENTRIES ( CVA6Cfg.NrPMPEntries   )
     ) i_pmp_data (
         .addr_i        ( lsu_paddr_o         ),
         .priv_lvl_i    ( ld_st_priv_lvl_i    ),

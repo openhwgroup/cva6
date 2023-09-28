@@ -22,12 +22,12 @@ PMP
 ===
 The CVA6 includes a Physical Memory Protection (PMP) unit. The PMP is both
 statically and dynamically configurable. The static configuration is performed
-through the top level parameters ``ArianeCfg.NrPMPEntries``. The dynamic
+through the top level parameters ``CVA6Cfg.NrPMPEntries``. The dynamic
 configuration is performed through the CSRs described in Control and Status
 Registers. A maximum of 16 PMP entries are supported.
 
 All PMP CSRs are always implemented, but CSRs (or bitfields of CSRs) related to
-PMP entries with number ``ArianeCfg.NrPMPEntries`` and above are hardwired to
+PMP entries with number ``CVA6Cfg.NrPMPEntries`` and above are hardwired to
 zero. All PMPs reset to zero.
 
 When the ``L`` (Lock) bit is set, PMPs are also enforced in M-mode.

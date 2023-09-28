@@ -31,30 +31,6 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   parameter logic [63:0] CachedAddrBeg = MemBytes>>3;//1/8th of the memory is NC
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
-  localparam ariane_cfg_t ArianeDefaultConfig = '{
-    RASDepth: 2,
-    BTBEntries: 32,
-    BHTEntries: 128,
-    // idempotent region
-    NrNonIdempotentRules:  0,
-    NonIdempotentAddrBase: {64'b0},
-    NonIdempotentLength:   {64'b0},
-    // executable region
-    NrExecuteRegionRules:  0,
-    ExecuteRegionAddrBase: {64'h0},
-    ExecuteRegionLength:   {64'h0},
-    // cached region
-    NrCachedRegionRules:   1,
-    CachedRegionAddrBase:  {CachedAddrBeg},//1/8th of the memory is NC
-    CachedRegionLength:    {CachedAddrEnd-CachedAddrBeg+64'b1},
-    // cache config
-    AxiCompliant:          1'b1,
-    SwapEndianess:         1'b0,
-    // debug
-    DmBaseAddress:         64'h0,
-    NrPMPEntries:          0
-  };
-
   // contention and invalidation rates (in %)
   parameter MemRandHitRate   = 75;
   parameter MemRandInvRate   = 10;
@@ -418,7 +394,7 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 ///////////////////////////////////////////////////////////////////////////////
 
   std_nbdcache  #(
-    .ArianeCfg      ( ArianeDefaultConfig ),
+    .CVA6Cfg        ( ArianeDefaultConfig ),
     .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull  ),
     .AXI_DATA_WIDTH ( TbAxiDataWidthFull  ),
     .AXI_ID_WIDTH   ( TbAxiIdWidthFull    ),

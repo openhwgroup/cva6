@@ -17,7 +17,6 @@
 
 module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig,  // contains cacheable regions
     parameter int unsigned NumPorts = 4,
     parameter type axi_ar_chan_t = logic,
     parameter type axi_aw_chan_t = logic,
@@ -67,7 +66,6 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
 
     cva6_icache_axi_wrapper #(
         .CVA6Cfg      ( CVA6Cfg      ),
-        .ArianeCfg    ( ArianeCfg    ),
         .axi_req_t    ( axi_req_t    ),
         .axi_rsp_t    ( axi_rsp_t    )
     ) i_cva6_icache_axi_wrapper (
@@ -92,7 +90,6 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
    // Port 3: Store Unit
    std_nbdcache #(
       .CVA6Cfg          ( CVA6Cfg      ),
-      .ArianeCfg        ( ArianeCfg    ),
       .NumPorts         ( NumPorts     ),
       .axi_req_t        ( axi_req_t    ),
       .axi_rsp_t        ( axi_rsp_t    )

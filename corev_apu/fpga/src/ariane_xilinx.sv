@@ -156,7 +156,58 @@ module ariane_xilinx (
 
 // CVA6 config
 localparam bit IsRVFI = bit'(0);
-localparam config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg;
+// CVA6 Xilinx configuration
+localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
+  NrCommitPorts:         cva6_config_pkg::CVA6ConfigNrCommitPorts,
+  AxiAddrWidth:          cva6_config_pkg::CVA6ConfigAxiAddrWidth,
+  AxiDataWidth:          cva6_config_pkg::CVA6ConfigAxiDataWidth,
+  AxiIdWidth:            cva6_config_pkg::CVA6ConfigAxiIdWidth,
+  AxiUserWidth:          cva6_config_pkg::CVA6ConfigDataUserWidth,
+  NrLoadBufEntries:      cva6_config_pkg::CVA6ConfigNrLoadBufEntries,
+  RASDepth:              cva6_config_pkg::CVA6ConfigRASDepth,
+  BTBEntries:            cva6_config_pkg::CVA6ConfigBTBEntries,
+  BHTEntries:            cva6_config_pkg::CVA6ConfigBHTEntries,
+  FpuEn:                 bit'(cva6_config_pkg::CVA6ConfigFpuEn),
+  XF16:                  bit'(cva6_config_pkg::CVA6ConfigF16En),
+  XF16ALT:               bit'(cva6_config_pkg::CVA6ConfigF16AltEn),
+  XF8:                   bit'(cva6_config_pkg::CVA6ConfigF8En),
+  RVA:                   bit'(cva6_config_pkg::CVA6ConfigAExtEn),
+  RVV:                   bit'(cva6_config_pkg::CVA6ConfigVExtEn),
+  RVC:                   bit'(cva6_config_pkg::CVA6ConfigCExtEn),
+  RVZCB:                 bit'(cva6_config_pkg::CVA6ConfigZcbExtEn),
+  XFVec:                 bit'(cva6_config_pkg::CVA6ConfigFVecEn),
+  CvxifEn:               bit'(cva6_config_pkg::CVA6ConfigCvxifEn),
+  ZiCondExtEn:           bit'(0),
+  RVF:                   bit'(0),
+  RVD:                   bit'(0),
+  FpPresent:             bit'(0),
+  NSX:                   bit'(0),
+  FLen:                  unsigned'(0),
+  RVFVec:                bit'(0),
+  XF16Vec:               bit'(0),
+  XF16ALTVec:            bit'(0),
+  XF8Vec:                bit'(0),
+  NrRgprPorts:           unsigned'(0),
+  NrWbPorts:             unsigned'(0),
+  EnableAccelerator:     bit'(0),
+  HaltAddress:           dm::HaltAddress,
+  ExceptionAddress:      dm::ExceptionAddress,
+  DmBaseAddress:         ariane_soc::DebugBase,
+  NrPMPEntries:          unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries),
+  NOCType:               config_pkg::NOC_TYPE_AXI4_ATOP,
+  // idempotent region
+  NrNonIdempotentRules:  unsigned'(1),
+  NonIdempotentAddrBase: 1024'({64'b0}),
+  NonIdempotentLength:   1024'({ariane_soc::DRAMBase}),
+  NrExecuteRegionRules:  unsigned'(3),
+  ExecuteRegionAddrBase: 1024'({ariane_soc::DRAMBase,   ariane_soc::ROMBase,   ariane_soc::DebugBase}),
+  ExecuteRegionLength:   1024'({ariane_soc::DRAMLength, ariane_soc::ROMLength, ariane_soc::DebugLength}),
+  // cached region
+  NrCachedRegionRules:   unsigned'(1),
+  CachedRegionAddrBase:  1024'({ariane_soc::DRAMBase}),
+  CachedRegionLength:    1024'({ariane_soc::DRAMLength})
+};
+
 localparam type rvfi_instr_t = logic;
 
 
@@ -705,8 +756,7 @@ ariane_axi::resp_t   axi_ariane_resp;
 ariane #(
     .CVA6Cfg ( CVA6Cfg ),
     .IsRVFI ( IsRVFI ),
-    .rvfi_instr_t ( rvfi_instr_t ),
-    .ArianeCfg ( ariane_soc::ArianeSocCfg )
+    .rvfi_instr_t ( rvfi_instr_t )
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),
@@ -715,6 +765,7 @@ ariane #(
     .irq_i        ( irq                 ),
     .ipi_i        ( ipi                 ),
     .time_irq_i   ( timer_irq           ),
+    .rvfi_o       ( /* open */          ),
     .debug_req_i  ( debug_req_irq       ),
     .noc_req_o    ( axi_ariane_req      ),
     .noc_resp_i   ( axi_ariane_resp     )
