@@ -15,7 +15,7 @@
 
 module cva6 import ariane_pkg::*; #(
   // CVA6 config
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg,
   parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
   // RVFI
   parameter type rvfi_instr_t = struct packed {
