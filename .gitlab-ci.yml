@@ -430,7 +430,6 @@ smoke-gate:
   needs:
     - build_tools
     - asic-synthesis
-  rules: *on_dev
   variables:
     DASHBOARD_JOB_TITLE: "Smoke Gate $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
@@ -460,7 +459,6 @@ fpga-boot:
   needs:
     - build_tools
     - fpga-build
-  rules: *on_dev
   variables:
     DASHBOARD_JOB_TITLE: "FPGA Linux32 Boot "
     DASHBOARD_JOB_DESCRIPTION: "Test of Linux 32 bits boot on FPGA Genesys2"
@@ -481,7 +479,6 @@ fpga-boot:
 code_coverage-report:
   extends:
     - .backend_test
-  rules: *on_verif
   needs:
     - generated_tests
     - directed_isacov-tests
