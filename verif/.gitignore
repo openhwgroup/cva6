@@ -39,7 +39,6 @@ tests/riscv-compliance/
 tests/riscv-arch-test/
 tests/riscv-tests/
 tests/riscv-isa-sim/
-sim/dv/
 sim/vcs_results
 sim/verilator_work
 sim/out_*
