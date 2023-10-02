@@ -188,7 +188,7 @@ You will now be able to run the CVA6 test scripts.
 To run simulation, several tools and repositories are needed:
 - Gcc as compiler,
 - Spike as instruction set simulator,
-- Verilator as simulator (if used as simulator to simulate),
+- Verilator as simulator (if used as simulator to simulate). Please refer to verif/regress/install-verilator.sh to know which is the supported Verilator version,
 - [riscv-dv](https://github.com/google/riscv-dv) as simulation environment.
 
 If you would like to use a precompiled Verilator, please setup the path to the installation directory
