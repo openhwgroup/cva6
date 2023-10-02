@@ -26,7 +26,7 @@ This document is not dedicated to CVA6 users looking for information to develop 
 
 The CVA6 architecture is illustrated in the following figure extracted from a paper written by F.Zaruba and L.Benini.
 
-.. figure:: ../images/ariane_overview.png
+.. figure:: ../images/ariane_overview.drawio.png
    :name: CVA6 Architecute
    :align: center
    :alt:

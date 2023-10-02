@@ -10,5 +10,5 @@ Scope and Purpose
 The purpose of the core is to run a full OS at reasonable speed and IPC. To achieve the necessary speed the core features a 6-stage pipelined design. In order to increase the IPC the CPU features a scoreboard which should hide latency to the data RAM (cache) by issuing data-independent instructions.
 The instruction RAM has (or L1 instruction cache) an access latency of 1 cycle on a hit, while accesses to the data RAM (or L1 data cache) have a longer latency of 3 cycles on a hit.
 
-.. image:: _static/ariane_overview.png
+.. image:: _static/ariane_overview.drawio.png
     :alt: Ariane Block Diagram
