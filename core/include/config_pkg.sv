@@ -102,59 +102,7 @@ package config_pkg;
       logic [NrMaxRules-1:0][63:0]      CachedRegionLength;
     } cva6_cfg_t;
 
-    localparam cva6_cfg_t cva6_cfg_default = '{
-      NrCommitPorts: unsigned'(1),
-      AxiAddrWidth: unsigned'(64),
-      AxiDataWidth: unsigned'(64),
-      AxiIdWidth: unsigned'(4),
-      AxiUserWidth: unsigned'(32),
-      NrLoadBufEntries: unsigned'(2),
-      FpuEn: bit'(0),
-      XF16: bit'(0),
-      XF16ALT: bit'(0),
-      XF8: bit'(0),
-      RVA: bit'(0),
-      RVV: bit'(0),
-      RVC: bit'(1),
-      RVZCB: bit'(1),
-      XFVec: bit'(0),
-      CvxifEn: bit'(1),
-      ZiCondExtEn: bit'(0),
-      // Extended
-      RVF: bit'(0),
-      RVD: bit'(0),
-      FpPresent: bit'(0),
-      NSX: bit'(0),
-      FLen: unsigned'(0),
-      RVFVec: bit'(0),
-      XF16Vec: bit'(0),
-      XF16ALTVec: bit'(0),
-      XF8Vec: bit'(0),
-      NrRgprPorts: unsigned'(0),
-      NrWbPorts: unsigned'(0),
-      EnableAccelerator: bit'(0),
-      HaltAddress: 64'h800,
-      ExceptionAddress: 64'h808,
-      RASDepth:      2,
-      BTBEntries:    32,
-      BHTEntries:    128,
-      DmBaseAddress: 64'h0,
-      NrPMPEntries:  8,
-      NOCType:       NOC_TYPE_AXI4_ATOP,
-      // idempotent region
-      NrNonIdempotentRules:  unsigned'(2),
-      NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
-      NonIdempotentLength:   1024'({64'b0, 64'b0}),
-      NrExecuteRegionRules:  unsigned'(3),
-      //                      DRAM,          Boot ROM,   Debug Module
-      ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
-      ExecuteRegionLength:   1024'({64'h40000000,  64'h10000,  64'h1000}),
-      // cached region
-      NrCachedRegionRules:   unsigned'(1),
-      CachedRegionAddrBase:  1024'({64'h8000_0000}),
-      CachedRegionLength:    1024'({64'h40000000})
-    };
-
+  
     /// Empty configuration to sanity check proper parameter passing. Whenever
     /// you develop a module that resides within the core, assign this constant.
     localparam cva6_cfg_t cva6_cfg_empty = '0;
