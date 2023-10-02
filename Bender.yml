@@ -83,12 +83,6 @@ sources:
       - core/include/acc_pkg.sv
 
       # for all the below files use Flist.cva6 as baseline and also look at Makefile pd/synth
-
-      # FPGA support keep vendoring here because too old
-      # - vendor/pulp-platform/fpga-support/rtl/SyncDpRam.sv
-      # - vendor/pulp-platform/fpga-support/rtl/AsyncDpRam.sv
-      # - vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv
-
       # CVXIF
       - core/include/instr_tracer_pkg.sv
       - core/include/cvxif_pkg.sv
@@ -135,7 +129,6 @@ sources:
       #     - vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
       # Top-level source files (not necessarily instantiated at the top of the cva6).
-      # - corev_apu/src/ariane.sv
       - core/cva6.sv
       - core/alu.sv
       # Note: depends on fpnew_pkg, above
@@ -150,7 +143,6 @@ sources:
       - core/instr_realign.sv
       - core/id_stage.sv
       - core/issue_read_operands.sv
-      - core/acc_dispatcher.sv
       - core/issue_stage.sv
       - core/load_unit.sv
       - core/load_store_unit.sv
@@ -227,8 +219,6 @@ sources:
           - core/include/instr_tracer_pkg.sv
           - common/local/util/instr_tracer.sv
           - common/local/util/instr_tracer_if.sv
-          # - common/local/util/instr_trace_item.svh
-          # - common/local/util/ex_trace_item.svh
 
     # TODO target define FPGA target + verification etc
     #   - target: test
