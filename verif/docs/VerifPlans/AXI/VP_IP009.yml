@@ -1,0 +1,33 @@
+!Feature
+next_elt_id: 2
+name: Error Injection
+id: 9
+display_order: 9
+subfeatures: !!omap
+- 000_Protocol errors: !Subfeature
+    name: 000_Protocol errors
+    tag: VP_AXI_F009_S000
+    next_elt_id: 4
+    display_order: 0
+    items: !!omap
+    - '003': !VerifItem
+        name: '003'
+        tag: VP_AXI_F009_S000_I003
+        description: Injection error by randomizing resp signal.
+        reqt_doc: ''
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Randomize xRESP signals. The CVA6 shouldn’t crash if RESP signal
+          indicate an error in a transaction.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

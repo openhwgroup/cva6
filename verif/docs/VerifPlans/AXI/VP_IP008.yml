@@ -61,10 +61,10 @@ subfeatures: !!omap
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: "Ensure that no errors are encountered as the testbench injects\
-          \ random Ready-to-Valid delays.  There are two cases to consider:\n\nARREADY\
-          \ is asserted on or after same cycle as ARVALID\nARREADY is asserted and\
-          \ deasserted during an interval when ARVALID is de-asserted"
+        verif_goals: "Ensure that no errors are encountered as the testbench injects
+          random Ready-to-Valid delays.  There are two cases to consider:\n\nARREADY
+          is asserted on or after same cycle as ARVALID\nARREADY is asserted and deasserted
+          during an interval when ARVALID is de-asserted"
         pfc: 0
         test_type: 3
         cov_method: 1
@@ -81,13 +81,13 @@ subfeatures: !!omap
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: "Ensure that no errors are encountered as the testbench injects\
-          \ random Ready-to-Valid delays. There are four cases to consider:  \n  \
-          \                                      \nAWREADY is asserted on or after\
-          \ same cycle as AWVALID and WVALID is de-asserted\nAWREADY is asserted on\
-          \ or after same cycle as WVALID  and AWVALID is de-asserted\nAWREADY is\
-          \ asserted on or after same cycle as AWVALID and WVALID\nAWREADY is asserted\
-          \ and deasserted during an interval when AWVALID and WVALID is de-asserted"
+        verif_goals: "Ensure that no errors are encountered as the testbench injects
+          random Ready-to-Valid delays. There are four cases to consider:  \n    \
+          \                                    \nAWREADY is asserted on or after same
+          cycle as AWVALID and WVALID is de-asserted\nAWREADY is asserted on or after
+          same cycle as WVALID  and AWVALID is de-asserted\nAWREADY is asserted on
+          or after same cycle as AWVALID and WVALID\nAWREADY is asserted and deasserted
+          during an interval when AWVALID and WVALID is de-asserted"
         pfc: 0
         test_type: 3
         cov_method: 1
@@ -104,13 +104,13 @@ subfeatures: !!omap
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: "Ensure that no errors are encountered as the testbench injects\
-          \ random Ready-to-Valid delays. There are four cases to consider:  \n  \
-          \                                              \nWREADY is asserted on or\
-          \ after same cycle as AWVALID and WVALID is de-asserted\nWREADY is asserted\
-          \ on or after same cycle as WVALID  and AWVALID is de-asserted\nWREADY is\
-          \ asserted on or after same cycle as AWVALID and WVALID\nWREADY is asserted\
-          \ and deasserted during an interval when AWVALID and WVALID is de-asserted"
+        verif_goals: "Ensure that no errors are encountered as the testbench injects
+          random Ready-to-Valid delays. There are four cases to consider:  \n    \
+          \                                            \nWREADY is asserted on or
+          after same cycle as AWVALID and WVALID is de-asserted\nWREADY is asserted
+          on or after same cycle as WVALID  and AWVALID is de-asserted\nWREADY is
+          asserted on or after same cycle as AWVALID and WVALID\nWREADY is asserted
+          and deasserted during an interval when AWVALID and WVALID is de-asserted"
         pfc: 0
         test_type: 3
         cov_method: 1
@@ -135,7 +135,7 @@ subfeatures: !!omap
         cores: 56
         coverage_loc: ''
         comments: ''
-vptool_gitrev: '$Id: 03047594b4818fcbd06a40669e637081ff1d4fb9 $'
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
 io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
 config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
 ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
