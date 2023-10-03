@@ -24,3 +24,17 @@ CUS_S_ADD,
 //Zicond extension
 CZERO_EQZ,
 CZERO_NEZ,
+
+//Zcb extension
+C_LBU,
+C_LH,
+C_LHU,
+C_SB,
+C_SH,
+C_MUL,
+C_ZEXT_B,
+C_SEXT_B,
+C_ZEXT_H,
+C_SEXT_H,
+C_ZEXT_W,
+C_NOT,

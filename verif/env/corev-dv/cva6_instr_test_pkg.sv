@@ -26,7 +26,9 @@ package cva6_instr_test_pkg;
    `include "cva6_instr_hazard_test.sv"
    `include "cvxif_custom_instr.sv"
    `include "riscv_zicond_instr.sv"
+   `include "riscv_zcb_instr.sv"
    `include "rv32x_instr.sv"
    `include "rv32zicond_instr.sv"
+   `include "rv32zcb_instr.sv"
    
 endpackage : cva6_instr_test_pkg;
