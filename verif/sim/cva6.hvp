@@ -1432,8 +1432,11 @@ plan "CVA6 Plan";
                     endmeasure
                 endfeature
                 feature Assertions;
-                    measure Group Measure_1;
-                        source = "property: **.axi_*_assert.*";
+                    measure Assert axi_protocol_assertion;
+                        source = "property: **.axi_ar_assert.*", "property: **.axi_aw_assert.*", "property: **.axi_b_assert.*", "property: **.axi_r_assert.*", "tree: **.axi_w_assert.*";
+                    endmeasure
+                    measure Assert cva6_axi_assertions;
+                        source = "property: **.cva6_axi_assert.*";
                     endmeasure
                 endfeature
             endfeature
