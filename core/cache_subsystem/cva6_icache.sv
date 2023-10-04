@@ -76,6 +76,7 @@ module cva6_icache
       cmp_en_d,
       cmp_en_q;  // enable tag comparison in next cycle. used to cut long path due to NC signal.
   logic flush_d, flush_q;  // used to register and signal pending flushes
+  logic outst_miss_d, outst_miss_q;  // tracks whether there are any outstanding misses
 
   // replacement strategy
   logic                                update_lfsr;  // shift the LFSR
@@ -187,6 +188,7 @@ module cva6_icache
     cache_wren = 1'b0;
     inv_en = 1'b0;
     flush_d = flush_q | flush_i;  // register incoming flush
+    outst_miss_d = outst_miss_q;
 
     // interfaces
     dreq_o.ready = 1'b0;
@@ -203,6 +205,11 @@ module cva6_icache
     // do not trigger a cache readout at the same time...
     if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_INV_REQ) begin
       inv_en = 1'b1;
+    end
+
+    // kill an outstanding miss
+    if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK && outst_miss_q) begin
+      outst_miss_d = 1'b0;
     end
 
     unique case (state_q)
@@ -228,7 +235,7 @@ module cva6_icache
           state_d = FLUSH;
           // wait for incoming requests
         end else begin
-          // mem requests are for sure invals here
+          // mem requests are for sure invals here or killed misses here
           if (!mem_rtrn_vld_i) begin
             dreq_o.ready = 1'b1;
             // we have a new request
@@ -266,8 +273,8 @@ module cva6_icache
 
             // we can accept another request
             // and stay here, but only if no inval is coming in
-            // note: we are not expecting ifill return packets here...
-            if (!mem_rtrn_vld_i) begin
+            // note: ifill return packets may arrive here only if killed...
+            if (!mem_rtrn_vld_i || (mem_rtrn_i.rtype == ICACHE_IFILL_ACK)) begin
               dreq_o.ready = 1'b1;
               if (dreq_i.req) begin
                 state_d = READ;
@@ -302,19 +309,25 @@ module cva6_icache
       // returns. do not write to memory
       // if the nc bit is set.
       MISS: begin
-        // note: this is mutually exclusive with ICACHE_INV_REQ,
-        // so we do not have to check for invals here
-        if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
-          state_d = IDLE;
-          // only return data if request is not being killed
-          if (!(dreq_i.kill_s2 || flush_d)) begin
-            dreq_o.valid = 1'b1;
-            // only write to cache if this address is cacheable
-            cache_wren   = ~paddr_is_nc;
-          end
+        // if there is an outstanding miss we must wait that it is discarded
+        if (!outst_miss_q) begin
+          // note: this is mutually exclusive with ICACHE_INV_REQ,
+          // so we do not have to check for invals here
+          if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
+            state_d = IDLE;
+            // only return data if request is not being killed
+            if (!(dreq_i.kill_s2 || flush_d)) begin
+              dreq_o.valid = 1'b1;
+              // only write to cache if this address is cacheable
+              cache_wren   = ~paddr_is_nc;
+            end
           // bail out if this request is being killed
-        end else if (dreq_i.kill_s2 || flush_d) begin
-          state_d = KILL_MISS;
+          end else if (dreq_i.kill_s2 || flush_d) begin
+            state_d = IDLE;
+            // track if there is an outstanding miss,
+            // the next response from memory must be discarded
+            outst_miss_d = 1'b1;
+          end
         end
       end
       //////////////////////////////////
@@ -324,15 +337,6 @@ module cva6_icache
       KILL_ATRANS: begin
         areq_o.fetch_req = '1;
         if (areq_i.fetch_valid) begin
-          state_d = IDLE;
-        end
-      end
-      //////////////////////////////////
-      // killed miss,
-      // wait until memory responds and
-      // go back to idle
-      KILL_MISS: begin
-        if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
           state_d = IDLE;
         end
       end
@@ -500,6 +504,7 @@ module cva6_icache
       cl_offset_q   <= '0;
       repl_way_oh_q <= '0;
       inv_q         <= '0;
+      outst_miss_q  <= '0;
     end else begin
       cl_tag_q      <= cl_tag_d;
       flush_cnt_q   <= flush_cnt_d;
@@ -511,6 +516,7 @@ module cva6_icache
       cl_offset_q   <= cl_offset_d;
       repl_way_oh_q <= repl_way_oh_d;
       inv_q         <= inv_d;
+      outst_miss_q  <= outst_miss_d;
     end
   end
 
