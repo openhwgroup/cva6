@@ -731,9 +731,9 @@ plan "CVA6 Plan";
                 measure Group C_NOT;
                 endmeasure
             endfeature
-            feature "Instructions sequences";
+            feature "Instructions execution sequences";
                 description = "Instructions sequences";
-                measure Group Sequential;
+                measure Group sequences;
                     source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rev32_seq_cg";
                 endmeasure
             endfeature
