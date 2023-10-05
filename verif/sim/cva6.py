@@ -18,6 +18,7 @@ Regression script for RISC-V random instruction generator
 
 import argparse
 import os
+import random
 import re
 import sys
 import logging
@@ -35,6 +36,38 @@ from dv.scripts.instr_trace_compare import *
 from types import SimpleNamespace
 
 LOGGER = logging.getLogger()
+
+class SeedGen:
+  '''An object that will generate a pseudo-random seed for test iterations'''
+  def __init__(self, start_seed, fixed_seed, seed_yaml):
+    # These checks are performed with proper error messages at argument parsing
+    # time, but it can't hurt to do a belt-and-braces check here too.
+    assert fixed_seed is None or start_seed is None
+
+    self.fixed_seed = fixed_seed
+    self.start_seed = start_seed
+    self.rerun_seed = {} if seed_yaml is None else read_yaml(seed_yaml)
+
+  def get(self, test_id, test_iter):
+    '''Get the seed to use for the given test and iteration'''
+
+    if test_id in self.rerun_seed:
+      # Note that test_id includes the iteration index (well, the batch index,
+      # at any rate), so this makes sense even if test_iter > 0.
+      return self.rerun_seed[test_id]
+
+    if self.fixed_seed is not None:
+      # Checked at argument parsing time
+      assert test_iter == 0
+      return self.fixed_seed
+
+    if self.start_seed is not None:
+      return self.start_seed + test_iter
+
+    # If the user didn't specify seeds in some way, we generate a random seed
+    # every time
+    return random.getrandbits(31)
+
 
 def get_generator_cmd(simulator, simulator_yaml, cov, exp, debug_cmd):
   """ Setup the compile and simulation command for the generator
@@ -197,7 +230,7 @@ def run_csr_test(cmd_list, cwd, csr_file, isa, iterations, lsf_cmd,
     run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
 
 
-def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
+def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_gen, csr_file,
                 isa, end_signature_addr, lsf_cmd, timeout_s, log_suffix,
                 batch_size, output_dir, verbose, check_return_code, debug_cmd):
   """Run  the instruction generator
@@ -207,8 +240,7 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
     test_list             : List of assembly programs to be compiled
     cwd                   : Filesystem path to RISCV-DV repo
     sim_opts              : Simulation options for the generator
-    seed_yaml             : Seed specification from a prior regression
-    seed                  : Seed to the instruction generator
+    seed_gen              : A SeedGen seed generator
     csr_file              : YAML file containing description of all CSRs
     isa                   : Processor supported ISA subset
     end_signature_addr    : Address that tests will write pass/fail signature to at end of test
@@ -224,9 +256,7 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
   sim_cmd = re.sub("<out>", os.path.abspath(output_dir), sim_cmd)
   sim_cmd = re.sub("<cwd>", cwd, sim_cmd)
   sim_cmd = re.sub("<sim_opts>", sim_opts, sim_cmd)
-  rerun_seed = {}
-  if seed_yaml:
-    rerun_seed = read_yaml(seed_yaml)
+
   logging.info("Running RISC-V instruction generator")
   sim_seed = {}
   for test in test_list:
@@ -244,10 +274,7 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
         logging.info("Running %s with %0d batches" % (test['test'], batch_cnt))
         for i in range(0, batch_cnt):
           test_id = '%0s_%0d' % (test['test'], i)
-          if test_id in rerun_seed:
-            rand_seed = rerun_seed[test_id]
-          else:
-            rand_seed = get_seed(seed)
+          rand_seed = seed_gen.get(test_id, i * batch_cnt)
           if i < batch_cnt - 1:
             test_cnt = batch_size
           else:
@@ -283,17 +310,15 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
                      debug_cmd = debug_cmd)
 
 
-def gen(test_list, cfg, output_dir, cwd):
+def gen(test_list, argv, output_dir, cwd):
   """Run the instruction generator
 
   Args:
     test_list             : List of assembly programs to be compiled
-    cfg                   : Loaded configuration dictionary.
+    argv                  : Configuration arguments
     output_dir            : Output directory of the ELF files
     cwd                   : Filesystem path to RISCV-DV repo
   """
-  # Convert key dictionary to argv variable
-  argv= SimpleNamespace(**cfg)
 
   check_return_code = True
   if argv.simulator == "ius":
@@ -317,7 +342,8 @@ def gen(test_list, cfg, output_dir, cwd):
                argv.cmp_opts, output_dir, argv.debug, argv.lsf_cmd)
   # Run the instruction generator
   if not argv.co:
-    do_simulate(sim_cmd, test_list, cwd, argv.sim_opts, argv.seed_yaml, argv.seed, argv.csr_yaml,
+    seed_gen = SeedGen(argv.start_seed, argv.seed, argv.seed_yaml)
+    do_simulate(sim_cmd, test_list, cwd, argv.sim_opts, seed_gen, argv.csr_yaml,
                 argv.isa, argv.end_signature_addr, argv.lsf_cmd, argv.gen_timeout, argv.log_suffix,
                 argv.batch_size, output_dir, argv.verbose, check_return_code, argv.debug)
 
@@ -727,7 +753,20 @@ def save_regr_report(report):
   logging.info("ISS regression report is saved to %s" % report)
 
 
-def setup_parser():
+def read_seed(arg):
+    '''Read --seed or --seed_start'''
+    try:
+        seed = int(arg)
+        if seed < 0:
+            raise ValueError('bad seed')
+        return seed
+
+    except ValueError:
+        raise argparse.ArgumentTypeError('Bad seed ({}): '
+                                         'must be a non-negative integer.'
+                                         .format(arg))
+
+def parse_args(cwd):
   """Create a command line parser.
 
   Returns: The created parser.
@@ -744,8 +783,6 @@ def setup_parser():
                       help="Regression testlist", dest="testlist")
   parser.add_argument("-tn", "--test", type=str, default="all",
                       help="Test name, 'all' means all tests in the list", dest="test")
-  parser.add_argument("--seed", type=int, default=-1,
-                      help="Randomization seed, default -1 means random seed")
   parser.add_argument("-i", "--iterations", type=int, default=0,
                       help="Override the iteration count in the test list", dest="iterations")
   parser.add_argument("-si", "--simulator", type=str, default="vcs",
@@ -795,9 +832,6 @@ def setup_parser():
                       help="RTL simulator setting YAML")
   parser.add_argument("--csr_yaml", type=str, default="",
                       help="CSR description file")
-  parser.add_argument("--seed_yaml", type=str, default="",
-                      help="Rerun the generator with the seed specification \
-                            from a prior regression")
   parser.add_argument("-ct", "--custom_target", type=str, default="",
                       help="Directory name of the custom target")
   parser.add_argument("-cs", "--core_setting_dir", type=str, default="",
@@ -838,8 +872,47 @@ def setup_parser():
                       help="Run test with a specific seed")
   parser.add_argument("--isa_extension", type=str, default="",
                       help="Choose additional z, s, x extensions")
-  return parser
 
+  rsg = parser.add_argument_group('Random seeds',
+                                  'To control random seeds, use at most one '
+                                  'of the --start_seed, --seed or --seed_yaml '
+                                  'arguments. Since the latter two only give '
+                                  'a single seed for each test, they imply '
+                                  '--iterations=1.')
+
+  rsg.add_argument("--start_seed", type=read_seed,
+                   help=("Randomization seed to use for first iteration of "
+                         "each test. Subsequent iterations use seeds "
+                         "counting up from there. Cannot be used with "
+                         "--seed or --seed_yaml."))
+  rsg.add_argument("--seed", type=read_seed,
+                   help=("Randomization seed to use for each test. "
+                         "Implies --iterations=1. Cannot be used with "
+                         "--start_seed or --seed_yaml."))
+  rsg.add_argument("--seed_yaml", type=str,
+                   help=("Rerun the generator with the seed specification "
+                         "from a prior regression. Implies --iterations=1. "
+                         "Cannot be used with --start_seed or --seed."))
+
+  args = parser.parse_args()
+
+  if args.seed is not None and args.start_seed is not None:
+    logging.error('--start_seed and --seed are mutually exclusive.')
+    sys.exit(RET_FAIL)
+
+  if args.seed is not None:
+    if args.iterations == 0:
+      args.iterations = 1
+    elif args.iterations > 1:
+      logging.error('--seed is incompatible with setting --iterations '
+                    'greater than 1.')
+      sys.exit(RET_FAIL)
+
+  # We've parsed all the arguments from the command line; default values
+  # can be set in the config file. Read that here.
+  load_config(args, cwd)
+
+  return args
 
 def load_config(args, cwd):
   """
@@ -948,19 +1021,19 @@ def load_config(args, cwd):
         sys.exit("mabi and isa must be specified for custom target %0s" % args.custom_target)
     if not args.testlist:
       args.testlist = args.custom_target + "/testlist.yaml"
-  # Create loaded configuration dictionary.
-  cfg = vars(args)
-  return cfg
+
 
 
 def main():
   """This is the main entry point."""
   try:
-    parser = setup_parser()
-    args = parser.parse_args()
     global issrun_opts
     global test_iteration
     global log_format
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
+    os.environ["CVA6_DV_ROOT"]  = cwd + "/../env/corev-dv"
+    args = parse_args(cwd)
     if args.axi_active == "yes":
       args.issrun_opts = args.issrun_opts + " +uvm_set_config_int=*uvm_test_top,force_axi_mode,1"
     elif args.axi_active == "no":
@@ -985,9 +1058,6 @@ def main():
     isspostrun_opts = "\""+args.isspostrun_opts+"\""
     global isscomp_opts
     isscomp_opts = "\""+args.isscomp_opts+"\""
-    cwd = os.path.dirname(os.path.realpath(__file__))
-    os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
-    os.environ["CVA6_DV_ROOT"]  = cwd + "/../env/corev-dv"
     setup_logging(args.verbose)
     logg = logging.getLogger()
     #Check gcc version
@@ -1013,8 +1083,6 @@ def main():
     fh.setFormatter(formatter)
     logg.addHandler(fh)
 
-    # Load configuration from the command line and the configuration file.
-    cfg = load_config(args, cwd)
     # Create output directory
     output_dir = create_output(args.o, args.noclean, cwd+"/out_")
 
@@ -1097,7 +1165,7 @@ def main():
       if test_executed ==0:
         if not args.co:
           process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
-          logging.info('CVA6 Configuration is %s'% cfg["hwconfig_opts"])
+          logging.info('CVA6 Configuration is %s'% args.hwconfig_opts)
           for entry in list(matched_list):
             yaml_needs = entry["needs"] if "needs" in entry else []
             if yaml_needs:
@@ -1105,7 +1173,7 @@ def main():
               for i in range(len(yaml_needs)):
                 needs.update(yaml_needs[i])
               for keys in needs.keys():
-                if cfg["hwconfig_opts"][keys] != needs[keys]:
+                if args.hwconfig_opts[keys] != needs[keys]:
                   logging.info('Removing test %s CVA6 configuration can not run it' % entry['test'])
                   matched_list.remove(entry)
                   break
@@ -1195,7 +1263,7 @@ def main():
                   sys.exit(RET_FAIL)
 
         # Run remaining tests using the instruction generator
-        gen(matched_list, cfg, output_dir, cwd)
+        gen(matched_list, args, output_dir, cwd)
 
       if not args.co:
         # Compile the assembly program to ELF, convert to plain binary
