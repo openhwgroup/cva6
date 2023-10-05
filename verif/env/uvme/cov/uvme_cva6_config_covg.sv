@@ -1,8 +1,8 @@
 //
 // Copyright 2020 OpenHW Group
-// Copyright 2021 Thales DIS Design Services SAS
+// Copyright 2023 Thales DIS
 //
-// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+// Licensed under the Solderpad Hardware License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
