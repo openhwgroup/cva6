@@ -43,3 +43,4 @@ if ! [ -d verif/sim/dv ]; then
   cd verif/sim/dv; pip3 install -r requirements.txt; cd -
 fi
 
+touch verif/sim/dv/__init__.py
