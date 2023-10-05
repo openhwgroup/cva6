@@ -30,7 +30,7 @@ privileged_mode_t supported_privileged_mode[] = {MACHINE_MODE};
 riscv_instr_name_t unsupported_instr[];
 
 // ISA supported by the processor
-riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV32C, RV32X};
+riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV32C, RV32B, RV32X};
 
 // Interrupt mode support
 mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
@@ -41,6 +41,9 @@ int max_interrupt_vector_num = 16;
 
 // Physical memory protection support
 bit support_pmp = 0;
+
+// Enhanced physical memory protection support
+bit support_epmp = 0;
 
 // Debug mode support
 bit support_debug_mode = 0;
@@ -54,11 +57,35 @@ bit support_sfence = 0;
 // Support unaligned load/store
 bit support_unaligned_load_store = 1'b1;
 
+// GPR setting
+parameter int NUM_FLOAT_GPR = 32;
+parameter int NUM_GPR = 32;
+parameter int NUM_VEC_GPR = 32;
+
+// ----------------------------------------------------------------------------
+// Vector extension configuration
+// ----------------------------------------------------------------------------
+
 // Parameter for vector extension
 parameter int VECTOR_EXTENSION_ENABLE = 0;
+
 parameter int VLEN = 512;
-parameter int ELEN = 64;
-parameter int SLEN = 64;
+
+// Maximum size of a single vector element
+parameter int ELEN = 32;
+
+// Minimum size of a sub-element, which must be at most 8-bits.
+parameter int SELEN = 8;
+
+// Maximum size of a single vector element (encoded in vsew format)
+parameter int VELEN = int'($ln(ELEN)/$ln(2)) - 3;
+
+// Maxium LMUL supported by the core
+parameter int MAX_LMUL = 8;
+
+// ----------------------------------------------------------------------------
+// Multi-harts configuration
+// ----------------------------------------------------------------------------
 
 // Number of harts
 parameter int NUM_HARTS = 1;
@@ -74,20 +101,51 @@ privileged_reg_t implemented_csr[] = {
 const privileged_reg_t implemented_csr[] = {
 `endif
     // Machine mode mode CSR
-    MVENDORID,  // Vendor ID
-    MARCHID,    // Architecture ID
-    MIMPID,     // Implementation ID
-    MHARTID,    // Hardware thread ID
-    MSTATUS,    // Machine status
-    MISA,       // ISA and extensions
-    MIE,        // Machine interrupt-enable register
-    MTVEC,      // Machine trap-handler base address
-    MCOUNTEREN, // Machine counter enable
-    MSCRATCH,   // Scratch register for machine trap handlers
-    MEPC,       // Machine exception program counter
-    MCAUSE,     // Machine trap cause
-    MTVAL,      // Machine bad address or instruction
-    MIP         // Machine interrupt pending
+    MVENDORID,        // Vendor ID
+    MSTATUS,          // Machine status
+    MSTATUSH,         // Additional machine status register, RV32 only
+    MISA,             // ISA and extensions
+    MIE,              // Machine interrupt-enable register
+    MTVEC,            // Machine trap-handler base address
+    MSCRATCH,         // Scratch register for machine trap handlers
+    MEPC,             // Machine exception program counter
+    MCAUSE,           // Machine trap cause
+    MTVAL,            // Machine bad address or instruction
+    MIP,              // Machine interrupt pending
+    MCYCLE,           // Machine cycle counter
+    MCYCLEH,          // Upper 32 bits of MCYCLE, RV32I only
+    MINSTRETH,        // Upper 32 bits of MINSTRET, RV32I only
+    MINSTRET,         // Machine instructions-retired counter
+    // Machine Memory Protection
+    PMPCFG0,          // Physical memory protection configuration
+    PMPCFG1,          // Physical memory protection configuration, RV32 only
+    PMPCFG2,          // Physical memory protection configuration
+    PMPCFG3,          // Physical memory protection configuration, RV32 only
+    PMPADDR0,         // Physical memory protection address register
+    PMPADDR1,         // Physical memory protection address register
+    PMPADDR2,         // Physical memory protection address register
+    PMPADDR3,         // Physical memory protection address register
+    PMPADDR4,         // Physical memory protection address register
+    PMPADDR5,         // Physical memory protection address register
+    PMPADDR6,         // Physical memory protection address register
+    PMPADDR7,         // Physical memory protection address register
+    PMPADDR8,         // Physical memory protection address register
+    PMPADDR9,         // Physical memory protection address register
+    PMPADDR10,        // Physical memory protection address register
+    PMPADDR11,        // Physical memory protection address register
+    PMPADDR12,        // Physical memory protection address register
+    PMPADDR13,        // Physical memory protection address register
+    PMPADDR14,        // Physical memory protection address register
+    PMPADDR15,        // Physical memory protection address register
+    // Unprivileged Counter/Timers
+    CYCLE,            // Cycle counter for RDCYCLE instruction
+    INSTRET,          // Instructions-retired counter for RDINSTRET instruction
+    CYCLEH,           // Upper 32 bits of CYCLE, RV32I only
+    INSTRETH        // Upper 32 bits of INSTRET, RV32I only
+};
+
+// Implementation-specific custom CSRs
+bit [11:0] custom_csr[] = {
 };
 
 // ----------------------------------------------------------------------------
@@ -99,14 +157,8 @@ interrupt_cause_t implemented_interrupt[] = {
 `else
 const interrupt_cause_t implemented_interrupt[] = {
 `endif
-    U_SOFTWARE_INTR,
-    S_SOFTWARE_INTR,
     M_SOFTWARE_INTR,
-    U_TIMER_INTR,
-    S_TIMER_INTR,
     M_TIMER_INTR,
-    U_EXTERNAL_INTR,
-    S_EXTERNAL_INTR,
     M_EXTERNAL_INTR
 };
 
@@ -123,8 +175,6 @@ const exception_cause_t implemented_exception[] = {
     LOAD_ACCESS_FAULT,
     STORE_AMO_ADDRESS_MISALIGNED,
     STORE_AMO_ACCESS_FAULT,
-    ECALL_UMODE,
-    ECALL_SMODE,
     ECALL_MMODE,
     INSTRUCTION_PAGE_FAULT,
     LOAD_PAGE_FAULT,
