@@ -110,10 +110,6 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
       // Program end
       gen_program_end(hart);
       if (!cfg_cva6.bare_program_mode) begin
-        if (!riscv_instr_pkg::support_pmp) begin
-          // Privileged mode switch routine
-          gen_privileged_mode_switch_routine(hart);
-        end
         // Generate debug rom section
         if (riscv_instr_pkg::support_debug_mode) begin
           gen_debug_rom(hart);
