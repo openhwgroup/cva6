@@ -102,7 +102,7 @@ If CV-X-IF is enabled and configured with 3 source registers,
 a third read port is added to the CVA6 general purpose register file.
 
 Description of interface connections between CVA6 and Coprocessor
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 In CVA6 execute stage, there is a new functional unit dedicated to drive the CV-X-IF interfaces.
 Here is *how* and *to what* CV-X-IF interfaces are connected to the CVA6.
 
@@ -162,7 +162,7 @@ Here is *how* and *to what* CV-X-IF interfaces are connected to the CVA6.
         | information held in these three registers.
 
 Coprocessor recommendations for use with CVA6's CV-X-IF
------------------------------------------------------
+-------------------------------------------------------
 
 CVA6 supports all coprocessors supporting the CV-X-IF specification with the exception of :
 

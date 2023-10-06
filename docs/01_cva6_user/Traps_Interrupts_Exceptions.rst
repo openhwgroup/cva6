@@ -30,7 +30,7 @@ Raising Traps
 =============
 When a trap is raised, the behaviour of the CVA6 core depends on
 several CSRs and some CSRs are modified. The CSR description is available
-in :doc:`CV32A6_Control_Status_Registers.rst`.
+in :doc:`CV32A6_Control_Status_Registers`.
 
 Configuration CSRs
 ------------------
