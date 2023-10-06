@@ -415,7 +415,7 @@ To activate the different cache system, compile your code with the macro `DCACHE
 
 ## Planned Improvements
 
-Go to the cva6 Kanban Board which also loosely tracks planned improvements.
+Go to the CVA6 Kanban Board which also loosely tracks planned improvements.
 
 
 ## Going Beyond
