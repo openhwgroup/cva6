@@ -415,89 +415,10 @@ To activate the different cache system, compile your code with the macro `DCACHE
 
 ## Planned Improvements
 
-Check-out the issue tab which also loosely tracks planned improvements.
+Go to the cva6 Kanban Board which also loosely tracks planned improvements.
 
 
 ## Going Beyond
-
-The core has been developed with a full licensed version of QuestaSim. If you happen to have this simulator available yourself here is how you could run the core with it.
-
-To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the `tmp/risc-tests/build/isa` folder:
-```
-make sim elf-bin=path/to/rv64ui-p-sraw
-```
-
-If you call `sim` with `batch-mode=1` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
-
-### CI Testsuites and Randomized Constrained Testing with Torture
-
-We provide two CI configuration files for Travis CI and GitLab CI that run the RISCV assembly tests, the RISCV benchmarks and a randomized RISCV Torture test. The difference between the two is that Travis CI runs these tests only on Verilator, whereas GitLab CI runs the same tests on QuestaSim and Verilator.
-
-If you would like to run the CI test suites locally on your machine, follow any of the two scripts `ci/travis-ci-emul.sh` and `ci/travis-ci-emul.sh` (depending on whether you have QuestaSim or not). In particular, you have to get the required packages for your system, the paths in `ci/path-setup.sh` to match your setup, and run the installation and build scripts prior to running any of the tests suites.
-
-Once everything is set up and installed, you can run the tests suites as follows (using Verilator):
-
-```
-make verilate
-make run-asm-tests-verilator
-make run-benchmarks-verilator
-```
-
-In order to run randomized Torture tests, you first have to generate the randomized program prior to running the simulation:
-
-```
-./ci/get-torture.sh
-make torture-gen
-make torture-rtest-verilator
-```
-This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
-
-CVA6 can dump a trace-log in Questa which can be easily diffed against Spike with commit log enabled. In `include/ariane_pkg.sv` set:
-
-```verilog
-localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
-```
-This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
-This will dump a file called `trace_hart_*_*_commit.log`.
-
-This can be helpful for debugging long traces (e.g.: torture traces). To compile Spike with the commit log feature do:
-
-```
-apt-get install device-tree-compiler
-mkdir build
-cd build
-../configure --prefix=$RISCV --with-fesvr=$RISCV --enable-commitlog
-make
-make install
-```
-
-### Memory Preloading
-
-In standard configuration the debug module will take care of loading the memory content. It will also handle communication with `riscv-fesvr`.
-Depending on the scenario this might not be diserable (e.g.: preloading of a large elf or linux boot in simulation). You can use the preload elf flag to specify the path
-to a binary which will be preloaded.
-
-> You will loose all `riscv-fesvr` communcation like sytemcalls and eoc capabilities.
-
-```
-make sim preload=elf
-```
-
-<!-- ### Tandem Verification with Spike
-
-```
-$ make sim preload=/home/zarubaf/Downloads/riscv-tests/build/benchmarks/dhrystone.riscv tandem=1
-```
-There are a couple of caveats:
-
-- Memories should be initialized to zero. Random or `x` are not supported.
-- UART needs to be replaced by a mock UART which exhibits always ready behavior.
-- There is no end of test signaling at the moment. You are supposed to kill the simulation when sufficiently long run.
-- You need to use the modified Spike version in the `tb` subdirectory.
-- The RTC clock needs to be sufficiently slow (e.g.: 32 kHz seems to work). This is needed as otherwise there will be a difference when reading the `mtime` register as the RTL simulation takes more time to propagate the information through the system.
-- All traps except memory traps need to zero the `tval` register. There is a switch you can set in `ariane_pkg`.
-- `mcycle` needs to be incremented with `instret` to be similar to the performance counters found in Spike (IPC = 1)
- -->
 
 ### Re-generating the Bootcode (ZSBL)
 
