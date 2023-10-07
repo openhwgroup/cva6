@@ -216,15 +216,17 @@ module load_unit import ariane_pkg::*; #(
                         if (!req_port_i.data_gnt) begin
                             state_d = WAIT_GNT;
                         end else begin
-                            if (dtlb_hit_i && !stall_ni) begin
-                                // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                                state_d = SEND_TAG;
-                                pop_ld_o = 1'b1;
-                            // translation valid but this is to NC and the WB is not yet empty.
-                            end else if (dtlb_hit_i && stall_ni) begin
-                                state_d = ABORT_TRANSACTION_NI;
-                            end else begin // TLB miss
+                            if (ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
                                 state_d = ABORT_TRANSACTION;
+                            end else begin
+                                if (!stall_ni) begin
+                                    // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                                    state_d = SEND_TAG;
+                                    pop_ld_o = 1'b1;
+                                    // translation valid but this is to NC and the WB is not yet empty.
+                                end else begin
+                                   state_d = ABORT_TRANSACTION_NI;
+                                end
                             end
                         end
                     end else begin
@@ -281,16 +283,19 @@ module load_unit import ariane_pkg::*; #(
                 // we finally got a data grant
                 if (req_port_i.data_gnt) begin
                     // so we send the tag in the next cycle
-                    if (dtlb_hit_i && !stall_ni) begin
-                        state_d = SEND_TAG;
-                        pop_ld_o = 1'b1;
-                    // translation valid but this is to NC and the WB is not yet empty.
-                    end else if (dtlb_hit_i && stall_ni) begin
-                        state_d = ABORT_TRANSACTION_NI;
-                    end else begin
-                    // should we not have hit on the TLB abort this transaction an retry later
+                    if (ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
                         state_d = ABORT_TRANSACTION;
+                    end else begin
+                        if (!stall_ni) begin
+                            // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                            state_d = SEND_TAG;
+                            pop_ld_o = 1'b1;
+                            // translation valid but this is to NC and the WB is not yet empty.
+                        end else begin
+                           state_d = ABORT_TRANSACTION_NI;
+                        end
                     end
+
                 end
                 // otherwise we keep waiting on our grant
             end
@@ -312,15 +317,17 @@ module load_unit import ariane_pkg::*; #(
                             state_d = WAIT_GNT;
                         end else begin
                             // we got a grant so we can send the tag in the next cycle
-                            if (dtlb_hit_i && !stall_ni) begin
-                                // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                                state_d = SEND_TAG;
-                                pop_ld_o = 1'b1;
-                            // translation valid but this is to NC and the WB is not yet empty.
-                            end else if (dtlb_hit_i && stall_ni) begin
-                                state_d = ABORT_TRANSACTION_NI;
+                            if (ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
+                                state_d = ABORT_TRANSACTION;
                             end else begin
-                                state_d = ABORT_TRANSACTION;// we missed on the TLB -> wait for the translation
+                                if (!stall_ni) begin
+                                    // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                                    state_d = SEND_TAG;
+                                    pop_ld_o = 1'b1;
+                                    // translation valid but this is to NC and the WB is not yet empty.
+                                end else begin
+                                   state_d = ABORT_TRANSACTION_NI;
+                                end
                             end
                         end
                     end else begin
