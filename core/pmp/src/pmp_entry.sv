@@ -33,7 +33,7 @@ module pmp_entry #(
     logic [PLEN-1:0] base;
     logic [PLEN-1:0] mask;
     int unsigned size;
-    assign conf_addr_n = ~conf_addr_i;
+    assign conf_addr_n = {2'b11, ~conf_addr_i};
     lzc #(.WIDTH(PLEN), .MODE(1'b0)) i_lzc(
         .in_i    ( conf_addr_n ),
         .cnt_o   ( trail_ones  ),
@@ -48,15 +48,15 @@ module pmp_entry #(
                 size = '0;
                 // check that the requested address is in between the two
                 // configuration addresses
-                if (addr_i >= (conf_addr_prev_i << 2) && addr_i < (conf_addr_i << 2)) begin
+                if (addr_i >= ({2'b0, conf_addr_prev_i} << 2) && addr_i < ({2'b0, conf_addr_i} << 2)) begin
                     match_o = 1'b1;
                 end else match_o = 1'b0;
 
                 // synthesis translate_off
                 if (match_o == 0) begin
-                    assert(addr_i >= (conf_addr_i << 2) || addr_i < (conf_addr_prev_i << 2));
+                    assert(addr_i >= ({2'b0, conf_addr_i} << 2) || addr_i < ({2'b0, conf_addr_prev_i} << 2));
                 end else begin
-                    assert(addr_i < (conf_addr_i << 2) && addr_i >= (conf_addr_prev_i << 2));
+                    assert(addr_i < ({2'b0, conf_addr_i} << 2) && addr_i >= ({2'b0, conf_addr_prev_i} << 2));
                 end
                 // synthesis translate_on
 
@@ -66,11 +66,11 @@ module pmp_entry #(
                 if (conf_addr_mode_i == riscv::NA4) size = 2;
                 else begin
                     // use the extracted trailing ones
-                    size = trail_ones+3;
+                    size =  {{(32-$clog2(PLEN)){1'b0}}, trail_ones} + 3;
                 end
 
                 mask = '1 << size;
-                base = (conf_addr_i << 2) & mask;
+                base = ({2'b0, conf_addr_i} << 2) & mask;
                 match_o = (addr_i & mask) == base ? 1'b1 : 1'b0;
 
                 // synthesis translate_off
