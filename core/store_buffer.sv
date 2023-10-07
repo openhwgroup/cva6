@@ -77,8 +77,6 @@ module store_buffer import ariane_pkg::*; #(
         automatic logic [$clog2(DEPTH_SPEC):0] speculative_status_cnt;
         speculative_status_cnt = speculative_status_cnt_q;
 
-        // we are ready if the speculative and the commit queue have a space left
-        ready_o = (speculative_status_cnt_q < (DEPTH_SPEC - 1)) || commit_i;
         // default assignments
         speculative_status_cnt_n    = speculative_status_cnt_q;
         speculative_read_pointer_n  = speculative_read_pointer_q;
@@ -119,6 +117,9 @@ module store_buffer import ariane_pkg::*; #(
             // also reset the status count
             speculative_status_cnt_n = 'b0;
         end
+        
+	// we are ready if the speculative and the commit queue have a space left
+        ready_o = (speculative_status_cnt_n < (DEPTH_SPEC)) || commit_i;
     end
 
     // ----------------------------------------
