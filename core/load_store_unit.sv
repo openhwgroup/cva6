@@ -447,7 +447,7 @@ module load_store_unit import ariane_pkg::*; #(
             end
         end
 
-         if (ariane_pkg::MMU_PRESENT && en_ld_st_translation_i && lsu_ctrl.overflow) begin
+        if (ariane_pkg::MMU_PRESENT && en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
