@@ -387,7 +387,7 @@ module load_unit import ariane_pkg::*; #(
             // the output is also valid if we got an exception. An exception arrives one cycle after
             // dtlb_hit_i is asserted, i.e. when we are in SEND_TAG. Otherwise, the exception
             // corresponds to the next request that is already being translated (see below).
-            if(ex_i.valid && (state_q == SEND_TAG)) begin
+            if (ex_i.valid && (state_q == SEND_TAG)) begin
                 valid_o    = 1'b1;
                 ex_o.valid = 1'b1;
             end
