@@ -86,7 +86,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     logic [riscv::PLEN-1:0] ptw_bad_paddr; // PTW PMP exception bad physical addr
 
     logic [riscv::VLEN-1:0] update_vaddr;
-    tlb_update_sv32_t update_itlb, update_dtlb, update_shared_tlb;
+    tlb_update_sv32_t update_itlb, update_shared_tlb;  //update_dtlb,
 
     logic             itlb_lu_access;
     riscv::pte_sv32_t itlb_content;
@@ -95,8 +95,8 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
 
     logic             dtlb_lu_access;
     riscv::pte_sv32_t dtlb_content;
-    logic             dtlb_is_4M;
-    logic             dtlb_lu_hit;
+    //logic             dtlb_is_4M;
+    //logic             dtlb_lu_hit;
 
     logic                     shared_tlb_access;
     logic [riscv::VLEN-1:0]   shared_tlb_vaddr;
@@ -132,7 +132,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         .lu_hit_o         ( itlb_lu_hit                )
     );
 
-    cva6_tlb_sv32 #(
+   /*  cva6_tlb_sv32 #(
         .CVA6Cfg         ( CVA6Cfg                     ),
         .TLB_ENTRIES     ( DATA_TLB_ENTRIES            ),
         .ASID_WIDTH      ( ASID_WIDTH                  )
@@ -152,7 +152,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
 
         .lu_is_4M_o       ( dtlb_is_4M                 ),
         .lu_hit_o         ( dtlb_lu_hit                )
-    );
+    ); */
 
     cva6_shared_tlb_sv32 #(
         .CVA6Cfg          ( CVA6Cfg  ),
@@ -175,12 +175,12 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         .itlb_vaddr_i     ( icache_areq_i.fetch_vaddr   ),
 
         .dtlb_access_i    ( dtlb_lu_access              ),
-        .dtlb_hit_i       ( dtlb_lu_hit                 ),
+        //.dtlb_hit_i       ( dtlb_lu_hit                 ),
         .dtlb_vaddr_i     ( lsu_vaddr_i                 ),
 
         // to TLBs, update logic
         .itlb_update_o    ( update_itlb                 ),
-        .dtlb_update_o    ( update_dtlb                 ),
+        .dtlb_content_o   ( dtlb_content                ),
 
         // Performance counters
         .itlb_miss_o      (itlb_miss_o                  ),
@@ -255,7 +255,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     //     .probe8(update_dtlb.valid), // input wire [0:0]  probe8
     //     .probe9(dtlb_lu_access), // input wire [0:0]  probe9
     //     .probe10(lsu_vaddr_i), // input wire [0:0]  probe10
-    //     .probe11(dtlb_lu_hit), // input wire [0:0]  probe11
+    //     .probe11(shared_tlb_hit), // input wire [0:0]  probe11
     //     .probe12(itlb_lu_access), // input wire [0:0]  probe12
     //     .probe13(icache_areq_i.fetch_vaddr), // input wire [0:0]  probe13
     //     .probe14(itlb_lu_hit) // input wire [0:0]  probe13
@@ -363,10 +363,10 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
     logic        lsu_req_n,       lsu_req_q;
     logic        lsu_is_store_n,  lsu_is_store_q;
     logic        dtlb_hit_n,      dtlb_hit_q;
-    logic        dtlb_is_4M_n,    dtlb_is_4M_q;
+    //logic        dtlb_is_4M_n,    dtlb_is_4M_q;
 
     // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
-    assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit :  1'b1;
+    assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? shared_tlb_hit :  1'b1;
 
     // Wires to PMP checks
     riscv::pmp_access_t pmp_access_type;
@@ -379,9 +379,9 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         lsu_req_n             = lsu_req_i;
         misaligned_ex_n       = misaligned_ex_i;
         dtlb_pte_n            = dtlb_content;
-        dtlb_hit_n            = dtlb_lu_hit;
+        dtlb_hit_n            = shared_tlb_hit;
         lsu_is_store_n        = lsu_is_store_i;
-        dtlb_is_4M_n          = dtlb_is_4M;
+       // dtlb_is_4M_n          = dtlb_is_4M;
 
         if (riscv::PLEN > riscv::VLEN) begin
             lsu_paddr_o           = {{riscv::PLEN-riscv::VLEN{1'b0}}, lsu_vaddr_q};
@@ -506,7 +506,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
             dtlb_pte_q       <= '0;
             dtlb_hit_q       <= '0;
             lsu_is_store_q   <= '0;
-            dtlb_is_4M_q     <= '0;
+         // dtlb_is_4M_q     <= '0;
         end else begin
             lsu_vaddr_q      <=  lsu_vaddr_n;
             lsu_req_q        <=  lsu_req_n;
@@ -514,7 +514,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
             dtlb_pte_q       <=  dtlb_pte_n;
             dtlb_hit_q       <=  dtlb_hit_n;
             lsu_is_store_q   <=  lsu_is_store_n;
-            dtlb_is_4M_q     <=  dtlb_is_4M_n;
+         // dtlb_is_4M_q     <=  dtlb_is_4M_n;
         end
     end
 endmodule

@@ -39,12 +39,12 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
     input  logic [riscv::VLEN-1:0]  itlb_vaddr_i,
 
     input  logic                    dtlb_access_i,
-    input  logic                    dtlb_hit_i,
+  //  input  logic                    dtlb_hit_i,
     input  logic [riscv::VLEN-1:0]  dtlb_vaddr_i,
 
     // to TLBs, update logic
     output tlb_update_sv32_t        itlb_update_o,
-    output tlb_update_sv32_t        dtlb_update_o,
+    output tlb_update_sv32_t        dtlb_content_o,
 
     // Performance counters
     output logic                    itlb_miss_o,
@@ -179,7 +179,7 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
             shared_tlb_vaddr_d  = itlb_vaddr_i;
 
         // we got an DTLB miss
-        end else if (en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i) begin
+        end else if (en_ld_st_translation_i & dtlb_access_i) begin // & ~dtlb_hit_i)
             tag_rd_en        = '1;
             tag_rd_addr      = dtlb_vaddr_i[12+:$clog2(SHARED_TLB_DEPTH)];
             pte_rd_en        = '1;
@@ -200,7 +200,7 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
 
     always_comb begin : tag_comparison
         shared_tlb_hit_d = 1'b0;
-        dtlb_update_o = '0;
+        dtlb_content_o = '0;
         itlb_update_o = '0;
         //number of ways
         for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
@@ -214,12 +214,12 @@ module cva6_shared_tlb_sv32 import ariane_pkg::*; #(
                         itlb_update_o.asid = tlb_update_asid_q;
                         itlb_update_o.content = pte[i];
                     end else if (dtlb_req_q) begin
-                        dtlb_update_o.valid = 1'b1;
-                        dtlb_update_o.vpn = dtlb_vpn_q;
-                        dtlb_update_o.is_4M = shared_tag_rd[i].is_4M;
-                        dtlb_update_o.asid = tlb_update_asid_q;
-                        dtlb_update_o.content = pte[i];
-                    end
+                        dtlb_content_o.valid = 1'b1;
+                        dtlb_content_o.vpn = dtlb_vpn_q;
+                        dtlb_content_o.is_4M = shared_tag_rd[i].is_4M;
+                        dtlb_content_o.asid = tlb_update_asid_q;
+                        dtlb_content_o.content = pte[i];
+                    end 
                 end
             end
         end
