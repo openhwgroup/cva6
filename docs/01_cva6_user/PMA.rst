@@ -53,7 +53,7 @@ structure to describe the PMA regions statically:
    - ``CVA6Cfg.CachedRegionLength``: Length of the cacheable region.
 
 Unsupported PMAs
--------
+----------------
 
 Currently the following RISC-V defined PMAs are not supported:
 
