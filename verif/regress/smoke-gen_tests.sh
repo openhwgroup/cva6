@@ -18,7 +18,7 @@ source verif/regress/install-cva6.sh
 source verif/regress/install-riscv-dv.sh
 
 if ! [ -n "$DV_TARGET" ]; then
-  DV_TARGET=cv32a60x
+  DV_TARGET=cv32a6_embedded
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
