@@ -38,3 +38,6 @@ if job_test_total == 0:
 report = rb.Report(f'{job_test_pass}/{job_test_total}')
 report.add_metric(metric)
 report.dump()
+
+if report.failed:
+    sys.exit(1)
