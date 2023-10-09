@@ -18,7 +18,7 @@ source verif/regress/install-riscv-dv.sh
 source verif/regress/install-spike.sh
 
 if ! [ -n "$DV_TARGET" ]; then
-  DV_TARGET=cv32a60x
+  DV_TARGET=cv32a6_embedded
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
