@@ -150,6 +150,7 @@ module issue_read_operands import ariane_pkg::*; #(
                 if(CVA6Cfg.FpPresent) begin
                    fu_busy = ~fpu_ready_i;
                 end
+                else fu_busy = 1'b0;
             LOAD, STORE:
                 fu_busy = ~lsu_ready_i;
             CVXIF:

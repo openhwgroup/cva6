@@ -53,7 +53,7 @@ module multiplier import ariane_pkg::*; #(
         always_comb begin
             clmul_d = '0;
             for (int i = 0; i <= riscv::XLEN; i++) begin
-                clmul_d = ((operand_b >> i) & 1) ? clmul_d ^ (operand_a << i) : clmul_d;
+                clmul_d = (|((operand_b >> i) & 1)) ? clmul_d ^ (operand_a << i) : clmul_d;
             end
         end
 
