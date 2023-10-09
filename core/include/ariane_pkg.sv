@@ -38,7 +38,7 @@ package ariane_pkg;
     localparam ISSUE_WIDTH = 1;
 
     // depth of store-buffers, this needs to be a power of two
-    localparam int unsigned DEPTH_SPEC   = 4;
+    localparam logic [2:0] DEPTH_SPEC   = 'd4;
 
     localparam int unsigned DCACHE_TYPE = int'(cva6_config_pkg::CVA6ConfigDcacheType);
     // if DCACHE_TYPE = cva6_config_pkg::WT
@@ -47,7 +47,7 @@ package ariane_pkg;
     // to longer paths into the commit stage
     // if DCACHE_TYPE = cva6_config_pkg::WB
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
-    localparam int unsigned DEPTH_COMMIT = (DCACHE_TYPE == int'(cva6_config_pkg::WT)) ? 4 : 8;
+    localparam logic [2:0] DEPTH_COMMIT = 'd4;
 
     localparam bit FPGA_EN = cva6_config_pkg::CVA6ConfigFPGAEn; // Is FPGA optimization of CV32A6
 

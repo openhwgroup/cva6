@@ -69,7 +69,7 @@ module cvxif_fu import ariane_pkg::*; #(
       x_valid_o             = cvxif_resp_i.x_result_valid; //Read result only when CVXIF is enabled
       x_trans_id_o          = x_valid_o ? cvxif_resp_i.x_result.id : '0;
       x_result_o            = x_valid_o ? cvxif_resp_i.x_result.data : '0;
-      x_exception_o.cause   = x_valid_o ? cvxif_resp_i.x_result.exccode : '0;
+      x_exception_o.cause   = x_valid_o ? {{(riscv::XLEN-6){1'b0}}, cvxif_resp_i.x_result.exccode} : '0;
       x_exception_o.valid   = x_valid_o ? cvxif_resp_i.x_result.exc : '0;
       x_exception_o.tval    = '0;
       x_we_o                = x_valid_o ? cvxif_resp_i.x_result.we : '0;

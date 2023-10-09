@@ -388,7 +388,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
             lsu_dtlb_ppn_o        = {{riscv::PLEN-riscv::VLEN{1'b0}},lsu_vaddr_n[riscv::VLEN-1:12]};
         end else begin
             lsu_paddr_o           = lsu_vaddr_q[riscv::PLEN-1:0];
-            lsu_dtlb_ppn_o        = lsu_vaddr_n[riscv::VLEN-1:12];
+            lsu_dtlb_ppn_o        = lsu_vaddr_n[riscv::PPNW-1:0];
         end
         lsu_valid_o           = lsu_req_q;
         lsu_exception_o       = misaligned_ex_q;
