@@ -97,6 +97,7 @@ module scoreboard #(
   ariane_pkg::scoreboard_entry_t decoded_instr;
   always_comb begin
     decoded_instr = decoded_instr_i;
+    //synthesis translate_off
     if (IsRVFI) begin
       decoded_instr.rs1_rdata = rs1_forwarding_i;
       decoded_instr.rs2_rdata = rs2_forwarding_i;
@@ -105,6 +106,7 @@ module scoreboard #(
       decoded_instr.lsu_wmask = '0;
       decoded_instr.lsu_wdata = '0;
     end
+    //synthesis translate_on
   end
 
   // output commit instruction directly
@@ -156,6 +158,7 @@ module scoreboard #(
     // ------------
     // Write Back
     // ------------
+    //synthesis translate_off
     if (IsRVFI) begin
       if (lsu_rmask_i != 0) begin
         mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
@@ -166,6 +169,7 @@ module scoreboard #(
         mem_n[lsu_addr_trans_id_i].sbe.lsu_wdata = wbdata_i[1];
       end
     end
+    //synthesis translate_on
 
     for (int unsigned i = 0; i < CVA6Cfg.NrWbPorts; i++) begin
       // check if this instruction was issued (e.g.: it could happen after a flush that there is still
