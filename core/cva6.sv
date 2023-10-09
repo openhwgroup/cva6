@@ -970,7 +970,7 @@ module cva6 import ariane_pkg::*; #(
     .inval_valid_i         ( inval_valid                 ),
     .inval_ready_o         ( inval_ready                 )
   );
-  end else if (DCACHE_TYPE == int'(config_pkg::HPDCACHE)) begin : hpdcache_subsystem_gen
+  end else if (DCACHE_TYPE == int'(config_pkg::HPDCACHE)) begin : gen_hpdcache_subsystem
   cva6_hpdcache_subsystem #(
     .CVA6Cfg               ( CVA6ExtendCfg ),
     .NumPorts              ( NumPorts ),
