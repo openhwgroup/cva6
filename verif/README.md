@@ -3,6 +3,7 @@
 - [Directories](#directories)
 - [Prerequisites](#prerequisites)
 - [Test execution](#test-execution)
+- [Verification plan](#verification-plan)
 - [Environment variables](#environment-variables)
 - [32-bit configuration](#32-bit-configuration)
 
@@ -49,6 +50,20 @@ Run one of the shell scripts:
 
 These tests are using [riscv-dv](https://github.com/google/riscv-dv)
 as environment.
+
+## Verification plan
+Verification plan is available only for vcs tool and located in sim/cva6.hvp, it's used within a modifier to filter out only needed features. Example sim/modifier_embedded.hvp for embedded config.
+
+To generate the coverage database user should run at least a test or regression with coverage enabled by setting:
+- `export cov=1`
+
+To view or edit verification plan use command:
+- `cd sim`
+- `verdi -cov -covdir vcs_results/default/vcs.d/simv.vdb -plan cva6.hvp -mod modifier_embedded.hvp`
+
+To generate verification plan report in html format use command:
+- `cd sim`
+- `urg -hvp_proj cva6_embedded -group instcov_for_score -hvp_attributes description -dir vcs_results/default/vcs.d/simv.vdb -plan cva6.hvp -mod modifier_embedded.hvp`
 
 ## Environment variables
 Other environment variables can be set to overload default values

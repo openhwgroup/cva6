@@ -1,0 +1,1530 @@
+
+plan "CVA6 Plan";
+
+    attribute enum{EMBEDDED,STEP1} CVA6_VERSION = EMBEDDED;
+    attribute integer ISA_M_EXTENSION = 0;
+    ISA_M_EXTENSION.description = "M extension support";
+    attribute integer ISA_C_EXTENSION = 0;
+    ISA_C_EXTENSION.description = "C extension support";
+    attribute integer ISA_ZICSR_EXTENSION = 0;
+    ISA_ZICSR_EXTENSION.description = "ZICSR extension support";
+    attribute integer ISA_ZIFENCEI_EXTENSION = 0;
+    ISA_ZIFENCEI_EXTENSION.description = "ZIFENCEI extension support";
+    attribute integer MMU_ENABLED = 0;
+    attribute integer FPU_ENABLED = 0;
+    attribute integer PMP_ENABLED = 0;
+    attribute integer ISA_ZICOND_EXTENSION = 0;
+    ISA_ZICOND_EXTENSION.description = "ZICOND extension support";
+    attribute integer ISA_ZCB_EXTENSION = 0;
+    ISA_ZCB_EXTENSION.description = "ZCB extension support";
+
+    description = "CVA6 features";
+    feature "Sanity features";
+        description = "CVA6 Sanity features";
+        feature Configuration;
+            description = "RTL configuration";
+            measure Group AExtEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_AExtEn";
+            endmeasure
+            measure Group AxiAddrWidth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_AxiAddrWidth";
+            endmeasure
+            measure Group AxiDataWidth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_AxiDataWidth";
+            endmeasure
+            measure Group AxiIdWidth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_AxiIdWidth";
+            endmeasure
+            measure Group BExtEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_BExtEn";
+            endmeasure
+            measure Group BHTEntries;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_BHTEntries";
+            endmeasure
+            measure Group BTBEntries;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_BTBEntries";
+            endmeasure
+            measure Group CExtEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_CExtEn";
+            endmeasure
+            measure Group CvxifEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_CvxifEn";
+            endmeasure
+            measure Group DataTlbEntries;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DataTlbEntries";
+            endmeasure
+            measure Group DataUserEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DataUserEn";
+            endmeasure
+            measure Group DataUserWidth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DataUserWidth";
+            endmeasure
+            measure Group DcacheByteSize;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheByteSize";
+            endmeasure
+            measure Group DcacheIdWidth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheIdWidth";
+            endmeasure
+            measure Group DcacheLineWidth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheLineWidth";
+            endmeasure
+            measure Group DcacheSetAssoc;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheSetAssoc";
+            endmeasure
+            measure Group DcacheType;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheType";
+            endmeasure
+            measure Group EnableAccelerator;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_EnableAccelerator";
+            endmeasure
+            measure Group ExceptionAddress;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_ExceptionAddress";
+            endmeasure
+            measure Group F8En;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_F8En";
+            endmeasure
+            measure Group F16AltEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_F16AltEn";
+            endmeasure
+            measure Group F16En;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_F16En";
+            endmeasure
+            measure Group FLen;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FLen";
+            endmeasure
+            measure Group FPGAEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FPGAEn";
+            endmeasure
+            measure Group FVecEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FVecEn";
+            endmeasure
+            measure Group FetchUserEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FetchUserEn";
+            endmeasure
+            measure Group FetchUserWidth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FetchUserWidth";
+            endmeasure
+            measure Group FpPresent;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FpPresent";
+            endmeasure
+            measure Group FpuEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FpuEn";
+            endmeasure
+            measure Group HaltAddress;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_HaltAddress";
+            endmeasure
+            measure Group IcacheByteSize;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_IcacheByteSize";
+            endmeasure
+            measure Group IcacheLineWidth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_IcacheLineWidth";
+            endmeasure
+            measure Group IcacheSetAssoc;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_IcacheSetAssoc";
+            endmeasure
+            measure Group InstrTlbEntries;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_InstrTlbEntries";
+            endmeasure
+            measure Group MemTidWidth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_MemTidWidth";
+            endmeasure
+            measure Group MmuPresent;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_MmuPresent";
+            endmeasure
+            measure Group NSX;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NSX";
+            endmeasure
+            measure Group NrCommitPorts;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrCommitPorts";
+            endmeasure
+            measure Group NrLoadBufEntries;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrLoadBufEntries";
+            endmeasure
+            measure Group NrLoadPipeRegs;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrLoadPipeRegs";
+            endmeasure
+            measure Group NrPMPEntries;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrPMPEntries";
+            endmeasure
+            measure Group NrRgprPorts;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrRgprPorts";
+            endmeasure
+            measure Group NrScoreboardEntries;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrScoreboardEntries";
+            endmeasure
+            measure Group NrStorePipeRegs;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrStorePipeRegs";
+            endmeasure
+            measure Group NrWbPorts;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrWbPorts";
+            endmeasure
+            measure Group PerfCounterEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_PerfCounterEn";
+            endmeasure
+            measure Group RASDepth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RASDepth";
+            endmeasure
+            measure Group RVD;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RVD";
+            endmeasure
+            measure Group RVF;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RVF";
+            endmeasure
+            measure Group RVFVec;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RVFVec";
+            endmeasure
+            measure Group RvfiTrace;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RvfiTrace";
+            endmeasure
+            measure Group VExtEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_VExtEn";
+            endmeasure
+            measure Group WtDcacheWbufDepth;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_WtDcacheWbufDepth";
+            endmeasure
+            measure Group XF8Vec;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_XF8Vec";
+            endmeasure
+            measure Group XF16ALTVec;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_XF16ALTVec";
+            endmeasure
+            measure Group XF16Vec;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_XF16Vec";
+            endmeasure
+            measure Group Xlen;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_Xlen";
+            endmeasure
+            measure Group ZiCondExtEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_ZiCondExtEn";
+            endmeasure
+        endfeature
+        feature "Hard Reset";
+            description = "Hard reset delay and duration";
+            feature "Startup reset";
+                description = "Hard reset on startup";
+                measure Group reset;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.reset_cg.cp_reset", "group instance: uvme_cva6_pkg.uvme_cva6_pkg.reset_cg.cp_reset_duration_ps";
+                endmeasure
+            endfeature
+            feature "On the fly reset";
+                description = "Recover from on the fly reset during simulation";
+                CVA6_VERSION = STEP1;
+                measure Group onthefly;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.reset_cg.cp_reset_onthefly_assert";
+                endmeasure
+            endfeature
+        endfeature
+        feature "Boot Addr";
+            description = "Multiple Boot address Support";
+            measure Group boot_addr;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.boot_addr_cg.cp_boot_addr";
+            endmeasure
+        endfeature
+        feature "Clock period";
+            description = "Multi-frequency support, Min frequency CVA6A32 is 150MHz (PPA-30) and CVA6A64 is 900MHz (PPA-40)";
+            measure Group clock_period;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.clock_period_cg.cp_clock_period_ps";
+            endmeasure
+        endfeature
+        feature "Performance monitor";
+            description = "Monitoring performance per MHz (PPA-20), single precision floating (PPA-50) and double-precision floating (PPA-60)";
+            CVA6_VERSION = STEP1;
+            measure Group general_performance;
+            endmeasure
+            measure Group single_precision_floating;
+            endmeasure
+            measure Group double_precision_floating;
+            endmeasure
+        endfeature
+    endfeature
+    feature "Functional features";
+        description = "CVA6 Functional features";
+        feature "RSIC-V standard instructions";
+            description = "Compliance RISC-V Instruction Set Manual, Volume I and Volume 2:\nExtensions: RV32I + M + A + C + Zicsr + Zifencei + Zicond + Zcb";
+            feature RV32I;
+                description = "I extension";
+                feature ADD;
+                    measure Group ADD;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_add_cg";
+                    endmeasure
+                endfeature
+                feature ADDI;
+                    measure Group ADDI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_addi_cg";
+                    endmeasure
+                endfeature
+                feature AND;
+                    measure Group AND;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_and_cg";
+                    endmeasure
+                endfeature
+                feature ANDI;
+                    measure Group ANDI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_andi_cg";
+                    endmeasure
+                endfeature
+                feature AUIPC;
+                    measure Group AUIPC;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_auipc_cg";
+                    endmeasure
+                endfeature
+                feature BEQ;
+                    measure Group BEQ;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_beq_cg";
+                    endmeasure
+                endfeature
+                feature BGE;
+                    measure Group BGE;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_bge_cg";
+                    endmeasure
+                endfeature
+                feature BGEU;
+                    measure Group BGEU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_bgeu_cg";
+                    endmeasure
+                endfeature
+                feature BLT;
+                    measure Group BLT;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_blt_cg";
+                    endmeasure
+                endfeature
+                feature BLTU;
+                    measure Group BLTU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_bltu_cg";
+                    endmeasure
+                endfeature
+                feature BNE;
+                    measure Group BNE;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_bne_cg";
+                    endmeasure
+                endfeature
+                feature DRET;
+                    measure Group DRET;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_dret_cg";
+                    endmeasure
+                endfeature
+                feature EBREAK;
+                    measure Group EBREAK;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_ebreak_cg";
+                    endmeasure
+                endfeature
+                feature ECALL;
+                    measure Group ECALL;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_ecall_cg";
+                    endmeasure
+                endfeature
+                feature FENCE;
+                    measure Group FENCE;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_fence_cg";
+                    endmeasure
+                endfeature
+                feature JAL;
+                    measure Group JAL;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_jal_cg";
+                    endmeasure
+                endfeature
+                feature JALR;
+                    measure Group JALR;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_jalr_cg";
+                    endmeasure
+                endfeature
+                feature LB;
+                    measure Group LB;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_lb_cg";
+                    endmeasure
+                endfeature
+                feature LBU;
+                    measure Group LBU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_lbu_cg";
+                    endmeasure
+                endfeature
+                feature LH;
+                    measure Group LH;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_lh_cg";
+                    endmeasure
+                endfeature
+                feature LHU;
+                    measure Group LHU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_lhu_cg";
+                    endmeasure
+                endfeature
+                feature LUI;
+                    measure Group LUI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_lui_cg";
+                    endmeasure
+                endfeature
+                feature LW;
+                    measure Group LW;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_lw_cg";
+                    endmeasure
+                endfeature
+                feature MRET;
+                    measure Group MRET;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_mret_cg";
+                    endmeasure
+                endfeature
+                feature OR;
+                    measure Group OR;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_or_cg";
+                    endmeasure
+                endfeature
+                feature ORI;
+                    measure Group ORI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_ori_cg";
+                    endmeasure
+                endfeature
+                feature SB;
+                    measure Group SB;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_sb_cg";
+                    endmeasure
+                endfeature
+                feature SH;
+                    measure Group SH;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_sh_cg";
+                    endmeasure
+                endfeature
+                feature SLL;
+                    measure Group SLL;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_sll_cg";
+                    endmeasure
+                endfeature
+                feature SLLI;
+                    measure Group SLLI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_slli_cg";
+                    endmeasure
+                endfeature
+                feature SLT;
+                    measure Group SLT;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_slt_cg";
+                    endmeasure
+                endfeature
+                feature SLTI;
+                    measure Group SLTI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_slti_cg";
+                    endmeasure
+                endfeature
+                feature SLTIU;
+                    measure Group SLTIU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_sltiu_cg";
+                    endmeasure
+                endfeature
+                feature SLTU;
+                    measure Group SLTU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_sltu_cg";
+                    endmeasure
+                endfeature
+                feature SRA;
+                    measure Group SRA;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_sra_cg";
+                    endmeasure
+                endfeature
+                feature SRAI;
+                    measure Group SRAI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_srai_cg";
+                    endmeasure
+                endfeature
+                feature SRL;
+                    measure Group SRL;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_srl_cg";
+                    endmeasure
+                endfeature
+                feature SRLI;
+                    measure Group SRLI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_srli_cg";
+                    endmeasure
+                endfeature
+                feature SUB;
+                    measure Group SUB;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_sub_cg";
+                    endmeasure
+                endfeature
+                feature SW;
+                    measure Group SW;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_sw_cg";
+                    endmeasure
+                endfeature
+                feature WFI;
+                    measure Group WFI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_wfi_cg";
+                    endmeasure
+                endfeature
+                feature XOR;
+                    measure Group XOR;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_xor_cg";
+                    endmeasure
+                endfeature
+                feature XORI;
+                    measure Group XORI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_xori_cg";
+                    endmeasure
+                endfeature
+            endfeature
+            feature RV32M;
+                description = "M extension";
+                ISA_M_EXTENSION = 1;
+                feature DIV;
+                    measure Group DIV;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_div_cg";
+                    endmeasure
+                endfeature
+                feature DIV_RESULTS;
+                    measure Group DIV_RESULTS;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_div_results_cg";
+                    endmeasure
+                endfeature
+                feature DIVU;
+                    measure Group DIVU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_divu_cg";
+                    endmeasure
+                endfeature
+                feature DIVU_RESULTS;
+                    measure Group DIVU_RESULTS;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_divu_results_cg";
+                    endmeasure
+                endfeature
+                feature MUL;
+                    measure Group MUL;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_mul_cg";
+                    endmeasure
+                endfeature
+                feature MULH;
+                    measure Group MULH;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_mulh_cg";
+                    endmeasure
+                endfeature
+                feature MULHSU;
+                    measure Group MULHSU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_mulhsu_cg";
+                    endmeasure
+                endfeature
+                feature MULHU;
+                    measure Group MULHU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_mulhu_cg";
+                    endmeasure
+                endfeature
+                feature REM;
+                    measure Group REM;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_rem_cg";
+                    endmeasure
+                endfeature
+                feature REM_RESULTS;
+                    measure Group REM_RESULTS;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_rem_results_cg";
+                    endmeasure
+                endfeature
+                feature REMU;
+                    measure Group REMU;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_remu_cg";
+                    endmeasure
+                endfeature
+                feature REMU_RESULTS;
+                    measure Group REMU_RESULTS;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32m_remu_results_cg";
+                    endmeasure
+                endfeature
+            endfeature
+            feature RV32C;
+                description = "C extension";
+                ISA_C_EXTENSION = 1;
+                feature ADD;
+                    measure Group ADD;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_add_cg";
+                    endmeasure
+                endfeature
+                feature ADDI4SPN;
+                    measure Group ADDI4SPN;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_addi4spn_cg";
+                    endmeasure
+                endfeature
+                feature ADDI16SP;
+                    measure Group ADDI16SP;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_addi16sp_cg";
+                    endmeasure
+                endfeature
+                feature ADDI;
+                    measure Group ADDI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_addi_cg";
+                    endmeasure
+                endfeature
+                feature AND;
+                    measure Group AND;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_and_cg";
+                    endmeasure
+                endfeature
+                feature ANDI;
+                    measure Group ANDI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_andi_cg";
+                    endmeasure
+                endfeature
+                feature BEQZ;
+                    measure Group BEQZ;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_beqz_cg";
+                    endmeasure
+                endfeature
+                feature BNEZ;
+                    measure Group BNEZ;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_bnez_cg";
+                    endmeasure
+                endfeature
+                feature EBREAK;
+                    measure Group EBREAK;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_ebreak_cg";
+                    endmeasure
+                endfeature
+                feature J;
+                    measure Group J;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_j_cg";
+                    endmeasure
+                endfeature
+                feature JAL;
+                    measure Group JAL;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_jal_cg";
+                    endmeasure
+                endfeature
+                feature JALR;
+                    measure Group JALR;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_jalr_cg";
+                    endmeasure
+                endfeature
+                feature JR;
+                    measure Group JR;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_jr_cg";
+                    endmeasure
+                endfeature
+                feature LI;
+                    measure Group LI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_li_cg";
+                    endmeasure
+                endfeature
+                feature LUI;
+                    measure Group LUI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_lui_cg";
+                    endmeasure
+                endfeature
+                feature LW;
+                    measure Group LW;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_lw_cg";
+                    endmeasure
+                endfeature
+                feature LWSP;
+                    measure Group LWSP;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_lwsp_cg";
+                    endmeasure
+                endfeature
+                feature MV;
+                    measure Group MV;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_mv_cg";
+                    endmeasure
+                endfeature
+                feature NOP;
+                    measure Group NOP;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_nop_cg";
+                    endmeasure
+                endfeature
+                feature OR;
+                    measure Group OR;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_or_cg";
+                    endmeasure
+                endfeature
+                feature SLLI;
+                    measure Group SLLI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_slli_cg";
+                    endmeasure
+                endfeature
+                feature SRAI;
+                    measure Group SRAI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_srai_cg";
+                    endmeasure
+                endfeature
+                feature SRLI;
+                    measure Group SRLI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_srli_cg";
+                    endmeasure
+                endfeature
+                feature SUB;
+                    measure Group SUB;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_sub_cg";
+                    endmeasure
+                endfeature
+                feature SW;
+                    measure Group SW;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_sw_cg";
+                    endmeasure
+                endfeature
+                feature SWSP;
+                    measure Group SWSP;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_swsp_cg";
+                    endmeasure
+                endfeature
+                feature XOR;
+                    measure Group XOR;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_xor_cg";
+                    endmeasure
+                endfeature
+            endfeature
+            feature RV32ZICSR;
+                description = "ZICSR extension";
+                ISA_ZICSR_EXTENSION = 1;
+                feature CSRRC;
+                    measure Group CSRRC;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zicsr_csrrc_cg";
+                    endmeasure
+                endfeature
+                feature CSRRCI;
+                    measure Group CSRRCI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zicsr_csrrci_cg";
+                    endmeasure
+                endfeature
+                feature CSRRS;
+                    measure Group CSRRS;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zicsr_csrrs_cg";
+                    endmeasure
+                endfeature
+                feature CSRRSI;
+                    measure Group CSRRSI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zicsr_csrrsi_cg";
+                    endmeasure
+                endfeature
+                feature CSRRW;
+                    measure Group CSRRW;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zicsr_csrrw_cg";
+                    endmeasure
+                endfeature
+                feature CSRRWI;
+                    measure Group CSRRWI;
+                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zicsr_csrrwi_cg";
+                    endmeasure
+                endfeature
+            endfeature
+            feature RV32ZIFENCEI;
+                description = "ZIFENCE.I extension";
+                ISA_ZIFENCEI_EXTENSION = 1;
+                measure Group FEINCE_I;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zifencei_fence_i_cg";
+                endmeasure
+            endfeature
+            feature RV32ZICOND;
+                description = "ZICOND extension";
+                ISA_ZICOND_EXTENSION = 1;
+                measure Group CZERO_EQZ;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.rv32zicond_czero_eqz_cg";
+                endmeasure
+                measure Group CZERO_NEZ;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.rv32zicond_czero_nez_cg";
+                endmeasure
+            endfeature
+            feature RV32ZCB;
+                description = "ZB extension";
+                ISA_ZCB_EXTENSION = 1;
+                measure Group C_MUL;
+                endmeasure
+                measure Group C_ZEXT_B;
+                endmeasure
+                measure Group C_SEXT_B;
+                endmeasure
+                measure Group C_ZEXT_H;
+                endmeasure
+                measure Group C_SEXT_H;
+                endmeasure
+                measure Group C_ZEXT_W;
+                endmeasure
+                measure Group C_NOT;
+                endmeasure
+            endfeature
+            feature "Instructions execution sequences";
+                description = "Instructions sequences";
+                measure Group sequences;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rev32_seq_cg";
+                endmeasure
+            endfeature
+            feature "Illegal instructions";
+                measure Group illegal_instructions;
+                endmeasure
+            endfeature
+        endfeature
+        feature Privileges;
+            description = "Support machine, supervisor, user and debug privilege modes (PVL-10)";
+            CVA6_VERSION = STEP1;
+            measure Group privileges;
+            endmeasure
+        endfeature
+        feature CSR;
+            description = "CSR registers Read/write ";
+            feature CYCLE;
+                CVA6_VERSION = STEP1;
+                measure Group CYCLE;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.cycle";
+                endmeasure
+            endfeature
+            feature CYCLEH;
+                measure Group CYCLEH;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.cycleh";
+                endmeasure
+            endfeature
+            feature ICACHE;
+                measure Group ICACHE;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.icache";
+                endmeasure
+            endfeature
+            feature INSTRET;
+                measure Group INSTRET;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.instret";
+                endmeasure
+            endfeature
+            feature INSTRETH;
+                measure Group INSTRETH;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.instreth";
+                endmeasure
+            endfeature
+            feature MARCHID;
+                measure Group MARCHID;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.marchid";
+                endmeasure
+            endfeature
+            feature MCAUSE;
+                measure Group MCAUSE;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mcause";
+                endmeasure
+            endfeature
+            feature MEPC;
+                measure Group MEPC;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mepc";
+                endmeasure
+            endfeature
+            feature MHARTID;
+                measure Group MHARTID;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhartid";
+                endmeasure
+            endfeature
+            feature MIE;
+                measure Group MIE;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mie";
+                endmeasure
+            endfeature
+            feature MIMPID;
+                measure Group MIMPID;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mimpid";
+                endmeasure
+            endfeature
+            feature MIP;
+                measure Group MIP;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mip";
+                endmeasure
+            endfeature
+            feature MISA;
+                measure Group MISA;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.misa";
+                endmeasure
+            endfeature
+            feature MSCRATCH;
+                measure Group MSCRATCH;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mscratch";
+                endmeasure
+            endfeature
+            feature MSTATUS;
+                measure Group MSTATUS;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mstatus";
+                endmeasure
+            endfeature
+            feature MSTATUSH;
+                measure Group MSTATUSH;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mstatush";
+                endmeasure
+            endfeature
+            feature MTVAL;
+                measure Group MTVAL;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mtval";
+                endmeasure
+            endfeature
+            feature MTVEC;
+                measure Group MTVEC;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mtvec";
+                endmeasure
+            endfeature
+            feature MVENDORID;
+                measure Group MVENDORID;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mvendorid";
+                endmeasure
+            endfeature
+            feature PMPADDR0;
+                measure Group PMPADDR0;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr0";
+                endmeasure
+            endfeature
+            feature PMPADDR1;
+                measure Group PMPADDR1;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr1";
+                endmeasure
+            endfeature
+            feature PMPADDR2;
+                measure Group PMPADDR2;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr2";
+                endmeasure
+            endfeature
+            feature PMPADDR3;
+                measure Group PMPADDR3;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr3";
+                endmeasure
+            endfeature
+            feature PMPADDR4;
+                measure Group PMPADDR4;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr4";
+                endmeasure
+            endfeature
+            feature PMPADDR5;
+                measure Group PMPADDR5;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr5";
+                endmeasure
+            endfeature
+            feature PMPADDR6;
+                measure Group PMPADDR6;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr6";
+                endmeasure
+            endfeature
+            feature PMPADDR7;
+                measure Group PMPADDR7;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr7";
+                endmeasure
+            endfeature
+            feature PMPADDR8;
+                measure Group PMPADDR8;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr8";
+                endmeasure
+            endfeature
+            feature PMPADDR9;
+                measure Group PMPADDR9;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr9";
+                endmeasure
+            endfeature
+            feature PMPADDR10;
+                measure Group PMPADDR10;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr10";
+                endmeasure
+            endfeature
+            feature PMPADDR11;
+                measure Group PMPADDR11;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr11";
+                endmeasure
+            endfeature
+            feature PMPADDR12;
+                measure Group PMPADDR12;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr12";
+                endmeasure
+            endfeature
+            feature PMPADDR13;
+                measure Group PMPADDR13;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr13";
+                endmeasure
+            endfeature
+            feature PMPADDR14;
+                measure Group PMPADDR14;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr14";
+                endmeasure
+            endfeature
+            feature PMPADDR15;
+                measure Group PMPADDR15;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpaddr15";
+                endmeasure
+            endfeature
+            feature PMPCFG0;
+                measure Group PMPCFG0;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpcfg0";
+                endmeasure
+            endfeature
+            feature PMPCFG1;
+                measure Group PMPCFG1;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpcfg1";
+                endmeasure
+            endfeature
+            feature PMPCFG2;
+                measure Group PMPCFG2;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpcfg2";
+                endmeasure
+            endfeature
+            feature PMPCFG3;
+                measure Group PMPCFG3;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.pmpcfg3";
+                endmeasure
+            endfeature
+        endfeature
+        feature "Performance counters";
+            description = "Performance counters control CSR registers Read/Write";
+            CVA6_VERSION = STEP1;
+            feature MHPMCOUNTER3;
+                measure Group MHPMCOUNTER3;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter3";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER4;
+                measure Group MHPMCOUNTER4;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter4";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER5;
+                measure Group MHPMCOUNTER5;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter5";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER6;
+                measure Group MHPMCOUNTER6;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter6";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER7;
+                measure Group MHPMCOUNTER7;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter7";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER8;
+                measure Group MHPMCOUNTER8;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter8";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER9;
+                measure Group MHPMCOUNTER9;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter9";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER10;
+                measure Group MHPMCOUNTER10;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter10";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER11;
+                measure Group MHPMCOUNTER11;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter11";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER12;
+                measure Group MHPMCOUNTER12;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter12";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER13;
+                measure Group MHPMCOUNTER13;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter13";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER14;
+                measure Group MHPMCOUNTER14;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter14";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER15;
+                measure Group MHPMCOUNTER15;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter15";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER16;
+                measure Group MHPMCOUNTER16;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter16";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER17;
+                measure Group MHPMCOUNTER17;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter17";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER18;
+                measure Group MHPMCOUNTER18;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter18";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER19;
+                measure Group MHPMCOUNTER19;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter19";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER20;
+                measure Group MHPMCOUNTER20;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter20";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER21;
+                measure Group MHPMCOUNTER21;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter21";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER22;
+                measure Group MHPMCOUNTER22;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter22";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER23;
+                measure Group MHPMCOUNTER23;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter23";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER24;
+                measure Group MHPMCOUNTER24;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter24";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER25;
+                measure Group MHPMCOUNTER25;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter25";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER26;
+                measure Group MHPMCOUNTER26;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter26";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER27;
+                measure Group MHPMCOUNTER27;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter27";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER28;
+                measure Group MHPMCOUNTER28;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter28";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER29;
+                measure Group MHPMCOUNTER29;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter29";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER30;
+                measure Group MHPMCOUNTER30;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter30";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTER31;
+                measure Group MHPMCOUNTER31;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounter31";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH3;
+                measure Group MHPMCOUNTERH3;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh3";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH4;
+                measure Group MHPMCOUNTERH4;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh4";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH5;
+                measure Group MHPMCOUNTERH5;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh5";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH6;
+                measure Group MHPMCOUNTERH6;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh6";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH7;
+                measure Group MHPMCOUNTERH7;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh7";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH8;
+                measure Group MHPMCOUNTERH8;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh8";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH9;
+                measure Group MHPMCOUNTERH9;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh9";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH10;
+                measure Group MHPMCOUNTERH10;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh10";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH11;
+                measure Group MHPMCOUNTERH11;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh11";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH12;
+                measure Group MHPMCOUNTERH12;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh12";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH13;
+                measure Group MHPMCOUNTERH13;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh13";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH14;
+                measure Group MHPMCOUNTERH14;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh14";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH15;
+                measure Group MHPMCOUNTERH15;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh15";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH16;
+                measure Group MHPMCOUNTERH16;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh16";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH17;
+                measure Group MHPMCOUNTERH17;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh17";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH18;
+                measure Group MHPMCOUNTERH18;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh18";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH19;
+                measure Group MHPMCOUNTERH19;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh19";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH20;
+                measure Group MHPMCOUNTERH20;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh20";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH21;
+                measure Group MHPMCOUNTERH21;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh21";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH22;
+                measure Group MHPMCOUNTERH22;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh22";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH23;
+                measure Group MHPMCOUNTERH23;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh23";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH24;
+                measure Group MHPMCOUNTERH24;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh24";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH25;
+                measure Group MHPMCOUNTERH25;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh25";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH26;
+                measure Group MHPMCOUNTERH26;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh26";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH27;
+                measure Group MHPMCOUNTERH27;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh27";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH28;
+                measure Group MHPMCOUNTERH28;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh28";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH29;
+                measure Group MHPMCOUNTERH29;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh29";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH30;
+                measure Group MHPMCOUNTERH30;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh30";
+                endmeasure
+            endfeature
+            feature MHPMCOUNTERH31;
+                measure Group MHPMCOUNTERH31;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmcounterh31";
+                endmeasure
+            endfeature
+            feature MHPMEVENT3;
+                measure Group MHPMEVENT3;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent3";
+                endmeasure
+            endfeature
+            feature MHPMEVENT4;
+                measure Group MHPMEVENT4;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent4";
+                endmeasure
+            endfeature
+            feature MHPMEVENT5;
+                measure Group MHPMEVENT5;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent5";
+                endmeasure
+            endfeature
+            feature MHPMEVENT6;
+                measure Group MHPMEVENT6;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent6";
+                endmeasure
+            endfeature
+            feature MHPMEVENT7;
+                measure Group MHPMEVENT7;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent7";
+                endmeasure
+            endfeature
+            feature MHPMEVENT8;
+                measure Group MHPMEVENT8;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent8";
+                endmeasure
+            endfeature
+            feature MHPMEVENT9;
+                measure Group MHPMEVENT9;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent9";
+                endmeasure
+            endfeature
+            feature MHPMEVENT10;
+                measure Group MHPMEVENT10;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent10";
+                endmeasure
+            endfeature
+            feature MHPMEVENT11;
+                measure Group MHPMEVENT11;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent11";
+                endmeasure
+            endfeature
+            feature MHPMEVENT12;
+                measure Group MHPMEVENT12;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent12";
+                endmeasure
+            endfeature
+            feature MHPMEVENT13;
+                measure Group MHPMEVENT13;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent13";
+                endmeasure
+            endfeature
+            feature MHPMEVENT14;
+                measure Group MHPMEVENT14;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent14";
+                endmeasure
+            endfeature
+            feature MHPMEVENT15;
+                measure Group MHPMEVENT15;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent15";
+                endmeasure
+            endfeature
+            feature MHPMEVENT16;
+                measure Group MHPMEVENT16;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent16";
+                endmeasure
+            endfeature
+            feature MHPMEVENT17;
+                measure Group MHPMEVENT17;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent17";
+                endmeasure
+            endfeature
+            feature MHPMEVENT18;
+                measure Group MHPMEVENT18;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent18";
+                endmeasure
+            endfeature
+            feature MHPMEVENT19;
+                measure Group MHPMEVENT19;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent19";
+                endmeasure
+            endfeature
+            feature MHPMEVENT20;
+                measure Group MHPMEVENT20;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent20";
+                endmeasure
+            endfeature
+            feature MHPMEVENT21;
+                measure Group MHPMEVENT21;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent21";
+                endmeasure
+            endfeature
+            feature MHPMEVENT22;
+                measure Group MHPMEVENT22;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent22";
+                endmeasure
+            endfeature
+            feature MHPMEVENT23;
+                measure Group MHPMEVENT23;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent23";
+                endmeasure
+            endfeature
+            feature MHPMEVENT24;
+                measure Group MHPMEVENT24;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent24";
+                endmeasure
+            endfeature
+            feature MHPMEVENT25;
+                measure Group MHPMEVENT25;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent25";
+                endmeasure
+            endfeature
+            feature MHPMEVENT26;
+                measure Group MHPMEVENT26;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent26";
+                endmeasure
+            endfeature
+            feature MHPMEVENT27;
+                measure Group MHPMEVENT27;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent27";
+                endmeasure
+            endfeature
+            feature MHPMEVENT28;
+                measure Group MHPMEVENT28;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent28";
+                endmeasure
+            endfeature
+            feature MHPMEVENT29;
+                measure Group MHPMEVENT29;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent29";
+                endmeasure
+            endfeature
+            feature MHPMEVENT30;
+                measure Group MHPMEVENT30;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent30";
+                endmeasure
+            endfeature
+            feature MHPMEVENT31;
+                measure Group MHPMEVENT31;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhpmevent31";
+                endmeasure
+            endfeature
+            feature MINSTRET;
+                measure Group MINSTRET;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.minstret";
+                endmeasure
+            endfeature
+            feature MINSTRETH;
+                measure Group MINSTRETH;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.minstreth";
+                endmeasure
+            endfeature
+            feature MCYCLE;
+                measure Group MCYCLE;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mcycle";
+                endmeasure
+            endfeature
+            feature MCYCLEH;
+                measure Group MCYCLEH;
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mcycleh";
+                endmeasure
+            endfeature
+        endfeature
+        feature TRAPS;
+            description = "Interrupts and Exceptions Support";
+            feature Interrupts;
+                measure Group Interrupts;
+                endmeasure
+            endfeature
+            feature Exceptions;
+                measure Group Exceptions;
+                endmeasure
+            endfeature
+        endfeature
+        feature PMA;
+            description = "Physical Memory Attributes support";
+            CVA6_VERSION = EMBEDDED;
+            measure Group PMA;
+            endmeasure
+        endfeature
+        feature Interfaces;
+            description = "CVA6 Interfaces";
+            feature AXI;
+                description = "Support AXI4 features and AXI5 Atomic";
+                feature Features;
+                    measure Group Features;
+                    endmeasure
+                endfeature
+                feature Assertions;
+                    measure Assert axi_protocol_assertion;
+                        source = "property: **.axi_ar_assert.*", "property: **.axi_aw_assert.*", "property: **.axi_b_assert.*", "property: **.axi_r_assert.*", "property: **.axi_w_assert.*";
+                    endmeasure
+                    measure Assert cva6_axi_assertions;
+                        source = "property: **.cva6_axi_assert.*";
+                    endmeasure
+                endfeature
+            endfeature
+            feature XIF;
+                description = "Support co-processor interface";
+                feature PROTOCOL;
+                    description = "XIF protocol checks";
+                    measure Group PROTOCOL;
+                        source = "group instance: uvma_cvxif_pkg.uvma_cvxif_pkg.request_cg", "group instance: uvma_cvxif_pkg.uvma_cvxif_pkg.response_cg", "group instance: uvma_cvxif_pkg.uvma_cvxif_pkg.result_cg";
+                    endmeasure
+                    measure Group Assertions;
+                        source = "property: **.cvxif_assert.*";
+                    endmeasure
+                endfeature
+                feature "Extednded instructions";
+                    description = "XIF extended instructions";
+                    feature Instructions;
+                        description = "Instructions";
+                        feature CUS_ADD;
+                            measure Group CUS_ADD;
+                                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.cus_add_cg";
+                            endmeasure
+                        endfeature
+                        feature CUS_ADD_MULTI;
+                            measure Group CUS_ADD_MULTI;
+                                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.cus_add_multi_cg";
+                            endmeasure
+                        endfeature
+                        feature CUS_ADD_RS3;
+                            measure Group CUS_ADD_RS3;
+                                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.cus_add_rs3_cg";
+                            endmeasure
+                        endfeature
+                        feature CUS_ADD_S;
+                            measure Group CUS_ADD_S;
+                                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.cus_add_s_cg";
+                            endmeasure
+                        endfeature
+                        feature CUS_ADD_U;
+                            measure Group CUS_ADD_U;
+                                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.cus_add_u_cg";
+                            endmeasure
+                        endfeature
+                        feature CUS_EXC;
+                            measure Group CUS_EXC;
+                                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.cus_exc_cg";
+                            endmeasure
+                        endfeature
+                    endfeature
+                    feature "Instruction sequences";
+                        description = "Instructions sequences";
+                        measure Group sequential;
+                            source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.cus_seq_cg";
+                        endmeasure
+                    endfeature
+                endfeature
+            endfeature
+        endfeature
+        feature "CVA6 Optional Features";
+            description = "Optional features support";
+            feature FPU;
+                description = "Floating Point Unit support";
+                CVA6_VERSION = STEP1;
+                FPU_ENABLED = 1;
+                measure Group FPU;
+                endmeasure
+            endfeature
+            feature MMU;
+                description = "Memory Management Unit\r support";
+                CVA6_VERSION = STEP1;
+                MMU_ENABLED = 1;
+                measure Group MMU;
+                endmeasure
+            endfeature
+            feature PMP;
+                description = "Physical Memory Protection support";
+                CVA6_VERSION = EMBEDDED;
+                PMP_ENABLED = 1;
+                measure Group PMP;
+                endmeasure
+            endfeature
+        endfeature
+    endfeature
+    feature "Code Coverage";
+        description = "CVA6 Design features code coverage";
+        measure Line, Cond, Toggle, Assert, SnpsAvg CVA6;
+            source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6";
+        endmeasure
+    endfeature
+endplan
+
