@@ -497,7 +497,7 @@ code_coverage-report:
     - mv artifacts/coverage/seedlist.yaml verif/sim/seedlist.yaml
     - make -C verif/sim generate_cov_dash
     - mv verif/sim/urgReport artifacts/cov_reports/
-    - python3 .gitlab-ci/scripts/report_pass.py
+    - python3 .gitlab-ci/scripts/report_coverage.py artifacts/cov_reports/urgReport/hierarchy.txt
 
 check gitlab jobs status:
   stage: find failures
