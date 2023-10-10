@@ -116,7 +116,7 @@ module issue_read_operands
     // Stall signal, we do not want to fetch any more entries - TO_BE_COMPLETED
     output logic stall_issue_o
 );
-  logic stall;
+  logic [SUPERSCALAR:0] stall;
   logic fu_busy;  // functional unit is busy
   logic [CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
   rs3_len_t
@@ -171,7 +171,7 @@ module issue_read_operands
   assign fpu_rm_o = fpu_rm_q;
   assign cvxif_valid_o = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
   assign cvxif_off_instr_o = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
-  assign stall_issue_o = stall;
+  assign stall_issue_o = stall[0];
   assign tinst_o = CVA6Cfg.RVH ? tinst_q : '0;
   // ---------------
   // Issue Stage
@@ -201,7 +201,7 @@ module issue_read_operands
   // check that all operands are available, otherwise stall
   // forward corresponding register
   always_comb begin : operands_available
-    stall = stall_i;
+    stall = '{default: stall_i};
     // operand forwarding signals
     forward_rs1 = '0;
     forward_rs2 = '0;
@@ -230,7 +230,7 @@ module issue_read_operands
                         (CVA6Cfg.RVS && issue_instr_i[i].op == SFENCE_VMA)))) begin
           forward_rs1[i] = 1'b1;
         end else begin  // the operand is not available -> stall
-          stall = 1'b1;
+          stall[i] = 1'b1;
         end
       end
 
@@ -245,7 +245,7 @@ module issue_read_operands
                         (CVA6Cfg.RVS && issue_instr_i[i].op == SFENCE_VMA)))) begin
           forward_rs2[i] = 1'b1;
         end else begin  // the operand is not available -> stall
-          stall = 1'b1;
+          stall[i] = 1'b1;
         end
       end
 
@@ -259,9 +259,13 @@ module issue_read_operands
         if (rs3_valid_i[i]) begin
           forward_rs3[i] = 1'b1;
         end else begin  // the operand is not available -> stall
-          stall = 1'b1;
+          stall[i] = 1'b1;
         end
       end
+    end
+
+    if (SUPERSCALAR) begin
+      // TODO stall[1] = 1'b0 if issue_instr_i[1] depends from issue_instr_i[0]
     end
   end
 
@@ -429,7 +433,7 @@ module issue_read_operands
     // and that the functional unit we need is not busy
     if (issue_instr_valid_i[0]) begin
       // check that the corresponding functional unit is not busy
-      if (!stall && !fu_busy) begin
+      if (!stall[0] && !fu_busy) begin
         // -----------------------------------------
         // WAW - Write After Write Dependency Check
         // -----------------------------------------
