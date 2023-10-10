@@ -88,6 +88,7 @@ build_tools:
   extends:
     - .setup_job
   script:
+    - git submodule update --init verif/core-v-verif
     # ROOT_PROJECT is used by Spike installer and designates the toplevel of core-v-verif tree.
     - 'export ROOT_PROJECT=$(pwd)'
     # If a local build of Spike is requested, clean up build and installation directories.
