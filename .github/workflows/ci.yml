@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         testcase: [asm-tests, mul, amo, fp, benchmarks]
+        target: [cv64a6_imafdc_sv39, cv64a6_imafdc_sv39_wb]
     env:
       RISCV: /riscv
     steps:
@@ -22,4 +23,4 @@ jobs:
     - name: Prepare
       run: ci/setup.sh
     - name: run tests
-      run: make run-${{ matrix.testcase}}-verilator
+      run: make run-${{ matrix.testcase}}-verilator target=${{ matrix.target }}
