@@ -265,7 +265,32 @@ module issue_read_operands
     end
 
     if (SUPERSCALAR) begin
-      // TODO stall[1] = 1'b0 if issue_instr_i[1] depends from issue_instr_i[0]
+      if (!issue_instr_i[1].use_zimm && (!CVA6Cfg.FpPresent || (is_rs1_fpr(
+              issue_instr_i[1].op
+          ) == is_rd_fpr(
+              issue_instr_i[0].op
+          ))) && issue_instr_i[1].rs1 == issue_instr_i[0].rd) begin
+        stall[1] = 1'b1;
+      end
+
+      if ((!CVA6Cfg.FpPresent || (is_rs2_fpr(
+              issue_instr_i[1].op
+          ) == is_rd_fpr(
+              issue_instr_i[0].op
+          ))) && issue_instr_i[1].rs2 == issue_instr_i[0].rd) begin
+        stall[1] = 1'b1;
+      end
+
+      // Only check clobbered gpr for OFFLOADED instruction
+      if ((CVA6Cfg.FpPresent && is_imm_fpr(
+              issue_instr_i[1].op
+          )) ? is_rd_fpr(
+              issue_instr_i[0].op
+          ) && issue_instr_i[0].rd == issue_instr_i[1].result[REG_ADDR_SIZE-1:0] :
+              issue_instr_i[1].op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ?
+              issue_instr_i[0].rd == issue_instr_i[1].result[REG_ADDR_SIZE-1:0] : 1'b0) begin
+        stall[1] = 1'b1;
+      end
     end
   end
 
