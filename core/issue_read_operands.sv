@@ -117,7 +117,7 @@ module issue_read_operands
     output logic stall_issue_o
 );
   logic [SUPERSCALAR:0] stall;
-  logic fu_busy;  // functional unit is busy
+  logic [SUPERSCALAR:0] fu_busy;  // functional unit is busy
   logic [CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
   rs3_len_t
       operand_c_regfile,
@@ -180,16 +180,18 @@ module issue_read_operands
   // select the right busy signal
   // this obviously depends on the functional unit we need
   always_comb begin : unit_busy
+    fu_busy = '0;
+
     unique case (issue_instr_i[0].fu)
-      NONE: fu_busy = 1'b0;
-      ALU, CTRL_FLOW, CSR, MULT: fu_busy = ~flu_ready_i;
-      LOAD, STORE: fu_busy = ~lsu_ready_i;
-      CVXIF: fu_busy = ~cvxif_ready_i;
+      NONE: fu_busy[0] = 1'b0;
+      ALU, CTRL_FLOW, CSR, MULT: fu_busy[0] = ~flu_ready_i;
+      LOAD, STORE: fu_busy[0] = ~lsu_ready_i;
+      CVXIF: fu_busy[0] = ~cvxif_ready_i;
       default: begin
         if (CVA6Cfg.FpPresent && (issue_instr_i[0].fu == FPU || issue_instr_i[0].fu == FPU_VEC)) begin
-          fu_busy = ~fpu_ready_i;
+          fu_busy[0] = ~fpu_ready_i;
         end else begin
-          fu_busy = 1'b0;
+          fu_busy[0] = 1'b0;
         end
       end
     endcase
@@ -458,7 +460,7 @@ module issue_read_operands
     // and that the functional unit we need is not busy
     if (issue_instr_valid_i[0]) begin
       // check that the corresponding functional unit is not busy
-      if (!stall[0] && !fu_busy) begin
+      if (!stall[0] && !fu_busy[0]) begin
         // -----------------------------------------
         // WAW - Write After Write Dependency Check
         // -----------------------------------------
