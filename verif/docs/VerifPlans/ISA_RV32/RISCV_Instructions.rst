@@ -1,4 +1,4 @@
-..
+﻿..
    Copyright (c) 2023 OpenHW Group
    Copyright (c) 2023 Thales DIS design services SAS
 
@@ -31,6 +31,7 @@ In this document, we present ISA (Instruction Set Architecture) for C32VA6_v5.0.
 * RV32C        – Standard Extension for Compressed Instructions
 * RV32Zicsr    – Standard Extension for CSR Instructions
 * RV32Zifencei – Standard Extension for Instruction-Fetch Fence
+* RV32Zicond   – Standard Extension for Integer Conditional Operations
 
 The base RISC-V ISA has fixed-length 32-bit instructions or 16-bit instructions (the C32VA6_v5.0.0 support C extension), so that must be naturally aligned on 4-byte boundary or 2-byte boundary.
 The C32VA6_v5.0.0 supports:
@@ -451,7 +452,7 @@ Control Transfer Instructions
     **Format**: beq rs1, rs2, imm[12:1]
 
     **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are equal.
-    
+
     **Pseudocode**: if (x[rs1] == x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
     **Invalid values**: NONE
@@ -465,7 +466,7 @@ Control Transfer Instructions
     **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are not equal.
 
     **Pseudocode**: if (x[rs1] != x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
-       
+
     **Invalid values**: NONE
 
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
@@ -479,7 +480,7 @@ Control Transfer Instructions
     **Pseudocode**: if (x[rs1] < x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
 
     **Invalid values**: NONE
-    
+
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
 - **BLTU**: Branch Less Than Unsigned
@@ -513,7 +514,7 @@ Control Transfer Instructions
     **Description**: takes the branch (pc is calculated using signed arithmetic) if registers rs1 is greater than or equal rs2 (using unsigned comparison).
 
     **Pseudocode**: if (x[rs1] >=u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4
-    
+
     **Invalid values**: NONE
 
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
@@ -1338,6 +1339,35 @@ RV32Zifencei Instruction-Fetch Fence
     **Description**: The FENCE.I instruction is used to synchronize the instruction and data streams. RISC-V does not guarantee that stores to instruction memory will be made visible to instruction fetches on the same RISC-V hart until a FENCE.I instruction is executed. A FENCE.I instruction only ensures that a subsequent instruction fetch on a RISC-V hart will see any previous data stores already visible to the same RISC-V hart.
 
     **Pseudocode**: Fence(Store, Fetch)
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+RV32Zicond Integer Conditional operations
+-------------------------------------------
+
+The instructions follow the format for R-type instructions with 3 operands (i.e., 2 source operands and 1 destination operand). Using these instructions, branchless sequences can be implemented (typically in two-instruction sequences) without the need for instruction fusion, special provisions during the decoding of architectural instructions, or other microarchitectural provisions.
+
+- **CZERO.EQZ**: Conditional zero, if condition is equal to zero
+
+    **Format**: czero.eqz rd, rs1, rs2
+
+    **Description**: This instruction behaves as if there is a conditional branch dependent on rs2 being equal to zero, wherein it branches to code that writes a 0 into rd when the equivalence is true, and otherwise falls through to code that moves rs1 into rd.
+
+    **Pseudocode**: if (x[rs2] == 0) x[rd] = 0 else x[rs1]
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+- **CZERO.NEZ**: Conditional zero, if condition is nonzero
+
+    **Format**: czero.nez rd, rs1, rs2
+
+    **Description**: This instruction behaves as if there is a conditional branch dependent on rs2 being not equal to zero, wherein it branches to code that writes a 0 into rd when the equivalence is true, and otherwise falls through to code that moves rs1 into rd
+
+    **Pseudocode**: if (x[rs2] != 0) x[rd] = 0 else x[rs1]
 
     **Invalid values**: NONE
 
