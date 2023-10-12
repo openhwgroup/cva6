@@ -970,7 +970,7 @@ module cva6 import ariane_pkg::*; #(
     .inval_valid_i         ( inval_valid                 ),
     .inval_ready_o         ( inval_ready                 )
   );
-  end else if (DCACHE_TYPE == int'(config_pkg::HPDCACHE)) begin : gen_hpdcache_subsystem
+  end else if (DCACHE_TYPE == int'(config_pkg::HPDCACHE)) begin : gen_cache_hpd
   cva6_hpdcache_subsystem #(
     .CVA6Cfg               ( CVA6ExtendCfg ),
     .NumPorts              ( NumPorts ),
@@ -1022,7 +1022,7 @@ module cva6 import ariane_pkg::*; #(
     .noc_resp_i            ( noc_resp_i )
   );
   assign inval_ready                  = 1'b1;
-  end else begin
+  end else begin : gen_cache_wb
   std_cache_subsystem #(
     // note: this only works with one cacheable region
     // not as important since this cache subsystem is about to be
