@@ -39,4 +39,4 @@
 	url = https://github.com/openhwgroup/core-v-verif
 [submodule "core/cache_subsystem/hpdcache"]
 	path = core/cache_subsystem/hpdcache
-	url = git@github.com:openhwgroup/cv-hpdcache.git
+	url = https://github.com/openhwgroup/cv-hpdcache.git
