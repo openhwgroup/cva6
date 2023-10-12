@@ -153,7 +153,6 @@ sources:
       - core/perf_counters.sv
       - core/ariane_regfile_ff.sv
       - core/ariane_regfile_fpga.sv
-      - core/re_name.sv
       # NOTE: scoreboard.sv modified for DSIM (unchanged for other simulators)
       - core/scoreboard.sv
       - core/store_buffer.sv
