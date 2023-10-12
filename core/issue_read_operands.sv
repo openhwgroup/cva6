@@ -116,8 +116,13 @@ module issue_read_operands
     // Stall signal, we do not want to fetch any more entries - TO_BE_COMPLETED
     output logic stall_issue_o
 );
+  typedef struct packed {
+    logic none, load, store, alu, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel;
+  } fus_busy_t;
+
   logic [SUPERSCALAR:0] stall;
   logic [SUPERSCALAR:0] fu_busy;  // functional unit is busy
+  fus_busy_t [SUPERSCALAR:0] fus_busy;  // which functional units are considered busy
   logic [CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
   rs3_len_t
       operand_c_regfile,
@@ -177,24 +182,82 @@ module issue_read_operands
   // Issue Stage
   // ---------------
 
+  always_comb begin : structural_hazards
+    fus_busy = '0;
+
+    if (!flu_ready_i) begin
+      fus_busy[0].alu = 1'b1;
+      fus_busy[0].ctrl_flow = 1'b1;
+      fus_busy[0].csr = 1'b1;
+      fus_busy[0].mult = 1'b1;
+    end
+
+    // after a multiplication was issued we can only issue another multiplication
+    // otherwise we will get contentions on the fixed latency bus
+    if (mult_valid_q) begin
+      fus_busy[0].alu = 1'b1;
+      fus_busy[0].ctrl_flow = 1'b1;
+      fus_busy[0].csr = 1'b1;
+    end
+
+    if (CVA6Cfg.FpPresent && !fpu_ready_i) begin
+      fus_busy[0].fpu = 1'b1;
+      fus_busy[0].fpu_vec = 1'b1;
+    end
+
+    if (!lsu_ready_i) begin
+      fus_busy[0].load  = 1'b1;
+      fus_busy[0].store = 1'b1;
+    end
+
+    if (!cvxif_ready_i) begin
+      fus_busy[0].cvxif = 1'b1;
+    end
+
+    if (SUPERSCALAR) begin
+      fus_busy[1] = fus_busy[0];
+
+      unique case (issue_instr_i[0].fu)
+        NONE: fus_busy[1].none = 1'b1;
+        // Control hazard
+        CTRL_FLOW: fus_busy[1] = '1;
+        ALU, CSR: begin
+          fus_busy[1].alu = 1'b1;
+          fus_busy[1].ctrl_flow = 1'b1;
+          fus_busy[1].csr = 1'b1;
+        end
+        MULT: fus_busy[1].mult = 1'b1;
+        FPU, FPU_VEC: begin
+          fus_busy[1].fpu = 1'b1;
+          fus_busy[1].fpu_vec = 1'b1;
+        end
+        LOAD, STORE: begin
+          fus_busy[1].load  = 1'b1;
+          fus_busy[1].store = 1'b1;
+        end
+        CVXIF: fus_busy[1].cvxif = 1'b1;
+      endcase
+    end
+  end
+
   // select the right busy signal
   // this obviously depends on the functional unit we need
-  always_comb begin : unit_busy
-    fu_busy = '0;
-
-    unique case (issue_instr_i[0].fu)
-      NONE: fu_busy[0] = 1'b0;
-      ALU, CTRL_FLOW, CSR, MULT: fu_busy[0] = ~flu_ready_i;
-      LOAD, STORE: fu_busy[0] = ~lsu_ready_i;
-      CVXIF: fu_busy[0] = ~cvxif_ready_i;
-      default: begin
-        if (CVA6Cfg.FpPresent && (issue_instr_i[0].fu == FPU || issue_instr_i[0].fu == FPU_VEC)) begin
-          fu_busy[0] = ~fpu_ready_i;
-        end else begin
-          fu_busy[0] = 1'b0;
-        end
-      end
-    endcase
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    always_comb begin
+      unique case (issue_instr_i[i].fu)
+        NONE: fu_busy[i] = fus_busy[i].none;
+        ALU: fu_busy[i] = fus_busy[i].alu;
+        CTRL_FLOW: fu_busy[i] = fus_busy[i].ctrl_flow;
+        CSR: fu_busy[i] = fus_busy[i].csr;
+        MULT: fu_busy[i] = fus_busy[i].mult;
+        FPU: fu_busy[i] = fus_busy[i].fpu;
+        FPU_VEC: fu_busy[i] = fus_busy[i].fpu_vec;
+        LOAD: fu_busy[i] = fus_busy[i].load;
+        STORE: fu_busy[i] = fus_busy[i].store;
+        CVXIF: fu_busy[i] = fus_busy[i].cvxif;
+        default: fu_busy[i] = 1'b0;
+      endcase
+    end
   end
 
   // ---------------
@@ -494,11 +557,6 @@ module issue_read_operands
       if (issue_instr_i[0].fu == NONE) begin
         issue_ack_o[0] = 1'b1;
       end
-    end
-    // after a multiplication was issued we can only issue another multiplication
-    // otherwise we will get contentions on the fixed latency bus
-    if (mult_valid_q && issue_instr_i[0].fu inside {ALU, CTRL_FLOW, CSR}) begin
-      issue_ack_o[0] = 1'b0;
     end
   end
 
