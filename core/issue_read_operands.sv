@@ -126,11 +126,11 @@ module issue_read_operands
   logic [SUPERSCALAR:0] stall;
   logic [SUPERSCALAR:0] fu_busy;  // functional unit is busy
   fus_busy_t [SUPERSCALAR:0] fus_busy;  // which functional units are considered busy
-  logic [CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
-  rs3_len_t
-      operand_c_regfile,
-      operand_c_fpr,
-      operand_c_gpr;  // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
+  // operands coming from regfile
+  logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;
+  // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
+  rs3_len_t [SUPERSCALAR:0] operand_c_regfile, operand_c_gpr;
+  rs3_len_t operand_c_fpr;
   // output flipflop (ID <-> EX)
   logic [CVA6Cfg.XLEN-1:0]
       operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
@@ -372,17 +372,17 @@ module issue_read_operands
   // Forwarding/Output MUX
   always_comb begin : forwarding_operand_select
     // default is regfiles (gpr or fpr)
-    operand_a_n = operand_a_regfile;
-    operand_b_n = operand_b_regfile;
+    operand_a_n = operand_a_regfile[0];
+    operand_b_n = operand_b_regfile[0];
     // immediates are the third operands in the store case
     // for FP operations, the imm field can also be the third operand from the regfile
     if (CVA6Cfg.NrRgprPorts == 3) begin
       imm_n = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
-          {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile} :
-          issue_instr_i[0].op == OFFLOAD ? operand_c_regfile : issue_instr_i[0].result;
+          {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[0]} :
+          issue_instr_i[0].op == OFFLOAD ? operand_c_regfile[0] : issue_instr_i[0].result;
     end else begin
       imm_n = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
-          {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile} : issue_instr_i[0].result;
+          {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[0]} : issue_instr_i[0].result;
     end
     trans_id_n = issue_instr_i[0].trans_id;
     fu_n       = issue_instr_i[0].fu;
@@ -628,11 +628,22 @@ module issue_read_operands
   logic [2:0][4:0] fp_raddr_pack;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] fp_wdata_pack;
 
+  always_comb begin : assign_fp_raddr_pack
+    fp_raddr_pack = {
+      issue_instr_i[0].result[4:0], issue_instr_i[0].rs2[4:0], issue_instr_i[0].rs1[4:0]
+    };
+
+    if (SUPERSCALAR) begin
+      if (!(issue_instr_i[0].fu inside {FPU, FPU_VEC})) begin
+        fp_raddr_pack = {
+          issue_instr_i[1].result[4:0], issue_instr_i[1].rs2[4:0], issue_instr_i[1].rs1[4:0]
+        };
+      end
+    end
+  end
+
   generate
     if (CVA6Cfg.FpPresent) begin : float_regfile_gen
-      assign fp_raddr_pack = {
-        issue_instr_i[0].result[4:0], issue_instr_i[0].rs2[4:0], issue_instr_i[0].rs1[4:0]
-      };
       for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_fp_wdata_pack
         assign fp_wdata_pack[i] = {wdata_i[i][CVA6Cfg.FLen-1:0]};
       end
@@ -674,20 +685,25 @@ module issue_read_operands
 
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_operand_c
     assign operand_c_fpr = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[2]};
-    assign operand_c_gpr = rdata[2];
   end else begin
     assign operand_c_fpr = fprdata[2];
   end
 
-  assign operand_a_regfile = (CVA6Cfg.FpPresent && is_rs1_fpr(
-      issue_instr_i[0].op
-  )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[0];
-  assign operand_b_regfile = (CVA6Cfg.FpPresent && is_rs2_fpr(
-      issue_instr_i[0].op
-  )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[1];
-  assign operand_c_regfile = (CVA6Cfg.NrRgprPorts == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(
-      issue_instr_i[0].op
-  )) ? operand_c_fpr : operand_c_gpr) : operand_c_fpr;
+  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+    if (CVA6Cfg.NrRgprPorts == 3) begin : gen_operand_c
+      assign operand_c_gpr[i] = rdata[i*OPERANDS_PER_INSTR+2];
+    end
+
+    assign operand_a_regfile[i] = (CVA6Cfg.FpPresent && is_rs1_fpr(
+        issue_instr_i[i].op
+    )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[i*OPERANDS_PER_INSTR+0];
+    assign operand_b_regfile[i] = (CVA6Cfg.FpPresent && is_rs2_fpr(
+        issue_instr_i[i].op
+    )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[i*OPERANDS_PER_INSTR+1];
+    assign operand_c_regfile[i] = (CVA6Cfg.NrRgprPorts == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(
+        issue_instr_i[i].op
+    )) ? operand_c_fpr : operand_c_gpr[i]) : operand_c_fpr;
+  end
 
   // ----------------------
   // Registers (ID <-> EX)
