@@ -106,7 +106,7 @@ module commit_stage
     commit_lsu_o = 1'b0;
     commit_csr_o = 1'b0;
     // amos will commit on port 0
-    wdata_o[0] = (amo_resp_i.ack) ? amo_resp_i.result[riscv::XLEN-1:0] : commit_instr_i[0].result;
+    wdata_o[0] = (CVA6Cfg.RVA && amo_resp_i.ack) ? amo_resp_i.result[riscv::XLEN-1:0] : commit_instr_i[0].result;
     csr_op_o = ADD;  // this corresponds to a CSR NOP
     csr_wdata_o = {riscv::XLEN{1'b0}};
     fence_i_o = 1'b0;
