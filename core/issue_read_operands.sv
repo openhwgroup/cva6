@@ -132,8 +132,8 @@ module issue_read_operands
   rs3_len_t [SUPERSCALAR:0] operand_c_regfile, operand_c_gpr;
   rs3_len_t operand_c_fpr;
   // output flipflop (ID <-> EX)
-  logic [CVA6Cfg.XLEN-1:0]
-      operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
+  fu_data_t fu_data_n, fu_data_q;
+  logic [CVA6Cfg.XLEN-1:0] imm_forward_rs3;
 
   logic        alu_valid_q;
   logic        mult_valid_q;
@@ -146,9 +146,6 @@ module issue_read_operands
   logic        cvxif_valid_q;
   logic [31:0] cvxif_off_instr_q;
 
-  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
-  fu_op operator_n, operator_q;  // operation to perform
-  fu_t fu_n, fu_q;  // functional unit to use
   logic [SUPERSCALAR:0][31:0] tinst_n, tinst_q;  // transformed instruction
 
   // forwarding signals
@@ -160,15 +157,10 @@ module issue_read_operands
 
   // ID <-> EX registers
 
-  assign rs1_forwarding_o = operand_a_n[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
-  assign rs2_forwarding_o = operand_b_n[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
+  assign rs1_forwarding_o = fu_data_n.operand_a[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
+  assign rs2_forwarding_o = fu_data_n.operand_b[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
 
-  assign fu_data_o.operand_a = operand_a_q;
-  assign fu_data_o.operand_b = operand_b_q;
-  assign fu_data_o.fu = fu_q;
-  assign fu_data_o.operation = operator_q;
-  assign fu_data_o.trans_id = trans_id_q;
-  assign fu_data_o.imm = imm_q;
+  assign fu_data_o = fu_data_q;
   assign alu_valid_o = alu_valid_q;
   assign branch_valid_o = branch_valid_q;
   assign lsu_valid_o = lsu_valid_q;
@@ -372,40 +364,40 @@ module issue_read_operands
   // Forwarding/Output MUX
   always_comb begin : forwarding_operand_select
     // default is regfiles (gpr or fpr)
-    operand_a_n = operand_a_regfile[0];
-    operand_b_n = operand_b_regfile[0];
+    fu_data_n.operand_a = operand_a_regfile[0];
+    fu_data_n.operand_b = operand_b_regfile[0];
     // immediates are the third operands in the store case
     // for FP operations, the imm field can also be the third operand from the regfile
     if (CVA6Cfg.NrRgprPorts == 3) begin
-      imm_n = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
+      fu_data_n.imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
           {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[0]} :
           issue_instr_i[0].op == OFFLOAD ? operand_c_regfile[0] : issue_instr_i[0].result;
     end else begin
-      imm_n = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
+      fu_data_n.imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
           {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[0]} : issue_instr_i[0].result;
     end
-    trans_id_n = issue_instr_i[0].trans_id;
-    fu_n       = issue_instr_i[0].fu;
-    operator_n = issue_instr_i[0].op;
+    fu_data_n.trans_id  = issue_instr_i[0].trans_id;
+    fu_data_n.fu        = issue_instr_i[0].fu;
+    fu_data_n.operation = issue_instr_i[0].op;
     if (CVA6Cfg.RVH) begin
       tinst_n[0] = issue_instr_i[0].ex.tinst;
     end
     // or should we forward
     if (forward_rs1[0]) begin
-      operand_a_n = rs1_i[0];
+      fu_data_n.operand_a = rs1_i[0];
     end
 
     if (forward_rs2[0]) begin
-      operand_b_n = rs2_i[0];
+      fu_data_n.operand_b = rs2_i[0];
     end
 
     if (CVA6Cfg.FpPresent && forward_rs3[0]) begin
-      imm_n = imm_forward_rs3;
+      fu_data_n.imm = imm_forward_rs3;
     end
 
     // use the PC as operand a
     if (issue_instr_i[0].use_pc) begin
-      operand_a_n = {
+      fu_data_n.operand_a = {
         {CVA6Cfg.XLEN - CVA6Cfg.VLEN{issue_instr_i[0].pc[CVA6Cfg.VLEN-1]}}, issue_instr_i[0].pc
       };
     end
@@ -413,14 +405,14 @@ module issue_read_operands
     // use the zimm as operand a
     if (issue_instr_i[0].use_zimm) begin
       // zero extend operand a
-      operand_a_n = {{CVA6Cfg.XLEN - 5{1'b0}}, issue_instr_i[0].rs1[4:0]};
+      fu_data_n.operand_a = {{CVA6Cfg.XLEN - 5{1'b0}}, issue_instr_i[0].rs1[4:0]};
     end
     // or is it an immediate (including PC), this is not the case for a store, control flow, and accelerator instructions
     // also make sure operand B is not already used as an FP operand
     if (issue_instr_i[0].use_imm && (issue_instr_i[0].fu != STORE) && (issue_instr_i[0].fu != CTRL_FLOW) && (issue_instr_i[0].fu != ACCEL) && !(CVA6Cfg.FpPresent && is_rs2_fpr(
             issue_instr_i[0].op
         ))) begin
-      operand_b_n = issue_instr_i[0].result;
+      fu_data_n.operand_b = issue_instr_i[0].result;
     end
   end
 
@@ -710,12 +702,7 @@ module issue_read_operands
   // ----------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      operand_a_q <= '{default: 0};
-      operand_b_q <= '{default: 0};
-      imm_q       <= '0;
-      fu_q        <= NONE;
-      operator_q  <= ADD;
-      trans_id_q  <= '0;
+      fu_data_q             <= '0;
       if (CVA6Cfg.RVH) begin
         tinst_q <= '0;
       end
@@ -723,12 +710,7 @@ module issue_read_operands
       is_compressed_instr_o <= 1'b0;
       branch_predict_o      <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
     end else begin
-      operand_a_q <= operand_a_n;
-      operand_b_q <= operand_b_n;
-      imm_q       <= imm_n;
-      fu_q        <= fu_n;
-      operator_q  <= operator_n;
-      trans_id_q  <= trans_id_n;
+      fu_data_q             <= fu_data_n;
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;
       end
@@ -749,9 +731,9 @@ module issue_read_operands
   end
 
   assert property (@(posedge clk_i) (branch_valid_q) |-> (!$isunknown(
-      operand_a_q
+      fu_data_q.operand_a
   ) && !$isunknown(
-      operand_b_q
+      fu_data_q.operand_b
   )))
   else $warning("Got unknown value in one of the operands");
 
