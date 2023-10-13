@@ -107,6 +107,8 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
     /// Bit mask which bits to consider when matching the rule.
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
+    /// Maximum number of outstanding stores.
+    int unsigned                 MaxOutstandingStores;
   } cva6_cfg_t;
 
 

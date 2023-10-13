@@ -551,7 +551,7 @@ module miss_handler
   // ----------------------
   axi_adapter_arbiter #(
       .NR_PORTS           (NR_BYPASS_PORTS),
-      .MAX_OUTSTANDING_REQ(7),
+      .MAX_OUTSTANDING_REQ(CVA6Cfg.MaxOutstandingStores),
       .req_t              (bypass_req_t),
       .rsp_t              (bypass_rsp_t)
   ) i_bypass_arbiter (
@@ -576,7 +576,6 @@ module miss_handler
       .CVA6Cfg              (CVA6Cfg),
       .DATA_WIDTH           (64),
       .CACHELINE_BYTE_OFFSET(DCACHE_BYTE_OFFSET),
-      .MAX_OUTSTANDING_AW   (7),
       .axi_req_t            (axi_req_t),
       .axi_rsp_t            (axi_rsp_t)
   ) i_bypass_axi_adapter (

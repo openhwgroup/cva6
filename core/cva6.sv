@@ -210,7 +210,8 @@ module cva6
     CVA6Cfg.ExecuteRegionLength,
     CVA6Cfg.NrCachedRegionRules,
     CVA6Cfg.CachedRegionAddrBase,
-    CVA6Cfg.CachedRegionLength
+    CVA6Cfg.CachedRegionLength,
+    CVA6Cfg.MaxOutstandingStores
   };
 
 

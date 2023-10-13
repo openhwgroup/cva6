@@ -21,7 +21,6 @@ module axi_adapter #(
     parameter int unsigned DATA_WIDTH = 256,
     parameter logic        CRITICAL_WORD_FIRST   = 0, // the AXI subsystem needs to support wrapping reads for this feature
     parameter int unsigned CACHELINE_BYTE_OFFSET = 8,
-    parameter int unsigned MAX_OUTSTANDING_AW    = 0,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
 ) (
@@ -55,6 +54,7 @@ module axi_adapter #(
   ) > 0) ? $clog2(
       DATA_WIDTH / CVA6Cfg.AxiDataWidth
   ) : 1;
+  localparam MAX_OUTSTANDING_AW = CVA6Cfg.MaxOutstandingStores;
   localparam MAX_OUTSTANDING_AW_CNT_WIDTH = $clog2(MAX_OUTSTANDING_AW + 1) > 0 ? $clog2(MAX_OUTSTANDING_AW + 1) : 1;
 
   typedef logic [MAX_OUTSTANDING_AW_CNT_WIDTH-1:0] outstanding_aw_cnt_t;
