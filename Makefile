@@ -47,8 +47,6 @@ $(warning must set CVA6_REPO_DIR to point at the root of CVA6 sources -- doing i
 export CVA6_REPO_DIR = $(abspath $(root-dir))
 endif
 
-export HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
-
 support_verilator_4 := $(shell ($(verilator) --version | grep '4\.') > /dev/null 2>&1 ; echo $$?)
 ifeq ($(support_verilator_4), 0)
 	verilator_threads := 1
@@ -95,6 +93,16 @@ target     ?= cv64a6_imafdc_sv39
 ifndef TARGET_CFG
 	export TARGET_CFG = $(target)
 endif
+
+# HPDcache directory
+HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
+export HPDCACHE_DIR
+
+# Target HPDcache configuration package.
+#   The HPDCACHE_TARGET_CFG variable contains the path (relative or absolute)
+#   to your target configuration package
+HPDCACHE_TARGET_CFG ?= ${CVA6_REPO_DIR}/core/include/cva6_hpdcache_default_config_pkg.sv
+export HPDCACHE_TARGET_CFG
 
 # Sources
 # Package files -> compile first

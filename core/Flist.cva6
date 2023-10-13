@@ -155,7 +155,7 @@ ${CVA6_REPO_DIR}/core/cache_subsystem/cache_ctrl.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_icache_axi_wrapper.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/std_cache_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/std_nbdcache.sv
-${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_params_pkg.sv
+${HPDCACHE_TARGET_CFG}
 -F ${HPDCACHE_DIR}/rtl/hpdcache.Flist
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_subsystem_axi_arbiter.sv
