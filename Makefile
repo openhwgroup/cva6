@@ -657,7 +657,12 @@ check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
-src_flist := $(addprefix $(root-dir), $(shell cat core/Flist.cva6|grep "$\{CVA6_REPO_DIR.\+sv"|sed "s/.*CVA6_REPO_DIR..//"|sed "s/..TARGET_CFG./$(target)/"))
+src_flist = $(shell \
+	    CVA6_REPO_DIR=$(CVA6_REPO_DIR) \
+	    TARGET_CFG=$(TARGET_CFG) \
+	    HPDCACHE_TARGET_CFG=$(HPDCACHE_TARGET_CFG) \
+	    HPDCACHE_DIR=$(HPDCACHE_DIR) \
+	    python3 util/flist_flattener.py core/Flist.cva6)
 fpga_filter := $(addprefix $(root-dir), corev_apu/bootrom/bootrom.sv)
 fpga_filter += $(addprefix $(root-dir), core/include/instr_tracer_pkg.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
