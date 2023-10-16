@@ -184,10 +184,10 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( CVA6Cfg.AxiAddrWidth     ),
-    .AXI_DATA_WIDTH ( CVA6Cfg.AxiDataWidth     ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_USER_WIDTH ( CVA6Cfg.AxiUserWidth     )
+    .AXI_ADDR_WIDTH ( CVA6Cfg.AxiAddrWidth         ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.AxiDataWidth         ),
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( CVA6Cfg.AxiUserWidth         )
   ) cva6_axi_bus();
 
   axi_master_connect #(
@@ -198,10 +198,10 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   );
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_ADDR_WIDTH ( CVA6Cfg.AxiAddrWidth     ),
-    .AXI_DATA_WIDTH ( CVA6Cfg.AxiDataWidth     ),
-    .AXI_USER_WIDTH ( CVA6Cfg.AxiUserWidth     )
+    .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
+    .AXI_ADDR_WIDTH ( CVA6Cfg.AxiAddrWidth         ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.AxiDataWidth         ),
+    .AXI_USER_WIDTH ( CVA6Cfg.AxiUserWidth         )
   ) i_cva6_axi2mem (
     .clk_i  ( clk_i       ),
     .rst_ni ( rst_ni      ),

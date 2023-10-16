@@ -37,3 +37,6 @@
 [submodule "verif/core-v-verif"]
 	path = verif/core-v-verif
 	url = https://github.com/openhwgroup/core-v-verif
+[submodule "core/cache_subsystem/hpdcache"]
+	path = core/cache_subsystem/hpdcache
+	url = https://github.com/openhwgroup/cv-hpdcache.git

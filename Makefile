@@ -94,6 +94,16 @@ ifndef TARGET_CFG
 	export TARGET_CFG = $(target)
 endif
 
+# HPDcache directory
+HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
+export HPDCACHE_DIR
+
+# Target HPDcache configuration package.
+#   The HPDCACHE_TARGET_CFG variable contains the path (relative or absolute)
+#   to your target configuration package
+HPDCACHE_TARGET_CFG ?= ${CVA6_REPO_DIR}/core/include/cva6_hpdcache_default_config_pkg.sv
+export HPDCACHE_TARGET_CFG
+
 # Sources
 # Package files -> compile first
 ariane_pkg := \
@@ -550,7 +560,7 @@ verilate_command := $(verilator) verilator_config.vlt                           
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG), --trace-structs,)                                                             \
                     $(if $(TRACE_COMPACT), --trace-fst $(VL_INC_DIR)/verilated_fst_c.cpp)                        \
-                    $(if $(TRACE_FAST), --trace $(VL_INC_DIR)/include/verilated_vcd_c.cpp)                       \
+                    $(if $(TRACE_FAST), --trace $(VL_INC_DIR)/verilated_vcd_c.cpp)                               \
                     -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr$(if $(PROFILE), -g -pg,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) -DVL_DEBUG"                                      \
                     --cc  --vpi                                                                                  \
@@ -647,7 +657,12 @@ check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
-src_flist := $(addprefix $(root-dir), $(shell cat core/Flist.cva6|grep "$\{CVA6_REPO_DIR.\+sv"|sed "s/.*CVA6_REPO_DIR..//"|sed "s/..TARGET_CFG./$(target)/"))
+src_flist = $(shell \
+	    CVA6_REPO_DIR=$(CVA6_REPO_DIR) \
+	    TARGET_CFG=$(TARGET_CFG) \
+	    HPDCACHE_TARGET_CFG=$(HPDCACHE_TARGET_CFG) \
+	    HPDCACHE_DIR=$(HPDCACHE_DIR) \
+	    python3 util/flist_flattener.py core/Flist.cva6)
 fpga_filter := $(addprefix $(root-dir), corev_apu/bootrom/bootrom.sv)
 fpga_filter += $(addprefix $(root-dir), core/include/instr_tracer_pkg.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)

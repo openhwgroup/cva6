@@ -145,7 +145,7 @@ covergroup cg_cva6_config(string name) with function sample();
       bins PerfCounterEn ={0};
    }
    cp_DcacheType : coverpoint cva6_config_pkg::CVA6ConfigDcacheType {
-      bins DcacheType ={cva6_config_pkg::WT};
+      bins DcacheType ={config_pkg::WT};
    }
    cp_MmuPresent : coverpoint cva6_config_pkg::CVA6ConfigMmuPresent {
       bins MmuPresent ={0};

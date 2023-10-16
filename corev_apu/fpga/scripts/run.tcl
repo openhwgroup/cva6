@@ -38,7 +38,13 @@ read_ip { \
 }
 # read_ip xilinx/xlnx_protocol_checker/ip/xlnx_protocol_checker.xci
 
-set_property include_dirs { "src/axi_sd_bridge/include" "../../vendor/pulp-platform/common_cells/include" "../../vendor/pulp-platform/axi/include" "../register_interface/include"} [current_fileset]
+set_property include_dirs { \
+	"src/axi_sd_bridge/include" \
+	"../../vendor/pulp-platform/common_cells/include" \
+	"../../vendor/pulp-platform/axi/include" \
+	"../../core/cache_subsystem/hpdcache/rtl/include" \
+	"../register_interface/include" \
+} [current_fileset]
 
 source scripts/add_sources.tcl
 

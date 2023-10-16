@@ -19,6 +19,11 @@ ifndef TARGET_CFG
 export TARGET_CFG = $(target)
 endif
 
+HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
+export HPDCACHE_DIR
+HPDCACHE_TARGET_CFG ?= ${CVA6_REPO_DIR}/core/include/cva6_hpdcache_default_config_pkg.sv
+export HPDCACHE_TARGET_CFG
+
 .DEFAULT_GOAL := help
 
 FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
