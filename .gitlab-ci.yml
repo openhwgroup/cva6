@@ -36,7 +36,7 @@ workflow:
         CI_KIND: regress
     - if: $CI_COMMIT_BRANCH =~ /.*_PR_.*/
       variables:
-        CI_KIND: regress
+        CI_KIND: dev
     - if: $CI_COMMIT_BRANCH =~ /^dev.*/
       variables:
         CI_KIND: dev
