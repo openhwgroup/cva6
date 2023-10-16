@@ -444,35 +444,37 @@ module issue_read_operands
       // Exception pass through:
       // If an exception has occurred simply pass it through
       // we do not want to issue this instruction
-      if (!issue_instr_i[0].ex.valid && issue_instr_valid_i[0] && issue_ack_o[0]) begin
-        case (issue_instr_i[0].fu)
-          ALU: begin
-            alu_valid_q[0] <= 1'b1;
-          end
-          CTRL_FLOW: begin
-            branch_valid_q[0] <= 1'b1;
-          end
-          MULT: begin
-            mult_valid_q[0] <= 1'b1;
-          end
-          LOAD, STORE: begin
-            lsu_valid_q[0] <= 1'b1;
-          end
-          CSR: begin
-            csr_valid_q[0] <= 1'b1;
-          end
-          default: begin
-            if (issue_instr_i[0].fu == FPU && CVA6Cfg.FpPresent) begin
-              fpu_valid_q[0] <= 1'b1;
-              fpu_fmt_q      <= orig_instr.rftype.fmt;  // fmt bits from instruction
-              fpu_rm_q       <= orig_instr.rftype.rm;  // rm bits from instruction
-            end else if (issue_instr_i[0].fu == FPU_VEC && CVA6Cfg.FpPresent) begin
-              fpu_valid_q[0] <= 1'b1;
-              fpu_fmt_q      <= orig_instr.rvftype.vfmt;  // vfmt bits from instruction
-              fpu_rm_q       <= {2'b0, orig_instr.rvftype.repl};  // repl bit from instruction
+      for (int unsigned i = 0; i <= SUPERSCALAR; i++) begin
+        if (!issue_instr_i[i].ex.valid && issue_instr_valid_i[i] && issue_ack_o[i]) begin
+          case (issue_instr_i[i].fu)
+            ALU: begin
+              alu_valid_q[i] <= 1'b1;
             end
-          end
-        endcase
+            CTRL_FLOW: begin
+              branch_valid_q[i] <= 1'b1;
+            end
+            MULT: begin
+              mult_valid_q[i] <= 1'b1;
+            end
+            LOAD, STORE: begin
+              lsu_valid_q[i] <= 1'b1;
+            end
+            CSR: begin
+              csr_valid_q[i] <= 1'b1;
+            end
+            default: begin
+              if (issue_instr_i[i].fu == FPU && CVA6Cfg.FpPresent) begin
+                fpu_valid_q[i] <= 1'b1;
+                fpu_fmt_q      <= orig_instr.rftype.fmt;  // fmt bits from instruction
+                fpu_rm_q       <= orig_instr.rftype.rm;  // rm bits from instruction
+              end else if (issue_instr_i[i].fu == FPU_VEC && CVA6Cfg.FpPresent) begin
+                fpu_valid_q[i] <= 1'b1;
+                fpu_fmt_q      <= orig_instr.rvftype.vfmt;  // vfmt bits from instruction
+                fpu_rm_q       <= {2'b0, orig_instr.rvftype.repl};  // repl bit from instruction
+              end
+            end
+          endcase
+        end
       end
       // if we got a flush request, de-assert the valid flag, otherwise we will start this
       // functional unit with the wrong inputs
@@ -495,14 +497,16 @@ module issue_read_operands
       end else begin
         cvxif_valid_q <= '0;
         cvxif_off_instr_q <= 32'b0;
-        if (!issue_instr_i[0].ex.valid && issue_instr_valid_i[0] && issue_ack_o[0]) begin
-          case (issue_instr_i[0].fu)
-            CVXIF: begin
-              cvxif_valid_q[0]  <= 1'b1;
-              cvxif_off_instr_q <= orig_instr;
-            end
-            default: ;
-          endcase
+        for (int unsigned i = 0; i <= SUPERSCALAR; i++) begin
+          if (!issue_instr_i[i].ex.valid && issue_instr_valid_i[i] && issue_ack_o[i]) begin
+            case (issue_instr_i[i].fu)
+              CVXIF: begin
+                cvxif_valid_q[i]  <= 1'b1;
+                cvxif_off_instr_q <= orig_instr;
+              end
+              default: ;
+            endcase
+          end
         end
         if (flush_i) begin
           cvxif_valid_q <= '0;
@@ -516,45 +520,53 @@ module issue_read_operands
   // destination register.
   // We also need to check if there is an unresolved branch in the scoreboard.
   always_comb begin : issue_scoreboard
-    // default assignment
-    issue_ack_o = '0;
-    // check that we didn't stall, that the instruction we got is valid
-    // and that the functional unit we need is not busy
-    if (issue_instr_valid_i[0]) begin
-      // check that the corresponding functional unit is not busy
-      if (!stall[0] && !fu_busy[0]) begin
-        // -----------------------------------------
-        // WAW - Write After Write Dependency Check
-        // -----------------------------------------
-        // no other instruction has the same destination register -> issue the instruction
-        if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
-                issue_instr_i[0].op
-            )) ? (rd_clobber_fpr_i[issue_instr_i[0].rd] == NONE) :
-                (rd_clobber_gpr_i[issue_instr_i[0].rd] == NONE)) begin
-          issue_ack_o[0] = 1'b1;
+    for (int unsigned i = 0; i <= SUPERSCALAR; i++) begin
+      // default assignment
+      issue_ack_o[i] = 1'b0;
+      // check that we didn't stall, that the instruction we got is valid
+      // and that the functional unit we need is not busy
+      if (issue_instr_valid_i[i]) begin
+        // check that the corresponding functional unit is not busy
+        if (!stall[i] && !fu_busy[i]) begin
+          // -----------------------------------------
+          // WAW - Write After Write Dependency Check
+          // -----------------------------------------
+          // no other instruction has the same destination register -> issue the instruction
+          if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
+                  issue_instr_i[i].op
+              )) ? (rd_clobber_fpr_i[issue_instr_i[i].rd] == NONE) :
+                  (rd_clobber_gpr_i[issue_instr_i[i].rd] == NONE)) begin
+            issue_ack_o[i] = 1'b1;
+          end
+          // or check that the target destination register will be written in this cycle by the
+          // commit stage
+          for (int unsigned c = 0; c < CVA6Cfg.NrCommitPorts; c++) begin
+            if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
+                    issue_instr_i[i].op
+                )) ? (we_fpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0]) :
+                    (we_gpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0])) begin
+              issue_ack_o[i] = 1'b1;
+            end
+          end
         end
-        // or check that the target destination register will be written in this cycle by the
-        // commit stage
-        for (int unsigned i = 0; i < CVA6Cfg.NrCommitPorts; i++)
-        if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
-                issue_instr_i[0].op
-            )) ? (we_fpr_i[i] && waddr_i[i] == issue_instr_i[0].rd[4:0]) :
-                (we_gpr_i[i] && waddr_i[i] == issue_instr_i[0].rd[4:0])) begin
-          issue_ack_o[0] = 1'b1;
+        // we can also issue the instruction under the following two circumstances:
+        // we can do this even if we are stalled or no functional unit is ready (as we don't need one)
+        // the decoder needs to make sure that the instruction is marked as valid when it does not
+        // need any functional unit or if an exception occurred previous to the execute stage.
+        // 1. we already got an exception
+        if (issue_instr_i[i].ex.valid) begin
+          issue_ack_o[i] = 1'b1;
         end
+        // 2. it is an instruction which does not need any functional unit
+        if (issue_instr_i[i].fu == NONE) begin
+          issue_ack_o[i] = 1'b1;
+        end
+      end
+    end
 
-      end
-      // we can also issue the instruction under the following two circumstances:
-      // we can do this even if we are stalled or no functional unit is ready (as we don't need one)
-      // the decoder needs to make sure that the instruction is marked as valid when it does not
-      // need any functional unit or if an exception occurred previous to the execute stage.
-      // 1. we already got an exception
-      if (issue_instr_i[0].ex.valid) begin
-        issue_ack_o[0] = 1'b1;
-      end
-      // 2. it is an instruction which does not need any functional unit
-      if (issue_instr_i[0].fu == NONE) begin
-        issue_ack_o[0] = 1'b1;
+    if (SUPERSCALAR) begin
+      if (!issue_ack_o[0]) begin
+        issue_ack_o[1] = 1'b0;
       end
     end
   end
@@ -714,13 +726,22 @@ module issue_read_operands
       is_compressed_instr_o <= 1'b0;
       branch_predict_o      <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
     end else begin
-      fu_data_q             <= fu_data_n;
+      fu_data_q <= fu_data_n;
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;
       end
-      pc_o                  <= issue_instr_i[0].pc;
-      is_compressed_instr_o <= issue_instr_i[0].is_compressed;
-      branch_predict_o      <= issue_instr_i[0].bp;
+      if (SUPERSCALAR) begin
+        if (issue_instr_i[1].fu == CTRL_FLOW) begin
+          pc_o                  <= issue_instr_i[1].pc;
+          is_compressed_instr_o <= issue_instr_i[1].is_compressed;
+          branch_predict_o      <= issue_instr_i[1].bp;
+        end
+      end
+      if (issue_instr_i[0].fu == CTRL_FLOW) begin
+        pc_o                  <= issue_instr_i[0].pc;
+        is_compressed_instr_o <= issue_instr_i[0].is_compressed;
+        branch_predict_o      <= issue_instr_i[0].bp;
+      end
     end
   end
 
