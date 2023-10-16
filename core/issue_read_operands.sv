@@ -364,62 +364,60 @@ module issue_read_operands
   end
 
   // Forwarding/Output MUX
-  always_comb begin : forwarding_operand_select
-    // default is regfiles (gpr or fpr)
-    fu_data_n[0].operand_a = operand_a_regfile[0];
-    fu_data_n[0].operand_b = operand_b_regfile[0];
-    // immediates are the third operands in the store case
-    // for FP operations, the imm field can also be the third operand from the regfile
-    if (CVA6Cfg.NrRgprPorts == 3) begin
-      fu_data_n[0].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
-          {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[0]} :
-          issue_instr_i[0].op == OFFLOAD ? operand_c_regfile[0] : issue_instr_i[0].result;
-    end else begin
-      fu_data_n[0].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
-          {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[0]} : issue_instr_i[0].result;
-    end
-    fu_data_n[0].trans_id  = issue_instr_i[0].trans_id;
-    fu_data_n[0].fu        = issue_instr_i[0].fu;
-    fu_data_n[0].operation = issue_instr_i[0].op;
-    if (CVA6Cfg.RVH) begin
-      tinst_n[0] = issue_instr_i[0].ex.tinst;
-    end
-    // or should we forward
-    if (forward_rs1[0]) begin
-      fu_data_n[0].operand_a = rs1_i[0];
-    end
+  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+    always_comb begin : forwarding_operand_select
+      // default is regfiles (gpr or fpr)
+      fu_data_n[i].operand_a = operand_a_regfile[i];
+      fu_data_n[i].operand_b = operand_b_regfile[i];
 
-    if (forward_rs2[0]) begin
-      fu_data_n[0].operand_b = rs2_i[0];
-    end
+      // immediates are the third operands in the store case
+      // for FP operations, the imm field can also be the third operand from the regfile
+      if (CVA6Cfg.NrRgprPorts == 3) begin
+        fu_data_n[i].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[i].op)) ?
+            {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[i]} :
+            issue_instr_i[i].op == OFFLOAD ? operand_c_regfile[i] : issue_instr_i[i].result;
+      end else begin
+        fu_data_n[i].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[i].op)) ?
+            {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[i]} : issue_instr_i[i].result;
+      end
+      fu_data_n[i].trans_id  = issue_instr_i[i].trans_id;
+      fu_data_n[i].fu        = issue_instr_i[i].fu;
+      fu_data_n[i].operation = issue_instr_i[i].op;
+      if (CVA6Cfg.RVH) begin
+        tinst_n[i] = issue_instr_i[i].ex.tinst;
+      end
 
-    if (CVA6Cfg.FpPresent && forward_rs3[0]) begin
-      fu_data_n[0].imm = imm_forward_rs3;
-    end
+      // or should we forward
+      if (forward_rs1[i]) begin
+        fu_data_n[i].operand_a = rs1_i[i];
+      end
+      if (forward_rs2[i]) begin
+        fu_data_n[i].operand_b = rs2_i[i];
+      end
+      if (CVA6Cfg.FpPresent && forward_rs3[i]) begin
+        fu_data_n[i].imm = imm_forward_rs3;
+      end
 
-    // use the PC as operand a
-    if (issue_instr_i[0].use_pc) begin
-      fu_data_n[0].operand_a = {
-        {CVA6Cfg.XLEN - CVA6Cfg.VLEN{issue_instr_i[0].pc[CVA6Cfg.VLEN-1]}}, issue_instr_i[0].pc
-      };
-    end
+      // use the PC as operand a
+      if (issue_instr_i[i].use_pc) begin
+        fu_data_n[i].operand_a = {
+          {CVA6Cfg.XLEN - CVA6Cfg.VLEN{issue_instr_i[i].pc[CVA6Cfg.VLEN-1]}}, issue_instr_i[i].pc
+        };
+      end
 
-    // use the zimm as operand a
-    if (issue_instr_i[0].use_zimm) begin
-      // zero extend operand a
-      fu_data_n[0].operand_a = {{CVA6Cfg.XLEN - 5{1'b0}}, issue_instr_i[0].rs1[4:0]};
+      // use the zimm as operand a
+      if (issue_instr_i[i].use_zimm) begin
+        // zero extend operand a
+        fu_data_n[i].operand_a = {{CVA6Cfg.XLEN - 5{1'b0}}, issue_instr_i[i].rs1[4:0]};
+      end
+      // or is it an immediate (including PC), this is not the case for a store, control flow, and accelerator instructions
+      // also make sure operand B is not already used as an FP operand
+      if (issue_instr_i[i].use_imm && (issue_instr_i[i].fu != STORE) && (issue_instr_i[i].fu != CTRL_FLOW) && (issue_instr_i[i].fu != ACCEL) && !(CVA6Cfg.FpPresent && is_rs2_fpr(
+              issue_instr_i[i].op
+          ))) begin
+        fu_data_n[i].operand_b = issue_instr_i[i].result;
+      end
     end
-    // or is it an immediate (including PC), this is not the case for a store, control flow, and accelerator instructions
-    // also make sure operand B is not already used as an FP operand
-    if (issue_instr_i[0].use_imm && (issue_instr_i[0].fu != STORE) && (issue_instr_i[0].fu != CTRL_FLOW) && (issue_instr_i[0].fu != ACCEL) && !(CVA6Cfg.FpPresent && is_rs2_fpr(
-            issue_instr_i[0].op
-        ))) begin
-      fu_data_n[0].operand_b = issue_instr_i[0].result;
-    end
-  end
-
-  if (SUPERSCALAR) begin
-    assign fu_data_n[1] = '0;
   end
 
   // FU select, assert the correct valid out signal (in the next cycle)
