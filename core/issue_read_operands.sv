@@ -63,11 +63,11 @@ module issue_read_operands
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output fu_data_t fu_data_o,
+    output fu_data_t [SUPERSCALAR:0] fu_data_o,
     // Unregistered version of fu_data_o.operanda - TO_BE_COMPLETED
-    output logic [CVA6Cfg.XLEN-1:0] rs1_forwarding_o,
+    output logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs1_forwarding_o,
     // Unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
-    output logic [CVA6Cfg.XLEN-1:0] rs2_forwarding_o,
+    output logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs2_forwarding_o,
     // Instruction pc - TO_BE_COMPLETED
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - TO_BE_COMPLETED
@@ -75,9 +75,9 @@ module issue_read_operands
     // Fixed Latency Unit ready to accept new request - TO_BE_COMPLETED
     input logic flu_ready_i,
     // ALU output is valid - TO_BE_COMPLETED
-    output logic alu_valid_o,
+    output logic [SUPERSCALAR:0] alu_valid_o,
     // Branch instruction is valid - TO_BE_COMPLETED
-    output logic branch_valid_o,
+    output logic [SUPERSCALAR:0] branch_valid_o,
     // Transformed instruction - TO_BE_COMPLETED
     output logic [SUPERSCALAR:0][31:0] tinst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -85,21 +85,21 @@ module issue_read_operands
     // Load Store Unit is ready - TO_BE_COMPLETED
     input logic lsu_ready_i,
     // Load Store Unit result is valid - TO_BE_COMPLETED
-    output logic lsu_valid_o,
+    output logic [SUPERSCALAR:0] lsu_valid_o,
     // Mult result is valid - TO_BE_COMPLETED
-    output logic mult_valid_o,
+    output logic [SUPERSCALAR:0] mult_valid_o,
     // FPU is ready - TO_BE_COMPLETED
     input logic fpu_ready_i,
     // FPU result is valid - TO_BE_COMPLETED
-    output logic fpu_valid_o,
+    output logic [SUPERSCALAR:0] fpu_valid_o,
     // FPU fmt field from instruction - TO_BE_COMPLETED
     output logic [1:0] fpu_fmt_o,
     // FPU rm field from isntruction - TO_BE_COMPLETED
     output logic [2:0] fpu_rm_o,
     // CSR result is valid - TO_BE_COMPLETED
-    output logic csr_valid_o,
+    output logic [SUPERSCALAR:0] csr_valid_o,
     // CVXIF result is valid - TO_BE_COMPLETED
-    output logic cvxif_valid_o,
+    output logic [SUPERSCALAR:0] cvxif_valid_o,
     // CVXIF is ready - TO_BE_COMPLETED
     input logic cvxif_ready_i,
     // CVXIF offloaded instruction - TO_BE_COMPLETED
@@ -132,19 +132,19 @@ module issue_read_operands
   rs3_len_t [SUPERSCALAR:0] operand_c_regfile, operand_c_gpr;
   rs3_len_t operand_c_fpr;
   // output flipflop (ID <-> EX)
-  fu_data_t fu_data_n, fu_data_q;
+  fu_data_t [SUPERSCALAR:0] fu_data_n, fu_data_q;
   logic [CVA6Cfg.XLEN-1:0] imm_forward_rs3;
 
-  logic        alu_valid_q;
-  logic        mult_valid_q;
-  logic        fpu_valid_q;
-  logic [ 1:0] fpu_fmt_q;
-  logic [ 2:0] fpu_rm_q;
-  logic        lsu_valid_q;
-  logic        csr_valid_q;
-  logic        branch_valid_q;
-  logic        cvxif_valid_q;
-  logic [31:0] cvxif_off_instr_q;
+  logic [SUPERSCALAR:0] alu_valid_q;
+  logic [SUPERSCALAR:0] mult_valid_q;
+  logic [SUPERSCALAR:0] fpu_valid_q;
+  logic [          1:0] fpu_fmt_q;
+  logic [          2:0] fpu_rm_q;
+  logic [SUPERSCALAR:0] lsu_valid_q;
+  logic [SUPERSCALAR:0] csr_valid_q;
+  logic [SUPERSCALAR:0] branch_valid_q;
+  logic [SUPERSCALAR:0] cvxif_valid_q;
+  logic [         31:0] cvxif_off_instr_q;
 
   logic [SUPERSCALAR:0][31:0] tinst_n, tinst_q;  // transformed instruction
 
@@ -157,8 +157,10 @@ module issue_read_operands
 
   // ID <-> EX registers
 
-  assign rs1_forwarding_o = fu_data_n.operand_a[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
-  assign rs2_forwarding_o = fu_data_n.operand_b[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
+  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+    assign rs1_forwarding_o[i] = fu_data_n[i].operand_a[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
+    assign rs2_forwarding_o[i] = fu_data_n[i].operand_b[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
+  end
 
   assign fu_data_o = fu_data_q;
   assign alu_valid_o = alu_valid_q;
@@ -364,40 +366,40 @@ module issue_read_operands
   // Forwarding/Output MUX
   always_comb begin : forwarding_operand_select
     // default is regfiles (gpr or fpr)
-    fu_data_n.operand_a = operand_a_regfile[0];
-    fu_data_n.operand_b = operand_b_regfile[0];
+    fu_data_n[0].operand_a = operand_a_regfile[0];
+    fu_data_n[0].operand_b = operand_b_regfile[0];
     // immediates are the third operands in the store case
     // for FP operations, the imm field can also be the third operand from the regfile
     if (CVA6Cfg.NrRgprPorts == 3) begin
-      fu_data_n.imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
+      fu_data_n[0].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
           {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[0]} :
           issue_instr_i[0].op == OFFLOAD ? operand_c_regfile[0] : issue_instr_i[0].result;
     end else begin
-      fu_data_n.imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
+      fu_data_n[0].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[0].op)) ?
           {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[0]} : issue_instr_i[0].result;
     end
-    fu_data_n.trans_id  = issue_instr_i[0].trans_id;
-    fu_data_n.fu        = issue_instr_i[0].fu;
-    fu_data_n.operation = issue_instr_i[0].op;
+    fu_data_n[0].trans_id  = issue_instr_i[0].trans_id;
+    fu_data_n[0].fu        = issue_instr_i[0].fu;
+    fu_data_n[0].operation = issue_instr_i[0].op;
     if (CVA6Cfg.RVH) begin
       tinst_n[0] = issue_instr_i[0].ex.tinst;
     end
     // or should we forward
     if (forward_rs1[0]) begin
-      fu_data_n.operand_a = rs1_i[0];
+      fu_data_n[0].operand_a = rs1_i[0];
     end
 
     if (forward_rs2[0]) begin
-      fu_data_n.operand_b = rs2_i[0];
+      fu_data_n[0].operand_b = rs2_i[0];
     end
 
     if (CVA6Cfg.FpPresent && forward_rs3[0]) begin
-      fu_data_n.imm = imm_forward_rs3;
+      fu_data_n[0].imm = imm_forward_rs3;
     end
 
     // use the PC as operand a
     if (issue_instr_i[0].use_pc) begin
-      fu_data_n.operand_a = {
+      fu_data_n[0].operand_a = {
         {CVA6Cfg.XLEN - CVA6Cfg.VLEN{issue_instr_i[0].pc[CVA6Cfg.VLEN-1]}}, issue_instr_i[0].pc
       };
     end
@@ -405,67 +407,71 @@ module issue_read_operands
     // use the zimm as operand a
     if (issue_instr_i[0].use_zimm) begin
       // zero extend operand a
-      fu_data_n.operand_a = {{CVA6Cfg.XLEN - 5{1'b0}}, issue_instr_i[0].rs1[4:0]};
+      fu_data_n[0].operand_a = {{CVA6Cfg.XLEN - 5{1'b0}}, issue_instr_i[0].rs1[4:0]};
     end
     // or is it an immediate (including PC), this is not the case for a store, control flow, and accelerator instructions
     // also make sure operand B is not already used as an FP operand
     if (issue_instr_i[0].use_imm && (issue_instr_i[0].fu != STORE) && (issue_instr_i[0].fu != CTRL_FLOW) && (issue_instr_i[0].fu != ACCEL) && !(CVA6Cfg.FpPresent && is_rs2_fpr(
             issue_instr_i[0].op
         ))) begin
-      fu_data_n.operand_b = issue_instr_i[0].result;
+      fu_data_n[0].operand_b = issue_instr_i[0].result;
     end
+  end
+
+  if (SUPERSCALAR) begin
+    assign fu_data_n[1] = '0;
   end
 
   // FU select, assert the correct valid out signal (in the next cycle)
   // This needs to be like this to make verilator happy. I know its ugly.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      alu_valid_q    <= 1'b0;
-      lsu_valid_q    <= 1'b0;
-      mult_valid_q   <= 1'b0;
-      fpu_valid_q    <= 1'b0;
-      fpu_fmt_q      <= 2'b0;
-      fpu_rm_q       <= 3'b0;
-      csr_valid_q    <= 1'b0;
-      branch_valid_q <= 1'b0;
+      alu_valid_q    <= '0;
+      lsu_valid_q    <= '0;
+      mult_valid_q   <= '0;
+      fpu_valid_q    <= '0;
+      fpu_fmt_q      <= '0;
+      fpu_rm_q       <= '0;
+      csr_valid_q    <= '0;
+      branch_valid_q <= '0;
     end else begin
-      alu_valid_q    <= 1'b0;
-      lsu_valid_q    <= 1'b0;
-      mult_valid_q   <= 1'b0;
-      fpu_valid_q    <= 1'b0;
-      fpu_fmt_q      <= 2'b0;
-      fpu_rm_q       <= 3'b0;
-      csr_valid_q    <= 1'b0;
-      branch_valid_q <= 1'b0;
+      alu_valid_q    <= '0;
+      lsu_valid_q    <= '0;
+      mult_valid_q   <= '0;
+      fpu_valid_q    <= '0;
+      fpu_fmt_q      <= '0;
+      fpu_rm_q       <= '0;
+      csr_valid_q    <= '0;
+      branch_valid_q <= '0;
       // Exception pass through:
       // If an exception has occurred simply pass it through
       // we do not want to issue this instruction
       if (!issue_instr_i[0].ex.valid && issue_instr_valid_i[0] && issue_ack_o[0]) begin
         case (issue_instr_i[0].fu)
           ALU: begin
-            alu_valid_q <= 1'b1;
+            alu_valid_q[0] <= 1'b1;
           end
           CTRL_FLOW: begin
-            branch_valid_q <= 1'b1;
+            branch_valid_q[0] <= 1'b1;
           end
           MULT: begin
-            mult_valid_q <= 1'b1;
+            mult_valid_q[0] <= 1'b1;
           end
           LOAD, STORE: begin
-            lsu_valid_q <= 1'b1;
+            lsu_valid_q[0] <= 1'b1;
           end
           CSR: begin
-            csr_valid_q <= 1'b1;
+            csr_valid_q[0] <= 1'b1;
           end
           default: begin
             if (issue_instr_i[0].fu == FPU && CVA6Cfg.FpPresent) begin
-              fpu_valid_q <= 1'b1;
-              fpu_fmt_q   <= orig_instr.rftype.fmt;  // fmt bits from instruction
-              fpu_rm_q    <= orig_instr.rftype.rm;  // rm bits from instruction
+              fpu_valid_q[0] <= 1'b1;
+              fpu_fmt_q      <= orig_instr.rftype.fmt;  // fmt bits from instruction
+              fpu_rm_q       <= orig_instr.rftype.rm;  // rm bits from instruction
             end else if (issue_instr_i[0].fu == FPU_VEC && CVA6Cfg.FpPresent) begin
-              fpu_valid_q <= 1'b1;
-              fpu_fmt_q   <= orig_instr.rvftype.vfmt;  // vfmt bits from instruction
-              fpu_rm_q    <= {2'b0, orig_instr.rvftype.repl};  // repl bit from instruction
+              fpu_valid_q[0] <= 1'b1;
+              fpu_fmt_q      <= orig_instr.rvftype.vfmt;  // vfmt bits from instruction
+              fpu_rm_q       <= {2'b0, orig_instr.rvftype.repl};  // repl bit from instruction
             end
           end
         endcase
@@ -473,12 +479,12 @@ module issue_read_operands
       // if we got a flush request, de-assert the valid flag, otherwise we will start this
       // functional unit with the wrong inputs
       if (flush_i) begin
-        alu_valid_q    <= 1'b0;
-        lsu_valid_q    <= 1'b0;
-        mult_valid_q   <= 1'b0;
-        fpu_valid_q    <= 1'b0;
-        csr_valid_q    <= 1'b0;
-        branch_valid_q <= 1'b0;
+        alu_valid_q    <= '0;
+        lsu_valid_q    <= '0;
+        mult_valid_q   <= '0;
+        fpu_valid_q    <= '0;
+        csr_valid_q    <= '0;
+        branch_valid_q <= '0;
       end
     end
   end
@@ -486,22 +492,22 @@ module issue_read_operands
   if (CVA6Cfg.CvxifEn) begin
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        cvxif_valid_q <= 1'b0;
+        cvxif_valid_q <= '0;
         cvxif_off_instr_q <= 32'b0;
       end else begin
-        cvxif_valid_q <= 1'b0;
+        cvxif_valid_q <= '0;
         cvxif_off_instr_q <= 32'b0;
         if (!issue_instr_i[0].ex.valid && issue_instr_valid_i[0] && issue_ack_o[0]) begin
           case (issue_instr_i[0].fu)
             CVXIF: begin
-              cvxif_valid_q     <= 1'b1;
+              cvxif_valid_q[0]  <= 1'b1;
               cvxif_off_instr_q <= orig_instr;
             end
             default: ;
           endcase
         end
         if (flush_i) begin
-          cvxif_valid_q <= 1'b0;
+          cvxif_valid_q <= '0;
           cvxif_off_instr_q <= 32'b0;
         end
       end
@@ -730,14 +736,14 @@ module issue_read_operands
       );
   end
 
-  assert property (@(posedge clk_i) (branch_valid_q) |-> (!$isunknown(
-      fu_data_q.operand_a
-  ) && !$isunknown(
-      fu_data_q.operand_b
-  )))
-  else $warning("Got unknown value in one of the operands");
-
+  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+    assert property (@(posedge clk_i) (branch_valid_q) |-> (!$isunknown(
+        fu_data_q[i].operand_a
+    ) && !$isunknown(
+        fu_data_q[i].operand_b
+    )))
+    else $warning("Got unknown value in one of the operands");
+  end
   //pragma translate_on
+
 endmodule
-
-

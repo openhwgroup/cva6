@@ -47,45 +47,45 @@ module issue_stage
     // Handshake's acknowlege with decode stage - ID_STAGE
     output logic [SUPERSCALAR:0] decoded_instr_ack_o,
     // rs1 forwarding - EX_STAGE
-    output [CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
+    output [SUPERSCALAR:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
     // rs2 forwarding - EX_STAGE
-    output [CVA6Cfg.VLEN-1:0] rs2_forwarding_o,
+    output [SUPERSCALAR:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_o,
     // FU data useful to execute instruction - EX_STAGE
-    output fu_data_t fu_data_o,
+    output fu_data_t [SUPERSCALAR:0] fu_data_o,
     // Program Counter - EX_STAGE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
     // Transformed trap instruction - EX_STAGE
-    output logic [31:0] tinst_o,
+    output logic [SUPERSCALAR:0][31:0] tinst_o,
     // Fixed Latency Unit is ready - EX_STAGE
     input logic flu_ready_i,
     // ALU FU is valid - EX_STAGE
-    output logic alu_valid_o,
+    output logic [SUPERSCALAR:0] alu_valid_o,
     // Signaling that we resolved the branch - EX_STAGE
     input logic resolve_branch_i,
     // Load store unit FU is ready - EX_STAGE
     input logic lsu_ready_i,
     // Load store unit FU is valid - EX_STAGE
-    output logic lsu_valid_o,
+    output logic [SUPERSCALAR:0] lsu_valid_o,
     // Branch unit is valid - EX_STAGE
-    output logic branch_valid_o,
+    output logic [SUPERSCALAR:0] branch_valid_o,
     // Information of branch prediction - EX_STAGE
     output branchpredict_sbe_t branch_predict_o,
     // Mult FU is valid - EX_STAGE
-    output logic mult_valid_o,
+    output logic [SUPERSCALAR:0] mult_valid_o,
     // FPU FU is ready - EX_STAGE
     input logic fpu_ready_i,
     // FPU FU is valid - EX_STAGE
-    output logic fpu_valid_o,
+    output logic [SUPERSCALAR:0] fpu_valid_o,
     // FPU fmt field - EX_STAGE
     output logic [1:0] fpu_fmt_o,
     // FPU rm field - EX_STAGE
     output logic [2:0] fpu_rm_o,
     // CSR is valid - EX_STAGE
-    output logic csr_valid_o,
+    output logic [SUPERSCALAR:0] csr_valid_o,
     // CVXIF FU is valid - EX_STAGE
-    output logic x_issue_valid_o,
+    output logic [SUPERSCALAR:0] x_issue_valid_o,
     // CVXIF is FU ready - EX_STAGE
     input logic x_issue_ready_i,
     // CVXIF offloader instruction value - EX_STAGE
@@ -150,11 +150,13 @@ module issue_stage
   logic              [       SUPERSCALAR:0]                    issue_instr_valid_sb_iro;
   logic              [       SUPERSCALAR:0]                    issue_ack_iro_sb;
 
-  logic              [    CVA6Cfg.XLEN-1:0]                    rs1_forwarding_xlen;
-  logic              [    CVA6Cfg.XLEN-1:0]                    rs2_forwarding_xlen;
+  logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs1_forwarding_xlen;
+  logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs2_forwarding_xlen;
 
-  assign rs1_forwarding_o = rs1_forwarding_xlen[CVA6Cfg.VLEN-1:0];
-  assign rs2_forwarding_o = rs2_forwarding_xlen[CVA6Cfg.VLEN-1:0];
+  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+    assign rs1_forwarding_o[i] = rs1_forwarding_xlen[i][CVA6Cfg.VLEN-1:0];
+    assign rs2_forwarding_o[i] = rs2_forwarding_xlen[i][CVA6Cfg.VLEN-1:0];
+  end
 
   assign issue_instr_o    = issue_instr_sb_iro[0];
   assign issue_instr_hs_o = issue_instr_valid_sb_iro[0] & issue_ack_iro_sb[0];

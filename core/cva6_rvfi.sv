@@ -51,7 +51,7 @@ module cva6_rvfi
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
 
   logic flush;
-  logic issue_instr_ack;
+  logic [ariane_pkg::SUPERSCALAR:0] issue_instr_ack;
   logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid;
   logic [ariane_pkg::SUPERSCALAR:0][31:0] instruction;
   logic [ariane_pkg::SUPERSCALAR:0] is_compressed;
@@ -61,11 +61,11 @@ module cva6_rvfi
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer;
 
   logic flush_unissued_instr;
-  logic decoded_instr_valid;
-  logic decoded_instr_ack;
+  logic [ariane_pkg::SUPERSCALAR:0] decoded_instr_valid;
+  logic [ariane_pkg::SUPERSCALAR:0] decoded_instr_ack;
 
-  logic [CVA6Cfg.XLEN-1:0] rs1_forwarding;
-  logic [CVA6Cfg.XLEN-1:0] rs2_forwarding;
+  logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs1_forwarding;
+  logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs2_forwarding;
 
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_pc;
   fu_op [CVA6Cfg.NrCommitPorts-1:0] commit_instr_op;
@@ -174,7 +174,11 @@ module cva6_rvfi
     issue_n = issue_q;
     took0   = 1'b0;
 
-    if (issue_instr_ack) issue_n[0].valid = 1'b0;
+    for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+      if (issue_instr_ack[i]) begin
+        issue_n[i].valid = 1'b0;
+      end
+    end
 
     if (!issue_n[ariane_pkg::SUPERSCALAR].valid) begin
       issue_n[ariane_pkg::SUPERSCALAR].valid = fetch_entry_valid[0];
@@ -229,10 +233,10 @@ module cva6_rvfi
   always_comb begin : issue_fifo
     mem_n = mem_q;
 
-    if (decoded_instr_valid && decoded_instr_ack && !flush_unissued_instr) begin
+    if (decoded_instr_valid[0] && decoded_instr_ack[0] && !flush_unissued_instr) begin
       mem_n[issue_pointer] = '{
-          rs1_rdata: rs1_forwarding,
-          rs2_rdata: rs2_forwarding,
+          rs1_rdata: rs1_forwarding[0],
+          rs2_rdata: rs2_forwarding[0],
           lsu_addr: '0,
           lsu_rmask: '0,
           lsu_wmask: '0,
