@@ -33,6 +33,7 @@ RISC-V Extensions
    "A - Atomic Instructions",                                           "Yes","✓","✓"
    "Zb* - Bit-Manipulation",                                            "Yes","✓","✓"
    "C - Compressed Instructions ",                                      "Yes","✓","✓"
+   "Zcb - Code Size Reduction",                                         "Yes","✓","✓"
    "D - Double precsision floating-point",                              "Yes","✗ ","✓"
    "F - Single precsision floating-point",                              "Yes","✓","✓"
    "M - Integer Multiply/Divide",                                       "No","✓","✓"
