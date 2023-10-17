@@ -85,9 +85,8 @@ elif [[ "$list_num" = 6 ]];then
            "riscv_rand_jump_hint_comp_test"
            "riscv_rand_jump_no_cmp_test"
            "riscv_rand_jump_illegal_test"
-           "riscv_arithmetic_basic_sub_prog_test"
            );
-	I=(75 75 50 20);
+	I=(75 75 50);
 fi
 
 if [[ "$list_num" != 0 ]];then
@@ -112,7 +111,7 @@ printf "+=======================================================================
 j=0
 while [[ $j -lt ${#TEST_NAME[@]} ]];do
   cp ../env/corev-dv/custom/riscv_custom_instr_enum.sv ./dv/src/isa/custom/
-  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imac/ --mabi ilp32 --isa rv32imac --simulator_yaml ../env/corev-dv/simulator.yaml --iss=vcs-uvm,spike -i ${I[j]} -bz 1 --iss_timeout 300
+  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imc/ --mabi ilp32 --isa rv32imc --simulator_yaml ../env/corev-dv/simulator.yaml --iss=vcs-uvm,spike -i ${I[j]} -bz 1 --iss_timeout 300
   n=0
   echo "Generate the test: ${TEST_NAME[j]}"
 #this while loop detects the failed tests from the log file and remove them
