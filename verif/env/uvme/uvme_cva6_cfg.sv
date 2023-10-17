@@ -109,7 +109,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_zbt_supported      == 0;
       ext_zifencei_supported == 1;
       ext_zicsr_supported    == 1;
-      ext_zicond_supported   == 1;
+      ext_zicond_supported   == 0;
 
       mode_s_supported       == 0;
       mode_u_supported       == 0;
