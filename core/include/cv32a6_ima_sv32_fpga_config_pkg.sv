@@ -10,69 +10,69 @@
 
 package cva6_config_pkg;
 
-    localparam CVA6ConfigXlen = 32;
+  localparam CVA6ConfigXlen = 32;
 
-    localparam CVA6ConfigFpuEn = 0;
-    localparam CVA6ConfigF16En = 0;
-    localparam CVA6ConfigF16AltEn = 0;
-    localparam CVA6ConfigF8En = 0;
-    localparam CVA6ConfigFVecEn = 0;
+  localparam CVA6ConfigFpuEn = 0;
+  localparam CVA6ConfigF16En = 0;
+  localparam CVA6ConfigF16AltEn = 0;
+  localparam CVA6ConfigF8En = 0;
+  localparam CVA6ConfigFVecEn = 0;
 
-    localparam CVA6ConfigCvxifEn = 0;
-    localparam CVA6ConfigCExtEn = 0;
-    localparam CVA6ConfigZcbExtEn = 0;
-    localparam CVA6ConfigAExtEn = 1;
-    localparam CVA6ConfigBExtEn = 0;
-    localparam CVA6ConfigVExtEn = 0;
-    localparam CVA6ConfigZiCondExtEn = 0;
+  localparam CVA6ConfigCvxifEn = 0;
+  localparam CVA6ConfigCExtEn = 0;
+  localparam CVA6ConfigZcbExtEn = 0;
+  localparam CVA6ConfigAExtEn = 1;
+  localparam CVA6ConfigBExtEn = 0;
+  localparam CVA6ConfigVExtEn = 0;
+  localparam CVA6ConfigZiCondExtEn = 0;
 
-    localparam CVA6ConfigAxiIdWidth = 4;
-    localparam CVA6ConfigAxiAddrWidth = 64;
-    localparam CVA6ConfigAxiDataWidth = 64;
-    localparam CVA6ConfigFetchUserEn = 0;
-    localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
-    localparam CVA6ConfigDataUserEn = 0;
-    localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
+  localparam CVA6ConfigAxiIdWidth = 4;
+  localparam CVA6ConfigAxiAddrWidth = 64;
+  localparam CVA6ConfigAxiDataWidth = 64;
+  localparam CVA6ConfigFetchUserEn = 0;
+  localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
+  localparam CVA6ConfigDataUserEn = 0;
+  localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
-    localparam CVA6ConfigIcacheByteSize = 8192;
-    localparam CVA6ConfigIcacheSetAssoc = 2;
-    localparam CVA6ConfigIcacheLineWidth = 128;
-    localparam CVA6ConfigDcacheByteSize = 8192;
-    localparam CVA6ConfigDcacheSetAssoc = 2;
-    localparam CVA6ConfigDcacheLineWidth = 128;
+  localparam CVA6ConfigIcacheByteSize = 8192;
+  localparam CVA6ConfigIcacheSetAssoc = 2;
+  localparam CVA6ConfigIcacheLineWidth = 128;
+  localparam CVA6ConfigDcacheByteSize = 8192;
+  localparam CVA6ConfigDcacheSetAssoc = 2;
+  localparam CVA6ConfigDcacheLineWidth = 128;
 
-    localparam CVA6ConfigDcacheIdWidth = 1;
-    localparam CVA6ConfigMemTidWidth = 2;
+  localparam CVA6ConfigDcacheIdWidth = 1;
+  localparam CVA6ConfigMemTidWidth = 2;
 
-    localparam CVA6ConfigWtDcacheWbufDepth = 2;
+  localparam CVA6ConfigWtDcacheWbufDepth = 2;
 
-    localparam CVA6ConfigNrCommitPorts = 1;
-    localparam CVA6ConfigNrScoreboardEntries = 4;
+  localparam CVA6ConfigNrCommitPorts = 1;
+  localparam CVA6ConfigNrScoreboardEntries = 4;
 
-    localparam CVA6ConfigFPGAEn = 1;
+  localparam CVA6ConfigFPGAEn = 1;
 
-    localparam CVA6ConfigNrLoadPipeRegs = 1;
-    localparam CVA6ConfigNrStorePipeRegs = 0;
-    localparam CVA6ConfigNrLoadBufEntries = 2;
+  localparam CVA6ConfigNrLoadPipeRegs = 1;
+  localparam CVA6ConfigNrStorePipeRegs = 0;
+  localparam CVA6ConfigNrLoadBufEntries = 2;
 
-    localparam CVA6ConfigInstrTlbEntries = 2;
-    localparam CVA6ConfigDataTlbEntries = 2;
+  localparam CVA6ConfigInstrTlbEntries = 2;
+  localparam CVA6ConfigDataTlbEntries = 2;
 
-    localparam CVA6ConfigRASDepth = 2;
-    localparam CVA6ConfigBTBEntries = 32;
-    localparam CVA6ConfigBHTEntries = 128;
+  localparam CVA6ConfigRASDepth = 2;
+  localparam CVA6ConfigBTBEntries = 32;
+  localparam CVA6ConfigBHTEntries = 128;
 
-    localparam CVA6ConfigNrPMPEntries = 0;
+  localparam CVA6ConfigNrPMPEntries = 0;
 
-    localparam CVA6ConfigPerfCounterEn = 0;
+  localparam CVA6ConfigPerfCounterEn = 0;
 
-    localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::WT;
+  localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::WT;
 
-    localparam CVA6ConfigMmuPresent = 1;
+  localparam CVA6ConfigMmuPresent = 1;
 
-    localparam CVA6ConfigRvfiTrace = 1;
+  localparam CVA6ConfigRvfiTrace = 1;
 
-    localparam config_pkg::cva6_cfg_t cva6_cfg = '{
+  localparam config_pkg::cva6_cfg_t cva6_cfg = '{
       NrCommitPorts: unsigned'(CVA6ConfigNrCommitPorts),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
@@ -91,7 +91,10 @@ package cva6_config_pkg;
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       ZiCondExtEn: bit'(CVA6ConfigZiCondExtEn),
       // Extended
-      RVF: bit'(0),
+      RVF:
+      bit'(
+      0
+      ),
       RVD: bit'(0),
       FpPresent: bit'(0),
       NSX: bit'(0),
@@ -105,24 +108,33 @@ package cva6_config_pkg;
       EnableAccelerator: bit'(0),
       HaltAddress: 64'h800,
       ExceptionAddress: 64'h808,
-      RASDepth:      unsigned'(CVA6ConfigRASDepth),
-      BTBEntries:    unsigned'(CVA6ConfigBTBEntries),
-      BHTEntries:    unsigned'(CVA6ConfigBHTEntries),
+      RASDepth: unsigned'(CVA6ConfigRASDepth),
+      BTBEntries: unsigned'(CVA6ConfigBTBEntries),
+      BHTEntries: unsigned'(CVA6ConfigBHTEntries),
       DmBaseAddress: 64'h0,
-      NrPMPEntries:  unsigned'(CVA6ConfigNrPMPEntries),
-      NOCType:       config_pkg::NOC_TYPE_AXI4_ATOP,
+      NrPMPEntries: unsigned'(CVA6ConfigNrPMPEntries),
+      NOCType: config_pkg::NOC_TYPE_AXI4_ATOP,
       // idempotent region
-      NrNonIdempotentRules:  unsigned'(2),
+      NrNonIdempotentRules:
+      unsigned'(
+      2
+      ),
       NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
-      NonIdempotentLength:   1024'({64'b0, 64'b0}),
-      NrExecuteRegionRules:  unsigned'(3),
+      NonIdempotentLength: 1024'({64'b0, 64'b0}),
+      NrExecuteRegionRules: unsigned'(3),
       //                      DRAM,          Boot ROM,   Debug Module
-      ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
-      ExecuteRegionLength:   1024'({64'h40000000,  64'h10000,  64'h1000}),
+      ExecuteRegionAddrBase:
+      1024'(
+      {64'h8000_0000, 64'h1_0000, 64'h0}
+      ),
+      ExecuteRegionLength: 1024'({64'h40000000, 64'h10000, 64'h1000}),
       // cached region
-      NrCachedRegionRules:   unsigned'(1),
-      CachedRegionAddrBase:  1024'({64'h8000_0000}),
-      CachedRegionLength:    1024'({64'h40000000})
-    };
+      NrCachedRegionRules:
+      unsigned'(
+      1
+      ),
+      CachedRegionAddrBase: 1024'({64'h8000_0000}),
+      CachedRegionLength: 1024'({64'h40000000})
+  };
 
 endpackage

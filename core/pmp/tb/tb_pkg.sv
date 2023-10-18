@@ -14,23 +14,26 @@
 
 package tb_pkg;
 
-    class P #(parameter WIDTH=32, parameter PMP_LEN=32);
-        static function logic[PMP_LEN-1:0] base_to_conf(logic[WIDTH-1:0] base, int unsigned size_i);
-            logic[PMP_LEN-1:0] pmp_reg;
+  class P #(
+      parameter WIDTH   = 32,
+      parameter PMP_LEN = 32
+  );
+    static function logic [PMP_LEN-1:0] base_to_conf(logic [WIDTH-1:0] base, int unsigned size_i);
+      logic [PMP_LEN-1:0] pmp_reg;
 
-            pmp_reg = '0;
-            for (int i = 0; i < WIDTH-2 && i < PMP_LEN; i++) begin
-                if (i+3 > size_i) begin
-                    pmp_reg[i] = base[i+2];
-                end else if (i+3 == size_i) begin
-                    pmp_reg[i] = 1'b0;
-                end else begin
-                    pmp_reg[i] = 1'b1;
-                end
-            end
+      pmp_reg = '0;
+      for (int i = 0; i < WIDTH - 2 && i < PMP_LEN; i++) begin
+        if (i + 3 > size_i) begin
+          pmp_reg[i] = base[i+2];
+        end else if (i + 3 == size_i) begin
+          pmp_reg[i] = 1'b0;
+        end else begin
+          pmp_reg[i] = 1'b1;
+        end
+      end
 
-            return pmp_reg;
-        endfunction
-    endclass
+      return pmp_reg;
+    endfunction
+  endclass
 
 endpackage
