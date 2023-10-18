@@ -17,52 +17,66 @@
 //import std_cache_pkg::*;
 
 module axi_adapter #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter int unsigned DATA_WIDTH            = 256,
-  parameter logic        CRITICAL_WORD_FIRST   = 0, // the AXI subsystem needs to support wrapping reads for this feature
-  parameter int unsigned CACHELINE_BYTE_OFFSET = 8,
-  parameter type axi_req_t = logic,
-  parameter type axi_rsp_t = logic
-)(
-  input  logic                             clk_i,  // Clock
-  input  logic                             rst_ni, // Asynchronous reset active low
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter int unsigned DATA_WIDTH = 256,
+    parameter logic        CRITICAL_WORD_FIRST   = 0, // the AXI subsystem needs to support wrapping reads for this feature
+    parameter int unsigned CACHELINE_BYTE_OFFSET = 8,
+    parameter type axi_req_t = logic,
+    parameter type axi_rsp_t = logic
+) (
+    input logic clk_i,  // Clock
+    input logic rst_ni, // Asynchronous reset active low
 
-  input  logic                             req_i,
-  input  ariane_pkg::ad_req_t              type_i,
-  input  ariane_pkg::amo_t                 amo_i,
-  output logic                             gnt_o,
-  input  logic [riscv::XLEN-1:0]           addr_i,
-  input  logic                             we_i,
-  input  logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0]      wdata_i,
-  input  logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][(CVA6Cfg.AxiDataWidth/8)-1:0]  be_i,
-  input  logic [1:0]                       size_i,
-  input  logic [CVA6Cfg.AxiIdWidth-1:0]    id_i,
-  // read port
-  output logic                             valid_o,
-  output logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0] rdata_o,
-  output logic [CVA6Cfg.AxiIdWidth-1:0]    id_o,
-  // critical word - read port
-  output logic [CVA6Cfg.AxiDataWidth-1:0]  critical_word_o,
-  output logic                             critical_word_valid_o,
-  // AXI port
-  output axi_req_t                 axi_req_o,
-  input  axi_rsp_t                 axi_resp_i
+    input logic req_i,
+    input ariane_pkg::ad_req_t type_i,
+    input ariane_pkg::amo_t amo_i,
+    output logic gnt_o,
+    input logic [riscv::XLEN-1:0] addr_i,
+    input logic we_i,
+    input logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0] wdata_i,
+    input logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][(CVA6Cfg.AxiDataWidth/8)-1:0] be_i,
+    input logic [1:0] size_i,
+    input logic [CVA6Cfg.AxiIdWidth-1:0] id_i,
+    // read port
+    output logic valid_o,
+    output logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0] rdata_o,
+    output logic [CVA6Cfg.AxiIdWidth-1:0] id_o,
+    // critical word - read port
+    output logic [CVA6Cfg.AxiDataWidth-1:0] critical_word_o,
+    output logic critical_word_valid_o,
+    // AXI port
+    output axi_req_t axi_req_o,
+    input axi_rsp_t axi_resp_i
 );
-  localparam BURST_SIZE = (DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1;
-  localparam ADDR_INDEX = ($clog2(DATA_WIDTH/CVA6Cfg.AxiDataWidth) > 0) ? $clog2(DATA_WIDTH/CVA6Cfg.AxiDataWidth) : 1;
+  localparam BURST_SIZE = (DATA_WIDTH / CVA6Cfg.AxiDataWidth) - 1;
+  localparam ADDR_INDEX = ($clog2(
+      DATA_WIDTH / CVA6Cfg.AxiDataWidth
+  ) > 0) ? $clog2(
+      DATA_WIDTH / CVA6Cfg.AxiDataWidth
+  ) : 1;
 
   enum logic [3:0] {
-    IDLE, WAIT_B_VALID, WAIT_AW_READY, WAIT_LAST_W_READY, WAIT_LAST_W_READY_AW_READY, WAIT_AW_READY_BURST,
-    WAIT_R_VALID, WAIT_R_VALID_MULTIPLE, COMPLETE_READ, WAIT_AMO_R_VALID
-  } state_q, state_d;
+    IDLE,
+    WAIT_B_VALID,
+    WAIT_AW_READY,
+    WAIT_LAST_W_READY,
+    WAIT_LAST_W_READY_AW_READY,
+    WAIT_AW_READY_BURST,
+    WAIT_R_VALID,
+    WAIT_R_VALID_MULTIPLE,
+    COMPLETE_READ,
+    WAIT_AMO_R_VALID
+  }
+      state_q, state_d;
 
   // counter for AXI transfers
   logic [ADDR_INDEX-1:0] cnt_d, cnt_q;
-  logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0] cache_line_d, cache_line_q;
+  logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0]
+      cache_line_d, cache_line_q;
   // save the address for a read, as we allow for non-cacheline aligned accesses
   logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0] addr_offset_d, addr_offset_q;
-  logic [CVA6Cfg.AxiIdWidth-1:0]    id_d, id_q;
-  logic [ADDR_INDEX-1:0]      index;
+  logic [CVA6Cfg.AxiIdWidth-1:0] id_d, id_q;
+  logic [ADDR_INDEX-1:0] index;
   // save the atomic operation and size
   ariane_pkg::amo_t amo_d, amo_q;
   logic [1:0] size_d, size_q;
@@ -75,8 +89,8 @@ module axi_adapter #(
     axi_req_o.aw.prot   = 3'b0;
     axi_req_o.aw.region = 4'b0;
     axi_req_o.aw.len    = 8'b0;
-    axi_req_o.aw.size   = {1'b0, size_i}; // 1, 2, 4 or 8 bytes
-    axi_req_o.aw.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
+    axi_req_o.aw.size   = {1'b0, size_i};  // 1, 2, 4 or 8 bytes
+    axi_req_o.aw.burst  = axi_pkg::BURST_INCR;  // Use BURST_INCR for AXI regular transaction
     axi_req_o.aw.lock   = 1'b0;
     axi_req_o.aw.cache  = axi_pkg::CACHE_MODIFIABLE;
     axi_req_o.aw.qos    = 4'b0;
@@ -92,42 +106,42 @@ module axi_adapter #(
     if (!CRITICAL_WORD_FIRST && type_i != ariane_pkg::SINGLE_REQ) begin
       axi_req_o.ar.addr[CACHELINE_BYTE_OFFSET-1:0] = '0;
     end
-    axi_req_o.ar.prot   = 3'b0;
+    axi_req_o.ar.prot = 3'b0;
     axi_req_o.ar.region = 4'b0;
-    axi_req_o.ar.len    = 8'b0;
-    axi_req_o.ar.size   = {1'b0, size_i}; // 1, 2, 4 or 8 bytes
+    axi_req_o.ar.len = 8'b0;
+    axi_req_o.ar.size = {1'b0, size_i};  // 1, 2, 4 or 8 bytes
     axi_req_o.ar.burst  = (CRITICAL_WORD_FIRST ? axi_pkg::BURST_WRAP : axi_pkg::BURST_INCR); // wrapping transfer in case of a critical word first strategy
-    axi_req_o.ar.lock   = 1'b0;
-    axi_req_o.ar.cache  = axi_pkg::CACHE_MODIFIABLE;
-    axi_req_o.ar.qos    = 4'b0;
-    axi_req_o.ar.id     = id_i;
-    axi_req_o.ar.user   = '0;
+    axi_req_o.ar.lock = 1'b0;
+    axi_req_o.ar.cache = axi_pkg::CACHE_MODIFIABLE;
+    axi_req_o.ar.qos = 4'b0;
+    axi_req_o.ar.id = id_i;
+    axi_req_o.ar.user = '0;
 
-    axi_req_o.w_valid   = 1'b0;
-    axi_req_o.w.data    = wdata_i[0];
-    axi_req_o.w.strb    = be_i[0];
-    axi_req_o.w.last    = 1'b0;
-    axi_req_o.w.user    = '0;
+    axi_req_o.w_valid = 1'b0;
+    axi_req_o.w.data = wdata_i[0];
+    axi_req_o.w.strb = be_i[0];
+    axi_req_o.w.last = 1'b0;
+    axi_req_o.w.user = '0;
 
-    axi_req_o.b_ready   = 1'b0;
-    axi_req_o.r_ready   = 1'b0;
+    axi_req_o.b_ready = 1'b0;
+    axi_req_o.r_ready = 1'b0;
 
-    gnt_o    = 1'b0;
-    valid_o  = 1'b0;
-    id_o     = axi_resp_i.r.id;
+    gnt_o = 1'b0;
+    valid_o = 1'b0;
+    id_o = axi_resp_i.r.id;
 
-    critical_word_o       = axi_resp_i.r.data;
+    critical_word_o = axi_resp_i.r.data;
     critical_word_valid_o = 1'b0;
-    rdata_o               = cache_line_q;
+    rdata_o = cache_line_q;
 
-    state_d       = state_q;
-    cnt_d         = cnt_q;
-    cache_line_d  = cache_line_q;
+    state_d = state_q;
+    cnt_d = cnt_q;
+    cache_line_d = cache_line_q;
     addr_offset_d = addr_offset_q;
-    id_d          = id_q;
-    amo_d         = amo_q;
-    size_d        = size_q;
-    index         = '0;
+    id_d = id_q;
+    amo_d = amo_q;
+    size_d = size_q;
+    index = '0;
 
     case (state_q)
 
@@ -142,17 +156,19 @@ module axi_adapter #(
             axi_req_o.aw_valid = 1'b1;
             axi_req_o.w_valid  = 1'b1;
             // store-conditional requires exclusive access
-            axi_req_o.aw.lock = amo_i == ariane_pkg::AMO_SC;
+            axi_req_o.aw.lock  = amo_i == ariane_pkg::AMO_SC;
             // its a single write
             if (type_i == ariane_pkg::SINGLE_REQ) begin
               // only a single write so the data is already the last one
-              axi_req_o.w.last   = 1'b1;
+              axi_req_o.w.last = 1'b1;
               // single req can be granted here
               gnt_o = axi_resp_i.aw_ready & axi_resp_i.w_ready;
-              case ({axi_resp_i.aw_ready, axi_resp_i.w_ready})
-                2'b11: state_d = WAIT_B_VALID;
-                2'b01: state_d = WAIT_AW_READY;
-                2'b10: state_d = WAIT_LAST_W_READY;
+              case ({
+                axi_resp_i.aw_ready, axi_resp_i.w_ready
+              })
+                2'b11:   state_d = WAIT_B_VALID;
+                2'b01:   state_d = WAIT_AW_READY;
+                2'b10:   state_d = WAIT_LAST_W_READY;
                 default: state_d = IDLE;
               endcase
 
@@ -161,29 +177,29 @@ module axi_adapter #(
                 size_d = size_i;
               end
 
-            // its a request for the whole cache line
+              // its a request for the whole cache line
             end else begin
               // bursts of AMOs unsupported
               assert (amo_i == ariane_pkg::AMO_NONE)
-                else $fatal("Bursts of atomic operations are not supported");
+              else $fatal("Bursts of atomic operations are not supported");
 
-              axi_req_o.aw.len = BURST_SIZE[7:0]; // number of bursts to do
+              axi_req_o.aw.len = BURST_SIZE[7:0];  // number of bursts to do
               axi_req_o.w.data = wdata_i[0];
               axi_req_o.w.strb = be_i[0];
 
-              if (axi_resp_i.w_ready)
-                cnt_d = BURST_SIZE[ADDR_INDEX-1:0] - 1;
-              else
-                cnt_d = BURST_SIZE[ADDR_INDEX-1:0];
+              if (axi_resp_i.w_ready) cnt_d = BURST_SIZE[ADDR_INDEX-1:0] - 1;
+              else cnt_d = BURST_SIZE[ADDR_INDEX-1:0];
 
-              case ({axi_resp_i.aw_ready, axi_resp_i.w_ready})
-                2'b11: state_d = WAIT_LAST_W_READY;
-                2'b01: state_d = WAIT_LAST_W_READY_AW_READY;
-                2'b10: state_d = WAIT_LAST_W_READY;
-                default:;
+              case ({
+                axi_resp_i.aw_ready, axi_resp_i.w_ready
+              })
+                2'b11:   state_d = WAIT_LAST_W_READY;
+                2'b01:   state_d = WAIT_LAST_W_READY_AW_READY;
+                2'b10:   state_d = WAIT_LAST_W_READY;
+                default: ;
               endcase
             end
-          // read
+            // read
           end else begin
 
             axi_req_o.ar_valid = 1'b1;
@@ -193,7 +209,7 @@ module axi_adapter #(
             gnt_o = axi_resp_i.ar_ready;
             if (type_i != ariane_pkg::SINGLE_REQ) begin
               assert (amo_i == ariane_pkg::AMO_NONE)
-                else $fatal("Bursts of atomic operations are not supported");
+              else $fatal("Bursts of atomic operations are not supported");
 
               axi_req_o.ar.len = BURST_SIZE[7:0];
               cnt_d = BURST_SIZE[ADDR_INDEX-1:0];
@@ -221,8 +237,8 @@ module axi_adapter #(
 
       // ~> we need to wait for an aw_ready and there is at least one outstanding write
       WAIT_LAST_W_READY_AW_READY: begin
-        axi_req_o.w_valid  = 1'b1;
-        axi_req_o.w.last   = (cnt_q == '0);
+        axi_req_o.w_valid = 1'b1;
+        axi_req_o.w.last  = (cnt_q == '0);
         if (type_i == ariane_pkg::SINGLE_REQ) begin
           axi_req_o.w.data = wdata_i[0];
           axi_req_o.w.strb = be_i[0];
@@ -234,29 +250,30 @@ module axi_adapter #(
         // we are here because we want to write a cache line
         axi_req_o.aw.len   = BURST_SIZE[7:0];
         // we got an aw_ready
-        case ({axi_resp_i.aw_ready, axi_resp_i.w_ready})
+        case ({
+          axi_resp_i.aw_ready, axi_resp_i.w_ready
+        })
           // we got an aw ready
           2'b01: begin
             // are there any outstanding transactions?
-            if (cnt_q == 0)
-              state_d = WAIT_AW_READY_BURST;
-            else // yes, so reduce the count and stay here
+            if (cnt_q == 0) state_d = WAIT_AW_READY_BURST;
+            else  // yes, so reduce the count and stay here
               cnt_d = cnt_q - 1;
           end
-          2'b10: state_d = WAIT_LAST_W_READY;
+          2'b10:   state_d = WAIT_LAST_W_READY;
           2'b11: begin
             // we are finished
             if (cnt_q == 0) begin
               state_d = WAIT_B_VALID;
               gnt_o   = 1'b1;
-            // there are outstanding transactions
+              // there are outstanding transactions
             end else begin
               state_d = WAIT_LAST_W_READY;
               cnt_d   = cnt_q - 1;
             end
           end
-          default:;
-         endcase
+          default: ;
+        endcase
 
       end
 
@@ -266,8 +283,8 @@ module axi_adapter #(
         axi_req_o.aw.len   = BURST_SIZE[7:0];
 
         if (axi_resp_i.aw_ready) begin
-          state_d  = WAIT_B_VALID;
-          gnt_o    = 1'b1;
+          state_d = WAIT_B_VALID;
+          gnt_o   = 1'b1;
         end
       end
 
@@ -347,10 +364,8 @@ module axi_adapter #(
 
       // ~> cacheline read, single read
       WAIT_R_VALID_MULTIPLE, WAIT_R_VALID: begin
-        if (CRITICAL_WORD_FIRST)
-          index = addr_offset_q + (BURST_SIZE[ADDR_INDEX-1:0]-cnt_q);
-        else
-          index = BURST_SIZE[ADDR_INDEX-1:0]-cnt_q;
+        if (CRITICAL_WORD_FIRST) index = addr_offset_q + (BURST_SIZE[ADDR_INDEX-1:0] - cnt_q);
+        else index = BURST_SIZE[ADDR_INDEX-1:0] - cnt_q;
 
         // reads are always wrapping here
         axi_req_o.r_ready = 1'b1;
@@ -380,8 +395,7 @@ module axi_adapter #(
           if (state_q == WAIT_R_VALID_MULTIPLE) begin
             cache_line_d[index] = axi_resp_i.r.data;
 
-          end else
-            cache_line_d[0] = axi_resp_i.r.data;
+          end else cache_line_d[0] = axi_resp_i.r.data;
 
           // Decrease the counter
           cnt_d = cnt_q - 1;
@@ -425,19 +439,27 @@ module axi_adapter #(
   function automatic axi_pkg::atop_t atop_from_amo(ariane_pkg::amo_t amo);
     axi_pkg::atop_t result = 6'b000000;
 
-    unique case(amo)
+    unique case (amo)
       ariane_pkg::AMO_NONE: result = {axi_pkg::ATOP_NONE, 4'b0000};
       ariane_pkg::AMO_SWAP: result = {axi_pkg::ATOP_ATOMICSWAP};
-      ariane_pkg::AMO_ADD : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
-      ariane_pkg::AMO_AND : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
-      ariane_pkg::AMO_OR  : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
-      ariane_pkg::AMO_XOR : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
-      ariane_pkg::AMO_MAX : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX};
-      ariane_pkg::AMO_MAXU: result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX};
-      ariane_pkg::AMO_MIN : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN};
-      ariane_pkg::AMO_MINU: result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN};
-      ariane_pkg::AMO_CAS1: result = {axi_pkg::ATOP_NONE, 4'b0000}; // Unsupported
-      ariane_pkg::AMO_CAS2: result = {axi_pkg::ATOP_NONE, 4'b0000}; // Unsupported
+      ariane_pkg::AMO_ADD:
+      result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
+      ariane_pkg::AMO_AND:
+      result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
+      ariane_pkg::AMO_OR:
+      result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
+      ariane_pkg::AMO_XOR:
+      result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
+      ariane_pkg::AMO_MAX:
+      result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX};
+      ariane_pkg::AMO_MAXU:
+      result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX};
+      ariane_pkg::AMO_MIN:
+      result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN};
+      ariane_pkg::AMO_MINU:
+      result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN};
+      ariane_pkg::AMO_CAS1: result = {axi_pkg::ATOP_NONE, 4'b0000};  // Unsupported
+      ariane_pkg::AMO_CAS2: result = {axi_pkg::ATOP_NONE, 4'b0000};  // Unsupported
       default: result = 6'b000000;
     endcase
 
@@ -445,8 +467,8 @@ module axi_adapter #(
   endfunction
 
   function automatic logic amo_returns_data(ariane_pkg::amo_t amo);
-    axi_pkg::atop_t atop           = atop_from_amo(amo);
-    logic           is_load        = atop[5:4] == axi_pkg::ATOP_ATOMICLOAD;
+    axi_pkg::atop_t atop = atop_from_amo(amo);
+    logic           is_load = atop[5:4] == axi_pkg::ATOP_ATOMICLOAD;
     logic           is_swap_or_cmp = atop[5:4] == axi_pkg::ATOP_ATOMICSWAP[5:4];
     return is_load || is_swap_or_cmp;
   endfunction

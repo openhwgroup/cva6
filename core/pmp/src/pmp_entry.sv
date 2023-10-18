@@ -28,95 +28,98 @@ module pmp_entry #(
     // Output
     output logic match_o
 );
-    logic [PLEN-1:0] conf_addr_n;
-    logic [$clog2(PLEN)-1:0] trail_ones;
-    logic [PLEN-1:0] base;
-    logic [PLEN-1:0] mask;
-    int unsigned size;
-    assign conf_addr_n = {2'b11, ~conf_addr_i};
-    lzc #(.WIDTH(PLEN), .MODE(1'b0)) i_lzc(
-        .in_i    ( conf_addr_n ),
-        .cnt_o   ( trail_ones  ),
-        .empty_o (             )
-    );
+  logic [PLEN-1:0] conf_addr_n;
+  logic [$clog2(PLEN)-1:0] trail_ones;
+  logic [PLEN-1:0] base;
+  logic [PLEN-1:0] mask;
+  int unsigned size;
+  assign conf_addr_n = {2'b11, ~conf_addr_i};
+  lzc #(
+      .WIDTH(PLEN),
+      .MODE (1'b0)
+  ) i_lzc (
+      .in_i   (conf_addr_n),
+      .cnt_o  (trail_ones),
+      .empty_o()
+  );
 
-    always_comb begin
-        case (conf_addr_mode_i)
-            riscv::TOR:     begin
-                base = '0;
-                mask = '0;
-                size = '0;
-                // check that the requested address is in between the two
-                // configuration addresses
-                if (addr_i >= ({2'b0, conf_addr_prev_i} << 2) && addr_i < ({2'b0, conf_addr_i} << 2)) begin
-                    match_o = 1'b1;
-                end else match_o = 1'b0;
+  always_comb begin
+    case (conf_addr_mode_i)
+      riscv::TOR: begin
+        base = '0;
+        mask = '0;
+        size = '0;
+        // check that the requested address is in between the two
+        // configuration addresses
+        if (addr_i >= ({2'b0, conf_addr_prev_i} << 2) && addr_i < ({2'b0, conf_addr_i} << 2)) begin
+          match_o = 1'b1;
+        end else match_o = 1'b0;
 
-                // synthesis translate_off
-                if (match_o == 0) begin
-                    assert(addr_i >= ({2'b0, conf_addr_i} << 2) || addr_i < ({2'b0, conf_addr_prev_i} << 2));
-                end else begin
-                    assert(addr_i < ({2'b0, conf_addr_i} << 2) && addr_i >= ({2'b0, conf_addr_prev_i} << 2));
-                end
-                // synthesis translate_on
+        // synthesis translate_off
+        if (match_o == 0) begin
+          assert (addr_i >= ({2'b0, conf_addr_i} << 2) || addr_i < ({2'b0, conf_addr_prev_i} << 2));
+        end else begin
+          assert (addr_i < ({2'b0, conf_addr_i} << 2) && addr_i >= ({2'b0, conf_addr_prev_i} << 2));
+        end
+        // synthesis translate_on
 
+      end
+      riscv::NA4, riscv::NAPOT: begin
+
+        if (conf_addr_mode_i == riscv::NA4) size = 2;
+        else begin
+          // use the extracted trailing ones
+          size = {{(32 - $clog2(PLEN)) {1'b0}}, trail_ones} + 3;
+        end
+
+        mask = '1 << size;
+        base = ({2'b0, conf_addr_i} << 2) & mask;
+        match_o = (addr_i & mask) == base ? 1'b1 : 1'b0;
+
+        // synthesis translate_off
+        // size extract checks
+        assert (size >= 2);
+        if (conf_addr_mode_i == riscv::NAPOT) begin
+          assert (size > 2);
+          if (size < PMP_LEN) assert (conf_addr_i[size-3] == 0);
+          for (int i = 0; i < PMP_LEN; i++) begin
+            if (size > 3 && i <= size - 4) begin
+              assert (conf_addr_i[i] == 1);  // check that all the rest are ones
             end
-            riscv::NA4, riscv::NAPOT:   begin
+          end
+        end
 
-                if (conf_addr_mode_i == riscv::NA4) size = 2;
-                else begin
-                    // use the extracted trailing ones
-                    size =  {{(32-$clog2(PLEN)){1'b0}}, trail_ones} + 3;
-                end
-
-                mask = '1 << size;
-                base = ({2'b0, conf_addr_i} << 2) & mask;
-                match_o = (addr_i & mask) == base ? 1'b1 : 1'b0;
-
-                // synthesis translate_off
-                // size extract checks
-                assert(size >= 2);
-                if (conf_addr_mode_i == riscv::NAPOT) begin
-                    assert(size > 2);
-                    if (size < PMP_LEN) assert(conf_addr_i[size - 3] == 0);
-                    for (int i = 0; i < PMP_LEN; i++) begin
-                        if (size > 3 && i <= size - 4) begin
-                            assert(conf_addr_i[i] == 1); // check that all the rest are ones
-                        end
-                    end
-                end
-
-                if (size < PLEN-1) begin
-                    if (base + 2**size > base) begin // check for overflow
-                        if (match_o == 0) begin
-                            assert(addr_i >= base + 2**size || addr_i < base);
-                        end else begin
-                            assert(addr_i < base + 2**size && addr_i >= base);
-                        end
-                    end else begin
-                        if (match_o == 0) begin
-                            assert(addr_i - 2**size >= base || addr_i < base);
-                        end else begin
-                            assert(addr_i - 2**size < base && addr_i >= base);
-                        end
-                    end
-                end
-                // synthesis translate_on
-
+        if (size < PLEN - 1) begin
+          if (base + 2 ** size > base) begin  // check for overflow
+            if (match_o == 0) begin
+              assert (addr_i >= base + 2 ** size || addr_i < base);
+            end else begin
+              assert (addr_i < base + 2 ** size && addr_i >= base);
             end
-            riscv::OFF: begin
-                match_o = 1'b0;
-                base = '0;
-                mask = '0;
-                size = '0;
+          end else begin
+            if (match_o == 0) begin
+              assert (addr_i - 2 ** size >= base || addr_i < base);
+            end else begin
+              assert (addr_i - 2 ** size < base && addr_i >= base);
             end
-            default: begin
-                match_o = 0;
-                base = '0;
-                mask = '0;
-                size = '0;
-            end
-        endcase
-    end
+          end
+        end
+        // synthesis translate_on
+
+      end
+      riscv::OFF: begin
+        match_o = 1'b0;
+        base = '0;
+        mask = '0;
+        size = '0;
+      end
+      default: begin
+        match_o = 0;
+        base = '0;
+        mask = '0;
+        size = '0;
+      end
+    endcase
+  end
 
 endmodule

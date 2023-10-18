@@ -7,14 +7,16 @@
 // Module stub for the cva6_accel_first_pass_decoder. Replace this with your accelerator's
 // first pass decoder.
 
-module cva6_accel_first_pass_decoder import ariane_pkg::*; (
-  input  logic [31:0]       instruction_i,          // instruction from IF
-  input  riscv::xs_t        fs_i,                   // floating point extension status
-  input  riscv::xs_t        vs_i,                   // vector extension status
-  output logic              is_accel_o,             // is an accelerator instruction
-  output scoreboard_entry_t instruction_o,          // predecoded instruction
-  output logic              illegal_instr_o,        // is an illegal instruction
-  output logic              is_control_flow_instr_o // is a control flow instruction
+module cva6_accel_first_pass_decoder
+  import ariane_pkg::*;
+(
+    input  logic              [31:0] instruction_i,           // instruction from IF
+    input  riscv::xs_t               fs_i,                    // floating point extension status
+    input  riscv::xs_t               vs_i,                    // vector extension status
+    output logic                     is_accel_o,              // is an accelerator instruction
+    output scoreboard_entry_t        instruction_o,           // predecoded instruction
+    output logic                     illegal_instr_o,         // is an illegal instruction
+    output logic                     is_control_flow_instr_o  // is a control flow instruction
 );
 
   assign is_accel_o              = 1'b0;

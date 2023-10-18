@@ -13,56 +13,60 @@
 // Description: wrapper module to connect the L1I$ to a 64bit AXI bus.
 //
 
-module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter type axi_req_t = logic,
-  parameter type axi_rsp_t = logic
+module cva6_icache_axi_wrapper
+  import ariane_pkg::*;
+  import wt_cache_pkg::*;
+#(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type axi_req_t = logic,
+    parameter type axi_rsp_t = logic
 ) (
-  input  logic              clk_i,
-  input  logic              rst_ni,
-  input riscv::priv_lvl_t   priv_lvl_i,
+    input logic             clk_i,
+    input logic             rst_ni,
+    input riscv::priv_lvl_t priv_lvl_i,
 
-  input  logic              flush_i,     // flush the icache, flush and kill have to be asserted together
-  input  logic              en_i,        // enable icache
-  output logic              miss_o,      // to performance counter
-  // address translation requests
-  input  icache_areq_t    areq_i,
-  output icache_arsp_t    areq_o,
-  // data requests
-  input  icache_dreq_t    dreq_i,
-  output icache_drsp_t    dreq_o,
-  // AXI refill port
-  output axi_req_t          axi_req_o,
-  input  axi_rsp_t          axi_resp_i
+    input logic flush_i,  // flush the icache, flush and kill have to be asserted together
+    input logic en_i,  // enable icache
+    output logic miss_o,  // to performance counter
+    // address translation requests
+    input icache_areq_t areq_i,
+    output icache_arsp_t areq_o,
+    // data requests
+    input icache_dreq_t dreq_i,
+    output icache_drsp_t dreq_o,
+    // AXI refill port
+    output axi_req_t axi_req_o,
+    input axi_rsp_t axi_resp_i
 );
 
   localparam AxiNumWords = (ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ICACHE_LINE_WIDTH  > DCACHE_LINE_WIDTH)  +
                            (DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ICACHE_LINE_WIDTH <= DCACHE_LINE_WIDTH) ;
 
-  logic                                  icache_mem_rtrn_vld;
-  icache_rtrn_t                          icache_mem_rtrn;
-  logic                                  icache_mem_data_req;
-  logic                                  icache_mem_data_ack;
-  icache_req_t                           icache_mem_data;
+  logic                                    icache_mem_rtrn_vld;
+  icache_rtrn_t                            icache_mem_rtrn;
+  logic                                    icache_mem_data_req;
+  logic                                    icache_mem_data_ack;
+  icache_req_t                             icache_mem_data;
 
-  logic                                  axi_rd_req;
-  logic                                  axi_rd_gnt;
-  logic [CVA6Cfg.AxiAddrWidth-1:0]       axi_rd_addr;
-  logic [$clog2(AxiNumWords)-1:0]        axi_rd_blen;
-  logic [2:0]                            axi_rd_size;
-  logic [CVA6Cfg.AxiIdWidth-1:0]         axi_rd_id_in;
-  logic                                  axi_rd_rdy;
-  logic                                  axi_rd_lock;
-  logic                                  axi_rd_last;
-  logic                                  axi_rd_valid;
-  logic [CVA6Cfg.AxiDataWidth-1:0]       axi_rd_data;
-  logic [CVA6Cfg.AxiIdWidth-1:0]         axi_rd_id_out;
-  logic                                  axi_rd_exokay;
+  logic                                    axi_rd_req;
+  logic                                    axi_rd_gnt;
+  logic         [CVA6Cfg.AxiAddrWidth-1:0] axi_rd_addr;
+  logic         [ $clog2(AxiNumWords)-1:0] axi_rd_blen;
+  logic         [                     2:0] axi_rd_size;
+  logic         [  CVA6Cfg.AxiIdWidth-1:0] axi_rd_id_in;
+  logic                                    axi_rd_rdy;
+  logic                                    axi_rd_lock;
+  logic                                    axi_rd_last;
+  logic                                    axi_rd_valid;
+  logic         [CVA6Cfg.AxiDataWidth-1:0] axi_rd_data;
+  logic         [  CVA6Cfg.AxiIdWidth-1:0] axi_rd_id_out;
+  logic                                    axi_rd_exokay;
 
-  logic                                  req_valid_d, req_valid_q;
-  icache_req_t                           req_data_d,  req_data_q;
-  logic                                  first_d,     first_q;
-  logic [ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0] rd_shift_d,  rd_shift_q;
+  logic req_valid_d, req_valid_q;
+  icache_req_t req_data_d, req_data_q;
+  logic first_d, first_q;
+  logic [ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
+      rd_shift_d, rd_shift_q;
 
   // Keep read request asserted until we have an AXI grant. This is not guaranteed by icache (but
   // required by AXI).
@@ -76,8 +80,8 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign axi_rd_addr           = CVA6Cfg.AxiAddrWidth'(req_data_d.paddr);
 
   // Fetch a full cache line on a cache miss, or a single word on a bypassed access
-  assign axi_rd_blen           = (req_data_d.nc) ? '0 : ariane_pkg::ICACHE_LINE_WIDTH/64-1;
-  assign axi_rd_size           = $clog2(CVA6Cfg.AxiDataWidth/8); // Maximum
+  assign axi_rd_blen           = (req_data_d.nc) ? '0 : ariane_pkg::ICACHE_LINE_WIDTH / 64 - 1;
+  assign axi_rd_size           = $clog2(CVA6Cfg.AxiDataWidth / 8);  // Maximum
   assign axi_rd_id_in          = req_data_d.tid;
   assign axi_rd_rdy            = 1'b1;
   assign axi_rd_lock           = 1'b0;
@@ -96,68 +100,68 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   // I-Cache
   // -------
   cva6_icache #(
-    // use ID 0 for icache reads
-    .CVA6Cfg            ( CVA6Cfg       ),
-    .RdTxId             ( 0             )
+      // use ID 0 for icache reads
+      .CVA6Cfg(CVA6Cfg),
+      .RdTxId (0)
   ) i_cva6_icache (
-    .clk_i              ( clk_i               ),
-    .rst_ni             ( rst_ni              ),
-    .flush_i            ( flush_i             ),
-    .en_i               ( en_i                ),
-    .miss_o             ( miss_o              ),
-    .areq_i             ( areq_i              ),
-    .areq_o             ( areq_o              ),
-    .dreq_i             ( dreq_i              ),
-    .dreq_o             ( dreq_o              ),
-    .mem_rtrn_vld_i     ( icache_mem_rtrn_vld ),
-    .mem_rtrn_i         ( icache_mem_rtrn     ),
-    .mem_data_req_o     ( icache_mem_data_req ),
-    .mem_data_ack_i     ( icache_mem_data_ack ),
-    .mem_data_o         ( icache_mem_data     )
+      .clk_i         (clk_i),
+      .rst_ni        (rst_ni),
+      .flush_i       (flush_i),
+      .en_i          (en_i),
+      .miss_o        (miss_o),
+      .areq_i        (areq_i),
+      .areq_o        (areq_o),
+      .dreq_i        (dreq_i),
+      .dreq_o        (dreq_o),
+      .mem_rtrn_vld_i(icache_mem_rtrn_vld),
+      .mem_rtrn_i    (icache_mem_rtrn),
+      .mem_data_req_o(icache_mem_data_req),
+      .mem_data_ack_i(icache_mem_data_ack),
+      .mem_data_o    (icache_mem_data)
   );
 
   // --------
   // AXI shim
   // --------
-    axi_shim #(
-    .CVA6Cfg         ( CVA6Cfg        ),
-    .AxiNumWords     ( AxiNumWords    ),
-    .axi_req_t       ( axi_req_t      ),
-    .axi_rsp_t       ( axi_rsp_t      )
+  axi_shim #(
+      .CVA6Cfg    (CVA6Cfg),
+      .AxiNumWords(AxiNumWords),
+      .axi_req_t  (axi_req_t),
+      .axi_rsp_t  (axi_rsp_t)
   ) i_axi_shim (
-    .clk_i           ( clk_i             ),
-    .rst_ni          ( rst_ni            ),
-    .rd_req_i        ( axi_rd_req        ),
-    .rd_gnt_o        ( axi_rd_gnt        ),
-    .rd_addr_i       ( axi_rd_addr       ),
-    .rd_blen_i       ( axi_rd_blen       ),
-    .rd_size_i       ( axi_rd_size       ),
-    .rd_id_i         ( axi_rd_id_in      ),
-    .rd_rdy_i        ( axi_rd_rdy        ),
-    .rd_lock_i       ( axi_rd_lock       ),
-    .rd_last_o       ( axi_rd_last       ),
-    .rd_valid_o      ( axi_rd_valid      ),
-    .rd_data_o       ( axi_rd_data       ),
-    .rd_user_o       (                   ),
-    .rd_id_o         ( axi_rd_id_out     ),
-    .rd_exokay_o     ( axi_rd_exokay     ),
-    .wr_req_i        ( '0                ),
-    .wr_gnt_o        (                   ),
-    .wr_addr_i       ( '0                ),
-    .wr_data_i       ( '0                ),
-    .wr_user_i       ( '0                ),
-    .wr_be_i         ( '0                ),
-    .wr_blen_i       ( '0                ),
-    .wr_size_i       ( '0                ),
-    .wr_id_i         ( '0                ),
-    .wr_lock_i       ( '0                ),
-    .wr_atop_i       ( '0                ),
-    .wr_rdy_i        ( '0                ),
-    .wr_valid_o      (                   ),
-    .wr_id_o         (                   ),
-    .wr_exokay_o     (                   ),
-    .axi_req_o       ( axi_req_o         ),
-    .axi_resp_i      ( axi_resp_i        )
+      .clk_i      (clk_i),
+      .rst_ni     (rst_ni),
+      .rd_req_i   (axi_rd_req),
+      .rd_gnt_o   (axi_rd_gnt),
+      .rd_addr_i  (axi_rd_addr),
+      .rd_blen_i  (axi_rd_blen),
+      .rd_size_i  (axi_rd_size),
+      .rd_id_i    (axi_rd_id_in),
+      .rd_rdy_i   (axi_rd_rdy),
+      .rd_lock_i  (axi_rd_lock),
+      .rd_last_o  (axi_rd_last),
+      .rd_valid_o (axi_rd_valid),
+      .rd_data_o  (axi_rd_data),
+      .rd_user_o  (),
+      .rd_id_o    (axi_rd_id_out),
+      .rd_exokay_o(axi_rd_exokay),
+      .wr_req_i   ('0),
+      .wr_gnt_o   (),
+      .wr_addr_i  ('0),
+      .wr_data_i  ('0),
+      .wr_user_i  ('0),
+      .wr_be_i    ('0),
+      .wr_blen_i  ('0),
+      .wr_size_i  ('0),
+      .wr_id_i    ('0),
+      .wr_lock_i  ('0),
+      .wr_atop_i  ('0),
+      .wr_rdy_i   ('0),
+      .wr_valid_o (),
+      .wr_id_o    (),
+      .wr_exokay_o(),
+      .axi_req_o  (axi_req_o),
+      .axi_resp_i (axi_resp_i)
   );
 
   // Buffer burst data in shift register
@@ -166,7 +170,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
     rd_shift_d = rd_shift_q;
 
     if (axi_rd_valid) begin
-      first_d    = axi_rd_last;
+      first_d = axi_rd_last;
       if (ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         rd_shift_d = axi_rd_data;
       end else begin
@@ -195,4 +199,4 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
     end
   end
 
-endmodule // cva6_icache_axi_wrapper
+endmodule  // cva6_icache_axi_wrapper

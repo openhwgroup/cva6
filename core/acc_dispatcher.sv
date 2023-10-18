@@ -13,56 +13,59 @@
 // Date: 20.11.2020
 // Description: Functional unit that dispatches CVA6 instructions to accelerators.
 
-module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type acc_req_t  = acc_pkg::accelerator_req_t,
-    parameter type acc_resp_t = acc_pkg::accelerator_resp_t,
-    parameter type      acc_cfg_t  = logic,
-    parameter acc_cfg_t AccCfg     = '0
+module acc_dispatcher
+  import ariane_pkg::*;
+  import riscv::*;
+#(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
+    parameter type                   acc_req_t  = acc_pkg::accelerator_req_t,
+    parameter type                   acc_resp_t = acc_pkg::accelerator_resp_t,
+    parameter type                   acc_cfg_t  = logic,
+    parameter acc_cfg_t              AccCfg     = '0
 ) (
-    input  logic                                  clk_i,
-    input  logic                                  rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
     // Interface with the CSR regfile
-    input  logic                                  acc_cons_en_i,        // Accelerator memory consistent mode
-    output logic                                  acc_fflags_valid_o,
-    output logic                            [4:0] acc_fflags_o,
+    input logic acc_cons_en_i,  // Accelerator memory consistent mode
+    output logic acc_fflags_valid_o,
+    output logic [4:0] acc_fflags_o,
     // Interface with the CSRs
-    input  logic                            [2:0] fcsr_frm_i,
-    output logic                                  dirty_v_state_o,
+    input logic [2:0] fcsr_frm_i,
+    output logic dirty_v_state_o,
     // Interface with the issue stage
-    input  scoreboard_entry_t                     issue_instr_i,
-    input  logic                                  issue_instr_hs_i,
-    output logic                                  issue_stall_o,
-    input  fu_data_t                              fu_data_i,
-    input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
-    output logic              [TRANS_ID_BITS-1:0] acc_trans_id_o,
-    output xlen_t                                 acc_result_o,
-    output logic                                  acc_valid_o,
-    output exception_t                            acc_exception_o,
+    input scoreboard_entry_t issue_instr_i,
+    input logic issue_instr_hs_i,
+    output logic issue_stall_o,
+    input fu_data_t fu_data_i,
+    input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
+    output logic [TRANS_ID_BITS-1:0] acc_trans_id_o,
+    output xlen_t acc_result_o,
+    output logic acc_valid_o,
+    output exception_t acc_exception_o,
     // Interface with the execute stage
-    output logic                                  acc_valid_ex_o,       // FU executed
+    output logic acc_valid_ex_o,  // FU executed
     // Interface with the commit stage
-    input  logic      [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
-    input  logic                                  commit_st_barrier_i,  // A store barrier was commited
+    input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
+    input logic commit_st_barrier_i,  // A store barrier was commited
     // Interface with the load/store unit
-    output logic                                  acc_stall_st_pending_o,
-    input  logic                                  acc_no_st_pending_i,
-    input  dcache_req_i_t                   [2:0] dcache_req_ports_i,
+    output logic acc_stall_st_pending_o,
+    input logic acc_no_st_pending_i,
+    input dcache_req_i_t [2:0] dcache_req_ports_i,
     // Interface with the controller
-    output logic                                  ctrl_halt_o,
-    input  logic                                  flush_unissued_instr_i,
-    input  logic                                  flush_ex_i,
-    output logic                                  flush_pipeline_o,
+    output logic ctrl_halt_o,
+    input logic flush_unissued_instr_i,
+    input logic flush_ex_i,
+    output logic flush_pipeline_o,
     // Interface with cache subsystem
-    output dcache_req_i_t                   [1:0] acc_dcache_req_ports_o,
-    input  dcache_req_o_t                   [1:0] acc_dcache_req_ports_i,
-    input  logic                                  inval_ready_i,
-    output logic                                  inval_valid_o,
-    output logic                           [63:0] inval_addr_o,
+    output dcache_req_i_t [1:0] acc_dcache_req_ports_o,
+    input dcache_req_o_t [1:0] acc_dcache_req_ports_i,
+    input logic inval_ready_i,
+    output logic inval_valid_o,
+    output logic [63:0] inval_addr_o,
     // Accelerator interface
-    output acc_req_t                              acc_req_o,
-    input  acc_resp_t                             acc_resp_i
-  );
+    output acc_req_t acc_req_o,
+    input acc_resp_t acc_resp_i
+);
 
   `include "common_cells/registers.svh"
 
@@ -96,16 +99,15 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
   always_comb begin : stall_issue
     unique case (issue_instr_i.fu)
       ACCEL:
-        // 1. We're issuing an accelerator instruction but the dispatcher isn't ready yet
-        issue_stall_o = ~acc_ready;
+      // 1. We're issuing an accelerator instruction but the dispatcher isn't ready yet
+      issue_stall_o = ~acc_ready;
       LOAD:
-        // 2. We're issuing a scalar load but there is an inflight accelerator store.
-        issue_stall_o = acc_cons_en_i & ~acc_no_st_pending;
+      // 2. We're issuing a scalar load but there is an inflight accelerator store.
+      issue_stall_o = acc_cons_en_i & ~acc_no_st_pending;
       STORE:
-        // 3. We're issuing a scalar store but there is an inflight accelerator load or store.
-        issue_stall_o = acc_cons_en_i & (~acc_no_st_pending | ~acc_no_ld_pending);
-      default:
-        issue_stall_o = 1'b0;
+      // 3. We're issuing a scalar store but there is an inflight accelerator load or store.
+      issue_stall_o = acc_cons_en_i & (~acc_no_st_pending | ~acc_no_ld_pending);
+      default: issue_stall_o = 1'b0;
     endcase
   end
 
@@ -121,30 +123,30 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
   logic                                            acc_insn_queue_empty;
   logic     [idx_width(InstructionQueueDepth)-1:0] acc_insn_queue_usage;
   logic                                            acc_commit;
-  logic     [TRANS_ID_BITS-1:0]                    acc_commit_trans_id;
+  logic     [                   TRANS_ID_BITS-1:0] acc_commit_trans_id;
 
   assign acc_data = acc_valid_ex_o ? fu_data_i : '0;
 
   fifo_v3 #(
-    .DEPTH       (InstructionQueueDepth),
-    .FALL_THROUGH(1'b1                 ),
-    .dtype       (fu_data_t            )
+      .DEPTH       (InstructionQueueDepth),
+      .FALL_THROUGH(1'b1),
+      .dtype       (fu_data_t)
   ) i_acc_insn_queue (
-    .clk_i     (clk_i               ),
-    .rst_ni    (rst_ni              ),
-    .flush_i   (flush_ex_i          ),
-    .testmode_i(1'b0                ),
-    .data_i    (fu_data_i           ),
-    .push_i    (acc_valid_q         ),
-    .full_o    (/* Unused */        ),
-    .data_o    (acc_insn_queue_o    ),
-    .pop_i     (acc_insn_queue_pop  ),
-    .empty_o   (acc_insn_queue_empty),
-    .usage_o   (acc_insn_queue_usage)
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .flush_i   (flush_ex_i),
+      .testmode_i(1'b0),
+      .data_i    (fu_data_i),
+      .push_i    (acc_valid_q),
+      .full_o    (  /* Unused */),
+      .data_o    (acc_insn_queue_o),
+      .pop_i     (acc_insn_queue_pop),
+      .empty_o   (acc_insn_queue_empty),
+      .usage_o   (acc_insn_queue_usage)
   );
 
   // We are ready if the instruction queue is able to accept at least one more entry.
-  assign acc_ready = acc_insn_queue_usage < (InstructionQueueDepth-1);
+  assign acc_ready = acc_insn_queue_usage < (InstructionQueueDepth - 1);
 
   /**********************************
    *  Non-speculative instructions  *
@@ -160,17 +162,15 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
   logic [NR_SB_ENTRIES-1:0] insn_ready_d, insn_ready_q;
   `FF(insn_ready_q, insn_ready_d, '0)
 
-  always_comb begin: p_non_speculative_ff
+  always_comb begin : p_non_speculative_ff
     // Maintain state
     insn_pending_d = insn_pending_q;
     insn_ready_d   = insn_ready_q;
 
     // We received a new instruction
-    if (acc_valid_q)
-      insn_pending_d[acc_data.trans_id] = 1'b1;
+    if (acc_valid_q) insn_pending_d[acc_data.trans_id] = 1'b1;
     // Flush all received instructions
-    if (flush_ex_i)
-      insn_pending_d = '0;
+    if (flush_ex_i) insn_pending_d = '0;
 
     // An accelerator instruction is no longer speculative.
     if (acc_commit && insn_pending_q[acc_commit_trans_id]) begin
@@ -179,9 +179,8 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
     end
 
     // An accelerator instruction was issued.
-    if (acc_req_o.req_valid)
-      insn_ready_d[acc_req_o.trans_id] = 1'b0;
-  end: p_non_speculative_ff
+    if (acc_req_o.req_valid) insn_ready_d[acc_req_o.trans_id] = 1'b0;
+  end : p_non_speculative_ff
 
   /*************************
    *  Accelerator request  *
@@ -193,18 +192,18 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
 
   acc_pkg::accelerator_req_t acc_req_int;
   fall_through_register #(
-    .T(acc_pkg::accelerator_req_t)
+      .T(acc_pkg::accelerator_req_t)
   ) i_accelerator_req_register (
-    .clk_i     (clk_i          ),
-    .rst_ni    (rst_ni         ),
-    .clr_i     (1'b0           ),
-    .testmode_i(1'b0           ),
-    .data_i    (acc_req        ),
-    .valid_i   (acc_req_valid  ),
-    .ready_o   (acc_req_ready  ),
-    .data_o    (acc_req_int    ),
-    .valid_o   (acc_req_o.req_valid),
-    .ready_i   (acc_resp_i.req_ready)
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .clr_i     (1'b0),
+      .testmode_i(1'b0),
+      .data_i    (acc_req),
+      .valid_i   (acc_req_valid),
+      .ready_o   (acc_req_ready),
+      .data_o    (acc_req_int),
+      .valid_o   (acc_req_o.req_valid),
+      .ready_i   (acc_resp_i.req_ready)
   );
 
   assign acc_req_o.insn          = acc_req_int.insn;
@@ -216,28 +215,33 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
   assign acc_req_o.acc_cons_en   = acc_cons_en_i;
   assign acc_req_o.inval_ready   = inval_ready_i;
 
-  always_comb begin: accelerator_req_dispatcher
+  always_comb begin : accelerator_req_dispatcher
     // Do not fetch from the instruction queue
     acc_insn_queue_pop = 1'b0;
 
     // Default values
-    acc_req       = '0;
-    acc_req_valid = 1'b0;
+    acc_req            = '0;
+    acc_req_valid      = 1'b0;
 
     // Unpack fu_data_t into accelerator_req_t
     if (!acc_insn_queue_empty) begin
       acc_req = '{
-        // Instruction is forwarded from the decoder as an immediate
-        // -
-        // frm rounding information is up to date during a valid request to the accelerator
-        // The scoreboard synchronizes it with previous fcsr writes, and future fcsr writes
-        // do not take place until the accelerator answers (Ariane commits in-order)
-        insn    : acc_insn_queue_o.imm[31:0],
-        rs1     : acc_insn_queue_o.operand_a,
-        rs2     : acc_insn_queue_o.operand_b,
-        frm     : fpnew_pkg::roundmode_e'(fcsr_frm_i),
-        trans_id: acc_insn_queue_o.trans_id,
-        default : '0
+          // Instruction is forwarded from the decoder as an immediate
+          // -
+          // frm rounding information is up to date during a valid request to the accelerator
+          // The scoreboard synchronizes it with previous fcsr writes, and future fcsr writes
+          // do not take place until the accelerator answers (Ariane commits in-order)
+          insn    :
+          acc_insn_queue_o.imm[
+          31
+          :
+          0
+          ],
+          rs1     : acc_insn_queue_o.operand_a,
+          rs2     : acc_insn_queue_o.operand_b,
+          frm     : fpnew_pkg::roundmode_e'(fcsr_frm_i),
+          trans_id: acc_insn_queue_o.trans_id,
+          default: '0
       };
       // Wait until the instruction is no longer speculative.
       acc_req_valid      = insn_ready_q[acc_insn_queue_o.trans_id] ||
@@ -254,26 +258,22 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
   logic acc_st_disp;
 
   // Unpack the accelerator response
-  assign acc_trans_id_o     = acc_resp_i.trans_id;
-  assign acc_result_o       = acc_resp_i.result;
-  assign acc_valid_o        = acc_resp_i.resp_valid;
-  assign acc_exception_o    = '{
-      cause: riscv::ILLEGAL_INSTR,
-      tval : '0,
-      valid: acc_resp_i.error
-    };
-  assign acc_fflags_valid_o = acc_resp_i.fflags_valid;
-  assign acc_fflags_o       = acc_resp_i.fflags;
+  assign acc_trans_id_o       = acc_resp_i.trans_id;
+  assign acc_result_o         = acc_resp_i.result;
+  assign acc_valid_o          = acc_resp_i.resp_valid;
+  assign acc_exception_o      = '{cause: riscv::ILLEGAL_INSTR, tval : '0, valid: acc_resp_i.error};
+  assign acc_fflags_valid_o   = acc_resp_i.fflags_valid;
+  assign acc_fflags_o         = acc_resp_i.fflags;
   // Always ready to receive responses
   assign acc_req_o.resp_ready = 1'b1;
 
   // Signal dispatched load/store to issue stage
-  assign acc_ld_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
-  assign acc_st_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_STORE);
+  assign acc_ld_disp          = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
+  assign acc_st_disp          = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_STORE);
 
   // Cache invalidation
-  assign inval_valid_o = acc_resp_i.inval_valid;
-  assign inval_addr_o  = acc_resp_i.inval_addr;
+  assign inval_valid_o        = acc_resp_i.inval_valid;
+  assign inval_addr_o         = acc_resp_i.inval_addr;
 
   /**************************
    *  Accelerator commit    *
@@ -282,13 +282,11 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
   // Instruction can be issued to the (in-order) back-end if
   // it reached the top of the scoreboard and it hasn't been
   // issued yet
-  always_comb begin: accelerator_commit
+  always_comb begin : accelerator_commit
     acc_commit = 1'b0;
-    if (!commit_instr_i[0].valid && commit_instr_i[0].fu == ACCEL)
-        acc_commit = 1'b1;
-    if (commit_instr_i[0].valid &&
-        !commit_instr_i[1].valid && commit_instr_i[1].fu == ACCEL)
-        acc_commit = 1'b1;
+    if (!commit_instr_i[0].valid && commit_instr_i[0].fu == ACCEL) acc_commit = 1'b1;
+    if (commit_instr_i[0].valid && !commit_instr_i[1].valid && commit_instr_i[1].fu == ACCEL)
+      acc_commit = 1'b1;
   end
 
   // Dirty the V state if we are committing anything related to the vector accelerator
@@ -330,37 +328,38 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
 
   // Count speculative loads. These can still be flushed.
   counter #(
-      .WIDTH           (3),
-      .STICKY_OVERFLOW (0)
+      .WIDTH          (3),
+      .STICKY_OVERFLOW(0)
   ) i_acc_spec_loads (
-      .clk_i           (clk_i                   ),
-      .rst_ni          (rst_ni                  ),
-      .clear_i         (flush_ex_i              ),
-      .en_i            ((acc_valid_d && issue_instr_i.op == ACCEL_OP_LOAD) ^ acc_ld_disp),
-      .load_i          (1'b0                    ),
-      .down_i          (acc_ld_disp             ),
-      .d_i             ('0                      ),
-      .q_o             (acc_spec_loads_pending  ),
-      .overflow_o      (acc_spec_loads_overflow )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .clear_i   (flush_ex_i),
+      .en_i      ((acc_valid_d && issue_instr_i.op == ACCEL_OP_LOAD) ^ acc_ld_disp),
+      .load_i    (1'b0),
+      .down_i    (acc_ld_disp),
+      .d_i       ('0),
+      .q_o       (acc_spec_loads_pending),
+      .overflow_o(acc_spec_loads_overflow)
   );
 
   // Count dispatched loads. These cannot be flushed anymore.
   counter #(
-      .WIDTH           (3),
-      .STICKY_OVERFLOW (0)
+      .WIDTH          (3),
+      .STICKY_OVERFLOW(0)
   ) i_acc_disp_loads (
-      .clk_i           (clk_i                   ),
-      .rst_ni          (rst_ni                  ),
-      .clear_i         (1'b0                    ),
-      .en_i            (acc_ld_disp ^ acc_resp_i.load_complete),
-      .load_i          (1'b0                    ),
-      .down_i          (acc_resp_i.load_complete),
-      .d_i             ('0                      ),
-      .q_o             (acc_disp_loads_pending  ),
-      .overflow_o      (acc_disp_loads_overflow )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .clear_i   (1'b0),
+      .en_i      (acc_ld_disp ^ acc_resp_i.load_complete),
+      .load_i    (1'b0),
+      .down_i    (acc_resp_i.load_complete),
+      .d_i       ('0),
+      .q_o       (acc_disp_loads_pending),
+      .overflow_o(acc_disp_loads_overflow)
   );
 
-  acc_dispatcher_no_load_overflow: assert property (
+  acc_dispatcher_no_load_overflow :
+  assert property (
       @(posedge clk_i) disable iff (~rst_ni) (acc_spec_loads_overflow == 1'b0) && (acc_disp_loads_overflow == 1'b0) )
   else $error("[acc_dispatcher] Too many pending loads.");
 
@@ -374,37 +373,38 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
 
   // Count speculative stores. These can still be flushed.
   counter #(
-      .WIDTH           (3),
-      .STICKY_OVERFLOW (0)
+      .WIDTH          (3),
+      .STICKY_OVERFLOW(0)
   ) i_acc_spec_stores (
-      .clk_i           (clk_i                   ),
-      .rst_ni          (rst_ni                  ),
-      .clear_i         (flush_ex_i              ),
-      .en_i            ((acc_valid_d && issue_instr_i.op == ACCEL_OP_STORE) ^ acc_st_disp),
-      .load_i          (1'b0                    ),
-      .down_i          (acc_st_disp             ),
-      .d_i             ('0                      ),
-      .q_o             (acc_spec_stores_pending ),
-      .overflow_o      (acc_spec_stores_overflow)
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .clear_i   (flush_ex_i),
+      .en_i      ((acc_valid_d && issue_instr_i.op == ACCEL_OP_STORE) ^ acc_st_disp),
+      .load_i    (1'b0),
+      .down_i    (acc_st_disp),
+      .d_i       ('0),
+      .q_o       (acc_spec_stores_pending),
+      .overflow_o(acc_spec_stores_overflow)
   );
 
   // Count dispatched stores. These cannot be flushed anymore.
   counter #(
-      .WIDTH           (3),
-      .STICKY_OVERFLOW (0)
+      .WIDTH          (3),
+      .STICKY_OVERFLOW(0)
   ) i_acc_disp_stores (
-      .clk_i           (clk_i                    ),
-      .rst_ni          (rst_ni                   ),
-      .clear_i         (1'b0                     ),
-      .en_i            (acc_st_disp ^ acc_resp_i.store_complete),
-      .load_i          (1'b0                     ),
-      .down_i          (acc_resp_i.store_complete),
-      .d_i             ('0                       ),
-      .q_o             (acc_disp_stores_pending  ),
-      .overflow_o      (acc_disp_stores_overflow )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .clear_i   (1'b0),
+      .en_i      (acc_st_disp ^ acc_resp_i.store_complete),
+      .load_i    (1'b0),
+      .down_i    (acc_resp_i.store_complete),
+      .d_i       ('0),
+      .q_o       (acc_disp_stores_pending),
+      .overflow_o(acc_disp_stores_overflow)
   );
 
-  acc_dispatcher_no_store_overflow: assert property (
+  acc_dispatcher_no_store_overflow :
+  assert property (
       @(posedge clk_i) disable iff (~rst_ni) (acc_spec_stores_overflow == 1'b0) && (acc_disp_stores_overflow == 1'b0) )
   else $error("[acc_dispatcher] Too many pending stores.");
 

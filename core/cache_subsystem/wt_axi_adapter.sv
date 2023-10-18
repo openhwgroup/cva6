@@ -14,40 +14,43 @@
 //
 
 
-module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter int unsigned ReqFifoDepth  = 2,
-  parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
-  parameter type axi_req_t = logic,
-  parameter type axi_rsp_t = logic
+module wt_axi_adapter
+  import ariane_pkg::*;
+  import wt_cache_pkg::*;
+#(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter int unsigned ReqFifoDepth = 2,
+    parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
+    parameter type axi_req_t = logic,
+    parameter type axi_rsp_t = logic
 ) (
-  input logic                  clk_i,
-  input logic                  rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
 
-  // icache
-  input  logic                 icache_data_req_i,
-  output logic                 icache_data_ack_o,
-  input  icache_req_t          icache_data_i,
-  // returning packets must be consumed immediately
-  output logic                 icache_rtrn_vld_o,
-  output icache_rtrn_t         icache_rtrn_o,
+    // icache
+    input  logic         icache_data_req_i,
+    output logic         icache_data_ack_o,
+    input  icache_req_t  icache_data_i,
+    // returning packets must be consumed immediately
+    output logic         icache_rtrn_vld_o,
+    output icache_rtrn_t icache_rtrn_o,
 
-  // dcache
-  input  logic                 dcache_data_req_i,
-  output logic                 dcache_data_ack_o,
-  input  dcache_req_t          dcache_data_i,
-  // returning packets must be consumed immediately
-  output logic                 dcache_rtrn_vld_o,
-  output dcache_rtrn_t         dcache_rtrn_o,
+    // dcache
+    input  logic         dcache_data_req_i,
+    output logic         dcache_data_ack_o,
+    input  dcache_req_t  dcache_data_i,
+    // returning packets must be consumed immediately
+    output logic         dcache_rtrn_vld_o,
+    output dcache_rtrn_t dcache_rtrn_o,
 
-  // AXI port
-  output axi_req_t             axi_req_o,
-  input  axi_rsp_t             axi_resp_i,
+    // AXI port
+    output axi_req_t axi_req_o,
+    input  axi_rsp_t axi_resp_i,
 
-  // Invalidations
-  input  logic [63:0]          inval_addr_i,
-  input  logic                 inval_valid_i,
-  output logic                 inval_ready_o
+    // Invalidations
+    input  logic [63:0] inval_addr_i,
+    input  logic        inval_valid_i,
+    output logic        inval_ready_o
 );
 
   // support up to 512bit cache lines
@@ -65,7 +68,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic dcache_data_full, dcache_data_empty;
 
   logic [1:0] arb_req, arb_ack;
-  logic       arb_idx, arb_gnt;
+  logic arb_idx, arb_gnt;
 
   logic axi_rd_req, axi_rd_gnt;
   logic axi_wr_req, axi_wr_gnt;
@@ -74,12 +77,13 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [CVA6Cfg.AxiAddrWidth-1:0] axi_rd_addr, axi_wr_addr;
   logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
   logic [2:0] axi_rd_size, axi_wr_size;
-  logic [CVA6Cfg.AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
+  logic [CVA6Cfg.AxiIdWidth-1:0]
+      axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
   logic [AxiNumWords-1:0][CVA6Cfg.AxiDataWidth-1:0] axi_wr_data;
   logic [AxiNumWords-1:0][CVA6Cfg.AxiUserWidth-1:0] axi_wr_user;
   logic [CVA6Cfg.AxiDataWidth-1:0] axi_rd_data;
   logic [CVA6Cfg.AxiUserWidth-1:0] axi_rd_user;
-  logic [AxiNumWords-1:0][(CVA6Cfg.AxiDataWidth/8)-1:0]  axi_wr_be;
+  logic [AxiNumWords-1:0][(CVA6Cfg.AxiDataWidth/8)-1:0] axi_wr_be;
   logic [5:0] axi_wr_atop;
   logic invalidate;
   logic [$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] amo_off_d, amo_off_q;
@@ -94,35 +98,33 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic dcache_rd_full, dcache_rd_empty;
   logic dcache_wr_full, dcache_wr_empty;
 
-  assign icache_data_ack_o  = icache_data_req_i & ~icache_data_full;
-  assign dcache_data_ack_o  = dcache_data_req_i & ~dcache_data_full;
+  assign icache_data_ack_o = icache_data_req_i & ~icache_data_full;
+  assign dcache_data_ack_o = dcache_data_req_i & ~dcache_data_full;
 
   // arbiter
-  assign arb_req           = {~(dcache_data_empty |
-                                dcache_wr_full    |
-                                dcache_rd_full),
-                              ~(icache_data_empty |
-                                icache_rd_full)};
+  assign arb_req = {
+    ~(dcache_data_empty | dcache_wr_full | dcache_rd_full), ~(icache_data_empty | icache_rd_full)
+  };
 
-  assign arb_gnt           = axi_rd_gnt | axi_wr_gnt;
+  assign arb_gnt = axi_rd_gnt | axi_wr_gnt;
 
   rr_arb_tree #(
-    .NumIn     (2),
-    .DataWidth (1),
-    .AxiVldRdy (1'b1),
-    .LockIn    (1'b1)
+      .NumIn    (2),
+      .DataWidth(1),
+      .AxiVldRdy(1'b1),
+      .LockIn   (1'b1)
   ) i_rr_arb_tree (
-    .clk_i  (clk_i   ),
-    .rst_ni (rst_ni  ),
-    .flush_i('0      ),
-    .rr_i   ('0      ),
-    .req_i  (arb_req ),
-    .gnt_o  (arb_ack ),
-    .data_i ('0      ),
-    .gnt_i  (arb_gnt ),
-    .req_o  (        ),
-    .data_o (        ),
-    .idx_o  (arb_idx )
+      .clk_i  (clk_i),
+      .rst_ni (rst_ni),
+      .flush_i('0),
+      .rr_i   ('0),
+      .req_i  (arb_req),
+      .gnt_o  (arb_ack),
+      .data_i ('0),
+      .gnt_i  (arb_gnt),
+      .req_o  (),
+      .data_o (),
+      .idx_o  (arb_idx)
   );
 
   // request side
@@ -149,9 +151,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_rd_blen  = '0;
 
     if (dcache_data.paddr[2] == 1'b0) begin
-      axi_wr_user  = {{64-CVA6Cfg.AxiUserWidth{1'b0}}, dcache_data.user};
+      axi_wr_user = {{64 - CVA6Cfg.AxiUserWidth{1'b0}}, dcache_data.user};
     end else begin
-      axi_wr_user  = {dcache_data.user, {64-CVA6Cfg.AxiUserWidth{1'b0}}};
+      axi_wr_user = {dcache_data.user, {64 - CVA6Cfg.AxiUserWidth{1'b0}}};
     end
 
     // arbiter mux
@@ -159,45 +161,50 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
       // Cast to AXI address width
       axi_rd_addr = dcache_data.paddr;
       // If dcache_data.size MSB is set, we want to read as much as possible
-      axi_rd_size  = dcache_data.size[2] ? $clog2(CVA6Cfg.AxiDataWidth/8) : dcache_data.size;
+      axi_rd_size = dcache_data.size[2] ? $clog2(CVA6Cfg.AxiDataWidth / 8) : dcache_data.size;
       if (dcache_data.size[2]) begin
-        axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1;
+        axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
       end
     end else begin
       // Cast to AXI address width
       axi_rd_addr = icache_data.paddr;
-      axi_rd_size  = $clog2(CVA6Cfg.AxiDataWidth/8); // always request max number of words in case of ifill
+      axi_rd_size =
+          $clog2(CVA6Cfg.AxiDataWidth / 8);  // always request max number of words in case of ifill
       if (!icache_data.nc) begin
-        axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1;
+        axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
       end
     end
 
     // signal that an invalidation message
     // needs to be generated
-    invalidate   = 1'b0;
+    invalidate = 1'b0;
 
     // decode message type
     if (|arb_req) begin
       if (arb_idx == 0) begin
         //////////////////////////////////////
         // IMISS
-        axi_rd_req   = 1'b1;
+        axi_rd_req = 1'b1;
         //////////////////////////////////////
       end else begin
         unique case (dcache_data.rtype)
           //////////////////////////////////////
           wt_cache_pkg::DCACHE_LOAD_REQ: begin
-            axi_rd_req   = 1'b1;
+            axi_rd_req = 1'b1;
           end
           //////////////////////////////////////
           wt_cache_pkg::DCACHE_STORE_REQ: begin
-            axi_wr_req   = 1'b1;
-            axi_wr_be    = '0;
-            unique case(dcache_data.size[1:0])
-              2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]]       = '1;  // byte
-              2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
-              2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
-              default: axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword
+            axi_wr_req = 1'b1;
+            axi_wr_be  = '0;
+            unique case (dcache_data.size[1:0])
+              2'b00:
+              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]] = '1;  // byte
+              2'b01:
+              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:2] = '1;  // hword
+              2'b10:
+              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:4] = '1;  // word
+              default:
+              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:8] = '1;  // dword
             endcase
           end
           //////////////////////////////////////
@@ -207,16 +214,20 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
             // since we only keep one read tx in flight, and since
             // the dcache drains all writes/reads before executing
             // an atomic, this is safe.
-            invalidate   = arb_gnt;
-            axi_wr_req   = 1'b1;
-            axi_wr_be    = '0;
-            unique case(dcache_data.size[1:0])
-              2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]]       = '1;  // byte
-              2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
-              2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
-              default: axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword
+            invalidate = arb_gnt;
+            axi_wr_req = 1'b1;
+            axi_wr_be  = '0;
+            unique case (dcache_data.size[1:0])
+              2'b00:
+              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]] = '1;  // byte
+              2'b01:
+              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:2] = '1;  // hword
+              2'b10:
+              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:4] = '1;  // word
+              default:
+              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:8] = '1;  // dword
             endcase
-            amo_gen_r_d  = 1'b1;
+            amo_gen_r_d = 1'b1;
             // need to use a separate ID here, so concat an additional bit
             axi_wr_id_in[1] = 1'b1;
 
@@ -226,206 +237,235 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
                 axi_rd_req      = 1'b1;
                 axi_rd_id_in[1] = 1'b1;
                 // tie to zero in this special case
-                axi_wr_req   = 1'b0;
-                axi_wr_be    = '0;
+                axi_wr_req      = 1'b0;
+                axi_wr_be       = '0;
               end
               AMO_SC: begin
-                axi_wr_lock  = 1'b1;
-                amo_gen_r_d  = 1'b0;
+                axi_wr_lock = 1'b1;
+                amo_gen_r_d = 1'b0;
                 // needed to properly encode success. store the result at offset within the returned
                 // AXI data word aligned with the requested word size.
-                amo_off_d = dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] & ~((1 << dcache_data.size[1:0]) - 1);
+                amo_off_d = dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-
+                                              1:0] & ~((1 << dcache_data.size[1:0]) - 1);
               end
               // RISC-V atops have a load semantic
-              AMO_SWAP: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ATOMICSWAP};
-              AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
-              AMO_AND:  begin
+              AMO_SWAP:
+              axi_wr_atop = {
+                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ATOMICSWAP
+              };
+              AMO_ADD:
+              axi_wr_atop = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
+              AMO_AND: begin
                 // in this case we need to invert the data to get a "CLR"
-                axi_wr_data  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
-                axi_wr_user  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.user}};
-                axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
+                axi_wr_data = ~{(CVA6Cfg.AxiDataWidth / riscv::XLEN) {dcache_data.data}};
+                axi_wr_user = ~{(CVA6Cfg.AxiDataWidth / riscv::XLEN) {dcache_data.user}};
+                axi_wr_atop = {
+                  axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR
+                };
               end
-              AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
-              AMO_XOR:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
-              AMO_MAX:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX};
-              AMO_MAXU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX};
-              AMO_MIN:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN};
-              AMO_MINU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN};
-              default: ; // Do nothing
+              AMO_OR:
+              axi_wr_atop = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
+              AMO_XOR:
+              axi_wr_atop = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
+              AMO_MAX:
+              axi_wr_atop = {
+                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX
+              };
+              AMO_MAXU:
+              axi_wr_atop = {
+                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX
+              };
+              AMO_MIN:
+              axi_wr_atop = {
+                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN
+              };
+              AMO_MINU:
+              axi_wr_atop = {
+                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN
+              };
+              default: ;  // Do nothing
             endcase
           end
-          default: ; // Do nothing
-        //////////////////////////////////////
+          default: ;  // Do nothing
+          //////////////////////////////////////
         endcase
       end
     end
   end
 
   fifo_v3 #(
-    .dtype       (  icache_req_t            ),
-    .DEPTH       (  ReqFifoDepth            )
+      .dtype(icache_req_t),
+      .DEPTH(ReqFifoDepth)
   ) i_icache_data_fifo (
-    .clk_i       (  clk_i                   ),
-    .rst_ni      (  rst_ni                  ),
-    .flush_i     (  1'b0                    ),
-    .testmode_i  (  1'b0                    ),
-    .full_o      (  icache_data_full        ),
-    .empty_o     (  icache_data_empty       ),
-    .usage_o     (                          ),
-    .data_i      (  icache_data_i           ),
-    .push_i      (  icache_data_ack_o       ),
-    .data_o      (  icache_data             ),
-    .pop_i       (  arb_ack[0]              )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .flush_i   (1'b0),
+      .testmode_i(1'b0),
+      .full_o    (icache_data_full),
+      .empty_o   (icache_data_empty),
+      .usage_o   (),
+      .data_i    (icache_data_i),
+      .push_i    (icache_data_ack_o),
+      .data_o    (icache_data),
+      .pop_i     (arb_ack[0])
   );
 
   fifo_v3 #(
-    .dtype       (  dcache_req_t            ),
-    .DEPTH       (  ReqFifoDepth            )
+      .dtype(dcache_req_t),
+      .DEPTH(ReqFifoDepth)
   ) i_dcache_data_fifo (
-    .clk_i       (  clk_i                   ),
-    .rst_ni      (  rst_ni                  ),
-    .flush_i     (  1'b0                    ),
-    .testmode_i  (  1'b0                    ),
-    .full_o      (  dcache_data_full        ),
-    .empty_o     (  dcache_data_empty       ),
-    .usage_o     (                          ),
-    .data_i      (  dcache_data_i           ),
-    .push_i      (  dcache_data_ack_o       ),
-    .data_o      (  dcache_data             ),
-    .pop_i       (  arb_ack[1]              )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .flush_i   (1'b0),
+      .testmode_i(1'b0),
+      .full_o    (dcache_data_full),
+      .empty_o   (dcache_data_empty),
+      .usage_o   (),
+      .data_i    (dcache_data_i),
+      .push_i    (dcache_data_ack_o),
+      .data_o    (dcache_data),
+      .pop_i     (arb_ack[1])
   );
 
-///////////////////////////////////////////////////////
-// meta info feedback fifos
-///////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////
+  // meta info feedback fifos
+  ///////////////////////////////////////////////////////
 
   logic icache_rtrn_rd_en, dcache_rtrn_rd_en;
   logic icache_rtrn_vld_d, icache_rtrn_vld_q, dcache_rtrn_vld_d, dcache_rtrn_vld_q;
 
   fifo_v3 #(
-    .DATA_WIDTH ( wt_cache_pkg::CACHE_ID_WIDTH ),
-    .DEPTH      ( MetaFifoDepth                )
+      .DATA_WIDTH(wt_cache_pkg::CACHE_ID_WIDTH),
+      .DEPTH     (MetaFifoDepth)
   ) i_rd_icache_id (
-    .clk_i      ( clk_i                   ),
-    .rst_ni     ( rst_ni                  ),
-    .flush_i    ( 1'b0                    ),
-    .testmode_i ( 1'b0                    ),
-    .full_o     ( icache_rd_full          ),
-    .empty_o    ( icache_rd_empty         ),
-    .usage_o    (                         ),
-    .data_i     ( icache_data.tid         ),
-    .push_i     ( arb_ack[0] & axi_rd_gnt ),
-    .data_o     ( icache_rtrn_tid_d       ),
-    .pop_i      ( icache_rtrn_vld_d       )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .flush_i   (1'b0),
+      .testmode_i(1'b0),
+      .full_o    (icache_rd_full),
+      .empty_o   (icache_rd_empty),
+      .usage_o   (),
+      .data_i    (icache_data.tid),
+      .push_i    (arb_ack[0] & axi_rd_gnt),
+      .data_o    (icache_rtrn_tid_d),
+      .pop_i     (icache_rtrn_vld_d)
   );
 
   fifo_v3 #(
-    .DATA_WIDTH ( wt_cache_pkg::CACHE_ID_WIDTH ),
-    .DEPTH      ( MetaFifoDepth                )
+      .DATA_WIDTH(wt_cache_pkg::CACHE_ID_WIDTH),
+      .DEPTH     (MetaFifoDepth)
   ) i_rd_dcache_id (
-    .clk_i      ( clk_i                   ),
-    .rst_ni     ( rst_ni                  ),
-    .flush_i    ( 1'b0                    ),
-    .testmode_i ( 1'b0                    ),
-    .full_o     ( dcache_rd_full          ),
-    .empty_o    ( dcache_rd_empty         ),
-    .usage_o    (                         ),
-    .data_i     ( dcache_data.tid         ),
-    .push_i     ( arb_ack[1] & axi_rd_gnt ),
-    .data_o     ( dcache_rtrn_rd_tid      ),
-    .pop_i      ( dcache_rd_pop           )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .flush_i   (1'b0),
+      .testmode_i(1'b0),
+      .full_o    (dcache_rd_full),
+      .empty_o   (dcache_rd_empty),
+      .usage_o   (),
+      .data_i    (dcache_data.tid),
+      .push_i    (arb_ack[1] & axi_rd_gnt),
+      .data_o    (dcache_rtrn_rd_tid),
+      .pop_i     (dcache_rd_pop)
   );
 
   fifo_v3 #(
-    .DATA_WIDTH ( wt_cache_pkg::CACHE_ID_WIDTH ),
-    .DEPTH      ( MetaFifoDepth                 )
+      .DATA_WIDTH(wt_cache_pkg::CACHE_ID_WIDTH),
+      .DEPTH     (MetaFifoDepth)
   ) i_wr_dcache_id (
-    .clk_i      ( clk_i                   ),
-    .rst_ni     ( rst_ni                  ),
-    .flush_i    ( 1'b0                    ),
-    .testmode_i ( 1'b0                    ),
-    .full_o     ( dcache_wr_full          ),
-    .empty_o    ( dcache_wr_empty         ),
-    .usage_o    (                         ),
-    .data_i     ( dcache_data.tid         ),
-    .push_i     ( arb_ack[1] & axi_wr_gnt ),
-    .data_o     ( dcache_rtrn_wr_tid      ),
-    .pop_i      ( dcache_wr_pop           )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .flush_i   (1'b0),
+      .testmode_i(1'b0),
+      .full_o    (dcache_wr_full),
+      .empty_o   (dcache_wr_empty),
+      .usage_o   (),
+      .data_i    (dcache_data.tid),
+      .push_i    (arb_ack[1] & axi_wr_gnt),
+      .data_o    (dcache_rtrn_wr_tid),
+      .pop_i     (dcache_wr_pop)
   );
 
   // select correct tid to return
   assign dcache_rtrn_tid_d = (dcache_wr_pop) ? dcache_rtrn_wr_tid : dcache_rtrn_rd_tid;
 
-///////////////////////////////////////////////////////
-// return path
-///////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////
+  // return path
+  ///////////////////////////////////////////////////////
 
   // buffer write responses
   logic b_full, b_empty, b_push, b_pop;
-  assign axi_wr_rdy          = ~b_full;
-  assign b_push              = axi_wr_valid & axi_wr_rdy;
+  assign axi_wr_rdy = ~b_full;
+  assign b_push     = axi_wr_valid & axi_wr_rdy;
 
   fifo_v3 #(
-    .DATA_WIDTH   ( CVA6Cfg.AxiIdWidth + 1 ),
-    .DEPTH        ( MetaFifoDepth              ),
-    .FALL_THROUGH ( 1'b1                       )
+      .DATA_WIDTH  (CVA6Cfg.AxiIdWidth + 1),
+      .DEPTH       (MetaFifoDepth),
+      .FALL_THROUGH(1'b1)
   ) i_b_fifo (
-    .clk_i      ( clk_i      ),
-    .rst_ni     ( rst_ni     ),
-    .flush_i    ( 1'b0       ),
-    .testmode_i ( 1'b0       ),
-    .full_o     ( b_full     ),
-    .empty_o    ( b_empty    ),
-    .usage_o    (            ),
-    .data_i     ( {axi_wr_exokay, axi_wr_id_out} ),
-    .push_i     ( b_push                         ),
-    .data_o     ( {wr_exokay, wr_id_out}         ),
-    .pop_i      ( b_pop                          )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .flush_i   (1'b0),
+      .testmode_i(1'b0),
+      .full_o    (b_full),
+      .empty_o   (b_empty),
+      .usage_o   (),
+      .data_i    ({axi_wr_exokay, axi_wr_id_out}),
+      .push_i    (b_push),
+      .data_o    ({wr_exokay, wr_id_out}),
+      .pop_i     (b_pop)
   );
 
   // buffer read responses in shift regs
   logic icache_first_d, icache_first_q, dcache_first_d, dcache_first_q;
-  logic [ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0] icache_rd_shift_user_d, icache_rd_shift_user_q;
-  logic [DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0] dcache_rd_shift_user_d, dcache_rd_shift_user_q;
-  logic [ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0] icache_rd_shift_d, icache_rd_shift_q;
-  logic [DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0] dcache_rd_shift_d, dcache_rd_shift_q;
+  logic [ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
+      icache_rd_shift_user_d, icache_rd_shift_user_q;
+  logic [DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
+      dcache_rd_shift_user_d, dcache_rd_shift_user_q;
+  logic [ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
+      icache_rd_shift_d, icache_rd_shift_q;
+  logic [DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
+      dcache_rd_shift_d, dcache_rd_shift_q;
   wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
   wt_cache_pkg::dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
   logic dcache_sc_rtrn, axi_rd_last;
 
   always_comb begin : p_axi_rtrn_shift
     // output directly from regs
-    icache_rtrn_o              = '0;
-    icache_rtrn_o.rtype        = wt_cache_pkg::ICACHE_IFILL_ACK;
-    icache_rtrn_o.tid          = icache_rtrn_tid_q;
-    icache_rtrn_o.data         = icache_rd_shift_q;
-    icache_rtrn_o.user         = icache_rd_shift_user_q;
-    icache_rtrn_vld_o          = icache_rtrn_vld_q;
+    icache_rtrn_o          = '0;
+    icache_rtrn_o.rtype    = wt_cache_pkg::ICACHE_IFILL_ACK;
+    icache_rtrn_o.tid      = icache_rtrn_tid_q;
+    icache_rtrn_o.data     = icache_rd_shift_q;
+    icache_rtrn_o.user     = icache_rd_shift_user_q;
+    icache_rtrn_vld_o      = icache_rtrn_vld_q;
 
-    dcache_rtrn_o              = '0;
-    dcache_rtrn_o.rtype        = dcache_rtrn_type_q;
-    dcache_rtrn_o.inv          = dcache_rtrn_inv_q;
-    dcache_rtrn_o.tid          = dcache_rtrn_tid_q;
-    dcache_rtrn_o.data         = dcache_rd_shift_q;
-    dcache_rtrn_o.user         = dcache_rd_shift_user_q;
-    dcache_rtrn_vld_o          = dcache_rtrn_vld_q;
+    dcache_rtrn_o          = '0;
+    dcache_rtrn_o.rtype    = dcache_rtrn_type_q;
+    dcache_rtrn_o.inv      = dcache_rtrn_inv_q;
+    dcache_rtrn_o.tid      = dcache_rtrn_tid_q;
+    dcache_rtrn_o.data     = dcache_rd_shift_q;
+    dcache_rtrn_o.user     = dcache_rd_shift_user_q;
+    dcache_rtrn_vld_o      = dcache_rtrn_vld_q;
 
     // read shift registers
-    icache_rd_shift_d = icache_rd_shift_q;
+    icache_rd_shift_d      = icache_rd_shift_q;
     icache_rd_shift_user_d = icache_rd_shift_user_q;
-    dcache_rd_shift_d = dcache_rd_shift_q;
+    dcache_rd_shift_d      = dcache_rd_shift_q;
     dcache_rd_shift_user_d = dcache_rd_shift_user_q;
-    icache_first_d    = icache_first_q;
-    dcache_first_d    = dcache_first_q;
+    icache_first_d         = icache_first_q;
+    dcache_first_d         = dcache_first_q;
 
     if (icache_rtrn_rd_en) begin
-      icache_first_d    = axi_rd_last;
+      icache_first_d = axi_rd_last;
       if (ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         icache_rd_shift_d = axi_rd_data;
       end else begin
-        icache_rd_shift_d = {axi_rd_data, icache_rd_shift_q[ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]};
+        icache_rd_shift_d = {
+          axi_rd_data, icache_rd_shift_q[ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
+        };
       end
-      icache_rd_shift_user_d = {axi_rd_user, icache_rd_shift_user_q[ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]};
+      icache_rd_shift_user_d = {
+        axi_rd_user, icache_rd_shift_user_q[ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
+      };
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (icache_first_q) begin
         icache_rd_shift_d[0] = axi_rd_data;
@@ -434,13 +474,17 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     end
 
     if (dcache_rtrn_rd_en) begin
-      dcache_first_d    = axi_rd_last;
+      dcache_first_d = axi_rd_last;
       if (DCACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         dcache_rd_shift_d = axi_rd_data;
       end else begin
-        dcache_rd_shift_d = {axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]};
+        dcache_rd_shift_d = {
+          axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
+        };
       end
-      dcache_rd_shift_user_d = {axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]};
+      dcache_rd_shift_user_d = {
+        axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
+      };
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (dcache_first_q) begin
         dcache_rd_shift_d[0] = axi_rd_data;
@@ -471,64 +515,64 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
       icache_rtrn_vld_d = axi_rd_last;
     end
 
-    dcache_rtrn_rd_en   = 1'b0;
-    dcache_rtrn_vld_d   = 1'b0;
-    dcache_rd_pop       = 1'b0;
-    dcache_wr_pop       = 1'b0;
-    dcache_rtrn_inv_d   = '0;
-    dcache_rtrn_type_d  = wt_cache_pkg::DCACHE_LOAD_ACK;
-    b_pop               = 1'b0;
-    dcache_sc_rtrn      = 1'b0;
+    dcache_rtrn_rd_en  = 1'b0;
+    dcache_rtrn_vld_d  = 1'b0;
+    dcache_rd_pop      = 1'b0;
+    dcache_wr_pop      = 1'b0;
+    dcache_rtrn_inv_d  = '0;
+    dcache_rtrn_type_d = wt_cache_pkg::DCACHE_LOAD_ACK;
+    b_pop              = 1'b0;
+    dcache_sc_rtrn     = 1'b0;
 
     // External invalidation requests (from coprocessor). This is safe as
     // there are no other transactions when a coprocessor has pending stores.
-    inval_ready_o = 1'b0;
+    inval_ready_o      = 1'b0;
     if (inval_valid_i) begin
-      inval_ready_o          = 1'b1;
-      dcache_rtrn_type_d     = wt_cache_pkg::DCACHE_INV_REQ;
-      dcache_rtrn_vld_d      = 1'b1;
-      dcache_rtrn_inv_d.all  = 1'b1;
-      dcache_rtrn_inv_d.idx  = inval_addr_i[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
-    //////////////////////////////////////
-    // dcache needs some special treatment
-    // for arbitration and decoding of atomics
-    //////////////////////////////////////
-    // this is safe, there is no other read tx in flight than this atomic.
-    // note that this self invalidation is handled in this way due to the
-    // write-through cache architecture, which is aligned with the openpiton
-    // cache subsystem.
+      inval_ready_o         = 1'b1;
+      dcache_rtrn_type_d    = wt_cache_pkg::DCACHE_INV_REQ;
+      dcache_rtrn_vld_d     = 1'b1;
+      dcache_rtrn_inv_d.all = 1'b1;
+      dcache_rtrn_inv_d.idx = inval_addr_i[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+      //////////////////////////////////////
+      // dcache needs some special treatment
+      // for arbitration and decoding of atomics
+      //////////////////////////////////////
+      // this is safe, there is no other read tx in flight than this atomic.
+      // note that this self invalidation is handled in this way due to the
+      // write-through cache architecture, which is aligned with the openpiton
+      // cache subsystem.
     end else if (invalidate) begin
-        dcache_rtrn_type_d     = wt_cache_pkg::DCACHE_INV_REQ;
-        dcache_rtrn_vld_d      = 1'b1;
+      dcache_rtrn_type_d    = wt_cache_pkg::DCACHE_INV_REQ;
+      dcache_rtrn_vld_d     = 1'b1;
 
-        dcache_rtrn_inv_d.all  = 1'b1;
-        dcache_rtrn_inv_d.idx  = dcache_data.paddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
-    //////////////////////////////////////
-    // read responses
-    // note that in case of atomics, the dcache sequentializes requests and
-    // guarantees that there are no other pending transactions in flight
+      dcache_rtrn_inv_d.all = 1'b1;
+      dcache_rtrn_inv_d.idx = dcache_data.paddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+      //////////////////////////////////////
+      // read responses
+      // note that in case of atomics, the dcache sequentializes requests and
+      // guarantees that there are no other pending transactions in flight
     end else if (axi_rd_valid && axi_rd_id_out[0] && axi_rd_rdy) begin
-      dcache_rtrn_rd_en        = 1'b1;
-      dcache_rtrn_vld_d        = axi_rd_last;
+      dcache_rtrn_rd_en = 1'b1;
+      dcache_rtrn_vld_d = axi_rd_last;
 
       // if this was an atomic op
       if (axi_rd_id_out[1]) begin
-        dcache_rtrn_type_d     = wt_cache_pkg::DCACHE_ATOMIC_ACK;
+        dcache_rtrn_type_d = wt_cache_pkg::DCACHE_ATOMIC_ACK;
 
         // check if transaction was issued over write channel and pop that ID
         if (!dcache_wr_empty) begin
-          dcache_wr_pop          = axi_rd_last;
-        // if this is not the case, there MUST be an id in the read channel (LR)
+          dcache_wr_pop = axi_rd_last;
+          // if this is not the case, there MUST be an id in the read channel (LR)
         end else begin
-          dcache_rd_pop          = axi_rd_last;
+          dcache_rd_pop = axi_rd_last;
         end
       end else begin
-        dcache_rd_pop          = axi_rd_last;
+        dcache_rd_pop = axi_rd_last;
       end
-    //////////////////////////////////////
-    // write responses, check b fifo
+      //////////////////////////////////////
+      // write responses, check b fifo
     end else if (!b_empty) begin
-      b_pop               = 1'b1;
+      b_pop = 1'b1;
 
       // this was an atomic
       if (wr_id_out[1]) begin
@@ -537,9 +581,9 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
         // silently discard b response if we already popped the fifo
         // with a R beat (iff the amo transaction generated an R beat)
         if (!amo_gen_r_q) begin
-          dcache_rtrn_vld_d  = 1'b1;
-          dcache_wr_pop      = 1'b1;
-          dcache_sc_rtrn     = 1'b1;
+          dcache_rtrn_vld_d = 1'b1;
+          dcache_wr_pop     = 1'b1;
+          dcache_sc_rtrn    = 1'b1;
         end
       end else begin
         // regular response
@@ -565,92 +609,92 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_rd_buf
     if (!rst_ni) begin
-      icache_first_q     <= 1'b1;
-      dcache_first_q     <= 1'b1;
-      icache_rd_shift_q  <= '0;
-      icache_rd_shift_user_q  <= '0;
-      dcache_rd_shift_q  <= '0;
-      dcache_rd_shift_user_q  <= '0;
-      icache_rtrn_vld_q  <= '0;
-      dcache_rtrn_vld_q  <= '0;
-      icache_rtrn_tid_q  <= '0;
-      dcache_rtrn_tid_q  <= '0;
-      dcache_rtrn_type_q <= wt_cache_pkg::DCACHE_LOAD_ACK;
-      dcache_rtrn_inv_q  <= '0;
-      amo_off_q          <= '0;
-      amo_gen_r_q        <= 1'b0;
+      icache_first_q         <= 1'b1;
+      dcache_first_q         <= 1'b1;
+      icache_rd_shift_q      <= '0;
+      icache_rd_shift_user_q <= '0;
+      dcache_rd_shift_q      <= '0;
+      dcache_rd_shift_user_q <= '0;
+      icache_rtrn_vld_q      <= '0;
+      dcache_rtrn_vld_q      <= '0;
+      icache_rtrn_tid_q      <= '0;
+      dcache_rtrn_tid_q      <= '0;
+      dcache_rtrn_type_q     <= wt_cache_pkg::DCACHE_LOAD_ACK;
+      dcache_rtrn_inv_q      <= '0;
+      amo_off_q              <= '0;
+      amo_gen_r_q            <= 1'b0;
     end else begin
-      icache_first_q     <= icache_first_d;
-      dcache_first_q     <= dcache_first_d;
-      icache_rd_shift_q  <= icache_rd_shift_d;
-      icache_rd_shift_user_q  <= icache_rd_shift_user_d;
-      dcache_rd_shift_q  <= dcache_rd_shift_d;
-      dcache_rd_shift_user_q  <= dcache_rd_shift_user_d;
-      icache_rtrn_vld_q  <= icache_rtrn_vld_d;
-      dcache_rtrn_vld_q  <= dcache_rtrn_vld_d;
-      icache_rtrn_tid_q  <= icache_rtrn_tid_d;
-      dcache_rtrn_tid_q  <= dcache_rtrn_tid_d;
-      dcache_rtrn_type_q <= dcache_rtrn_type_d;
-      dcache_rtrn_inv_q  <= dcache_rtrn_inv_d;
-      amo_off_q          <= amo_off_d;
-      amo_gen_r_q        <= amo_gen_r_d;
+      icache_first_q         <= icache_first_d;
+      dcache_first_q         <= dcache_first_d;
+      icache_rd_shift_q      <= icache_rd_shift_d;
+      icache_rd_shift_user_q <= icache_rd_shift_user_d;
+      dcache_rd_shift_q      <= dcache_rd_shift_d;
+      dcache_rd_shift_user_q <= dcache_rd_shift_user_d;
+      icache_rtrn_vld_q      <= icache_rtrn_vld_d;
+      dcache_rtrn_vld_q      <= dcache_rtrn_vld_d;
+      icache_rtrn_tid_q      <= icache_rtrn_tid_d;
+      dcache_rtrn_tid_q      <= dcache_rtrn_tid_d;
+      dcache_rtrn_type_q     <= dcache_rtrn_type_d;
+      dcache_rtrn_inv_q      <= dcache_rtrn_inv_d;
+      amo_off_q              <= amo_off_d;
+      amo_gen_r_q            <= amo_gen_r_d;
     end
   end
 
 
-///////////////////////////////////////////////////////
-// axi protocol shim
-///////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////
+  // axi protocol shim
+  ///////////////////////////////////////////////////////
 
   axi_shim #(
-    .CVA6Cfg         ( CVA6Cfg        ),
-    .AxiNumWords     ( AxiNumWords    ),
-    .axi_req_t       ( axi_req_t      ),
-    .axi_rsp_t       ( axi_rsp_t      )
+      .CVA6Cfg    (CVA6Cfg),
+      .AxiNumWords(AxiNumWords),
+      .axi_req_t  (axi_req_t),
+      .axi_rsp_t  (axi_rsp_t)
   ) i_axi_shim (
-    .clk_i           ( clk_i             ),
-    .rst_ni          ( rst_ni            ),
-    .rd_req_i        ( axi_rd_req        ),
-    .rd_gnt_o        ( axi_rd_gnt        ),
-    .rd_addr_i       ( axi_rd_addr       ),
-    .rd_blen_i       ( axi_rd_blen       ),
-    .rd_size_i       ( axi_rd_size       ),
-    .rd_id_i         ( axi_rd_id_in      ),
-    .rd_rdy_i        ( axi_rd_rdy        ),
-    .rd_lock_i       ( axi_rd_lock       ),
-    .rd_last_o       ( axi_rd_last       ),
-    .rd_valid_o      ( axi_rd_valid      ),
-    .rd_data_o       ( axi_rd_data       ),
-    .rd_user_o       ( axi_rd_user       ),
-    .rd_id_o         ( axi_rd_id_out     ),
-    .rd_exokay_o     ( axi_rd_exokay     ),
-    .wr_req_i        ( axi_wr_req        ),
-    .wr_gnt_o        ( axi_wr_gnt        ),
-    .wr_addr_i       ( axi_wr_addr       ),
-    .wr_data_i       ( axi_wr_data       ),
-    .wr_user_i       ( axi_wr_user       ),
-    .wr_be_i         ( axi_wr_be         ),
-    .wr_blen_i       ( axi_wr_blen       ),
-    .wr_size_i       ( axi_wr_size       ),
-    .wr_id_i         ( axi_wr_id_in      ),
-    .wr_lock_i       ( axi_wr_lock       ),
-    .wr_atop_i       ( axi_wr_atop       ),
-    .wr_rdy_i        ( axi_wr_rdy        ),
-    .wr_valid_o      ( axi_wr_valid      ),
-    .wr_id_o         ( axi_wr_id_out     ),
-    .wr_exokay_o     ( axi_wr_exokay     ),
-    .axi_req_o       ( axi_req_o         ),
-    .axi_resp_i      ( axi_resp_i        )
+      .clk_i      (clk_i),
+      .rst_ni     (rst_ni),
+      .rd_req_i   (axi_rd_req),
+      .rd_gnt_o   (axi_rd_gnt),
+      .rd_addr_i  (axi_rd_addr),
+      .rd_blen_i  (axi_rd_blen),
+      .rd_size_i  (axi_rd_size),
+      .rd_id_i    (axi_rd_id_in),
+      .rd_rdy_i   (axi_rd_rdy),
+      .rd_lock_i  (axi_rd_lock),
+      .rd_last_o  (axi_rd_last),
+      .rd_valid_o (axi_rd_valid),
+      .rd_data_o  (axi_rd_data),
+      .rd_user_o  (axi_rd_user),
+      .rd_id_o    (axi_rd_id_out),
+      .rd_exokay_o(axi_rd_exokay),
+      .wr_req_i   (axi_wr_req),
+      .wr_gnt_o   (axi_wr_gnt),
+      .wr_addr_i  (axi_wr_addr),
+      .wr_data_i  (axi_wr_data),
+      .wr_user_i  (axi_wr_user),
+      .wr_be_i    (axi_wr_be),
+      .wr_blen_i  (axi_wr_blen),
+      .wr_size_i  (axi_wr_size),
+      .wr_id_i    (axi_wr_id_in),
+      .wr_lock_i  (axi_wr_lock),
+      .wr_atop_i  (axi_wr_atop),
+      .wr_rdy_i   (axi_wr_rdy),
+      .wr_valid_o (axi_wr_valid),
+      .wr_id_o    (axi_wr_id_out),
+      .wr_exokay_o(axi_wr_exokay),
+      .axi_req_o  (axi_req_o),
+      .axi_resp_i (axi_resp_i)
   );
 
-///////////////////////////////////////////////////////
-// assertions
-///////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////
+  // assertions
+  ///////////////////////////////////////////////////////
 
-//pragma translate_off
+  //pragma translate_off
 `ifndef VERILATOR
 
 `endif
-//pragma translate_on
+  //pragma translate_on
 
-endmodule // wt_l15_adapter
+endmodule  // wt_l15_adapter

@@ -43,64 +43,67 @@
 // the replay mechanism gets more complicated as it can be that a 32 bit instruction
 // can not be pushed at once.
 
-module instr_queue import ariane_pkg::*; #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+module instr_queue
+  import ariane_pkg::*;
+#(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
-  input  logic                                               clk_i,
-  input  logic                                               rst_ni,
-  input  logic                                               flush_i,
-  input  logic [ariane_pkg::INSTR_PER_FETCH-1:0][31:0]       instr_i,
-  input  logic [ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr_i,
-  input  logic [ariane_pkg::INSTR_PER_FETCH-1:0]             valid_i,
-  output logic                                               ready_o,
-  output logic [ariane_pkg::INSTR_PER_FETCH-1:0]             consumed_o,
-  // we've encountered an exception, at this point the only possible exceptions are page-table faults
-  input  ariane_pkg::frontend_exception_t                    exception_i,
-  input  logic [riscv::VLEN-1:0]                             exception_addr_i,
-  // branch predict
-  input  logic [riscv::VLEN-1:0]                             predict_address_i,
-  input  ariane_pkg::cf_t  [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type_i,
-  // replay instruction because one of the FIFO was already full
-  output logic                                               replay_o,
-  output logic [riscv::VLEN-1:0]                             replay_addr_o, // address at which to replay this instruction
-  // to processor backend
-  output ariane_pkg::fetch_entry_t                           fetch_entry_o,
-  output logic                                               fetch_entry_valid_o,
-  input  logic                                               fetch_entry_ready_i
+    input logic clk_i,
+    input logic rst_ni,
+    input logic flush_i,
+    input logic [ariane_pkg::INSTR_PER_FETCH-1:0][31:0] instr_i,
+    input logic [ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr_i,
+    input logic [ariane_pkg::INSTR_PER_FETCH-1:0] valid_i,
+    output logic ready_o,
+    output logic [ariane_pkg::INSTR_PER_FETCH-1:0] consumed_o,
+    // we've encountered an exception, at this point the only possible exceptions are page-table faults
+    input ariane_pkg::frontend_exception_t exception_i,
+    input logic [riscv::VLEN-1:0] exception_addr_i,
+    // branch predict
+    input logic [riscv::VLEN-1:0] predict_address_i,
+    input ariane_pkg::cf_t [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type_i,
+    // replay instruction because one of the FIFO was already full
+    output logic replay_o,
+    output logic [riscv::VLEN-1:0] replay_addr_o,  // address at which to replay this instruction
+    // to processor backend
+    output ariane_pkg::fetch_entry_t fetch_entry_o,
+    output logic fetch_entry_valid_o,
+    input logic fetch_entry_ready_i
 );
 
   typedef struct packed {
-    logic [31:0]     instr; // instruction word
-    ariane_pkg::cf_t cf;    // branch was taken
-    ariane_pkg::frontend_exception_t ex;    // exception happened
-    logic [riscv::VLEN-1:0] ex_vaddr;       // lower VLEN bits of tval for exception
+    logic [31:0]                     instr;     // instruction word
+    ariane_pkg::cf_t                 cf;        // branch was taken
+    ariane_pkg::frontend_exception_t ex;        // exception happened
+    logic [riscv::VLEN-1:0]          ex_vaddr;  // lower VLEN bits of tval for exception
   } instr_data_t;
 
   logic [ariane_pkg::LOG2_INSTR_PER_FETCH-1:0] branch_index;
   // instruction queues
-  logic [ariane_pkg::INSTR_PER_FETCH-1:0]
-        [$clog2(ariane_pkg::FETCH_FIFO_DEPTH)-1:0] instr_queue_usage;
-  instr_data_t [ariane_pkg::INSTR_PER_FETCH-1:0]   instr_data_in, instr_data_out;
-  logic [ariane_pkg::INSTR_PER_FETCH-1:0]          push_instr, push_instr_fifo;
-  logic [ariane_pkg::INSTR_PER_FETCH-1:0]          pop_instr;
-  logic [ariane_pkg::INSTR_PER_FETCH-1:0]          instr_queue_full;
-  logic [ariane_pkg::INSTR_PER_FETCH-1:0]          instr_queue_empty;
-  logic instr_overflow;
+  logic [ariane_pkg::INSTR_PER_FETCH-1:0][$clog2(
+ariane_pkg::FETCH_FIFO_DEPTH
+)-1:0] instr_queue_usage;
+  instr_data_t [ariane_pkg::INSTR_PER_FETCH-1:0] instr_data_in, instr_data_out;
+  logic [ariane_pkg::INSTR_PER_FETCH-1:0] push_instr, push_instr_fifo;
+  logic [         ariane_pkg::INSTR_PER_FETCH-1:0] pop_instr;
+  logic [         ariane_pkg::INSTR_PER_FETCH-1:0] instr_queue_full;
+  logic [         ariane_pkg::INSTR_PER_FETCH-1:0] instr_queue_empty;
+  logic                                            instr_overflow;
   // address queue
   logic [$clog2(ariane_pkg::FETCH_FIFO_DEPTH)-1:0] address_queue_usage;
-  logic [riscv::VLEN-1:0] address_out;
-  logic pop_address;
-  logic push_address;
-  logic full_address;
-  logic empty_address;
-  logic address_overflow;
+  logic [                         riscv::VLEN-1:0] address_out;
+  logic                                            pop_address;
+  logic                                            push_address;
+  logic                                            full_address;
+  logic                                            empty_address;
+  logic                                            address_overflow;
   // input stream counter
   logic [ariane_pkg::LOG2_INSTR_PER_FETCH-1:0] idx_is_d, idx_is_q;
   // Registers
   // output FIFO select, one-hot
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] idx_ds_d, idx_ds_q;
-  logic [riscv::VLEN-1:0] pc_d, pc_q; // current PC
-  logic reset_address_d, reset_address_q; // we need to re-set the address because of a flush
+  logic [riscv::VLEN-1:0] pc_d, pc_q;  // current PC
+  logic reset_address_d, reset_address_q;  // we need to re-set the address because of a flush
 
   logic [ariane_pkg::INSTR_PER_FETCH*2-2:0] branch_mask_extended;
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] branch_mask;
@@ -129,12 +132,12 @@ module instr_queue import ariane_pkg::*; #(
 
     // calculate a branch mask, e.g.: get the first taken branch
     lzc #(
-      .WIDTH   ( ariane_pkg::INSTR_PER_FETCH ),
-      .MODE    ( 0                           ) // count trailing zeros
+        .WIDTH(ariane_pkg::INSTR_PER_FETCH),
+        .MODE (0)                             // count trailing zeros
     ) i_lzc_branch_index (
-      .in_i    ( taken          ), // we want to count trailing zeros
-      .cnt_o   ( branch_index   ), // first branch on branch_index
-      .empty_o ( branch_empty   )
+        .in_i   (taken),         // we want to count trailing zeros
+        .cnt_o  (branch_index),  // first branch on branch_index
+        .empty_o(branch_empty)
     );
 
 
@@ -154,10 +157,10 @@ module instr_queue import ariane_pkg::*; #(
     assign consumed_o = consumed_extended[ariane_pkg::INSTR_PER_FETCH-1:0];
     // count the numbers of valid instructions we've pushed from this package
     popcount #(
-      .INPUT_WIDTH   ( ariane_pkg::INSTR_PER_FETCH )
+        .INPUT_WIDTH(ariane_pkg::INSTR_PER_FETCH)
     ) i_popcount (
-      .data_i     ( push_instr_fifo ),
-      .popcount_o ( popcount        )
+        .data_i    (push_instr_fifo),
+        .popcount_o(popcount)
     );
     assign shamt = popcount[$bits(shamt)-1:0];
 
@@ -168,7 +171,7 @@ module instr_queue import ariane_pkg::*; #(
     // Input interface
     // ----------------------
     // rotate left by the current position
-    assign fifo_pos_extended = { valid, valid } << idx_is_q;
+    assign fifo_pos_extended = {valid, valid} << idx_is_q;
     // we just care about the upper bits
     assign fifo_pos = fifo_pos_extended[ariane_pkg::INSTR_PER_FETCH*2-1:ariane_pkg::INSTR_PER_FETCH];
     // the fifo_position signal can directly be used to guide the push signal of each FIFO
@@ -178,17 +181,17 @@ module instr_queue import ariane_pkg::*; #(
     // duplicate the entries for easier selection e.g.: 3 2 1 0 3 2 1 0
     for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_duplicate_instr_input
       assign instr[i] = instr_i[i];
-      assign instr[i + ariane_pkg::INSTR_PER_FETCH] = instr_i[i];
+      assign instr[i+ariane_pkg::INSTR_PER_FETCH] = instr_i[i];
       assign cf[i] = cf_type_i[i];
-      assign cf[i + ariane_pkg::INSTR_PER_FETCH] = cf_type_i[i];
+      assign cf[i+ariane_pkg::INSTR_PER_FETCH] = cf_type_i[i];
     end
 
     // shift the inputs
     for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_fifo_input_select
       /* verilator lint_off WIDTH */
-      assign instr_data_in[i].instr = instr[i + idx_is_q];
-      assign instr_data_in[i].cf = cf[i + idx_is_q];
-      assign instr_data_in[i].ex = exception_i; // exceptions hold for the whole fetch packet
+      assign instr_data_in[i].instr = instr[i+idx_is_q];
+      assign instr_data_in[i].cf = cf[i+idx_is_q];
+      assign instr_data_in[i].ex = exception_i;  // exceptions hold for the whole fetch packet
       assign instr_data_in[i].ex_vaddr = exception_addr_i;
       /* verilator lint_on WIDTH */
     end
@@ -217,7 +220,7 @@ module instr_queue import ariane_pkg::*; #(
     /* verilator lint_off WIDTH */
     assign instr_data_in[0].instr = instr_i[0];
     assign instr_data_in[0].cf = cf_type_i[0];
-    assign instr_data_in[0].ex = exception_i; // exceptions hold for the whole fetch packet
+    assign instr_data_in[0].ex = exception_i;  // exceptions hold for the whole fetch packet
     assign instr_data_in[0].ex_vaddr = exception_addr_i;
     /* verilator lint_on WIDTH */
   end
@@ -235,7 +238,7 @@ module instr_queue import ariane_pkg::*; #(
   end else begin : gen_instr_overflow_fifo_without_C
     assign instr_overflow_fifo = instr_queue_full & valid_i;
   end
-  assign instr_overflow = |instr_overflow_fifo; // at least one instruction overflowed
+  assign instr_overflow = |instr_overflow_fifo;  // at least one instruction overflowed
   assign address_overflow = full_address & push_address;
   assign replay_o = instr_overflow | address_overflow;
 
@@ -279,14 +282,18 @@ module instr_queue import ariane_pkg::*; #(
           end
           fetch_entry_o.instruction = instr_data_out[i].instr;
           fetch_entry_o.ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
-          fetch_entry_o.ex.tval  = {{(riscv::XLEN-riscv::VLEN){1'b0}}, instr_data_out[i].ex_vaddr};
+          fetch_entry_o.ex.tval = {
+            {(riscv::XLEN - riscv::VLEN) {1'b0}}, instr_data_out[i].ex_vaddr
+          };
           fetch_entry_o.branch_predict.cf = instr_data_out[i].cf;
           pop_instr[i] = fetch_entry_valid_o & fetch_entry_ready_i;
         end
       end
       // rotate the pointer left
       if (fetch_entry_ready_i) begin
-        idx_ds_d = {idx_ds_q[ariane_pkg::INSTR_PER_FETCH-2:0], idx_ds_q[ariane_pkg::INSTR_PER_FETCH-1]};
+        idx_ds_d = {
+          idx_ds_q[ariane_pkg::INSTR_PER_FETCH-2:0], idx_ds_q[ariane_pkg::INSTR_PER_FETCH-1]
+        };
       end
     end
   end else begin : gen_downstream_itf_without_c
@@ -302,7 +309,7 @@ module instr_queue import ariane_pkg::*; #(
       end else begin
         fetch_entry_o.ex.cause = riscv::INSTR_PAGE_FAULT;
       end
-      fetch_entry_o.ex.tval = {{64-riscv::VLEN{1'b0}}, instr_data_out[0].ex_vaddr};
+      fetch_entry_o.ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[0].ex_vaddr};
 
       fetch_entry_o.branch_predict.predict_address = address_out;
       fetch_entry_o.branch_predict.cf = instr_data_out[0].cf;
@@ -326,15 +333,15 @@ module instr_queue import ariane_pkg::*; #(
       // TODO(zarubaf): This needs to change for a dual issue implementation
       // advance the PC
       if (ariane_pkg::RVC == 1'b1) begin : gen_pc_with_c_extension
-        pc_d =  pc_q + ((fetch_entry_o.instruction[1:0] != 2'b11) ? 'd2 : 'd4);
+        pc_d = pc_q + ((fetch_entry_o.instruction[1:0] != 2'b11) ? 'd2 : 'd4);
       end else begin : gen_pc_without_c_extension
-        pc_d =  pc_q + 'd4;
+        pc_d = pc_q + 'd4;
       end
     end
 
     if (pop_address) pc_d = address_out;
 
-      // we previously flushed so we need to reset the address
+    // we previously flushed so we need to reset the address
     if (valid_i[0] && reset_address_q) begin
       // this is the base of the first instruction
       pc_d = addr_i[0];
@@ -347,20 +354,20 @@ module instr_queue import ariane_pkg::*; #(
     // Make sure we don't save any instructions if we couldn't save the address
     assign push_instr_fifo[i] = push_instr[i] & ~address_overflow;
     fifo_v3 #(
-      .DEPTH      ( ariane_pkg::FETCH_FIFO_DEPTH ),
-      .dtype      ( instr_data_t                 )
+        .DEPTH(ariane_pkg::FETCH_FIFO_DEPTH),
+        .dtype(instr_data_t)
     ) i_fifo_instr_data (
-      .clk_i      ( clk_i                ),
-      .rst_ni     ( rst_ni               ),
-      .flush_i    ( flush_i              ),
-      .testmode_i ( 1'b0                 ),
-      .full_o     ( instr_queue_full[i]  ),
-      .empty_o    ( instr_queue_empty[i] ),
-      .usage_o    ( instr_queue_usage[i] ),
-      .data_i     ( instr_data_in[i]     ),
-      .push_i     ( push_instr_fifo[i]   ),
-      .data_o     ( instr_data_out[i]    ),
-      .pop_i      ( pop_instr[i]         )
+        .clk_i     (clk_i),
+        .rst_ni    (rst_ni),
+        .flush_i   (flush_i),
+        .testmode_i(1'b0),
+        .full_o    (instr_queue_full[i]),
+        .empty_o   (instr_queue_empty[i]),
+        .usage_o   (instr_queue_usage[i]),
+        .data_i    (instr_data_in[i]),
+        .push_i    (push_instr_fifo[i]),
+        .data_o    (instr_data_out[i]),
+        .pop_i     (pop_instr[i])
     );
   end
   // or reduce and check whether we are retiring a taken branch (might be that the corresponding)
@@ -374,26 +381,26 @@ module instr_queue import ariane_pkg::*; #(
   end
 
   fifo_v3 #(
-    .DEPTH      ( ariane_pkg::FETCH_FIFO_DEPTH ), // TODO(zarubaf): Fork out to separate param
-    .DATA_WIDTH ( riscv::VLEN                  )
+      .DEPTH     (ariane_pkg::FETCH_FIFO_DEPTH),  // TODO(zarubaf): Fork out to separate param
+      .DATA_WIDTH(riscv::VLEN)
   ) i_fifo_address (
-    .clk_i      ( clk_i                        ),
-    .rst_ni     ( rst_ni                       ),
-    .flush_i    ( flush_i                      ),
-    .testmode_i ( 1'b0                         ),
-    .full_o     ( full_address                 ),
-    .empty_o    ( empty_address                ),
-    .usage_o    ( address_queue_usage          ),
-    .data_i     ( predict_address_i            ),
-    .push_i     ( push_address & ~full_address ),
-    .data_o     ( address_out                  ),
-    .pop_i      ( pop_address                  )
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .flush_i   (flush_i),
+      .testmode_i(1'b0),
+      .full_o    (full_address),
+      .empty_o   (empty_address),
+      .usage_o   (address_queue_usage),
+      .data_i    (predict_address_i),
+      .push_i    (push_address & ~full_address),
+      .data_o    (address_out),
+      .pop_i     (pop_address)
   );
 
   unread i_unread_address_fifo (.d_i(|{empty_address, address_queue_usage}));
   unread i_unread_branch_mask (.d_i(|branch_mask_extended));
   unread i_unread_lzc (.d_i(|{branch_empty}));
-  unread i_unread_fifo_pos (.d_i(|fifo_pos_extended)); // we don't care about the lower signals
+  unread i_unread_fifo_pos (.d_i(|fifo_pos_extended));  // we don't care about the lower signals
   unread i_unread_instr_fifo (.d_i(|instr_queue_usage));
 
   if (ariane_pkg::RVC) begin : gen_pc_q_with_c
@@ -413,8 +420,8 @@ module instr_queue import ariane_pkg::*; #(
           idx_is_q        <= '0;
           reset_address_q <= 1'b1;
         end else begin
-          idx_ds_q        <= idx_ds_d;
-          idx_is_q        <= idx_is_d;
+          idx_ds_q <= idx_ds_d;
+          idx_is_q <= idx_is_d;
         end
       end
     end
@@ -436,14 +443,17 @@ module instr_queue import ariane_pkg::*; #(
   end
 
   // pragma translate_off
-  `ifndef VERILATOR
-      replay_address_fifo: assert property (
-        @(posedge clk_i) disable iff (!rst_ni) replay_o |-> !i_fifo_address.push_i
-      ) else $fatal(1,"[instr_queue] Pushing address although replay asserted");
+`ifndef VERILATOR
+  replay_address_fifo :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) replay_o |-> !i_fifo_address.push_i)
+  else $fatal(1, "[instr_queue] Pushing address although replay asserted");
 
-      output_select_onehot: assert property (
-        @(posedge clk_i) $onehot0(idx_ds_q)
-      ) else begin $error("Output select should be one-hot encoded"); $stop(); end
-  `endif
+  output_select_onehot :
+  assert property (@(posedge clk_i) $onehot0(idx_ds_q))
+  else begin
+    $error("Output select should be one-hot encoded");
+    $stop();
+  end
+`endif
   // pragma translate_on
 endmodule
