@@ -84,20 +84,35 @@ class reg_mstatus extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mstatus__read_cg";
       option.per_instance = 1;
-      SD: coverpoint data[31:31];
+      SD: coverpoint data[31:31] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       TSR: coverpoint data[22:22];
       TW: coverpoint data[21:21];
       TVM: coverpoint data[20:20];
       MXR: coverpoint data[19:19];
       SUM: coverpoint data[18:18];
       MPRV: coverpoint data[17:17];
-      XS: coverpoint data[16:15];
-      FS: coverpoint data[14:13];
+      XS: coverpoint data[16:15] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
+      FS: coverpoint data[14:13] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       MPP: coverpoint data[12:11];
-      VS: coverpoint data[10:9];
+      VS: coverpoint data[10:9] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       SPP: coverpoint data[8:8];
       MPIE: coverpoint data[7:7];
-      UBE: coverpoint data[6:6];
+      UBE: coverpoint data[6:6] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       SPIE: coverpoint data[5:5];
       MIE: coverpoint data[3:3];
       SIE: coverpoint data[1:1];
@@ -106,20 +121,35 @@ class reg_mstatus extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mstatus.mstatus__write_cp";
       option.per_instance = 1;
-      SD: coverpoint data[31:31];
+      SD: coverpoint data[31:31] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
       TSR: coverpoint data[22:22];
       TW: coverpoint data[21:21];
       TVM: coverpoint data[20:20];
       MXR: coverpoint data[19:19];
       SUM: coverpoint data[18:18];
       MPRV: coverpoint data[17:17];
-      XS: coverpoint data[16:15];
-      FS: coverpoint data[14:13];
+      XS: coverpoint data[16:15]  {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
+      FS: coverpoint data[14:13] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
       MPP: coverpoint data[12:11];
-      VS: coverpoint data[10:9];
+      VS: coverpoint data[10:9]  {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
       SPP: coverpoint data[8:8];
       MPIE: coverpoint data[7:7];
-      UBE: coverpoint data[6:6];
+      UBE: coverpoint data[6:6] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
       SPIE: coverpoint data[5:5];
       MIE: coverpoint data[3:3];
       SIE: coverpoint data[1:1];
@@ -221,15 +251,27 @@ class reg_misa extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_misa__read_cg";
       option.per_instance = 1;
-      MXL: coverpoint data[31:30];
-      Extensions: coverpoint data[25:0];
+      MXL: coverpoint data[31:30] {
+         bins legal_values[] = {1};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {1}));
+      }
+      Extensions: coverpoint data[25:0] {
+         bins legal_values[] = {26'h141104};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {26'h141104}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_misa.misa__write_cp";
       option.per_instance = 1;
-      MXL: coverpoint data[31:30];
-      Extensions: coverpoint data[25:0];
+      MXL: coverpoint data[31:30] {
+         bins legal_values[] = {1};
+         bins illegal_values[] = {[0:$]} with (!(item inside {1}));
+      }
+      Extensions: coverpoint data[25:0] {
+         bins legal_values[] = {26'h141104};
+         bins illegal_values = {[0:$]} with (!(item inside {26'h141104}));
+      }
   endgroup
 
   //---------------------------------------
@@ -292,13 +334,22 @@ class reg_mie extends csr_reg;
       option.per_instance = 1;
       MEIE: coverpoint data[11:11];
       SEIE: coverpoint data[9:9];
-      UEIE: coverpoint data[8:8];
+      UEIE: coverpoint data[8:8] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      } 
       MTIE: coverpoint data[7:7];
       STIE: coverpoint data[5:5];
-      UTIE: coverpoint data[4:4];
+      UTIE: coverpoint data[4:4] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      } 
       MSIE: coverpoint data[3:3];
       SSIE: coverpoint data[1:1];
-      USIE: coverpoint data[0:0];
+      USIE: coverpoint data[0:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      } 
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
@@ -306,13 +357,22 @@ class reg_mie extends csr_reg;
       option.per_instance = 1;
       MEIE: coverpoint data[11:11];
       SEIE: coverpoint data[9:9];
-      UEIE: coverpoint data[8:8];
+      UEIE: coverpoint data[8:8] {
+         bins legal_values[] = {0};
+         bins illegal_values[]  = {[0:$]} with (!(item inside {0}));
+      } 
       MTIE: coverpoint data[7:7];
       STIE: coverpoint data[5:5];
-      UTIE: coverpoint data[4:4];
+      UTIE: coverpoint data[4:4] {
+         bins legal_values[] = {0};
+         bins illegal_values[]  = {[0:$]} with (!(item inside {0}));
+      } 
       MSIE: coverpoint data[3:3];
       SSIE: coverpoint data[1:1];
-      USIE: coverpoint data[0:0];
+      USIE: coverpoint data[0:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -388,14 +448,20 @@ class reg_mtvec extends csr_reg;
       option.name = "csr_mtvec__read_cg";
       option.per_instance = 1;
       BASE: coverpoint data[31:2];
-      MODE: coverpoint data[1:0];
+      MODE: coverpoint data[1:0] {
+         bins legal_values[] = {0,1};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0,1}));
+      } 
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mtvec.mtvec__write_cp";
       option.per_instance = 1;
       BASE: coverpoint data[31:2];
-      MODE: coverpoint data[1:0];
+      MODE: coverpoint data[1:0] {
+         bins legal_values[] = {0,1};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0,1}));
+      } 
   endgroup
 
   //---------------------------------------
@@ -449,15 +515,27 @@ class reg_mstatush extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mstatush__read_cg";
       option.per_instance = 1;
-      SBE: coverpoint data[4:4];
-      MBE: coverpoint data[5:5];
+      SBE: coverpoint data[4:4] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
+      MBE: coverpoint data[5:5]{
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mstatush.mstatush__write_cp";
       option.per_instance = 1;
-      SBE: coverpoint data[4:4];
-      MBE: coverpoint data[5:5];
+      SBE: coverpoint data[4:4] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
+      MBE: coverpoint data[5:5] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -2374,27 +2452,45 @@ class reg_mip extends csr_reg;
       option.per_instance = 1;
       MEIP: coverpoint data[11:11];
       SEIP: coverpoint data[9:9];
-      UEIP: coverpoint data[8:8];
+      UEIP: coverpoint data[8:8] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       MTIP: coverpoint data[7:7];
       STIP: coverpoint data[5:5];
-      UTIP: coverpoint data[4:4];
+      UTIP: coverpoint data[4:4] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       MSIP: coverpoint data[3:3];
       SSIP: coverpoint data[1:1];
-      USIP: coverpoint data[0:0];
+      USIP: coverpoint data[0:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mip.mip__write_cp";
       option.per_instance = 1;
-      MEIP: coverpoint data[11:11];
+      MEIP: coverpoint data[11:11] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
       SEIP: coverpoint data[9:9];
       UEIP: coverpoint data[8:8];
       MTIP: coverpoint data[7:7];
       STIP: coverpoint data[5:5];
-      UTIP: coverpoint data[4:4];
+      UTIP: coverpoint data[4:4] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
       MSIP: coverpoint data[3:3];
       SSIP: coverpoint data[1:1];
-      USIP: coverpoint data[0:0];
+      USIP: coverpoint data[0:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -3717,6 +3813,9 @@ class reg_mcycle extends csr_reg;
       option.name = "csr_mcycle__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0];
+      count_overflow: coverpoint data[31:0] {
+         bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
@@ -3773,6 +3872,9 @@ class reg_minstret extends csr_reg;
       option.name = "csr_minstret__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0];
+      count_overflow: coverpoint data[31:0] {
+         bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
@@ -3829,6 +3931,9 @@ class reg_mcycleh extends csr_reg;
       option.name = "csr_mcycleh__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0];
+      count_overflow: coverpoint data[31:0] {
+         bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
@@ -3885,6 +3990,9 @@ class reg_minstreth extends csr_reg;
       option.name = "csr_minstreth__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0];
+      count_overflow: coverpoint data[31:0] {
+         bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
@@ -7189,6 +7297,9 @@ class reg_cycle extends csr_reg;
       option.name = "csr_cycle__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0];
+      count_overflow: coverpoint data[31:0] {
+         bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
@@ -7245,6 +7356,9 @@ class reg_instret extends csr_reg;
       option.name = "csr_instret__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0];
+      count_overflow: coverpoint data[31:0] {
+         bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
@@ -7301,6 +7415,9 @@ class reg_cycleh extends csr_reg;
       option.name = "csr_cycleh__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0];
+      count_overflow: coverpoint data[31:0] {
+         bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
@@ -7357,6 +7474,9 @@ class reg_instreth extends csr_reg;
       option.name = "csr_instreth__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0];
+      count_overflow: coverpoint data[31:0] {
+         bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
