@@ -34,7 +34,7 @@ else
   # Use the in-tree vendorized Spike if SPIKE_SRC_DIR is not set
   # or when a fully local installation was requested.
   if [ -z "$SPIKE_SRC_DIR" -o "$SPIKE_INSTALL_DIR" = "__local__" ]; then
-    export SPIKE_SRC_DIR=$ROOT_PROJECT/vendor/riscv/riscv-isa-sim
+    export SPIKE_SRC_DIR=$ROOT_PROJECT/verif/core-v-verif/vendor/riscv/riscv-isa-sim
   fi
 
   # Set the installation location of Spike.
