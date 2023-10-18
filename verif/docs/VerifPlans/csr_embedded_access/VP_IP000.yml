@@ -23,8 +23,8 @@ subfeatures: !!omap
         ref_viewer: firefox
         verif_goals: Verify that the CSRs reset value must match with the value specified
           in the RISC-V CVA6 user manual.
-        pfc: 1
-        test_type: 1
+        pfc: 3
+        test_type: 2
         cov_method: 1
         cores: 56
         coverage_loc: ''
