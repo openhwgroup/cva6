@@ -183,7 +183,17 @@ hwconfig:
   timeout: 2 hours
   before_script:
     - !reference [.fe_smoke_test, before_script]
-  rules: *on_dev
+  rules: &on_dev_rtl
+    - if: $CI_KIND == "regress"
+    - if: $CI_KIND == "verif"
+    - if: $CI_KIND == "dev"
+      changes:
+        paths:
+          - core/**/*
+          - corev_apu/**/*
+        compare_to: master
+    - when: manual
+      allow_failure: true
 
 asic-synthesis:
   extends:
