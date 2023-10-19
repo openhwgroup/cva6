@@ -209,82 +209,59 @@ module wt_axi_adapter
           end
           //////////////////////////////////////
           wt_cache_pkg::DCACHE_ATOMIC_REQ: begin
-            // default
-            // push back an invalidation here.
-            // since we only keep one read tx in flight, and since
-            // the dcache drains all writes/reads before executing
-            // an atomic, this is safe.
-            invalidate = arb_gnt;
-            axi_wr_req = 1'b1;
-            axi_wr_be  = '0;
-            unique case (dcache_data.size[1:0])
-              2'b00:
-              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]] = '1;  // byte
-              2'b01:
-              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:2] = '1;  // hword
-              2'b10:
-              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:4] = '1;  // word
-              default:
-              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:8] = '1;  // dword
-            endcase
-            amo_gen_r_d = 1'b1;
-            // need to use a separate ID here, so concat an additional bit
-            axi_wr_id_in[1] = 1'b1;
+            if(CVA6Cfg.RVA) begin
+               // default
+               // push back an invalidation here.
+               // since we only keep one read tx in flight, and since
+               // the dcache drains all writes/reads before executing
+               // an atomic, this is safe.
+               invalidate   = arb_gnt;
+               axi_wr_req   = 1'b1;
+               axi_wr_be    = '0;
+               unique case(dcache_data.size[1:0])
+                 2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]]       = '1;  // byte
+                 2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
+                 2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
+                 default: axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword
+               endcase
+               amo_gen_r_d  = 1'b1;
+               // need to use a separate ID here, so concat an additional bit
+               axi_wr_id_in[1] = 1'b1;
 
-            unique case (dcache_data.amo_op)
-              AMO_LR: begin
-                axi_rd_lock     = 1'b1;
-                axi_rd_req      = 1'b1;
-                axi_rd_id_in[1] = 1'b1;
-                // tie to zero in this special case
-                axi_wr_req      = 1'b0;
-                axi_wr_be       = '0;
-              end
-              AMO_SC: begin
-                axi_wr_lock = 1'b1;
-                amo_gen_r_d = 1'b0;
-                // needed to properly encode success. store the result at offset within the returned
-                // AXI data word aligned with the requested word size.
-                amo_off_d = dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-
-                                              1:0] & ~((1 << dcache_data.size[1:0]) - 1);
-              end
-              // RISC-V atops have a load semantic
-              AMO_SWAP:
-              axi_wr_atop = {
-                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ATOMICSWAP
-              };
-              AMO_ADD:
-              axi_wr_atop = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
-              AMO_AND: begin
-                // in this case we need to invert the data to get a "CLR"
-                axi_wr_data = ~{(CVA6Cfg.AxiDataWidth / riscv::XLEN) {dcache_data.data}};
-                axi_wr_user = ~{(CVA6Cfg.AxiDataWidth / riscv::XLEN) {dcache_data.user}};
-                axi_wr_atop = {
-                  axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR
-                };
-              end
-              AMO_OR:
-              axi_wr_atop = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
-              AMO_XOR:
-              axi_wr_atop = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
-              AMO_MAX:
-              axi_wr_atop = {
-                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX
-              };
-              AMO_MAXU:
-              axi_wr_atop = {
-                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX
-              };
-              AMO_MIN:
-              axi_wr_atop = {
-                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN
-              };
-              AMO_MINU:
-              axi_wr_atop = {
-                axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN
-              };
-              default: ;  // Do nothing
-            endcase
+               unique case (dcache_data.amo_op)
+                 AMO_LR: begin
+                   axi_rd_lock     = 1'b1;
+                   axi_rd_req      = 1'b1;
+                   axi_rd_id_in[1] = 1'b1;
+                   // tie to zero in this special case
+                   axi_wr_req   = 1'b0;
+                   axi_wr_be    = '0;
+                 end
+                 AMO_SC: begin
+                   axi_wr_lock  = 1'b1;
+                   amo_gen_r_d  = 1'b0;
+                   // needed to properly encode success. store the result at offset within the returned
+                   // AXI data word aligned with the requested word size.
+                   amo_off_d = dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] & ~((1 << dcache_data.size[1:0]) - 1);
+                 end
+                 // RISC-V atops have a load semantic
+                 AMO_SWAP: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ATOMICSWAP};
+                 AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
+                 AMO_AND:  begin
+                   // in this case we need to invert the data to get a "CLR"
+                   axi_wr_data  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
+                   axi_wr_user  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.user}};
+                   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
+                 end
+                 AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
+                 AMO_XOR:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
+                 AMO_MAX:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX};
+                 AMO_MAXU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX};
+                 AMO_MIN:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN};
+                 AMO_MINU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN};
+                 default: ; // Do nothing
+               endcase
+            end
           end
           default: ;  // Do nothing
           //////////////////////////////////////
@@ -490,7 +467,7 @@ module wt_axi_adapter
         dcache_rd_shift_d[0] = axi_rd_data;
         dcache_rd_shift_user_d[0] = axi_rd_user;
       end
-    end else if (dcache_sc_rtrn) begin
+    end else if (CVA6Cfg.RVA && dcache_sc_rtrn) begin
       // encode lr/sc success
       dcache_rd_shift_d[0] = '0;
       dcache_rd_shift_user_d[0] = '0;
@@ -541,9 +518,9 @@ module wt_axi_adapter
       // note that this self invalidation is handled in this way due to the
       // write-through cache architecture, which is aligned with the openpiton
       // cache subsystem.
-    end else if (invalidate) begin
-      dcache_rtrn_type_d    = wt_cache_pkg::DCACHE_INV_REQ;
-      dcache_rtrn_vld_d     = 1'b1;
+    end else if (CVA6Cfg.RVA && invalidate) begin
+        dcache_rtrn_type_d  = wt_cache_pkg::DCACHE_INV_REQ;
+        dcache_rtrn_vld_d   = 1'b1;
 
       dcache_rtrn_inv_d.all = 1'b1;
       dcache_rtrn_inv_d.idx = dcache_data.paddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
@@ -556,7 +533,7 @@ module wt_axi_adapter
       dcache_rtrn_vld_d = axi_rd_last;
 
       // if this was an atomic op
-      if (axi_rd_id_out[1]) begin
+      if (CVA6Cfg.RVA && axi_rd_id_out[1]) begin
         dcache_rtrn_type_d = wt_cache_pkg::DCACHE_ATOMIC_ACK;
 
         // check if transaction was issued over write channel and pop that ID
@@ -575,7 +552,7 @@ module wt_axi_adapter
       b_pop = 1'b1;
 
       // this was an atomic
-      if (wr_id_out[1]) begin
+      if (CVA6Cfg.RVA && wr_id_out[1]) begin
         dcache_rtrn_type_d = wt_cache_pkg::DCACHE_ATOMIC_ACK;
 
         // silently discard b response if we already popped the fifo

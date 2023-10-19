@@ -187,24 +187,28 @@ module store_unit
   always_comb begin
     st_be_n = lsu_ctrl_i.be;
     // don't shift the data if we are going to perform an AMO as we still need to operate on this data
-    st_data_n = instr_is_amo ? lsu_ctrl_i.data[riscv::XLEN-1:0] :
+    st_data_n = (CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[riscv::XLEN-1:0] :
         data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
     st_data_size_n = extract_transfer_size(lsu_ctrl_i.operation);
     // save AMO op for next cycle
-    case (lsu_ctrl_i.operation)
-      AMO_LRW, AMO_LRD:     amo_op_d = AMO_LR;
-      AMO_SCW, AMO_SCD:     amo_op_d = AMO_SC;
-      AMO_SWAPW, AMO_SWAPD: amo_op_d = AMO_SWAP;
-      AMO_ADDW, AMO_ADDD:   amo_op_d = AMO_ADD;
-      AMO_ANDW, AMO_ANDD:   amo_op_d = AMO_AND;
-      AMO_ORW, AMO_ORD:     amo_op_d = AMO_OR;
-      AMO_XORW, AMO_XORD:   amo_op_d = AMO_XOR;
-      AMO_MAXW, AMO_MAXD:   amo_op_d = AMO_MAX;
-      AMO_MAXWU, AMO_MAXDU: amo_op_d = AMO_MAXU;
-      AMO_MINW, AMO_MIND:   amo_op_d = AMO_MIN;
-      AMO_MINWU, AMO_MINDU: amo_op_d = AMO_MINU;
-      default:              amo_op_d = AMO_NONE;
-    endcase
+    if(CVA6Cfg.RVA) begin
+        case (lsu_ctrl_i.operation)
+            AMO_LRW, AMO_LRD:     amo_op_d = AMO_LR;
+            AMO_SCW, AMO_SCD:     amo_op_d = AMO_SC;
+            AMO_SWAPW, AMO_SWAPD: amo_op_d = AMO_SWAP;
+            AMO_ADDW, AMO_ADDD:   amo_op_d = AMO_ADD;
+            AMO_ANDW, AMO_ANDD:   amo_op_d = AMO_AND;
+            AMO_ORW, AMO_ORD:     amo_op_d = AMO_OR;
+            AMO_XORW, AMO_XORD:   amo_op_d = AMO_XOR;
+            AMO_MAXW, AMO_MAXD:   amo_op_d = AMO_MAX;
+            AMO_MAXWU, AMO_MAXDU: amo_op_d = AMO_MAXU;
+            AMO_MINW, AMO_MIND:   amo_op_d = AMO_MIN;
+            AMO_MINWU, AMO_MINDU: amo_op_d = AMO_MINU;
+            default: amo_op_d = AMO_NONE;
+        endcase
+    end else begin
+        amo_op_d = AMO_NONE;
+    end
   end
 
   logic store_buffer_valid, amo_buffer_valid;
@@ -249,23 +253,28 @@ module store_unit
       .req_port_o           (req_port_o)
   );
 
-  amo_buffer #(
-      .CVA6Cfg(CVA6Cfg)
-  ) i_amo_buffer (
-      .clk_i,
-      .rst_ni,
-      .flush_i,
-      .valid_i           (amo_buffer_valid),
-      .ready_o           (amo_buffer_ready),
-      .paddr_i           (paddr_i),
-      .amo_op_i          (amo_op_q),
-      .data_i            (st_data_q),
-      .data_size_i       (st_data_size_q),
-      .amo_req_o         (amo_req_o),
-      .amo_resp_i        (amo_resp_i),
-      .amo_valid_commit_i(amo_valid_commit_i),
-      .no_st_pending_i   (no_st_pending_o)
-  );
+  if(CVA6Cfg.RVA) begin
+        amo_buffer #(
+            .CVA6Cfg   ( CVA6Cfg   )
+        ) i_amo_buffer (
+            .clk_i,
+            .rst_ni,
+            .flush_i,
+            .valid_i            ( amo_buffer_valid   ),
+            .ready_o            ( amo_buffer_ready   ),
+            .paddr_i            ( paddr_i            ),
+            .amo_op_i           ( amo_op_q           ),
+            .data_i             ( st_data_q          ),
+            .data_size_i        ( st_data_size_q     ),
+            .amo_req_o          ( amo_req_o          ),
+            .amo_resp_i         ( amo_resp_i         ),
+            .amo_valid_commit_i ( amo_valid_commit_i ),
+            .no_st_pending_i    ( no_st_pending_o    )
+        );
+    end else begin
+        assign amo_buffer_ready = '1;
+        assign amo_req_o        = '0;
+    end
 
   // ---------------
   // Registers
