@@ -916,7 +916,7 @@ Atomic Memory Operations
 
     **Exception raised**: If the address is not naturally aligned (4-byte boundary), a misaligned address exception will be generated.
 
-RV32C/ZC* Compressed Instructions
+RV32C Compressed Instructions
 ----------------------------------
 
 RVC uses a simple compression scheme that offers shorter 16-bit versions of common 32-bit RISC-V
@@ -931,12 +931,6 @@ The C extension is compatible with all other standard instruction extensions. Th
 allows 16-bit instructions to be freely intermixed with 32-bit instructions, with the latter now able
 to start on any 16-bit boundary. With the addition of the C extension, JAL and JALR instructions
 will no longer raise an instruction misaligned exception.
-
-RISC-V Code Size Reduction Extension (Zc*) has become the superset of Standard C extension with the 
-addition of more 16-bit insturctions to the ISA. Under the umbrella of Zc* extension, Standard C extension is
-categorized in **Zca**, **Zcf** and **Zd**, which includes 16-bit versions of common Integer, Single-precision and double-precision
-floating-point instructions. In addition, **Zcb**, **Zcmp** and **Zcmt** extensions are added to Zc* group introducing 16-bit versions of
-additional integer instructions,  Bit-Manipulation extension instructions and compressed instructions for special operations.
 
 Integer Computational Instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -953,10 +947,6 @@ Integer Computational Instructions
 
     **Exception raised**: NONE
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.LUI**: Compressed Load Upper Immediate
 
     **Format**: c.lui rd, nzimm[17:12]
@@ -968,10 +958,6 @@ Integer Computational Instructions
     **Invalid values**: rd = x0 & rd = x2 & nzimm = 0
 
     **Exception raised**: NONE
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.ADDI**: Compressed Addition Immediate
 
@@ -985,10 +971,6 @@ Integer Computational Instructions
 
     **Exception raised**: NONE
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.ADDI16SP**: Addition Immediate Scaled by 16, to Stack Pointer
 
     **Format**: c.addi16sp nzimm[9:4]
@@ -1000,10 +982,6 @@ Integer Computational Instructions
     **Invalid values**: rd != x2 & nzimm = 0
 
     **Exception raised**: NONE
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.ADDI4SPN**: Addition Immediate Scaled by 4, to Stack Pointer
 
@@ -1017,10 +995,6 @@ Integer Computational Instructions
 
     **Exception raised**: NONE
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.SLLI**: Compressed Shift Left Logic Immediate
 
     **Format**: c.slli rd, uimm[5:0]
@@ -1032,10 +1006,6 @@ Integer Computational Instructions
     **Invalid values**: rd = x0 & uimm[5] = 0
 
     **Exception raised**: NONE
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.SRLI**: Compressed Shift Right Logic Immediate
 
@@ -1049,10 +1019,6 @@ Integer Computational Instructions
 
     **Exception raised**: NONE
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.SRAI**: Compressed Shift Right Arithmetic Immediate
 
     **Format**: c.srai rd', uimm[5:0]
@@ -1064,10 +1030,6 @@ Integer Computational Instructions
     **Invalid values**: uimm[5] = 0
 
     **Exception raised**: NONE
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.ANDI**: Compressed AND Immediate
 
@@ -1081,10 +1043,6 @@ Integer Computational Instructions
 
     **Exception raised**: NONE
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.ADD**: Compressed Addition
 
     **Format**: c.add rd, rs2
@@ -1096,10 +1054,6 @@ Integer Computational Instructions
     **Invalid values**: rd = x0 & rs2 = x0
 
     **Exception raised**: NONE
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.MV**: Move
 
@@ -1113,10 +1067,6 @@ Integer Computational Instructions
 
     **Exception raised**: NONE
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.AND**: Compressed AND
 
     **Format**: c.and rd', rs2'
@@ -1128,10 +1078,6 @@ Integer Computational Instructions
     **Invalid values**: NONE
 
     **Exception raised**: NONE
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.OR**: Compressed OR
 
@@ -1145,10 +1091,6 @@ Integer Computational Instructions
 
     **Exception raised**: NONE
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.XOR**: Compressed XOR
 
     **Format**: c.and rd', rs2'
@@ -1160,10 +1102,6 @@ Integer Computational Instructions
     **Invalid values**: NONE
 
     **Exception raised**: NONE
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.SUB**: Compressed Subtraction
 
@@ -1177,10 +1115,6 @@ Integer Computational Instructions
 
     **Exception raised**: NONE
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.EBREAK**: Compressed Ebreak
 
     **Format**: c.ebreak
@@ -1192,122 +1126,6 @@ Integer Computational Instructions
     **Invalid values**: NONE
 
     **Exception raised**: Raise a Breakpoint exception.
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
-- **C.ZEXT.B**: Compressed Zero Extend Byte
-
-    **Format**: c.zext.b rd''
-
-    **Description**: This instruction takes a single source/destination operand. It zero-extends the least-significant byte of the operand by inserting zeros into all of the bits more significant than 7.
-
-    **Pseudocode**: x[8 + rd'] = zext(x[8 + rd'][7:0])
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-    **Group**: Zcb
-
-    **Prerequisites**: NONE
-
-- **C.SEXT.B**: Compressed Sign Extend Byte
-
-    **Format**: c.sext.b rd'
-
-    **Description**: This instruction takes a single source/destination operand. It sign-extends the least-significant byte in the operand by copying the most-significant bit in the byte (i.e., bit 7) to all of the more-significant bits.
-
-    **Pseudocode**: x[8 + rd'] = sext(x[8 + rd'][7:0])
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-    **Group**: Zcb
-
-    **Prerequisites**:  Bit-Manipulation extension (Zbb)
-
-- **C.ZEXT.H**: Compressed Zero Extend Halfword
-
-    **Format**: c.zext.h rd'
-
-    **Description**: This instruction takes a single source/destination operand. It zero-extends the least-significant halfword of the operand by inserting zeros into all of the bits more significant than 15.
-
-    **Pseudocode**: x[8 + rd'] = zext(x[8 + rd'][15:0])
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-    **Group**: Zcb
-
-    **Prerequisites**:  Bit-Manipulation extension (Zbb)
-
-- **C.SEXT.H**: Compressed Sign Extend Halfword
-
-    **Format**: c.sext.h rd'
-
-    **Description**: This instruction takes a single source/destination operand. It sign-extends the least-significant halfword in the operand by copying the most-significant bit in the halfword (i.e., bit 15) to all of the more-significant bits.
-
-    **Pseudocode**: x[8 + rd'] = sext(x[8 + rd'][15:0])
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-    **Group**: Zcb
-
-    **Prerequisites**:  Bit-Manipulation extension (Zbb)
-
-- **C.ZEXT.W**: Compressed Zero Extend Word
-
-    **Format**: c.zext.w rd'
-
-    **Description**: This instruction takes a single source/destination operand. It zero-extends the least-significant word of the operand by inserting zeros into all of the bits more significant than 31.
-
-    **Pseudocode**: x[8 + rd'] = zext(x[8 + rd'][31:0])
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-    **Group**: Zcb
-
-    **Prerequisites**:  Bit-Manipulation extension (Zba)
-
-- **C.NOT**: Compressed Bitwise NOT
-
-    **Format**: c.not rd'
-
-    **Description**: This instruction takes the one’s complement of rd'/rs1' and writes the result to the same register.
-
-    **Pseudocode**: x[8 + rd'] = x[8 + rd'] ^ -1
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-    **Group**: Zcb
-
-    **Prerequisites**: NONE
-
-- **C.MUL**: Compressed Multiply
-
-    **Format**: c.mul rsd', rs2'
-
-    **Description**: performs a 32-bit × 32-bit multiplication and places the lower 32 bits in the destination register (Both rs1 and rs2 treated as signed numbers).
-
-    **Pseudocode**: x[8 + rd'] = (x[8 + rd'] * x[8 + rs2'])[31:0]
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-    **Group**: Zcb
-
-    **Prerequisites**: M or Zmmul extension
 
 Control Transfer Instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1324,10 +1142,6 @@ Control Transfer Instructions
 
     **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.JAL**: Compressed Jump and Link
 
     **Format**: c.jal imm[11:1]
@@ -1339,10 +1153,6 @@ Control Transfer Instructions
     **Invalid values**: NONE
 
     **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.JR**: Compressed Jump Register
 
@@ -1356,10 +1166,6 @@ Control Transfer Instructions
 
     **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.JALR**: Compressed Jump and Link Register
 
     **Format**: c.jalr rs1
@@ -1371,10 +1177,6 @@ Control Transfer Instructions
     **Invalid values**: rs1 = x0
 
     **Exception raised**: jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception.
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.BEQZ**: Branch if Equal Zero
 
@@ -1388,10 +1190,6 @@ Control Transfer Instructions
 
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.BNEZ**: Branch if Not Equal Zero
 
     **Format**: c.bnez rs1', imm[8:1]
@@ -1403,10 +1201,6 @@ Control Transfer Instructions
     **Invalid values**: NONE
 
     **Exception raised**: no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions.
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 Load and Store Instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1423,10 +1217,6 @@ Load and Store Instructions
 
     **Exception raised**: loads with a destination of x0 must still raise any exceptions, also an exception if the memory address isn't aligned (4-byte boundary).
 
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.SWSP**: Store Word Stack-Pointer
 
     **Format**: c.swsp rd, uimm(x2)
@@ -1438,10 +1228,6 @@ Load and Store Instructions
     **Invalid values**: NONE
 
     **Exception raised**: an exception raised if the memory address isn't aligned (4-byte boundary).
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
 
 - **C.LW**: Compressed Load Word
 
@@ -1455,9 +1241,107 @@ Load and Store Instructions
 
     **Exception raised**: an exception raised if the memory address isn't aligned (4-byte boundary).
 
-    **Group**: Zca
+- **C.SW**: Compressed Store Word
 
-    **Prerequisites**: NONE
+    **Format**: c.sw rs2', uimm(rs1')
+
+    **Description**: stores a 32-bit value from memory into register rd'. It computes an effective address by adding the zero-extended offset, scaled by 4, to the base address in register rs1'.
+
+    **Pseudocode**: M[x[8+rs1'] + zext(uimm[6:2])][31:0] = x[8+rs2']
+
+    **Invalid values**: NONE
+
+    **Exception raised**: an exception raised if the memory address isn't aligned (4-byte boundary).
+
+RV32ZCB Code Size Reduction Instructions
+-----------------------------------------
+
+Zcb belongs to group of extensions called RISC-V Code Size Reduction Extension (Zc*). Zc* has become the superset of Standard C extension adding more 16-bit insturctions to the ISA. Zcb includes 16-bit version of additional Integer (I), Multiply (M) and Bit-Manipulation (Zbb) Instructions. 
+All the Zcb instructions require at least standard C extension support as pre-requisite, along with M and Zbb extensions for 16-bit version of the respective instructions.
+
+- **C.ZEXT.B**: Compressed Zero Extend Byte
+
+    **Format**: c.zext.b rd'
+
+    **Description**: This instruction takes a single source/destination operand. It zero-extends the least-significant byte of the operand by inserting zeros into all of the bits more significant than 7.
+
+    **Pseudocode**: x[8 + rd'] = zext(x[8 + rd'][7:0])
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+- **C.SEXT.B**: Compressed Sign Extend Byte
+
+    **Format**: c.sext.b rd'
+
+    **Description**: This instruction takes a single source/destination operand. It sign-extends the least-significant byte in the operand by copying the most-significant bit in the byte (i.e., bit 7) to all of the more-significant bits. It also requires Bit-Manipulation (Zbb) extension support.
+
+    **Pseudocode**: x[8 + rd'] = sext(x[8 + rd'][7:0])
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+- **C.ZEXT.H**: Compressed Zero Extend Halfword
+
+    **Format**: c.zext.h rd'
+
+    **Description**: This instruction takes a single source/destination operand. It zero-extends the least-significant halfword of the operand by inserting zeros into all of the bits more significant than 15. It also requires Bit-Manipulation (Zbb) extension support.
+
+    **Pseudocode**: x[8 + rd'] = zext(x[8 + rd'][15:0])
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+- **C.SEXT.H**: Compressed Sign Extend Halfword
+
+    **Format**: c.sext.h rd'
+
+    **Description**: This instruction takes a single source/destination operand. It sign-extends the least-significant halfword in the operand by copying the most-significant bit in the halfword (i.e., bit 15) to all of the more-significant bits.  It also requires Bit-Manipulation (Zbb) extension support.
+
+    **Pseudocode**: x[8 + rd'] = sext(x[8 + rd'][15:0])
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+- **C.ZEXT.W**: Compressed Zero Extend Word
+
+    **Format**: c.zext.w rd'
+
+    **Description**: This instruction takes a single source/destination operand. It zero-extends the least-significant word of the operand by inserting zeros into all of the bits more significant than 31. It also requires Bit-Manipulation (Zbb) extension support.
+
+    **Pseudocode**: x[8 + rd'] = zext(x[8 + rd'][31:0])
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+- **C.NOT**: Compressed Bitwise NOT
+
+    **Format**: c.not rd'
+
+    **Description**: This instruction takes the one’s complement of rd'/rs1' and writes the result to the same register.
+
+    **Pseudocode**: x[8 + rd'] = x[8 + rd'] ^ -1
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+- **C.MUL**: Compressed Multiply
+
+    **Format**: c.mul rd', rs2'
+
+    **Description**: performs a 32-bit × 32-bit multiplication and places the lower 32 bits in the destination register (Both rd' and rs2' treated as signed numbers). It also requires M extension support.
+
+    **Pseudocode**: x[8 + rd'] = (x[8 + rd'] * x[8 + rs2'])[31:0]
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
 
 - **C.LHU**: Compressed Load Halfword Unsigned
 
@@ -1471,10 +1355,6 @@ Load and Store Instructions
 
     **Exception raised**: an exception raised if the memory address isn't aligned (2-byte boundary).
 
-    **Group**: Zcb
-
-    **Prerequisites**: NONE
-
 - **C.LH**: Compressed Load Halfword
 
     **Format**: c.lh rd', uimm(rs1')
@@ -1486,10 +1366,6 @@ Load and Store Instructions
     **Invalid values**: NONE
 
     **Exception raised**: an exception raised if the memory address isn't aligned (2-byte boundary).
-
-    **Group**: Zcb
-
-    **Prerequisites**: NONE
 
 - **C.LBU**: Compressed Load Byte Unsigned
 
@@ -1503,26 +1379,6 @@ Load and Store Instructions
 
     **Exception raised**: NONE
 
-    **Group**: Zcb
-
-    **Prerequisites**: NONE
-
-- **C.SW**: Compressed Store Word
-
-    **Format**: c.sw rs2', uimm(rs1')
-
-    **Description**: stores a 32-bit value from memory into register rd'. It computes an effective address by adding the zero-extended offset, scaled by 4, to the base address in register rs1'.
-
-    **Pseudocode**: M[x[8+rs1'] + zext(uimm[6:2])][31:0] = x[8+rs2']
-
-    **Invalid values**: NONE
-
-    **Exception raised**: an exception raised if the memory address isn't aligned (4-byte boundary).
-
-    **Group**: Zca
-
-    **Prerequisites**: NONE
-
 - **C.SH**: Compressed Store Halfword
 
     **Format**: c.sh rs2', uimm(rs1')
@@ -1534,10 +1390,6 @@ Load and Store Instructions
     **Invalid values**: NONE
 
     **Exception raised**: an exception raised if the memory address isn't aligned (2-byte boundary).
-    
-    **Group**: Zcb
-
-    **Prerequisites**: NONE
 
 - **C.SB**: Compressed Store Byte
 
@@ -1550,10 +1402,6 @@ Load and Store Instructions
     **Invalid values**: NONE
 
     **Exception raised**: NONE
-
-    **Group**: Zcb
-
-    **Prerequisites**: NONE
 
 RV32Zicsr Control and Status Register Instructions
 ---------------------------------------------------
