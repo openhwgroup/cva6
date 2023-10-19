@@ -360,8 +360,13 @@ module cache_ctrl
         // got a grant so go to valid
         if (bypass_gnt_i) begin
           state_d = WAIT_REFILL_VALID;
-          // if this was a write we still need to give a grant to the store unit
-          if (mem_req_q.we) req_port_o.data_gnt = 1'b1;
+          // if this was a write we still need to give a grant to the store unit.
+          // We can also avoid waiting for the response valid, this signal is
+          // currently not used by the store unit
+          if (mem_req_q.we) begin
+            req_port_o.data_gnt = 1'b1;
+            state_d = IDLE;
+          end
         end
 
         if (miss_gnt_i && !mem_req_q.we) state_d = WAIT_CRITICAL_WORD;

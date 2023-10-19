@@ -205,7 +205,8 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   // cached region
   NrCachedRegionRules:   unsigned'(1),
   CachedRegionAddrBase:  1024'({ariane_soc::DRAMBase}),
-  CachedRegionLength:    1024'({ariane_soc::DRAMLength})
+  CachedRegionLength:    1024'({ariane_soc::DRAMLength}),
+  MaxOutstandingStores:  unsigned'(7)
 };
 
 localparam type rvfi_instr_t = logic;
