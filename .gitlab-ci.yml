@@ -514,7 +514,7 @@ code_coverage-report:
 check gitlab jobs status:
   stage: find failures
   rules:
-    - if: $CI_KIND == "regress" || $CI_KIND == "verif"
+    - if: $DASHBOARD_URL && $CI_KIND != "none"
       when: on_failure
   variables:
     DASHBOARD_JOB_TITLE: "Environment check"
