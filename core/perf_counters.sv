@@ -130,12 +130,11 @@ module perf_counters
     read_access_exception = 1'b0;
     update_access_exception = 1'b0;
 
+    // Increment the non-inhibited counters with active events
     for (int unsigned i = 1; i <= 6; i++) begin
       if ((!debug_mode_i) && (!we_i)) begin
         if ((events[i]) == 1 && (!mcountinhibit_i[i+2])) begin
           generic_counter_d[i] = generic_counter_q[i] + 1'b1;
-        end else begin
-          generic_counter_d[i] = 'b0;
         end
       end
     end
