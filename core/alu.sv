@@ -42,6 +42,7 @@ module alu
   logic [$clog2(riscv::XLEN)-1 : 0] lz_tz_count;  // Count Leading Zeros
   logic [                      4:0] lz_tz_wcount;  // Count Leading Zeros Word
   logic lz_tz_empty, lz_tz_wempty;
+  riscv::xlen_t orcbw_result, rev8w_result;
 
   // bit reverse operand_a for left shifts and bit counting
   generate
@@ -219,6 +220,18 @@ module alu
     );
   end
 
+  if (ariane_pkg::BITMANIP) begin : gen_orcbw_rev8w_results
+    assign orcbw = {{8{|fu_data_i.operand_a[31:24]}}, {8{|fu_data_i.operand_a[23:16]}}, {8{|fu_data_i.operand_a[15:8]}}, {8{|fu_data_i.operand_a[7:0]}}};
+    assign rev8w = {{fu_data_i.operand_a[7:0]}, {fu_data_i.operand_a[15:8]}, {fu_data_i.operand_a[23:16]}, {fu_data_i.operand_a[31:24]}};
+    if (riscv::XLEN == 64) begin : gen_64b
+      assign orcbw_result = {{8{|fu_data_i.operand_a[63:56]}}, {8{|fu_data_i.operand_a[55:48]}}, {8{|fu_data_i.operand_a[47:40]}}, {8{|fu_data_i.operand_a[39:32]}}, orcbw};
+      assign rev8w_result = {rev8w , {fu_data_i.operand_a[39:32]}, {fu_data_i.operand_a[47:40]}, {fu_data_i.operand_a[55:48]}, {fu_data_i.operand_a[63:56]}};
+    end else begin : gen_32b
+      assign orcbw_result = orcbw;
+      assign rev8w_result = rev8w;
+    end
+  end
+
   // -----------
   // Result MUX
   // -----------
@@ -249,18 +262,6 @@ module alu
     if (ariane_pkg::BITMANIP) begin
       // Index for Bitwise Rotation
       bit_indx = 1 << (fu_data_i.operand_b & (riscv::XLEN - 1));
-      orcbw = {
-        {8{|fu_data_i.operand_a[31:24]}},
-        {8{|fu_data_i.operand_a[23:16]}},
-        {8{|fu_data_i.operand_a[15:8]}},
-        {8{|fu_data_i.operand_a[7:0]}}
-      };
-      rev8w = {
-        {fu_data_i.operand_a[7:0]},
-        {fu_data_i.operand_a[15:8]},
-        {fu_data_i.operand_a[23:16]},
-        {fu_data_i.operand_a[31:24]}
-      };
       // rolw, roriw, rorw
       rolw = ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
       rorw = ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
@@ -302,9 +303,9 @@ module alu
         result_o = (riscv::XLEN == 64) ? ((fu_data_i.operand_a >> fu_data_i.operand_b[5:0]) | (fu_data_i.operand_a << (riscv::XLEN-fu_data_i.operand_b[5:0]))) : ((fu_data_i.operand_a >> fu_data_i.operand_b[4:0]) | (fu_data_i.operand_a << (riscv::XLEN-fu_data_i.operand_b[4:0])));
         RORW, RORIW: result_o = {{riscv::XLEN - 32{rorw[31]}}, rorw};
         ORCB:
-        result_o = (riscv::XLEN == 64) ? ({{8{|fu_data_i.operand_a[63:56]}}, {8{|fu_data_i.operand_a[55:48]}}, {8{|fu_data_i.operand_a[47:40]}}, {8{|fu_data_i.operand_a[39:32]}}, orcbw}) : orcbw;
+        result_o = orcbw_result;
         REV8:
-        result_o = (riscv::XLEN == 64) ? ({rev8w , {fu_data_i.operand_a[39:32]}, {fu_data_i.operand_a[47:40]}, {fu_data_i.operand_a[55:48]}, {fu_data_i.operand_a[63:56]}}) : rev8w;
+        result_o = rev8w_result;
 
         default: ;  // default case to suppress unique warning
       endcase

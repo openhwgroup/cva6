@@ -379,11 +379,12 @@ module load_store_unit
   // we can generate the byte enable from the virtual address since the last
   // 12 bit are the same anyway
   // and we can always generate the byte enable from the address at hand
-  assign be_i = riscv::IS_XLEN64 ? be_gen(
-      vaddr_i[2:0], extract_transfer_size(fu_data_i.operation)
-  ) : be_gen_32(
-      vaddr_i[1:0], extract_transfer_size(fu_data_i.operation)
-  );
+
+  if (riscv::IS_XLEN64) begin : gen_8b_be
+    assign be_i = be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operation));
+  end else begin : gen_4b_be
+    assign be_i = be_gen_32(vaddr_i[1:0], extract_transfer_size(fu_data_i.operation));
+  end
 
   // ------------------------
   // Misaligned Exception
