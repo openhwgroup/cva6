@@ -1,0 +1,32 @@
+# Copyright 2023 OpenHW Group
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: 'Close stale issues and PRs'
+# on:
+#   schedule:
+#     - cron: '30 1 * * *'
+on: workflow_dispatch
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v8
+        with:
+          debug-only: true
+          stale-issue-label: Status:Stale
+          stale-pr-label: Status:Stale
+          stale-issue-message: |
+            👋 Hi there!
+
+            This issue seems inactive. Need more help? Feel free to update us. If there are no updates within the next few days, we'll go ahead and close this issue. 😊
+          stale-pr-message: |
+            👋 Hi there!
+
+            This pull request seems inactive. Need more help or have updates? Feel free to let us know. If there are no updates within the next few days, we'll go ahead and close this PR. 😊
+          days-before-stale: 30
+          days-before-close: 5
+          exempt-issue-labels: Type:Task,Type:Enhancement,Type:Bug
+          exempt-all-milestones: true
+          start-date: '2023-09-01T00:00:00Z'
