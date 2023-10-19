@@ -1,3 +1,4 @@
+// See LICENSE for license details.
 #pragma once
 
 // The hart that non-SMP tests should run on
