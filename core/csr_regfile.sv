@@ -562,7 +562,7 @@ module csr_regfile
       end
       instret_d = instret;
       // increment the cycle count
-      if (ENABLE_CYCLE_COUNT && !mcountinhibit_q[0]) cycle_d = cycle_q + 1'b1;
+      if (!mcountinhibit_q[0]) cycle_d = cycle_q + 1'b1;
       else cycle_d = instret;
     end
 

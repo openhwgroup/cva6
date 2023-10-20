@@ -31,7 +31,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // Integrals
    rand bit                      enabled;
 
-   rand bit                      scoreboarding_enabled;
+   rand bit                      scoreboard_enabled;
    rand bit                      cov_model_enabled;
    rand bit                      cov_cvxif_model_enabled;
    rand bit                      cov_isa_model_enabled;
@@ -51,7 +51,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
-      `uvm_field_int (                         scoreboarding_enabled       , UVM_DEFAULT          )
+      `uvm_field_int (                         scoreboard_enabled          , UVM_DEFAULT          )
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zicond_supported        , UVM_DEFAULT          )
@@ -73,7 +73,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    constraint defaults_cons {
       soft enabled                 == 1;
       soft is_active               == UVM_ACTIVE;
-      soft scoreboarding_enabled   == 1;
+      soft scoreboard_enabled      == 1;
       soft cov_model_enabled       == 1;
       soft trn_log_enabled         == 1;
       soft sys_clk_period          == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
@@ -147,15 +147,15 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          isacov_cfg.enabled    == 1;
          rvfi_cfg.enabled      == 1;
       }
-      
+
       isacov_cfg.seq_instr_group_x2_enabled == 1;
       isacov_cfg.seq_instr_group_x3_enabled == 0;
       isacov_cfg.seq_instr_group_x4_enabled == 0;
       isacov_cfg.seq_instr_x2_enabled       == 1;
       isacov_cfg.reg_crosses_enabled        == 0;
       isacov_cfg.reg_hazards_enabled        == 1;
-      rvfi_cfg.nret                         == RVFI_NRET;
-      
+      rvfi_cfg.nret                         == cva6_config_pkg::CVA6ConfigNrCommitPorts;
+
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active   == UVM_ACTIVE;
          isacov_cfg.is_active    == UVM_PASSIVE;

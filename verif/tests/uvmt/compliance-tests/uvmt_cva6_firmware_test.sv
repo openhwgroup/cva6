@@ -62,6 +62,11 @@ class uvmt_cva6_firmware_test_c extends uvmt_cva6_base_test_c;
    extern virtual task configure_phase(uvm_phase phase);
 
    /**
+    *  Override types with the UVM Factory
+    */
+   extern virtual function void build_phase(uvm_phase phase);
+
+   /**
     *  Enable program execution, wait for completion.
     */
    extern virtual task run_phase(uvm_phase phase);
@@ -91,6 +96,14 @@ task uvmt_cva6_firmware_test_c::reset_phase(uvm_phase phase);
    super.reset_phase(phase);
 
 endtask : reset_phase
+
+function void uvmt_cva6_firmware_test_c::build_phase(uvm_phase phase);
+   super.build_phase(phase);
+
+   `uvm_info("firmware_test", "Overriding Reference Model with Spike", UVM_NONE)
+   set_type_override_by_type(uvmc_rvfi_reference_model::get_type(),uvmc_rvfi_spike::get_type());
+
+endfunction : build_phase
 
 
 task uvmt_cva6_firmware_test_c::configure_phase(uvm_phase phase);

@@ -30,6 +30,8 @@ module uvmt_cva6_tb;
    import uvmt_cva6_pkg::*;
    import uvme_cva6_pkg::*;
 
+   localparam RVFI_NRET = cva6_config_pkg::CVA6ConfigNrCommitPorts;
+
    // CVA6 config
    localparam config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg;
    localparam bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace);
@@ -82,9 +84,9 @@ module uvmt_cva6_tb;
    uvma_rvfi_instr_if #(
      uvme_cva6_pkg::ILEN,
      uvme_cva6_pkg::XLEN
-   ) rvfi_instr_if [uvme_cva6_pkg::RVFI_NRET-1:0] ();
+   ) rvfi_instr_if [RVFI_NRET-1:0] ();
 
-    uvma_rvfi_csr_if#(uvme_cva6_pkg::XLEN)       rvfi_csr_if [uvme_cva6_pkg::RVFI_NRET-1:0]();
+    uvma_rvfi_csr_if#(uvme_cva6_pkg::XLEN)       rvfi_csr_if [RVFI_NRET-1:0]();
 
    uvmt_default_inputs_intf         default_inputs_vif();
 
@@ -132,13 +134,14 @@ module uvmt_cva6_tb;
                     .rvfi_o(rvfi_if.rvfi_o)
                     );
 
-   for (genvar i = 0; i < uvme_cva6_pkg::RVFI_NRET; i++) begin
+   for (genvar i = 0; i < RVFI_NRET; i++) begin
       assign  rvfi_instr_if[i].clk            = clknrst_if.clk;
       assign  rvfi_instr_if[i].reset_n        = clknrst_if.reset_n;
       assign  rvfi_instr_if[i].rvfi_valid     = rvfi_if.rvfi_o[i].valid;
       assign  rvfi_instr_if[i].rvfi_order     = rvfi_if.rvfi_o[i].order;
       assign  rvfi_instr_if[i].rvfi_insn      = rvfi_if.rvfi_o[i].insn;
       assign  rvfi_instr_if[i].rvfi_trap      = rvfi_if.rvfi_o[i].trap;
+      assign  rvfi_instr_if[i].rvfi_cause     = rvfi_if.rvfi_o[i].cause;
       assign  rvfi_instr_if[i].rvfi_halt      = rvfi_if.rvfi_o[i].halt;
       assign  rvfi_instr_if[i].rvfi_intr      = rvfi_if.rvfi_o[i].intr;
       assign  rvfi_instr_if[i].rvfi_mode      = rvfi_if.rvfi_o[i].mode;
@@ -165,7 +168,7 @@ module uvmt_cva6_tb;
    assign  default_inputs_vif.debug_req = 1'b0;
 
 
-   for (genvar i = 0; i < uvme_cva6_pkg::RVFI_NRET; i++) begin
+   for (genvar i = 0; i < RVFI_NRET; i++) begin
       initial  begin
          uvm_config_db#(virtual uvma_rvfi_instr_if )::set(null,"*", $sformatf("instr_vif%0d", i), rvfi_instr_if[i]);
 

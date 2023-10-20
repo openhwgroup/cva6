@@ -584,12 +584,7 @@ module ariane_testharness #(
     .AxiIdWidth   ( ariane_axi_soc::IdWidthSlave ),
     .AxiUserWidth ( AXI_USER_WIDTH               ),
 `ifndef VERILATOR
-  // disable UART when using Spike, as we need to rely on the mockuart
-  `ifdef SPIKE_TANDEM
-    .InclUART     ( 1'b0                     ),
-  `else
     .InclUART     ( 1'b1                     ),
-  `endif
 `else
     .InclUART     ( 1'b0                     ),
 `endif
@@ -690,6 +685,22 @@ module ariane_testharness #(
     .rvfi_i(rvfi),
     .end_of_test_o(rvfi_exit)
   );
+
+`ifdef SPIKE_TANDEM
+    spike #(
+        .CVA6Cfg ( CVA6Cfg ),
+        .rvfi_instr_t(rvfi_instr_t)
+    ) i_spike (
+        .clk_i,
+        .rst_ni,
+        .clint_tick_i   ( rtc_i    ),
+        .rvfi_i         ( rvfi )
+    );
+    initial begin
+        $display("Running binary in tandem mode");
+    end
+`endif
+
 
 `ifdef AXI_SVA
   // AXI 4 Assertion IP integration - You will need to get your own copy of this IP if you want

@@ -28,6 +28,8 @@
 -f ${DV_UVMA_CORE_CNTRL_PATH}/uvma_core_cntrl_pkg.flist
 -f ${DV_UVMA_RVFI_PATH}/uvma_rvfi_pkg.flist
 -f ${DV_UVMA_ISACOV_PATH}/uvma_isacov_pkg.flist
+-f ${DV_UVMC_RVFI_REFERENCE_MODEL_PATH}/uvmc_rvfi_reference_model_pkg.flist
+-f ${DV_UVMC_RVFI_SB_PATH}/uvmc_rvfi_scoreboard_pkg.flist
 
 // Environments
 -f ${CVA6_UVME_PATH}/uvme_cva6_pkg.flist

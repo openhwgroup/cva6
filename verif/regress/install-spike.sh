@@ -55,7 +55,9 @@ else
     # Build and install Spike (including extensions).
     mkdir -p build
     cd build
-    ../configure --prefix="$SPIKE_INSTALL_DIR"
+    if [[ ! -f config.log ]]; then
+        ../configure --prefix="$SPIKE_INSTALL_DIR"
+    fi
     make -j${NUM_JOBS}
     echo "Installing Spike in '$SPIKE_INSTALL_DIR'..."
     make install
