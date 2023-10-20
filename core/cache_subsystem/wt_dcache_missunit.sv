@@ -271,30 +271,24 @@ module wt_dcache_missunit
     end
   end
 
-
-  // note: openpiton returns a full cacheline!
-  if (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_AXI4_ATOP) begin : gen_axi_rtrn_mux
-    if (CVA6Cfg.AxiDataWidth > 64) begin
-      assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[$clog2(
-          CVA6Cfg.AxiDataWidth/8
-      )-1:3]*64+:64];
-    end else begin
-      assign amo_rtrn_mux = mem_rtrn_i.data[0+:64];
+  if (CVA6Cfg.RVA) begin
+    // note: openpiton returns a full cacheline!
+    if (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_AXI4_ATOP) begin : gen_axi_rtrn_mux
+      if (CVA6Cfg.AxiDataWidth > 64) begin
+        assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[$clog2(
+            CVA6Cfg.AxiDataWidth/8
+        )-1:3]*64+:64];
+      end else begin
+        assign amo_rtrn_mux = mem_rtrn_i.data[0+:64];
+      end
+    end else begin : gen_piton_rtrn_mux
+      assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64+:64];
     end
-  end else begin : gen_piton_rtrn_mux
-    assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64+:64];
-  end
 
-  // always sign extend 32bit values
-  assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
+    // always sign extend 32bit values
+    assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
                                                        amo_rtrn_mux ;
-
-      // always sign extend 32bit values
-      assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
-                                                           amo_rtrn_mux ;
-
-      assign amo_req_d = amo_req_i.req;
-
+    assign amo_req_d = amo_req_i.req;
   end
 
   // outgoing memory requests (AMOs are always uncached)
