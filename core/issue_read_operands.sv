@@ -525,9 +525,9 @@ module issue_read_operands
       issue_ack_o[i] = 1'b0;
       // check that we didn't stall, that the instruction we got is valid
       // and that the functional unit we need is not busy
-      if (issue_instr_valid_i[i]) begin
+      if (issue_instr_valid_i[i] && !fu_busy[i]) begin
         // check that the corresponding functional unit is not busy
-        if (!stall[i] && !fu_busy[i]) begin
+        if (!stall[i]) begin
           // -----------------------------------------
           // WAW - Write After Write Dependency Check
           // -----------------------------------------
