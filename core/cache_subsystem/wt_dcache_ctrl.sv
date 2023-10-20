@@ -97,7 +97,7 @@ module wt_dcache_ctrl
   // to miss unit
   assign miss_vld_bits_o = vld_data_q;
   assign miss_paddr_o = {address_tag_q, address_idx_q, address_off_q};
-  assign miss_size_o = (miss_nc_o) ? data_size_q : 3'b111;
+  assign miss_size_o = (miss_nc_o) ? {1'b0, data_size_q} : 3'b111;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
   assign miss_nc_o = (~cache_en_i) | (~config_pkg::is_inside_cacheable_regions(

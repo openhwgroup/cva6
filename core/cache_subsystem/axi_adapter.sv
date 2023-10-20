@@ -359,7 +359,7 @@ module axi_adapter #(
             if (amo_q == ariane_pkg::AMO_SC) begin
               if (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY) begin
                 // success -> return 0
-                rdata_o = 1'b0;
+                rdata_o = 'b0;
               end else begin
                 // failure -> when request is 64-bit, return 1;
                 // when request is 32-bit place a 1 in both upper

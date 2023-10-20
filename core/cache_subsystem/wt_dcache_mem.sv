@@ -239,7 +239,7 @@ module wt_dcache_mem
   end
 
   for (genvar k = 0; k < DCACHE_WBUF_DEPTH; k++) begin : gen_wbuffer_hit
-    assign wbuffer_hit_oh[k] = (|wbuffer_data_i[k].valid) & (wbuffer_data_i[k].wtag == (wbuffer_cmp_addr >> riscv::XLEN_ALIGN_BYTES));
+    assign wbuffer_hit_oh[k] = (|wbuffer_data_i[k].valid) & ({{riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_data_i[k].wtag} == (wbuffer_cmp_addr >> riscv::XLEN_ALIGN_BYTES));
   end
 
   lzc #(
@@ -265,7 +265,7 @@ module wt_dcache_mem
   if (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_AXI4_ATOP) begin : gen_axi_offset
     // In case of an uncached read, return the desired XLEN-bit segment of the most recent AXI read
     assign wr_cl_off     = (wr_cl_nc_i) ? (CVA6Cfg.AxiDataWidth == riscv::XLEN) ? '0 :
-                              wr_cl_off_i[AXI_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES] :
+                              {{DCACHE_OFFSET_WIDTH-AXI_OFFSET_WIDTH{1'b0}}, wr_cl_off_i[AXI_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES]} :
                               wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES];
   end else begin : gen_piton_offset
     assign wr_cl_off = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
