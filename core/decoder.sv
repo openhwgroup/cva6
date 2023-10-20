@@ -143,19 +143,21 @@ module decoder
                 12'b1: ebreak = 1'b1;
                 // SRET
                 12'b1_0000_0010: begin
-                  instruction_o.op = ariane_pkg::SRET;
-                  // check privilege level, SRET can only be executed in S and M mode
-                  // we'll just decode an illegal instruction if we are in the wrong privilege level
-                  if (priv_lvl_i == riscv::PRIV_LVL_U) begin
-                    illegal_instr = 1'b1;
-                    //  do not change privilege level if this is an illegal instruction
-                    instruction_o.op = ariane_pkg::ADD;
-                  end
-                  // if we are in S-Mode and Trap SRET (tsr) is set -> trap on illegal instruction
-                  if (priv_lvl_i == riscv::PRIV_LVL_S && tsr_i) begin
-                    illegal_instr = 1'b1;
-                    //  do not change privilege level if this is an illegal instruction
-                    instruction_o.op = ariane_pkg::ADD;
+                  if (CVA6Cfg.RVS) begin
+                    instruction_o.op = ariane_pkg::SRET;
+                    // check privilege level, SRET can only be executed in S and M mode
+                    // we'll just decode an illegal instruction if we are in the wrong privilege level
+                    if (priv_lvl_i == riscv::PRIV_LVL_U) begin
+                      illegal_instr = 1'b1;
+                      //  do not change privilege level if this is an illegal instruction
+                      instruction_o.op = ariane_pkg::ADD;
+                    end
+                    // if we are in S-Mode and Trap SRET (tsr) is set -> trap on illegal instruction
+                    if (priv_lvl_i == riscv::PRIV_LVL_S && tsr_i) begin
+                      illegal_instr = 1'b1;
+                      //  do not change privilege level if this is an illegal instruction
+                      instruction_o.op = ariane_pkg::ADD;
+                    end
                   end
                 end
                 // MRET
@@ -163,7 +165,7 @@ module decoder
                   instruction_o.op = ariane_pkg::MRET;
                   // check privilege level, MRET can only be executed in M mode
                   // otherwise we decode an illegal instruction
-                  if (priv_lvl_i inside {riscv::PRIV_LVL_U, riscv::PRIV_LVL_S})
+                  if ((CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U)
                     illegal_instr = 1'b1;
                 end
                 // DRET
@@ -177,7 +179,7 @@ module decoder
                   if (ENABLE_WFI) instruction_o.op = ariane_pkg::WFI;
                   // if timeout wait is set, trap on an illegal instruction in S Mode
                   // (after 0 cycles timeout)
-                  if (priv_lvl_i == riscv::PRIV_LVL_S && tw_i) begin
+                  if (CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S && tw_i) begin
                     illegal_instr = 1'b1;
                     instruction_o.op = ariane_pkg::ADD;
                   end
@@ -192,10 +194,11 @@ module decoder
                   if (instr.instr[31:25] == 7'b1001) begin
                     // check privilege level, SFENCE.VMA can only be executed in M/S mode
                     // otherwise decode an illegal instruction
-                    illegal_instr    = ((priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
+                    illegal_instr    = (((CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_M) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
                     instruction_o.op = ariane_pkg::SFENCE_VMA;
                     // check TVM flag and intercept SFENCE.VMA call if necessary
-                    if (priv_lvl_i == riscv::PRIV_LVL_S && tvm_i) illegal_instr = 1'b1;
+                    if (CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S && tvm_i)
+                      illegal_instr = 1'b1;
                   end else begin
                     illegal_instr = 1'b1;
                   end
@@ -1317,7 +1320,7 @@ module decoder
         // depending on the privilege mode, set the appropriate cause
         case (priv_lvl_i)
           riscv::PRIV_LVL_M: instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
-          riscv::PRIV_LVL_S: instruction_o.ex.cause = riscv::ENV_CALL_SMODE;
+          riscv::PRIV_LVL_S: if (CVA6Cfg.RVS) instruction_o.ex.cause = riscv::ENV_CALL_SMODE;
           riscv::PRIV_LVL_U: instruction_o.ex.cause = riscv::ENV_CALL_UMODE;
           default: ;  // this should not happen
         endcase
@@ -1390,7 +1393,7 @@ module decoder
         // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
         // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
         if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(riscv::XLEN)-1:0]]) begin
-          if ((irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) begin
+          if ((CVA6Cfg.RVS && irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) begin
             instruction_o.ex.valid = 1'b1;
             instruction_o.ex.cause = interrupt_cause;
           end
