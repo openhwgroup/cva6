@@ -1,3 +1,7 @@
+// Copyright OpenHW Group contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 #include "uart.h"
 
 void write_reg_u8(uintptr_t addr, uint8_t value)
