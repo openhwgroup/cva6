@@ -215,15 +215,24 @@ module issue_read_operands
       fus_busy[1] = fus_busy[0];
 
       unique case (issue_instr_i[0].fu)
-        NONE: fus_busy[1].none = 1'b1;
-        // Control hazard
-        CTRL_FLOW: fus_busy[1] = '1;
+        NONE:  fus_busy[1].none = 1'b1;
+        CTRL_FLOW: begin
+          // There are no branch misses on a JAL
+          if (issue_instr_i[0].op == ariane_pkg::ADD) begin
+            fus_busy[1].alu = 1'b1;
+            fus_busy[1].ctrl_flow = 1'b1;
+            fus_busy[1].csr = 1'b1;
+          end else begin
+            // Control hazard
+            fus_busy[1] = '1;
+          end
+        end
         ALU, CSR: begin
           fus_busy[1].alu = 1'b1;
           fus_busy[1].ctrl_flow = 1'b1;
           fus_busy[1].csr = 1'b1;
         end
-        MULT: fus_busy[1].mult = 1'b1;
+        MULT:  fus_busy[1].mult = 1'b1;
         FPU, FPU_VEC: begin
           fus_busy[1].fpu = 1'b1;
           fus_busy[1].fpu_vec = 1'b1;
