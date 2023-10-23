@@ -24,11 +24,13 @@ package cva6_instr_test_pkg;
    `include "cva6_asm_program_gen.sv"
    `include "cva6_instr_base_test.sv"
    `include "cva6_instr_hazard_test.sv"
+   `include "cva6_load_store_instr_lib.sv"
    `include "cvxif_custom_instr.sv"
    `include "riscv_zicond_instr.sv"
    `include "riscv_zcb_instr.sv"
    `include "rv32x_instr.sv"
    `include "rv32zicond_instr.sv"
    `include "rv32zcb_instr.sv"
+   `include "rv64zcb_instr.sv"
    
 endpackage : cva6_instr_test_pkg;
