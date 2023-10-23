@@ -1307,18 +1307,6 @@ All the Zcb instructions require at least standard C extension support as pre-re
 
     **Exception raised**: NONE
 
-- **C.ZEXT.W**: Compressed Zero Extend Word
-
-    **Format**: c.zext.w rd'
-
-    **Description**: This instruction takes a single source/destination operand. It zero-extends the least-significant word of the operand by inserting zeros into all of the bits more significant than 31. It also requires Bit-Manipulation (Zbb) extension support.
-
-    **Pseudocode**: x[8 + rd'] = zext(x[8 + rd'][31:0])
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
 - **C.NOT**: Compressed Bitwise NOT
 
     **Format**: c.not rd'
