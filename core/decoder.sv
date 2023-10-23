@@ -147,7 +147,7 @@ module decoder
                     instruction_o.op = ariane_pkg::SRET;
                     // check privilege level, SRET can only be executed in S and M mode
                     // we'll just decode an illegal instruction if we are in the wrong privilege level
-                    if (priv_lvl_i == riscv::PRIV_LVL_U) begin
+                    if (CVA6Cfg.RVU && priv_lvl_i == riscv::PRIV_LVL_U) begin
                       illegal_instr = 1'b1;
                       //  do not change privilege level if this is an illegal instruction
                       instruction_o.op = ariane_pkg::ADD;
@@ -165,7 +165,7 @@ module decoder
                   instruction_o.op = ariane_pkg::MRET;
                   // check privilege level, MRET can only be executed in M mode
                   // otherwise we decode an illegal instruction
-                  if ((CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U)
+                  if ((CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S) || (CVA6Cfg.RVU && priv_lvl_i == riscv::PRIV_LVL_U))
                     illegal_instr = 1'b1;
                 end
                 // DRET
@@ -184,7 +184,7 @@ module decoder
                     instruction_o.op = ariane_pkg::ADD;
                   end
                   // we don't support U mode interrupts so WFI is illegal in this context
-                  if (priv_lvl_i == riscv::PRIV_LVL_U) begin
+                  if (CVA6Cfg.RVU && priv_lvl_i == riscv::PRIV_LVL_U) begin
                     illegal_instr = 1'b1;
                     instruction_o.op = ariane_pkg::ADD;
                   end
@@ -1321,7 +1321,7 @@ module decoder
         case (priv_lvl_i)
           riscv::PRIV_LVL_M: instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
           riscv::PRIV_LVL_S: if (CVA6Cfg.RVS) instruction_o.ex.cause = riscv::ENV_CALL_SMODE;
-          riscv::PRIV_LVL_U: instruction_o.ex.cause = riscv::ENV_CALL_UMODE;
+          riscv::PRIV_LVL_U: if (CVA6Cfg.RVU) instruction_o.ex.cause = riscv::ENV_CALL_UMODE;
           default: ;  // this should not happen
         endcase
       end else if (ebreak) begin
@@ -1393,7 +1393,7 @@ module decoder
         // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
         // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
         if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(riscv::XLEN)-1:0]]) begin
-          if ((CVA6Cfg.RVS && irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) begin
+          if ((CVA6Cfg.RVS && irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || (CVA6Cfg.RVU && priv_lvl_i == riscv::PRIV_LVL_U)) begin
             instruction_o.ex.valid = 1'b1;
             instruction_o.ex.cause = interrupt_cause;
           end
