@@ -57,6 +57,10 @@ module mock_uart (
         $write("%c", ch);
     endfunction : uart_tx
 
+/* verilator lint_off WIDTHTRUNC */
+/* verilator lint_off WIDTHEXPAND */
+/* verilator lint_off WIDTHCONCAT */
+
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (rst_ni) begin
             if (psel_i & penable_i & pwrite_i) begin
@@ -108,4 +112,9 @@ module mock_uart (
             endcase
         end
     end
+
+/* verilator lint_on WIDTHTRUNC */
+/* verilator lint_on WIDTHEXPAND */
+/* verilator lint_on WIDTHCONCAT */
+
 endmodule
