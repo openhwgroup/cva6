@@ -168,107 +168,66 @@ module wt_dcache
   // read controllers (LD unit and PTW/MMU)
   ///////////////////////////////////////////////////////
 
-  // note: last read port is used by the write buffer
-  for (genvar k = 1; k < NumPorts - 1; k++) begin : gen_rd_ports
+  // 0 is used by PTW, 1 by READ and 2 by STORE access requests
+  for (genvar k = 0; k < NumPorts - 1; k++) begin : gen_rd_ports
     // set these to high prio ports
-    assign rd_prio[k] = 1'b1;
-
-    wt_dcache_ctrl #(
-        .CVA6Cfg(CVA6Cfg),
-        .RdTxId (RdAmoTxId)
-    ) i_wt_dcache_ctrl (
-        .clk_i          (clk_i),
-        .rst_ni         (rst_ni),
-        .cache_en_i     (cache_en),
-        // reqs from core
-        .req_port_i     (req_ports_i[k]),
-        .req_port_o     (req_ports_o[k]),
-        // miss interface
-        .miss_req_o     (miss_req[k]),
-        .miss_ack_i     (miss_ack[k]),
-        .miss_we_o      (miss_we[k]),
-        .miss_wdata_o   (miss_wdata[k]),
-        .miss_wuser_o   (miss_wuser[k]),
-        .miss_vld_bits_o(miss_vld_bits_o[k]),
-        .miss_paddr_o   (miss_paddr[k]),
-        .miss_nc_o      (miss_nc[k]),
-        .miss_size_o    (miss_size[k]),
-        .miss_id_o      (miss_id[k]),
-        .miss_replay_i  (miss_replay[k]),
-        .miss_rtrn_vld_i(miss_rtrn_vld[k]),
-        // used to detect readout mux collisions
-        .wr_cl_vld_i    (wr_cl_vld),
-        // cache mem interface
-        .rd_tag_o       (rd_tag[k]),
-        .rd_idx_o       (rd_idx[k]),
-        .rd_off_o       (rd_off[k]),
-        .rd_req_o       (rd_req[k]),
-        .rd_tag_only_o  (rd_tag_only[k]),
-        .rd_ack_i       (rd_ack[k]),
-        .rd_data_i      (rd_data),
-        .rd_user_i      (rd_user),
-        .rd_vld_bits_i  (rd_vld_bits),
-        .rd_hit_oh_i    (rd_hit_oh)
-    );
-  end
-
-  if (MMU_PRESENT) begin
-    assign rd_prio[0] = 1'b1;
-    wt_dcache_ctrl #(
-        .CVA6Cfg(CVA6Cfg),
-        .RdTxId (RdAmoTxId)
-    ) i_wt_dcache_ctrl_0 (
-        .clk_i          (clk_i),
-        .rst_ni         (rst_ni),
-        .cache_en_i     (cache_en),
-        // reqs from core
-        .req_port_i     (req_ports_i[0]),
-        .req_port_o     (req_ports_o[0]),
-        // miss interface
-        .miss_req_o     (miss_req[0]),
-        .miss_ack_i     (miss_ack[0]),
-        .miss_we_o      (miss_we[0]),
-        .miss_wdata_o   (miss_wdata[0]),
-        .miss_wuser_o   (miss_wuser[0]),
-        .miss_vld_bits_o(miss_vld_bits_o[0]),
-        .miss_paddr_o   (miss_paddr[0]),
-        .miss_nc_o      (miss_nc[0]),
-        .miss_size_o    (miss_size[0]),
-        .miss_id_o      (miss_id[0]),
-        .miss_replay_i  (miss_replay[0]),
-        .miss_rtrn_vld_i(miss_rtrn_vld[0]),
-        // used to detect readout mux collisions
-        .wr_cl_vld_i    (wr_cl_vld),
-        // cache mem interface
-        .rd_tag_o       (rd_tag[0]),
-        .rd_idx_o       (rd_idx[0]),
-        .rd_off_o       (rd_off[0]),
-        .rd_req_o       (rd_req[0]),
-        .rd_tag_only_o  (rd_tag_only[0]),
-        .rd_ack_i       (rd_ack[0]),
-        .rd_data_i      (rd_data),
-        .rd_user_i      (rd_user),
-        .rd_vld_bits_i  (rd_vld_bits),
-        .rd_hit_oh_i    (rd_hit_oh)
-    );
-  end else begin
-    assign rd_prio[0] = 1'b0;
-    assign req_ports_o[0] = '0;
-    assign miss_req[0] = 1'b0;
-    assign miss_we[0] = 1'b0;
-    assign miss_wdata[0] = {{riscv::XLEN}{1'b0}};
-    assign miss_wuser[0] = {{DCACHE_USER_WIDTH}{1'b0}};
-    assign miss_vld_bits_o[0] = {{DCACHE_SET_ASSOC}{1'b0}};
-    assign miss_paddr[0] = {{riscv::PLEN}{1'b0}};
-    assign miss_nc[0] = 1'b0;
-    assign miss_size[0] = 3'b0;
-    assign miss_id[0] = {{CACHE_ID_WIDTH}{1'b0}};
-    assign rd_tag[0] = {{DCACHE_TAG_WIDTH}{1'b0}};
-    assign rd_idx[0] = {{DCACHE_CL_IDX_WIDTH}{1'b0}};
-    assign rd_off[0] = {{DCACHE_OFFSET_WIDTH}{1'b0}};
-    assign rd_req[0] = 1'b0;
-    assign rd_tag_only[0] = 1'b0;
-  end
+    if (k != 0 || MMU_PRESENT) begin
+      assign rd_prio[k] = 1'b1;
+      wt_dcache_ctrl #(
+          .CVA6Cfg(CVA6Cfg),
+          .RdTxId (RdAmoTxId)
+      ) i_wt_dcache_ctrl (
+          .clk_i          (clk_i),
+          .rst_ni         (rst_ni),
+          .cache_en_i     (cache_en),
+          // reqs from core
+          .req_port_i     (req_ports_i[k]),
+          .req_port_o     (req_ports_o[k]),
+          // miss interface
+          .miss_req_o     (miss_req[k]),
+          .miss_ack_i     (miss_ack[k]),
+          .miss_we_o      (miss_we[k]),
+          .miss_wdata_o   (miss_wdata[k]),
+          .miss_wuser_o   (miss_wuser[k]),
+          .miss_vld_bits_o(miss_vld_bits_o[k]),
+          .miss_paddr_o   (miss_paddr[k]),
+          .miss_nc_o      (miss_nc[k]),
+          .miss_size_o    (miss_size[k]),
+          .miss_id_o      (miss_id[k]),
+          .miss_replay_i  (miss_replay[k]),
+          .miss_rtrn_vld_i(miss_rtrn_vld[k]),
+          // used to detect readout mux collisions
+          .wr_cl_vld_i    (wr_cl_vld),
+          // cache mem interface
+          .rd_tag_o       (rd_tag[k]),
+          .rd_idx_o       (rd_idx[k]),
+          .rd_off_o       (rd_off[k]),
+          .rd_req_o       (rd_req[k]),
+          .rd_tag_only_o  (rd_tag_only[k]),
+          .rd_ack_i       (rd_ack[k]),
+          .rd_data_i      (rd_data),
+          .rd_user_i      (rd_user),
+          .rd_vld_bits_i  (rd_vld_bits),
+          .rd_hit_oh_i    (rd_hit_oh)
+      );
+    end else begin
+      assign rd_prio[0] = 1'b0;
+      assign req_ports_o[0] = '0;
+      assign miss_req[0] = 1'b0;
+      assign miss_we[0] = 1'b0;
+      assign miss_wdata[0] = {{riscv::XLEN}{1'b0}};
+      assign miss_wuser[0] = {{DCACHE_USER_WIDTH}{1'b0}};
+      assign miss_vld_bits_o[0] = {{DCACHE_SET_ASSOC}{1'b0}};
+      assign miss_paddr[0] = {{riscv::PLEN}{1'b0}};
+      assign miss_nc[0] = 1'b0;
+      assign miss_size[0] = 3'b0;
+      assign miss_id[0] = {{CACHE_ID_WIDTH}{1'b0}};
+      assign rd_tag[0] = {{DCACHE_TAG_WIDTH}{1'b0}};
+      assign rd_idx[0] = {{DCACHE_CL_IDX_WIDTH}{1'b0}};
+      assign rd_off[0] = {{DCACHE_OFFSET_WIDTH}{1'b0}};
+      assign rd_req[0] = 1'b0;
+      assign rd_tag_only[0] = 1'b0;
+    end
 
   ///////////////////////////////////////////////////////
   // store unit controller
