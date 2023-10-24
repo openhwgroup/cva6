@@ -228,6 +228,7 @@ module wt_dcache
       assign rd_req[0] = 1'b0;
       assign rd_tag_only[0] = 1'b0;
     end
+  end
 
   ///////////////////////////////////////////////////////
   // store unit controller
