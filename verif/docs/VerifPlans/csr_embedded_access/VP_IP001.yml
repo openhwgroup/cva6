@@ -30,7 +30,7 @@ subfeatures: !!omap
         test_type: 2
         cov_method: 1
         cores: 56
-        coverage_loc: ''
+        coverage_loc: uvme_cva6_pkg.csr_reg_cov.*.*__write_cg; uvme_cva6_pkg.csr_reg_cov.*.*__read_cg
         comments: 'Related RW Registers: mstatus, misa, mie, mtvec, mstatush, mhpmevent[3-31],
           mscratch, mepc, mcause, mtval, mip, pmpcfg[0-15], icache, mcycle, minstret,
           mcycleh, minstreth, mhpmcounter[3..31], mhpmcounterh[3..31]'
@@ -52,7 +52,7 @@ subfeatures: !!omap
         test_type: 2
         cov_method: 1
         cores: 56
-        coverage_loc: ''
+        coverage_loc: uvme_cva6_pkg.csr_reg_cov.*.*__write_cg
         comments: "Related RW Registers with legal values: \nmstatus.SD : 0\nmstatus.XS
           : 0\nmstatus.FS : 0\nmstatus.VS : 0\nmstatus.UBE : 0\nmisa[31:30] : 1\n
           misa[25:0] : 0x141104\nmie.UEIE : 0\nmie.UTIE : 0\nmie.USIE : 0\nmtvec.MODE:
@@ -83,7 +83,7 @@ subfeatures: !!omap
         test_type: 2
         cov_method: 1
         cores: 56
-        coverage_loc: ''
+        coverage_loc: uvme_cva6_pkg.csr_reg_cov.*.*__write_cg; uvme_cva6_pkg.csr_reg_cov.*.*__read_cg
         comments: 'Related RO registers: cycle, instret, cycleh, instreth, mvendorid,
           marchid, mimpid, mhartid'
 - 002_Write and Read unmapped registers: !Subfeature
@@ -108,10 +108,10 @@ subfeatures: !!omap
           that an illegal instruction exception occurred.\n3.Immediately after returning
           from the exception handler, read address to check that it value is 0."
         pfc: 3
-        test_type: 2
+        test_type: 3
         cov_method: 0
         cores: 56
-        coverage_loc: ''
+        coverage_loc: riscv_arithmetic_basic_illegal_csr.S
         comments: 'Related register addresses: all unoccupied addresses from 0x0 to
           0xFFF'
 vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'

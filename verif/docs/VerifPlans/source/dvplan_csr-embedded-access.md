@@ -18,7 +18,7 @@
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_csr-embedded-access_F000_S000_I000
-* **Link to Coverage:** 
+* **Link to Coverage:** uvme_cva6_pkg.csr_reg_cov.*.*__read_cg
 * **Comments**
   
   Applicable to all CSR registers
@@ -36,13 +36,13 @@
   
   1.Verify that CSR can be written using the appropriate CSR write instructions.  
   2.Ensure correct read operations using CSR read instructions.  
-  3.Ensure that read values of the CSR should be as per CVA6 user manual.
+   3.Ensure that read values of the CSR should be as per CVA6 user manual.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Directed Non-SelfChk
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_csr-embedded-access_F001_S000_I000
-* **Link to Coverage:** 
+* **Link to Coverage:** uvme_cva6_pkg.csr_reg_cov.*.*__write_cg; uvme_cva6_pkg.csr_reg_cov.*.*__read_cg
 * **Comments**
   
   Related RW Registers: mstatus, misa, mie, mtvec, mstatush, mhpmevent[3-31], mscratch, mepc, mcause, mtval, mip, pmpcfg[0-15], icache, mcycle, minstret, mcycleh, minstreth, mhpmcounter[3..31], mhpmcounterh[3..31]
@@ -56,13 +56,13 @@
   
   1.Verify that CSR can be written with it illegal values.  
   2.Ensure correct read operations using CSR read instructions.  
-  3.Ensure that read values of the CSR should be inchanged.
+  3.Ensure that read values of the CSR should be unchanged.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Directed Non-SelfChk
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_csr-embedded-access_F001_S000_I001
-* **Link to Coverage:** 
+* **Link to Coverage:** uvme_cva6_pkg.csr_reg_cov.*.*__write_cg
 * **Comments**
   
   Related RW Registers with legal values:   
@@ -72,7 +72,7 @@
   mstatus.VS : 0  
   mstatus.UBE : 0  
   misa[31:30] : 1  
-  misa[25:0] : 0x141104  
+   misa[25:0] : 0x141104  
   mie.UEIE : 0  
   mie.UTIE : 0  
   mie.USIE : 0  
@@ -100,7 +100,7 @@
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_csr-embedded-access_F001_S001_I000
-* **Link to Coverage:** 
+* **Link to Coverage:** uvme_cva6_pkg.csr_reg_cov.*.*__write_cg; uvme_cva6_pkg.csr_reg_cov.*.*__read_cg
 * **Comments**
   
   Related RO registers: cycle, instret, cycleh, instreth, mvendorid, marchid, mimpid, mhartid
@@ -118,11 +118,11 @@
   2.Check to see that an illegal instruction exception occurred.  
   3.Immediately after returning from the exception handler, read address to check that it value is 0.
 * **Pass/Fail Criteria:** Check RM
-* **Test Type:** Directed Non-SelfChk
+* **Test Type:** Constrained Random
 * **Coverage Method:** Testcase
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_csr-embedded-access_F001_S002_I000
-* **Link to Coverage:** 
+* **Link to Coverage:** riscv_arithmetic_basic_illegal_csr.S
 * **Comments**
   
   Related register addresses: all unoccupied addresses from 0x0 to 0xFFF
