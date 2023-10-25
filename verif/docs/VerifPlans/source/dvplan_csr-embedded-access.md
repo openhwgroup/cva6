@@ -36,7 +36,7 @@
   
   1.Verify that CSR can be written using the appropriate CSR write instructions.  
   2.Ensure correct read operations using CSR read instructions.  
-  3.Ensure that read values of the CSR should be as per CVA6 user manual
+  3.Ensure that read values of the CSR should be as per CVA6 user manual.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Directed Non-SelfChk
 * **Coverage Method:** Functional Coverage
@@ -56,7 +56,7 @@
   
   1.Verify that CSR can be written with it illegal values.  
   2.Ensure correct read operations using CSR read instructions.  
-  3.Ensure that read values of the CSR should be inchanged
+  3.Ensure that read values of the CSR should be inchanged.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Directed Non-SelfChk
 * **Coverage Method:** Functional Coverage
@@ -104,7 +104,7 @@
 * **Comments**
   
   Related RO registers: cycle, instret, cycleh, instreth, mvendorid, marchid, mimpid, mhartid
-### Sub-feature: 002_Read after write unmapped registers
+### Sub-feature: 002_Write and Read unmapped registers
 
 #### Item: 000
 
@@ -117,10 +117,10 @@
   1.Attempt to write a unoccupied CSR address.  
   2.Check to see that an illegal instruction exception occurred.  
   3.Immediately after returning from the exception handler, read address to check that it value is 0.
-* **Pass/Fail Criteria:** NDY (Not Defined Yet)
-* **Test Type:** NDY (Not Defined Yet)
-* **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32E40P, CV32E40S, CV32E40X, CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Directed Non-SelfChk
+* **Coverage Method:** Testcase
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_csr-embedded-access_F001_S002_I000
 * **Link to Coverage:** 
 * **Comments**
@@ -135,21 +135,37 @@
 * **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
 * **Feature Description**
   
-  Check correct behavior of counter registers:  
-  - Increment cycle/mcycle and cycleh/mcycleh at each clock  
-  - Increment instret/minstreh and instreth/minstreh after each instruction
+  Check that counter registers cycle/mcycle and cycleh/mcycleh increment at each clock.
 * **Verification Goals**
   
   Performing two continuous reads to the same register and ensure that the value of the second read from counter CSR is greater than the value of the initial read.
 * **Pass/Fail Criteria:** Self-Check
 * **Test Type:** Directed SelfChk
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32E40P, CV32E40S, CV32E40X, CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_csr-embedded-access_F002_S000_I000
 * **Link to Coverage:** 
 * **Comments**
   
-  In a RISC-V 32bits architecture instret/minstre and instreth/minstret holds low 32 bits and high 32 bits respectively of the count of executed instructions by the processor. Same for cycle/mcycle and cycleh/mcycleh holds low 32 bits and high 32 bits respectively of the count of clock cycles executed by the processor.
+  In a RISC-V 32bits architecture cycle/mcycle and cycleh/mcycleh holds low 32 bits and high 32 bits respectively of the count of clock cycles executed by the processor.
+#### Item: 001
+
+* **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+* **Feature Description**
+  
+  Check that counter registers instret/instreth and minstret/minstreth increment after each instruction.
+* **Verification Goals**
+  
+  Performing two continuous reads to the same register and ensure that the value of the second read from counter CSR is greater than the value of the initial read.
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Directed SelfChk
+* **Coverage Method:** Testcase
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_csr-embedded-access_F002_S000_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  In a RISC-V 32bits architecture instret/minstret and instreth/minstreth holds low 32 bits and high 32 bits respectively of the count of executed instructions by the processor.
 ### Sub-feature: 001_Counter overflow
 
 #### Item: 000
@@ -157,18 +173,38 @@
 * **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
 * **Feature Description**
   
-  Check the behaviour of counter CSRs when reaching maximum value.
+  Check the behaviour of counter CSRs cycle, cycleh, mcycle, mcycleh when reaching maximum value.
 * **Verification Goals**
   
-  1- Write mcycle/mcycleh/minstre/minstreh to higher or maximum 32bit value.  
+  1- Write mcycle/mcycleh to higher or maximum 32bit value.  
   2- Perform some random read/write CSR registers.  
   3- Ensure that counters reset to 0.
 * **Pass/Fail Criteria:** Self-Check
 * **Test Type:** Directed SelfChk
 * **Coverage Method:** Testcase
-* **Applicable Cores:** CV32E40P, CV32E40S, CV32E40X, CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_csr-embedded-access_F002_S001_I000
 * **Link to Coverage:** 
 * **Comments**
   
-  Related counter registers: cycle, cycleh, mcycle, mcycleh, instret, instreth, minstre, minstreh
+  Related counter registers: cycle, cycleh, mcycle, mcycleh.
+#### Item: 001
+
+* **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+* **Feature Description**
+  
+  Check the behaviour of counter CSRs instre, instreh, minstre, minstreh when reaching maximum value.
+* **Verification Goals**
+  
+  1- Write minstret/minstreth to higher or maximum 32bit value.  
+  2- Perform some random read/write CSR registers.  
+  3- Ensure that counters reset to 0.
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Directed SelfChk
+* **Coverage Method:** Testcase
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_csr-embedded-access_F002_S001_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  Related counter registers: instret, instreth, minstret, minstreth.
