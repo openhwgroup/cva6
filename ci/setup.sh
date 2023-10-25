@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
-ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+export ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+export ROOT_PROJECT=$ROOT
 
 export PATH=$RISCV/bin:/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
@@ -15,13 +16,14 @@ sudo apt install device-tree-compiler
 
 ci/make-tmp.sh
 
-ci/install-verilator.sh
-
 sudo mkdir -p $RISCV && sudo chmod 777 $RISCV
 RISCV64_UNKNOWN_ELF_GCC=riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz
 if [ ! -f "$RISCV64_UNKNOWN_ELF_GCC" ]; then
   wget https://static.dev.sifive.com/dev-tools/$RISCV64_UNKNOWN_ELF_GCC
 fi
 tar -x -f $RISCV64_UNKNOWN_ELF_GCC --strip-components=1 -C $RISCV
-ci/install-fesvr.sh
+
+sudo apt install libfl-dev help2man
+
+verif/regress/install-cva6.sh
 ci/build-riscv-tests.sh

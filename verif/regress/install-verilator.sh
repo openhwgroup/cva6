@@ -8,7 +8,7 @@
 # Original Author: Jean-Roch COULON - Thales
 
 if [ -z "$NUM_JOBS" ]; then
-    NUM_JOBS=1
+    NUM_JOBS=4
 fi
 
 # Ensure the location of tools is known (usually, .../core-v-verif/tools).
@@ -51,6 +51,7 @@ if [ ! -f "$VERILATOR_INSTALL_DIR/bin/verilator" ]; then
     echo "VERILATOR_BRANCH=$VERILATOR_BRANCH"
     echo "VERILATOR_HASH=$VERILATOR_HASH"
     echo "VERILATOR_PATCH=$VERILATOR_PATCH"
+    echo "NUM_JOBS=$NUM_JOBS"
     mkdir -p $VERILATOR_BUILD_DIR
     cd $VERILATOR_BUILD_DIR
     # Clone only if the ".git" directory does not exist.

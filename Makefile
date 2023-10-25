@@ -25,7 +25,8 @@ VCOM ?= vcom$(questa_version)
 VLIB ?= vlib$(questa_version)
 VMAP ?= vmap$(questa_version)
 # verilator version
-verilator      ?= $(PWD)/tmp/verilator-v5.008/verilator/bin/verilator
+VERILATOR_INSTALL_DIR ?= $(PWD)/tmp/verilator-v5.008/verilator/
+verilator             ?= verilator
 # traget option
 target-options ?=
 # additional defines
