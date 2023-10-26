@@ -224,10 +224,18 @@ module csr_regfile
           end
         end
         // debug registers
-        riscv::CSR_DCSR: csr_rdata = {{riscv::XLEN - 32{1'b0}}, dcsr_q};
-        riscv::CSR_DPC: csr_rdata = dpc_q;
-        riscv::CSR_DSCRATCH0: csr_rdata = dscratch0_q;
-        riscv::CSR_DSCRATCH1: csr_rdata = dscratch1_q;
+        riscv::CSR_DCSR:
+        if (CVA6Cfg.DebugEn) csr_rdata = {{riscv::XLEN - 32{1'b0}}, dcsr_q};
+        else read_access_exception = 1'b1;
+        riscv::CSR_DPC:
+        if (CVA6Cfg.DebugEn) csr_rdata = dpc_q;
+        else read_access_exception = 1'b1;
+        riscv::CSR_DSCRATCH0:
+        if (CVA6Cfg.DebugEn) csr_rdata = dscratch0_q;
+        else read_access_exception = 1'b1;
+        riscv::CSR_DSCRATCH1:
+        if (CVA6Cfg.DebugEn) csr_rdata = dscratch1_q;
+        else read_access_exception = 1'b1;
         // trigger module registers
         riscv::CSR_TSELECT: read_access_exception = 1'b1;  // not implemented
         riscv::CSR_TDATA1: read_access_exception = 1'b1;  // not implemented
@@ -662,17 +670,27 @@ module csr_regfile
         end
         // debug CSR
         riscv::CSR_DCSR: begin
-          dcsr_d           = csr_wdata[31:0];
-          // debug is implemented
-          dcsr_d.xdebugver = 4'h4;
-          // currently not supported
-          dcsr_d.nmip      = 1'b0;
-          dcsr_d.stopcount = 1'b0;
-          dcsr_d.stoptime  = 1'b0;
+          if (CVA6Cfg.DebugEn) begin
+            dcsr_d           = csr_wdata[31:0];
+            // debug is implemented
+            dcsr_d.xdebugver = 4'h4;
+            // currently not supported
+            dcsr_d.nmip      = 1'b0;
+            dcsr_d.stopcount = 1'b0;
+            dcsr_d.stoptime  = 1'b0;
+          end else begin
+            update_access_exception = 1'b1;
+          end
         end
-        riscv::CSR_DPC:       dpc_d = csr_wdata;
-        riscv::CSR_DSCRATCH0: dscratch0_d = csr_wdata;
-        riscv::CSR_DSCRATCH1: dscratch1_d = csr_wdata;
+        riscv::CSR_DPC:
+        if (CVA6Cfg.DebugEn) dpc_d = csr_wdata;
+        else update_access_exception = 1'b1;
+        riscv::CSR_DSCRATCH0:
+        if (CVA6Cfg.DebugEn) dscratch0_d = csr_wdata;
+        else update_access_exception = 1'b1;
+        riscv::CSR_DSCRATCH1:
+        if (CVA6Cfg.DebugEn) dscratch1_d = csr_wdata;
+        else update_access_exception = 1'b1;
         // trigger module CSRs
         riscv::CSR_TSELECT: update_access_exception = 1'b1 ;  // not implemented
         riscv::CSR_TDATA1: update_access_exception = 1'b1;  // not implemented
@@ -1124,7 +1142,7 @@ module csr_regfile
       // trigger module fired
 
       // caused by a breakpoint
-      if (ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
+      if (CVA6Cfg.DebugEn && ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
         dcsr_d.prv = priv_lvl_o;
         // check that we actually want to enter debug depending on the privilege level we are currently in
         unique case (priv_lvl_o)
@@ -1150,7 +1168,7 @@ module csr_regfile
       end
 
       // we've got a debug request
-      if (ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
+      if (CVA6Cfg.DebugEn && ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
         dcsr_d.prv = priv_lvl_o;
         // save the PC
         dpc_d = {{riscv::XLEN - riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
@@ -1163,7 +1181,7 @@ module csr_regfile
       end
 
       // single step enable and we just retired an instruction
-      if (dcsr_q.step && commit_ack_i[0]) begin
+      if (CVA6Cfg.DebugEn && dcsr_q.step && commit_ack_i[0]) begin
         dcsr_d.prv = priv_lvl_o;
         // valid CTRL flow change
         if (commit_instr_i[0].fu == CTRL_FLOW) begin
@@ -1191,7 +1209,7 @@ module csr_regfile
       end
     end
     // go in halt-state again when we encounter an exception
-    if (debug_mode_q && ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
+    if (CVA6Cfg.DebugEn && debug_mode_q && ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
       set_debug_pc_o = 1'b1;
     end
 
@@ -1240,7 +1258,7 @@ module csr_regfile
     end
 
     // return from debug mode
-    if (dret) begin
+    if (CVA6Cfg.DebugEn && dret) begin
       // return from exception, IF doesn't care from where we are returning
       eret_o       = 1'b1;
       // restore the previous privilege level
@@ -1281,10 +1299,12 @@ module csr_regfile
         mret     = 1'b1;  // signal a return from machine mode
       end
       DRET: begin
-        // the return should not have any write or read side-effects
-        csr_we   = 1'b0;
-        csr_read = 1'b0;
-        dret     = 1'b1;  // signal a return from debug mode
+        if (CVA6Cfg.DebugEn) begin
+          // the return should not have any write or read side-effects
+          csr_we   = 1'b0;
+          csr_read = 1'b0;
+          dret     = 1'b1;  // signal a return from debug mode
+        end
       end
       default: begin
         csr_we   = 1'b0;
@@ -1366,7 +1386,7 @@ module csr_regfile
     wfi_d = wfi_q;
     // if there is any (enabled) interrupt pending un-stall the core
     // also un-stall if we want to enter debug mode
-    if (|(mip_q & mie_q) || debug_req_i || irq_i[1]) begin
+    if (|(mip_q & mie_q) || (CVA6Cfg.DebugEn && debug_req_i) || irq_i[1]) begin
       wfi_d = 1'b0;
       // or alternatively if there is no exception pending and we are not in debug mode wait here
       // for the interrupt
@@ -1384,7 +1404,7 @@ module csr_regfile
     end
 
     // if we are in debug mode jump to a specific address
-    if (debug_mode_q) begin
+    if (CVA6Cfg.DebugEn && debug_mode_q) begin
       trap_vector_base_o = CVA6Cfg.DmBaseAddress[riscv::VLEN-1:0] + CVA6Cfg.ExceptionAddress[riscv::VLEN-1:0];
     end
 
@@ -1405,7 +1425,7 @@ module csr_regfile
       epc_o = sepc_q[riscv::VLEN-1:0];
     end
     // we are returning from debug mode, to take the dpc register
-    if (dret) begin
+    if (CVA6Cfg.DebugEn && dret) begin
       epc_o = dpc_q[riscv::VLEN-1:0];
     end
   end
@@ -1434,7 +1454,7 @@ module csr_regfile
   end
 
   // in debug mode we execute with privilege level M
-  assign priv_lvl_o = (debug_mode_q) ? riscv::PRIV_LVL_M : priv_lvl_q;
+  assign priv_lvl_o = (CVA6Cfg.DebugEn && debug_mode_q) ? riscv::PRIV_LVL_M : priv_lvl_q;
   // FPU outputs
   assign fflags_o = fcsr_q.fflags;
   assign frm_o = fcsr_q.frm;
@@ -1458,29 +1478,31 @@ module csr_regfile
 `else
   assign icache_en_o = icache_q[0] & (~debug_mode_q);
 `endif
-  assign dcache_en_o     = dcache_q[0];
-  assign acc_cons_en_o   = CVA6Cfg.EnableAccelerator ? acc_cons_q[0] : 1'b0;
+  assign dcache_en_o = dcache_q[0];
+  assign acc_cons_en_o = CVA6Cfg.EnableAccelerator ? acc_cons_q[0] : 1'b0;
 
   // determine if mprv needs to be considered if in debug mode
-  assign mprv            = (debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
-  assign debug_mode_o    = debug_mode_q;
-  assign single_step_o   = dcsr_q.step;
+  assign mprv = (CVA6Cfg.DebugEn && debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
+  assign debug_mode_o = debug_mode_q;
+  assign single_step_o = dcsr_q.step;
   assign mcountinhibit_o = {{29 - MHPMCounterNum{1'b0}}, mcountinhibit_q};
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      priv_lvl_q       <= riscv::PRIV_LVL_M;
+      priv_lvl_q   <= riscv::PRIV_LVL_M;
       // floating-point registers
-      fcsr_q           <= '0;
+      fcsr_q       <= '0;
       // debug signals
-      debug_mode_q     <= 1'b0;
-      dcsr_q           <= '0;
-      dcsr_q.prv       <= riscv::PRIV_LVL_M;
-      dcsr_q.xdebugver <= 4'h4;
-      dpc_q            <= '0;
-      dscratch0_q      <= {riscv::XLEN{1'b0}};
-      dscratch1_q      <= {riscv::XLEN{1'b0}};
+      debug_mode_q <= 1'b0;
+      if (CVA6Cfg.DebugEn) begin
+        dcsr_q           <= '0;
+        dcsr_q.prv       <= riscv::PRIV_LVL_M;
+        dcsr_q.xdebugver <= 4'h4;
+        dpc_q            <= '0;
+        dscratch0_q      <= {riscv::XLEN{1'b0}};
+        dscratch1_q      <= {riscv::XLEN{1'b0}};
+      end
       // machine mode registers
       mstatus_q        <= 64'b0;
       // set to boot address + direct mode + 4 byte offset which is the initial trap
@@ -1520,15 +1542,17 @@ module csr_regfile
       pmpcfg_q               <= '0;
       pmpaddr_q              <= '0;
     end else begin
-      priv_lvl_q       <= priv_lvl_d;
+      priv_lvl_q <= priv_lvl_d;
       // floating-point registers
-      fcsr_q           <= fcsr_d;
+      fcsr_q     <= fcsr_d;
       // debug signals
-      debug_mode_q     <= debug_mode_d;
-      dcsr_q           <= dcsr_d;
-      dpc_q            <= dpc_d;
-      dscratch0_q      <= dscratch0_d;
-      dscratch1_q      <= dscratch1_d;
+      if (CVA6Cfg.DebugEn) begin
+        debug_mode_q <= debug_mode_d;
+        dcsr_q       <= dcsr_d;
+        dpc_q        <= dpc_d;
+        dscratch0_q  <= dscratch0_d;
+        dscratch1_q  <= dscratch1_d;
+      end
       // machine mode registers
       mstatus_q        <= mstatus_d;
       mtvec_rst_load_q <= 1'b0;

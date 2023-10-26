@@ -361,7 +361,7 @@ module frontend
     end
     // 7. Debug
     // enter debug on a hard-coded base-address
-    if (set_debug_pc_i)
+    if (CVA6Cfg.DebugEn && set_debug_pc_i)
       npc_d = CVA6Cfg.DmBaseAddress[riscv::VLEN-1:0] + CVA6Cfg.HaltAddress[riscv::VLEN-1:0];
     icache_dreq_o.vaddr = fetch_address;
   end
