@@ -194,6 +194,7 @@ module cva6
     unsigned'(NrRgprPorts),
     unsigned'(NrWbPorts),
     bit'(EnableAccelerator),
+    CVA6Cfg.RVS,
     CVA6Cfg.HaltAddress,
     CVA6Cfg.ExceptionAddress,
     CVA6Cfg.RASDepth,
@@ -1306,7 +1307,7 @@ module cva6
       else begin
         case (priv_lvl)
           riscv::PRIV_LVL_M: mode = "M";
-          riscv::PRIV_LVL_S: mode = "S";
+          riscv::PRIV_LVL_S: if(CVA6Cfg.RVS) mode = "S";
           riscv::PRIV_LVL_U: mode = "U";
           default: ;  // Do nothing
         endcase
