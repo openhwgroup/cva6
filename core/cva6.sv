@@ -671,7 +671,7 @@ module cva6 import ariane_pkg::*; #(
   // Cache Subsystem
   // -------------------
 
-`ifdef WT_DCACHE
+`ifdef PITON_ARIANE_HPDC
 
  cva6_hpdcache_subsystem #(
   .ArianeCfg(ArianeCfg)
@@ -739,7 +739,46 @@ module cva6 import ariane_pkg::*; #(
     .axi_resp_i            ( axi_resp_i                  )
     //  }}}
 `endif
-);//NTODO: " `elsif WT_HPDCACHE" Add Here the instanciation of the HPDC and add the WT_HPDCACHE MACRO
+);
+`elsif WT_DCACHE
+// this is a cache subsystem that is compatible with OpenPiton
+  wt_cache_subsystem #(
+    .ArianeCfg            ( ArianeCfg     )
+  ) i_cache_subsystem (
+    // to D$
+    .clk_i                 ( clk_i                       ),
+    .rst_ni                ( rst_ni                      ),
+    // I$
+    .icache_en_i           ( icache_en_csr               ),
+    .icache_flush_i        ( icache_flush_ctrl_cache     ),
+    .icache_miss_o         ( icache_miss_cache_perf      ),
+    .icache_areq_i         ( icache_areq_ex_cache        ),
+    .icache_areq_o         ( icache_areq_cache_ex        ),
+    .icache_dreq_i         ( icache_dreq_if_cache        ),
+    .icache_dreq_o         ( icache_dreq_cache_if        ),
+    // D$
+    .dcache_enable_i       ( dcache_en_csr_nbdcache      ),
+    .dcache_flush_i        ( dcache_flush_ctrl_cache     ),
+    .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl ),
+    // to commit stage
+    .dcache_amo_req_i      ( amo_req                     ),
+    .dcache_amo_resp_o     ( amo_resp                    ),
+    // from PTW, Load Unit  and Store Unit
+    .dcache_miss_o         ( dcache_miss_cache_perf      ),
+    .dcache_req_ports_i    ( dcache_req_ports_ex_cache   ),
+    .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
+    // write buffer status
+    .wbuffer_empty_o       ( dcache_commit_wbuffer_empty ),
+    .wbuffer_not_ni_o      ( dcache_commit_wbuffer_not_ni ),
+`ifdef PITON_ARIANE
+    .l15_req_o             ( l15_req_o                   ),
+    .l15_rtrn_i            ( l15_rtrn_i                  )
+`else
+    // memory side
+    .axi_req_o             ( axi_req_o                   ),
+    .axi_resp_i            ( axi_resp_i                  )
+`endif
+  );
 `else
   std_cache_subsystem #(
     // note: this only works with one cacheable region
