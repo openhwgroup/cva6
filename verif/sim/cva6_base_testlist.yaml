@@ -39,7 +39,10 @@
     +directed_instr_1=riscv_load_store_hazard_instr_stream,10
     +directed_instr_2=riscv_multi_page_load_store_instr_stream,10
     +directed_instr_3=riscv_mem_region_stress_test,10
-    +disable_compressed_instr=0
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -56,6 +59,10 @@
     +directed_instr_2=riscv_multi_page_load_store_instr_stream,10
     +directed_instr_3=riscv_mem_region_stress_test,10
     +hint_instr_ratio=500
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -70,6 +77,10 @@
     +directed_instr_1=riscv_jal_instr,20
     +illegal_instr_ratio=100
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -82,6 +93,10 @@
     +num_of_sub_program=0
     +directed_instr_1=riscv_jal_instr,70
     +hint_instr_ratio=500
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -94,6 +109,10 @@
     +num_of_sub_program=0
     +directed_instr_0=riscv_jal_instr,70
     +disable_compressed_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -108,7 +127,10 @@
     +no_branch_jump=0
     +directed_instr_0=riscv_load_store_rand_instr_stream,70
     +directed_instr_1=riscv_load_store_hazard_instr_stream,50
-    +disable_compressed_instr=0
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -124,6 +146,10 @@
     +directed_instr_0=riscv_load_store_rand_instr_stream,20
     +directed_instr_1=riscv_load_store_hazard_instr_stream,50
     +disable_compressed_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -140,7 +166,10 @@
     +no_branch_jump=1
     +boot_mode=m
     +no_csr_instr=1
-    +disable_compressed_instr=0
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -159,6 +188,10 @@
     +enable_x_extension=1
     +disable_compressed_instr=1
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -176,6 +209,10 @@
     +enable_x_extension=1
     +illegal_instr_ratio=100
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -192,6 +229,10 @@
     +directed_instr_1=riscv_load_store_hazard_instr_stream,50
     +tvec_alignment=8
     +enable_x_extension=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -205,6 +246,10 @@
     +directed_instr_1=riscv_jal_instr,70
     +enable_x_extension=1
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -222,6 +267,10 @@
     +boot_mode=m
     +no_csr_instr=1
     +disable_compressed_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -238,6 +287,10 @@
     +no_branch_jump=1
     +boot_mode=m
     +no_csr_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -254,6 +307,10 @@
     +no_branch_jump=0
     +boot_mode=m
     +no_csr_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -269,6 +326,10 @@
     +no_branch_jump=1
     +boot_mode=m
     +no_csr_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -285,6 +346,10 @@
     +no_csr_instr=1
     +illegal_instr_ratio=100
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -303,7 +368,10 @@
     +directed_instr_1=riscv_load_store_hazard_instr_stream,20
     +enable_unaligned_load_store=1
     +tvec_alignment=8
-    +disable_compressed_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -322,6 +390,10 @@
     +enable_access_invalid_csr_level=1
     +disable_compressed_instr=1
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -338,6 +410,10 @@
     +boot_mode=m
     +enable_dummy_csr_write=1
     +no_csr_instr=0
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -357,6 +433,10 @@
     +randomize_csr=1
     +enable_acess_invalid_csr_level=1
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -376,6 +456,10 @@
     +enable_illegal_csr_instruction=1
     +hint_instr_ratio=150
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test 
@@ -396,6 +480,10 @@
     +illegal_instr_ratio=100
     +hint_instr_ratio=100
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -412,6 +500,10 @@
     +no_branch_jump=1
     +boot_mode=m
     +no_csr_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -430,6 +522,10 @@
     +no_dret=0
     +no_fence=0
     +tvec_alignment=8
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
@@ -447,6 +543,10 @@
     +no_csr_instr=1
     +enable_same_reg=1
     +disable_compressed_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_hazard_test_c
   rtl_test: core_base_test
@@ -464,6 +564,10 @@
     +no_csr_instr=1
     +enable_rdrs1_hazard=1
     +disable_compressed_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_hazard_test_c
   rtl_test: core_base_test
@@ -481,6 +585,10 @@
     +no_csr_instr=1
     +enable_rdrs2_hazard=1
     +disable_compressed_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
   iterations: 2
   gen_test: cva6_instr_hazard_test_c
   rtl_test: core_base_test
