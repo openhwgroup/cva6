@@ -229,10 +229,10 @@ module csr_regfile
         riscv::CSR_DSCRATCH0: csr_rdata = dscratch0_q;
         riscv::CSR_DSCRATCH1: csr_rdata = dscratch1_q;
         // trigger module registers
-        riscv::CSR_TSELECT: ;  // not implemented
-        riscv::CSR_TDATA1: ;  // not implemented
-        riscv::CSR_TDATA2: ;  // not implemented
-        riscv::CSR_TDATA3: ;  // not implemented
+        riscv::CSR_TSELECT: read_access_exception = 1'b1;  // not implemented
+        riscv::CSR_TDATA1: read_access_exception = 1'b1;  // not implemented
+        riscv::CSR_TDATA2: read_access_exception = 1'b1;  // not implemented
+        riscv::CSR_TDATA3: read_access_exception = 1'b1;  // not implemented
         // supervisor registers
         riscv::CSR_SSTATUS: begin
           if (CVA6Cfg.RVS)
@@ -674,10 +674,10 @@ module csr_regfile
         riscv::CSR_DSCRATCH0: dscratch0_d = csr_wdata;
         riscv::CSR_DSCRATCH1: dscratch1_d = csr_wdata;
         // trigger module CSRs
-        riscv::CSR_TSELECT:   ;  // not implemented
-        riscv::CSR_TDATA1:    ;  // not implemented
-        riscv::CSR_TDATA2:    ;  // not implemented
-        riscv::CSR_TDATA3:    ;  // not implemented
+        riscv::CSR_TSELECT: update_access_exception = 1'b1 ;  // not implemented
+        riscv::CSR_TDATA1: update_access_exception = 1'b1;  // not implemented
+        riscv::CSR_TDATA2: update_access_exception = 1'b1;  // not implemented
+        riscv::CSR_TDATA3: update_access_exception = 1'b1;  // not implemented
         // sstatus is a subset of mstatus - mask it accordingly
         riscv::CSR_SSTATUS: begin
           if (CVA6Cfg.RVS) begin
