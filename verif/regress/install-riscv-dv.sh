@@ -21,9 +21,9 @@ export TB_PATH=$ROOT_PROJECT/verif/tb/core
 export TESTS_PATH=$ROOT_PROJECT/verif/tests
 
 if [ -z "$DV_REPO" ]; then
-  export DV_REPO="https://github.com/google/riscv-dv.git"
+  export DV_REPO="https://github.com/chipsalliance/riscv-dv.git"
   export DV_BRANCH="master"
-  export DV_HASH="96c1ee6f371f2754c45b4831fcab95f6671689d9"
+  export DV_HASH="f0c570d11236f94f9c5449870223a5ac717cc580"
   export DV_PATCH=
 fi
 echo "Repo:  " $DV_REPO

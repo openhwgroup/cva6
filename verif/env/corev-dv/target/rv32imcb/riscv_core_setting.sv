@@ -30,7 +30,7 @@ privileged_mode_t supported_privileged_mode[] = {MACHINE_MODE};
 riscv_instr_name_t unsupported_instr[];
 
 // ISA supported by the processor
-riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV32C, RV32A, RV32X};
+riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV32C, RV32B, RV32X};
 
 // Interrupt mode support
 mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
@@ -101,20 +101,51 @@ privileged_reg_t implemented_csr[] = {
 const privileged_reg_t implemented_csr[] = {
 `endif
     // Machine mode mode CSR
-    MVENDORID,  // Vendor ID
-    MARCHID,    // Architecture ID
-    MIMPID,     // Implementation ID
-    MHARTID,    // Hardware thread ID
-    MSTATUS,    // Machine status
-    MISA,       // ISA and extensions
-    MIE,        // Machine interrupt-enable register
-    MTVEC,      // Machine trap-handler base address
-    MCOUNTEREN, // Machine counter enable
-    MSCRATCH,   // Scratch register for machine trap handlers
-    MEPC,       // Machine exception program counter
-    MCAUSE,     // Machine trap cause
-    MTVAL,      // Machine bad address or instruction
-    MIP         // Machine interrupt pending
+    MVENDORID,        // Vendor ID
+    MSTATUS,          // Machine status
+    MSTATUSH,         // Additional machine status register, RV32 only
+    MISA,             // ISA and extensions
+    MIE,              // Machine interrupt-enable register
+    MTVEC,            // Machine trap-handler base address
+    MSCRATCH,         // Scratch register for machine trap handlers
+    MEPC,             // Machine exception program counter
+    MCAUSE,           // Machine trap cause
+    MTVAL,            // Machine bad address or instruction
+    MIP,              // Machine interrupt pending
+    MCYCLE,           // Machine cycle counter
+    MCYCLEH,          // Upper 32 bits of MCYCLE, RV32I only
+    MINSTRETH,        // Upper 32 bits of MINSTRET, RV32I only
+    MINSTRET,         // Machine instructions-retired counter
+    // Machine Memory Protection
+    PMPCFG0,          // Physical memory protection configuration
+    PMPCFG1,          // Physical memory protection configuration, RV32 only
+    PMPCFG2,          // Physical memory protection configuration
+    PMPCFG3,          // Physical memory protection configuration, RV32 only
+    PMPADDR0,         // Physical memory protection address register
+    PMPADDR1,         // Physical memory protection address register
+    PMPADDR2,         // Physical memory protection address register
+    PMPADDR3,         // Physical memory protection address register
+    PMPADDR4,         // Physical memory protection address register
+    PMPADDR5,         // Physical memory protection address register
+    PMPADDR6,         // Physical memory protection address register
+    PMPADDR7,         // Physical memory protection address register
+    PMPADDR8,         // Physical memory protection address register
+    PMPADDR9,         // Physical memory protection address register
+    PMPADDR10,        // Physical memory protection address register
+    PMPADDR11,        // Physical memory protection address register
+    PMPADDR12,        // Physical memory protection address register
+    PMPADDR13,        // Physical memory protection address register
+    PMPADDR14,        // Physical memory protection address register
+    PMPADDR15,        // Physical memory protection address register
+    // Unprivileged Counter/Timers
+    CYCLE,            // Cycle counter for RDCYCLE instruction
+    INSTRET,          // Instructions-retired counter for RDINSTRET instruction
+    CYCLEH,           // Upper 32 bits of CYCLE, RV32I only
+    INSTRETH        // Upper 32 bits of INSTRET, RV32I only
+};
+
+// Implementation-specific custom CSRs
+bit [11:0] custom_csr[] = {
 };
 
 // ----------------------------------------------------------------------------
@@ -136,10 +167,16 @@ exception_cause_t implemented_exception[] = {
 `else
 const exception_cause_t implemented_exception[] = {
 `endif
+    INSTRUCTION_ADDRESS_MISALIGNED,
     INSTRUCTION_ACCESS_FAULT,
     ILLEGAL_INSTRUCTION,
     BREAKPOINT,
     LOAD_ADDRESS_MISALIGNED,
     LOAD_ACCESS_FAULT,
-    ECALL_MMODE
+    STORE_AMO_ADDRESS_MISALIGNED,
+    STORE_AMO_ACCESS_FAULT,
+    ECALL_MMODE,
+    INSTRUCTION_PAGE_FAULT,
+    LOAD_PAGE_FAULT,
+    STORE_AMO_PAGE_FAULT
 };
