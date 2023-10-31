@@ -244,25 +244,28 @@ module alu
   // -----------
   always_comb begin
     result_o = '0;
+    if (riscv::IS_XLEN64) begin
+      unique case (fu_data_i.operation)
+        // Add word: Ignore the upper bits and sign extend to 64 bit
+        ADDW, SUBW: result_o = {{riscv::XLEN - 32{adder_result[31]}}, adder_result[31:0]};
+        SH1ADDUW, SH2ADDUW, SH3ADDUW: result_o = adder_result;
+        // Shifts 32 bit
+        SLLW, SRLW, SRAW: result_o = {{riscv::XLEN - 32{shift_result32[31]}}, shift_result32[31:0]};
+        default: ;
+      endcase
+    end
     unique case (fu_data_i.operation)
       // Standard Operations
       ANDL, ANDN: result_o = fu_data_i.operand_a & operand_b_neg[riscv::XLEN:1];
       ORL, ORN:   result_o = fu_data_i.operand_a | operand_b_neg[riscv::XLEN:1];
       XORL, XNOR: result_o = fu_data_i.operand_a ^ operand_b_neg[riscv::XLEN:1];
-
       // Adder Operations
-      ADD, SUB, ADDUW, SH1ADD, SH2ADD, SH3ADD, SH1ADDUW, SH2ADDUW, SH3ADDUW:
+      ADD, SUB, ADDUW, SH1ADD, SH2ADD, SH3ADD:
       result_o = adder_result;
-      // Add word: Ignore the upper bits and sign extend to 64 bit
-      ADDW, SUBW: result_o = {{riscv::XLEN - 32{adder_result[31]}}, adder_result[31:0]};
       // Shift Operations
       SLL, SRL, SRA: result_o = (riscv::IS_XLEN64) ? shift_result : shift_result32;
-      // Shifts 32 bit
-      SLLW, SRLW, SRAW: result_o = {{riscv::XLEN - 32{shift_result32[31]}}, shift_result32[31:0]};
-
       // Comparison Operations
       SLTS, SLTU: result_o = {{riscv::XLEN - 1{1'b0}}, less};
-
       default: ;  // default case to suppress unique warning
     endcase
 
