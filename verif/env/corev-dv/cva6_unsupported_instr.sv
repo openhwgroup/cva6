@@ -138,7 +138,7 @@ class cva6_unsupported_instr_c extends uvm_object;
         instr_bin[14:12] == func3;
       }
       if (has_func2) {
-        instr_bin[26:25] == func3;
+        instr_bin[26:25] == func2;
       }
     }
   }
