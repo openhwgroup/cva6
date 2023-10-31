@@ -143,7 +143,8 @@ package cva6_config_pkg;
       1
       ),
       CachedRegionAddrBase: 1024'({64'h8000_0000}),
-      CachedRegionLength: 1024'({64'h40000000})
+      CachedRegionLength: 1024'({64'h40000000}),
+      DebugEn: bit'(1)
   };
 
 endpackage

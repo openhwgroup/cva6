@@ -154,7 +154,7 @@ module controller
     // 1. Exception
     // 2. Return from exception
     // ---------------------------------
-    if (ex_valid_i || eret_i || set_debug_pc_i) begin
+    if (ex_valid_i || eret_i || (CVA6Cfg.DebugEn && set_debug_pc_i)) begin
       // don't flush pcgen as we want to take the exception: Flush PCGen is not a flush signal
       // for the PC Gen stage but instead tells it to take the PC we gave it
       set_pc_commit_o        = 1'b0;

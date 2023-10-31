@@ -111,6 +111,7 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
     /// Maximum number of outstanding stores.
     int unsigned                 MaxOutstandingStores;
+    bit                          DebugEn;
   } cva6_cfg_t;
 
 

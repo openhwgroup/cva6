@@ -213,7 +213,8 @@ module cva6
     CVA6Cfg.NrCachedRegionRules,
     CVA6Cfg.CachedRegionAddrBase,
     CVA6Cfg.CachedRegionLength,
-    CVA6Cfg.MaxOutstandingStores
+    CVA6Cfg.MaxOutstandingStores,
+    CVA6Cfg.DebugEn
   };
 
 
@@ -1304,7 +1305,7 @@ module cva6
       cycles <= 0;
     end else begin
       byte mode = "";
-      if (debug_mode) mode = "D";
+      if (CVA6Cfg.DebugEn && debug_mode) mode = "D";
       else begin
         case (priv_lvl)
           riscv::PRIV_LVL_M: mode = "M";
@@ -1322,7 +1323,7 @@ module cva6
             $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n",
                     commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
           end else begin
-            if (debug_mode) begin
+            if (CVA6Cfg.DebugEn && debug_mode) begin
               $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc,
                       mode, commit_instr_id_commit[i].ex.tval[31:0],
                       commit_instr_id_commit[i].ex.tval[31:0]);
@@ -1369,7 +1370,7 @@ module cva6
         // when trap, the instruction is not executed
         rvfi_o[i].trap = mem_exception;
         rvfi_o[i].cause = ex_commit.cause;
-        rvfi_o[i].mode = debug_mode ? 2'b10 : priv_lvl;
+        rvfi_o[i].mode = (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
         rvfi_o[i].ixl = riscv::XLEN == 64 ? 2 : 1;
         rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1[4:0];
         rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2[4:0];

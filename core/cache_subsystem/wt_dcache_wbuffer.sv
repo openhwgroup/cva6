@@ -341,7 +341,9 @@ module wt_dcache_wbuffer
 
   for (genvar k = 0; k < DCACHE_WBUF_DEPTH; k++) begin : gen_flags
     // only for debug, will be pruned
-    assign debug_paddr[k] = {{riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[k].wtag << riscv::XLEN_ALIGN_BYTES};
+    if(CVA6Cfg.DebugEn) begin
+      assign debug_paddr[k] = {{riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[k].wtag << riscv::XLEN_ALIGN_BYTES};
+    end
 
     // dirty bytes that are ready for transmission.
     // note that we cannot retransmit a word that is already in-flight

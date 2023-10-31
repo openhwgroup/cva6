@@ -176,7 +176,9 @@ module scoreboard #(
         mem_n[trans_id_i[i]].sbe.valid = 1'b1;
         mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
         // save the target address of a branch (needed for debug in commit stage)
-        mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
+        if(CVA6Cfg.DebugEn) begin
+          mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
+        end
         if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i) begin
           mem_n[trans_id_i[i]].sbe.rd = 5'b0;
         end
