@@ -434,7 +434,7 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 Thanks to Gian Marti, Thomas Kramer and Thomas E. Benz for implementing the PLIC.
 
-Some contributions to CVA6 are supported by the FRACTAL and TRISTAN projects,
+Some contributions to CVA6 are supported by the FRACTAL, TRISTAN and ISOLDE projects,
 which have received funding from the Key Digital Technologies Joint Undertaking (KDT JU),
 Austria, Belgium, Finland, France, Germany, Italy, the Netherlands, Poland, Romania, Switzerland, Spain and Turkey
 under grant agreements 877056 and 101095947.
