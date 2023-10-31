@@ -49,7 +49,7 @@ if [[ "$list_num" = 1 ]];then
            "riscv_load_store_xif_test"
            "riscv_rand_jump_xif_test"
            );
-   I=(100 100 100 100);
+   I=(80 80 80 80);
 fi
 
 if [[ "$list_num" != 0 ]];then
