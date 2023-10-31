@@ -114,6 +114,7 @@ package cva6_config_pkg;
       NrWbPorts: unsigned'(0),
       EnableAccelerator: bit'(0),
       RVS: bit'(1),
+      RVU: bit'(1),
       HaltAddress: 64'h800,
       ExceptionAddress: 64'h808,
       RASDepth: unsigned'(CVA6ConfigRASDepth),

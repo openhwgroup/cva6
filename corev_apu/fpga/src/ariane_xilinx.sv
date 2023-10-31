@@ -191,6 +191,7 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   NrWbPorts:             unsigned'(0),
   EnableAccelerator:     bit'(0),
   RVS:                   bit'(1),
+  RVU:                   bit'(1),
   HaltAddress:           dm::HaltAddress,
   ExceptionAddress:      dm::ExceptionAddress,
   DmBaseAddress:         ariane_soc::DebugBase,

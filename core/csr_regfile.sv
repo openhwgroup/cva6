@@ -163,7 +163,7 @@ module csr_regfile
   | (riscv::XLEN'(1) << 12)  // M - Integer Multiply/Divide extension
   | (riscv::XLEN'(0) << 13)  // N - User level interrupts supported
   | (riscv::XLEN'(CVA6Cfg.RVS) << 18)  // S - Supervisor mode implemented
-  | (riscv::XLEN'(1) << 20)  // U - User mode implemented
+  | (riscv::XLEN'(CVA6Cfg.RVU) << 20)  // U - User mode implemented
   | (riscv::XLEN'(CVA6Cfg.RVV) << 21)  // V - Vector extension
   | (riscv::XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
   | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN - 2);  // MXL
@@ -1139,8 +1139,10 @@ module csr_regfile
             end
           end
           riscv::PRIV_LVL_U: begin
-            debug_mode_d   = dcsr_q.ebreaku;
-            set_debug_pc_o = dcsr_q.ebreaku;
+            if (CVA6Cfg.RVU) begin
+              debug_mode_d   = dcsr_q.ebreaku;
+              set_debug_pc_o = dcsr_q.ebreaku;
+            end
           end
           default: ;
         endcase
@@ -1330,7 +1332,8 @@ module csr_regfile
           riscv::PRIV_LVL_M: privilege_violation = 1'b0;
           riscv::PRIV_LVL_S: if (CVA6Cfg.RVS) privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
           riscv::PRIV_LVL_U:
-          privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] & ~scounteren_q[csr_addr_i[4:0]];
+          if (CVA6Cfg.RVU)
+            privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] & ~scounteren_q[csr_addr_i[4:0]];
         endcase
       end
     end
