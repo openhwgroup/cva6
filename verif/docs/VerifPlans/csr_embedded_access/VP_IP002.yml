@@ -36,7 +36,7 @@ subfeatures: !!omap
         name: '001'
         tag: VP_csr-embedded-access_F002_S000_I001
         description: Check that counter registers instret/instreth and minstret/minstreth
-          increment after each instruction.
+          increment after each instruction and values match reference model.
         reqt_doc: 
           https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
         ref_mode: page
@@ -63,8 +63,10 @@ subfeatures: !!omap
     - '000': !VerifItem
         name: '000'
         tag: VP_csr-embedded-access_F002_S001_I000
-        description: Check the behaviour of counter CSRs cycle, cycleh, mcycle, mcycleh
-          when reaching maximum value.
+        description: "Check the behaviour of counter CSRs cycle, cycleh, mcycle, mcycleh
+          when reaching maximum value.\ncycle and mcycle should be 0 after reaching
+          maximum value and cycleh/mcycleh should increment by 1. cycleh/mcycleh should
+          be set to 0 after reaching maximum value."
         reqt_doc: 
           https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
         ref_mode: page
@@ -83,8 +85,11 @@ subfeatures: !!omap
     - '001': !VerifItem
         name: '001'
         tag: VP_csr-embedded-access_F002_S001_I001
-        description: Check the behaviour of counter CSRs instre, instreh, minstre,
-          minstreh when reaching maximum value.
+        description: "Check the behaviour of counter CSRs instret, instreth, minstret,
+          minstreth when reaching maximum value which should match reference model.
+          \ninstret and minstret should be 0 after reaching maximum value and instreth/minstreth
+          should increment by 1. instreth/minstreth should be set to 0 after reaching
+          maximum value."
         reqt_doc: 
           https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
         ref_mode: page
