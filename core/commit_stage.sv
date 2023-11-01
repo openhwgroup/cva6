@@ -172,7 +172,7 @@ module commit_stage
       // sfence.vma is idempotent so we can safely re-execute it after returning
       // from interrupt service routine
       // check if this instruction was a SFENCE_VMA
-      if (commit_instr_i[0].op == SFENCE_VMA) begin
+      if (CVA6Cfg.RVS && commit_instr_i[0].op == SFENCE_VMA) begin
         // no store pending so we can flush the TLBs and pipeline
         sfence_vma_o = no_st_pending_i;
         // wait for the store buffer to drain until flushing the pipeline

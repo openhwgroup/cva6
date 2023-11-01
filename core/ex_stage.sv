@@ -386,28 +386,34 @@ module ex_stage
     assign x_valid_o     = '0;
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (~rst_ni) begin
-      current_instruction_is_sfence_vma <= 1'b0;
-    end else begin
-      if (flush_i) begin
+  if(CVA6Cfg.RVS) begin
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (~rst_ni) begin
         current_instruction_is_sfence_vma <= 1'b0;
-      end else if ((fu_data_i.operation == SFENCE_VMA) && csr_valid_i) begin
-        current_instruction_is_sfence_vma <= 1'b1;
+      end else begin
+        if (flush_i) begin
+          current_instruction_is_sfence_vma <= 1'b0;
+        end else if ((fu_data_i.operation == SFENCE_VMA) && csr_valid_i) begin
+          current_instruction_is_sfence_vma <= 1'b1;
+        end
       end
     end
-  end
 
-  // This process stores the rs1 and rs2 parameters of a SFENCE_VMA instruction.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (~rst_ni) begin
-      asid_to_be_flushed  <= '0;
-      vaddr_to_be_flushed <= '0;
-      // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
-    end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operation == SFENCE_VMA) && csr_valid_i))) begin
-      vaddr_to_be_flushed <= rs1_forwarding_i;
-      asid_to_be_flushed  <= rs2_forwarding_i[ASID_WIDTH-1:0];
+    // This process stores the rs1 and rs2 parameters of a SFENCE_VMA instruction.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (~rst_ni) begin
+        asid_to_be_flushed  <= '0;
+        vaddr_to_be_flushed <= '0;
+        // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
+      end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operation == SFENCE_VMA) && csr_valid_i))) begin
+        vaddr_to_be_flushed <= rs1_forwarding_i;
+        asid_to_be_flushed  <= rs2_forwarding_i[ASID_WIDTH-1:0];
+      end
     end
+  end else begin
+     assign current_instruction_is_sfence_vma = 1'b0;
+     assign asid_to_be_flushed                = '0;
+     assign vaddr_to_be_flushed               = '0;
   end
 
 endmodule
