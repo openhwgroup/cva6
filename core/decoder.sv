@@ -50,7 +50,6 @@ module decoder
   logic illegal_instr_bm;
   logic illegal_instr_zic;
   logic illegal_instr_non_bm;
-  logic illegal_instr_non_zexth;
   // this instruction is an environment call (ecall), it is handled like an exception
   logic ecall;
   // this instruction is a software break-point
@@ -108,7 +107,6 @@ module decoder
     illegal_instr_non_bm        = 1'b0;
     illegal_instr_bm            = 1'b0;
     illegal_instr_zic           = 1'b0;
-    illegal_instr_non_zexth     = 1'b0;
     instruction_o.pc            = pc_i;
     instruction_o.trans_id      = '0;
     instruction_o.fu            = NONE;
@@ -631,15 +629,6 @@ module decoder
           instruction_o.rs1[4:0] = instr.rtype.rs1;
           instruction_o.rs2[4:0] = instr.rtype.rs2;
           instruction_o.rd[4:0] = instr.rtype.rd;
-          if (ariane_pkg::BITMANIP) begin
-            unique case ({
-              instr.rtype.funct7, instr.rtype.funct3
-            })
-              // Zero Extend Op
-              {7'b000_0100, 3'b100}: instruction_o.op = ariane_pkg::ZEXTH;    // zext
-              default: illegal_instr_non_zexth = 1'b1;
-            endcase
-          end
           if (riscv::IS_XLEN64) begin
             unique case ({
               instr.rtype.funct7, instr.rtype.funct3
@@ -667,8 +656,6 @@ module decoder
                 {7'b001_0000, 3'b110}: instruction_o.op = ariane_pkg::SH3ADDUW; // sh3add.uw
                 // Unsigned word Op's
                 {7'b000_0100, 3'b000}: instruction_o.op = ariane_pkg::ADDUW;    // add.uw
-                // Zero Extend Op
-                {7'b000_0100, 3'b100}: instruction_o.op = ariane_pkg::ZEXTH;    // zext
                 // Bitwise Shifting
                 {7'b011_0000, 3'b001}: instruction_o.op = ariane_pkg::ROLW;     // rolw
                 {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::RORW;     // rorw
@@ -678,7 +665,7 @@ module decoder
             end else begin
               illegal_instr = illegal_instr_non_bm;
             end
-          end else illegal_instr = ~illegal_instr_non_zexth;
+          end else illegal_instr = 1'b1;
         end
         // --------------------------------
         // Reg-Immediate Operations
