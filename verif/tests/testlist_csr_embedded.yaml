@@ -25,26 +25,27 @@
 # gcc_opts        : gcc compile options
 # --------------------------------------------------------------------------------
 
-- test: branch_test
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/branch_to_zero.S
 
-- test: load_reg_hazard
+- test: csr_test
   iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/load_reg_hazard.S
+  asm_tests: <path_var>/custom/csr_embedded/csr_test.S
 
-- test: load_store_test
-  iterations: 1
+- test: csrrw_fullrandom_test
+  iterations: 0
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/load_store_test.S
+  asm_tests: <path_var>/custom/csr_embedded/csrrw_fullrandom_test.S
 
-- test: seq_test
+- test: csrrw_ro_test
   iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/seq_hazard.S
+  asm_tests: <path_var>/custom/csr_embedded/csrrw_ro_test.S
+
+- test: csrrw_unmapped_test
+  iterations: 1
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
+  asm_tests: <path_var>/custom/csr_embedded/csrrw_unmapped_test.S
