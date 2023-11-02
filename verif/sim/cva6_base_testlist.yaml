@@ -75,8 +75,8 @@
     +num_of_sub_program=0
     +directed_instr_0=riscv_load_store_rand_instr_stream,10
     +directed_instr_1=riscv_jal_instr,20
-    +illegal_instr_ratio=50
-    +unsupported_instr_ratio=50
+    +illegal_instr_ratio=100
+    +unsupported_instr_ratio=100
     +tvec_alignment=8
     +enable_zba_extension=1
     +enable_zbb_extension=1
@@ -208,8 +208,8 @@
     +boot_mode=m
     +no_csr_instr=1
     +enable_x_extension=1
-    +illegal_instr_ratio=50
-    +unsupported_instr_ratio=50
+    +illegal_instr_ratio=100
+    +unsupported_instr_ratio=100
     +tvec_alignment=8
     +enable_zba_extension=1
     +enable_zbb_extension=1
@@ -346,8 +346,8 @@
     +no_branch_jump=1
     +boot_mode=m
     +no_csr_instr=1
-    +illegal_instr_ratio=50
-    +unsupported_instr_ratio=50
+    +illegal_instr_ratio=100
+    +unsupported_instr_ratio=100
     +tvec_alignment=8
     +enable_zba_extension=1
     +enable_zbb_extension=1
@@ -480,8 +480,8 @@
     +no_load_store=1
     +boot_mode=m
     +no_csr_instr=1
-    +illegal_instr_ratio=50
-    +unsupported_instr_ratio=50
+    +illegal_instr_ratio=100
+    +unsupported_instr_ratio=100
     +hint_instr_ratio=100
     +tvec_alignment=8
     +enable_zba_extension=1

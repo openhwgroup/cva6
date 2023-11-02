@@ -45,12 +45,10 @@ if [[ "$list_num" = 1 ]];then
   TEST_NAME=(
            "riscv_arithmetic_basic_test_no_comp"
            "riscv_arithmetic_basic_test_bcomp"
-           "riscv_arithmetic_basic_illegal"
            "riscv_arithmetic_basic_test_comp"
-           "riscv_arithmetic_basic_illegal_hint_test"
            "riscv_arithmetic_basic_loop_test"
            );
-   I=(100 100 20 100 20 20);
+   I=(100 100 100 20);
 elif [[ "$list_num" = 2 ]];then
   TEST_NAME=(
            "riscv_arithmetic_basic_same_reg_test"
@@ -60,12 +58,12 @@ elif [[ "$list_num" = 2 ]];then
    I=(100 100 100);
 elif [[ "$list_num" = 3 ]];then
   TEST_NAME=(
-           "riscv_arithmetic_basic_csr_dummy"
-           "riscv_arithmetic_basic_Randcsr_test"
+           "riscv_arithmetic_basic_illegal"
+           "riscv_arithmetic_basic_illegal_hint_test"
            "riscv_arithmetic_basic_ebreak_dret_test"
            "riscv_arithmetic_basic_illegal_csr"
            );
-   I=(20 20 20 20);
+   I=(30 30 30 30);
 elif [[ "$list_num" = 4 ]];then
 	TEST_NAME=(
            "riscv_mmu_stress_hint_test"

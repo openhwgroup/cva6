@@ -360,8 +360,8 @@ generated_tests:
         DASHBOARD_JOB_TITLE: "Generated Hazard Arithmetic tests"
         DASHBOARD_JOB_DESCRIPTION: "Generate Hazard register (RAW) Arithmetic tests using CVA6-DV"
       - list_num: 3
-        DASHBOARD_JOB_TITLE: "Generated CSR tests"
-        DASHBOARD_JOB_DESCRIPTION: "Generate Random CSR tests using CVA6-DV"
+        DASHBOARD_JOB_TITLE: "Generated Illegal instruction tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random Illegal instruction tests using CVA6-DV"
       - list_num: 4
         DASHBOARD_JOB_TITLE: "Generated MMU tests"
         DASHBOARD_JOB_DESCRIPTION: "Generate Random MMU tests using CVA6-DV"
