@@ -168,8 +168,8 @@ module wt_dcache
   // read controllers (LD unit and PTW/MMU)
   ///////////////////////////////////////////////////////
 
-  // 0 is used by MMU, 1 by READ and 2 by WRITE access requests
-  for (genvar k = 0; k < NumPorts - 1; k++) begin : gen_rd_ports
+  // 0 is used by MMU, 1 by READ access requests
+  for (genvar k = 0; k < NumPorts - 2; k++) begin : gen_rd_ports
     // set these to high prio ports
     if (k != 0 || MMU_PRESENT) begin
       assign rd_prio[k] = 1'b1;
