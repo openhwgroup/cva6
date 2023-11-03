@@ -6,13 +6,13 @@
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA Version 20191213, Chapter 1.5
+* **Requirement location:** Unprivileged ISA Version 20191213, Chapter 2.2
 * **Feature Description**
   
-  Opcodes that do not decode to a valid, supported instruction for the CVA6 core configuration shall raise an illegal instruction exception.
+  The behavior upon decoding a reserved instruction is unspecified. Opcodes that do not decode to a valid, supported instruction for the CVA6 core configuration shall raise an illegal instruction exception.
 * **Verification Goals**
   
-  Check that when executing any illegal instruction, an exception is raised with `mcause` CSR set to 0x2.
+  Check that when executing any illegal instruction, an exception is raised with `mcause` set to 0x2.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Code Coverage
@@ -21,30 +21,27 @@
 * **Link to Coverage:** 
 * **Comments**
   
-  Covered by ISACOV
-## Feature: Load x0
-
-### Sub-feature: 000_load_x0
+  Covered by ISACOV tests, not yet in ISACOV DV plan
+### Sub-feature: 001_mtval
 
 #### Item: 000
 
-* **Requirement location:** Unprivileged ISA Version 20191213, Chapter 2.6
+* **Requirement location:** Privileged Architecture Version 20211203, Chapter 3.1.16
 * **Feature Description**
   
-  `x0` register cannot have a value loaded into it but does not generate an exception when that is attempted, as the exception is not implemented.
+  When an illegal instruction exception is raised, the corresponding instruction is stored into `mtval` CSR.
 * **Verification Goals**
   
-  Check that loading to `x0` register does not cause an exception.
-* **Pass/Fail Criteria:** Check RM
-* **Test Type:** Constrained Random
-* **Coverage Method:** Functional Coverage
+  Check that when any illegal instruction exception is raised, `mtval` CSR contains the faulting instruction.
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_traps_F001_S000_I000
+* **Unique verification tag:** VP_traps_F000_S001_I000
 * **Link to Coverage:** 
 * **Comments**
   
-  *(none)*  
-  
+  ZERO_TVAL parameter value?
 ## Feature: CSR Access
 
 ### Sub-feature: 000_CSR_access
@@ -67,7 +64,8 @@
 * **Comments**
   
   Covered by CSR DV plan.  
-  Verify if `mcause` value check is covered by CSR DV plan.
+  VP_csr-embedded-access_F001_S002_I000  
+   Verify if `mcause` value check is covered by CSR tests.
 #### Item: 001
 
 * **Requirement location:** Privileged Architecture Version 20211203, Chapter 2.1
@@ -86,7 +84,8 @@
 * **Comments**
   
   Covered by CSR DV plan.  
-  Verify if `mcause` value check is covered by CSR DV plan.
+  VP_csr-embedded-access_F001_S001_I000  
+   Verify if `mcause` value check is covered by CSR tests.
 ## Feature: Machine Trap Vector
 
 ### Sub-feature: 000_mtvec
@@ -105,29 +104,6 @@
 * **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_traps_F003_S000_I000
-* **Link to Coverage:** 
-* **Comments**
-  
-  *(none)*  
-  
-## Feature: Machine Cause
-
-### Sub-feature: 000_mcause
-
-#### Item: 000
-
-* **Requirement location:** Privileged Architecture Version 20211203, 3.1.15
-* **Feature Description**
-  
-  `mcause` is set to exception cause upon entry into exception.
-* **Verification Goals**
-  
-  Check that `mcause` correctly identifies the exception taken.
-* **Pass/Fail Criteria:** Check RM
-* **Test Type:** Constrained Random
-* **Coverage Method:** Functional Coverage
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_traps_F004_S000_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -255,21 +231,23 @@
   - code=0x8, 0x9, 0xB: Environment call from U-mode, from S-mode, from M-mode  
   - code=0x3: Environment break  
   - code=0x3: Load/store/AMO address breakpoint  
-  - code=0x4, 0x6: Load address misaligned, store/AMO address misaligned (CHECK IF NOT LOWEST PRIORITY ON CVA6)  
-  - code=0xD, 0xF, 0x5, 0x7: Load page fault, store/AMO page fault, load access fault, store/AMO access fault
+  - code=0xD, 0xF, 0x5, 0x7: Load page fault, store/AMO page fault, load access fault, store/AMO access fault  
+  - code=0x4, 0x6: Load address misaligned, store/AMO address misaligned
 * **Verification Goals**
   
   Check that when raising an exception together with a lower priority one the cause of the higher priority exception is written in `mcause` register.
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** Directed Non-SelfChk
 * **Coverage Method:** Testcase
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F007_S000_I000
 * **Link to Coverage:** 
 * **Comments**
   
   *(none)*  
   
+### Sub-feature: 001_exception priority embedded
+
 ## Feature: Address Misaligned
 
 ### Sub-feature: 000_instr_misaligned
@@ -325,7 +303,7 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F008_S001_I001
 * **Link to Coverage:** 
 * **Comments**
@@ -365,7 +343,7 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F008_S002_I001
 * **Link to Coverage:** 
 * **Comments**
@@ -380,17 +358,37 @@
   If not aligned AMO is attempted, a store/AMO access misaligned exception is taken.
 * **Verification Goals**
   
-  Exception is entered with mcause set to 0x6.
+  Exception is entered with `mcause` set to 0x6.
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F008_S002_I002
 * **Link to Coverage:** 
 * **Comments**
   
   *(none)*  
   
+### Sub-feature: 003_mtval
+
+#### Item: 000
+
+* **Requirement location:** Privileged Architecture Version 20211203, Chapter 3.1.16
+* **Feature Description**
+  
+  When an address misaligned exception is raised, the corresponding address is stored into `mtval` CSR.
+* **Verification Goals**
+  
+  Check that when any address misaligned exception is raised, `mtval` CSR contains the address of the portion of the access causing the fault.
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_traps_F008_S003_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  ZERO_TVAL parameter value?
 ## Feature: Access Fault
 
 ### Sub-feature: 000_instr_access
@@ -465,7 +463,7 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F009_S001_I001
 * **Link to Coverage:** 
 * **Comments**
@@ -505,7 +503,7 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F009_S002_I001
 * **Link to Coverage:** 
 * **Comments**
@@ -524,13 +522,33 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F009_S002_I002
 * **Link to Coverage:** 
 * **Comments**
   
   *(none)*  
   
+### Sub-feature: 003_mtval
+
+#### Item: 000
+
+* **Requirement location:** Privileged Architecture Version 20211203, Chapter 3.1.16
+* **Feature Description**
+  
+  When an access fault exception is raised, the corresponding address is stored into `mtval` CSR.
+* **Verification Goals**
+  
+  Check that when any access fault exception is raised, `mtval` CSR contains the address of the portion of the access causing the fault.
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_traps_F009_S003_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  ZERO_TVAL parameter value?
 ## Feature: Environment Call
 
 ### Sub-feature: 000_ecall
@@ -566,7 +584,7 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F010_S000_I001
 * **Link to Coverage:** 
 * **Comments**
@@ -585,7 +603,7 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F010_S000_I002
 * **Link to Coverage:** 
 * **Comments**
@@ -608,7 +626,7 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F011_S000_I000
 * **Link to Coverage:** 
 * **Comments**
@@ -628,7 +646,7 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F011_S001_I000
 * **Link to Coverage:** 
 * **Comments**
@@ -648,17 +666,30 @@
 * **Pass/Fail Criteria:** NDY (Not Defined Yet)
 * **Test Type:** NDY (Not Defined Yet)
 * **Coverage Method:** NDY (Not Defined Yet)
-* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
 * **Unique verification tag:** VP_traps_F011_S002_I000
 * **Link to Coverage:** 
 * **Comments**
   
   MMU related
-## Feature: Breakpoint
+### Sub-feature: 003_mtval
 
-### Sub-feature: 000_instr_bkp
+#### Item: 000
 
-### Sub-feature: 001_data_bkp
-
-### Sub-feature: 002_environment_break
-
+* **Requirement location:** Privileged Architecture Version 20211203, Chapter 3.1.16
+* **Feature Description**
+  
+  When an page fault exception is raised, the corresponding address is stored into `mtval` CSR.
+* **Verification Goals**
+  
+  Check that when any page fault exception is raised, `mtval` CSR contains the address of the portion of the access causing the fault.
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV64A6-step3
+* **Unique verification tag:** VP_traps_F011_S003_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  MMU related  
+  ZERO_TVAL parameter value?
