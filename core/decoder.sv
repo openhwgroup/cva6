@@ -158,6 +158,9 @@ module decoder
                       //  do not change privilege level if this is an illegal instruction
                       instruction_o.op = ariane_pkg::ADD;
                     end
+                  end else begin
+                    illegal_instr = 1'b1;
+                    instruction_o.op = ariane_pkg::ADD;
                   end
                 end
                 // MRET
