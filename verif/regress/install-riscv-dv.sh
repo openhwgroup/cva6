@@ -20,27 +20,4 @@ export RTL_PATH=$ROOT_PROJECT/
 export TB_PATH=$ROOT_PROJECT/verif/tb/core
 export TESTS_PATH=$ROOT_PROJECT/verif/tests
 
-if [ -z "$DV_REPO" ]; then
-  export DV_REPO="https://github.com/chipsalliance/riscv-dv.git"
-  export DV_BRANCH="master"
-  export DV_HASH="f0c570d11236f94f9c5449870223a5ac717cc580"
-  export DV_PATCH=
-fi
-echo "Repo:  " $DV_REPO
-echo "Branch:" $DV_BRANCH
-echo "Hash:  " $DV_HASH
-echo "Patch: " $DV_PATCH
-
-mkdir -p verif/sim
-if ! [ -d verif/sim/dv ]; then
-  git clone $DV_REPO -b $DV_BRANCH verif/sim/dv
-  cd verif/sim/dv; git checkout $DV_HASH;
-  if [[ -n "$DV_PATCH" && -f "$DV_PATCH" ]]; then
-    git apply "$DV_PATCH"
-  fi
-  cd -
-  # install riscv-dv dependencies
-  cd verif/sim/dv; pip3 install -r requirements.txt; cd -
-fi
-
-touch verif/sim/dv/__init__.py
+(cd verif/sim/dv; pip3 install -r requirements.txt)
