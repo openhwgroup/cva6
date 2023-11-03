@@ -15,14 +15,52 @@
 
 module ariane_verilog_wrap
     import ariane_pkg::*;
+    import config_pkg::*;
 #(
   parameter int unsigned               RASDepth              = 2,
   parameter int unsigned               BTBEntries            = 32,
   parameter int unsigned               BHTEntries            = 128,
+  parameter int unsigned               NrCommitPorts         = 2,
+  parameter int unsigned               NrLoadBufEntries      = 2,
+  parameter int unsigned               NrRgprPorts           = 0,
+  parameter int unsigned               NrWbPorts             = 0,
+  parameter int unsigned               MaxOutstandingStores  = 7,
+  parameter logic [63:0]               HaltAddress           = 64'h800,
+  parameter logic [63:0]               ExceptionAddress      = 64'h808,
+  parameter bit                        EnableAccelerator     = 0,
+  parameter bit                        SupervisorModeEn      = 1,
+  // RISCV extensions
+  parameter bit                        FpuEn                 = 1,
+  parameter bit                        F16En                 = 0,
+  parameter bit                        F16AltEn              = 0,
+  parameter bit                        F8En                  = 0,
+  parameter bit                        FVecEn                = 0,
+  parameter bit                        CvxifEn               = 0,
+  parameter bit                        CExtEn                = 1,
+  parameter bit                        ZcbExtEn              = 0,
+  parameter bit                        AExtEn                = 1,
+  parameter bit                        BExtEn                = 0,
+  parameter bit                        VExtEn                = 0,
+  parameter bit                        ZiCondExtEn           = 0,
+  parameter bit                        FExtEn                = 0,
+  parameter bit                        DExtEn                = 0,
+  // extended
+  parameter bit                        FpPresent             = 0,
+  parameter int unsigned               FLen                  = 0,
+  parameter bit                        NSXEn                 = 0, // non standard extensions present
+  parameter bit                        RVFVecEn              = 0,
+  parameter bit                        XF16VecEn             = 0,
+  parameter bit                        XF16ALTVecEn          = 0,
+  parameter bit                        XF8VecEn              = 0,
   // debug module base address
   parameter logic [63:0]               DmBaseAddress         = 64'h0,
   // swap endianess in l15 adapter
   parameter bit                        SwapEndianess         = 1,
+  // AXI Configuration
+  parameter int unsigned               AxiAddrWidth          = 64,
+  parameter int unsigned               AxiDataWidth          = 64,
+  parameter int unsigned               AxiIdWidth            = 4,
+  parameter int unsigned               AxiUserWidth          = 64,
   // PMA configuration
   // idempotent region
   parameter int unsigned               NrNonIdempotentRules  =  1,
@@ -156,32 +194,60 @@ module ariane_verilog_wrap
   // ariane instance
   /////////////////////////////
 
-  localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
-    RASDepth:              RASDepth,
-    BTBEntries:            BTBEntries,
-    BHTEntries:            BHTEntries,
-    // idempotent region
-    NrNonIdempotentRules:  NrNonIdempotentRules,
-    NonIdempotentAddrBase: NonIdempotentAddrBase,
-    NonIdempotentLength:   NonIdempotentLength,
-    NrExecuteRegionRules:  NrExecuteRegionRules,
-    ExecuteRegionAddrBase: ExecuteRegionAddrBase,
-    ExecuteRegionLength:   ExecuteRegionLength,
-    // cached region
-    NrCachedRegionRules:   NrCachedRegionRules,
-    CachedRegionAddrBase:  CachedRegionAddrBase,
-    CachedRegionLength:    CachedRegionLength,
-    // cache config
-    AxiCompliant:          1'b0,
-    SwapEndianess:         SwapEndianess,
-    // debug
-    DmBaseAddress:         DmBaseAddress,
-    NrPMPEntries:          NrPMPEntries
+  localparam cva6_cfg_t CVA6Cfg = '{
+    NrCommitPorts:          NrCommitPorts,
+    AxiAddrWidth:           AxiAddrWidth,
+    AxiDataWidth:           AxiDataWidth,
+    AxiIdWidth:             AxiIdWidth,
+    AxiUserWidth:           AxiUserWidth,
+    NrLoadBufEntries:       NrLoadBufEntries,
+    FpuEn:                  FpuEn,
+    XF16:                   F16En,
+    XF16ALT:                F16AltEn,
+    XF8:                    F8En,
+    RVA:                    AExtEn,
+    RVV:                    VExtEn,
+    RVC:                    CExtEn,
+    RVZCB:                  ZcbExtEn,
+    XFVec:                  FVecEn,
+    CvxifEn:                CvxifEn,
+    ZiCondExtEn:            ZiCondExtEn,
+    RVF:                    FExtEn,
+    RVD:                    DExtEn,
+    FpPresent:              FpPresent,
+    NSX:                    NSXEn,
+    FLen:                   FLen,
+    RVFVec:                 RVFVecEn,
+    XF16Vec:                XF16VecEn,
+    XF16ALTVec:             XF16ALTVecEn,
+    XF8Vec:                 XF8VecEn,
+    NrRgprPorts:            NrRgprPorts,
+    NrWbPorts:              NrWbPorts,
+    EnableAccelerator:      EnableAccelerator,
+    RVS:                    SupervisorModeEn,
+    HaltAddress:            HaltAddress,
+    ExceptionAddress:       ExceptionAddress,
+    RASDepth:               RASDepth,
+    BTBEntries:             BTBEntries,
+    BHTEntries:             BHTEntries,
+    DmBaseAddress:          DmBaseAddress,
+    NrPMPEntries:           NrPMPEntries,
+    NOCType:                SwapEndianess ? NOC_TYPE_L15_BIG_ENDIAN : NOC_TYPE_AXI4_ATOP,
+    NrNonIdempotentRules:   NrNonIdempotentRules,
+    NonIdempotentAddrBase:  NonIdempotentAddrBase,
+    NonIdempotentLength:    NonIdempotentLength,
+    NrExecuteRegionRules:   NrExecuteRegionRules,
+    ExecuteRegionAddrBase:  ExecuteRegionAddrBase,
+    ExecuteRegionLength:    ExecuteRegionLength,
+    NrCachedRegionRules:    NrCachedRegionRules,
+    CachedRegionAddrBase:   CachedRegionAddrBase,
+    CachedRegionLength:     CachedRegionLength,
+    MaxOutstandingStores:   MaxOutstandingStores
   };
 
   ariane #(
-    .ArianeCfg ( ArianeOpenPitonCfg ),
-    .noc_req_t  ( wt_cache_pkg::l15_req_t ),
+    .CVA6Cfg    ( CVA6Cfg                  ),
+    .noc_req_t  ( wt_cache_pkg::l15_req_t  ),
     .noc_resp_t ( wt_cache_pkg::l15_rtrn_t )
   ) ariane (
     .clk_i       ( clk_i      ),

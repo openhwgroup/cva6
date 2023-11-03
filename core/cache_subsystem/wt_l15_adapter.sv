@@ -292,7 +292,7 @@ module wt_l15_adapter
   end
 
   // openpiton is big endian
-  if (SwapEndianess) begin : gen_swap
+  if (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_L15_BIG_ENDIAN) begin : gen_swap
     assign dcache_rtrn_o.data = {
       swendian64(rtrn_fifo_data.l15_data_1), swendian64(rtrn_fifo_data.l15_data_0)
     };

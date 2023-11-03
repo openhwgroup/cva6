@@ -136,7 +136,7 @@ module wt_cache_subsystem
 
 `ifdef PITON_ARIANE
   wt_l15_adapter #(
-      .CVA6Cfg(CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg)
   ) i_adapter (
       .clk_i            (clk_i),
       .rst_ni           (rst_ni),
