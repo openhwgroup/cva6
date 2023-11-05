@@ -169,9 +169,9 @@ module wt_dcache
   ///////////////////////////////////////////////////////
 
   // 0 is used by MMU, 1 by READ access requests
-  for (genvar k = 0; k < NumPorts - 2; k++) begin : gen_rd_ports
+  for (genvar k = 0; k < NumPorts - 1; k++) begin : gen_rd_ports
     // set these to high prio ports
-    if (k != 0 || MMU_PRESENT) begin
+    if ((k=0 && MMU_PRESENT) || (k=1) || (k=2 && CVA6Cfg.EnableAccelerator)) begin
       assign rd_prio[k] = 1'b1;
       wt_dcache_ctrl #(
           .CVA6Cfg(CVA6Cfg),
@@ -211,22 +211,22 @@ module wt_dcache
           .rd_hit_oh_i    (rd_hit_oh)
       );
     end else begin
-      assign rd_prio[0] = 1'b0;
-      assign req_ports_o[0] = '0;
-      assign miss_req[0] = 1'b0;
-      assign miss_we[0] = 1'b0;
-      assign miss_wdata[0] = {{riscv::XLEN}{1'b0}};
-      assign miss_wuser[0] = {{DCACHE_USER_WIDTH}{1'b0}};
-      assign miss_vld_bits_o[0] = {{DCACHE_SET_ASSOC}{1'b0}};
-      assign miss_paddr[0] = {{riscv::PLEN}{1'b0}};
-      assign miss_nc[0] = 1'b0;
-      assign miss_size[0] = 3'b0;
-      assign miss_id[0] = {{CACHE_ID_WIDTH}{1'b0}};
-      assign rd_tag[0] = {{DCACHE_TAG_WIDTH}{1'b0}};
-      assign rd_idx[0] = {{DCACHE_CL_IDX_WIDTH}{1'b0}};
-      assign rd_off[0] = {{DCACHE_OFFSET_WIDTH}{1'b0}};
-      assign rd_req[0] = 1'b0;
-      assign rd_tag_only[0] = 1'b0;
+      assign rd_prio[k] = 1'b0;
+      assign req_ports_o[k] = '0;
+      assign miss_req[k] = 1'b0;
+      assign miss_we[k] = 1'b0;
+      assign miss_wdata[k] = {{riscv::XLEN}{1'b0}};
+      assign miss_wuser[k] = {{DCACHE_USER_WIDTH}{1'b0}};
+      assign miss_vld_bits_o[k] = {{DCACHE_SET_ASSOC}{1'b0}};
+      assign miss_paddr[k] = {{riscv::PLEN}{1'b0}};
+      assign miss_nc[k] = 1'b0;
+      assign miss_size[k] = 3'b0;
+      assign miss_id[k] = {{CACHE_ID_WIDTH}{1'b0}};
+      assign rd_tag[k] = {{DCACHE_TAG_WIDTH}{1'b0}};
+      assign rd_idx[k] = {{DCACHE_CL_IDX_WIDTH}{1'b0}};
+      assign rd_off[k] = {{DCACHE_OFFSET_WIDTH}{1'b0}};
+      assign rd_req[k] = 1'b0;
+      assign rd_tag_only[k] = 1'b0;
     end
   end
 
