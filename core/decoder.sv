@@ -174,7 +174,7 @@ module decoder
                   if (CVACfg.DebugEn) begin
                     // check that we are in debug mode when executing this instruction
                     illegal_instr = (!debug_mode_i) ? 1'b1 : illegal_instr;
-                  else begin
+                  end else begin
                     illegal_instr = 1'b1;
                   end
                 end
