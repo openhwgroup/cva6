@@ -171,7 +171,7 @@ module decoder
                 // DRET
                 12'b111_1011_0010: begin
                   instruction_o.op = ariane_pkg::DRET;
-                  if (CVACfg.DebugEn) begin
+                  if (CVA6Cfg.DebugEn) begin
                     // check that we are in debug mode when executing this instruction
                     illegal_instr = (!debug_mode_i) ? 1'b1 : illegal_instr;
                   end else begin
