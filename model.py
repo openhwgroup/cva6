@@ -336,7 +336,7 @@ class Model:
             sb_len=8,
             fetch_size=None,
             has_forwarding=True,
-            has_renaming=True):
+            has_renaming=False):
         self.ras = Ras(debug=debug)
         self.bht = Bht()
         self.instr_queue = []
@@ -416,9 +416,6 @@ class Model:
         for entry in self.scoreboard:
             if instr.has_WAW_from(entry.instr) and not self.has_renaming:
                 self.log_event_on(instr, EventKind.WAW, cycle)
-                found = True
-            if instr.has_WAR_from(entry.instr) and not self.has_renaming:
-                self.log_event_on(instr, EventKind.WAR, cycle)
                 found = True
             can_forward = self.has_forwarding and entry.done
             if instr.has_RAW_from(entry.instr) and not can_forward:
