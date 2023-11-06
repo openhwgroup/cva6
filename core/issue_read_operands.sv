@@ -340,7 +340,7 @@ module issue_read_operands
               issue_instr_i[1].op
           ) == is_rd_fpr(
               issue_instr_i[0].op
-          ))) && issue_instr_i[1].rs1 == issue_instr_i[0].rd) begin
+          ))) && issue_instr_i[1].rs1 == issue_instr_i[0].rd && issue_instr_i[1].rs1 != '0) begin
         stall[1] = 1'b1;
       end
 
@@ -348,7 +348,7 @@ module issue_read_operands
               issue_instr_i[1].op
           ) == is_rd_fpr(
               issue_instr_i[0].op
-          ))) && issue_instr_i[1].rs2 == issue_instr_i[0].rd) begin
+          ))) && issue_instr_i[1].rs2 == issue_instr_i[0].rd && issue_instr_i[1].rs2 != '0) begin
         stall[1] = 1'b1;
       end
 
