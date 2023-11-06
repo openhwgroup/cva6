@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from enum import Enum
 from collections import defaultdict
 
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 from isa import Instr, Reg
 
@@ -558,13 +558,13 @@ def display_scores(scores):
         dy.append(.5)
         dz.append(bz)
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111, projection='3d')
-    ax1.bar3d(x, y, z, dx, dy, dz)
-    ax1.set_xlabel("issue")
-    ax1.set_ylabel("commit")
-    ax1.set_zlabel("CoreMark/MHz")
-    plt.show()
+    #fig = plt.figure()
+    #ax1 = fig.add_subplot(111, projection='3d')
+    #ax1.bar3d(x, y, z, dx, dy, dz)
+    #ax1.set_xlabel("issue")
+    #ax1.set_ylabel("commit")
+    #ax1.set_zlabel("CoreMark/MHz")
+    #plt.show()
 
 def issue_commit_graph(input_file, n = 3):
     """Plot the issue/commit graph"""
