@@ -358,6 +358,8 @@ class Model:
 
     def log_event_on(self, instr, kind, cycle):
         """Log an event on the instruction"""
+        if self.debug:
+            print(f"{instr}: {kind}")
         event = Event(kind, cycle)
         instr.events.append(event)
         self.log.append((event, instr))
@@ -529,10 +531,10 @@ def write_trace(output_file, instructions):
         assert commit_event.kind == EventKind.commit
         cycle = commit_event.cycle
         annotated = re.sub(pattern, f"@ {cycle}", instr.line)
-        if EventKind.STRUCT in [e.kind for e in instr.events]:
-            annotated += " #STRUCT"
-        if EventKind.RAW in [e.kind for e in instr.events]:
-            annotated += " #RAW"
+        #if EventKind.STRUCT in [e.kind for e in instr.events]:
+        #    annotated += " #STRUCT"
+        #if EventKind.RAW in [e.kind for e in instr.events]:
+        #    annotated += " #RAW"
         lines.append(f"{annotated}\n")
 
     with open(output_file, 'w') as f:
@@ -627,7 +629,7 @@ def print_stats(instructions):
 def main(input_file: str):
     "Entry point"
 
-    model = Model(debug=False, issue=2, commit=2)
+    model = Model(debug=True, issue=2, commit=2)
     model.load_file(input_file)
     model.run()
 
