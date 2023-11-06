@@ -264,20 +264,20 @@ def to_fu(instr):
 class FusBusy:
     "Is each functional unit busy"
     def __init__(self):
-        self.flu = False
+        self.alu = False
+        self.mul = False
+        self.branch = False
         self.ldu = False
         self.stu = False
-        self.fp = False
-        self.mul_this_cycle = False
-        self.mul_last_cycle = False
+        self.issued_mul = False
 
     def is_ready(self, fu):
         return {
-            Fu.ALU: not ((self.flu or self.mul_last_cycle) and self.fp),
-            Fu.MUL: not self.mul_this_cycle,
-            Fu.BRANCH: not (self.flu or self.mul_last_cycle),
-            Fu.LDU: not (self.ldu or self.stu),
-            Fu.STU: not (self.ldu or self.stu),
+            Fu.ALU: not self.alu,
+            Fu.MUL: not self.mul,
+            Fu.BRANCH: not self.branch,
+            Fu.LDU: not self.ldu,
+            Fu.STU: not self.stu,
         }[fu]
 
     def is_ready_for(self, instr):
@@ -293,33 +293,35 @@ class FusBusy:
         }[to_fu(instr)](self)
 
     def issue_mul(self):
-        self.fp = True
-        self.mul_this_cycle = True
+        self.mul = True
+        self.issued_mul = True
 
     def issue_alu(self):
-        if not self.fp:
-            self.fp = True
-        elif not (self.flu or self.mul_last_cycle):
-            self.flu = True
-        else:
-            prout()
+        self.alu = True
+        self.branch = True
 
     def issue_branch(self):
-        self.flu = True
+        self.alu = True
+        self.mul = True
+        self.branch = True
+        self.ldu = True
+        self.stu = True
 
     def issue_ldu(self):
         self.ldu = True
+        self.stu = True
 
     def issue_stu(self):
         self.stu = True
+        self.ldu = True
 
     def cycle(self):
-        self.mul_last_cycle = self.mul_this_cycle
-        self.flu = False
+        self.alu = self.issued_mul
+        self.mul = False
+        self.branch = self.issued_mul
         self.ldu = False
         self.stu = False
-        self.fp = False
-        self.mul_this_cycle = False
+        self.issued_mul = False
 
 class Model:
     """Models the scheduling of CVA6"""
