@@ -18,7 +18,14 @@
 class riscv_zcb_instr_c extends riscv_custom_instr;
 
    `uvm_object_utils(riscv_zcb_instr_c)
-   `uvm_object_new
+
+  function new(string name = "");
+    super.new(name);
+    rs1 = S0;
+    rs2 = S0;
+    rd  = S0;
+    is_compressed = 1'b1;
+  endfunction : new
 
   constraint rvc_rx_c {
     //  Registers specified by the three-bit rs1’, rs2’, and rd’
