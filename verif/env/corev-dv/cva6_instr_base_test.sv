@@ -34,6 +34,7 @@ class cva6_instr_base_test_c extends riscv_instr_base_test;
   virtual function void build_phase(uvm_phase phase);
     override_asm_program_gen();
     override_gen_config();
+    override_illegal_instr();
     override_sequence_instr();
     super.build_phase(phase);
   endfunction
@@ -49,6 +50,13 @@ class cva6_instr_base_test_c extends riscv_instr_base_test;
     `uvm_info("CVA6_DV", $sformatf("Overriding ..."), UVM_LOW)
     uvm_factory::get().set_type_override_by_type(riscv_instr_gen_config::get_type(),
                                                  cva6_instr_gen_config_c::get_type());
+    `uvm_info("CVA6_DV", $sformatf("Overrid done "), UVM_LOW)
+  endfunction
+
+  virtual function void override_illegal_instr();
+    `uvm_info("CVA6_DV", $sformatf("Overriding ..."), UVM_LOW)
+    uvm_factory::get().set_type_override_by_type(riscv_illegal_instr::get_type(),
+                                                 cva6_illegal_instr_c::get_type());
     `uvm_info("CVA6_DV", $sformatf("Overrid done "), UVM_LOW)
   endfunction
 
