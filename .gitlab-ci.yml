@@ -413,11 +413,26 @@ directed_isacov-tests:
     - mv verif/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
     - python3 .gitlab-ci/scripts/report_pass.py
 
+csr_embedded_tests:
+  extends:
+    - .verif_test
+  variables:
+    DASHBOARD_JOB_TITLE: "csr_embedded test $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "CSR Test generated using UVM-REG"
+    DASHBOARD_SORT_INDEX: 15
+    DASHBOARD_JOB_CATEGORY: "CSR tests"
+    DV_SIMULATORS: "vcs-uvm"
+  script:
+    - mkdir -p artifacts/coverage
+    - source verif/regress/dv-csr-embedded-tests.sh
+    - mv verif/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
+    - python3 .gitlab-ci/scripts/report_pass.py
+
 directed_xif-tests:
   extends:
     - .verif_test
   variables:
-    DASHBOARD_SORT_INDEX: 15
+    DASHBOARD_SORT_INDEX: 16
     DASHBOARD_JOB_CATEGORY: "Functional Coverage"
   parallel:
     matrix:
@@ -496,6 +511,7 @@ code_coverage-report:
     - directed_isacov-tests
     - generated_xif_tests
     - directed_xif-tests
+    - csr_embedded_tests
   variables:
     DASHBOARD_JOB_TITLE: "Report merge coverage"
     DASHBOARD_JOB_DESCRIPTION: "Report merge coverage of generated tests"
