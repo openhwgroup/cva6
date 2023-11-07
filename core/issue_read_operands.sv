@@ -184,7 +184,7 @@ module issue_read_operands
       if (rs1_valid_i && (CVA6Cfg.FpPresent && is_rs1_fpr(
               issue_instr_i.op
           ) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i.rs1] != CSR) ||
-                      (issue_instr_i.op == SFENCE_VMA)))) begin
+                      (CVA6Cfg.RVS && issue_instr_i.op == SFENCE_VMA)))) begin
         forward_rs1 = 1'b1;
       end else begin  // the operand is not available -> stall
         stall = 1'b1;
@@ -199,7 +199,7 @@ module issue_read_operands
       if (rs2_valid_i && (CVA6Cfg.FpPresent && is_rs2_fpr(
               issue_instr_i.op
           ) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i.rs2] != CSR) ||
-                      (issue_instr_i.op == SFENCE_VMA)))) begin
+                      (CVA6Cfg.RVS && issue_instr_i.op == SFENCE_VMA)))) begin
         forward_rs2 = 1'b1;
       end else begin  // the operand is not available -> stall
         stall = 1'b1;
