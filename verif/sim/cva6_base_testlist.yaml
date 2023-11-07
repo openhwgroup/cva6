@@ -514,7 +514,8 @@
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
-    +no_data_page=1
+    +directed_instr_0=cva6_ecall_instr_stream_c,1
+    +no_data_page=0
     +no_branch_jump=1
     +boot_mode=m
     +no_csr_instr=1
