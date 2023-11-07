@@ -263,17 +263,24 @@ def to_fu(instr):
 
 class FusBusy:
     "Is each functional unit busy"
-    def __init__(self):
+    def __init__(self, has_alu2 = False):
+        self.has_alu2 = has_alu2
+
         self.alu = False
         self.mul = False
         self.branch = False
         self.ldu = False
         self.stu = False
+        self.alu2 = False
+
         self.issued_mul = False
+
+    def _alu2_ready(self):
+        return self.has_alu2 and not self.alu2
 
     def is_ready(self, fu):
         return {
-            Fu.ALU: not self.alu,
+            Fu.ALU: self._alu2_ready() or not self.alu,
             Fu.MUL: not self.mul,
             Fu.BRANCH: not self.branch,
             Fu.LDU: not self.ldu,
@@ -297,11 +304,16 @@ class FusBusy:
         self.issued_mul = True
 
     def issue_alu(self):
-        self.alu = True
-        self.branch = True
+        if not self._alu2_ready():
+            assert not self.alu
+            self.alu = True
+            self.branch = True
+        else:
+            self.alu2 = True
 
     def issue_branch(self):
-        self.issue_alu()
+        self.alu = True
+        self.branch = True
         # Stores are not allowed yet
         self.stu = True
 
@@ -319,6 +331,7 @@ class FusBusy:
         self.branch = self.issued_mul
         self.ldu = False
         self.stu = False
+        self.alu2 = False
         self.issued_mul = False
 
 class Model:
@@ -341,7 +354,7 @@ class Model:
         self.bht = Bht()
         self.instr_queue = []
         self.scoreboard = []
-        self.fus = FusBusy()
+        self.fus = FusBusy(True)
         self.last_issued = None
         self.last_committed = None
         self.retired = []
