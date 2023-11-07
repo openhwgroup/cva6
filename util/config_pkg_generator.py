@@ -18,7 +18,7 @@ def setup_parser_config_generator():
   parser = argparse.ArgumentParser()
 
   parser.add_argument("--default_config", type=str, default="cv64a6_imafdc_sv39", required=True,
-                      choices=["cv32a6_imac_sv0","cv32a6_imac_sv32","cv32a6_imafc_sv32","cv64a6_imafdc_sv39","cv32a60x"],
+                      choices=["cv32a6_embedded","cv32a6_imac_sv0","cv32a6_imac_sv32","cv32a6_imafc_sv32","cv64a6_imafdc_sv39","cv32a60x"],
                       help="Default configuration is one of the 4 preexisting configuration: \
                             cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv64a6_imafdc_sv39")
   parser.add_argument("--isa", type=str, default=None, required=True,
