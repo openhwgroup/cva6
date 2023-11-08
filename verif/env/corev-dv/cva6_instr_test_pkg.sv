@@ -26,6 +26,7 @@ package cva6_instr_test_pkg;
    `include "cva6_instr_base_test.sv"
    `include "cva6_instr_hazard_test.sv"
    `include "cva6_load_store_instr_lib.sv"
+   `include "cva6_ecall_instr_stream.sv"
    `include "cvxif_custom_instr.sv"
    `include "riscv_zicond_instr.sv"
    `include "riscv_zcb_instr.sv"

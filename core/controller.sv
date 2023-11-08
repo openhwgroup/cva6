@@ -125,7 +125,7 @@ module controller
     // ---------------------------------
     // SFENCE.VMA
     // ---------------------------------
-    if (sfence_vma_i) begin
+    if (CVA6Cfg.RVS && sfence_vma_i) begin
       set_pc_commit_o        = 1'b1;
       flush_if_o             = 1'b1;
       flush_unissued_instr_o = 1'b1;
