@@ -31,6 +31,7 @@ class cva6_instr_sequence_c extends riscv_instr_sequence;
   function new (string name = "");
     super.new(name);
     unsupported_instr = cva6_unsupported_instr_c::type_id::create("unsupported_instr");
+    illegal_instr     = cva6_illegal_instr_c::type_id::create("illegal_instr");
   endfunction
 
   function void insert_unsupported_instr();
@@ -48,6 +49,39 @@ class cva6_instr_sequence_c extends riscv_instr_sequence;
         str = {indent, $sformatf(".4byte 0x%s # %0s",
                        unsupported_instr.get_bin_str(), unsupported_instr.comment)};
                idx = $urandom_range(0, instr_string_list.size());
+        instr_string_list.insert(idx, str);
+      end
+    end
+  endfunction
+
+  function void insert_illegal_hint_instr();
+    int bin_instr_cnt;
+    int idx;
+    string str;
+    illegal_instr.init(cfg);
+    bin_instr_cnt = instr_cnt * cfg.illegal_instr_ratio / 1000;
+    if (bin_instr_cnt >= 0) begin
+      `uvm_info(`gfn, $sformatf("Injecting %0d cva6 illegal instructions, ratio %0d/100",
+                      bin_instr_cnt, cfg.illegal_instr_ratio), UVM_LOW)
+      repeat (bin_instr_cnt) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(illegal_instr,
+                                       exception != kHintInstr;)
+        str = {indent, $sformatf(".4byte 0x%s # %0s",
+                       illegal_instr.get_bin_str(), illegal_instr.comment)};
+               idx = $urandom_range(0, instr_string_list.size());
+        instr_string_list.insert(idx, str);
+      end
+    end
+    bin_instr_cnt = instr_cnt * cfg.hint_instr_ratio / 1000;
+    if (bin_instr_cnt >= 0) begin
+      `uvm_info(`gfn, $sformatf("Injecting %0d HINT instructions, ratio %0d/100",
+                      bin_instr_cnt, cfg.illegal_instr_ratio), UVM_LOW)
+      repeat (bin_instr_cnt) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(illegal_instr,
+                                       exception == kHintInstr;)
+        str = {indent, $sformatf(".2byte 0x%s # %0s",
+                       illegal_instr.get_bin_str(), illegal_instr.comment)};
+        idx = $urandom_range(0, instr_string_list.size());
         instr_string_list.insert(idx, str);
       end
     end

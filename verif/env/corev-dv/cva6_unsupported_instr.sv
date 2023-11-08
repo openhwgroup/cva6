@@ -138,180 +138,197 @@ class cva6_unsupported_instr_c extends uvm_object;
         instr_bin[14:12] == func3;
       }
       if (has_func2) {
-        instr_bin[26:25] == func3;
+        instr_bin[26:25] == func2;
       }
     }
   }
 
   // RV64I instructions
   constraint rv64i_instr_c {
-    if (unsupported_instr == rv64i_instr) {
-      compressed == 0;
-      opcode inside {legal_rv64i_opcode};
-      func3 inside {3'b110, 3'b011, 3'b001, 3'b101, 3'b0};
-      if (opcode == 7'b0000011) {
-         func3 inside {3'b110, 3'b011};
-      } 
-      if (opcode == 7'b0100011) {
-         func3 == 3'b011;
-      }
-      if (opcode == 7'b0011011) {
-         func3 inside {3'b101, 3'b001, 3'b0};
-         if (func3 == 3'b101) {
-            func7 inside {7'b0, 7'b0100000};
-         }
-         if (func3 == 3'b001) {
-            func7 == 7'b0;
-         }         
-      }
-      if (opcode == 7'b0111011) {
-         func3 inside {3'b101, 3'b001, 3'b0};
-         if (func3 == 3'b0) {
-            func7 inside {7'b0, 7'b0100000};
-         }
-         if (func3 == 3'b001) {
-            func7 == 7'b0;
-         }
-         if (func3 == 3'b101) {
-            func7 inside {7'b0, 7'b0100000};
-         }
+    if (!RV64I inside {supported_isa}) {
+      if (unsupported_instr == rv64i_instr) {
+        compressed == 0;
+        opcode inside {legal_rv64i_opcode};
+        func3 inside {3'b110, 3'b011, 3'b001, 3'b101, 3'b0};
+        if (opcode == 7'b0000011) {
+           func3 inside {3'b110, 3'b011};
+        }
+        if (opcode == 7'b0100011) {
+           func3 == 3'b011;
+        }
+        if (opcode == 7'b0011011) {
+           func3 inside {3'b101, 3'b001, 3'b0};
+           if (func3 == 3'b101) {
+              func7 inside {7'b0, 7'b0100000};
+           }
+           if (func3 == 3'b001) {
+              func7 == 7'b0;
+           }
+        }
+        if (opcode == 7'b0111011) {
+           func3 inside {3'b101, 3'b001, 3'b0};
+           if (func3 == 3'b0) {
+              func7 inside {7'b0, 7'b0100000};
+           }
+           if (func3 == 3'b001) {
+              func7 == 7'b0;
+           }
+           if (func3 == 3'b101) {
+              func7 inside {7'b0, 7'b0100000};
+           }
+        }
       }
     }
   }
 
   // RV64M instructions
-  constraint rv64c_instr_c {
-    if (unsupported_instr == rv64m_instr) {
-         compressed == 0;
-         opcode == 7'b0111011;
-         func3 inside {3'b100, 3'b110, 3'b000, 3'b101, 3'b111};
-         func7 == 7'b0000001;
+  constraint rv64m_instr_c {
+    if (!RV64M inside {supported_isa}) {
+      if (unsupported_instr == rv64m_instr) {
+           compressed == 0;
+           opcode == 7'b0111011;
+           func3 inside {3'b100, 3'b110, 3'b000, 3'b101, 3'b111};
+           func7 == 7'b0000001;
+      }
     }
   }
 
   // RV64C instructions
-  constraint rv64m_instr_c {
-    if (unsupported_instr == rv64c_instr) {
-         compressed == 1;
-         c_op != 2'b11;
-         if (c_op == 2'b0) {
-            !(c_msb inside {3'b0, 3'b010, 3'b110});
-         }
-         if (c_op == 2'b01) {
-            c_msb == 3'b100;
-            instr_bin[12:10] inside {3'b0, 3'b001, 3'b111};
-            if (instr_bin[12:10] != 3'b111) {
-               instr_bin[6:2] == 5'b0;
-            }
-         }
-         if (c_op == 2'b10) {
-            !(c_msb inside {3'b100, 3'b010, 3'b110});
-            if (c_msb == 3'b0) {
-               instr_bin[6:2] == 5'b0;
-               instr_bin[12] == 1'b0;
-            }
-         }
+  constraint rv64c_instr_c {
+    if (!RV64C inside {supported_isa} ||
+        !RV32FC inside {supported_isa} ||
+        !RV32DC inside {supported_isa} ||
+        !RV128C inside {supported_isa}) {
+      if (unsupported_instr == rv64c_instr) {
+           compressed == 1;
+           c_op != 2'b11;
+           if (c_op == 2'b0) {
+              !(c_msb inside {3'b0, 3'b010, 3'b100, 3'b110});
+           }
+           if (c_op == 2'b01) {
+              c_msb == 3'b100;
+              instr_bin[12:10] inside {3'b0, 3'b001, 3'b111};
+              if (instr_bin[12:10] != 3'b111) {
+                 instr_bin[6:2] == 5'b0;
+              }
+            else {
+               !instr_bin[6:5] inside {2'b10, 2'b11};
+             }
+           }
+           if (c_op == 2'b10) {
+              !(c_msb inside {3'b100, 3'b010, 3'b110});
+              if (c_msb == 3'b0) {
+                 instr_bin[6:2] == 5'b0;
+                 instr_bin[12] == 1'b0;
+              }
+           }
+      }
     }
   }
 
   // RV32FDQ, RV64FDQ instructions
   constraint rvfdq_instr_c {
-    if (unsupported_instr == rvfdq_instr) {
-      compressed == 0;
-      opcode inside {legal_rvfdq_opcode};
-      func7 inside {legal_rvfdq_func7};
-      if (opcode == 7'b0000111) {
-         func3 inside {3'b010, 3'b011, 3'b100};
-      } 
-      if (opcode == 7'b0100111) {
-         func3 inside {3'b010, 3'b011, 3'b100};
-      }
-      if (opcode == 7'b1000011) {
-         func2 inside {legal_func2};
-      }
-      if (opcode == 7'b1000111) {
-         func2 inside {legal_func2};
-      }
-      if (opcode == 7'b1001011) {
-         func2 inside {legal_func2};
-      }
-      if (opcode == 7'b1001111) {
-         func2 inside {legal_func2};
-      }
-      if (opcode == 7'b1010011) {
-         func3 inside {3'b0, 3'b010, 3'b001};
-         if (func3 == 3'b0) {
-            func7 inside {7'b0010000,7'b0010100,7'b1110000,7'b1010000,
-                          7'b1111000,7'b0010001,7'b0010101,7'b1010001,
-                          7'b1110001,7'b1111001,7'b0010011,7'b0010111,
-                          7'b1010011};
-            if (func7 == 7'b1110000) {
-               instr_bin[24:20] == 5'b0;
-            }
-            if (func7 == 7'b1111000) {
-               instr_bin[24:20] == 5'b0;
-            }
-            if (func7 == 7'b1110001) {
-               instr_bin[24:20] == 5'b0;
-            }
-            if (func7 == 7'b1111001) {
-               instr_bin[24:20] == 5'b0;
-            }
-         }
-         if (func3 == 3'b001) {
-            func7 inside {7'b0010000,7'b0010100,7'b1110000,7'b1010000,
-                          7'b0010001,7'b0010101,7'b1010001,7'b1110001,
-                          7'b1010011,7'b1110011,7'b0010011,7'b0010111};
-            if (func7 == 7'b1110000) {
-               instr_bin[24:20] == 5'b0;
-            }
-            if (func7 == 7'b1110001) {
-               instr_bin[24:20] == 5'b0;
-            }
-            if (func7 == 7'b1110011) {
-               instr_bin[24:20] == 5'b0;
-            }
-         }
-         if (func3 == 3'b010) {
-            func7 inside {7'b0010000,7'b1010000,7'b0010001,7'b1010001,
-                          7'b0010011,7'b1010011};
-         }
-         if (func7 == 7'b0101100) {
-            instr_bin[24:20] == 5'b0;
-         }
-         if (func7 == 7'b1100000) {
-            instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
-         }
-         if (func7 == 7'b1101000) {
-            instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
-         }
-         if (func7 == 7'b0101101) {
-            instr_bin[24:20] == 5'b0;
-         }
-         if (func7 == 7'b0100000) {
-            instr_bin[24:20] inside {5'b00001, 5'b00011};
-         }
-         if (func7 == 7'b0100001) {
-            instr_bin[24:20] inside {5'b0, 5'b00011};
-         }
-         if (func7 == 7'b1100001) {
-            instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
-         }
-         if (func7 == 7'b1101001) {
-            instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
-         }
-         if (func7 == 7'b0101111) {
-            instr_bin[24:20] == 5'b0;
-         }
-         if (func7 == 7'b0100011) {
-            instr_bin[24:20] inside {5'b0, 5'b00001};
-         }
-         if (func7 == 7'b1100011) {
-            instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
-         }
-         if (func7 == 7'b1101011) {
-            instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
-         }
+    if (!RV32F inside {supported_isa} ||
+        !RV64F inside {supported_isa} ||
+        !RV32D inside {supported_isa} ||
+        !RV64D inside {supported_isa}) {
+      if (unsupported_instr == rvfdq_instr) {
+        compressed == 0;
+        opcode inside {legal_rvfdq_opcode};
+        func7 inside {legal_rvfdq_func7};
+        if (opcode == 7'b0000111) {
+           func3 inside {3'b010, 3'b011, 3'b100};
+        }
+        if (opcode == 7'b0100111) {
+           func3 inside {3'b010, 3'b011, 3'b100};
+        }
+        if (opcode == 7'b1000011) {
+           func2 inside {legal_func2};
+        }
+        if (opcode == 7'b1000111) {
+           func2 inside {legal_func2};
+        }
+        if (opcode == 7'b1001011) {
+           func2 inside {legal_func2};
+        }
+        if (opcode == 7'b1001111) {
+           func2 inside {legal_func2};
+        }
+        if (opcode == 7'b1010011) {
+           func3 inside {3'b0, 3'b010, 3'b001};
+           if (func3 == 3'b0) {
+              func7 inside {7'b0010000,7'b0010100,7'b1110000,7'b1010000,
+                            7'b1111000,7'b0010001,7'b0010101,7'b1010001,
+                            7'b1110001,7'b1111001,7'b0010011,7'b0010111,
+                            7'b1010011};
+              if (func7 == 7'b1110000) {
+                 instr_bin[24:20] == 5'b0;
+              }
+              if (func7 == 7'b1111000) {
+                 instr_bin[24:20] == 5'b0;
+              }
+              if (func7 == 7'b1110001) {
+                 instr_bin[24:20] == 5'b0;
+              }
+              if (func7 == 7'b1111001) {
+                 instr_bin[24:20] == 5'b0;
+              }
+           }
+           if (func3 == 3'b001) {
+              func7 inside {7'b0010000,7'b0010100,7'b1110000,7'b1010000,
+                            7'b0010001,7'b0010101,7'b1010001,7'b1110001,
+                            7'b1010011,7'b1110011,7'b0010011,7'b0010111};
+              if (func7 == 7'b1110000) {
+                 instr_bin[24:20] == 5'b0;
+              }
+              if (func7 == 7'b1110001) {
+                 instr_bin[24:20] == 5'b0;
+              }
+              if (func7 == 7'b1110011) {
+                 instr_bin[24:20] == 5'b0;
+              }
+           }
+           if (func3 == 3'b010) {
+              func7 inside {7'b0010000,7'b1010000,7'b0010001,7'b1010001,
+                            7'b0010011,7'b1010011};
+           }
+           if (func7 == 7'b0101100) {
+              instr_bin[24:20] == 5'b0;
+           }
+           if (func7 == 7'b1100000) {
+              instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
+           }
+           if (func7 == 7'b1101000) {
+              instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
+           }
+           if (func7 == 7'b0101101) {
+              instr_bin[24:20] == 5'b0;
+           }
+           if (func7 == 7'b0100000) {
+              instr_bin[24:20] inside {5'b00001, 5'b00011};
+           }
+           if (func7 == 7'b0100001) {
+              instr_bin[24:20] inside {5'b0, 5'b00011};
+           }
+           if (func7 == 7'b1100001) {
+              instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
+           }
+           if (func7 == 7'b1101001) {
+              instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
+           }
+           if (func7 == 7'b0101111) {
+              instr_bin[24:20] == 5'b0;
+           }
+           if (func7 == 7'b0100011) {
+              instr_bin[24:20] inside {5'b0, 5'b00001};
+           }
+           if (func7 == 7'b1100011) {
+              instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
+           }
+           if (func7 == 7'b1101011) {
+              instr_bin[24:20] inside {5'b0, 5'b00001, 5'b00010, 5'b00011};
+           }
+        }
       }
     }
   }

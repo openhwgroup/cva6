@@ -19,6 +19,7 @@ package cva6_instr_test_pkg;
 
    `include "cva6_instr_gen_config.sv"
    `include "cva6_unsupported_instr.sv"
+   `include "cva6_illegal_instr.sv"
    `include "cva6_reg_hazard_stream.sv"
    `include "cva6_instr_sequence.sv"
    `include "cva6_asm_program_gen.sv"
