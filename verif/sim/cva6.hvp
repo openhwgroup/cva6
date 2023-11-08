@@ -705,6 +705,7 @@ plan "CVA6 Plan";
             endfeature
             feature RV32ZICOND;
                 description = "ZICOND extension";
+                CVA6_VERSION = STEP1;
                 ISA_ZICOND_EXTENSION = 1;
                 measure Group CZERO_EQZ;
                     source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.rv32zicond_czero_eqz_cg";
