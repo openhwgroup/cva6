@@ -211,9 +211,9 @@ class cva6_unsupported_instr_c extends uvm_object;
               if (instr_bin[12:10] != 3'b111) {
                  instr_bin[6:2] == 5'b0;
               }
-            else {
-               !instr_bin[6:5] inside {2'b10, 2'b11};
-             }
+              else {
+                !(instr_bin[6:5] inside {2'b10, 2'b11});
+              }
            }
            if (c_op == 2'b10) {
               !(c_msb inside {3'b100, 3'b010, 3'b110});
