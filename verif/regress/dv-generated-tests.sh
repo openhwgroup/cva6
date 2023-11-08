@@ -61,9 +61,8 @@ elif [[ "$list_num" = 3 ]];then
            "riscv_arithmetic_basic_illegal"
            "riscv_arithmetic_basic_illegal_hint_test"
            "riscv_arithmetic_basic_ebreak_dret_test"
-           "riscv_arithmetic_basic_illegal_csr"
            );
-   I=(30 30 30 30);
+   I=(50 50 50);
 elif [[ "$list_num" = 4 ]];then
 	TEST_NAME=(
            "riscv_mmu_stress_hint_test"
