@@ -64,6 +64,11 @@ module frontend
     input logic fetch_entry_ready_i
 );
 
+  localparam type btb_prediction_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] target_address;
+  };
+
   localparam type btb_update_t = struct packed {
     logic                   valid;
     logic [riscv::VLEN-1:0] pc;              // update at PC
@@ -454,6 +459,7 @@ module frontend
     btb #(
         .CVA6Cfg   (CVA6Cfg),
         .btb_update_t(btb_update_t),
+        .btb_prediction_t(btb_prediction_t),
         .NR_ENTRIES(CVA6Cfg.BTBEntries)
     ) i_btb (
         .clk_i,
