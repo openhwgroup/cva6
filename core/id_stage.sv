@@ -15,6 +15,7 @@
 
 module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type fetch_entry_t = logic,
     parameter type scoreboard_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -26,7 +27,7 @@ module id_stage #(
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
     // Handshake's data between fetch and decode - FRONTEND
-    input ariane_pkg::fetch_entry_t fetch_entry_i,
+    input fetch_entry_t fetch_entry_i,
     // Handshake's valid between fetch and decode - FRONTEND
     input logic fetch_entry_valid_i,
     // Handshake's ready between fetch and decode - FRONTEND

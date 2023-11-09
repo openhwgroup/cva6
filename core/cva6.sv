@@ -46,6 +46,15 @@ module cva6
       logic vfp;  // is this a vector floating-point instruction?
     },
 
+    // IF/ID Stage
+    // store the decompressed instruction
+    parameter type fetch_entry_t = struct packed {
+      logic [riscv::VLEN-1:0] address;  // the address of the instructions from below
+      logic [31:0] instruction;  // instruction word
+      branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
+      exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
+    },
+
     parameter type rvfi_probes_t = struct packed {
       logic csr;  //disabled 
       rvfi_probes_instr_t instr;
@@ -390,7 +399,8 @@ module cva6
   // Frontend
   // --------------
   frontend #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .fetch_entry_t(fetch_entry_t)
   ) i_frontend (
       .flush_i            (flush_ctrl_if),                  // not entirely correct
       .flush_bp_i         (1'b0),
@@ -418,6 +428,7 @@ module cva6
   // ---------
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
+      .fetch_entry_t(fetch_entry_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) id_stage_i (
       .clk_i,
