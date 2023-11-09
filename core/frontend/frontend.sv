@@ -20,6 +20,7 @@ module frontend
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
+    parameter type fetch_entry_t = logic,
 
     parameter type btb_update_t = struct packed {
       logic                   valid;
@@ -511,7 +512,8 @@ module frontend
   end
 
   instr_queue #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .fetch_entry_t(fetch_entry_t)
   ) i_instr_queue (
       .clk_i              (clk_i),
       .rst_ni             (rst_ni),

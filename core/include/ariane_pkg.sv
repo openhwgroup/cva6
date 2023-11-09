@@ -559,17 +559,6 @@ package ariane_pkg;
   endfunction
 
   // ---------------
-  // IF/ID Stage
-  // ---------------
-  // store the decompressed instruction
-  typedef struct packed {
-    logic [riscv::VLEN-1:0] address;  // the address of the instructions from below
-    logic [31:0] instruction;  // instruction word
-    branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
-    exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
-  } fetch_entry_t;
-
-  // ---------------
   // ID/EX/WB Stage
   // ---------------
 

@@ -16,7 +16,8 @@
 module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type branchpredict_sbe_t = logic,
-    parameter type irq_ctrl_t = logic
+    parameter type irq_ctrl_t = logic,
+    parameter type fetch_entry_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -24,7 +25,7 @@ module id_stage #(
     input logic flush_i,
     input logic debug_req_i,
     // from IF
-    input ariane_pkg::fetch_entry_t fetch_entry_i,
+    input fetch_entry_t fetch_entry_i,
     input logic fetch_entry_valid_i,
     output logic fetch_entry_ready_o,  // acknowledge the instruction (fetch entry)
     // to ID

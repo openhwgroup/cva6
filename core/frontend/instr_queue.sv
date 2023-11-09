@@ -46,7 +46,8 @@
 module instr_queue
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type fetch_entry_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -66,7 +67,7 @@ module instr_queue
     output logic replay_o,
     output logic [CVA6Cfg.VLEN-1:0] replay_addr_o,  // address at which to replay this instruction
     // to processor backend
-    output ariane_pkg::fetch_entry_t fetch_entry_o,
+    output fetch_entry_t fetch_entry_o,
     output logic fetch_entry_valid_o,
     input logic fetch_entry_ready_i
 );

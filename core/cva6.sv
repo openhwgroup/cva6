@@ -60,6 +60,15 @@ module cva6
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     },
 
+    // IF/ID Stage
+    // store the decompressed instruction
+    parameter type fetch_entry_t = struct packed {
+      logic [CVA6Cfg.VLEN-1:0] address;  // the address of the instructions from below
+      logic [31:0] instruction;  // instruction word
+      branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
+      exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
+    },
+
     parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
     // RVFI
     parameter type rvfi_instr_t = struct packed {
@@ -414,7 +423,8 @@ module cva6
   // --------------
   frontend #(
       .CVA6Cfg(CVA6Cfg),
-      .bp_resolve_t(bp_resolve_t)
+      .bp_resolve_t(bp_resolve_t),
+      .fetch_entry_t(fetch_entry_t)
   ) i_frontend (
       .flush_i            (flush_ctrl_if),                  // not entirely correct
       .flush_bp_i         (1'b0),
@@ -443,7 +453,8 @@ module cva6
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .irq_ctrl_t(irq_ctrl_t)
+      .irq_ctrl_t(irq_ctrl_t),
+      .fetch_entry_t(fetch_entry_t)
   ) id_stage_i (
       .clk_i,
       .rst_ni,
