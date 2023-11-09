@@ -19,7 +19,13 @@ module frontend
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type bp_resolve_t = logic
+    parameter type bp_resolve_t = logic,
+
+    parameter type btb_update_t = struct packed {
+      logic                   valid;
+      logic [CVA6Cfg.VLEN-1:0] pc;              // update at PC
+      logic [CVA6Cfg.VLEN-1:0] target_address;
+    }
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -432,6 +438,7 @@ module frontend
   end else begin : btb_gen
     btb #(
         .CVA6Cfg   (CVA6Cfg),
+        .btb_update_t(btb_update_t),
         .NR_ENTRIES(CVA6Cfg.BTBEntries)
     ) i_btb (
         .clk_i,

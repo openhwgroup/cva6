@@ -159,12 +159,6 @@ package ariane_pkg;
 
   typedef struct packed {
     logic                   valid;
-    logic [riscv::VLEN-1:0] pc;              // update at PC
-    logic [riscv::VLEN-1:0] target_address;
-  } btb_update_t;
-
-  typedef struct packed {
-    logic                   valid;
     logic [riscv::VLEN-1:0] target_address;
   } btb_prediction_t;
 

@@ -27,6 +27,7 @@
 // branch target buffer
 module btb #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type btb_update_t = logic,
     parameter int NR_ENTRIES = 8
 ) (
     input logic clk_i,        // Clock
@@ -35,7 +36,7 @@ module btb #(
     input logic debug_mode_i,
 
     input logic [CVA6Cfg.VLEN-1:0] vpc_i,  // virtual PC from IF stage
-    input ariane_pkg::btb_update_t btb_update_i,  // update btb with this information
+    input btb_update_t btb_update_i,  // update btb with this information
     output ariane_pkg::btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o // prediction from btb
 );
   // the last bit is always zero, we don't need it for indexing
