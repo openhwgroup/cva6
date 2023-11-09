@@ -28,6 +28,7 @@
 module btb #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type btb_update_t = logic,
+    parameter type btb_prediction_t = logic,
     parameter int NR_ENTRIES = 8
 ) (
     input logic clk_i,        // Clock
@@ -37,7 +38,7 @@ module btb #(
 
     input logic [CVA6Cfg.VLEN-1:0] vpc_i,  // virtual PC from IF stage
     input btb_update_t btb_update_i,  // update btb with this information
-    output ariane_pkg::btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o // prediction from btb
+    output btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o // prediction from btb
 );
   // the last bit is always zero, we don't need it for indexing
   localparam OFFSET = CVA6Cfg.RVC == 1'b1 ? 1 : 2;
@@ -51,7 +52,7 @@ module btb #(
   // prevent aliasing to degrade performance
   localparam ANTIALIAS_BITS = 8;
   // number of bits par word in the bram
-  localparam BRAM_WORD_BITS = $bits(ariane_pkg::btb_prediction_t);
+  localparam BRAM_WORD_BITS = $bits(btb_prediction_t);
   // we are not interested in all bits of the address
   unread i_unread (.d_i(|vpc_i));
 
@@ -141,7 +142,7 @@ module btb #(
 
     // typedef for all branch target entries
     // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
-    ariane_pkg::btb_prediction_t
+    btb_prediction_t
         btb_d[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0],
         btb_q[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0];
 

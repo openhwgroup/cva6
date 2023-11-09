@@ -25,6 +25,11 @@ module frontend
       logic                   valid;
       logic [CVA6Cfg.VLEN-1:0] pc;              // update at PC
       logic [CVA6Cfg.VLEN-1:0] target_address;
+    },
+
+    parameter type btb_prediction_t = struct packed {
+      logic                   valid;
+      logic [CVA6Cfg.VLEN-1:0] target_address;
     }
 ) (
     input logic clk_i,  // Clock
@@ -439,6 +444,7 @@ module frontend
     btb #(
         .CVA6Cfg   (CVA6Cfg),
         .btb_update_t(btb_update_t),
+        .btb_prediction_t(btb_prediction_t),
         .NR_ENTRIES(CVA6Cfg.BTBEntries)
     ) i_btb (
         .clk_i,
