@@ -15,7 +15,8 @@
 
 module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type branchpredict_sbe_t = logic
+    parameter type branchpredict_sbe_t = logic,
+    parameter type irq_ctrl_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -37,7 +38,7 @@ module id_stage #(
     input logic [2:0] frm_i,  // floating-point dynamic rounding mode
     input riscv::xs_t vs_i,  // vector extension status
     input logic [1:0] irq_i,
-    input ariane_pkg::irq_ctrl_t irq_ctrl_i,
+    input irq_ctrl_t irq_ctrl_i,
     input logic debug_mode_i,  // we are in debug mode
     input logic tvm_i,
     input logic tw_i,
@@ -80,7 +81,8 @@ module id_stage #(
   // ---------------------------------------------------------
   decoder #(
       .CVA6Cfg(CVA6Cfg),
-      .branchpredict_sbe_t(branchpredict_sbe_t)
+      .branchpredict_sbe_t(branchpredict_sbe_t),
+      .irq_ctrl_t(irq_ctrl_t)
   ) decoder_i (
       .debug_req_i,
       .irq_ctrl_i,

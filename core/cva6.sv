@@ -41,6 +41,16 @@ module cva6
       logic [CVA6Cfg.VLEN-1:0] predict_address;  // target address at which to jump, or not
     },
 
+    // All information needed to determine whether we need to associate an interrupt
+    // with the corresponding instruction or not.
+    parameter type irq_ctrl_t = struct packed {
+      logic [CVA6Cfg.XLEN-1:0] mie;
+      logic [CVA6Cfg.XLEN-1:0] mip;
+      logic [CVA6Cfg.XLEN-1:0] mideleg;
+      logic                    sie;
+      logic                    global_enable;
+    },
+
     parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
     // RVFI
     parameter type rvfi_instr_t = struct packed {
@@ -423,7 +433,8 @@ module cva6
   // ---------
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
-      .branchpredict_sbe_t(branchpredict_sbe_t)
+      .branchpredict_sbe_t(branchpredict_sbe_t),
+      .irq_ctrl_t(irq_ctrl_t)
   ) id_stage_i (
       .clk_i,
       .rst_ni,
@@ -755,6 +766,7 @@ module cva6
   // ---------
   csr_regfile #(
       .CVA6Cfg       (CVA6Cfg),
+      .irq_ctrl_t(irq_ctrl_t),
       .AsidWidth     (CVA6Cfg.ASID_WIDTH),
       .MHPMCounterNum(MHPMCounterNum)
   ) csr_regfile_i (
