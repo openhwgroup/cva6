@@ -51,6 +51,15 @@ module cva6
       logic                    global_enable;
     },
 
+    parameter type fu_data_t = struct packed {
+      fu_t                      fu;
+      fu_op                     operation;
+      logic [CVA6Cfg.XLEN-1:0]  operand_a;
+      logic [CVA6Cfg.XLEN-1:0]  operand_b;
+      logic [CVA6Cfg.XLEN-1:0]  imm;
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
+    },
+
     parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
     // RVFI
     parameter type rvfi_instr_t = struct packed {
@@ -533,6 +542,7 @@ module cva6
       .CVA6Cfg   (CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .fu_data_t(fu_data_t),
       .IsRVFI    (IsRVFI),
       .NR_ENTRIES(CVA6Cfg.NR_SB_ENTRIES)
   ) issue_stage_i (
@@ -610,7 +620,8 @@ module cva6
   ex_stage #(
       .CVA6Cfg   (CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
-      .branchpredict_sbe_t(branchpredict_sbe_t)
+      .branchpredict_sbe_t(branchpredict_sbe_t),
+      .fu_data_t(fu_data_t)
   ) ex_stage_i (
       .clk_i                (clk_i),
       .rst_ni               (rst_ni),
@@ -1081,6 +1092,7 @@ module cva6
   if (CVA6Cfg.EnableAccelerator) begin : gen_accelerator
     acc_dispatcher #(
         .CVA6Cfg   (CVA6Cfg),
+        .fu_data_t(fu_data_t),
         .acc_cfg_t (acc_cfg_t),
         .AccCfg    (AccCfg),
         .acc_req_t (cvxif_req_t),

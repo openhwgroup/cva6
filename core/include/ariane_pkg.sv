@@ -474,15 +474,6 @@ package ariane_pkg;
     CZERO_NEZ
   } fu_op;
 
-  typedef struct packed {
-    fu_t                      fu;
-    fu_op                     operation;
-    riscv::xlen_t             operand_a;
-    riscv::xlen_t             operand_b;
-    riscv::xlen_t             imm;
-    logic [TRANS_ID_BITS-1:0] trans_id;
-  } fu_data_t;
-
   function automatic logic op_is_branch(input fu_op op);
     unique case (op) inside
       EQ, NE, LTS, GES, LTU, GEU: return 1'b1;

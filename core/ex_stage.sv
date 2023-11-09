@@ -19,7 +19,8 @@ module ex_stage
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
-    parameter type branchpredict_sbe_t = logic
+    parameter type branchpredict_sbe_t = logic,
+    parameter type fu_data_t = logic
 ) (
     input logic clk_i,        // Clock
     input logic rst_ni,       // Asynchronous reset active low
@@ -172,7 +173,8 @@ module ex_stage
   assign alu_data = (alu_valid_i | branch_valid_i) ? fu_data_i : '0;
 
   alu #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) alu_i (
       .clk_i,
       .rst_ni,
@@ -187,7 +189,8 @@ module ex_stage
   branch_unit #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
-      .branchpredict_sbe_t(branchpredict_sbe_t)
+      .branchpredict_sbe_t(branchpredict_sbe_t),
+      .fu_data_t(fu_data_t)
   ) branch_unit_i (
       .clk_i,
       .rst_ni,
@@ -208,7 +211,8 @@ module ex_stage
 
   // 3. CSR (sequential)
   csr_buffer #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) csr_buffer_i (
       .clk_i,
       .rst_ni,
@@ -251,7 +255,8 @@ module ex_stage
   assign mult_data = mult_valid_i ? fu_data_i : '0;
 
   mult #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) i_mult (
       .clk_i,
       .rst_ni,
@@ -273,7 +278,8 @@ module ex_stage
       assign fpu_data = fpu_valid_i ? fu_data_i : '0;
 
       fpu_wrap #(
-          .CVA6Cfg(CVA6Cfg)
+          .CVA6Cfg(CVA6Cfg),
+          .fu_data_t(fu_data_t)
       ) fpu_i (
           .clk_i,
           .rst_ni,
@@ -307,7 +313,8 @@ module ex_stage
   assign lsu_data = lsu_valid_i ? fu_data_i : '0;
 
   load_store_unit #(
-      .CVA6Cfg   (CVA6Cfg)
+      .CVA6Cfg   (CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) lsu_i (
       .clk_i,
       .rst_ni,
@@ -363,7 +370,8 @@ module ex_stage
     fu_data_t cvxif_data;
     assign cvxif_data = x_valid_i ? fu_data_i : '0;
     cvxif_fu #(
-        .CVA6Cfg(CVA6Cfg)
+        .CVA6Cfg(CVA6Cfg),
+        .fu_data_t(fu_data_t)
     ) cvxif_fu_i (
         .clk_i,
         .rst_ni,
