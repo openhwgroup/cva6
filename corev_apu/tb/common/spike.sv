@@ -12,111 +12,91 @@
 // Date: 3/11/2018
 // Description: Wrapped Spike Model for Tandem Verification
 
-import uvm_pkg::*;
+import ariane_pkg::*;
+import rvfi_pkg::*;
 
-`include "uvm_macros.svh"
-
-import "DPI-C" function int spike_create(string filename, longint unsigned dram_base, int unsigned size);
-
-typedef riscv::commit_log_t riscv_commit_log_t;
-import "DPI-C" function void spike_tick(output riscv_commit_log_t commit_log);
-
-import "DPI-C" function void clint_tick();
+import "DPI-C" function void spike_step(inout st_rvfi rvfi);
 
 module spike #(
-    parameter longint unsigned DramBase = 'h8000_0000,
-    parameter int unsigned     Size     = 64 * 1024 * 1024 // 64 Mega Byte
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg,
+  parameter type rvfi_instr_t = struct packed {
+    logic [config_pkg::NRET-1:0]                  valid;
+    logic [config_pkg::NRET*64-1:0]               order;
+    logic [config_pkg::NRET*config_pkg::ILEN-1:0] insn;
+    logic [config_pkg::NRET-1:0]                  trap;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      cause;
+    logic [config_pkg::NRET-1:0]                  halt;
+    logic [config_pkg::NRET-1:0]                  intr;
+    logic [config_pkg::NRET*2-1:0]                mode;
+    logic [config_pkg::NRET*2-1:0]                ixl;
+    logic [config_pkg::NRET*5-1:0]                rs1_addr;
+    logic [config_pkg::NRET*5-1:0]                rs2_addr;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
+    logic [config_pkg::NRET*5-1:0]                rd_addr;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
+    logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
+    logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
+    logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
+    logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+  },
+  parameter longint unsigned DramBase = 'h8000_0000,
+  parameter int unsigned     Size     = 64 * 1024 * 1024 // 64 Mega Byte
 )(
-    input logic       clk_i,
-    input logic       rst_ni,
-    input logic       clint_tick_i,
-    input ariane_pkg::scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
-    input logic [CVA6Cfg.NrCommitPorts-1:0]                          commit_ack_i,
-    input ariane_pkg::exception_t                            exception_i,
-    input logic [CVA6Cfg.NrCommitPorts-1:0][4:0]                     waddr_i,
-    input logic [CVA6Cfg.NrCommitPorts-1:0][63:0]                    wdata_i,
-    input riscv::priv_lvl_t                                  priv_lvl_i
+    input logic                                     clk_i,
+    input logic                                     rst_ni,
+    input logic                                     clint_tick_i,
+    input rvfi_instr_t[CVA6Cfg.NrCommitPorts-1:0]   rvfi_i
 );
-    static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
-
     string binary = "";
-
-    logic fake_clk;
-
-    logic clint_tick_q, clint_tick_qq, clint_tick_qqq, clint_tick_qqqq;
+    string rtl_isa = "";
 
     initial begin
-        void'(uvcl.get_arg_value("+PRELOAD=", binary));
-        assert(binary != "") else $error("We need a preloaded binary for tandem verification");
-        void'(spike_create(binary, DramBase, Size));
+        rvfi_initialize_spike('h1);
     end
 
-    riscv_commit_log_t commit_log;
-    logic [31:0] instr;
+    st_rvfi t_core, t_reference_model;
+    logic [63:0] pc64;
+    logic [31:0] rtl_instr;
+    logic [31:0] spike_instr;
+    string       cause;
+    string instr;
 
     always_ff @(posedge clk_i) begin
         if (rst_ni) begin
-
             for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-                if ((commit_instr_i[i].valid && commit_ack_i[i]) || (commit_instr_i[i].valid && exception_i.valid)) begin
-                    spike_tick(commit_log);
-                    instr = (commit_log.instr[1:0] != 2'b11) ? {16'b0, commit_log.instr[15:0]} : commit_log.instr;
-                    // $display("\x1B[32m%h %h\x1B[0m", commit_log.pc, instr);
-                    // $display("%p", commit_log);
-                    // $display("\x1B[37m%h %h\x1B[0m", commit_instr_i[i].pc, commit_instr_i[i].ex.tval[31:0]);
-                    assert (commit_log.pc === commit_instr_i[i].pc) else begin
-                        $warning("\x1B[33m[Tandem] PCs Mismatch\x1B[0m");
-                        // $stop;
-                    end
-                    assert (commit_log.was_exception === exception_i.valid) else begin
-                        $warning("\x1B[33m[Tandem] Exception not detected\x1B[0m");
-                        // $stop;
-                        $display("Spike: %p", commit_log);
-                        $display("Ariane: %p", commit_instr_i[i]);
-                    end
-                    if (!exception_i.valid) begin
-                        assert (commit_log.priv === priv_lvl_i) else begin
-                            $warning("\x1B[33m[Tandem] Privilege level mismatches\x1B[0m");
-                            // $stop;
-                            $display("\x1B[37m %2d == %2d @ PC %h\x1B[0m", priv_lvl_i, commit_log.priv, commit_log.pc);
-                        end
-                        assert (instr === commit_instr_i[i].ex.tval) else begin
-                            $warning("\x1B[33m[Tandem] Decoded instructions mismatch\x1B[0m");
-                            // $stop;
-                            $display("\x1B[37m%h === %h @ PC %h\x1B[0m", commit_instr_i[i].ex.tval, instr, commit_log.pc);
-                        end
-                        // TODO(zarubaf): Adapt for floating point instructions
-                        if (commit_instr_i[i].rd != 0) begin
-                            // check the return value
-                            // $display("\x1B[37m%h === %h\x1B[0m", commit_instr_i[i].rd, commit_log.rd);
-                            assert (waddr_i[i] === commit_log.rd) else begin
-                                $warning("\x1B[33m[Tandem] Destination register mismatches\x1B[0m");
-                                // $stop;
-                            end
-                            assert (wdata_i[i] === commit_log.data) else begin
-                                $warning("\x1B[33m[Tandem] Write back data mismatches\x1B[0m");
-                                $display("\x1B[37m%h === %h @ PC %h\x1B[0m", wdata_i[i], commit_log.data, commit_log.pc);
-                            end
-                        end
-                    end
+
+                if (rvfi_i[i].valid || rvfi_i[i].trap) begin
+                    spike_step(t_reference_model);
+                    t_core.order = rvfi_i[i].order;
+                    t_core.insn  = rvfi_i[i].insn;
+                    t_core.trap  = rvfi_i[i].trap;
+                    t_core.cause = rvfi_i[i].cause;
+                    t_core.halt  = rvfi_i[i].halt;
+                    t_core.intr  = rvfi_i[i].intr;
+                    t_core.mode  = rvfi_i[i].mode;
+                    t_core.ixl   = rvfi_i[i].ixl;
+                    t_core.rs1_addr  = rvfi_i[i].rs1_addr;
+                    t_core.rs2_addr  = rvfi_i[i].rs2_addr;
+                    t_core.rs1_rdata = rvfi_i[i].rs1_rdata;
+                    t_core.rs2_rdata = rvfi_i[i].rs2_rdata;
+                    t_core.rd1_addr   = rvfi_i[i].rd_addr;
+                    t_core.rd1_wdata  = rvfi_i[i].rd_wdata;
+                    t_core.pc_rdata  = rvfi_i[i].pc_rdata;
+                    t_core.pc_wdata  = rvfi_i[i].pc_wdata;
+                    t_core.mem_addr  = rvfi_i[i].mem_addr;
+                    t_core.mem_rmask = rvfi_i[i].mem_rmask;
+                    t_core.mem_wmask = rvfi_i[i].mem_wmask;
+                    t_core.mem_rdata = rvfi_i[i].mem_rdata;
+                    t_core.mem_wdata = rvfi_i[i].mem_wdata;
+
+                    rvfi_compare(t_core, t_reference_model);
                 end
             end
-        end
-    end
-
-    // we want to schedule the timer increment at the end of this cycle
-    assign #1ps fake_clk = clk_i;
-
-    always_ff @(posedge fake_clk) begin
-        clint_tick_q <= clint_tick_i;
-        clint_tick_qq <= clint_tick_q;
-        clint_tick_qqq <= clint_tick_qq;
-        clint_tick_qqqq <= clint_tick_qqq;
-    end
-
-    always_ff @(posedge clint_tick_qqqq) begin
-        if (rst_ni) begin
-            void'(clint_tick());
         end
     end
 endmodule

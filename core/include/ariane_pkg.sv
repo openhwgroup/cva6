@@ -107,22 +107,17 @@ package ariane_pkg;
   // enables a commit log which matches spikes commit log format for easier trace comparison
   localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
 
-  // ------------- Dangerouse -------------
+  // ------------- Dangerous -------------
   // if set to zero a flush will not invalidate the cache-lines, in a single core environment
   // where coherence is not necessary this can improve performance. This needs to be switched on
   // when more than one core is in a system
   localparam logic INVALIDATE_ON_FLUSH = 1'b1;
+
 `ifdef SPIKE_TANDEM
-  // enable performance cycle counter, if set to zero mcycle will be incremented
-  // with instret (non RISC-V conformal)
-  localparam bit ENABLE_CYCLE_COUNT = 1'b0;
-  // mark WIF as nop
-  localparam bit ENABLE_WFI = 1'b0;
-  // Spike zeros tval on all exception except memory faults
+  // Spike still places 0 in TVAL for ENV_CALL_* exceptions.
+  // This may eventually go away when Spike starts to handle TVAL for *all* exceptions.
   localparam bit ZERO_TVAL = 1'b1;
 `else
-  localparam bit ENABLE_CYCLE_COUNT = 1'b1;
-  localparam bit ENABLE_WFI = 1'b1;
   localparam bit ZERO_TVAL = 1'b0;
 `endif
   // read mask for SSTATUS over MMSTATUS

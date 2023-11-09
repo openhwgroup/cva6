@@ -7,8 +7,30 @@ name: ci
 on: [push, pull_request]
 
 jobs:
-  riscv-tests:
-    name: riscv-tests
+  build-riscv-tests:
+    name: build-riscv-tests
+    runs-on: ubuntu-latest
+    env:
+      RISCV: /riscv
+      NUM_JOBS: 4
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Prepare
+      run: |
+          ci/setup.sh
+          tar -cf tools.tar tools
+          tar -cf tmp.tar tmp
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: compiled-tools
+        path: |
+          tools.tar
+          tmp.tar
+  execute-riscv-tests:
+    name: execute-riscv-tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -16,11 +38,19 @@ jobs:
         target: [cv64a6_imafdc_sv39, cv64a6_imafdc_sv39_wb]
     env:
       RISCV: /riscv
+    needs:
+      build-riscv-tests
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Prepare
-      run: ci/setup.sh
-    - name: run tests
-      run: make run-${{ matrix.testcase}}-verilator target=${{ matrix.target }}
+    - name: Download a single artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: compiled-tools
+    - name: Run Tests
+      run: |
+          tar xf tools.tar
+          tar xf tmp.tar
+          source verif/regress/install-cva6.sh
+          make run-${{ matrix.testcase}}-verilator target=${{ matrix.target }}

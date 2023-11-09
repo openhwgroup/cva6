@@ -62,6 +62,12 @@ void handle_sigterm(int sig) {
   dtm->stop();
 }
 
+
+extern "C" void read_elf(const char* filename);
+extern "C" int64_t read_symbol(const char* symbol, uint64_t* address);
+extern "C" char get_section (long long* address, long long* len);
+extern "C" void read_section_void(long long address, void * buffer, uint64_t size = 0);
+
 // Called by $time in Verilog converts to double, to match what SystemC does
 double sc_time_stamp () {
     return main_time;
@@ -285,11 +291,7 @@ done_processing:
 
   std::unique_ptr<Variane_testharness> top(new Variane_testharness);
 
-  // Use an hitf hexwriter to read the binary data.
-  htif_hexwriter_t htif(0x0, 1, -1);
-  memif_t memif(&htif);
-  reg_t entry;
-  load_elf(htif_argv[1], &memif, &entry);
+  read_elf(htif_argv[1]);
 
 #if VM_TRACE
   Verilated::traceEverOn(true); // Verilator must compute traced signals
@@ -335,15 +337,22 @@ done_processing:
   top->rst_ni = 1;
 
   // Preload memory.
-  size_t mem_size = 0xFFFFFF;
 #if (VERILATOR_VERSION_INTEGER >= 5000000)
   // Verilator v5: Use rootp pointer and .data() accessor.
-  memif.read(0x80000000, mem_size, (void *)top->rootp->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram.m_storage);
+#define MEM top->rootp->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram.m_storage
 #else
   // Verilator v4
-  memif.read(0x80000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram);
+#define MEM top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram
 #endif
-  // memif.read(0x84000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__gen_mem_user__DOT__i_tc_sram_wrapper_user__DOT__i_tc_sram__DOT__sram);
+  long long addr;
+  long long len;
+
+  size_t mem_size = 0xFFFFFF;
+  while(get_section(&addr, &len))
+  {
+    if (addr == 0x80000000)
+        read_section_void(addr, (void *) MEM , mem_size);
+  }
 
   while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)) {
     top->clk_i = 0;

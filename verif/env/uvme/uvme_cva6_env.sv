@@ -38,6 +38,8 @@ class uvme_cva6_env_c extends uvm_env;
    uvme_cva6_vsqr_c       vsequencer;
    uvme_cva6_cov_model_c  cov_model;
 
+   uvmc_rvfi_reference_model m_reference_model;
+
    // Agents
    uvma_clknrst_agent_c   clknrst_agent;
    uvma_cvxif_agent_c     cvxif_agent;
@@ -50,7 +52,7 @@ class uvme_cva6_env_c extends uvm_env;
    virtual uvmt_axi_switch_intf  axi_switch_vif;
 
    //CSR register model
-   cva6_csr_reg_block                             csr_reg_block;   
+   cva6_csr_reg_block                             csr_reg_block;
    cva6_csr_reg_adapter                           csr_reg_adapter;
    cva6_csr_reg_predictor#(uvma_isacov_mon_trn_c) csr_reg_predictor;
 
@@ -168,6 +170,9 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
+      if ($test$plusargs("scoreboard_enabled"))
+          $value$plusargs("scoreboard_enabled=%b",cfg.scoreboard_enabled);
+
       retrieve_vif();
       assign_cfg           ();
       assign_cntxt         ();
@@ -184,7 +189,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
       csr_reg_block     = cva6_csr_reg_block::type_id::create("csr_reg_block", this);
       csr_reg_predictor = cva6_csr_reg_predictor#(uvma_isacov_mon_trn_c)::type_id::create("csr_reg_predictor", this);
       csr_reg_adapter   = cva6_csr_reg_adapter::type_id::create("csr_reg_adapter",, get_full_name());
-      csr_reg_block.build(); 
+      csr_reg_block.build();
     end
 
 endfunction : build_phase
@@ -195,7 +200,7 @@ function void uvme_cva6_env_c::connect_phase(uvm_phase phase);
    super.connect_phase(phase);
 
    if (cfg.enabled) begin
-      if (cfg.scoreboarding_enabled) begin
+      if (cfg.scoreboard_enabled) begin
          connect_predictor ();
          connect_scoreboard();
       end
@@ -207,7 +212,7 @@ function void uvme_cva6_env_c::connect_phase(uvm_phase phase);
          connect_coverage_model();
       end
    end
-   
+
    if (csr_reg_block.get_parent() == null) begin
       csr_reg_block.default_map.set_base_addr('h0);
       csr_reg_predictor.map     = csr_reg_block.default_map;
@@ -269,9 +274,10 @@ endfunction: create_agents
 
 function void uvme_cva6_env_c::create_env_components();
 
-   if (cfg.scoreboarding_enabled) begin
+   if (cfg.scoreboard_enabled) begin
       predictor = uvme_cva6_prd_c::type_id::create("predictor", this);
       sb        = uvme_cva6_sb_c ::type_id::create("sb"       , this);
+      m_reference_model = uvmc_rvfi_reference_model#(ILEN,XLEN)::type_id::create("m_reference_model", this);
    end
 
    if (cfg.cov_model_enabled) begin
@@ -321,6 +327,10 @@ function void uvme_cva6_env_c::connect_scoreboard();
    // TODO Connect predictor -> scoreboard
    //      Ex: predictor.debug_ap.connect(sb.debug_sb.exp_export);
 
+    rvfi_agent.rvfi_core_ap.connect(sb.m_rvfi_scoreboard.m_imp_core);
+    rvfi_agent.rvfi_core_ap.connect(m_reference_model.m_analysis_imp);
+    m_reference_model.m_analysis_port.connect(sb.m_rvfi_scoreboard.m_imp_reference_model);
+
 endfunction: connect_scoreboard
 
 
@@ -361,11 +371,9 @@ function void uvme_cva6_env_c::connect_coverage_model();
    if (cfg.cov_isa_model_enabled) begin
       isacov_agent.monitor.ap.connect(cov_model.isa_covg.mon_trn_fifo.analysis_export);
    end
-   foreach (rvfi_agent.instr_mon_ap[i]) begin
-      rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_imp);
-   end
-   
+
    clknrst_agent.mon_ap.connect(cov_model.reset_export);
+   rvfi_agent.rvfi_core_ap.connect(isacov_agent.monitor.rvfi_instr_imp);
 
 endfunction: connect_coverage_model
 

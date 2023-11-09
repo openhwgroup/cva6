@@ -35,6 +35,8 @@ class uvme_cva6_sb_c extends uvm_scoreboard;
    // TODO Add sub-scoreboards
    //      Ex: uvme_cva6_sb_simplex_c  egress_sb;
    //          uvme_cva6_sb_simplex_c  ingress_sb;
+   uvmc_rvfi_scoreboard_c#(ILEN,XLEN) m_rvfi_scoreboard;
+
 
 
    `uvm_component_utils_begin(uvme_cva6_sb_c)
@@ -129,6 +131,7 @@ function void uvme_cva6_sb_c::create_sbs();
    // TODO Implement uvme_cva6_sb_c::create_sbs()
    //      Ex: egress_sb  = uvme_cva6_sb_simplex_c::type_id::create("egress_sb" , this);
    //          ingress_sb = uvme_cva6_sb_simplex_c::type_id::create("ingress_sb", this);
+    m_rvfi_scoreboard = uvmc_rvfi_scoreboard_c#(ILEN,XLEN)::type_id::create("m_rvfi_scoreboard", this);
 
 endfunction : create_sbs
 

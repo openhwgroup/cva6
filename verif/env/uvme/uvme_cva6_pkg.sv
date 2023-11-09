@@ -37,6 +37,7 @@
  */
 package uvme_cva6_pkg;
 
+   import cva6_config_pkg ::*;
    import uvm_pkg         ::*;
    import uvml_hrtbt_pkg  ::*;
    import uvml_sb_pkg     ::*;
@@ -47,6 +48,8 @@ package uvme_cva6_pkg;
    import uvml_mem_pkg  ::*;
    import uvma_core_cntrl_pkg::*;
    import uvma_rvfi_pkg::*;
+   import uvmc_rvfi_scoreboard_pkg::*;
+   import uvmc_rvfi_reference_model_pkg::*;
    import uvma_isacov_pkg::*;
 
    // Constants / Structs / Enums

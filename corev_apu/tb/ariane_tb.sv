@@ -24,7 +24,7 @@ import uvm_pkg::*;
 
 import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
-import "DPI-C" context function void read_section(input longint address, inout byte buffer[]);
+import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
 
 module ariane_tb;
 
@@ -91,26 +91,6 @@ module ariane_tb;
         .exit_o
     );
 
-`ifdef SPIKE_TANDEM
-    spike #(
-        .CVA6Cfg ( CVA6Cfg ),
-        .Size ( NUM_WORDS * 8 )
-    ) i_spike (
-        .clk_i,
-        .rst_ni,
-        .clint_tick_i   ( rtc_i                               ),
-        .commit_instr_i ( dut.i_ariane.commit_instr_id_commit ),
-        .commit_ack_i   ( dut.i_ariane.commit_ack             ),
-        .exception_i    ( dut.i_ariane.ex_commit              ),
-        .waddr_i        ( dut.i_ariane.waddr_commit_id        ),
-        .wdata_i        ( dut.i_ariane.wdata_commit_id        ),
-        .priv_lvl_i     ( dut.i_ariane.priv_lvl               )
-    );
-    initial begin
-        $display("Running binary in tandem mode");
-    end
-`endif
-
     // Clock process
     initial begin
         clk_i = 1'b0;
@@ -158,7 +138,7 @@ module ariane_tb;
         automatic logic [7:0][7:0] mem_row;
         longint address, len;
         byte buffer[];
-        void'(uvcl.get_arg_value("+PRELOAD=", binary));
+        void'(uvcl.get_arg_value("+elf_file=", binary));
 
         if (binary != "") begin
             `uvm_info( "Core Test", $sformatf("Preloading ELF: %s", binary), UVM_LOW)
@@ -170,10 +150,9 @@ module ariane_tb;
             // while there are more sections to process
             while (get_section(address, len)) begin
                 automatic int num_words = (len+7)/8;
-                `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len),
-UVM_LOW)
+                `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
                 buffer = new [num_words*8];
-                void'(read_section(address, buffer));
+                void'(read_section_sv(address, buffer));
                 // preload memories
                 // 64-bit
                 for (int i = 0; i < num_words; i++) begin

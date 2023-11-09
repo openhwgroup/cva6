@@ -38,6 +38,7 @@ package uvmt_cva6_pkg;
 
    import uvm_pkg::*;
    import uvme_cva6_pkg::*;
+   import uvmc_rvfi_reference_model_pkg::*;
    import uvml_hrtbt_pkg::*;
    import uvml_logs_pkg::*;
 
