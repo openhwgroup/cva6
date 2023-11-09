@@ -558,17 +558,6 @@ package ariane_pkg;
     endcase
   endfunction
 
-  typedef struct packed {
-    logic                       valid;
-    logic [riscv::VLEN-1:0]     vaddr;
-    logic                       overflow;
-    riscv::xlen_t               data;
-    logic [(riscv::XLEN/8)-1:0] be;
-    fu_t                        fu;
-    fu_op                       operation;
-    logic [TRANS_ID_BITS-1:0]   trans_id;
-  } lsu_ctrl_t;
-
   // ---------------
   // IF/ID Stage
   // ---------------

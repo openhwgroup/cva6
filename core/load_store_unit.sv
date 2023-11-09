@@ -17,7 +17,18 @@ module load_store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type fu_data_t = logic
+    parameter type fu_data_t = logic,
+
+    parameter type lsu_ctrl_t = struct packed {
+      logic                        valid;
+      logic [CVA6Cfg.VLEN-1:0]     vaddr;
+      logic                        overflow;
+      logic [CVA6Cfg.XLEN-1:0]     data;
+      logic [(CVA6Cfg.XLEN/8)-1:0] be;
+      fu_t                         fu;
+      fu_op                        operation;
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0]    trans_id;
+    }
 ) (
     input  logic clk_i,
     input  logic rst_ni,
@@ -244,7 +255,8 @@ module load_store_unit
   // Store Unit
   // ------------------
   store_unit #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) i_store_unit (
       .clk_i,
       .rst_ni,
@@ -286,7 +298,8 @@ module load_store_unit
   // Load Unit
   // ------------------
   load_unit #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
       .valid_i   (ld_valid_i),
       .lsu_ctrl_i(lsu_ctrl),
@@ -476,7 +489,8 @@ module load_store_unit
   };
 
   lsu_bypass #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) lsu_bypass_i (
       .lsu_req_i      (lsu_req_i),
       .lsu_req_valid_i(lsu_valid_i),
