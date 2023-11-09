@@ -86,6 +86,17 @@ module cva6
       logic                   global_enable;
     },
 
+    parameter type lsu_ctrl_t = struct packed {
+      logic                                 valid;
+      logic [riscv::VLEN-1:0]               vaddr;
+      logic                                 overflow;
+      logic [riscv::XLEN-1:0]               data;
+      logic [(riscv::XLEN/8)-1:0]           be;
+      fu_t                                  fu;
+      fu_op                                 operation;
+      logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
+    },
+
     parameter type fu_data_t = struct packed {
       fu_t                                  fu;
       fu_op                                 operation;
@@ -652,6 +663,7 @@ module cva6
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .fu_data_t(fu_data_t),
+      .lsu_ctrl_t(lsu_ctrl_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) ex_stage_i (
       .clk_i                (clk_i),
@@ -1377,6 +1389,7 @@ module cva6
   cva6_rvfi_probes #(
       .CVA6Cfg      (CVA6Cfg),
       .scoreboard_entry_t(scoreboard_entry_t),
+      .lsu_ctrl_t   (lsu_ctrl_t),
       .rvfi_probes_t(rvfi_probes_t)
   ) i_cva6_rvfi_probes (
 

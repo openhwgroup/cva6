@@ -21,6 +21,7 @@ module ex_stage
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
     parameter type fu_data_t = logic,
+    parameter type lsu_ctrl_t = logic,
     parameter int unsigned ASID_WIDTH = 1
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -374,6 +375,7 @@ module ex_stage
   load_store_unit #(
       .CVA6Cfg   (CVA6Cfg),
       .fu_data_t (fu_data_t),
+      .lsu_ctrl_t(lsu_ctrl_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) lsu_i (
       .clk_i,
