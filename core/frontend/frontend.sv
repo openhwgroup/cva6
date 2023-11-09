@@ -63,6 +63,13 @@ module frontend
     // Handshake's ready between fetch and decode - ID_STAGE
     input logic fetch_entry_ready_i
 );
+
+  localparam type btb_update_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] pc;              // update at PC
+    logic [riscv::VLEN-1:0] target_address;
+  };
+
   // Instruction Cache Registers, from I$
   logic                            [                FETCH_WIDTH-1:0] icache_data_q;
   logic                                                              icache_valid_q;
@@ -446,6 +453,7 @@ module frontend
   end else begin : btb_gen
     btb #(
         .CVA6Cfg   (CVA6Cfg),
+        .btb_update_t(btb_update_t),
         .NR_ENTRIES(CVA6Cfg.BTBEntries)
     ) i_btb (
         .clk_i,

@@ -27,6 +27,7 @@
 // branch target buffer
 module btb #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type btb_update_t = logic,
     parameter int NR_ENTRIES = 8
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -40,7 +41,7 @@ module btb #(
     // Virtual PC - CACHE
     input logic [riscv::VLEN-1:0] vpc_i,
     // Update BTB with resolved address - EXECUTE
-    input ariane_pkg::btb_update_t btb_update_i,
+    input btb_update_t btb_update_i,
     // BTB Prediction - FRONTEND
     output ariane_pkg::btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o
 );
