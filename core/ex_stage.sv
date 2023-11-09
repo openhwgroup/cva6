@@ -20,6 +20,7 @@ module ex_stage
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
+    parameter type fu_data_t = logic,
     parameter int unsigned ASID_WIDTH = 1
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -231,7 +232,8 @@ module ex_stage
   assign alu_data = (alu_valid_i | branch_valid_i) ? fu_data_i : '0;
 
   alu #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) alu_i (
       .clk_i,
       .rst_ni,
@@ -246,7 +248,8 @@ module ex_stage
   branch_unit #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
-      .branchpredict_sbe_t(branchpredict_sbe_t)
+      .branchpredict_sbe_t(branchpredict_sbe_t),
+      .fu_data_t(fu_data_t)
   ) branch_unit_i (
       .clk_i,
       .rst_ni,
@@ -267,7 +270,8 @@ module ex_stage
 
   // 3. CSR (sequential)
   csr_buffer #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg  (CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) csr_buffer_i (
       .clk_i,
       .rst_ni,
@@ -310,7 +314,8 @@ module ex_stage
   assign mult_data = mult_valid_i ? fu_data_i : '0;
 
   mult #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg  (CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) i_mult (
       .clk_i,
       .rst_ni,
@@ -332,7 +337,8 @@ module ex_stage
       assign fpu_data = fpu_valid_i ? fu_data_i : '0;
 
       fpu_wrap #(
-          .CVA6Cfg(CVA6Cfg)
+          .CVA6Cfg  (CVA6Cfg),
+          .fu_data_t(fu_data_t)
       ) fpu_i (
           .clk_i,
           .rst_ni,
@@ -367,6 +373,7 @@ module ex_stage
 
   load_store_unit #(
       .CVA6Cfg   (CVA6Cfg),
+      .fu_data_t (fu_data_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) lsu_i (
       .clk_i,
@@ -420,7 +427,8 @@ module ex_stage
     fu_data_t cvxif_data;
     assign cvxif_data = x_valid_i ? fu_data_i : '0;
     cvxif_fu #(
-        .CVA6Cfg(CVA6Cfg)
+        .CVA6Cfg(CVA6Cfg),
+        .fu_data_t(fu_data_t)
     ) cvxif_fu_i (
         .clk_i,
         .rst_ni,

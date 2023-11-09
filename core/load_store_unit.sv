@@ -17,6 +17,7 @@ module load_store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type fu_data_t = logic,
     parameter int unsigned ASID_WIDTH = 1
 ) (
     // Subsystem Clock - SUBSYSTEM

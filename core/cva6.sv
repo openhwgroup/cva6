@@ -86,6 +86,15 @@ module cva6
       logic                   global_enable;
     },
 
+    parameter type fu_data_t = struct packed {
+      fu_t                                  fu;
+      fu_op                                 operation;
+      logic [riscv::XLEN-1:0]               operand_a;
+      logic [riscv::XLEN-1:0]               operand_b;
+      logic [riscv::XLEN-1:0]               imm;
+      logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
+    },
+
     parameter type rvfi_probes_t = struct packed {
       logic csr;  //disabled 
       rvfi_probes_instr_t instr;
@@ -565,6 +574,7 @@ module cva6
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .fu_data_t(fu_data_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) issue_stage_i (
       .clk_i,
@@ -641,6 +651,7 @@ module cva6
       .CVA6Cfg   (CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .fu_data_t(fu_data_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) ex_stage_i (
       .clk_i                (clk_i),
@@ -1119,6 +1130,7 @@ module cva6
   if (CVA6Cfg.EnableAccelerator) begin : gen_accelerator
     acc_dispatcher #(
         .CVA6Cfg           (CVA6Cfg),
+        .fu_data_t         (fu_data_t),
         .scoreboard_entry_t(scoreboard_entry_t),
         .acc_cfg_t         (acc_cfg_t),
         .AccCfg            (AccCfg),

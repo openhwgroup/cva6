@@ -15,7 +15,8 @@
 module branch_unit #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
-    parameter type branchpredict_sbe_t = logic
+    parameter type branchpredict_sbe_t = logic,
+    parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -24,7 +25,7 @@ module branch_unit #(
     // Debug mode state - CSR_REGFILE
     input logic debug_mode_i,
     // FU data needed to execute instruction - ISSUE_STAGE
-    input ariane_pkg::fu_data_t fu_data_i,
+    input fu_data_t fu_data_i,
     // Instruction PC - ISSUE_STAGE
     input logic [riscv::VLEN-1:0] pc_i,
     // Instruction is compressed - ISSUE_STAGE

@@ -20,6 +20,7 @@ module issue_stage
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
+    parameter type fu_data_t = logic,
     parameter type scoreboard_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -200,6 +201,7 @@ module issue_stage
   issue_read_operands #(
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .fu_data_t(fu_data_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .rs3_len_t(rs3_len_t)
   ) i_issue_read_operands (
