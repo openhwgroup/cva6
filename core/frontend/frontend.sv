@@ -64,6 +64,12 @@ module frontend
     input logic fetch_entry_ready_i
 );
 
+  localparam type bht_update_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] pc;     // update at PC
+    logic                   taken;
+  };
+
   localparam type btb_prediction_t = struct packed {
     logic                   valid;
     logic [riscv::VLEN-1:0] target_address;
@@ -483,6 +489,7 @@ module frontend
   end else begin : bht_gen
     bht #(
         .CVA6Cfg   (CVA6Cfg),
+        .bht_update_t(bht_update_t),
         .NR_ENTRIES(CVA6Cfg.BHTEntries)
     ) i_bht (
         .clk_i,
