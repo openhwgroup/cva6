@@ -16,6 +16,7 @@
 // return address stack
 module ras #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type ras_t = logic,
     parameter int unsigned DEPTH = 2
 ) (
     input  logic                               clk_i,
@@ -24,10 +25,10 @@ module ras #(
     input  logic                               push_i,
     input  logic                               pop_i,
     input  logic             [CVA6Cfg.VLEN-1:0] data_i,
-    output ariane_pkg::ras_t                   data_o
+    output ras_t                   data_o
 );
 
-  ariane_pkg::ras_t [DEPTH-1:0] stack_d, stack_q;
+  ras_t [DEPTH-1:0] stack_d, stack_q;
 
   assign data_o = stack_q[0];
 

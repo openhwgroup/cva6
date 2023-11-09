@@ -30,6 +30,11 @@ module frontend
     parameter type btb_prediction_t = struct packed {
       logic                   valid;
       logic [CVA6Cfg.VLEN-1:0] target_address;
+    },
+
+    parameter type ras_t = struct packed {
+      logic                   valid;
+      logic [CVA6Cfg.VLEN-1:0] ra;
     }
 ) (
     input logic clk_i,  // Clock
@@ -421,6 +426,7 @@ module frontend
   end else begin : ras_gen
     ras #(
         .CVA6Cfg(CVA6Cfg),
+        .ras_t(ras_t),
         .DEPTH  (CVA6Cfg.RASDepth)
     ) i_ras (
         .clk_i,

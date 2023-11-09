@@ -159,11 +159,6 @@ package ariane_pkg;
 
   typedef struct packed {
     logic                   valid;
-    logic [riscv::VLEN-1:0] ra;
-  } ras_t;
-
-  typedef struct packed {
-    logic                   valid;
     logic [riscv::VLEN-1:0] pc;     // update at PC
     logic                   taken;
   } bht_update_t;
