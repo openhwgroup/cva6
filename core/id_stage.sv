@@ -17,6 +17,7 @@ module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type branchpredict_sbe_t = logic,
     parameter type fetch_entry_t = logic,
+    parameter type irq_ctrl_t = logic,
     parameter type scoreboard_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -56,7 +57,7 @@ module id_stage #(
     // Level sensitive (async) interrupts - SUBSYSTEM
     input logic [1:0] irq_i,
     // Interrupt control status - CSR_REGFILE
-    input ariane_pkg::irq_ctrl_t irq_ctrl_i,
+    input irq_ctrl_t irq_ctrl_i,
     // Is current mode debug ? - CSR_REGFILE
     input logic debug_mode_i,
     // Trap virtual memory - CSR_REGFILE
@@ -108,6 +109,7 @@ module id_stage #(
   decoder #(
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) decoder_i (
       .debug_req_i,

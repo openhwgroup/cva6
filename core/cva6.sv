@@ -76,6 +76,16 @@ module cva6
       cf_t                    cf_type;         // Type of control flow change
     },
 
+    // All information needed to determine whether we need to associate an interrupt
+    // with the corresponding instruction or not.
+    parameter type irq_ctrl_t = struct packed {
+      logic [riscv::XLEN-1:0] mie;
+      logic [riscv::XLEN-1:0] mip;
+      logic [riscv::XLEN-1:0] mideleg;
+      logic                   sie;
+      logic                   global_enable;
+    },
+
     parameter type rvfi_probes_t = struct packed {
       logic csr;  //disabled 
       rvfi_probes_instr_t instr;
@@ -452,6 +462,7 @@ module cva6
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .fetch_entry_t(fetch_entry_t),
+      .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) id_stage_i (
       .clk_i,
@@ -784,6 +795,7 @@ module cva6
   // ---------
   csr_regfile #(
       .CVA6Cfg           (CVA6Cfg),
+      .irq_ctrl_t        (irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .AsidWidth         (ASID_WIDTH),
       .MHPMCounterNum    (MHPMCounterNum)
