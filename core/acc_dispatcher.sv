@@ -17,7 +17,8 @@ module acc_dispatcher
   import ariane_pkg::*;
   import riscv::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type scoreboard_entry_t = logic,
     localparam type accelerator_req_t = struct packed {
       logic                                 req_valid;
       logic                                 resp_ready;
@@ -48,8 +49,8 @@ module acc_dispatcher
       logic                                 inval_valid;
       logic [63:0]                          inval_addr;
     },
-    parameter type                   acc_cfg_t  = logic,
-    parameter acc_cfg_t              AccCfg     = '0
+    parameter type acc_cfg_t = logic,
+    parameter acc_cfg_t AccCfg = '0
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -219,8 +220,8 @@ module acc_dispatcher
    *************************/
 
   accelerator_req_t acc_req;
-  logic                      acc_req_valid;
-  logic                      acc_req_ready;
+  logic             acc_req_valid;
+  logic             acc_req_ready;
 
   accelerator_req_t acc_req_int;
   fall_through_register #(

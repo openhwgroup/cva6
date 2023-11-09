@@ -14,7 +14,8 @@
 //              issue and read operands.
 
 module id_stage #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type scoreboard_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -31,7 +32,7 @@ module id_stage #(
     // Handshake's ready between fetch and decode - FRONTEND
     output logic fetch_entry_ready_o,
     // Handshake's data between decode and issue - ISSUE
-    output ariane_pkg::scoreboard_entry_t issue_entry_o,
+    output scoreboard_entry_t issue_entry_o,
     // Instruction value - ISSUE
     output logic [31:0] orig_instr_o,
     // Handshake's valid between decode and issue - ISSUE
@@ -65,20 +66,20 @@ module id_stage #(
 );
   // ID/ISSUE register stage
   typedef struct packed {
-    logic                          valid;
-    ariane_pkg::scoreboard_entry_t sbe;
-    logic [31:0]                   orig_instr;
-    logic                          is_ctrl_flow;
+    logic              valid;
+    scoreboard_entry_t sbe;
+    logic [31:0]       orig_instr;
+    logic              is_ctrl_flow;
   } issue_struct_t;
   issue_struct_t issue_n, issue_q;
 
-  logic                                 is_control_flow_instr;
-  ariane_pkg::scoreboard_entry_t        decoded_instruction;
-  logic                          [31:0] orig_instr;
+  logic                     is_control_flow_instr;
+  scoreboard_entry_t        decoded_instruction;
+  logic              [31:0] orig_instr;
 
-  logic                                 is_illegal;
-  logic                          [31:0] instruction;
-  logic                                 is_compressed;
+  logic                     is_illegal;
+  logic              [31:0] instruction;
+  logic                     is_compressed;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -103,7 +104,8 @@ module id_stage #(
   // 2. Decode and emit instruction to issue stage
   // ---------------------------------------------------------
   decoder #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) decoder_i (
       .debug_req_i,
       .irq_ctrl_i,

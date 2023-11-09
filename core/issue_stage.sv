@@ -17,7 +17,8 @@
 module issue_stage
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type scoreboard_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -157,8 +158,9 @@ module issue_stage
   // 2. Manage instructions in a scoreboard
   // ---------------------------------------------------------
   scoreboard #(
-      .CVA6Cfg  (CVA6Cfg),
-      .rs3_len_t(rs3_len_t)
+      .CVA6Cfg   (CVA6Cfg),
+      .rs3_len_t (rs3_len_t),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) i_scoreboard (
       .sb_full_o          (sb_full_o),
       .unresolved_branch_i(1'b0),
@@ -193,7 +195,8 @@ module issue_stage
   // 3. Issue instruction and read operand, also commit
   // ---------------------------------------------------------
   issue_read_operands #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t),
       .rs3_len_t(rs3_len_t)
   ) i_issue_read_operands (
       .flush_i            (flush_unissued_instr_i),

@@ -21,6 +21,31 @@ module cva6
         cva6_config_pkg::cva6_cfg
     ),
 
+    // ID/EX/WB Stage
+    parameter type scoreboard_entry_t = struct packed {
+      logic [riscv::VLEN-1:0] pc;  // PC of instruction
+      logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
+                                               // with the transaction id in any case make the width more generic
+      fu_t fu;  // functional unit to use
+      fu_op op;  // operation to perform in each functional unit
+      logic [REG_ADDR_SIZE-1:0] rs1;  // register source address 1
+      logic [REG_ADDR_SIZE-1:0] rs2;  // register source address 2
+      logic [REG_ADDR_SIZE-1:0] rd;  // register destination address
+      riscv::xlen_t result;  // for unfinished instructions this field also holds the immediate,
+                             // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
+                             // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
+                             // this field holds the address of the third operand from the floating-point register file
+      logic valid;  // is the result valid
+      logic use_imm;  // should we use the immediate as operand b?
+      logic use_zimm;  // use zimm as operand a
+      logic use_pc;  // set if we need to use the PC as operand a, PC from exception
+      exception_t ex;  // exception has occurred
+      branchpredict_sbe_t bp;  // branch predict scoreboard data structure
+      logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
+                                               // we want jump accordingly e.g.: +4, +2
+      logic vfp;  // is this a vector floating-point instruction?
+    },
+
     parameter type rvfi_probes_t = struct packed {
       logic csr;  //disabled 
       rvfi_probes_instr_t instr;
@@ -392,7 +417,8 @@ module cva6
   // ID
   // ---------
   id_stage #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) id_stage_i (
       .clk_i,
       .rst_ni,
@@ -491,7 +517,8 @@ module cva6
   // Issue
   // ---------
   issue_stage #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) issue_stage_i (
       .clk_i,
       .rst_ni,
@@ -678,7 +705,8 @@ module cva6
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
   commit_stage #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
@@ -717,9 +745,10 @@ module cva6
   // CSR
   // ---------
   csr_regfile #(
-      .CVA6Cfg       (CVA6Cfg),
-      .AsidWidth     (ASID_WIDTH),
-      .MHPMCounterNum(MHPMCounterNum)
+      .CVA6Cfg           (CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t),
+      .AsidWidth         (ASID_WIDTH),
+      .MHPMCounterNum    (MHPMCounterNum)
   ) csr_regfile_i (
       .flush_o               (flush_csr_ctrl),
       .halt_csr_o            (halt_csr_ctrl),
@@ -786,7 +815,8 @@ module cva6
   // ------------------------
   if (PERF_COUNTER_EN) begin : gen_perf_counter
     perf_counters #(
-        .CVA6Cfg (CVA6Cfg),
+        .CVA6Cfg(CVA6Cfg),
+        .scoreboard_entry_t(scoreboard_entry_t),
         .NumPorts(NumPorts)
     ) perf_counters_i (
         .clk_i         (clk_i),
@@ -1036,11 +1066,12 @@ module cva6
 
   if (CVA6Cfg.EnableAccelerator) begin : gen_accelerator
     acc_dispatcher #(
-        .CVA6Cfg   (CVA6Cfg),
-        .acc_cfg_t (acc_cfg_t),
-        .AccCfg    (AccCfg),
-        .acc_req_t (cvxif_req_t),
-        .acc_resp_t(cvxif_resp_t)
+        .CVA6Cfg           (CVA6Cfg),
+        .scoreboard_entry_t(scoreboard_entry_t),
+        .acc_cfg_t         (acc_cfg_t),
+        .AccCfg            (AccCfg),
+        .acc_req_t         (cvxif_req_t),
+        .acc_resp_t        (cvxif_resp_t)
     ) i_acc_dispatcher (
         .clk_i                 (clk_i),
         .rst_ni                (rst_ni),
@@ -1167,7 +1198,12 @@ module cva6
 `endif  // PITON_ARIANE
 
 `ifndef VERILATOR
-  instr_tracer_if #(.CVA6Cfg(CVA6Cfg)) tracer_if (clk_i);
+  instr_tracer_if #(
+      .CVA6Cfg(CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t)
+  ) tracer_if (
+      clk_i
+  );
   // assign instruction tracer interface
   // control signals
   assign tracer_if.rstn           = rst_ni;
@@ -1205,7 +1241,8 @@ module cva6
   assign tracer_if.debug_mode     = debug_mode;
 
   instr_tracer #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) instr_tracer_i (
       .tracer_if(tracer_if),
       .hart_id_i
@@ -1273,6 +1310,7 @@ module cva6
 
   cva6_rvfi_probes #(
       .CVA6Cfg      (CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t),
       .rvfi_probes_t(rvfi_probes_t)
   ) i_cva6_rvfi_probes (
 
