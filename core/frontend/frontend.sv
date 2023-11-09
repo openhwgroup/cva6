@@ -75,6 +75,11 @@ module frontend
     logic [riscv::VLEN-1:0] target_address;
   };
 
+  localparam type ras_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] ra;
+  };
+
   // Instruction Cache Registers, from I$
   logic                            [                FETCH_WIDTH-1:0] icache_data_q;
   logic                                                              icache_valid_q;
@@ -436,6 +441,7 @@ module frontend
   end else begin : ras_gen
     ras #(
         .CVA6Cfg(CVA6Cfg),
+        .ras_t  (ras_t),
         .DEPTH  (CVA6Cfg.RASDepth)
     ) i_ras (
         .clk_i,
