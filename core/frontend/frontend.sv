@@ -35,6 +35,12 @@ module frontend
     parameter type ras_t = struct packed {
       logic                   valid;
       logic [CVA6Cfg.VLEN-1:0] ra;
+    },
+
+    parameter type bht_update_t = struct packed {
+      logic                   valid;
+      logic [CVA6Cfg.VLEN-1:0] pc;     // update at PC
+      logic                   taken;
     }
 ) (
     input logic clk_i,  // Clock
@@ -468,6 +474,7 @@ module frontend
   end else begin : bht_gen
     bht #(
         .CVA6Cfg   (CVA6Cfg),
+        .bht_update_t(bht_update_t),
         .NR_ENTRIES(CVA6Cfg.BHTEntries)
     ) i_bht (
         .clk_i,

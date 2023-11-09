@@ -20,6 +20,7 @@
 
 module bht #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bht_update_t = logic,
     parameter int unsigned NR_ENTRIES = 1024
 ) (
     input  logic                                                          clk_i,
@@ -27,7 +28,7 @@ module bht #(
     input  logic                                                          flush_i,
     input  logic                                                          debug_mode_i,
     input  logic                        [                CVA6Cfg.VLEN-1:0] vpc_i,
-    input  ariane_pkg::bht_update_t                                       bht_update_i,
+    input  bht_update_t                                       bht_update_i,
     // we potentially need INSTR_PER_FETCH predictions/cycle
     output ariane_pkg::bht_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] bht_prediction_o
 );
