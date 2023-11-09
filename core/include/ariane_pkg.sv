@@ -564,36 +564,6 @@ package ariane_pkg;
 
   localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
 
-  typedef struct packed {
-    logic [riscv::VLEN-1:0] pc;  // PC of instruction
-    logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
-                                             // with the transaction id in any case make the width more generic
-    fu_t fu;  // functional unit to use
-    fu_op op;  // operation to perform in each functional unit
-    logic [REG_ADDR_SIZE-1:0] rs1;  // register source address 1
-    logic [REG_ADDR_SIZE-1:0] rs2;  // register source address 2
-    logic [REG_ADDR_SIZE-1:0] rd;  // register destination address
-    riscv::xlen_t result;  // for unfinished instructions this field also holds the immediate,
-                           // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
-                           // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
-                           // this field holds the address of the third operand from the floating-point register file
-    logic valid;  // is the result valid
-    logic use_imm;  // should we use the immediate as operand b?
-    logic use_zimm;  // use zimm as operand a
-    logic use_pc;  // set if we need to use the PC as operand a, PC from exception
-    exception_t ex;  // exception has occurred
-    branchpredict_sbe_t bp;  // branch predict scoreboard data structure
-    logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
-                                             // we want jump accordingly e.g.: +4, +2
-    riscv::xlen_t rs1_rdata;  // information needed by RVFI
-    riscv::xlen_t rs2_rdata;  // information needed by RVFI
-    logic [riscv::VLEN-1:0] lsu_addr;  // information needed by RVFI
-    logic [(riscv::XLEN/8)-1:0] lsu_rmask;  // information needed by RVFI
-    logic [(riscv::XLEN/8)-1:0] lsu_wmask;  // information needed by RVFI
-    riscv::xlen_t lsu_wdata;  // information needed by RVFI
-    logic vfp;  // is this a vector floating-point instruction?
-  } scoreboard_entry_t;
-
   // ---------------
   // MMU instanciation
   // ---------------

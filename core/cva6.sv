@@ -69,6 +69,37 @@ module cva6
       exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
     },
 
+    // ID/EX/WB Stage
+    parameter type scoreboard_entry_t = struct packed {
+      logic [CVA6Cfg.VLEN-1:0] pc;  // PC of instruction
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
+                                               // with the transaction id in any case make the width more generic
+      fu_t fu;  // functional unit to use
+      fu_op op;  // operation to perform in each functional unit
+      logic [REG_ADDR_SIZE-1:0] rs1;  // register source address 1
+      logic [REG_ADDR_SIZE-1:0] rs2;  // register source address 2
+      logic [REG_ADDR_SIZE-1:0] rd;  // register destination address
+      logic [CVA6Cfg.XLEN-1:0]             result;        // for unfinished instructions this field also holds the immediate,
+      // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
+      // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
+      // this field holds the address of the third operand from the floating-point register file
+      logic valid;  // is the result valid
+      logic use_imm;  // should we use the immediate as operand b?
+      logic use_zimm;  // use zimm as operand a
+      logic use_pc;  // set if we need to use the PC as operand a, PC from exception
+      exception_t ex;  // exception has occurred
+      branchpredict_sbe_t bp;  // branch predict scoreboard data structure
+      logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
+                                               // we want jump accordingly e.g.: +4, +2
+      logic [CVA6Cfg.XLEN-1:0] rs1_rdata;  // information needed by RVFI
+      logic [CVA6Cfg.XLEN-1:0] rs2_rdata;  // information needed by RVFI
+      logic [CVA6Cfg.VLEN-1:0] lsu_addr;  // information needed by RVFI
+      logic [(CVA6Cfg.XLEN/8)-1:0] lsu_rmask;  // information needed by RVFI
+      logic [(CVA6Cfg.XLEN/8)-1:0] lsu_wmask;  // information needed by RVFI
+      logic [CVA6Cfg.XLEN-1:0] lsu_wdata;  // information needed by RVFI
+      logic vfp;  // is this a vector floating-point instruction?
+    },
+
     parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
     // RVFI
     parameter type rvfi_instr_t = struct packed {
@@ -454,7 +485,8 @@ module cva6
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .irq_ctrl_t(irq_ctrl_t),
-      .fetch_entry_t(fetch_entry_t)
+      .fetch_entry_t(fetch_entry_t),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) id_stage_i (
       .clk_i,
       .rst_ni,
@@ -554,6 +586,7 @@ module cva6
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .fu_data_t(fu_data_t),
+      .scoreboard_entry_t(scoreboard_entry_t),
       .IsRVFI    (IsRVFI),
       .NR_ENTRIES(CVA6Cfg.NR_SB_ENTRIES)
   ) issue_stage_i (
@@ -748,7 +781,8 @@ module cva6
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
   commit_stage #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
@@ -789,6 +823,7 @@ module cva6
   csr_regfile #(
       .CVA6Cfg       (CVA6Cfg),
       .irq_ctrl_t(irq_ctrl_t),
+      .scoreboard_entry_t(scoreboard_entry_t),
       .AsidWidth     (CVA6Cfg.ASID_WIDTH),
       .MHPMCounterNum(MHPMCounterNum)
   ) csr_regfile_i (
@@ -857,6 +892,7 @@ module cva6
     perf_counters #(
         .CVA6Cfg (CVA6Cfg),
         .bp_resolve_t(bp_resolve_t),
+        .scoreboard_entry_t(scoreboard_entry_t),
         .NumPorts(NumPorts)
     ) perf_counters_i (
         .clk_i         (clk_i),
@@ -1104,6 +1140,7 @@ module cva6
     acc_dispatcher #(
         .CVA6Cfg   (CVA6Cfg),
         .fu_data_t(fu_data_t),
+        .scoreboard_entry_t(scoreboard_entry_t),
         .acc_cfg_t (acc_cfg_t),
         .AccCfg    (AccCfg),
         .acc_req_t (cvxif_req_t),

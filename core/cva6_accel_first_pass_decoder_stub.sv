@@ -8,8 +8,9 @@
 // first pass decoder.
 
 module cva6_accel_first_pass_decoder
-  import ariane_pkg::*;
-(
+  import ariane_pkg::*; #(
+    parameter type scoreboard_entry_t = logic
+  ) (
     input  logic              [31:0] instruction_i,           // instruction from IF
     input  riscv::xs_t               fs_i,                    // floating point extension status
     input  riscv::xs_t               vs_i,                    // vector extension status

@@ -15,6 +15,7 @@
 module scoreboard #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
+    parameter type scoreboard_entry_t = logic,
     parameter bit IsRVFI = bit'(0),
     parameter type rs3_len_t = logic,
     parameter int unsigned NR_ENTRIES = 8  // must be a power of 2
@@ -43,17 +44,17 @@ module scoreboard #(
     output logic                                     rs3_valid_o,
 
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
-    output ariane_pkg::scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
+    output scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
     input  logic                          [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
 
     // instruction to put on top of scoreboard e.g.: top pointer
     // we can always put this instruction to the top unless we signal with asserted full_o
-    input  ariane_pkg::scoreboard_entry_t decoded_instr_i,
+    input  scoreboard_entry_t decoded_instr_i,
     input  logic                          decoded_instr_valid_i,
     output logic                          decoded_instr_ack_o,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
-    output ariane_pkg::scoreboard_entry_t issue_instr_o,
+    output scoreboard_entry_t issue_instr_o,
     output logic                          issue_instr_valid_o,
     input  logic                          issue_ack_i,
 
@@ -79,7 +80,7 @@ module scoreboard #(
   typedef struct packed {
     logic issued;  // this bit indicates whether we issued this instruction e.g.: if it is valid
     logic is_rd_fpr_flag;  // redundant meta info, added for speed
-    ariane_pkg::scoreboard_entry_t sbe;  // this is the score board entry we will send to ex
+    scoreboard_entry_t sbe;  // this is the score board entry we will send to ex
   } sb_mem_t;
   sb_mem_t [NR_ENTRIES-1:0] mem_q, mem_n;
 
@@ -95,7 +96,7 @@ module scoreboard #(
 
   assign sb_full_o  = issue_full;
 
-  ariane_pkg::scoreboard_entry_t decoded_instr;
+  scoreboard_entry_t decoded_instr;
   always_comb begin
     decoded_instr = decoded_instr_i;
     if (IsRVFI) begin

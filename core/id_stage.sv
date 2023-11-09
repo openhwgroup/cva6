@@ -17,7 +17,8 @@ module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type branchpredict_sbe_t = logic,
     parameter type irq_ctrl_t = logic,
-    parameter type fetch_entry_t = logic
+    parameter type fetch_entry_t = logic,
+    parameter type scoreboard_entry_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -29,7 +30,7 @@ module id_stage #(
     input logic fetch_entry_valid_i,
     output logic fetch_entry_ready_o,  // acknowledge the instruction (fetch entry)
     // to ID
-    output ariane_pkg::scoreboard_entry_t issue_entry_o,  // a decoded instruction
+    output scoreboard_entry_t issue_entry_o,  // a decoded instruction
     output logic issue_entry_valid_o,  // issue entry is valid
     output logic is_ctrl_flow_o,  // the instruction we issue is a ctrl flow instructions
     input logic issue_instr_ack_i,  // issue stage acknowledged sampling of instructions
@@ -48,13 +49,13 @@ module id_stage #(
   // ID/ISSUE register stage
   typedef struct packed {
     logic                          valid;
-    ariane_pkg::scoreboard_entry_t sbe;
+    scoreboard_entry_t sbe;
     logic                          is_ctrl_flow;
   } issue_struct_t;
   issue_struct_t issue_n, issue_q;
 
   logic                                 is_control_flow_instr;
-  ariane_pkg::scoreboard_entry_t        decoded_instruction;
+  scoreboard_entry_t        decoded_instruction;
 
   logic                                 is_illegal;
   logic                          [31:0] instruction;
@@ -83,7 +84,8 @@ module id_stage #(
   decoder #(
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .irq_ctrl_t(irq_ctrl_t)
+      .irq_ctrl_t(irq_ctrl_t),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) decoder_i (
       .debug_req_i,
       .irq_ctrl_i,

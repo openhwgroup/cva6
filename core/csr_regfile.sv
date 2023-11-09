@@ -18,6 +18,7 @@ module csr_regfile
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
     parameter type irq_ctrl_t = logic,
+    parameter type scoreboard_entry_t = logic,
     parameter int                    AsidWidth      = 1,
     parameter int unsigned           MHPMCounterNum = 6
 ) (
