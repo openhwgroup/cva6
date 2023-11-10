@@ -29,6 +29,12 @@ module cva6
       logic [riscv::VLEN-1:0] predict_address;  // target address at which to jump, or not
     },
 
+    // cache request ports
+    parameter type icache_arsp_t = struct packed {
+      logic                   fetch_req;    // address translation request
+      logic [riscv::VLEN-1:0] fetch_vaddr;  // virtual address out
+    },
+
     // IF/ID Stage
     // store the decompressed instruction
     parameter type fetch_entry_t = struct packed {
@@ -663,6 +669,7 @@ module cva6
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .fu_data_t(fu_data_t),
+      .icache_arsp_t(icache_arsp_t),
       .lsu_ctrl_t(lsu_ctrl_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) ex_stage_i (
@@ -995,6 +1002,7 @@ module cva6
     // this is a cache subsystem that is compatible with OpenPiton
     wt_cache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
+        .icache_arsp_t(icache_arsp_t),
         .NumPorts  (NumPorts),
         .noc_req_t (noc_req_t),
         .noc_resp_t(noc_resp_t)
@@ -1035,6 +1043,7 @@ module cva6
   end else if (DCACHE_TYPE == int'(config_pkg::HPDCACHE)) begin : gen_cache_hpd
     cva6_hpdcache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
+        .icache_arsp_t(icache_arsp_t),
         .NumPorts  (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),
@@ -1095,6 +1104,7 @@ module cva6
         // not as important since this cache subsystem is about to be
         // deprecated
         .CVA6Cfg      (CVA6Cfg),
+        .icache_arsp_t(icache_arsp_t),
         .NumPorts     (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),
