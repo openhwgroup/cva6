@@ -24,6 +24,7 @@ module wt_cache_subsystem
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
+    parameter type icache_arsp_t = logic,
     parameter int unsigned           NumPorts   = 4,
     parameter type                   noc_req_t  = logic,
     parameter type                   noc_resp_t = logic
@@ -79,6 +80,7 @@ module wt_cache_subsystem
   cva6_icache #(
       // use ID 0 for icache reads
       .CVA6Cfg(CVA6Cfg),
+      .icache_arsp_t(icache_arsp_t),
       .RdTxId (0)
   ) i_cva6_icache (
       .clk_i         (clk_i),

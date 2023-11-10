@@ -635,11 +635,6 @@ package ariane_pkg;
     exception_t             fetch_exception;  // exception occurred during fetch
   } icache_areq_t;
 
-  typedef struct packed {
-    logic                   fetch_req;    // address translation request
-    logic [riscv::VLEN-1:0] fetch_vaddr;  // virtual address out
-  } icache_arsp_t;
-
   // I$ data requests
   typedef struct packed {
     logic                   req;      // we request a new word

@@ -30,6 +30,7 @@ module cva6_icache
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type icache_arsp_t = logic,
     /// ID to be used for read transactions
     parameter logic [MEM_TID_WIDTH-1:0] RdTxId = 0
 ) (
