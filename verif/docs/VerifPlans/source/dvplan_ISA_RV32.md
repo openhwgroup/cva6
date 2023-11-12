@@ -17,7 +17,7 @@
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -102,7 +102,7 @@ isacov.rv32i_addi_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -187,7 +187,7 @@ isacov.rv32i_xori_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -272,7 +272,7 @@ isacov.rv32i_ori_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -351,13 +351,13 @@ isacov.rv32i_andi_cg.cp_rd_toggle
   
   slti rd, rs1, imm[11:0]  
   rd = (rs1 < Sext(imm[11:0]) ? 1 : 0  
-  Both imm and rs1 treated as signed numbers
+   Both imm and rs1 treated as signed numbers
 * **Verification Goals**
   
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -378,7 +378,7 @@ isacov.rv32i_slti_cg.cp_rd_rs1_hazard
   
   slti rd, rs1, imm[11:0]  
   rd = (rs1 < Sext(imm[11:0]) ? 1 : 0  
-  Both imm and rs1 treated as signed numbers
+   Both imm and rs1 treated as signed numbers
 * **Verification Goals**
   
   Input operands:  
@@ -409,7 +409,7 @@ isacov.rv32i_slti_cg.cp_immi_toggle
   
   slti rd, rs1, imm[11:0]  
   rd = (rs1 < Sext(imm[11:0]) ? 1 : 0  
-  Both imm and rs1 treated as signed numbers
+   Both imm and rs1 treated as signed numbers
 * **Verification Goals**
   
   Output result:  
@@ -440,7 +440,7 @@ isacov.rv32i_slti_cg.cp_immi_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -523,7 +523,7 @@ isacov.rv32i_sltiu_cg.cp_immi_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -606,7 +606,7 @@ isacov.rv32i_slli_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -689,7 +689,7 @@ isacov.rv32i_srli_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -932,9 +932,9 @@ isacov.rv32i_auipc_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1021,9 +1021,9 @@ isacov.rv32i_add_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1110,9 +1110,9 @@ isacov.rv32i_sub_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1204,9 +1204,9 @@ isacov.rv32i_and_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1293,9 +1293,9 @@ isacov.rv32i_or_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1382,9 +1382,9 @@ isacov.rv32i_xor_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1469,9 +1469,9 @@ isacov.rv32i_slt_cg.cp_rs2_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1556,9 +1556,9 @@ isacov.rv32i_sltu_cg.cp_rs2_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1645,9 +1645,9 @@ isacov.rv32i_sll_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1732,9 +1732,9 @@ isacov.rv32i_srl_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1815,7 +1815,7 @@ isacov.rv32i_sra_cg.cp_rd_toggle
   
   jal rd, imm[20:1]  
   rd = pc+4; pc += Sext({imm[20:1], 1’b0})  
-  pc is calculated using signed arithmetic  
+   pc is calculated using signed arithmetic  
     
   jal x0, imm[20:1] (special case: unconditional jump)  
   pc += Sext({imm[20:1], 1’b0})
@@ -1841,7 +1841,7 @@ isacov.rv32i_sra_cg.cp_rd_toggle
   
   jal rd, imm[20:1]  
   rd = pc+4; pc += Sext({imm[20:1], 1’b0})  
-  pc is calculated using signed arithmetic  
+   pc is calculated using signed arithmetic  
     
   jal x0, imm[20:1] (special case: unconditional jump)  
   pc += Sext({imm[20:1], 1’b0})
@@ -1869,7 +1869,7 @@ isacov.rv32i_jal_cg.cp_immj_toggle
   
   jal rd, imm[20:1]  
   rd = pc+4; pc += Sext({imm[20:1], 1’b0})  
-  pc is calculated using signed arithmetic  
+   pc is calculated using signed arithmetic  
     
   jal x0, imm[20:1] (special case: unconditional jump)  
   pc += Sext({imm[20:1], 1’b0})
@@ -1897,13 +1897,13 @@ isacov.rv32i_jal_cg.cp_immj_toggle
   
   jalr rd, rs1, imm[11:0]  
   rd = pc+4; pc = rs1 + Sext(imm[11:0])  
-  pc is calculated using signed arithmetic
+   pc is calculated using signed arithmetic
 * **Verification Goals**
   
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -1924,7 +1924,7 @@ isacov.rv32i_jalr_cg.cp_rd_rs1_hazard
   
   jalr rd, rs1, imm[11:0]  
   rd = pc+4; pc = rs1 + Sext(imm[11:0])  
-  pc is calculated using signed arithmetic
+   pc is calculated using signed arithmetic
 * **Verification Goals**
   
   Input operands:  
@@ -1951,7 +1951,7 @@ isacov.rv32i_jalr_cg.cp_rs1_toggle
   
   jalr rd, rs1, imm[11:0]  
   rd = pc+4; pc = rs1 + Sext(imm[11:0])  
-  pc is calculated using signed arithmetic
+   pc is calculated using signed arithmetic
 * **Verification Goals**
   
   Output result:  
@@ -1982,7 +1982,7 @@ isacov.rv32i_jalr_cg.cp_rs1_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.
+   All possible rs2 registers are used.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -2060,7 +2060,7 @@ isacov.rv32i_beq_cg.cp_rs2_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.
+   All possible rs2 registers are used.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -2138,7 +2138,7 @@ isacov.rv32i_bne_cg.cp_rs2_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.
+   All possible rs2 registers are used.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -2216,7 +2216,7 @@ isacov.rv32i_blt_cg.cp_rs2_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.
+   All possible rs2 registers are used.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -2294,7 +2294,7 @@ isacov.rv32i_bge_cg.cp_rs2_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.
+   All possible rs2 registers are used.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -2372,7 +2372,7 @@ isacov.rv32i_bltu_cg.cp_rs2_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.
+   All possible rs2 registers are used.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -2452,7 +2452,7 @@ isacov.rv32i_bgeu_cg.cp_rs2_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -2534,7 +2534,7 @@ isacov.rv32i_lb_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -2618,7 +2618,7 @@ isacov.rv32i_lh_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -2702,7 +2702,7 @@ isacov.rv32i_lw_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -2784,7 +2784,7 @@ isacov.rv32i_lbu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -2867,7 +2867,7 @@ isacov.rv32i_lhu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.
+   All possible rs2 registers are used.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -2921,7 +2921,7 @@ isacov.rv32i_sb_cg.cp_imms_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.
+   All possible rs2 registers are used.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -2948,7 +2948,7 @@ isacov.rv32i_sh_cg.cp_rs2
   All bits of rs1 are toggled  
   All bits of rs2 are toggled  
   All bits of imms are toggled  
-  Unaligned and aligned accesses to memory
+   Unaligned and aligned accesses to memory
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -2977,7 +2977,7 @@ isacov.rv32i_sh_cg.cp_aligned
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.
+   All possible rs2 registers are used.
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -3004,7 +3004,7 @@ isacov.rv32i_sw_cg.cp_rs2
   All bits of rs1 are toggled  
   All bits of rs2 are toggled  
   All bits of imms are toggled  
-  Unaligned and aligned accesses to memory
+   Unaligned and aligned accesses to memory
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -3123,9 +3123,9 @@ isacov.rv32i_sw_cg.cp_aligned
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -3165,7 +3165,7 @@ isacov.rv32m_mul_cg.cp_rd_rs2_hazard
 * **Unique verification tag:** VP_ISA_RV32_F006_S000_I001
 * **Link to Coverage:** isacov.rv32m_mul_cg.cp_rs1_value
 isacov.rv32m_mul_cg.cp_rs2_value
-isacov.rv32m_mul_cg.cross_rs1_rs2_value
+ isacov.rv32m_mul_cg.cross_rs1_rs2_value
 isacov.rv32m_mul_cg.cp_rs1_toggle 
 isacov.rv32m_mul_cg.cp_rs2_toggle
 * **Comments**
@@ -3239,9 +3239,9 @@ isacov.rv32m_mulh_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -3281,7 +3281,7 @@ isacov.rv32m_mulhu_cg.cp_rd_rs2_hazard
 * **Unique verification tag:** VP_ISA_RV32_F006_S002_I001
 * **Link to Coverage:** isacov.rv32m_mulhu_cg.cp_rs1_value
 isacov.rv32m_mulhu_cg.cp_rs2_value
-isacov.rv32m_mulhu_cg.cross_rs1_rs2_value
+ isacov.rv32m_mulhu_cg.cross_rs1_rs2_value
 isacov.rv32m_mulhu_cg.cp_rs1_toggle 
 isacov.rv32m_mulhu_cg.cp_rs2_toggle
 * **Comments**
@@ -3328,9 +3328,9 @@ isacov.rv32m_mulhu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -3370,7 +3370,7 @@ isacov.rv32m_mulhsu_cg.cp_rd_rs2_hazard
 * **Unique verification tag:** VP_ISA_RV32_F006_S003_I001
 * **Link to Coverage:** isacov.rv32m_mulhsu_cg.cp_rs1_value
 isacov.rv32m_mulhsu_cg.cp_rs2_value
-isacov.rv32m_mulhsu_cg.cross_rs1_rs2_value
+ isacov.rv32m_mulhsu_cg.cross_rs1_rs2_value
 isacov.rv32m_mulhsu_cg.cp_rs1_toggle 
 isacov.rv32m_mulhsu_cg.cp_rs2_toggle
 * **Comments**
@@ -3420,9 +3420,9 @@ Chapter 7.2
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -3463,7 +3463,7 @@ Chapter 7.2
 * **Unique verification tag:** VP_ISA_RV32_F007_S000_I001
 * **Link to Coverage:** isacov.rv32m_div_cg.cp_rs1_value
 isacov.rv32m_div_cg.cp_rs2_value
-isacov.rv32m_div_cg.cross_rs1_rs2_value
+ isacov.rv32m_div_cg.cross_rs1_rs2_value
 isacov.rv32m_div_cg.cp_rs1_toggle 
 isacov.rv32m_div_cg.cp_rs2_toggle
 * **Comments**
@@ -3492,7 +3492,7 @@ Chapter 7.2
 * **Unique verification tag:** VP_ISA_RV32_F007_S000_I002
 * **Link to Coverage:** isacov.rv32m_div_cg.cp_rs1_value
 isacov.rv32m_div_cg.cp_rs2_value
-isacov.rv32m_div_cg.cross_rs1_rs2_value
+ isacov.rv32m_div_cg.cross_rs1_rs2_value
 isacov.rv32m_div_cg.cp_rs1_toggle 
 isacov.rv32m_div_cg.cp_rs2_toggle
 * **Comments**
@@ -3538,9 +3538,9 @@ isacov.rv32m_div_results_cg.cp_div_arithmetic_overflow
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -3580,7 +3580,7 @@ isacov.rv32m_rem_cg.cp_rd_rs2_hazard
 * **Unique verification tag:** VP_ISA_RV32_F007_S001_I001
 * **Link to Coverage:** isacov.rv32m_rem_cg.cp_rs1_value
 isacov.rv32m_rem_cg.cp_rs2_value
-isacov.rv32m_rem_cg.cross_rs1_rs2_value
+ isacov.rv32m_rem_cg.cross_rs1_rs2_value
 isacov.rv32m_rem_cg.cp_rs1_toggle 
 isacov.rv32m_rem_cg.cp_rs2_toggle
 * **Comments**
@@ -3650,9 +3650,9 @@ isacov.rv32m_rem_results_cg.cp_div_arithmetic_overflow
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -3692,7 +3692,7 @@ isacov.rv32m_divu_cg.cp_rd_rs2_hazard
 * **Unique verification tag:** VP_ISA_RV32_F007_S002_I001
 * **Link to Coverage:** isacov.rv32m_divu_cg.cp_rs1_value
 isacov.rv32m_divu_cg.cp_rs2_value
-isacov.rv32m_divu_cg.cross_rs1_rs2_value
+ isacov.rv32m_divu_cg.cross_rs1_rs2_value
 isacov.rv32m_divu_cg.cp_rs1_toggle 
 isacov.rv32m_divu_cg.cp_rs2_toggle
 * **Comments**
@@ -3760,9 +3760,9 @@ isacov.rv32m_divu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rs2 registers are used.  
+   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -3802,7 +3802,7 @@ isacov.rv32m_remu_cg.cp_rd_rs2_hazard
 * **Unique verification tag:** VP_ISA_RV32_F007_S003_I001
 * **Link to Coverage:** isacov.rv32m_remu_cg.cp_rs1_value
 isacov.rv32m_remu_cg.cp_rs2_value
-isacov.rv32m_remu_cg.cross_rs1_rs2_value
+ isacov.rv32m_remu_cg.cross_rs1_rs2_value
 isacov.rv32m_remu_cg.cp_rs1_toggle 
 isacov.rv32m_remu_cg.cp_rs2_toggle
 * **Comments**
@@ -3873,7 +3873,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -3975,7 +3975,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used.  
-  All possible rd registers are used.  
+   All possible rd registers are used.  
   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
@@ -4088,7 +4088,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   All possible rs1 registers are used.  
   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -4196,7 +4196,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   All possible rs1 registers are used.  
   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -4250,7 +4250,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Output result:   
     
   +ve, -ve and zero values of rd are used  
-  All bits of rd are toggled
+   All bits of rd are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -4305,7 +4305,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   All possible rs1 registers are used.  
   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -4413,7 +4413,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   All possible rs1 registers are used.  
   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -4521,7 +4521,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   All possible rs1 registers are used.  
   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -4629,7 +4629,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   All possible rs1 registers are used.  
   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -4683,7 +4683,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Output result:   
     
   +ve, -ve and zero values of rd are used  
-  All bits of rd are toggled
+   All bits of rd are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -4738,7 +4738,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   All possible rs1 registers are used.  
   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -4845,7 +4845,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   All possible rs1 registers are used.  
   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -4898,7 +4898,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Output result:   
     
   +ve, -ve and zero values of rd are used  
-  All bits of rd are toggled
+   All bits of rd are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -4953,7 +4953,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   All possible rs1 registers are used.  
   All possible rs2 registers are used.  
   All possible rd registers are used.  
-  All possible register combinations where rs1 == rd are used  
+   All possible register combinations where rs1 == rd are used  
   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -5282,7 +5282,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.addi4spn rd', nzuimm[9:2]  
   x[8+rd'] = x[2] + nzuimm[9:2]  
-  Expands to addi rd', x2, nzuimm[9:2]. Invalid when nzuimm = 0.  
+   Expands to addi rd', x2, nzuimm[9:2]. Invalid when nzuimm = 0.  
   rd is calculated using signed arithmetic.
 * **Verification Goals**
   
@@ -5306,7 +5306,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.addi4spn rd', nzuimm[9:2]  
   x[8+rd'] = x[2] + nzuimm[9:2]  
-  Expands to addi rd', x2, nzuimm[9:2]. Invalid when nzuimm = 0.  
+   Expands to addi rd', x2, nzuimm[9:2]. Invalid when nzuimm = 0.  
   rd is calculated using signed arithmetic.
 * **Verification Goals**
   
@@ -5331,7 +5331,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.addi4spn rd', nzuimm[9:2]  
   x[8+rd'] = x[2] + nzuimm[9:2]  
-  Expands to addi rd', x2, nzuimm[9:2]. Invalid when nzuimm = 0.  
+   Expands to addi rd', x2, nzuimm[9:2]. Invalid when nzuimm = 0.  
   rd is calculated using signed arithmetic.
 * **Verification Goals**
   
@@ -5386,7 +5386,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operands:  
     
   All shift amounts from [0:31] are used  
-  All bits of rd before instruction execution are toggled
+   All bits of rd before instruction execution are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -5458,7 +5458,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operands:  
     
   All shift amounts from [0:31] are used  
-  All bits of rd before instruction execution are toggled
+   All bits of rd before instruction execution are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -5530,7 +5530,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operands:  
     
   All shift amounts from [0:31] are used  
-  +ve, -ve and zero values of rd` are used  
+   +ve, -ve and zero values of rd` are used  
   All bits of rd` before instruction execution are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -5574,7 +5574,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.andi rd', imm[5:0]  
   x[8+rd'] = x[8+rd'] & sext(imm[5:0])  
-  Expands to andi rd', rd', imm[5:0].  
+   Expands to andi rd', rd', imm[5:0].  
   imm treated as signed number
 * **Verification Goals**
   
@@ -5598,14 +5598,14 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.andi rd', imm[5:0]  
   x[8+rd'] = x[8+rd'] & sext(imm[5:0])  
-  Expands to andi rd', rd', imm[5:0].  
+   Expands to andi rd', rd', imm[5:0].  
   imm treated as signed number
 * **Verification Goals**
   
   Input operands:  
     
   All shift amounts from [0:31] are used  
-  +ve, -ve and zero values of imm are used  
+   +ve, -ve and zero values of imm are used  
   All bits of rd` before instruction execution are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -5624,7 +5624,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.andi rd', imm[5:0]  
   x[8+rd'] = x[8+rd'] & sext(imm[5:0])  
-  Expands to andi rd', rd', imm[5:0].  
+   Expands to andi rd', rd', imm[5:0].  
   imm treated as signed number
 * **Verification Goals**
   
@@ -5657,7 +5657,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rd registers are used.  
-  All possible register combinations where rs2 == rd are used
+   All possible register combinations where rs2 == rd are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -5756,9 +5756,9 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operands:  
     
   +ve,-ve and zero values of rs2 are used  
-  +ve,-ve, and zero values of rdrs1 are used  
+   +ve,-ve, and zero values of rdrs1 are used  
   All bits of rs2 are toggled  
-  All bits of rd before instruction execution are toggled
+   All bits of rd before instruction execution are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -5832,9 +5832,9 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operands:  
     
   Non-zero and zero values of rs2` are used  
-  Non-zero and zero values of rd` are used  
+   Non-zero and zero values of rd` are used  
   All bits of rs2` are toggled  
-  All bits of rd` before instruction execution are toggled
+   All bits of rd` before instruction execution are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -5906,9 +5906,9 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operands:  
     
   Non-zero and zero values of rs2` are used  
-  Non-zero and zero values of rd` are used  
+   Non-zero and zero values of rd` are used  
   All bits of rs2` are toggled  
-  All bits of rd` before instruction execution are toggled
+   All bits of rd` before instruction execution are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -5980,9 +5980,9 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operands:  
     
   Non-zero and zero values of rs2` are used  
-  Non-zero and zero values of rd` are used  
+   Non-zero and zero values of rd` are used  
   All bits of rs2` are toggled  
-  All bits of rd` before instruction execution are toggled
+   All bits of rd` before instruction execution are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -6054,9 +6054,9 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operands:  
     
   +ve,-ve and zero values of rs2` are used  
-  +ve, -ve, and zero values of rd` are used  
+   +ve, -ve, and zero values of rd` are used  
   All bits of rs2` are toggled  
-  All bits of rd` before instruction execution are toggled
+   All bits of rd` before instruction execution are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -6324,7 +6324,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.beqz rs1', imm[8:1]  
   if (x[8+rs1'] == 0) pc += sext(imm)  
-  Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
+   Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
 * **Verification Goals**
   
   Register operands:  
@@ -6347,7 +6347,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.beqz rs1', imm[8:1]  
   if (x[8+rs1'] == 0) pc += sext(imm)  
-  Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
+   Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
 * **Verification Goals**
   
   Input operands:  
@@ -6370,7 +6370,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.beqz rs1', imm[8:1]  
   if (x[8+rs1'] == 0) pc += sext(imm)  
-  Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
+   Expands to beq rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
 * **Verification Goals**
   
   Output result:  
@@ -6395,7 +6395,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.bnez  rs1', imm[8:1]  
   if (x[8+rs1'] ≠ 0) pc += sext(imm)  
-  Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
+   Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
 * **Verification Goals**
   
   Register operands:  
@@ -6418,7 +6418,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.bnez  rs1', imm[8:1]  
   if (x[8+rs1'] ≠ 0) pc += sext(imm)  
-  Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
+   Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
 * **Verification Goals**
   
   Input operands:  
@@ -6441,7 +6441,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   c.bnez  rs1', imm[8:1]  
   if (x[8+rs1'] ≠ 0) pc += sext(imm)  
-  Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
+   Expands to bne rs1', x0, imm[8:1]. pc is calculated using signed arithmetic.
 * **Verification Goals**
   
   Output result:  
@@ -6604,7 +6604,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1` registers are used.  
-  All possible rd` registers are used.  
+   All possible rd` registers are used.  
   All possible register combinations where rs1` == rd` are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -6680,7 +6680,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1` registers are used.  
-  All possible rd` registers are used.  
+   All possible rd` registers are used.  
   All possible register combinations where rs1` == rd` are used
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
@@ -6734,7 +6734,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used  
-  All possible rd registers are used  
+   All possible rd registers are used  
   All supported CSRs are used  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
@@ -6784,7 +6784,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used  
-  All possible rd registers are used  
+   All possible rd registers are used  
   All supported CSRs are used  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
@@ -6835,7 +6835,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Register operands:  
     
   All possible rs1 registers are used  
-  All possible rd registers are used  
+   All possible rd registers are used  
   All supported CSRs are used  
   All possible register combinations where rs1 == rd are used
 * **Pass/Fail Criteria:** Check RM
@@ -6880,7 +6880,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   csrrwi rd, imm[4:0], csr  
   rd = Zext([csr]); csr = Zext(imm[4:0])  
-  If rd == x0 then CSR is not read.
+   If rd == x0 then CSR is not read.
 * **Verification Goals**
   
   Register operands:  
@@ -6904,13 +6904,13 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   
   csrrwi rd, imm[4:0], csr  
   rd = Zext([csr]); csr = Zext(imm[4:0])  
-  If rd == x0 then CSR is not read.
+   If rd == x0 then CSR is not read.
 * **Verification Goals**
   
   Input operand:  
     
   Non-zero and zero imm[4:0] operands are used  
-  All bits of imm[4:0] are toggled
+   All bits of imm[4:0] are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -6960,7 +6960,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operand:  
     
   Non-zero and zero imm[4:0] operands are used  
-  All bits of imm[4:0] are toggled
+   All bits of imm[4:0] are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -7010,7 +7010,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
   Input operand:  
     
   Non-zero and zero imm[4:0] operands are used  
-  All bits of imm[4:0] are toggled
+   All bits of imm[4:0] are toggled
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -7159,7 +7159,7 @@ isacov.rv32m_remu_cg.cp_rd_toggle
 * **Verification Goals**
   
   CSR write instruction attempts to write to a supported CSR  
-  This does not include csr set or clear instructions where rs1 is x0 (bypassing the write)
+   This does not include csr set or clear instructions where rs1 is x0 (bypassing the write)
 * **Pass/Fail Criteria:** Check RM
 * **Test Type:** Constrained Random
 * **Coverage Method:** Functional Coverage
@@ -7184,6 +7184,803 @@ isacov.rv32m_remu_cg.cp_rd_toggle
 * **Coverage Method:** NDY (Not Defined Yet)
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_ISA_RV32_F015_S003_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+## Feature: RV32Zicond Integer Conditional Instructions
+
+### Sub-feature: 000_CZERO.EQZ
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  czero.eqz rd, rs1, rs2  
+  if (x[rs2] == 0) x[rd] = 0 else x[rs1]  
+   Set rd's value to zero if rs2 is equal to zero, otherwise moves rs1 into rd
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd registers are used  
+  All possible rs1 registers are used  
+  All possible rs2 registers are used  
+  All possible register combinations where rs1 == rd are used  
+  All possible register combinations where rs2 == rd are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F016_S000_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  czero.eqz rd, rs1, rs2  
+  if (x[rs2] == 0) x[rd] = 0 else x[rs1]  
+   Set rd's value to zero if rs2 is equal to zero, otherwise moves rs1 into rd
+* **Verification Goals**
+  
+  Input operands:  
+    
+  rs1 value is +ve, -ve and zero  
+  rs2 value is +ve, -ve and zero  
+  All combinations of rs1 and rs2 +ve, -ve, and zero values are used  
+  All bits of rs1 are toggled  
+  All bits of rs2 are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F016_S000_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  czero.eqz rd, rs1, rs2  
+  if (x[rs2] == 0) x[rd] = 0 else x[rs1]  
+   Set rd's value to zero if rs2 is equal to zero, otherwise moves rs1 into rd
+* **Verification Goals**
+  
+  Output result:  
+    
+  rd value is +ve, -ve and zero  
+  All bits of rd are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F016_S000_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 001_CZERO.NEZ
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  czero.nez rd, rs1, rs2  
+  if (x[rs2] != 0) x[rd] = 0 else x[rs1]  
+   Set rd's value to zero if rs2 isn't equal to zero, otherwise moves rs1 into rd
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd registers are used  
+  All possible rs1 registers are used  
+  All possible rs2 registers are used  
+  All possible register combinations where rs1 == rd are used  
+  All possible register combinations where rs2 == rd are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F016_S001_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  czero.nez rd, rs1, rs2  
+  if (x[rs2] != 0) x[rd] = 0 else x[rs1]  
+   Set rd's value to zero if rs2 isn't equal to zero, otherwise moves rs1 into rd
+* **Verification Goals**
+  
+  Input operands:  
+    
+  rs1 value is +ve, -ve and zero  
+  rs2 value is +ve, -ve and zero  
+  All combinations of rs1 and rs2 +ve, -ve, and zero values are used  
+  All bits of rs1 are toggled  
+  All bits of rs2 are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F016_S001_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  czero.nez rd, rs1, rs2  
+  if (x[rs2] != 0) x[rd] = 0 else x[rs1]  
+   Set rd's value to zero if rs2 isn't equal to zero, otherwise moves rs1 into rd
+* **Verification Goals**
+  
+  Output result:  
+    
+  rd value is +ve, -ve and zero  
+  All bits of rd are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32_F016_S001_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+## Feature: RV32Zcb Integer Computational Instructions
+
+### Sub-feature: 000_C.ZEXT.B
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.zext.b rd'  
+  x[8 + rd'] = zext(x[8 + rd'][7:0])  
+  It zero-extends the least-significant byte of the operand
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd` registers are used.
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S000_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.zext.b rd'  
+  x[8 + rd'] = zext(x[8 + rd'][7:0])  
+  It zero-extends the least-significant byte of the operand
+* **Verification Goals**
+  
+  Output result:  
+    
+  All bits of rd'[7:0] are toggled
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S000_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 001_C.SEXT.B
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.sext.b rd'  
+  x[8 + rd'] = sext(x[8 + rd'][7:0])  
+  It sign-extends the least-significant byte of the operand
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd' are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S001_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.sext.b rd'  
+  x[8 + rd'] = sext(x[8 + rd'][7:0])  
+  It sign-extends the least-significant byte of the operand
+* **Verification Goals**
+  
+  Output operands:  
+    
+  All bits of rd' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S001_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 002_C.ZEXT.H
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.zext.h rd'  
+  x[8 + rd'] = zext(x[8 + rd'][15:0])  
+  It zero-extends the least-significant half-word of the operand
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd' registers are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S002_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.zext.h rd'  
+  x[8 + rd'] = zext(x[8 + rd'][15:0])  
+  It zero-extends the least-significant half-word of the operand
+* **Verification Goals**
+  
+  Output result:  
+    
+  All bits of rd'[15:0] are toggled
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S002_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 003_C.SEXT.H
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.sext.h rd'  
+  x[8 + rd'] = sext(x[8 + rd'][15:0])  
+  It sign-extends the least-significant half-word of the operand
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd' registers are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S003_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.sext.h rd'  
+  x[8 + rd'] = sext(x[8 + rd'][15:0])  
+  It sign-extends the least-significant half-word of the operand
+* **Verification Goals**
+  
+  Output result:  
+    
+  All bits of rd' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S003_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 005_C.NOT
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.not rd'  
+  x[8 + rd'] = x[8 + rd']^ -1
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd' registers are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S005_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.not rd'  
+  x[8 + rd'] = x[8 + rd']^ -1
+* **Verification Goals**
+  
+  Output result:  
+    
+  All bits of rd' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S005_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 006_C.MUL
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.mul rd',rs2'  
+  x[8 + rd'] = x[8 + rd'] * x[8 + rs2']  
+  Arithmetic overflow is ignored.
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd' registers are used  
+   All possible register combinations where rs2' == rd' are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S006_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.mul rd',rs2'  
+  x[8 + rd'] = x[8 + rd'] * x[8 + rs2']  
+  Arithmetic overflow is ignored.
+* **Verification Goals**
+  
+  Input operands:  
+    
+  All bits of rs2' are toggled
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S006_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.mul rd',rs2'  
+  x[8 + rd'] = x[8 + rd'] * x[8 + rs2']  
+  Arithmetic overflow is ignored.
+* **Verification Goals**
+  
+  Output result:  
+    
+  All bits of rd' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F016_S006_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+## Feature: RV32Zcb Load and Store Instructions
+
+### Sub-feature: 000_C.LBU
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.lbu rd', uimm(rs1')  
+  x[8 + rd'] = zext(M[x[8 + rd'] + zext(uimm[1:0])][7:0])
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd' register are used  
+  All possible rs1' register are used  
+  ALl possible combinations where rd' == rs1' are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S000_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.lbu rd', uimm(rs1')  
+  x[8 + rd'] = zext(M[x[8 + rd'] + zext(uimm[1:0])][7:0])
+* **Verification Goals**
+  
+  Input operands:  
+    
+  uimm value is non-zero and zero  
+  All bits of uimm are toggled  
+  All bits of rs1' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S000_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.lbu rd', uimm(rs1')  
+  x[8 + rd'] = zext(M[x[8 + rd'] + zext(uimm[1:0])][7:0])
+* **Verification Goals**
+  
+  Output result:  
+    
+  rd' value is non-zero and zero  
+  All bits of rd' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S000_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 001_C.SB
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.sb rs1', uimm(rs2')  
+  M[x[8 + rs1'] + zext(uimm[1:0])][7:0] = x[8 + rs2']
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rs1' register are used  
+   All possible rs2' register are used  
+  All possible combinations where rs1' = rs2' register are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S001_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.sb rs1', uimm(rs2')  
+  M[x[8 + rs1'] + zext(uimm[1:0])][7:0] = x[8 + rs2']
+* **Verification Goals**
+  
+  Input operands:  
+    
+  uimm value is non-zero and zero  
+  All bits of uimm are toggled  
+  All bits of rs1' are toggled  
+  All bits of rs2' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S001_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 002_C.LHU
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions
+* **Feature Description**
+  
+  c.lhu rd', uimm(rs1')  
+  x[8 + rd'] = zext(M[x[8 + rd'] + zext(uimm[1])][15:0])
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd' register are used  
+  All possible rs1' register are used  
+  ALl possible combinations where rd' == rs1' are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S002_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions
+* **Feature Description**
+  
+  c.lhu rd', uimm(rs1')  
+  x[8 + rd'] = zext(M[x[8 + rd'] + zext(uimm[1])][15:0])
+* **Verification Goals**
+  
+  Input operands:  
+    
+  uimm value is non-zero and zero  
+  All bits of uimm are toggled  
+  All bits of rs1' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S002_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./RISCV_Instructions
+* **Feature Description**
+  
+  c.lhu rd', uimm(rs1')  
+  x[8 + rd'] = zext(M[x[8 + rd'] + zext(uimm[1])][15:0])
+* **Verification Goals**
+  
+  Output result:  
+    
+  rd' value is non-zero and zero  
+  All bits of rd' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S002_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 003_C.LH
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.lh rd', uimm(rs1')  
+  x[8 + rd'] = sext(M[x[8 + rd'] + zext(uimm[1])][15:0])
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rd' register are used  
+  All possible rs1' register are used  
+  ALl possible combinations where rd' == rs1' are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S003_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.lh rd', uimm(rs1')  
+  x[8 + rd'] = sext(M[x[8 + rd'] + zext(uimm[1])][15:0])
+* **Verification Goals**
+  
+  Input operands:  
+    
+  uimm value is non-zero and zero  
+  All bits of uimm are toggled  
+  All bits of rs1' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S003_I001
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 002
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.lh rd', uimm(rs1')  
+  x[8 + rd'] = sext(M[x[8 + rd'] + zext(uimm[1])][15:0])
+* **Verification Goals**
+  
+  Output result:  
+    
+  rd' value is non-zero and zero  
+  All bits of rd' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S003_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 004_C.SH
+
+#### Item: 000
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.sh rs1', uimm(rs2')  
+  M[x[8 + rs1'] + zext(uimm[1])][15:0] = x[8 + rs2']
+* **Verification Goals**
+  
+  Register operands:  
+    
+  All possible rs1' register are used  
+   All possible rs2' register are used  
+  All possible combinations where rs1' = rs2' are used
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S004_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** ./RISCV_Instructions.rst
+* **Feature Description**
+  
+  c.sh rs1', uimm(rs2')  
+  M[x[8 + rs1'] + zext(uimm[1])][15:0] = x[8 + rs2']
+* **Verification Goals**
+  
+  Input operands:  
+    
+  uimm value is non-zero and zero  
+  All bits of uimm are toggled  
+  All bits of rs1' are toggled  
+  All bits of rs2' are toggled
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_ISA_RV32 EMBEDDED_F017_S004_I001
 * **Link to Coverage:** 
 * **Comments**
   

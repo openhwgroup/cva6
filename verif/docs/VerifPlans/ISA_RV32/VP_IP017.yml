@@ -1,0 +1,266 @@
+!Feature
+next_elt_id: 7
+name: RV32Zcb Integer Computational Instructions
+id: 17
+display_order: 17
+subfeatures: !!omap
+- 000_C.ZEXT.B: !Subfeature
+    name: 000_C.ZEXT.B
+    tag: VP_ISA_RV32 EMBEDDED_F016_S000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S000_I000
+        description: "c.zext.b rd'\nx[8 + rd'] = zext(x[8 + rd'][7:0])\nIt zero-extends
+          the least-significant byte of the operand"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd` registers are used."
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S000_I001
+        description: "c.zext.b rd'\nx[8 + rd'] = zext(x[8 + rd'][7:0])\nIt zero-extends
+          the least-significant byte of the operand"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd'[7:0] are toggled"
+        pfc: 3
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_C.SEXT.B: !Subfeature
+    name: 001_C.SEXT.B
+    tag: VP_ISA_RV32 EMBEDDED_F016_S001
+    next_elt_id: 2
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S001_I000
+        description: "c.sext.b rd'\nx[8 + rd'] = sext(x[8 + rd'][7:0])\nIt sign-extends
+          the least-significant byte of the operand"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd' are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S001_I001
+        description: "c.sext.b rd'\nx[8 + rd'] = sext(x[8 + rd'][7:0])\nIt sign-extends
+          the least-significant byte of the operand"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output operands:\n\nAll bits of rd' are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_C.ZEXT.H: !Subfeature
+    name: 002_C.ZEXT.H
+    tag: VP_ISA_RV32 EMBEDDED_F016_S002
+    next_elt_id: 2
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S002_I000
+        description: "c.zext.h rd'\nx[8 + rd'] = zext(x[8 + rd'][15:0])\nIt zero-extends
+          the least-significant half-word of the operand"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd' registers are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S002_I001
+        description: "c.zext.h rd'\nx[8 + rd'] = zext(x[8 + rd'][15:0])\nIt zero-extends
+          the least-significant half-word of the operand"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd'[15:0] are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_C.SEXT.H: !Subfeature
+    name: 003_C.SEXT.H
+    tag: VP_ISA_RV32 EMBEDDED_F016_S003
+    next_elt_id: 2
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S003_I000
+        description: "c.sext.h rd'\nx[8 + rd'] = sext(x[8 + rd'][15:0])\nIt sign-extends
+          the least-significant half-word of the operand"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd' registers are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S003_I001
+        description: "c.sext.h rd'\nx[8 + rd'] = sext(x[8 + rd'][15:0])\nIt sign-extends
+          the least-significant half-word of the operand"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd' are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_C.NOT: !Subfeature
+    name: 005_C.NOT
+    tag: VP_ISA_RV32 EMBEDDED_F016_S005
+    next_elt_id: 2
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S005_I000
+        description: "c.not rd'\nx[8 + rd'] = x[8 + rd']^ -1"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd' registers are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S005_I001
+        description: "c.not rd'\nx[8 + rd'] = x[8 + rd']^ -1"
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd' are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 006_C.MUL: !Subfeature
+    name: 006_C.MUL
+    tag: VP_ISA_RV32 EMBEDDED_F016_S006
+    next_elt_id: 3
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S006_I000
+        description: "c.mul rd',rs2'\nx[8 + rd'] = x[8 + rd'] * x[8 + rs2']\nArithmetic
+          overflow is ignored."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rd' registers are used\n
+          All possible register combinations where rs2' == rd' are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S006_I001
+        description: "c.mul rd',rs2'\nx[8 + rd'] = x[8 + rd'] * x[8 + rs2']\nArithmetic
+          overflow is ignored."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nAll bits of rs2' are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32 EMBEDDED_F016_S006_I002
+        description: "c.mul rd',rs2'\nx[8 + rd'] = x[8 + rd'] * x[8 + rs2']\nArithmetic
+          overflow is ignored."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nAll bits of rd' are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
