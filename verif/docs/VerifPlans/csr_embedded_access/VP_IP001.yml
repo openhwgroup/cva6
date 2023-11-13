@@ -1,0 +1,101 @@
+!Feature
+next_elt_id: 3
+name: CVA6 CSRs read after write
+id: 1
+display_order: 1
+subfeatures: !!omap
+- 000_Read after write RW registers: !Subfeature
+    name: 000_Read after write RW registers
+    tag: VP_csr-embedded-access_F001_S000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_csr-embedded-access_F001_S000_I000
+        description: 'Check the correctness of RISCV CVA6 CSRs write and read register
+          operations by writing in a random order CSRs with values: Inverted reset,
+          0xaaaaaaaa, 0x555555 and random values after applying not testable register
+          fields mask to the written value, then read back the CSRs. Read values should
+          match reference model.'
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "1.Verify that CSR can be written using the appropriate CSR write
+          instructions.\n2.Ensure correct read operations using CSR read instructions.\n
+          3.Ensure that read values of the CSR should be as per CVA6 user manual."
+        pfc: 3
+        test_type: 2
+        cov_method: 1
+        cores: 56
+        coverage_loc: uvme_cva6_pkg.csr_reg_cov.\*.\*__write_cg; uvme_cva6_pkg.csr_reg_cov.\*.\*__read_cg
+        comments: 'Related RW Registers: mstatus, misa, mie, mtvec, mstatush, mhpmevent[3-31],
+          mscratch, mepc, mcause, mtval, mip, pmpcfg[0-15], icache, mcycle, minstret,
+          mcycleh, minstreth, mhpmcounter[3..31], mhpmcounterh[3..31]'
+- 001_Read after write RO registers: !Subfeature
+    name: 001_Read after write RO registers
+    tag: VP_csr-embedded-access_F001_S001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_csr-embedded-access_F001_S001_I000
+        description: 'Check the correctness of RISCV CVA6 Read-Only CSRs by writing
+          CSRs in a random order values: Inverted reset, 0xaaaaaaaa, 0x555555, random
+          values. Then confirm that write into RO CSRs generates illegal exception.
+          Finaly read back the CSR and check register value has not changed and matchs
+          reference model.'
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "1.Attempt to write a RO CSR.\n2.Check to see that an illegal
+          instruction exception occurred.\n3.Immediately after returning from the
+          exception handler, read CSR to check that it value has not changed."
+        pfc: 3
+        test_type: 2
+        cov_method: 1
+        cores: 56
+        coverage_loc: uvme_cva6_pkg.csr_reg_cov.\*.\*__write_cg; uvme_cva6_pkg.csr_reg_cov.\*.\*__read_cg
+        comments: 'Related RO registers: cycle, instret, cycleh, instreth, mvendorid,
+          marchid, mimpid, mhartid'
+- 002_Write and Read all CSR addresses: !Subfeature
+    name: 002_Write and Read all CSR addresses
+    tag: VP_csr-embedded-access_F001_S002
+    next_elt_id: 1
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_csr-embedded-access_F001_S002_I000
+        description: Check the correctness of RISCV CVA6 all CSR addresses write and
+          read operations by writing random value to CSR address from 0 to 0xFFF in
+          a random order. Then confirm that write into unmapped addresses generates
+          illegal exception. Finaly read the CSRs in a random order and check that
+          it also generates illegal exception in unmapped addresses.
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "1.Write and read all CSR addresses.\n2.Check to see that an
+          illegal instruction exception occurred bor both write and read operations
+          in all unmapped address."
+        pfc: 3
+        test_type: 3
+        cov_method: 0
+        cores: 56
+        coverage_loc: riscv_arithmetic_basic_illegal_csr.S
+        comments: 'Related register addresses: all unoccupied addresses from 0x0 to
+          0xFFF'
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

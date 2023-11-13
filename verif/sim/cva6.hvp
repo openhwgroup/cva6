@@ -1505,7 +1505,7 @@ plan "CVA6 Plan";
                 endmeasure
             endfeature
             feature MMU;
-                description = "Memory Management Unit\r support";
+                description = "Memory Management Unit support";
                 CVA6_VERSION = STEP1;
                 MMU_ENABLED = 1;
                 measure Group MMU;

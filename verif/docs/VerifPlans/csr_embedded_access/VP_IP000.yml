@@ -1,0 +1,37 @@
+!Feature
+next_elt_id: 1
+name: CVA6 CSRs reset value
+id: 0
+display_order: 0
+subfeatures: !!omap
+- 000_Read register value after boot: !Subfeature
+    name: 000_Read register value after boot
+    tag: VP_csr-embedded-access_F000_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_csr-embedded-access_F000_S000_I000
+        description: After hardware reset and boot execution, RISC-V CVA6 CSRs registers
+          must initialize to their respective reset value specified in the RISC-V
+          CVA6 user manual. Read reset values should match reference model.
+        reqt_doc: 
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "1.Apply hard reset.\n2.Read all CSRs using read instructions.\n
+          3.Ensure that read values of the CSR should be as per CVA6 user manual and
+          match reference model."
+        pfc: 3
+        test_type: 2
+        cov_method: 1
+        cores: 56
+        coverage_loc: uvme_cva6_pkg.csr_reg_cov.\*.\*__read_cg
+        comments: Applicable to all CSR addresses
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
