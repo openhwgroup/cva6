@@ -1,0 +1,34 @@
+!Feature
+next_elt_id: 1
+name: Machine Exception Program Counter
+id: 5
+display_order: 5
+subfeatures: !!omap
+- 000_mepc: !Subfeature
+    name: 000_mepc
+    tag: VP_traps_F005_S000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F005_S000_I000
+        description: '`mepc` is set to the `pc` value of the instruction that generates
+          an exception.'
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.1.15
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that when an exception is raised, `mepc` CSR contains the
+          correct `pc`.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

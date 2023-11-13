@@ -1,0 +1,54 @@
+!Feature
+next_elt_id: 1
+name: CSR Access
+id: 2
+display_order: 2
+subfeatures: !!omap
+- 000_CSR_access: !Subfeature
+    name: 000_CSR_access
+    tag: VP_traps_F002_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F002_S000_I000
+        description: Attempted access to non-existent CSRs will generate an illegal
+          instruction exception.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 2.1
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that when accessing any non-existent CSR, an exception
+          is raised with `mcause` set to 0x2.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: "Covered by CSR DV plan.\nVP_csr-embedded-access_F001_S002_I000\n
+          Verify if `mcause` value check is covered by CSR tests."
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_traps_F002_S000_I001
+        description: Attempted store to read-only CSRs will generate an illegal instruction
+          exception.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 2.1
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that when storing to any read-only CSR, an exception is
+          raised with `mcause` set to 0x2.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: "Covered by CSR DV plan.\nVP_csr-embedded-access_F001_S001_I000\n
+          Verify if `mcause` value check is covered by CSR tests."
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

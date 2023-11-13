@@ -1,0 +1,67 @@
+!Feature
+next_elt_id: 2
+name: Exception Priority
+id: 7
+display_order: 7
+subfeatures: !!omap
+- 000_exception priority: !Subfeature
+    name: 000_exception priority
+    tag: VP_traps_F007_S000
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F007_S000_I000
+        description: "Exceptions are of lower priority than all interrupts.\nException
+          priority (high to low)\n- code=0x3: Instruction address breakpoint\n- code=0xC,
+          0x1: Instruction page fault, instruction access fault\n- code=0x2: Illegal
+          instruction\n- code=0x8, 0x9, 0xB: Environment call from U-mode, from S-mode,
+          from M-mode\n- code=0x3: Environment break\n- code=0x3: Load/store/AMO address
+          breakpoint\n- code=0xD, 0xF, 0x5, 0x7: Load page fault, store/AMO page fault,
+          load access fault, store/AMO access fault\n- code=0x4, 0x6: Load address
+          misaligned, store/AMO address misaligned"
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.1.15
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that when raising an exception together with a lower priority
+          one the cause of the higher priority exception is written in `mcause` register.
+        pfc: -1
+        test_type: 2
+        cov_method: 0
+        cores: 40
+        coverage_loc: ''
+        comments: ''
+- 001_exception priority embedded: !Subfeature
+    name: 001_exception priority embedded
+    tag: VP_traps_F007_S001
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F007_S001_I000
+        description: "Exceptions are of lower priority than all interrupts.\nException
+          priority (high to low)\n- code=0x1: Instruction access fault\n- code=0x2:
+          Illegal instruction\n- code=0xB: Environment call from M-mode\n- code=0x5,
+          0x7: Load access fault, store access fault\n- code=0x4, 0x6: Load address
+          misaligned, store address misaligned"
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.1.15
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that when raising an exception together with a lower priority
+          one the cause of the higher priority exception is written in `mcause` register.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 16
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

@@ -1,0 +1,172 @@
+!Feature
+next_elt_id: 2
+name: Access Fault
+id: 9
+display_order: 9
+subfeatures: !!omap
+- 000_instr_access: !Subfeature
+    name: 000_instr_access
+    tag: VP_traps_F009_S000
+    next_elt_id: 1
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F009_S000_I000
+        description: If execution is attempted in a PMP region without execute permission,
+          an instruction access fault exception is taken.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.7.1
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Exception is entered with `mcause` set to 0x1.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_traps_F009_S000_I001
+        description: If execution is attempted in a PMA region set to I/O, an instruction
+          access fault exception is taken.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.6
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Exception is entered with `mcause` set to 0x1.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: CHECK IF RELEVANT ON CVA6
+- 001_load_access: !Subfeature
+    name: 001_load_access
+    tag: VP_traps_F009_S001
+    next_elt_id: 2
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F009_S001_I000
+        description: If aligned or not aligned load is attempted in a PMP region without
+          write permission, a load access fault exception is taken.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.7.1
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Exception is entered with `mcause` set to 0x5.
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_traps_F009_S001_I001
+        description: If aligned or not aligned load-reserved is attempted in a PMP
+          region without write permission, a load access fault exception is taken.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.7.1
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Exception is entered with `mcause` set to 0x5
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 40
+        coverage_loc: ''
+        comments: ''
+- 002_store_amo_access: !Subfeature
+    name: 002_store_amo_access
+    tag: VP_traps_F009_S002
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F009_S002_I000
+        description: If aligned or not aligned store is attempted in a PMP region
+          without write permission, a store/AMO access fault exception is taken.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.7.1
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Exception is entered with `mcause` set to 0x7
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_traps_F009_S002_I001
+        description: If aligned or not aligned store conditional is attempted in a
+          PMP region without write permission, a store/AMO access fault exception
+          is taken.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.7.1
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Exception is entered with `mcause` set to 0x7
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 40
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_traps_F009_S002_I002
+        description: If aligned or not aligned AMO is attempted in a PMP region without
+          write permission, a store/AMO access fault exception is taken.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.7.1
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Exception is entered with `mcause` set to 0x7
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 40
+        coverage_loc: ''
+        comments: ''
+- 003_mtval: !Subfeature
+    name: 003_mtval
+    tag: VP_traps_F009_S003
+    next_elt_id: 1
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_traps_F009_S003_I000
+        description: When an access fault exception is raised, the corresponding address
+          is stored into `mtval` CSR.
+        reqt_doc: Privileged Architecture Version 20211203, Chapter 3.1.16
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Check that when any access fault exception is raised, `mtval`
+          CSR contains the address of the portion of the access causing the fault.
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ZERO_TVAL parameter value?
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
