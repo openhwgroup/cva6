@@ -19,6 +19,7 @@ module perf_counters
     parameter config_pkg::cva6_cfg_t CVA6Cfg  = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type scoreboard_entry_t = logic,
+    parameter type icache_dreq_t = logic,
     parameter int unsigned           NumPorts = 3                            // number of miss ports
 ) (
     input logic clk_i,

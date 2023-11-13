@@ -18,6 +18,8 @@ module cva6_hpdcache_subsystem
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
     parameter int NumPorts = 4,
     parameter int NrHwPrefetchers = 4,
     parameter type noc_req_t = logic,
@@ -42,8 +44,8 @@ module cva6_hpdcache_subsystem
     input ariane_pkg::icache_areq_t icache_areq_i,  // to/from frontend
     output icache_arsp_t icache_areq_o,
     // data requests
-    input ariane_pkg::icache_dreq_t icache_dreq_i,  // to/from frontend
-    output ariane_pkg::icache_drsp_t icache_dreq_o,
+    input icache_dreq_t icache_dreq_i,  // to/from frontend
+    output icache_drsp_t icache_dreq_o,
     //   }}}
 
     //  D$
@@ -103,6 +105,8 @@ module cva6_hpdcache_subsystem
   cva6_icache #(
       .CVA6Cfg(CVA6Cfg),
       .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t),
       .RdTxId (ICACHE_RDTXID)
   ) i_cva6_icache (
       .clk_i         (clk_i),

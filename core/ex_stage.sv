@@ -21,7 +21,9 @@ module ex_stage
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
     parameter type fu_data_t = logic,
-    parameter type icache_arsp_t = logic
+    parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic
 ) (
     input logic clk_i,        // Clock
     input logic rst_ni,       // Asynchronous reset active low
@@ -316,7 +318,9 @@ module ex_stage
   load_store_unit #(
       .CVA6Cfg   (CVA6Cfg),
       .fu_data_t(fu_data_t),
-      .icache_arsp_t(icache_arsp_t)
+      .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t)
   ) lsu_i (
       .clk_i,
       .rst_ni,

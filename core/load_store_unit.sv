@@ -19,6 +19,8 @@ module load_store_unit
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type fu_data_t = logic,
     parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
     parameter type lsu_ctrl_t = struct packed {
       logic                        valid;
       logic [CVA6Cfg.VLEN-1:0]     vaddr;
@@ -155,6 +157,8 @@ module load_store_unit
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .icache_arsp_t(icache_arsp_t),
+        .icache_dreq_t(icache_dreq_t),
+        .icache_drsp_t(icache_drsp_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES)
     ) i_cva6_mmu (
@@ -184,6 +188,8 @@ module load_store_unit
     cva6_mmu_sv32 #(
         .CVA6Cfg          (CVA6Cfg),
         .icache_arsp_t(icache_arsp_t),
+        .icache_dreq_t(icache_dreq_t),
+        .icache_drsp_t(icache_drsp_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES)
     ) i_cva6_mmu (

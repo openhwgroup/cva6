@@ -21,6 +21,8 @@ module frontend
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type fetch_entry_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
 
     parameter type btb_update_t = struct packed {
       logic                   valid;

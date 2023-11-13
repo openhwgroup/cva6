@@ -635,24 +635,6 @@ package ariane_pkg;
     exception_t             fetch_exception;  // exception occurred during fetch
   } icache_areq_t;
 
-  // I$ data requests
-  typedef struct packed {
-    logic                   req;      // we request a new word
-    logic                   kill_s1;  // kill the current request
-    logic                   kill_s2;  // kill the last request
-    logic                   spec;     // request is speculative
-    logic [riscv::VLEN-1:0] vaddr;    // 1st cycle: 12 bit index is taken for lookup
-  } icache_dreq_t;
-
-  typedef struct packed {
-    logic                        ready;  // icache is ready
-    logic                        valid;  // signals a valid read
-    logic [FETCH_WIDTH-1:0]      data;   // 2+ cycle out: tag
-    logic [FETCH_USER_WIDTH-1:0] user;   // User bits
-    logic [riscv::VLEN-1:0]      vaddr;  // virtual address out
-    exception_t                  ex;     // we've encountered an exception
-  } icache_drsp_t;
-
   // AMO request going to cache. this request is unconditionally valid as soon
   // as request goes high.
   // Furthermore, those signals are kept stable until the response indicates
