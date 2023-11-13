@@ -116,7 +116,7 @@ module multiplier
   always_comb begin : p_selmux
     unique case (operator_q)
       MULH, MULHU, MULHSU: result_o = mult_result_q[CVA6Cfg.XLEN*2-1:CVA6Cfg.XLEN];
-      MULW:                result_o = sext32(mult_result_q[31:0]);
+      MULW:                result_o = {{CVA6Cfg.XLEN - 32{mult_result_q[31]}}, mult_result_q[31:0]};
       CLMUL:               result_o = clmul_q;
       CLMULH:              result_o = clmulr_q >> 1;
       CLMULR:              result_o = clmulr_q;

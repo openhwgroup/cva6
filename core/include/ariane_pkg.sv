@@ -653,13 +653,6 @@ package ariane_pkg;
     logic [63:0] result;  // sign-extended, result
   } amo_resp_t;
 
-  // ----------------------
-  // Arithmetic Functions
-  // ----------------------
-  function automatic riscv::xlen_t sext32(logic [31:0] operand);
-    return {{riscv::XLEN - 32{operand[31]}}, operand[31:0]};
-  endfunction
-
   // generate byte enable mask
   function automatic logic [7:0] be_gen(logic [2:0] addr, logic [1:0] size);
     case (size)

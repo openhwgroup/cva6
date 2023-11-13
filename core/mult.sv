@@ -93,8 +93,8 @@ module mult
       if (fu_data_i.operation inside {DIVW, DIVUW, REMW, REMUW}) begin
         // yes so check if we should sign extend this is only done for a signed operation
         if (div_signed) begin
-          operand_a = sext32(fu_data_i.operand_a[31:0]);
-          operand_b = sext32(fu_data_i.operand_b[31:0]);
+          operand_a = {{CVA6Cfg.XLEN - 32{fu_data_i.operand_a[31]}}, fu_data_i.operand_a[31:0]};
+          operand_b = {{CVA6Cfg.XLEN - 32{fu_data_i.operand_b[31]}}, fu_data_i.operand_b[31:0]};
         end else begin
           operand_a = fu_data_i.operand_a[31:0];
           operand_b = fu_data_i.operand_b[31:0];
@@ -135,7 +135,7 @@ module mult
 
   // Result multiplexer
   // if it was a signed word operation the bit will be set and the result will be sign extended accordingly
-  assign div_result = (word_op_q) ? sext32(result) : result;
+  assign div_result = (word_op_q) ? {{CVA6Cfg.XLEN - 32{result[31]}}, result[31:0]} : result;
 
   // ---------------------
   // Registers
