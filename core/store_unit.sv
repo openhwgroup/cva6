@@ -189,9 +189,26 @@ module store_unit
   // re-align the write data to comply with the address offset
   always_comb begin
     st_be_n = lsu_ctrl_i.be;
+
     // don't shift the data if we are going to perform an AMO as we still need to operate on this data
-    st_data_n = (CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0] :
-        data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
+    if (CVA6Cfg.RVA && instr_is_amo) begin
+      st_data_n = lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0];
+    end else begin
+      st_data_n = '0;
+      // align data to address e.g.: shift data to be naturally 64
+      // Set addr[2] to 1'b0 when 32bits
+      case ({(lsu_ctrl_i.vaddr[2] && CVA6Cfg.IS_XLEN64), lsu_ctrl_i.vaddr[1:0]})
+        3'b000: st_data_n[CVA6Cfg.XLEN-1:0] = {lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0]};
+        3'b001: st_data_n[CVA6Cfg.XLEN-1:0] = {lsu_ctrl_i.data[CVA6Cfg.XLEN-9:0], lsu_ctrl_i.data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-8]};
+        3'b010: st_data_n[CVA6Cfg.XLEN-1:0] = {lsu_ctrl_i.data[CVA6Cfg.XLEN-17:0], lsu_ctrl_i.data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-16]};
+        3'b011: st_data_n[CVA6Cfg.XLEN-1:0] = {lsu_ctrl_i.data[CVA6Cfg.XLEN-25:0], lsu_ctrl_i.data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-24]};
+        3'b100: st_data_n = {lsu_ctrl_i.data[31:0], lsu_ctrl_i.data[63:32]};
+        3'b101: st_data_n = {lsu_ctrl_i.data[23:0], lsu_ctrl_i.data[63:24]};
+        3'b110: st_data_n = {lsu_ctrl_i.data[15:0], lsu_ctrl_i.data[63:16]};
+        3'b111: st_data_n = {lsu_ctrl_i.data[7:0], lsu_ctrl_i.data[63:8]};
+      endcase
+    end
+
     st_data_size_n = extract_transfer_size(lsu_ctrl_i.operation);
     // save AMO op for next cycle
     if(CVA6Cfg.RVA) begin
