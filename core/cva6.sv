@@ -35,6 +35,23 @@ module cva6
       logic [riscv::VLEN-1:0] fetch_vaddr;  // virtual address out
     },
 
+    // I$ data requests
+    parameter type icache_dreq_t = struct packed {
+      logic                   req;      // we request a new word
+      logic                   kill_s1;  // kill the current request
+      logic                   kill_s2;  // kill the last request
+      logic                   spec;     // request is speculative
+      logic [riscv::VLEN-1:0] vaddr;    // 1st cycle: 12 bit index is taken for lookup
+    },
+    parameter type icache_drsp_t = struct packed {
+      logic                                    ready;  // icache is ready
+      logic                                    valid;  // signals a valid read
+      logic [ariane_pkg::FETCH_WIDTH-1:0]      data;   // 2+ cycle out: tag
+      logic [ariane_pkg::FETCH_USER_WIDTH-1:0] user;   // User bits
+      logic [riscv::VLEN-1:0]                  vaddr;  // virtual address out
+      exception_t                              ex;     // we've encountered an exception
+    },
+
     // IF/ID Stage
     // store the decompressed instruction
     parameter type fetch_entry_t = struct packed {
@@ -458,7 +475,9 @@ module cva6
   frontend #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
-      .fetch_entry_t(fetch_entry_t)
+      .fetch_entry_t(fetch_entry_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t)
   ) i_frontend (
       .flush_i            (flush_ctrl_if),                  // not entirely correct
       .flush_bp_i         (1'b0),
@@ -670,6 +689,8 @@ module cva6
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .fu_data_t(fu_data_t),
       .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t),
       .lsu_ctrl_t(lsu_ctrl_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) ex_stage_i (
@@ -898,6 +919,7 @@ module cva6
         .CVA6Cfg(CVA6Cfg),
         .bp_resolve_t(bp_resolve_t),
         .scoreboard_entry_t(scoreboard_entry_t),
+        .icache_dreq_t(icache_dreq_t),
         .NumPorts(NumPorts)
     ) perf_counters_i (
         .clk_i         (clk_i),
@@ -1003,6 +1025,8 @@ module cva6
     wt_cache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
         .icache_arsp_t(icache_arsp_t),
+        .icache_dreq_t(icache_dreq_t),
+        .icache_drsp_t(icache_drsp_t),
         .NumPorts  (NumPorts),
         .noc_req_t (noc_req_t),
         .noc_resp_t(noc_resp_t)
@@ -1044,6 +1068,8 @@ module cva6
     cva6_hpdcache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
         .icache_arsp_t(icache_arsp_t),
+        .icache_dreq_t(icache_dreq_t),
+        .icache_drsp_t(icache_drsp_t),
         .NumPorts  (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),
@@ -1105,6 +1131,8 @@ module cva6
         // deprecated
         .CVA6Cfg      (CVA6Cfg),
         .icache_arsp_t(icache_arsp_t),
+        .icache_dreq_t(icache_dreq_t),
+        .icache_drsp_t(icache_drsp_t),
         .NumPorts     (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),

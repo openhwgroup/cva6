@@ -22,6 +22,8 @@ module ex_stage
     parameter type branchpredict_sbe_t = logic,
     parameter type fu_data_t = logic,
     parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
     parameter type lsu_ctrl_t = logic,
     parameter int unsigned ASID_WIDTH = 1
 ) (
@@ -377,6 +379,8 @@ module ex_stage
       .CVA6Cfg   (CVA6Cfg),
       .fu_data_t (fu_data_t),
       .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t),
       .lsu_ctrl_t(lsu_ctrl_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) lsu_i (
