@@ -48,11 +48,22 @@ module instr_scan #(
   // Opocde is JAL[R] and destination register is either x1 or x5
   assign rvi_call_o = (rvi_jalr_o | rvi_jump_o) & ((instr_i[11:7] == 5'd1) | instr_i[11:7] == 5'd5);
   // differentiates between JAL and BRANCH opcode, JALR comes from BHT
-  assign rvi_imm_o = is_xret ? '0 : (instr_i[3]) ? ariane_pkg::uj_imm(
-      instr_i
-  ) : ariane_pkg::sb_imm(
-      instr_i
-  );
+  assign rvi_imm_o = is_xret ? '0 : (instr_i[3]) ? {
+      // uj_imm
+      {44 + CVA6Cfg.VLEN - 64{instr_i[31]}},
+      instr_i[19:12],
+      instr_i[20],
+      instr_i[30:21],
+      1'b0
+    } : {
+      // sb_imm
+      {51 + CVA6Cfg.VLEN - 64{instr_i[31]}},
+      instr_i[31],
+      instr_i[7],
+      instr_i[30:25],
+      instr_i[11:8],
+      1'b0
+    };
   assign rvi_branch_o = (instr_i[6:0] == riscv::OpcodeBranch);
   assign rvi_jalr_o = (instr_i[6:0] == riscv::OpcodeJalr);
   assign rvi_jump_o = logic'(instr_i[6:0] == riscv::OpcodeJal) | is_xret;

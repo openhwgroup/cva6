@@ -661,34 +661,6 @@ package ariane_pkg;
   endfunction
 
   // ----------------------
-  // Immediate functions
-  // ----------------------
-  function automatic logic [riscv::VLEN-1:0] uj_imm(logic [31:0] instruction_i);
-    return {
-      {44 + riscv::VLEN - 64{instruction_i[31]}},
-      instruction_i[19:12],
-      instruction_i[20],
-      instruction_i[30:21],
-      1'b0
-    };
-  endfunction
-
-  function automatic logic [riscv::VLEN-1:0] i_imm(logic [31:0] instruction_i);
-    return {{52 + riscv::VLEN - 64{instruction_i[31]}}, instruction_i[31:20]};
-  endfunction
-
-  function automatic logic [riscv::VLEN-1:0] sb_imm(logic [31:0] instruction_i);
-    return {
-      {51 + riscv::VLEN - 64{instruction_i[31]}},
-      instruction_i[31],
-      instruction_i[7],
-      instruction_i[30:25],
-      instruction_i[11:8],
-      1'b0
-    };
-  endfunction
-
-  // ----------------------
   // LSU Functions
   // ----------------------
   // align data to address e.g.: shift data to be naturally 64
