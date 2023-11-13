@@ -18,6 +18,8 @@ module std_nbdcache
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned NumPorts = 4,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
@@ -95,7 +97,9 @@ module std_nbdcache
   generate
     for (genvar i = 0; i < NumPorts; i++) begin : master_ports
       cache_ctrl #(
-          .CVA6Cfg(CVA6Cfg)
+          .CVA6Cfg(CVA6Cfg),
+          .dcache_req_i_t(dcache_req_i_t),
+          .dcache_req_o_t(dcache_req_o_t)
       ) i_cache_ctrl (
           .bypass_i  (~enable_i),
           .busy_o    (busy[i]),

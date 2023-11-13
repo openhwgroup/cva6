@@ -23,6 +23,8 @@ module std_cache_subsystem
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned NumPorts = 4,
     parameter type axi_ar_chan_t = logic,
     parameter type axi_aw_chan_t = logic,
@@ -99,6 +101,8 @@ module std_cache_subsystem
   // Port 3: Store Unit
   std_nbdcache #(
       .CVA6Cfg  (CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
       .NumPorts (NumPorts),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t)

@@ -124,6 +124,29 @@ module cva6
       logic [CVA6Cfg.VLEN-1:0] fetch_vaddr;  // virtual address out
     },
 
+    // D$ data requests
+     parameter type dcache_req_i_t = struct packed {
+      logic [DCACHE_INDEX_WIDTH-1:0] address_index;
+      logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
+      logic [CVA6Cfg.XLEN-1:0]       data_wdata;
+      logic [DCACHE_USER_WIDTH-1:0]  data_wuser;
+      logic                          data_req;
+      logic                          data_we;
+      logic [(CVA6Cfg.XLEN/8)-1:0]   data_be;
+      logic [1:0]                    data_size;
+      logic [DCACHE_TID_WIDTH-1:0]   data_id;
+      logic                          kill_req;
+      logic                          tag_valid;
+    },
+
+    parameter type dcache_req_o_t = struct packed {
+      logic                         data_gnt;
+      logic                         data_rvalid;
+      logic [DCACHE_TID_WIDTH-1:0]  data_rid;
+      logic [CVA6Cfg.XLEN-1:0]      data_rdata;
+      logic [DCACHE_USER_WIDTH-1:0] data_ruser;
+    },
+
     parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
     // RVFI
     parameter type rvfi_instr_t = struct packed {
@@ -694,7 +717,9 @@ module cva6
       .fu_data_t(fu_data_t),
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
-      .icache_drsp_t(icache_drsp_t)
+      .icache_drsp_t(icache_drsp_t),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t)
   ) ex_stage_i (
       .clk_i                (clk_i),
       .rst_ni               (rst_ni),
@@ -923,6 +948,8 @@ module cva6
         .bp_resolve_t(bp_resolve_t),
         .scoreboard_entry_t(scoreboard_entry_t),
         .icache_dreq_t(icache_dreq_t),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
         .NumPorts(NumPorts)
     ) perf_counters_i (
         .clk_i         (clk_i),
@@ -1030,6 +1057,8 @@ module cva6
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
         .NumPorts  (NumPorts),
         .noc_req_t (noc_req_t),
         .noc_resp_t(noc_resp_t)
@@ -1073,6 +1102,8 @@ module cva6
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
         .NumPorts  (NumPorts),
         .noc_req_t (noc_req_t),
         .noc_resp_t(noc_resp_t),
@@ -1131,6 +1162,8 @@ module cva6
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
         .NumPorts     (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),
@@ -1180,6 +1213,8 @@ module cva6
         .CVA6Cfg   (CVA6Cfg),
         .fu_data_t(fu_data_t),
         .scoreboard_entry_t(scoreboard_entry_t),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
         .acc_cfg_t (acc_cfg_t),
         .AccCfg    (AccCfg),
         .acc_req_t (cvxif_req_t),

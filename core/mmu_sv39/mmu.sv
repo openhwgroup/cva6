@@ -22,6 +22,8 @@ module mmu
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned           INSTR_TLB_ENTRIES = 4,
     parameter int unsigned           DATA_TLB_ENTRIES  = 4,
 ) (
@@ -145,7 +147,9 @@ module mmu
 
 
   ptw #(
-      .CVA6Cfg   (CVA6Cfg)
+      .CVA6Cfg   (CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t)
   ) i_ptw (
       .clk_i                 (clk_i),
       .rst_ni                (rst_ni),

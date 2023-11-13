@@ -20,6 +20,8 @@ module perf_counters
     parameter type bp_resolve_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter type icache_dreq_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned           NumPorts = 3                            // number of miss ports
 ) (
     input logic clk_i,

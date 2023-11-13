@@ -23,7 +23,9 @@ module ex_stage
     parameter type fu_data_t = logic,
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic
+    parameter type icache_drsp_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic
 ) (
     input logic clk_i,        // Clock
     input logic rst_ni,       // Asynchronous reset active low
@@ -320,7 +322,9 @@ module ex_stage
       .fu_data_t(fu_data_t),
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
-      .icache_drsp_t(icache_drsp_t)
+      .icache_drsp_t(icache_drsp_t),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t)
   ) lsu_i (
       .clk_i,
       .rst_ni,

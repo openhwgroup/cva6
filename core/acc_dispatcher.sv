@@ -20,6 +20,8 @@ module acc_dispatcher
     parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
     parameter type                   fu_data_t  = logic,
     parameter type scoreboard_entry_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter type                   acc_req_t  = acc_pkg::accelerator_req_t,
     parameter type                   acc_resp_t = acc_pkg::accelerator_resp_t,
     parameter type                   acc_cfg_t  = logic,

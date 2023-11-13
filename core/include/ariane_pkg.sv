@@ -653,29 +653,6 @@ package ariane_pkg;
     logic [63:0] result;  // sign-extended, result
   } amo_resp_t;
 
-  // D$ data requests
-  typedef struct packed {
-    logic [DCACHE_INDEX_WIDTH-1:0] address_index;
-    logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
-    riscv::xlen_t                  data_wdata;
-    logic [DCACHE_USER_WIDTH-1:0]  data_wuser;
-    logic                          data_req;
-    logic                          data_we;
-    logic [(riscv::XLEN/8)-1:0]    data_be;
-    logic [1:0]                    data_size;
-    logic [DCACHE_TID_WIDTH-1:0]   data_id;
-    logic                          kill_req;
-    logic                          tag_valid;
-  } dcache_req_i_t;
-
-  typedef struct packed {
-    logic                         data_gnt;
-    logic                         data_rvalid;
-    logic [DCACHE_TID_WIDTH-1:0]  data_rid;
-    riscv::xlen_t                 data_rdata;
-    logic [DCACHE_USER_WIDTH-1:0] data_ruser;
-  } dcache_req_o_t;
-
   // ----------------------
   // Arithmetic Functions
   // ----------------------

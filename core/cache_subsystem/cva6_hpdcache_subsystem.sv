@@ -20,6 +20,8 @@ module cva6_hpdcache_subsystem
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int NumPorts = 4,
     parameter int NrHwPrefetchers = 4,
     parameter type noc_req_t = logic,
@@ -63,8 +65,8 @@ module cva6_hpdcache_subsystem
     input  cmo_req_t                                 dcache_cmo_req_i,    // from CMO FU
     output cmo_rsp_t                                 dcache_cmo_resp_o,   // to CMO FU
     //  Request ports
-    input  ariane_pkg::dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,  // from LSU
-    output ariane_pkg::dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,  // to LSU
+    input  dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,  // from LSU
+    output dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,  // to LSU
     //  Write Buffer status
     output logic                                     wbuffer_empty_o,
     output logic                                     wbuffer_not_ni_o,
@@ -214,13 +216,15 @@ module cva6_hpdcache_subsystem
   hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
 
   generate
-    ariane_pkg::dcache_req_i_t dcache_req_ports[HPDCACHE_NREQUESTERS-1:0];
+    dcache_req_i_t dcache_req_ports[HPDCACHE_NREQUESTERS-1:0];
 
     for (genvar r = 0; r < (NumPorts - 1); r++) begin : cva6_hpdcache_load_if_adapter_gen
       assign dcache_req_ports[r] = dcache_req_ports_i[r];
 
       cva6_hpdcache_if_adapter #(
           .CVA6Cfg     (CVA6Cfg),
+          .dcache_req_i_t(dcache_req_i_t),
+          .dcache_req_o_t(dcache_req_o_t),
           .is_load_port(1'b1)
       ) i_cva6_hpdcache_load_if_adapter (
           .clk_i,
@@ -247,6 +251,8 @@ module cva6_hpdcache_subsystem
 
     cva6_hpdcache_if_adapter #(
         .CVA6Cfg     (CVA6Cfg),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
         .is_load_port(1'b0)
     ) i_cva6_hpdcache_store_if_adapter (
         .clk_i,

@@ -27,6 +27,8 @@ module wt_cache_subsystem
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned           NumPorts   = 4,
     parameter type                   noc_req_t  = logic,
     parameter type                   noc_resp_t = logic
@@ -110,6 +112,8 @@ module wt_cache_subsystem
   // Port 2 is write only and goes into the merging write buffer
   wt_dcache #(
       .CVA6Cfg  (CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
       // use ID 1 for dcache reads and amos. note that the writebuffer
       // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
       .RdAmoTxId(1)
