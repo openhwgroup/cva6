@@ -83,7 +83,6 @@ CVA6 User Documentation
       - [Prerequisites](#prerequisites)
       - [Environent setup](#environent-setup)
       - [Test execution](#test-execution)
-    - [Running User-Space Applications](#running-user-space-applications)
   - [Physical Implementation](#physical-implementation)
     - [ASIC Synthesis](#asic-synthesis)
     - [ASIC Gate Simulation with `core-v-verif` repository](#asic-gate-simulation-with-core-v-verif-repository)
@@ -220,46 +219,8 @@ bash verif/regress/dv-riscv-compliance.sh
 bash verif/regress/dv-riscv-tests.sh
 ```
 
-
-### Running User-Space Applications
-
-> :warning: **Warning**: this chapter needs to be updated. See Github issue https://github.com/openhwgroup/cva6/issues/1358.
-
-It is possible to run user-space binaries on CVA6 with ([RISC-V Proxy Kernel and Boot Loader](https://github.com/riscv/riscv-pk)).
-RISC-V PK can be installed by running: `./ci/install-riscvpk.sh`
-
-```
-mkdir build
-cd build
-../configure --prefix=$RISCV --host=riscv64-unknown-elf
-make
-make install
-```
-
-Then to run a RISC-V ELF using the Verilator model do:
-
-```
-echo '
-#include <stdio.h>
-
-int main(int argc, char const *argv[]) {
-    printf("Hello CVA6!\\n");
-    return 0;
-}' > hello.c
-riscv64-unknown-elf-gcc hello.c -o hello.elf
-```
-
-```
-make verilate
-work-ver/Variane_testharness $RISCV/riscv64-unknown-elf/bin/pk hello.elf
-```
-
-If you want to use QuestaSim to run it you can use the following command:
-```
-make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  batch-mode=1
-```
-
-> Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
+You can run customs tests (.elf .S or .c) by following the example of the hello_world test in `verif/regress/smoke-test.sh`. \
+Please make sure to source `verif/regress/install-cva6.sh` and `verif/regress/install-riscv-dv.sh` since they set the environment to run tests.
 
 ## Physical Implementation
 

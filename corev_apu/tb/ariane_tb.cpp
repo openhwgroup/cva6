@@ -111,13 +111,7 @@ EMULATOR DEBUG OPTIONS (only supported in debug build -- try `make debug`)\n",
 "  - run a bare metal test to generate an FST waveform:\n"
 "    %s -f rv64ui-p-add.fst $RISCV/riscv64-unknown-elf/share/riscv-tests/isa/rv64ui-p-add\n"
 #endif
-"  - run an ELF (you wrote, called 'hello') using the proxy kernel:\n"
-"    %s pk hello\n",
-         program_name, program_name, program_name
-#if VM_TRACE
-         , program_name, program_name
-#endif
-         );
+  , program_name, program_name);
 }
 
 // In case we use the DTM we do not want to use the JTAG
