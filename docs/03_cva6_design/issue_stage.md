@@ -42,10 +42,10 @@ out-of-order issue ().
 The issuing of instructions happen in-order, that means order of program
 flow is naturally maintained. What can happen out-of-order is the
 write-back of each functional unit. Think for example, that the issue
-stage issues a multiplication which takes $n$ clock cycles to produce a
+stage issues a load which takes $n$ clock cycles to produce a
 valid result. In the next cycle the issue stage issues an ALU
 instruction like an addition. The addition will just take one clock
-cycle to return and therefore return before the multiplication's result
+cycle to return and therefore return before the load's result
 is ready. Because of this we need to assign IDs to the various issue
 stages. The ID resembles the (unique) position in which the scoreboard
 will store the result of this instruction. The ID (called transaction
