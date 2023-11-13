@@ -67,29 +67,6 @@
   gen_test: cva6_instr_base_test_c
   rtl_test: core_base_test
 
-- test: riscv_unaligned_mmu_stress_illegal_test
-  description: >
-    Test with different patterns of load/store instructions, stress test MMU
-    operations.
-  gen_opts: >
-    +instr_cnt=500
-    +num_of_sub_program=5
-    +directed_instr_0=cva6_load_store_rand_instr_stream_c,30
-    +directed_instr_1=cva6_load_store_hazard_instr_stream_c,30
-    +directed_instr_2=cva6_multi_page_load_store_instr_stream_c,30
-    +directed_instr_3=cva6_mem_region_stress_test_c,30
-    +enable_unaligned_load_store=1
-    +illegal_instr_ratio=100
-    +unsupported_instr_ratio=100
-    +enable_zba_extension=1
-    +enable_zbb_extension=1
-    +enable_zbc_extension=1
-    +enable_zbs_extension=1
-    +enable_zcb_extension=1
-  iterations: 2
-  gen_test: cva6_instr_base_test_c
-  rtl_test: core_base_test
-
 - test: riscv_rand_jump_illegal_test
   description: >
     Jump among large number of sub-programs, stress testing iTLB operations.

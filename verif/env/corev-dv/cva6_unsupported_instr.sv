@@ -32,7 +32,7 @@ class cva6_unsupported_instr_c extends uvm_object;
     rv64m_instr,
     rvfdq_instr,
     sys_instr,
-    illegal_sll_sra
+    illegal_slli_srai
   } illegal_ext_instr_type_e;
 
   // Default legal opcode for RV32I instructions
@@ -119,7 +119,7 @@ class cva6_unsupported_instr_c extends uvm_object;
       rv64m_instr := 3,
       rvfdq_instr := 3,
       sys_instr   := 1,
-      illegal_sll_sra := 1
+      illegal_slli_srai := 1
     };
   }
 
@@ -148,6 +148,7 @@ class cva6_unsupported_instr_c extends uvm_object;
   }
 
   // unsupported system instructions
+  // sfence.vma instruction
   constraint sys_instr_c {
     if (unsupported_instr == sys_instr) {
          compressed == 0;
@@ -159,9 +160,9 @@ class cva6_unsupported_instr_c extends uvm_object;
     }
   }
 
-  // illegal SLL & SRA instruction
-  constraint illegal_sll_sra_instr_c {
-    if (unsupported_instr == illegal_sll_sra) {
+  // illegal RV32 SLLI & SRAI instruction with 25th bit is high
+  constraint illegal_slli_srai_32_instr_c {
+    if (unsupported_instr == illegal_slli_srai) {
          compressed == 0;
          opcode == 7'b0010011;
          instr_bin[25] != 1'b0;

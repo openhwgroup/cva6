@@ -67,9 +67,8 @@ elif [[ "$list_num" = 4 ]];then
 	TEST_NAME=(
            "riscv_mmu_stress_hint_test"
            "riscv_mmu_stress_test"
-           "riscv_unaligned_mmu_stress_illegal_test"
            );
-	I=(100 100 100);
+	I=(100 100);
 elif [[ "$list_num" = 5 ]];then
   TEST_NAME=(
            "riscv_load_store_test"

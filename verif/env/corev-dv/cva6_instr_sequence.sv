@@ -45,7 +45,7 @@ class cva6_instr_sequence_c extends riscv_instr_sequence;
                       bin_instr_cnt, cfg_cva6.unsupported_instr_ratio), UVM_LOW)
       repeat (bin_instr_cnt) begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(unsupported_instr, 
-                                       unsupported_instr inside {rv64i_instr,rv64c_instr,rv64m_instr,rvfdq_instr,illegal_sll_sra,sys_instr};)
+                                       unsupported_instr inside {rv64i_instr,rv64c_instr,rv64m_instr,rvfdq_instr,illegal_slli_srai,sys_instr};)
         str = {indent, $sformatf(".4byte 0x%s # %0s",
                        unsupported_instr.get_bin_str(), unsupported_instr.comment)};
                idx = $urandom_range(0, instr_string_list.size());
