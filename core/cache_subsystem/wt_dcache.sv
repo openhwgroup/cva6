@@ -18,6 +18,8 @@ module wt_dcache
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned NumPorts = 4,  // number of miss ports
     // ID to be used for read and AMO transactions.
     // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
@@ -175,6 +177,8 @@ module wt_dcache
       assign rd_prio[k] = 1'b1;
       wt_dcache_ctrl #(
           .CVA6Cfg(CVA6Cfg),
+          .dcache_req_i_t(dcache_req_i_t),
+          .dcache_req_o_t(dcache_req_o_t),
           .RdTxId (RdAmoTxId)
       ) i_wt_dcache_ctrl (
           .clk_i          (clk_i),
@@ -238,7 +242,9 @@ module wt_dcache
   assign rd_prio[NumPorts-1] = 1'b0;
 
   wt_dcache_wbuffer #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t)
   ) i_wt_dcache_wbuffer (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),

@@ -20,6 +20,8 @@ module ex_stage
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter type fu_data_t = logic,
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
@@ -377,6 +379,8 @@ module ex_stage
 
   load_store_unit #(
       .CVA6Cfg   (CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
       .fu_data_t (fu_data_t),
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),

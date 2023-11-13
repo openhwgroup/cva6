@@ -17,6 +17,8 @@ module load_store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter type fu_data_t = logic,
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
@@ -187,6 +189,8 @@ module load_store_unit
         .icache_arsp_t    (icache_arsp_t),
         .icache_dreq_t    (icache_dreq_t),
         .icache_drsp_t    (icache_drsp_t),
+        .dcache_req_i_t   (dcache_req_i_t),
+        .dcache_req_o_t   (dcache_req_o_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
         .ASID_WIDTH       (ASID_WIDTH)
@@ -219,6 +223,8 @@ module load_store_unit
         .icache_arsp_t    (icache_arsp_t),
         .icache_dreq_t    (icache_dreq_t),
         .icache_drsp_t    (icache_drsp_t),
+        .dcache_req_i_t   (dcache_req_i_t),
+        .dcache_req_o_t   (dcache_req_o_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
         .ASID_WIDTH       (ASID_WIDTH)
@@ -294,6 +300,8 @@ module load_store_unit
   // ------------------
   store_unit #(
       .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_store_unit (
       .clk_i,
@@ -337,6 +345,8 @@ module load_store_unit
   // ------------------
   load_unit #(
       .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
       .valid_i   (ld_valid_i),
