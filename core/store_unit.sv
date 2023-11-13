@@ -79,6 +79,28 @@ module store_unit
     // Data cache response - CACHES
     output dcache_req_i_t req_port_o
 );
+
+  // align data to address e.g.: shift data to be naturally 64
+  function automatic [riscv::XLEN-1:0] data_align(logic [2:0] addr, logic [63:0] data);
+    // Set addr[2] to 1'b0 when 32bits
+    logic [ 2:0] addr_tmp = {(addr[2] && riscv::IS_XLEN64), addr[1:0]};
+    logic [63:0] data_tmp = {64{1'b0}};
+    case (addr_tmp)
+      3'b000: data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-1:0]};
+      3'b001:
+      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-9:0], data[riscv::XLEN-1:riscv::XLEN-8]};
+      3'b010:
+      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-17:0], data[riscv::XLEN-1:riscv::XLEN-16]};
+      3'b011:
+      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-25:0], data[riscv::XLEN-1:riscv::XLEN-24]};
+      3'b100: data_tmp = {data[31:0], data[63:32]};
+      3'b101: data_tmp = {data[23:0], data[63:24]};
+      3'b110: data_tmp = {data[15:0], data[63:16]};
+      3'b111: data_tmp = {data[7:0], data[63:8]};
+    endcase
+    return data_tmp[riscv::XLEN-1:0];
+  endfunction
+
   // it doesn't matter what we are writing back as stores don't return anything
   assign result_o = lsu_ctrl_i.data;
 
