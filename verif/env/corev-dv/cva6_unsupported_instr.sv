@@ -30,7 +30,9 @@ class cva6_unsupported_instr_c extends uvm_object;
     rv64i_instr,
     rv64c_instr,
     rv64m_instr,
-    rvfdq_instr
+    rvfdq_instr,
+    sys_instr,
+    illegal_slli_srai
   } illegal_ext_instr_type_e;
 
   // Default legal opcode for RV32I instructions
@@ -112,10 +114,12 @@ class cva6_unsupported_instr_c extends uvm_object;
 
   constraint exception_dist_c {
     unsupported_instr dist {
-      rv64i_instr := 1,
-      rv64c_instr := 1,
-      rv64m_instr := 1,
-      rvfdq_instr := 1  
+      rv64i_instr := 3,
+      rv64c_instr := 3,
+      rv64m_instr := 3,
+      rvfdq_instr := 3,
+      sys_instr   := 1,
+      illegal_slli_srai := 1
     };
   }
 
@@ -140,6 +144,35 @@ class cva6_unsupported_instr_c extends uvm_object;
       if (has_func2) {
         instr_bin[26:25] == func2;
       }
+    }
+  }
+
+  // unsupported system instructions
+  // sfence.vma instruction
+  constraint sys_instr_c {
+    if (unsupported_instr == sys_instr) {
+         compressed == 0;
+         opcode == 7'b1110011;
+         func3 == 3'b000;
+         instr_bin[11:7] inside {5'b0, 5'b00001};
+         func7 == 7'b0001001;
+
+    }
+  }
+
+  // illegal RV32 SLLI & SRAI instruction with 25th bit is high
+  constraint illegal_slli_srai_32_instr_c {
+    if (unsupported_instr == illegal_slli_srai) {
+         compressed == 0;
+         opcode == 7'b0010011;
+         instr_bin[25] != 1'b0;
+         func3 inside {3'b001, 3'b101};
+         if (func3 == 3'b001) {
+            instr_bin[31:26] == 6'b000000;
+         }
+         else if (func3 == 3'b101) {
+            instr_bin[31:26] == 6'b010000;
+         }
     }
   }
 
@@ -336,7 +369,7 @@ class cva6_unsupported_instr_c extends uvm_object;
   constraint has_func7_c {
     solve opcode before func7;
     solve func7 before func3;
-    if (opcode == 7'b0111011) {
+    if (opcode inside {7'b0111011, 7'b1110011}) {
       has_func3 == 1'b1;
       has_func7 == 1'b1;
       has_func2 == 1'b0;  
@@ -351,7 +384,7 @@ class cva6_unsupported_instr_c extends uvm_object;
         has_func7 == 1'b1;
       }
     }
-    if (opcode inside {7'b0000111, 7'b0100111}) {
+    if (opcode inside {7'b0000111, 7'b0100111, 7'b0010011}) {
       has_func2 == 1'b0;
       has_func3 == 1'b1;
       has_func7 == 1'b0;
