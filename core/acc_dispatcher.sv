@@ -168,7 +168,8 @@ module acc_dispatcher
   fifo_v3 #(
       .DEPTH       (InstructionQueueDepth),
       .FALL_THROUGH(1'b1),
-      .dtype       (fu_data_t)
+      .dtype       (fu_data_t),
+      .FPGA_EN     (ariane_pkg::FPGA_EN)
   ) i_acc_insn_queue (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
