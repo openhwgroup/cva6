@@ -239,7 +239,8 @@ module wt_dcache_wbuffer
   fifo_v3 #(
       .FALL_THROUGH(1'b0),
       .DATA_WIDTH  ($clog2(DCACHE_MAX_TX)),
-      .DEPTH       (DCACHE_MAX_TX)
+      .DEPTH       (DCACHE_MAX_TX),
+      .FPGA_EN(CVA6Cfg.FPGA_EN)
   ) i_rtrn_id_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

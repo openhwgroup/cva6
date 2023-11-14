@@ -1306,7 +1306,8 @@ module cva6
   for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_pc_fifo
     fifo_v3 #(
         .DATA_WIDTH(64),
-        .DEPTH(PC_QUEUE_DEPTH)
+        .DEPTH(PC_QUEUE_DEPTH),
+        .FPGA_EN(CVA6Cfg.FPGA_EN)
     ) i_pc_fifo (
         .clk_i     (clk_i),
         .rst_ni    (rst_ni),

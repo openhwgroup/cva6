@@ -15,6 +15,7 @@ module fifo_v3 #(
     parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
     parameter type dtype                = logic [DATA_WIDTH-1:0],
+    parameter bit          FPGA_EN      = 1'b0,
     // DO NOT OVERWRITE THIS PARAMETER
     parameter int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
 )(
@@ -70,7 +71,7 @@ module fifo_v3 #(
         read_pointer_n  = read_pointer_q;
         write_pointer_n = write_pointer_q;
         status_cnt_n    = status_cnt_q;
-        if (ariane_pkg::FPGA_EN) begin
+        if (FPGA_EN) begin
              fifo_ram_we             = '0;
              fifo_ram_read_address   = read_pointer_q;
              fifo_ram_write_address  = '0;
@@ -84,7 +85,7 @@ module fifo_v3 #(
 
         // push a new element to the queue
         if (push_i && ~full_o) begin
-            if (ariane_pkg::FPGA_EN) begin
+            if (FPGA_EN) begin
                 fifo_ram_we = 1'b1;
                 fifo_ram_write_address = write_pointer_q;
                 fifo_ram_wdata = data_i;
@@ -149,7 +150,7 @@ module fifo_v3 #(
         end
     end
 
-    if (ariane_pkg::FPGA_EN) begin : gen_fpga_queue
+    if (FPGA_EN) begin : gen_fpga_queue
         AsyncDpRam #(
             .ADDR_WIDTH (ADDR_DEPTH),
             .DATA_DEPTH (DEPTH),

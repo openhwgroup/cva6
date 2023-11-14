@@ -112,7 +112,8 @@ module cvxif_example_coprocessor
       .FALL_THROUGH(1),         //data_o ready and pop in the same cycle
       .DATA_WIDTH  (64),
       .DEPTH       (8),
-      .dtype       (x_issue_t)
+      .dtype       (x_issue_t),
+      .FPGA_EN(CVA6Cfg.FPGA_EN)
   ) fifo_commit_i (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

@@ -64,7 +64,8 @@ module amo_buffer #(
 
   fifo_v3 #(
       .DEPTH(1),
-      .dtype(amo_op_t)
+      .dtype(amo_op_t),
+      .FPGA_EN(CVA6Cfg.FPGA_EN)
   ) i_amo_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
