@@ -119,6 +119,13 @@ module cva6
     },
 
     // cache request ports
+    // I$ address translation requests
+    parameter type icache_areq_t = struct packed {
+      logic                   fetch_valid;      // address translation valid
+      logic [CVA6Cfg.PLEN-1:0] fetch_paddr;      // physical address in
+      exception_t             fetch_exception;  // exception occurred during fetch
+    },
+
     parameter type icache_arsp_t = struct packed {
       logic                   fetch_req;    // address translation request
       logic [CVA6Cfg.VLEN-1:0] fetch_vaddr;  // virtual address out
@@ -715,6 +722,7 @@ module cva6
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .fu_data_t(fu_data_t),
+      .icache_areq_t(icache_areq_t),
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
@@ -1054,6 +1062,7 @@ module cva6
     // this is a cache subsystem that is compatible with OpenPiton
     wt_cache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
+        .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
@@ -1099,6 +1108,7 @@ module cva6
   end else if (DCACHE_TYPE == int'(config_pkg::HPDCACHE)) begin : gen_cache_hpd
     cva6_hpdcache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
+        .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
@@ -1159,6 +1169,7 @@ module cva6
         // not as important since this cache subsystem is about to be
         // deprecated
         .CVA6Cfg      (CVA6Cfg),
+        .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),

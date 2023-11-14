@@ -18,6 +18,7 @@ module load_store_unit
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type fu_data_t = logic,
+    parameter type icache_areq_t = logic,
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
@@ -158,6 +159,7 @@ module load_store_unit
   if (MMU_PRESENT && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
+        .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
@@ -191,6 +193,7 @@ module load_store_unit
   end else if (MMU_PRESENT && (CVA6Cfg.XLEN == 32)) begin : gen_mmu_sv32
     cva6_mmu_sv32 #(
         .CVA6Cfg          (CVA6Cfg),
+        .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),

@@ -619,16 +619,6 @@ package ariane_pkg;
     FE_INSTR_PAGE_FAULT
   } frontend_exception_t;
 
-  // ----------------------
-  // cache request ports
-  // ----------------------
-  // I$ address translation requests
-  typedef struct packed {
-    logic                   fetch_valid;      // address translation valid
-    logic [riscv::PLEN-1:0] fetch_paddr;      // physical address in
-    exception_t             fetch_exception;  // exception occurred during fetch
-  } icache_areq_t;
-
   // AMO request going to cache. this request is unconditionally valid as soon
   // as request goes high.
   // Furthermore, those signals are kept stable until the response indicates
