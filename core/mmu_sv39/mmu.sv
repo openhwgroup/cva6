@@ -27,6 +27,15 @@ module mmu
     parameter type dcache_req_o_t = logic,
     parameter int unsigned           INSTR_TLB_ENTRIES = 4,
     parameter int unsigned           DATA_TLB_ENTRIES  = 4,
+
+    parameter type tlb_update_t = struct packed {
+      logic                  valid;    // valid flag
+      logic                  is_2M;    //
+      logic                  is_1G;    //
+      logic [27-1:0]         vpn;      // VPN (39bits) = 27bits + 12bits offset
+      logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
+      riscv::pte_t           content;
+    }
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -104,6 +113,7 @@ module mmu
 
   tlb #(
       .CVA6Cfg    (CVA6Cfg),
+      .tlb_update_t(tlb_update_t),
       .TLB_ENTRIES(INSTR_TLB_ENTRIES)
   ) i_itlb (
       .clk_i  (clk_i),
@@ -126,6 +136,7 @@ module mmu
 
   tlb #(
       .CVA6Cfg    (CVA6Cfg),
+      .tlb_update_t(tlb_update_t),
       .TLB_ENTRIES(DATA_TLB_ENTRIES)
   ) i_dtlb (
       .clk_i  (clk_i),
@@ -150,7 +161,8 @@ module mmu
   ptw #(
       .CVA6Cfg   (CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t)
+      .dcache_req_o_t(dcache_req_o_t),
+      .tlb_update_t(tlb_update_t)
   ) i_ptw (
       .clk_i                 (clk_i),
       .rst_ni                (rst_ni),

@@ -19,6 +19,7 @@ module tlb
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type tlb_update_t = logic,
     parameter int unsigned TLB_ENTRIES = 4
 ) (
     input  logic                          clk_i,                  // Clock

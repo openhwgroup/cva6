@@ -570,15 +570,6 @@ package ariane_pkg;
     AMO_CAS2 = 4'b1101   // unused, not part of riscv spec, but provided in OpenPiton
   } amo_t;
 
-  typedef struct packed {
-    logic                  valid;    // valid flag
-    logic                  is_2M;    //
-    logic                  is_1G;    //
-    logic [27-1:0]         vpn;      // VPN (39bits) = 27bits + 12bits offset
-    logic [ASID_WIDTH-1:0] asid;
-    riscv::pte_t           content;
-  } tlb_update_t;
-
   // Bits required for representation of physical address space as 4K pages
   // (e.g. 27*4K == 39bit address space).
   localparam PPN4K_WIDTH = 38;
