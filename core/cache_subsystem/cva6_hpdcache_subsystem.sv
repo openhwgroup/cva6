@@ -103,7 +103,7 @@ module cva6_hpdcache_subsystem
   logic icache_miss_resp_valid;
   wt_cache_pkg::icache_rtrn_t icache_miss_resp;
 
-  localparam int ICACHE_RDTXID = 1 << (ariane_pkg::MEM_TID_WIDTH - 1);
+  localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
 
   cva6_icache #(
       .CVA6Cfg(CVA6Cfg),
@@ -146,7 +146,7 @@ module cva6_hpdcache_subsystem
   localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
 
   typedef logic [CVA6Cfg.AxiAddrWidth-1:0] hpdcache_mem_addr_t;
-  typedef logic [ariane_pkg::MEM_TID_WIDTH-1:0] hpdcache_mem_id_t;
+  typedef logic [CVA6Cfg.MEM_TID_WIDTH-1:0] hpdcache_mem_id_t;
   typedef logic [CVA6Cfg.AxiDataWidth-1:0] hpdcache_mem_data_t;
   typedef logic [CVA6Cfg.AxiDataWidth/8-1:0] hpdcache_mem_be_t;
   `HPDCACHE_TYPEDEF_MEM_REQ_T(hpdcache_mem_req_t, hpdcache_mem_addr_t, hpdcache_mem_id_t);
@@ -389,7 +389,7 @@ module cva6_hpdcache_subsystem
 
   hpdcache #(
       .NREQUESTERS          (HPDCACHE_NREQUESTERS),
-      .HPDcacheMemIdWidth   (ariane_pkg::MEM_TID_WIDTH),
+      .HPDcacheMemIdWidth   (CVA6Cfg.MEM_TID_WIDTH),
       .HPDcacheMemDataWidth (CVA6Cfg.AxiDataWidth),
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
@@ -498,7 +498,8 @@ module cva6_hpdcache_subsystem
   `AXI_TYPEDEF_R_CHAN_T(axi_r_chan_t, axi_data_t, axi_id_t, axi_user_t)
 
   cva6_hpdcache_subsystem_axi_arbiter #(
-      .HPDcacheMemIdWidth   (ariane_pkg::MEM_TID_WIDTH),
+      .CVA6Cfg              (CVA6Cfg),
+      .HPDcacheMemIdWidth   (CVA6Cfg.MEM_TID_WIDTH),
       .HPDcacheMemDataWidth (CVA6Cfg.AxiDataWidth),
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),

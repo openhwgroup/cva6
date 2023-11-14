@@ -37,13 +37,13 @@ package wt_cache_pkg;
   localparam L15_SET_ASSOC = `CONFIG_L15_ASSOCIATIVITY;
   localparam L15_TLB_CSM_WIDTH = `TLB_CSM_WIDTH;
 `else
-  localparam L15_SET_ASSOC           = ariane_pkg::DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Ariane setup
+  localparam L15_SET_ASSOC           = CVA6Cfg.DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Ariane setup
   localparam L15_TLB_CSM_WIDTH = 33;
 `endif
-  localparam L15_TID_WIDTH = ariane_pkg::MEM_TID_WIDTH;
+  localparam L15_TID_WIDTH = CVA6Cfg.MEM_TID_WIDTH;
   localparam L15_WAY_WIDTH = $clog2(L15_SET_ASSOC);
-  localparam L1I_WAY_WIDTH = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
-  localparam L1D_WAY_WIDTH = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
+  localparam L1I_WAY_WIDTH = $clog2(CVA6Cfg.ICACHE_SET_ASSOC);
+  localparam L1D_WAY_WIDTH = $clog2(CVA6Cfg.DCACHE_SET_ASSOC);
 
   // FIFO depths of L15 adapter
   localparam ADAPTER_REQ_FIFO_DEPTH = 2;
@@ -51,15 +51,15 @@ package wt_cache_pkg;
 
 
   // Calculated parameter
-  localparam ICACHE_OFFSET_WIDTH = $clog2(ariane_pkg::ICACHE_LINE_WIDTH / 8);
-  localparam ICACHE_NUM_WORDS = 2 ** (ariane_pkg::ICACHE_INDEX_WIDTH - ICACHE_OFFSET_WIDTH);
+  localparam ICACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8);
+  localparam ICACHE_NUM_WORDS = 2 ** (CVA6Cfg.ICACHE_INDEX_WIDTH - ICACHE_OFFSET_WIDTH);
   localparam ICACHE_CL_IDX_WIDTH = $clog2(ICACHE_NUM_WORDS);  // excluding byte offset
 
-  localparam DCACHE_OFFSET_WIDTH = $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8);
-  localparam DCACHE_NUM_WORDS = 2 ** (ariane_pkg::DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
+  localparam DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DCACHE_LINE_WIDTH / 8);
+  localparam DCACHE_NUM_WORDS = 2 ** (CVA6Cfg.DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
   localparam DCACHE_CL_IDX_WIDTH = $clog2(DCACHE_NUM_WORDS);  // excluding byte offset
 
-  localparam DCACHE_NUM_BANKS = ariane_pkg::DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
+  localparam DCACHE_NUM_BANKS = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
   localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
 
   // write buffer parameterization
@@ -69,14 +69,14 @@ package wt_cache_pkg;
 
 
   typedef struct packed {
-    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] wtag;
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] wtag;
     logic [CVA6Cfg.XLEN-1:0] data;
-    logic [ariane_pkg::DCACHE_USER_WIDTH-1:0] user;
+    logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] user;
     logic [(CVA6Cfg.XLEN/8)-1:0] dirty;  // byte is dirty
     logic [(CVA6Cfg.XLEN/8)-1:0] valid;  // byte is valid
     logic [(CVA6Cfg.XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
     logic checked;  // if cache state of this word has been checked
-    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
+    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
   } wbuffer_t;
 
   // TX status registers are indexed with the transaction ID
@@ -114,12 +114,12 @@ package wt_cache_pkg;
   typedef struct packed {
     logic                                      vld;  // invalidate only affected way
     logic                                      all;  // invalidate all ways
-    logic [ariane_pkg::ICACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
+    logic [CVA6Cfg.ICACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
     logic [L1I_WAY_WIDTH-1:0]                  way;  // way to invalidate
   } icache_inval_t;
 
   typedef struct packed {
-    logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] way;  // way to replace
+    logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] way;  // way to replace
     logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
     logic nc;  // noncacheable
     logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
@@ -127,8 +127,8 @@ package wt_cache_pkg;
 
   typedef struct packed {
     icache_in_t rtype;  // see definitions above
-    logic [ariane_pkg::ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
-    logic [ariane_pkg::ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
+    logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
+    logic [CVA6Cfg.ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
     icache_inval_t inv;  // invalidation vector
     logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
   } icache_rtrn_t;
@@ -137,7 +137,7 @@ package wt_cache_pkg;
   typedef struct packed {
     logic                                      vld;  // invalidate only affected way
     logic                                      all;  // invalidate all ways
-    logic [ariane_pkg::DCACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
+    logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
     logic [L15_WAY_WIDTH-1:0]                  way;  // way to invalidate
   } dcache_inval_t;
 
@@ -155,8 +155,8 @@ package wt_cache_pkg;
 
   typedef struct packed {
     dcache_in_t rtype;  // see definitions above
-    logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
-    logic [ariane_pkg::DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
+    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
+    logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
     dcache_inval_t inv;  // invalidation vector
     logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
   } dcache_rtrn_t;

@@ -133,10 +133,10 @@ module cva6
 
     // D$ data requests
      parameter type dcache_req_i_t = struct packed {
-      logic [DCACHE_INDEX_WIDTH-1:0] address_index;
-      logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
+      logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
+      logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
       logic [CVA6Cfg.XLEN-1:0]       data_wdata;
-      logic [DCACHE_USER_WIDTH-1:0]  data_wuser;
+      logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]  data_wuser;
       logic                          data_req;
       logic                          data_we;
       logic [(CVA6Cfg.XLEN/8)-1:0]   data_be;
@@ -151,7 +151,7 @@ module cva6
       logic                         data_rvalid;
       logic [DCACHE_TID_WIDTH-1:0]  data_rid;
       logic [CVA6Cfg.XLEN-1:0]      data_rdata;
-      logic [DCACHE_USER_WIDTH-1:0] data_ruser;
+      logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
 
     parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
@@ -449,7 +449,7 @@ module cva6
   logic                                                                dtlb_miss_ex_perf;
   logic                                                                dcache_miss_cache_perf;
   logic                                                                icache_miss_cache_perf;
-  logic          [                 NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits;
+  logic          [                 NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;
   logic                                                                stall_issue;
   // --------------
   // CTRL <-> *

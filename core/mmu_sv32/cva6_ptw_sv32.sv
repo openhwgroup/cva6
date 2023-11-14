@@ -121,8 +121,8 @@ module cva6_ptw_sv32
   //assign walking_instr_o = is_instr_ptw_q;
   assign walking_instr_o = is_instr_ptw_q;
   // directly output the correct physical address
-  assign req_port_o.address_index = ptw_pptr_q[DCACHE_INDEX_WIDTH-1:0];
-  assign req_port_o.address_tag   = ptw_pptr_q[DCACHE_INDEX_WIDTH+DCACHE_TAG_WIDTH-1:DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_index = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_tag   = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH+CVA6Cfg.DCACHE_TAG_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
   // we are never going to kill this request
   assign req_port_o.kill_req = '0;
   // we are never going to write with the HPTW

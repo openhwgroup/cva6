@@ -54,8 +54,8 @@ module wt_axi_adapter
 );
 
   // support up to 512bit cache lines
-  localparam AxiNumWords = (ariane_pkg::ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH > ariane_pkg::DCACHE_LINE_WIDTH)  +
-                           (ariane_pkg::DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH <= ariane_pkg::DCACHE_LINE_WIDTH) ;
+  localparam AxiNumWords = (CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (CVA6Cfg.ICACHE_LINE_WIDTH > CVA6Cfg.DCACHE_LINE_WIDTH)  +
+                           (CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (CVA6Cfg.ICACHE_LINE_WIDTH <= CVA6Cfg.DCACHE_LINE_WIDTH) ;
 
 
   ///////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ module wt_axi_adapter
       // If dcache_data.size MSB is set, we want to read as much as possible
       axi_rd_size = dcache_data.size[2] ? $clog2(CVA6Cfg.AxiDataWidth / 8) : dcache_data.size;
       if (dcache_data.size[2]) begin
-        axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
+        axi_rd_blen = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
       end
     end else begin
       // Cast to AXI address width
@@ -171,7 +171,7 @@ module wt_axi_adapter
       axi_rd_size =
           $clog2(CVA6Cfg.AxiDataWidth / 8);  // always request max number of words in case of ifill
       if (!icache_data.nc) begin
-        axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
+        axi_rd_blen = CVA6Cfg.ICACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
       end
     end
 
@@ -400,13 +400,13 @@ module wt_axi_adapter
 
   // buffer read responses in shift regs
   logic icache_first_d, icache_first_q, dcache_first_d, dcache_first_q;
-  logic [ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
+  logic [CVA6Cfg.ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
       icache_rd_shift_user_d, icache_rd_shift_user_q;
-  logic [DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
+  logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
       dcache_rd_shift_user_d, dcache_rd_shift_user_q;
-  logic [ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
+  logic [CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       icache_rd_shift_d, icache_rd_shift_q;
-  logic [DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
+  logic [CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       dcache_rd_shift_d, dcache_rd_shift_q;
   wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
   wt_cache_pkg::dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
@@ -439,15 +439,15 @@ module wt_axi_adapter
 
     if (icache_rtrn_rd_en) begin
       icache_first_d = axi_rd_last;
-      if (ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
+      if (CVA6Cfg.ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         icache_rd_shift_d = axi_rd_data;
       end else begin
         icache_rd_shift_d = {
-          axi_rd_data, icache_rd_shift_q[ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
+          axi_rd_data, icache_rd_shift_q[CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
         };
       end
       icache_rd_shift_user_d = {
-        axi_rd_user, icache_rd_shift_user_q[ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
+        axi_rd_user, icache_rd_shift_user_q[CVA6Cfg.ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
       };
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (icache_first_q) begin
@@ -458,15 +458,15 @@ module wt_axi_adapter
 
     if (dcache_rtrn_rd_en) begin
       dcache_first_d = axi_rd_last;
-      if (DCACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
+      if (CVA6Cfg.DCACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         dcache_rd_shift_d = axi_rd_data;
       end else begin
         dcache_rd_shift_d = {
-          axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
+          axi_rd_data, dcache_rd_shift_q[CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
         };
       end
       dcache_rd_shift_user_d = {
-        axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
+        axi_rd_user, dcache_rd_shift_user_q[CVA6Cfg.DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
       };
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (dcache_first_q) begin
@@ -515,7 +515,7 @@ module wt_axi_adapter
       dcache_rtrn_type_d    = wt_cache_pkg::DCACHE_INV_REQ;
       dcache_rtrn_vld_d     = 1'b1;
       dcache_rtrn_inv_d.all = 1'b1;
-      dcache_rtrn_inv_d.idx = inval_addr_i[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+      dcache_rtrn_inv_d.idx = inval_addr_i[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
       //////////////////////////////////////
       // dcache needs some special treatment
       // for arbitration and decoding of atomics
@@ -529,7 +529,7 @@ module wt_axi_adapter
         dcache_rtrn_vld_d   = 1'b1;
 
       dcache_rtrn_inv_d.all = 1'b1;
-      dcache_rtrn_inv_d.idx = dcache_data.paddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+      dcache_rtrn_inv_d.idx = dcache_data.paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
       //////////////////////////////////////
       // read responses
       // note that in case of atomics, the dcache sequentializes requests and

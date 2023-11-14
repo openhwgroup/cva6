@@ -46,22 +46,34 @@ package config_pkg;
     /// instruction stalls a little longer.
     int unsigned                 NrCommitPorts;
     /// AXI parameters.
-    int unsigned                 AxiAddrWidth;
-    int unsigned                 AxiDataWidth;
-    int unsigned                 AxiIdWidth;
-    int unsigned                 AxiUserWidth;
-    int unsigned                 NrLoadBufEntries;
-    bit                          FpuEn;
-    bit                          XF16;
-    bit                          XF16ALT;
-    bit                          XF8;
-    bit                          RVA;
-    bit                          RVV;
-    bit                          RVC;
-    bit                          RVZCB;
-    bit                          XFVec;
-    bit                          CvxifEn;
-    bit                          ZiCondExtEn;
+    int unsigned AxiAddrWidth;
+    int unsigned AxiDataWidth;
+    int unsigned AxiIdWidth;
+    int unsigned AxiUserWidth;
+
+    int unsigned MemTidWidth;
+
+    // I$
+    int unsigned IcacheByteSize;  // in byte
+    int unsigned IcacheSetAssoc;  // number of ways
+    int unsigned IcacheLineWidth; // number of ways
+    // D$
+    int unsigned DcacheByteSize;  // in byte
+    int unsigned DcacheSetAssoc;  // number of ways
+    int unsigned DcacheLineWidth; // number of ways
+
+    int unsigned NrLoadBufEntries;
+    bit FpuEn;
+    bit XF16;
+    bit XF16ALT;
+    bit XF8;
+    bit RVA;
+    bit RVV;
+    bit RVC;
+    bit RVZCB;
+    bit XFVec;
+    bit CvxifEn;
+    bit ZiCondExtEn;
     bit RVS;
     bit RVU;
     int unsigned FETCH_USER_WIDTH;
@@ -188,10 +200,25 @@ package config_pkg;
 
     int unsigned FETCH_USER_WIDTH;
     int unsigned DATA_USER_WIDTH;
+    bit AXI_USER_EN;
     int unsigned AXI_USER_WIDTH;
+    int unsigned MEM_TID_WIDTH;
+    // I$
+    int unsigned ICACHE_SET_ASSOC;
+    int unsigned ICACHE_INDEX_WIDTH;  // in bit, contains also offset width
+    int unsigned ICACHE_TAG_WIDTH;
+    int unsigned ICACHE_LINE_WIDTH;  // in bit
+    int unsigned ICACHE_USER_LINE_WIDTH;  // in bit
+    // D$
+    int unsigned DCACHE_SET_ASSOC;
+    int unsigned DCACHE_INDEX_WIDTH;  // in bit, contains also offset width
+    int unsigned DCACHE_TAG_WIDTH;
+    int unsigned DCACHE_LINE_WIDTH;
+    int unsigned DCACHE_USER_LINE_WIDTH;  // in bit
+    int unsigned DCACHE_USER_WIDTH;
+
     bit DATA_USER_EN;
     bit FETCH_USER_EN;
-    bit AXI_USER_EN;
     int unsigned FETCH_WIDTH;
     int unsigned INSTR_PER_FETCH;
     // maximum instructions we can fetch on one request (we support compressed instructions)
@@ -223,9 +250,14 @@ package config_pkg;
 
     riscv::vm_mode_t MODE_SV = (CVA6Cfg.XLEN == 32) ? riscv::ModeSv32 : riscv::ModeSv39;
     int unsigned VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;
-
+    int unsigned PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
     int unsigned FETCH_WIDTH = 32;
     int unsigned INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
+
+    int unsigned ICACHE_SET_ASSOC = CVA6Cfg.IcacheSetAssoc;
+    int unsigned DCACHE_SET_ASSOC = CVA6Cfg.DcacheSetAssoc;
+    int unsigned ICACHE_INDEX_WIDTH = $clog2(CVA6Cfg.IcacheByteSize / ICACHE_SET_ASSOC);
+    int unsigned DCACHE_INDEX_WIDTH = $clog2(CVA6Cfg.DcacheByteSize / DCACHE_SET_ASSOC);
 
     return
     '{
@@ -236,7 +268,7 @@ package config_pkg;
       ASID_WIDTH: unsigned'((CVA6Cfg.XLEN == 64) ? 16 : 1),
       FPGA_EN: CVA6Cfg.FPGA_EN,
       VLEN: VLEN,
-      PLEN: (CVA6Cfg.XLEN == 32) ? 34 : 56,
+      PLEN: PLEN,
       IS_XLEN32: IS_XLEN32,
       IS_XLEN64: IS_XLEN64,
       XLEN_ALIGN_BYTES: $clog2(CVA6Cfg.XLEN / 8),
@@ -301,8 +333,23 @@ package config_pkg;
       DATA_USER_WIDTH: CVA6Cfg.DATA_USER_WIDTH,
       AXI_USER_EN: CVA6Cfg.DATA_USER_EN | CVA6Cfg.FETCH_USER_EN,
       AXI_USER_WIDTH: CVA6Cfg.AXI_USER_WIDTH,
+      MEM_TID_WIDTH: CVA6Cfg.MemTidWidth,
+
+      ICACHE_SET_ASSOC: ICACHE_SET_ASSOC,
+      ICACHE_INDEX_WIDTH: ICACHE_INDEX_WIDTH,
+      ICACHE_TAG_WIDTH: PLEN - ICACHE_INDEX_WIDTH,
+      ICACHE_LINE_WIDTH: CVA6Cfg.IcacheLineWidth,
+      ICACHE_USER_LINE_WIDTH: (CVA6Cfg.AXI_USER_WIDTH == 1) ? 4 : CVA6Cfg.IcacheLineWidth,
+
+      DCACHE_SET_ASSOC: DCACHE_SET_ASSOC,
+      DCACHE_INDEX_WIDTH: DCACHE_INDEX_WIDTH,
+      DCACHE_TAG_WIDTH: PLEN - DCACHE_INDEX_WIDTH,
+      DCACHE_LINE_WIDTH: CVA6Cfg.DcacheLineWidth,
+      DCACHE_USER_LINE_WIDTH: (CVA6Cfg.AXI_USER_WIDTH == 1) ? 4 : CVA6Cfg.DcacheLineWidth,
+      DCACHE_USER_WIDTH: CVA6Cfg.DATA_USER_WIDTH,
+
       DATA_USER_EN: CVA6Cfg.DATA_USER_EN,
-      FETCH_USER_EN: CVA6Cfg.FETCH_USER_EN
+      FETCH_USER_EN: CVA6Cfg.FETCH_USER_EN,
       FETCH_WIDTH: FETCH_WIDTH,
       INSTR_PER_FETCH: INSTR_PER_FETCH,
       LOG2_INSTR_PER_FETCH: CVA6Cfg.RVC == 1'b1 ? $clog2(INSTR_PER_FETCH) : 1

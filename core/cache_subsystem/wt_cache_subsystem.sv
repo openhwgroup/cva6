@@ -53,7 +53,7 @@ module wt_cache_subsystem
     output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
     output logic dcache_miss_o,  // we missed on a ld/st
     // For Performance Counter
-    output logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
+    output logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
     // AMO interface
     input amo_req_t dcache_amo_req_i,
     output amo_resp_t dcache_amo_resp_o,

@@ -16,6 +16,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
 //  Parameters
 //  {{{
 #(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int HPDcacheMemIdWidth = 8,
     parameter int HPDcacheMemDataWidth = 512,
     parameter type hpdcache_mem_req_t = logic,
@@ -128,19 +129,19 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
   localparam int MEM_RESP_RT_DEPTH = (1 << HPDcacheMemIdWidth);
   typedef hpdcache_mem_id_t [MEM_RESP_RT_DEPTH-1:0] mem_resp_rt_t;
-  typedef logic [ariane_pkg::ICACHE_LINE_WIDTH-1:0] icache_resp_data_t;
+  typedef logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] icache_resp_data_t;
   //  }}}
 
   //  Adapt the I$ interface to the HPDcache memory interface
   //  {{{
-  localparam int ICACHE_CL_WORDS = ariane_pkg::ICACHE_LINE_WIDTH / 64;
+  localparam int ICACHE_CL_WORDS = CVA6Cfg.ICACHE_LINE_WIDTH / 64;
   localparam int ICACHE_CL_WORD_INDEX = $clog2(ICACHE_CL_WORDS);
-  localparam int ICACHE_CL_SIZE = $clog2(ariane_pkg::ICACHE_LINE_WIDTH / 8);
+  localparam int ICACHE_CL_SIZE = $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8);
   localparam int ICACHE_WORD_SIZE = 3;
   localparam int ICACHE_MEM_REQ_CL_LEN =
-    (ariane_pkg::ICACHE_LINE_WIDTH + HPDcacheMemDataWidth - 1)/HPDcacheMemDataWidth;
+    (CVA6Cfg.ICACHE_LINE_WIDTH + HPDcacheMemDataWidth - 1)/HPDcacheMemDataWidth;
   localparam int ICACHE_MEM_REQ_CL_SIZE =
-    (HPDcacheMemDataWidth <= ariane_pkg::ICACHE_LINE_WIDTH) ?
+    (HPDcacheMemDataWidth <= CVA6Cfg.ICACHE_LINE_WIDTH) ?
       $clog2(
       HPDcacheMemDataWidth / 8
   ) : ICACHE_CL_SIZE;
@@ -201,7 +202,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
   icache_resp_data_t icache_miss_rdata;
 
   generate
-    if (HPDcacheMemDataWidth < ariane_pkg::ICACHE_LINE_WIDTH) begin
+    if (HPDcacheMemDataWidth < CVA6Cfg.ICACHE_LINE_WIDTH) begin
       hpdcache_fifo_reg #(
           .FIFO_DEPTH (1),
           .fifo_data_t(hpdcache_mem_id_t)
@@ -220,7 +221,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
       hpdcache_data_upsize #(
           .WR_WIDTH(HPDcacheMemDataWidth),
-          .RD_WIDTH(ariane_pkg::ICACHE_LINE_WIDTH),
+          .RD_WIDTH(CVA6Cfg.ICACHE_LINE_WIDTH),
           .DEPTH   (1)
       ) i_icache_hpdcache_data_upsize (
           .clk_i,
@@ -261,7 +262,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
           automatic logic [63:0] icache_miss_word;
           icache_miss_word_index = icache_miss_req_rdata.mem_req_addr[3+:ICACHE_CL_WORD_INDEX];
           icache_miss_word = icache_miss_resp_data_rdata[icache_miss_word_index*64+:64];
-          icache_miss_rdata = {{ariane_pkg::ICACHE_LINE_WIDTH - 64{1'b0}}, icache_miss_word};
+          icache_miss_rdata = {{CVA6Cfg.ICACHE_LINE_WIDTH - 64{1'b0}}, icache_miss_word};
         end else begin
           icache_miss_rdata = icache_miss_resp_data_rdata;
         end
@@ -575,10 +576,10 @@ module cva6_hpdcache_subsystem_axi_arbiter
           "HPDcacheMemIdWidth shall be wide enough to identify all pending HPDcache cacheable writes and uncacheable writes"
       );
   initial
-    assert (HPDcacheMemDataWidth <= ariane_pkg::ICACHE_LINE_WIDTH)
+    assert (HPDcacheMemDataWidth <= CVA6Cfg.ICACHE_LINE_WIDTH)
     else $fatal("HPDcacheMemDataWidth shall be less or equal to the width of a Icache line");
   initial
-    assert (HPDcacheMemDataWidth <= ariane_pkg::DCACHE_LINE_WIDTH)
+    assert (HPDcacheMemDataWidth <= CVA6Cfg.DCACHE_LINE_WIDTH)
     else $fatal("HPDcacheMemDataWidth shall be less or equal to the width of a Dcache line");
   //  pragma translate_on
   //  }}}

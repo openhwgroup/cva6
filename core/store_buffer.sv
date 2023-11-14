@@ -141,11 +141,11 @@ module store_buffer
   // we do not require an acknowledgement for writes, thus we do not need to identify uniquely the responses
   assign req_port_o.data_id = '0;
   // those signals can directly be output to the memory
-  assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   // if we got a new request we already saved the tag from the previous cycle
-  assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_TAG_WIDTH     +
-                                                                                    ariane_pkg::DCACHE_INDEX_WIDTH-1 :
-                                                                                    ariane_pkg::DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_TAG_WIDTH     +
+                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
+                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
   assign req_port_o.data_wdata = commit_queue_q[commit_read_pointer_q].data;
   assign req_port_o.data_be = commit_queue_q[commit_read_pointer_q].be;
   assign req_port_o.data_size = commit_queue_q[commit_read_pointer_q].data_size;

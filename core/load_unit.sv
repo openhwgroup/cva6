@@ -173,11 +173,11 @@ module load_unit
   };
   // output address
   // we can now output the lower 12 bit as the index to the cache
-  assign req_port_o.address_index = lsu_ctrl_i.vaddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_index = lsu_ctrl_i.vaddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   // translation from last cycle, again: control is handled in the FSM
-  assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
-                                              ariane_pkg::DCACHE_INDEX_WIDTH-1 :
-                                              ariane_pkg::DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_tag   = paddr_i[CVA6Cfg.DCACHE_TAG_WIDTH     +
+                                              CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
+                                              CVA6Cfg.DCACHE_INDEX_WIDTH];
   // request id = index of the load buffer's entry
   assign req_port_o.data_id = ldbuf_windex;
   // directly forward exception fields (valid bit is set below)
