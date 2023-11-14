@@ -74,6 +74,15 @@ module mmu
     input logic [15:0][riscv::PLEN-3:0] pmpaddr_i
 );
 
+  localparam type tlb_update_t = struct packed {
+    logic                  valid;    // valid flag
+    logic                  is_2M;    //
+    logic                  is_1G;    //
+    logic [27-1:0]         vpn;      // VPN (39bits) = 27bits + 12bits offset
+    logic [ASID_WIDTH-1:0] asid;
+    riscv::pte_t           content;
+  };
+
   logic                   iaccess_err;  // insufficient privilege to access this instruction page
   logic                   daccess_err;  // insufficient privilege to access this data page
   logic                   ptw_active;  // PTW is currently walking a page table
@@ -105,6 +114,7 @@ module mmu
 
   tlb #(
       .CVA6Cfg    (CVA6Cfg),
+      .tlb_update_t(tlb_update_t),
       .TLB_ENTRIES(INSTR_TLB_ENTRIES),
       .ASID_WIDTH (ASID_WIDTH)
   ) i_itlb (
@@ -128,6 +138,7 @@ module mmu
 
   tlb #(
       .CVA6Cfg    (CVA6Cfg),
+      .tlb_update_t(tlb_update_t),
       .TLB_ENTRIES(DATA_TLB_ENTRIES),
       .ASID_WIDTH (ASID_WIDTH)
   ) i_dtlb (
@@ -154,6 +165,7 @@ module mmu
       .CVA6Cfg   (CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .tlb_update_t(tlb_update_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) i_ptw (
       .clk_i                 (clk_i),

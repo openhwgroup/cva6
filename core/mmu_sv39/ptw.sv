@@ -21,6 +21,7 @@ module ptw
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type tlb_update_t = logic,
     parameter int ASID_WIDTH = 1
 ) (
     input  logic clk_i,                   // Clock
