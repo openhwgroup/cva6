@@ -192,6 +192,10 @@ package config_pkg;
     bit DATA_USER_EN;
     bit FETCH_USER_EN;
     bit AXI_USER_EN;
+    int unsigned FETCH_WIDTH;
+    int unsigned INSTR_PER_FETCH;
+    // maximum instructions we can fetch on one request (we support compressed instructions)
+    int unsigned LOG2_INSTR_PER_FETCH;
   } cva6_cfg_t;
 
   function automatic cva6_cfg_t build_config(cva6_user_cfg_t CVA6Cfg);
@@ -219,6 +223,9 @@ package config_pkg;
 
     riscv::vm_mode_t MODE_SV = (CVA6Cfg.XLEN == 32) ? riscv::ModeSv32 : riscv::ModeSv39;
     int unsigned VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;
+
+    int unsigned FETCH_WIDTH = 32;
+    int unsigned INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
 
     return
     '{
@@ -256,7 +263,6 @@ package config_pkg;
       XFVec: CVA6Cfg.XFVec,
       CvxifEn: CVA6Cfg.CvxifEn,
       ZiCondExtEn: CVA6Cfg.ZiCondExtEn,
-
       RVF: bit'(RVF),
       RVD: bit'(RVD),
       FpPresent: bit'(FpPresent),
@@ -271,7 +277,6 @@ package config_pkg;
       EnableAccelerator: bit'(EnableAccelerator),
       RVS: CVA6Cfg.RVS,
       RVU: CVA6Cfg.RVU,
-
       HaltAddress: CVA6Cfg.HaltAddress,
       ExceptionAddress: CVA6Cfg.ExceptionAddress,
       RASDepth: CVA6Cfg.RASDepth,
@@ -298,6 +303,9 @@ package config_pkg;
       AXI_USER_WIDTH: CVA6Cfg.AXI_USER_WIDTH,
       DATA_USER_EN: CVA6Cfg.DATA_USER_EN,
       FETCH_USER_EN: CVA6Cfg.FETCH_USER_EN
+      FETCH_WIDTH: FETCH_WIDTH,
+      INSTR_PER_FETCH: INSTR_PER_FETCH,
+      LOG2_INSTR_PER_FETCH: CVA6Cfg.RVC == 1'b1 ? $clog2(INSTR_PER_FETCH) : 1
     }
     ;
 

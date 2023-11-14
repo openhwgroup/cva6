@@ -31,15 +31,15 @@ module instr_realign
     input logic valid_i,
     output logic serving_unaligned_o,  // we have an unaligned instruction in [0]
     input logic [CVA6Cfg.VLEN-1:0] address_i,
-    input logic [FETCH_WIDTH-1:0] data_i,
-    output logic [INSTR_PER_FETCH-1:0] valid_o,
-    output logic [INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] addr_o,
-    output logic [INSTR_PER_FETCH-1:0][31:0] instr_o
+    input logic [CVA6Cfg.FETCH_WIDTH-1:0] data_i,
+    output logic [CVA6Cfg.INSTR_PER_FETCH-1:0] valid_o,
+    output logic [CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] addr_o,
+    output logic [CVA6Cfg.INSTR_PER_FETCH-1:0][31:0] instr_o
 );
   // as a maximum we support a fetch width of 64-bit, hence there can be 4 compressed instructions
   logic [3:0] instr_is_compressed;
 
-  for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
     // LSB != 2'b11
     assign instr_is_compressed[i] = ~&data_i[i*16+:2];
   end
@@ -54,7 +54,7 @@ module instr_realign
   assign serving_unaligned_o = unaligned_q;
 
   // Instruction re-alignment
-  if (FETCH_WIDTH == 32) begin : realign_bp_32
+  if (CVA6Cfg.FETCH_WIDTH == 32) begin : realign_bp_32
     always_comb begin : re_align
       unaligned_d = unaligned_q;
       unaligned_address_d = {address_i[CVA6Cfg.VLEN-1:2], 2'b10};
@@ -104,7 +104,7 @@ module instr_realign
       end
     end
     // TODO(zarubaf): Fix 64 bit FETCH_WIDTH, maybe generalize to arbitrary fetch width
-  end else if (FETCH_WIDTH == 64) begin : realign_bp_64
+  end else if (CVA6Cfg.FETCH_WIDTH == 64) begin : realign_bp_64
     initial begin
       $error("Not propperly implemented");
     end

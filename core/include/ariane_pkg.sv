@@ -133,12 +133,6 @@ package ariane_pkg;
 
   // leave as is (fails with >8 entries and wider fetch width)
   localparam int unsigned FETCH_FIFO_DEPTH = 4;
-  localparam int unsigned FETCH_WIDTH = 32;
-  // maximum instructions we can fetch on one request (we support compressed instructions)
-  localparam int unsigned INSTR_PER_FETCH = RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
-  localparam int unsigned LOG2_INSTR_PER_FETCH = RVC == 1'b1 ? $clog2(
-      ariane_pkg::INSTR_PER_FETCH
-  ) : 1;
 
   // Only use struct when signals have same direction
   // exception

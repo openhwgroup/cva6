@@ -30,15 +30,15 @@ module bht #(
     input  logic                        [                CVA6Cfg.VLEN-1:0] vpc_i,
     input  bht_update_t                                       bht_update_i,
     // we potentially need INSTR_PER_FETCH predictions/cycle
-    output ariane_pkg::bht_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] bht_prediction_o
+    output ariane_pkg::bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0] bht_prediction_o
 );
   // the last bit is always zero, we don't need it for indexing
   localparam OFFSET = CVA6Cfg.RVC == 1'b1 ? 1 : 2;
   // re-shape the branch history table
-  localparam NR_ROWS = NR_ENTRIES / ariane_pkg::INSTR_PER_FETCH;
+  localparam NR_ROWS = NR_ENTRIES / CVA6Cfg.INSTR_PER_FETCH;
   // number of bits needed to index the row
-  localparam ROW_ADDR_BITS = $clog2(ariane_pkg::INSTR_PER_FETCH);
-  localparam ROW_INDEX_BITS = CVA6Cfg.RVC == 1'b1 ? $clog2(ariane_pkg::INSTR_PER_FETCH) : 1;
+  localparam ROW_ADDR_BITS = $clog2(CVA6Cfg.INSTR_PER_FETCH);
+  localparam ROW_INDEX_BITS = CVA6Cfg.LOG2_INSTR_PER_FETCH;
   // number of bits we should use for prediction
   localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
   // we are not interested in all bits of the address
@@ -48,8 +48,8 @@ module bht #(
     logic       valid;
     logic [1:0] saturation_counter;
   }
-      bht_d[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0],
-      bht_q[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0];
+      bht_d[NR_ROWS-1:0][CVA6Cfg.INSTR_PER_FETCH-1:0],
+      bht_q[NR_ROWS-1:0][CVA6Cfg.INSTR_PER_FETCH-1:0];
 
   logic [$clog2(NR_ROWS)-1:0] index, update_pc;
   logic [ROW_INDEX_BITS-1:0] update_row_index;
@@ -66,7 +66,7 @@ module bht #(
 
     logic [1:0] saturation_counter;
     // prediction assignment
-    for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_bht_output
+    for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_bht_output
       assign bht_prediction_o[i].valid = bht_q[index][i].valid;
       assign bht_prediction_o[i].taken = bht_q[index][i].saturation_counter[1] == 1'b1;
     end
@@ -98,7 +98,7 @@ module bht #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         for (int unsigned i = 0; i < NR_ROWS; i++) begin
-          for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
+          for (int j = 0; j < CVA6Cfg.INSTR_PER_FETCH; j++) begin
             bht_q[i][j] <= '0;
           end
         end
@@ -106,7 +106,7 @@ module bht #(
         // evict all entries
         if (flush_i) begin
           for (int i = 0; i < NR_ROWS; i++) begin
-            for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
+            for (int j = 0; j < CVA6Cfg.INSTR_PER_FETCH; j++) begin
               bht_q[i][j].valid <= 1'b0;
               bht_q[i][j].saturation_counter <= 2'b10;
             end
@@ -122,16 +122,16 @@ module bht #(
     // number of bits par word in the bram
     localparam BRAM_WORD_BITS = $bits(ariane_pkg::bht_t);
     logic             [                             ROW_INDEX_BITS-1:0] row_index;
-    logic             [                ariane_pkg::INSTR_PER_FETCH-1:0] bht_ram_we;
-    logic             [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_read_address_0;
-    logic             [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_read_address_1;
-    logic             [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_write_address;
-    logic             [ ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] bht_ram_wdata;
-    logic             [ ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] bht_ram_rdata_0;
-    logic             [ ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] bht_ram_rdata_1;
+    logic             [                CVA6Cfg.INSTR_PER_FETCH-1:0] bht_ram_we;
+    logic             [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_read_address_0;
+    logic             [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_read_address_1;
+    logic             [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_write_address;
+    logic             [ CVA6Cfg.INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] bht_ram_wdata;
+    logic             [ CVA6Cfg.INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] bht_ram_rdata_0;
+    logic             [ CVA6Cfg.INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] bht_ram_rdata_1;
 
-    ariane_pkg::bht_t [                ariane_pkg::INSTR_PER_FETCH-1:0] bht;
-    ariane_pkg::bht_t [                ariane_pkg::INSTR_PER_FETCH-1:0] bht_updated;
+    ariane_pkg::bht_t [                CVA6Cfg.INSTR_PER_FETCH-1:0] bht;
+    ariane_pkg::bht_t [                CVA6Cfg.INSTR_PER_FETCH-1:0] bht_updated;
 
     if (CVA6Cfg.RVC) begin : gen_row_index
       assign row_index = vpc_i[ROW_ADDR_BITS+OFFSET-1:OFFSET];
@@ -151,7 +151,7 @@ module bht #(
       bht_updated = '0;
       bht = '0;
 
-      for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
+      for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
         if (row_index == i) begin
           bht_ram_read_address_0[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = index;
           bht_prediction_o[i].valid = bht_ram_rdata_0[i*BRAM_WORD_BITS+2];
@@ -160,7 +160,7 @@ module bht #(
       end
 
       if (bht_update_i.valid && !debug_mode_i) begin
-        for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
+        for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
           if (update_row_index == i) begin
             bht_ram_read_address_1[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;
             bht[i].saturation_counter = bht_ram_rdata_1[i*BRAM_WORD_BITS+:2];
@@ -195,7 +195,7 @@ module bht #(
       end
     end
 
-    for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_bht_ram
+    for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_bht_ram
       AsyncThreePortRam #(
           .ADDR_WIDTH($clog2(NR_ROWS)),
           .DATA_DEPTH(NR_ROWS),
