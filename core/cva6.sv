@@ -459,6 +459,9 @@ module cva6
   // ID <-> COMMIT
   // --------------
   scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_id_commit;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_drop_id_commit;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_commit_id;
+
   // --------------
   // RVFI
   // --------------
@@ -774,7 +777,8 @@ module cva6
       .we_gpr_i             (we_gpr_commit_id),
       .we_fpr_i             (we_fpr_commit_id),
       .commit_instr_o       (commit_instr_id_commit),
-      .commit_ack_i         (commit_ack),
+      .commit_drop_o        (commit_drop_id_commit),
+      .commit_ack_i         (commit_ack_commit_id),
       // Performance Counters
       .stall_issue_o        (stall_issue),
       //RVFI
@@ -937,7 +941,8 @@ module cva6
       .dirty_fp_state_o  (dirty_fp_state),
       .single_step_i     (single_step_csr_commit || single_step_acc_commit),
       .commit_instr_i    (commit_instr_id_commit),
-      .commit_ack_o      (commit_ack),
+      .commit_drop_i     (commit_drop_id_commit),
+      .commit_ack_o      (commit_ack_commit_id),
       .commit_macro_ack_o(commit_macro_ack),
       .no_st_pending_i   (no_st_pending_commit),
       .waddr_o           (waddr_commit_id),
@@ -964,6 +969,8 @@ module cva6
       .flush_commit_o    (flush_commit),
       .*
   );
+
+  assign commit_ack = commit_ack_commit_id & ~commit_drop_id_commit;
 
   // ---------
   // CSR
