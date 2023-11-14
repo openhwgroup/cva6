@@ -253,7 +253,7 @@ module cva6_rvfi
     end else if (lsu_wmask != 0) begin
       mem_n[lsu_addr_trans_id].lsu_addr  = lsu_addr;
       mem_n[lsu_addr_trans_id].lsu_wmask = lsu_wmask;
-      mem_n[lsu_addr_trans_id].lsu_wdata = wbdata[1];
+      mem_n[lsu_addr_trans_id].lsu_wdata = wbdata[STORE_WB];
     end
   end
 

@@ -668,59 +668,36 @@ module cva6
   exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_ex_id;  // exception from execute, ex_stage to id_stage
   logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_ex_id;
 
+  assign trans_id_ex_id[FLU_WB] = flu_trans_id_ex_id;
+  assign wbdata_ex_id[FLU_WB]   = flu_result_ex_id;
+  assign ex_ex_ex_id[FLU_WB]    = flu_exception_ex_id;
+  assign wt_valid_ex_id[FLU_WB] = flu_valid_ex_id;
+
+  assign trans_id_ex_id[STORE_WB] = store_trans_id_ex_id;
+  assign wbdata_ex_id[STORE_WB]   = store_result_ex_id;
+  assign ex_ex_ex_id[STORE_WB]    = store_exception_ex_id;
+  assign wt_valid_ex_id[STORE_WB] = store_valid_ex_id;
+
+  assign trans_id_ex_id[LOAD_WB] = load_trans_id_ex_id;
+  assign wbdata_ex_id[LOAD_WB]   = load_result_ex_id;
+  assign ex_ex_ex_id[LOAD_WB]    = load_exception_ex_id;
+  assign wt_valid_ex_id[LOAD_WB] = load_valid_ex_id;
+
+  assign trans_id_ex_id[FPU_WB] = fpu_trans_id_ex_id;
+  assign wbdata_ex_id[FPU_WB]   = fpu_result_ex_id;
+  assign ex_ex_ex_id[FPU_WB]    = fpu_exception_ex_id;
+  assign wt_valid_ex_id[FPU_WB] = fpu_valid_ex_id;
+
   if (CVA6Cfg.CvxifEn) begin
-    assign trans_id_ex_id = {
-      x_trans_id_ex_id,
-      flu_trans_id_ex_id,
-      load_trans_id_ex_id,
-      store_trans_id_ex_id,
-      fpu_trans_id_ex_id
-    };
-    assign wbdata_ex_id = {
-      x_result_ex_id, flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id
-    };
-    assign ex_ex_ex_id = {
-      x_exception_ex_id,
-      flu_exception_ex_id,
-      load_exception_ex_id,
-      store_exception_ex_id,
-      fpu_exception_ex_id
-    };
-    assign wt_valid_ex_id = {
-      x_valid_ex_id, flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id
-    };
+    assign trans_id_ex_id[X_WB] = x_trans_id_ex_id;
+    assign wbdata_ex_id[X_WB]   = x_result_ex_id;
+    assign ex_ex_ex_id[X_WB]    = x_exception_ex_id;
+    assign wt_valid_ex_id[X_WB] = x_valid_ex_id;
   end else if (CVA6Cfg.EnableAccelerator) begin
-    assign trans_id_ex_id = {
-      flu_trans_id_ex_id,
-      load_trans_id_ex_id,
-      store_trans_id_ex_id,
-      fpu_trans_id_ex_id,
-      acc_trans_id_ex_id
-    };
-    assign wbdata_ex_id = {
-      flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id, acc_result_ex_id
-    };
-    assign ex_ex_ex_id = {
-      flu_exception_ex_id,
-      load_exception_ex_id,
-      store_exception_ex_id,
-      fpu_exception_ex_id,
-      acc_exception_ex_id
-    };
-    assign wt_valid_ex_id = {
-      flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id, acc_valid_ex_id
-    };
-  end else begin
-    assign trans_id_ex_id = {
-      flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id
-    };
-    assign wbdata_ex_id = {
-      flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id
-    };
-    assign ex_ex_ex_id = {
-      flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id
-    };
-    assign wt_valid_ex_id = {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
+    assign trans_id_ex_id[ACC_WB] = acc_trans_id_ex_id;
+    assign wbdata_ex_id[ACC_WB]   = acc_result_ex_id;
+    assign ex_ex_ex_id[ACC_WB]    = acc_exception_ex_id;
+    assign wt_valid_ex_id[ACC_WB] = acc_valid_ex_id;
   end
 
   if (CVA6Cfg.CvxifEn && CVA6Cfg.EnableAccelerator) begin : gen_err_xif_and_acc

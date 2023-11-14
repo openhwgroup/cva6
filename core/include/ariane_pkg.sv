@@ -202,6 +202,14 @@ package ariane_pkg;
     ACCEL       // 10
   } fu_t;
 
+  // Index of writeback ports
+  localparam FLU_WB = 0;
+  localparam STORE_WB = 1;
+  localparam LOAD_WB = 2;
+  localparam FPU_WB = 3;
+  localparam ACC_WB = 4;
+  localparam X_WB = 4;
+
   localparam EXC_OFF_RST = 8'h80;
 
   localparam SupervisorIrq = 1;
