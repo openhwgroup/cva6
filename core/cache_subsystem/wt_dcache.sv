@@ -53,6 +53,8 @@ module wt_dcache
     output dcache_req_t  mem_data_o
 );
 
+  localparam DCACHE_CL_IDX_WIDTH = $clog2(CVA6Cfg.DCACHE_NUM_WORDS);  // excluding byte offset
+
   // miss unit <-> read controllers
   logic                                                           cache_en;
 
@@ -62,7 +64,7 @@ module wt_dcache
   logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                          wr_cl_we;
   logic     [      CVA6Cfg.DCACHE_TAG_WIDTH-1:0]                          wr_cl_tag;
   logic     [   DCACHE_CL_IDX_WIDTH-1:0]                          wr_cl_idx;
-  logic     [   DCACHE_OFFSET_WIDTH-1:0]                          wr_cl_off;
+  logic     [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0]                          wr_cl_off;
   logic     [     CVA6Cfg.DCACHE_LINE_WIDTH-1:0]                          wr_cl_data;
   logic     [CVA6Cfg.DCACHE_USER_LINE_WIDTH-1:0]                          wr_cl_user;
   logic     [   CVA6Cfg.DCACHE_LINE_WIDTH/8-1:0]                          wr_cl_data_be;
@@ -70,7 +72,7 @@ module wt_dcache
   logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                          wr_req;
   logic                                                           wr_ack;
   logic     [   DCACHE_CL_IDX_WIDTH-1:0]                          wr_idx;
-  logic     [   DCACHE_OFFSET_WIDTH-1:0]                          wr_off;
+  logic     [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0]                          wr_off;
   logic [CVA6Cfg.XLEN-1:0]                          wr_data;
   logic     [      (CVA6Cfg.XLEN/8)-1:0]                          wr_data_be;
   logic     [     CVA6Cfg.DCACHE_USER_WIDTH-1:0]                          wr_user;
@@ -96,7 +98,7 @@ module wt_dcache
   logic     [              NumPorts-1:0]                          rd_ack;
   logic     [              NumPorts-1:0][   CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag;
   logic     [              NumPorts-1:0][DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
-  logic     [              NumPorts-1:0][DCACHE_OFFSET_WIDTH-1:0] rd_off;
+  logic     [              NumPorts-1:0][CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] rd_off;
   logic [CVA6Cfg.XLEN-1:0]                          rd_data;
   logic     [     CVA6Cfg.DCACHE_USER_WIDTH-1:0]                          rd_user;
   logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                          rd_vld_bits;
@@ -117,7 +119,8 @@ module wt_dcache
   wt_dcache_missunit #(
       .CVA6Cfg (CVA6Cfg),
       .AmoTxId (RdAmoTxId),
-      .NumPorts(NumPorts)
+      .NumPorts(NumPorts),
+      .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH)
   ) i_wt_dcache_missunit (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),
@@ -179,6 +182,7 @@ module wt_dcache
           .CVA6Cfg(CVA6Cfg),
           .dcache_req_i_t(dcache_req_i_t),
           .dcache_req_o_t(dcache_req_o_t),
+          .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH),
           .RdTxId (RdAmoTxId)
       ) i_wt_dcache_ctrl (
           .clk_i          (clk_i),
@@ -228,7 +232,7 @@ module wt_dcache
       assign miss_id[k] = {{CACHE_ID_WIDTH}{1'b0}};
       assign rd_tag[k] = {{CVA6Cfg.DCACHE_TAG_WIDTH}{1'b0}};
       assign rd_idx[k] = {{DCACHE_CL_IDX_WIDTH}{1'b0}};
-      assign rd_off[k] = {{DCACHE_OFFSET_WIDTH}{1'b0}};
+      assign rd_off[k] = {{CVA6Cfg.DCACHE_OFFSET_WIDTH}{1'b0}};
       assign rd_req[k] = 1'b0;
       assign rd_tag_only[k] = 1'b0;
     end
@@ -244,7 +248,8 @@ module wt_dcache
   wt_dcache_wbuffer #(
       .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t)
+      .dcache_req_o_t(dcache_req_o_t),
+      .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH)
   ) i_wt_dcache_wbuffer (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),
@@ -302,7 +307,8 @@ module wt_dcache
 
   wt_dcache_mem #(
       .CVA6Cfg (CVA6Cfg),
-      .NumPorts(NumPorts)
+      .NumPorts(NumPorts),
+      .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH)
   ) i_wt_dcache_mem (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),

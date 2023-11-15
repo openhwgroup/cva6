@@ -44,7 +44,7 @@ module std_nbdcache
     input axi_rsp_t axi_bypass_i
 );
 
-  import std_cache_pkg::*;
+  localparam int unsigned DCACHE_DIRTY_WIDTH = CVA6Cfg.DCACHE_SET_ASSOC * 2;
 
   // -------------------------------
   // Controller <-> Arbiter
@@ -180,12 +180,12 @@ module std_nbdcache
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : sram_block
     sram #(
         .DATA_WIDTH(CVA6Cfg.DCACHE_LINE_WIDTH),
-        .NUM_WORDS (DCACHE_NUM_WORDS)
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) data_sram (
         .req_i  (req_ram[i]),
         .rst_ni (rst_ni),
         .we_i   (we_ram),
-        .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
+        .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
         .wuser_i('0),
         .wdata_i(wdata_ram.data),
         .be_i   (be_ram.data),
@@ -196,12 +196,12 @@ module std_nbdcache
 
     sram #(
         .DATA_WIDTH(CVA6Cfg.DCACHE_TAG_WIDTH),
-        .NUM_WORDS (DCACHE_NUM_WORDS)
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) tag_sram (
         .req_i  (req_ram[i]),
         .rst_ni (rst_ni),
         .we_i   (we_ram),
-        .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
+        .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
         .wuser_i('0),
         .wdata_i(wdata_ram.tag),
         .be_i   (be_ram.tag),
@@ -231,13 +231,13 @@ module std_nbdcache
   sram #(
       .USER_WIDTH(1),
       .DATA_WIDTH(4 * DCACHE_DIRTY_WIDTH),
-      .NUM_WORDS (DCACHE_NUM_WORDS)
+      .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
   ) valid_dirty_sram (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
       .req_i  (|req_ram),
       .we_i   (we_ram),
-      .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
+      .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
       .wuser_i('0),
       .wdata_i(dirty_wdata),
       .be_i   (be_ram.vldrty),

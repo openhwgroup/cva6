@@ -111,7 +111,7 @@ module cache_ctrl
     automatic logic [$clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0] cl_offset;
     // incoming cache-line -> this is needed as synthesis is not supporting +: indexing in a multi-dimensional array
     // cache-line offset -> multiple of 64
-    cl_offset = mem_req_q.index[DCACHE_BYTE_OFFSET-1:3] << 6;  // shift by 6 to the left
+    cl_offset = mem_req_q.index[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:3] << 6;  // shift by 6 to the left
     // default assignments
     state_d = state_q;
     mem_req_d = mem_req_q;

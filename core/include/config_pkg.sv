@@ -258,6 +258,7 @@ package config_pkg;
     int unsigned DCACHE_SET_ASSOC = CVA6Cfg.DcacheSetAssoc;
     int unsigned ICACHE_INDEX_WIDTH = $clog2(CVA6Cfg.IcacheByteSize / ICACHE_SET_ASSOC);
     int unsigned DCACHE_INDEX_WIDTH = $clog2(CVA6Cfg.DcacheByteSize / DCACHE_SET_ASSOC);
+    int unsigned DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DcacheLineWidth / 8);
 
     return
     '{
@@ -347,6 +348,8 @@ package config_pkg;
       DCACHE_LINE_WIDTH: CVA6Cfg.DcacheLineWidth,
       DCACHE_USER_LINE_WIDTH: (CVA6Cfg.AXI_USER_WIDTH == 1) ? 4 : CVA6Cfg.DcacheLineWidth,
       DCACHE_USER_WIDTH: CVA6Cfg.DATA_USER_WIDTH,
+      DCACHE_OFFSET_WIDTH: DCACHE_OFFSET_WIDTH,
+      DCACHE_NUM_WORDS: 2 ** (DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH),
 
       DATA_USER_EN: CVA6Cfg.DATA_USER_EN,
       FETCH_USER_EN: CVA6Cfg.FETCH_USER_EN,

@@ -55,10 +55,6 @@ package wt_cache_pkg;
   localparam ICACHE_NUM_WORDS = 2 ** (CVA6Cfg.ICACHE_INDEX_WIDTH - ICACHE_OFFSET_WIDTH);
   localparam ICACHE_CL_IDX_WIDTH = $clog2(ICACHE_NUM_WORDS);  // excluding byte offset
 
-  localparam DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DCACHE_LINE_WIDTH / 8);
-  localparam DCACHE_NUM_WORDS = 2 ** (CVA6Cfg.DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
-  localparam DCACHE_CL_IDX_WIDTH = $clog2(DCACHE_NUM_WORDS);  // excluding byte offset
-
   localparam DCACHE_NUM_BANKS = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
   localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
 

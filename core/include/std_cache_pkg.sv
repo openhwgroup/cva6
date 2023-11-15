@@ -16,13 +16,6 @@
 // Description: package for the standard Ariane cache subsystem.
 
 package std_cache_pkg;
-
-  // Calculated parameter
-  localparam DCACHE_BYTE_OFFSET = $clog2(CVA6Cfg.DCACHE_LINE_WIDTH / 8);
-  localparam DCACHE_NUM_WORDS = 2 ** (CVA6Cfg.DCACHE_INDEX_WIDTH - DCACHE_BYTE_OFFSET);
-  localparam DCACHE_DIRTY_WIDTH = CVA6Cfg.DCACHE_SET_ASSOC * 2;
-  // localparam DECISION_BIT = 30; // bit on which to decide whether the request is cache-able or not
-
   typedef struct packed {
     logic [1:0]      id;     // id for which we handle the miss
     logic            valid;
