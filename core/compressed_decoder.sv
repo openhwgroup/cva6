@@ -835,12 +835,14 @@ module compressed_decoder #(
               // c.add -> add rd, rd, rs2
               instr_o = {7'b0, instr_i[6:2], instr_i[11:7], 3'b0, instr_i[11:7], riscv::OpcodeOp};
 
-              if (instr_i[11:7] == 5'b0 && instr_i[6:2] == 5'b0) begin
-                // c.ebreak -> ebreak
-                instr_o = {32'h00_10_00_73};
-              end else if (instr_i[11:7] != 5'b0 && instr_i[6:2] == 5'b0) begin
-                // c.jalr -> jalr x1, rs1, 0
-                instr_o = {12'b0, instr_i[11:7], 3'b000, 5'b00001, riscv::OpcodeJalr};
+              if (instr_i[6:2] == 5'b0) begin
+                if (instr_i[11:7] == 5'b0) begin
+                  // c.ebreak -> ebreak
+                  instr_o = {32'h00_10_00_73};
+                end else begin
+                  // c.jalr -> jalr x1, rs1, 0
+                  instr_o = {12'b0, instr_i[11:7], 3'b000, 5'b00001, riscv::OpcodeJalr};
+                end
               end
             end
           end
