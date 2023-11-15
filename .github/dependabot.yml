@@ -9,5 +9,4 @@ updates:
     allow:
       - dependency-name: "verif/core-v-verif"
       - dependency-name: "verif/sim/dv"
-    labels:
-      - "Component:Verif"
+    labels: []
