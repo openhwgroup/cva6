@@ -15,7 +15,7 @@
 /**
  * This class describe Zcb extension.
  */
-class riscv_zcb_instr_c extends riscv_custom_instr;
+class riscv_zcb_instr_c extends riscv_instr;
 
    `uvm_object_utils(riscv_zcb_instr_c)
 
@@ -47,11 +47,6 @@ class riscv_zcb_instr_c extends riscv_custom_instr;
       }
     }
 
-   virtual function string get_instr_name();
-      get_instr_name = instr_name.name();
-      return get_instr_name;
-   endfunction : get_instr_name
-
   virtual function void set_imm_len();
     if (instr_name inside {C_LBU, C_LH, C_LHU, C_SB, C_SH}) begin
       imm_len = 2;
@@ -61,7 +56,7 @@ class riscv_zcb_instr_c extends riscv_custom_instr;
    // Convert the instruction to assembly code
    virtual function string convert2asm(string prefix = "");
       string asm_str;
-      asm_str = format_string(get_cus_instr_name(), MAX_INSTR_STR_LEN);
+      asm_str = format_string(get_instr_name(), MAX_INSTR_STR_LEN);
       case (instr_name)
          C_LBU    :       asm_str = $sformatf("%0s%0s, %0s(%0s)",      asm_str, rd.name(), get_imm(), rs1.name());
          C_LH     :       asm_str = $sformatf("%0s%0s, %0s(%0s)",      asm_str, rd.name(), get_imm(), rs1.name());
@@ -112,18 +107,6 @@ class riscv_zcb_instr_c extends riscv_custom_instr;
     endcase
     return {prefix, binary};
   endfunction : convert2bin
-
-  //TODO- work-around : Can't use the original methode of riscv_instr.sv
-  //so I create the same one with diffrent name
-  virtual function string get_cus_instr_name();
-    get_cus_instr_name = instr_name.name();
-    foreach(get_cus_instr_name[i]) begin
-      if (get_cus_instr_name[i] == "_") begin
-        get_cus_instr_name[i] = ".";
-      end
-    end
-    return get_cus_instr_name;
-  endfunction
 
   virtual function bit [1:0] get_c_opcode();
     case (instr_name) inside
@@ -194,4 +177,4 @@ class riscv_zcb_instr_c extends riscv_custom_instr;
 
 endclass
 
-`endif // __RISCV_ZICOND_INSTR_SV__
+`endif // __RISCV_ZCB_INSTR_SV__
