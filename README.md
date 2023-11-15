@@ -34,7 +34,7 @@ The top-level directories of this repo:
 
 ## Contributing
 We highly appreciate community contributions.
-<br><br>To ease the work of reviewing contributions, please review [CONTRIBUTING](https://github.com/openhwgroup/cva6/blob/master/CONTRIBUTING.md).
+<br><br>To ease the work of reviewing contributions, please review [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Issues and Troubleshooting
 If you find any problems or issues with CVA6 or the documentation, please check out the [issue tracker](https://github.com/openhwgroup/cva6/issues)
@@ -428,17 +428,9 @@ To re-generate the bootcode you can use the existing makefile within those direc
 
 # Contributing
 
-Check out the [contribution guide](CONTRIBUTING.md)
+Check out the [contribution guide](CONTRIBUTING.md).
 
 # Acknowledgements
 
-Thanks to Gian Marti, Thomas Kramer and Thomas E. Benz for implementing the PLIC.
+Check out the [acknowledgements](ACKNOWLEDGEMENTS.md).
 
-Some contributions to CVA6 are supported by the FRACTAL, TRISTAN and ISOLDE projects,
-which have received funding from the Key Digital Technologies Joint Undertaking (KDT JU),
-Austria, Belgium, Czechia, Finland, France, Germany, Italy, the Netherlands, Poland, Romania, Sweden, Switzerland, Spain and Turkey
-under grant agreements 877056, 101095947 and 101112274.
-The JU receives support from the European Union’s Horizon Europe research and innovation program.
-
-![EU Logo](https://cloud.hipert.unimore.it/apps/files_sharing/publicpreview/pessWNfeqBfYi3o?x=1912&y=617&a=true&file=eu_logo.png&scalingup=0)
-![KDT Logo](https://cloud.hipert.unimore.it/apps/files_sharing/publicpreview/yd7FgKisNgtLPTy?x=1912&y=617&a=true&file=kdt_logo.png&scalingup=0)   
