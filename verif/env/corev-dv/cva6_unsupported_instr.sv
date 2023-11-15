@@ -26,13 +26,16 @@ class cva6_unsupported_instr_c extends uvm_object;
 
   string comment;
 
-  typedef enum bit [2:0] {
+  typedef enum bit [3:0] {
     rv64i_instr,
     rv64c_instr,
     rv64m_instr,
     rvfdq_instr,
     sys_instr,
-    illegal_slli_srai
+    illegal_slli_srai,
+    rv64zcb_instr,
+    illegal_rv32zcb_instr,
+    rv32vf_instr
   } illegal_ext_instr_type_e;
 
   // Default legal opcode for RV32I instructions
@@ -119,7 +122,10 @@ class cva6_unsupported_instr_c extends uvm_object;
       rv64m_instr := 3,
       rvfdq_instr := 3,
       sys_instr   := 1,
-      illegal_slli_srai := 1
+      illegal_slli_srai := 1,
+      rv64zcb_instr := 1,
+      illegal_rv32zcb_instr := 1,
+      rv32vf_instr :=1
     };
   }
 
@@ -178,7 +184,7 @@ class cva6_unsupported_instr_c extends uvm_object;
 
   // RV64I instructions
   constraint rv64i_instr_c {
-    if (!RV64I inside {supported_isa}) {
+    if (!(RV64I inside {supported_isa})) {
       if (unsupported_instr == rv64i_instr) {
         compressed == 0;
         opcode inside {legal_rv64i_opcode};
@@ -216,7 +222,7 @@ class cva6_unsupported_instr_c extends uvm_object;
 
   // RV64M instructions
   constraint rv64m_instr_c {
-    if (!RV64M inside {supported_isa}) {
+    if (!(RV64M inside {supported_isa})) {
       if (unsupported_instr == rv64m_instr) {
            compressed == 0;
            opcode == 7'b0111011;
@@ -226,12 +232,21 @@ class cva6_unsupported_instr_c extends uvm_object;
     }
   }
 
+  // RV32 Vectorial FP instructions
+  constraint rv32vf_instr_c {
+    if (unsupported_instr == rv32vf_instr) {
+         compressed == 0;
+         opcode == 7'b0110011;
+         instr_bin[31:30] == 2'b10;
+    }
+  }
+
   // RV64C instructions
   constraint rv64c_instr_c {
-    if (!RV64C inside {supported_isa} ||
-        !RV32FC inside {supported_isa} ||
-        !RV32DC inside {supported_isa} ||
-        !RV128C inside {supported_isa}) {
+    if (!(RV64C inside {supported_isa}) ||
+        !(RV32FC inside {supported_isa}) ||
+        !(RV32DC inside {supported_isa}) ||
+        !(RV128C inside {supported_isa})) {
       if (unsupported_instr == rv64c_instr) {
            compressed == 1;
            c_op != 2'b11;
@@ -259,12 +274,40 @@ class cva6_unsupported_instr_c extends uvm_object;
     }
   }
 
+  // RV64Zcb instructions
+  constraint rv64zcb_instr_c {
+    if (unsupported_instr == rv64zcb_instr) {
+         compressed == 1;
+         c_op  == 2'b01;
+         c_msb == 3'b100;
+         instr_bin[12:10] == 3'b111;
+         instr_bin[6:2] == 5'b11100;
+    }
+  }
+
+  // Illegal RV32Zcb instructions
+  constraint illegal_rv32zcb_instr_c {
+    if (unsupported_instr == illegal_rv32zcb_instr) {
+         compressed == 1;
+         c_op inside {2'b00, 2'b01};
+         c_msb == 3'b100;
+         if (c_op == 2'b00) {
+            !(instr_bin[12:10] inside {3'b000, 3'b001, 3'b010, 3'b011});
+         }
+         if (c_op == 2'b01) {
+            instr_bin[12:10] == 3'b111;
+            !(instr_bin[4:2] inside {3'b000, 3'b001, 3'b010, 3'b011, 3'b100, 3'b101});
+            instr_bin[6:5] == 2'b11;
+         }
+    }
+  }
+
   // RV32FDQ, RV64FDQ instructions
   constraint rvfdq_instr_c {
-    if (!RV32F inside {supported_isa} ||
-        !RV64F inside {supported_isa} ||
-        !RV32D inside {supported_isa} ||
-        !RV64D inside {supported_isa}) {
+    if (!(RV32F inside {supported_isa}) ||
+        !(RV64F inside {supported_isa}) ||
+        !(RV32D inside {supported_isa}) ||
+        !(RV64D inside {supported_isa})) {
       if (unsupported_instr == rvfdq_instr) {
         compressed == 0;
         opcode inside {legal_rvfdq_opcode};

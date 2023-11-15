@@ -63,12 +63,13 @@ class cva6_illegal_instr_c extends riscv_illegal_instr;
 
   // Invalid SYSTEM instructions
   constraint system_instr_c {
-    if (exception == kIllegalSystemInstr) {
-      opcode == 7'b1110011;
-      func3 == 3'b000;
-      // ECALL/EBREAK/xRET/WFI
-      // Constrain the upper 12 bits to avoid ecall instruction
-      instr_bin[31:20] != 0;
+    if (!(SUPERVISOR_MODE inside supported_privileged_mode)) {
+       if (exception == kIllegalSystemInstr) {
+         opcode == 7'b1110011;
+         func3 == 3'b000;
+         // Constrain the upper 12 bits to generate SRET instruction
+         instr_bin[31:20] == 12'b100000010;
+       }
     }
   }
 
