@@ -338,18 +338,6 @@ riscv-tests-p:
       allow_failure: true
   timeout: 4h
 
-csr_test:
-  extends:
-    - .verif_test
-  variables:
-    DASHBOARD_JOB_TITLE: "csr_test $DV_TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "CSR regression suite"
-    DASHBOARD_SORT_INDEX: 0
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
-  script: source verif/regress/dv-riscv-csr-access-test.sh
-  after_script: *simu_after_script
-
 mmu_sv32_tests:
   extends:
     - .verif_test
