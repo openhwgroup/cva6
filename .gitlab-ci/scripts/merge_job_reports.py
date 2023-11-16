@@ -119,6 +119,7 @@ with open(f'{sys.argv[1]}/{filename}', 'w+') as f:
     yaml.dump(pipeline, f)
 
 try:
+  quoted_title = "'" + title.replace("'", "'\"'\"'") + "'"
   print(subprocess.check_output(f'''
 rm -r .gitlab-ci/dashboard_tmp || echo "nothing to do"
 git clone {dashboard_url} .gitlab-ci/dashboard_tmp
@@ -129,7 +130,7 @@ cd .gitlab-ci/dashboard_tmp
 git config user.email {git_email}
 git config user.name {git_name}
 git add pipelines_{workflow_repo}/{filename}
-git commit -m  "{workflow_repo}: {title.replace('"',"'")}" || echo "commit fail"
+git commit -m  '{workflow_repo}: '{quoted_title} || echo "commit fail"
 git push
 cd -
 ''', shell=True))
