@@ -23,3 +23,8 @@
 `define DEFINE_ZCB_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
    class riscv_``instr_n``_instr extends riscv_zcb_instr_c;  \
       `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
+
+// Zcmp extension instruction
+`define DEFINE_ZCMP_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+   class riscv_``instr_n``_instr extends riscv_zcmp_instr_c;  \
+      `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
