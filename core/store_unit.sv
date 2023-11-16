@@ -151,11 +151,11 @@ module store_unit
         end
       end
 
-      // we didn't receive a valid translation, wait for one
-      // but we know that the store queue is not full as we could only have landed here if
-      // it wasn't full
-      WAIT_TRANSLATION: begin
-        if (ariane_pkg::MMU_PRESENT) begin
+      default: begin
+        // we didn't receive a valid translation, wait for one
+        // but we know that the store queue is not full as we could only have landed here if
+        // it wasn't full
+        if(state_q == WAIT_TRANSLATION && ariane_pkg::MMU_PRESENT) begin
           translation_req_o = 1'b1;
 
           if (dtlb_hit_i) begin

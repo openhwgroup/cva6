@@ -257,27 +257,6 @@ module load_unit
         end
       end
 
-      // abort the previous request - free the D$ arbiter
-      // we are here because of a TLB miss, we need to abort the current request and give way for the
-      // PTW walker to satisfy the TLB miss
-      ABORT_TRANSACTION: begin
-        if (ariane_pkg::MMU_PRESENT) begin
-          req_port_o.kill_req = 1'b1;
-          req_port_o.tag_valid = 1'b1;
-          // wait until the WB is empty
-          state_d = WAIT_TRANSLATION;
-        end
-      end
-
-      ABORT_TRANSACTION_NI: begin
-        if (CVA6Cfg.NonIdemPotenceEn) begin
-          req_port_o.kill_req = 1'b1;
-          req_port_o.tag_valid = 1'b1;
-          // re-do the request
-          state_d = WAIT_WB_EMPTY;
-        end
-      end
-
       // Wait until the write-back buffer is empty in the data cache.
       WAIT_WB_EMPTY: begin
         // the write buffer is empty, so lets go and re-do the translation.
@@ -378,7 +357,24 @@ module load_unit
         state_d = IDLE;
       end
 
-      default: state_d = IDLE;
+      default: begin
+        // abort the previous request - free the D$ arbiter
+        // we are here because of a TLB miss, we need to abort the current request and give way for the
+        // PTW walker to satisfy the TLB miss
+        if (state_q == ABORT_TRANSACTION && ariane_pkg::MMU_PRESENT) begin
+          req_port_o.kill_req = 1'b1;
+          req_port_o.tag_valid = 1'b1;
+          // wait until the WB is empty
+          state_d = WAIT_TRANSLATION;
+        end else if (state_q == ABORT_TRANSACTION_NI && CVA6Cfg.NonIdemPotenceEn) begin
+          req_port_o.kill_req = 1'b1;
+          req_port_o.tag_valid = 1'b1;
+          // re-do the request
+          state_d = WAIT_WB_EMPTY;
+        end else begin
+          state_d = IDLE;
+        end
+      end
     endcase
 
     // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage

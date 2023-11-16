@@ -1341,7 +1341,7 @@ module csr_regfile
         privilege_violation = 1'b1;
       end
       // check access to debug mode only CSRs
-      if (csr_addr_i[11:4] == 8'h7b && !debug_mode_q) begin
+      if ((!CVA6Cfg.DebugEn && csr_addr_i[11:4] == 8'h7b) || (CVA6Cfg.DebugEn && csr_addr_i[11:4] == 8'h7b && !debug_mode_q)) begin
         privilege_violation = 1'b1;
       end
       // check counter-enabled counter CSR accesses
