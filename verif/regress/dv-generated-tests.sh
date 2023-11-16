@@ -81,7 +81,7 @@ elif [[ "$list_num" = 5 ]];then
            "riscv_load_store_hazard_test"
            "riscv_unaligned_load_store_test"
            );
-   I=(50 50 50 50);
+   I=(100 100 100 100);
 elif [[ "$list_num" = 6 ]];then
 	TEST_NAME=(
            "riscv_rand_jump_hint_comp_test"
