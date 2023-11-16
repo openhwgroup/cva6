@@ -1067,7 +1067,7 @@ module csr_regfile
     trap_to_priv_lvl = riscv::PRIV_LVL_M;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if (!debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) begin
+    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid)) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
@@ -1081,7 +1081,8 @@ module csr_regfile
           )-1:0]]))) begin
         // traps never transition from a more-privileged mode to a less privileged mode
         // so if we are already in M mode, stay there
-        trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
+        if(priv_lvl_o == riscv::PRIV_LVL_M) trap_to_priv_lvl = riscv::PRIV_LVL_M;
+        else trap_to_priv_lvl = riscv::PRIV_LVL_S;
       end
 
       // trap to supervisor mode
@@ -1287,31 +1288,27 @@ module csr_regfile
       CSR_SET:   csr_wdata = csr_wdata_i | csr_rdata;
       CSR_CLEAR: csr_wdata = (~csr_wdata_i) & csr_rdata;
       CSR_READ:  csr_we = 1'b0;
-      SRET: begin
-        if (CVA6Cfg.RVS) begin
-          // the return should not have any write or read side-effects
-          csr_we   = 1'b0;
-          csr_read = 1'b0;
-          sret     = 1'b1;  // signal a return from supervisor mode
-        end
-      end
       MRET: begin
         // the return should not have any write or read side-effects
         csr_we   = 1'b0;
         csr_read = 1'b0;
         mret     = 1'b1;  // signal a return from machine mode
       end
-      DRET: begin
-        if (CVA6Cfg.DebugEn) begin
+      default: begin
+        if(CVA6Cfg.RVS && csr_op_i == SRET) begin
+          // the return should not have any write or read side-effects
+          csr_we   = 1'b0;
+          csr_read = 1'b0;
+          sret     = 1'b1;  // signal a return from supervisor mode
+        end else if(CVA6Cfg.DebugEn && csr_op_i == DRET) begin
           // the return should not have any write or read side-effects
           csr_we   = 1'b0;
           csr_read = 1'b0;
           dret     = 1'b1;  // signal a return from debug mode
+        end else begin
+          csr_we   = 1'b0;
+          csr_read = 1'b0;
         end
-      end
-      default: begin
-        csr_we   = 1'b0;
-        csr_read = 1'b0;
       end
     endcase
     // if we are violating our privilges do not update the architectural state
@@ -1343,19 +1340,19 @@ module csr_regfile
         privilege_violation = 1'b1;
       end
       // check access to debug mode only CSRs
-      if (csr_addr_i[11:4] == 8'h7b && !debug_mode_q) begin
+      if ((CVA6Cfg.DebugEn && csr_addr_i[11:4] == 8'h7b) || (!CVA6Cfg.DebugEn && csr_addr_i[11:4] == 8'h7b && !debug_mode_q)) begin
         privilege_violation = 1'b1;
       end
       // check counter-enabled counter CSR accesses
       // counter address range is C00 to C1F
       if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_HPM_COUNTER_31]}) begin
-        unique case (priv_lvl_o)
-          riscv::PRIV_LVL_M: privilege_violation = 1'b0;
-          riscv::PRIV_LVL_S: if (CVA6Cfg.RVS) privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
-          riscv::PRIV_LVL_U:
-          if (CVA6Cfg.RVU)
-            privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] & ~scounteren_q[csr_addr_i[4:0]];
-        endcase
+        if(priv_lvl_o == riscv::PRIV_LVL_M) begin
+          privilege_violation = 1'b0;
+        end else if(priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
+          privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
+        end else if(priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
+          privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] & ~scounteren_q[csr_addr_i[4:0]];
+        end
       end
     end
   end
@@ -1394,7 +1391,7 @@ module csr_regfile
       wfi_d = 1'b0;
       // or alternatively if there is no exception pending and we are not in debug mode wait here
       // for the interrupt
-    end else if (!debug_mode_q && csr_op_i == WFI && !ex_i.valid) begin
+    end else if (((CVA6Cfg.DebugEn && !debug_mode_q) && csr_op_i == WFI && !ex_i.valid) || (!CVA6Cfg.DebugEn && csr_op_i == WFI && !ex_i.valid)) begin
       wfi_d = 1'b1;
     end
   end
@@ -1418,7 +1415,7 @@ module csr_regfile
     // privilege level we are jumping and whether the vectored mode is
     // activated for _that_ privilege level.
     if (ex_i.cause[riscv::XLEN-1] &&
-                ((trap_to_priv_lvl == riscv::PRIV_LVL_M && mtvec_q[0])
+                ((((CVA6Cfg.RVS || CVA6Cfg.RVU) && trap_to_priv_lvl == riscv::PRIV_LVL_M && mtvec_q[0]) || (!CVA6Cfg.RVS && !CVA6Cfg.RVU && mtvec_q[0]))
                || (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S && stvec_q[0]))) begin
       trap_vector_base_o[7:2] = ex_i.cause[5:0];
     end

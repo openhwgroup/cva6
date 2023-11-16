@@ -127,7 +127,7 @@ module commit_stage
         we_gpr_o[0] = 1'b1;
       end
       // check whether the instruction we retire was a store
-      if (commit_instr_i[0].fu == STORE && !instr_0_is_amo) begin
+      if ((!CVA6Cfg.RVA && commit_instr_i[0].fu == STORE) || (CVA6Cfg.RVA && commit_instr_i[0].fu == STORE && !instr_0_is_amo)) begin
         // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
         if (commit_lsu_ready_i) begin
           commit_ack_o[0] = 1'b1;
@@ -185,7 +185,7 @@ module commit_stage
       // from interrupt service routine
       // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
       // and the private dcache. This is the most expensive instruction.
-      if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && commit_instr_i[0].fu != STORE)) begin
+      if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && DCACHE_TYPE == int'(config_pkg::WB) && commit_instr_i[0].fu != STORE)) begin
         commit_ack_o[0] = no_st_pending_i;
         // tell the controller to flush the I$
         fence_i_o = no_st_pending_i;
