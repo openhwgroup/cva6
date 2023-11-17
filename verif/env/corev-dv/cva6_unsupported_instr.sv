@@ -161,8 +161,7 @@ class cva6_unsupported_instr_c extends uvm_object;
          opcode == 7'b1110011;
          func3 == 3'b000;
          instr_bin[11:7] inside {5'b0, 5'b00001};
-         func7 == 7'b0001001;
-
+         func7 inside {7'b1111111, 7'b0001001};
     }
   }
 
