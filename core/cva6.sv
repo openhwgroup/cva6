@@ -163,6 +163,8 @@ module cva6
 
   localparam NrRgprPorts = 2;
 
+  localparam bit NonIdemPotenceEn = CVA6Cfg.NrNonIdempotentRules && CVA6Cfg.NonIdempotentLength;  // Currently only used by V extension (Ara)
+
   localparam config_pkg::cva6_cfg_t CVA6ExtendCfg = {
     CVA6Cfg.NrCommitPorts,
     CVA6Cfg.AxiAddrWidth,
@@ -214,7 +216,8 @@ module cva6
     CVA6Cfg.CachedRegionAddrBase,
     CVA6Cfg.CachedRegionLength,
     CVA6Cfg.MaxOutstandingStores,
-    CVA6Cfg.DebugEn
+    CVA6Cfg.DebugEn,
+    NonIdemPotenceEn
   };
 
 

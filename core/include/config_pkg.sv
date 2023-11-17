@@ -112,6 +112,7 @@ package config_pkg;
     /// Maximum number of outstanding stores.
     int unsigned                 MaxOutstandingStores;
     bit                          DebugEn;
+    bit                          NonIdemPotenceEn;
   } cva6_cfg_t;
 
 

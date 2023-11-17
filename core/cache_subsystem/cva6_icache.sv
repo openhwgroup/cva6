@@ -255,7 +255,7 @@ module cva6_icache
         // readout speculatively
         cache_rden  = cache_en_q;
 
-        if (areq_i.fetch_valid && (!dreq_i.spec || !addr_ni)) begin
+        if (areq_i.fetch_valid && (!dreq_i.spec || ((CVA6Cfg.NonIdemPotenceEn && !addr_ni) || (!CVA6Cfg.NonIdemPotenceEn)))) begin
           // check if we have to flush
           if (flush_d) begin
             state_d = IDLE;

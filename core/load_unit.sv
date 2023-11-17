@@ -189,7 +189,7 @@ module load_unit
   assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(CVA6Cfg, {{52-riscv::PPNW{1'b0}}, dtlb_ppn_i, 12'd0});
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
-  assign stall_ni = (inflight_stores || not_commit_time) && paddr_ni;
+  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_ni && CVA6Cfg.NonIdemPotenceEn);
 
   // ---------------
   // Load Control
@@ -235,7 +235,7 @@ module load_unit
                   state_d  = SEND_TAG;
                   pop_ld_o = 1'b1;
                   // translation valid but this is to NC and the WB is not yet empty.
-                end else begin
+                end else if (CVA6Cfg.NonIdemPotenceEn) begin
                   state_d = ABORT_TRANSACTION_NI;
                 end
               end
@@ -258,30 +258,43 @@ module load_unit
       // abort the previous request - free the D$ arbiter
       // we are here because of a TLB miss, we need to abort the current request and give way for the
       // PTW walker to satisfy the TLB miss
-      ABORT_TRANSACTION, ABORT_TRANSACTION_NI: begin
-        req_port_o.kill_req = 1'b1;
-        req_port_o.tag_valid = 1'b1;
-        // either re-do the request or wait until the WB is empty (depending on where we came from).
-        state_d = (state_q == ABORT_TRANSACTION_NI) ? WAIT_WB_EMPTY : WAIT_TRANSLATION;
+      ABORT_TRANSACTION: begin
+        if(ariane_pkg::MMU_PRESENT) begin
+          req_port_o.kill_req = 1'b1;
+          req_port_o.tag_valid = 1'b1;
+          // wait until the WB is empty
+          state_d = WAIT_TRANSLATION;
+        end
+      end
+
+      ABORT_TRANSACTION_NI: begin
+        if(CVA6Cfg.NonIdemPotenceEn) begin
+          req_port_o.kill_req = 1'b1;
+          req_port_o.tag_valid = 1'b1;
+          // re-do the request
+          state_d = WAIT_WB_EMPTY;
+        end
       end
 
       // Wait until the write-back buffer is empty in the data cache.
       WAIT_WB_EMPTY: begin
         // the write buffer is empty, so lets go and re-do the translation.
-        if (dcache_wbuffer_not_ni_i) state_d = WAIT_TRANSLATION;
+        if (CVA6Cfg.NonIdemPotenceEn && dcache_wbuffer_not_ni_i) state_d = WAIT_TRANSLATION;
       end
 
       WAIT_TRANSLATION: begin
-        translation_req_o = 1'b1;
-        // we've got a hit and we can continue with the request process
-        if (dtlb_hit_i) state_d = WAIT_GNT;
+        if(ariane_pkg::MMU_PRESENT || CVA6Cfg.NonIdemPotenceEn) begin
+          translation_req_o = 1'b1;
+          // we've got a hit and we can continue with the request process
+          if (dtlb_hit_i) state_d = WAIT_GNT;
 
-        // we got an exception
-        if (ex_i.valid) begin
-          // the next state will be the idle state
-          state_d  = IDLE;
-          // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
-          pop_ld_o = ~req_port_i.data_rvalid;
+          // we got an exception
+          if (ex_i.valid) begin
+            // the next state will be the idle state
+            state_d  = IDLE;
+            // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
+            pop_ld_o = ~req_port_i.data_rvalid;
+          end
         end
       end
 
@@ -301,7 +314,7 @@ module load_unit
               state_d  = SEND_TAG;
               pop_ld_o = 1'b1;
               // translation valid but this is to NC and the WB is not yet empty.
-            end else begin
+            end else if (CVA6Cfg.NonIdemPotenceEn) begin
               state_d = ABORT_TRANSACTION_NI;
             end
           end
@@ -335,7 +348,7 @@ module load_unit
                   state_d  = SEND_TAG;
                   pop_ld_o = 1'b1;
                   // translation valid but this is to NC and the WB is not yet empty.
-                end else begin
+                end else if (CVA6Cfg.NonIdemPotenceEn) begin
                   state_d = ABORT_TRANSACTION_NI;
                 end
               end
@@ -406,7 +419,7 @@ module load_unit
     // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
     // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
     // round in the load FSM
-    if ((state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
+    if (ariane_pkg::MMU_PRESENT && CVA6Cfg.NonIdemPotenceEn && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
       trans_id_o = lsu_ctrl_i.trans_id;
       valid_o = 1'b1;
       ex_o.valid = 1'b1;
