@@ -217,7 +217,7 @@ module scoreboard #(
   end
 
   // FIFO counter updates
-  if (CVA6Cfg.NrCommitPorts == 2) begin : gen_two_commit_ports
+  if (CVA6Cfg.NrCommitPorts == 2) begin : gen_commit_ports
     assign num_commit = commit_ack_i[1] + commit_ack_i[0];
   end else begin : gen_one_commit_port
     assign num_commit = commit_ack_i[0];
