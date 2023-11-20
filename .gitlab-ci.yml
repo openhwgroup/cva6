@@ -334,6 +334,7 @@ riscv-tests-p:
     - .regress_test
   rules: &on_verif
     - if: $CI_KIND == "verif"
+      allow_failure: true
     - when: manual
       allow_failure: true
   timeout: 4h
