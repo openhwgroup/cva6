@@ -185,7 +185,7 @@ module commit_stage
       // from interrupt service routine
       // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
       // and the private dcache. This is the most expensive instruction.
-      if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && DCACHE_TYPE == int'(config_pkg::WB) && commit_instr_i[0].fu != STORE)) begin
+      if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && commit_instr_i[0].fu != STORE)) begin
         commit_ack_o[0] = no_st_pending_i;
         // tell the controller to flush the I$
         fence_i_o = no_st_pending_i;
