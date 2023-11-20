@@ -56,7 +56,9 @@ module wt_axi_adapter
   // support up to 512bit cache lines
   localparam AxiNumWords = (ariane_pkg::ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH > ariane_pkg::DCACHE_LINE_WIDTH)  +
                            (ariane_pkg::DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH <= ariane_pkg::DCACHE_LINE_WIDTH) ;
-
+  localparam MaxNumWords = $clog2(CVA6Cfg.AxiDataWidth / 8);
+  localparam AxiRdBlenIcache = ariane_pkg::ICACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
+  localparam AxiRdBlenDcache = ariane_pkg::DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
 
   ///////////////////////////////////////////////////////
   // request path
@@ -130,11 +132,11 @@ module wt_axi_adapter
   // request side
   always_comb begin : p_axi_req
     // write channel
-    axi_wr_id_in = arb_idx;
-    axi_wr_data  = {(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
-    axi_wr_user  = dcache_data.user;
+    axi_wr_id_in = {{CVA6Cfg.AxiIdWidth-1{1'b0}}, arb_idx};
+    axi_wr_data[0]  = {(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
+    axi_wr_user[0]  = dcache_data.user;
     // Cast to AXI address width
-    axi_wr_addr  = dcache_data.paddr;
+    axi_wr_addr  = {{CVA6Cfg.AxiAddrWidth-riscv::PLEN{1'b0}}, dcache_data.paddr};
     axi_wr_size  = dcache_data.size;
     axi_wr_req   = 1'b0;
     axi_wr_blen  = '0;// single word writes
@@ -145,7 +147,7 @@ module wt_axi_adapter
     amo_gen_r_d  = amo_gen_r_q;
 
     // read channel
-    axi_rd_id_in = arb_idx;
+    axi_rd_id_in = {{CVA6Cfg.AxiIdWidth-1{1'b0}}, arb_idx};
     axi_rd_req   = 1'b0;
     axi_rd_lock  = '0;
     axi_rd_blen  = '0;
@@ -159,19 +161,18 @@ module wt_axi_adapter
     // arbiter mux
     if (arb_idx) begin
       // Cast to AXI address width
-      axi_rd_addr = dcache_data.paddr;
+      axi_rd_addr = {{CVA6Cfg.AxiAddrWidth-riscv::PLEN{1'b0}}, dcache_data.paddr};
       // If dcache_data.size MSB is set, we want to read as much as possible
-      axi_rd_size = dcache_data.size[2] ? $clog2(CVA6Cfg.AxiDataWidth / 8) : dcache_data.size;
+      axi_rd_size = dcache_data.size[2] ?  MaxNumWords[2:0] : dcache_data.size;
       if (dcache_data.size[2]) begin
-        axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
+        axi_rd_blen = AxiRdBlenDcache[$clog2(AxiNumWords)-1:0];
       end
     end else begin
       // Cast to AXI address width
-      axi_rd_addr = icache_data.paddr;
-      axi_rd_size =
-          $clog2(CVA6Cfg.AxiDataWidth / 8);  // always request max number of words in case of ifill
+      axi_rd_addr = {{CVA6Cfg.AxiAddrWidth-riscv::PLEN{1'b0}}, icache_data.paddr};
+      axi_rd_size = MaxNumWords[2:0]; // always request max number of words in case of ifill
       if (!icache_data.nc) begin
-        axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
+        axi_rd_blen = AxiRdBlenIcache[$clog2(AxiNumWords)-1:0];
       end
     end
 
@@ -245,11 +246,11 @@ module wt_axi_adapter
                    amo_off_d = dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0] & ~((1 << dcache_data.size[1:0]) - 1);
                  end
                  // RISC-V atops have a load semantic
-                 AMO_SWAP: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ATOMICSWAP};
+                 AMO_SWAP: axi_wr_atop  = axi_pkg::ATOP_ATOMICSWAP;
                  AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
                  AMO_AND:  begin
                    // in this case we need to invert the data to get a "CLR"
-                   axi_wr_data  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
+                   axi_wr_data[0]  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
                    axi_wr_user  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.user}};
                    axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
                  end
@@ -434,7 +435,7 @@ module wt_axi_adapter
     if (icache_rtrn_rd_en) begin
       icache_first_d = axi_rd_last;
       if (ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
-        icache_rd_shift_d = axi_rd_data;
+        icache_rd_shift_d[0] = axi_rd_data;
       end else begin
         icache_rd_shift_d = {
           axi_rd_data, icache_rd_shift_q[ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
@@ -453,7 +454,7 @@ module wt_axi_adapter
     if (dcache_rtrn_rd_en) begin
       dcache_first_d = axi_rd_last;
       if (DCACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
-        dcache_rd_shift_d = axi_rd_data;
+        dcache_rd_shift_d[0] = axi_rd_data;
       end else begin
         dcache_rd_shift_d = {
           axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]

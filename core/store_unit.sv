@@ -188,7 +188,7 @@ module store_unit
     st_be_n = lsu_ctrl_i.be;
     // don't shift the data if we are going to perform an AMO as we still need to operate on this data
     st_data_n = (CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[riscv::XLEN-1:0] :
-        data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
+        data_align(lsu_ctrl_i.vaddr[2:0], {{64-riscv::XLEN{1'b0}}, lsu_ctrl_i.data});
     st_data_size_n = extract_transfer_size(lsu_ctrl_i.operation);
     // save AMO op for next cycle
     if(CVA6Cfg.RVA) begin

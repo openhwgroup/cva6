@@ -195,7 +195,7 @@ module scoreboard #(
     // Commit Port
     // ------------
     // we've got an acknowledge from commit
-    for (logic [CVA6Cfg.NrCommitPorts-1:0] i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
+    for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       if (commit_ack_i[i]) begin
         // this instruction is no longer in issue e.g.: it is considered finished
         mem_n[commit_pointer_q[i]].issued    = 1'b0;
@@ -217,13 +217,14 @@ module scoreboard #(
   end
 
   // FIFO counter updates
-  if (CVA6Cfg.NrCommitPorts == 2) begin : gen_two_commit_ports
+  if (CVA6Cfg.NrCommitPorts == 2) begin : gen_commit_ports
     assign num_commit = commit_ack_i[1] + commit_ack_i[0];
   end else begin : gen_one_commit_port
     assign num_commit = commit_ack_i[0];
   end
 
-  assign issue_cnt_n = (flush_i) ? '0 : issue_cnt_q - num_commit + issue_en;
+  assign issue_cnt_n = (flush_i) ? '0 : issue_cnt_q - {{BITS_ENTRIES-$clog2(CVA6Cfg.NrCommitPorts){1'b0}}, num_commit}
+                                                    + {{BITS_ENTRIES-1{1'b0}}, issue_en};
   assign commit_pointer_n[0] = (flush_i) ? '0 : commit_pointer_q[0] + num_commit;
   assign issue_pointer_n = (flush_i) ? '0 : issue_pointer_q + issue_en;
 
@@ -445,11 +446,11 @@ module scoreboard #(
   assert property (
     @(posedge clk_i) disable iff (!rst_ni) commit_ack_i[0] |-> commit_instr_o[0].valid)
   else $fatal(1, "Commit acknowledged but instruction is not valid");
-
-  assert property (
-    @(posedge clk_i) disable iff (!rst_ni) commit_ack_i[1] |-> commit_instr_o[1].valid)
-  else $fatal(1, "Commit acknowledged but instruction is not valid");
-
+  if (CVA6Cfg.NrCommitPorts == 2) begin : gen_two_commit_ports
+      assert property (
+        @(posedge clk_i) disable iff (!rst_ni) commit_ack_i[1] |-> commit_instr_o[1].valid)
+      else $fatal(1, "Commit acknowledged but instruction is not valid");
+  end
   // assert that we never give an issue ack signal if the instruction is not valid
   assert property (@(posedge clk_i) disable iff (!rst_ni) issue_ack_i |-> issue_instr_valid_o)
   else $fatal(1, "Issue acknowledged but instruction is not valid");
