@@ -1067,7 +1067,7 @@ module csr_regfile
     trap_to_priv_lvl = riscv::PRIV_LVL_M;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if (!debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) begin
+    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid)) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
@@ -1081,8 +1081,7 @@ module csr_regfile
           )-1:0]]))) begin
         // traps never transition from a more-privileged mode to a less privileged mode
         // so if we are already in M mode, stay there
-        if(priv_lvl_o == riscv::PRIV_LVL_M) trap_to_priv_lvl = riscv::PRIV_LVL_M;
-        else trap_to_priv_lvl = riscv::PRIV_LVL_S;
+        trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
       end
 
       // trap to supervisor mode
