@@ -137,17 +137,17 @@ module controller
 
     // Set PC to commit stage and flush pipeline
     if (flush_csr_i || flush_acc_i) begin
-        set_pc_commit_o        = 1'b1;
-        flush_if_o             = 1'b1;
-        flush_unissued_instr_o = 1'b1;
-        flush_id_o             = 1'b1;
-        flush_ex_o             = 1'b1;
+      set_pc_commit_o        = 1'b1;
+      flush_if_o             = 1'b1;
+      flush_unissued_instr_o = 1'b1;
+      flush_id_o             = 1'b1;
+      flush_ex_o             = 1'b1;
     end else if (CVA6Cfg.RVA && flush_commit_i) begin
-        set_pc_commit_o        = 1'b1;
-        flush_if_o             = 1'b1;
-        flush_unissued_instr_o = 1'b1;
-        flush_id_o             = 1'b1;
-        flush_ex_o             = 1'b1;
+      set_pc_commit_o        = 1'b1;
+      flush_if_o             = 1'b1;
+      flush_unissued_instr_o = 1'b1;
+      flush_id_o             = 1'b1;
+      flush_ex_o             = 1'b1;
     end
 
     // ---------------------------------
