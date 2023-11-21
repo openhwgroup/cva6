@@ -32,6 +32,12 @@
   description: >
     Test with different patterns of load/store instructions, stress test MMU
     operations.
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=5
@@ -52,6 +58,12 @@
   description: >
     Test with different patterns of load/store instructions, stress test MMU
     operations.
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=5
@@ -72,6 +84,12 @@
 - test: riscv_rand_jump_illegal_test
   description: >
     Jump among large number of sub-programs, stress testing iTLB operations.
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=300
     +num_of_sub_program=0
@@ -92,6 +110,12 @@
 - test: riscv_rand_jump_hint_comp_test
   description: >
     Jump among large number of sub-programs, stress testing iTLB operations.
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -109,6 +133,12 @@
 - test: riscv_rand_jump_no_cmp_test
   description: >
     Jump among large number of sub-programs, stress testing iTLB operations.
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -126,6 +156,12 @@
 - test: riscv_load_store_test
   description: >
     Unaligned load/store test
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -145,6 +181,12 @@
 - test: riscv_load_store_cmp_test
   description: >
     Unaligned load/store test
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -165,6 +207,12 @@
 - test: riscv_load_store_hazard_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -186,6 +234,12 @@
 - test: riscv_arithmetic_basic_xif_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -209,6 +263,12 @@
 - test: riscv_arithmetic_basic_xif_illegal_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -232,6 +292,12 @@
 - test: riscv_load_store_xif_test
   description: >
     Unaligned load/store test
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -253,6 +319,12 @@
 - test: riscv_rand_jump_xif_test
   description: >
     Jump among large number of sub-programs, stress testing iTLB operations.
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -271,6 +343,12 @@
 - test: riscv_arithmetic_basic_test_no_comp
   description: >
     Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -292,6 +370,12 @@
 - test: riscv_arithmetic_basic_test_comp
   description: >
     Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -312,6 +396,12 @@
 - test: riscv_arithmetic_basic_test_bcomp
   description: >
     Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -332,6 +422,12 @@
 - test: riscv_arithmetic_basic_sub_prog_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=20
@@ -352,6 +448,12 @@
 - test: riscv_arithmetic_basic_illegal
   description: >
     Arithmetic instruction test, no load/store/branch instructions
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -376,6 +478,12 @@
     Unaligned load/store test
   gcc_opts: >
     -mno-strict-align
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=100
     +num_of_sub_program=0
@@ -397,6 +505,12 @@
 - test: riscv_arithmetic_basic_illegal_csr
   description: >
     Arithmetic instruction test, no load/store/branch instructions
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=5
@@ -419,6 +533,12 @@
 - test: riscv_arithmetic_basic_hint_illegal_csr
   description: >
     Arithmetic instruction test, no load/store/branch instructions
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -442,6 +562,12 @@
 - test: riscv_arithmetic_basic_illegal_hint_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -467,6 +593,12 @@
 - test: riscv_arithmetic_basic_loop_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=10
@@ -488,6 +620,12 @@
 - test: riscv_arithmetic_basic_ebreak_dret_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=500
     +num_of_sub_program=0
@@ -512,6 +650,12 @@
 - test: riscv_arithmetic_basic_same_reg_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=1000
     +num_of_sub_program=0
@@ -534,6 +678,12 @@
 - test: riscv_arithmetic_basic_hazard_rdrs1_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=1000
     +num_of_sub_program=0
@@ -556,6 +706,12 @@
 - test: riscv_arithmetic_basic_hazard_rdrs2_test
   description: >
     Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
   gen_opts: >
     +instr_cnt=1000
     +num_of_sub_program=0

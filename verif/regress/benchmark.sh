@@ -37,6 +37,9 @@ GCC_COMMON_SRC=(
 
 GCC_CFLAGS=(
         -fno-tree-loop-distribute-patterns
+        -static
+        -mcmodel=medany
+        -fvisibility=hidden
         -nostdlib
         -nostartfiles
         -lgcc
