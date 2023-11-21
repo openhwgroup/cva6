@@ -321,6 +321,20 @@ package riscv;
     logic v;
   } pte_sv32_t;
 
+  // memory management, pte for cva6
+  typedef struct packed {
+    logic [PPNW-1:0] ppn; // PPN length for
+    logic [1:0]  rsw;
+    logic d;
+    logic a;
+    logic g;
+    logic u;
+    logic x;
+    logic w;
+    logic r;
+    logic v;
+} pte_cva6_t;
+
   // ----------------------
   // Exception Cause Codes
   // ----------------------
