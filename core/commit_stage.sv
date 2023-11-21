@@ -127,7 +127,7 @@ module commit_stage
         we_gpr_o[0] = 1'b1;
       end
       // check whether the instruction we retire was a store
-      if (commit_instr_i[0].fu == STORE && !instr_0_is_amo) begin
+      if ((!CVA6Cfg.RVA && commit_instr_i[0].fu == STORE) || (CVA6Cfg.RVA && commit_instr_i[0].fu == STORE && !instr_0_is_amo)) begin
         // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
         if (commit_lsu_ready_i) begin
           commit_ack_o[0] = 1'b1;
