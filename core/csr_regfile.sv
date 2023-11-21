@@ -1081,7 +1081,8 @@ module csr_regfile
           )-1:0]]))) begin
         // traps never transition from a more-privileged mode to a less privileged mode
         // so if we are already in M mode, stay there
-        trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
+        if (priv_lvl_o == riscv::PRIV_LVL_M) trap_to_priv_lvl = riscv::PRIV_LVL_M;
+        else trap_to_priv_lvl = riscv::PRIV_LVL_S;
       end
 
       // trap to supervisor mode
@@ -1294,12 +1295,12 @@ module csr_regfile
         mret     = 1'b1;  // signal a return from machine mode
       end
       default: begin
-        if(CVA6Cfg.RVS && csr_op_i == SRET) begin
+        if (CVA6Cfg.RVS && csr_op_i == SRET) begin
           // the return should not have any write or read side-effects
           csr_we   = 1'b0;
           csr_read = 1'b0;
           sret     = 1'b1;  // signal a return from supervisor mode
-        end else if(CVA6Cfg.DebugEn && csr_op_i == DRET) begin
+        end else if (CVA6Cfg.DebugEn && csr_op_i == DRET) begin
           // the return should not have any write or read side-effects
           csr_we   = 1'b0;
           csr_read = 1'b0;
@@ -1345,11 +1346,11 @@ module csr_regfile
       // check counter-enabled counter CSR accesses
       // counter address range is C00 to C1F
       if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_HPM_COUNTER_31]}) begin
-        if(priv_lvl_o == riscv::PRIV_LVL_M) begin
+        if (priv_lvl_o == riscv::PRIV_LVL_M) begin
           privilege_violation = 1'b0;
-        end else if(priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
+        end else if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
           privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
-        end else if(priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
+        end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
           privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] & ~scounteren_q[csr_addr_i[4:0]];
         end
       end
