@@ -128,7 +128,7 @@ class IqLen:
         """Does the instruction queue have this instruction?"""
         length = self.len
         if self._is_crossword(instr):
-            length -= 2
+            length -= (self.fetch_size - 2)
         self._debug(f"comparing {length} to {instr.size()} ({instr})")
         return length >= instr.size()
 
