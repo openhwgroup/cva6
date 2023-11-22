@@ -143,9 +143,9 @@ Below are the configuration of the first releases of the CVA6.
 +--------------------+---------+---------+------+-------+---------+---------+---------+---------+
 | Release ID         | Target  | ISA     | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
 +====================+=========+=========+======+=======+=========+=========+=========+=========+
-| CV32E6?X           | ASIC    | IMC     |  32  | No    | Yes     | None    | None    | None    |
+| CV32E6?X           | ASIC    | IMC     |  32  | No    | Yes     | None    | 2 kB    | 2 kB    |
 +--------------------+---------+---------+------+-------+---------+---------+---------+---------+
-| CV32A60X           | ASIC    | IMC     |  32  | No    | Yes     | Sv32    | None    | 16 kB   |
+| CV32A60X           | ASIC    | IMC     |  32  | No    | Yes     | Sv32    | 16kB    | 16 kB   |
 +--------------------+---------+---------+------+-------+---------+---------+---------+---------+
 
 The value of the "?" digit above is yet to be defined when all details of this configuration are known.
