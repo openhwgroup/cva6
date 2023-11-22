@@ -91,7 +91,7 @@ always_comb begin : translation
     //At level 0 the page match is also set, so this level will have a match
     //if all vpn levels match
     for (int unsigned x = 0; x < PT_LEVELS; x++) begin
-        vpn_match[x]   = lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)]; == tags_q[i].vpn[x];
+        vpn_match[x]   = lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
         level_match[x] = &vpn_match[PT_LEVELS-1:x] & page_match[x];
     end
 

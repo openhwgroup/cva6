@@ -772,9 +772,7 @@ package ariane_pkg;
 
   typedef struct packed {
     logic                  valid;      // valid flag
-    logic                  is_2M;      //
-    logic                  is_4M;      //
-    logic                  is_1G;      //
+    logic  [PT_LEVELS-2:0] is_page;      //
     logic [VPN_LEN-1:0]    vpn;        //
     logic [ASID_LEN-1:0]   asid;       //
     riscv::pte_cva6_t      content;
