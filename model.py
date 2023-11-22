@@ -469,12 +469,18 @@ class Model:
                 self.log_event_on(instr, EventKind.done, cycle)
                 entry.done = True
 
-    def try_commit(self, cycle):
+    def try_commit(self, cycle, commit_port):
         """Try to commit an instruction"""
         if len(self.scoreboard) == 0:
             return
         entry = self.scoreboard[0]
-        if entry.done:
+        can_commit = True
+        if commit_port > 0:
+            if entry.instr.is_store():
+                can_commit = False
+        if not entry.done:
+            can_commit = False
+        if can_commit:
             instr = self.scoreboard.pop(0).instr
             self.log_event_on(instr, EventKind.commit, cycle)
             self.retired.append(instr)
@@ -483,8 +489,8 @@ class Model:
     def run_cycle(self, cycle):
         """Runs a cycle"""
         self.fus.cycle()
-        for _ in range(self.commit_width):
-            self.try_commit(cycle)
+        for commit_port in range(self.commit_width):
+            self.try_commit(cycle, commit_port)
         self.try_execute(cycle)
         for _ in range(self.issue_width):
             self.try_issue(cycle)
