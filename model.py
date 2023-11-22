@@ -301,10 +301,8 @@ class FusBusy:
         self.branch = True
 
     def issue_branch(self):
-        self.alu = True
-        self.mul = True
-        self.branch = True
-        self.ldu = True
+        self.issue_alu()
+        # Stores are not allowed yet
         self.stu = True
 
     def issue_ldu(self):
