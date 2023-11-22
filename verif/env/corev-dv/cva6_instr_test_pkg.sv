@@ -30,9 +30,11 @@ package cva6_instr_test_pkg;
    `include "cvxif_custom_instr.sv"
    `include "riscv_zicond_instr.sv"
    `include "riscv_zcb_instr.sv"
+   `include "riscv_zcmp_instr.sv"
    `include "rv32x_instr.sv"
    `include "rv32zicond_instr.sv"
    `include "rv32zcb_instr.sv"
+   `include "rv32zcmp_instr.sv"
    `include "rv64zcb_instr.sv"
    
 endpackage : cva6_instr_test_pkg;
