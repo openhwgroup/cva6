@@ -257,6 +257,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = '0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
+                riscv::CSR_MCONFIGPTR:         csr_rdata = '0;
                 riscv::CSR_MCOUNTINHIBIT:      csr_rdata = mcountinhibit_q;
                 // Counters and Timers
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q[riscv::XLEN-1:0];
