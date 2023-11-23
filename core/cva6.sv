@@ -135,6 +135,25 @@ module cva6
       logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
     },
 
+    parameter type icache_req_t = struct packed {
+      logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] way;  // way to replace
+      logic [riscv::PLEN-1:0] paddr;  // physical address
+      logic nc;  // noncacheable
+      logic [wt_cache_pkg::CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+    },
+    parameter type icache_rtrn_t = struct packed {
+      wt_cache_pkg::icache_in_t rtype;  // see definitions above
+      logic [ariane_pkg::ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
+      logic [ariane_pkg::ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
+      struct packed {
+        logic                                      vld;  // invalidate only affected way
+        logic                                      all;  // invalidate all ways
+        logic [ariane_pkg::ICACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
+        logic [wt_cache_pkg::L1I_WAY_WIDTH-1:0]    way;  // way to invalidate
+      } inv;  // invalidation vector
+      logic [wt_cache_pkg::CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+    },
+
     // D$ data requests
     parameter type dcache_req_i_t = struct packed {
       logic [DCACHE_INDEX_WIDTH-1:0] address_index;
@@ -1062,6 +1081,8 @@ module cva6
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
+        .icache_req_t(icache_req_t),
+        .icache_rtrn_t(icache_rtrn_t),
         .dcache_req_i_t(dcache_req_i_t),
         .dcache_req_o_t(dcache_req_o_t),
         .NumPorts  (NumPorts),
@@ -1108,6 +1129,8 @@ module cva6
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
+        .icache_req_t(icache_req_t),
+        .icache_rtrn_t(icache_rtrn_t),
         .dcache_req_i_t(dcache_req_i_t),
         .dcache_req_o_t(dcache_req_o_t),
         .NumPorts  (NumPorts),
@@ -1174,6 +1197,8 @@ module cva6
         .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
+        .icache_req_t  (icache_req_t),
+        .icache_rtrn_t (icache_rtrn_t),
         .dcache_req_i_t(dcache_req_i_t),
         .dcache_req_o_t(dcache_req_o_t),
         .NumPorts     (NumPorts),
