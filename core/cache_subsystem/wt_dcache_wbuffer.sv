@@ -437,7 +437,7 @@ module wt_dcache_wbuffer
 
   logic ni_inside, ni_conflict;
   assign ni_inside = |ni_pending_q;
-  assign ni_conflict = is_ni && ni_inside;
+  assign ni_conflict = CVA6Cfg.NonIdemPotenceEn && is_ni && ni_inside;
   assign not_ni_o = !ni_inside;
   assign empty_o    = !(|valid);
 
