@@ -382,9 +382,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
         logging.error("Cannot find assembly test: %s\n", asm)
         sys.exit(RET_FAIL)
       # gcc comilation
-      cmd = ("%s -static -mcmodel=medany \
-             -fvisibility=hidden -nostdlib \
-             -nostartfiles %s \
+      cmd = ("%s %s \
              -I%s/../env/corev-dv/user_extension \
              -T%s %s -o %s " % \
              (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm, cwd, linker, opts, elf))
@@ -444,9 +442,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   logging.info("Compiling assembly test : %s" % asm_test)
 
   # gcc compilation
-  cmd = ("%s -static -mcmodel=medany \
-         -fvisibility=hidden -nostdlib \
-         -nostartfiles %s \
+  cmd = ("%s %s \
          -I%s/../env/corev-dv/user_extension \
          -T%s %s -o %s " % \
          (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm_test, cwd, linker,
@@ -583,8 +579,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   logging.info("Compiling c test : %s" % c_test)
 
   # gcc compilation
-  cmd = ("%s -mcmodel=medany -nostdlib \
-         -nostartfiles %s \
+  cmd = ("%s %s \
          -I%s/dv/user_extension \
           -T%s %s -o %s " % \
          (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), c_test, cwd,

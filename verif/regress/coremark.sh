@@ -48,6 +48,9 @@ srcA=(
 cflags_opt=(
         -O3 -g
         -fno-tree-loop-distribute-patterns
+        -static
+        -mcmodel=medany
+        -fvisibility=hidden
         -nostdlib
         -nostartfiles
         -lgcc
