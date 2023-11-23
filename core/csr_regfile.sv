@@ -134,6 +134,7 @@ module csr_regfile
   riscv::xlen_t mepc_q, mepc_d;
   riscv::xlen_t mcause_q, mcause_d;
   riscv::xlen_t mtval_q, mtval_d;
+  logic fiom_d, fiom_q;
 
   riscv::xlen_t stvec_q, stvec_d;
   riscv::xlen_t scounteren_q, scounteren_d;
@@ -303,6 +304,11 @@ module csr_regfile
         riscv::CSR_MCAUSE: csr_rdata = mcause_q;
         riscv::CSR_MTVAL: csr_rdata = mtval_q;
         riscv::CSR_MIP: csr_rdata = mip_q;
+        riscv::CSR_MENVCFG: csr_rdata = '0 | fiom_q;
+        riscv::CSR_MENVCFGH: begin
+          if (riscv::XLEN == 32) csr_rdata = '0;
+          else read_access_exception = 1'b1;
+        end
         riscv::CSR_MVENDORID: csr_rdata = OPENHWGROUP_MVENDORID;
         riscv::CSR_MARCHID: csr_rdata = ARIANE_MARCHID;
         riscv::CSR_MIMPID: csr_rdata = '0;  // not implemented
@@ -606,6 +612,7 @@ module csr_regfile
     mcounteren_d           = mcounteren_q;
     mscratch_d             = mscratch_q;
     mtval_d                = mtval_q;
+    fiom_d                 = fiom_q;
     dcache_d               = dcache_q;
     icache_d               = icache_q;
     acc_cons_d             = acc_cons_q;
@@ -842,6 +849,10 @@ module csr_regfile
         riscv::CSR_MIP: begin
           mask  = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
           mip_d = (mip_q & ~mask) | (csr_wdata & mask);
+        end
+        riscv::CSR_MENVCFG: fiom_d <= csr_wdata[0];
+        riscv::CSR_MENVCFGH: begin
+          if (riscv::XLEN != 32) update_access_exception = 1'b1;
         end
         riscv::CSR_MCOUNTINHIBIT:
         mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
@@ -1516,6 +1527,7 @@ module csr_regfile
       mcounteren_q     <= {riscv::XLEN{1'b0}};
       mscratch_q       <= {riscv::XLEN{1'b0}};
       mtval_q          <= {riscv::XLEN{1'b0}};
+      fiom_q           <= '0;
       dcache_q         <= {{riscv::XLEN - 1{1'b0}}, 1'b1};
       icache_q         <= {{riscv::XLEN - 1{1'b0}}, 1'b1};
       mcountinhibit_q  <= '0;
@@ -1565,6 +1577,7 @@ module csr_regfile
       mcounteren_q     <= mcounteren_d;
       mscratch_q       <= mscratch_d;
       mtval_q          <= mtval_d;
+      fiom_q           <= fiom_d;
       dcache_q         <= dcache_d;
       icache_q         <= icache_d;
       mcountinhibit_q  <= mcountinhibit_d;
