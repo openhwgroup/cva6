@@ -850,7 +850,7 @@ module csr_regfile
           mask  = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
           mip_d = (mip_q & ~mask) | (csr_wdata & mask);
         end
-        riscv::CSR_MENVCFG: fiom_d <= csr_wdata[0];
+        riscv::CSR_MENVCFG: if (CVA6Cfg.RVS) fiom_d <= csr_wdata[0];
         riscv::CSR_MENVCFGH: begin
           if (riscv::XLEN != 32) update_access_exception = 1'b1;
         end
