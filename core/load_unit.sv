@@ -419,7 +419,7 @@ module load_unit
     // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
     // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
     // round in the load FSM
-    if (ariane_pkg::MMU_PRESENT && CVA6Cfg.NonIdemPotenceEn && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
+    if ((ariane_pkg::MMU_PRESENT || CVA6Cfg.NonIdemPotenceEn) && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
       trans_id_o = lsu_ctrl_i.trans_id;
       valid_o = 1'b1;
       ex_o.valid = 1'b1;
