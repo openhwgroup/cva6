@@ -53,20 +53,6 @@ package std_cache_pkg;
     logic [63:0] rdata;
   } bypass_rsp_t;
 
-  typedef struct packed {
-    logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
-    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;   // data array
-    logic                                     valid;  // state array
-    logic                                     dirty;  // state array
-  } cache_line_t;
-
-  // cache line byte enable
-  typedef struct packed {
-    logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
-    logic [(CVA6Cfg.DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
-    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
-  } cl_be_t;
-
   // convert one hot to bin for -> needed for cache replacement
   function automatic logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] one_hot_to_bin(
       input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] in);

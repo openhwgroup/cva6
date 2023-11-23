@@ -23,7 +23,9 @@ module miss_handler
     parameter config_pkg::cva6_cfg_t CVA6Cfg   = config_pkg::cva6_cfg_empty,
     parameter int unsigned           NR_PORTS  = 4,
     parameter type                   axi_req_t = logic,
-    parameter type                   axi_rsp_t = logic
+    parameter type                   axi_rsp_t = logic,
+    parameter type                   cache_line_t = logic,
+    parameter type                   cl_be_t   = logic
 ) (
     input logic clk_i,
     input logic rst_ni,

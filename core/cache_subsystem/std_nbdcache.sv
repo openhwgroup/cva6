@@ -22,7 +22,18 @@ module std_nbdcache
     parameter type dcache_req_o_t = logic,
     parameter int unsigned NumPorts = 4,
     parameter type axi_req_t = logic,
-    parameter type axi_rsp_t = logic
+    parameter type axi_rsp_t = logic,
+    parameter type cache_line_t = struct packed {
+      logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
+      logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;   // data array
+      logic                                 valid;  // state array
+      logic                                 dirty;  // state array
+    },
+    parameter type cl_be_t = struct packed {
+      logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0]  tag;  // byte enable into tag array
+      logic [(CVA6Cfg.DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
+      logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
+    }
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -99,7 +110,9 @@ module std_nbdcache
       cache_ctrl #(
           .CVA6Cfg(CVA6Cfg),
           .dcache_req_i_t(dcache_req_i_t),
-          .dcache_req_o_t(dcache_req_o_t)
+          .dcache_req_o_t(dcache_req_o_t),
+          .cache_line_t(cache_line_t),
+          .cl_be_t(cl_be_t)
       ) i_cache_ctrl (
           .bypass_i  (~enable_i),
           .busy_o    (busy[i]),
@@ -141,7 +154,9 @@ module std_nbdcache
       .CVA6Cfg  (CVA6Cfg),
       .NR_PORTS (NumPorts),
       .axi_req_t(axi_req_t),
-      .axi_rsp_t(axi_rsp_t)
+      .axi_rsp_t(axi_rsp_t),
+      .cache_line_t(cache_line_t),
+      .cl_be_t(cl_be_t)
   ) i_miss_handler (
       .flush_i              (flush_i),
       .busy_i               (|busy),
@@ -252,6 +267,8 @@ module std_nbdcache
       .CVA6Cfg         (CVA6Cfg),
       .NR_PORTS        (NumPorts + 1),
       .ADDR_WIDTH      (CVA6Cfg.DCACHE_INDEX_WIDTH),
+      .l_data_t        (cache_line_t),
+      .l_be_t          (cl_be_t)
   ) i_tag_cmp (
       .req_i    (req),
       .gnt_o    (gnt),

@@ -24,7 +24,9 @@ module cache_ctrl
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic
+    parameter type dcache_req_o_t = logic,
+    parameter type cache_line_t = logic,
+    parameter type cl_be_t = logic
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low

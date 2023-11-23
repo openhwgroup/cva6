@@ -19,8 +19,8 @@ module tag_cmp #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg          = config_pkg::cva6_cfg_empty,
     parameter int unsigned           NR_PORTS         = 3,
     parameter int unsigned           ADDR_WIDTH       = 64,
-    parameter type                   l_data_t         = std_cache_pkg::cache_line_t,
-    parameter type                   l_be_t           = std_cache_pkg::cl_be_t
+    parameter type                   l_data_t         = logic,
+    parameter type                   l_be_t           = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
