@@ -71,6 +71,26 @@ module miss_handler
   // Three MSHR ports + AMO port
   parameter NR_BYPASS_PORTS = NR_PORTS + 1;
 
+  // convert one hot to bin for -> needed for cache replacement
+  function automatic logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] one_hot_to_bin(
+      input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] in);
+    for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
+      if (in[i]) return i;
+    end
+  endfunction
+  // get the first bit set, returns one hot value
+  function automatic logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] get_victim_cl(
+      input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] valid_dirty);
+    // one-hot return vector
+    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] oh = '0;
+    for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
+      if (valid_dirty[i]) begin
+        oh[i] = 1'b1;
+        return oh;
+      end
+    end
+  endfunction
+
   // FSM states
   enum logic [3:0] {
     IDLE,                // 0

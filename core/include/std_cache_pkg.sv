@@ -52,25 +52,5 @@ package std_cache_pkg;
     logic        valid;
     logic [63:0] rdata;
   } bypass_rsp_t;
-
-  // convert one hot to bin for -> needed for cache replacement
-  function automatic logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] one_hot_to_bin(
-      input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] in);
-    for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
-      if (in[i]) return i;
-    end
-  endfunction
-  // get the first bit set, returns one hot value
-  function automatic logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] get_victim_cl(
-      input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] valid_dirty);
-    // one-hot return vector
-    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] oh = '0;
-    for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
-      if (valid_dirty[i]) begin
-        oh[i] = 1'b1;
-        return oh;
-      end
-    end
-  endfunction
 endpackage : std_cache_pkg
 
