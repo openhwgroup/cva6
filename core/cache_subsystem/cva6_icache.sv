@@ -34,6 +34,8 @@ module cva6_icache
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type icache_req_t  = logic,
+    parameter type icache_rtrn_t = logic,
     /// ID to be used for read transactions
     parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 0
 ) (

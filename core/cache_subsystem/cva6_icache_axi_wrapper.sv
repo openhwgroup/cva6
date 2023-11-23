@@ -22,6 +22,8 @@ module cva6_icache_axi_wrapper
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type icache_req_t  = logic,
+    parameter type icache_rtrn_t = logic,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
 ) (
@@ -110,6 +112,8 @@ module cva6_icache_axi_wrapper
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
       .RdTxId (0)
   ) i_cva6_icache (
       .clk_i         (clk_i),

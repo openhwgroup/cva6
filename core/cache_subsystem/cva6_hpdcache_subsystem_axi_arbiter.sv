@@ -23,6 +23,8 @@ module cva6_hpdcache_subsystem_axi_arbiter
     parameter type hpdcache_mem_req_w_t = logic,
     parameter type hpdcache_mem_resp_r_t = logic,
     parameter type hpdcache_mem_resp_w_t = logic,
+    parameter type icache_req_t = logic,
+    parameter type icache_rtrn_t = logic,
 
     parameter int unsigned AxiAddrWidth = 1,
     parameter int unsigned AxiDataWidth = 1,
@@ -48,11 +50,11 @@ module cva6_hpdcache_subsystem_axi_arbiter
     //  {{{
     input  logic                      icache_miss_valid_i,
     output logic                      icache_miss_ready_o,
-    input  wt_cache_pkg::icache_req_t icache_miss_i,
+    input  icache_req_t               icache_miss_i,
     input  hpdcache_mem_id_t          icache_miss_id_i,
 
     output logic                       icache_miss_resp_valid_o,
-    output wt_cache_pkg::icache_rtrn_t icache_miss_resp_o,
+    output icache_rtrn_t               icache_miss_resp_o,
     //  }}}
 
     //  Interfaces from/to D$

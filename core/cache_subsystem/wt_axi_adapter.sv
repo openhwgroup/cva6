@@ -22,7 +22,9 @@ module wt_axi_adapter
     parameter int unsigned ReqFifoDepth = 2,
     parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
     parameter type axi_req_t = logic,
-    parameter type axi_rsp_t = logic
+    parameter type axi_rsp_t = logic,
+    parameter type icache_req_t = logic,
+    parameter type icache_rtrn_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,

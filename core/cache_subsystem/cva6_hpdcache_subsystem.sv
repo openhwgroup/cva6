@@ -21,6 +21,8 @@ module cva6_hpdcache_subsystem
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type icache_req_t  = logic,
+    parameter type icache_rtrn_t = logic,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter int NumPorts = 4,
@@ -98,10 +100,10 @@ module cva6_hpdcache_subsystem
   //  I$ instantiation
   //  {{{
   logic icache_miss_valid, icache_miss_ready;
-  wt_cache_pkg::icache_req_t icache_miss;
+  icache_req_t icache_miss;
 
   logic icache_miss_resp_valid;
-  wt_cache_pkg::icache_rtrn_t icache_miss_resp;
+  icache_rtrn_t icache_miss_resp;
 
   localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
 
@@ -111,6 +113,8 @@ module cva6_hpdcache_subsystem
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
       .RdTxId (ICACHE_RDTXID)
   ) i_cva6_icache (
       .clk_i         (clk_i),
@@ -505,6 +509,8 @@ module cva6_hpdcache_subsystem
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
       .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
       .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
 
       .AxiAddrWidth (CVA6Cfg.AxiAddrWidth),
       .AxiDataWidth (CVA6Cfg.AxiDataWidth),

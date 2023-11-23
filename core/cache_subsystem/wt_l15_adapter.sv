@@ -53,7 +53,9 @@ module wt_l15_adapter
   import ariane_pkg::*;
   import wt_cache_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type icache_req_t = logic,
+    parameter type icache_rtrn_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,

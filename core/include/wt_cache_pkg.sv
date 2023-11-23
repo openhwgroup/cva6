@@ -114,21 +114,6 @@ package wt_cache_pkg;
     logic [L1I_WAY_WIDTH-1:0]                  way;  // way to invalidate
   } icache_inval_t;
 
-  typedef struct packed {
-    logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] way;  // way to replace
-    logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
-    logic nc;  // noncacheable
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
-  } icache_req_t;
-
-  typedef struct packed {
-    icache_in_t rtype;  // see definitions above
-    logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
-    logic [CVA6Cfg.ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
-    icache_inval_t inv;  // invalidation vector
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
-  } icache_rtrn_t;
-
   // dcache interface
   typedef struct packed {
     logic                                      vld;  // invalidate only affected way

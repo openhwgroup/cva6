@@ -30,6 +30,8 @@ module wt_cache_subsystem
     parameter type icache_drsp_t = logic,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type icache_req_t = logic,
+    parameter type icache_rtrn_t = logic,
     parameter int unsigned           NumPorts   = 4,
     parameter type                   noc_req_t  = logic,
     parameter type                   noc_resp_t = logic
@@ -74,8 +76,8 @@ module wt_cache_subsystem
 );
 
   logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
-  wt_cache_pkg::icache_req_t  icache_adapter;
-  wt_cache_pkg::icache_rtrn_t adapter_icache;
+  icache_req_t  icache_adapter;
+  icache_rtrn_t adapter_icache;
 
 
   logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
@@ -89,6 +91,8 @@ module wt_cache_subsystem
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
       .RdTxId (0)
   ) i_cva6_icache (
       .clk_i         (clk_i),
@@ -149,6 +153,8 @@ module wt_cache_subsystem
 `ifdef PITON_ARIANE
   wt_l15_adapter #(
       .CVA6Cfg(CVA6Cfg),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t)
   ) i_adapter (
       .clk_i            (clk_i),
       .rst_ni           (rst_ni),
@@ -169,7 +175,9 @@ module wt_cache_subsystem
   wt_axi_adapter #(
       .CVA6Cfg  (CVA6Cfg),
       .axi_req_t(noc_req_t),
-      .axi_rsp_t(noc_resp_t)
+      .axi_rsp_t(noc_resp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t)
   ) i_adapter (
       .clk_i            (clk_i),
       .rst_ni           (rst_ni),
