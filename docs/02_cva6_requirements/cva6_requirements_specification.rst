@@ -138,14 +138,17 @@ The CVA6 is highly configurable via SystemVerilog parameters.
 It is not practical to fully document and verify all possible combinations of parameters, so a set of "viable IP configurations" has been defined.
 The full list of parameters for this configuration will be detailed in the users’ guide.
 
-Below is the configuration of the first release of the CVA6.
+Below are the configuration of the first releases of the CVA6.
 
 +--------------------+---------+---------+------+-------+---------+---------+---------+---------+
 | Release ID         | Target  | ISA     | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
 +====================+=========+=========+======+=======+=========+=========+=========+=========+
-| CV32A60X           | ASIC    | IMC     |  32  | No    | Yes     | Sv32    | None    | 16 kB   |
+| CV32E6?X           | ASIC    | IMC     |  32  | No    | Yes     | None    | 2 kB    | 2 kB    |
++--------------------+---------+---------+------+-------+---------+---------+---------+---------+
+| CV32A60X           | ASIC    | IMC     |  32  | No    | Yes     | Sv32    | 16kB    | 16 kB   |
 +--------------------+---------+---------+------+-------+---------+---------+---------+---------+
 
+The value of the "?" digit above is yet to be defined when all details of this configuration are known.
 
 Possible Future Releases
 ------------------------
@@ -190,6 +193,10 @@ Asanović and John Hauser, RISC-V Foundation, December 4, 2021.
 
 [RVdbg] “RISC-V External Debug Support, Document Version 0.13.2”,
 Editors Tim Newsome and Megan Wachs, RISC-V Foundation, March 22, 2019.
+
+[RVZc] “RISC-V Zc* Code Size Reduction v1.0",
+Editor Tariq Kurd, Codasip, April, 2023.
+https://wiki.riscv.org/display/HOME/Recently+Ratified+Extensions
 
 [RVcompat] “RISC-V Architectural Compatibility Test Framework”,
 https://github.com/riscv-non-isa/riscv-arch-test.
