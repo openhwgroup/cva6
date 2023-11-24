@@ -170,11 +170,13 @@ module load_store_unit
         .*
     );
   end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
-    cva6_mmu_sv32 #(
+    cva6_mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (ASID_WIDTH)
+        .ASID_WIDTH       (ASID_WIDTH),
+        .VPN_LEN          (VPN_LEN),
+        .PT_LEVELS        (PT_LEVELS)
     ) i_cva6_mmu (
         // misaligned bypass
         .misaligned_ex_i(misaligned_exception),

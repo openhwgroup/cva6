@@ -15,7 +15,7 @@
 //              fully set-associative
 //              This module is an merge of the Sv32 TLB developed by Sebastien
 //              Jacq (Thales Research & Technology) and the Sv39 TLB developed
-//              by Florian Zaruba and David Schaffenrath to the Sv32 standard.
+//              by Florian Zaruba and David Schaffenrath.
 //
 // =========================================================================== //
 // Revisions  :
@@ -50,78 +50,79 @@ import ariane_pkg::*;
 );
 
 
+ // Sv32 defines two levels of page tables
 struct packed {
-  logic [ASID_LEN-1:0]  asid;   
+  logic [ASID_LEN-1:0] asid;   
   logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
   logic [PT_LEVELS-2:0] is_page;
-  logic                 valid;
+  logic       valid;
 } [TLB_ENTRIES-1:0]
     tags_q, tags_n;
 
 riscv::pte_cva6_t [TLB_ENTRIES-1:0] content_q, content_n;
-// logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
-logic [PT_LEVELS-1:0] vpn_match;
-logic [PT_LEVELS-1:0] page_match;
-logic [PT_LEVELS-1:0] level_match;
+logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] vpn_match;
+logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] page_match;
+logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] level_match;
+logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] vaddr_vpn_match;
+logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] vaddr_level_match;
 logic [TLB_ENTRIES-1:0] lu_hit;  // to replacement logic
 logic [TLB_ENTRIES-1:0] replace_en;  // replace the following entry, set by replacement strategy
 //-------------
 // Translation
 //-------------
+
+//at level 0 make page match always 1
+//build level match vector according to vpn_match and page_match
+//a level has a match if all vpn of higher levels and current have a match, 
+//AND the page_match is also set
+//At level 0 the page match is always set, so this level will have a match
+//if all vpn levels match
+genvar i,x;
+    generate
+      for (i=0; i < TLB_ENTRIES; i++) begin
+        //identify page_match for all TLB Entries
+        assign page_match[i]          = (tags_q[i].is_page[PT_LEVELS-2:0])*2 +1;
+
+        for (x=0; x < PT_LEVELS; x++) begin  
+            //identify if vpn matches at all PT levels for all TLB entries  
+            assign vpn_match[i][x]        = lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+            //identify if there is a hit at each PT level for all TLB entries  
+            assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
+            //identify if virtual address vpn matches at all PT levels for all TLB entries  
+            assign vaddr_vpn_match[i][x]  = vaddr_to_be_flushed_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+            //identify if there is a hit at each PT level for all TLB entries  
+            assign vaddr_level_match[i][x]= &vaddr_vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
+            //update vpn field in tags_n for each TLB when the update is valid and the tag needs to be replaced
+            assign tags_n[i].vpn[x]       = (update_i.valid & replace_en[i]) ? update_i.vpn[(1+x)*(VPN_LEN/PT_LEVELS)-1:x*(VPN_LEN/PT_LEVELS)] : tags_n[i].vpn[x];
+        end
+      end
+    endgenerate
+
 always_comb begin : translation
-
-
 
   // default assignment
   lu_hit       = '{default: 0};
   lu_hit_o     = 1'b0;
   lu_content_o = '{default: 0};
-  lu_is_page_o = 0;
-
-    
+  lu_is_page_o   = 0;
 
   for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
-
-    //at level 0 make page match always 1
-    page_match = (tags_q[i].is_page)*2 +1;
-
-    //build level match vector according to vpn_match and page_match
-    //a level has a match if all vpn of higher levels and current have a match, 
-    //AND the page_match is also set
-    //At level 0 the page match is also set, so this level will have a match
-    //if all vpn levels match
-    for (int unsigned x = 0; x < PT_LEVELS; x++) begin
-        vpn_match[x]   = lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
-        level_match[x] = &vpn_match[PT_LEVELS-1:x] & page_match[x];
-    end
-
-    
-
-    // first level match, check the ASID flags as well
+    // first level match, this may be a page, check the ASID flags as well
     // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-    if (tags_q[i].valid && ((lu_asid_i == tags_q[i].asid[ASID_WIDTH-1:0]) || content_q[i].g) ) begin
-        for (int unsigned a = PT_LEVELS-1; a>=0;a--) begin
-            //find highest level to have a match and break loop
-            if (level_match[a]) begin
-                lu_is_page_o[a]   = tags_q[i].is_page[a];
-                lu_content_o = content_q[i];
-                lu_hit_o     = 1'b1;
-                lu_hit[i]    = 1'b1;
-                break;
-              end
-        end
-      
+    if (tags_q[i].valid && ((lu_asid_i == tags_q[i].asid[ASID_WIDTH-1:0]) || content_q[i].g)) begin
+      // find if there is a match at any level
+      if (|level_match[i]) begin
+            lu_is_page_o   = tags_q[i].is_page; //the page size is indicated here
+            lu_content_o = content_q[i];
+            lu_hit_o     = 1'b1;
+            lu_hit[i]    = 1'b1;
+      end
     end
   end
 end
 
 logic asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2)is 0, active high
 logic vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
-logic [PT_LEVELS-1:0][TLB_ENTRIES-1:0] vaddr_vpn_match;
-logic [PT_LEVELS-1:0][TLB_ENTRIES-1:0] vaddr_page_match;
-logic [PT_LEVELS-1:0][TLB_ENTRIES-1:0] vaddr_level_match;
-
-
 
 assign asid_to_be_flushed_is0  = ~(|asid_to_be_flushed_i);
 assign vaddr_to_be_flushed_is0 = ~(|vaddr_to_be_flushed_i);
@@ -135,28 +136,15 @@ always_comb begin : update_flush
 
   for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
 
-    //at level 0 make page match always 1
-    vaddr_page_match = (tags_q[i].is_page)*2 +1;
-
-    //build vaddr_level_match vector according to vaddr_vpn_match and vaddr_page_match
-    //a level has a match if all vpn of higher levels and current have a match, 
-    //AND the page_match is also set
-    //At level 0 the vaddr_page_match is also set, so this level will have a match
-    //if all vaddr vpn levels match
-    for (int unsigned x = 0; x < PT_LEVELS; x++) begin
-        vaddr_vpn_match[x] = vaddr_to_be_flushed_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[x].vpn;
-        level_match[x] = &vaddr_vpn_match[PT_LEVELS-1:x] & vaddr_page_match[x];
-    end
-
     if (flush_i) begin
       // invalidate logic
       // flush everything if ASID is 0 and vaddr is 0 ("SFENCE.VMA x0 x0" case)
       if (asid_to_be_flushed_is0 && vaddr_to_be_flushed_is0) tags_n[i].valid = 1'b0;
       // flush vaddr in all addressing space ("SFENCE.VMA vaddr x0" case), it should happen only for leaf pages
-      else if (asid_to_be_flushed_is0 && (level_match!=0) && (~vaddr_to_be_flushed_is0))
+      else if (asid_to_be_flushed_is0 && (|vaddr_level_match[i]) && (~vaddr_to_be_flushed_is0))
         tags_n[i].valid = 1'b0;
       // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
-      else if ((!content_q[i].g) && (level_match!=0) && (asid_to_be_flushed_i == tags_q[i].asid[ASID_WIDTH-1:0]) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
+      else if ((!content_q[i].g) && (|vaddr_level_match[i]) && (asid_to_be_flushed_i == tags_q[i].asid[ASID_WIDTH-1:0]) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
         tags_n[i].valid = 1'b0;
       // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
       else if ((!content_q[i].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i == tags_q[i].asid[ASID_WIDTH-1:0]) && (!asid_to_be_flushed_is0))
@@ -164,12 +152,10 @@ always_comb begin : update_flush
       // normal replacement
     end else if (update_i.valid & replace_en[i]) begin
       // update tag array
-      tags_n[i] = '{
-          asid: update_i.asid,
-          vpn : update_i.vpn,
-          is_page: update_i.is_page,
-          valid: 1'b1
-      };
+      tags_n[i].asid   = update_i.asid;
+      tags_n[i].is_page= update_i.is_page;
+      tags_n[i].valid  = update_i.valid;
+
       // and content as well
       content_n[i] = update_i.content;
     end

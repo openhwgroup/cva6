@@ -35,6 +35,7 @@ filesets:
       - src/miss_handler.sv
       - src/mmu_sv39/mmu.sv
       - src/mmu_sv32/cva6_mmu_sv32.sv
+      - src/mmu_unify/cva6_mmu.sv
       - src/mult.sv
       - src/nbdcache.sv
       - src/pcgen_stage.sv
@@ -47,6 +48,7 @@ filesets:
       - src/store_unit.sv
       - src/mmu_sv39/tlb.sv
       - src/mmu_sv32/cva6_tlb_sv32.sv
+      - src/mmu_unify/cva6_tlb.sv
     file_type : systemVerilogSource
     depend :
       - pulp-platform.org::axi_mem_if

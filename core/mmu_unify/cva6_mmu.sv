@@ -91,7 +91,7 @@ logic [riscv::PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
 
 logic [riscv::VLEN-1:0] update_vaddr;
 tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
-tlb_update_sv32_t update_shared_tlb_sv32;
+tlb_update_sv32_t update_itlb_sv32, update_dtlb_sv32, update_shared_tlb_sv32;
 
 logic                               itlb_lu_access;
 riscv::pte_cva6_t                   itlb_content;
@@ -163,7 +163,7 @@ cva6_tlb #(
     .lu_hit_o  (dtlb_lu_hit)
 );
 
-cva6_shared_tlb #(
+cva6_shared_tlb_sv32 #(
     .CVA6Cfg         (CVA6Cfg),
     .SHARED_TLB_DEPTH(64),
     .SHARED_TLB_WAYS (2),
@@ -188,8 +188,8 @@ cva6_shared_tlb #(
     .dtlb_vaddr_i (lsu_vaddr_i),
 
     // to TLBs, update logic
-    .itlb_update_o(update_itlb),
-    .dtlb_update_o(update_dtlb),
+    .itlb_update_o(update_itlb_sv32),
+    .dtlb_update_o(update_dtlb_sv32),
 
     // Performance counters
     .itlb_miss_o(itlb_miss_o),
@@ -201,7 +201,7 @@ cva6_shared_tlb #(
 
     .itlb_req_o         (itlb_req),
     // to update shared tlb
-    .shared_tlb_update_i(update_shared_tlb)
+    .shared_tlb_update_i(update_shared_tlb_sv32)
 );
 
 cva6_ptw_sv32 #(
@@ -251,11 +251,23 @@ cva6_ptw_sv32 #(
 
 );
 
-assign update_shared_tlb_sv32.valid = update_shared_tlb.valid;
-assign update_shared_tlb_sv32.is_4M = update_shared_tlb.is_page;
-assign update_shared_tlb_sv32.vpn = update_shared_tlb.vpn;
-assign update_shared_tlb_sv32.asid = update_shared_tlb.asid;
-assign update_shared_tlb_sv32.content = update_shared_tlb.content;
+// assign update_shared_tlb_sv32.valid = update_shared_tlb.valid;
+// assign update_shared_tlb_sv32.is_4M = update_shared_tlb.is_page;
+// assign update_shared_tlb_sv32.vpn = update_shared_tlb.vpn;
+// assign update_shared_tlb_sv32.asid = update_shared_tlb.asid;
+// assign update_shared_tlb_sv32.content = update_shared_tlb.content;
+
+assign update_itlb.valid   = update_itlb_sv32.valid;
+assign update_itlb.is_page = update_itlb_sv32.is_4M;
+assign update_itlb.vpn     = update_itlb_sv32.vpn;
+assign update_itlb.asid    = update_itlb_sv32.asid;
+assign update_itlb.content = update_itlb_sv32.content;
+
+assign update_dtlb.valid   = update_dtlb_sv32.valid;
+assign update_dtlb.is_page = update_dtlb_sv32.is_4M;
+assign update_dtlb.vpn     = update_dtlb_sv32.vpn;
+assign update_dtlb.asid    = update_dtlb_sv32.asid;
+assign update_dtlb.content = update_dtlb_sv32.content;
 
 // ila_1 i_ila_1 (
 //     .clk(clk_i), // input wire clk
@@ -319,7 +331,7 @@ always_comb begin : instr_interface
     // 4K page
     icache_areq_o.fetch_paddr = {itlb_content.ppn, icache_areq_i.fetch_vaddr[11:0]};
     // Mega page
-    if (itlb_is_4M) begin
+    if (itlb_is_page[0]) begin
       icache_areq_o.fetch_paddr[21:12] = icache_areq_i.fetch_vaddr[21:12];
     end
 
@@ -418,7 +430,7 @@ always_comb begin : data_interface
   dtlb_pte_n      = dtlb_content;
   dtlb_hit_n      = dtlb_lu_hit;
   lsu_is_store_n  = lsu_is_store_i;
-  dtlb_is_4M_n    = dtlb_is_4M;
+  dtlb_is_4M_n    = dtlb_is_page[0];
 
   if (riscv::PLEN > riscv::VLEN) begin
     lsu_paddr_o    = {{riscv::PLEN - riscv::VLEN{1'b0}}, lsu_vaddr_q};

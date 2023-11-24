@@ -48,8 +48,8 @@ sources:
           - core/include/cv32a6_imac_sv0_config_pkg.sv
           - core/include/riscv_pkg.sv
           - core/include/ariane_pkg.sv
-          - core/mmu_sv32/cva6_tlb_sv32.sv
-          - core/mmu_sv32/cva6_mmu_sv32.sv
+          - core/mmu_unify/cva6_tlb.sv
+          - core/mmu_unify/cva6_mmu.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
           - core/cva6_accel_first_pass_decoder_stub.sv
 
@@ -58,8 +58,8 @@ sources:
           - core/include/cv32a6_imac_sv32_config_pkg.sv
           - core/include/riscv_pkg.sv
           - core/include/ariane_pkg.sv
-          - core/mmu_sv32/cva6_tlb_sv32.sv
-          - core/mmu_sv32/cva6_mmu_sv32.sv
+          - core/mmu_unify/cva6_tlb.sv
+          - core/mmu_unify/cva6_mmu.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
           - core/cva6_accel_first_pass_decoder_stub.sv
 
@@ -68,8 +68,8 @@ sources:
           - core/include/cv32a6_imafc_sv32_config_pkg.sv
           - core/include/riscv_pkg.sv
           - core/include/ariane_pkg.sv
-          - core/mmu_sv32/cva6_tlb_sv32.sv
-          - core/mmu_sv32/cva6_mmu_sv32.sv
+          - core/mmu_unify/cva6_tlb.sv
+          - core/mmu_unify/cva6_mmu.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
           - core/cva6_accel_first_pass_decoder_stub.sv
 
