@@ -58,25 +58,9 @@ package config_pkg;
     bit                          XFVec;
     bit                          CvxifEn;
     bit                          ZiCondExtEn;
-    // Calculated
-    bit                          RVF;
-    bit                          RVD;
-    bit                          FpPresent;
-    bit                          NSX;
-    int unsigned                 FLen;
-    bit                          RVFVec;
-    bit                          XF16Vec;
-    bit                          XF16ALTVec;
-    bit                          XF8Vec;
-    int unsigned                 NrRgprPorts;
-    int unsigned                 NrWbPorts;
-    bit                          EnableAccelerator;
-    bit                          RVS;    //Supervisor mode
-    bit                          RVU;    //User mode
-    // Debug Module
-    // address to which a hart should jump when it was requested to halt
-    logic [63:0]                 HaltAddress;
-    logic [63:0]                 ExceptionAddress;
+    bit RVS;
+    bit RVU;
+
     /// Return address stack depth, good values are around 2 to 4.
     int unsigned                 RASDepth;
     /// Branch target buffer entries.
@@ -112,13 +96,151 @@ package config_pkg;
     /// Maximum number of outstanding stores.
     int unsigned                 MaxOutstandingStores;
     bit                          DebugEn;
+  } cva6_user_cfg_t;
+
+  typedef struct packed {
+    /// Number of commit ports, i.e., maximum number of instructions that the
+    /// core can retire per cycle. It can be beneficial to have more commit
+    /// ports than issue ports, for the scoreboard to empty out in case one
+    /// instruction stalls a little longer.
+    int unsigned                 NrCommitPorts;
+    /// AXI parameters.
+    int unsigned                 AxiAddrWidth;
+    int unsigned                 AxiDataWidth;
+    int unsigned                 AxiIdWidth;
+    int unsigned                 AxiUserWidth;
+    int unsigned                 NrLoadBufEntries;
+    bit                          FpuEn;
+    bit                          XF16;
+    bit                          XF16ALT;
+    bit                          XF8;
+    bit                          RVA;
+    bit                          RVV;
+    bit                          RVC;
+    bit                          RVZCB;
+    bit                          XFVec;
+    bit                          CvxifEn;
+    bit                          ZiCondExtEn;
+    // Calculated
+    bit                          RVF;
+    bit                          RVD;
+    bit                          FpPresent;
+    bit                          NSX;
+    int unsigned                 FLen;
+    bit                          RVFVec;
+    bit                          XF16Vec;
+    bit                          XF16ALTVec;
+    bit                          XF8Vec;
+    int unsigned                 NrRgprPorts;
+    int unsigned                 NrWbPorts;
+    bit                          EnableAccelerator;
+    bit                          RVS;    //Supervisor mode
+    bit                          RVU;    //User mode
+
+    logic [63:0]                 HaltAddress;
+    logic [63:0]                 ExceptionAddress;
+    int unsigned                 RASDepth;
+    int unsigned                 BTBEntries;
+    int unsigned                 BHTEntries;
+    logic [63:0]                 DmBaseAddress;
+    int unsigned                 NrPMPEntries;
+    noc_type_e                   NOCType;
+    int unsigned                 NrNonIdempotentRules;
+    logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
+    logic [NrMaxRules-1:0][63:0] NonIdempotentLength;
+    int unsigned                 NrExecuteRegionRules;
+    logic [NrMaxRules-1:0][63:0] ExecuteRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] ExecuteRegionLength;
+    int unsigned                 NrCachedRegionRules;
+    logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] CachedRegionLength;
+    int unsigned                 MaxOutstandingStores;
+    bit                          DebugEn;
   } cva6_cfg_t;
 
+  function automatic cva6_cfg_t build_config(cva6_user_cfg_t CVA6Cfg);
+    bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & CVA6Cfg.FpuEn;
+    bit RVD = (riscv::IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
+    bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
+    bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
+    int unsigned FLen = RVD ? 64 :  // D ext.
+    RVF ? 32 :  // F ext.
+    CVA6Cfg.XF16 ? 16 :  // Xf16 ext.
+    CVA6Cfg.XF16ALT ? 16 :  // Xf16alt ext.
+    CVA6Cfg.XF8 ? 8 :  // Xf8 ext.
+    1;  // Unused in case of no FP
+
+    // Transprecision floating-point extensions configuration
+    bit RVFVec     = RVF             & CVA6Cfg.XFVec & FLen>32; // FP32 vectors available if vectors and larger fmt enabled
+    bit XF16Vec    = CVA6Cfg.XF16    & CVA6Cfg.XFVec & FLen>16; // FP16 vectors available if vectors and larger fmt enabled
+    bit XF16ALTVec = CVA6Cfg.XF16ALT & CVA6Cfg.XFVec & FLen>16; // FP16ALT vectors available if vectors and larger fmt enabled
+    bit XF8Vec     = CVA6Cfg.XF8     & CVA6Cfg.XFVec & FLen>8;  // FP8 vectors available if vectors and larger fmt enabled
+
+    bit EnableAccelerator = CVA6Cfg.RVV;  // Currently only used by V extension (Ara)
+    int unsigned NrWbPorts = (CVA6Cfg.CvxifEn || EnableAccelerator) ? 5 : 4;
+
+    return
+    '{
+      NrCommitPorts: CVA6Cfg.NrCommitPorts,
+      AxiAddrWidth: CVA6Cfg.AxiAddrWidth,
+      AxiDataWidth: CVA6Cfg.AxiDataWidth,
+      AxiIdWidth: CVA6Cfg.AxiIdWidth,
+      AxiUserWidth: CVA6Cfg.AxiUserWidth,
+      NrLoadBufEntries: CVA6Cfg.NrLoadBufEntries,
+      FpuEn: CVA6Cfg.FpuEn,
+      XF16: CVA6Cfg.XF16,
+      XF16ALT: CVA6Cfg.XF16ALT,
+      XF8: CVA6Cfg.XF8,
+      RVA: CVA6Cfg.RVA,
+      RVV: CVA6Cfg.RVV,
+      RVC: CVA6Cfg.RVC,
+      RVZCB: CVA6Cfg.RVZCB,
+      XFVec: CVA6Cfg.XFVec,
+      CvxifEn: CVA6Cfg.CvxifEn,
+      ZiCondExtEn: CVA6Cfg.ZiCondExtEn,
+
+      RVF: bit'(RVF),
+      RVD: bit'(RVD),
+      FpPresent: bit'(FpPresent),
+      NSX: bit'(NSX),
+      FLen: unsigned'(FLen),
+      RVFVec: bit'(RVFVec),
+      XF16Vec: bit'(XF16Vec),
+      XF16ALTVec: bit'(XF16ALTVec),
+      XF8Vec: bit'(XF8Vec),
+      NrRgprPorts: unsigned'(2),
+      NrWbPorts: unsigned'(NrWbPorts),
+      EnableAccelerator: bit'(EnableAccelerator),
+      RVS: CVA6Cfg.RVS,
+      RVU: CVA6Cfg.RVU,
+
+      HaltAddress: CVA6Cfg.HaltAddress,
+      ExceptionAddress: CVA6Cfg.ExceptionAddress,
+      RASDepth: CVA6Cfg.RASDepth,
+      BTBEntries: CVA6Cfg.BTBEntries,
+      BHTEntries: CVA6Cfg.BHTEntries,
+      DmBaseAddress: CVA6Cfg.DmBaseAddress,
+      NrPMPEntries: CVA6Cfg.NrPMPEntries,
+      NOCType: CVA6Cfg.NOCType,
+      NrNonIdempotentRules: CVA6Cfg.NrNonIdempotentRules,
+      NonIdempotentAddrBase: CVA6Cfg.NonIdempotentAddrBase,
+      NonIdempotentLength: CVA6Cfg.NonIdempotentLength,
+      NrExecuteRegionRules: CVA6Cfg.NrExecuteRegionRules,
+      ExecuteRegionAddrBase: CVA6Cfg.ExecuteRegionAddrBase,
+      ExecuteRegionLength: CVA6Cfg.ExecuteRegionLength,
+      NrCachedRegionRules: CVA6Cfg.NrCachedRegionRules,
+      CachedRegionAddrBase: CVA6Cfg.CachedRegionAddrBase,
+      CachedRegionLength: CVA6Cfg.CachedRegionLength,
+      MaxOutstandingStores: CVA6Cfg.MaxOutstandingStores,
+      DebugEn: CVA6Cfg.DebugEn,
+    }
+    ;
+
+  endfunction
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
   /// you develop a module that resides within the core, assign this constant.
   localparam cva6_cfg_t cva6_cfg_empty = '0;
-
 
   /// Utility function being called to check parameters. Not all values make
   /// sense for all parameters, here is the place to sanity check them.
