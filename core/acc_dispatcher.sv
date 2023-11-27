@@ -39,7 +39,7 @@ module acc_dispatcher
     input fu_data_t fu_data_i,
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     output logic [TRANS_ID_BITS-1:0] acc_trans_id_o,
-    output xlen_t acc_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] acc_result_o,
     output logic acc_valid_o,
     output exception_t acc_exception_o,
     // Interface with the execute stage

@@ -30,11 +30,11 @@ module scoreboard #(
 
     // regfile like interface to operand read stage
     input  logic         [ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
-    output riscv::xlen_t                                 rs1_o,
+    output logic [CVA6Cfg.XLEN-1:0]                                 rs1_o,
     output logic                                         rs1_valid_o,
 
     input  logic         [ariane_pkg::REG_ADDR_SIZE-1:0] rs2_i,
-    output riscv::xlen_t                                 rs2_o,
+    output logic [CVA6Cfg.XLEN-1:0]                                 rs2_o,
     output logic                                         rs2_valid_o,
 
     input  logic     [ariane_pkg::REG_ADDR_SIZE-1:0] rs3_i,
@@ -69,8 +69,8 @@ module scoreboard #(
     input               [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_i,
     input               [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_i,
     input               [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_i,
-    input riscv::xlen_t                                 rs1_forwarding_i,
-    input riscv::xlen_t                                 rs2_forwarding_i
+    input logic [CVA6Cfg.XLEN-1:0]                                 rs1_forwarding_i,
+    input logic [CVA6Cfg.XLEN-1:0]                                 rs2_forwarding_i
 );
   localparam int unsigned BITS_ENTRIES = $clog2(NR_ENTRIES);
 
@@ -389,7 +389,7 @@ module scoreboard #(
       .idx_o  ()
   );
 
-  riscv::xlen_t rs3;
+  logic [CVA6Cfg.XLEN-1:0] rs3;
 
   rr_arb_tree #(
       .NumIn(NR_ENTRIES + CVA6Cfg.NrWbPorts),

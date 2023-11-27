@@ -39,8 +39,8 @@ module commit_stage
     output logic [riscv::VLEN-1:0] pc_o,
     // to/from CSR file
     output fu_op csr_op_o,  // decoded CSR operation
-    output riscv::xlen_t csr_wdata_o,  // data to write to CSR
-    input riscv::xlen_t csr_rdata_i,  // data to read from CSR
+    output logic [CVA6Cfg.XLEN-1:0] csr_wdata_o,  // data to write to CSR
+    input logic [CVA6Cfg.XLEN-1:0] csr_rdata_i,  // data to read from CSR
     input  exception_t                              csr_exception_i,    // exception or interrupt occurred in CSR stage (the same as commit)
     output logic csr_write_fflags_o,  // write the fflags CSR
     // commit signals to ex

@@ -49,8 +49,6 @@ package riscv;
   localparam VPN2 = (VLEN - 31 < 8) ? VLEN - 31 : 8;
   localparam XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
 
-  typedef logic [CVA6Cfg.XLEN-1:0] xlen_t;
-
   // --------------------
   // Privilege Spec
   // --------------------

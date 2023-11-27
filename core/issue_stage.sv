@@ -103,11 +103,11 @@ module issue_stage
   fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;
 
   logic              [   REG_ADDR_SIZE-1:0] rs1_iro_sb;
-  riscv::xlen_t                             rs1_sb_iro;
+  logic [CVA6Cfg.XLEN-1:0]                             rs1_sb_iro;
   logic                                     rs1_valid_sb_iro;
 
   logic              [   REG_ADDR_SIZE-1:0] rs2_iro_sb;
-  riscv::xlen_t                             rs2_sb_iro;
+  logic [CVA6Cfg.XLEN-1:0]                             rs2_sb_iro;
   logic                                     rs2_valid_iro_sb;
 
   logic              [   REG_ADDR_SIZE-1:0] rs3_iro_sb;
@@ -118,8 +118,8 @@ module issue_stage
   logic                                     issue_instr_valid_sb_iro;
   logic                                     issue_ack_iro_sb;
 
-  riscv::xlen_t                             rs1_forwarding_xlen;
-  riscv::xlen_t                             rs2_forwarding_xlen;
+  logic [CVA6Cfg.XLEN-1:0]                             rs1_forwarding_xlen;
+  logic [CVA6Cfg.XLEN-1:0]                             rs2_forwarding_xlen;
 
   assign rs1_forwarding_o = rs1_forwarding_xlen[riscv::VLEN-1:0];
   assign rs2_forwarding_o = rs2_forwarding_xlen[riscv::VLEN-1:0];

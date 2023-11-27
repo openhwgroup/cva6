@@ -69,7 +69,7 @@ module wt_dcache_wbuffer
     output logic [riscv::PLEN-1:0] miss_paddr_o,
     output logic miss_req_o,
     output logic miss_we_o,  // always 1 here
-    output riscv::xlen_t miss_wdata_o,
+    output logic [CVA6Cfg.XLEN-1:0] miss_wdata_o,
     output logic [DCACHE_USER_WIDTH-1:0] miss_wuser_o,
     output logic [DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // unused here (set to 0)
     output logic miss_nc_o,  // request to I/O space
@@ -85,7 +85,7 @@ module wt_dcache_wbuffer
     output logic rd_req_o,  // read the word at offset off_i[:3] in all ways
     output logic rd_tag_only_o,  // set to 1 here as we do not have to read the data arrays
     input logic rd_ack_i,
-    input riscv::xlen_t rd_data_i,  // unused
+    input logic [CVA6Cfg.XLEN-1:0] rd_data_i,  // unused
     input logic [DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,  // unused
     input logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_i,
     // cacheline writes
@@ -96,7 +96,7 @@ module wt_dcache_wbuffer
     input logic wr_ack_i,
     output logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx_o,
     output logic [DCACHE_OFFSET_WIDTH-1:0] wr_off_o,
-    output riscv::xlen_t wr_data_o,
+    output logic [CVA6Cfg.XLEN-1:0] wr_data_o,
     output logic [(CVA6Cfg.XLEN/8)-1:0] wr_data_be_o,
     output logic [DCACHE_USER_WIDTH-1:0] wr_user_o,
     // to forwarding logic and miss unit

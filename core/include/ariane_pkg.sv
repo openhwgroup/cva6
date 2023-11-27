@@ -182,8 +182,8 @@ package ariane_pkg;
   // Only use struct when signals have same direction
   // exception
   typedef struct packed {
-    riscv::xlen_t cause;  // cause of exception
-    riscv::xlen_t       tval;  // additional information of causing exception (e.g.: instruction causing it),
+    logic [CVA6Cfg.XLEN-1:0] cause;  // cause of exception
+    logic [CVA6Cfg.XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
     // address of LD/ST fault
     logic valid;
   } exception_t;

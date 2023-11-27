@@ -26,7 +26,7 @@ module cvxif_fu
     //to writeback
     output logic                   [TRANS_ID_BITS-1:0] x_trans_id_o,
     output exception_t                                 x_exception_o,
-    output riscv::xlen_t                               x_result_o,
+    output logic [CVA6Cfg.XLEN-1:0]                               x_result_o,
     output logic                                       x_valid_o,
     output logic                                       x_we_o,
     //to coprocessor

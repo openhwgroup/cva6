@@ -27,7 +27,7 @@ module csr_buffer
 
     output logic                csr_ready_o,   // FU is ready e.g. not busy
     input  logic                csr_valid_i,   // Input is valid
-    output riscv::xlen_t        csr_result_o,
+    output logic [CVA6Cfg.XLEN-1:0]        csr_result_o,
     input  logic                csr_commit_i,  // commit the pending CSR OP
     // to CSR file
     output logic         [11:0] csr_addr_o     // CSR address to commit stage

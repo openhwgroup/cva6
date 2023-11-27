@@ -17,8 +17,8 @@ package acc_pkg;
     logic                                 req_valid;
     logic                                 resp_ready;
     riscv::instruction_t                  insn;
-    riscv::xlen_t                         rs1;
-    riscv::xlen_t                         rs2;
+    logic [CVA6Cfg.XLEN-1:0]                         rs1;
+    logic [CVA6Cfg.XLEN-1:0]                         rs2;
     fpnew_pkg::roundmode_e                frm;
     logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
     logic                                 store_pending;
@@ -30,7 +30,7 @@ package acc_pkg;
   typedef struct packed {
     logic                                 req_ready;
     logic                                 resp_valid;
-    riscv::xlen_t                         result;
+    logic [CVA6Cfg.XLEN-1:0]                         result;
     logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
     logic                                 error;
     // Metadata

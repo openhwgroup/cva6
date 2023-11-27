@@ -69,7 +69,7 @@ module wt_dcache
   logic                                                               wr_ack;
   logic         [   DCACHE_CL_IDX_WIDTH-1:0]                          wr_idx;
   logic         [   DCACHE_OFFSET_WIDTH-1:0]                          wr_off;
-  riscv::xlen_t                                                       wr_data;
+  logic [CVA6Cfg.XLEN-1:0]                                                       wr_data;
   logic         [       (CVA6Cfg.XLEN/8)-1:0]                          wr_data_be;
   logic         [     DCACHE_USER_WIDTH-1:0]                          wr_user;
 
@@ -95,7 +95,7 @@ module wt_dcache
   logic         [              NumPorts-1:0][   DCACHE_TAG_WIDTH-1:0] rd_tag;
   logic         [              NumPorts-1:0][DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
   logic         [              NumPorts-1:0][DCACHE_OFFSET_WIDTH-1:0] rd_off;
-  riscv::xlen_t                                                       rd_data;
+  logic [CVA6Cfg.XLEN-1:0]                                                       rd_data;
   logic         [     DCACHE_USER_WIDTH-1:0]                          rd_user;
   logic         [      DCACHE_SET_ASSOC-1:0]                          rd_vld_bits;
   logic         [      DCACHE_SET_ASSOC-1:0]                          rd_hit_oh;

@@ -26,11 +26,11 @@ module alu
     input  logic         clk_i,            // Clock
     input  logic         rst_ni,           // Asynchronous reset active low
     input  fu_data_t     fu_data_i,
-    output riscv::xlen_t result_o,
+    output logic [CVA6Cfg.XLEN-1:0] result_o,
     output logic         alu_branch_res_o
 );
 
-  riscv::xlen_t                   operand_a_rev;
+  logic [CVA6Cfg.XLEN-1:0]                   operand_a_rev;
   logic         [           31:0] operand_a_rev32;
   logic         [  CVA6Cfg.XLEN:0] operand_b_neg;
   logic         [CVA6Cfg.XLEN+1:0] adder_result_ext_o;
@@ -42,7 +42,7 @@ module alu
   logic [$clog2(CVA6Cfg.XLEN)-1 : 0] lz_tz_count;  // Count Leading Zeros
   logic [                      4:0] lz_tz_wcount;  // Count Leading Zeros Word
   logic lz_tz_empty, lz_tz_wempty;
-  riscv::xlen_t orcbw_result, rev8w_result;
+  logic [CVA6Cfg.XLEN-1:0] orcbw_result, rev8w_result;
 
   // bit reverse operand_a for left shifts and bit counting
   generate
@@ -59,7 +59,7 @@ module alu
   logic adder_op_b_negate;
   logic adder_z_flag;
   logic [CVA6Cfg.XLEN:0] adder_in_a, adder_in_b;
-  riscv::xlen_t adder_result;
+  logic [CVA6Cfg.XLEN-1:0] adder_result;
   logic [CVA6Cfg.XLEN-1:0] operand_a_bitmanip, bit_indx;
 
   always_comb begin
@@ -129,17 +129,17 @@ module alu
   logic                         shift_left;  // should we shift left
   logic                         shift_arithmetic;
 
-  riscv::xlen_t                 shift_amt;  // amount of shift, to the right
-  riscv::xlen_t                 shift_op_a;  // input of the shifter
+  logic [CVA6Cfg.XLEN-1:0]                 shift_amt;  // amount of shift, to the right
+  logic [CVA6Cfg.XLEN-1:0]                 shift_op_a;  // input of the shifter
   logic         [         31:0] shift_op_a32;  // input to the 32 bit shift operation
 
-  riscv::xlen_t                 shift_result;
+  logic [CVA6Cfg.XLEN-1:0]                 shift_result;
   logic         [         31:0] shift_result32;
 
   logic         [CVA6Cfg.XLEN:0] shift_right_result;
   logic         [         32:0] shift_right_result32;
 
-  riscv::xlen_t                 shift_left_result;
+  logic [CVA6Cfg.XLEN-1:0]                 shift_left_result;
   logic         [         31:0] shift_left_result32;
 
   assign shift_amt = fu_data_i.operand_b;

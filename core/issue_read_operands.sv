@@ -32,10 +32,10 @@ module issue_read_operands
     output logic issue_ack_o,
     // lookup rd in scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs1_o,
-    input riscv::xlen_t rs1_i,
+    input logic [CVA6Cfg.XLEN-1:0] rs1_i,
     input logic rs1_valid_i,
     output logic [REG_ADDR_SIZE-1:0] rs2_o,
-    input riscv::xlen_t rs2_i,
+    input logic [CVA6Cfg.XLEN-1:0] rs2_i,
     input logic rs2_valid_i,
     output logic [REG_ADDR_SIZE-1:0] rs3_o,
     input rs3_len_t rs3_i,
@@ -45,8 +45,8 @@ module issue_read_operands
     input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_i,
     // To FU, just single issue for now
     output fu_data_t fu_data_o,
-    output riscv::xlen_t rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
-    output riscv::xlen_t rs2_forwarding_o,  // unregistered version of fu_data_o.operandb
+    output logic [CVA6Cfg.XLEN-1:0] rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
+    output logic [CVA6Cfg.XLEN-1:0] rs2_forwarding_o,  // unregistered version of fu_data_o.operandb
     output logic [riscv::VLEN-1:0] pc_o,
     output logic is_compressed_instr_o,
     // ALU 1
@@ -85,10 +85,10 @@ module issue_read_operands
 );
   logic stall;
   logic fu_busy;  // functional unit is busy
-  riscv::xlen_t operand_a_regfile, operand_b_regfile;  // operands coming from regfile
+  logic [CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
   rs3_len_t operand_c_regfile, operand_c_fpr, operand_c_gpr;  // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
   // output flipflop (ID <-> EX)
-  riscv::xlen_t operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
+  logic [CVA6Cfg.XLEN-1:0] operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
 
   logic        alu_valid_q;
   logic        mult_valid_q;

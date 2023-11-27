@@ -33,7 +33,7 @@ module load_unit
     // load unit output port
     output logic valid_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
-    output riscv::xlen_t result_o,
+    output logic [CVA6Cfg.XLEN-1:0] result_o,
     output exception_t ex_o,
     // MMU -> Address Translation
     output logic translation_req_o,  // request address translation
@@ -426,7 +426,7 @@ module load_unit
   // ---------------
   // Sign Extend
   // ---------------
-  riscv::xlen_t shifted_data;
+  logic [CVA6Cfg.XLEN-1:0] shifted_data;
 
   // realign as needed
   assign shifted_data = req_port_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};

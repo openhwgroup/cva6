@@ -25,8 +25,8 @@ module perf_counters
     // SRAM like interface
     input logic [11:0] addr_i,  // read/write address (up to 6 counters possible)
     input logic we_i,  // write enable
-    input riscv::xlen_t data_i,  // data to write
-    output riscv::xlen_t data_o,  // data to read
+    input logic [CVA6Cfg.XLEN-1:0] data_i,  // data to write
+    output logic [CVA6Cfg.XLEN-1:0] data_o,  // data to read
     // from commit stage
     input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,     // the instruction we want to commit
     input  logic [CVA6Cfg.NrCommitPorts-1:0]              commit_ack_i,       // acknowledge that we are indeed committing

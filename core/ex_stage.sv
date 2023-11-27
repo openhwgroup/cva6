@@ -32,7 +32,7 @@ module ex_stage
     input logic is_compressed_instr_i,  // we need to know if this was a compressed instruction
                                         // in order to calculate the next PC on a mis-predict
     // Fixed latency unit(s)
-    output riscv::xlen_t flu_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] flu_result_o,
     output logic [TRANS_ID_BITS-1:0]               flu_trans_id_o,        // ID of scoreboard entry at which to write back
     output exception_t flu_exception_o,
     output logic flu_ready_o,  // FLU is ready
@@ -56,11 +56,11 @@ module ex_stage
     input logic lsu_valid_i,  // Input is valid
 
     output logic                             load_valid_o,
-    output riscv::xlen_t                     load_result_o,
+    output logic [CVA6Cfg.XLEN-1:0]                     load_result_o,
     output logic         [TRANS_ID_BITS-1:0] load_trans_id_o,
     output exception_t                       load_exception_o,
     output logic                             store_valid_o,
-    output riscv::xlen_t                     store_result_o,
+    output logic [CVA6Cfg.XLEN-1:0]                     store_result_o,
     output logic         [TRANS_ID_BITS-1:0] store_trans_id_o,
     output exception_t                       store_exception_o,
 
@@ -78,7 +78,7 @@ module ex_stage
     input logic [2:0] fpu_frm_i,  // FP frm csr
     input logic [6:0] fpu_prec_i,  // FP precision control
     output logic [TRANS_ID_BITS-1:0] fpu_trans_id_o,
-    output riscv::xlen_t fpu_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] fpu_result_o,
     output logic fpu_valid_o,
     output exception_t fpu_exception_o,
     // CoreV-X-Interface
@@ -87,7 +87,7 @@ module ex_stage
     input logic [31:0] x_off_instr_i,
     output logic [TRANS_ID_BITS-1:0] x_trans_id_o,
     output exception_t x_exception_o,
-    output riscv::xlen_t x_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] x_result_o,
     output logic x_valid_o,
     output logic x_we_o,
     output cvxif_pkg::cvxif_req_t cvxif_req_o,
@@ -159,7 +159,7 @@ module ex_stage
 
   // from ALU to branch unit
   logic alu_branch_res;  // branch comparison result
-  riscv::xlen_t alu_result, csr_result, mult_result;
+  logic [CVA6Cfg.XLEN-1:0] alu_result, csr_result, mult_result;
   logic [riscv::VLEN-1:0] branch_result;
   logic csr_ready, mult_ready;
   logic [TRANS_ID_BITS-1:0] mult_trans_id;

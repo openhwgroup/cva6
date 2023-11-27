@@ -31,12 +31,12 @@ module load_store_unit
     input  logic     lsu_valid_i,  // Input is valid
 
     output logic [TRANS_ID_BITS-1:0] load_trans_id_o,          // ID of scoreboard entry at which to write back
-    output riscv::xlen_t load_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] load_result_o,
     output logic load_valid_o,
     output exception_t load_exception_o,  // to WB, signal exception status LD exception
 
     output logic [TRANS_ID_BITS-1:0] store_trans_id_o,         // ID of scoreboard entry at which to write back
-    output riscv::xlen_t store_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] store_result_o,
     output logic store_valid_o,
     output exception_t store_exception_o,  // to WB, signal exception status ST exception
 
@@ -100,7 +100,7 @@ module load_store_unit
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
   logic         [    riscv::VLEN-1:0] vaddr_i;
-  riscv::xlen_t                       vaddr_xlen;
+  logic [CVA6Cfg.XLEN-1:0]                       vaddr_xlen;
   logic                               overflow;
   logic         [(CVA6Cfg.XLEN/8)-1:0] be_i;
 
@@ -125,10 +125,10 @@ module load_store_unit
 
   logic                             ld_valid;
   logic         [TRANS_ID_BITS-1:0] ld_trans_id;
-  riscv::xlen_t                     ld_result;
+  logic [CVA6Cfg.XLEN-1:0]                     ld_result;
   logic                             st_valid;
   logic         [TRANS_ID_BITS-1:0] st_trans_id;
-  riscv::xlen_t                     st_result;
+  logic [CVA6Cfg.XLEN-1:0]                     st_result;
 
   logic         [             11:0] page_offset;
   logic                             page_offset_matches;

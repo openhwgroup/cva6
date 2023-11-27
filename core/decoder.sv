@@ -63,12 +63,12 @@ module decoder
   // --------------------
   enum logic         [3:0] {NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3} imm_select;
 
-  riscv::xlen_t                                                        imm_i_type;
-  riscv::xlen_t                                                        imm_s_type;
-  riscv::xlen_t                                                        imm_sb_type;
-  riscv::xlen_t                                                        imm_u_type;
-  riscv::xlen_t                                                        imm_uj_type;
-  riscv::xlen_t                                                        imm_bi_type;
+  logic [CVA6Cfg.XLEN-1:0]                                                        imm_i_type;
+  logic [CVA6Cfg.XLEN-1:0]                                                        imm_s_type;
+  logic [CVA6Cfg.XLEN-1:0]                                                        imm_sb_type;
+  logic [CVA6Cfg.XLEN-1:0]                                                        imm_u_type;
+  logic [CVA6Cfg.XLEN-1:0]                                                        imm_uj_type;
+  logic [CVA6Cfg.XLEN-1:0]                                                        imm_bi_type;
 
   // ---------------------------------------
   // Accelerator instructions' first-pass decoder
@@ -1296,7 +1296,7 @@ module decoder
   // ---------------------
   // Exception handling
   // ---------------------
-  riscv::xlen_t interrupt_cause;
+  logic [CVA6Cfg.XLEN-1:0] interrupt_cause;
 
   // this instruction has already executed if the exception is valid
   assign instruction_o.valid = instruction_o.ex.valid;

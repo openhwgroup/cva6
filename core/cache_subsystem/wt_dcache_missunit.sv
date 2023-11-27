@@ -138,8 +138,8 @@ module wt_dcache_missunit
   logic amo_sel, miss_is_write;
   logic amo_req_d, amo_req_q;
   logic [63:0] amo_rtrn_mux;
-  riscv::xlen_t amo_data, amo_data_a, amo_data_b;
-  riscv::xlen_t amo_user;  //DCACHE USER ? DATA_USER_WIDTH
+  logic [CVA6Cfg.XLEN-1:0] amo_data, amo_data_a, amo_data_b;
+  logic [CVA6Cfg.XLEN-1:0] amo_user;  //DCACHE USER ? DATA_USER_WIDTH
   logic [riscv::PLEN-1:0] tmp_paddr;
   logic [$clog2(NumPorts)-1:0] miss_port_idx;
   logic [DCACHE_CL_IDX_WIDTH-1:0] cnt_d, cnt_q;

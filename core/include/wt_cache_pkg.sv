@@ -70,7 +70,7 @@ package wt_cache_pkg;
 
   typedef struct packed {
     logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
-    riscv::xlen_t data;
+    logic [CVA6Cfg.XLEN-1:0] data;
     logic [ariane_pkg::DCACHE_USER_WIDTH-1:0] user;
     logic [(CVA6Cfg.XLEN/8)-1:0] dirty;  // byte is dirty
     logic [(CVA6Cfg.XLEN/8)-1:0] valid;  // byte is valid
@@ -146,7 +146,7 @@ package wt_cache_pkg;
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
     logic [L1D_WAY_WIDTH-1:0] way;  // way to replace
     logic [riscv::PLEN-1:0] paddr;  // physical address
-    riscv::xlen_t data;  // word width of processor (no block stores at the moment)
+    logic [CVA6Cfg.XLEN-1:0] data;  // word width of processor (no block stores at the moment)
     logic [ariane_pkg::DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
     logic nc;  // noncacheable
     logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
@@ -289,9 +289,9 @@ package wt_cache_pkg;
   endfunction : to_byte_enable4
 
   // openpiton requires the data to be replicated in case of smaller sizes than dwords
-  function automatic riscv::xlen_t repData64(input riscv::xlen_t data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+  function automatic logic [CVA6Cfg.XLEN-1:0] repData64(input logic [CVA6Cfg.XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
                                             input logic [1:0] size);
-    riscv::xlen_t out;
+    logic [CVA6Cfg.XLEN-1:0] out;
     unique case (size)
       2'b00:   for (int k = 0; k < 8; k++) out[k*8+:8] = data[offset*8+:8];  // byte
       2'b01:   for (int k = 0; k < 4; k++) out[k*16+:16] = data[offset*8+:16];  // hword
@@ -301,9 +301,9 @@ package wt_cache_pkg;
     return out;
   endfunction : repData64
 
-  function automatic riscv::xlen_t repData32(input riscv::xlen_t data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+  function automatic logic [CVA6Cfg.XLEN-1:0] repData32(input logic [CVA6Cfg.XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
                                             input logic [1:0] size);
-    riscv::xlen_t out;
+    logic [CVA6Cfg.XLEN-1:0] out;
     unique case (size)
       2'b00:   for (int k = 0; k < 4; k++) out[k*8+:8] = data[offset*8+:8];  // byte
       2'b01:   for (int k = 0; k < 2; k++) out[k*16+:16] = data[offset*8+:16];  // hword

@@ -187,7 +187,7 @@ module cva6
   logic flu_ready_ex_id;
   logic [TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
   logic flu_valid_ex_id;
-  riscv::xlen_t flu_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] flu_result_ex_id;
   exception_t flu_exception_ex_id;
   // ALU
   logic alu_valid_id_ex;
@@ -201,11 +201,11 @@ module cva6
   logic lsu_ready_ex_id;
 
   logic [TRANS_ID_BITS-1:0] load_trans_id_ex_id;
-  riscv::xlen_t load_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] load_result_ex_id;
   logic load_valid_ex_id;
   exception_t load_exception_ex_id;
 
-  riscv::xlen_t store_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] store_result_ex_id;
   logic [TRANS_ID_BITS-1:0] store_trans_id_ex_id;
   logic store_valid_ex_id;
   exception_t store_exception_ex_id;
@@ -217,7 +217,7 @@ module cva6
   logic [1:0] fpu_fmt_id_ex;
   logic [2:0] fpu_rm_id_ex;
   logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
-  riscv::xlen_t fpu_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] fpu_result_ex_id;
   logic fpu_valid_ex_id;
   exception_t fpu_exception_ex_id;
   // Accelerator
@@ -225,7 +225,7 @@ module cva6
   scoreboard_entry_t issue_instr_id_acc;
   logic issue_instr_hs_id_acc;
   logic [TRANS_ID_BITS-1:0] acc_trans_id_ex_id;
-  riscv::xlen_t acc_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] acc_result_ex_id;
   logic acc_valid_ex_id;
   exception_t acc_exception_ex_id;
   logic halt_acc_ctrl;
@@ -235,7 +235,7 @@ module cva6
   logic csr_valid_id_ex;
   // CVXIF
   logic [TRANS_ID_BITS-1:0] x_trans_id_ex_id;
-  riscv::xlen_t x_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] x_result_ex_id;
   logic x_valid_ex_id;
   exception_t x_exception_ex_id;
   logic x_we_ex_id;
@@ -287,8 +287,8 @@ module cva6
   logic [ASID_WIDTH-1:0] asid_csr_ex;
   logic [11:0] csr_addr_ex_csr;
   fu_op csr_op_commit_csr;
-  riscv::xlen_t csr_wdata_commit_csr;
-  riscv::xlen_t csr_rdata_csr_commit;
+  logic [CVA6Cfg.XLEN-1:0] csr_wdata_commit_csr;
+  logic [CVA6Cfg.XLEN-1:0] csr_rdata_csr_commit;
   exception_t csr_exception_csr_commit;
   logic tvm_csr_id;
   logic tw_csr_id;
@@ -307,7 +307,7 @@ module cva6
   // Performance Counters <-> *
   // ----------------------------
   logic [11:0] addr_csr_perf;
-  riscv::xlen_t data_csr_perf, data_perf_csr;
+  logic [CVA6Cfg.XLEN-1:0] data_csr_perf, data_perf_csr;
   logic                                                                we_csr_perf;
 
   logic                                                                icache_flush_ctrl_cache;
