@@ -64,6 +64,11 @@ package config_pkg;
     bit                          ZiCondExtEn;
     bit RVS;
     bit RVU;
+    int unsigned FETCH_USER_WIDTH;
+    int unsigned DATA_USER_WIDTH;
+    int unsigned AXI_USER_WIDTH;
+    bit DATA_USER_EN;
+    bit FETCH_USER_EN;
 
     /// Return address stack depth, good values are around 2 to 4.
     int unsigned                 RASDepth;
@@ -172,6 +177,13 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
     int unsigned                 MaxOutstandingStores;
     bit                          DebugEn;
+
+    int unsigned FETCH_USER_WIDTH;
+    int unsigned DATA_USER_WIDTH;
+    int unsigned AXI_USER_WIDTH;
+    bit DATA_USER_EN;
+    bit FETCH_USER_EN;
+    bit AXI_USER_EN;
   } cva6_cfg_t;
 
   function automatic cva6_cfg_t build_config(cva6_user_cfg_t CVA6Cfg);
@@ -261,6 +273,13 @@ package config_pkg;
       CachedRegionLength: CVA6Cfg.CachedRegionLength,
       MaxOutstandingStores: CVA6Cfg.MaxOutstandingStores,
       DebugEn: CVA6Cfg.DebugEn,
+
+      FETCH_USER_WIDTH: CVA6Cfg.FETCH_USER_WIDTH,
+      DATA_USER_WIDTH: CVA6Cfg.DATA_USER_WIDTH,
+      AXI_USER_EN: CVA6Cfg.DATA_USER_EN | CVA6Cfg.FETCH_USER_EN,
+      AXI_USER_WIDTH: CVA6Cfg.AXI_USER_WIDTH,
+      DATA_USER_EN: CVA6Cfg.DATA_USER_EN,
+      FETCH_USER_EN: CVA6Cfg.FETCH_USER_EN
     }
     ;
 

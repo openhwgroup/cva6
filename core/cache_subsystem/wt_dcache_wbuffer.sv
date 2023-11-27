@@ -213,7 +213,7 @@ module wt_dcache_wbuffer
   ) : repData32(
       wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]
   );
-  if (ariane_pkg::DATA_USER_EN) begin
+  if (CVA6Cfg.DATA_USER_EN) begin
     assign miss_wuser_o = CVA6Cfg.IS_XLEN64 ? repData64(
         wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]
     ) : repData32(
@@ -520,7 +520,7 @@ module wt_dcache_wbuffer
             wbuffer_d[wr_ptr].valid[k]     = 1'b1;
             wbuffer_d[wr_ptr].dirty[k]     = 1'b1;
             wbuffer_d[wr_ptr].data[k*8+:8] = req_port_i.data_wdata[k*8+:8];
-            if (ariane_pkg::DATA_USER_EN) begin
+            if (CVA6Cfg.DATA_USER_EN) begin
               wbuffer_d[wr_ptr].user[k*8+:8] = req_port_i.data_wuser[k*8+:8];
             end else begin
               wbuffer_d[wr_ptr].user[k*8+:8] = '0;

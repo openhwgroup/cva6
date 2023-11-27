@@ -101,7 +101,7 @@ module cva6_icache
   logic [ICACHE_LINE_WIDTH-1:0]         cl_rdata     [ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the cache
   logic [ICACHE_USER_LINE_WIDTH-1:0]    cl_ruser[ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the user cache
   logic [ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0] cl_sel;  // selected word from each cacheline
-  logic [ICACHE_SET_ASSOC-1:0][FETCH_USER_WIDTH-1:0] cl_user;  // selected word from each cacheline
+  logic [ICACHE_SET_ASSOC-1:0][CVA6Cfg.FETCH_USER_WIDTH-1:0] cl_user;  // selected word from each cacheline
   logic [ICACHE_SET_ASSOC-1:0] vld_req;  // bit enable for valid regs
   logic vld_we;  // valid bits write enable
   logic [ICACHE_SET_ASSOC-1:0] vld_wdata;  // valid bits to write
@@ -414,7 +414,7 @@ module cva6_icache
   for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : gen_tag_cmpsel
     assign cl_hit[i]  = (cl_tag_rdata[i] == cl_tag_d) & vld_rdata[i];
     assign cl_sel[i]  = cl_rdata[i][{cl_offset_q, 3'b0}+:FETCH_WIDTH];
-    assign cl_user[i] = cl_ruser[i][{cl_offset_q, 3'b0}+:FETCH_USER_WIDTH];
+    assign cl_user[i] = cl_ruser[i][{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_USER_WIDTH];
   end
 
 
@@ -432,7 +432,7 @@ module cva6_icache
       dreq_o.user = cl_user[hit_idx];
     end else begin
       dreq_o.data = mem_rtrn_i.data[{cl_offset_q, 3'b0}+:FETCH_WIDTH];
-      dreq_o.user = mem_rtrn_i.user[{cl_offset_q, 3'b0}+:FETCH_USER_WIDTH];
+      dreq_o.user = mem_rtrn_i.user[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_USER_WIDTH];
     end
   end
 
@@ -471,7 +471,7 @@ module cva6_icache
     sram #(
         .USER_WIDTH(ICACHE_USER_LINE_WIDTH),
         .DATA_WIDTH(ICACHE_LINE_WIDTH),
-        .USER_EN   (ariane_pkg::FETCH_USER_EN),
+        .USER_EN   (CVA6Cfg.FETCH_USER_EN),
         .NUM_WORDS (ICACHE_NUM_WORDS)
     ) data_sram (
         .clk_i  (clk_i),

@@ -139,7 +139,7 @@ module wt_dcache_missunit
   logic amo_req_d, amo_req_q;
   logic [63:0] amo_rtrn_mux;
   logic [CVA6Cfg.XLEN-1:0] amo_data, amo_data_a, amo_data_b;
-  logic [CVA6Cfg.XLEN-1:0] amo_user;  //DCACHE USER ? DATA_USER_WIDTH
+  logic [CVA6Cfg.XLEN-1:0] amo_user;  //DCACHE USER ? CVA6Cfg.DATA_USER_WIDTH
   logic [CVA6Cfg.PLEN-1:0] tmp_paddr;
   logic [$clog2(NumPorts)-1:0] miss_port_idx;
   logic [DCACHE_CL_IDX_WIDTH-1:0] cnt_d, cnt_q;
@@ -263,7 +263,7 @@ module wt_dcache_missunit
       end else begin
         amo_data = amo_data_a;
       end
-      if (ariane_pkg::DATA_USER_EN) begin
+      if (CVA6Cfg.DATA_USER_EN) begin
         amo_user = amo_data;
       end else begin
         amo_user = '0;

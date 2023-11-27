@@ -298,9 +298,9 @@ module wt_dcache_mem
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_data_banks
     // Data RAM
     sram #(
-        .USER_WIDTH(ariane_pkg::DCACHE_SET_ASSOC * DATA_USER_WIDTH),
+        .USER_WIDTH(ariane_pkg::DCACHE_SET_ASSOC * CVA6Cfg.DATA_USER_WIDTH),
         .DATA_WIDTH(ariane_pkg::DCACHE_SET_ASSOC * CVA6Cfg.XLEN),
-        .USER_EN   (ariane_pkg::DATA_USER_EN),
+        .USER_EN   (CVA6Cfg.DATA_USER_EN),
         .NUM_WORDS (wt_cache_pkg::DCACHE_NUM_WORDS)
     ) i_data_sram (
         .clk_i  (clk_i),
