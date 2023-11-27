@@ -21,6 +21,23 @@ module cva6
         cva6_config_pkg::cva6_cfg
     ),
 
+    // branchpredict scoreboard entry
+    // this is the struct which we will inject into the pipeline to guide the various
+    // units towards the correct branch decision and resolve
+    parameter type branchpredict_sbe_t = struct packed {
+      cf_t                    cf;               // type of control flow prediction
+      logic [riscv::VLEN-1:0] predict_address;  // target address at which to jump, or not
+    },
+
+    // IF/ID Stage
+    // store the decompressed instruction
+    parameter type fetch_entry_t = struct packed {
+      logic [riscv::VLEN-1:0] address;  // the address of the instructions from below
+      logic [31:0] instruction;  // instruction word
+      branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
+      exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
+    },
+
     // ID/EX/WB Stage
     parameter type scoreboard_entry_t = struct packed {
       logic [riscv::VLEN-1:0] pc;  // PC of instruction
@@ -46,13 +63,17 @@ module cva6
       logic vfp;  // is this a vector floating-point instruction?
     },
 
-    // IF/ID Stage
-    // store the decompressed instruction
-    parameter type fetch_entry_t = struct packed {
-      logic [riscv::VLEN-1:0] address;  // the address of the instructions from below
-      logic [31:0] instruction;  // instruction word
-      branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
-      exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
+    // branch-predict
+    // this is the struct we get back from ex stage and we will use it to update
+    // all the necessary data structures
+    // bp_resolve_t
+    parameter type bp_resolve_t = struct packed {
+      logic                   valid;           // prediction with all its values is valid
+      logic [riscv::VLEN-1:0] pc;              // PC of predict or mis-predict
+      logic [riscv::VLEN-1:0] target_address;  // target address at which to jump, or not
+      logic                   is_mispredict;   // set if this was a mis-predict
+      logic                   is_taken;        // branch is taken
+      cf_t                    cf_type;         // Type of control flow change
     },
 
     parameter type rvfi_probes_t = struct packed {
@@ -400,6 +421,7 @@ module cva6
   // --------------
   frontend #(
       .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
       .fetch_entry_t(fetch_entry_t)
   ) i_frontend (
       .flush_i            (flush_ctrl_if),                  // not entirely correct
@@ -428,6 +450,7 @@ module cva6
   // ---------
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
       .fetch_entry_t(fetch_entry_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) id_stage_i (
@@ -529,6 +552,8 @@ module cva6
   // ---------
   issue_stage #(
       .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) issue_stage_i (
       .clk_i,
@@ -603,6 +628,8 @@ module cva6
   // ---------
   ex_stage #(
       .CVA6Cfg   (CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) ex_stage_i (
       .clk_i                (clk_i),
@@ -827,6 +854,7 @@ module cva6
   if (PERF_COUNTER_EN) begin : gen_perf_counter
     perf_counters #(
         .CVA6Cfg(CVA6Cfg),
+        .bp_resolve_t(bp_resolve_t),
         .scoreboard_entry_t(scoreboard_entry_t),
         .NumPorts(NumPorts)
     ) perf_counters_i (
@@ -866,7 +894,8 @@ module cva6
   // Controller
   // ------------
   controller #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t)
   ) controller_i (
       // flush ports
       .set_pc_commit_o       (set_pc_ctrl_pcgen),
@@ -1211,6 +1240,7 @@ module cva6
 `ifndef VERILATOR
   instr_tracer_if #(
       .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) tracer_if (
       clk_i
@@ -1253,6 +1283,7 @@ module cva6
 
   instr_tracer #(
       .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) instr_tracer_i (
       .tracer_if(tracer_if),

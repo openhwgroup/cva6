@@ -19,6 +19,7 @@ module frontend
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
     parameter type fetch_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM

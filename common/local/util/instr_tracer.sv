@@ -19,6 +19,7 @@
 
 module instr_tracer #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+  parameter type bp_resolve_t = logic,
   parameter type scoreboard_entry_t = logic
 )(
   instr_tracer_if tracer_if,
@@ -33,7 +34,7 @@ module instr_tracer #(
   scoreboard_entry_t issue_sbe_queue [$];
   scoreboard_entry_t issue_sbe;
   // store resolved branches, get (mis-)predictions
-  ariane_pkg::bp_resolve_t bp [$];
+  bp_resolve_t bp [$];
   // shadow copy of the register files
   logic [63:0] gp_reg_file [32];
   logic [63:0] fp_reg_file [32];
@@ -64,7 +65,7 @@ module instr_tracer #(
     fp_reg_file  = '{default:0};
 
     forever begin
-      automatic ariane_pkg::bp_resolve_t bp_instruction = '0;
+      automatic bp_resolve_t bp_instruction = '0;
       // new cycle, we are only interested if reset is de-asserted
       @(tracer_if.pck) if (tracer_if.pck.rstn !== 1'b1) begin
         flush();
@@ -189,9 +190,10 @@ module instr_tracer #(
     bp              = {};
   endfunction
 
-  function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
+  function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
     automatic instr_trace_item #(
       .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t)
     ) iti = new ($time, clk_ticks, sbe, instr, gp_reg_file, fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
     // print instruction to console

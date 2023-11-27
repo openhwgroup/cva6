@@ -13,7 +13,9 @@
 // Description: Branch target calculation and comparison
 
 module branch_unit #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type branchpredict_sbe_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -36,9 +38,9 @@ module branch_unit #(
     // Brach unit result - ISSUE_STAGE
     output logic [riscv::VLEN-1:0] branch_result_o,
     // Information of branch prediction - ISSUE_STAGE
-    input ariane_pkg::branchpredict_sbe_t branch_predict_i,
+    input branchpredict_sbe_t branch_predict_i,
     // Signaling that we resolved the branch - ISSUE_STAGE
-    output ariane_pkg::bp_resolve_t resolved_branch_o,
+    output bp_resolve_t resolved_branch_o,
     // Branch is resolved, new entries can be accepted by scoreboard - ID_STAGE
     output logic resolve_branch_o,
     // Branch exception out - TO_BE_COMPLETED

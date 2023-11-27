@@ -14,6 +14,7 @@
 
 module scoreboard #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter type rs3_len_t = logic
 ) (
@@ -83,7 +84,7 @@ module scoreboard #(
     input  logic                     issue_ack_i,
 
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input ariane_pkg::bp_resolve_t resolved_branch_i,
+    input bp_resolve_t resolved_branch_i,
     // Transaction ID at which to write the result back - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0] trans_id_i,
     // Results to write back - TO_BE_COMPLETED

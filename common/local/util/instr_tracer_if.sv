@@ -17,6 +17,7 @@
 `define INSTR_TRACER_IF_SV
 interface instr_tracer_if #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+  parameter type bp_resolve_t = logic,
   parameter type scoreboard_entry_t = logic
 )(
         input clk
@@ -49,7 +50,7 @@ interface instr_tracer_if #(
     logic                         ld_kill;
     logic [riscv::PLEN-1:0]       ld_paddr;
     // misprediction
-    ariane_pkg::bp_resolve_t resolve_branch;
+    bp_resolve_t resolve_branch;
     // exceptions
     ariane_pkg::exception_t  exception;
     // current privilege level

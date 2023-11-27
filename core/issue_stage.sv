@@ -18,6 +18,8 @@ module issue_stage
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type branchpredict_sbe_t = logic,
     parameter type scoreboard_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -160,6 +162,7 @@ module issue_stage
   scoreboard #(
       .CVA6Cfg   (CVA6Cfg),
       .rs3_len_t (rs3_len_t),
+      .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) i_scoreboard (
       .sb_full_o          (sb_full_o),
@@ -196,6 +199,7 @@ module issue_stage
   // ---------------------------------------------------------
   issue_read_operands #(
       .CVA6Cfg(CVA6Cfg),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .rs3_len_t(rs3_len_t)
   ) i_issue_read_operands (
