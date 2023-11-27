@@ -425,7 +425,7 @@ module frontend
   //For FPGA, BTB is implemented in read synchronous BRAM
   //while for ASIC, BTB is implemented in D flip-flop
   //and can be read at the same cycle.
-  assign vpc_btb = (ariane_pkg::FPGA_EN) ? icache_dreq_i.vaddr : icache_vaddr_q;
+  assign vpc_btb = (CVA6Cfg.FPGA_EN) ? icache_dreq_i.vaddr : icache_vaddr_q;
 
   if (CVA6Cfg.BTBEntries == 0) begin
     assign btb_prediction = '0;

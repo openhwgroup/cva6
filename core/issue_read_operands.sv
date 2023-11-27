@@ -451,7 +451,7 @@ module issue_read_operands
     assign wdata_pack[i] = wdata_i[i];
     assign we_pack[i]    = we_gpr_i[i];
   end
-  if (ariane_pkg::FPGA_EN) begin : gen_fpga_regfile
+  if (CVA6Cfg.FPGA_EN) begin : gen_fpga_regfile
     ariane_regfile_fpga #(
         .CVA6Cfg      (CVA6Cfg),
         .DATA_WIDTH   (CVA6Cfg.XLEN),
@@ -500,7 +500,7 @@ module issue_read_operands
       for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_fp_wdata_pack
         assign fp_wdata_pack[i] = {wdata_i[i][CVA6Cfg.FLen-1:0]};
       end
-      if (ariane_pkg::FPGA_EN) begin : gen_fpga_fp_regfile
+      if (CVA6Cfg.FPGA_EN) begin : gen_fpga_fp_regfile
         ariane_regfile_fpga #(
             .CVA6Cfg      (CVA6Cfg),
             .DATA_WIDTH   (CVA6Cfg.FLen),

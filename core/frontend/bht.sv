@@ -61,7 +61,7 @@ module bht #(
     assign update_row_index = '0;
   end
 
-  if (!ariane_pkg::FPGA_EN) begin : gen_asic_bht  // ASIC TARGET
+  if (!CVA6Cfg.FPGA_EN) begin : gen_asic_bht  // ASIC TARGET
 
     logic [1:0] saturation_counter;
     // prediction assignment

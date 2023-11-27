@@ -66,7 +66,7 @@ module btb #(
     assign update_row_index = '0;
   end
 
-  if (ariane_pkg::FPGA_EN) begin : gen_fpga_btb  //FPGA TARGETS
+  if (CVA6Cfg.FPGA_EN) begin : gen_fpga_btb  //FPGA TARGETS
     logic [                ariane_pkg::INSTR_PER_FETCH-1:0] btb_ram_csel_prediction;
     logic [                ariane_pkg::INSTR_PER_FETCH-1:0] btb_ram_we_prediction;
     logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] btb_ram_addr_prediction;

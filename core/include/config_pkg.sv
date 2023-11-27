@@ -39,6 +39,7 @@ package config_pkg;
     int unsigned XLEN;
     bit BITMANIP;
     int unsigned NR_SB_ENTRIES;
+    bit FPGA_EN;  // Is FPGA optimization of CV32A6
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
@@ -109,6 +110,7 @@ package config_pkg;
     // to uniquely identify the entry in the scoreboard
     int unsigned TRANS_ID_BITS;
     int unsigned ASID_WIDTH;
+    bit FPGA_EN;
     int unsigned VLEN;  // virtual address length
     int unsigned PLEN;  // physical address length
     bit IS_XLEN32;
@@ -202,6 +204,7 @@ package config_pkg;
       NR_SB_ENTRIES: CVA6Cfg.NR_SB_ENTRIES,
       TRANS_ID_BITS: $clog2(CVA6Cfg.NR_SB_ENTRIES),
       ASID_WIDTH: unsigned'((CVA6Cfg.XLEN == 64) ? 16 : 1),
+      FPGA_EN: CVA6Cfg.FPGA_EN,
       VLEN: (CVA6Cfg.XLEN == 32) ? 32 : 64,
       PLEN: (CVA6Cfg.XLEN == 32) ? 34 : 56,
       IS_XLEN32: IS_XLEN32,
