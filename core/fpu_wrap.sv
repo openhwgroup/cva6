@@ -59,7 +59,7 @@ module fpu_wrap
 
     // Features (enabled formats, vectors etc.)
     localparam fpnew_pkg::fpu_features_t FPU_FEATURES = '{
-        Width: unsigned'(riscv::XLEN),  // parameterized using XLEN
+        Width: unsigned'(CVA6Cfg.XLEN),  // parameterized using CVA6Cfg.XLEN
         EnableVectors: CVA6Cfg.XFVec,
         EnableNanBox: 1'b1,
         FpFmtMask: {CVA6Cfg.RVF, CVA6Cfg.RVD, CVA6Cfg.XF16, CVA6Cfg.XF8, CVA6Cfg.XF16ALT},

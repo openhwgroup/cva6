@@ -196,7 +196,7 @@ module wt_cache_subsystem
         icache_dreq_o.data
     );
 
-  for (genvar j = 0; j < riscv::XLEN / 8; j++) begin : gen_invalid_write_assertion
+  for (genvar j = 0; j < CVA6Cfg.XLEN / 8; j++) begin : gen_invalid_write_assertion
     a_invalid_write_data :
     assert property (
       @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[NumPorts-1].data_req |-> dcache_req_ports_i[NumPorts-1].data_be[j] |-> (|dcache_req_ports_i[NumPorts-1].data_wdata[j*8+:8] !== 1'hX))

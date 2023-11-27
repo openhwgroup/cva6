@@ -37,7 +37,7 @@ module instr_scan #(
   assign is_rvc = (instr_i[1:0] != 2'b11);
 
   logic rv32_rvc_jal;
-  assign rv32_rvc_jal = (riscv::XLEN == 32) & ((instr_i[15:13] == riscv::OpcodeC1Jal) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1));
+  assign rv32_rvc_jal = (CVA6Cfg.XLEN == 32) & ((instr_i[15:13] == riscv::OpcodeC1Jal) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1));
 
   logic is_xret;
   assign is_xret = logic'(instr_i[31:30] == 2'b00) & logic'(instr_i[28:0] == 29'b10000001000000000000001110011);

@@ -70,7 +70,7 @@ module wt_dcache
   logic         [   DCACHE_CL_IDX_WIDTH-1:0]                          wr_idx;
   logic         [   DCACHE_OFFSET_WIDTH-1:0]                          wr_off;
   riscv::xlen_t                                                       wr_data;
-  logic         [       (riscv::XLEN/8)-1:0]                          wr_data_be;
+  logic         [       (CVA6Cfg.XLEN/8)-1:0]                          wr_data_be;
   logic         [     DCACHE_USER_WIDTH-1:0]                          wr_user;
 
   // miss unit <-> controllers/wbuffer
@@ -78,7 +78,7 @@ module wt_dcache
   logic         [              NumPorts-1:0]                          miss_ack;
   logic         [              NumPorts-1:0]                          miss_nc;
   logic         [              NumPorts-1:0]                          miss_we;
-  logic         [              NumPorts-1:0][        riscv::XLEN-1:0] miss_wdata;
+  logic         [              NumPorts-1:0][        CVA6Cfg.XLEN-1:0] miss_wdata;
   logic         [              NumPorts-1:0][  DCACHE_USER_WIDTH-1:0] miss_wuser;
   logic         [              NumPorts-1:0][        riscv::PLEN-1:0] miss_paddr;
   logic         [              NumPorts-1:0][                    2:0] miss_size;
@@ -215,7 +215,7 @@ module wt_dcache
       assign req_ports_o[k] = '0;
       assign miss_req[k] = 1'b0;
       assign miss_we[k] = 1'b0;
-      assign miss_wdata[k] = {{riscv::XLEN}{1'b0}};
+      assign miss_wdata[k] = {{CVA6Cfg.XLEN}{1'b0}};
       assign miss_wuser[k] = {{DCACHE_USER_WIDTH}{1'b0}};
       assign miss_vld_bits_o[k] = {{DCACHE_SET_ASSOC}{1'b0}};
       assign miss_paddr[k] = {{riscv::PLEN}{1'b0}};

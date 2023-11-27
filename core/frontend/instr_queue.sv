@@ -283,7 +283,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
           fetch_entry_o.instruction = instr_data_out[i].instr;
           fetch_entry_o.ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
           fetch_entry_o.ex.tval = {
-            {(riscv::XLEN - riscv::VLEN) {1'b0}}, instr_data_out[i].ex_vaddr
+            {(CVA6Cfg.XLEN - riscv::VLEN) {1'b0}}, instr_data_out[i].ex_vaddr
           };
           fetch_entry_o.branch_predict.cf = instr_data_out[i].cf;
           pop_instr[i] = fetch_entry_valid_o & fetch_entry_ready_i;

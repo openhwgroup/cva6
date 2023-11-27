@@ -33,7 +33,7 @@ module multiplier
     output logic         [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
   // Carry-less multiplication
-  logic [riscv::XLEN-1:0]
+  logic [CVA6Cfg.XLEN-1:0]
       clmul_q, clmul_d, clmulr_q, clmulr_d, operand_a, operand_b, operand_a_rev, operand_b_rev;
   logic clmul_rmode, clmul_hmode;
 
@@ -43,9 +43,9 @@ module multiplier
     assign clmul_hmode = (operation_i == CLMULH);
 
     // operand_a and b reverse generator
-    for (genvar i = 0; i < riscv::XLEN; i++) begin
-      assign operand_a_rev[i] = operand_a_i[(riscv::XLEN-1)-i];
-      assign operand_b_rev[i] = operand_b_i[(riscv::XLEN-1)-i];
+    for (genvar i = 0; i < CVA6Cfg.XLEN; i++) begin
+      assign operand_a_rev[i] = operand_a_i[(CVA6Cfg.XLEN-1)-i];
+      assign operand_b_rev[i] = operand_b_i[(CVA6Cfg.XLEN-1)-i];
     end
 
     // operand_a and operand_b selection
@@ -55,14 +55,14 @@ module multiplier
     // implementation
     always_comb begin
       clmul_d = '0;
-      for (int i = 0; i <= riscv::XLEN; i++) begin
+      for (int i = 0; i <= CVA6Cfg.XLEN; i++) begin
         clmul_d = (|((operand_b >> i) & 1)) ? clmul_d ^ (operand_a << i) : clmul_d;
       end
     end
 
     // clmulr + clmulh result generator
-    for (genvar i = 0; i < riscv::XLEN; i++) begin
-      assign clmulr_d[i] = clmul_d[(riscv::XLEN-1)-i];
+    for (genvar i = 0; i < CVA6Cfg.XLEN; i++) begin
+      assign clmulr_d[i] = clmul_d[(CVA6Cfg.XLEN-1)-i];
     end
   end
 
@@ -70,7 +70,7 @@ module multiplier
   logic [TRANS_ID_BITS-1:0] trans_id_q;
   logic                     mult_valid_q;
   fu_op operator_d, operator_q;
-  logic [riscv::XLEN*2-1:0] mult_result_d, mult_result_q;
+  logic [CVA6Cfg.XLEN*2-1:0] mult_result_d, mult_result_q;
 
   // control registers
   logic sign_a, sign_b;
@@ -105,9 +105,9 @@ module multiplier
 
   // single stage version
   assign mult_result_d = $signed(
-      {operand_a_i[riscv::XLEN-1] & sign_a, operand_a_i}
+      {operand_a_i[CVA6Cfg.XLEN-1] & sign_a, operand_a_i}
   ) * $signed(
-      {operand_b_i[riscv::XLEN-1] & sign_b, operand_b_i}
+      {operand_b_i[CVA6Cfg.XLEN-1] & sign_b, operand_b_i}
   );
 
 
@@ -115,13 +115,13 @@ module multiplier
 
   always_comb begin : p_selmux
     unique case (operator_q)
-      MULH, MULHU, MULHSU: result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
+      MULH, MULHU, MULHSU: result_o = mult_result_q[CVA6Cfg.XLEN*2-1:CVA6Cfg.XLEN];
       MULW:                result_o = sext32(mult_result_q[31:0]);
       CLMUL:               result_o = clmul_q;
       CLMULH:              result_o = clmulr_q >> 1;
       CLMULR:              result_o = clmulr_q;
-      // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
-      default:             result_o = mult_result_q[riscv::XLEN-1:0];  // including MUL
+      // MUL performs an CVA6Cfg.XLEN-bit×CVA6Cfg.XLEN-bit multiplication and places the lower CVA6Cfg.XLEN bits in the destination register
+      default:             result_o = mult_result_q[CVA6Cfg.XLEN-1:0];  // including MUL
     endcase
   end
   if (ariane_pkg::BITMANIP) begin

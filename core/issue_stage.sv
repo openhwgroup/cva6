@@ -72,14 +72,14 @@ module issue_stage
     // write back port
     input logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_i,
     input bp_resolve_t resolved_branch_i,
-    input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,
     input exception_t [CVA6Cfg.NrWbPorts-1:0]              ex_ex_i, // exception from execute stage or CVXIF offloaded instruction
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
     input logic x_we_i,
 
     // commit port
     input logic [CVA6Cfg.NrCommitPorts-1:0][            4:0] waddr_i,
-    input logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
     input logic [CVA6Cfg.NrCommitPorts-1:0]                  we_gpr_i,
     input logic [CVA6Cfg.NrCommitPorts-1:0]                  we_fpr_i,
 
@@ -90,14 +90,14 @@ module issue_stage
 
     //RVFI
     input [              riscv::VLEN-1:0] lsu_addr_i,
-    input [          (riscv::XLEN/8)-1:0] lsu_rmask_i,
-    input [          (riscv::XLEN/8)-1:0] lsu_wmask_i,
+    input [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_i,
+    input [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_i,
     input [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_i
 );
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)
   // ---------------------------------------------------
-  typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? riscv::XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
+  typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? CVA6Cfg.XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
 
   fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_sb_iro;
   fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;

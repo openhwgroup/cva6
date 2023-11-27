@@ -27,25 +27,25 @@ module cva6
       logic [config_pkg::NRET*64-1:0]               order;
       logic [config_pkg::NRET*config_pkg::ILEN-1:0] insn;
       logic [config_pkg::NRET-1:0]                  trap;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      cause;
+      logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      cause;
       logic [config_pkg::NRET-1:0]                  halt;
       logic [config_pkg::NRET-1:0]                  intr;
       logic [config_pkg::NRET*2-1:0]                mode;
       logic [config_pkg::NRET*2-1:0]                ixl;
       logic [config_pkg::NRET*5-1:0]                rs1_addr;
       logic [config_pkg::NRET*5-1:0]                rs2_addr;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
+      logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      rs1_rdata;
+      logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      rs2_rdata;
       logic [config_pkg::NRET*5-1:0]                rd_addr;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
+      logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      rd_wdata;
+      logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      pc_rdata;
+      logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      pc_wdata;
       logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
       logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
-      logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
-      logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+      logic [config_pkg::NRET*(CVA6Cfg.XLEN/8)-1:0]  mem_rmask;
+      logic [config_pkg::NRET*(CVA6Cfg.XLEN/8)-1:0]  mem_wmask;
+      logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      mem_rdata;
+      logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      mem_wdata;
     },
     // AXI types
     parameter type axi_ar_chan_t = struct packed {
@@ -122,7 +122,7 @@ module cva6
     input logic rst_ni,
     // Core ID, Cluster ID and boot address are considered more or less static
     input logic [riscv::VLEN-1:0] boot_addr_i,  // reset boot address
-    input  logic [riscv::XLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+    input  logic [CVA6Cfg.XLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
     // Interrupt inputs
     input logic [1:0] irq_i,  // level sensitive IR lines, mip & sip (async)
     input logic ipi_i,  // inter-processor interrupts (async)
@@ -267,7 +267,7 @@ module cva6
   // COMMIT <-> ID
   // --------------
   logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_commit_id;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_commit_id;
   logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_commit_id;
   logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_commit_id;
   // --------------
@@ -360,8 +360,8 @@ module cva6
 
   logic          [              riscv::VLEN-1:0]                       lsu_addr;
   logic          [              riscv::PLEN-1:0]                       mem_paddr;
-  logic          [          (riscv::XLEN/8)-1:0]                       lsu_rmask;
-  logic          [          (riscv::XLEN/8)-1:0]                       lsu_wmask;
+  logic          [          (CVA6Cfg.XLEN/8)-1:0]                       lsu_rmask;
+  logic          [          (CVA6Cfg.XLEN/8)-1:0]                       lsu_wmask;
   logic          [ariane_pkg::TRANS_ID_BITS-1:0]                       lsu_addr_trans_id;
 
   // Accelerator port
@@ -429,7 +429,7 @@ module cva6
   );
 
   logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
-  logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_ex_id;
+  logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_ex_id;
   exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_ex_id;  // exception from execute, ex_stage to id_stage
   logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_ex_id;
 
@@ -737,7 +737,7 @@ module cva6
       .commit_instr_i        (commit_instr_id_commit),
       .commit_ack_i          (commit_ack),
       .boot_addr_i           (boot_addr_i[riscv::VLEN-1:0]),
-      .hart_id_i             (hart_id_i[riscv::XLEN-1:0]),
+      .hart_id_i             (hart_id_i[CVA6Cfg.XLEN-1:0]),
       .ex_i                  (ex_commit),
       .csr_op_i              (csr_op_commit_csr),
       .csr_write_fflags_i    (csr_write_fflags_commit_cs),
@@ -1292,7 +1292,7 @@ module cva6
         rvfi_o[i].trap = mem_exception;
         rvfi_o[i].cause = ex_commit.cause;
         rvfi_o[i].mode = (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
-        rvfi_o[i].ixl = riscv::XLEN == 64 ? 2 : 1;
+        rvfi_o[i].ixl = CVA6Cfg.XLEN == 64 ? 2 : 1;
         rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1[4:0];
         rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2[4:0];
         rvfi_o[i].rd_addr = commit_instr_id_commit[i].rd[4:0];

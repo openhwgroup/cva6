@@ -569,7 +569,7 @@ module miss_handler
   // Bypass AXI Interface
   // ----------------------
   // Cast bypass_adapter_req.addr to axi_adapter port size
-  logic [riscv::XLEN-1:0] bypass_addr;
+  logic [CVA6Cfg.XLEN-1:0] bypass_addr;
   assign bypass_addr = bypass_adapter_req.addr;
 
   axi_adapter #(
@@ -604,7 +604,7 @@ module miss_handler
   // Cache Line AXI Refill
   // ----------------------
   // Cast req_fsm_miss_addr to axi_adapter port size
-  logic [riscv::XLEN-1:0] miss_addr;
+  logic [CVA6Cfg.XLEN-1:0] miss_addr;
   assign miss_addr = req_fsm_miss_addr;
 
   axi_adapter #(

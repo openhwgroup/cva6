@@ -11,12 +11,12 @@
 
 package cvxif_pkg;
 
-  localparam X_DATAWIDTH = riscv::XLEN;
+  localparam X_DATAWIDTH = CVA6Cfg.XLEN;
   localparam X_NUM_RS = ariane_pkg::NR_RGPR_PORTS;  //2 or 3
   localparam X_ID_WIDTH = ariane_pkg::TRANS_ID_BITS;
   localparam X_MEM_WIDTH = 64;
-  localparam X_RFR_WIDTH = riscv::XLEN;
-  localparam X_RFW_WIDTH = riscv::XLEN;
+  localparam X_RFR_WIDTH = CVA6Cfg.XLEN;
+  localparam X_RFW_WIDTH = CVA6Cfg.XLEN;
 
   typedef struct packed {
     logic [15:0]           instr;

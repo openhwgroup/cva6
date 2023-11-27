@@ -97,7 +97,7 @@ module wt_dcache_wbuffer
     output logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx_o,
     output logic [DCACHE_OFFSET_WIDTH-1:0] wr_off_o,
     output riscv::xlen_t wr_data_o,
-    output logic [(riscv::XLEN/8)-1:0] wr_data_be_o,
+    output logic [(CVA6Cfg.XLEN/8)-1:0] wr_data_be_o,
     output logic [DCACHE_USER_WIDTH-1:0] wr_user_o,
     // to forwarding logic and miss unit
     output wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_o,
@@ -112,14 +112,14 @@ module wt_dcache_wbuffer
   logic [DCACHE_WBUF_DEPTH-1:0] tocheck;
   logic [DCACHE_WBUF_DEPTH-1:0] wbuffer_hit_oh, inval_hit;
   //logic     [DCACHE_WBUF_DEPTH-1:0][7:0]    bdirty;
-  logic [DCACHE_WBUF_DEPTH-1:0][(riscv::XLEN/8)-1:0] bdirty;
+  logic [DCACHE_WBUF_DEPTH-1:0][(CVA6Cfg.XLEN/8)-1:0] bdirty;
 
   logic [$clog2(DCACHE_WBUF_DEPTH)-1:0]
       next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
   logic [CACHE_ID_WIDTH-1:0] tx_id, rtrn_id;
 
   logic [riscv::XLEN_ALIGN_BYTES-1:0] bdirty_off;
-  logic [(riscv::XLEN/8)-1:0] tx_be;
+  logic [(CVA6Cfg.XLEN/8)-1:0] tx_be;
   logic [riscv::PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
   logic [DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
   logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
@@ -183,7 +183,7 @@ module wt_dcache_wbuffer
 
   // get byte offset
   lzc #(
-      .WIDTH(riscv::XLEN / 8)
+      .WIDTH(CVA6Cfg.XLEN / 8)
   ) i_vld_bdirty (
       .in_i   (bdirty[dirty_ptr]),
       .cnt_o  (bdirty_off),
@@ -468,7 +468,7 @@ module wt_dcache_wbuffer
     // once TX write response came back, we can clear the TX block. if it was not dirty, we
     // can completely evict it - otherwise we have to leave it there for retransmission
     if (evict) begin
-      for (int k = 0; k < (riscv::XLEN / 8); k++) begin
+      for (int k = 0; k < (CVA6Cfg.XLEN / 8); k++) begin
         if (tx_stat_q[rtrn_id].be[k]) begin
           wbuffer_d[rtrn_ptr].txblock[k] = 1'b0;
           if (!wbuffer_q[rtrn_ptr].dirty[k]) begin
@@ -490,7 +490,7 @@ module wt_dcache_wbuffer
     // mark bytes sent out to the memory system
     if (miss_req_o && miss_ack_i) begin
       dirty_rd_en = 1'b1;
-      for (int k = 0; k < (riscv::XLEN / 8); k++) begin
+      for (int k = 0; k < (CVA6Cfg.XLEN / 8); k++) begin
         if (tx_be[k]) begin
           wbuffer_d[dirty_ptr].dirty[k]   = 1'b0;
           wbuffer_d[dirty_ptr].txblock[k] = 1'b1;
@@ -515,7 +515,7 @@ module wt_dcache_wbuffer
         };
 
         // mark bytes as dirty
-        for (int k = 0; k < (riscv::XLEN / 8); k++) begin
+        for (int k = 0; k < (CVA6Cfg.XLEN / 8); k++) begin
           if (req_port_i.data_be[k]) begin
             wbuffer_d[wr_ptr].valid[k]     = 1'b1;
             wbuffer_d[wr_ptr].dirty[k]     = 1'b1;
@@ -605,7 +605,7 @@ module wt_dcache_wbuffer
   else $fatal(1, "[l1 dcache wbuffer] req_port_i.kill_req should not be asserted");
 
   for (genvar k = 0; k < DCACHE_WBUF_DEPTH; k++) begin : gen_assert1
-    for (genvar j = 0; j < (riscv::XLEN / 8); j++) begin : gen_assert2
+    for (genvar j = 0; j < (CVA6Cfg.XLEN / 8); j++) begin : gen_assert2
       byteStates :
       assert property (
         @(posedge clk_i) disable iff (!rst_ni) {wbuffer_q[k].valid[j], wbuffer_q[k].dirty[j], wbuffer_q[k].txblock[j]} inside {3'b000, 3'b110, 3'b101, 3'b111} )

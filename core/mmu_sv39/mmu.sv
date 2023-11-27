@@ -224,7 +224,7 @@ module mmu
       if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0)) begin
         icache_areq_o.fetch_exception = {
           riscv::INSTR_ACCESS_FAULT,
-          {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+          {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
           1'b1
         };
       end
@@ -253,13 +253,13 @@ module mmu
           // throw a page fault
           icache_areq_o.fetch_exception = {
             riscv::INSTR_PAGE_FAULT,
-            {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+            {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
             1'b1
           };
         end else if (!pmp_instr_allow) begin
           icache_areq_o.fetch_exception = {
             riscv::INSTR_ACCESS_FAULT,
-            {{riscv::XLEN - riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+            {{CVA6Cfg.XLEN - riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr},
             1'b1
           };
         end
@@ -272,11 +272,11 @@ module mmu
         icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
         if (ptw_error)
           icache_areq_o.fetch_exception = {
-            riscv::INSTR_PAGE_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
+            riscv::INSTR_PAGE_FAULT, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
           };
         else
           icache_areq_o.fetch_exception = {
-            riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
+            riscv::INSTR_ACCESS_FAULT, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
           };
       end
     end
@@ -285,7 +285,7 @@ module mmu
     if ((!match_any_execute_region && !ptw_error) || (!enable_translation_i && !pmp_instr_allow)) begin
       icache_areq_o.fetch_exception = {
         riscv::INSTR_ACCESS_FAULT,
-        {{riscv::XLEN - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr},
+        {{CVA6Cfg.XLEN - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr},
         1'b1
       };
     end
@@ -390,14 +390,14 @@ module mmu
           if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
             lsu_exception_o = {
               riscv::STORE_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
+              {{CVA6Cfg.XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
               1'b1
             };
             // Check if any PMPs are violated
           end else if (!pmp_data_allow) begin
             lsu_exception_o = {
               riscv::ST_ACCESS_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
+              {{CVA6Cfg.XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
               1'b1
             };
           end
@@ -408,14 +408,14 @@ module mmu
           if (daccess_err) begin
             lsu_exception_o = {
               riscv::LOAD_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
+              {{CVA6Cfg.XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
               1'b1
             };
             // Check if any PMPs are violated
           end else if (!pmp_data_allow) begin
             lsu_exception_o = {
               riscv::LD_ACCESS_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
+              {{CVA6Cfg.XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
               1'b1
             };
           end
@@ -435,13 +435,13 @@ module mmu
           if (lsu_is_store_q) begin
             lsu_exception_o = {
               riscv::STORE_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
+              {{CVA6Cfg.XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
               1'b1
             };
           end else begin
             lsu_exception_o = {
               riscv::LOAD_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
+              {{CVA6Cfg.XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
               1'b1
             };
           end
@@ -453,11 +453,11 @@ module mmu
           // Any fault of the page table walk should be based of the original access type
           if (lsu_is_store_q) begin
             lsu_exception_o = {
-              riscv::ST_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1
+              riscv::ST_ACCESS_FAULT, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1
             };
           end else begin
             lsu_exception_o = {
-              riscv::LD_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1
+              riscv::LD_ACCESS_FAULT, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1
             };
           end
         end
@@ -466,11 +466,11 @@ module mmu
     else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
       if (lsu_is_store_q) begin
         lsu_exception_o = {
-          riscv::ST_ACCESS_FAULT, {{riscv::XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1
+          riscv::ST_ACCESS_FAULT, {{CVA6Cfg.XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1
         };
       end else begin
         lsu_exception_o = {
-          riscv::LD_ACCESS_FAULT, {{riscv::XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1
+          riscv::LD_ACCESS_FAULT, {{CVA6Cfg.XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1
         };
       end
     end

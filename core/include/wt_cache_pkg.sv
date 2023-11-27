@@ -59,7 +59,7 @@ package wt_cache_pkg;
   localparam DCACHE_NUM_WORDS = 2 ** (ariane_pkg::DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
   localparam DCACHE_CL_IDX_WIDTH = $clog2(DCACHE_NUM_WORDS);  // excluding byte offset
 
-  localparam DCACHE_NUM_BANKS = ariane_pkg::DCACHE_LINE_WIDTH / riscv::XLEN;
+  localparam DCACHE_NUM_BANKS = ariane_pkg::DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
   localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
 
   // write buffer parameterization
@@ -72,9 +72,9 @@ package wt_cache_pkg;
     logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
     riscv::xlen_t data;
     logic [ariane_pkg::DCACHE_USER_WIDTH-1:0] user;
-    logic [(riscv::XLEN/8)-1:0] dirty;  // byte is dirty
-    logic [(riscv::XLEN/8)-1:0] valid;  // byte is valid
-    logic [(riscv::XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
+    logic [(CVA6Cfg.XLEN/8)-1:0] dirty;  // byte is dirty
+    logic [(CVA6Cfg.XLEN/8)-1:0] valid;  // byte is valid
+    logic [(CVA6Cfg.XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
     logic checked;  // if cache state of this word has been checked
     logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
   } wbuffer_t;
@@ -85,7 +85,7 @@ package wt_cache_pkg;
 
   typedef struct packed {
     logic                                 vld;
-    logic [(riscv::XLEN/8)-1:0]           be;
+    logic [(CVA6Cfg.XLEN/8)-1:0]           be;
     logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
   } tx_stat_t;
 
@@ -265,8 +265,8 @@ package wt_cache_pkg;
     return cnt;
   endfunction : popcnt64
 
-  function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable8(input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
-    logic [(riscv::XLEN/8)-1:0] be;
+  function automatic logic [(CVA6Cfg.XLEN/8)-1:0] to_byte_enable8(input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
+    logic [(CVA6Cfg.XLEN/8)-1:0] be;
     be = '0;
     unique case (size)
       2'b00:   be[offset] = '1;  // byte
@@ -277,7 +277,7 @@ package wt_cache_pkg;
     return be;
   endfunction : to_byte_enable8
 
-  function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable4(input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
+  function automatic logic [(CVA6Cfg.XLEN/8)-1:0] to_byte_enable4(input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
     logic [3:0] be;
     be = '0;
     unique case (size)

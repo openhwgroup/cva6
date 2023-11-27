@@ -41,7 +41,7 @@ module store_buffer
     input  logic [riscv::PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
     output [riscv::PLEN-1:0] mem_paddr_o,
     input riscv::xlen_t data_i,  // data which is placed in the queue
-    input logic [(riscv::XLEN/8)-1:0] be_i,  // byte enable in
+    input logic [(CVA6Cfg.XLEN/8)-1:0] be_i,  // byte enable in
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
@@ -55,7 +55,7 @@ module store_buffer
   struct packed {
     logic [riscv::PLEN-1:0] address;
     riscv::xlen_t data;
-    logic [(riscv::XLEN/8)-1:0] be;
+    logic [(CVA6Cfg.XLEN/8)-1:0] be;
     logic [1:0] data_size;
     logic valid;  // this entry is valid, we need this for checking if the address offset matches
   }

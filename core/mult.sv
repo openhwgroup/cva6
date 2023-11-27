@@ -115,7 +115,7 @@ module mult
   // ---------------------
   serdiv #(
       .CVA6Cfg(CVA6Cfg),
-      .WIDTH  (riscv::XLEN)
+      .WIDTH  (CVA6Cfg.XLEN)
   ) i_div (
       .clk_i    (clk_i),
       .rst_ni   (rst_ni),

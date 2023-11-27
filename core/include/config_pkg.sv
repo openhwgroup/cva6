@@ -36,6 +36,7 @@ package config_pkg;
   localparam NrMaxRules = 16;
 
   typedef struct packed {
+    int unsigned XLEN;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
@@ -99,6 +100,7 @@ package config_pkg;
   } cva6_user_cfg_t;
 
   typedef struct packed {
+    int unsigned XLEN;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
@@ -181,6 +183,7 @@ package config_pkg;
 
     return
     '{
+      XLEN: CVA6Cfg.XLEN,
       NrCommitPorts: CVA6Cfg.NrCommitPorts,
       AxiAddrWidth: CVA6Cfg.AxiAddrWidth,
       AxiDataWidth: CVA6Cfg.AxiDataWidth,

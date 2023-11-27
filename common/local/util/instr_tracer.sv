@@ -21,7 +21,7 @@ module instr_tracer #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 )(
   instr_tracer_if   tracer_if,
-  input logic[riscv::XLEN-1:0] hart_id_i
+  input logic[CVA6Cfg.XLEN-1:0] hart_id_i
 );
 
   // keep the decoded instructions in a queue

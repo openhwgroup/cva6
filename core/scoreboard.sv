@@ -59,15 +59,15 @@ module scoreboard #(
     // write-back port
     input ariane_pkg::bp_resolve_t resolved_branch_i,
     input logic [CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
-    input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,  // write data in
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,  // write data in
     input ariane_pkg::exception_t [CVA6Cfg.NrWbPorts-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,  // data in is valid
     input logic x_we_i,  // cvxif we for writeback
 
     // RVFI
     input               [              riscv::VLEN-1:0] lsu_addr_i,
-    input               [          (riscv::XLEN/8)-1:0] lsu_rmask_i,
-    input               [          (riscv::XLEN/8)-1:0] lsu_wmask_i,
+    input               [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_i,
+    input               [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_i,
     input               [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_i,
     input riscv::xlen_t                                 rs1_forwarding_i,
     input riscv::xlen_t                                 rs2_forwarding_i
@@ -309,7 +309,7 @@ module scoreboard #(
   // ----------------------------------
   // read operand interface: same logic as register file
   logic [NR_ENTRIES+CVA6Cfg.NrWbPorts-1:0] rs1_fwd_req, rs2_fwd_req, rs3_fwd_req;
-  logic [NR_ENTRIES+CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] rs_data;
+  logic [NR_ENTRIES+CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] rs_data;
   logic rs1_valid, rs2_valid, rs3_valid;
 
   // WB ports have higher prio than entries
@@ -353,7 +353,7 @@ module scoreboard #(
   // this implicitly gives higher prio to WB ports
   rr_arb_tree #(
       .NumIn(NR_ENTRIES + CVA6Cfg.NrWbPorts),
-      .DataWidth(riscv::XLEN),
+      .DataWidth(CVA6Cfg.XLEN),
       .ExtPrio(1'b1),
       .AxiVldRdy(1'b1)
   ) i_sel_rs1 (
@@ -372,7 +372,7 @@ module scoreboard #(
 
   rr_arb_tree #(
       .NumIn(NR_ENTRIES + CVA6Cfg.NrWbPorts),
-      .DataWidth(riscv::XLEN),
+      .DataWidth(CVA6Cfg.XLEN),
       .ExtPrio(1'b1),
       .AxiVldRdy(1'b1)
   ) i_sel_rs2 (
@@ -393,7 +393,7 @@ module scoreboard #(
 
   rr_arb_tree #(
       .NumIn(NR_ENTRIES + CVA6Cfg.NrWbPorts),
-      .DataWidth(riscv::XLEN),
+      .DataWidth(CVA6Cfg.XLEN),
       .ExtPrio(1'b1),
       .AxiVldRdy(1'b1)
   ) i_sel_rs3 (
@@ -411,7 +411,7 @@ module scoreboard #(
   );
 
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_three_port
-    assign rs3_o = rs3[riscv::XLEN-1:0];
+    assign rs3_o = rs3[CVA6Cfg.XLEN-1:0];
   end else begin : gen_fp_three_port
     assign rs3_o = rs3[CVA6Cfg.FLen-1:0];
   end

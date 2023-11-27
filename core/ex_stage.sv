@@ -125,8 +125,8 @@ module ex_stage
     // RVFI
     output [              riscv::VLEN-1:0] lsu_addr_o,
     output [              riscv::PLEN-1:0] mem_paddr_o,
-    output [          (riscv::XLEN/8)-1:0] lsu_rmask_o,
-    output [          (riscv::XLEN/8)-1:0] lsu_wmask_o,
+    output [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_o,
+    output [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_o,
     output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
 );
 
@@ -223,7 +223,7 @@ module ex_stage
   // result MUX
   always_comb begin
     // Branch result as default case
-    flu_result_o   = {{riscv::XLEN - riscv::VLEN{1'b0}}, branch_result};
+    flu_result_o   = {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, branch_result};
     flu_trans_id_o = fu_data_i.trans_id;
     // ALU result
     if (alu_valid_i) begin

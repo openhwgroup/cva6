@@ -51,7 +51,7 @@ module amo_buffer #(
   assign amo_req_o.amo_op = amo_data_out.op;
   assign amo_req_o.size = amo_data_out.size;
   assign amo_req_o.operand_a = {{64 - riscv::PLEN{1'b0}}, amo_data_out.paddr};
-  assign amo_req_o.operand_b = {{64 - riscv::XLEN{1'b0}}, amo_data_out.data};
+  assign amo_req_o.operand_b = {{64 - CVA6Cfg.XLEN{1'b0}}, amo_data_out.data};
 
   assign amo_data_in.op = amo_op_i;
   assign amo_data_in.data = data_i;

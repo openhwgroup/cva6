@@ -79,8 +79,8 @@ module load_store_unit
     //RVFI
     output [              riscv::VLEN-1:0] lsu_addr_o,
     output [              riscv::PLEN-1:0] mem_paddr_o,
-    output [          (riscv::XLEN/8)-1:0] lsu_rmask_o,
-    output [          (riscv::XLEN/8)-1:0] lsu_wmask_o,
+    output [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_o,
+    output [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_o,
     output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
 );
   // data is misaligned
@@ -102,12 +102,12 @@ module load_store_unit
   logic         [    riscv::VLEN-1:0] vaddr_i;
   riscv::xlen_t                       vaddr_xlen;
   logic                               overflow;
-  logic         [(riscv::XLEN/8)-1:0] be_i;
+  logic         [(CVA6Cfg.XLEN/8)-1:0] be_i;
 
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
   assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
-  // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
-  assign overflow = !((&vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b1 || (|vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b0);
+  // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.XLEN-1:38] or [CVA6Cfg.XLEN-1:31] are equal
+  assign overflow = !((&vaddr_xlen[CVA6Cfg.XLEN-1:riscv::SV-1]) == 1'b1 || (|vaddr_xlen[CVA6Cfg.XLEN-1:riscv::SV-1]) == 1'b0);
 
   logic                   st_valid_i;
   logic                   ld_valid_i;
@@ -140,7 +140,7 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
-  if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
+  if (MMU_PRESENT && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
@@ -169,7 +169,7 @@ module load_store_unit
         .pmpaddr_i,
         .*
     );
-  end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
+  end else if (MMU_PRESENT && (CVA6Cfg.XLEN == 32)) begin : gen_mmu_sv32
     cva6_mmu_sv32 #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
@@ -394,7 +394,7 @@ module load_store_unit
   // can augment the exception if other memory related exceptions like a page fault or access errors
   always_comb begin : data_misaligned_detection
 
-    misaligned_exception = {{riscv::XLEN{1'b0}}, {riscv::XLEN{1'b0}}, 1'b0};
+    misaligned_exception = {{CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, 1'b0};
 
     data_misaligned = 1'b0;
 
@@ -435,12 +435,12 @@ module load_store_unit
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception = {
-          riscv::LD_ADDR_MISALIGNED, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
+          riscv::LD_ADDR_MISALIGNED, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
         };
 
       end else if (lsu_ctrl.fu == STORE) begin
         misaligned_exception = {
-          riscv::ST_ADDR_MISALIGNED, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
+          riscv::ST_ADDR_MISALIGNED, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
         };
       end
     end
@@ -449,12 +449,12 @@ module load_store_unit
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception = {
-          riscv::LD_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
+          riscv::LD_ACCESS_FAULT, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
         };
 
       end else if (lsu_ctrl.fu == STORE) begin
         misaligned_exception = {
-          riscv::ST_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
+          riscv::ST_ACCESS_FAULT, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
         };
       end
     end

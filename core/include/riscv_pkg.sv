@@ -20,7 +20,6 @@ package riscv;
   // ----------------------
   // Import cva6 config from cva6_config_pkg
   // ----------------------
-  localparam XLEN = cva6_config_pkg::CVA6ConfigXlen;
   localparam FPU_EN = cva6_config_pkg::CVA6ConfigFpuEn;
 
   // ----------------------
@@ -37,20 +36,20 @@ package riscv;
 
   // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
   // Warning: VLEN must be superior or equal to PLEN
-  localparam VLEN = (XLEN == 32) ? 32 : 64;  // virtual address length
-  localparam PLEN = (XLEN == 32) ? 34 : 56;  // physical address length
+  localparam VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;  // virtual address length
+  localparam PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;  // physical address length
 
-  localparam IS_XLEN32 = (XLEN == 32) ? 1'b1 : 1'b0;
-  localparam IS_XLEN64 = (XLEN == 32) ? 1'b0 : 1'b1;
-  localparam ModeW = (XLEN == 32) ? 1 : 4;
-  localparam ASIDW = (XLEN == 32) ? 9 : 16;
-  localparam PPNW = (XLEN == 32) ? 22 : 44;
-  localparam vm_mode_t MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
+  localparam IS_XLEN32 = (CVA6Cfg.XLEN == 32) ? 1'b1 : 1'b0;
+  localparam IS_XLEN64 = (CVA6Cfg.XLEN == 32) ? 1'b0 : 1'b1;
+  localparam ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
+  localparam ASIDW = (CVA6Cfg.XLEN == 32) ? 9 : 16;
+  localparam PPNW = (CVA6Cfg.XLEN == 32) ? 22 : 44;
+  localparam vm_mode_t MODE_SV = (CVA6Cfg.XLEN == 32) ? ModeSv32 : ModeSv39;
   localparam SV = (MODE_SV == ModeSv32) ? 32 : 39;
   localparam VPN2 = (VLEN - 31 < 8) ? VLEN - 31 : 8;
-  localparam XLEN_ALIGN_BYTES = $clog2(XLEN / 8);
+  localparam XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
 
-  typedef logic [XLEN-1:0] xlen_t;
+  typedef logic [CVA6Cfg.XLEN-1:0] xlen_t;
 
   // --------------------
   // Privilege Spec
@@ -324,21 +323,21 @@ package riscv;
   // ----------------------
   // Exception Cause Codes
   // ----------------------
-  localparam logic [XLEN-1:0] INSTR_ADDR_MISALIGNED = 0;
-  localparam logic [XLEN-1:0] INSTR_ACCESS_FAULT    = 1;  // Illegal access as governed by PMPs and PMAs
-  localparam logic [XLEN-1:0] ILLEGAL_INSTR = 2;
-  localparam logic [XLEN-1:0] BREAKPOINT = 3;
-  localparam logic [XLEN-1:0] LD_ADDR_MISALIGNED = 4;
-  localparam logic [XLEN-1:0] LD_ACCESS_FAULT = 5;  // Illegal access as governed by PMPs and PMAs
-  localparam logic [XLEN-1:0] ST_ADDR_MISALIGNED = 6;
-  localparam logic [XLEN-1:0] ST_ACCESS_FAULT = 7;  // Illegal access as governed by PMPs and PMAs
-  localparam logic [XLEN-1:0] ENV_CALL_UMODE = 8;  // environment call from user mode
-  localparam logic [XLEN-1:0] ENV_CALL_SMODE = 9;  // environment call from supervisor mode
-  localparam logic [XLEN-1:0] ENV_CALL_MMODE = 11;  // environment call from machine mode
-  localparam logic [XLEN-1:0] INSTR_PAGE_FAULT = 12;  // Instruction page fault
-  localparam logic [XLEN-1:0] LOAD_PAGE_FAULT = 13;  // Load page fault
-  localparam logic [XLEN-1:0] STORE_PAGE_FAULT = 15;  // Store page fault
-  localparam logic [XLEN-1:0] DEBUG_REQUEST = 24;  // Debug request
+  localparam logic [CVA6Cfg.XLEN-1:0] INSTR_ADDR_MISALIGNED = 0;
+  localparam logic [CVA6Cfg.XLEN-1:0] INSTR_ACCESS_FAULT    = 1;  // Illegal access as governed by PMPs and PMAs
+  localparam logic [CVA6Cfg.XLEN-1:0] ILLEGAL_INSTR = 2;
+  localparam logic [CVA6Cfg.XLEN-1:0] BREAKPOINT = 3;
+  localparam logic [CVA6Cfg.XLEN-1:0] LD_ADDR_MISALIGNED = 4;
+  localparam logic [CVA6Cfg.XLEN-1:0] LD_ACCESS_FAULT = 5;  // Illegal access as governed by PMPs and PMAs
+  localparam logic [CVA6Cfg.XLEN-1:0] ST_ADDR_MISALIGNED = 6;
+  localparam logic [CVA6Cfg.XLEN-1:0] ST_ACCESS_FAULT = 7;  // Illegal access as governed by PMPs and PMAs
+  localparam logic [CVA6Cfg.XLEN-1:0] ENV_CALL_UMODE = 8;  // environment call from user mode
+  localparam logic [CVA6Cfg.XLEN-1:0] ENV_CALL_SMODE = 9;  // environment call from supervisor mode
+  localparam logic [CVA6Cfg.XLEN-1:0] ENV_CALL_MMODE = 11;  // environment call from machine mode
+  localparam logic [CVA6Cfg.XLEN-1:0] INSTR_PAGE_FAULT = 12;  // Instruction page fault
+  localparam logic [CVA6Cfg.XLEN-1:0] LOAD_PAGE_FAULT = 13;  // Load page fault
+  localparam logic [CVA6Cfg.XLEN-1:0] STORE_PAGE_FAULT = 15;  // Store page fault
+  localparam logic [CVA6Cfg.XLEN-1:0] DEBUG_REQUEST = 24;  // Debug request
 
   localparam int unsigned IRQ_S_SOFT = 1;
   localparam int unsigned IRQ_M_SOFT = 3;
@@ -347,19 +346,19 @@ package riscv;
   localparam int unsigned IRQ_S_EXT = 9;
   localparam int unsigned IRQ_M_EXT = 11;
 
-  localparam logic [XLEN-1:0] MIP_SSIP = 1 << IRQ_S_SOFT;
-  localparam logic [XLEN-1:0] MIP_MSIP = 1 << IRQ_M_SOFT;
-  localparam logic [XLEN-1:0] MIP_STIP = 1 << IRQ_S_TIMER;
-  localparam logic [XLEN-1:0] MIP_MTIP = 1 << IRQ_M_TIMER;
-  localparam logic [XLEN-1:0] MIP_SEIP = 1 << IRQ_S_EXT;
-  localparam logic [XLEN-1:0] MIP_MEIP = 1 << IRQ_M_EXT;
+  localparam logic [CVA6Cfg.XLEN-1:0] MIP_SSIP = 1 << IRQ_S_SOFT;
+  localparam logic [CVA6Cfg.XLEN-1:0] MIP_MSIP = 1 << IRQ_M_SOFT;
+  localparam logic [CVA6Cfg.XLEN-1:0] MIP_STIP = 1 << IRQ_S_TIMER;
+  localparam logic [CVA6Cfg.XLEN-1:0] MIP_MTIP = 1 << IRQ_M_TIMER;
+  localparam logic [CVA6Cfg.XLEN-1:0] MIP_SEIP = 1 << IRQ_S_EXT;
+  localparam logic [CVA6Cfg.XLEN-1:0] MIP_MEIP = 1 << IRQ_M_EXT;
 
-  localparam logic [XLEN-1:0] S_SW_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_SOFT);
-  localparam logic [XLEN-1:0] M_SW_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_SOFT);
-  localparam logic [XLEN-1:0] S_TIMER_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_TIMER);
-  localparam logic [XLEN-1:0] M_TIMER_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_TIMER);
-  localparam logic [XLEN-1:0] S_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_EXT);
-  localparam logic [XLEN-1:0] M_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_EXT);
+  localparam logic [CVA6Cfg.XLEN-1:0] S_SW_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_S_SOFT);
+  localparam logic [CVA6Cfg.XLEN-1:0] M_SW_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_M_SOFT);
+  localparam logic [CVA6Cfg.XLEN-1:0] S_TIMER_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_S_TIMER);
+  localparam logic [CVA6Cfg.XLEN-1:0] M_TIMER_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_M_TIMER);
+  localparam logic [CVA6Cfg.XLEN-1:0] S_EXT_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_S_EXT);
+  localparam logic [CVA6Cfg.XLEN-1:0] M_EXT_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_M_EXT);
 
   // -----
   // CSRs

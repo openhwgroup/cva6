@@ -446,7 +446,7 @@ module load_unit
     end  */
 
   // result mux fast
-  logic [        (riscv::XLEN/8)-1:0] rdata_sign_bits;
+  logic [        (CVA6Cfg.XLEN/8)-1:0] rdata_sign_bits;
   logic [riscv::XLEN_ALIGN_BYTES-1:0] rdata_offset;
   logic rdata_sign_bit, rdata_is_signed, rdata_is_fp_signed;
 
@@ -458,7 +458,7 @@ module load_unit
                                 ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH})                     ? ldbuf_rdata.address_offset + 1 :
                                                                                                                          ldbuf_rdata.address_offset;
 
-  for (genvar i = 0; i < (riscv::XLEN / 8); i++) begin : gen_sign_bits
+  for (genvar i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : gen_sign_bits
     assign rdata_sign_bits[i] = req_port_i.data_rdata[(i+1)*8-1];
   end
 
@@ -471,28 +471,28 @@ module load_unit
   always_comb begin
     unique case (ldbuf_rdata.operation)
       ariane_pkg::LW, ariane_pkg::LWU:
-      result_o = {{riscv::XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
+      result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
       ariane_pkg::LH, ariane_pkg::LHU:
-      result_o = {{riscv::XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
+      result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
       ariane_pkg::LB, ariane_pkg::LBU:
-      result_o = {{riscv::XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
+      result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
       ariane_pkg::FLW: begin
         if (CVA6Cfg.FpPresent) begin
-          result_o = {{riscv::XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
+          result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
         end
       end
       ariane_pkg::FLH: begin
         if (CVA6Cfg.FpPresent) begin
-          result_o = {{riscv::XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
+          result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
         end
       end
       ariane_pkg::FLB: begin
         if (CVA6Cfg.FpPresent) begin
-          result_o = {{riscv::XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
+          result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
         end
       end
 
-      default: result_o = shifted_data[riscv::XLEN-1:0];
+      default: result_o = shifted_data[CVA6Cfg.XLEN-1:0];
     endcase
   end
   // end result mux fast

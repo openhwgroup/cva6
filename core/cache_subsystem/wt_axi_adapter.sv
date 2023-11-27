@@ -131,7 +131,7 @@ module wt_axi_adapter
   always_comb begin : p_axi_req
     // write channel
     axi_wr_id_in = arb_idx;
-    axi_wr_data  = {(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
+    axi_wr_data  = {(CVA6Cfg.AxiDataWidth/CVA6Cfg.XLEN){dcache_data.data}};
     axi_wr_user  = dcache_data.user;
     // Cast to AXI address width
     axi_wr_addr  = dcache_data.paddr;
@@ -249,8 +249,8 @@ module wt_axi_adapter
                  AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
                  AMO_AND:  begin
                    // in this case we need to invert the data to get a "CLR"
-                   axi_wr_data  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
-                   axi_wr_user  = ~{(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.user}};
+                   axi_wr_data  = ~{(CVA6Cfg.AxiDataWidth/CVA6Cfg.XLEN){dcache_data.data}};
+                   axi_wr_user  = ~{(CVA6Cfg.AxiDataWidth/CVA6Cfg.XLEN){dcache_data.user}};
                    axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
                  end
                  AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};

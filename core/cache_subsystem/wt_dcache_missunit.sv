@@ -40,7 +40,7 @@ module wt_dcache_missunit
     output logic [NumPorts-1:0] miss_ack_o,
     input logic [NumPorts-1:0] miss_nc_i,
     input logic [NumPorts-1:0] miss_we_i,
-    input logic [NumPorts-1:0][riscv::XLEN-1:0] miss_wdata_i,
+    input logic [NumPorts-1:0][CVA6Cfg.XLEN-1:0] miss_wdata_i,
     input logic [NumPorts-1:0][DCACHE_USER_WIDTH-1:0] miss_wuser_i,
     input logic [NumPorts-1:0][riscv::PLEN-1:0] miss_paddr_i,
     input logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits_i,
