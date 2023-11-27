@@ -305,7 +305,7 @@ module cva6
   logic sum_csr_ex;
   logic mxr_csr_ex;
   logic [riscv::PPNW-1:0] satp_ppn_csr_ex;
-  logic [ASID_WIDTH-1:0] asid_csr_ex;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] asid_csr_ex;
   logic [11:0] csr_addr_ex_csr;
   fu_op csr_op_commit_csr;
   logic [CVA6Cfg.XLEN-1:0] csr_wdata_commit_csr;
@@ -599,8 +599,7 @@ module cva6
   ex_stage #(
       .CVA6Cfg   (CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
-      .branchpredict_sbe_t(branchpredict_sbe_t),
-      .ASID_WIDTH(ASID_WIDTH)
+      .branchpredict_sbe_t(branchpredict_sbe_t)
   ) ex_stage_i (
       .clk_i                (clk_i),
       .rst_ni               (rst_ni),
@@ -756,7 +755,7 @@ module cva6
   // ---------
   csr_regfile #(
       .CVA6Cfg       (CVA6Cfg),
-      .AsidWidth     (ASID_WIDTH),
+      .AsidWidth     (CVA6Cfg.ASID_WIDTH),
       .MHPMCounterNum(MHPMCounterNum)
   ) csr_regfile_i (
       .flush_o               (flush_csr_ctrl),

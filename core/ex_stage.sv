@@ -19,8 +19,7 @@ module ex_stage
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
-    parameter type branchpredict_sbe_t = logic,
-    parameter int unsigned ASID_WIDTH = 1
+    parameter type branchpredict_sbe_t = logic
 ) (
     input logic clk_i,        // Clock
     input logic rst_ni,       // Asynchronous reset active low
@@ -105,7 +104,7 @@ module ex_stage
     input  logic                               sum_i,
     input  logic                               mxr_i,
     input  logic             [riscv::PPNW-1:0] satp_ppn_i,
-    input  logic             [ ASID_WIDTH-1:0] asid_i,
+    input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // icache translation requests
     input  icache_arsp_t                       icache_areq_i,
     output icache_areq_t                       icache_areq_o,
@@ -156,7 +155,7 @@ module ex_stage
   logic current_instruction_is_sfence_vma;
   // These two register store the rs1 and rs2 parameters in case of `SFENCE_VMA`
   // instruction to be used for TLB flush in the next clock cycle.
-  logic [ASID_WIDTH-1:0] asid_to_be_flushed;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed;
   logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed;
 
   // from ALU to branch unit
@@ -308,8 +307,7 @@ module ex_stage
   assign lsu_data = lsu_valid_i ? fu_data_i : '0;
 
   load_store_unit #(
-      .CVA6Cfg   (CVA6Cfg),
-      .ASID_WIDTH(ASID_WIDTH)
+      .CVA6Cfg   (CVA6Cfg)
   ) lsu_i (
       .clk_i,
       .rst_ni,
@@ -411,7 +409,7 @@ module ex_stage
         // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
       end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operation == SFENCE_VMA) && csr_valid_i))) begin
         vaddr_to_be_flushed <= rs1_forwarding_i;
-        asid_to_be_flushed  <= rs2_forwarding_i[ASID_WIDTH-1:0];
+        asid_to_be_flushed  <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
       end
     end
   end else begin

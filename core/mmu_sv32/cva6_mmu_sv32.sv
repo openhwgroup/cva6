@@ -31,8 +31,7 @@ module cva6_mmu_sv32
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
     parameter int unsigned           INSTR_TLB_ENTRIES = 2,
-    parameter int unsigned           DATA_TLB_ENTRIES  = 2,
-    parameter int unsigned           ASID_WIDTH        = 1
+    parameter int unsigned           DATA_TLB_ENTRIES  = 2
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -64,8 +63,8 @@ module cva6_mmu_sv32
     input logic mxr_i,
     // input logic flag_mprv_i,
     input logic [riscv::PPNW-1:0] satp_ppn_i,
-    input logic [ASID_WIDTH-1:0] asid_i,
-    input logic [ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     input logic flush_tlb_i,
     // Performance counters
@@ -114,8 +113,7 @@ module cva6_mmu_sv32
 
   cva6_tlb_sv32 #(
       .CVA6Cfg    (CVA6Cfg),
-      .TLB_ENTRIES(INSTR_TLB_ENTRIES),
-      .ASID_WIDTH (ASID_WIDTH)
+      .TLB_ENTRIES(INSTR_TLB_ENTRIES)
   ) i_itlb (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
@@ -136,8 +134,7 @@ module cva6_mmu_sv32
 
   cva6_tlb_sv32 #(
       .CVA6Cfg    (CVA6Cfg),
-      .TLB_ENTRIES(DATA_TLB_ENTRIES),
-      .ASID_WIDTH (ASID_WIDTH)
+      .TLB_ENTRIES(DATA_TLB_ENTRIES)
   ) i_dtlb (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
@@ -159,8 +156,7 @@ module cva6_mmu_sv32
   cva6_shared_tlb_sv32 #(
       .CVA6Cfg         (CVA6Cfg),
       .SHARED_TLB_DEPTH(64),
-      .SHARED_TLB_WAYS (2),
-      .ASID_WIDTH      (ASID_WIDTH)
+      .SHARED_TLB_WAYS (2)
   ) i_shared_tlb (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
@@ -198,8 +194,7 @@ module cva6_mmu_sv32
   );
 
   cva6_ptw_sv32 #(
-      .CVA6Cfg   (CVA6Cfg),
-      .ASID_WIDTH(ASID_WIDTH)
+      .CVA6Cfg   (CVA6Cfg)
   ) i_ptw (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),

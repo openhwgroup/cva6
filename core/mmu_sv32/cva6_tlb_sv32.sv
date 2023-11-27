@@ -28,8 +28,7 @@ module cva6_tlb_sv32
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter int unsigned TLB_ENTRIES = 4,
-    parameter int unsigned ASID_WIDTH = 1
+    parameter int unsigned TLB_ENTRIES = 4
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -38,10 +37,10 @@ module cva6_tlb_sv32
     input tlb_update_sv32_t update_i,
     // Lookup signals
     input logic lu_access_i,
-    input logic [ASID_WIDTH-1:0] lu_asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i,
     input logic [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
     output riscv::pte_sv32_t lu_content_o,
-    input logic [ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     output logic lu_is_4M_o,
     output logic lu_hit_o
@@ -78,7 +77,7 @@ module cva6_tlb_sv32
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // first level match, this may be a mega page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-      if (tags_q[i].valid && ((lu_asid_i == tags_q[i].asid[ASID_WIDTH-1:0]) || content_q[i].g)  && vpn1 == tags_q[i].vpn1) begin
+      if (tags_q[i].valid && ((lu_asid_i == tags_q[i].asid[CVA6Cfg.ASID_WIDTH-1:0]) || content_q[i].g)  && vpn1 == tags_q[i].vpn1) begin
         if (tags_q[i].is_4M || vpn0 == tags_q[i].vpn0) begin
           lu_is_4M_o   = tags_q[i].is_4M;
           lu_content_o = content_q[i];
@@ -118,10 +117,10 @@ module cva6_tlb_sv32
         else if (asid_to_be_flushed_is0 && ( (vaddr_vpn0_match[i] && vaddr_vpn1_match[i]) || (vaddr_vpn1_match[i] && tags_q[i].is_4M) ) && (~vaddr_to_be_flushed_is0))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
-        else if ((!content_q[i].g) && ((vaddr_vpn0_match[i] && vaddr_vpn1_match[i]) || (vaddr_vpn1_match[i] && tags_q[i].is_4M)) && (asid_to_be_flushed_i == tags_q[i].asid[ASID_WIDTH-1:0]) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
+        else if ((!content_q[i].g) && ((vaddr_vpn0_match[i] && vaddr_vpn1_match[i]) || (vaddr_vpn1_match[i] && tags_q[i].is_4M)) && (asid_to_be_flushed_i == tags_q[i].asid[CVA6Cfg.ASID_WIDTH-1:0]) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
-        else if ((!content_q[i].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i == tags_q[i].asid[ASID_WIDTH-1:0]) && (!asid_to_be_flushed_is0))
+        else if ((!content_q[i].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i == tags_q[i].asid[CVA6Cfg.ASID_WIDTH-1:0]) && (!asid_to_be_flushed_is0))
           tags_n[i].valid = 1'b0;
         // normal replacement
       end else if (update_i.valid & replace_en[i]) begin
@@ -248,7 +247,7 @@ module cva6_tlb_sv32
       $error("TLB size must be a multiple of 2 and greater than 1");
       $stop();
     end
-    assert (ASID_WIDTH >= 1)
+    assert (CVA6Cfg.ASID_WIDTH >= 1)
     else begin
       $error("ASID width must be at least 1");
       $stop();

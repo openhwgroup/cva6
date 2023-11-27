@@ -16,8 +16,7 @@
 module load_store_unit
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter int unsigned ASID_WIDTH = 1
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     input  logic clk_i,
     input  logic rst_ni,
@@ -56,8 +55,8 @@ module load_store_unit
     input  logic                               sum_i,                  // From CSR register file
     input  logic                               mxr_i,                  // From CSR register file
     input  logic             [riscv::PPNW-1:0] satp_ppn_i,             // From CSR register file
-    input  logic             [ ASID_WIDTH-1:0] asid_i,                 // From CSR register file
-    input  logic             [ ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_i,                 // From CSR register file
+    input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     input  logic             [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     input  logic                               flush_tlb_i,
     // Performance counters
@@ -144,8 +143,7 @@ module load_store_unit
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (ASID_WIDTH)
+        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES)
     ) i_cva6_mmu (
         // misaligned bypass
         .misaligned_ex_i(misaligned_exception),
@@ -173,8 +171,7 @@ module load_store_unit
     cva6_mmu_sv32 #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (ASID_WIDTH)
+        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES)
     ) i_cva6_mmu (
         // misaligned bypass
         .misaligned_ex_i(misaligned_exception),

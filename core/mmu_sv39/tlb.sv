@@ -19,8 +19,7 @@ module tlb
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter int unsigned TLB_ENTRIES = 4,
-    parameter int unsigned ASID_WIDTH = 1
+    parameter int unsigned TLB_ENTRIES = 4
 ) (
     input  logic                          clk_i,                  // Clock
     input  logic                          rst_ni,                 // Asynchronous reset active low
@@ -29,10 +28,10 @@ module tlb
     input  tlb_update_t                   update_i,
     // Lookup signals
     input  logic                          lu_access_i,
-    input  logic        [ ASID_WIDTH-1:0] lu_asid_i,
+    input  logic        [ CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i,
     input  logic        [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
     output riscv::pte_t                   lu_content_o,
-    input  logic        [ ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input  logic        [ CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     input  logic        [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     output logic                          lu_is_2M_o,
     output logic                          lu_is_1G_o,
@@ -41,7 +40,7 @@ module tlb
 
   // SV39 defines three levels of page tables
   struct packed {
-    logic [ASID_WIDTH-1:0] asid;
+    logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
     logic [riscv::VPN2:0]  vpn2;
     logic [8:0]            vpn1;
     logic [8:0]            vpn0;
@@ -257,7 +256,7 @@ module tlb
       $error("TLB size must be a multiple of 2 and greater than 1");
       $stop();
     end
-    assert (ASID_WIDTH >= 1)
+    assert (CVA6Cfg.ASID_WIDTH >= 1)
     else begin
       $error("ASID width must be at least 1");
       $stop();

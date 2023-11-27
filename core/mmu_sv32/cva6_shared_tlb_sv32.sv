@@ -22,8 +22,7 @@ module cva6_shared_tlb_sv32
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int SHARED_TLB_DEPTH = 64,
-    parameter int SHARED_TLB_WAYS = 2,
-    parameter int ASID_WIDTH = 1
+    parameter int SHARED_TLB_WAYS = 2
 ) (
     input logic clk_i,   // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -32,7 +31,7 @@ module cva6_shared_tlb_sv32
     input logic enable_translation_i,   // CSRs indicate to enable SV32
     input logic en_ld_st_translation_i, // enable virtual memory translation for load/stores
 
-    input logic [ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
 
     // from TLBs
     // did we miss?
@@ -116,7 +115,7 @@ module cva6_shared_tlb_sv32
   logic [CVA6Cfg.VLEN-1-12:0] itlb_vpn_q;
   logic [CVA6Cfg.VLEN-1-12:0] dtlb_vpn_q;
 
-  logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_d;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_d;
 
   logic shared_tlb_access_q, shared_tlb_access_d;
   logic shared_tlb_hit_d;

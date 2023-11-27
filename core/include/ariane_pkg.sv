@@ -29,7 +29,6 @@
 package ariane_pkg;
 
   // TODO: Slowly move those parameters to the new system.
-  localparam ASID_WIDTH = (riscv::XLEN == 64) ? 16 : 1;
   localparam BITS_SATURATION_COUNTER = 2;
 
   localparam ISSUE_WIDTH = 1;
