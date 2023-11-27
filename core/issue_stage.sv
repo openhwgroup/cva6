@@ -72,7 +72,7 @@ module issue_stage
     output logic              issue_instr_hs_o,
 
     // write back port
-    input logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_i,
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_i,
     input bp_resolve_t resolved_branch_i,
     input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,
     input exception_t [CVA6Cfg.NrWbPorts-1:0]              ex_ex_i, // exception from execute stage or CVXIF offloaded instruction
@@ -94,7 +94,7 @@ module issue_stage
     input [              CVA6Cfg.VLEN-1:0] lsu_addr_i,
     input [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_i,
     input [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_i,
-    input [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_i
+    input [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_addr_trans_id_i
 );
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)

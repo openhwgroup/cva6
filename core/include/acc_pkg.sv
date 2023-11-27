@@ -20,7 +20,7 @@ package acc_pkg;
     logic [CVA6Cfg.XLEN-1:0]                         rs1;
     logic [CVA6Cfg.XLEN-1:0]                         rs2;
     fpnew_pkg::roundmode_e                frm;
-    logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     logic                                 store_pending;
     // Invalidation interface
     logic                                 acc_cons_en;
@@ -31,7 +31,7 @@ package acc_pkg;
     logic                                 req_ready;
     logic                                 resp_valid;
     logic [CVA6Cfg.XLEN-1:0]                         result;
-    logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     logic                                 error;
     // Metadata
     logic                                 store_pending;

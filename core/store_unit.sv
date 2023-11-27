@@ -33,7 +33,7 @@ module store_unit
     input logic amo_valid_commit_i,
     // store unit output port
     output logic valid_o,
-    output logic [TRANS_ID_BITS-1:0] trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     output logic [CVA6Cfg.XLEN-1:0] result_o,
     output exception_t ex_o,
     // MMU -> Address Translation
@@ -75,7 +75,7 @@ module store_unit
   logic [1:0] st_data_size_n, st_data_size_q;
   amo_t amo_op_d, amo_op_q;
 
-  logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
   // output assignments
   assign vaddr_o    = lsu_ctrl_i.vaddr; // virtual address

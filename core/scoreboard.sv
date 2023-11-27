@@ -59,7 +59,7 @@ module scoreboard #(
 
     // write-back port
     input bp_resolve_t resolved_branch_i,
-    input logic [CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
     input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,  // write data in
     input ariane_pkg::exception_t [CVA6Cfg.NrWbPorts-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,  // data in is valid
@@ -69,7 +69,7 @@ module scoreboard #(
     input               [              CVA6Cfg.VLEN-1:0] lsu_addr_i,
     input               [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_i,
     input               [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_i,
-    input               [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_i,
+    input               [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_addr_trans_id_i,
     input logic [CVA6Cfg.XLEN-1:0]                                 rs1_forwarding_i,
     input logic [CVA6Cfg.XLEN-1:0]                                 rs2_forwarding_i
 );

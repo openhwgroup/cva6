@@ -35,7 +35,7 @@ module ex_stage
                                         // in order to calculate the next PC on a mis-predict
     // Fixed latency unit(s)
     output logic [CVA6Cfg.XLEN-1:0] flu_result_o,
-    output logic [TRANS_ID_BITS-1:0]               flu_trans_id_o,        // ID of scoreboard entry at which to write back
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0]               flu_trans_id_o,        // ID of scoreboard entry at which to write back
     output exception_t flu_exception_o,
     output logic flu_ready_o,  // FLU is ready
     output logic flu_valid_o,  // FLU result is valid
@@ -59,16 +59,16 @@ module ex_stage
 
     output logic                             load_valid_o,
     output logic [CVA6Cfg.XLEN-1:0]                     load_result_o,
-    output logic         [TRANS_ID_BITS-1:0] load_trans_id_o,
+    output logic         [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_o,
     output exception_t                       load_exception_o,
     output logic                             store_valid_o,
     output logic [CVA6Cfg.XLEN-1:0]                     store_result_o,
-    output logic         [TRANS_ID_BITS-1:0] store_trans_id_o,
+    output logic         [CVA6Cfg.TRANS_ID_BITS-1:0] store_trans_id_o,
     output exception_t                       store_exception_o,
 
     input logic lsu_commit_i,
     output logic lsu_commit_ready_o,  // commit queue is ready to accept another commit request
-    input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     input logic stall_st_pending_i,
     output logic no_st_pending_o,
     input logic amo_valid_commit_i,
@@ -79,7 +79,7 @@ module ex_stage
     input logic [2:0] fpu_rm_i,  // FP rm
     input logic [2:0] fpu_frm_i,  // FP frm csr
     input logic [6:0] fpu_prec_i,  // FP precision control
-    output logic [TRANS_ID_BITS-1:0] fpu_trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id_o,
     output logic [CVA6Cfg.XLEN-1:0] fpu_result_o,
     output logic fpu_valid_o,
     output exception_t fpu_exception_o,
@@ -87,7 +87,7 @@ module ex_stage
     input logic x_valid_i,
     output logic x_ready_o,
     input logic [31:0] x_off_instr_i,
-    output logic [TRANS_ID_BITS-1:0] x_trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_o,
     output exception_t x_exception_o,
     output logic [CVA6Cfg.XLEN-1:0] x_result_o,
     output logic x_valid_o,
@@ -129,7 +129,7 @@ module ex_stage
     output [              CVA6Cfg.PLEN-1:0] mem_paddr_o,
     output [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_o,
     output [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_o,
-    output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
+    output [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
 );
 
   // -------------------------
@@ -164,7 +164,7 @@ module ex_stage
   logic [CVA6Cfg.XLEN-1:0] alu_result, csr_result, mult_result;
   logic [CVA6Cfg.VLEN-1:0] branch_result;
   logic csr_ready, mult_ready;
-  logic [TRANS_ID_BITS-1:0] mult_trans_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
 
   // 1. ALU (combinatorial)

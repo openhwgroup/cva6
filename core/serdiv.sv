@@ -25,7 +25,7 @@ module serdiv
     input logic clk_i,
     input logic rst_ni,
     // input IF
-    input logic [TRANS_ID_BITS-1:0] id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] id_i,
     input logic [WIDTH-1:0] op_a_i,
     input logic [WIDTH-1:0] op_b_i,
     input logic [1:0] opcode_i,  // 0: udiv, 2: urem, 1: div, 3: rem
@@ -36,7 +36,7 @@ module serdiv
     // output IF
     output logic out_vld_o,
     input logic out_rdy_i,
-    output logic [TRANS_ID_BITS-1:0] id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] id_o,
     output logic [WIDTH-1:0] res_o
 );
 
@@ -58,7 +58,7 @@ module serdiv
   logic op_b_zero, op_b_zero_q, op_b_zero_d;
   logic op_b_neg_one, op_b_neg_one_q, op_b_neg_one_d;
 
-  logic [TRANS_ID_BITS-1:0] id_q, id_d;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] id_q, id_d;
 
   logic rem_sel_d, rem_sel_q;
   logic comp_inv_d, comp_inv_q;

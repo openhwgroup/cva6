@@ -24,7 +24,7 @@ module cvxif_fu
     output logic                                       x_ready_o,
     input  logic                   [             31:0] x_off_instr_i,
     //to writeback
-    output logic                   [TRANS_ID_BITS-1:0] x_trans_id_o,
+    output logic                   [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_o,
     output exception_t                                 x_exception_o,
     output logic [CVA6Cfg.XLEN-1:0]                               x_result_o,
     output logic                                       x_valid_o,
@@ -36,7 +36,7 @@ module cvxif_fu
   localparam X_NUM_RS     = ariane_pkg::NR_RGPR_PORTS;
 
   logic illegal_n, illegal_q;
-  logic [TRANS_ID_BITS-1:0] illegal_id_n, illegal_id_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] illegal_id_n, illegal_id_q;
   logic [31:0] illegal_instr_n, illegal_instr_q;
   logic [X_NUM_RS-1:0] rs_valid;
 

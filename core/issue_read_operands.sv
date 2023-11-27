@@ -102,7 +102,7 @@ module issue_read_operands
   logic        cvxif_valid_q;
   logic [31:0] cvxif_off_instr_q;
 
-  logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
   fu_op operator_n, operator_q;  // operation to perform
   fu_t fu_n, fu_q;  // functional unit to use
 

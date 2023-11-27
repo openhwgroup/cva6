@@ -46,7 +46,7 @@ module commit_stage
     // commit signals to ex
     output logic commit_lsu_o,  // commit the pending store
     input logic commit_lsu_ready_i,  // commit buffer of LSU is ready
-    output logic [TRANS_ID_BITS-1:0] commit_tran_id_o,  // transaction id of first commit port
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_o,  // transaction id of first commit port
     output logic amo_valid_commit_o,  // valid AMO in commit stage
     input logic no_st_pending_i,  // there is no store pending
     output logic commit_csr_o,  // commit the pending CSR instruction

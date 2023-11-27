@@ -29,10 +29,6 @@
 package ariane_pkg;
 
   // TODO: Slowly move those parameters to the new system.
-  localparam TRANS_ID_BITS = $clog2(
-      CVA6Cfg.NR_SB_ENTRIES
-  );  // depending on the number of scoreboard entries we need that many bits
-      // to uniquely identify the entry in the scoreboard
   localparam ASID_WIDTH = (riscv::XLEN == 64) ? 16 : 1;
   localparam BITS_SATURATION_COUNTER = 2;
 

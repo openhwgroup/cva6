@@ -32,7 +32,7 @@ module load_unit
     output logic pop_ld_o,
     // load unit output port
     output logic valid_o,
-    output logic [TRANS_ID_BITS-1:0] trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     output logic [CVA6Cfg.XLEN-1:0] result_o,
     output exception_t ex_o,
     // MMU -> Address Translation
@@ -46,7 +46,7 @@ module load_unit
     output logic [11:0] page_offset_o,
     input logic page_offset_matches_i,
     input logic store_buffer_empty_i,  // the entire store-buffer is empty
-    input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // D$ interface
     input dcache_req_o_t req_port_i,
     output dcache_req_i_t req_port_o,
@@ -68,7 +68,7 @@ module load_unit
   // in order to decouple the response interface from the request interface,
   // we need a a buffer which can hold all inflight memory load requests
   typedef struct packed {
-    logic [TRANS_ID_BITS-1:0]           trans_id;        // scoreboard identifier
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0]           trans_id;        // scoreboard identifier
     logic [riscv::XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
     fu_op                               operation;       // type of load
   } ldbuf_t;

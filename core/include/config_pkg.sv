@@ -105,6 +105,9 @@ package config_pkg;
     int unsigned XLEN;
     bit BITMANIP;
     int unsigned NR_SB_ENTRIES;
+    // depending on the number of scoreboard entries we need that many bits
+    // to uniquely identify the entry in the scoreboard
+    int unsigned TRANS_ID_BITS;
     int unsigned VLEN;  // virtual address length
     int unsigned PLEN;  // physical address length
     bit IS_XLEN32;
@@ -196,6 +199,7 @@ package config_pkg;
       XLEN: CVA6Cfg.XLEN,
       BITMANIP: CVA6Cfg.BITMANIP,
       NR_SB_ENTRIES: CVA6Cfg.NR_SB_ENTRIES,
+      TRANS_ID_BITS: $clog2(CVA6Cfg.NR_SB_ENTRIES),
       VLEN: (CVA6Cfg.XLEN == 32) ? 32 : 64,
       PLEN: (CVA6Cfg.XLEN == 32) ? 34 : 56,
       IS_XLEN32: IS_XLEN32,

@@ -38,7 +38,7 @@ module acc_dispatcher
     output logic issue_stall_o,
     input fu_data_t fu_data_i,
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
-    output logic [TRANS_ID_BITS-1:0] acc_trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] acc_trans_id_o,
     output logic [CVA6Cfg.XLEN-1:0] acc_result_o,
     output logic acc_valid_o,
     output exception_t acc_exception_o,
@@ -123,7 +123,7 @@ module acc_dispatcher
   logic                                            acc_insn_queue_empty;
   logic     [idx_width(InstructionQueueDepth)-1:0] acc_insn_queue_usage;
   logic                                            acc_commit;
-  logic     [                   TRANS_ID_BITS-1:0] acc_commit_trans_id;
+  logic     [                   CVA6Cfg.TRANS_ID_BITS-1:0] acc_commit_trans_id;
 
   assign acc_data = acc_valid_ex_o ? fu_data_i : '0;
 

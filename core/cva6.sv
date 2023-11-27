@@ -206,7 +206,7 @@ module cva6
   logic is_compressed_instr_id_ex;
   // fixed latency units
   logic flu_ready_ex_id;
-  logic [TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
   logic flu_valid_ex_id;
   logic [CVA6Cfg.XLEN-1:0] flu_result_ex_id;
   exception_t flu_exception_ex_id;
@@ -221,13 +221,13 @@ module cva6
   logic lsu_valid_id_ex;
   logic lsu_ready_ex_id;
 
-  logic [TRANS_ID_BITS-1:0] load_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_ex_id;
   logic [CVA6Cfg.XLEN-1:0] load_result_ex_id;
   logic load_valid_ex_id;
   exception_t load_exception_ex_id;
 
   logic [CVA6Cfg.XLEN-1:0] store_result_ex_id;
-  logic [TRANS_ID_BITS-1:0] store_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] store_trans_id_ex_id;
   logic store_valid_ex_id;
   exception_t store_exception_ex_id;
   // MULT
@@ -237,7 +237,7 @@ module cva6
   logic fpu_valid_id_ex;
   logic [1:0] fpu_fmt_id_ex;
   logic [2:0] fpu_rm_id_ex;
-  logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
   logic [CVA6Cfg.XLEN-1:0] fpu_result_ex_id;
   logic fpu_valid_ex_id;
   exception_t fpu_exception_ex_id;
@@ -245,7 +245,7 @@ module cva6
   logic stall_acc_id;
   scoreboard_entry_t issue_instr_id_acc;
   logic issue_instr_hs_id_acc;
-  logic [TRANS_ID_BITS-1:0] acc_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] acc_trans_id_ex_id;
   logic [CVA6Cfg.XLEN-1:0] acc_result_ex_id;
   logic acc_valid_ex_id;
   exception_t acc_exception_ex_id;
@@ -255,7 +255,7 @@ module cva6
   // CSR
   logic csr_valid_id_ex;
   // CVXIF
-  logic [TRANS_ID_BITS-1:0] x_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_ex_id;
   logic [CVA6Cfg.XLEN-1:0] x_result_ex_id;
   logic x_valid_ex_id;
   exception_t x_exception_ex_id;
@@ -273,7 +273,7 @@ module cva6
   // LSU Commit
   logic lsu_commit_commit_ex;
   logic lsu_commit_ready_ex_commit;
-  logic [TRANS_ID_BITS-1:0] lsu_commit_trans_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_commit_trans_id;
   logic stall_st_pending_ex;
   logic no_st_pending_ex;
   logic no_st_pending_commit;
@@ -383,7 +383,7 @@ module cva6
   logic          [              CVA6Cfg.PLEN-1:0]                       mem_paddr;
   logic          [          (CVA6Cfg.XLEN/8)-1:0]                       lsu_rmask;
   logic          [          (CVA6Cfg.XLEN/8)-1:0]                       lsu_wmask;
-  logic          [ariane_pkg::TRANS_ID_BITS-1:0]                       lsu_addr_trans_id;
+  logic          [CVA6Cfg.TRANS_ID_BITS-1:0]                       lsu_addr_trans_id;
 
   // Accelerator port
   logic          [                         63:0]                       inval_addr;
@@ -451,7 +451,7 @@ module cva6
       .tsr_i       (tsr_csr_id)
   );
 
-  logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
+  logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
   logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_ex_id;
   exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_ex_id;  // exception from execute, ex_stage to id_stage
   logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_ex_id;

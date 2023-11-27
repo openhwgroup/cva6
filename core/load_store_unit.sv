@@ -30,19 +30,19 @@ module load_store_unit
     output logic     lsu_ready_o,  // FU is ready e.g. not busy
     input  logic     lsu_valid_i,  // Input is valid
 
-    output logic [TRANS_ID_BITS-1:0] load_trans_id_o,          // ID of scoreboard entry at which to write back
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_o,          // ID of scoreboard entry at which to write back
     output logic [CVA6Cfg.XLEN-1:0] load_result_o,
     output logic load_valid_o,
     output exception_t load_exception_o,  // to WB, signal exception status LD exception
 
-    output logic [TRANS_ID_BITS-1:0] store_trans_id_o,         // ID of scoreboard entry at which to write back
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] store_trans_id_o,         // ID of scoreboard entry at which to write back
     output logic [CVA6Cfg.XLEN-1:0] store_result_o,
     output logic store_valid_o,
     output exception_t store_exception_o,  // to WB, signal exception status ST exception
 
     input logic commit_i,  // commit the pending store
     output logic commit_ready_o,  // commit queue is ready to accept another commit request
-    input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
 
     input logic enable_translation_i,   // enable virtual memory translation
     input logic en_ld_st_translation_i, // enable virtual memory translation for load/stores
@@ -81,7 +81,7 @@ module load_store_unit
     output [              CVA6Cfg.PLEN-1:0] mem_paddr_o,
     output [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_o,
     output [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_o,
-    output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
+    output [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
 );
   // data is misaligned
   logic                               data_misaligned;
@@ -124,10 +124,10 @@ module load_store_unit
   logic         [  riscv::PPNW-1:0] dtlb_ppn;
 
   logic                             ld_valid;
-  logic         [TRANS_ID_BITS-1:0] ld_trans_id;
+  logic         [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
   logic [CVA6Cfg.XLEN-1:0]                     ld_result;
   logic                             st_valid;
-  logic         [TRANS_ID_BITS-1:0] st_trans_id;
+  logic         [CVA6Cfg.TRANS_ID_BITS-1:0] st_trans_id;
   logic [CVA6Cfg.XLEN-1:0]                     st_result;
 
   logic         [             11:0] page_offset;
