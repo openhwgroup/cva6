@@ -1351,7 +1351,7 @@ module csr_regfile
         end else if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
           privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
         end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
-          privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] & ~scounteren_q[csr_addr_i[4:0]];
+          privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] | ~scounteren_q[csr_addr_i[4:0]];
         end
       end
     end
