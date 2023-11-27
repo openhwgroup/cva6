@@ -201,20 +201,20 @@ module wt_dcache_wbuffer
   // note: openpiton can only handle aligned offsets + size, and hence
   // we have to split unaligned data into multiple transfers (see toSize64)
   // e.g. if we have the following valid bytes: 0011_1001 -> TX0: 0000_0001, TX1: 0000_1000, TX2: 0011_0000
-  if(riscv::IS_XLEN64) begin : gen_size_64b
+  if(CVA6Cfg.IS_XLEN64) begin : gen_size_64b
     assign miss_size_o = {1'b0, toSize64(bdirty[dirty_ptr])};
   end else begin : gen_size_32b
     assign miss_size_o = {1'b0, toSize32(bdirty[dirty_ptr])};
   end
 
   // replicate transfers shorter than a dword
-  assign miss_wdata_o = riscv::IS_XLEN64 ? repData64(
+  assign miss_wdata_o = CVA6Cfg.IS_XLEN64 ? repData64(
       wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]
   ) : repData32(
       wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]
   );
   if (ariane_pkg::DATA_USER_EN) begin
-    assign miss_wuser_o = riscv::IS_XLEN64 ? repData64(
+    assign miss_wuser_o = CVA6Cfg.IS_XLEN64 ? repData64(
         wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]
     ) : repData32(
         wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]
@@ -223,7 +223,7 @@ module wt_dcache_wbuffer
     assign miss_wuser_o = '0;
   end
 
-  assign tx_be = riscv::IS_XLEN64 ? to_byte_enable8(
+  assign tx_be = CVA6Cfg.IS_XLEN64 ? to_byte_enable8(
       bdirty_off, miss_size_o[1:0]
   ) : to_byte_enable4(
       bdirty_off, miss_size_o[1:0]

@@ -454,7 +454,7 @@ module load_unit
   // prepare these signals for faster selection in the next cycle
   assign rdata_is_signed    =   ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
   assign rdata_is_fp_signed =   ldbuf_rdata.operation inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW}) & riscv::IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
+  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW}) & CVA6Cfg.IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
                                 ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH})                     ? ldbuf_rdata.address_offset + 1 :
                                                                                                                          ldbuf_rdata.address_offset;
 

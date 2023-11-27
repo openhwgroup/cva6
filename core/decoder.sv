@@ -637,7 +637,7 @@ module decoder
           instruction_o.rs1[4:0] = instr.rtype.rs1;
           instruction_o.rs2[4:0] = instr.rtype.rs2;
           instruction_o.rd[4:0] = instr.rtype.rd;
-          if (riscv::IS_XLEN64) begin
+          if (CVA6Cfg.IS_XLEN64) begin
             unique case ({
               instr.rtype.funct7, instr.rtype.funct3
             })
@@ -745,7 +745,7 @@ module decoder
           imm_select = IIMM;
           instruction_o.rs1[4:0] = instr.itype.rs1;
           instruction_o.rd[4:0] = instr.itype.rd;
-          if (riscv::IS_XLEN64) begin
+          if (CVA6Cfg.IS_XLEN64) begin
             unique case (instr.itype.funct3)
               3'b000:  instruction_o.op = ariane_pkg::ADDW;  // Add Immediate
               3'b001: begin
@@ -1117,7 +1117,7 @@ module decoder
               default: illegal_instr = 1'b1;
             endcase
             // double words
-          end else if (riscv::IS_XLEN64 && CVA6Cfg.RVA && instr.stype.funct3 == 3'h3) begin
+          end else if (CVA6Cfg.IS_XLEN64 && CVA6Cfg.RVA && instr.stype.funct3 == 3'h3) begin
             unique case (instr.instr[31:27])
               5'h0: instruction_o.op = ariane_pkg::AMO_ADDD;
               5'h1: instruction_o.op = ariane_pkg::AMO_SWAPD;

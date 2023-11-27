@@ -103,6 +103,8 @@ package config_pkg;
     int unsigned XLEN;
     int unsigned VLEN;  // virtual address length
     int unsigned PLEN;  // physical address length
+    bit IS_XLEN32;
+    bit IS_XLEN64;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
@@ -163,8 +165,10 @@ package config_pkg;
   } cva6_cfg_t;
 
   function automatic cva6_cfg_t build_config(cva6_user_cfg_t CVA6Cfg);
-    bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & CVA6Cfg.FpuEn;
-    bit RVD = (riscv::IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
+    bit IS_XLEN32 = (CVA6Cfg.XLEN == 32) ? 1'b1 : 1'b0;
+    bit IS_XLEN64 = (CVA6Cfg.XLEN == 32) ? 1'b0 : 1'b1;
+    bit RVF = (IS_XLEN64 | IS_XLEN32) & CVA6Cfg.FpuEn;
+    bit RVD = (IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
     bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
     bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
     int unsigned FLen = RVD ? 64 :  // D ext.
@@ -188,6 +192,8 @@ package config_pkg;
       XLEN: CVA6Cfg.XLEN,
       VLEN: (CVA6Cfg.XLEN == 32) ? 32 : 64,
       PLEN: (CVA6Cfg.XLEN == 32) ? 34 : 56,
+      IS_XLEN32: IS_XLEN32,
+      IS_XLEN64: IS_XLEN64,
       NrCommitPorts: CVA6Cfg.NrCommitPorts,
       AxiAddrWidth: CVA6Cfg.AxiAddrWidth,
       AxiDataWidth: CVA6Cfg.AxiDataWidth,

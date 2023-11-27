@@ -181,7 +181,7 @@ module csr_regfile
   // ----------------
   // CSR Read logic
   // ----------------
-  assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[CVA6Cfg.XLEN-1:0] :
+  assign mstatus_extended = CVA6Cfg.IS_XLEN64 ? mstatus_q[CVA6Cfg.XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
 
 

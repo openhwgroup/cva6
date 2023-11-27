@@ -34,8 +34,6 @@ package riscv;
     ModeSv64 = 11
   } vm_mode_t;
 
-  localparam IS_XLEN32 = (CVA6Cfg.XLEN == 32) ? 1'b1 : 1'b0;
-  localparam IS_XLEN64 = (CVA6Cfg.XLEN == 32) ? 1'b0 : 1'b1;
   localparam ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
   localparam ASIDW = (CVA6Cfg.XLEN == 32) ? 9 : 16;
   localparam PPNW = (CVA6Cfg.XLEN == 32) ? 22 : 44;
@@ -607,7 +605,7 @@ package riscv;
   localparam logic [63:0] SSTATUS_MXR = 'h00080000;
   localparam logic [63:0] SSTATUS_UPIE = 'h00000010;
   localparam logic [63:0] SSTATUS_UXL = 64'h0000000300000000;
-  localparam logic [63:0] SSTATUS_SD = {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
+  localparam logic [63:0] SSTATUS_SD = {CVA6Cfg.IS_XLEN64, 31'h00000000, ~CVA6Cfg.IS_XLEN64, 31'h00000000};
 
   localparam logic [63:0] MSTATUS_UIE = 'h00000001;
   localparam logic [63:0] MSTATUS_SIE = 'h00000002;
@@ -628,9 +626,9 @@ package riscv;
   localparam logic [63:0] MSTATUS_TVM = 'h00100000;
   localparam logic [63:0] MSTATUS_TW = 'h00200000;
   localparam logic [63:0] MSTATUS_TSR = 'h00400000;
-  localparam logic [63:0] MSTATUS_UXL = {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
-  localparam logic [63:0] MSTATUS_SXL = {28'h0000000, IS_XLEN64, IS_XLEN64, 34'h00000000};
-  localparam logic [63:0] MSTATUS_SD = {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
+  localparam logic [63:0] MSTATUS_UXL = {30'h0000000, CVA6Cfg.IS_XLEN64, CVA6Cfg.IS_XLEN64, 32'h00000000};
+  localparam logic [63:0] MSTATUS_SXL = {28'h0000000, CVA6Cfg.IS_XLEN64, CVA6Cfg.IS_XLEN64, 34'h00000000};
+  localparam logic [63:0] MSTATUS_SD = {CVA6Cfg.IS_XLEN64, 31'h00000000, ~CVA6Cfg.IS_XLEN64, 31'h00000000};
 
   typedef enum logic [2:0] {
     CSRRW  = 3'h1,

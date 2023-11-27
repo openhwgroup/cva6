@@ -244,7 +244,7 @@ module wt_dcache_missunit
   // if size = 32bit word, select appropriate offset, replicate for openpiton...
 
   if (CVA6Cfg.RVA) begin
-    if (riscv::IS_XLEN64) begin : gen_amo_64b_data
+    if (CVA6Cfg.IS_XLEN64) begin : gen_amo_64b_data
       assign amo_data_a = {amo_req_i.operand_b[0 +: 32], amo_req_i.operand_b[0 +: 32]};
       assign amo_data_b = amo_req_i.operand_b;
     end else begin : gen_amo_32b_data
@@ -254,7 +254,7 @@ module wt_dcache_missunit
 
   always_comb begin
     if (CVA6Cfg.RVA) begin
-      if (riscv::IS_XLEN64) begin
+      if (CVA6Cfg.IS_XLEN64) begin
         if (amo_req_i.size == 2'b10) begin
           amo_data = amo_data_a;
         end else begin
