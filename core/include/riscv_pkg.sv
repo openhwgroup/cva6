@@ -18,11 +18,6 @@
 package riscv;
 
   // ----------------------
-  // Import cva6 config from cva6_config_pkg
-  // ----------------------
-  localparam FPU_EN = cva6_config_pkg::CVA6ConfigFpuEn;
-
-  // ----------------------
   // Data and Address length
   // ----------------------
   typedef enum logic [3:0] {
