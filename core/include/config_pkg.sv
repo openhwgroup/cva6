@@ -36,6 +36,8 @@ package config_pkg;
   localparam NrMaxRules = 16;
 
   typedef struct packed {
+    // Is FPGA optimization of CV32A6
+    bit FPGA_EN;
     // Number of commit ports
     int unsigned                 NrCommitPorts;
     // AXI address width
@@ -133,6 +135,7 @@ package config_pkg;
   } cva6_user_cfg_t;
 
   typedef struct packed {
+    bit FPGA_EN;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
