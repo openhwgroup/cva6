@@ -531,7 +531,7 @@ module decoder
             // Integer Reg-Reg Operations
             // ---------------------------
           end else begin
-            if (ariane_pkg::BITMANIP) begin
+            if (CVA6Cfg.BITMANIP) begin
               instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001 || ((instr.rtype.funct7 == 7'b000_0101) && !(instr.rtype.funct3[14]))) ? MULT : ALU;
             end else begin
               instruction_o.fu = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
@@ -569,7 +569,7 @@ module decoder
                 illegal_instr_non_bm = 1'b1;
               end
             endcase
-            if (ariane_pkg::BITMANIP) begin
+            if (CVA6Cfg.BITMANIP) begin
               unique case ({
                 instr.rtype.funct7, instr.rtype.funct3
               })
@@ -619,7 +619,7 @@ module decoder
             end
             //VCS coverage on
             unique case ({
-              ariane_pkg::BITMANIP, CVA6Cfg.ZiCondExtEn
+              CVA6Cfg.BITMANIP, CVA6Cfg.ZiCondExtEn
             })
               2'b00: illegal_instr = illegal_instr_non_bm;
               2'b01: illegal_instr = illegal_instr_non_bm & illegal_instr_zic;
@@ -654,7 +654,7 @@ module decoder
               {7'b000_0001, 3'b111} : instruction_o.op = ariane_pkg::REMUW;
               default: illegal_instr_non_bm = 1'b1;
             endcase
-            if (ariane_pkg::BITMANIP) begin
+            if (CVA6Cfg.BITMANIP) begin
               unique case ({
                 instr.rtype.funct7, instr.rtype.funct3
               })
@@ -707,7 +707,7 @@ module decoder
               if (instr.instr[25] != 1'b0 && CVA6Cfg.XLEN == 32) illegal_instr_non_bm = 1'b1;
             end
           endcase
-          if (ariane_pkg::BITMANIP) begin
+          if (CVA6Cfg.BITMANIP) begin
             unique case (instr.itype.funct3)
               3'b001: begin
                 if (instr.instr[31:25] == 7'b0110000) begin
@@ -761,7 +761,7 @@ module decoder
               end
               default: illegal_instr_non_bm = 1'b1;
             endcase
-            if (ariane_pkg::BITMANIP) begin
+            if (CVA6Cfg.BITMANIP) begin
               unique case (instr.itype.funct3)
                 3'b001: begin
                   if (instr.instr[31:25] == 7'b0110000) begin
