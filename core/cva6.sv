@@ -40,8 +40,8 @@ module cva6
       logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      rd_wdata;
       logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      pc_rdata;
       logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      pc_wdata;
-      logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
-      logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
+      logic [config_pkg::NRET*CVA6Cfg.VLEN-1:0]      mem_addr;
+      logic [config_pkg::NRET*CVA6Cfg.PLEN-1:0]      mem_paddr;
       logic [config_pkg::NRET*(CVA6Cfg.XLEN/8)-1:0]  mem_rmask;
       logic [config_pkg::NRET*(CVA6Cfg.XLEN/8)-1:0]  mem_wmask;
       logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      mem_rdata;
@@ -121,7 +121,7 @@ module cva6
     input logic clk_i,
     input logic rst_ni,
     // Core ID, Cluster ID and boot address are considered more or less static
-    input logic [riscv::VLEN-1:0] boot_addr_i,  // reset boot address
+    input logic [CVA6Cfg.VLEN-1:0] boot_addr_i,  // reset boot address
     input  logic [CVA6Cfg.XLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
     // Interrupt inputs
     input logic [1:0] irq_i,  // level sensitive IR lines, mip & sip (async)
@@ -146,7 +146,7 @@ module cva6
   riscv::priv_lvl_t                                   priv_lvl;
   exception_t                                         ex_commit;  // exception from commit stage
   bp_resolve_t                                        resolved_branch;
-  logic             [                riscv::VLEN-1:0] pc_commit;
+  logic             [                CVA6Cfg.VLEN-1:0] pc_commit;
   logic                                               eret;
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
 
@@ -157,8 +157,8 @@ module cva6
   // --------------
   // PCGEN <-> CSR
   // --------------
-  logic [riscv::VLEN-1:0] trap_vector_base_commit_pcgen;
-  logic [riscv::VLEN-1:0] epc_commit_pcgen;
+  logic [CVA6Cfg.VLEN-1:0] trap_vector_base_commit_pcgen;
+  logic [CVA6Cfg.VLEN-1:0] epc_commit_pcgen;
   // --------------
   // IF <-> ID
   // --------------
@@ -177,11 +177,11 @@ module cva6
   // --------------
   // ISSUE <-> EX
   // --------------
-  logic [riscv::VLEN-1:0] rs1_forwarding_id_ex;  // unregistered version of fu_data_o.operanda
-  logic [riscv::VLEN-1:0] rs2_forwarding_id_ex;  // unregistered version of fu_data_o.operandb
+  logic [CVA6Cfg.VLEN-1:0] rs1_forwarding_id_ex;  // unregistered version of fu_data_o.operanda
+  logic [CVA6Cfg.VLEN-1:0] rs2_forwarding_id_ex;  // unregistered version of fu_data_o.operandb
 
   fu_data_t fu_data_id_ex;
-  logic [riscv::VLEN-1:0] pc_id_ex;
+  logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
   logic is_compressed_instr_id_ex;
   // fixed latency units
   logic flu_ready_ex_id;
@@ -301,7 +301,7 @@ module cva6
   logic debug_mode;
   logic single_step_csr_commit;
   riscv::pmpcfg_t [15:0] pmpcfg;
-  logic [15:0][riscv::PLEN-3:0] pmpaddr;
+  logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr;
   logic [31:0] mcountinhibit_csr_perf;
   // ----------------------------
   // Performance Counters <-> *
@@ -358,8 +358,8 @@ module cva6
   logic                                                                dcache_commit_wbuffer_empty;
   logic                                                                dcache_commit_wbuffer_not_ni;
 
-  logic          [              riscv::VLEN-1:0]                       lsu_addr;
-  logic          [              riscv::PLEN-1:0]                       mem_paddr;
+  logic          [              CVA6Cfg.VLEN-1:0]                       lsu_addr;
+  logic          [              CVA6Cfg.PLEN-1:0]                       mem_paddr;
   logic          [          (CVA6Cfg.XLEN/8)-1:0]                       lsu_rmask;
   logic          [          (CVA6Cfg.XLEN/8)-1:0]                       lsu_wmask;
   logic          [ariane_pkg::TRANS_ID_BITS-1:0]                       lsu_addr_trans_id;
@@ -379,7 +379,7 @@ module cva6
       .flush_bp_i         (1'b0),
       .halt_i             (halt_ctrl),
       .debug_mode_i       (debug_mode),
-      .boot_addr_i        (boot_addr_i[riscv::VLEN-1:0]),
+      .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
       .icache_dreq_i      (icache_dreq_cache_if),
       .icache_dreq_o      (icache_dreq_if_cache),
       .resolved_branch_i  (resolved_branch),
@@ -736,7 +736,7 @@ module cva6
       .halt_csr_o            (halt_csr_ctrl),
       .commit_instr_i        (commit_instr_id_commit),
       .commit_ack_i          (commit_ack),
-      .boot_addr_i           (boot_addr_i[riscv::VLEN-1:0]),
+      .boot_addr_i           (boot_addr_i[CVA6Cfg.VLEN-1:0]),
       .hart_id_i             (hart_id_i[CVA6Cfg.XLEN-1:0]),
       .ex_i                  (ex_commit),
       .csr_op_i              (csr_op_commit_csr),
@@ -1125,8 +1125,8 @@ module cva6
   localparam PC_QUEUE_DEPTH = 16;
 
   logic                                                    piton_pc_vld;
-  logic [                riscv::VLEN-1:0]                  piton_pc;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] pc_data;
+  logic [                CVA6Cfg.VLEN-1:0]                  piton_pc;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] pc_data;
   logic [CVA6Cfg.NrCommitPorts-1:0] pc_pop, pc_empty;
 
   for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_pc_fifo

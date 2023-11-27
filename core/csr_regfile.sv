@@ -30,7 +30,7 @@ module csr_regfile
     input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i, // the instruction we want to commit
     input  logic [CVA6Cfg.NrCommitPorts-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
-    input  logic[riscv::VLEN-1:0] boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
+    input  logic[CVA6Cfg.VLEN-1:0] boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
     input  logic[CVA6Cfg.XLEN-1:0] hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
     // we are taking an exception
     input exception_t ex_i,  // We've got an exception from the commit stage, take it
@@ -42,14 +42,14 @@ module csr_regfile
     input logic dirty_fp_state_i,  // Mark the FP sate as dirty
     input  logic                  csr_write_fflags_i,         // Write fflags register e.g.: we are retiring a floating point instruction
     input logic dirty_v_state_i,  // Mark the V state as dirty
-    input logic [riscv::VLEN-1:0] pc_i,  // PC of instruction accessing the CSR
+    input logic [CVA6Cfg.VLEN-1:0] pc_i,  // PC of instruction accessing the CSR
     output exception_t csr_exception_o,  // attempts to access a CSR without appropriate privilege
                                          // level or to write  a read-only register also
                                          // raises illegal instruction exceptions.
     // Interrupts/Exceptions
-    output logic  [riscv::VLEN-1:0] epc_o,                    // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
+    output logic  [CVA6Cfg.VLEN-1:0] epc_o,                    // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
     output logic eret_o,  // Return from exception, set the PC of epc_o
-    output logic  [riscv::VLEN-1:0] trap_vector_base_o,       // Output base of exception vector, correct CSR is output (mtvec, stvec)
+    output logic  [CVA6Cfg.VLEN-1:0] trap_vector_base_o,       // Output base of exception vector, correct CSR is output (mtvec, stvec)
     output riscv::priv_lvl_t priv_lvl_o,  // Current privilege level the CPU is in
     // FP Imprecise exceptions
     input  logic            [4:0] acc_fflags_ex_i,            // Imprecise FP exception from the accelerator (fcsr.fflags format)
@@ -94,7 +94,7 @@ module csr_regfile
     output logic perf_we_o,
     // PMPs
     output riscv::pmpcfg_t [15:0] pmpcfg_o,  // PMP configuration containing pmpcfg for max 16 PMPs
-    output logic [15:0][riscv::PLEN-3:0] pmpaddr_o,  // PMP addresses
+    output logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,  // PMP addresses
     output logic [31:0] mcountinhibit_o
 );
   // internal signal to keep track of access exceptions
@@ -151,7 +151,7 @@ module csr_regfile
   logic [63:0] instret_q, instret_d;
 
   riscv::pmpcfg_t [15:0] pmpcfg_q, pmpcfg_d;
-  logic [15:0][riscv::PLEN-3:0] pmpaddr_q, pmpaddr_d;
+  logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_q, pmpaddr_d;
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
   logic [3:0] index;
 
@@ -529,8 +529,8 @@ module csr_regfile
           // -> last bit of pmpaddr must be set 0/1 based on the mode:
           // NA4, NAPOT: 1
           // TOR, OFF:   0
-          if (pmpcfg_q[index].addr_mode[1] == 1'b1) csr_rdata = pmpaddr_q[index][riscv::PLEN-3:0];
-          else csr_rdata = {pmpaddr_q[index][riscv::PLEN-3:1], 1'b0};
+          if (pmpcfg_q[index].addr_mode[1] == 1'b1) csr_rdata = pmpaddr_q[index][CVA6Cfg.PLEN-3:0];
+          else csr_rdata = {pmpaddr_q[index][CVA6Cfg.PLEN-3:1], 1'b0};
         end
         default: read_access_exception = 1'b1;
       endcase
@@ -592,7 +592,7 @@ module csr_regfile
     // boot_addr_i will be assigned a constant
     // on the top-level.
     if (mtvec_rst_load_q) begin
-      mtvec_d = {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, boot_addr_i} + 'h40;
+      mtvec_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, boot_addr_i} + 'h40;
     end else begin
       mtvec_d = mtvec_q;
     end
@@ -1009,7 +1009,7 @@ module csr_regfile
           automatic logic [3:0] index = csr_addr.csr_decode.address[3:0];
           // check if the entry or the entry above is locked
           if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index].addr_mode == riscv::TOR)) begin
-            pmpaddr_d[index] = csr_wdata[riscv::PLEN-3:0];
+            pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
           end
         end
         default: update_access_exception = 1'b1;
@@ -1093,7 +1093,7 @@ module csr_regfile
         // set cause
         scause_d = ex_i.cause;
         // set epc
-        sepc_d = {{CVA6Cfg.XLEN - riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
+        sepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
         stval_d        = (ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
@@ -1112,7 +1112,7 @@ module csr_regfile
         mstatus_d.mpp = priv_lvl_q;
         mcause_d = ex_i.cause;
         // set epc
-        mepc_d = {{CVA6Cfg.XLEN - riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
+        mepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
         mtval_d        = (ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
@@ -1165,7 +1165,7 @@ module csr_regfile
           default: ;
         endcase
         // save PC of next this instruction e.g.: the next one to be executed
-        dpc_d = {{CVA6Cfg.XLEN - riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
+        dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         dcsr_d.cause = ariane_pkg::CauseBreakpoint;
       end
 
@@ -1173,7 +1173,7 @@ module csr_regfile
       if (CVA6Cfg.DebugEn && ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
         dcsr_d.prv = priv_lvl_o;
         // save the PC
-        dpc_d = {{CVA6Cfg.XLEN - riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
+        dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // enter debug mode
         debug_mode_d = 1'b1;
         // jump to the base address
@@ -1189,19 +1189,19 @@ module csr_regfile
         if (commit_instr_i[0].fu == CTRL_FLOW) begin
           // we saved the correct target address during execute
           dpc_d = {
-            {CVA6Cfg.XLEN - riscv::VLEN{commit_instr_i[0].bp.predict_address[riscv::VLEN-1]}},
+            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i[0].bp.predict_address[CVA6Cfg.VLEN-1]}},
             commit_instr_i[0].bp.predict_address
           };
           // exception valid
         end else if (ex_i.valid) begin
-          dpc_d = {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, trap_vector_base_o};
+          dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, trap_vector_base_o};
           // return from environment
         end else if (eret_o) begin
-          dpc_d = {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, epc_o};
+          dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, epc_o};
           // consecutive PC
         end else begin
           dpc_d = {
-            {CVA6Cfg.XLEN - riscv::VLEN{commit_instr_i[0].pc[riscv::VLEN-1]}},
+            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i[0].pc[CVA6Cfg.VLEN-1]}},
             commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4)
           };
         end
@@ -1400,15 +1400,15 @@ module csr_regfile
 
   // output assignments dependent on privilege mode
   always_comb begin : priv_output
-    trap_vector_base_o = {mtvec_q[riscv::VLEN-1:2], 2'b0};
+    trap_vector_base_o = {mtvec_q[CVA6Cfg.VLEN-1:2], 2'b0};
     // output user mode stvec
     if (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
-      trap_vector_base_o = {stvec_q[riscv::VLEN-1:2], 2'b0};
+      trap_vector_base_o = {stvec_q[CVA6Cfg.VLEN-1:2], 2'b0};
     end
 
     // if we are in debug mode jump to a specific address
     if (CVA6Cfg.DebugEn && debug_mode_q) begin
-      trap_vector_base_o = CVA6Cfg.DmBaseAddress[riscv::VLEN-1:0] + CVA6Cfg.ExceptionAddress[riscv::VLEN-1:0];
+      trap_vector_base_o = CVA6Cfg.DmBaseAddress[CVA6Cfg.VLEN-1:0] + CVA6Cfg.ExceptionAddress[CVA6Cfg.VLEN-1:0];
     end
 
     // check if we are in vectored mode, if yes then do BASE + 4 * cause we
@@ -1422,14 +1422,14 @@ module csr_regfile
       trap_vector_base_o[7:2] = ex_i.cause[5:0];
     end
 
-    epc_o = mepc_q[riscv::VLEN-1:0];
+    epc_o = mepc_q[CVA6Cfg.VLEN-1:0];
     // we are returning from supervisor mode, so take the sepc register
     if (CVA6Cfg.RVS && sret) begin
-      epc_o = sepc_q[riscv::VLEN-1:0];
+      epc_o = sepc_q[CVA6Cfg.VLEN-1:0];
     end
     // we are returning from debug mode, to take the dpc register
     if (CVA6Cfg.DebugEn && dret) begin
-      epc_o = dpc_q[riscv::VLEN-1:0];
+      epc_o = dpc_q[CVA6Cfg.VLEN-1:0];
     end
   end
 

@@ -118,7 +118,7 @@ module wt_dcache_mem
   logic [  (CVA6Cfg.XLEN/8)-1:0] wbuffer_be;
   logic [CVA6Cfg.XLEN-1:0] wbuffer_rdata, rdata;
   logic [DCACHE_USER_WIDTH-1:0] wbuffer_ruser, ruser;
-  logic [riscv::PLEN-1:0] wbuffer_cmp_addr;
+  logic [CVA6Cfg.PLEN-1:0] wbuffer_cmp_addr;
 
   logic cmp_en_d, cmp_en_q;
   logic rd_acked;

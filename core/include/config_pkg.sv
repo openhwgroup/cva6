@@ -101,6 +101,8 @@ package config_pkg;
 
   typedef struct packed {
     int unsigned XLEN;
+    int unsigned VLEN;  // virtual address length
+    int unsigned PLEN;  // physical address length
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
@@ -184,6 +186,8 @@ package config_pkg;
     return
     '{
       XLEN: CVA6Cfg.XLEN,
+      VLEN: (CVA6Cfg.XLEN == 32) ? 32 : 64,
+      PLEN: (CVA6Cfg.XLEN == 32) ? 34 : 56,
       NrCommitPorts: CVA6Cfg.NrCommitPorts,
       AxiAddrWidth: CVA6Cfg.AxiAddrWidth,
       AxiDataWidth: CVA6Cfg.AxiDataWidth,
@@ -257,6 +261,8 @@ package config_pkg;
     assert (Cfg.NrExecuteRegionRules <= NrMaxRules);
     assert (Cfg.NrCachedRegionRules <= NrMaxRules);
     assert (Cfg.NrPMPEntries <= 16);
+    assert (!Cfg.STD_CACHE || (Cfg.PLEN == 56 && Cfg.VLEN == 64));
+    assert (Cfg.VLEN >= Cfg.PLEN);
 `endif
     // pragma translate_on
   endfunction

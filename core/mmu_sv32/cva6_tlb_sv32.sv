@@ -39,10 +39,10 @@ module cva6_tlb_sv32
     // Lookup signals
     input logic lu_access_i,
     input logic [ASID_WIDTH-1:0] lu_asid_i,
-    input logic [riscv::VLEN-1:0] lu_vaddr_i,
+    input logic [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
     output riscv::pte_sv32_t lu_content_o,
     input logic [ASID_WIDTH-1:0] asid_to_be_flushed_i,
-    input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     output logic lu_is_4M_o,
     output logic lu_hit_o
 );

@@ -66,7 +66,7 @@ module wt_dcache_wbuffer
     output dcache_req_o_t req_port_o,
     // interface to miss handler
     input logic miss_ack_i,
-    output logic [riscv::PLEN-1:0] miss_paddr_o,
+    output logic [CVA6Cfg.PLEN-1:0] miss_paddr_o,
     output logic miss_req_o,
     output logic miss_we_o,  // always 1 here
     output logic [CVA6Cfg.XLEN-1:0] miss_wdata_o,
@@ -101,7 +101,7 @@ module wt_dcache_wbuffer
     output logic [DCACHE_USER_WIDTH-1:0] wr_user_o,
     // to forwarding logic and miss unit
     output wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_o,
-    output logic [DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
+    output logic [DCACHE_MAX_TX-1:0][CVA6Cfg.PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
     output logic [DCACHE_MAX_TX-1:0] tx_vld_o
 );
 
@@ -120,7 +120,7 @@ module wt_dcache_wbuffer
 
   logic [riscv::XLEN_ALIGN_BYTES-1:0] bdirty_off;
   logic [(CVA6Cfg.XLEN/8)-1:0] tx_be;
-  logic [riscv::PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
+  logic [CVA6Cfg.PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
   logic [DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
   logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
   logic check_en_d, check_en_q, check_en_q1;
@@ -133,7 +133,7 @@ module wt_dcache_wbuffer
   logic wr_cl_vld_q, wr_cl_vld_d;
   logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_q, wr_cl_idx_d;
 
-  logic [riscv::PLEN-1:0] debug_paddr[DCACHE_WBUF_DEPTH-1:0];
+  logic [CVA6Cfg.PLEN-1:0] debug_paddr[DCACHE_WBUF_DEPTH-1:0];
 
   wbuffer_t wbuffer_check_mux, wbuffer_dirty_mux;
 

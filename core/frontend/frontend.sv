@@ -27,17 +27,17 @@ module frontend
     input logic halt_i,  // halt commit stage
     input logic debug_mode_i,
     // global input
-    input logic [riscv::VLEN-1:0] boot_addr_i,
+    input logic [CVA6Cfg.VLEN-1:0] boot_addr_i,
     // Set a new PC
     // mispredict
     input  bp_resolve_t        resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
     // from commit, when flushing the whole pipeline
     input logic set_pc_commit_i,  // Take the PC from commit stage
-    input logic [riscv::VLEN-1:0] pc_commit_i,  // PC of instruction in commit stage
+    input logic [CVA6Cfg.VLEN-1:0] pc_commit_i,  // PC of instruction in commit stage
     // CSR input
-    input logic [riscv::VLEN-1:0] epc_i,  // exception PC which we need to return to
+    input logic [CVA6Cfg.VLEN-1:0] epc_i,  // exception PC which we need to return to
     input logic eret_i,  // return from exception
-    input logic [riscv::VLEN-1:0] trap_vector_base_i,  // base of trap vector
+    input logic [CVA6Cfg.VLEN-1:0] trap_vector_base_i,  // base of trap vector
     input logic ex_valid_i,  // exception is valid - from commit
     input logic set_debug_pc_i,  // jump to debug address
     // Instruction Fetch
@@ -52,7 +52,7 @@ module frontend
   logic                            [                FETCH_WIDTH-1:0] icache_data_q;
   logic                                                              icache_valid_q;
   ariane_pkg::frontend_exception_t                                   icache_ex_valid_q;
-  logic                            [                riscv::VLEN-1:0] icache_vaddr_q;
+  logic                            [                CVA6Cfg.VLEN-1:0] icache_vaddr_q;
   logic                                                              instr_queue_ready;
   logic                            [ariane_pkg::INSTR_PER_FETCH-1:0] instr_queue_consumed;
   // upper-most branch-prediction from last cycle
@@ -60,13 +60,13 @@ module frontend
   bht_prediction_t                                                   bht_q;
   // instruction fetch is ready
   logic                                                              if_ready;
-  logic [riscv::VLEN-1:0] npc_d, npc_q;  // next PC
+  logic [CVA6Cfg.VLEN-1:0] npc_d, npc_q;  // next PC
 
   // indicates whether we come out of reset (then we need to load boot_addr_i)
   logic                                           npc_rst_load_q;
 
   logic                                           replay;
-  logic [                        riscv::VLEN-1:0] replay_addr;
+  logic [                        CVA6Cfg.VLEN-1:0] replay_addr;
 
   // shift amount
   logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
@@ -82,13 +82,13 @@ module frontend
   // -----------------------
   // RVI ctrl flow prediction
   logic [INSTR_PER_FETCH-1:0] rvi_return, rvi_call, rvi_branch, rvi_jalr, rvi_jump;
-  logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] rvi_imm;
+  logic [INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] rvi_imm;
   // RVC branching
   logic [INSTR_PER_FETCH-1:0] rvc_branch, rvc_jump, rvc_jr, rvc_return, rvc_jalr, rvc_call;
-  logic            [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] rvc_imm;
+  logic            [INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] rvc_imm;
   // re-aligned instruction and address (coming from cache - combinationally)
   logic            [INSTR_PER_FETCH-1:0][           31:0] instr;
-  logic            [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr;
+  logic            [INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] addr;
   logic            [INSTR_PER_FETCH-1:0]                  instruction_valid;
   // BHT, BTB and RAS prediction
   bht_prediction_t [INSTR_PER_FETCH-1:0]                  bht_prediction;
@@ -96,15 +96,15 @@ module frontend
   bht_prediction_t [INSTR_PER_FETCH-1:0]                  bht_prediction_shifted;
   btb_prediction_t [INSTR_PER_FETCH-1:0]                  btb_prediction_shifted;
   ras_t                                                   ras_predict;
-  logic            [    riscv::VLEN-1:0]                  vpc_btb;
+  logic            [    CVA6Cfg.VLEN-1:0]                  vpc_btb;
 
   // branch-predict update
   logic                                                   is_mispredict;
   logic ras_push, ras_pop;
-  logic [                riscv::VLEN-1:0] ras_update;
+  logic [                CVA6Cfg.VLEN-1:0] ras_update;
 
   // Instruction FIFO
-  logic [                riscv::VLEN-1:0] predict_address;
+  logic [                CVA6Cfg.VLEN-1:0] predict_address;
   cf_t  [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type;
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvi_cf;
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvc_cf;
@@ -229,8 +229,8 @@ module frontend
             // otherwise default to static prediction
           end else begin
             // set if immediate is negative - static prediction
-            taken_rvi_cf[i] = rvi_branch[i] & rvi_imm[i][riscv::VLEN-1];
-            taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][riscv::VLEN-1];
+            taken_rvi_cf[i] = rvi_branch[i] & rvi_imm[i][CVA6Cfg.VLEN-1];
+            taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][CVA6Cfg.VLEN-1];
           end
           if (taken_rvi_cf[i] || taken_rvc_cf[i]) begin
             cf_type[i] = ariane_pkg::Branch;
@@ -307,7 +307,7 @@ module frontend
   // Mis-predict handling is a little bit different
   // select PC a.k.a PC Gen
   always_comb begin : npc_select
-    automatic logic [riscv::VLEN-1:0] fetch_address;
+    automatic logic [CVA6Cfg.VLEN-1:0] fetch_address;
     // check whether we come out of reset
     // this is a workaround. some tools have issues
     // having boot_addr_i in the asynchronous
@@ -329,7 +329,7 @@ module frontend
     end
     // 1. Default assignment
     if (if_ready) begin
-      npc_d = {fetch_address[riscv::VLEN-1:2], 2'b0} + 'h4;
+      npc_d = {fetch_address[CVA6Cfg.VLEN-1:2], 2'b0} + 'h4;
     end
     // 2. Replay instruction fetch
     if (replay) begin
@@ -357,12 +357,12 @@ module frontend
     // instruction in the commit stage
     // TODO(zarubaf) This adder can at least be merged with the one in the csr_regfile stage
     if (set_pc_commit_i) begin
-      npc_d = pc_commit_i + (halt_i ? '0 : {{riscv::VLEN - 3{1'b0}}, 3'b100});
+      npc_d = pc_commit_i + (halt_i ? '0 : {{CVA6Cfg.VLEN - 3{1'b0}}, 3'b100});
     end
     // 7. Debug
     // enter debug on a hard-coded base-address
     if (CVA6Cfg.DebugEn && set_debug_pc_i)
-      npc_d = CVA6Cfg.DmBaseAddress[riscv::VLEN-1:0] + CVA6Cfg.HaltAddress[riscv::VLEN-1:0];
+      npc_d = CVA6Cfg.DmBaseAddress[CVA6Cfg.VLEN-1:0] + CVA6Cfg.HaltAddress[CVA6Cfg.VLEN-1:0];
     icache_dreq_o.vaddr = fetch_address;
   end
 

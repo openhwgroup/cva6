@@ -58,7 +58,7 @@ module load_store_unit
     input  logic             [riscv::PPNW-1:0] satp_ppn_i,             // From CSR register file
     input  logic             [ ASID_WIDTH-1:0] asid_i,                 // From CSR register file
     input  logic             [ ASID_WIDTH-1:0] asid_to_be_flushed_i,
-    input  logic             [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+    input  logic             [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     input  logic                               flush_tlb_i,
     // Performance counters
     output logic                               itlb_miss_o,
@@ -74,11 +74,11 @@ module load_store_unit
     input  amo_resp_t                              amo_resp_i,
     // PMP
     input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
-    input  logic           [15:0][riscv::PLEN-3:0] pmpaddr_i,
+    input  logic           [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
 
     //RVFI
-    output [              riscv::VLEN-1:0] lsu_addr_o,
-    output [              riscv::PLEN-1:0] mem_paddr_o,
+    output [              CVA6Cfg.VLEN-1:0] lsu_addr_o,
+    output [              CVA6Cfg.PLEN-1:0] mem_paddr_o,
     output [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_o,
     output [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_o,
     output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
@@ -99,13 +99,13 @@ module load_store_unit
   // Address Generation Unit (AGU)
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
-  logic         [    riscv::VLEN-1:0] vaddr_i;
+  logic         [    CVA6Cfg.VLEN-1:0] vaddr_i;
   logic [CVA6Cfg.XLEN-1:0]                       vaddr_xlen;
   logic                               overflow;
   logic         [(CVA6Cfg.XLEN/8)-1:0] be_i;
 
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
-  assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
+  assign vaddr_i = vaddr_xlen[CVA6Cfg.VLEN-1:0];
   // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.XLEN-1:38] or [CVA6Cfg.XLEN-1:31] are equal
   assign overflow = !((&vaddr_xlen[CVA6Cfg.XLEN-1:riscv::SV-1]) == 1'b1 || (|vaddr_xlen[CVA6Cfg.XLEN-1:riscv::SV-1]) == 1'b0);
 
@@ -113,12 +113,12 @@ module load_store_unit
   logic                   ld_valid_i;
   logic                   ld_translation_req;
   logic                   st_translation_req;
-  logic [riscv::VLEN-1:0] ld_vaddr;
-  logic [riscv::VLEN-1:0] st_vaddr;
+  logic [CVA6Cfg.VLEN-1:0] ld_vaddr;
+  logic [CVA6Cfg.VLEN-1:0] st_vaddr;
   logic                   translation_req;
   logic                   translation_valid;
-  logic [riscv::VLEN-1:0] mmu_vaddr;
-  logic [riscv::PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
+  logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
+  logic [CVA6Cfg.PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
   exception_t                       mmu_exception;
   logic                             dtlb_hit;
   logic         [  riscv::PPNW-1:0] dtlb_ppn;
@@ -200,12 +200,12 @@ module load_store_unit
     );
   end else begin : gen_no_mmu
 
-    if (riscv::VLEN > riscv::PLEN) begin
-      assign mmu_vaddr_plen   = mmu_vaddr[riscv::PLEN-1:0];
-      assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0];
+    if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin
+      assign mmu_vaddr_plen   = mmu_vaddr[CVA6Cfg.PLEN-1:0];
+      assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin
-      assign mmu_vaddr_plen   = {{{riscv::PLEN - riscv::VLEN} {1'b0}}, mmu_vaddr};
-      assign fetch_vaddr_plen = {{{riscv::PLEN - riscv::VLEN} {1'b0}}, icache_areq_i.fetch_vaddr};
+      assign mmu_vaddr_plen   = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
+      assign fetch_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, icache_areq_i.fetch_vaddr};
     end
 
     assign icache_areq_o.fetch_valid           = icache_areq_i.fetch_req;
@@ -224,7 +224,7 @@ module load_store_unit
 
     assign itlb_miss_o                         = 1'b0;
     assign dtlb_miss_o                         = 1'b0;
-    assign dtlb_ppn                            = mmu_vaddr_plen[riscv::PLEN-1:12];
+    assign dtlb_ppn                            = mmu_vaddr_plen[CVA6Cfg.PLEN-1:12];
     assign dtlb_hit                            = 1'b1;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -351,7 +351,7 @@ module load_store_unit
     st_valid_i      = 1'b0;
 
     translation_req = 1'b0;
-    mmu_vaddr       = {riscv::VLEN{1'b0}};
+    mmu_vaddr       = {CVA6Cfg.VLEN{1'b0}};
 
     // check the operation to activate the right functional unit accordingly
     unique case (lsu_ctrl.fu)
@@ -435,12 +435,12 @@ module load_store_unit
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception = {
-          riscv::LD_ADDR_MISALIGNED, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
+          riscv::LD_ADDR_MISALIGNED, {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
         };
 
       end else if (lsu_ctrl.fu == STORE) begin
         misaligned_exception = {
-          riscv::ST_ADDR_MISALIGNED, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
+          riscv::ST_ADDR_MISALIGNED, {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
         };
       end
     end
@@ -449,12 +449,12 @@ module load_store_unit
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception = {
-          riscv::LD_ACCESS_FAULT, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
+          riscv::LD_ACCESS_FAULT, {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
         };
 
       end else if (lsu_ctrl.fu == STORE) begin
         misaligned_exception = {
-          riscv::ST_ACCESS_FAULT, {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
+          riscv::ST_ACCESS_FAULT, {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
         };
       end
     end

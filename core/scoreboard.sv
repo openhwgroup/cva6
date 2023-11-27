@@ -65,7 +65,7 @@ module scoreboard #(
     input logic x_we_i,  // cvxif we for writeback
 
     // RVFI
-    input               [              riscv::VLEN-1:0] lsu_addr_i,
+    input               [              CVA6Cfg.VLEN-1:0] lsu_addr_i,
     input               [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_i,
     input               [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_i,
     input               [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_i,

@@ -34,11 +34,6 @@ package riscv;
     ModeSv64 = 11
   } vm_mode_t;
 
-  // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
-  // Warning: VLEN must be superior or equal to PLEN
-  localparam VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;  // virtual address length
-  localparam PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;  // physical address length
-
   localparam IS_XLEN32 = (CVA6Cfg.XLEN == 32) ? 1'b1 : 1'b0;
   localparam IS_XLEN64 = (CVA6Cfg.XLEN == 32) ? 1'b0 : 1'b1;
   localparam ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
@@ -46,7 +41,7 @@ package riscv;
   localparam PPNW = (CVA6Cfg.XLEN == 32) ? 22 : 44;
   localparam vm_mode_t MODE_SV = (CVA6Cfg.XLEN == 32) ? ModeSv32 : ModeSv39;
   localparam SV = (MODE_SV == ModeSv32) ? 32 : 39;
-  localparam VPN2 = (VLEN - 31 < 8) ? VLEN - 31 : 8;
+  localparam VPN2 = (CVA6Cfg.VLEN - 31 < 8) ? CVA6Cfg.VLEN - 31 : 8;
   localparam XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
 
   // --------------------

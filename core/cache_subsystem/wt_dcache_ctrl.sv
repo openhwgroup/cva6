@@ -33,7 +33,7 @@ module wt_dcache_ctrl
     output logic [CVA6Cfg.XLEN-1:0] miss_wdata_o,  // unused (set to 0)
     output logic [DCACHE_USER_WIDTH-1:0] miss_wuser_o,  // unused (set to 0)
     output logic [DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // valid bits at the missed index
-    output logic [riscv::PLEN-1:0] miss_paddr_o,
+    output logic [CVA6Cfg.PLEN-1:0] miss_paddr_o,
     output logic miss_nc_o,  // request to I/O space
     output logic [2:0] miss_size_o,  // 00: 1byte, 01: 2byte, 10: 4byte, 11: 8byte, 111: cacheline
     output logic [CACHE_ID_WIDTH-1:0] miss_id_o,  // set to constant ID

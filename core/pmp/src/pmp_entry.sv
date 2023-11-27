@@ -14,11 +14,10 @@
 
 module pmp_entry #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter int unsigned PLEN = 56,
     parameter int unsigned PMP_LEN = 54
 ) (
     // Input
-    input logic [PLEN-1:0] addr_i,
+    input logic [CVA6Cfg.PLEN-1:0] addr_i,
 
     // Configuration
     input logic [PMP_LEN-1:0] conf_addr_i,
@@ -28,14 +27,14 @@ module pmp_entry #(
     // Output
     output logic match_o
 );
-  logic [PLEN-1:0] conf_addr_n;
-  logic [$clog2(PLEN)-1:0] trail_ones;
-  logic [PLEN-1:0] base;
-  logic [PLEN-1:0] mask;
+  logic [CVA6Cfg.PLEN-1:0] conf_addr_n;
+  logic [$clog2(CVA6Cfg.PLEN)-1:0] trail_ones;
+  logic [CVA6Cfg.PLEN-1:0] base;
+  logic [CVA6Cfg.PLEN-1:0] mask;
   int unsigned size;
   assign conf_addr_n = {2'b11, ~conf_addr_i};
   lzc #(
-      .WIDTH(PLEN),
+      .WIDTH(CVA6Cfg.PLEN),
       .MODE (1'b0)
   ) i_lzc (
       .in_i   (conf_addr_n),
@@ -69,7 +68,7 @@ module pmp_entry #(
         if (conf_addr_mode_i == riscv::NA4) size = 2;
         else begin
           // use the extracted trailing ones
-          size = {{(32 - $clog2(PLEN)) {1'b0}}, trail_ones} + 3;
+          size = {{(32 - $clog2(CVA6Cfg.PLEN)) {1'b0}}, trail_ones} + 3;
         end
 
         mask = '1 << size;
@@ -89,7 +88,7 @@ module pmp_entry #(
           end
         end
 
-        if (size < PLEN - 1) begin
+        if (size < CVA6Cfg.PLEN - 1) begin
           if (base + 2 ** size > base) begin  // check for overflow
             if (match_o == 0) begin
               assert (addr_i >= base + 2 ** size || addr_i < base);

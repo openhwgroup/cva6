@@ -14,12 +14,11 @@
 
 module pmp #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
-    parameter int unsigned           PLEN       = 34,                          // rv64: 56
     parameter int unsigned           PMP_LEN    = 32,                          // rv64: 54
     parameter int unsigned           NR_ENTRIES = 4
 ) (
     // Input
-    input logic [PLEN-1:0] addr_i,
+    input logic [CVA6Cfg.PLEN-1:0] addr_i,
     input riscv::pmp_access_t access_type_i,
     input riscv::priv_lvl_t priv_lvl_i,
     // Configuration
@@ -39,7 +38,6 @@ module pmp #(
 
       pmp_entry #(
           .CVA6Cfg(CVA6Cfg),
-          .PLEN   (PLEN),
           .PMP_LEN(PMP_LEN)
       ) i_pmp_entry (
           .addr_i          (addr_i),

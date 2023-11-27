@@ -34,7 +34,7 @@ module btb #(
     input logic flush_i,      // flush the btb
     input logic debug_mode_i,
 
-    input logic [riscv::VLEN-1:0] vpc_i,  // virtual PC from IF stage
+    input logic [CVA6Cfg.VLEN-1:0] vpc_i,  // virtual PC from IF stage
     input ariane_pkg::btb_update_t btb_update_i,  // update btb with this information
     output ariane_pkg::btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o // prediction from btb
 );

@@ -23,7 +23,7 @@ module ras #(
     input  logic                               flush_i,
     input  logic                               push_i,
     input  logic                               pop_i,
-    input  logic             [riscv::VLEN-1:0] data_i,
+    input  logic             [CVA6Cfg.VLEN-1:0] data_i,
     output ariane_pkg::ras_t                   data_o
 );
 

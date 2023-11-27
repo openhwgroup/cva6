@@ -34,10 +34,10 @@ module issue_stage
     input logic is_ctrl_flow_i,
     output logic decoded_instr_ack_o,
     // to EX
-    output [riscv::VLEN-1:0] rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
-    output [riscv::VLEN-1:0] rs2_forwarding_o,  // unregistered version of fu_data_o.operandb
+    output [CVA6Cfg.VLEN-1:0] rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
+    output [CVA6Cfg.VLEN-1:0] rs2_forwarding_o,  // unregistered version of fu_data_o.operandb
     output fu_data_t fu_data_o,
-    output logic [riscv::VLEN-1:0] pc_o,
+    output logic [CVA6Cfg.VLEN-1:0] pc_o,
     output logic is_compressed_instr_o,
     input logic flu_ready_i,
     output logic alu_valid_o,
@@ -89,7 +89,7 @@ module issue_stage
     output logic stall_issue_o,  // Used in Performance Counters
 
     //RVFI
-    input [              riscv::VLEN-1:0] lsu_addr_i,
+    input [              CVA6Cfg.VLEN-1:0] lsu_addr_i,
     input [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_i,
     input [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_i,
     input [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_i
@@ -121,8 +121,8 @@ module issue_stage
   logic [CVA6Cfg.XLEN-1:0]                             rs1_forwarding_xlen;
   logic [CVA6Cfg.XLEN-1:0]                             rs2_forwarding_xlen;
 
-  assign rs1_forwarding_o = rs1_forwarding_xlen[riscv::VLEN-1:0];
-  assign rs2_forwarding_o = rs2_forwarding_xlen[riscv::VLEN-1:0];
+  assign rs1_forwarding_o = rs1_forwarding_xlen[CVA6Cfg.VLEN-1:0];
+  assign rs2_forwarding_o = rs2_forwarding_xlen[CVA6Cfg.VLEN-1:0];
 
   assign issue_instr_o    = issue_instr_sb_iro;
   assign issue_instr_hs_o = issue_instr_valid_sb_iro & issue_ack_iro_sb;

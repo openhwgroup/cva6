@@ -24,7 +24,7 @@ module amo_buffer #(
     input logic valid_i,  // AMO is valid
     output logic ready_o,  // AMO unit is ready
     input ariane_pkg::amo_t amo_op_i,  // AMO Operation
-    input  logic [riscv::PLEN-1:0]      paddr_i,            // physical address of store which needs to be placed in the queue
+    input  logic [CVA6Cfg.PLEN-1:0]      paddr_i,            // physical address of store which needs to be placed in the queue
     input logic [CVA6Cfg.XLEN-1:0] data_i,  // data which is placed in the queue
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
     // D$
@@ -39,7 +39,7 @@ module amo_buffer #(
 
   typedef struct packed {
     ariane_pkg::amo_t       op;
-    logic [riscv::PLEN-1:0] paddr;
+    logic [CVA6Cfg.PLEN-1:0] paddr;
     logic [CVA6Cfg.XLEN-1:0]           data;
     logic [1:0]             size;
   } amo_op_t;
@@ -50,7 +50,7 @@ module amo_buffer #(
   assign amo_req_o.req = no_st_pending_i & amo_valid_commit_i & amo_valid;
   assign amo_req_o.amo_op = amo_data_out.op;
   assign amo_req_o.size = amo_data_out.size;
-  assign amo_req_o.operand_a = {{64 - riscv::PLEN{1'b0}}, amo_data_out.paddr};
+  assign amo_req_o.operand_a = {{64 - CVA6Cfg.PLEN{1'b0}}, amo_data_out.paddr};
   assign amo_req_o.operand_b = {{64 - CVA6Cfg.XLEN{1'b0}}, amo_data_out.data};
 
   assign amo_data_in.op = amo_op_i;

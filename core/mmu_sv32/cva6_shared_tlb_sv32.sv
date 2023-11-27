@@ -38,11 +38,11 @@ module cva6_shared_tlb_sv32
     // did we miss?
     input logic                   itlb_access_i,
     input logic                   itlb_hit_i,
-    input logic [riscv::VLEN-1:0] itlb_vaddr_i,
+    input logic [CVA6Cfg.VLEN-1:0] itlb_vaddr_i,
 
     input logic                   dtlb_access_i,
     input logic                   dtlb_hit_i,
-    input logic [riscv::VLEN-1:0] dtlb_vaddr_i,
+    input logic [CVA6Cfg.VLEN-1:0] dtlb_vaddr_i,
 
     // to TLBs, update logic
     output tlb_update_sv32_t itlb_update_o,
@@ -54,7 +54,7 @@ module cva6_shared_tlb_sv32
 
     output logic                   shared_tlb_access_o,
     output logic                   shared_tlb_hit_o,
-    output logic [riscv::VLEN-1:0] shared_tlb_vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_o,
 
     output logic itlb_req_o,
 
@@ -113,14 +113,14 @@ module cva6_shared_tlb_sv32
 
   riscv::pte_sv32_t [SHARED_TLB_WAYS-1:0] pte;
 
-  logic [riscv::VLEN-1-12:0] itlb_vpn_q;
-  logic [riscv::VLEN-1-12:0] dtlb_vpn_q;
+  logic [CVA6Cfg.VLEN-1-12:0] itlb_vpn_q;
+  logic [CVA6Cfg.VLEN-1-12:0] dtlb_vpn_q;
 
   logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_d;
 
   logic shared_tlb_access_q, shared_tlb_access_d;
   logic shared_tlb_hit_d;
-  logic [riscv::VLEN-1:0] shared_tlb_vaddr_q, shared_tlb_vaddr_d;
+  logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_q, shared_tlb_vaddr_d;
 
   logic itlb_req_d, itlb_req_q;
   logic dtlb_req_d, dtlb_req_q;

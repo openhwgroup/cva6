@@ -25,10 +25,10 @@ module ex_stage
     input logic flush_i,
     input logic debug_mode_i,
 
-    input logic [riscv::VLEN-1:0] rs1_forwarding_i,
-    input logic [riscv::VLEN-1:0] rs2_forwarding_i,
+    input logic [CVA6Cfg.VLEN-1:0] rs1_forwarding_i,
+    input logic [CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
     input fu_data_t fu_data_i,
-    input logic [riscv::VLEN-1:0] pc_i,  // PC of current instruction
+    input logic [CVA6Cfg.VLEN-1:0] pc_i,  // PC of current instruction
     input logic is_compressed_instr_i,  // we need to know if this was a compressed instruction
                                         // in order to calculate the next PC on a mis-predict
     // Fixed latency unit(s)
@@ -120,11 +120,11 @@ module ex_stage
     output logic dtlb_miss_o,
     // PMPs
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
-    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
 
     // RVFI
-    output [              riscv::VLEN-1:0] lsu_addr_o,
-    output [              riscv::PLEN-1:0] mem_paddr_o,
+    output [              CVA6Cfg.VLEN-1:0] lsu_addr_o,
+    output [              CVA6Cfg.PLEN-1:0] mem_paddr_o,
     output [          (CVA6Cfg.XLEN/8)-1:0] lsu_rmask_o,
     output [          (CVA6Cfg.XLEN/8)-1:0] lsu_wmask_o,
     output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
@@ -155,12 +155,12 @@ module ex_stage
   // These two register store the rs1 and rs2 parameters in case of `SFENCE_VMA`
   // instruction to be used for TLB flush in the next clock cycle.
   logic [ASID_WIDTH-1:0] asid_to_be_flushed;
-  logic [riscv::VLEN-1:0] vaddr_to_be_flushed;
+  logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed;
 
   // from ALU to branch unit
   logic alu_branch_res;  // branch comparison result
   logic [CVA6Cfg.XLEN-1:0] alu_result, csr_result, mult_result;
-  logic [riscv::VLEN-1:0] branch_result;
+  logic [CVA6Cfg.VLEN-1:0] branch_result;
   logic csr_ready, mult_ready;
   logic [TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
@@ -223,7 +223,7 @@ module ex_stage
   // result MUX
   always_comb begin
     // Branch result as default case
-    flu_result_o   = {{CVA6Cfg.XLEN - riscv::VLEN{1'b0}}, branch_result};
+    flu_result_o   = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, branch_result};
     flu_trans_id_o = fu_data_i.trans_id;
     // ALU result
     if (alu_valid_i) begin

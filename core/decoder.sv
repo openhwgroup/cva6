@@ -25,7 +25,7 @@ module decoder
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     input logic debug_req_i,  // external debug request
-    input logic [riscv::VLEN-1:0] pc_i,  // PC from IF
+    input logic [CVA6Cfg.VLEN-1:0] pc_i,  // PC from IF
     input logic is_compressed_i,  // is a compressed instruction
     input logic [15:0] compressed_instr_i,  // compressed form of instruction
     input logic is_illegal_i,  // illegal compressed instruction

@@ -52,19 +52,19 @@ module instr_queue
     input logic rst_ni,
     input logic flush_i,
     input logic [ariane_pkg::INSTR_PER_FETCH-1:0][31:0] instr_i,
-    input logic [ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr_i,
+    input logic [ariane_pkg::INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] addr_i,
     input logic [ariane_pkg::INSTR_PER_FETCH-1:0] valid_i,
     output logic ready_o,
     output logic [ariane_pkg::INSTR_PER_FETCH-1:0] consumed_o,
     // we've encountered an exception, at this point the only possible exceptions are page-table faults
     input ariane_pkg::frontend_exception_t exception_i,
-    input logic [riscv::VLEN-1:0] exception_addr_i,
+    input logic [CVA6Cfg.VLEN-1:0] exception_addr_i,
     // branch predict
-    input logic [riscv::VLEN-1:0] predict_address_i,
+    input logic [CVA6Cfg.VLEN-1:0] predict_address_i,
     input ariane_pkg::cf_t [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type_i,
     // replay instruction because one of the FIFO was already full
     output logic replay_o,
-    output logic [riscv::VLEN-1:0] replay_addr_o,  // address at which to replay this instruction
+    output logic [CVA6Cfg.VLEN-1:0] replay_addr_o,  // address at which to replay this instruction
     // to processor backend
     output ariane_pkg::fetch_entry_t fetch_entry_o,
     output logic fetch_entry_valid_o,
@@ -75,7 +75,7 @@ module instr_queue
     logic [31:0]                     instr;     // instruction word
     ariane_pkg::cf_t                 cf;        // branch was taken
     ariane_pkg::frontend_exception_t ex;        // exception happened
-    logic [riscv::VLEN-1:0]          ex_vaddr;  // lower VLEN bits of tval for exception
+    logic [CVA6Cfg.VLEN-1:0]          ex_vaddr;  // lower CVA6Cfg.VLEN bits of tval for exception
   } instr_data_t;
 
   logic [ariane_pkg::LOG2_INSTR_PER_FETCH-1:0] branch_index;
@@ -91,7 +91,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   logic                                            instr_overflow;
   // address queue
   logic [$clog2(ariane_pkg::FETCH_FIFO_DEPTH)-1:0] address_queue_usage;
-  logic [                         riscv::VLEN-1:0] address_out;
+  logic [                         CVA6Cfg.VLEN-1:0] address_out;
   logic                                            pop_address;
   logic                                            push_address;
   logic                                            full_address;
@@ -102,7 +102,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   // Registers
   // output FIFO select, one-hot
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] idx_ds_d, idx_ds_q;
-  logic [riscv::VLEN-1:0] pc_d, pc_q;  // current PC
+  logic [CVA6Cfg.VLEN-1:0] pc_d, pc_q;  // current PC
   logic reset_address_d, reset_address_q;  // we need to re-set the address because of a flush
 
   logic [ariane_pkg::INSTR_PER_FETCH*2-2:0] branch_mask_extended;
@@ -283,7 +283,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
           fetch_entry_o.instruction = instr_data_out[i].instr;
           fetch_entry_o.ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
           fetch_entry_o.ex.tval = {
-            {(CVA6Cfg.XLEN - riscv::VLEN) {1'b0}}, instr_data_out[i].ex_vaddr
+            {(CVA6Cfg.XLEN - CVA6Cfg.VLEN) {1'b0}}, instr_data_out[i].ex_vaddr
           };
           fetch_entry_o.branch_predict.cf = instr_data_out[i].cf;
           pop_instr[i] = fetch_entry_valid_o & fetch_entry_ready_i;
@@ -309,7 +309,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
       end else begin
         fetch_entry_o.ex.cause = riscv::INSTR_PAGE_FAULT;
       end
-      fetch_entry_o.ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[0].ex_vaddr};
+      fetch_entry_o.ex.tval = {{64 - CVA6Cfg.VLEN{1'b0}}, instr_data_out[0].ex_vaddr};
 
       fetch_entry_o.branch_predict.predict_address = address_out;
       fetch_entry_o.branch_predict.cf = instr_data_out[0].cf;
@@ -382,7 +382,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
 
   fifo_v3 #(
       .DEPTH     (ariane_pkg::FETCH_FIFO_DEPTH),  // TODO(zarubaf): Fork out to separate param
-      .DATA_WIDTH(riscv::VLEN)
+      .DATA_WIDTH(CVA6Cfg.VLEN)
   ) i_fifo_address (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

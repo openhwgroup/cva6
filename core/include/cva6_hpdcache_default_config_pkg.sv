@@ -35,7 +35,7 @@ package hpdcache_params_pkg;
   //  Definition of global constants for the HPDcache data and directory
   //  {{{
   //  HPDcache physical address width (in bits)
-  localparam int unsigned PARAM_PA_WIDTH = riscv::PLEN;
+  localparam int unsigned PARAM_PA_WIDTH = CVA6Cfg.PLEN;
 
   //  HPDcache number of sets
   localparam int unsigned PARAM_SETS = __BYTES_PER_WAY / __BYTES_PER_CACHELINE;

@@ -50,14 +50,14 @@ module cva6_ptw_sv32
     // to Shared TLB, update logic
     output tlb_update_sv32_t shared_tlb_update_o,
 
-    output logic [riscv::VLEN-1:0] update_vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] update_vaddr_o,
 
     input logic [ASID_WIDTH-1:0] asid_i,
 
     // from shared TLB
     input logic                   shared_tlb_access_i,
     input logic                   shared_tlb_hit_i,
-    input logic [riscv::VLEN-1:0] shared_tlb_vaddr_i,
+    input logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_i,
 
     input logic itlb_req_i,
 
@@ -70,8 +70,8 @@ module cva6_ptw_sv32
 
     // PMP
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
-    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
-    output logic [riscv::PLEN-1:0] bad_paddr_o
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    output logic [CVA6Cfg.PLEN-1:0] bad_paddr_o
 
 );
 
@@ -109,9 +109,9 @@ module cva6_ptw_sv32
   // register the ASID
   logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VPN we need to walk, SV32 defines a 32 bit virtual address
-  logic [riscv::VLEN-1:0] vaddr_q, vaddr_n;
+  logic [CVA6Cfg.VLEN-1:0] vaddr_q, vaddr_n;
   // 4 byte aligned physical pointer
-  logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
+  logic [CVA6Cfg.PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 
   // Assignments
   assign update_vaddr_o = vaddr_q;
@@ -149,8 +149,7 @@ module cva6_ptw_sv32
 
   pmp #(
       .CVA6Cfg   (CVA6Cfg),
-      .PLEN      (riscv::PLEN),
-      .PMP_LEN   (riscv::PLEN - 2),
+      .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
   ) i_pmp_ptw (
       .addr_i       (ptw_pptr_q),
