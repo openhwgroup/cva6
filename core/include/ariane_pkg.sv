@@ -29,9 +29,8 @@
 package ariane_pkg;
 
   // TODO: Slowly move those parameters to the new system.
-  localparam NR_SB_ENTRIES = cva6_config_pkg::CVA6ConfigNrScoreboardEntries; // number of scoreboard entries
   localparam TRANS_ID_BITS = $clog2(
-      NR_SB_ENTRIES
+      CVA6Cfg.NR_SB_ENTRIES
   );  // depending on the number of scoreboard entries we need that many bits
       // to uniquely identify the entry in the scoreboard
   localparam ASID_WIDTH = (riscv::XLEN == 64) ? 16 : 1;

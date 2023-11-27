@@ -153,13 +153,13 @@ module acc_dispatcher
    **********************************/
 
   // Keep track of the instructions that were received by the dispatcher.
-  logic [NR_SB_ENTRIES-1:0] insn_pending_d, insn_pending_q;
+  logic [CVA6Cfg.NR_SB_ENTRIES-1:0] insn_pending_d, insn_pending_q;
   `FF(insn_pending_q, insn_pending_d, '0)
 
   // Only non-speculative instructions can be issued to the accelerators.
   // The following block keeps track of which transaction IDs reached the
   // top of the scoreboard, and are therefore no longer speculative.
-  logic [NR_SB_ENTRIES-1:0] insn_ready_d, insn_ready_q;
+  logic [CVA6Cfg.NR_SB_ENTRIES-1:0] insn_ready_d, insn_ready_q;
   `FF(insn_ready_q, insn_ready_d, '0)
 
   always_comb begin : p_non_speculative_ff

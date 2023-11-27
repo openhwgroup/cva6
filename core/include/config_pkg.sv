@@ -38,6 +38,7 @@ package config_pkg;
   typedef struct packed {
     int unsigned XLEN;
     bit BITMANIP;
+    int unsigned NR_SB_ENTRIES;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
@@ -103,6 +104,7 @@ package config_pkg;
   typedef struct packed {
     int unsigned XLEN;
     bit BITMANIP;
+    int unsigned NR_SB_ENTRIES;
     int unsigned VLEN;  // virtual address length
     int unsigned PLEN;  // physical address length
     bit IS_XLEN32;
@@ -193,6 +195,7 @@ package config_pkg;
     '{
       XLEN: CVA6Cfg.XLEN,
       BITMANIP: CVA6Cfg.BITMANIP,
+      NR_SB_ENTRIES: CVA6Cfg.NR_SB_ENTRIES,
       VLEN: (CVA6Cfg.XLEN == 32) ? 32 : 64,
       PLEN: (CVA6Cfg.XLEN == 32) ? 34 : 56,
       IS_XLEN32: IS_XLEN32,

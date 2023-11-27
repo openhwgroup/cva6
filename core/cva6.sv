@@ -523,7 +523,7 @@ module cva6
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .IsRVFI    (IsRVFI),
-      .NR_ENTRIES(NR_SB_ENTRIES)
+      .NR_ENTRIES(CVA6Cfg.NR_SB_ENTRIES)
   ) issue_stage_i (
       .clk_i,
       .rst_ni,
