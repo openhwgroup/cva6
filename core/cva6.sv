@@ -20,6 +20,27 @@ module cva6
     parameter config_pkg::cva6_user_cfg_t CVA6UserCfg = cva6_config_pkg::cva6_cfg,
     parameter config_pkg::cva6_cfg_t      CVA6Cfg     = config_pkg::build_config(CVA6UserCfg),
 
+    // branch-predict
+    // this is the struct we get back from ex stage and we will use it to update
+    // all the necessary data structures
+    // bp_resolve_t
+    parameter type bp_resolve_t = struct packed {
+      logic                    valid;           // prediction with all its values is valid
+      logic [CVA6Cfg.VLEN-1:0] pc;              // PC of predict or mis-predict
+      logic [CVA6Cfg.VLEN-1:0] target_address;  // target address at which to jump, or not
+      logic                    is_mispredict;   // set if this was a mis-predict
+      logic                    is_taken;        // branch is taken
+      cf_t                     cf_type;         // Type of control flow change
+    },
+
+    // branchpredict scoreboard entry
+    // this is the struct which we will inject into the pipeline to guide the various
+    // units towards the correct branch decision and resolve
+    parameter type branchpredict_sbe_t = struct packed {
+      cf_t                     cf;               // type of control flow prediction
+      logic [CVA6Cfg.VLEN-1:0] predict_address;  // target address at which to jump, or not
+    },
+
     parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
     // RVFI
     parameter type rvfi_instr_t = struct packed {
@@ -373,7 +394,8 @@ module cva6
   // Frontend
   // --------------
   frontend #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t)
   ) i_frontend (
       .flush_i            (flush_ctrl_if),                  // not entirely correct
       .flush_bp_i         (1'b0),
@@ -400,7 +422,8 @@ module cva6
   // ID
   // ---------
   id_stage #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .branchpredict_sbe_t(branchpredict_sbe_t)
   ) id_stage_i (
       .clk_i,
       .rst_ni,
@@ -497,6 +520,8 @@ module cva6
   // ---------
   issue_stage #(
       .CVA6Cfg   (CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
       .IsRVFI    (IsRVFI),
       .NR_ENTRIES(NR_SB_ENTRIES)
   ) issue_stage_i (
@@ -573,6 +598,8 @@ module cva6
   // ---------
   ex_stage #(
       .CVA6Cfg   (CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) ex_stage_i (
       .clk_i                (clk_i),
@@ -796,6 +823,7 @@ module cva6
   if (PERF_COUNTER_EN) begin : gen_perf_counter
     perf_counters #(
         .CVA6Cfg (CVA6Cfg),
+        .bp_resolve_t(bp_resolve_t),
         .NumPorts(NumPorts)
     ) perf_counters_i (
         .clk_i         (clk_i),
@@ -834,7 +862,8 @@ module cva6
   // Controller
   // ------------
   controller #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t)
   ) controller_i (
       // flush ports
       .set_pc_commit_o       (set_pc_ctrl_pcgen),

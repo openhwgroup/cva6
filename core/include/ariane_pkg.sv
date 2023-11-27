@@ -196,27 +196,6 @@ package ariane_pkg;
     Return   // Return Address Prediction
   } cf_t;
 
-  // branch-predict
-  // this is the struct we get back from ex stage and we will use it to update
-  // all the necessary data structures
-  // bp_resolve_t
-  typedef struct packed {
-    logic                   valid;           // prediction with all its values is valid
-    logic [riscv::VLEN-1:0] pc;              // PC of predict or mis-predict
-    logic [riscv::VLEN-1:0] target_address;  // target address at which to jump, or not
-    logic                   is_mispredict;   // set if this was a mis-predict
-    logic                   is_taken;        // branch is taken
-    cf_t                    cf_type;         // Type of control flow change
-  } bp_resolve_t;
-
-  // branchpredict scoreboard entry
-  // this is the struct which we will inject into the pipeline to guide the various
-  // units towards the correct branch decision and resolve
-  typedef struct packed {
-    cf_t                    cf;               // type of control flow prediction
-    logic [riscv::VLEN-1:0] predict_address;  // target address at which to jump, or not
-  } branchpredict_sbe_t;
-
   typedef struct packed {
     logic                   valid;
     logic [riscv::VLEN-1:0] pc;              // update at PC

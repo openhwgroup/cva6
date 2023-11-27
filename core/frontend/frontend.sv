@@ -18,7 +18,8 @@
 module frontend
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low

@@ -14,7 +14,8 @@
 //              issue and read operands.
 
 module id_stage #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type branchpredict_sbe_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -78,7 +79,8 @@ module id_stage #(
   // 2. Decode and emit instruction to issue stage
   // ---------------------------------------------------------
   decoder #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .branchpredict_sbe_t(branchpredict_sbe_t)
   ) decoder_i (
       .debug_req_i,
       .irq_ctrl_i,

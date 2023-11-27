@@ -13,7 +13,9 @@
 // Description: Branch target calculation and comparison
 
 module branch_unit #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type branchpredict_sbe_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -26,8 +28,8 @@ module branch_unit #(
     input logic branch_comp_res_i,  // branch comparison result from ALU
     output logic [CVA6Cfg.VLEN-1:0] branch_result_o,
 
-    input ariane_pkg::branchpredict_sbe_t branch_predict_i,  // this is the address we predicted
-    output ariane_pkg::bp_resolve_t               resolved_branch_o,      // this is the actual address we are targeting
+    input branchpredict_sbe_t branch_predict_i,  // this is the address we predicted
+    output bp_resolve_t resolved_branch_o,  // this is the actual address we are targeting
     output logic resolve_branch_o,  // to ID to clear that we resolved the branch and we can
                                     // accept new entries to the scoreboard
     output ariane_pkg::exception_t branch_exception_o  // branch exception out

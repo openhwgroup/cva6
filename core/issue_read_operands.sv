@@ -18,6 +18,7 @@ module issue_read_operands
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type branchpredict_sbe_t = logic,
     parameter type rs3_len_t = logic
 ) (
     input logic clk_i,  // Clock

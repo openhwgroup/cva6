@@ -18,6 +18,8 @@ module ex_stage
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type branchpredict_sbe_t = logic,
     parameter int unsigned ASID_WIDTH = 1
 ) (
     input logic clk_i,        // Clock
@@ -184,7 +186,9 @@ module ex_stage
   // we don't silence the branch unit as this is already critical and we do
   // not want to add another layer of logic
   branch_unit #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
+      .branchpredict_sbe_t(branchpredict_sbe_t)
   ) branch_unit_i (
       .clk_i,
       .rst_ni,

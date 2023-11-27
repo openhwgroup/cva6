@@ -22,7 +22,8 @@
 module decoder
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type branchpredict_sbe_t = logic
 ) (
     input logic debug_req_i,  // external debug request
     input logic [CVA6Cfg.VLEN-1:0] pc_i,  // PC from IF
