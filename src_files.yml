@@ -46,6 +46,7 @@ ariane:
     src/perf_counters.sv,
     src/mmu_sv39/ptw.sv,
     src/mmu_sv32/cva6_ptw_sv32.sv,
+    src/mmu_unify/cva6_ptw.sv,
     src/re_name.sv,
     src/scoreboard.sv,
     src/store_buffer.sv,

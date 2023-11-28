@@ -91,7 +91,7 @@ logic [riscv::PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
 
 logic [riscv::VLEN-1:0] update_vaddr;
 tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
-tlb_update_sv32_t update_shared_tlb_sv32;
+// tlb_update_sv32_t update_shared_tlb_sv32;
 
 logic                               itlb_lu_access;
 riscv::pte_cva6_t                   itlb_content;
@@ -206,9 +206,11 @@ cva6_shared_tlb #(
     .shared_tlb_update_i(update_shared_tlb)
 );
 
-cva6_ptw_sv32 #(
+cva6_ptw #(
     .CVA6Cfg   (CVA6Cfg),
-    .ASID_WIDTH(ASID_WIDTH)
+    .ASID_WIDTH(ASID_WIDTH),
+    .VPN_LEN(VPN_LEN),
+    .PT_LEVELS(PT_LEVELS)
 ) i_ptw (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -225,7 +227,7 @@ cva6_ptw_sv32 #(
     .req_port_o    (req_port_o),
 
     // to Shared TLB, update logic
-    .shared_tlb_update_o(update_shared_tlb_sv32),
+    .shared_tlb_update_o(update_shared_tlb),
 
     .update_vaddr_o(update_vaddr),
 
@@ -253,11 +255,11 @@ cva6_ptw_sv32 #(
 
 );
 
-assign update_shared_tlb.valid        = update_shared_tlb_sv32.valid;
-assign update_shared_tlb.is_page[0]   = update_shared_tlb_sv32.is_4M;
-assign update_shared_tlb.vpn          = update_shared_tlb_sv32.vpn;
-assign update_shared_tlb.asid         = update_shared_tlb_sv32.asid;
-assign update_shared_tlb.content      = update_shared_tlb_sv32.content;
+// assign update_shared_tlb.valid        = update_shared_tlb_sv32.valid;
+// assign update_shared_tlb.is_page[0]   = update_shared_tlb_sv32.is_4M;
+// assign update_shared_tlb.vpn          = update_shared_tlb_sv32.vpn;
+// assign update_shared_tlb.asid         = update_shared_tlb_sv32.asid;
+// assign update_shared_tlb.content      = update_shared_tlb_sv32.content;
 
 // assign update_itlb.valid   = update_itlb_sv32.valid;
 // assign update_itlb.is_page = update_itlb_sv32.is_4M;

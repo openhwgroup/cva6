@@ -51,6 +51,7 @@ sources:
           - core/mmu_unify/cva6_tlb.sv
           - core/mmu_unify/cva6_mmu.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/mmu_unify/cva6_ptw.sv
           - core/cva6_accel_first_pass_decoder_stub.sv
 
       - target: cv32a6_imac_sv32
@@ -61,6 +62,7 @@ sources:
           - core/mmu_unify/cva6_tlb.sv
           - core/mmu_unify/cva6_mmu.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/mmu_unify/cva6_ptw.sv
           - core/cva6_accel_first_pass_decoder_stub.sv
 
       - target: cv32a6_imafc_sv32
@@ -71,6 +73,7 @@ sources:
           - core/mmu_unify/cva6_tlb.sv
           - core/mmu_unify/cva6_mmu.sv
           - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/mmu_unify/cva6_ptw.sv
           - core/cva6_accel_first_pass_decoder_stub.sv
 
       # included via target core/include/${TARGET_CFG}_config_pkg.sv

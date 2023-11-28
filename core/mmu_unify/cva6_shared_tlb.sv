@@ -8,8 +8,8 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
-// Author: Sebastien Jacq - Thales Research & Technology
-// Date: 08/03/2023
+// Author: Angela Gonzalez PlanV Technology
+// Date: 24/11/2023
 //
 // Description: N-way associative shared TLB, it allows to reduce the number
 //              of ITLB and DTLB entries.
