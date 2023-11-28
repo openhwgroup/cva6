@@ -97,6 +97,40 @@ module csr_regfile
     output logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,  // PMP addresses
     output logic [31:0] mcountinhibit_o
 );
+
+  localparam logic [63:0] SSTATUS_UIE = 'h00000001;
+  localparam logic [63:0] SSTATUS_SIE = 'h00000002;
+  localparam logic [63:0] SSTATUS_SPIE = 'h00000020;
+  localparam logic [63:0] SSTATUS_SPP = 'h00000100;
+  localparam logic [63:0] SSTATUS_FS = 'h00006000;
+  localparam logic [63:0] SSTATUS_XS = 'h00018000;
+  localparam logic [63:0] SSTATUS_SUM = 'h00040000;
+  localparam logic [63:0] SSTATUS_MXR = 'h00080000;
+  localparam logic [63:0] SSTATUS_UPIE = 'h00000010;
+  localparam logic [63:0] SSTATUS_UXL = 64'h0000000300000000;
+  localparam logic [63:0] SSTATUS_SD = {CVA6Cfg.IS_XLEN64, 31'h00000000, ~CVA6Cfg.IS_XLEN64, 31'h00000000};
+
+  // read mask for SSTATUS over MMSTATUS
+  localparam logic [63:0] SMODE_STATUS_READ_MASK = SSTATUS_UIE
+                                                   | SSTATUS_SIE
+                                                   | SSTATUS_SPIE
+                                                   | SSTATUS_SPP
+                                                   | SSTATUS_FS
+                                                   | SSTATUS_XS
+                                                   | SSTATUS_SUM
+                                                   | SSTATUS_MXR
+                                                   | SSTATUS_UPIE
+                                                   | SSTATUS_SPIE
+                                                   | SSTATUS_UXL
+                                                   | SSTATUS_SD;
+
+  localparam logic [63:0] SMODE_STATUS_WRITE_MASK = SSTATUS_SIE
+                                                    | SSTATUS_SPIE
+                                                    | SSTATUS_SPP
+                                                    | SSTATUS_FS
+                                                    | SSTATUS_SUM
+                                                    | SSTATUS_MXR;
+
   // internal signal to keep track of access exceptions
   logic read_access_exception, update_access_exception, privilege_violation;
   logic csr_we, csr_read;
@@ -244,7 +278,7 @@ module csr_regfile
         // supervisor registers
         riscv::CSR_SSTATUS: begin
           if (CVA6Cfg.RVS)
-            csr_rdata = mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[CVA6Cfg.XLEN-1:0];
+            csr_rdata = mstatus_extended & SMODE_STATUS_READ_MASK[CVA6Cfg.XLEN-1:0];
           else read_access_exception = 1'b1;
         end
         riscv::CSR_SIE:
@@ -699,7 +733,7 @@ module csr_regfile
         // sstatus is a subset of mstatus - mask it accordingly
         riscv::CSR_SSTATUS: begin
           if (CVA6Cfg.RVS) begin
-            mask = ariane_pkg::SMODE_STATUS_WRITE_MASK[CVA6Cfg.XLEN-1:0];
+            mask = SMODE_STATUS_WRITE_MASK[CVA6Cfg.XLEN-1:0];
             mstatus_d = (mstatus_q & ~{{64-CVA6Cfg.XLEN{1'b0}}, mask}) | {{64-CVA6Cfg.XLEN{1'b0}}, (csr_wdata & mask)};
             // hardwire to zero if floating point extension is not present
             if (!CVA6Cfg.FpPresent) begin

@@ -47,6 +47,14 @@ module decoder
     output scoreboard_entry_t instruction_o,  // scoreboard entry to scoreboard
     output logic is_control_flow_instr_o  // this instruction will change the control flow
 );
+
+  localparam logic [CVA6Cfg.XLEN-1:0] S_SW_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_SOFT);
+  localparam logic [CVA6Cfg.XLEN-1:0] M_SW_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_SOFT);
+  localparam logic [CVA6Cfg.XLEN-1:0] S_TIMER_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_TIMER);
+  localparam logic [CVA6Cfg.XLEN-1:0] M_TIMER_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_TIMER);
+  localparam logic [CVA6Cfg.XLEN-1:0] S_EXT_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_EXT);
+  localparam logic [CVA6Cfg.XLEN-1:0] M_EXT_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_EXT);
+
   logic illegal_instr;
   logic illegal_instr_bm;
   logic illegal_instr_zic;
@@ -1344,54 +1352,54 @@ module decoder
       // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
       // for two privilege levels: Supervisor and Machine Mode
       // Supervisor Timer Interrupt
-      if (irq_ctrl_i.mie[riscv::S_TIMER_INTERRUPT[$clog2(
+      if (irq_ctrl_i.mie[S_TIMER_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
-          )-1:0]] && irq_ctrl_i.mip[riscv::S_TIMER_INTERRUPT[$clog2(
+          )-1:0]] && irq_ctrl_i.mip[S_TIMER_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
           )-1:0]]) begin
-        interrupt_cause = riscv::S_TIMER_INTERRUPT;
+        interrupt_cause = S_TIMER_INTERRUPT;
       end
       // Supervisor Software Interrupt
-      if (irq_ctrl_i.mie[riscv::S_SW_INTERRUPT[$clog2(
+      if (irq_ctrl_i.mie[S_SW_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
-          )-1:0]] && irq_ctrl_i.mip[riscv::S_SW_INTERRUPT[$clog2(
+          )-1:0]] && irq_ctrl_i.mip[S_SW_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
           )-1:0]]) begin
-        interrupt_cause = riscv::S_SW_INTERRUPT;
+        interrupt_cause = S_SW_INTERRUPT;
       end
       // Supervisor External Interrupt
       // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
       // used to generate external interrupts to the supervisor
-      if (irq_ctrl_i.mie[riscv::S_EXT_INTERRUPT[$clog2(
+      if (irq_ctrl_i.mie[S_EXT_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
-          )-1:0]] && (irq_ctrl_i.mip[riscv::S_EXT_INTERRUPT[$clog2(
+          )-1:0]] && (irq_ctrl_i.mip[S_EXT_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
           )-1:0]] | irq_i[ariane_pkg::SupervisorIrq])) begin
-        interrupt_cause = riscv::S_EXT_INTERRUPT;
+        interrupt_cause = S_EXT_INTERRUPT;
       end
       // Machine Timer Interrupt
-      if (irq_ctrl_i.mip[riscv::M_TIMER_INTERRUPT[$clog2(
+      if (irq_ctrl_i.mip[M_TIMER_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
-          )-1:0]] && irq_ctrl_i.mie[riscv::M_TIMER_INTERRUPT[$clog2(
+          )-1:0]] && irq_ctrl_i.mie[M_TIMER_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
           )-1:0]]) begin
-        interrupt_cause = riscv::M_TIMER_INTERRUPT;
+        interrupt_cause = M_TIMER_INTERRUPT;
       end
       // Machine Mode Software Interrupt
-      if (irq_ctrl_i.mip[riscv::M_SW_INTERRUPT[$clog2(
+      if (irq_ctrl_i.mip[M_SW_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
-          )-1:0]] && irq_ctrl_i.mie[riscv::M_SW_INTERRUPT[$clog2(
+          )-1:0]] && irq_ctrl_i.mie[M_SW_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
           )-1:0]]) begin
-        interrupt_cause = riscv::M_SW_INTERRUPT;
+        interrupt_cause = M_SW_INTERRUPT;
       end
       // Machine Mode External Interrupt
-      if (irq_ctrl_i.mip[riscv::M_EXT_INTERRUPT[$clog2(
+      if (irq_ctrl_i.mip[M_EXT_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
-          )-1:0]] && irq_ctrl_i.mie[riscv::M_EXT_INTERRUPT[$clog2(
+          )-1:0]] && irq_ctrl_i.mie[M_EXT_INTERRUPT[$clog2(
               CVA6Cfg.XLEN
           )-1:0]]) begin
-        interrupt_cause = riscv::M_EXT_INTERRUPT;
+        interrupt_cause = M_EXT_INTERRUPT;
       end
 
       if (interrupt_cause[CVA6Cfg.XLEN-1] && irq_ctrl_i.global_enable) begin

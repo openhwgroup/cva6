@@ -301,21 +301,21 @@ package riscv;
   // ----------------------
   // Exception Cause Codes
   // ----------------------
-  localparam logic [CVA6Cfg.XLEN-1:0] INSTR_ADDR_MISALIGNED = 0;
-  localparam logic [CVA6Cfg.XLEN-1:0] INSTR_ACCESS_FAULT    = 1;  // Illegal access as governed by PMPs and PMAs
-  localparam logic [CVA6Cfg.XLEN-1:0] ILLEGAL_INSTR = 2;
-  localparam logic [CVA6Cfg.XLEN-1:0] BREAKPOINT = 3;
-  localparam logic [CVA6Cfg.XLEN-1:0] LD_ADDR_MISALIGNED = 4;
-  localparam logic [CVA6Cfg.XLEN-1:0] LD_ACCESS_FAULT = 5;  // Illegal access as governed by PMPs and PMAs
-  localparam logic [CVA6Cfg.XLEN-1:0] ST_ADDR_MISALIGNED = 6;
-  localparam logic [CVA6Cfg.XLEN-1:0] ST_ACCESS_FAULT = 7;  // Illegal access as governed by PMPs and PMAs
-  localparam logic [CVA6Cfg.XLEN-1:0] ENV_CALL_UMODE = 8;  // environment call from user mode
-  localparam logic [CVA6Cfg.XLEN-1:0] ENV_CALL_SMODE = 9;  // environment call from supervisor mode
-  localparam logic [CVA6Cfg.XLEN-1:0] ENV_CALL_MMODE = 11;  // environment call from machine mode
-  localparam logic [CVA6Cfg.XLEN-1:0] INSTR_PAGE_FAULT = 12;  // Instruction page fault
-  localparam logic [CVA6Cfg.XLEN-1:0] LOAD_PAGE_FAULT = 13;  // Load page fault
-  localparam logic [CVA6Cfg.XLEN-1:0] STORE_PAGE_FAULT = 15;  // Store page fault
-  localparam logic [CVA6Cfg.XLEN-1:0] DEBUG_REQUEST = 24;  // Debug request
+  localparam logic [31:0] INSTR_ADDR_MISALIGNED = 0;
+  localparam logic [31:0] INSTR_ACCESS_FAULT    = 1;  // Illegal access as governed by PMPs and PMAs
+  localparam logic [31:0] ILLEGAL_INSTR = 2;
+  localparam logic [31:0] BREAKPOINT = 3;
+  localparam logic [31:0] LD_ADDR_MISALIGNED = 4;
+  localparam logic [31:0] LD_ACCESS_FAULT = 5;  // Illegal access as governed by PMPs and PMAs
+  localparam logic [31:0] ST_ADDR_MISALIGNED = 6;
+  localparam logic [31:0] ST_ACCESS_FAULT = 7;  // Illegal access as governed by PMPs and PMAs
+  localparam logic [31:0] ENV_CALL_UMODE = 8;  // environment call from user mode
+  localparam logic [31:0] ENV_CALL_SMODE = 9;  // environment call from supervisor mode
+  localparam logic [31:0] ENV_CALL_MMODE = 11;  // environment call from machine mode
+  localparam logic [31:0] INSTR_PAGE_FAULT = 12;  // Instruction page fault
+  localparam logic [31:0] LOAD_PAGE_FAULT = 13;  // Load page fault
+  localparam logic [31:0] STORE_PAGE_FAULT = 15;  // Store page fault
+  localparam logic [31:0] DEBUG_REQUEST = 24;  // Debug request
 
   localparam int unsigned IRQ_S_SOFT = 1;
   localparam int unsigned IRQ_M_SOFT = 3;
@@ -324,19 +324,12 @@ package riscv;
   localparam int unsigned IRQ_S_EXT = 9;
   localparam int unsigned IRQ_M_EXT = 11;
 
-  localparam logic [CVA6Cfg.XLEN-1:0] MIP_SSIP = 1 << IRQ_S_SOFT;
-  localparam logic [CVA6Cfg.XLEN-1:0] MIP_MSIP = 1 << IRQ_M_SOFT;
-  localparam logic [CVA6Cfg.XLEN-1:0] MIP_STIP = 1 << IRQ_S_TIMER;
-  localparam logic [CVA6Cfg.XLEN-1:0] MIP_MTIP = 1 << IRQ_M_TIMER;
-  localparam logic [CVA6Cfg.XLEN-1:0] MIP_SEIP = 1 << IRQ_S_EXT;
-  localparam logic [CVA6Cfg.XLEN-1:0] MIP_MEIP = 1 << IRQ_M_EXT;
-
-  localparam logic [CVA6Cfg.XLEN-1:0] S_SW_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_S_SOFT);
-  localparam logic [CVA6Cfg.XLEN-1:0] M_SW_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_M_SOFT);
-  localparam logic [CVA6Cfg.XLEN-1:0] S_TIMER_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_S_TIMER);
-  localparam logic [CVA6Cfg.XLEN-1:0] M_TIMER_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_M_TIMER);
-  localparam logic [CVA6Cfg.XLEN-1:0] S_EXT_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_S_EXT);
-  localparam logic [CVA6Cfg.XLEN-1:0] M_EXT_INTERRUPT = (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(IRQ_M_EXT);
+  localparam logic [31:0] MIP_SSIP = 1 << IRQ_S_SOFT;
+  localparam logic [31:0] MIP_MSIP = 1 << IRQ_M_SOFT;
+  localparam logic [31:0] MIP_STIP = 1 << IRQ_S_TIMER;
+  localparam logic [31:0] MIP_MTIP = 1 << IRQ_M_TIMER;
+  localparam logic [31:0] MIP_SEIP = 1 << IRQ_S_EXT;
+  localparam logic [31:0] MIP_MEIP = 1 << IRQ_M_EXT;
 
   // -----
   // CSRs
@@ -581,41 +574,6 @@ package riscv;
     CSR_HPM_COUNTER_30H  = 12'hC9E,  // reserved
     CSR_HPM_COUNTER_31H  = 12'hC9F   // reserved
   } csr_reg_t;
-
-  localparam logic [63:0] SSTATUS_UIE = 'h00000001;
-  localparam logic [63:0] SSTATUS_SIE = 'h00000002;
-  localparam logic [63:0] SSTATUS_SPIE = 'h00000020;
-  localparam logic [63:0] SSTATUS_SPP = 'h00000100;
-  localparam logic [63:0] SSTATUS_FS = 'h00006000;
-  localparam logic [63:0] SSTATUS_XS = 'h00018000;
-  localparam logic [63:0] SSTATUS_SUM = 'h00040000;
-  localparam logic [63:0] SSTATUS_MXR = 'h00080000;
-  localparam logic [63:0] SSTATUS_UPIE = 'h00000010;
-  localparam logic [63:0] SSTATUS_UXL = 64'h0000000300000000;
-  localparam logic [63:0] SSTATUS_SD = {CVA6Cfg.IS_XLEN64, 31'h00000000, ~CVA6Cfg.IS_XLEN64, 31'h00000000};
-
-  localparam logic [63:0] MSTATUS_UIE = 'h00000001;
-  localparam logic [63:0] MSTATUS_SIE = 'h00000002;
-  localparam logic [63:0] MSTATUS_HIE = 'h00000004;
-  localparam logic [63:0] MSTATUS_MIE = 'h00000008;
-  localparam logic [63:0] MSTATUS_UPIE = 'h00000010;
-  localparam logic [63:0] MSTATUS_SPIE = 'h00000020;
-  localparam logic [63:0] MSTATUS_HPIE = 'h00000040;
-  localparam logic [63:0] MSTATUS_MPIE = 'h00000080;
-  localparam logic [63:0] MSTATUS_SPP = 'h00000100;
-  localparam logic [63:0] MSTATUS_HPP = 'h00000600;
-  localparam logic [63:0] MSTATUS_MPP = 'h00001800;
-  localparam logic [63:0] MSTATUS_FS = 'h00006000;
-  localparam logic [63:0] MSTATUS_XS = 'h00018000;
-  localparam logic [63:0] MSTATUS_MPRV = 'h00020000;
-  localparam logic [63:0] MSTATUS_SUM = 'h00040000;
-  localparam logic [63:0] MSTATUS_MXR = 'h00080000;
-  localparam logic [63:0] MSTATUS_TVM = 'h00100000;
-  localparam logic [63:0] MSTATUS_TW = 'h00200000;
-  localparam logic [63:0] MSTATUS_TSR = 'h00400000;
-  localparam logic [63:0] MSTATUS_UXL = {30'h0000000, CVA6Cfg.IS_XLEN64, CVA6Cfg.IS_XLEN64, 32'h00000000};
-  localparam logic [63:0] MSTATUS_SXL = {28'h0000000, CVA6Cfg.IS_XLEN64, CVA6Cfg.IS_XLEN64, 34'h00000000};
-  localparam logic [63:0] MSTATUS_SD = {CVA6Cfg.IS_XLEN64, 31'h00000000, ~CVA6Cfg.IS_XLEN64, 31'h00000000};
 
   typedef enum logic [2:0] {
     CSRRW  = 3'h1,
