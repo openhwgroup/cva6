@@ -1204,7 +1204,7 @@ module cva6
   assign tracer_if.priv_lvl       = priv_lvl;
   assign tracer_if.debug_mode     = debug_mode;
 
-  instr_tracer instr_tracer_i (
+  instr_tracer #(.CVA6Cfg(CVA6Cfg)) instr_tracer_i (
       .tracer_if(tracer_if),
       .hart_id_i
   );
