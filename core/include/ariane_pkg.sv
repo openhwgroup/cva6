@@ -57,8 +57,8 @@ package ariane_pkg;
   localparam int unsigned LAT_NONCOMP = 'd1;
   localparam int unsigned LAT_CONV = 'd2;
 
-  localparam riscv::xlen_t OPENHWGROUP_MVENDORID = {{riscv::XLEN - 32{1'b0}}, 32'h0602};
-  localparam riscv::xlen_t ARIANE_MARCHID = {{riscv::XLEN - 32{1'b0}}, 32'd3};
+  localparam logic [31:0] OPENHWGROUP_MVENDORID = 32'h0602;
+  localparam logic [31:0] ARIANE_MARCHID = 32'd3;
 
   // 32 registers
   localparam REG_ADDR_SIZE = 5;

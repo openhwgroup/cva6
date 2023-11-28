@@ -343,8 +343,8 @@ module csr_regfile
         riscv::CSR_MCAUSE: csr_rdata = mcause_q;
         riscv::CSR_MTVAL: csr_rdata = mtval_q;
         riscv::CSR_MIP: csr_rdata = mip_q;
-        riscv::CSR_MVENDORID: csr_rdata = OPENHWGROUP_MVENDORID;
-        riscv::CSR_MARCHID: csr_rdata = ARIANE_MARCHID;
+        riscv::CSR_MVENDORID: csr_rdata = {{CVA6Cfg.XLEN - 32{1'b0}}, OPENHWGROUP_MVENDORID};
+        riscv::CSR_MARCHID: csr_rdata = {{CVA6Cfg.XLEN - 32{1'b0}}, ARIANE_MARCHID};
         riscv::CSR_MIMPID: csr_rdata = '0;  // not implemented
         riscv::CSR_MHARTID: csr_rdata = hart_id_i;
         riscv::CSR_MCONFIGPTR: csr_rdata = '0;  // not implemented
