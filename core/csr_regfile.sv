@@ -1324,7 +1324,8 @@ module csr_regfile
   assign irq_ctrl_o.mideleg = mideleg_q;
   assign irq_ctrl_o.global_enable = (~debug_mode_q)
       // interrupts are enabled during single step or we are not stepping
-      & (~dcsr_q.step | dcsr_q.stepie)
+      // No need to check interrupts during single step if we don't support DEBUG mode
+      & (~CVA6Cfg.DebugEn | (~dcsr_q.step | dcsr_q.stepie))
                                     & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
                                     | (priv_lvl_o != riscv::PRIV_LVL_M));
 
