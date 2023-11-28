@@ -103,7 +103,7 @@ module ex_stage
     input  riscv::priv_lvl_t                   ld_st_priv_lvl_i,
     input  logic                               sum_i,
     input  logic                               mxr_i,
-    input  logic             [riscv::PPNW-1:0] satp_ppn_i,
+    input  logic             [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // icache translation requests
     input  icache_arsp_t                       icache_areq_i,

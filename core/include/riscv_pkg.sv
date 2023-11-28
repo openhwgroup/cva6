@@ -29,9 +29,6 @@ package riscv;
     ModeSv64 = 11
   } vm_mode_t;
 
-  localparam ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
-  localparam ASIDW = (CVA6Cfg.XLEN == 32) ? 9 : 16;
-  localparam PPNW = (CVA6Cfg.XLEN == 32) ? 22 : 44;
   localparam vm_mode_t MODE_SV = (CVA6Cfg.XLEN == 32) ? ModeSv32 : ModeSv39;
   localparam SV = (MODE_SV == ModeSv32) ? 32 : 39;
   localparam VPN2 = (CVA6Cfg.VLEN - 31 < 8) ? CVA6Cfg.VLEN - 31 : 8;
@@ -108,9 +105,9 @@ package riscv;
   } mstatus_rv_t;
 
   typedef struct packed {
-    logic [ModeW-1:0] mode;
-    logic [ASIDW-1:0] asid;
-    logic [PPNW-1:0]  ppn;
+    logic [CVA6Cfg.ModeW-1:0] mode;
+    logic [CVA6Cfg.ASIDW-1:0] asid;
+    logic [CVA6Cfg.PPNW-1:0]  ppn;
   } satp_t;
 
   // --------------------

@@ -54,7 +54,7 @@ module load_store_unit
     input  riscv::priv_lvl_t                   ld_st_priv_lvl_i,       // From CSR register file
     input  logic                               sum_i,                  // From CSR register file
     input  logic                               mxr_i,                  // From CSR register file
-    input  logic             [riscv::PPNW-1:0] satp_ppn_i,             // From CSR register file
+    input  logic             [CVA6Cfg.PPNW-1:0] satp_ppn_i,             // From CSR register file
     input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_i,                 // From CSR register file
     input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     input  logic             [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
@@ -120,7 +120,7 @@ module load_store_unit
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
   exception_t                       mmu_exception;
   logic                             dtlb_hit;
-  logic         [  riscv::PPNW-1:0] dtlb_ppn;
+  logic         [  CVA6Cfg.PPNW-1:0] dtlb_ppn;
 
   logic                             ld_valid;
   logic         [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;

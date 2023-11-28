@@ -41,7 +41,7 @@ module load_unit
     input logic [CVA6Cfg.PLEN-1:0] paddr_i,  // physical address in
     input  exception_t               ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
     input logic dtlb_hit_i,  // hit on the dtlb, send in the same cycle as the request
-    input  logic [riscv::PPNW-1:0]   dtlb_ppn_i,          // ppn on the dtlb, send in the same cycle as the request
+    input  logic [CVA6Cfg.PPNW-1:0]   dtlb_ppn_i,          // ppn on the dtlb, send in the same cycle as the request
     // address checker
     output logic [11:0] page_offset_o,
     input logic page_offset_matches_i,
@@ -186,7 +186,7 @@ module load_unit
   logic not_commit_time;
   logic inflight_stores;
   logic stall_ni;
-  assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(CVA6Cfg, {{52-riscv::PPNW{1'b0}}, dtlb_ppn_i, 12'd0});
+  assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(CVA6Cfg, {{52-CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0});
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
   assign stall_ni = (inflight_stores || not_commit_time) && paddr_ni;
