@@ -216,8 +216,8 @@ module mmu
     // AXI decode error), or when PTW performs walk due to ITLB miss and raises
     // an error.
     if (enable_translation_i) begin
-      // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:riscv::SV-1] are equal
-      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:riscv::SV-1]) == 1'b0)) begin
+      // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal
+      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0)) begin
         icache_areq_o.fetch_exception = {
           riscv::INSTR_ACCESS_FAULT,
           {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},

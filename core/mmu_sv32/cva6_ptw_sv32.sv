@@ -131,7 +131,7 @@ module cva6_ptw_sv32
   // -----------
   // Shared TLB Update
   // -----------
-  assign shared_tlb_update_o.vpn = vaddr_q[riscv::SV-1:12];
+  assign shared_tlb_update_o.vpn = vaddr_q[CVA6Cfg.SV-1:12];
   // update the correct page table level
   assign shared_tlb_update_o.is_4M = (ptw_lvl_q == LVL1);
   // output the correct ASID
@@ -219,7 +219,7 @@ module cva6_ptw_sv32
         // if we got a Shared TLB miss
         if (shared_tlb_access_i & ~shared_tlb_hit_i) begin
           ptw_pptr_n = {
-            satp_ppn_i, shared_tlb_vaddr_i[riscv::SV-1:22], 2'b0
+            satp_ppn_i, shared_tlb_vaddr_i[CVA6Cfg.SV-1:22], 2'b0
           };  // SATP.PPN * PAGESIZE + VPN*PTESIZE = SATP.PPN * 2^(12) + VPN*4
           is_instr_ptw_n = itlb_req_i;
           tlb_update_asid_n = asid_i;

@@ -765,7 +765,7 @@ module csr_regfile
               satp.asid = satp.asid & {{(CVA6Cfg.ASIDW - AsidWidth) {1'b0}}, {AsidWidth{1'b1}}};
               // only update if we actually support this mode
               if (riscv::vm_mode_t'(satp.mode) == riscv::ModeOff ||
-                                riscv::vm_mode_t'(satp.mode) == riscv::MODE_SV)
+                                riscv::vm_mode_t'(satp.mode) == CVA6Cfg.MODE_SV)
                 satp_d = satp;
             end
             // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
@@ -1220,7 +1220,7 @@ module csr_regfile
     // ------------------------------
     // Set the address translation at which the load and stores should occur
     // we can use the previous values since changing the address translation will always involve a pipeline flush
-    if (ariane_pkg::MMU_PRESENT && mprv && CVA6Cfg.RVS && riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
+    if (ariane_pkg::MMU_PRESENT && mprv && CVA6Cfg.RVS && riscv::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
       en_ld_st_translation_d = 1'b1;
     else  // otherwise we go with the regular settings
       en_ld_st_translation_d = en_translation_o;
@@ -1467,7 +1467,7 @@ module csr_regfile
   assign asid_o = satp_q.asid[AsidWidth-1:0];
   assign sum_o = mstatus_q.sum;
   // we support bare memory addressing and SV39
-  assign en_translation_o = ((CVA6Cfg.RVS && riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV) &&
+  assign en_translation_o = ((CVA6Cfg.RVS && riscv::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV) &&
                                priv_lvl_o != riscv::PRIV_LVL_M)
                               ? 1'b1
                               : 1'b0;

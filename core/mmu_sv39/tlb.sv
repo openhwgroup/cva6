@@ -41,7 +41,7 @@ module tlb
   // SV39 defines three levels of page tables
   struct packed {
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
-    logic [riscv::VPN2:0]  vpn2;
+    logic [CVA6Cfg.VPN2:0]  vpn2;
     logic [8:0]            vpn1;
     logic [8:0]            vpn0;
     logic                  is_2M;
@@ -52,7 +52,7 @@ module tlb
 
   riscv::pte_t [TLB_ENTRIES-1:0] content_q, content_n;
   logic [8:0] vpn0, vpn1;
-  logic [  riscv::VPN2:0] vpn2;
+  logic [  CVA6Cfg.VPN2:0] vpn2;
   logic [TLB_ENTRIES-1:0] lu_hit;  // to replacement logic
   logic [TLB_ENTRIES-1:0] replace_en;  // replace the following entry, set by replacement strategy
   //-------------
@@ -61,7 +61,7 @@ module tlb
   always_comb begin : translation
     vpn0         = lu_vaddr_i[20:12];
     vpn1         = lu_vaddr_i[29:21];
-    vpn2         = lu_vaddr_i[30+riscv::VPN2:30];
+    vpn2         = lu_vaddr_i[30+CVA6Cfg.VPN2:30];
 
     // default assignment
     lu_hit       = '{default: 0};
@@ -117,7 +117,7 @@ module tlb
 
       vaddr_vpn0_match[i] = (vaddr_to_be_flushed_i[20:12] == tags_q[i].vpn0);
       vaddr_vpn1_match[i] = (vaddr_to_be_flushed_i[29:21] == tags_q[i].vpn1);
-      vaddr_vpn2_match[i] = (vaddr_to_be_flushed_i[30+riscv::VPN2:30] == tags_q[i].vpn2);
+      vaddr_vpn2_match[i] = (vaddr_to_be_flushed_i[30+CVA6Cfg.VPN2:30] == tags_q[i].vpn2);
 
       if (flush_i) begin
         // invalidate logic
@@ -137,7 +137,7 @@ module tlb
         // update tag array
         tags_n[i] = '{
             asid: update_i.asid,
-            vpn2: update_i.vpn[18+riscv::VPN2:18],
+            vpn2: update_i.vpn[18+CVA6Cfg.VPN2:18],
             vpn1: update_i.vpn[17:9],
             vpn0: update_i.vpn[8:0],
             is_1G: update_i.is_1G,

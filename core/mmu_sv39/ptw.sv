@@ -122,8 +122,8 @@ module ptw
   // -----------
   // TLB Update
   // -----------
-  assign itlb_update_o.vpn = {{39 - riscv::SV{1'b0}}, vaddr_q[riscv::SV-1:12]};
-  assign dtlb_update_o.vpn = {{39 - riscv::SV{1'b0}}, vaddr_q[riscv::SV-1:12]};
+  assign itlb_update_o.vpn = {{39 - CVA6Cfg.SV{1'b0}}, vaddr_q[CVA6Cfg.SV-1:12]};
+  assign dtlb_update_o.vpn = {{39 - CVA6Cfg.SV{1'b0}}, vaddr_q[CVA6Cfg.SV-1:12]};
   // update the correct page table level
   assign itlb_update_o.is_2M = (ptw_lvl_q == LVL2);
   assign itlb_update_o.is_1G = (ptw_lvl_q == LVL1);
@@ -214,7 +214,7 @@ module ptw
         is_instr_ptw_n   = 1'b0;
         // if we got an ITLB miss
         if (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
-          ptw_pptr_n        = {satp_ppn_i, itlb_vaddr_i[riscv::SV-1:30], 3'b0};
+          ptw_pptr_n        = {satp_ppn_i, itlb_vaddr_i[CVA6Cfg.SV-1:30], 3'b0};
           is_instr_ptw_n    = 1'b1;
           tlb_update_asid_n = asid_i;
           vaddr_n           = itlb_vaddr_i;
@@ -222,7 +222,7 @@ module ptw
           itlb_miss_o       = 1'b1;
           // we got an DTLB miss
         end else if (en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i) begin
-          ptw_pptr_n        = {satp_ppn_i, dtlb_vaddr_i[riscv::SV-1:30], 3'b0};
+          ptw_pptr_n        = {satp_ppn_i, dtlb_vaddr_i[CVA6Cfg.SV-1:30], 3'b0};
           tlb_update_asid_n = asid_i;
           vaddr_n           = dtlb_vaddr_i;
           state_d           = WAIT_GRANT;

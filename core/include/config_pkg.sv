@@ -124,6 +124,10 @@ package config_pkg;
     int unsigned ModeW;
     int unsigned ASIDW;
     int unsigned PPNW;
+    riscv::vm_mode_t MODE_SV;
+    int unsigned SV;
+    int unsigned VPN2;
+
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
@@ -213,6 +217,9 @@ package config_pkg;
     bit EnableAccelerator = CVA6Cfg.RVV;  // Currently only used by V extension (Ara)
     int unsigned NrWbPorts = (CVA6Cfg.CvxifEn || EnableAccelerator) ? 5 : 4;
 
+    riscv::vm_mode_t MODE_SV = (CVA6Cfg.XLEN == 32) ? riscv::ModeSv32 : riscv::ModeSv39;
+    int unsigned VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;
+
     return
     '{
       XLEN: CVA6Cfg.XLEN,
@@ -221,7 +228,7 @@ package config_pkg;
       TRANS_ID_BITS: $clog2(CVA6Cfg.NR_SB_ENTRIES),
       ASID_WIDTH: unsigned'((CVA6Cfg.XLEN == 64) ? 16 : 1),
       FPGA_EN: CVA6Cfg.FPGA_EN,
-      VLEN: (CVA6Cfg.XLEN == 32) ? 32 : 64,
+      VLEN: VLEN,
       PLEN: (CVA6Cfg.XLEN == 32) ? 34 : 56,
       IS_XLEN32: IS_XLEN32,
       IS_XLEN64: IS_XLEN64,
@@ -229,6 +236,9 @@ package config_pkg;
       ModeW: unsigned'((CVA6Cfg.XLEN == 32) ? 1 : 4),
       ASIDW: unsigned'((CVA6Cfg.XLEN == 32) ? 9 : 16),
       PPNW: unsigned'((CVA6Cfg.XLEN == 32) ? 22 : 44),
+      MODE_SV: MODE_SV,
+      SV: unsigned'((MODE_SV == riscv::ModeSv32) ? 32 : 39),
+      VPN2: unsigned'((VLEN - 31 < 8) ? VLEN - 31 : 8),
       NrCommitPorts: CVA6Cfg.NrCommitPorts,
       AxiAddrWidth: CVA6Cfg.AxiAddrWidth,
       AxiDataWidth: CVA6Cfg.AxiDataWidth,
