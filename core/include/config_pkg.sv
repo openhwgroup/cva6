@@ -120,6 +120,7 @@ package config_pkg;
     int unsigned PLEN;  // physical address length
     bit IS_XLEN32;
     bit IS_XLEN64;
+    int unsigned XLEN_ALIGN_BYTES;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
@@ -221,6 +222,7 @@ package config_pkg;
       PLEN: (CVA6Cfg.XLEN == 32) ? 34 : 56,
       IS_XLEN32: IS_XLEN32,
       IS_XLEN64: IS_XLEN64,
+      XLEN_ALIGN_BYTES: $clog2(CVA6Cfg.XLEN / 8),
       NrCommitPorts: CVA6Cfg.NrCommitPorts,
       AxiAddrWidth: CVA6Cfg.AxiAddrWidth,
       AxiDataWidth: CVA6Cfg.AxiDataWidth,

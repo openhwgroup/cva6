@@ -189,7 +189,7 @@ module wt_dcache_mem
     bank_idx = '{default: wr_idx_i};
 
     for (int k = 0; k < NumPorts; k++) begin
-      bank_collision[k] = rd_off_i[k][DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES] == wr_off_i[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES];
+      bank_collision[k] = rd_off_i[k][DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES] == wr_off_i[DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES];
     end
 
     if (wr_cl_vld_i & |wr_cl_we_i) begin
@@ -200,16 +200,16 @@ module wt_dcache_mem
       if (rd_acked) begin
         if (!rd_tag_only_i[vld_sel_d]) begin
           bank_req =
-              dcache_cl_bin2oh(rd_off_i[vld_sel_d][DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES]);
-          bank_idx[rd_off_i[vld_sel_d][DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES]] = rd_idx_i[vld_sel_d];
+              dcache_cl_bin2oh(rd_off_i[vld_sel_d][DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]);
+          bank_idx[rd_off_i[vld_sel_d][DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]] = rd_idx_i[vld_sel_d];
         end
       end
 
       if (|wr_req_i) begin
         if (rd_tag_only_i[vld_sel_d] || !(rd_ack_o[vld_sel_d] && bank_collision[vld_sel_d])) begin
           wr_ack_o = 1'b1;
-          bank_req |= dcache_cl_bin2oh(wr_off_i[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES]);
-          bank_we = dcache_cl_bin2oh(wr_off_i[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES]);
+          bank_req |= dcache_cl_bin2oh(wr_off_i[DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]);
+          bank_we = dcache_cl_bin2oh(wr_off_i[DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]);
         end
       end
     end
@@ -219,8 +219,8 @@ module wt_dcache_mem
   // tag comparison, hit generatio, readoud muxes
   ///////////////////////////////////////////////////////
 
-  logic [DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES-1:0] wr_cl_off;
-  logic [DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES-1:0] wr_cl_nc_off;
+  logic [DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:0] wr_cl_off;
+  logic [DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:0] wr_cl_nc_off;
   logic [                  $clog2(DCACHE_WBUF_DEPTH)-1:0] wbuffer_hit_idx;
   logic [                   $clog2(DCACHE_SET_ASSOC)-1:0] rd_hit_idx;
 
@@ -234,12 +234,12 @@ module wt_dcache_mem
     // tag comparison of ways >0
     assign rd_hit_oh_o[i] = (rd_tag == tag_rdata[i]) & rd_vld_bits_o[i] & cmp_en_q;
     // byte offset mux of ways >0
-    assign rdata_cl[i] = bank_rdata[bank_off_q[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES]][i];
-    assign ruser_cl[i] = bank_ruser[bank_off_q[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES]][i];
+    assign rdata_cl[i] = bank_rdata[bank_off_q[DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]][i];
+    assign ruser_cl[i] = bank_ruser[bank_off_q[DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]][i];
   end
 
   for (genvar k = 0; k < DCACHE_WBUF_DEPTH; k++) begin : gen_wbuffer_hit
-    assign wbuffer_hit_oh[k] = (|wbuffer_data_i[k].valid) & ({{riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_data_i[k].wtag} == (wbuffer_cmp_addr >> riscv::XLEN_ALIGN_BYTES));
+    assign wbuffer_hit_oh[k] = (|wbuffer_data_i[k].valid) & ({{CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_data_i[k].wtag} == (wbuffer_cmp_addr >> CVA6Cfg.XLEN_ALIGN_BYTES));
   end
 
   lzc #(
@@ -265,8 +265,8 @@ module wt_dcache_mem
   if (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_AXI4_ATOP) begin : gen_axi_offset
     // In case of an uncached read, return the desired CVA6Cfg.XLEN-bit segment of the most recent AXI read
     assign wr_cl_off     = (wr_cl_nc_i) ? (CVA6Cfg.AxiDataWidth == CVA6Cfg.XLEN) ? '0 :
-                              {{DCACHE_OFFSET_WIDTH-AXI_OFFSET_WIDTH{1'b0}}, wr_cl_off_i[AXI_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES]} :
-                              wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:riscv::XLEN_ALIGN_BYTES];
+                              {{DCACHE_OFFSET_WIDTH-AXI_OFFSET_WIDTH{1'b0}}, wr_cl_off_i[AXI_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]} :
+                              wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES];
   end else begin : gen_piton_offset
     assign wr_cl_off = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
   end

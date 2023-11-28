@@ -69,7 +69,7 @@ module load_unit
   // we need a a buffer which can hold all inflight memory load requests
   typedef struct packed {
     logic [CVA6Cfg.TRANS_ID_BITS-1:0]           trans_id;        // scoreboard identifier
-    logic [riscv::XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
+    logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
     fu_op                               operation;       // type of load
   } ldbuf_t;
 
@@ -166,7 +166,7 @@ module load_unit
   assign req_port_o.data_wdata = '0;
   // compose the load buffer write data, control is handled in the FSM
   assign ldbuf_wdata = {
-    lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[riscv::XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operation
+    lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operation
   };
   // output address
   // we can now output the lower 12 bit as the index to the cache
@@ -447,7 +447,7 @@ module load_unit
 
   // result mux fast
   logic [        (CVA6Cfg.XLEN/8)-1:0] rdata_sign_bits;
-  logic [riscv::XLEN_ALIGN_BYTES-1:0] rdata_offset;
+  logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] rdata_offset;
   logic rdata_sign_bit, rdata_is_signed, rdata_is_fp_signed;
 
 

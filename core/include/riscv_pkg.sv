@@ -35,7 +35,6 @@ package riscv;
   localparam vm_mode_t MODE_SV = (CVA6Cfg.XLEN == 32) ? ModeSv32 : ModeSv39;
   localparam SV = (MODE_SV == ModeSv32) ? 32 : 39;
   localparam VPN2 = (CVA6Cfg.VLEN - 31 < 8) ? CVA6Cfg.VLEN - 31 : 8;
-  localparam XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
 
   // --------------------
   // Privilege Spec

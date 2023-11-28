@@ -69,7 +69,7 @@ package wt_cache_pkg;
 
 
   typedef struct packed {
-    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
+    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] wtag;
     logic [CVA6Cfg.XLEN-1:0] data;
     logic [ariane_pkg::DCACHE_USER_WIDTH-1:0] user;
     logic [(CVA6Cfg.XLEN/8)-1:0] dirty;  // byte is dirty
@@ -265,7 +265,7 @@ package wt_cache_pkg;
     return cnt;
   endfunction : popcnt64
 
-  function automatic logic [(CVA6Cfg.XLEN/8)-1:0] to_byte_enable8(input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
+  function automatic logic [(CVA6Cfg.XLEN/8)-1:0] to_byte_enable8(input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
     logic [(CVA6Cfg.XLEN/8)-1:0] be;
     be = '0;
     unique case (size)
@@ -277,7 +277,7 @@ package wt_cache_pkg;
     return be;
   endfunction : to_byte_enable8
 
-  function automatic logic [(CVA6Cfg.XLEN/8)-1:0] to_byte_enable4(input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
+  function automatic logic [(CVA6Cfg.XLEN/8)-1:0] to_byte_enable4(input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
     logic [3:0] be;
     be = '0;
     unique case (size)
@@ -289,7 +289,7 @@ package wt_cache_pkg;
   endfunction : to_byte_enable4
 
   // openpiton requires the data to be replicated in case of smaller sizes than dwords
-  function automatic logic [CVA6Cfg.XLEN-1:0] repData64(input logic [CVA6Cfg.XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+  function automatic logic [CVA6Cfg.XLEN-1:0] repData64(input logic [CVA6Cfg.XLEN-1:0] data, input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset,
                                             input logic [1:0] size);
     logic [CVA6Cfg.XLEN-1:0] out;
     unique case (size)
@@ -301,7 +301,7 @@ package wt_cache_pkg;
     return out;
   endfunction : repData64
 
-  function automatic logic [CVA6Cfg.XLEN-1:0] repData32(input logic [CVA6Cfg.XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+  function automatic logic [CVA6Cfg.XLEN-1:0] repData32(input logic [CVA6Cfg.XLEN-1:0] data, input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset,
                                             input logic [1:0] size);
     logic [CVA6Cfg.XLEN-1:0] out;
     unique case (size)
