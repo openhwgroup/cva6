@@ -17,8 +17,10 @@
 `include "ex_trace_item.svh"
 `include "instr_trace_item.svh"
 
-module instr_tracer (
-  instr_tracer_if   tracer_if,
+module instr_tracer #(
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+)(
+  instr_tracer_if tracer_if,
   input logic[riscv::XLEN-1:0] hart_id_i
 );
 
@@ -187,7 +189,9 @@ module instr_tracer (
   endfunction
 
   function void printInstr(ariane_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
-    automatic instr_trace_item iti = new ($time, clk_ticks, sbe, instr, gp_reg_file, fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
+    automatic instr_trace_item #(
+      .CVA6Cfg(CVA6Cfg)
+    ) iti = new ($time, clk_ticks, sbe, instr, gp_reg_file, fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
     // print instruction to console
     automatic string print_instr = iti.printInstr();
     if (ariane_pkg::ENABLE_SPIKE_COMMIT_LOG && !debug_mode) begin
@@ -197,7 +201,9 @@ module instr_tracer (
   endfunction
 
   function void printException(logic [riscv::VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
-    automatic ex_trace_item eti = new (pc, cause, tval);
+    automatic ex_trace_item #(
+      .CVA6Cfg(CVA6Cfg)
+    ) eti = new (pc, cause, tval);
     automatic string print_ex = eti.printException();
     $fwrite(f, {print_ex, "\n"});
   endfunction

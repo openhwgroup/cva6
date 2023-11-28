@@ -1167,7 +1167,7 @@ module cva6
 `endif  // PITON_ARIANE
 
 `ifndef VERILATOR
-  instr_tracer_if tracer_if (clk_i);
+  instr_tracer_if #(.CVA6Cfg(CVA6Cfg)) tracer_if (clk_i);
   // assign instruction tracer interface
   // control signals
   assign tracer_if.rstn           = rst_ni;
@@ -1204,7 +1204,9 @@ module cva6
   assign tracer_if.priv_lvl       = priv_lvl;
   assign tracer_if.debug_mode     = debug_mode;
 
-  instr_tracer instr_tracer_i (
+  instr_tracer #(
+      .CVA6Cfg(CVA6Cfg)
+  ) instr_tracer_i (
       .tracer_if(tracer_if),
       .hart_id_i
   );

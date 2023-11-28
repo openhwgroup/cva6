@@ -22,7 +22,9 @@ function string printPCexpr(input logic [63:0] imm);
   end
 endfunction
 
-class instr_trace_item;
+class instr_trace_item #(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+);
     // keep a couple of general purpose information inside this instruction item
     time               simtime;
     longint unsigned   cycle;
