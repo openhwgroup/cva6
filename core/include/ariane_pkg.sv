@@ -830,7 +830,7 @@ package ariane_pkg;
     riscv::xlen_t sepc_q;
     riscv::xlen_t scause_q;
     riscv::xlen_t stval_q;
-    riscv::satp_t satp_q;
+    riscv::xlen_t satp_q;
     riscv::xlen_t mstatus_extended;
     riscv::xlen_t medeleg_q;
     riscv::xlen_t mideleg_q;
@@ -849,7 +849,7 @@ package ariane_pkg;
     riscv::xlen_t acc_cons_q;
     riscv::pmpcfg_t [15:0] pmpcfg_q;
     logic [15:0][riscv::PLEN-3:0] pmpaddr_q;
-  } rvfi_probes_csr_t;
+ } rvfi_probes_csr_t;
 
   // RVFI CSR structure
   typedef struct packed {
