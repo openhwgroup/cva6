@@ -100,12 +100,6 @@ package riscv;
     logic wpri0;  // writes preserved reads ignored
   } mstatus_rv_t;
 
-  typedef struct packed {
-    logic [CVA6Cfg.ModeW-1:0] mode;
-    logic [CVA6Cfg.ASIDW-1:0] asid;
-    logic [CVA6Cfg.PPNW-1:0]  ppn;
-  } satp_t;
-
   // --------------------
   // Instruction Types
   // --------------------

@@ -98,6 +98,12 @@ module csr_regfile
     output logic [31:0] mcountinhibit_o
 );
 
+  typedef struct packed {
+    logic [CVA6Cfg.ModeW-1:0] mode;
+    logic [CVA6Cfg.ASIDW-1:0] asid;
+    logic [CVA6Cfg.PPNW-1:0]  ppn;
+  } satp_t;
+
   localparam logic [63:0] SSTATUS_UIE = 'h00000001;
   localparam logic [63:0] SSTATUS_SIE = 'h00000002;
   localparam logic [63:0] SSTATUS_SPIE = 'h00000020;
@@ -146,7 +152,7 @@ module csr_regfile
   logic dirty_fp_state_csr;
   riscv::mstatus_rv_t mstatus_q, mstatus_d;
   logic [CVA6Cfg.XLEN-1:0] mstatus_extended;
-  riscv::satp_t satp_q, satp_d;
+  satp_t satp_q, satp_d;
   riscv::dcsr_t dcsr_q, dcsr_d;
   riscv::csr_t csr_addr;
   // privilege level register
@@ -575,7 +581,7 @@ module csr_regfile
   // ---------------------------
   logic [CVA6Cfg.XLEN-1:0] mask;
   always_comb begin : csr_update
-    automatic riscv::satp_t satp;
+    automatic satp_t satp;
     automatic logic [63:0] instret;
 
 
@@ -794,7 +800,7 @@ module csr_regfile
             // intercept SATP writes if in S-Mode and TVM is enabled
             if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm) update_access_exception = 1'b1;
             else begin
-              satp      = riscv::satp_t'(csr_wdata);
+              satp      = satp_t'(csr_wdata);
               // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
               satp.asid = satp.asid & {{(CVA6Cfg.ASIDW - AsidWidth) {1'b0}}, {AsidWidth{1'b1}}};
               // only update if we actually support this mode
