@@ -1350,6 +1350,12 @@ csrrw:
     #MIP read value
     csrr x14, 0x344
 
+    #Clear MIP to avoid traping
+    csrw 0x344, x0
+
+    #MIP read value
+    csrr x14, 0x344
+
     ##########################
     #MHPMCOUNTERH27 testing W/R values '{'hffffffff, 'h0, 'h55555555, 'haaaaaaaa, 'h22c2d883} 
     ##########################
