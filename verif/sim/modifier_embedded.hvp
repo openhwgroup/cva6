@@ -1,3 +1,0 @@
-filter CVA6_M_C;
-   remove feature where CVA6_VERSION != EMBEDDED;
-endfilter
