@@ -33,6 +33,7 @@ module cva6_mmu
     parameter int unsigned           INSTR_TLB_ENTRIES = 2,
     parameter int unsigned           DATA_TLB_ENTRIES  = 2,
     parameter int unsigned           ASID_WIDTH        = 1,
+    parameter int unsigned           ASID_LEN = 1,
     parameter int unsigned           VPN_LEN = 1,
     parameter int unsigned           PT_LEVELS = 1
 ) (
@@ -118,6 +119,7 @@ module cva6_mmu
       .CVA6Cfg    (CVA6Cfg),
       .TLB_ENTRIES(INSTR_TLB_ENTRIES),
       .ASID_WIDTH (ASID_WIDTH),
+      .ASID_LEN (ASID_LEN),
       .VPN_LEN(VPN_LEN),
       .PT_LEVELS(PT_LEVELS)
   ) i_itlb (
@@ -142,6 +144,7 @@ module cva6_mmu
       .CVA6Cfg    (CVA6Cfg),
       .TLB_ENTRIES(DATA_TLB_ENTRIES),
       .ASID_WIDTH (ASID_WIDTH),
+      .ASID_LEN (ASID_LEN),
       .VPN_LEN(VPN_LEN),
       .PT_LEVELS(PT_LEVELS)
   ) i_dtlb (
@@ -167,6 +170,7 @@ module cva6_mmu
       .SHARED_TLB_DEPTH(64),
       .SHARED_TLB_WAYS (2),
       .ASID_WIDTH      (ASID_WIDTH),
+      .ASID_LEN (ASID_LEN),
       .VPN_LEN(VPN_LEN),
       .PT_LEVELS(PT_LEVELS)
   ) i_shared_tlb (

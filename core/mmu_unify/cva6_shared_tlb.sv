@@ -24,6 +24,7 @@ module cva6_shared_tlb
     parameter int SHARED_TLB_DEPTH = 64,
     parameter int SHARED_TLB_WAYS = 2,
     parameter int ASID_WIDTH = 1,
+    parameter int unsigned ASID_LEN = 1,
     parameter int unsigned VPN_LEN = 1,
     parameter int unsigned PT_LEVELS = 1
   ) (
@@ -74,7 +75,7 @@ module cva6_shared_tlb
   endfunction
 
   typedef struct packed {
-    logic [ASID_LEN-1:0] asid;   //9 bits wide
+    logic [ASID_LEN-1:0] asid;   
     logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
     logic [PT_LEVELS-2:0] is_page;
   } shared_tag_t;

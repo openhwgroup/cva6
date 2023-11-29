@@ -175,8 +175,9 @@ module load_store_unit
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
         .ASID_WIDTH       (ASID_WIDTH),
-        .VPN_LEN          (VPN_LEN),
-        .PT_LEVELS        (PT_LEVELS)
+        .ASID_LEN         (ariane_pkg::ASID_LEN),
+        .VPN_LEN          (ariane_pkg::VPN_LEN),
+        .PT_LEVELS        (ariane_pkg::PT_LEVELS)
     ) i_cva6_mmu (
         // misaligned bypass
         .misaligned_ex_i(misaligned_exception),
