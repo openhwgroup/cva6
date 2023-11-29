@@ -13,7 +13,7 @@
 //
 //
 // Description: Hardware-PTW (Page-Table-Walker) for unified MMU.
-//              This module is an merge of the Sv32 PTW developed by Sebastien
+//              This module is a merge of the Sv32 PTW developed by Sebastien
 //              Jacq (Thales Research & Technology) and the Sv39 PTW developed
 //              by Florian Zaruba and David Schaffenrath.
 //
