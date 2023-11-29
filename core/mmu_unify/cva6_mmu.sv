@@ -278,6 +278,7 @@ module cva6_mmu
   //-----------------------
   logic match_any_execute_region;
   logic pmp_instr_allow;
+  localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 
   assign icache_areq_o.fetch_paddr    [11:0] = icache_areq_i.fetch_vaddr[11:0];
   assign icache_areq_o.fetch_paddr [riscv::PLEN-1:PPNWMin+1]   = //
@@ -408,13 +409,13 @@ module cva6_mmu
   // Wires to PMP checks
   riscv::pmp_access_t pmp_access_type;
   logic               pmp_data_allow;
-  localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
+  
 
   assign lsu_paddr_o    [11:0] = lsu_vaddr_q[11:0];
   assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
                               (en_ld_st_translation_i && !misaligned_ex_q.valid) ? //
                               dtlb_pte_q.ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : // 
-                              riscv::PLEN'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN ):PPNWMin+1]);
+                              riscv::PLEN'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
                               
 
 
