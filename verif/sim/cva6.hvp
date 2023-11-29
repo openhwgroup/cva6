@@ -614,6 +614,11 @@ plan "CVA6 Verification Master Plan";
         endfeature
         feature "CSR access";
             description = "CSR registers access.\nSpecification: Done, Dvplan: Done, Verification execution: Done";
+            feature "CSR CODE COVERAGE";
+                measure Line, Cond, Toggle CSR_code_cov;
+                    source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.csr_regfile_i";
+                endmeasure
+            endfeature
             feature CYCLE;
                 measure Group CYCLE;
                     source = "group instance: uvme_cva6_pkg.csr_reg_cov.cycle.cycle__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.cycle.cycle__write_cg";
@@ -1303,31 +1308,31 @@ plan "CVA6 Verification Master Plan";
         description = "CVA6 features for design";
         feature FRONTEND;
             description = "FRONTEND stage.\nSpecification: Done, Dvplan: No, Verification execution: No.";
-            measure Line, Cond, Toggle frontend_rtl;
+            measure Line, Cond, Toggle frontend_code_cov;
                 source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.i_frontend";
             endmeasure
         endfeature
         feature DECODE;
             description = "DECODE stage.\nSpecification: No, Dvplan: No, Verification execution: No.";
-            measure Line, Cond, Toggle Decode_rtl;
+            measure Line, Cond, Toggle Decode_code_cov;
                 source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.id_stage_i";
             endmeasure
         endfeature
         feature ISSUE;
             description = "ISSUE stage.\nSpecification: No, Dvplan: No, Verification execution: No.";
-            measure Line, Cond, Toggle issue_rtl;
+            measure Line, Cond, Toggle issue_code_cov;
                 source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.issue_stage_i";
             endmeasure
         endfeature
         feature EXECUTE;
             description = "EXECUTE stage.\nSpecification: No, Dvplan: No, Verification execution: No.";
-            measure Line, Cond, Toggle execute_rtl;
+            measure Line, Cond, Toggle execute_code_cov;
                 source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.ex_stage_i";
             endmeasure
         endfeature
         feature COMMIT;
             description = "COMMIT stage.\nSpecification: No, Dvplan: No, Verification execution: No.";
-            measure Line, Cond, Toggle commit_rtl;
+            measure Line, Cond, Toggle commit_code_cov;
                 source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.commit_stage_i";
             endmeasure
         endfeature
@@ -1635,12 +1640,12 @@ plan "CVA6 Verification Master Plan";
             measure Group double_precision_floating;
             endmeasure
         endfeature
-    endfeature
-    feature "Code Coverage";
-        description = "CVA6 Design features code coverage";
-        measure Line, Cond, Toggle CVA6;
-            source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6";
-        endmeasure
+        feature "CVA6 Code Coverage";
+            description = "CVA6 Design features code coverage";
+            measure Line, Cond, Toggle CVA6;
+                source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6";
+            endmeasure
+        endfeature
     endfeature
 endplan
 
