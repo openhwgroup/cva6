@@ -151,11 +151,18 @@ module cva6_shared_tlb
         //identify page_match for all TLB Entries
         assign page_match[i]          = (shared_tag_rd[i].is_page[PT_LEVELS-2:0])*2 +1;
         for (x=0; x < PT_LEVELS; x++) begin  
-          assign vpn_d[x]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] :((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] : vpn_q[x]);
+          // assign vpn_d[x]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] :((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] : vpn_q[x]);
           assign vpn_match[i][x]        = vpn_q[x] == shared_tag_rd[i].vpn[x];
           assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
         end
       end
+    endgenerate
+
+    genvar w;
+    generate
+        for (w=0; w < PT_LEVELS; w++) begin  
+          assign vpn_d[w]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] :((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : vpn_q[w]);
+        end
     endgenerate
 
 
@@ -288,8 +295,8 @@ module cva6_shared_tlb
   end  //update_flush
 
   assign shared_tag_wr.asid = shared_tlb_update_i.asid;
-  assign shared_tag_wr.vpn[1] = shared_tlb_update_i.vpn[19:10];
-  assign shared_tag_wr.vpn[0] = shared_tlb_update_i.vpn[9:0];
+  // assign shared_tag_wr.vpn[1] = shared_tlb_update_i.vpn[19:10];
+  // assign shared_tag_wr.vpn[0] = shared_tlb_update_i.vpn[9:0];
   assign shared_tag_wr.is_page = shared_tlb_update_i.is_page;
 
 
