@@ -984,6 +984,11 @@ main:
     #MIP read value
     csrr x14, 0x344
 
+    #Clear MIP to avoid traping
+    csrw 0x344, x0
+
+    #MIP read value
+    csrr x14, 0x344
     ##########################
     #PMPADDR3 testing W/R values '{'hffffffff, 'h0, 'h55555555, 'haaaaaaaa, 'hf479076} 
     ##########################
