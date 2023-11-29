@@ -3320,6 +3320,12 @@ csrrwi:
     #MIP read value
     csrr x14, 0x344
 
+    #Clear MIP to avoid traping
+    csrw 0x344, x0
+
+    #MIP read value
+    csrr x14, 0x344
+
     ##########################
     #MHPMEVENT9 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'ha} 
     ##########################
