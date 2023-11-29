@@ -50,6 +50,8 @@ module cva6_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   output icache_req_t               mem_data_o
 );
 
+`include "common_cells/registers.svh"
+
   // functions
   function automatic logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh (
     input logic [L1I_WAY_WIDTH-1:0] in
@@ -432,13 +434,31 @@ end else begin : gen_piton_offset
   logic [ICACHE_TAG_WIDTH:0] cl_tag_valid_rdata [ICACHE_SET_ASSOC-1:0];
 
   for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : gen_sram
+`ifndef VERILATOR
+    // Clock gate
+    logic icache_tag_clk;
+    logic tag_sram_active_q;
+    `FF(tag_sram_active_q, vld_req[i], 1'b0)
+
+    tc_clk_gating i_icache_tag_ckg (
+      .clk_i    (clk_i                           ),
+      .test_en_i(1'b0                            ),
+      .en_i     (vld_req[i] || tag_sram_active_q ),
+      .clk_o    (icache_tag_clk                  )
+    );
+`else
+    logic icache_tag_clk;
+
+    assign icache_tag_clk = clk_i;
+`endif
+
     // Tag RAM
     sram #(
       // tag + valid bit
       .DATA_WIDTH ( ICACHE_TAG_WIDTH+1 ),
       .NUM_WORDS  ( ICACHE_NUM_WORDS   )
     ) tag_sram (
-      .clk_i     ( clk_i                    ),
+      .clk_i     ( icache_tag_clk           ),
       .rst_ni    ( rst_ni                   ),
       .req_i     ( vld_req[i]               ),
       .we_i      ( vld_we                   ),
@@ -455,6 +475,24 @@ end else begin : gen_piton_offset
     assign cl_tag_rdata[i] = cl_tag_valid_rdata[i][ICACHE_TAG_WIDTH-1:0];
     assign vld_rdata[i]    = cl_tag_valid_rdata[i][ICACHE_TAG_WIDTH];
 
+`ifndef VERILATOR
+    // Clock gate
+    logic icache_data_clk;
+    logic data_sram_active_q;
+    `FF(data_sram_active_q, cl_req[i], 1'b0)
+
+    tc_clk_gating i_icache_data_ckg (
+      .clk_i    (clk_i                           ),
+      .test_en_i(1'b0                            ),
+      .en_i     (cl_req[i] || data_sram_active_q ),
+      .clk_o    (icache_data_clk                 )
+    );
+`else
+    logic icache_data_clk;
+
+    assign icache_data_clk = clk_i;
+`endif
+
     // Data RAM
     sram #(
       .USER_WIDTH ( ICACHE_USER_LINE_WIDTH ),
@@ -462,7 +500,7 @@ end else begin : gen_piton_offset
       .USER_EN    ( ariane_pkg::FETCH_USER_EN ),
       .NUM_WORDS  ( ICACHE_NUM_WORDS  )
     ) data_sram (
-      .clk_i     ( clk_i               ),
+      .clk_i     ( icache_data_clk     ),
       .rst_ni    ( rst_ni              ),
       .req_i     ( cl_req[i]           ),
       .we_i      ( cl_we               ),

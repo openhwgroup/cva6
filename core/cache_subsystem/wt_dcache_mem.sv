@@ -87,6 +87,8 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   // is not needed. Therefore, increment it by one to avoid reverse range select during elaboration.
   localparam AXI_OFFSET_WIDTH = AxiDataWidth == riscv::XLEN ? $clog2(AxiDataWidth/8)+1 : $clog2(AxiDataWidth/8);
 
+`include "common_cells/registers.svh"
+
   logic [DCACHE_NUM_BANKS-1:0]                                             bank_req;
   logic [DCACHE_NUM_BANKS-1:0]                                             bank_we;
   logic [DCACHE_NUM_BANKS-1:0][DCACHE_SET_ASSOC-1:0][(riscv::XLEN/8)-1:0]  bank_be;
@@ -291,6 +293,24 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [DCACHE_TAG_WIDTH:0] vld_tag_rdata [DCACHE_SET_ASSOC-1:0];
 
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_data_banks
+`ifndef VERILATOR
+    // Clock gate
+    logic dcache_data_clk;
+    logic data_sram_active_q;
+    `FF(data_sram_active_q, bank_req[k], 1'b0)
+
+    tc_clk_gating i_dcache_data_ckg (
+      .clk_i    (clk_i                           ),
+      .test_en_i(1'b0                            ),
+      .en_i     (bank_req[k] || data_sram_active_q),
+      .clk_o    (dcache_data_clk                  )
+    );
+`else
+    logic dcache_data_clk;
+
+    assign dcache_data_clk = clk_i;
+`endif
+
     // Data RAM
     sram #(
       .USER_WIDTH ( ariane_pkg::DCACHE_SET_ASSOC * DATA_USER_WIDTH ),
@@ -298,7 +318,7 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
       .USER_EN    ( ariane_pkg::DATA_USER_EN          ),
       .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS    )
     ) i_data_sram (
-      .clk_i      ( clk_i               ),
+      .clk_i      ( dcache_data_clk     ),
       .rst_ni     ( rst_ni              ),
       .req_i      ( bank_req   [k]      ),
       .we_i       ( bank_we    [k]      ),
@@ -316,13 +336,31 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
     assign tag_rdata[i]     = vld_tag_rdata[i][DCACHE_TAG_WIDTH-1:0];
     assign rd_vld_bits_o[i] = vld_tag_rdata[i][DCACHE_TAG_WIDTH];
 
+`ifndef VERILATOR
+    // Clock gate
+    logic dcache_tag_clk;
+    logic tag_sram_active_q;
+    `FF(tag_sram_active_q, vld_req[i], 1'b0)
+
+    tc_clk_gating i_dcache_tag_ckg (
+      .clk_i    (clk_i                           ),
+      .test_en_i(1'b0                            ),
+      .en_i     (vld_req[i] || tag_sram_active_q ),
+      .clk_o    (dcache_tag_clk                  )
+    );
+`else
+    logic dcache_tag_clk;
+
+    assign dcache_tag_clk = clk_i;
+`endif
+
     // Tag RAM
     sram #(
       // tag + valid bit
       .DATA_WIDTH ( ariane_pkg::DCACHE_TAG_WIDTH + 1 ),
       .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS   )
     ) i_tag_sram (
-      .clk_i     ( clk_i               ),
+      .clk_i     ( dcache_tag_clk      ),
       .rst_ni    ( rst_ni              ),
       .req_i     ( vld_req[i]          ),
       .we_i      ( vld_we              ),
