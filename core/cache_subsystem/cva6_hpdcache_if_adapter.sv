@@ -97,9 +97,9 @@ module cva6_hpdcache_if_adapter
           cva6_req_o.data_gnt = hpdcache_req_ready_i;
     end  //  }}}
 
-         //  STORE/AMO request
          //  {{{
     else begin : store_amo_gen
+      //  STORE/AMO request
       hpdcache_req_addr_t   amo_addr;
       hpdcache_req_offset_t amo_addr_offset;
       hpdcache_tag_t        amo_tag;
