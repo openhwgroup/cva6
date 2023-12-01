@@ -217,7 +217,8 @@ module cva6
     CVA6Cfg.CachedRegionLength,
     CVA6Cfg.MaxOutstandingStores,
     CVA6Cfg.DebugEn,
-    NonIdemPotenceEn
+    NonIdemPotenceEn,
+    CVA6Cfg.AxiBurstWriteEn
   };
 
 

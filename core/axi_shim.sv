@@ -114,7 +114,7 @@ module axi_shim #(
 
   // tx counter
   assign wr_cnt_done         = (wr_cnt_q == wr_blen_i);
-  assign wr_cnt_d            = (wr_cnt_clr) ? '0 : (wr_cnt_en) ? wr_cnt_q + 1 : wr_cnt_q;
+  assign wr_cnt_d            = (wr_cnt_clr) ? '0 : (wr_cnt_en && CVA6Cfg.AxiBurstWriteEn) ? wr_cnt_q + 1 : wr_cnt_q;
 
   always_comb begin : p_axi_write_fsm
     // default
@@ -149,7 +149,7 @@ module axi_shim #(
               default: wr_state_d = IDLE;
             endcase
             // its a request for the whole cache line
-          end else begin
+          end else if(CVA6Cfg.AxiBurstWriteEn) begin
             wr_cnt_en = axi_resp_i.w_ready;
 
             case ({
@@ -174,52 +174,6 @@ module axi_shim #(
         end
       end
       ///////////////////////////////////
-      // ~> we need to wait for an aw_ready and there is at least one outstanding write
-      WAIT_LAST_W_READY_AW_READY: begin
-        axi_req_o.w_valid  = 1'b1;
-        axi_req_o.aw_valid = 1'b1;
-        // we got an aw_ready
-        case ({
-          axi_resp_i.aw_ready, axi_resp_i.w_ready
-        })
-          // we got an aw ready
-          2'b01: begin
-            // are there any outstanding transactions?
-            if (wr_cnt_done) begin
-              wr_state_d = WAIT_AW_READY_BURST;
-              wr_cnt_clr = 1'b1;
-            end else begin
-              // yes, so reduce the count and stay here
-              wr_cnt_en = 1'b1;
-            end
-          end
-          2'b10:   wr_state_d = WAIT_LAST_W_READY;
-          2'b11: begin
-            // we are finished
-            if (wr_cnt_done) begin
-              wr_state_d = IDLE;
-              wr_gnt_o   = 1'b1;
-              wr_cnt_clr = 1'b1;
-              // there are outstanding transactions
-            end else begin
-              wr_state_d = WAIT_LAST_W_READY;
-              wr_cnt_en  = 1'b1;
-            end
-          end
-          default: ;
-        endcase
-      end
-      ///////////////////////////////////
-      // ~> all data has already been sent, we are only waiting for the aw_ready
-      WAIT_AW_READY_BURST: begin
-        axi_req_o.aw_valid = 1'b1;
-
-        if (axi_resp_i.aw_ready) begin
-          wr_state_d = IDLE;
-          wr_gnt_o   = 1'b1;
-        end
-      end
-      ///////////////////////////////////
       // ~> from write, there is an outstanding write
       WAIT_LAST_W_READY: begin
         axi_req_o.w_valid = 1'b1;
@@ -231,13 +185,62 @@ module axi_shim #(
             wr_cnt_clr = 1'b1;
             wr_gnt_o   = 1'b1;
           end
-        end else if (axi_resp_i.w_ready) begin
+        end else if (CVA6Cfg.AxiBurstWriteEn && axi_resp_i.w_ready) begin
           wr_cnt_en = 1'b1;
         end
       end
       ///////////////////////////////////
       default: begin
-        wr_state_d = IDLE;
+        ///////////////////////////////////
+        // ~> we need to wait for an aw_ready and there is at least one outstanding write
+        if(CVA6Cfg.AxiBurstWriteEn) begin
+          if (wr_state_q == WAIT_LAST_W_READY_AW_READY) begin
+            axi_req_o.w_valid  = 1'b1;
+            axi_req_o.aw_valid = 1'b1;
+            // we got an aw_ready
+            case ({
+              axi_resp_i.aw_ready, axi_resp_i.w_ready
+            })
+              // we got an aw ready
+              2'b01: begin
+                // are there any outstanding transactions?
+                if (wr_cnt_done) begin
+                  wr_state_d = WAIT_AW_READY_BURST;
+                  wr_cnt_clr = 1'b1;
+                end else begin
+                  // yes, so reduce the count and stay here
+                  wr_cnt_en = 1'b1;
+                end
+              end
+              2'b10:   wr_state_d = WAIT_LAST_W_READY;
+              2'b11: begin
+                // we are finished
+                if (wr_cnt_done) begin
+                  wr_state_d = IDLE;
+                  wr_gnt_o   = 1'b1;
+                  wr_cnt_clr = 1'b1;
+                  // there are outstanding transactions
+                end else begin
+                  wr_state_d = WAIT_LAST_W_READY;
+                  wr_cnt_en  = 1'b1;
+                end
+              end
+              default: ;
+            endcase
+          end
+          ///////////////////////////////////
+          // ~> all data has already been sent, we are only waiting for the aw_ready
+          else if (wr_state_q == WAIT_AW_READY_BURST) begin
+            axi_req_o.aw_valid = 1'b1;
+	      
+            if (axi_resp_i.aw_ready) begin
+              wr_state_d = IDLE;
+              wr_gnt_o   = 1'b1;
+            end
+          end
+        end else begin
+          wr_state_d = IDLE;
+        end
       end
     endcase
   end
