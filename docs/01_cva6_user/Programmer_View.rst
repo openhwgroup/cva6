@@ -27,25 +27,28 @@ RISC-V Extensions
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Extension", "Optional", "RV32","RV64"
+   :header: "Extension", "Optional", "RV32","RV64", "*Applicable to CV32A60X*", "*Applicable to CV32E6?X*"
 
-   "I- RV32i Base Integer Instruction Set",                             "No","✓","✓"
-   "A - Atomic Instructions",                                           "Yes","✓","✓"
-   "Zb* - Bit-Manipulation",                                            "Yes","✓","✓"
-   "C - Compressed Instructions ",                                      "Yes","✓","✓"
-   "Zcb - Code Size Reduction",                                         "Yes","✓","✓"
-   "D - Double precsision floating-point",                              "Yes","✗ ","✓"
-   "F - Single precsision floating-point",                              "Yes","✓","✓"
-   "M - Integer Multiply/Divide",                                       "No","✓","✓"
-   "Zicount - Performance Counters",                                    "Yes","✓","✓"
-   "Zicsr - Control and Status Register Instructions",                  "No","✓","✓"
-   "Zifencei - Instruction-Fetch Fence",                                "No","✓","✓"
-   "Zicond - Integer Conditional Operations(Ratification pending)",     "Yes","✓","✓"
+   "I- RV32i Base Integer Instruction Set",                             "No","✓","✓","✓","✓"
+   "A - Atomic Instructions",                                           "Yes","✓","✓","✓","✗"
+   "Zb* - Bit-Manipulation",                                            "Yes","✓","✓","✓","✓"
+   "C - Compressed Instructions ",                                      "Yes","✓","✓","✓","✓"
+   "Zcb - Code Size Reduction",                                         "Yes","✓","✓","✓","✓"
+   "D - Double precsision floating-point",                              "Yes","✗","✓","✗","✗"
+   "F - Single precsision floating-point",                              "Yes","✓","✓","✗","✗"
+   "M - Integer Multiply/Divide",                                       "No","✓","✓","✓","✓"
+   "Zicount - Performance Counters",                                    "Yes","✓","✓","✓","✗"
+   "Zicsr - Control and Status Register Instructions",                  "No","✓","✓","✓","✓"
+   "Zifencei - Instruction-Fetch Fence",                                "No","✓","✓","✓","✓"
+   "Zicond - Integer Conditional Operations(Ratification pending)",     "Yes","✓","✓","✓","✗"
 
 
 
 RISC-V Privileges
 -----------------
+
+CVA6 supports these privilege modes:
+
 .. csv-table::
    :widths: auto
    :align: left
@@ -55,8 +58,17 @@ RISC-V Privileges
    "S - Supervior"
    "U - User"
 
-
 Note: The addition of the H Extension is in the process. After that, HS, VS, and VU modes will also be available.
+
+*Applicability to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60X", "M, S, U implemented"
+   "CV32E6?X", "Only M implemented"
 
 
 RISC-V Virtual Memory
@@ -77,13 +89,28 @@ Notes for the integrator:
 
 * The addition of the hypervisor support will come with **Sv39x4** virtual memory that is not yet documented here.
 
+*Applicability to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60X", "Sv32"
+   "CV32E6?X", "Only Bare mode"
+
+
 Memory Alignment
 ----------------
 CVA6 **does not support non-aligned** memory accesses.
+
+*This is applicable to all configurations.*
 
 Harts
 -----
 CVA6 features a **single hart**, i.e. a single hardware thread.
 
 Therefore the words *hart* and *core* have the same meaning in this guide.
+
+*This is applicable to all configurations.*
 
