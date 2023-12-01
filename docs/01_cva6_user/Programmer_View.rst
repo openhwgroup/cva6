@@ -24,25 +24,28 @@ RISC-V specifications allow many variations. This chapter provides more details 
 
 RISC-V Extensions
 -----------------
+
+*These are the RISC-V extensions supported by CVA6 and their applicability to configurations:*
+
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Extension", "Optional", "RV32","RV64", "*Applicable to CV32A60X*", "*Applicable to CV32E6?X*"
+   :header: "Extension", "Optional", "CV32A60X", "CV32E??X"
 
-   "I- RV32i Base Integer Instruction Set",                             "No","✓","✓","✓","✓"
-   "A - Atomic Instructions",                                           "Yes","✓","✓","✓","✗"
-   "Zb* - Bit-Manipulation",                                            "Yes","✓","✓","✓","✓"
-   "C - Compressed Instructions ",                                      "Yes","✓","✓","✓","✓"
-   "Zcb - Code Size Reduction",                                         "Yes","✓","✓","✓","✓"
-   "D - Double precsision floating-point",                              "Yes","✗","✓","✗","✗"
-   "F - Single precsision floating-point",                              "Yes","✓","✓","✗","✗"
-   "M - Integer Multiply/Divide",                                       "No","✓","✓","✓","✓"
-   "Zicount - Performance Counters",                                    "Yes","✓","✓","✓","✗"
-   "Zicsr - Control and Status Register Instructions",                  "No","✓","✓","✓","✓"
-   "Zifencei - Instruction-Fetch Fence",                                "No","✓","✓","✓","✓"
-   "Zicond - Integer Conditional Operations(Ratification pending)",     "Yes","✓","✓","✓","✗"
+   "I- RV32i Base Integer Instruction Set",                             "No","✓","✓"
+   "A - Atomic Instructions",                                           "Yes","✓","✗"
+   "Zb* - Bit-Manipulation",                                            "Yes","✓","✓"
+   "C - Compressed Instructions ",                                      "Yes","✓","✓"
+   "Zcb - Code Size Reduction",                                         "Yes","✓","✓"
+   "D - Double precsision floating-point",                              "Yes","",""
+   "F - Single precsision floating-point",                              "Yes","",""
+   "M - Integer Multiply/Divide",                                       "No","✓","✓"
+   "Zicount - Performance Counters",                                    "Yes","✓",""
+   "Zicsr - Control and Status Register Instructions",                  "No","✓","✓"
+   "Zifencei - Instruction-Fetch Fence",                                "No","✓","✓"
+   "Zicond - Integer Conditional Operations(Ratification pending)",     "Yes","✓",""
 
-
+The D extension is not available with CV32A6.
 
 RISC-V Privileges
 -----------------
@@ -58,8 +61,6 @@ CVA6 supports these privilege modes:
    "S - Supervior"
    "U - User"
 
-Note: The addition of the H Extension is in the process. After that, HS, VS, and VU modes will also be available.
-
 *Applicability to configurations:*
 
 .. csv-table::
@@ -70,6 +71,7 @@ Note: The addition of the H Extension is in the process. After that, HS, VS, and
    "CV32A60X", "M, S, U implemented"
    "CV32E6?X", "Only M implemented"
 
+Note: The addition of the H Extension is in the process. After that, HS, VS, and VU modes will also be available.
 
 RISC-V Virtual Memory
 ---------------------
