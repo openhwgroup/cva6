@@ -284,9 +284,6 @@ module alu
         endcase
       end
       unique case (fu_data_i.operation)
-        // Left Shift 32 bit unsigned
-        SLLIUW:
-        result_o = {{riscv::XLEN-32{1'b0}}, fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[5:0];
         // Integer minimum/maximum
         MAX: result_o = less ? fu_data_i.operand_b : fu_data_i.operand_a;
         MAXU: result_o = less ? fu_data_i.operand_b : fu_data_i.operand_a;
@@ -323,8 +320,8 @@ module alu
         result_o = orcbw_result;
         REV8:
         result_o = rev8w_result;
-
-        default: ;  // default case to suppress unique warning
+        // Left Shift 32 bit unsigned
+        default: if(fu_data_i.operation == SLLIUW && riscv::IS_XLEN64) result_o = {{riscv::XLEN-32{1'b0}}, fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[5:0];  // default case to suppress unique warning
       endcase
     end
     if (CVA6Cfg.ZiCondExtEn) begin

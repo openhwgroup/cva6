@@ -107,7 +107,7 @@ module load_store_unit
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
   assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
   // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
-  assign overflow = !((&vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b1 || (|vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b0);
+  assign overflow = (riscv::IS_XLEN64 && !((&vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b1 || (|vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b0));
 
   logic                   st_valid_i;
   logic                   ld_valid_i;
@@ -406,7 +406,7 @@ module load_store_unit
                 AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
                 AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
                 AMO_MINDU: begin
-          if (lsu_ctrl.vaddr[2:0] != 3'b000) begin
+          if (riscv::IS_XLEN64 && lsu_ctrl.vaddr[2:0] != 3'b000) begin
             data_misaligned = 1'b1;
           end
         end
