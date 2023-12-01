@@ -120,6 +120,7 @@ cva6_tlb #(
     .CVA6Cfg    (CVA6Cfg),
     .TLB_ENTRIES(INSTR_TLB_ENTRIES),
     .ASID_WIDTH (ASID_WIDTH),
+    .ASID_LEN (ASID_LEN),
     .VPN_LEN(VPN_LEN),
     .PT_LEVELS(PT_LEVELS)
 ) i_itlb (
@@ -144,6 +145,7 @@ cva6_tlb #(
     .CVA6Cfg    (CVA6Cfg),
     .TLB_ENTRIES(DATA_TLB_ENTRIES),
     .ASID_WIDTH (ASID_WIDTH),
+    .ASID_LEN (ASID_LEN),
     .VPN_LEN(VPN_LEN),
     .PT_LEVELS(PT_LEVELS)
 ) i_dtlb (
