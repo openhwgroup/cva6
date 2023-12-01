@@ -96,8 +96,8 @@ Notes for the integrator:
    :align: left
    :header: "Configuration", "Implementation"
 
-   "CV32A60X", "Sv32"
-   "CV32E6?X", "Only Bare mode"
+   "CV32A60X", "Bare mode, Sv32"
+   "CV32E6?X", "Bare mode"
 
 
 Memory Alignment
