@@ -210,7 +210,8 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   CachedRegionLength:    1024'({ariane_soc::DRAMLength}),
   MaxOutstandingStores:  unsigned'(7),
   DebugEn: bit'(1),
-  NonIdemPotenceEn: bit'(0)
+  NonIdemPotenceEn: bit'(0),
+  AxiBurstWriteEn: bit'(0)
 };
 
 localparam type rvfi_instr_t = logic;

@@ -113,6 +113,7 @@ package config_pkg;
     int unsigned                 MaxOutstandingStores;
     bit                          DebugEn;
     bit                          NonIdemPotenceEn;
+    bit                          AxiBurstWriteEn;
   } cva6_cfg_t;
 
 
