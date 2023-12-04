@@ -341,7 +341,9 @@ module alu
         ORCB: result_o = orcbw_result;
         REV8: result_o = rev8w_result;
 
-        default: if(fu_data_i.operation == SLLIUW && riscv::IS_XLEN64) result_o = {{riscv::XLEN-32{1'b0}}, fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[5:0];  // Left Shift 32 bit unsigned
+        default:
+        if (fu_data_i.operation == SLLIUW && riscv::IS_XLEN64)
+          result_o = {{riscv::XLEN-32{1'b0}}, fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[5:0];  // Left Shift 32 bit unsigned
       endcase
     end
     if (CVA6Cfg.ZiCondExtEn) begin
