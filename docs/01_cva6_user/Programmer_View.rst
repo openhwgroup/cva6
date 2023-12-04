@@ -33,7 +33,7 @@ RISC-V Extensions
    :header: "Extension", "Optional", "CV32A60X", "CV32E??X"
 
    "I- RV32i Base Integer Instruction Set",                             "No","✓","✓"
-   "A - Atomic Instructions",                                           "Yes","✓","✗"
+   "A - Atomic Instructions",                                           "Yes","✓",""
    "Zb* - Bit-Manipulation",                                            "Yes","✓","✓"
    "C - Compressed Instructions ",                                      "Yes","✓","✓"
    "Zcb - Code Size Reduction",                                         "Yes","✓","✓"
