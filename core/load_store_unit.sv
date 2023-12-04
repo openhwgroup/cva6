@@ -19,6 +19,7 @@ module load_store_unit
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type icache_areq_t = logic,
     parameter type icache_arsp_t = logic,
@@ -187,6 +188,7 @@ module load_store_unit
   if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
+        .exception_t      (exception_t),
         .icache_areq_t    (icache_areq_t),
         .icache_arsp_t    (icache_arsp_t),
         .icache_dreq_t    (icache_dreq_t),
@@ -222,6 +224,7 @@ module load_store_unit
   end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
     cva6_mmu_sv32 #(
         .CVA6Cfg          (CVA6Cfg),
+        .exception_t      (exception_t),
         .icache_areq_t    (icache_areq_t),
         .icache_arsp_t    (icache_arsp_t),
         .icache_dreq_t    (icache_dreq_t),
@@ -305,6 +308,7 @@ module load_store_unit
       .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_store_unit (
       .clk_i,
@@ -350,6 +354,7 @@ module load_store_unit
       .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
       .valid_i   (ld_valid_i),

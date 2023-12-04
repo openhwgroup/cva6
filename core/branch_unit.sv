@@ -16,6 +16,7 @@ module branch_unit #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
+    parameter type exception_t = logic,
     parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -45,7 +46,7 @@ module branch_unit #(
     // Branch is resolved, new entries can be accepted by scoreboard - ID_STAGE
     output logic resolve_branch_o,
     // Branch exception out - TO_BE_COMPLETED
-    output ariane_pkg::exception_t branch_exception_o
+    output exception_t branch_exception_o
 );
   logic [riscv::VLEN-1:0] target_address;
   logic [riscv::VLEN-1:0] next_pc;

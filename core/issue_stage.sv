@@ -20,6 +20,7 @@ module issue_stage
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
+    parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type scoreboard_entry_t = logic
 ) (
@@ -164,6 +165,7 @@ module issue_stage
       .CVA6Cfg   (CVA6Cfg),
       .rs3_len_t (rs3_len_t),
       .bp_resolve_t(bp_resolve_t),
+      .exception_t(exception_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) i_scoreboard (
       .sb_full_o          (sb_full_o),

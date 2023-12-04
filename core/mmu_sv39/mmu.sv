@@ -25,6 +25,7 @@ module mmu
     parameter type                   icache_drsp_t     = logic,
     parameter type                   dcache_req_i_t = logic,
     parameter type                   dcache_req_o_t = logic,
+    parameter type                   exception_t = logic,
     parameter int unsigned           INSTR_TLB_ENTRIES = 4,
     parameter int unsigned           DATA_TLB_ENTRIES  = 4,
     parameter int unsigned           ASID_WIDTH        = 1

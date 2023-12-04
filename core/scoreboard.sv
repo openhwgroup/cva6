@@ -15,6 +15,7 @@
 module scoreboard #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
+    parameter type exception_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter type rs3_len_t = logic
 ) (
@@ -90,7 +91,7 @@ module scoreboard #(
     // Results to write back - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
     // Exception from a functional unit (e.g.: ld/st exception) - TO_BE_COMPLETED
-    input ariane_pkg::exception_t [CVA6Cfg.NrWbPorts-1:0] ex_i,
+    input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_i,
     // Indicates valid results - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
     // Cvxif we for writeback - TO_BE_COMPLETED

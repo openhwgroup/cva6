@@ -22,6 +22,7 @@ module ex_stage
     parameter type branchpredict_sbe_t = logic,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type icache_areq_t = logic,
     parameter type icache_arsp_t = logic,
@@ -256,6 +257,7 @@ module ex_stage
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .exception_t(exception_t),
       .fu_data_t(fu_data_t)
   ) branch_unit_i (
       .clk_i,
@@ -345,6 +347,7 @@ module ex_stage
 
       fpu_wrap #(
           .CVA6Cfg  (CVA6Cfg),
+          .exception_t(exception_t),
           .fu_data_t(fu_data_t)
       ) fpu_i (
           .clk_i,
@@ -382,6 +385,7 @@ module ex_stage
       .CVA6Cfg   (CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .exception_t(exception_t),
       .fu_data_t (fu_data_t),
       .icache_areq_t(icache_areq_t),
       .icache_arsp_t(icache_arsp_t),
@@ -442,6 +446,7 @@ module ex_stage
     assign cvxif_data = x_valid_i ? fu_data_i : '0;
     cvxif_fu #(
         .CVA6Cfg(CVA6Cfg),
+        .exception_t(exception_t),
         .fu_data_t(fu_data_t)
     ) cvxif_fu_i (
         .clk_i,

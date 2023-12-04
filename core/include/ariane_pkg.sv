@@ -167,15 +167,6 @@ package ariane_pkg;
   localparam int unsigned INSTR_PER_FETCH = RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
   localparam int unsigned LOG2_INSTR_PER_FETCH = RVC == 1'b1 ? $clog2(INSTR_PER_FETCH) : 1;
 
-  // Only use struct when signals have same direction
-  // exception
-  typedef struct packed {
-    riscv::xlen_t cause;  // cause of exception
-    riscv::xlen_t       tval;  // additional information of causing exception (e.g.: instruction causing it),
-    // address of LD/ST fault
-    logic valid;
-  } exception_t;
-
   typedef enum logic [2:0] {
     NoCF,    // No control flow prediction
     Branch,  // Branch

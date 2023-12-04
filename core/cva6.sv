@@ -29,6 +29,13 @@ module cva6
       logic [riscv::VLEN-1:0] predict_address;  // target address at which to jump, or not
     },
 
+    parameter type exception_t = struct packed {
+      logic [riscv::XLEN-1:0] cause;  // cause of exception
+      logic [riscv::XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
+      // address of LD/ST fault
+      logic valid;
+    },
+
     // cache request ports
     // I$ address translation requests
     parameter type icache_areq_t = struct packed {
@@ -554,6 +561,7 @@ module cva6
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .exception_t(exception_t),
       .fetch_entry_t(fetch_entry_t),
       .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t)
@@ -658,6 +666,7 @@ module cva6
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .exception_t(exception_t),
       .fu_data_t(fu_data_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) issue_stage_i (
@@ -737,6 +746,7 @@ module cva6
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .exception_t(exception_t),
       .fu_data_t(fu_data_t),
       .icache_areq_t(icache_areq_t),
       .icache_arsp_t(icache_arsp_t),
@@ -857,6 +867,7 @@ module cva6
 
   commit_stage #(
       .CVA6Cfg(CVA6Cfg),
+      .exception_t(exception_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) commit_stage_i (
       .clk_i,
@@ -897,6 +908,7 @@ module cva6
   // ---------
   csr_regfile #(
       .CVA6Cfg           (CVA6Cfg),
+      .exception_t       (exception_t),
       .irq_ctrl_t        (irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .AsidWidth         (ASID_WIDTH),
@@ -969,6 +981,7 @@ module cva6
     perf_counters #(
         .CVA6Cfg(CVA6Cfg),
         .bp_resolve_t(bp_resolve_t),
+        .exception_t(exception_t),
         .scoreboard_entry_t(scoreboard_entry_t),
         .icache_dreq_t(icache_dreq_t),
         .dcache_req_i_t(dcache_req_i_t),
@@ -1251,6 +1264,7 @@ module cva6
         .fu_data_t         (fu_data_t),
         .dcache_req_i_t    (dcache_req_i_t),
         .dcache_req_o_t    (dcache_req_o_t),
+        .exception_t       (exception_t),
         .scoreboard_entry_t(scoreboard_entry_t),
         .acc_cfg_t         (acc_cfg_t),
         .AccCfg            (AccCfg),
@@ -1385,6 +1399,7 @@ module cva6
   instr_tracer_if #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
+      .exception_t(exception_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) tracer_if (
       clk_i
@@ -1496,6 +1511,7 @@ module cva6
 
   cva6_rvfi_probes #(
       .CVA6Cfg      (CVA6Cfg),
+      .exception_t  (exception_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .lsu_ctrl_t   (lsu_ctrl_t),
       .rvfi_probes_t(rvfi_probes_t)
