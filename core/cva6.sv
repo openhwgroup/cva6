@@ -41,6 +41,14 @@ module cva6
       logic [CVA6Cfg.VLEN-1:0] predict_address;  // target address at which to jump, or not
     },
 
+    parameter type exception_t = struct packed {
+      logic [CVA6Cfg.XLEN-1:0] cause;  // cause of exception
+      logic [CVA6Cfg.XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
+      // address of LD/ST fault
+      logic valid;
+    },
+
+
     // All information needed to determine whether we need to associate an interrupt
     // with the corresponding instruction or not.
     parameter type irq_ctrl_t = struct packed {
@@ -553,6 +561,7 @@ module cva6
   // ---------
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
+      .exception_t(exception_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .irq_ctrl_t(irq_ctrl_t),
       .fetch_entry_t(fetch_entry_t),
@@ -653,6 +662,7 @@ module cva6
   // ---------
   issue_stage #(
       .CVA6Cfg   (CVA6Cfg),
+      .exception_t(exception_t),
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .fu_data_t(fu_data_t),
@@ -733,6 +743,7 @@ module cva6
   // ---------
   ex_stage #(
       .CVA6Cfg   (CVA6Cfg),
+      .exception_t(exception_t),
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .fu_data_t(fu_data_t),
@@ -858,6 +869,7 @@ module cva6
 
   commit_stage #(
       .CVA6Cfg(CVA6Cfg),
+      .exception_t(exception_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) commit_stage_i (
       .clk_i,
@@ -898,6 +910,7 @@ module cva6
   // ---------
   csr_regfile #(
       .CVA6Cfg       (CVA6Cfg),
+      .exception_t(exception_t),
       .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .AsidWidth     (CVA6Cfg.ASID_WIDTH),
@@ -967,6 +980,7 @@ module cva6
   if (PERF_COUNTER_EN) begin : gen_perf_counter
     perf_counters #(
         .CVA6Cfg (CVA6Cfg),
+        .exception_t(exception_t),
         .bp_resolve_t(bp_resolve_t),
         .scoreboard_entry_t(scoreboard_entry_t),
         .icache_dreq_t(icache_dreq_t),
@@ -1242,6 +1256,7 @@ module cva6
   if (CVA6Cfg.EnableAccelerator) begin : gen_accelerator
     acc_dispatcher #(
         .CVA6Cfg   (CVA6Cfg),
+        .exception_t(exception_t),
         .fu_data_t(fu_data_t),
         .scoreboard_entry_t(scoreboard_entry_t),
         .dcache_req_i_t(dcache_req_i_t),

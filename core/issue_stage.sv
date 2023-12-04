@@ -18,6 +18,7 @@ module issue_stage
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type exception_t = logic,
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
     parameter type fu_data_t = logic,
@@ -137,6 +138,7 @@ module issue_stage
   // ---------------------------------------------------------
   scoreboard #(
       .CVA6Cfg   (CVA6Cfg),
+      .exception_t(exception_t),
       .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .IsRVFI    (IsRVFI),

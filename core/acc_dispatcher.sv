@@ -18,6 +18,7 @@ module acc_dispatcher
   import riscv::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
+    parameter type exception_t = logic,
     parameter type                   fu_data_t  = logic,
     parameter type scoreboard_entry_t = logic,
     parameter type dcache_req_i_t = logic,

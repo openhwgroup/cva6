@@ -14,6 +14,7 @@
 
 module branch_unit #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type exception_t = logic,
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
     parameter type fu_data_t = logic
@@ -33,7 +34,7 @@ module branch_unit #(
     output bp_resolve_t resolved_branch_o,  // this is the actual address we are targeting
     output logic resolve_branch_o,  // to ID to clear that we resolved the branch and we can
                                     // accept new entries to the scoreboard
-    output ariane_pkg::exception_t branch_exception_o  // branch exception out
+    output exception_t branch_exception_o  // branch exception out
 );
   logic [CVA6Cfg.VLEN-1:0] target_address;
   logic [CVA6Cfg.VLEN-1:0] next_pc;

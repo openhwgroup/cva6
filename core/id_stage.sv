@@ -15,6 +15,7 @@
 
 module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type exception_t = logic,
     parameter type branchpredict_sbe_t = logic,
     parameter type irq_ctrl_t = logic,
     parameter type fetch_entry_t = logic,
@@ -83,6 +84,7 @@ module id_stage #(
   // ---------------------------------------------------------
   decoder #(
       .CVA6Cfg(CVA6Cfg),
+      .exception_t(exception_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t)
