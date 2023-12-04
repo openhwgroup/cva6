@@ -19,7 +19,7 @@
 
 module cva6_shared_tlb
   import ariane_pkg::*;
-  #(
+#(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int SHARED_TLB_DEPTH = 64,
     parameter int SHARED_TLB_WAYS = 2,
@@ -27,7 +27,7 @@ module cva6_shared_tlb
     parameter int unsigned ASID_LEN = 1,
     parameter int unsigned VPN_LEN = 1,
     parameter int unsigned PT_LEVELS = 1
-  ) (
+) (
     input logic clk_i,   // Clock
     input logic rst_ni,  // Asynchronous reset active low
     input logic flush_i,

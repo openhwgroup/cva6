@@ -26,8 +26,8 @@
 /* verilator lint_off WIDTH */
 
 module cva6_ptw
-    import ariane_pkg::*;
-    #(
+  import ariane_pkg::*;
+#(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int ASID_WIDTH = 1,
     parameter int unsigned VPN_LEN = 1,
@@ -36,8 +36,8 @@ module cva6_ptw
     input  logic clk_i,                  // Clock
     input  logic rst_ni,                 // Asynchronous reset active low
     input  logic flush_i,                // flush everything, we need to do this because
-                                        // actually everything we do is speculative at this stage
-                                        // e.g.: there could be a CSR instruction that changes everything
+                                         // actually everything we do is speculative at this stage
+                                         // e.g.: there could be a CSR instruction that changes everything
     output logic ptw_active_o,
     output logic walking_instr_o,        // set when walking for TLB
     output logic ptw_error_o,            // set when an error occurred
