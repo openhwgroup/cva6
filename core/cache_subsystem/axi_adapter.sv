@@ -55,7 +55,11 @@ module axi_adapter #(
       DATA_WIDTH / CVA6Cfg.AxiDataWidth
   ) : 1;
   localparam MAX_OUTSTANDING_AW = CVA6Cfg.MaxOutstandingStores;
-  localparam MAX_OUTSTANDING_AW_CNT_WIDTH = $clog2(MAX_OUTSTANDING_AW + 1) > 0 ? $clog2(MAX_OUTSTANDING_AW + 1) : 1;
+  localparam MAX_OUTSTANDING_AW_CNT_WIDTH = $clog2(
+      MAX_OUTSTANDING_AW + 1
+  ) > 0 ? $clog2(
+      MAX_OUTSTANDING_AW + 1
+  ) : 1;
 
   typedef logic [MAX_OUTSTANDING_AW_CNT_WIDTH-1:0] outstanding_aw_cnt_t;
 
@@ -369,8 +373,8 @@ module axi_adapter #(
               end
             end
           end
-        // if the request was not an atomic we can possibly issue
-        // other requests while waiting for the response
+          // if the request was not an atomic we can possibly issue
+          // other requests while waiting for the response
         end else begin
           if ((amo_q == ariane_pkg::AMO_NONE) && (outstanding_aw_cnt_q != MAX_OUTSTANDING_AW)) begin
             state_d = IDLE;

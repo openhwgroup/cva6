@@ -173,10 +173,10 @@ module scoreboard #(
       // check if this instruction was issued (e.g.: it could happen after a flush that there is still
       // something in the pipeline e.g. an incomplete memory operation)
       if (wt_valid_i[i] && mem_q[trans_id_i[i]].issued) begin
-        mem_n[trans_id_i[i]].sbe.valid = 1'b1;
+        mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
         mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
         // save the target address of a branch (needed for debug in commit stage)
-        if(CVA6Cfg.DebugEn) begin
+        if (CVA6Cfg.DebugEn) begin
           mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
         end
         if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i) begin
@@ -223,8 +223,9 @@ module scoreboard #(
     assign num_commit = commit_ack_i[0];
   end
 
-  assign issue_cnt_n = (flush_i) ? '0 : issue_cnt_q - {{BITS_ENTRIES-$clog2(CVA6Cfg.NrCommitPorts){1'b0}}, num_commit}
-                                                    + {{BITS_ENTRIES-1{1'b0}}, issue_en};
+  assign issue_cnt_n = (flush_i) ? '0 : issue_cnt_q - {{BITS_ENTRIES - $clog2(
+      CVA6Cfg.NrCommitPorts
+  ) {1'b0}}, num_commit} + {{BITS_ENTRIES - 1{1'b0}}, issue_en};
   assign commit_pointer_n[0] = (flush_i) ? '0 : commit_pointer_q[0] + num_commit;
   assign issue_pointer_n = (flush_i) ? '0 : issue_pointer_q + issue_en;
 
@@ -447,9 +448,9 @@ module scoreboard #(
     @(posedge clk_i) disable iff (!rst_ni) commit_ack_i[0] |-> commit_instr_o[0].valid)
   else $fatal(1, "Commit acknowledged but instruction is not valid");
   if (CVA6Cfg.NrCommitPorts == 2) begin : gen_two_commit_ports
-      assert property (
+    assert property (
         @(posedge clk_i) disable iff (!rst_ni) commit_ack_i[1] |-> commit_instr_o[1].valid)
-      else $fatal(1, "Commit acknowledged but instruction is not valid");
+    else $fatal(1, "Commit acknowledged but instruction is not valid");
   end
   // assert that we never give an issue ack signal if the instruction is not valid
   assert property (@(posedge clk_i) disable iff (!rst_ni) issue_ack_i |-> issue_instr_valid_o)

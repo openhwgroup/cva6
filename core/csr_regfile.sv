@@ -692,7 +692,7 @@ module csr_regfile
         if (CVA6Cfg.DebugEn) dscratch1_d = csr_wdata;
         else update_access_exception = 1'b1;
         // trigger module CSRs
-        riscv::CSR_TSELECT: update_access_exception = 1'b1 ;  // not implemented
+        riscv::CSR_TSELECT: update_access_exception = 1'b1;  // not implemented
         riscv::CSR_TDATA1: update_access_exception = 1'b1;  // not implemented
         riscv::CSR_TDATA2: update_access_exception = 1'b1;  // not implemented
         riscv::CSR_TDATA3: update_access_exception = 1'b1;  // not implemented
