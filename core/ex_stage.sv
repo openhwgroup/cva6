@@ -386,7 +386,7 @@ module ex_stage
     assign x_valid_o     = '0;
   end
 
-  if(CVA6Cfg.RVS) begin
+  if (CVA6Cfg.RVS) begin
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         current_instruction_is_sfence_vma <= 1'b0;
@@ -411,9 +411,9 @@ module ex_stage
       end
     end
   end else begin
-     assign current_instruction_is_sfence_vma = 1'b0;
-     assign asid_to_be_flushed                = '0;
-     assign vaddr_to_be_flushed               = '0;
+    assign current_instruction_is_sfence_vma = 1'b0;
+    assign asid_to_be_flushed                = '0;
+    assign vaddr_to_be_flushed               = '0;
   end
 
 endmodule

@@ -689,7 +689,11 @@ module axi_adapter_arbiter #(
     input  rsp_t                rsp_i
 );
 
-  localparam MAX_OUTSTANDING_CNT_WIDTH = $clog2(MAX_OUTSTANDING_REQ + 1) > 0 ? $clog2(MAX_OUTSTANDING_REQ + 1) : 1;
+  localparam MAX_OUTSTANDING_CNT_WIDTH = $clog2(
+      MAX_OUTSTANDING_REQ + 1
+  ) > 0 ? $clog2(
+      MAX_OUTSTANDING_REQ + 1
+  ) : 1;
 
   typedef logic [MAX_OUTSTANDING_CNT_WIDTH-1:0] outstanding_cnt_t;
 

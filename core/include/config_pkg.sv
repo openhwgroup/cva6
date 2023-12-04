@@ -71,8 +71,8 @@ package config_pkg;
     int unsigned                 NrRgprPorts;
     int unsigned                 NrWbPorts;
     bit                          EnableAccelerator;
-    bit                          RVS;    //Supervisor mode
-    bit                          RVU;    //User mode
+    bit                          RVS;                    //Supervisor mode
+    bit                          RVU;                    //User mode
     // Debug Module
     // address to which a hart should jump when it was requested to halt
     logic [63:0]                 HaltAddress;

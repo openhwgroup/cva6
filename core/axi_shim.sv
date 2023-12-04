@@ -84,36 +84,36 @@ module axi_shim #(
   logic [AddrIndex-1:0] wr_cnt_d, wr_cnt_q;
   logic wr_single_req, wr_cnt_done, wr_cnt_clr, wr_cnt_en;
 
-  assign wr_single_req       = (wr_blen_i == 0);
+  assign wr_single_req = (wr_blen_i == 0);
 
   // address
-  assign axi_req_o.aw.burst  = axi_pkg::BURST_INCR;  // Use BURST_INCR for AXI regular transaction
-  assign axi_req_o.aw.addr   = wr_addr_i[CVA6Cfg.AxiAddrWidth-1:0];
-  assign axi_req_o.aw.size   = wr_size_i;
-  assign axi_req_o.aw.len    = wr_blen_i;
-  assign axi_req_o.aw.id     = wr_id_i;
-  assign axi_req_o.aw.prot   = 3'b0;
+  assign axi_req_o.aw.burst = axi_pkg::BURST_INCR;  // Use BURST_INCR for AXI regular transaction
+  assign axi_req_o.aw.addr = wr_addr_i[CVA6Cfg.AxiAddrWidth-1:0];
+  assign axi_req_o.aw.size = wr_size_i;
+  assign axi_req_o.aw.len = wr_blen_i;
+  assign axi_req_o.aw.id = wr_id_i;
+  assign axi_req_o.aw.prot = 3'b0;
   assign axi_req_o.aw.region = 4'b0;
-  assign axi_req_o.aw.lock   = wr_lock_i;
-  assign axi_req_o.aw.cache  = axi_pkg::CACHE_MODIFIABLE;
-  assign axi_req_o.aw.qos    = 4'b0;
-  assign axi_req_o.aw.atop   = wr_atop_i;
-  assign axi_req_o.aw.user   = '0;
+  assign axi_req_o.aw.lock = wr_lock_i;
+  assign axi_req_o.aw.cache = axi_pkg::CACHE_MODIFIABLE;
+  assign axi_req_o.aw.qos = 4'b0;
+  assign axi_req_o.aw.atop = wr_atop_i;
+  assign axi_req_o.aw.user = '0;
 
   // data
-  assign axi_req_o.w.data    = wr_data_i[wr_cnt_q];
-  assign axi_req_o.w.user    = wr_user_i[wr_cnt_q];
-  assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
-  assign axi_req_o.w.last    = wr_cnt_done;
+  assign axi_req_o.w.data = wr_data_i[wr_cnt_q];
+  assign axi_req_o.w.user = wr_user_i[wr_cnt_q];
+  assign axi_req_o.w.strb = wr_be_i[wr_cnt_q];
+  assign axi_req_o.w.last = wr_cnt_done;
 
   // write response
-  assign wr_exokay_o         = (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY);
-  assign axi_req_o.b_ready   = wr_rdy_i;
-  assign wr_valid_o          = axi_resp_i.b_valid;
-  assign wr_id_o             = axi_resp_i.b.id;
+  assign wr_exokay_o = (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY);
+  assign axi_req_o.b_ready = wr_rdy_i;
+  assign wr_valid_o = axi_resp_i.b_valid;
+  assign wr_id_o = axi_resp_i.b.id;
 
   // tx counter
-  assign wr_cnt_done         = (wr_cnt_q == wr_blen_i);
+  assign wr_cnt_done = (wr_cnt_q == wr_blen_i);
   assign wr_cnt_d            = (wr_cnt_clr) ? '0 : (wr_cnt_en && CVA6Cfg.AxiBurstWriteEn) ? wr_cnt_q + 1 : wr_cnt_q;
 
   always_comb begin : p_axi_write_fsm
@@ -149,7 +149,7 @@ module axi_shim #(
               default: wr_state_d = IDLE;
             endcase
             // its a request for the whole cache line
-          end else if(CVA6Cfg.AxiBurstWriteEn) begin
+          end else if (CVA6Cfg.AxiBurstWriteEn) begin
             wr_cnt_en = axi_resp_i.w_ready;
 
             case ({
@@ -193,7 +193,7 @@ module axi_shim #(
       default: begin
         ///////////////////////////////////
         // ~> we need to wait for an aw_ready and there is at least one outstanding write
-        if(CVA6Cfg.AxiBurstWriteEn) begin
+        if (CVA6Cfg.AxiBurstWriteEn) begin
           if (wr_state_q == WAIT_LAST_W_READY_AW_READY) begin
             axi_req_o.w_valid  = 1'b1;
             axi_req_o.aw_valid = 1'b1;
@@ -227,12 +227,11 @@ module axi_shim #(
               end
               default: ;
             endcase
-          end
-          ///////////////////////////////////
-          // ~> all data has already been sent, we are only waiting for the aw_ready
+          end  ///////////////////////////////////
+               // ~> all data has already been sent, we are only waiting for the aw_ready
           else if (wr_state_q == WAIT_AW_READY_BURST) begin
             axi_req_o.aw_valid = 1'b1;
-	      
+
             if (axi_resp_i.aw_ready) begin
               wr_state_d = IDLE;
               wr_gnt_o   = 1'b1;

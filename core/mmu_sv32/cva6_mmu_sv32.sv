@@ -278,7 +278,9 @@ module cva6_mmu_sv32
         {riscv::PLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr
       };  // play through in case we disabled address translation
     else
-      icache_areq_o.fetch_paddr = {2'b00, icache_areq_i.fetch_vaddr[riscv::VLEN-1:0]};// play through in case we disabled address translation
+      icache_areq_o.fetch_paddr = {
+        2'b00, icache_areq_i.fetch_vaddr[riscv::VLEN-1:0]
+      };  // play through in case we disabled address translation
     // two potential exception sources:
     // 1. HPTW threw an exception -> signal with a page fault exception
     // 2. We got an access error because of insufficient permissions -> throw an access exception
