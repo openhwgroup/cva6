@@ -84,7 +84,7 @@ module perf_counters
     int_event = '{default: 0};
     fp_event = '{default: 0};
 
-    for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++)
+    for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) begin
       load_event[j] = commit_ack_i[j] & (commit_instr_i[j].fu == LOAD);
       store_event[j] = commit_ack_i[j] & (commit_instr_i[j].fu == STORE);
       branch_event[j] = commit_ack_i[j] & (commit_instr_i[j].fu == CTRL_FLOW);
