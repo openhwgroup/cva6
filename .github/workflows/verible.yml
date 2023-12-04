@@ -1,0 +1,23 @@
+# Copyright 2023 Thales DIS
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Verible
+on:
+  pull_request_target:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: chipsalliance/verible-formatter-action@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: 'core/**/*.{v,sv}'
