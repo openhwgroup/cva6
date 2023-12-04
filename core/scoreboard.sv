@@ -185,7 +185,7 @@ module scoreboard #(
         // write the exception back if it is valid
         if (ex_i[i].valid) mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
         // write the fflags back from the FPU (exception valid is never set), leave tval intact
-        else if(CVA6Cfg.FpPresent && mem_q[trans_id_i[i]].sbe.fu inside {ariane_pkg::FPU, ariane_pkg::FPU_VEC}) begin
+        else if(CVA6Cfg.FpPresent && (mem_q[trans_id_i[i]].sbe.fu == ariane_pkg::FPU || mem_q[trans_id_i[i]].sbe.fu == ariane_pkg::FPU_VEC)) begin
           mem_n[trans_id_i[i]].sbe.ex.cause = ex_i[i].cause;
         end
       end

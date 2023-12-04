@@ -136,8 +136,18 @@ module axi_shim #(
           axi_req_o.aw_valid = 1'b1;
           axi_req_o.w_valid  = 1'b1;
 
-          // its a single write
-          if (wr_single_req) begin
+          if (CVA6Cfg.AxiBurstWriteEn && !wr_single_req) begin
+            wr_cnt_en = axi_resp_i.w_ready;
+
+            case ({
+              axi_resp_i.aw_ready, axi_resp_i.w_ready
+            })
+              2'b11:   wr_state_d = WAIT_LAST_W_READY;
+              2'b01:   wr_state_d = WAIT_LAST_W_READY_AW_READY;
+              2'b10:   wr_state_d = WAIT_LAST_W_READY;
+              default: ;
+            endcase
+          end else if (wr_single_req) begin  // its a single write
             wr_cnt_clr = 1'b1;
             // single req can be granted here
             wr_gnt_o   = axi_resp_i.aw_ready & axi_resp_i.w_ready;
@@ -149,17 +159,6 @@ module axi_shim #(
               default: wr_state_d = IDLE;
             endcase
             // its a request for the whole cache line
-          end else if (CVA6Cfg.AxiBurstWriteEn) begin
-            wr_cnt_en = axi_resp_i.w_ready;
-
-            case ({
-              axi_resp_i.aw_ready, axi_resp_i.w_ready
-            })
-              2'b11:   wr_state_d = WAIT_LAST_W_READY;
-              2'b01:   wr_state_d = WAIT_LAST_W_READY_AW_READY;
-              2'b10:   wr_state_d = WAIT_LAST_W_READY;
-              default: ;
-            endcase
           end
         end
       end
@@ -178,15 +177,14 @@ module axi_shim #(
       WAIT_LAST_W_READY: begin
         axi_req_o.w_valid = 1'b1;
 
-        // this is the last write
-        if (wr_cnt_done) begin
+        if (CVA6Cfg.AxiBurstWriteEn && axi_resp_i.w_ready && !wr_cnt_done) begin
+          wr_cnt_en = 1'b1;
+        end else if (wr_cnt_done) begin  // this is the last write
           if (axi_resp_i.w_ready) begin
             wr_state_d = IDLE;
             wr_cnt_clr = 1'b1;
             wr_gnt_o   = 1'b1;
           end
-        end else if (CVA6Cfg.AxiBurstWriteEn && axi_resp_i.w_ready) begin
-          wr_cnt_en = 1'b1;
         end
       end
       ///////////////////////////////////
