@@ -86,7 +86,10 @@ module issue_read_operands
   logic stall;
   logic fu_busy;  // functional unit is busy
   riscv::xlen_t operand_a_regfile, operand_b_regfile;  // operands coming from regfile
-  rs3_len_t operand_c_regfile, operand_c_fpr, operand_c_gpr;  // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
+  rs3_len_t
+      operand_c_regfile,
+      operand_c_fpr,
+      operand_c_gpr;  // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
   // output flipflop (ID <-> EX)
   riscv::xlen_t operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
 
@@ -223,9 +226,9 @@ module issue_read_operands
 
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_rs3
-      assign imm_forward_rs3 = rs3_i;
+    assign imm_forward_rs3 = rs3_i;
   end else begin : gen_fp_rs3
-      assign imm_forward_rs3 = {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, rs3_i};
+    assign imm_forward_rs3 = {{riscv::XLEN - CVA6Cfg.FLen{1'b0}}, rs3_i};
   end
 
   // Forwarding/Output MUX
@@ -536,7 +539,7 @@ module issue_read_operands
   endgenerate
 
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_operand_c
-    assign operand_c_fpr = {{riscv::XLEN-CVA6Cfg.FLen{1'b0}}, fprdata[2]};
+    assign operand_c_fpr = {{riscv::XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[2]};
     assign operand_c_gpr = rdata[2];
   end else begin
     assign operand_c_fpr = fprdata[2];
@@ -548,7 +551,9 @@ module issue_read_operands
   assign operand_b_regfile = (CVA6Cfg.FpPresent && is_rs2_fpr(
       issue_instr_i.op
   )) ? {{riscv::XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[1];
-  assign operand_c_regfile = (CVA6Cfg.NrRgprPorts == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i.op)) ? operand_c_fpr : operand_c_gpr) : operand_c_fpr;
+  assign operand_c_regfile = (CVA6Cfg.NrRgprPorts == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(
+      issue_instr_i.op
+  )) ? operand_c_fpr : operand_c_gpr) : operand_c_fpr;
 
 
   // ----------------------

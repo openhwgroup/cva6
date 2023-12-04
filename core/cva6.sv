@@ -217,7 +217,8 @@ module cva6
     CVA6Cfg.CachedRegionLength,
     CVA6Cfg.MaxOutstandingStores,
     CVA6Cfg.DebugEn,
-    NonIdemPotenceEn
+    NonIdemPotenceEn,
+    CVA6Cfg.AxiBurstWriteEn
   };
 
 
@@ -1312,7 +1313,7 @@ module cva6
       else begin
         case (priv_lvl)
           riscv::PRIV_LVL_M: mode = "M";
-          riscv::PRIV_LVL_S: if(CVA6Cfg.RVS) mode = "S";
+          riscv::PRIV_LVL_S: if (CVA6Cfg.RVS) mode = "S";
           riscv::PRIV_LVL_U: mode = "U";
           default: ;  // Do nothing
         endcase

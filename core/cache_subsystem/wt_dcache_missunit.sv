@@ -245,10 +245,10 @@ module wt_dcache_missunit
 
   if (CVA6Cfg.RVA) begin
     if (riscv::IS_XLEN64) begin : gen_amo_64b_data
-      assign amo_data_a = {amo_req_i.operand_b[0 +: 32], amo_req_i.operand_b[0 +: 32]};
+      assign amo_data_a = {amo_req_i.operand_b[0+:32], amo_req_i.operand_b[0+:32]};
       assign amo_data_b = amo_req_i.operand_b;
     end else begin : gen_amo_32b_data
-      assign amo_data_a = amo_req_i.operand_b[0 +: 32];
+      assign amo_data_a = amo_req_i.operand_b[0+:32];
     end
   end
 
@@ -292,16 +292,16 @@ module wt_dcache_missunit
   end
 
   // outgoing memory requests (AMOs are always uncached)
-  assign mem_data_o.tid    = (CVA6Cfg.RVA && amo_sel) ? AmoTxId                : miss_id_i[miss_port_idx];
-  assign mem_data_o.nc     = (CVA6Cfg.RVA && amo_sel) ? 1'b1                   : miss_nc_i[miss_port_idx];
-  assign mem_data_o.way    = (CVA6Cfg.RVA && amo_sel) ? '0                     : repl_way;
-  assign mem_data_o.data   = (CVA6Cfg.RVA && amo_sel) ? amo_data               : miss_wdata_i[miss_port_idx];
-  assign mem_data_o.user   = (CVA6Cfg.RVA && amo_sel) ? amo_user               : miss_wuser_i[miss_port_idx];
+  assign mem_data_o.tid = (CVA6Cfg.RVA && amo_sel) ? AmoTxId : miss_id_i[miss_port_idx];
+  assign mem_data_o.nc = (CVA6Cfg.RVA && amo_sel) ? 1'b1 : miss_nc_i[miss_port_idx];
+  assign mem_data_o.way = (CVA6Cfg.RVA && amo_sel) ? '0 : repl_way;
+  assign mem_data_o.data = (CVA6Cfg.RVA && amo_sel) ? amo_data : miss_wdata_i[miss_port_idx];
+  assign mem_data_o.user = (CVA6Cfg.RVA && amo_sel) ? amo_user : miss_wuser_i[miss_port_idx];
   assign mem_data_o.size   = (CVA6Cfg.RVA && amo_sel) ? {1'b0, amo_req_i.size} : miss_size_i [miss_port_idx];
-  assign mem_data_o.amo_op = (CVA6Cfg.RVA && amo_sel) ? amo_req_i.amo_op       : AMO_NONE;
+  assign mem_data_o.amo_op = (CVA6Cfg.RVA && amo_sel) ? amo_req_i.amo_op : AMO_NONE;
 
   assign tmp_paddr         = (CVA6Cfg.RVA && amo_sel) ? amo_req_i.operand_a[riscv::PLEN-1:0] : miss_paddr_i[miss_port_idx];
-  assign mem_data_o.paddr  = paddrSizeAlign(tmp_paddr, mem_data_o.size);
+  assign mem_data_o.paddr = paddrSizeAlign(tmp_paddr, mem_data_o.size);
 
   ///////////////////////////////////////////////////////
   // back-off mechanism for LR/SC completion guarantee
@@ -358,19 +358,19 @@ module wt_dcache_missunit
           end
         end
         DCACHE_ATOMIC_ACK: begin
-          if(CVA6Cfg.RVA) begin
-              if (amo_req_q) begin
-                amo_ack = 1'b1;
-                // need to set SC backoff counter if
-                // this op failed
-                if (amo_req_i.amo_op == AMO_SC) begin
-                  if (amo_resp_o.result>0) begin
-                    sc_fail = 1'b1;
-                  end else begin
-                    sc_pass = 1'b1;
-                  end
+          if (CVA6Cfg.RVA) begin
+            if (amo_req_q) begin
+              amo_ack = 1'b1;
+              // need to set SC backoff counter if
+              // this op failed
+              if (amo_req_i.amo_op == AMO_SC) begin
+                if (amo_resp_o.result > 0) begin
+                  sc_fail = 1'b1;
+                end else begin
+                  sc_pass = 1'b1;
                 end
               end
+            end
           end
         end
         DCACHE_INV_REQ: begin
@@ -546,27 +546,27 @@ module wt_dcache_missunit
       //////////////////////////////////
       // send out amo op request
       AMO: begin
-        if(CVA6Cfg.RVA) begin
-           mem_data_o.rtype = DCACHE_ATOMIC_REQ;
-           amo_sel          = 1'b1;
-           // if this is an LR, we need to consult the backoff counter
-           if ((amo_req_i.amo_op != AMO_LR) || sc_backoff_over) begin
-             mem_data_req_o = 1'b1;
-             if (mem_data_ack_i) begin
-               state_d = AMO_WAIT;
-             end
-           end
+        if (CVA6Cfg.RVA) begin
+          mem_data_o.rtype = DCACHE_ATOMIC_REQ;
+          amo_sel          = 1'b1;
+          // if this is an LR, we need to consult the backoff counter
+          if ((amo_req_i.amo_op != AMO_LR) || sc_backoff_over) begin
+            mem_data_req_o = 1'b1;
+            if (mem_data_ack_i) begin
+              state_d = AMO_WAIT;
+            end
+          end
         end
       end
       //////////////////////////////////
       // block and wait until AMO OP returns
       AMO_WAIT: begin
-        if(CVA6Cfg.RVA) begin
-           amo_sel = 1'b1;
-           if (amo_ack) begin
-             amo_resp_o.ack = 1'b1;
-             state_d        = IDLE;
-           end
+        if (CVA6Cfg.RVA) begin
+          amo_sel = 1'b1;
+          if (amo_ack) begin
+            amo_resp_o.ack = 1'b1;
+            state_d        = IDLE;
+          end
         end
       end
       //////////////////////////////////

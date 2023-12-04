@@ -186,7 +186,9 @@ module load_unit
   logic not_commit_time;
   logic inflight_stores;
   logic stall_ni;
-  assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(CVA6Cfg, {{52-riscv::PPNW{1'b0}}, dtlb_ppn_i, 12'd0});
+  assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(
+      CVA6Cfg, {{52 - riscv::PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
+  );
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
   assign stall_ni = (inflight_stores || not_commit_time) && (paddr_ni && CVA6Cfg.NonIdemPotenceEn);
@@ -259,7 +261,7 @@ module load_unit
       // we are here because of a TLB miss, we need to abort the current request and give way for the
       // PTW walker to satisfy the TLB miss
       ABORT_TRANSACTION: begin
-        if(ariane_pkg::MMU_PRESENT) begin
+        if (ariane_pkg::MMU_PRESENT) begin
           req_port_o.kill_req = 1'b1;
           req_port_o.tag_valid = 1'b1;
           // wait until the WB is empty
@@ -268,7 +270,7 @@ module load_unit
       end
 
       ABORT_TRANSACTION_NI: begin
-        if(CVA6Cfg.NonIdemPotenceEn) begin
+        if (CVA6Cfg.NonIdemPotenceEn) begin
           req_port_o.kill_req = 1'b1;
           req_port_o.tag_valid = 1'b1;
           // re-do the request
@@ -283,7 +285,7 @@ module load_unit
       end
 
       WAIT_TRANSLATION: begin
-        if(ariane_pkg::MMU_PRESENT || CVA6Cfg.NonIdemPotenceEn) begin
+        if (ariane_pkg::MMU_PRESENT || CVA6Cfg.NonIdemPotenceEn) begin
           translation_req_o = 1'b1;
           // we've got a hit and we can continue with the request process
           if (dtlb_hit_i) state_d = WAIT_GNT;
