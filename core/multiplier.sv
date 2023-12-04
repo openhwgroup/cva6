@@ -116,12 +116,14 @@ module multiplier
   always_comb begin : p_selmux
     unique case (operator_q)
       MULH, MULHU, MULHSU: result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
-      MULW:                result_o = sext32(mult_result_q[31:0]);
       CLMUL:               result_o = clmul_q;
       CLMULH:              result_o = clmulr_q >> 1;
       CLMULR:              result_o = clmulr_q;
       // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
-      default:             result_o = mult_result_q[riscv::XLEN-1:0];  // including MUL
+      default: begin
+        if (operator_q == MULW && riscv::IS_XLEN64) result_o = sext32(mult_result_q[31:0]);
+        else result_o = mult_result_q[riscv::XLEN-1:0];  // including MUL
+      end
     endcase
   end
   if (ariane_pkg::BITMANIP) begin

@@ -205,7 +205,10 @@ module wt_axi_adapter
               2'b10:
               axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:4] = '1;  // word
               default:
-              axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:8] = '1;  // dword
+              if (riscv::IS_XLEN64)
+                axi_wr_be[0][dcache_data.paddr[$clog2(
+                    CVA6Cfg.AxiDataWidth/8
+                )-1:0]+:8] = '1;  // dword
             endcase
           end
           //////////////////////////////////////

@@ -89,7 +89,7 @@ module mult
     // we've go a new division operation
     if (mult_valid_i && fu_data_i.operation inside {DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW}) begin
       // is this a word operation?
-      if (fu_data_i.operation inside {DIVW, DIVUW, REMW, REMUW}) begin
+      if (riscv::IS_XLEN64 && (fu_data_i.operation inside {DIVW, DIVUW, REMW, REMUW})) begin
         // yes so check if we should sign extend this is only done for a signed operation
         if (div_signed) begin
           operand_a = sext32(fu_data_i.operand_a[31:0]);
@@ -134,7 +134,7 @@ module mult
 
   // Result multiplexer
   // if it was a signed word operation the bit will be set and the result will be sign extended accordingly
-  assign div_result = (word_op_q) ? sext32(result) : result;
+  assign div_result = (riscv::IS_XLEN64 && word_op_q) ? sext32(result) : result;
 
   // ---------------------
   // Registers
