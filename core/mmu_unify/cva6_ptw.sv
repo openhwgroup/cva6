@@ -81,7 +81,7 @@ module cva6_ptw
   riscv::xlen_t data_rdata_q;
 
   riscv::pte_cva6_t pte;
-  assign pte = riscv::pte_cva6_t'(data_rdata_q);
+  assign pte = riscv::pte_cva6_t'(data_rdata_q[riscv::PPNW+9:0]);
 
 
   enum logic [2:0] {
@@ -183,7 +183,9 @@ genvar x;
   );
 
 
-//   assign req_port_o.data_be = be_gen_32(req_port_o.address_index[1:0], req_port_o.data_size);
+   assign req_port_o.data_be = riscv::XLEN ==32?
+                               be_gen_32(req_port_o.address_index[1:0], req_port_o.data_size):
+                               be_gen(req_port_o.address_index[2:0], req_port_o.data_size);
 
   //-------------------
   // Page table walker
@@ -213,7 +215,7 @@ genvar x;
     // PTW memory interface
     tag_valid_n               = 1'b0;
     req_port_o.data_req       = 1'b0;
-    req_port_o.data_size      = 2'b10;
+    req_port_o.data_size      = 2'b{PT_LEVELS};
     req_port_o.data_we        = 1'b0;
     ptw_error_o               = 1'b0;
     ptw_access_exception_o    = 1'b0;
