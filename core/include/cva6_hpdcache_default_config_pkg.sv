@@ -85,7 +85,7 @@ package hpdcache_params_pkg;
   localparam int unsigned PARAM_MSHR_WAYS = (CVA6ConfigNrLoadBufEntries > 4) ? 4 : 2;
 
   //  HPDcache MSHR number of ways in the same SRAM word
-  localparam int unsigned PARAM_MSHR_WAYS_PER_RAM_WORD = PARAM_MSHR_WAYS > 1 ? 2 : 1;
+  localparam int unsigned PARAM_MSHR_WAYS_PER_RAM_WORD = (PARAM_MSHR_WAYS > 1) ? 2 : 1;
 
   //  HPDcache MSHR number of sets in the same SRAM
   localparam int unsigned PARAM_MSHR_SETS_PER_RAM = PARAM_MSHR_SETS;
@@ -97,6 +97,7 @@ package hpdcache_params_pkg;
 
   //  HPDcache MSHR whether uses FFs or SRAM
   localparam bit PARAM_MSHR_USE_REGBANK = (PARAM_MSHR_SETS * PARAM_MSHR_WAYS) <= 16;
+  localparam bit PARAM_REFILL_CORE_RSP_FEEDTHROUGH = 1'b1;
   //  }}}
 
   //  Definition of constants and types for the Write Buffer (WBUF)
@@ -112,6 +113,7 @@ package hpdcache_params_pkg;
 
   //  HPDcache Write-Buffer threshold counter width (in bits)
   localparam int unsigned PARAM_WBUF_TIMECNT_WIDTH = 3;
+  localparam bit PARAM_WBUF_SEND_FEEDTHROUGH = 1'b0;
   //  }}}
 
   //  Definition of constants and types for the Replay Table (RTAB)
