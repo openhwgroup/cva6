@@ -47,7 +47,7 @@ package hpdcache_params_pkg;
   localparam int unsigned PARAM_WORD_WIDTH = CVA6ConfigXlen;
 
   //  HPDcache cache-line width (bits)
-  localparam int unsigned PARAM_CL_WORDS = CVA6ConfigDcacheLineWidth/PARAM_WORD_WIDTH;
+  localparam int unsigned PARAM_CL_WORDS = CVA6ConfigDcacheLineWidth / PARAM_WORD_WIDTH;
 
   //  HPDcache number of words in the request data channels (request and response)
   localparam int unsigned PARAM_REQ_WORDS = 1;
