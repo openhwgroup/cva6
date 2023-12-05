@@ -58,6 +58,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   output rvfi_csr_t                    rvfi_csr_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
+  input  logic [2:0]                   irq_i,
   uvma_axi_intf                        axi_slave,
   uvmt_axi_switch_intf                 axi_switch_vif,
   uvmt_default_inputs_intf             default_inputs_vif
@@ -81,19 +82,19 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
      .rvfi_probes_csr_t    ( rvfi_probes_csr_t   ),
      .rvfi_probes_t        ( rvfi_probes_t       )
    ) i_cva6 (
-    .clk_i                ( clk_i                     ),
-    .rst_ni               ( rst_ni                    ),
-    .boot_addr_i          ( boot_addr_i               ),//Driving the boot_addr value from the core control agent
+    .clk_i                ( clk_i                        ),
+    .rst_ni               ( rst_ni                       ),
+    .boot_addr_i          ( boot_addr_i                  ),//Driving the boot_addr value from the core control agent
     .hart_id_i            ( default_inputs_vif.hart_id   ),
-    .irq_i                ( default_inputs_vif.irq       ),
-    .ipi_i                ( default_inputs_vif.ipi       ),
-    .time_irq_i           ( default_inputs_vif.time_irq  ),
+    .irq_i                ( {1'b0, irq_i[0]}             ),
+    .ipi_i                ( irq_i[1]                     ),
+    .time_irq_i           ( irq_i[2]                     ),
     .debug_req_i          ( default_inputs_vif.debug_req ),
     .rvfi_probes_o        ( rvfi_probes                  ),
-    .cvxif_req_o          ( cvxif_req                 ),
-    .cvxif_resp_i         ( cvxif_resp                ),
-    .noc_req_o            ( axi_ariane_req            ),
-    .noc_resp_i           ( axi_ariane_resp           )
+    .cvxif_req_o          ( cvxif_req                    ),
+    .cvxif_resp_i         ( cvxif_resp                   ),
+    .noc_req_o            ( axi_ariane_req               ),
+    .noc_resp_i           ( axi_ariane_resp              )
   );
 
   //----------------------------------------------------------------------------
