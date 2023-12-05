@@ -96,6 +96,8 @@ module issue_read_operands
     output logic [1:0] fpu_fmt_o,
     // FPU rm field from isntruction - TO_BE_COMPLETED
     output logic [2:0] fpu_rm_o,
+    // ALU output is valid - TO_BE_COMPLETED
+    output logic [SUPERSCALAR:0] alu2_valid_o,
     // CSR result is valid - TO_BE_COMPLETED
     output logic [SUPERSCALAR:0] csr_valid_o,
     // CVXIF result is valid - TO_BE_COMPLETED
@@ -140,6 +142,7 @@ module issue_read_operands
   logic [   SUPERSCALAR:0] fpu_valid_q;
   logic [             1:0] fpu_fmt_q;
   logic [             2:0] fpu_rm_q;
+  logic [   SUPERSCALAR:0] alu2_valid_q;
   logic [   SUPERSCALAR:0] lsu_valid_q;
   logic [   SUPERSCALAR:0] csr_valid_q;
   logic [   SUPERSCALAR:0] branch_valid_q;
@@ -171,6 +174,7 @@ module issue_read_operands
   assign fpu_valid_o = fpu_valid_q;
   assign fpu_fmt_o = fpu_fmt_q;
   assign fpu_rm_o = fpu_rm_q;
+  assign alu2_valid_o = alu2_valid_q;
   assign cvxif_valid_o = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
   assign cvxif_off_instr_o = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
   assign stall_issue_o = stall[0];
@@ -450,6 +454,7 @@ module issue_read_operands
       fpu_valid_q    <= '0;
       fpu_fmt_q      <= '0;
       fpu_rm_q       <= '0;
+      alu2_valid_q   <= '0;
       csr_valid_q    <= '0;
       branch_valid_q <= '0;
     end else begin
@@ -459,6 +464,7 @@ module issue_read_operands
       fpu_valid_q    <= '0;
       fpu_fmt_q      <= '0;
       fpu_rm_q       <= '0;
+      alu2_valid_q   <= '0;
       csr_valid_q    <= '0;
       branch_valid_q <= '0;
       // Exception pass through:
@@ -503,6 +509,7 @@ module issue_read_operands
         lsu_valid_q    <= '0;
         mult_valid_q   <= '0;
         fpu_valid_q    <= '0;
+        alu2_valid_q   <= '0;
         csr_valid_q    <= '0;
         branch_valid_q <= '0;
       end

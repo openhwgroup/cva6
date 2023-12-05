@@ -414,6 +414,8 @@ module cva6
   logic [CVA6Cfg.XLEN-1:0] fpu_result_ex_id;
   logic fpu_valid_ex_id;
   exception_t fpu_exception_ex_id;
+  // ALU2
+  logic [SUPERSCALAR:0] alu2_valid_id_ex;
   // Accelerator
   logic stall_acc_id;
   scoreboard_entry_t issue_instr_id_acc;
@@ -755,6 +757,8 @@ module cva6
       .fpu_valid_o           (fpu_valid_id_ex),
       .fpu_fmt_o             (fpu_fmt_id_ex),
       .fpu_rm_o              (fpu_rm_id_ex),
+      // ALU2
+      .alu2_valid_o          (alu2_valid_id_ex),
       // CSR
       .csr_valid_o           (csr_valid_id_ex),
       // CVXIF
@@ -864,6 +868,8 @@ module cva6
       .fpu_result_o            (fpu_result_ex_id),
       .fpu_valid_o             (fpu_valid_ex_id),
       .fpu_exception_o         (fpu_exception_ex_id),
+      // ALU2
+      .alu2_valid_i            (alu2_valid_id_ex),
       .amo_valid_commit_i      (amo_valid_commit),
       .amo_req_o               (amo_req),
       .amo_resp_i              (amo_resp),
