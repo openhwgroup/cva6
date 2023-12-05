@@ -39,7 +39,7 @@ package hpdcache_params_pkg;
   localparam int unsigned PARAM_PA_WIDTH = riscv::PLEN;
 
   //  HPDcache number of sets
-  localparam int unsigned PARAM_SETS = __BYTES_PER_WAY/__BYTES_PER_CACHELINE;
+  localparam int unsigned PARAM_SETS = __BYTES_PER_WAY / __BYTES_PER_CACHELINE;
 
   //  HPDcache number of ways
   localparam int unsigned PARAM_WAYS = CVA6ConfigDcacheSetAssoc;
