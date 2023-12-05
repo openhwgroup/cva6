@@ -54,7 +54,9 @@ package uvme_cva6_pkg;
    import uvmc_rvfi_scoreboard_pkg::*;
    import uvmc_rvfi_reference_model_pkg::*;
    import uvma_isacov_pkg::*;
+   import uvma_interrupt_pkg::*;
    import config_pkg::*;
+
    import "DPI-C" function void read_elf(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len);
    import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
@@ -102,6 +104,7 @@ package uvme_cva6_pkg;
    `include "uvme_isa_covg.sv"
    `include "uvme_illegal_instr_covg.sv"
    `include "uvme_exception_covg.sv"
+   `include "uvme_interrupt_covg.sv"
    `include "uvme_cva6_config_covg.sv"
    `include "uvme_axi_covg.sv"
    `include "uvme_axi_ext_covg.sv"
