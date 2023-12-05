@@ -73,7 +73,7 @@ package hpdcache_params_pkg;
   //  simultaneously from the cache.
   //  -  This limits the maximum width for the data channel from requesters
   //  -  This impacts the refill latency (more ACCESS_WORDS -> less REFILL LATENCY)
-  localparam int unsigned PARAM_ACCESS_WORDS = PARAM_CL_WORDS/2;
+  localparam int unsigned PARAM_ACCESS_WORDS = PARAM_CL_WORDS / 2;
   //  }}}
 
   //  Definition of constants and types for the Miss Status Holding Register (MSHR)
