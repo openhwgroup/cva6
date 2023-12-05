@@ -182,11 +182,20 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       (!dm_exception_addr_plusarg_valid) -> (dm_exception_addr == 'h0000_0000);
    }
 
+   constraint default_interrupt_cons {
+      if (interrupt_cfg.interrupt_plusarg_valid) {
+         interrupt_cfg.enable_interrupt == 'h1;
+      }
+      else
+         interrupt_cfg.enable_interrupt == 'h0;
+   }
+
    constraint agent_cfg_cons {
       if (enabled) {
-         clknrst_cfg.enabled   == 1;
-         isacov_cfg.enabled    == 1;
-         rvfi_cfg.enabled      == 1;
+         clknrst_cfg.enabled    == 1;
+         isacov_cfg.enabled     == 1;
+         rvfi_cfg.enabled       == 1;
+         interrupt_cfg.enabled  == 1;
       }
 
       isacov_cfg.seq_instr_group_x2_enabled == 1;
@@ -213,12 +222,13 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       }
 
       if (cov_model_enabled) {
-         cvxif_cfg.cov_model_enabled  == 1;
-         isacov_cfg.cov_model_enabled == 1;
-         axi_cfg.cov_model_enabled == 1;
+         cvxif_cfg.cov_model_enabled     == 1;
+         isacov_cfg.cov_model_enabled    == 1;
+         axi_cfg.cov_model_enabled       == 1;
+         interrupt_cfg.cov_model_enabled == 1;
          //env coverage models
-         cov_cvxif_model_enabled == 1;
-         cov_isa_model_enabled   == 1;
+         cov_cvxif_model_enabled         == 1;
+         cov_isa_model_enabled           == 1;
       }
 
    }
