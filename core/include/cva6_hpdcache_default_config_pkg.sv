@@ -27,8 +27,7 @@ package hpdcache_params_pkg;
 
   //  Definition of constants used only in this file
   //  {{{
-  localparam int unsigned __BYTES_PER_WAY =
-      CVA6ConfigDcacheByteSize/CVA6ConfigDcacheSetAssoc;
+  localparam int unsigned __BYTES_PER_WAY = CVA6ConfigDcacheByteSize / CVA6ConfigDcacheSetAssoc;
 
   localparam int unsigned __BYTES_PER_CACHELINE =
       CVA6ConfigDcacheLineWidth/8;
