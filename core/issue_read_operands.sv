@@ -122,7 +122,7 @@ module issue_read_operands
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts >> SUPERSCALAR;
 
   typedef struct packed {
-    logic none, load, store, alu, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel;
+    logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel;
   } fus_busy_t;
 
   logic [SUPERSCALAR:0] stall;
@@ -204,6 +204,7 @@ module issue_read_operands
     if (CVA6Cfg.FpPresent && !fpu_ready_i) begin
       fus_busy[0].fpu = 1'b1;
       fus_busy[0].fpu_vec = 1'b1;
+      if (SUPERSCALAR) fus_busy[0].alu2 = 1'b1;
     end
 
     if (!lsu_ready_i) begin
@@ -242,7 +243,20 @@ module issue_read_operands
             end
           end
         end
-        ALU, CSR: begin
+        ALU: begin
+          if (SUPERSCALAR && !fus_busy[0].alu2) begin
+            fus_busy[1].alu2 = 1'b1;
+            // TODO is there a minimum float execution time?
+            // If so we could issue FPU & ALU2 the same cycle
+            fus_busy[1].fpu = 1'b1;
+            fus_busy[1].fpu_vec = 1'b1;
+          end else begin
+            fus_busy[1].alu = 1'b1;
+            fus_busy[1].ctrl_flow = 1'b1;
+            fus_busy[1].csr = 1'b1;
+          end
+        end
+        CSR: begin
           fus_busy[1].alu = 1'b1;
           fus_busy[1].ctrl_flow = 1'b1;
           fus_busy[1].csr = 1'b1;
@@ -267,7 +281,13 @@ module issue_read_operands
     always_comb begin
       unique case (issue_instr_i[i].fu)
         NONE: fu_busy[i] = fus_busy[i].none;
-        ALU: fu_busy[i] = fus_busy[i].alu;
+        ALU: begin
+          if (SUPERSCALAR && !fus_busy[i].alu2) begin
+            fu_busy[i] = fus_busy[i].alu2;
+          end else begin
+            fu_busy[i] = fus_busy[i].alu;
+          end
+        end
         CTRL_FLOW: fu_busy[i] = fus_busy[i].ctrl_flow;
         CSR: fu_busy[i] = fus_busy[i].csr;
         MULT: fu_busy[i] = fus_busy[i].mult;
@@ -474,7 +494,11 @@ module issue_read_operands
         if (!issue_instr_i[i].ex.valid && issue_instr_valid_i[i] && issue_ack_o[i]) begin
           case (issue_instr_i[i].fu)
             ALU: begin
-              alu_valid_q[i] <= 1'b1;
+              if (SUPERSCALAR && !fus_busy[i].alu2) begin
+                alu2_valid_q[i] <= 1'b1;
+              end else begin
+                alu_valid_q[i] <= 1'b1;
+              end
             end
             CTRL_FLOW: begin
               branch_valid_q[i] <= 1'b1;
