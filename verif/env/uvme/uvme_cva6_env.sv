@@ -47,6 +47,7 @@ class uvme_cva6_env_c extends uvm_env;
    uvma_cva6_core_cntrl_agent_c core_cntrl_agent;
    uvma_rvfi_agent_c#(ILEN,XLEN)      rvfi_agent;
    uvma_isacov_agent_c#(ILEN,XLEN)    isacov_agent;
+   uvma_interrupt_agent_c    interrupt_agent;
 
    // Handle to agent switch interface
    virtual uvmt_axi_switch_intf  axi_switch_vif;
@@ -258,6 +259,8 @@ function void uvme_cva6_env_c::assign_cfg();
    uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*rvfi_scoreboard", "cfg", cfg);
    uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "reference_model", "cfg", cfg);
 
+   uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
+
 endfunction: assign_cfg
 
 
@@ -267,6 +270,7 @@ function void uvme_cva6_env_c::assign_cntxt();
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c)::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
+   uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
 
 endfunction: assign_cntxt
 
@@ -279,6 +283,7 @@ function void uvme_cva6_env_c::create_agents();
    core_cntrl_agent = uvma_cva6_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
    rvfi_agent    = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
    isacov_agent  = uvma_isacov_agent_c#(ILEN,XLEN)::type_id::create("isacov_agent", this);
+   interrupt_agent  = uvma_interrupt_agent_c::type_id::create("interrupt_agent", this);
 
 endfunction: create_agents
 
@@ -358,6 +363,7 @@ function void uvme_cva6_env_c::assemble_vsequencer();
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
    vsequencer.cvxif_vsequencer    = cvxif_agent.vsequencer;
    vsequencer.axi_vsequencer      = axi_agent.vsequencer;
+   vsequencer.interrupt_sequencer      = interrupt_agent.sequencer;
 
 endfunction: assemble_vsequencer
 
@@ -379,15 +385,23 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
             axi_vseq.start(axi_agent.vsequencer);
          end
       end
+
+      begin
+         if(cfg.interrupt_cfg.is_active == UVM_ACTIVE) begin
+            uvma_interrupt_seq_c  interrupt_seq;
+            interrupt_seq = uvma_interrupt_seq_c::type_id::create("interrupt_seq");
+            interrupt_seq.start(interrupt_agent.sequencer);
+         end
+      end
    join_none
 endtask
 
 function void uvme_cva6_env_c::connect_coverage_model();
 
-   if (cfg.cov_cvxif_model_enabled) begin
+   if (cfg.cvxif_cfg.cov_model_enabled) begin
       cvxif_agent.monitor.req_ap.connect(cov_model.cvxif_covg.req_item_fifo.analysis_export);
    end
-   if (cfg.cov_isa_model_enabled) begin
+   if (cfg.isacov_cfg.cov_model_enabled) begin
       isacov_agent.monitor.ap.connect(cov_model.isa_covg.mon_trn_fifo.analysis_export);
       isacov_agent.monitor.ap.connect(cov_model.illegal_covg.mon_trn_fifo.analysis_export);
       isacov_agent.monitor.ap.connect(cov_model.exception_covg.mon_trn_fifo.analysis_export);
@@ -406,6 +420,10 @@ function void uvme_cva6_env_c::connect_coverage_model();
       axi_agent.monitor.m_axi_superset_read_rsp_packets_collected . connect(cov_model.axi_ext_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
       axi_agent.monitor.m_axi_superset_read_req_packets_collected .connect(cov_model.axi_ext_covg.uvme_axi_cov_ar_req_fifo.analysis_export);
       axi_agent.monitor.m_axi_superset_write_req_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
+   end
+
+   if(cfg.interrupt_cfg.cov_model_enabled) begin
+      isacov_agent.monitor.ap.connect(cov_model.interrupt_covg.mon_trn_fifo.analysis_export);
    end
 
 endfunction: connect_coverage_model

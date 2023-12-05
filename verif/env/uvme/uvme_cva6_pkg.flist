@@ -22,6 +22,7 @@
 +incdir+${CVA6_UVME_PATH}/cov
 +incdir+${CVA6_UVME_PATH}/vseq
 +incdir+${CVA6_UVME_PATH}/cvxif_vseq
++incdir+${CVA6_UVME_PATH}/uvma_interrupt
 
 // Files
 ${CVA6_UVME_PATH}/uvme_cva6_pkg.sv

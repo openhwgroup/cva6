@@ -37,6 +37,7 @@ class uvme_cva6_cov_model_c extends uvm_component;
    uvme_exception_cov_model_c        exception_covg;
    uvme_axi_covg_c                   axi_covg;
    uvme_axi_ext_covg_c               axi_ext_covg;
+   uvme_interrupt_covg_c             interrupt_covg;
    
    //
    uvm_analysis_export#(uvma_clknrst_mon_trn_c)  reset_export;
@@ -101,12 +102,13 @@ function void uvme_cva6_cov_model_c::build_phase(uvm_phase phase);
       `uvm_fatal("CNTXT", "Context handle is null")
    end
 
-   if (cfg.cov_cvxif_model_enabled) begin
+   if (cfg.cvxif_cfg.cov_model_enabled) begin
       cvxif_covg = uvme_cvxif_covg_c::type_id::create("cvxif_covg", this);
       uvm_config_db#(uvme_cva6_cfg_c)::set(this, "cvxif_covg", "cfg", cfg);
+      uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "cvxif_covg", "cntxt", cntxt);
    end
 
-   if (cfg.cov_isa_model_enabled) begin
+   if (cfg.isacov_cfg.cov_model_enabled) begin
       isa_covg = uvme_isa_cov_model_c::type_id::create("isa_covg", this);
       illegal_covg = uvme_illegal_instr_cov_model_c::type_id::create("illegal_covg", this);
       exception_covg = uvme_exception_cov_model_c::type_id::create("exception_covg", this);
@@ -114,8 +116,6 @@ function void uvme_cva6_cov_model_c::build_phase(uvm_phase phase);
       uvm_config_db#(uvme_cva6_cfg_c)::set(this, "illegal_covg", "cfg", cfg);
       uvm_config_db#(uvme_cva6_cfg_c)::set(this, "exception_covg", "cfg", cfg);
    end
-
-   uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "cvxif_covg", "cntxt", cntxt);
    
    config_covg = uvme_cva6_config_covg_c::type_id::create("config_covg", this);
    uvm_config_db#(uvme_cva6_cfg_c)::set(this, "config_covg", "cfg", cfg);
@@ -128,6 +128,12 @@ function void uvme_cva6_cov_model_c::build_phase(uvm_phase phase);
       uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "axi_covg", "cntxt", cntxt);
       uvm_config_db#(uvme_cva6_cfg_c)::set(this, "axi_ext_covg", "cfg", cfg);
       uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "axi_ext_covg", "cntxt", cntxt);
+   end
+
+   if(cfg.interrupt_cfg.cov_model_enabled) begin
+      interrupt_covg   = uvme_interrupt_covg_c::type_id::create("interrupt_covg", this);
+      uvm_config_db#(uvme_cva6_cfg_c)::set(this, "interrupt_covg", "cfg", cfg);
+      uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "interrupt_covg", "cntxt", cntxt);
    end
 
 endfunction : build_phase
