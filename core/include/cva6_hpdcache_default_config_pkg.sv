@@ -96,7 +96,7 @@ package hpdcache_params_pkg;
   localparam bit PARAM_MSHR_RAM_WBYTEENABLE = 1'b1;
 
   //  HPDcache MSHR whether uses FFs or SRAM
-  localparam bit PARAM_MSHR_USE_REGBANK = (PARAM_MSHR_SETS*PARAM_MSHR_WAYS) <= 16;
+  localparam bit PARAM_MSHR_USE_REGBANK = (PARAM_MSHR_SETS * PARAM_MSHR_WAYS) <= 16;
   localparam bit PARAM_REFILL_CORE_RSP_FEEDTHROUGH = 1'b1;
   //  }}}
 
