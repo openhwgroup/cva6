@@ -201,7 +201,7 @@ module decoder
                   if (instr.instr[31:25] == 7'b1001) begin
                     // check privilege level, SFENCE.VMA can only be executed in M/S mode
                     // otherwise decode an illegal instruction
-                    illegal_instr    = (((CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_M) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
+                    illegal_instr    = (((CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S) || ((!CVA6Cfg.RVS && !CVA6Cfg.RVU) || priv_lvl_i == riscv::PRIV_LVL_M)) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
                     instruction_o.op = ariane_pkg::SFENCE_VMA;
                     // check TVM flag and intercept SFENCE.VMA call if necessary
                     if (CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S && tvm_i)
@@ -1323,12 +1323,13 @@ module decoder
         // this exception is valid
         instruction_o.ex.valid = 1'b1;
         // depending on the privilege mode, set the appropriate cause
-        case (priv_lvl_i)
-          riscv::PRIV_LVL_M: instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
-          riscv::PRIV_LVL_S: if (CVA6Cfg.RVS) instruction_o.ex.cause = riscv::ENV_CALL_SMODE;
-          riscv::PRIV_LVL_U: if (CVA6Cfg.RVU) instruction_o.ex.cause = riscv::ENV_CALL_UMODE;
-          default: ;  // this should not happen
-        endcase
+        if (priv_lvl_i == riscv::PRIV_LVL_M) begin
+          instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
+        end else if (priv_lvl_i == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
+          instruction_o.ex.cause = riscv::ENV_CALL_SMODE;
+        end else if (priv_lvl_i == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
+          instruction_o.ex.cause = riscv::ENV_CALL_UMODE;
+        end
       end else if (ebreak) begin
         // this exception is valid
         instruction_o.ex.valid = 1'b1;

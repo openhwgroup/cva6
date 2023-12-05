@@ -147,13 +147,15 @@ module issue_read_operands
     unique case (issue_instr_i.fu)
       NONE: fu_busy = 1'b0;
       ALU, CTRL_FLOW, CSR, MULT: fu_busy = ~flu_ready_i;
-      FPU, FPU_VEC:
-      if (CVA6Cfg.FpPresent) begin
-        fu_busy = ~fpu_ready_i;
-      end else fu_busy = 1'b0;
       LOAD, STORE: fu_busy = ~lsu_ready_i;
       CVXIF: fu_busy = ~cvxif_ready_i;
-      default: fu_busy = 1'b0;
+      default: begin
+        if (CVA6Cfg.FpPresent && (issue_instr_i.fu == FPU || issue_instr_i.fu == FPU_VEC)) begin
+          fu_busy = ~fpu_ready_i;
+        end else begin
+          fu_busy = 1'b0;
+        end
+      end
     endcase
   end
 
@@ -318,27 +320,23 @@ module issue_read_operands
           MULT: begin
             mult_valid_q <= 1'b1;
           end
-          FPU: begin
-            if (CVA6Cfg.FpPresent) begin
-              fpu_valid_q <= 1'b1;
-              fpu_fmt_q   <= orig_instr.rftype.fmt;  // fmt bits from instruction
-              fpu_rm_q    <= orig_instr.rftype.rm;  // rm bits from instruction
-            end
-          end
-          FPU_VEC: begin
-            if (CVA6Cfg.FpPresent) begin
-              fpu_valid_q <= 1'b1;
-              fpu_fmt_q   <= orig_instr.rvftype.vfmt;  // vfmt bits from instruction
-              fpu_rm_q    <= {2'b0, orig_instr.rvftype.repl};  // repl bit from instruction
-            end
-          end
           LOAD, STORE: begin
             lsu_valid_q <= 1'b1;
           end
           CSR: begin
             csr_valid_q <= 1'b1;
           end
-          default: ;
+          default: begin
+            if (issue_instr_i.fu == FPU && CVA6Cfg.FpPresent) begin
+              fpu_valid_q <= 1'b1;
+              fpu_fmt_q   <= orig_instr.rftype.fmt;  // fmt bits from instruction
+              fpu_rm_q    <= orig_instr.rftype.rm;  // rm bits from instruction
+            end else if (issue_instr_i.fu == FPU_VEC && CVA6Cfg.FpPresent) begin
+              fpu_valid_q <= 1'b1;
+              fpu_fmt_q   <= orig_instr.rvftype.vfmt;  // vfmt bits from instruction
+              fpu_rm_q    <= {2'b0, orig_instr.rvftype.repl};  // repl bit from instruction
+            end
+          end
         endcase
       end
       // if we got a flush request, de-assert the valid flag, otherwise we will start this
