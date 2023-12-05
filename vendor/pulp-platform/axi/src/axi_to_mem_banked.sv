@@ -150,7 +150,7 @@ module axi_to_mem_banked #(
     .NoMstPorts  ( 32'd2         ),
     .MaxTrans    ( MemLatency+2  ), // allow multiple Ax vectors to not starve W channel
     .AxiLookBits ( 32'd1         ), // select is fixed, do not need it
-    .UniqueIds   ( 1'b0          ),
+    .UniqueIds   ( 1'b1          ), // Can be set as ports are statically selected -> reduces HW
     .SpillAw     ( 1'b1          ),
     .SpillW      ( 1'b1          ),
     .SpillB      ( 1'b1          ),

@@ -12,33 +12,58 @@
 // Authors:
 // - Andreas Kurth <akurth@iis.ee.ethz.ch>
 // - Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+// - Thomas Benz <tbenz@iis.ee.ethz.ch>
 // - Wolfgang Roenninger <wroennin@iis.ee.ethz.ch>
 // - Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
+// - Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 // - Matheus Cavalcante <matheusd@iis.ee.ethz.ch>
 
 //! AXI Package
 /// Contains all necessary type definitions, constants, and generally useful functions.
 package axi_pkg;
-  /// AXI Transaction Burst Type.
-  typedef logic [1:0] burst_t;
+    /// AXI Transaction Burst Width.
+  parameter int unsigned BurstWidth  = 32'd2;
+  /// AXI Transaction Response Width.
+  parameter int unsigned RespWidth   = 32'd2;
+  /// AXI Transaction Cacheability Width.
+  parameter int unsigned CacheWidth  = 32'd4;
+  /// AXI Transaction Protection Width.
+  parameter int unsigned ProtWidth   = 32'd3;
+  /// AXI Transaction Quality of Service Width.
+  parameter int unsigned QosWidth    = 32'd4;
+  /// AXI Transaction Region Width.
+  parameter int unsigned RegionWidth = 32'd4;
+  /// AXI Transaction Length Width.
+  parameter int unsigned LenWidth    = 32'd8;
+  /// AXI Transaction Size Width.
+  parameter int unsigned SizeWidth   = 32'd3;
+  /// AXI Lock Width.
+  parameter int unsigned LockWidth   = 32'd1;
+  /// AXI5 Atomic Operation Width.
+  parameter int unsigned AtopWidth   = 32'd6;
+  /// AXI5 Non-Secure Address Identifier.
+  parameter int unsigned NsaidWidth  = 32'd4;
+
+  /// AXI Transaction Burst Width.
+  typedef logic [1:0]  burst_t;
   /// AXI Transaction Response Type.
-  typedef logic [1:0] resp_t;
+  typedef logic [1:0]   resp_t;
   /// AXI Transaction Cacheability Type.
-  typedef logic [3:0] cache_t;
+  typedef logic [3:0]  cache_t;
   /// AXI Transaction Protection Type.
-  typedef logic [2:0] prot_t;
+  typedef logic [2:0]   prot_t;
   /// AXI Transaction Quality of Service Type.
-  typedef logic [3:0] qos_t;
+  typedef logic [3:0]    qos_t;
   /// AXI Transaction Region Type.
   typedef logic [3:0] region_t;
   /// AXI Transaction Length Type.
-  typedef logic [7:0] len_t;
+  typedef logic [7:0]    len_t;
   /// AXI Transaction Size Type.
-  typedef logic [2:0] size_t;
+  typedef logic [2:0]   size_t;
   /// AXI5 Atomic Operation Type.
-  typedef logic [5:0] atop_t; // atomic operations
+  typedef logic [5:0]   atop_t; // atomic operations
   /// AXI5 Non-Secure Address Identifier.
-  typedef logic [3:0] nsaid_t;
+  typedef logic [3:0]  nsaid_t;
 
   /// In a fixed burst:
   /// - The address is the same for every transfer in the burst.
@@ -175,7 +200,7 @@ package axi_pkg;
   beat_lower_byte(largest_addr_t addr, size_t size, len_t len, burst_t burst,
       shortint unsigned strobe_width, shortint unsigned i_beat);
     largest_addr_t _addr = beat_addr(addr, size, len, burst, i_beat);
-    return _addr - (_addr / strobe_width) * strobe_width;
+    return shortint'(_addr - (_addr / strobe_width) * strobe_width);
   endfunction
 
   /// Index of highest byte in beat (see A3-51).
@@ -288,6 +313,65 @@ package axi_pkg;
         return resp_a;
       end
     endcase
+  endfunction
+
+  /// AW Width: Returns the width of the AW channel payload
+  function automatic int unsigned aw_width(int unsigned addr_width, int unsigned id_width,
+                                           int unsigned user_width );
+    // Sum the individual bit widths of the signals
+    return (id_width + addr_width + LenWidth + SizeWidth + BurstWidth + LockWidth + CacheWidth +
+            ProtWidth + QosWidth + RegionWidth + AtopWidth + user_width );
+  endfunction
+
+  /// W Width: Returns the width of the W channel payload
+  function automatic int unsigned w_width(int unsigned data_width, int unsigned user_width );
+    // Sum the individual bit widths of the signals
+    return (data_width + data_width / 32'd8 + 32'd1 + user_width);
+    //                   ^- StrobeWidth       ^- LastWidth
+  endfunction
+
+  /// B Width: Returns the width of the B channel payload
+  function automatic int unsigned b_width(int unsigned id_width, int unsigned user_width );
+    // Sum the individual bit widths of the signals
+    return (id_width + RespWidth + user_width);
+  endfunction
+
+  /// AR Width: Returns the width of the AR channel payload
+  function automatic int unsigned ar_width(int unsigned addr_width, int unsigned id_width,
+                                           int unsigned user_width );
+    // Sum the individual bit widths of the signals
+    return (id_width + addr_width + LenWidth + SizeWidth + BurstWidth + LockWidth + CacheWidth +
+            ProtWidth + QosWidth + RegionWidth + user_width );
+  endfunction
+
+  /// R Width: Returns the width of the R channel payload
+  function automatic int unsigned r_width(int unsigned data_width, int unsigned id_width,
+                                          int unsigned user_width );
+    // Sum the individual bit widths of the signals
+    return (id_width + data_width + RespWidth + 32'd1 + user_width);
+    //                                          ^- LastWidth
+  endfunction
+
+  /// Request Width: Returns the width of the request channel
+  function automatic int unsigned req_width(int unsigned addr_width,    int unsigned data_width,
+                                            int unsigned id_width,      int unsigned aw_user_width,
+                                            int unsigned ar_user_width, int unsigned w_user_width   );
+    // Sum the individual bit widths of the signals and their handshakes
+    //                                                      v- valids
+    return (aw_width(addr_width, id_width, aw_user_width) + 32'd1 +
+            w_width(data_width, w_user_width)             + 32'd1 +
+            ar_width(addr_width, id_width, ar_user_width) + 32'd1 + 32'd1 + 32'd1 );
+    //                                                              ^- R,   ^- B ready
+  endfunction
+
+  /// Response Width: Returns the width of the response channel
+  function automatic int unsigned rsp_width(int unsigned data_width,   int unsigned id_width,
+                                            int unsigned r_user_width, int unsigned b_user_width );
+    // Sum the individual bit widths of the signals and their handshakes
+    //                                                    v- valids
+    return (r_width(data_width, id_width, r_user_width) + 32'd1 +
+            b_width(id_width, b_user_width)             + 32'd1 + 32'd1 + 32'd1 + 32'd1);
+    //                                                            ^- AW,  ^- AR,  ^- W ready
   endfunction
 
   // ATOP[5:0]
@@ -447,4 +531,5 @@ package axi_pkg;
     logic [31:0] start_addr;
     logic [31:0] end_addr;
   } xbar_rule_32_t;
+
 endpackage

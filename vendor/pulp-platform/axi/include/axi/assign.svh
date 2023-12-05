@@ -652,4 +652,46 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Macros instantiating signal highlighter from common verification
+// https://github.com/pulp-platform/common_verification.git
+// `AXI_HIGHLIGHT(__name, __aw_t, __w_t, __b_t, __ar_t, __r_t, __req, __resp)
+`define AXI_HIGHLIGHT(__name, __aw_t, __w_t, __b_t, __ar_t, __r_t, __req, __resp) \
+  signal_highlighter #(                                                           \
+    .T ( __aw_t )                                                                 \
+  ) i_signal_highlighter_``__name``_aw (                                          \
+    .ready_i ( __resp.aw_ready ),                                                 \
+    .valid_i ( __req.aw_valid  ),                                                 \
+    .data_i  ( __req.aw        )                                                  \
+  );                                                                              \
+  signal_highlighter #(                                                           \
+    .T ( __w_t )                                                                  \
+  ) i_signal_highlighter_``__name``_w (                                           \
+    .ready_i ( __resp.w_ready ),                                                  \
+    .valid_i ( __req.w_valid  ),                                                  \
+    .data_i  ( __req.w        )                                                   \
+  );                                                                              \
+  signal_highlighter #(                                                           \
+    .T ( __b_t )                                                                  \
+  ) i_signal_highlighter_``__name``_b (                                           \
+    .ready_i ( __req.b_ready  ),                                                  \
+    .valid_i ( __resp.b_valid ),                                                  \
+    .data_i  ( __resp.b       )                                                   \
+  );                                                                              \
+  signal_highlighter #(                                                           \
+    .T ( __ar_t )                                                                 \
+  ) i_signal_highlighter_``__name``_ar (                                          \
+    .ready_i ( __resp.ar_ready ),                                                 \
+    .valid_i ( __req.ar_valid  ),                                                 \
+    .data_i  ( __req.ar        )                                                  \
+  );                                                                              \
+  signal_highlighter #(                                                           \
+    .T ( __r_t )                                                                  \
+  ) i_signal_highlighter_``__name``_r (                                           \
+    .ready_i ( __req.r_ready  ),                                                  \
+    .valid_i ( __resp.r_valid ),                                                  \
+    .data_i  ( __resp.r       )                                                   \
+  );
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 `endif

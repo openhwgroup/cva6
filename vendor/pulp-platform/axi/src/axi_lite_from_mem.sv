@@ -10,6 +10,7 @@
 //
 // Authors:
 // - Wolfgang Roenninger <wroennin@iis.ee.ethz.ch>
+// - Nicole Narr <narrn@ethz.ch>
 
 /// Protocol adapter which translates memory requests to the AXI4-Lite protocol.
 ///

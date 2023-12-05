@@ -47,6 +47,8 @@ module axi_to_mem_interleaved #(
   input  logic                           clk_i,
   /// Asynchronous reset, active low.
   input  logic                           rst_ni,
+  /// Testmode enable
+  input  logic                           test_i,
   /// The unit is busy handling an AXI4+ATOP request.
   output logic                           busy_o,
   /// AXI4+ATOP slave port, request input.
@@ -94,27 +96,26 @@ module axi_to_mem_interleaved #(
   mem_data_t      [NumBanks-1:0]  r_mem_rdata,  w_mem_rdata;
 
   // split AXI bus in read and write
-  always_comb begin : proc_axi_rw_split
-    axi_resp_o.r          = r_axi_resp.r;
-    axi_resp_o.r_valid    = r_axi_resp.r_valid;
-    axi_resp_o.ar_ready   = r_axi_resp.ar_ready;
-    axi_resp_o.b          = w_axi_resp.b;
-    axi_resp_o.b_valid    = w_axi_resp.b_valid;
-    axi_resp_o.w_ready    = w_axi_resp.w_ready;
-    axi_resp_o.aw_ready   = w_axi_resp.aw_ready;
-
-    w_axi_req             = '0;
-    w_axi_req.aw          = axi_req_i.aw;
-    w_axi_req.aw_valid    = axi_req_i.aw_valid;
-    w_axi_req.w           = axi_req_i.w;
-    w_axi_req.w_valid     = axi_req_i.w_valid;
-    w_axi_req.b_ready     = axi_req_i.b_ready;
-
-    r_axi_req             = '0;
-    r_axi_req.ar          = axi_req_i.ar;
-    r_axi_req.ar_valid    = axi_req_i.ar_valid;
-    r_axi_req.r_ready     = axi_req_i.r_ready;
-  end
+  axi_demux_simple #(
+    .AxiIdWidth  ( IdWidth    ),
+    .AtopSupport ( 1'b1       ),
+    .axi_req_t   ( axi_req_t  ),
+    .axi_resp_t  ( axi_resp_t ),
+    .NoMstPorts  ( 2          ),
+    .MaxTrans    ( BufDepth   ),
+    .AxiLookBits ( 1          ), // select is fixed, do not need it
+    .UniqueIds   ( 1'b1       )  // Can be set as ports are statically selected -> reduces HW
+  ) i_split_read_write (
+    .clk_i,
+    .rst_ni,
+    .test_i,
+    .slv_req_i       ( axi_req_i                ),
+    .slv_ar_select_i ( 1'b0                     ),
+    .slv_aw_select_i ( 1'b1                     ),
+    .slv_resp_o      ( axi_resp_o               ),
+    .mst_reqs_o      ( {w_axi_req,  r_axi_req}  ),
+    .mst_resps_i     ( {w_axi_resp, r_axi_resp} )
+  );
 
   axi_to_mem #(
     .axi_req_t   ( axi_req_t    ),
@@ -246,3 +247,119 @@ module axi_to_mem_interleaved #(
   end
 
 endmodule : axi_to_mem_interleaved
+
+`include "axi/typedef.svh"
+`include "axi/assign.svh"
+/// AXI4+ATOP interface wrapper for `axi_to_mem_interleaved`
+module axi_to_mem_interleaved_intf #(
+  /// AXI4+ATOP ID width
+  parameter int unsigned                  AXI_ID_WIDTH   = 32'd0,
+  /// AXI4+ATOP address width
+  parameter int unsigned                  AXI_ADDR_WIDTH = 32'd0,
+  /// AXI4+ATOP data width
+  parameter int unsigned                  AXI_DATA_WIDTH = 32'd0,
+  /// AXI4+ATOP user width
+  parameter int unsigned                  AXI_USER_WIDTH = 32'd0,
+  /// Number of memory banks / macros
+  parameter int unsigned                  MEM_NUM_BANKS  = 32'd4,
+  /// Read latency of the connected memory in cycles
+  parameter int unsigned                  BUF_DEPTH      = 32'd1,
+  /// Hide write requests if the strb == '0
+  parameter bit                           HIDE_STRB      = 1'b0,
+  /// Depth of output fifo/fall_through_register. Increase for asymmetric backpressure (contention) on banks.
+  parameter int unsigned                  OUT_FIFO_DEPTH = 32'd1,
+
+  /// Dependent parameter, do not override. Memory address type.
+  parameter type mem_addr_t = logic [AXI_ADDR_WIDTH-1:0],
+  /// Dependent parameter, do not override. Memory atomic type.
+  parameter type mem_atop_t = axi_pkg::atop_t,
+  /// Dependent parameter, do not override. Memory data type.
+  parameter type mem_data_t = logic [AXI_DATA_WIDTH/MEM_NUM_BANKS-1:0],
+  /// Dependent parameter, do not override. Memory write strobe type.
+  parameter type mem_strb_t = logic [AXI_DATA_WIDTH/MEM_NUM_BANKS/8-1:0]
+) (
+  /// Clock
+  input  logic                          clk_i,
+  /// Asynchronous reset, active low
+  input  logic                          rst_ni,
+  /// Status output, busy flag of `axi_to_mem`
+  output logic                          busy_o,
+  /// AXI4+ATOP slave port
+  AXI_BUS.Slave                         slv,
+  /// Memory bank request
+  output logic      [MEM_NUM_BANKS-1:0] mem_req_o,
+  /// Memory request grant
+  input  logic      [MEM_NUM_BANKS-1:0] mem_gnt_i,
+  /// Request address
+  output mem_addr_t [MEM_NUM_BANKS-1:0] mem_addr_o,
+  /// Write data
+  output mem_data_t [MEM_NUM_BANKS-1:0] mem_wdata_o,
+  /// Write data byte enable, active high
+  output mem_strb_t [MEM_NUM_BANKS-1:0] mem_strb_o,
+  /// Atomic operation
+  output mem_atop_t [MEM_NUM_BANKS-1:0] mem_atop_o,
+  /// Write request enable, active high
+  output logic      [MEM_NUM_BANKS-1:0] mem_we_o,
+  /// Read data valid response, active high
+  input  logic      [MEM_NUM_BANKS-1:0] mem_rvalid_i,
+  /// Read data response
+  input  mem_data_t [MEM_NUM_BANKS-1:0] mem_rdata_i
+);
+  typedef logic [AXI_ID_WIDTH-1:0]     id_t;
+  typedef logic [AXI_ADDR_WIDTH-1:0]   addr_t;
+  typedef logic [AXI_DATA_WIDTH-1:0]   data_t;
+  typedef logic [AXI_DATA_WIDTH/8-1:0] strb_t;
+  typedef logic [AXI_USER_WIDTH-1:0]   user_t;
+  `AXI_TYPEDEF_AW_CHAN_T(aw_chan_t, addr_t, id_t, user_t)
+  `AXI_TYPEDEF_W_CHAN_T(w_chan_t, data_t, strb_t, user_t)
+  `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, user_t)
+  `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, user_t)
+  `AXI_TYPEDEF_R_CHAN_T(r_chan_t, data_t, id_t, user_t)
+  `AXI_TYPEDEF_REQ_T(axi_req_t, aw_chan_t, w_chan_t, ar_chan_t)
+  `AXI_TYPEDEF_RESP_T(axi_resp_t, b_chan_t, r_chan_t)
+
+  axi_req_t  mem_axi_req;
+  axi_resp_t mem_axi_resp;
+
+  `AXI_ASSIGN_TO_REQ(mem_axi_req, slv)
+  `AXI_ASSIGN_FROM_RESP(slv, mem_axi_resp)
+
+  axi_to_mem_interleaved #(
+    .axi_req_t     ( axi_req_t      ),
+    .axi_resp_t    ( axi_resp_t     ),
+    .AddrWidth     ( AXI_ADDR_WIDTH ),
+    .DataWidth     ( AXI_DATA_WIDTH ),
+    .IdWidth       ( AXI_ID_WIDTH   ),
+    .NumBanks      ( MEM_NUM_BANKS  ),
+    .BufDepth      ( BUF_DEPTH      ),
+    .HideStrb      ( HIDE_STRB      ),
+    .OutFifoDepth  ( OUT_FIFO_DEPTH )
+  ) i_axi_to_mem_interleaved (
+    .clk_i,
+    .rst_ni,
+    .busy_o,
+    .axi_req_i  ( mem_axi_req  ),
+    .axi_resp_o ( mem_axi_resp ),
+    .mem_req_o,
+    .mem_gnt_i,
+    .mem_addr_o,
+    .mem_wdata_o,
+    .mem_strb_o,
+    .mem_atop_o,
+    .mem_we_o,
+    .mem_rvalid_i,
+    .mem_rdata_i
+  );
+
+// pragma translate_off
+`ifndef VERILATOR
+  initial begin: p_assertions
+    assert (AXI_ADDR_WIDTH  >= 1) else $fatal(1, "AXI address width must be at least 1!");
+    assert (AXI_DATA_WIDTH  >= 1) else $fatal(1, "AXI data width must be at least 1!");
+    assert (AXI_ID_WIDTH    >= 1) else $fatal(1, "AXI ID   width must be at least 1!");
+    assert (AXI_USER_WIDTH  >= 1) else $fatal(1, "AXI user width must be at least 1!");
+  end
+`endif
+// pragma translate_on
+
+endmodule // axi_to_mem_interleaved_intf

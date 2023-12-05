@@ -9,6 +9,6 @@
   upstream:
   {
     url: https://github.com/pulp-platform/axi.git
-    rev: af8b0ce2653997301b1b792c4c6d207b95f63a56
+    rev: fccffb5953ec8564218ba05e20adbedec845e014
   }
 }

@@ -10,6 +10,7 @@
 //
 // Authors:
 // - Michael Rogenmoser <michaero@iis.ee.ethz.ch>
+// - Thomas Benz <tbenz@iis.ee.ethz.ch>
 
 `include "axi/assign.svh"
 /// AXI4+ATOP to memory-protocol interconnect. Completely separates the read and write channel to
@@ -49,6 +50,8 @@ module axi_to_mem_split #(
   input logic                              clk_i,
   /// Asynchronous reset, active low.
   input logic                              rst_ni,
+  /// Testmode enable
+  input  logic                             test_i,
   /// The unit is busy handling an AXI4+ATOP request.
   output logic                             busy_o,
   /// AXI4+ATOP slave port, request input.
@@ -81,18 +84,26 @@ module axi_to_mem_split #(
 
   logic read_busy, write_busy;
 
-  axi_rw_split #(
-    .axi_req_t  ( axi_req_t  ),
-    .axi_resp_t ( axi_resp_t )
-  ) i_axi_rw_split (
+  // split AXI bus in read and write
+  axi_demux_simple #(
+    .AxiIdWidth  ( IdWidth    ),
+    .AtopSupport ( 1'b1       ),
+    .axi_req_t   ( axi_req_t  ),
+    .axi_resp_t  ( axi_resp_t ),
+    .NoMstPorts  ( 2          ),
+    .MaxTrans    ( BufDepth   ),
+    .AxiLookBits ( 1          ), // select is fixed, do not need it
+    .UniqueIds   ( 1'b1       )  // Can be set as ports are statically selected -> reduces HW
+  ) i_split_read_write (
     .clk_i,
     .rst_ni,
-    .slv_req_i        ( axi_req_i        ),
-    .slv_resp_o       ( axi_resp_o       ),
-    .mst_read_req_o   ( axi_read_req     ),
-    .mst_read_resp_i  ( axi_read_resp    ),
-    .mst_write_req_o  ( axi_write_req    ),
-    .mst_write_resp_i ( axi_write_resp   )
+    .test_i,
+    .slv_req_i       ( axi_req_i                       ),
+    .slv_ar_select_i ( 1'b0                            ),
+    .slv_aw_select_i ( 1'b1                            ),
+    .slv_resp_o      ( axi_resp_o                      ),
+    .mst_reqs_o      ( {axi_write_req,  axi_read_req}  ),
+    .mst_resps_i     ( {axi_write_resp, axi_read_resp} )
   );
 
   assign busy_o = read_busy || write_busy;

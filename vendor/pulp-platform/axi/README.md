@@ -1,5 +1,5 @@
 # AXI SystemVerilog Modules for High-Performance On-Chip Communication
-[![CI status](https://akurth.net/usrv/ig/shields/pipeline/akurth/axi/master.svg)](https://iis-git.ee.ethz.ch/akurth/axi/commits/master)
+[![CI status](https://github.com/pulp-platform/axi/actions/workflows/gitlab-ci.yml/badge.svg?branch=master)](https://github.com/pulp-platform/axi/actions/workflows/gitlab-ci.yml?query=branch%3Amaster)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/pulp-platform/axi?color=blue&label=current&sort=semver)](CHANGELOG.md)
 [![SHL-0.51 license](https://img.shields.io/badge/license-SHL--0.51-green)](LICENSE)
 
@@ -19,51 +19,54 @@ The **design and microarchitecture** of the modules in this repository is descri
 
 In addition to the documents linked in the following table, we are setting up [documentation auto-generated from inline docstrings](https://pulp-platform.github.io/axi/master).  (Replace `master` in that URL with a tag to get the documentation for a specific version.)
 
-| Name                                                 | Description                                                                                          | Doc                            |
-|------------------------------------------------------|------------------------------------------------------------------------------------------------------|--------------------------------|
-| [`axi_atop_filter`](src/axi_atop_filter.sv)          | Filters atomic operations (ATOPs), i.e., write transactions that have a non-zero `aw_atop` value.    |                                |
-| [`axi_burst_splitter`](src/axi_burst_splitter.sv)    | Split AXI4 burst transfers into single-beat transactions.                                            |                                |
-| [`axi_cdc`](src/axi_cdc.sv)                          | AXI clock domain crossing based on a Gray FIFO implementation.                                       |                                |
-| [`axi_cut`](src/axi_cut.sv)                          | Breaks all combinatorial paths between its input and output.                                         |                                |
-| [`axi_delayer`](src/axi_delayer.sv)                  | Synthesizable module which can (randomly) delays AXI channels.                                       |                                |
-| [`axi_demux`](src/axi_demux.sv)                      | Demultiplexes an AXI bus from one slave port to multiple master ports.                               | [Doc](doc/axi_demux.md)        |
-| [`axi_dw_converter`](src/axi_dw_converter.sv)        | A data width converter between AXI interfaces of any data width.                                     |                                |
-| [`axi_dw_downsizer`](src/axi_dw_downsizer.sv)        | A data width converter between a wide AXI master and a narrower AXI slave.                           |                                |
-| [`axi_dw_upsizer`](src/axi_dw_upsizer.sv)            | A data width converter between a narrow AXI master and a wider AXI slave.                            |                                |
-| [`axi_err_slv`](src/axi_err_slv.sv)                  | Always responds with an AXI decode/slave error for transactions which are sent to it.                |                                |
-| [`axi_fifo`](src/axi_fifo.sv)                        | A Fifo for each AXI4 channel to buffer requests.                                                     |                                |
-| [`axi_from_mem`](src/axi_from_mem.sv)                | This module acts like an SRAM and makes AXI4 requests downstream.                                    |                                |
-| [`axi_id_prepend`](src/axi_id_prepend.sv)            | This module prepends/strips the MSB from the AXI IDs.                                                |                                |
-| [`axi_id_remap`](src/axi_id_remap.sv)                | Remap AXI IDs from wide IDs at the slave port to narrower IDs at the master port.                    | [Doc][doc.axi_id_remap]        |
-| [`axi_id_serialize`](src/axi_id_serialize.sv)        | Reduce AXI IDs by serializing transactions when necessary.                                           | [Doc][doc.axi_id_serialize]    |
-| [`axi_intf`](src/axi_intf.sv)                        | This file defines the interfaces we support.                                                         |                                |
-| [`axi_isolate`](src/axi_isolate.sv)                  | A module that can isolate downstream slaves from receiving new AXI4 transactions.                    |                                |
-| [`axi_iw_converter`](src/axi_iw_converter.sv)        | Convert between any two AXI ID widths.                                                               | [Doc][doc.axi_iw_converter]    |
-| [`axi_join`](src/axi_join.sv)                        | A connector that joins two AXI interfaces.                                                           |                                |
-| [`axi_lfsr`](src/axi_lfsr.sv)                        | AXI4-attached LFSR; read returns pseudo-random data, writes are compressed into a checksum.          |                                |
-| [`axi_lite_demux`](src/axi_lite_demux.sv)            | Demultiplexes an AXI4-Lite bus from one slave port to multiple master ports.                         | [Doc](doc/axi_lite_demux.md)   |
-| [`axi_lite_from_mem`](src/axi_lite_from_mem.sv)      | This module acts like an SRAM and makes AXI4-Lite requests downstream.                               |                                |
-| [`axi_lite_join`](src/axi_lite_join.sv)              | A connector that joins two AXI-Lite interfaces.                                                      |                                |
-| [`axi_lite_lfsr`](src/axi_lite_lfsr.sv)              | AXI4-Lite-attached LFSR; read returns pseudo-random data, writes are compressed into a checksum.     |                                |
-| [`axi_lite_mailbox`](src/axi_lite_mailbox.sv)        | A AXI4-Lite Mailbox with two slave ports and usage triggered irq.                                    | [Doc](doc/axi_lite_mailbox.md) |
-| [`axi_lite_mux`](src/axi_lite_mux.sv)                | Multiplexes AXI4-Lite slave ports down to one master port.                                           | [Doc](doc/axi_lite_mux.md)     |
-| [`axi_lite_regs`](src/axi_lite_regs.sv)              | AXI4-Lite registers with optional read-only and protection features.                                 | [Doc][doc.axi_lite_regs]       |
-| [`axi_lite_to_apb`](src/axi_lite_to_apb.sv)          | AXI4-Lite to APB4 protocol converter.                                                                |                                |
-| [`axi_lite_to_axi`](src/axi_lite_to_axi.sv)          | AXI4-Lite to AXI4 protocol converter.                                                                |                                |
-| [`axi_lite_xbar`](src/axi_lite_xbar.sv)              | Fully-connected AXI4-Lite crossbar with an arbitrary number of slave and master ports.               | [Doc](doc/axi_lite_xbar.md)    |
-| [`axi_modify_address`](src/axi_modify_address.sv)    | A connector that allows addresses of AXI requests to be changed.                                     |                                |
-| [`axi_multicut`](src/axi_multicut.sv)                | AXI register which can be used to relax timing pressure on long AXI buses.                           |                                |
-| [`axi_mux`](src/axi_mux.sv)                          | Multiplexes the AXI4 slave ports down to one master port.                                            | [Doc](doc/axi_mux.md)          |
-| [`axi_pkg`](src/axi_pkg.sv)                          | Contains AXI definitions, common structs, and useful helper functions.                               |                                |
-| [`axi_rw_join`](src/axi_rw_join.sv)                  | Joins a read and a write slave into one single read / write master.                                  |                                |
-| [`axi_rw_split`](src/axi_rw_split.sv)                | Splits a single read / write slave into one read and one write master.                               |                                |
-| [`axi_serializer`](src/axi_serializer.sv)            | Serializes transactions with different IDs to the same ID.                                           |                                |
-| [`axi_throttle`](src/axi_throttle.sv)                | Limits the maximum number of outstanding transfers sent to the downstream logic.                     |                                |
-| [`axi_test`](src/axi_test.sv)                        | A set of testbench utilities for AXI interfaces.                                                     |                                |
-| [`axi_to_axi_lite`](src/axi_to_axi_lite.sv)          | AXI4 to AXI4-Lite protocol converter.                                                                |                                |
-| [`axi_to_mem`](src/axi_to_mem.sv)                    | AXI4 to memory protocol (req, gnt, rvalid) converter. Additional banked, interleaved, split variant. |                                |
-| [`axi_xbar`](src/axi_xbar.sv)                        | Fully-connected AXI4+ATOP crossbar with an arbitrary number of slave and master ports.               | [Doc](doc/axi_xbar.md)         |
-| [`axi_xp`](src/axi_xp.sv)                            | AXI Crosspoint (XP) with homomorphous slave and master ports.                                        |                                |
+| Name                                                    | Description                                                                                          | Doc                              |
+|---------------------------------------------------------|------------------------------------------------------------------------------------------------------|----------------------------------|
+| [`axi_atop_filter`](src/axi_atop_filter.sv)             | Filters atomic operations (ATOPs), i.e., write transactions that have a non-zero `aw_atop` value.    |                                  |
+| [`axi_burst_splitter`](src/axi_burst_splitter.sv)       | Split AXI4 burst transfers into single-beat transactions.                                            |                                  |
+| [`axi_cdc`](src/axi_cdc.sv)                             | AXI clock domain crossing based on a Gray FIFO implementation.                                       |                                  |
+| [`axi_cut`](src/axi_cut.sv)                             | Breaks all combinatorial paths between its input and output.                                         |                                  |
+| [`axi_delayer`](src/axi_delayer.sv)                     | Synthesizable module which can (randomly) delays AXI channels.                                       |                                  |
+| [`axi_demux_simple`](src/axi_demux_simple.sv)           | Demux without spill registers.                                                                       | [Doc](doc/axi_demux.md)          |
+| [`axi_demux`](src/axi_demux.sv)                         | Demultiplexes an AXI bus from one slave port to multiple master ports.                               | [Doc](doc/axi_demux.md)          |
+| [`axi_dw_converter`](src/axi_dw_converter.sv)           | A data width converter between AXI interfaces of any data width.                                     |                                  |
+| [`axi_dw_downsizer`](src/axi_dw_downsizer.sv)           | A data width converter between a wide AXI master and a narrower AXI slave.                           |                                  |
+| [`axi_dw_upsizer`](src/axi_dw_upsizer.sv)               | A data width converter between a narrow AXI master and a wider AXI slave.                            |                                  |
+| [`axi_err_slv`](src/axi_err_slv.sv)                     | Always responds with an AXI decode/slave error for transactions which are sent to it.                |                                  |
+| [`axi_fifo`](src/axi_fifo.sv)                           | A Fifo for each AXI4 channel to buffer requests.                                                     |                                  |
+| [`axi_from_mem`](src/axi_from_mem.sv)                   | This module acts like an SRAM and makes AXI4 requests downstream.                                    |                                  |
+| [`axi_id_prepend`](src/axi_id_prepend.sv)               | This module prepends/strips the MSB from the AXI IDs.                                                |                                  |
+| [`axi_id_remap`](src/axi_id_remap.sv)                   | Remap AXI IDs from wide IDs at the slave port to narrower IDs at the master port.                    | [Doc][doc.axi_id_remap]          |
+| [`axi_id_serialize`](src/axi_id_serialize.sv)           | Reduce AXI IDs by serializing transactions when necessary.                                           | [Doc][doc.axi_id_serialize]      |
+| [`axi_intf`](src/axi_intf.sv)                           | This file defines the interfaces we support.                                                         |                                  |
+| [`axi_isolate`](src/axi_isolate.sv)                     | A module that can isolate downstream slaves from receiving new AXI4 transactions.                    |                                  |
+| [`axi_iw_converter`](src/axi_iw_converter.sv)           | Convert between any two AXI ID widths.                                                               | [Doc][doc.axi_iw_converter]      |
+| [`axi_join`](src/axi_join.sv)                           | A connector that joins two AXI interfaces.                                                           |                                  |
+| [`axi_lfsr`](src/axi_lfsr.sv)                           | AXI4-attached LFSR; read returns pseudo-random data, writes are compressed into a checksum.          |                                  |
+| [`axi_lite_demux`](src/axi_lite_demux.sv)               | Demultiplexes an AXI4-Lite bus from one slave port to multiple master ports.                         | [Doc](doc/axi_lite_demux.md)     |
+| [`axi_lite_dw_converter`](src/axi_lite_dw_converter.sv) | A data width converter between two AXI-Lite busses                                                   | [Doc][doc.axi_lite_dw_converter] |
+| [`axi_lite_from_mem`](src/axi_lite_from_mem.sv)         | This module acts like an SRAM and makes AXI4-Lite requests downstream.                               |                                  |
+| [`axi_lite_join`](src/axi_lite_join.sv)                 | A connector that joins two AXI-Lite interfaces.                                                      |                                  |
+| [`axi_lite_lfsr`](src/axi_lite_lfsr.sv)                 | AXI4-Lite-attached LFSR; read returns pseudo-random data, writes are compressed into a checksum.     |                                  |
+| [`axi_lite_mailbox`](src/axi_lite_mailbox.sv)           | A AXI4-Lite Mailbox with two slave ports and usage triggered irq.                                    | [Doc](doc/axi_lite_mailbox.md)   |
+| [`axi_lite_mux`](src/axi_lite_mux.sv)                   | Multiplexes AXI4-Lite slave ports down to one master port.                                           | [Doc](doc/axi_lite_mux.md)       |
+| [`axi_lite_regs`](src/axi_lite_regs.sv)                 | AXI4-Lite registers with optional read-only and protection features.                                 | [Doc][doc.axi_lite_regs]         |
+| [`axi_lite_to_apb`](src/axi_lite_to_apb.sv)             | AXI4-Lite to APB4 protocol converter.                                                                |                                  |
+| [`axi_lite_to_axi`](src/axi_lite_to_axi.sv)             | AXI4-Lite to AXI4 protocol converter.                                                                |                                  |
+| [`axi_lite_xbar`](src/axi_lite_xbar.sv)                 | Fully-connected AXI4-Lite crossbar with an arbitrary number of slave and master ports.               | [Doc](doc/axi_lite_xbar.md)      |
+| [`axi_modify_address`](src/axi_modify_address.sv)       | A connector that allows addresses of AXI requests to be changed.                                     |                                  |
+| [`axi_multicut`](src/axi_multicut.sv)                   | AXI register which can be used to relax timing pressure on long AXI buses.                           |                                  |
+| [`axi_mux`](src/axi_mux.sv)                             | Multiplexes the AXI4 slave ports down to one master port.                                            | [Doc](doc/axi_mux.md)            |
+| [`axi_pkg`](src/axi_pkg.sv)                             | Contains AXI definitions, common structs, and useful helper functions.                               |                                  |
+| [`axi_rw_join`](src/axi_rw_join.sv)                     | Joins a read and a write slave into one single read / write master.                                  |                                  |
+| [`axi_rw_split`](src/axi_rw_split.sv)                   | Splits a single read / write slave into one read and one write master.                               |                                  |
+| [`axi_serializer`](src/axi_serializer.sv)               | Serializes transactions with different IDs to the same ID.                                           |                                  |
+| [`axi_slave_compare`](src/axi_slave_compare.sv)         | Compares two slave devices.                                                                          |                                  |
+| [`axi_throttle`](src/axi_throttle.sv)                   | Limits the maximum number of outstanding transfers sent to the downstream logic.                     |                                  |
+| [`axi_test`](src/axi_test.sv)                           | A set of testbench utilities for AXI interfaces.                                                     |                                  |
+| [`axi_to_axi_lite`](src/axi_to_axi_lite.sv)             | AXI4 to AXI4-Lite protocol converter.                                                                |                                  |
+| [`axi_to_mem`](src/axi_to_mem.sv)                       | AXI4 to memory protocol (req, gnt, rvalid) converter. Additional banked, interleaved, split variant. |                                  |
+| [`axi_xbar`](src/axi_xbar.sv)                           | Fully-connected AXI4+ATOP crossbar with an arbitrary number of slave and master ports.               | [Doc](doc/axi_xbar.md)           |
+| [`axi_xp`](src/axi_xp.sv)                               | AXI Crosspoint (XP) with homomorphous slave and master ports.                                        |                                  |
 
 ## Synthesizable Verification Modules
 
@@ -84,6 +87,7 @@ In addition to the modules above, which are available in synthesis and simulatio
 | [`axi_chan_logger`](src/axi_test.sv)                 | Logs the transactions of an AXI4(+ATOPs) port to files.                                                |
 | [`axi_driver`](src/axi_test.sv)                      | Low-level driver for AXI4(+ATOPs) that can send and receive individual beats on any channel.           |
 | [`axi_dumper`](src/axi_dumper.sv)                    | Dumps log to file to be interpreted by `axi_dumper_interpret` script for debugging purposes.           |
+| [`axi_file_master`](src/axi_test.sv)                 | AXI4 master for file-based testbenches                                                                 |
 | [`axi_lite_driver`](src/axi_test.sv)                 | Low-level driver for AXI4-Lite that can send and receive individual beats on any channel.              |
 | [`axi_lite_rand_master`](src/axi_test.sv)            | AXI4-Lite master component that issues random transactions within user-defined constraints.            |
 | [`axi_lite_rand_slave`](src/axi_test.sv)             | AXI4-Lite slave component that responds to transactions with constrainable random delays and data.     |

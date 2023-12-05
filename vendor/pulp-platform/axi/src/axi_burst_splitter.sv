@@ -30,6 +30,8 @@ module axi_burst_splitter #(
   parameter int unsigned MaxReadTxns  = 32'd0,
   // Maximum number of AXI write bursts outstanding at the same time
   parameter int unsigned MaxWriteTxns = 32'd0,
+  // Internal ID queue can work in two bandwidth modes: see id_queue.sv for details
+  parameter bit          FullBW       = 0,
   // AXI Bus Types
   parameter int unsigned AddrWidth    = 32'd0,
   parameter int unsigned DataWidth    = 32'd0,
@@ -139,7 +141,8 @@ module axi_burst_splitter #(
   axi_burst_splitter_ax_chan #(
     .chan_t   ( aw_chan_t    ),
     .IdWidth  ( IdWidth      ),
-    .MaxTxns  ( MaxWriteTxns )
+    .MaxTxns  ( MaxWriteTxns ),
+    .FullBW   ( FullBW       )
   ) i_axi_burst_splitter_aw_chan (
     .clk_i,
     .rst_ni,
@@ -233,7 +236,8 @@ module axi_burst_splitter #(
   axi_burst_splitter_ax_chan #(
     .chan_t   ( ar_chan_t   ),
     .IdWidth  ( IdWidth     ),
-    .MaxTxns  ( MaxReadTxns )
+    .MaxTxns  ( MaxReadTxns ),
+    .FullBW   ( FullBW      )
   ) i_axi_burst_splitter_ar_chan (
     .clk_i,
     .rst_ni,
@@ -346,6 +350,7 @@ module axi_burst_splitter_ax_chan #(
   parameter type         chan_t  = logic,
   parameter int unsigned IdWidth = 0,
   parameter int unsigned MaxTxns = 0,
+  parameter bit          FullBW  = 0,
   parameter type         id_t    = logic[IdWidth-1:0]
 ) (
   input  logic          clk_i,
@@ -371,6 +376,7 @@ module axi_burst_splitter_ax_chan #(
   logic cnt_alloc_req, cnt_alloc_gnt;
   axi_burst_splitter_counters #(
     .MaxTxns ( MaxTxns  ),
+    .FullBW  ( FullBW   ),
     .IdWidth ( IdWidth  )
   ) i_axi_burst_splitter_counters (
     .clk_i,
@@ -459,6 +465,7 @@ endmodule
 /// Internal module of [`axi_burst_splitter`](module.axi_burst_splitter) to order transactions.
 module axi_burst_splitter_counters #(
   parameter int unsigned MaxTxns = 0,
+  parameter bit          FullBW  = 0,
   parameter int unsigned IdWidth = 0,
   parameter type         id_t    = logic [IdWidth-1:0]
 ) (
@@ -517,7 +524,8 @@ module axi_burst_splitter_counters #(
   id_queue #(
     .ID_WIDTH ( $bits(id_t) ),
     .CAPACITY ( MaxTxns     ),
-    .data_t   ( cnt_idx_t   )
+    .data_t   ( cnt_idx_t   ),
+    .FULL_BW  ( FullBW      )
   ) i_idq (
     .clk_i,
     .rst_ni,

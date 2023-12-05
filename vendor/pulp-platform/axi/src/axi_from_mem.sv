@@ -10,7 +10,7 @@
 //
 // Authors:
 // - Christopher Reinwardt <creinwar@ethz.ch>
-// - Nicole Narr <narrn@ethz.ch
+// - Nicole Narr <narrn@ethz.ch>
 
 `include "axi/typedef.svh"
 
