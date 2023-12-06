@@ -329,35 +329,36 @@ assign update_itlb.content.v    = update_ptw_itlb.content.v;
 //     .probe14(itlb_lu_hit) // input wire [0:0]  probe13
 // );
 
-  //-----------------------
-  // Instruction Interface
-  //-----------------------
+//-----------------------
+// Instruction Interface
+//-----------------------
 logic match_any_execute_region;
 logic pmp_instr_allow;
 localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 
-assign icache_areq_o.fetch_paddr    [11:0] = icache_areq_i.fetch_vaddr[11:0];
-assign icache_areq_o.fetch_paddr [riscv::PLEN-1:PPNWMin+1]   = //
-                          (enable_translation_i) ? //
-                          itlb_content.ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : //
-                          riscv::PLEN'(icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
+  assign icache_areq_o.fetch_paddr    [11:0] = icache_areq_i.fetch_vaddr[11:0];
+  assign icache_areq_o.fetch_paddr [riscv::PLEN-1:PPNWMin+1]   = //
+                            (enable_translation_i) ? //
+                            itlb_content.ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : //
+                            riscv::PLEN'(icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
 
-genvar a;
-generate
-  
-    for (a=0; a < PT_LEVELS-1; a++) begin  
-     assign icache_areq_o.fetch_paddr [PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1] = //
-                          (enable_translation_i && (|itlb_is_page[a:0]==0)) ? //
-                          itlb_content.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))] : //
-                          icache_areq_i.fetch_vaddr[PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1];
-    end
+  genvar a;
+  generate
+    
+      for (a=0; a < PT_LEVELS-1; a++) begin  
+       assign icache_areq_o.fetch_paddr [PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1] = //
+                            (enable_translation_i && (|itlb_is_page[a:0]==0)) ? //
+                            itlb_content.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))] : //
+                            icache_areq_i.fetch_vaddr[PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1];
+      end
 
-endgenerate
+  endgenerate
 
 // The instruction interface is a simple request response interface
 always_comb begin : instr_interface
   // MMU disabled: just pass through
   icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
+  // icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
   // two potential exception sources:
   // 1. HPTW threw an exception -> signal with a page fault exception
   // 2. We got an access error because of insufficient permissions -> throw an access exception
@@ -382,6 +383,17 @@ always_comb begin : instr_interface
     end
 
     icache_areq_o.fetch_valid = 1'b0;
+
+    // // 4K page
+    // icache_areq_o.fetch_paddr = {itlb_content.ppn, icache_areq_i.fetch_vaddr[11:0]};
+    // // Mega page
+    // if (itlb_is_page[1]) begin
+    //   icache_areq_o.fetch_paddr[20:12] = icache_areq_i.fetch_vaddr[20:12];
+    // end
+    // // Giga page
+    // if (itlb_is_page[0]) begin
+    //   icache_areq_o.fetch_paddr[29:12] = icache_areq_i.fetch_vaddr[29:12];
+    // end
 
     // ---------
     // ITLB Hit
@@ -458,12 +470,13 @@ pmp #(
 // Data Interface
 //-----------------------
 logic [riscv::VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
-riscv::pte_t dtlb_pte_n, dtlb_pte_q;
+riscv::pte_cva6_t dtlb_pte_n, dtlb_pte_q;
 exception_t misaligned_ex_n, misaligned_ex_q;
 logic lsu_req_n, lsu_req_q;
 logic lsu_is_store_n, lsu_is_store_q;
 logic dtlb_hit_n, dtlb_hit_q;
-logic [PT_LEVELS-2:0] dtlb_is_page_n, dtlb_is_page_q;
+logic dtlb_is_2M_n, dtlb_is_2M_q;
+logic dtlb_is_1G_n, dtlb_is_1G_q;
 
 // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
 assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit : 1'b1;
@@ -471,35 +484,36 @@ assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit : 1'b1;
 // Wires to PMP checks
 riscv::pmp_access_t pmp_access_type;
 logic               pmp_data_allow;
+// localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 
+  assign lsu_paddr_o    [11:0] = lsu_vaddr_q[11:0];
+  assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
+                              (en_ld_st_translation_i && !misaligned_ex_q.valid) ? //
+                              dtlb_pte_q.ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : // 
+                              riscv::PLEN'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
+                              
+  genvar i;
+    generate
+      
+        for (i=0; i < PT_LEVELS-1; i++) begin  
+         assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
+                              (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
+                              dtlb_pte_q.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
+                              lsu_vaddr_q[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
 
-assign lsu_paddr_o    [11:0] = lsu_vaddr_q[11:0];
-assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
-                            (en_ld_st_translation_i && !misaligned_ex_q.valid) ? //
-                            dtlb_pte_q.ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : // 
-                            riscv::PLEN'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
-                            
-genvar i;
-  generate
-    
-      for (i=0; i < PT_LEVELS-1; i++) begin  
-       assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-                            (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-                            dtlb_pte_q.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
-                            lsu_vaddr_q[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
+         assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
+                              (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
+                              dtlb_content.ppn[(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
+                              lsu_vaddr_n[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
+        end
+        if(riscv::IS_XLEN64) begin
+          assign lsu_dtlb_ppn_o[riscv::PPNW-1:PPNWMin+1] = (en_ld_st_translation_i && !misaligned_ex_q.valid) ? 
+                              dtlb_content.ppn[riscv::PPNW-1:PPNWMin+1] : 
+                              lsu_vaddr_n[riscv::PPNW-1:PPNWMin+1] ;
+        end
 
-       assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-                            (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-                            dtlb_content.ppn[(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
-                            lsu_vaddr_n[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
-      end
-      if(riscv::IS_XLEN64) begin
-        assign lsu_dtlb_ppn_o[riscv::PPNW-1:PPNWMin+1] = (en_ld_st_translation_i && !misaligned_ex_q.valid) ? 
-                            dtlb_content.ppn[riscv::PPNW-1:PPNWMin+1] : 
-                            lsu_vaddr_n[riscv::PPNW-1:PPNWMin+1] ;
-      end
-
-  endgenerate  // The data interface is simpler and only consists of a request/response interface
+    endgenerate 
+// The data interface is simpler and only consists of a request/response interface
 always_comb begin : data_interface
   // save request and DTLB response
   lsu_vaddr_n = lsu_vaddr_i;
@@ -508,7 +522,11 @@ always_comb begin : data_interface
   dtlb_pte_n = dtlb_content;
   dtlb_hit_n = dtlb_lu_hit;
   lsu_is_store_n = lsu_is_store_i;
-  dtlb_is_page_n = dtlb_is_page;
+  dtlb_is_2M_n = dtlb_is_page[1];
+  dtlb_is_1G_n = dtlb_is_page[0];
+
+  // lsu_paddr_o = lsu_vaddr_q[riscv::PLEN-1:0];
+  // lsu_dtlb_ppn_o = lsu_vaddr_n[riscv::PLEN-1:12];
   lsu_valid_o = lsu_req_q;
   lsu_exception_o = misaligned_ex_q;
   pmp_access_type = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
@@ -523,7 +541,19 @@ always_comb begin : data_interface
   // translation is enabled and no misaligned exception occurred
   if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
     lsu_valid_o = 1'b0;
-
+    // // 4K page
+    // lsu_paddr_o = {dtlb_pte_q.ppn, lsu_vaddr_q[11:0]};
+    // lsu_dtlb_ppn_o = dtlb_content.ppn;
+    // // Mega page
+    // if (dtlb_is_2M_q) begin
+    //   lsu_paddr_o[20:12] = lsu_vaddr_q[20:12];
+    //   lsu_dtlb_ppn_o[20:12] = lsu_vaddr_n[20:12];
+    // end
+    // // Giga page
+    // if (dtlb_is_1G_q) begin
+    //   lsu_paddr_o[PPNWMin:12] = lsu_vaddr_q[PPNWMin:12];
+    //   lsu_dtlb_ppn_o[PPNWMin:12] = lsu_vaddr_n[PPNWMin:12];
+    // end
     // ---------
     // DTLB Hit
     // --------
@@ -654,7 +684,8 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
     dtlb_pte_q      <= '0;
     dtlb_hit_q      <= '0;
     lsu_is_store_q  <= '0;
-    dtlb_is_page_q  <= '0;
+    dtlb_is_2M_q    <= '0;
+    dtlb_is_1G_q    <= '0;
   end else begin
     lsu_vaddr_q     <= lsu_vaddr_n;
     lsu_req_q       <= lsu_req_n;
@@ -662,7 +693,8 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
     dtlb_pte_q      <= dtlb_pte_n;
     dtlb_hit_q      <= dtlb_hit_n;
     lsu_is_store_q  <= lsu_is_store_n;
-    dtlb_is_page_q  <= dtlb_is_page_n;
+    dtlb_is_2M_q    <= dtlb_is_2M_n;
+    dtlb_is_1G_q    <= dtlb_is_1G_n;
   end
 end
 endmodule
