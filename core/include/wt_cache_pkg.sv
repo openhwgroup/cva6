@@ -191,53 +191,6 @@ package wt_cache_pkg;
     return cnt;
   endfunction : popcnt64
 
-  function automatic logic [(CVA6Cfg.XLEN/8)-1:0] to_byte_enable8(input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
-    logic [(CVA6Cfg.XLEN/8)-1:0] be;
-    be = '0;
-    unique case (size)
-      2'b00:   be[offset] = '1;  // byte
-      2'b01:   be[offset+:2] = '1;  // hword
-      2'b10:   be[offset+:4] = '1;  // word
-      default: be = '1;  // dword
-    endcase  // size
-    return be;
-  endfunction : to_byte_enable8
-
-  function automatic logic [(CVA6Cfg.XLEN/8)-1:0] to_byte_enable4(input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
-    logic [3:0] be;
-    be = '0;
-    unique case (size)
-      2'b00:   be[offset] = '1;  // byte
-      2'b01:   be[offset+:2] = '1;  // hword
-      default: be = '1;  // word
-    endcase  // size
-    return be;
-  endfunction : to_byte_enable4
-
-  // openpiton requires the data to be replicated in case of smaller sizes than dwords
-  function automatic logic [CVA6Cfg.XLEN-1:0] repData64(input logic [CVA6Cfg.XLEN-1:0] data, input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset,
-                                            input logic [1:0] size);
-    logic [CVA6Cfg.XLEN-1:0] out;
-    unique case (size)
-      2'b00:   for (int k = 0; k < 8; k++) out[k*8+:8] = data[offset*8+:8];  // byte
-      2'b01:   for (int k = 0; k < 4; k++) out[k*16+:16] = data[offset*8+:16];  // hword
-      2'b10:   for (int k = 0; k < 2; k++) out[k*32+:32] = data[offset*8+:32];  // word
-      default: out = data;  // dword
-    endcase  // size
-    return out;
-  endfunction : repData64
-
-  function automatic logic [CVA6Cfg.XLEN-1:0] repData32(input logic [CVA6Cfg.XLEN-1:0] data, input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset,
-                                            input logic [1:0] size);
-    logic [CVA6Cfg.XLEN-1:0] out;
-    unique case (size)
-      2'b00:   for (int k = 0; k < 4; k++) out[k*8+:8] = data[offset*8+:8];  // byte
-      2'b01:   for (int k = 0; k < 2; k++) out[k*16+:16] = data[offset*8+:16];  // hword
-      default: out = data;  // word
-    endcase  // size
-    return out;
-  endfunction : repData32
-
   // note: this is openpiton specific. cannot transmit unaligned words.
   // hence we default to individual bytes in that case, and they have to be transmitted
   // one after the other
