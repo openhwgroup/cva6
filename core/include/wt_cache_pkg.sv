@@ -67,12 +67,6 @@ package wt_cache_pkg;
   // they basically store which bytes from which buffer entry are part
   // of that transaction
 
-  typedef struct packed {
-    logic                                 vld;
-    logic [(CVA6Cfg.XLEN/8)-1:0]           be;
-    logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
-  } tx_stat_t;
-
   // local interfaces between caches and L15 adapter
   typedef enum logic [1:0] {
     DCACHE_STORE_REQ,

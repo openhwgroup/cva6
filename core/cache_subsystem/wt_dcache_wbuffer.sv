@@ -109,6 +109,12 @@ module wt_dcache_wbuffer
     output logic [DCACHE_MAX_TX-1:0] tx_vld_o
 );
 
+  typedef struct packed {
+    logic                                 vld;
+    logic [(CVA6Cfg.XLEN/8)-1:0]           be;
+    logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
+  } tx_stat_t;
+
   tx_stat_t [DCACHE_MAX_TX-1:0] tx_stat_d, tx_stat_q;
   wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_d, wbuffer_q;
   logic [DCACHE_WBUF_DEPTH-1:0] valid;
