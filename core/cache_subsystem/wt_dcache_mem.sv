@@ -31,6 +31,7 @@ module wt_dcache_mem
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg  = config_pkg::cva6_cfg_empty,
+    parameter type wbuffer_t = logic,
     parameter int unsigned           NumPorts = 3
 ) (
     input logic clk_i,

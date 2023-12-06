@@ -66,18 +66,6 @@ package wt_cache_pkg;
   localparam DCACHE_WBUF_DEPTH = ariane_pkg::WT_DCACHE_WBUF_DEPTH;
   localparam CACHE_ID_WIDTH = L15_TID_WIDTH;
 
-
-  typedef struct packed {
-    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
-    riscv::xlen_t data;
-    logic [ariane_pkg::DCACHE_USER_WIDTH-1:0] user;
-    logic [(riscv::XLEN/8)-1:0] dirty;  // byte is dirty
-    logic [(riscv::XLEN/8)-1:0] valid;  // byte is valid
-    logic [(riscv::XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
-    logic checked;  // if cache state of this word has been checked
-    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
-  } wbuffer_t;
-
   // TX status registers are indexed with the transaction ID
   // they basically store which bytes from which buffer entry are part
   // of that transaction
