@@ -811,6 +811,20 @@ module issue_read_operands
       );
   end
 
+  // FPU does not declare that it will return a result the subsequent cycle so
+  // it is not possible for issue stage to know when ALU2 can be used if there
+  // is an FPU.  As there are discussions to change the FPU, I did not explore
+  // its architecture to create this "FPU returns next cycle" signal.  Also, a
+  // "lookahead" optimization should be added to be performant with FPU:  when
+  // issue port 2 is issuing to FPU, issue port 1 should issue to ALU1 instead
+  // of ALU2 so that FPU is not busy.  However, if FPU has a minimum execution
+  // time of 2 cycles, it is possible to simply not raise fus_busy[1].alu2.
+  initial begin
+    assert (!(SUPERSCALAR && CVA6Cfg.FpPresent))
+    else
+      $fatal(1, "FPU is not yet supported in superscalar CVA6, see comments above this assertion.");
+  end
+
   for (genvar i = 0; i <= SUPERSCALAR; i++) begin
     assert property (@(posedge clk_i) (branch_valid_q) |-> (!$isunknown(
         fu_data_q[i].operand_a
