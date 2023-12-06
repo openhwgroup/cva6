@@ -519,7 +519,7 @@ module ariane_testharness #(
     MaxSlvTrans: unsigned'(1), // Probably requires update
     FallThrough: 1'b0,
     LatencyMode: axi_pkg::NO_LATENCY,
-    PipelineStages: 1,
+    PipelineStages: 0,
     AxiIdWidthSlvPorts: unsigned'(ariane_axi_soc::IdWidth),
     AxiIdUsedSlvPorts: unsigned'(ariane_axi_soc::IdWidth),
     UniqueIds: 1'b0,
