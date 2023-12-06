@@ -23,6 +23,9 @@ module wt_axi_adapter
     parameter int unsigned MetaFifoDepth = CVA6Cfg.DCACHE_MAX_TX,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic,
+    parameter type dcache_req_t = logic,
+    parameter type dcache_rtrn_t = logic,
+    parameter type dcache_inval_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic
 ) (
@@ -440,7 +443,7 @@ module wt_axi_adapter
   logic [DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       dcache_rd_shift_d, dcache_rd_shift_q;
   wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
-  wt_cache_pkg::dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
+  dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
   logic dcache_sc_rtrn, axi_rd_last;
 
   always_comb begin : p_axi_rtrn_shift

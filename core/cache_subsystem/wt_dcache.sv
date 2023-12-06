@@ -20,6 +20,8 @@ module wt_dcache
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type dcache_req_t = logic,
+    parameter type dcache_rtrn_t = logic,
     parameter int unsigned NumPorts = 4,  // number of miss ports
     // ID to be used for read and AMO transactions.
     // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
@@ -127,6 +129,8 @@ module wt_dcache
 
   wt_dcache_missunit #(
       .CVA6Cfg (CVA6Cfg),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
       .AmoTxId (RdAmoTxId),
       .NumPorts(NumPorts)
   ) i_wt_dcache_missunit (
