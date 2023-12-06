@@ -80,9 +80,11 @@
       generate
         for (i=0; i < TLB_ENTRIES; i++) begin
           //identify page_match for all TLB Entries
-          assign page_match[i]          = (tags_q[i].is_page[PT_LEVELS-2:0])*2 +1;
+          // assign page_match[i]        = (tags_q[i].is_page[PT_LEVELS-2:0])*2 +1;
 
           for (x=0; x < PT_LEVELS; x++) begin  
+              //identify page_match for all TLB Entries
+              assign page_match[i][x] = x==0 ? 1 :tags_q[i].is_page[PT_LEVELS-1-x];
               //identify if vpn matches at all PT levels for all TLB entries  
               assign vpn_match[i][x]        = lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
               //identify if there is a hit at each PT level for all TLB entries  
