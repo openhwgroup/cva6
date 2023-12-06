@@ -557,6 +557,11 @@ module issue_read_operands
               issue_ack_o[i] = 1'b1;
             end
           end
+          if (i > 0) begin
+            if ((issue_instr_i[i].rd[4:0] == issue_instr_i[i-1].rd[4:0]) && (issue_instr_i[i].rd[4:0] != '0)) begin
+              issue_ack_o[i] = 1'b0;
+            end
+          end
         end
         // we can also issue the instruction under the following two circumstances:
         // we can do this even if we are stalled or no functional unit is ready (as we don't need one)
