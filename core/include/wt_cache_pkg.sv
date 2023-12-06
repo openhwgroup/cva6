@@ -88,35 +88,6 @@ package wt_cache_pkg;
     ICACHE_IFILL_ACK
   } icache_in_t;
 
-  // dcache interface
-  typedef struct packed {
-    logic                                      vld;  // invalidate only affected way
-    logic                                      all;  // invalidate all ways
-    logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
-    logic [L15_WAY_WIDTH-1:0]                  way;  // way to invalidate
-  } dcache_inval_t;
-
-  typedef struct packed {
-    dcache_out_t rtype;  // see definitions above
-    logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
-    logic [L1D_WAY_WIDTH-1:0] way;  // way to replace
-    logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
-    logic [CVA6Cfg.XLEN-1:0] data;  // word width of processor (no block stores at the moment)
-    logic [CVA6Cfg.DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
-    logic nc;  // noncacheable
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
-    ariane_pkg::amo_t amo_op;  // amo opcode
-  } dcache_req_t;
-
-  typedef struct packed {
-    dcache_in_t rtype;  // see definitions above
-    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
-    logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
-    dcache_inval_t inv;  // invalidation vector
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
-  } dcache_rtrn_t;
-
-
   // taken from iop.h in openpiton
   // to l1.5 (only marked subset is used)
   typedef enum logic [4:0] {

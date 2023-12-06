@@ -20,6 +20,8 @@ module wt_dcache
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type dcache_req_t = logic,
+    parameter type dcache_rtrn_t = logic,
     parameter int unsigned NumPorts = 4,  // number of miss ports
     localparam type wbuffer_t = struct packed {
       logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] wtag;
@@ -130,6 +132,8 @@ module wt_dcache
       .CVA6Cfg (CVA6Cfg),
       .AmoTxId (RdAmoTxId),
       .NumPorts(NumPorts),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
       .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH)
   ) i_wt_dcache_missunit (
       .clk_i          (clk_i),

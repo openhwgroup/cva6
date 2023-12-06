@@ -55,7 +55,9 @@ module wt_l15_adapter
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type icache_req_t = logic,
-    parameter type icache_rtrn_t = logic
+    parameter type icache_rtrn_t = logic,
+    parameter type dcache_req_t = logic,
+    parameter type dcache_rtrn_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
