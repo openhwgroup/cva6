@@ -1,0 +1,3688 @@
+#
+#   Copyright (c) 2023 Thales Silicon Security
+#   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#   Author: Mohamed Aziz FRIKHA
+#
+
+component:
+  '@xmlns:ipxact': http://www.accellera.org/XMLSchema/IPXACT/1685-2014
+  vendor: OpenHW
+  library: cva6
+  name: CV32A6_CSR
+  version: Apache_2.0_with_SHL_2.1
+  busInterfaces:
+    busInterface:
+      name: Other
+      busType:
+        '@library': cv32a6
+        '@name': cva6
+        '@vendor': OpenHW
+        '@version': '1.0'
+      abstractionTypes:
+        abstractionType:
+          abstractionRef:
+            '@library': cv32a6
+            '@name': cva6
+            '@vendor': OpenHW
+            '@version': '1.0'
+      slave:
+        memoryMapRef:
+          '@memoryMapRef': Other
+      bitsInLau: '32'
+  memoryMaps:
+    memoryMap:
+      name: Other
+      addressBlock:
+        name: address_block
+        baseAddress: "'h0"
+        range: "'h4000"
+        width: '32'
+        usage: register
+        register:
+        - name: mstatus
+          displayName: Machine Status
+          description: The ``mstatus`` register keeps track of and controls the hart’s current operating state.
+          addressOffset: "'h300"
+          size: '32'
+          volatile: 'true'
+          access: read-write
+          field:
+          - name: SD
+            displayName: State Dirty
+            description: The SD bit is a read-only bit.``Legal Values``:0.
+            bitOffset: '31'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            volatile: 'true'
+            access: read-only
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Not_Dirty
+                description: None of FS, VS or XS is dirty.
+                value: '0'
+              - '@usage': read
+                name: Dirty
+                description: Either FS, VS or XS is dirty.
+                value: '1'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: reserved_0
+            displayName: Reserved
+            description: Reserved
+            bitOffset: '23'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '8'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
+          - name: TSR
+            displayName: Trap SRET
+            description: The TSR bit supports intercepting the supervisor exception return instruction, SRET.
+            bitOffset: '22'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Permitted
+                description: Executing SRET in S-mode is permitted.
+                value: '0'
+              - '@usage': read
+                name: Not_Permitted
+                description: Illegal instruction exception raised by executing SRET in S-mode.
+                value: '1'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: TW
+            displayName: Timeout Wait
+            description: The TW bit supports intercepting the WFI instruction.
+            bitOffset: '21'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Permitted
+                description: WFI may execute in lower privilege modes.
+                value: '0'
+              - '@usage': read
+                name: Not_Permitted
+                description: Illegal instruction exception raised by executing WFI in lower privilege mode that does not complete in bounded time limit.
+                value: '1'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: TVM
+            displayName: Trap Virtual Memory
+            description: The TVM bit supports intercepting supervisor virtual-memory management operations.
+            bitOffset: '20'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Permitted
+                description: Reading or writing SATP and executing SFENCE.VMA are permitted in S-mode.
+                value: '0'
+              - '@usage': read
+                name: Not_Permitted
+                description: Illegal instruction exception is raised by reading or writing SATP or executing in S-mode SFENCE.VMA .
+                value: '1'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: MXR
+            displayName: Make eXecutable Readable
+            description: The MXR bit modifies the privilege with which loads access virtual memory.
+            bitOffset: '19'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Not_Executable
+                description: Only loads from pages marked readable will succeed.
+                value: '0'
+              - '@usage': read
+                name: Executable
+                description: Loads from pages marked either readable or executable will succeed.
+                value: '1'
+          - name: SUM
+            displayName: Supervisor User Memory
+            description: The SUM bit modifies the privilege with which S-mode loads and stores access virtual memory.
+            bitOffset: '18'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Not_Permitted
+                description: No access to U-mode pages with S-mode.
+                value: '0'
+              - '@usage': read
+                name: Permitted
+                description: Access to U-mode pages with S-mode is granted.
+                value: '1'
+          - name: MPRV
+            displayName: Modify Privilege
+            description: The MPRV bit modifies the privilege mode at which loads and stores execute.
+            bitOffset: '17'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Normal
+                description: Loads and stores behave as normal.
+                value: '0'
+              - '@usage': read
+                name: Protected
+                description: Load and store memory addresses are translated and protected, and endianness is applied, as though the current privilege mode were set to MPP.
+                value: '1'
+          - name: XS
+            displayName: Extension State
+            description: The XS field encodes the status of the additional user-mode extensions and associated state.``Legal Values``:0.
+            bitOffset: '15'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x3'
+            bitWidth: '2'
+            volatile: 'true'
+            access: read-only
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Off
+                description: All off
+                value: '0'
+              - '@usage': read
+                name: Initial
+                description: None dirty or clean, some on
+                value: '1'
+              - '@usage': read
+                name: Clean
+                description: None dirty, some clean
+                value: '2'
+              - '@usage': read
+                name: Dirty
+                description: Some dirty
+                value: '3'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: FS
+            displayName: Floating-point unit State
+            description: FS extension is not supported.``Legal Values``:0.
+            bitOffset: '13'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x3'
+            bitWidth: '2'
+            access: read-only
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read-write
+                name: Off
+                value: '0'
+              - '@usage': read-write
+                name: Initial
+                value: '1'
+              - '@usage': read-write
+                name: Clean
+                value: '2'
+              - '@usage': read-write
+                name: Dirty
+                value: '3'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: MPP
+            displayName: Machine mode Prior Privilege
+            description: Holds the previous privilege mode for machine mode.
+            bitOffset: '11'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x3'
+            bitWidth: '2'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read-write
+                name: U-mode
+                value: '0'
+              - '@usage': read-write
+                name: S-mode
+                value: '1'
+              - '@usage': read-write
+                name: Reserved
+                value: '2'
+              - '@usage': read-write
+                name: M-mode
+                value: '3'
+          - name: VS
+            displayName: Vector extension State
+            description: V extension is not supported.``Legal Values``:0.
+            bitOffset: '9'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x3'
+            bitWidth: '2'
+            access: read-only
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: SPP
+            displayName: Supervisor mode Prior Privilege
+            description: Holds the previous privilege mode for supervisor mode.
+            bitOffset: '8'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read-write
+                name: U-mode
+                value: '0'
+              - '@usage': read-write
+                name: Otherwise
+                value: '1'
+          - name: MPIE
+            displayName: Machine mode Prior Interrupt Enable
+            description: Indicates whether machine interrupts were enabled prior to trapping into machine mode.
+            bitOffset: '7'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Disabled
+                description: Interrupts were not enabled in M-mode.
+                value: '0'
+              - '@usage': read
+                name: Enabled
+                description: Interrupts were enabled in M-mode.
+                value: '1'
+          - name: UBE
+            displayName: User mode Bit Endianess
+            description: UBE controls whether explicit load and store memory accesses made from U-mode are little-endian or big-endian.``Legal Values``:0.
+            bitOffset: '6'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Little-endian
+                value: '0'
+              - '@usage': read
+                name: Big-endian
+                value: '1'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: SPIE
+            displayName: Supervisor mode Prior Interrupt Enable
+            description: Indicates whether supervisor interrupts were enabled prior to trapping into supervisor mode.
+            bitOffset: '5'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Disabled
+                description: Interrupts were not enabled in S-mode.
+                value: '0'
+              - '@usage': read
+                name: Enabled
+                description: Interrupts were enabled in S-mode.
+                value: '1'
+          - name: reserved_1
+            displayName: Reserved
+            description: Reserved
+            bitOffset: '4'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
+          - name: MIE
+            displayName: Machine mode Interrupt Enable
+            description: Global interrupt-enable bit for Machine mode.
+            bitOffset: '3'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Disabled
+                description: Interrupts are disabled.
+                value: '0'
+              - '@usage': read
+                name: Enabled
+                description: Interrupts are enabled.
+                value: '1'
+          - name: reserved_2
+            displayName: Reserved
+            description: Reserved
+            bitOffset: '2'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
+          - name: SIE
+            displayName: Supervisor mode Interrupt Enable
+            description: Global interrupt-enable bit for Supervisor mode.
+            bitOffset: '1'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Disabled
+                description: Interrupts are disabled.
+                value: '0'
+              - '@usage': read
+                name: Enabled
+                description: Interrupts are enabled.
+                value: '1'
+          - name: reserved_3
+            displayName: Reserved
+            description: Reserved
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
+          vendorExtensions:
+            privilege_mode: M
+        - name: misa
+          displayName: Machine ISA
+          description: The misa CSR is reporting the ISA supported by the hart.
+          addressOffset: "'h301"
+          size: '32'
+          access: read-write
+          field:
+          - name: MXL
+            displayName: Machine XLEN
+            description: The MXL field encodes the native base integer ISA width.``Legal Values``:1.
+            bitOffset: '30'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x3'
+            bitWidth: '2'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read-write
+                name: XLEN_32
+                value: '1'
+              - '@usage': read-write
+                name: XLEN_64
+                value: '2'
+              - '@usage': read-write
+                name: XLEN_128
+                value: '3'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: Reserved_26
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '26'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '4'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: Extensions
+            displayName: Extensions
+            description: The Extensions field encodes the presence of the standard extensions, with a single bit per letter of the alphabet.``Legal Values``:0x141104.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x141104'
+                mask: '0x3ffffff'
+            bitWidth: '26'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read-write
+                name: A
+                description: Atomic extension.
+                value: '1'
+              - '@usage': read-write
+                name: B
+                description: '*Tentatively reserved for Bit-Manipulation extension.*'
+                value: '2'
+              - '@usage': read-write
+                name: C
+                description: Compressed extension.
+                value: '4'
+              - '@usage': read-write
+                name: D
+                description: Double-precision floating-point extension.
+                value: '8'
+              - '@usage': read-write
+                name: E
+                description: RV32E base ISA.
+                value: '16'
+              - '@usage': read-write
+                name: F
+                description: Single-precision floating-point extension.
+                value: '32'
+              - '@usage': read-write
+                name: G
+                description: '*Reserved.*'
+                value: '64'
+              - '@usage': read-write
+                name: H
+                description: Hypervisor extension.
+                value: '128'
+              - '@usage': read-write
+                name: I
+                description: RV32I/64I/128I base ISA.
+                value: '256'
+              - '@usage': read-write
+                name: J
+                description: '*Tentatively reserved for Dynamically Translated Languages extension.*'
+                value: '512'
+              - '@usage': read-write
+                name: K
+                description: '*Reserved.*'
+                value: '1024'
+              - '@usage': read-write
+                name: L
+                description: '*Reserved.*'
+                value: '2048'
+              - '@usage': read-write
+                name: M
+                description: Integer Multiply/Divide extension.
+                value: '4096'
+              - '@usage': read-write
+                name: N
+                description: '*Tentatively reserved for User-Level Interrupts extension.*'
+                value: '8192'
+              - '@usage': read-write
+                name: O
+                description: '*Reserved.*'
+                value: '16384'
+              - '@usage': read-write
+                name: P
+                description: '*Tentatively reserved for Packed-SIMD extension.*'
+                value: '32768'
+              - '@usage': read-write
+                name: Q
+                description: Quad-precision floating-point extension.
+                value: '65536'
+              - '@usage': read-write
+                name: R
+                description: '*Reserved.*'
+                value: '131072'
+              - '@usage': read-write
+                name: S
+                description: Supervisor mode implemented.
+                value: '262144'
+              - '@usage': read-write
+                name: T
+                description: '*Reserved.*'
+                value: '524288'
+              - '@usage': read-write
+                name: U
+                description: User mode implemented.
+                value: '1048576'
+              - '@usage': read-write
+                name: V
+                description: '*Tentatively reserved for Vector extension.*'
+                value: '2097152'
+              - '@usage': read-write
+                name: W
+                description: '*Reserved.*'
+                value: '4194304'
+              - '@usage': read-write
+                name: X
+                description: Non-standard extensions present.
+                value: '8388608'
+              - '@usage': read-write
+                name: Y
+                description: '*Reserved.*'
+                value: '16777216'
+              - '@usage': read-write
+                name: Z
+                description: '*Reserved.*'
+                value: '33554432'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mie
+          displayName: Machine Interrupt Enable
+          description: This register contains machine interrupt enable bits.
+          addressOffset: "'h304"
+          size: '32'
+          access: read-write
+          field:
+          - name: Reserved_12
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '12'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '4'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: MEIE
+            displayName: M-mode External Interrupt Enable
+            description: Enables machine mode external interrupts.
+            bitOffset: '11'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: Reserved_10
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '10'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: SEIE
+            displayName: S-mode External Interrupt Enable
+            description: Enables supervisor mode external interrupts.
+            bitOffset: '9'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: UEIE
+            description: enables U-mode external interrupts.``Legal Values:``0.
+            bitOffset: '8'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: MTIE
+            displayName: M-mode Timer Interrupt Enable
+            description: Enables machine mode timer interrupts.
+            bitOffset: '7'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: Reserved_6
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '6'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: STIE
+            displayName: S-mode Timer Interrupt Enable
+            description: Enables supervisor mode timer interrupts.
+            bitOffset: '5'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: UTIE
+            description: timer interrupt-enable bit for U-mode.``Legal Values:``0.
+            bitOffset: '4'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: MSIE
+            displayName: M-mode Software Interrupt Enable
+            description: Enables machine mode software interrupts.
+            bitOffset: '3'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+          - name: Reserved_2
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '2'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: SSIE
+            displayName: S-mode Software Interrupt Enable
+            description: Enables supervisor mode software interrupts.
+            bitOffset: '1'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: USIE
+            description: enable U-mode software interrrupts.``Legal Values:``0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mtvec
+          displayName: Machine Trap Vector
+          description: This register holds trap vector configuration, consisting of a vector base address and a vector mode.
+          addressOffset: "'h305"
+          size: '32'
+          access: read-write
+          field:
+          - name: BASE
+            description: 'The BASE field in mtvec is a WARL field that can hold any valid virtual or physical address, subject to the following alignment constraints: when MODE=Direct the address must be 4-byte aligned, and when MODE=Vectored the address must be 256-byte aligned.'
+            bitOffset: '2'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x3fffffff'
+            bitWidth: '30'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: MODE
+            description: Imposes additional alignment constraints on the value in the BASE field.``Legal Values :``0,1.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x3'
+            bitWidth: '2'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read-write
+                name: Direct
+                description: All exceptions set ``pc`` to BASE.
+                value: '0'
+              - '@usage': read-write
+                name: Vectored
+                description: Asynchronous interrupts set ``pc`` to BASE+4×cause.
+                value: '1'
+              - '@usage': read-write
+                name: Reserved_2
+                description: '*Reserved.*'
+                value: '2'
+              - '@usage': read-write
+                name: Reserved_3
+                description: '*Reserved.*'
+                value: '3'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mstatush
+          displayName: Upper 32-bits of Machine Status
+          description: The ``mstatush`` is the upper 32-bits of Machine status only for RV32.
+          addressOffset: "'h310"
+          size: '32'
+          volatile: 'true'
+          access: read-write
+          field:
+          - name: reserved_0
+            displayName: Reserved
+            description: Reserved
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '4'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
+          - name: SBE
+            displayName: Supervisor mode Bit Endianess
+            description: SBE controls whether explicit load and store memory accesses made from S-mode are little-endian or big-endian.``Legal Values``:0.
+            bitOffset: '4'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Little-endian
+                value: '0'
+              - '@usage': read
+                name: Big-endian
+                value: '1'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: MBE
+            displayName: Machine mode Bit Endianess
+            description: MBE controls whether explicit load and store memory accesses made from M-mode are little-endian or big-endian.``Legal Values``:0.
+            bitOffset: '5'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            enumeratedValues:
+              enumeratedValue:
+              - '@usage': read
+                name: Little-endian
+                value: '0'
+              - '@usage': read
+                name: Big-endian
+                value: '1'
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: reserved_1
+            displayName: Reserved
+            description: Reserved
+            bitOffset: '6'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '26'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WPRI
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent3
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h323"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent4
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h324"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent5
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h325"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent6
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h326"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent7
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h327"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent8
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h328"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent9
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h329"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent10
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h32a"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent11
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h32b"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent12
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h32c"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent13
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h32d"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent14
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h32e"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent15
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h32f"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent16
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h330"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent17
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h331"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent18
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h332"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent19
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h333"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent20
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h334"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent21
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h335"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent22
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h336"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent23
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h337"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent24
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h338"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent25
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h339"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent26
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h33a"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent27
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h33b"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent28
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h33c"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent29
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h33d"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent30
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h33e"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmevent31
+          displayName: Machine Hardware Performance-Monitoring Event Selector
+          description: This register controls which event causes the corresponding counter to increment.
+          dim: '6'
+          addressOffset: "'h33f"
+          size: '32'
+          access: read-write
+          field:
+            name: mhpmevent
+            description: Event selector CSRs.``Legal Values``:0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mscratch
+          displayName: Machine Scratch
+          description: This register is used to hold a value dedicated to Machine mode. Attempts to access without Machine mode level raise illegal instruction exception.
+          addressOffset: "'h340"
+          size: '32'
+          access: read-write
+          field:
+            name: mscratch
+            displayName: Machine Scratch
+            description: Holds a value dedicated to Machine mode.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: mepc
+          displayName: Machine Exception Program Counter
+          description: This register must be able to hold all valid virtual addresses.
+          addressOffset: "'h341"
+          size: '32'
+          access: read-write
+          field:
+            name: mepc
+            displayName: Machine Exception Program Counter
+            description: When a trap is taken into M-mode, ``mepc`` is written with the virtual address of the instruction that was interrupted or that encountered the exception.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mcause
+          displayName: Machine Cause
+          description: "When a trap is taken into M-mode, mcause is written with a code indicating the event that caused the trap.\nMachine cause register (``mcause``) values after trap are shown in the following table. =========  ==============  ==============================\nInterrupt  Exception Code Description =========  ==============  ==============================\n        1               0  *Reserved*\n        1               1  Supervisor software interrupt\n        1             2-4  *Reserved*\n        1               5  Supervisor timer interrupt\n        1             6-8  *Reserved*\n        1               9  Supervisor external interrupt\n        1           10-15  *Reserved*\n        1             ≥16  *Designated for platform use*\n        0               0  Instruction address misaligned\n        0               1  Instruction access fault\n        0               2  Illegal instruction\n        0               3  Breakpoint\n        0               4  Load address misaligned\n        0               5  Load access fault\n        0               6  Store/AMO address misaligned\n        0               7  Store/AMO access fault\n        0               8  Environment call from U-mode\n        0               9  Environment call from S-mode\n        0           10-11  *Reserved*\n        0              12  Instruction page fault\n        0              13  Load page fault\n        0              14  *Reserved*\n        0              15  Store/AMO page fault\n        0           16-23  *Reserved*\n        0           24-31  *Designated for custom use*\n        0           32-47  *Reserved*\n        0           48-63  *Designated for custom use*\n        0             ≥64 *Reserved* =========  ==============  =============================="
+          addressOffset: "'h342"
+          size: '32'
+          access: read-write
+          field:
+          - name: Interrupt
+            displayName: Interrupt
+            description: This bit is set if the trap was caused by an interrupt.
+            bitOffset: '31'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+          - name: exception_code
+            displayName: Exception Code
+            description: This field contains a code identifying the last exception or interrupt.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x7fffffff'
+            bitWidth: '31'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WLRL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mtval
+          displayName: Machine Trap Value
+          description: When a trap is taken into M-mode, mtval is either set to zero or written with exception-specific information to assist software in handling the trap.
+          addressOffset: "'h343"
+          size: '32'
+          access: read-write
+          field:
+            name: mtval
+            displayName: Machine Trap Value
+            description: "If ``mtval`` is written with a nonzero value when a breakpoint, address-misaligned, access-fault, or page-fault exception occurs on an instruction fetch, load, or store, then mtval will contain the faulting virtual address.\nIf ``mtval`` is written with a nonzero value when a misaligned load or store causes an access-fault or page-fault exception, then ``mtval`` will contain the virtual address of the portion of the access that caused the fault.\nIf ``mtval`` is written with a nonzero value when an instruction access-fault or page-fault exception occurs on a system with variable-length instructions, then ``mtval`` will contain the virtual address of the portion of the instruction that caused the fault, while ``mepc`` will point to the beginning of the instruction."
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mip
+          displayName: Machine Interrupt Pending
+          description: This register contains machine interrupt pending bits.
+          addressOffset: "'h344"
+          size: '32'
+          volatile: 'true'
+          access: read-write
+          field:
+          - name: Reserved_12
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '12'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '4'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: MEIP
+            displayName: M-mode External Interrupt Pending
+            description: The interrupt-pending bit for machine-level external interrupts.
+            bitOffset: '11'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            volatile: 'true'
+            access: read-only
+          - name: Reserved_10
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '10'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: SEIP
+            displayName: S-mode External Interrupt Pending
+            description: The interrupt-pending bit for supervisor-level external interrupts.
+            bitOffset: '9'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+          - name: UEIP
+            description: enables external interrupts.``Legal Values:``0.
+            bitOffset: '8'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+          - name: MTIP
+            displayName: M-mode Timer Interrupt Pending
+            description: The interrupt-pending bit for machine-level timer interrupts.
+            bitOffset: '7'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            volatile: 'true'
+            access: read-only
+          - name: Reserved_6
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '6'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: STIP
+            displayName: S-mode Timer Interrupt Pending
+            description: The interrupt-pending bit for supervisor-level timer interrupts.
+            bitOffset: '5'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+          - name: UTIP
+            description: Correspond to timer interrupt-pending bits for user interrupt.``Legal Values:``0.
+            bitOffset: '4'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+          - name: MSIP
+            displayName: M-mode Software Interrupt Pending
+            description: The interrupt-pending bit for machine-level software interrupts.
+            bitOffset: '3'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            volatile: 'true'
+            access: read-only
+          - name: Reserved_2
+            displayName: Reserved
+            description: Reserved.``Legal Values:``0.
+            bitOffset: '2'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          - name: SSIP
+            displayName: S-mode Software Interrupt Pending
+            description: The interrupt-pending bit for supervisor-level software interrupts.
+            bitOffset: '1'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+          - name: USIP
+            description: A hart to directly write its own USIP bits when running in the appropriate mode.``Legal Values:``0.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpcfg0
+          displayName: Physical Memory Protection Config 0
+          description: Holds configuration 0-3.
+          addressOffset: "'h3a0"
+          size: '32'
+          access: read-write
+          field:
+          - name: pmp3cfg
+            displayName: Physical Memory Protection 3 Config
+            description: Holds the configuration.
+            bitOffset: '24'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp2cfg
+            displayName: Physical Memory Protection 2 Config
+            description: Holds the configuration.
+            bitOffset: '16'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp1cfg
+            displayName: Physical Memory Protection 1 Config
+            description: Holds the configuration.
+            bitOffset: '8'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp0cfg
+            displayName: Physical Memory Protection 0 Config
+            description: Holds the configuration.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpcfg1
+          displayName: Physical Memory Protection Config 1
+          description: Holds configuration 4-7.
+          addressOffset: "'h3a1"
+          size: '32'
+          access: read-write
+          field:
+          - name: pmp7cfg
+            displayName: Physical Memory Protection 7 Config
+            description: Holds the configuration.
+            bitOffset: '24'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp6cfg
+            displayName: Physical Memory Protection 6 Config
+            description: Holds the configuration.
+            bitOffset: '16'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp5cfg
+            displayName: Physical Memory Protection 5 Config
+            description: Holds the configuration.
+            bitOffset: '8'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp4cfg
+            displayName: Physical Memory Protection 4 Config
+            description: Holds the configuration.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpcfg2
+          displayName: Physical Memory Protection Config 2
+          description: Holds configuration 8-11.
+          addressOffset: "'h3a2"
+          size: '32'
+          access: read-write
+          field:
+          - name: pmp11cfg
+            displayName: Physical Memory Protection 11 Config
+            description: Holds the configuration.
+            bitOffset: '24'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp10cfg
+            displayName: Physical Memory Protection 10 Config
+            description: Holds the configuration.
+            bitOffset: '16'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp9cfg
+            displayName: Physical Memory Protection 9 Config
+            description: Holds the configuration.
+            bitOffset: '8'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp8cfg
+            displayName: Physical Memory Protection 8 Config
+            description: Holds the configuration.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpcfg3
+          displayName: Physical Memory Protection Config 3
+          description: Holds configuration 12-15.
+          addressOffset: "'h3a3"
+          size: '32'
+          access: read-write
+          field:
+          - name: pmp15cfg
+            displayName: Physical Memory Protection 15 Config
+            description: Holds the configuration.
+            bitOffset: '24'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp14cfg
+            displayName: Physical Memory Protection 14 Config
+            description: Holds the configuration.
+            bitOffset: '16'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp13cfg
+            displayName: Physical Memory Protection 13 Config
+            description: Holds the configuration.
+            bitOffset: '8'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          - name: pmp12cfg
+            displayName: Physical Memory Protection 12 Config
+            description: Holds the configuration.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xff'
+            bitWidth: '8'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr0
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b0"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr1
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b1"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr2
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b2"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr3
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b3"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr4
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b4"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr5
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b5"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr6
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b6"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr7
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b7"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr8
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b8"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr9
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3b9"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr10
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3ba"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr11
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3bb"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr12
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3bc"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr13
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3bd"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr14
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3be"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: pmpaddr15
+          displayName: Physical Memory Protection Address
+          description: Address register for Physical Memory Protection.
+          dim: '16'
+          addressOffset: "'h3bf"
+          size: '32'
+          access: read-write
+          field:
+            name: address
+            displayName: Address
+            description: Encodes bits 33-2 of a 34-bit physical address.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+            vendorExtensions:
+              RISCV_behavior: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: icache
+          displayName: Instruction Cache
+          description: Custom Register to enable/disable for Icache [bit 0]
+          addressOffset: "'h7C0"
+          size: '32'
+          access: read-write
+          field:
+          - name: reserved_0
+            displayName: Reserved
+            description: Reserved
+            bitOffset: '1'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0x1'
+            bitWidth: '31'
+            access: read-only
+          - name: icache
+            displayName: Instruction Cache
+            description: Custom Register
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x1'
+                mask: '0x1'
+            bitWidth: '1'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: mcycle
+          displayName: M-mode Cycle counter
+          description: Counts the number of clock cycles executed by the processor core on which the hart is running.
+          addressOffset: "'hB00"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: Counts the number of clock cycles executed by the processor core.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: minstret
+          displayName: Machine Instruction Retired counter
+          description: Counts the number of instructions the hart has retired.
+          addressOffset: "'hB02"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: Counts the number of instructions the hart has retired.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: mcycleh
+          displayName: Upper 32-bits of M-mode Cycle counter
+          description: Counts the number of clock cycles executed by the processor core on which the hart is running.
+          addressOffset: "'hB80"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: Counts the number of clock cycles executed by the processor core.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: minstreth
+          displayName: Upper 32-bits of Machine Instruction Retired counter
+          description: Counts the number of instructions the hart has retired.
+          addressOffset: "'hB82"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: Counts the number of instructions the hart has retired.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: read-write
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter3
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb03"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter4
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb04"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter5
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb05"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter6
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb06"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter7
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb07"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter8
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb08"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter9
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb09"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter10
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb0a"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter11
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb0b"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter12
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb0c"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter13
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb0d"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter14
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb0e"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter15
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb0f"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter16
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb10"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter17
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb11"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter18
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb12"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter19
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb13"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter20
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb14"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter21
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb15"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter22
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb16"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter23
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb17"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter24
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb18"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter25
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb19"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter26
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb1a"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter27
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb1b"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter28
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb1c"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter29
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb1d"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter30
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb1e"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounter31
+          displayName: Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter.
+          dim: '6'
+          addressOffset: "'hb1f"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh3
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb83"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh4
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb84"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh5
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb85"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh6
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb86"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh7
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb87"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh8
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb88"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh9
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb89"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh10
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb8a"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh11
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb8b"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh12
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb8c"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh13
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb8d"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh14
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb8e"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh15
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb8f"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh16
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb90"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh17
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb91"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh18
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb92"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh19
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb93"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh20
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb94"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh21
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb95"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh22
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb96"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh23
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb97"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh24
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb98"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh25
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb99"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh26
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb9a"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh27
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb9b"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh28
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb9c"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh29
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb9d"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh30
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb9e"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhpmcounterh31
+          displayName: Upper 32 bits of Machine Hardware Performance Monitoring Counter
+          description: Hardware performance event counter only for RV32.
+          dim: '6'
+          addressOffset: "'hb9f"
+          size: '32'
+          access: read-write
+          field:
+            name: count
+            displayName: Count
+            description: '``Legal Values``: 0.'
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            access: WARL
+          vendorExtensions:
+            privilege_mode: M
+        - name: cycle
+          displayName: Cycle counter
+          description: Cycle counter for RDCYCLE instruction. Shadow of mcycle.
+          addressOffset: "'hC00"
+          size: '32'
+          volatile: 'true'
+          access: read-only
+          field:
+            name: count
+            displayName: Count
+            description: Count
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            volatile: 'true'
+            access: read-only
+          vendorExtensions:
+            privilege_mode: U
+        - name: instret
+          displayName: Instruction Retired counter
+          description: Instructions-retired counter for RDINSTRET instruction. Shadow of minstret.
+          addressOffset: "'hC02"
+          size: '32'
+          volatile: 'true'
+          access: read-only
+          field:
+            name: count
+            displayName: Count
+            description: Count
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            volatile: 'true'
+            access: read-only
+          vendorExtensions:
+            privilege_mode: U
+        - name: cycleh
+          displayName: Upper 32-bits of Cycle counter
+          description: Cycle counter for RDCYCLE instruction. Shadow of mcycleh.
+          addressOffset: "'hC80"
+          size: '32'
+          volatile: 'true'
+          access: read-only
+          field:
+            name: count
+            displayName: Count
+            description: Count
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            volatile: 'true'
+            access: read-only
+          vendorExtensions:
+            privilege_mode: U
+        - name: instreth
+          displayName: Upper 32-bits of Instruction Retired counter
+          description: Instructions-retired counter for RDINSTRET instruction. Shadow of minstreth.
+          addressOffset: "'hC82"
+          size: '32'
+          volatile: 'true'
+          access: read-only
+          field:
+            name: count
+            displayName: Count
+            description: Count
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            volatile: 'true'
+            access: read-only
+          vendorExtensions:
+            privilege_mode: U
+        - name: mvendorid
+          displayName: Machine Vendor ID
+          description: This register provids the JEDEC manufacturer ID of the provider of the core.
+          addressOffset: "'hF11"
+          size: '32'
+          volatile: 'true'
+          access: read-only
+          field:
+          - name: bank
+            displayName: Bank
+            description: Contain encoding for number of one-byte continuation codes discarding the parity bit.
+            bitOffset: '7'
+            resets:
+              reset:
+                value: '0xC0'
+                mask: '0x1ffffff'
+            bitWidth: '25'
+            volatile: 'true'
+            access: read-only
+          - name: offset
+            displayName: Offset
+            description: Contain encording for the final byte discarding the parity bit.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x20'
+                mask: '0x7f'
+            bitWidth: '7'
+            volatile: 'true'
+            access: read-only
+          vendorExtensions:
+            privilege_mode: M
+        - name: marchid
+          displayName: Machine Architecture ID
+          description: This register encodes the base microarchitecture of the hart.
+          addressOffset: "'hF12"
+          size: '32'
+          volatile: 'true'
+          access: read-only
+          field:
+            name: architecture_id
+            displayName: Architecture ID
+            description: Provide Encoding the base microarchitecture of the hart.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x3'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            volatile: 'true'
+            access: read-only
+          vendorExtensions:
+            privilege_mode: M
+        - name: mimpid
+          displayName: Machine Implementation ID
+          description: Provides a unique encoding of the version of the processor implementation.
+          addressOffset: "'hF13"
+          size: '32'
+          volatile: 'true'
+          access: read-only
+          field:
+            name: implementation
+            displayName: Implementation
+            description: Provides unique encoding of the version of the processor implementation.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            volatile: 'true'
+            access: read-only
+          vendorExtensions:
+            privilege_mode: M
+        - name: mhartid
+          displayName: Machine Hardware Thread ID
+          description: This register contains the integer ID of the hardware thread running the code.
+          addressOffset: "'hF14"
+          size: '32'
+          volatile: 'true'
+          access: read-only
+          field:
+            name: hart_id
+            displayName: Hart ID
+            description: Contains the integer ID of the hardware thread running the code.
+            bitOffset: '0'
+            resets:
+              reset:
+                value: '0x0'
+                mask: '0xffffffff'
+            bitWidth: '32'
+            volatile: 'true'
+            access: read-only
+          vendorExtensions:
+            privilege_mode: M
+      addressUnitBits: '32'
