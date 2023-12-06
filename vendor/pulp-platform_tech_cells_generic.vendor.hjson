@@ -15,7 +15,7 @@
         // URL
         url: "https://github.com/pulp-platform/tech_cells_generic.git",
         // revision
-        rev: "b2a68114302af1d8191ddf34ea0e07b471911866",
+        rev: "v0.2.13",
     }
 
     // Patch dir for local changes

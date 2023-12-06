@@ -30,6 +30,9 @@
 //                "none":   Each bit gets initialized with 1'bx. (default)
 // - PrintSimCfg: Prints at the beginning of the simulation a `Hello` message with
 //                the instantiated parameters and signal widths.
+// - ImplKey:     Key by which an instance can refer to a specific implementation (e.g. macro).
+//                May be used to look up additional parameters for implementation (e.g. generator,
+//                line width, muxing) in an external reference, such as a configuration file.
 //
 // Ports:
 // - `clk_i`:   Clock
@@ -58,6 +61,7 @@ module tc_sram #(
   parameter int unsigned Latency      = 32'd1,    // Latency when the read data is available
   parameter              SimInit      = "none",   // Simulation initialization
   parameter bit          PrintSimCfg  = 1'b0,     // Print configuration
+  parameter              ImplKey      = "none",   // Reference to specific implementation
   // DEPENDENT PARAMETERS, DO NOT OVERWRITE!
   parameter int unsigned AddrWidth = (NumWords > 32'd1) ? $clog2(NumWords) : 32'd1,
   parameter int unsigned BeWidth   = (DataWidth + ByteWidth - 32'd1) / ByteWidth, // ceil_div

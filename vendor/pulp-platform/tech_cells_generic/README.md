@@ -19,7 +19,7 @@ If you want to get started in your own technology (either an unsupported FPGA or
 
 Clock cells usually are care-fully designed cells which do not exhibit any glitches. Therefore they need to be manually instantiated in ASIC designs. All clock cells can be found in `tc_clk.sv`.
 
-|        Name       |         Description          | Status |       Xilinx       |
+| Name              | Description                  | Status | Xilinx             |
 |-------------------|------------------------------|--------|--------------------|
 | `tc_clk_and2`     | Clock and gate               | active | :white_check_mark: |
 | `tc_clk_buffer`   | Clock buffer                 | active | :white_check_mark: |
@@ -27,6 +27,7 @@ Clock cells usually are care-fully designed cells which do not exhibit any glitc
 | `tc_clk_inverter` | Clock inverter               | active | :white_check_mark: |
 | `tc_clk_mux2`     | Clock Mux with two inputs    | active | :white_check_mark: |
 | `tc_clk_xor2`     | Clock Xor                    | active | :white_check_mark: |
+| `tc_clk_or2`      | Clock Or                     | active | :white_check_mark: |
 | `tc_clk_delay`    | Programmable clock-delay     | active |                    |
 
 ### Memory

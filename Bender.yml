@@ -12,10 +12,7 @@ dependencies:
     { git: "https://github.com/pulp-platform/common_cells", version: 1.23.0 }
   fpnew: { git: "https://github.com/openhwgroup/cvfpu.git", version: 0.7.0 }
   tech_cells_generic:
-    {
-      git: "https://github.com/pulp-platform/tech_cells_generic.git",
-      rev: b2a68114302af1d8191ddf34ea0e07b471911866,
-    }
+    { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.13 }
 
 frozen: true
 
