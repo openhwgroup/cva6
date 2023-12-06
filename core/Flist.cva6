@@ -157,6 +157,11 @@ ${CVA6_REPO_DIR}/core/cache_subsystem/std_cache_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/std_nbdcache.sv
 ${HPDCACHE_TARGET_CFG}
 -F ${HPDCACHE_DIR}/rtl/hpdcache.Flist
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_req_read_arbiter.sv
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_req_write_arbiter.sv
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_resp_demux.sv
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_to_axi_read.sv
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_to_axi_write.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_subsystem_axi_arbiter.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_if_adapter.sv
