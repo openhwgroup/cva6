@@ -88,14 +88,6 @@ package wt_cache_pkg;
     ICACHE_IFILL_ACK
   } icache_in_t;
 
-  // icache interface
-  typedef struct packed {
-    logic                                      vld;  // invalidate only affected way
-    logic                                      all;  // invalidate all ways
-    logic [CVA6Cfg.ICACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
-    logic [L1I_WAY_WIDTH-1:0]                  way;  // way to invalidate
-  } icache_inval_t;
-
   // dcache interface
   typedef struct packed {
     logic                                      vld;  // invalidate only affected way

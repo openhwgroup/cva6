@@ -149,7 +149,12 @@ module cva6
       wt_cache_pkg::icache_in_t rtype;  // see definitions above
       logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
       logic [CVA6Cfg.ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
-      wt_cache_pkg::icache_inval_t inv;  // invalidation vector
+      struct packed {
+        logic                                      vld;  // invalidate only affected way
+        logic                                      all;  // invalidate all ways
+        logic [CVA6Cfg.ICACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
+        logic [wt_cache_pkg::L1I_WAY_WIDTH-1:0]    way;  // way to invalidate
+      } inv;  // invalidation vector
       logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     },
 
