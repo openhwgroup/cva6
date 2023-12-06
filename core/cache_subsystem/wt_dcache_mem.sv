@@ -32,6 +32,7 @@ module wt_dcache_mem
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg  = config_pkg::cva6_cfg_empty,
     parameter int unsigned           NumPorts = 3,
+    parameter type wbuffer_t = logic,
     parameter int unsigned DCACHE_CL_IDX_WIDTH = 1
 ) (
     input logic clk_i,

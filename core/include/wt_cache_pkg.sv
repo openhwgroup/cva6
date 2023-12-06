@@ -63,18 +63,6 @@ package wt_cache_pkg;
   localparam DCACHE_MAX_TX = 2 ** L15_TID_WIDTH;
   localparam CACHE_ID_WIDTH = L15_TID_WIDTH;
 
-
-  typedef struct packed {
-    logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] wtag;
-    logic [CVA6Cfg.XLEN-1:0] data;
-    logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] user;
-    logic [(CVA6Cfg.XLEN/8)-1:0] dirty;  // byte is dirty
-    logic [(CVA6Cfg.XLEN/8)-1:0] valid;  // byte is valid
-    logic [(CVA6Cfg.XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
-    logic checked;  // if cache state of this word has been checked
-    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
-  } wbuffer_t;
-
   // TX status registers are indexed with the transaction ID
   // they basically store which bytes from which buffer entry are part
   // of that transaction

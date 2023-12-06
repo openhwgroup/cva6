@@ -56,6 +56,7 @@ module wt_dcache_wbuffer
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type wbuffer_t = logic,
     parameter int unsigned DCACHE_CL_IDX_WIDTH = 1
 ) (
     input logic clk_i,  // Clock

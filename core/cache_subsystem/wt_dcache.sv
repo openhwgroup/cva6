@@ -21,6 +21,16 @@ module wt_dcache
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter int unsigned NumPorts = 4,  // number of miss ports
+    localparam type wbuffer_t = struct packed {
+      logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] wtag;
+      logic [CVA6Cfg.XLEN-1:0] data;
+      logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] user;
+      logic [(CVA6Cfg.XLEN/8)-1:0] dirty;  // byte is dirty
+      logic [(CVA6Cfg.XLEN/8)-1:0] valid;  // byte is valid
+      logic [(CVA6Cfg.XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
+      logic checked;  // if cache state of this word has been checked
+      logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
+    },
     // ID to be used for read and AMO transactions.
     // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
     parameter logic [CACHE_ID_WIDTH-1:0] RdAmoTxId = 1
@@ -249,6 +259,7 @@ module wt_dcache
       .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .wbuffer_t(wbuffer_t),
       .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH)
   ) i_wt_dcache_wbuffer (
       .clk_i          (clk_i),
@@ -308,6 +319,7 @@ module wt_dcache
   wt_dcache_mem #(
       .CVA6Cfg (CVA6Cfg),
       .NumPorts(NumPorts),
+      .wbuffer_t(wbuffer_t),
       .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH)
   ) i_wt_dcache_mem (
       .clk_i          (clk_i),
