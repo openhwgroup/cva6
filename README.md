@@ -7,232 +7,142 @@ These changes will impact CVA6 interfaces (and top-level parameters). They will 
 To avoid integrating a moving target in their design, CVA6 users can therefore consider pointing to a specific GitHub hash during the changes
 (or investigate [vendorization](https://opentitan.org/book/util/doc/vendor.html)).
 
+
 # CVA6 RISC-V CPU
 
 CVA6 is a 6-stage, single-issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore, it is compliant to the draft external debug spec 0.13.
 
 It has a configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
 
-![](docs/01_cva6_user/_static/ariane_overview.png)
+<img src="docs/03_cva6_design/_static/ariane_overview.drawio.png"/>
 
-## Directory Structure:
-The directory structure separates the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the [CORE-V-APU FPGA Emulation Platform](#corev-apu-fpga-emulation).
-Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
-Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
-The CVA6 core can be compiled stand-alone, and obviously the APU is dependent on the core.
 
-The top-level directories of this repo:
-* **ci**: Scriptware for CI.
-* **common**: Source code used by both the CVA6 Core and the COREV APU. Subdirectories from here are `local` for common files that are hosted in this repo and `submodules` that are hosted in other repos.
-* **core**: Source code for the CVA6 Core only. There should be no sources in this directory used to build anything other than the CVA6 core.
-* **corev_apu**: Source code for the CVA6 APU, exclusive of the CVA6 core. There should be no sources in this directory used to build the CVA6 core.
-* **docs**: Documentation.
-* **pd**: Example and CI scripts to synthesis CVA6.
-* **util**: General utility scriptware.
-* **vendor**: Third-party IP maintained outside the repository.
-* **verif**: Verification environment for the CVA6. The verification files shared with other cores are in the [core-v-verif](https://github.com/openhwgroup/core-v-verif) repository on GitHub. core-v-verif is defined as a cva6 submodule.
-
-## Contributing
-We highly appreciate community contributions.
-<br><br>To ease the work of reviewing contributions, please review [CONTRIBUTING](CONTRIBUTING.md).
-
-## Issues and Troubleshooting
-If you find any problems or issues with CVA6 or the documentation, please check out the [issue tracker](https://github.com/openhwgroup/cva6/issues)
-and create a new issue if your problem is not yet tracked.
-
-## Publication
-
-If you use CVA6 in your academic work you can cite us:
-
-<details>
-<summary>CVA6 Publication</summary>
-<p>
-
-```
-@article{zaruba2019cost,
-   author={F. {Zaruba} and L. {Benini}},
-   journal={IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
-   title={The Cost of Application-Class Processing: Energy and Performance Analysis of a Linux-Ready 1.7-GHz 64-Bit RISC-V Core in 22-nm FDSOI Technology},
-   year={2019},
-   volume={27},
-   number={11},
-   pages={2629-2640},
-   doi={10.1109/TVLSI.2019.2926114},
-   ISSN={1557-9999},
-   month={Nov},
-}
-```
-
-</p>
-</details>
-
-CVA6 User Documentation
-=======================
-
-- [CVA6 RISC-V CPU](#cva6-risc-v-cpu)
-  - [Directory Structure:](#directory-structure)
-  - [Verification](#verification)
-  - [Contributing](#contributing)
-  - [Issues and Troubleshooting](#issues-and-troubleshooting)
-  - [Publication](#publication)
-- [CVA6 User Documentation](#cva6-user-documentation)
-  - [Getting Started](#getting-started)
-    - [Checkout Repo](#checkout-repo)
-    - [Build Model and Run Simulations with verif directory](#build-model-and-run-simulations-with-verif-directory)
-      - [Directories](#directories)
-      - [Prerequisites](#prerequisites)
-      - [Environent setup](#environent-setup)
-      - [Test execution](#test-execution)
-  - [Physical Implementation](#physical-implementation)
-    - [ASIC Synthesis](#asic-synthesis)
-    - [ASIC Gate Simulation with `core-v-verif` repository](#asic-gate-simulation-with-core-v-verif-repository)
-  - [COREV-APU FPGA Emulation](#corev-apu-fpga-emulation)
-    - [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
-    - [Preparing the SD Card](#preparing-the-sd-card)
-    - [Generating a Bitstream](#generating-a-bitstream)
-    - [Debugging](#debugging)
-    - [Preliminary Support for OpenPiton Cache System](#preliminary-support-for-openpiton-cache-system)
-  - [Planned Improvements](#planned-improvements)
-  - [Going Beyond](#going-beyond)
-    - [CI Testsuites and Randomized Constrained Testing with Torture](#ci-testsuites-and-randomized-constrained-testing-with-torture)
-    - [Memory Preloading](#memory-preloading)
-    - [Re-generating the Bootcode (ZSBL)](#re-generating-the-bootcode-zsbl)
-- [Contributing](#contributing-1)
-- [Acknowledgements](#acknowledgements)
-
-Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
-
-## Getting Started
+# Quick setup
 
 The following instructions will allow you to compile and run a Verilator model of the CVA6 APU (which instantiates the CVA6 core) within the CVA6 APU testbench (corev_apu/tb).
 
-### Checkout Repo
+Throughout all build and simulations scripts executions, you can use the environment variable `NUM_JOBS` to set the number of concurrent jobs launched by `make`:
+- if left undefined, `NUM_JOBS` will default to 1, resulting in a sequential execution
+of `make` jobs;
+- when setting `NUM_JOBS` to an explicit value, it is recommended not to exceed 2/3 of
+the total number of virtual cores available on your system.    
 
-Checkout the repository and initialize all submodules
+1. Checkout the repository and initialize all submodules.
 ```sh
 git clone https://github.com/openhwgroup/cva6.git
 cd cva6
 git submodule update --init --recursive
 ```
 
-### Build Model and Run Simulations with verif directory
+2. Install the [GCC Toolchain](file:util/gcc-toolchain-builder/README.md#Prerequisites).
 
-#### verif Directories
-- **bsp**:     board support package for test-programs compiled/assembled/linked for the CVA6.
-This BSP is used by both `core` testbench and `uvmt_cva6` UVM verification environment.
-- **regress**: scripts to install tools, test suites, CVA6 code and to execute tests
-- **sim**:     simulation environment (e.g. riscv-dv)
-- **tb**:      testbench module instancing the core
-- **tests**:   source of test cases and test lists
+:warning: It is **strongly recommanded** to use the toolchain built with the provided scripts.
 
-There are README files in each directory with additional information.
-
-#### Prerequisites
-
-In brief, you will need:
-- a native C/C++ development environment to build simulation tools and models;
-- a RISC-V toolchain to build the CVA6 test programs;
-- optionally, an EDA tool that supports building and running simulation models of designs expressed in SystemVerilog.
-
-To build the open-source tools used by CVA6 and to run CVA6 simulations, you will need
-a native compilation toolchain for C and C++.  Such toolchains are available on virtually
-all Linux distributions as pre-installed or optional packages.   If unsure, ask your system
-administrator to install one on your system.
-
-To build test programs for the CVA6 core, you need a RISC-V toolchain.
-For GCC-based toolchains, only GCC versions above 11.1.0 are supported;
-it is recommended to use GCC 13.1.0 or above.
-
-You can use a pre-built toolchain (available for most common Linux/macOS
-distributions from a variety of providers) or build one from scratch using
-publicly available source code repositiores.  The second approach may prove
-necessary on older or unsupported Linux installations.
-
-To use a pre-built RISC-V toolchain, download and install the package(s) for your
-Linux distribution as per instructions from the toolchain provider, and set the
-`RISCV` environment variable to the installation location of the toolchain:
-
+3. Set the RISCV environment variable.
 ```sh
-# Set environment variable RISCV to the location of the installed toolchain.
 export RISCV=/path/to/toolchain/installation/directory
 ```
 
-To build and install RISC-V GCC toolchain locally, you can use the toolchain generation scripts
-located under `util/gcc-toolchain-builder`.  Please make sure beforehand that you have
-installed all the required *toolchain build* dependencies (see
-[the toolchain README file](file:util/gcc-toolchain-builder/README.md).)
-
-To control the load of your host machine when building the toolchain, you can use
-the environment variable `NUM_JOBS` to limit the number of concurrent jobs launched
-by `make`:
-- if left undefined, `NUM_JOBS` will default to 1, resulting in a sequential execution
-of `make` jobs;
-- when setting `NUM_JOBS` to an explicit value, it is recommended not to exceed 2/3 of
-the total nuber of virtual cores available on your system.
-
+4. Run these commands to install a custom Spike and Verilator (i.e. these versions must be used to simulate the CVA6) and [these](#running-regression-tests-simulations) tests suites.
 ```sh
-# Set environment variable RISCV to the desired installation location.
-# The toolchain can be installed in any user-writable directory.
-export RISCV=/path/to/toolchain/installation/directory
-
-# Get the source code of toolchain components from public repositiories.
-cd util/gcc-toolchain-builder
-bash ./get-toolchain.sh
-
-# For the build prerequisites, see the local README.md.
-
-# Build and install the GCC toolchain.
-bash ./build-toolchain.sh $RISCV
-
-# Return to the toplevel CVA6 directory.
-cd -
-```
-
-You will now be able to run the CVA6 test scripts.
-
-#### Environent setup
-
-To run simulation, several tools and repositories are needed:
-- Gcc as compiler,
-- Spike as instruction set simulator,
-- Verilator as simulator (if used as simulator to simulate). Please refer to verif/regress/install-verilator.sh to know which is the supported Verilator version,
-- [riscv-dv](https://github.com/google/riscv-dv) as simulation environment.
-
-If you would like to use a precompiled Verilator, please setup the path to the installation directory
-```sh
-export VERILATOR_INSTALL_DIR=/path/to/installation/directory
-```
-
-The smoke_tests execution will end up the installation by installing Verilator, Spike, tests from regression suites as arch-test, riscv-dv. Then it runs the smoke_tests test.
-
-Three simulation types are supported:
-- **veri-testharness**: verilator with corev_apu/testharness testbench,
-- **vcs-testharness**: vcs with corev_apu/testharness testbench,
-- **vcs-uvm**: vcs with UVM testbench.
-To check the RTL cva6 behaviour, the RTL simulation trace is compared to spike trace. `DV_SIMULATORS` need to be setup to define which simulators are used.
-
-```sh
+# DV_SIMULATORS is detailed in the next section
 export DV_SIMULATORS=veri-testharness,spike
 bash verif/regress/smoke-tests.sh
 ```
 
-#### Test execution
+# Running standalone simulations
 
-Run one of the shell scripts:
+Simulating the CVA6 is done by using `verif/sim/cva6.py`.
+
+The environment variable `DV_SIMULATORS` allows you to specify which simulator to use.
+
+4 simulation types are supported:
+- **veri-testharness**: verilator with corev_apu/testharness testbench
+- **vcs-testharness**: vcs with corev_apu/testharness testbench
+- **vcs-uvm**: vcs with UVM testbench
+- **Spike** ISS 
+
+You can set several simulators, such as :
 
 ```sh
-# riscv-compliance (https://github.com/riscv/riscv-compliance) test suite:
-bash verif/regress/dv-riscv-compliance.sh
-# riscv-tests (https://github.com/riscv/riscv-tests) test suite:
-bash verif/regress/dv-riscv-tests.sh
+export DV_SIMULATORS=veri-testharness,vcs-testharness,vcs_uvm
 ```
 
-You can run customs tests (.elf .S or .c) by following the example of the hello_world test in `verif/regress/smoke-test.sh`. \
-Please make sure to source `verif/regress/install-cva6.sh` and `verif/regress/install-riscv-dv.sh` since they set the environment to run tests.
+If exactly 2 simulators are given, their trace is compared ([see the Regression tests section](#running-regression-tests-simulations)).
 
-## Physical Implementation
+Here is how you can run the hello world C program with the Verilator model: 
 
-### ASIC Synthesis
+```sh
+# Make sure to source these 2 scripts to correctly set the environment variables related to the tools
+source ./verif/regress/install-cva6.sh
+source ./verif/regress/install-riscv-dv.sh
+
+# Set the NUM_JOBS variable to increase the number of parallel make jobs
+# export NUM_JOBS=
+
+export DV_SIMULATORS=veri-testharness
+
+cd ./verif/sim
+
+python3 cva6.py --target cv32a60x --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml \
+--c_tests ../tests/custom/hello_world/hello_world.c \
+--linker=../tests/custom/common/test.ld \
+--gcc_opts="-static -mcmodel=medany -fvisibility=hidden -nostdlib \
+-nostartfiles -g ../tests/custom/ common/syscalls.c \
+../tests/custom/common/crt.S -lgcc \
+-I../tests/custom/env -I../tests/custom/common"
+```
+
+You can run either assembly programs (check `verif/test/custom/hello_world/custom_test_template.S`) or C programs. Run `python3 cva6.py --help` to have more informations on the available parameters.
+
+## Simulating with VCS and Verdi
+
+You can set the environment variable `VERDI` as such if you want to launch Verdi while simulating with VCS:
+
+```sh
+export VERDI=1
+```
+
+
+# Running regression tests simulations
+
+The smoke-tests script installs a random instruction generator and several tests suites:
+- [riscv-dv](https://github.com/chipsalliance/riscv-dv)
+- [riscv-compliance](https://github.com/lowRISC/riscv-compliance)
+- [riscv-tests](https://github.com/riscv-software-src/riscv-tests)
+- [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test)
+
+
+The regression tests are done by comparing a model simulation trace with the Spike trace.
+
+Several tests scripts can be found in `./verif/regress`
+
+For example, here is how would run the riscv-arch-test regression test suite with the Verilator model:
+
+```sh
+export DV_SIMULATORS=veri-testharness,spike
+bash verif/regress/dv-riscv-arch-test.sh
+```
+
+
+# Logs
+
+The logs from cva6.py are located in `./verif/sim/out-year-month-day`.
+
+Assuming you ran the smoke-tests scripts in the previous step, here is the log directory hierarchy:
+
+- **directed_asm_tests/**: The compiled (to .o then .bin) assembly tests
+- **directed_c_tests/**: The compiled (to .o then .bin) c tests
+- **spike_sim/**: Spike simulation log and trace files
+- **veri_testharness_sim**: Verilator simulation log and trace files
+- **iss_regr.log**: The regression test log 
+
+The regression test log summarizes the comparison between the simulator trace and the Spike trace. Beware that a if a test fails before the comparison step, it will not appear in this log, check the output of cva6.py and the logs of the simulation instead.
+
+
+# Physical Implementation
+
+## ASIC Synthesis
 
 How to make cva6 synthesis ?
 ```
@@ -241,7 +151,8 @@ make -C pd/synth cva6_synth FOUNDRY_PATH=/your/techno/basepath/ TECH_NAME=yourTe
 Don't forget to escape spaces in lists.
 Reports are under: pd/synth/ariane/reports
 
-### ASIC Gate Simulation with `core-v-verif` repository
+
+## ASIC Gate Simulation with `core-v-verif` repository
 
 > :warning: **Warning**: this chapter needs to be updated. See Github issue https://github.com/openhwgroup/cva6/issues/1358.
 
@@ -255,7 +166,8 @@ make vcs_clean
 python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-core-gate $DV_OPTS
 ```
 
-## COREV-APU FPGA Emulation
+
+# COREV-APU FPGA Emulation
 
 We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/openhwgroup/cva6/releases).
 
@@ -267,11 +179,10 @@ Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 - JTAG port (see debugging section below)
 - Bootrom containing zero stage bootloader and device tree.
 
-![](docs/01_cva6_user/_static/fpga_bd.png)
-
 > The ethernet controller and the corresponding network connection is still work in progress and not functional at the moment. Expect some updates soon-ish.
 
-### Programming the Memory Configuration File
+
+## Programming the Memory Configuration File
 
 - Open Vivado
 - Open the hardware manager and open the target board (Genesys II - `xc7k325t`)
@@ -281,7 +192,8 @@ Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 - Press Ok. Flashing will take a couple of minutes.
 - Right click on the FPGA device - Boot from Configuration Memory Device (or press the program button on the FPGA)
 
-### Preparing the SD Card
+
+## Preparing the SD Card
 
 The first stage bootloader will boot from SD Card by default. Get yourself a suitable SD Card (we use [this](https://www.amazon.com/Kingston-Digital-Mobility-MBLY10G2-32GB/dp/B00519BEQO) one). Either grab a pre-built Linux image from [here](https://github.com/pulp-platform/ariane-sdk/releases) or generate the Linux image yourself following the README in the [ariane-sdk repository](https://github.com/pulp-platform/ariane-sdk). Prepare the SD Card by following the "Booting from SD card" section in the ariane-sdk repository.
 
@@ -294,7 +206,8 @@ Default baudrate set by the bootlaoder and Linux is `115200`.
 
 After you've inserted the SD Card and programmed the FPGA you can connect to the serial port of the FPGA and should see the bootloader and afterwards Linux booting. Default username is `root`, no password required.
 
-### Generating a Bitstream
+
+## Generating a Bitstream
 
 To generate the FPGA bitstream (and memory configuration) yourself for the Genesys II board run:
 
@@ -304,7 +217,8 @@ make fpga
 
 This will produce a bitstream file and memory configuration file (in `fpga/work-fpga`) which you can permanently flash by running the above commands.
 
-### Debugging
+
+## Debugging
 
 You can debug (and program) the FPGA using [OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html). We provide two example scripts for OpenOCD below.
 
@@ -374,7 +288,8 @@ You can read or write device memory by using:
 (gdb) set $pc = 0x1000
 ```
 
-### Preliminary Support for OpenPiton Cache System
+
+## Preliminary Support for OpenPiton Cache System
 
 CVA6 has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/wt_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
 
@@ -382,22 +297,84 @@ The corresponding integration patches will be released on [OpenPiton GitHub repo
 
 To activate the different cache system, compile your code with the macro `DCACHE_TYPE`.
 
-## Planned Improvements
 
-Go to the CVA6 Kanban Board which also loosely tracks planned improvements.
-
-
-## Going Beyond
-
-### Re-generating the Bootcode (ZSBL)
+## Re-generating the Bootcode (ZSBL)
 
 The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while the bootcode for the FPGA is in `fpga/src/bootrom`. The RTL bootcode simply jumps to the base of the DRAM where the FSBL takes over. For the FPGA the ZSBL performs additional housekeeping. Both bootloader pass the hartid as well as address to the device tree in argumen register `a0` and `a1` respectively.
 
 To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.
 
+
+# Directory Structure:
+
+The directory structure separates the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the [CORE-V-APU FPGA Emulation Platform](#corev-apu-fpga-emulation).
+Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
+Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
+The CVA6 core can be compiled stand-alone, and obviously the APU is dependent on the core.
+
+The top-level directories of this repo:
+* **ci**: Scriptware for CI.
+* **common**: Source code used by both the CVA6 Core and the COREV APU. Subdirectories from here are `local` for common files that are hosted in this repo and `submodules` that are hosted in other repos.
+* **core**: Source code for the CVA6 Core only. There should be no sources in this directory used to build anything other than the CVA6 core.
+* **corev_apu**: Source code for the CVA6 APU, exclusive of the CVA6 core. There should be no sources in this directory used to build the CVA6 core.
+* **docs**: Documentation.
+* **pd**: Example and CI scripts to synthesis CVA6.
+* **util**: General utility scriptware.
+* **vendor**: Third-party IP maintained outside the repository.
+* **verif**: Verification environment for the CVA6. The verification files shared with other cores are in the [core-v-verif](https://github.com/openhwgroup/core-v-verif) repository on GitHub. core-v-verif is defined as a cva6 submodule.
+
+
+## verif Directories
+
+- **bsp**:     board support package for test-programs compiled/assembled/linked for the CVA6.
+This BSP is used by both `core` testbench and `uvmt_cva6` UVM verification environment.
+- **regress**: scripts to install tools, test suites, CVA6 code and to execute tests
+- **sim**:     simulation environment (e.g. riscv-dv)
+- **tb**:      testbench module instancing the core
+- **tests**:   source of test cases and test lists
+
+# Planned Improvements
+
+Go to the CVA6 Kanban Board which also loosely tracks planned improvements.
+
+
 # Contributing
 
-Check out the [contribution guide](CONTRIBUTING.md).
+We highly appreciate community contributions.
+<br><br>To ease the work of reviewing contributions, please review [CONTRIBUTING](CONTRIBUTING.md).
+
+
+# Issues and Troubleshooting
+
+If you find any problems or issues with CVA6 or the documentation, please check out the [issue tracker](https://github.com/openhwgroup/cva6/issues)
+and create a new issue if your problem is not yet tracked.
+
+
+# Publication
+
+If you use CVA6 in your academic work you can cite us:
+
+<details>
+<summary>CVA6 Publication</summary>
+<p>
+```
+@article{zaruba2019cost,
+   author={F. {Zaruba} and L. {Benini}},
+   journal={IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
+   title={The Cost of Application-Class Processing: Energy and Performance Analysis of a Linux-Ready 1.7-GHz 64-Bit RISC-V Core in 22-nm FDSOI Technology},
+   year={2019},
+   volume={27},
+   number={11},
+   pages={2629-2640},
+   doi={10.1109/TVLSI.2019.2926114},
+   ISSN={1557-9999},
+   month={Nov},
+}
+```
+</p>
+</details>
+<br/>
+
 
 # Acknowledgements
 
