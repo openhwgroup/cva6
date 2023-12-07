@@ -34,11 +34,11 @@ See the License for the specific language governing permissions and limitations 
 
 Work In Progress
 ----------------
-This document is a work in progress and the team currently drafting it focuses on its use for the “step 1” verification of the project.
+This document is a work in progress and the team currently drafting it focuses on its use to verify several configurations of CVA6.
 
 The current limitation of documentation on CVA6 is well understood.
-Rather than regretting this; the reader is encouraged to contribute to it to make CVA6 an even better core.
-To contribute to the project, refer to the Contributing_ guidelines.
+Rather than regretting this, the reader is encouraged to contribute to it to make CVA6 an even better core.
+To contribute to the project, refer to the Contributing_ guidelines and get in touch with the team.
 
 .. _Contributing: https://github.com/jquevremont/cva6/blob/master/CONTRIBUTING.md
 
@@ -53,7 +53,7 @@ The CVA6 user manual targets:
 * Verification engineers involved in the OpenHW Group’s CVA6 project who use this manual as a reference.
 
 The user guide does not target people who dig into CVA6 design. No internal mechanisms are described here,
-except if the user has some sort of control on it; there is a separate design specification for this purpose.
+except if the user has some sort of control on it. A separate design document digs into the core microarchitecture.
 
 CVA6 Overview
 --------------
@@ -81,10 +81,34 @@ CV64A6 is an industrial evolution of ARIANE created by ETH Zürich and the
 University of Bologna. CV32A6 is a later addition by Thales. CVA6 is now
 curated at the OpenHW Group by its members.
 
-This guide targets all versions of the cores, except if a specific configuration or parameter setting is mentioned.
+Configurations
+--------------
+
+CVA6 is actually a family of cores, as CVA6 can be configured to the users' needs with more than 50 parameters.
+A configuration is defined as a given set of parameters.
+
+A few configurations undergo a complete verification process to bring them to **TRL-5**,
+the maturity level where they can be integrated in production ASICs.
+
+This manual includes generic descriptions of CVA6 capabilities, as well as their applicability to
+the verified configurations.
+
+As of today, two configurations are being verified and addressed in this document:
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Short description", "Target", "Privilege levels", "Supported RISC-V ISA", "CV-X-IF"
+
+   "**CV32A60X**", "32-bit **application** core", "ASIC", "Machine, Supervisor, User", "RV32IMACZicsr_Zifencei_Zba_Zbb_Zbc_Zbs_Zcb_Zicond", "Included"
+   "**CV32E6?X**", "32-bit **embedded** core", "ASIC", "Machine only", "RV32IMCZicsr_Zifencei_Zba_Zbb_Zbc_Zbs", "Included"
+
+The "?" digit in CV32E6?X is to be defined, as the team has not yet decided if this core will be extended with dual-issue.
+
+In the future, dedicated user manuals for each configuration could be generated. The team is looking for a contributor to implement this through *templating*.
 
 Scope of the IP
-~~~~~~~~~~~~~~~
+---------------
 
 The **scope of the IP** refers the subsystem that is documented here.
 
