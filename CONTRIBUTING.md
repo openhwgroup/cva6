@@ -20,7 +20,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
     * This can help save significant review and overhauling effort for you and us when dealing with the pull request review.
     * Together, we can anticipate specific cases that are not addressed here.
     * If you do not know how to contact us already, get in touch through info@openhwgroup.org or open an issue in GitHub.
-    
+
 - Specific recommendations:
     * Always consider using the CV-X-IF interface if your contribution is an instruction-set extension.
         - and talk to the team if it's not possible.
@@ -38,6 +38,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - When the contribution is disabled: in all cases, to ensure you have not broken the design.
         - When the contribution is enabled: in relevant cases.
         - You can issue a "do not merge" pull request to test your contribution.
+        - RTL code located in `core` directory is formatted with `verible-verilog-format`.
     * Your contribution shall come with its own regression test to integrate in the CI flow.
         - So that we can detect quickly if future updates break your contribution.
         - To avoid impacting those users who use your contribution in their project.
