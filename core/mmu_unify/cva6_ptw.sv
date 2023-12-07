@@ -215,7 +215,7 @@ genvar x;
     // PTW memory interface
     tag_valid_n               = 1'b0;
     req_port_o.data_req       = 1'b0;
-    req_port_o.data_size      = 2'b{PT_LEVELS};
+    req_port_o.data_size      = 2'(PT_LEVELS);
     req_port_o.data_we        = 1'b0;
     ptw_error_o               = 1'b0;
     ptw_access_exception_o    = 1'b0;
