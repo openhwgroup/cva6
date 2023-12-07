@@ -248,69 +248,7 @@ module cva6_mmu
 
   );
 
-// ptw #(
-//     .CVA6Cfg   (CVA6Cfg),
-//     .ASID_WIDTH(ASID_WIDTH)
-// ) i_ptw (
-//     .clk_i                 (clk_i),
-//     .rst_ni                (rst_ni),
-//     .ptw_active_o          (ptw_active),
-//     .walking_instr_o       (walking_instr),
-//     .ptw_error_o           (ptw_error),
-//     .ptw_access_exception_o(ptw_access_exception),
-//     .enable_translation_i  (enable_translation_i),
 
-//     .update_vaddr_o(update_vaddr),
-//     .itlb_update_o (update_ptw_itlb),
-//     .dtlb_update_o (update_ptw_dtlb),
-
-//     .itlb_access_i(itlb_lu_access),
-//     .itlb_hit_i   (itlb_lu_hit),
-//     .itlb_vaddr_i (icache_areq_i.fetch_vaddr),
-
-//     .dtlb_access_i(dtlb_lu_access),
-//     .dtlb_hit_i   (dtlb_lu_hit),
-//     .dtlb_vaddr_i (lsu_vaddr_i),
-
-//     .req_port_i (req_port_i),
-//     .req_port_o (req_port_o),
-//     .pmpcfg_i,
-//     .pmpaddr_i,
-//     .bad_paddr_o(ptw_bad_paddr),
-//     .*
-// );
-
-// assign update_dtlb.valid        = update_ptw_dtlb.valid;
-// assign update_dtlb.is_page[1]   = update_ptw_dtlb.is_2M;
-// assign update_dtlb.is_page[0]   = update_ptw_dtlb.is_1G;
-// assign update_dtlb.vpn          = update_ptw_dtlb.vpn;
-// assign update_dtlb.asid         = update_ptw_dtlb.asid;
-// assign update_dtlb.content.ppn  = update_ptw_dtlb.content.ppn;
-// assign update_dtlb.content.rsw  = update_ptw_dtlb.content.rsw;
-// assign update_dtlb.content.d    = update_ptw_dtlb.content.d;
-// assign update_dtlb.content.a    = update_ptw_dtlb.content.a;
-// assign update_dtlb.content.g    = update_ptw_dtlb.content.g;
-// assign update_dtlb.content.u    = update_ptw_dtlb.content.u;
-// assign update_dtlb.content.x    = update_ptw_dtlb.content.x;
-// assign update_dtlb.content.w    = update_ptw_dtlb.content.w;
-// assign update_dtlb.content.r    = update_ptw_dtlb.content.r;
-// assign update_dtlb.content.v    = update_ptw_dtlb.content.v;
-
-// assign update_itlb.valid        = update_ptw_itlb.valid;
-// assign update_itlb.is_page[1]   = update_ptw_itlb.is_2M;
-// assign update_itlb.is_page[0]   = update_ptw_itlb.is_1G;
-// assign update_itlb.vpn          = update_ptw_itlb.vpn;
-// assign update_itlb.asid         = update_ptw_itlb.asid;
-// assign update_itlb.content.ppn  = update_ptw_itlb.content.ppn;
-// assign update_itlb.content.rsw  = update_ptw_itlb.content.rsw;
-// assign update_itlb.content.d    = update_ptw_itlb.content.d;
-// assign update_itlb.content.a    = update_ptw_itlb.content.a;
-// assign update_itlb.content.g    = update_ptw_itlb.content.g;
-// assign update_itlb.content.u    = update_ptw_itlb.content.u;
-// assign update_itlb.content.x    = update_ptw_itlb.content.x;
-// assign update_itlb.content.w    = update_ptw_itlb.content.w;
-// assign update_itlb.content.r    = update_ptw_itlb.content.r;
-// assign update_itlb.content.v    = update_ptw_itlb.content.v;
 
 // ila_1 i_ila_1 (
 //     .clk(clk_i), // input wire clk
@@ -360,7 +298,6 @@ module cva6_mmu
   always_comb begin : instr_interface
     // MMU disabled: just pass through
     icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-    // icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
     // two potential exception sources:
     // 1. HPTW threw an exception -> signal with a page fault exception
     // 2. We got an access error because of insufficient permissions -> throw an access exception
@@ -384,17 +321,6 @@ module cva6_mmu
       end
 
       icache_areq_o.fetch_valid = 1'b0;
-
-    // // 4K page
-    // icache_areq_o.fetch_paddr = {itlb_content.ppn, icache_areq_i.fetch_vaddr[11:0]};
-    // // Mega page
-    // if (itlb_is_page[1]) begin
-    //   icache_areq_o.fetch_paddr[20:12] = icache_areq_i.fetch_vaddr[20:12];
-    // end
-    // // Giga page
-    // if (itlb_is_page[0]) begin
-    //   icache_areq_o.fetch_paddr[29:12] = icache_areq_i.fetch_vaddr[29:12];
-    // end
 
       // ---------
       // ITLB Hit
@@ -480,7 +406,6 @@ module cva6_mmu
   // Wires to PMP checks
   riscv::pmp_access_t pmp_access_type;
   logic               pmp_data_allow;
-// localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 
   assign lsu_paddr_o    [11:0] = lsu_vaddr_q[11:0];
   assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
@@ -519,9 +444,6 @@ module cva6_mmu
     dtlb_hit_n = dtlb_lu_hit;
     lsu_is_store_n = lsu_is_store_i;
     dtlb_is_page_n = dtlb_is_page;
-
-  // lsu_paddr_o = lsu_vaddr_q[riscv::PLEN-1:0];
-  // lsu_dtlb_ppn_o = lsu_vaddr_n[riscv::PLEN-1:12];
     lsu_valid_o = lsu_req_q;
     lsu_exception_o = misaligned_ex_q;
     pmp_access_type = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
@@ -536,19 +458,7 @@ module cva6_mmu
     // translation is enabled and no misaligned exception occurred
     if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
       lsu_valid_o = 1'b0;
-    // // 4K page
-    // lsu_paddr_o = {dtlb_pte_q.ppn, lsu_vaddr_q[11:0]};
-    // lsu_dtlb_ppn_o = dtlb_content.ppn;
-    // // Mega page
-    // if (dtlb_is_2M_q) begin
-    //   lsu_paddr_o[20:12] = lsu_vaddr_q[20:12];
-    //   lsu_dtlb_ppn_o[20:12] = lsu_vaddr_n[20:12];
-    // end
-    // // Giga page
-    // if (dtlb_is_1G_q) begin
-    //   lsu_paddr_o[PPNWMin:12] = lsu_vaddr_q[PPNWMin:12];
-    //   lsu_dtlb_ppn_o[PPNWMin:12] = lsu_vaddr_n[PPNWMin:12];
-    // end
+
       // ---------
       // DTLB Hit
       // --------
