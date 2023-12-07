@@ -18,8 +18,11 @@
 
 .. _cva6_compiler_command_lines:
 
+*The team is looking for contributors for this chapter.*
+
 Compiler command lines
 ======================
 Add GCC and LLVM command lines, compiler versions, options that work well with CVA6.
+
 Going further to fine tune the compiler options for performance, benchmarking, code density is not the scope here and would call for a white paper.
 
