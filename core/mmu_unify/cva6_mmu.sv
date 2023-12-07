@@ -329,12 +329,12 @@ assign update_itlb.content.v    = update_ptw_itlb.content.v;
 //     .probe14(itlb_lu_hit) // input wire [0:0]  probe13
 // );
 
-//-----------------------
-// Instruction Interface
-//-----------------------
-logic match_any_execute_region;
-logic pmp_instr_allow;
-localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
+  //-----------------------
+  // Instruction Interface
+  //-----------------------
+  logic match_any_execute_region;
+  logic pmp_instr_allow;
+  localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 
   assign icache_areq_o.fetch_paddr    [11:0] = icache_areq_i.fetch_vaddr[11:0];
   assign icache_areq_o.fetch_paddr [riscv::PLEN-1:PPNWMin+1]   = //
@@ -354,35 +354,35 @@ localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 
   endgenerate
 
-// The instruction interface is a simple request response interface
-always_comb begin : instr_interface
-  // MMU disabled: just pass through
-  icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-  // icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
-  // two potential exception sources:
-  // 1. HPTW threw an exception -> signal with a page fault exception
-  // 2. We got an access error because of insufficient permissions -> throw an access exception
-  icache_areq_o.fetch_exception = '0;
-  // Check whether we are allowed to access this memory region from a fetch perspective
-  iaccess_err   = icache_areq_i.fetch_req && enable_translation_i
-                                               && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
-                                               || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
+  // The instruction interface is a simple request response interface
+  always_comb begin : instr_interface
+    // MMU disabled: just pass through
+    icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
+    // icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
+    // two potential exception sources:
+    // 1. HPTW threw an exception -> signal with a page fault exception
+    // 2. We got an access error because of insufficient permissions -> throw an access exception
+    icache_areq_o.fetch_exception = '0;
+    // Check whether we are allowed to access this memory region from a fetch perspective
+    iaccess_err   = icache_areq_i.fetch_req && enable_translation_i
+                                                 && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
+                                                 || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
-  // MMU enabled: address from TLB, request delayed until hit. Error when TLB
-  // hit and no access right or TLB hit and translated address not valid (e.g.
-  // AXI decode error), or when PTW performs walk due to ITLB miss and raises
-  // an error.
-  if (enable_translation_i) begin
-    // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
-    if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0)) begin
-      icache_areq_o.fetch_exception = {
-        riscv::INSTR_ACCESS_FAULT,
-        {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-        1'b1
-      };
-    end
+    // MMU enabled: address from TLB, request delayed until hit. Error when TLB
+    // hit and no access right or TLB hit and translated address not valid (e.g.
+    // AXI decode error), or when PTW performs walk due to ITLB miss and raises
+    // an error.
+    if (enable_translation_i) begin
+      // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
+      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0)) begin
+        icache_areq_o.fetch_exception = {
+          riscv::INSTR_ACCESS_FAULT,
+          {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+          1'b1
+        };
+      end
 
-    icache_areq_o.fetch_valid = 1'b0;
+      icache_areq_o.fetch_valid = 1'b0;
 
     // // 4K page
     // icache_areq_o.fetch_paddr = {itlb_content.ppn, icache_areq_i.fetch_vaddr[11:0]};
@@ -395,94 +395,90 @@ always_comb begin : instr_interface
     //   icache_areq_o.fetch_paddr[29:12] = icache_areq_i.fetch_vaddr[29:12];
     // end
 
-    // ---------
-    // ITLB Hit
-    // --------
-    // if we hit the ITLB output the request signal immediately
-    if (itlb_lu_hit) begin
-      icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-      // we got an access error
-      if (iaccess_err) begin
-        // throw a page fault
-        icache_areq_o.fetch_exception = {
-          riscv::INSTR_PAGE_FAULT,
-          {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-          1'b1
-        };
-      end else if (!pmp_instr_allow) begin
-        icache_areq_o.fetch_exception = {
-          riscv::INSTR_ACCESS_FAULT,
-          {{riscv::XLEN - riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-          1'b1
-        };
+      // ---------
+      // ITLB Hit
+      // --------
+      // if we hit the ITLB output the request signal immediately
+      if (itlb_lu_hit) begin
+        icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
+        // we got an access error
+        if (iaccess_err) begin
+          // throw a page fault
+          icache_areq_o.fetch_exception = {
+            riscv::INSTR_PAGE_FAULT,
+            {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+            1'b1
+          };
+        end else if (!pmp_instr_allow) begin
+          icache_areq_o.fetch_exception = {
+            riscv::INSTR_ACCESS_FAULT, riscv::XLEN '(icache_areq_i.fetch_vaddr), 1'b1
+          }; 
+        end
+      end else
+      // ---------
+      // ITLB Miss
+      // ---------
+      // watch out for exceptions happening during walking the page table
+      if (ptw_active && walking_instr) begin
+        icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
+        if (ptw_error)
+          icache_areq_o.fetch_exception = {
+            riscv::INSTR_PAGE_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
+          };
+        else
+          icache_areq_o.fetch_exception = {
+            riscv::INSTR_ACCESS_FAULT, ptw_bad_paddr[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1
+          };
       end
-    end else
-    // ---------
-    // ITLB Miss
-    // ---------
-    // watch out for exceptions happening during walking the page table
-    if (ptw_active && walking_instr) begin
-      icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
-      if (ptw_error)
-        icache_areq_o.fetch_exception = {
-          riscv::INSTR_PAGE_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
-        };
-      else
-        icache_areq_o.fetch_exception = {
-          riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
-        };
+    end
+    // if it didn't match any execute region throw an `Instruction Access Fault`
+    // or: if we are not translating, check PMPs immediately on the paddr
+    if ((!match_any_execute_region && !ptw_error) || (!enable_translation_i && !pmp_instr_allow)) begin
+      icache_areq_o.fetch_exception = {
+        riscv::INSTR_ACCESS_FAULT, riscv::VLEN'(icache_areq_o.fetch_paddr[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0]), 1'b1
+      };
     end
   end
-  // if it didn't match any execute region throw an `Instruction Access Fault`
-  // or: if we are not translating, check PMPs immediately on the paddr
-  if ((!match_any_execute_region && !ptw_error) || (!enable_translation_i && !pmp_instr_allow)) begin
-    icache_areq_o.fetch_exception = {
-      riscv::INSTR_ACCESS_FAULT,
-      {{riscv::XLEN - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr},
-      1'b1
-    };
-  end
-end
 
-// check for execute flag on memory
-assign match_any_execute_region = config_pkg::is_inside_execute_regions(
-    CVA6Cfg, {{64 - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}
-);
+  // check for execute flag on memory
+  assign match_any_execute_region = config_pkg::is_inside_execute_regions(
+      CVA6Cfg, {{64 - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}
+  );
 
-// Instruction fetch
-pmp #(
-    .CVA6Cfg   (CVA6Cfg),
-    .PLEN      (riscv::PLEN),
-    .PMP_LEN   (riscv::PLEN - 2),
-    .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
-) i_pmp_if (
-    .addr_i       (icache_areq_o.fetch_paddr),
-    .priv_lvl_i,
-    // we will always execute on the instruction fetch port
-    .access_type_i(riscv::ACCESS_EXEC),
-    // Configuration
-    .conf_addr_i  (pmpaddr_i),
-    .conf_i       (pmpcfg_i),
-    .allow_o      (pmp_instr_allow)
-);
+  // Instruction fetch
+  pmp #(
+      .CVA6Cfg   (CVA6Cfg),
+      .PLEN      (riscv::PLEN),
+      .PMP_LEN   (riscv::PLEN - 2),
+      .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
+  ) i_pmp_if (
+      .addr_i       (icache_areq_o.fetch_paddr),
+      .priv_lvl_i,
+      // we will always execute on the instruction fetch port
+      .access_type_i(riscv::ACCESS_EXEC),
+      // Configuration
+      .conf_addr_i  (pmpaddr_i),
+      .conf_i       (pmpcfg_i),
+      .allow_o      (pmp_instr_allow)
+  );
 
-//-----------------------
-// Data Interface
-//-----------------------
-logic [riscv::VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
-riscv::pte_cva6_t dtlb_pte_n, dtlb_pte_q;
-exception_t misaligned_ex_n, misaligned_ex_q;
-logic lsu_req_n, lsu_req_q;
-logic lsu_is_store_n, lsu_is_store_q;
-logic dtlb_hit_n, dtlb_hit_q;
-logic [PT_LEVELS-2:0] dtlb_is_page_n, dtlb_is_page_q;
+  //-----------------------
+  // Data Interface
+  //-----------------------
+  logic [riscv::VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
+  riscv::pte_cva6_t dtlb_pte_n, dtlb_pte_q;
+  exception_t misaligned_ex_n, misaligned_ex_q;
+  logic lsu_req_n, lsu_req_q;
+  logic lsu_is_store_n, lsu_is_store_q;
+  logic dtlb_hit_n, dtlb_hit_q;
+  logic [PT_LEVELS-2:0] dtlb_is_page_n, dtlb_is_page_q;
 
-// check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
-assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit : 1'b1;
+  // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
+  assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit : 1'b1;
 
-// Wires to PMP checks
-riscv::pmp_access_t pmp_access_type;
-logic               pmp_data_allow;
+  // Wires to PMP checks
+  riscv::pmp_access_t pmp_access_type;
+  logic               pmp_data_allow;
 // localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 
   assign lsu_paddr_o    [11:0] = lsu_vaddr_q[11:0];
@@ -512,33 +508,33 @@ logic               pmp_data_allow;
         end
 
     endgenerate 
-// The data interface is simpler and only consists of a request/response interface
-always_comb begin : data_interface
-  // save request and DTLB response
-  lsu_vaddr_n = lsu_vaddr_i;
-  lsu_req_n = lsu_req_i;
-  misaligned_ex_n = misaligned_ex_i;
-  dtlb_pte_n = dtlb_content;
-  dtlb_hit_n = dtlb_lu_hit;
-  lsu_is_store_n = lsu_is_store_i;
-  dtlb_is_page_n = dtlb_is_page;
+  // The data interface is simpler and only consists of a request/response interface
+  always_comb begin : data_interface
+    // save request and DTLB response
+    lsu_vaddr_n = lsu_vaddr_i;
+    lsu_req_n = lsu_req_i;
+    misaligned_ex_n = misaligned_ex_i;
+    dtlb_pte_n = dtlb_content;
+    dtlb_hit_n = dtlb_lu_hit;
+    lsu_is_store_n = lsu_is_store_i;
+    dtlb_is_page_n = dtlb_is_page;
 
   // lsu_paddr_o = lsu_vaddr_q[riscv::PLEN-1:0];
   // lsu_dtlb_ppn_o = lsu_vaddr_n[riscv::PLEN-1:12];
-  lsu_valid_o = lsu_req_q;
-  lsu_exception_o = misaligned_ex_q;
-  pmp_access_type = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
+    lsu_valid_o = lsu_req_q;
+    lsu_exception_o = misaligned_ex_q;
+    pmp_access_type = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
 
-  // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
-  misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
+    // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
+    misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
 
-  // Check if the User flag is set, then we may only access it in supervisor mode
-  // if SUM is enabled
-  daccess_err = en_ld_st_translation_i && ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
-  (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u));            // this is not a user page but we are in user mode and trying to access it
-  // translation is enabled and no misaligned exception occurred
-  if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
-    lsu_valid_o = 1'b0;
+    // Check if the User flag is set, then we may only access it in supervisor mode
+    // if SUM is enabled
+    daccess_err = en_ld_st_translation_i && ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
+    (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u));            // this is not a user page but we are in user mode and trying to access it
+    // translation is enabled and no misaligned exception occurred
+    if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
+      lsu_valid_o = 1'b0;
     // // 4K page
     // lsu_paddr_o = {dtlb_pte_q.ppn, lsu_vaddr_q[11:0]};
     // lsu_dtlb_ppn_o = dtlb_content.ppn;
@@ -552,145 +548,129 @@ always_comb begin : data_interface
     //   lsu_paddr_o[PPNWMin:12] = lsu_vaddr_q[PPNWMin:12];
     //   lsu_dtlb_ppn_o[PPNWMin:12] = lsu_vaddr_n[PPNWMin:12];
     // end
-    // ---------
-    // DTLB Hit
-    // --------
-    if (dtlb_hit_q && lsu_req_q) begin
-      lsu_valid_o = 1'b1;
-      // exception priority:
-      // PAGE_FAULTS have higher priority than ACCESS_FAULTS
-      // virtual memory based exceptions are PAGE_FAULTS
-      // physical memory based exceptions are ACCESS_FAULTS (PMA/PMP)
+      // ---------
+      // DTLB Hit
+      // --------
+      if (dtlb_hit_q && lsu_req_q) begin
+        lsu_valid_o = 1'b1;
+        // exception priority:
+        // PAGE_FAULTS have higher priority than ACCESS_FAULTS
+        // virtual memory based exceptions are PAGE_FAULTS
+        // physical memory based exceptions are ACCESS_FAULTS (PMA/PMP)
 
-      // this is a store
+        // this is a store
+        if (lsu_is_store_q) begin
+          // check if the page is write-able and we are not violating privileges
+          // also check if the dirty flag is set
+          if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
+            lsu_exception_o = {
+              riscv::STORE_PAGE_FAULT,
+              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
+              1'b1
+            };
+            // Check if any PMPs are violated
+          end else if (!pmp_data_allow) begin
+            lsu_exception_o = {
+              riscv::ST_ACCESS_FAULT, riscv::XLEN'(lsu_paddr_o[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0]), 1'b1
+            };
+          end
+
+          // this is a load
+        end else begin
+          // check for sufficient access privileges - throw a page fault if necessary
+          if (daccess_err) begin
+            lsu_exception_o = {
+              riscv::LOAD_PAGE_FAULT,
+              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
+              1'b1
+            };
+            // Check if any PMPs are violated
+          end else if (!pmp_data_allow) begin
+            lsu_exception_o = {
+              riscv::LD_ACCESS_FAULT, lsu_paddr_o[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1
+            };
+          end
+        end
+      end else
+
+      // ---------
+      // DTLB Miss
+      // ---------
+      // watch out for exceptions
+      if (ptw_active && !walking_instr) begin
+        // page table walker threw an exception
+        if (ptw_error) begin
+          // an error makes the translation valid
+          lsu_valid_o = 1'b1;
+          // the page table walker can only throw page faults
+          if (lsu_is_store_q) begin
+            lsu_exception_o = {
+              riscv::STORE_PAGE_FAULT,
+              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
+              1'b1
+            };
+          end else begin
+            lsu_exception_o = {
+              riscv::LOAD_PAGE_FAULT,
+              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
+              1'b1
+            };
+          end
+        end
+
+        if (ptw_access_exception) begin
+          // an error makes the translation valid
+          lsu_valid_o = 1'b1;
+          // Any fault of the page table walk should be based of the original access type
+          lsu_exception_o = {riscv::LD_ACCESS_FAULT, ptw_bad_paddr[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1};
+        end
+      end
+    end  // If translation is not enabled, check the paddr immediately against PMPs
+    else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
       if (lsu_is_store_q) begin
-        // check if the page is write-able and we are not violating privileges
-        // also check if the dirty flag is set
-        if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
-          lsu_exception_o = {
-            riscv::STORE_PAGE_FAULT,
-            {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-            1'b1
-          };
-          // Check if any PMPs are violated
-        end else if (!pmp_data_allow) begin
-          lsu_exception_o = {
-            riscv::ST_ACCESS_FAULT,
-            {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-            1'b1
-          };
-        end
-
-        // this is a load
+        lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1};
       end else begin
-        // check for sufficient access privileges - throw a page fault if necessary
-        if (daccess_err) begin
-          lsu_exception_o = {
-            riscv::LOAD_PAGE_FAULT,
-            {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-            1'b1
-          };
-          // Check if any PMPs are violated
-        end else if (!pmp_data_allow) begin
-          lsu_exception_o = {
-            riscv::LD_ACCESS_FAULT,
-            {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-            1'b1
-          };
-        end
-      end
-    end else
-
-    // ---------
-    // DTLB Miss
-    // ---------
-    // watch out for exceptions
-    if (ptw_active && !walking_instr) begin
-      // page table walker threw an exception
-      if (ptw_error) begin
-        // an error makes the translation valid
-        lsu_valid_o = 1'b1;
-        // the page table walker can only throw page faults
-        if (lsu_is_store_q) begin
-          lsu_exception_o = {
-            riscv::STORE_PAGE_FAULT,
-            {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-            1'b1
-          };
-        end else begin
-          lsu_exception_o = {
-            riscv::LOAD_PAGE_FAULT,
-            {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-            1'b1
-          };
-        end
-      end
-
-      if (ptw_access_exception) begin
-        // an error makes the translation valid
-        lsu_valid_o = 1'b1;
-        // Any fault of the page table walk should be based of the original access type
-        if (lsu_is_store_q) begin
-          lsu_exception_o = {
-            riscv::ST_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1
-          };
-        end else begin
-          lsu_exception_o = {
-            riscv::LD_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1
-          };
-        end
+        lsu_exception_o = {riscv::LD_ACCESS_FAULT, lsu_paddr_o[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1};
       end
     end
-  end  // If translation is not enabled, check the paddr immediately against PMPs
-  else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
-    if (lsu_is_store_q) begin
-      lsu_exception_o = {
-        riscv::ST_ACCESS_FAULT, {{riscv::XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1
-      };
+  end
+
+  // Load/store PMP check
+  pmp #(
+      .CVA6Cfg   (CVA6Cfg),
+      .PLEN      (riscv::PLEN),
+      .PMP_LEN   (riscv::PLEN - 2),
+      .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
+  ) i_pmp_data (
+      .addr_i       (lsu_paddr_o),
+      .priv_lvl_i   (ld_st_priv_lvl_i),
+      .access_type_i(pmp_access_type),
+      // Configuration
+      .conf_addr_i  (pmpaddr_i),
+      .conf_i       (pmpcfg_i),
+      .allow_o      (pmp_data_allow)
+  );
+
+  // ----------
+  // Registers
+  // ----------
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      lsu_vaddr_q     <= '0;
+      lsu_req_q       <= '0;
+      misaligned_ex_q <= '0;
+      dtlb_pte_q      <= '0;
+      dtlb_hit_q      <= '0;
+      lsu_is_store_q  <= '0;
+      dtlb_is_page_q  <= '0;
     end else begin
-      lsu_exception_o = {
-        riscv::LD_ACCESS_FAULT, {{riscv::XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1
-      };
+      lsu_vaddr_q     <= lsu_vaddr_n;
+      lsu_req_q       <= lsu_req_n;
+      misaligned_ex_q <= misaligned_ex_n;
+      dtlb_pte_q      <= dtlb_pte_n;
+      dtlb_hit_q      <= dtlb_hit_n;
+      lsu_is_store_q  <= lsu_is_store_n;
+      dtlb_is_page_q  <= dtlb_is_page_n;
     end
   end
-end
-
-// Load/store PMP check
-pmp #(
-    .CVA6Cfg   (CVA6Cfg),
-    .PLEN      (riscv::PLEN),
-    .PMP_LEN   (riscv::PLEN - 2),
-    .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
-) i_pmp_data (
-    .addr_i       (lsu_paddr_o),
-    .priv_lvl_i   (ld_st_priv_lvl_i),
-    .access_type_i(pmp_access_type),
-    // Configuration
-    .conf_addr_i  (pmpaddr_i),
-    .conf_i       (pmpcfg_i),
-    .allow_o      (pmp_data_allow)
-);
-
-// ----------
-// Registers
-// ----------
-always_ff @(posedge clk_i or negedge rst_ni) begin
-  if (~rst_ni) begin
-    lsu_vaddr_q     <= '0;
-    lsu_req_q       <= '0;
-    misaligned_ex_q <= '0;
-    dtlb_pte_q      <= '0;
-    dtlb_hit_q      <= '0;
-    lsu_is_store_q  <= '0;
-    dtlb_is_page_q  <= '0;
-  end else begin
-    lsu_vaddr_q     <= lsu_vaddr_n;
-    lsu_req_q       <= lsu_req_n;
-    misaligned_ex_q <= misaligned_ex_n;
-    dtlb_pte_q      <= dtlb_pte_n;
-    dtlb_hit_q      <= dtlb_hit_n;
-    lsu_is_store_q  <= lsu_is_store_n;
-    dtlb_is_page_q  <= dtlb_is_page_n;
-  end
-end
 endmodule
