@@ -23,27 +23,57 @@ Interfaces
 
 AXI Interface
 -------------
-Need for step1 verification. Already written by MU Electronics.
-Focus on the features used by the CVA6 and refer to ARM documentation for the AXI specification (e.g. do not draw the standard chronogram).
-Features:
-* See requirement specification
-* Atomic transactions
-* “USER” bus width extension
-* Transaction ordering
+The AXI interface is described in a separate chapter.
+
+*Applicability to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60X", "AXI implemented"
+   "CV32E6?X", "AXI implemented"
 
 Debug Interface
 ---------------
-Desired for step1 verification, but we can likely reuse an E4 DVplan.
-Remember: the debug module (DTM) is not in the scope, so we focus on the debug interrupt.
-How to use the interface (HW/SW). We can refer to RISC-V specifications.
-If the section is too heavy, promote it to a separate chapter.
+  The team is looking for a contributor for this section.
+  We can likely reuse an E4 DVplan.
+  Remember: the debug module (DTM) is not in the scope, so we focus on the debug interrupt.
+  How to use the interface (HW/SW). We can refer to RISC-V specifications.
+  If the section is too heavy, promote it to a separate chapter.
+
+*Applicability to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60X", "Debug interface implemented"
+   "CV32E6?X", "No debug interface"
 
 Interrupt Interface
 -------------------
-Desired for step1 verification, but we can likely reuse an E4 DVplan.
-How to use the interface (HW/SW). We can refer to RISC-V specifications.
-If the section is too heavy, promote it to a separate chapter.
+  The team is looking for a contributor for this section.
+  We can likely reuse an E4 DVplan.
+  How to use the interface (HW/SW). We can refer to RISC-V specifications.
+  If the section is too heavy, promote it to a separate chapter.
+
+*The interrupt interface is applicable to all configurations.*
 
 TRI Interface
 -------------
-Refer to OpenPiton documents.
+The TRI interface is exclusive of the AXI interface.
+
+For more information, refer to OpenPiton documents.
+
+*Applicability to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60X", "No TRI interface"
+   "CV32E6?X", "No TRI interface"
