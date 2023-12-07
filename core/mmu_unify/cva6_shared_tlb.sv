@@ -149,8 +149,9 @@ module cva6_shared_tlb
     generate
       for (i=0; i < SHARED_TLB_WAYS; i++) begin
         //identify page_match for all TLB Entries
-        assign page_match[i]          = (shared_tag_rd[i].is_page[PT_LEVELS-2:0])*2 +1;
+        // assign page_match[i]          = (shared_tag_rd[i].is_page[PT_LEVELS-2:0])*2 +1;
         for (x=0; x < PT_LEVELS; x++) begin  
+          assign page_match[i][x] = x==0 ? 1 :shared_tag_rd[i].is_page[PT_LEVELS-1-x];
           // assign vpn_d[x]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] :((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] : vpn_q[x]);
           assign vpn_match[i][x]        = vpn_q[x] == shared_tag_rd[i].vpn[x];
           assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];

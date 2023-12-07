@@ -1,4 +1,5 @@
 // Copyright (c) 2021 Thales.
+// Copyright (c) 2021 Thales.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -8,6 +9,14 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
+// Author: Angela Gonzalez, PlanV Technology
+// Date: 07/12/2023
+// Description: Memory Management Unit for CVA6, contains TLB and
+//              address translation unit. SV32 and SV39 as defined in RISC-V
+//              privilege specification 1.11-WIP.
+//              This module is an merge of the MMU Sv39 developed
+//              by Florian Zaruba and the MMU Sv32 developed by Sebastien Jacq.
+
 // Author: Sebastien Jacq Thales Research & Technology
 // Date: 17/07/2021
 //
@@ -27,11 +36,11 @@
 // =========================================================================== //
 
 module cva6_mmu
-  import ariane_pkg::*;
+    import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
-    parameter int unsigned           INSTR_TLB_ENTRIES = 2,
-    parameter int unsigned           DATA_TLB_ENTRIES  = 2,
+    parameter int unsigned           INSTR_TLB_ENTRIES = 4,
+    parameter int unsigned           DATA_TLB_ENTRIES  = 4,
     parameter int unsigned           ASID_WIDTH        = 1,
     parameter int unsigned           ASID_LEN = 1,
     parameter int unsigned           VPN_LEN = 1,
@@ -82,17 +91,17 @@ module cva6_mmu
     input logic [15:0][riscv::PLEN-3:0] pmpaddr_i
 );
 
-  logic                   iaccess_err;  // insufficient privilege to access this instruction page
-  logic                   daccess_err;  // insufficient privilege to access this data page
-  logic                   ptw_active;  // PTW is currently walking a page table
-  logic                   walking_instr;  // PTW is walking because of an ITLB miss
-  logic                   ptw_error;  // PTW threw an exception
-  logic                   ptw_access_exception;  // PTW threw an access exception (PMPs)
-  logic [riscv::PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
+    logic                   iaccess_err;  // insufficient privilege to access this instruction page
+    logic                   daccess_err;  // insufficient privilege to access this data page
+    logic                   ptw_active;  // PTW is currently walking a page table
+    logic                   walking_instr;  // PTW is walking because of an ITLB miss
+    logic                   ptw_error;  // PTW threw an exception
+    logic                   ptw_access_exception;  // PTW threw an access exception (PMPs)
+    logic [riscv::PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
 
-  logic [riscv::VLEN-1:0] update_vaddr;
-  tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
-  tlb_update_sv32_t update_itlb_sv32, update_dtlb_sv32, update_shared_tlb_sv32;
+logic [riscv::VLEN-1:0] update_vaddr;
+tlb_update_t update_ptw_itlb, update_ptw_dtlb;
+tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
   logic                               itlb_lu_access;
   riscv::pte_cva6_t                   itlb_content;
@@ -259,11 +268,69 @@ module cva6_mmu
 
   );
 
-// assign update_shared_tlb.valid        = update_shared_tlb_sv32.valid;
-// assign update_shared_tlb.is_page[0]   = update_shared_tlb_sv32.is_4M;
-// assign update_shared_tlb.vpn          = update_shared_tlb_sv32.vpn;
-// assign update_shared_tlb.asid         = update_shared_tlb_sv32.asid;
-// assign update_shared_tlb.content      = update_shared_tlb_sv32.content;
+// ptw #(
+//     .CVA6Cfg   (CVA6Cfg),
+//     .ASID_WIDTH(ASID_WIDTH)
+// ) i_ptw (
+//     .clk_i                 (clk_i),
+//     .rst_ni                (rst_ni),
+//     .ptw_active_o          (ptw_active),
+//     .walking_instr_o       (walking_instr),
+//     .ptw_error_o           (ptw_error),
+//     .ptw_access_exception_o(ptw_access_exception),
+//     .enable_translation_i  (enable_translation_i),
+
+//     .update_vaddr_o(update_vaddr),
+//     .itlb_update_o (update_ptw_itlb),
+//     .dtlb_update_o (update_ptw_dtlb),
+
+//     .itlb_access_i(itlb_lu_access),
+//     .itlb_hit_i   (itlb_lu_hit),
+//     .itlb_vaddr_i (icache_areq_i.fetch_vaddr),
+
+//     .dtlb_access_i(dtlb_lu_access),
+//     .dtlb_hit_i   (dtlb_lu_hit),
+//     .dtlb_vaddr_i (lsu_vaddr_i),
+
+//     .req_port_i (req_port_i),
+//     .req_port_o (req_port_o),
+//     .pmpcfg_i,
+//     .pmpaddr_i,
+//     .bad_paddr_o(ptw_bad_paddr),
+//     .*
+// );
+
+// assign update_dtlb.valid        = update_ptw_dtlb.valid;
+// assign update_dtlb.is_page[1]   = update_ptw_dtlb.is_2M;
+// assign update_dtlb.is_page[0]   = update_ptw_dtlb.is_1G;
+// assign update_dtlb.vpn          = update_ptw_dtlb.vpn;
+// assign update_dtlb.asid         = update_ptw_dtlb.asid;
+// assign update_dtlb.content.ppn  = update_ptw_dtlb.content.ppn;
+// assign update_dtlb.content.rsw  = update_ptw_dtlb.content.rsw;
+// assign update_dtlb.content.d    = update_ptw_dtlb.content.d;
+// assign update_dtlb.content.a    = update_ptw_dtlb.content.a;
+// assign update_dtlb.content.g    = update_ptw_dtlb.content.g;
+// assign update_dtlb.content.u    = update_ptw_dtlb.content.u;
+// assign update_dtlb.content.x    = update_ptw_dtlb.content.x;
+// assign update_dtlb.content.w    = update_ptw_dtlb.content.w;
+// assign update_dtlb.content.r    = update_ptw_dtlb.content.r;
+// assign update_dtlb.content.v    = update_ptw_dtlb.content.v;
+
+// assign update_itlb.valid        = update_ptw_itlb.valid;
+// assign update_itlb.is_page[1]   = update_ptw_itlb.is_2M;
+// assign update_itlb.is_page[0]   = update_ptw_itlb.is_1G;
+// assign update_itlb.vpn          = update_ptw_itlb.vpn;
+// assign update_itlb.asid         = update_ptw_itlb.asid;
+// assign update_itlb.content.ppn  = update_ptw_itlb.content.ppn;
+// assign update_itlb.content.rsw  = update_ptw_itlb.content.rsw;
+// assign update_itlb.content.d    = update_ptw_itlb.content.d;
+// assign update_itlb.content.a    = update_ptw_itlb.content.a;
+// assign update_itlb.content.g    = update_ptw_itlb.content.g;
+// assign update_itlb.content.u    = update_ptw_itlb.content.u;
+// assign update_itlb.content.x    = update_ptw_itlb.content.x;
+// assign update_itlb.content.w    = update_ptw_itlb.content.w;
+// assign update_itlb.content.r    = update_ptw_itlb.content.r;
+// assign update_itlb.content.v    = update_ptw_itlb.content.v;
 
 // ila_1 i_ila_1 (
 //     .clk(clk_i), // input wire clk
