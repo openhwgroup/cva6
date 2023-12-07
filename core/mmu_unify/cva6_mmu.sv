@@ -259,11 +259,6 @@ module cva6_mmu
 
   );
 
-// assign update_shared_tlb.valid        = update_shared_tlb_sv32.valid;
-// assign update_shared_tlb.is_page[0]   = update_shared_tlb_sv32.is_4M;
-// assign update_shared_tlb.vpn          = update_shared_tlb_sv32.vpn;
-// assign update_shared_tlb.asid         = update_shared_tlb_sv32.asid;
-// assign update_shared_tlb.content      = update_shared_tlb_sv32.content;
 
 // ila_1 i_ila_1 (
 //     .clk(clk_i), // input wire clk
@@ -420,7 +415,6 @@ module cva6_mmu
   // Wires to PMP checks
   riscv::pmp_access_t pmp_access_type;
   logic               pmp_data_allow;
-  
 
   assign lsu_paddr_o    [11:0] = lsu_vaddr_q[11:0];
   assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
