@@ -475,7 +475,8 @@ exception_t misaligned_ex_n, misaligned_ex_q;
 logic lsu_req_n, lsu_req_q;
 logic lsu_is_store_n, lsu_is_store_q;
 logic dtlb_hit_n, dtlb_hit_q;
-logic [PT_LEVELS-2:0] dtlb_is_page_n, dtlb_is_page_q;
+logic dtlb_is_2M_n, dtlb_is_2M_q;
+logic dtlb_is_1G_n, dtlb_is_1G_q;
 
 // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
 assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit : 1'b1;
@@ -521,7 +522,8 @@ always_comb begin : data_interface
   dtlb_pte_n = dtlb_content;
   dtlb_hit_n = dtlb_lu_hit;
   lsu_is_store_n = lsu_is_store_i;
-  dtlb_is_page_n = dtlb_is_page;
+  dtlb_is_2M_n = dtlb_is_page[1];
+  dtlb_is_1G_n = dtlb_is_page[0];
 
   // lsu_paddr_o = lsu_vaddr_q[riscv::PLEN-1:0];
   // lsu_dtlb_ppn_o = lsu_vaddr_n[riscv::PLEN-1:12];
@@ -682,7 +684,8 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
     dtlb_pte_q      <= '0;
     dtlb_hit_q      <= '0;
     lsu_is_store_q  <= '0;
-    dtlb_is_page_q  <= '0;
+    dtlb_is_2M_q    <= '0;
+    dtlb_is_1G_q    <= '0;
   end else begin
     lsu_vaddr_q     <= lsu_vaddr_n;
     lsu_req_q       <= lsu_req_n;
@@ -690,7 +693,8 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
     dtlb_pte_q      <= dtlb_pte_n;
     dtlb_hit_q      <= dtlb_hit_n;
     lsu_is_store_q  <= lsu_is_store_n;
-    dtlb_is_page_q  <= dtlb_is_page_n;
+    dtlb_is_2M_q    <= dtlb_is_2M_n;
+    dtlb_is_1G_q    <= dtlb_is_1G_n;
   end
 end
 endmodule
