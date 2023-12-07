@@ -13,68 +13,75 @@ AXI
 
 Introduction
 ------------
-   In this chapter, we describe in detail the restriction that apply to the supported features.
+In this chapter, we describe in detail the restriction that apply to the supported features.
 
-   In order to understand how the AXI memory interface behaves in CVA6, it is necessary to read the AMBA AXI and ACE Protocol Specification (https://developer.arm.com/documentation/ihi0022/hc) and this chapter.
+In order to understand how the AXI memory interface behaves in CVA6, it is necessary to read the AMBA AXI and ACE Protocol Specification (https://developer.arm.com/documentation/ihi0022/hc) and this chapter.
 
+*Applicability of this chapter to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60X", "AXI included"
+   "CV32E6?X", "AXI included"
 
 About the AXI4 protocol
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-   The AMBA AXI protocol supports high-performance, high-frequency system designs for communication between Manager and Subordinate components.
+The AMBA AXI protocol supports high-performance, high-frequency system designs for communication between Manager and Subordinate components.
 
-   The AXI protocol features are:
+The AXI protocol features are:
 
-     * It is suitable for high-bandwidth and low-latency designs.
-     * High-frequency operation is provided, without using complex bridges.
-     * The protocol meets the interface requirements of a wide range of components.
-     * It is suitable for memory controllers with high initial access latency.
-     * Flexibility in the implementation of interconnect architectures is provided.
-     * It is backward-compatible with AHB and APB interfaces.
+* It is suitable for high-bandwidth and low-latency designs.
+* High-frequency operation is provided, without using complex bridges.
+* The protocol meets the interface requirements of a wide range of components.
+* It is suitable for memory controllers with high initial access latency.
+* Flexibility in the implementation of interconnect architectures is provided.
+* It is backward-compatible with AHB and APB interfaces.
 
-   The key features of the AXI protocol are:
+The key features of the AXI protocol are:
 
-     * Separate address/control and data phases.
-     * Support for unaligned data transfers, using byte strobes.
-     * Uses burst-based transactions with only the start address issued.
-     * Separate read and write data channels, that can provide low-cost Direct Memory Access (DMA).
-     * Support for issuing multiple outstanding addresses.
-     * Support for out-of-order transaction completion.
-     * Permits easy addition of register stages to provide timing closure.
+* Separate address/control and data phases.
+* Support for unaligned data transfers, using byte strobes.
+* Uses burst-based transactions with only the start address issued.
+* Separate read and write data channels, that can provide low-cost Direct Memory Access (DMA).
+* Support for issuing multiple outstanding addresses.
+* Support for out-of-order transaction completion.
+* Permits easy addition of register stages to provide timing closure.
 
-   The present specification is based on :
-
-      https://developer.arm.com/documentation/ihi0022/hc
+The present specification is based on: https://developer.arm.com/documentation/ihi0022/hc
 
 
 AXI4 and CVA6
 ~~~~~~~~~~~~~
 
-   The AXI bus protocol is used with the CVA6 processor as a memory interface. Since the processor is the one that initiates the connection with the memory, it will have a manager interface to send requests to the subordinate, which will be the memory.
+The AXI bus protocol is used with the CVA6 processor as a memory interface. Since the processor is the one that initiates the connection with the memory, it will have a manager interface to send requests to the subordinate, which will be the memory.
 
-   Features supported by CVA6 are the ones in the AMBA AXI4 specification and the Atomic Operation feature from AXI5. With restriction that apply to some features.
+Features supported by CVA6 are the ones in the AMBA AXI4 specification and the Atomic Operation feature from AXI5. With restriction that apply to some features.
 
-   This doesn’t mean that all the full set of signals available on an AXI interface are supported by the CVA6. Nevertheless, all required AXI signals are implemented.
+This doesn’t mean that all the full set of signals available on an AXI interface are supported by the CVA6. Nevertheless, all required AXI signals are implemented.
 
-   Supported AXI4 features are defined in AXI Protocol Specification sections: A3, A4, A5, A6 and A7.
+Supported AXI4 features are defined in AXI Protocol Specification sections: A3, A4, A5, A6 and A7.
 
-   Supported AXI5 feature are defined in AXI Protocol Specification section: E1.1.
+Supported AXI5 feature are defined in AXI Protocol Specification section: E1.1.
 
 
 Signal Description (Section A2)
 -------------------------------
 
-   This section introduces the AXI memory interface signals of CVA6. Most of the signals are supported by CVA6, the tables summarizing the signals identify the exceptions.
+This section introduces the AXI memory interface signals of CVA6. Most of the signals are supported by CVA6, the tables summarizing the signals identify the exceptions.
 
-   In the following tables, the *Src* column tells whether the signal is driven by Manager ou Subordinate.
+In the following tables, the *Src* column tells whether the signal is driven by Manager ou Subordinate.
 
-   The AXI required and optional signals, and the default signals values that apply when an optional signal is not implemented are defined in AXI Protocol Specification section A9.3.
+The AXI required and optional signals, and the default signals values that apply when an optional signal is not implemented are defined in AXI Protocol Specification section A9.3.
 
 
 Global signals (Section A2.1)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Table 2.1 shows the global AXI memory interface signals.
+Table 2.1 shows the global AXI memory interface signals.
 
 
 .. list-table::
@@ -96,7 +103,7 @@ Global signals (Section A2.1)
 Write address channel signals (Section A2.2)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Table 2.2 shows the AXI memory interface write address channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+Table 2.2 shows the AXI memory interface write address channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
 
 
 .. list-table::
@@ -201,7 +208,7 @@ Write address channel signals (Section A2.2)
 Write data channel signals (Section A2.3)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Table 2.3 shows the AXI write data channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+Table 2.3 shows the AXI write data channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
 
 .. list-table::
    :widths: 15 15 15 40
@@ -254,7 +261,7 @@ Write data channel signals (Section A2.3)
 Write Response Channel signals (Section A2.4)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Table 2.4 shows the AXI write response channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+Table 2.4 shows the AXI write response channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
 
 
 .. list-table::
@@ -299,7 +306,7 @@ Write Response Channel signals (Section A2.4)
 Read address channel signals (Section A2.5)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Table 2.5 shows the AXI read address channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+Table 2.5 shows the AXI read address channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
 
 
 .. list-table::
@@ -399,7 +406,7 @@ Read address channel signals (Section A2.5)
 Read data channel signals (Section A2.6)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Table 2.6 shows the AXI read data channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+Table 2.6 shows the AXI read data channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
 
 
 .. list-table::
@@ -446,12 +453,9 @@ Read data channel signals (Section A2.6)
 
 Single Interface Requirements: Transaction structure (Section A3.4)
 -------------------------------------------------------------------
-|
 
 This section describes the structure of transactions. The following sections define the address, data, and response
 structures
-
-|
 
 .. _address_structure_label:
 
@@ -462,44 +466,41 @@ The AXI protocol is burst-based. The Manager begins each burst by driving contro
 
 **Burst length**
 
-   The burst length is specified by:
+The burst length is specified by:
 
-   • **ARLEN[7:0]**, for read transfers
-   • **AWLEN[7:0]**, for write transfers
+* ``ARLEN[7:0]``, for read transfers
+* ``AWLEN[7:0]``, for write transfers
 
-   The burst length for AXI4 is defined as:
+The burst length for AXI4 is defined as: ``Burst_Length = AxLEN[3:0] + 1``.
 
-      ``Burst_Length = AxLEN[3:0] + 1``
+CVA6 has some limitation governing the use of bursts:
 
-   CVA6 has some limitation governing the use of bursts:
-
-   * *All read transactions performed by CVA6 are of burst length equal to 0, ICACHE_LINE_WIDTH/64 or DCACHE_LINE_WIDTH/64.*
-   * *All write transactions performed by CVA6 are of burst length equal to 1.*
+* *All read transactions performed by CVA6 are of burst length equal to 0, ICACHE_LINE_WIDTH/64 or DCACHE_LINE_WIDTH/64.*
+* *All write transactions performed by CVA6 are of burst length equal to 1.*
 
 **Burst size**
 
-   The maximum number of bytes to transfer in each data transfer, or beat, in a burst, is specified by:
+The maximum number of bytes to transfer in each data transfer, or beat, in a burst, is specified by:
 
-   * **ARSIZE[2:0]**, for read transfers
-   * **AWSIZE[2:0]**, for write transfers
+* ``ARSIZE[2:0]``, for read transfers
+* ``AWSIZE[2:0]``, for write transfers
 
-   *The maximum value can be taking by AXSIZE is log2(AXI DATA WIDTH/8) (8 bytes by transfer).*
-
+*The maximum value can be taking by AXSIZE is log2(AXI DATA WIDTH/8) (8 bytes by transfer).*
 
 **Burst type**
 
-   The AXI protocol defines three burst types:
+The AXI protocol defines three burst types:
 
-   * **FIXED**
-   * **INCR**
-   * **WRAP**
+* **FIXED**
+* **INCR**
+* **WRAP**
 
-   The burst type is specified by:
+The burst type is specified by:
 
-   * **ARBURST[1:0]**, for read transfers
-   * **AWBURST[1:0]**, for write transfers
+* ``ARBURST[1:0]``, for read transfers
+* ``AWBURST[1:0]``, for write transfers
 
-   *All transactions performed by CVA6 are of burst type INCR. (AXBURST = 0b01)*
+*All transactions performed by CVA6 are of burst type INCR. (AXBURST = 0b01)*
 
 
 .. _data_read_and_write_structure_label:
@@ -508,22 +509,22 @@ Data read and write structure: (Section A3.4.4)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Write strobes**
 
-   The WSTRB[n:0] signals when HIGH, specify the byte lanes of the data bus that contain valid information. There is one write strobe
-   for each 8 bits of the write data bus, therefore WSTRB[n] corresponds to WDATA[(8n)+7: (8n)].
+The ``WSTRB[n:0]`` signals when HIGH, specify the byte lanes of the data bus that contain valid information. There is one write strobe
+for each 8 bits of the write data bus, therefore ``WSTRB[n]`` corresponds to ``WDATA[(8n)+7: (8n)]``.
 
-   *Write Strobe width is equal to (AXI_DATA_WIDTH/8)  (n = (AXI_DATA_WIDTH/8)-1).*
+*Write Strobe width is equal to (AXI_DATA_WIDTH/8)  (n = (AXI_DATA_WIDTH/8)-1).*
 
-   *The size of all transactions performed by cva6 is equal to the number of byte lanes of the data bus containing valid information.*
-   *This means 1, 2, 4, ... or (AXI_DATA_WIDTH/8) byte lanes containing valid information.*
+*The size of all transactions performed by cva6 is equal to the number of byte lanes of the data bus containing valid information.*
+*This means 1, 2, 4, ... or (AXI_DATA_WIDTH/8) byte lanes containing valid information.*
 
 
 **Unaligned transfers**
 
-   For any burst that is made up of data transfers wider than 1 byte, the first bytes accessed might be unaligned with the natural
-   address boundary. For example, a 32-bit data packet that starts at a byte address of 0x1002 is not aligned to the natural 32-bit
-   transfer size.
+For any burst that is made up of data transfers wider than 1 byte, the first bytes accessed might be unaligned with the natural
+address boundary. For example, a 32-bit data packet that starts at a byte address of 0x1002 is not aligned to the natural 32-bit
+transfer size.
 
-   *CVA6 does not perform Unaligned transfers.*
+*CVA6 does not perform Unaligned transfers.*
 
 
 .. _read_and_write_response_structure_label:
@@ -531,26 +532,26 @@ Data read and write structure: (Section A3.4.4)
 Read and write response structure (Section A3.4.5)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   The AXI protocol provides response signaling for both read and write transactions:
+The AXI protocol provides response signaling for both read and write transactions:
 
-   * For read transactions, the response information from the Subordinate is signaled on the read data channel.
-   * For write transactions, the response information is signaled on the write response channel.
+* For read transactions, the response information from the Subordinate is signaled on the read data channel.
+* For write transactions, the response information is signaled on the write response channel.
 
-   *CVA6 does not consider the responses sent by the memory except in the exclusive Access ( XRESP[1:0] = 0b01 ).*
+CVA6 does not consider the responses sent by the memory except in the exclusive Access ( ``XRESP[1:0]`` = 0b01 ).
 
 Transaction Attributes: Memory types (Section A4)
 --------------------------------------------------
 
-   This section describes the attributes that determine how a transaction should be treated by the AXI subordinate that is connected to the CVA6.
+This section describes the attributes that determine how a transaction should be treated by the AXI subordinate that is connected to the CVA6.
 
-   *AXCACHE always take 0b0010. The subordinate should be a Normal Non-cacheable Non-bufferable.*
+``AXCACHE`` always takeq 0b0010. The subordinate should be a Normal Non-cacheable Non-bufferable.
 
-   The required behavior for Normal Non-cacheable Non-bufferable memory is:
+The required behavior for Normal Non-cacheable Non-bufferable memory is:
 
-   * The write response must be obtained from the final destination.
-   * Read data must be obtained from the final destination.
-   * Transactions are modifiable.
-   * Writes can be merged.
+* The write response must be obtained from the final destination.
+* Read data must be obtained from the final destination.
+* Transactions are modifiable.
+* Writes can be merged.
 
 
 .. _transaction_identifiers_label:
@@ -558,15 +559,13 @@ Transaction Attributes: Memory types (Section A4)
 Transaction Identifiers (Section A5)
 -------------------------------------
 
-   The AXI protocol includes AXI ID transaction identifiers. A Manager can use these to identify separate transactions that must be returned in order.
+The AXI protocol includes AXI ID transaction identifiers. A Manager can use these to identify separate transactions that must be returned in order.
 
-   The CVA6 identify each type of transaction with a specific ID
+The CVA6 identify each type of transaction with a specific ID:
 
-      *For read transaction id can be 0 or 1.*
-
-      *For write transaction id = 1.*
-
-      *For Atomic operation id = 3. This ID must be sent in the write channels and also in the read channel if the transaction performed requires response data.*
+* For read transaction id can be 0 or 1.
+* For write transaction id = 1.
+* For Atomic operation id = 3. This ID must be sent in the write channels and also in the read channel if the transaction performed requires response data.
 
 AXI Ordering Model (Section A6)
 -------------------------------
@@ -575,68 +574,68 @@ AXI ordering model overview (Section A6.1)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-   The AXI ordering model is based on the use of the transaction identifier, which is signaled on ARID or AWID.
+The AXI ordering model is based on the use of the transaction identifier, which is signaled on ``ARID`` or ``AWID``.
 
-   Transaction requests on the same channel, with the same ID and destination are guaranteed to remain in order.
+Transaction requests on the same channel, with the same ID and destination are guaranteed to remain in order.
 
-   Transaction responses with the same ID are returned in the same order as the requests were issued.
+Transaction responses with the same ID are returned in the same order as the requests were issued.
 
-   Write transaction requests, with the same destination are guaranteed to remain in order. Because all write transaction performed by CVA6 have the same ID.
+Write transaction requests, with the same destination are guaranteed to remain in order. Because all write transaction performed by CVA6 have the same ID.
 
-   CVA6 can perform multiple outstanding write address transactions.
+CVA6 can perform multiple outstanding write address transactions.
 
-   CVA6 cannot perform a Read transaction and a Write one at the same time. Therefore there no ordering problems between Read and write transactions.
+CVA6 cannot perform a Read transaction and a Write one at the same time. Therefore there no ordering problems between Read and write transactions.
 
 
-   The ordering model does not give any ordering guarantees between:
+The ordering model does not give any ordering guarantees between:
 
-   * Transactions from different Managers
-   * Read Transactions with different IDs
-   * Transactions to different Memory locations
+* Transactions from different Managers
+* Read Transactions with different IDs
+* Transactions to different Memory locations
 
-   If the CVA6 requires ordering between transactions that have no ordering guarantee, the Manager must wait to receive a response to the first transaction before issuing the second transaction.
+If the CVA6 requires ordering between transactions that have no ordering guarantee, the Manager must wait to receive a response to the first transaction before issuing the second transaction.
 
 
 Memory locations and Peripheral regions (Section A6.2)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   The address map in AMBA is made up of Memory locations and Peripheral regions. But the AXI is associated to the memory interface of CVA6.
+The address map in AMBA is made up of Memory locations and Peripheral regions. But the AXI is associated to the memory interface of CVA6.
 
-   A Memory location has all of the following properties:
+A Memory location has all of the following properties:
 
-   * A read of a byte from a Memory location returns the last value that was written to that byte location.
-   * A write to a byte of a Memory location updates the value at that location to a new value that is obtained by a subsequent read of that location.
-   * Reading or writing to a Memory location has no side-effects on any other Memory location.
-   * Observation guarantees for Memory are given for each location.
-   * The size of a Memory location is equal to the single-copy atomicity size for that component.
+* A read of a byte from a Memory location returns the last value that was written to that byte location.
+* A write to a byte of a Memory location updates the value at that location to a new value that is obtained by a subsequent read of that location.
+* Reading or writing to a Memory location has no side-effects on any other Memory location.
+* Observation guarantees for Memory are given for each location.
+* The size of a Memory location is equal to the single-copy atomicity size for that component.
 
 
 Transactions and ordering (Section A6.3)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   A transaction is a read or a write to one or more address locations. The locations are determined by AxADDR and any relevant qualifiers such as the Non-secure bit in AxPROT.
+A transaction is a read or a write to one or more address locations. The locations are determined by AxADDR and any relevant qualifiers such as the Non-secure bit in ``AxPROT``.
 
-   * Ordering guarantees are given only between accesses to the same Memory location or Peripheral region.
-   * A transaction to a Peripheral region must be entirely contained within that region.
-   * A transaction that spans multiple Memory locations has multiple ordering guarantees.
+* Ordering guarantees are given only between accesses to the same Memory location or Peripheral region.
+* A transaction to a Peripheral region must be entirely contained within that region.
+* A transaction that spans multiple Memory locations has multiple ordering guarantees.
 
-   *Transaction performed by CVA6 is of type Normal. Because AxCACHE[1] is asserted.*
+Transaction performed by CVA6 is of type Normal, because ``AxCACHE[1]`` is asserted.
 
-   Normal transactions are used to access Memory locations and are not expected to be used to access Peripheral regions.
+Normal transactions are used to access Memory locations and are not expected to be used to access Peripheral regions.
 
-   A Normal access to a Peripheral region must complete in a protocol-compliant manner, but the result is IMPLEMENTATION DEFINED.
+A Normal access to a Peripheral region must complete in a protocol-compliant manner, but the result is IMPLEMENTATION DEFINED.
 
-   *A write transaction performed by CVA6 is Non-bufferable (It is not possible to send an early response before the transaction reach the final destination). Because AxCACHE[0] deasserted.*
+A write transaction performed by CVA6 is Non-bufferable (It is not possible to send an early response before the transaction reach the final destination), because ``AxCACHE[0]`` is deasserted.
 
 Ordered write observation (Section A6.8)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   To improve compatibility with interface protocols that support a different ordering model, a Subordinate interface can give stronger ordering guarantees for write transactions. A stronger ordering guarantee is known as Ordered Write Observation.
+To improve compatibility with interface protocols that support a different ordering model, a Subordinate interface can give stronger ordering guarantees for write transactions. A stronger ordering guarantee is known as Ordered Write Observation.
 
-   *The CVA6 AXI interface exhibits Ordered Write Observation, so the Ordered_Write_Observation property is True.*
+*The CVA6 AXI interface exhibits Ordered Write Observation, so the Ordered_Write_Observation property is True.*
 
-   An interface that exhibits Ordered Write Observation gives guarantees for write transactions that are not dependent on the destination or address:
+An interface that exhibits Ordered Write Observation gives guarantees for write transactions that are not dependent on the destination or address:
 
-   * A write W1 is guaranteed to be observed by a write W2, where W2 is issued after W1, from the same Manager, with the same ID.
+* A write W1 is guaranteed to be observed by a write W2, where W2 is issued after W1, from the same Manager, with the same ID.
 
 
 .. _atomic_transactions_label:
@@ -644,10 +643,10 @@ Ordered write observation (Section A6.8)
 Atomic transactions (Section E1.1)
 -----------------------------------
 
-   AMBA 5 introduces Atomic transactions, which perform more than just a single access and have an operation that is associated with the transaction. Atomic transactions enable sending the operation to the data, permitting the operation to be performed closer to where the data is located. Atomic transactions are suited to situations where the data is located a significant distance from the agent that must perform the operation.
+AMBA 5 introduces Atomic transactions, which perform more than just a single access and have an operation that is associated with the transaction. Atomic transactions enable sending the operation to the data, permitting the operation to be performed closer to where the data is located. Atomic transactions are suited to situations where the data is located a significant distance from the agent that must perform the operation.
 
-   *CVA6 support just the AtomicLoad and AtomicSwap transaction. So AWATOP[5:4] can be 00, 10 or 11*
+CVA6 supports just the AtomicLoad and AtomicSwap transaction. So ``AWATOP[5:4]`` can be 00, 10 or 11.
 
-   *CVA6 perform only little-endian operation. So AWATOP[3] = 0*
+CVA6 performs only little-endian operation. So ``AWATOP[3]`` = 0.
 
-   *For AtomicLoad, CVA6 support all arithmetic operations encoded on the lower-order AWATOP[2:0] signals*
+For AtomicLoad, CVA6 supports all arithmetic operations encoded on the lower-order ``AWATOP[2:0]`` signals.
