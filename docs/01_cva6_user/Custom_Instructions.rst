@@ -18,6 +18,8 @@
 
 .. _cva6_custom_instructions:
 
+*This chapter is applicable to all configurations.*
+
 Custom RISC-V instructions
 ==========================
 As of now, CVA6 does not implement custom RISC-V instructions.
