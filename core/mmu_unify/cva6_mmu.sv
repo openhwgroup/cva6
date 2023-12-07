@@ -98,6 +98,7 @@ logic                               shared_tlb_access;
 logic             [riscv::VLEN-1:0] shared_tlb_vaddr;
 logic                               shared_tlb_hit;
 
+logic                               itlb_req;
 
 // Assignments
 assign itlb_lu_access = icache_areq_i.fetch_req;
