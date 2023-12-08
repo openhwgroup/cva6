@@ -78,7 +78,7 @@ module wt_dcache_missunit
 
   // functions
   function automatic logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh(
-      input logic [L1D_WAY_WIDTH-1:0] in);
+      input logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] in);
     logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] out;
     out     = '0;
     out[in] = 1'b1;
@@ -124,12 +124,12 @@ module wt_dcache_missunit
     logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]         vld_bits;
     logic [CACHE_ID_WIDTH-1:0]           id;
     logic                                nc;
-    logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] repl_way;
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] repl_way;
     logic [$clog2(NumPorts)-1:0]         miss_port_idx;
   } mshr_t;
 
   mshr_t mshr_d, mshr_q;
-  logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] repl_way, inv_way, rnd_way;
+  logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] repl_way, inv_way, rnd_way;
   logic mshr_vld_d, mshr_vld_q, mshr_vld_q1;
   logic mshr_allocate;
   logic update_lfsr, all_ways_valid;
@@ -199,7 +199,7 @@ module wt_dcache_missunit
   // generate random cacheline index
   lfsr #(
       .LfsrWidth(8),
-      .OutWidth ($clog2(CVA6Cfg.DCACHE_SET_ASSOC))
+      .OutWidth (CVA6Cfg.DCACHE_SET_ASSOC_WIDTH)
   ) i_lfsr_inv (
       .clk_i (clk_i),
       .rst_ni(rst_ni),

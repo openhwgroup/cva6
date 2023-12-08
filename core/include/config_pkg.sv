@@ -205,12 +205,14 @@ package config_pkg;
     int unsigned MEM_TID_WIDTH;
     // I$
     int unsigned ICACHE_SET_ASSOC;
+    int unsigned ICACHE_SET_ASSOC_WIDTH;
     int unsigned ICACHE_INDEX_WIDTH;  // in bit, contains also offset width
     int unsigned ICACHE_TAG_WIDTH;
     int unsigned ICACHE_LINE_WIDTH;  // in bit
     int unsigned ICACHE_USER_LINE_WIDTH;  // in bit
     // D$
     int unsigned DCACHE_SET_ASSOC;
+    int unsigned DCACHE_SET_ASSOC_WIDTH;
     int unsigned DCACHE_INDEX_WIDTH;  // in bit, contains also offset width
     int unsigned DCACHE_TAG_WIDTH;
     int unsigned DCACHE_LINE_WIDTH;
@@ -337,12 +339,14 @@ package config_pkg;
       MEM_TID_WIDTH: CVA6Cfg.MemTidWidth,
 
       ICACHE_SET_ASSOC: ICACHE_SET_ASSOC,
+      ICACHE_SET_ASSOC_WIDTH: $clog2(ICACHE_SET_ASSOC),
       ICACHE_INDEX_WIDTH: ICACHE_INDEX_WIDTH,
       ICACHE_TAG_WIDTH: PLEN - ICACHE_INDEX_WIDTH,
       ICACHE_LINE_WIDTH: CVA6Cfg.IcacheLineWidth,
       ICACHE_USER_LINE_WIDTH: (CVA6Cfg.AXI_USER_WIDTH == 1) ? 4 : CVA6Cfg.IcacheLineWidth,
 
       DCACHE_SET_ASSOC: DCACHE_SET_ASSOC,
+      DCACHE_SET_ASSOC_WIDTH: $clog2(DCACHE_SET_ASSOC),
       DCACHE_INDEX_WIDTH: DCACHE_INDEX_WIDTH,
       DCACHE_TAG_WIDTH: PLEN - DCACHE_INDEX_WIDTH,
       DCACHE_LINE_WIDTH: CVA6Cfg.DcacheLineWidth,

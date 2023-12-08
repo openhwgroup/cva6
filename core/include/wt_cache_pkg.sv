@@ -37,13 +37,9 @@ package wt_cache_pkg;
   localparam L15_SET_ASSOC = `CONFIG_L15_ASSOCIATIVITY;
   localparam L15_TLB_CSM_WIDTH = `TLB_CSM_WIDTH;
 `else
-  localparam L15_SET_ASSOC           = CVA6Cfg.DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Ariane setup
   localparam L15_TLB_CSM_WIDTH = 33;
 `endif
   localparam L15_TID_WIDTH = CVA6Cfg.MEM_TID_WIDTH;
-  localparam L15_WAY_WIDTH = $clog2(L15_SET_ASSOC);
-  localparam L1I_WAY_WIDTH = $clog2(CVA6Cfg.ICACHE_SET_ASSOC);
-  localparam L1D_WAY_WIDTH = $clog2(CVA6Cfg.DCACHE_SET_ASSOC);
 
   // FIFO depths of L15 adapter
   localparam ADAPTER_REQ_FIFO_DEPTH = 2;
@@ -139,7 +135,7 @@ package wt_cache_pkg;
     logic l15_invalidate_cacheline;  // unused by Ariane as L1 has no ECC at the moment
     logic l15_blockstore;  // unused in openpiton
     logic l15_blockinitstore;  // unused in openpiton
-    logic [L15_WAY_WIDTH-1:0] l15_l1rplway;  // way to replace
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] l15_l1rplway;  // way to replace
     logic [39:0] l15_address;  // physical address
     logic [63:0] l15_data;  // word to write
     logic [63:0] l15_data_next_entry;  // unused in Ariane (only used for CAS atomic requests)
@@ -167,10 +163,10 @@ package wt_cache_pkg;
     logic l15_inval_dcache_all_way;  // unused in openpiton
     logic [15:4] l15_inval_address_15_4;  // invalidate selected cacheline
     logic l15_cross_invalidate;  // unused in openpiton
-    logic [L15_WAY_WIDTH-1:0] l15_cross_invalidate_way;  // unused in openpiton
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] l15_cross_invalidate_way;  // unused in openpiton
     logic l15_inval_dcache_inval;  // invalidate selected cacheline and way
     logic l15_inval_icache_inval;  // unused in openpiton
-    logic [L15_WAY_WIDTH-1:0] l15_inval_way;  // way to invalidate
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] l15_inval_way;  // way to invalidate
     logic l15_blockinitstore;  // unused in openpiton
   } l15_rtrn_t;
 

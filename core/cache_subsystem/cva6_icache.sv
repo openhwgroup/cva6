@@ -64,7 +64,7 @@ module cva6_icache
 
   // functions
   function automatic logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] icache_way_bin2oh(
-      input logic [L1I_WAY_WIDTH-1:0] in);
+      input logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] in);
     logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] out;
     out     = '0;
     out[in] = 1'b1;

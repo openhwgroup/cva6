@@ -224,7 +224,7 @@ module wt_dcache_mem
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:0] wr_cl_off;
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:0] wr_cl_nc_off;
   logic [                  $clog2(DCACHE_WBUF_DEPTH)-1:0] wbuffer_hit_idx;
-  logic [                   $clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] rd_hit_idx;
+  logic [                    CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] rd_hit_idx;
 
   assign cmp_en_d = (|vld_req) & ~vld_we;
 

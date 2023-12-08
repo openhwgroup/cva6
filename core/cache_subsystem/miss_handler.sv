@@ -72,7 +72,7 @@ module miss_handler
   parameter NR_BYPASS_PORTS = NR_PORTS + 1;
 
   // convert one hot to bin for -> needed for cache replacement
-  function automatic logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] one_hot_to_bin(
+  function automatic logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] one_hot_to_bin(
       input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] in);
     for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
       if (in[i]) return i;

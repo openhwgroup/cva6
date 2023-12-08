@@ -393,13 +393,13 @@ module wt_l15_adapter
 
   initial begin
     // assert wrong parameterizations
-    assert (L15_SET_ASSOC >= CVA6Cfg.ICACHE_SET_ASSOC)
+    assert (CVA6Cfg.DCACHE_SET_ASSOC >= CVA6Cfg.ICACHE_SET_ASSOC)
     else
       $fatal(
           1, "[l15_adapter] number of icache ways must be smaller or equal the number of L15 ways"
       );
     // assert wrong parameterizations
-    assert (L15_SET_ASSOC >= CVA6Cfg.DCACHE_SET_ASSOC)
+    assert (CVA6Cfg.DCACHE_SET_ASSOC >= CVA6Cfg.DCACHE_SET_ASSOC)
     else
       $fatal(
           1, "[l15_adapter] number of dcache ways must be smaller or equal the number of L15 ways"

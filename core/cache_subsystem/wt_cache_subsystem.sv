@@ -41,13 +41,13 @@ module wt_cache_subsystem
       logic                                      vld;  // invalidate only affected way
       logic                                      all;  // invalidate all ways
       logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
-      logic [L15_WAY_WIDTH-1:0]                  way;  // way to invalidate
+      logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0]                  way;  // way to invalidate
     },
 
     localparam type dcache_req_t = struct packed {
       dcache_out_t rtype;  // see definitions above
       logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
-      logic [L1D_WAY_WIDTH-1:0] way;  // way to replace
+      logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
       logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
       logic [CVA6Cfg.XLEN-1:0] data;  // word width of processor (no block stores at the moment)
       logic [CVA6Cfg.DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
