@@ -3,8 +3,8 @@
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd $ROOT/tmp
 
-if [ -z ${NUM_JOBS} ]; then
-    NUM_JOBS=4
+if [ -z "$NUM_JOBS" ]; then
+    NUM_JOBS=1
 fi
 
 VERILATOR_REPO="https://github.com/verilator/verilator.git"
