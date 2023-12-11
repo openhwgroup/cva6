@@ -17,11 +17,11 @@ export PLATFORM_TOP_DIR="$ROOTDIR"
 
 # Set the printable name for the project that will be used
 # in the human-readable documentation.
-export PROJECT_NAME="CSR EMBEDDED ACCESS VERIFICATION"
+export PROJECT_NAME="CV32E6QX CSR ACCESS BEHAVIOR"
 
 # Set the alphanumerical identifier of the project that
 # will be used to construct file names etc.
-export PROJECT_IDENT="csr-embedded-access"
+export PROJECT_IDENT="CV32E6QX"
 
 # Set the destination directory of Markdown files for this project.
 # Since it will be used by VPTOOL, it shall NOT be a relative path.
@@ -31,4 +31,4 @@ export MARKDOWN_OUTPUT_DIR=`readlink -f "$ROOTDIR/../source"`
 # FIXME: Introduce a suitably named shell variable that points to the root
 # directory of the tool set (TOOL_TOP etc.)
 # FORNOW use a hardcoded relative path.
-sh $ROOTDIR/../../../../verif/core-v-verif/tools/vptool/vptool.sh $*
+sh $ROOTDIR/../../../../../verif/core-v-verif/tools/vptool/vptool.sh $*
