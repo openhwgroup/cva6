@@ -307,9 +307,9 @@ module alu
       end
       unique case (fu_data_i.operation)
         // Integer minimum/maximum
-        MAX: result_o = less ? fu_data_i.operand_b : fu_data_i.operand_a;
+        MAX:  result_o = less ? fu_data_i.operand_b : fu_data_i.operand_a;
         MAXU: result_o = less ? fu_data_i.operand_b : fu_data_i.operand_a;
-        MIN: result_o = ~less ? fu_data_i.operand_b : fu_data_i.operand_a;
+        MIN:  result_o = ~less ? fu_data_i.operand_b : fu_data_i.operand_a;
         MINU: result_o = ~less ? fu_data_i.operand_b : fu_data_i.operand_a;
 
         // Single bit instructions operations

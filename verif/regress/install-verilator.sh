@@ -8,7 +8,7 @@
 # Original Author: Jean-Roch COULON - Thales
 
 if [ -z "$NUM_JOBS" ]; then
-    NUM_JOBS=4
+    NUM_JOBS=1
 fi
 
 # Ensure the location of tools is known (usually, .../core-v-verif/tools).

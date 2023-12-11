@@ -63,9 +63,6 @@ else
   echo "Skipping Verilator setup on user's request (\$VERILATOR_INSTALL_DIR = \"NO\")."
 fi
 
-# number of parallel jobs to use for make commands and simulation
-export NUM_JOBS=24
-
 # install the required tools for cva6
 if [ -z "$CVA6_REPO" ]; then
   CVA6_REPO="https://github.com/openhwgroup/cva6.git"

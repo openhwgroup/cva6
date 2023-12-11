@@ -16,12 +16,27 @@ These configurations are deliberately lightweight and consist of:
 * `GCC`: the GNU GCC compiler configured for C only
 * `newlib`: an open-source C library suitable for embedded applications.
 
-Several extensions are envisioned:
+## Prerequisites
 
-* Explicit selection of GDB version
-* Addition of LLVM/Clang compilers
-* Support for Linux-based target environments
-* Addition of full-featured C library implementations
+**Disk space:** Approximately 3.5 GB of disk space are needed to build and install a bare-metal toolchain
+from source code:
+
+ * 1.9 GB is occupied by source code (including Git history);
+ * 1.1 GB is needed for the build space;
+ * 0.5 GB is needed for the installed toolchain.
+
+Several **standard packages** are needed to build the GCC-based compiler
+toolchains.  On Debian/Ubuntu, executing the following command should suffice:
+
+    $ sudo apt-get install autoconf automake autotools-dev curl git libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool bc zlib1g-dev
+
+On Fedora/CentOS/RHEL OS, executing the following command should suffice:
+
+    $ sudo yum install autoconf automake git libmpc-devel mpfr-devel gmp-devel gawk  bison flex texinfo gcc gcc-c++ zlib-devel
+
+On macOS, you can use [Homebrew](http://brew.sh) to install the dependencies:
+
+    $ brew install gawk gnu-sed gmp mpfr libmpc isl zlib
 
 ## Getting started
 
@@ -35,6 +50,7 @@ upstream GCC toolchain (default: 13.1.0) for bare-metal 32-bit and 64-bit applic
     sh get-toolchain.sh
 
     # 3. Build and install the toolchain (requires write+create permissions for $INSTALL_DIR.)
+    You can set 
     sh build-toolchain.sh $INSTALL_DIR
 
 ## File and directory structure
@@ -60,28 +76,6 @@ under the current working directory:
 This directory structure was chosen to keep the source and build directories
 local to the user's workspace while supporting systematic out-of-source-tree
 building of toolchain components.
-
-## Prerequisites
-
-**Disk space:** Approximately 3.5 GB of disk space are needed to build and install a bare-metal toolchain
-from source code:
-
- * 1.9 GB is occupied by source code (including Git history);
- * 1.1 GB is needed for the build space;
- * 0.5 GB is needed for the installed toolchain.
-
-Several **standard packages** are needed to build the GCC-based compiler
-toolchains.  On Debian/Ubuntu, executing the following command should suffice:
-
-    $ sudo apt-get install autoconf automake autotools-dev curl git libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool bc zlib1g-dev
-
-On Fedora/CentOS/RHEL OS, executing the following command should suffice:
-
-    $ sudo yum install autoconf automake git libmpc-devel mpfr-devel gmp-devel gawk  bison flex texinfo gcc gcc-c++ zlib-devel
-
-On macOS, you can use [Homebrew](http://brew.sh) to install the dependencies:
-
-    $ brew install gawk gnu-sed gmp mpfr libmpc isl zlib
 
 ## Building a bare-metal toolchain (Newlib-based)
 
@@ -154,3 +148,12 @@ adjusting the values of per-component variables.  Taking `GCC` as an example:
  * `GCC_CONFIGURE_OPTS` is the list of options to pass to the configure script. \
    _**NOTE:** Since `GCC_CONFIGURE_OPTS` is a Bourne shell variable, any double-quotes in
    the option list must be duly escaped to be correctly handled by the shell._
+
+## Potential additions
+
+Several extensions are envisioned:
+
+* Explicit selection of GDB version
+* Addition of LLVM/Clang compilers
+* Support for Linux-based target environments
+* Addition of full-featured C library implementations
