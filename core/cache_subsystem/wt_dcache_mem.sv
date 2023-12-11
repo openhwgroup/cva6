@@ -76,6 +76,10 @@ module wt_dcache_mem
     input wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_i
 );
 
+  // Calculated parameter
+  localparam DCACHE_NUM_BANKS = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
+  localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
+
   // functions
   function automatic logic [DCACHE_NUM_BANKS-1:0] dcache_cl_bin2oh(
       input logic [DCACHE_NUM_BANKS_WIDTH-1:0] in);
