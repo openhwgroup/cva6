@@ -1,0 +1,1140 @@
+!Feature
+next_elt_id: 18
+name: RV32Zbb Basic bit-manipulation
+id: 21
+display_order: 21
+subfeatures: !!omap
+- 000_ANDN: !Subfeature
+    name: 000_ANDN
+    tag: VP_ISA_RV32_F021_S000
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S000_I000
+        description: "andn rd, rs1, rs2\nx[rd] = x[rs1] & ~x[rs2]\nBit-wise AND rs1
+          with the bit-wise inverted rs2 value and store the result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S000_I001
+        description: "andn rd, rs1, rs2\nx[rd] = x[rs1] & ~x[rs2]\nBit-wise AND rs1
+          with the bit-wise inverted rs2 value and store the result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S000_I002
+        description: "andn rd, rs1, rs2\nx[rd] = x[rs1] & ~x[rs2]\nBit-wise AND rs1
+          with the bit-wise inverted rs2 value and store the result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_CLZ: !Subfeature
+    name: 001_CLZ
+    tag: VP_ISA_RV32_F021_S001
+    next_elt_id: 3
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S001_I000
+        description: "clz rd, rs1\nx[rd] = countzeroesmsb(rs1)\ncounts the number
+          of 0's before the first 1, starting at the MSB bit."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S001_I001
+        description: "clz rd, rs1\nx[rd] = countzeroesmsb(rs1)\ncounts the number
+          of 0's before the first 1, starting at the MSB bit."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S001_I002
+        description: "clz rd, rs1\nx[rd] = countzeroesmsb(rs1)\ncounts the number
+          of 0's before the first 1, starting at the MSB bit."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_CPOP: !Subfeature
+    name: 002_CPOP
+    tag: VP_ISA_RV32_F021_S002
+    next_elt_id: 3
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S002_I000
+        description: "cpop rd, rs1\nx[rd] = countones(rs1)\nCounts the number of 1's
+          in the source register, and place the value in rd."
+        reqt_doc: ./RISCV_Instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S002_I001
+        description: "cpop rd, rs1\nx[rd] = countones(rs1)\nCounts the number of 1's
+          in the source register, and place the value in rd."
+        reqt_doc: ./RISCV_Instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S002_I002
+        description: "cpop rd, rs1\nx[rd] = countones(rs1)\nCounts the number of 1's
+          in the source register, and place the value in rd."
+        reqt_doc: ./RISCV_Instruction.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_CTZ: !Subfeature
+    name: 003_CTZ
+    tag: VP_ISA_RV32_F021_S003
+    next_elt_id: 3
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S003_I000
+        description: "ctz rd, rs1\nx[rd] = countzeroeslsb(rs1)\ncounts the number
+          of 0's before the first 1, starting at the LSB bit."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S003_I001
+        description: "ctz rd, rs1\nx[rd] = countzeroeslsb(rs1)\ncounts the number
+          of 0's before the first 1, starting at the LSB bit."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S003_I002
+        description: "ctz rd, rs1\nx[rd] = countzeroeslsb(rs1)\ncounts the number
+          of 0's before the first 1, starting at the LSB bit."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_MAX: !Subfeature
+    name: 004_MAX
+    tag: VP_ISA_RV32_F021_S004
+    next_elt_id: 3
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S004_I000
+        description: "max rd, rs1, rs2\nx[rd] = max_signed(rs1, rs2)\nPlace the greater
+          value between rs1, rs2 (signed values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S004_I001
+        description: "max rd, rs1, rs2\nx[rd] = max_signed(rs1, rs2)\nPlace the greater
+          value between rs1, rs2 (signed values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value
+          is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero
+          values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S004_I002
+        description: "max rd, rs1, rs2\nx[rd] = max_signed(rs1, rs2)\nPlace the greater
+          value between rs1, rs2 (signed values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_MAXU: !Subfeature
+    name: 005_MAXU
+    tag: VP_ISA_RV32_F021_S005
+    next_elt_id: 3
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S005_I000
+        description: "maxu rd, rs1, rs2\nx[rd] = max_unsigned(rs1, rs2)\nPlace the
+          greater value between rs1, rs2 (unsigned values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S005_I001
+        description: "maxu rd, rs1, rs2\nx[rd] = max_unsigned(rs1, rs2)\nPlace the
+          greater value between rs1, rs2 (unsigned values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S005_I002
+        description: "maxu rd, rs1, rs2\nx[rd] = max_unsigned(rs1, rs2)\nPlace the
+          greater value between rs1, rs2 (unsigned values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 006_MIN: !Subfeature
+    name: 006_MIN
+    tag: VP_ISA_RV32_F021_S006
+    next_elt_id: 3
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S006_I000
+        description: "min rd, rs1, rs2\nx[rd] = min_signed(rs1, rs2)\nPlace the lesser
+          value between rs1, rs2 (signed values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S006_I001
+        description: "min rd, rs1, rs2\nx[rd] = min_signed(rs1, rs2)\nPlace the lesser
+          value between rs1, rs2 (signed values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nrs2 value
+          is +ve, -ve and zero\nAll combinations of rs1 and rs2 +ve, -ve, and zero
+          values are used\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S006_I002
+        description: "min rd, rs1, rs2\nx[rd] = min_signed(rs1, rs2)\nPlace the lesser
+          value between rs1, rs2 (signed values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 007_MINU: !Subfeature
+    name: 007_MINU
+    tag: VP_ISA_RV32_F021_S007
+    next_elt_id: 3
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S007_I000
+        description: "minu rd, rs1, rs2\nx[rd] = min_unsigned(rs1, rs2)\nPlace the
+          lesser value between rs1, rs2 (unsigned values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S007_I001
+        description: "minu rd, rs1, rs2\nx[rd] = min_unsigned(rs1, rs2)\nPlace the
+          lesser value between rs1, rs2 (unsigned values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S007_I002
+        description: "minu rd, rs1, rs2\nx[rd] = min_unsigned(rs1, rs2)\nPlace the
+          lesser value between rs1, rs2 (unsigned values) into rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 008_ORC_B: !Subfeature
+    name: 008_ORC_B
+    tag: VP_ISA_RV32_F021_S008
+    next_elt_id: 3
+    display_order: 8
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S008_I000
+        description: "orc.b rd, rs1\nx[rd] = {rs1[31:24] ? 8'hff : 8'h00, \n     \
+          \    rs1[23:16] ? 8'hff : 8'h00,\n         rs1[15:8] ? 8'hff : 8'h00,\n\
+          \         rs1[7:0] ? 8'hff : 8'h00}\n\nFor each byte of rs1, if the value
+          is zero, the corresponding output value byte is set to all zeroes, otherwise
+          ones."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S008_I001
+        description: "orc.b rd, rs1\nx[rd] = {rs1[31:24] ? 8'hff : 8'h00, \n     \
+          \    rs1[23:16] ? 8'hff : 8'h00,\n         rs1[15:8] ? 8'hff : 8'h00,\n\
+          \         rs1[7:0] ? 8'hff : 8'h00}\n\nFor each byte of rs1, if the value
+          is zero, the corresponding output value byte is set to all zeroes, otherwise
+          ones."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S008_I002
+        description: "orc.b rd, rs1\nx[rd] = {rs1[31:24] ? 8'hff : 8'h00, \n     \
+          \    rs1[23:16] ? 8'hff : 8'h00,\n         rs1[15:8] ? 8'hff : 8'h00,\n\
+          \         rs1[7:0] ? 8'hff : 8'h00}\n\nFor each byte of rs1, if the value
+          is zero, the corresponding output value byte is set to all zeroes, otherwise
+          ones."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 009_ORN: !Subfeature
+    name: 009_ORN
+    tag: VP_ISA_RV32_F021_S009
+    next_elt_id: 3
+    display_order: 9
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S009_I000
+        description: "orn rd, rs1, rs2\nx[rd] = x[rs1] | ~x[rs2]\nBit-wise OR rs1
+          with the bit-wise inverted rs2 value and store the result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S009_I001
+        description: "orn rd, rs1, rs2\nx[rd] = x[rs1] | ~x[rs2]\nBit-wise OR rs1
+          with the bit-wise inverted rs2 value and store the result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S009_I002
+        description: "orn rd, rs1, rs2\nx[rd] = x[rs1] | ~x[rs2]\nBit-wise OR rs1
+          with the bit-wise inverted rs2 value and store the result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 010_REV8: !Subfeature
+    name: 010_REV8
+    tag: VP_ISA_RV32_F021_S010
+    next_elt_id: 3
+    display_order: 10
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S010_I000
+        description: "rev8 rd, rs1\nx[rd] = {rs1[7:0], rs1[15:8], rs1[23:16], rs1[31:24]}\n
+          Perform an endian swap by swapping bytes in the value in rs1 and place it
+          in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S010_I001
+        description: "rev8 rd, rs1\nx[rd] = {rs1[7:0], rs1[15:8], rs1[23:16], rs1[31:24]}\n
+          Perform an endian swap by swapping bytes in the value in rs1 and place it
+          in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S010_I002
+        description: "rev8 rd, rs1\nx[rd] = {rs1[7:0], rs1[15:8], rs1[23:16], rs1[31:24]}\n
+          Perform an endian swap by swapping bytes in the value in rs1 and place it
+          in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 011_ROR: !Subfeature
+    name: 011_ROR
+    tag: VP_ISA_RV32_F021_S011
+    next_elt_id: 3
+    display_order: 11
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S011_I000
+        description: "ror rd, rs1, rs2\nx[rd] = rs1 rotate_right rs2[4:0]\nrs1 is
+          shifted right by the number of bits in rs2[4:0].\nAny bits shifted out of
+          the LSB are shifted into the MSB of the output value."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S011_I001
+        description: "ror rd, rs1, rs2\nx[rd] = rs1 rotate_right rs2[4:0]\nrs1 is
+          shifted right by the number of bits in rs2[4:0].\nAny bits shifted out of
+          the LSB are shifted into the MSB of the output value."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S011_I002
+        description: "ror rd, rs1, rs2\nx[rd] = rs1 rotate_right rs2[4:0]\nrs1 is
+          shifted right by the number of bits in rs2[4:0].\nAny bits shifted out of
+          the LSB are shifted into the MSB of the output value."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 012_ROL: !Subfeature
+    name: 012_ROL
+    tag: VP_ISA_RV32_F021_S012
+    next_elt_id: 3
+    display_order: 12
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S012_I000
+        description: "rol rd, rs1, rs2\nx[rd] = rs1 rotate_left rs2[4:0]\nrs1 is shifted
+          left by the number of bits in rs2[4:0].\nAny bits shifted out of the MSB
+          are shifted into the LSB of the output value."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S012_I001
+        description: "rol rd, rs1, rs2\nx[rd] = rs1 rotate_left rs2[4:0]\nrs1 is shifted
+          left by the number of bits in rs2[4:0].\nAny bits shifted out of the MSB
+          are shifted into the LSB of the output value."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S012_I002
+        description: "rol rd, rs1, rs2\nx[rd] = rs1 rotate_left rs2[4:0]\nrs1 is shifted
+          left by the number of bits in rs2[4:0].\nAny bits shifted out of the MSB
+          are shifted into the LSB of the output value."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 013_RORI: !Subfeature
+    name: 013_RORI
+    tag: VP_ISA_RV32_F021_S013
+    next_elt_id: 3
+    display_order: 13
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S013_I000
+        description: "rori rd, rs1, imm\nx[rd] = rs1 rotate_right imm\nrs1 is shifted
+          right by the number of bits in immediate value.\nAny bits shifted out of
+          the LSB are shifted into the MSB of the output value."
+        reqt_doc: ''
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S013_I001
+        description: "rori rd, rs1, imm\nx[rd] = rs1 rotate_right imm\nrs1 is shifted
+          right by the number of bits in immediate value.\nAny bits shifted out of
+          the LSB are shifted into the MSB of the output value."
+        reqt_doc: ''
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled\nAll bits of imm are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S013_I002
+        description: "rori rd, rs1, imm\nx[rd] = rs1 rotate_right imm\nrs1 is shifted
+          right by the number of bits in immediate value.\nAny bits shifted out of
+          the LSB are shifted into the MSB of the output value."
+        reqt_doc: ''
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 014_SEXT_B: !Subfeature
+    name: 014_SEXT_B
+    tag: VP_ISA_RV32_F021_S014
+    next_elt_id: 3
+    display_order: 14
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S014_I000
+        description: "sext.b rd, rs1\nx[rd] = sext(x[rs1][7:0])\nIt sign-extends the
+          least-significant byte of rs1, and store result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S014_I001
+        description: "sext.b rd, rs1\nx[rd] = sext(x[rs1][7:0])\nIt sign-extends the
+          least-significant byte of rs1, and store result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is +ve, -ve and zero\nAll bits
+          of rs1 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S014_I002
+        description: "sext.b rd, rs1\nx[rd] = sext(x[rs1][7:0])\nIt sign-extends the
+          least-significant byte of rs1, and store result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +127, -128 and zero\nAll bits
+          of rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 015_SEXT_H: !Subfeature
+    name: 015_SEXT_H
+    tag: VP_ISA_RV32_F021_S015
+    next_elt_id: 3
+    display_order: 15
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S015_I000
+        description: "sext.h rd, rs1\nx[rd] = sext(x[rs1][15:0])\nIt sign-extends
+          the least-significant half-word of rs1, and store result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S015_I001
+        description: "sext.h rd, rs1\nx[rd] = sext(x[rs1][15:0])\nIt sign-extends
+          the least-significant half-word of rs1, and store result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is no-zero and zero\nAll bits of
+          rs1 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S015_I002
+        description: "sext.h rd, rs1\nx[rd] = sext(x[rs1][15:0])\nIt sign-extends
+          the least-significant half-word of rs1, and store result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is +ve, -ve and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 016_XNOR: !Subfeature
+    name: 016_XNOR
+    tag: VP_ISA_RV32_F021_S016
+    next_elt_id: 3
+    display_order: 16
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S016_I000
+        description: "xnor rd, rs1, rs2\nx[rd] = x[rs1] ^ ~x[rs2]\nBit-wise XOR rs1
+          with the bit-wise inverted rs2 value and store the result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S016_I001
+        description: "xnor rd, rs1, rs2\nx[rd] = x[rs1] ^ ~x[rs2]\nBit-wise XOR rs1
+          with the bit-wise inverted rs2 value and store the result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S016_I002
+        description: "xnor rd, rs1, rs2\nx[rd] = x[rs1] ^ ~x[rs2]\nBit-wise XOR rs1
+          with the bit-wise inverted rs2 value and store the result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 017_ZEXT_H: !Subfeature
+    name: 017_ZEXT_H
+    tag: VP_ISA_RV32_F021_S017
+    next_elt_id: 3
+    display_order: 17
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F021_S017_I000
+        description: "zext.h rd, rs1\nx[rd] = zext(x[rs1][15:0])\nIt zero-extends
+          the least-significant half-word of rs1, and store result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F021_S017_I001
+        description: "zext.h rd, rs1\nx[rd] = zext(x[rs1][15:0])\nIt zero-extends
+          the least-significant half-word of rs1, and store result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F021_S017_I002
+        description: "zext.h rd, rs1\nx[rd] = zext(x[rs1][15:0])\nIt zero-extends
+          the least-significant half-word of rs1, and store result in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'
