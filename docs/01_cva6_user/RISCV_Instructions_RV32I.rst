@@ -30,7 +30,7 @@ This chapter is applicable to all CV32A6 configurations.
    "CV32A60X", "Implemented extension"
    "CV32E6?X", "Implemented extension"
 
-**Note**: This chapter is specific to CV32A6 configurations. CV64A6 implements RV64I that includes additional instructions.
+**Note**: CV64A6 implements RV64I that includes additional instructions.
 
 
 RV32I Base Integer Instruction Set
