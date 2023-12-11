@@ -270,7 +270,7 @@ class reg_misa extends csr_reg;
       }
       Extensions: coverpoint data[25:0] {
          bins legal_values[] = {26'h141104};
-         bins illegal_values = {[0:$]} with (!(item inside {26'h141104}));
+         bins illegal_values[3] = {[0:$]} with (!(item inside {26'h141104}));
       }
   endgroup
 
@@ -447,7 +447,10 @@ class reg_mtvec extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mtvec__read_cg";
       option.per_instance = 1;
-      BASE: coverpoint data[31:2];
+      BASE: coverpoint data[31:2] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       MODE: coverpoint data[1:0] {
          bins legal_values[] = {0,1};
          illegal_bins illegal_values = {[0:$]} with (!(item inside {0,1}));
@@ -457,7 +460,10 @@ class reg_mtvec extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mtvec.mtvec__write_cp";
       option.per_instance = 1;
-      BASE: coverpoint data[31:2];
+      BASE: coverpoint data[31:2] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       MODE: coverpoint data[1:0] {
          bins legal_values[] = {0,1};
          bins illegal_values[] = {[0:$]} with (!(item inside {0,1}));
@@ -588,13 +594,19 @@ class reg_mhpmevent3 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent3__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent3.mhpmevent3__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -644,13 +656,19 @@ class reg_mhpmevent4 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent4__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent4.mhpmevent4__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -700,13 +718,19 @@ class reg_mhpmevent5 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent5__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent5.mhpmevent5__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -756,13 +780,19 @@ class reg_mhpmevent6 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent6__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent6.mhpmevent6__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -812,13 +842,19 @@ class reg_mhpmevent7 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent7__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent7.mhpmevent7__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -868,13 +904,19 @@ class reg_mhpmevent8 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent8__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent8.mhpmevent8__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -924,13 +966,19 @@ class reg_mhpmevent9 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent9__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent9.mhpmevent9__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0]  {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -980,13 +1028,19 @@ class reg_mhpmevent10 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent10__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent10.mhpmevent10__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1036,13 +1090,19 @@ class reg_mhpmevent11 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent11__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent11.mhpmevent11__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1092,13 +1152,19 @@ class reg_mhpmevent12 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent12__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent12.mhpmevent12__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1148,13 +1214,19 @@ class reg_mhpmevent13 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent13__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent13.mhpmevent13__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1204,13 +1276,19 @@ class reg_mhpmevent14 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent14__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent14.mhpmevent14__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1260,13 +1338,19 @@ class reg_mhpmevent15 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent15__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent15.mhpmevent15__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1316,13 +1400,19 @@ class reg_mhpmevent16 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent16__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent16.mhpmevent16__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1372,13 +1462,19 @@ class reg_mhpmevent17 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent17__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent17.mhpmevent17__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1428,13 +1524,19 @@ class reg_mhpmevent18 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent18__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent18.mhpmevent18__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1484,13 +1586,19 @@ class reg_mhpmevent19 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent19__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent19.mhpmevent19__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1540,13 +1648,19 @@ class reg_mhpmevent20 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent20__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent20.mhpmevent20__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1596,13 +1710,19 @@ class reg_mhpmevent21 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent21__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent21.mhpmevent21__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1652,13 +1772,19 @@ class reg_mhpmevent22 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent22__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent22.mhpmevent22__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1708,13 +1834,19 @@ class reg_mhpmevent23 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent23__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent23.mhpmevent23__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1764,13 +1896,19 @@ class reg_mhpmevent24 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent24__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent24.mhpmevent24__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1820,13 +1958,19 @@ class reg_mhpmevent25 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent25__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent25.mhpmevent25__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1876,13 +2020,19 @@ class reg_mhpmevent26 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent26__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent26.mhpmevent26__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1932,13 +2082,19 @@ class reg_mhpmevent27 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent27__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent27.mhpmevent27__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -1988,13 +2144,19 @@ class reg_mhpmevent28 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent28__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent28.mhpmevent28__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -2044,13 +2206,19 @@ class reg_mhpmevent29 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent29__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent29.mhpmevent29__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -2100,13 +2268,19 @@ class reg_mhpmevent30 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent30__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent30.mhpmevent30__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -2156,13 +2330,19 @@ class reg_mhpmevent31 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent31__read_cg";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmevent31.mhpmevent31__write_cp";
       option.per_instance = 1;
-      mhpmevent: coverpoint data[31:0];
+      mhpmevent: coverpoint data[31:0] {
+         bins legal_values[] = {0};
+         bins illegal_values[3]  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   //---------------------------------------
@@ -2212,13 +2392,19 @@ class reg_mscratch extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mscratch__read_cg";
       option.per_instance = 1;
-      mscratch: coverpoint data[31:0];
+      mscratch: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mscratch.mscratch__write_cp";
       option.per_instance = 1;
-      mscratch: coverpoint data[31:0];
+      mscratch: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -2268,13 +2454,19 @@ class reg_mepc extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mepc__read_cg";
       option.per_instance = 1;
-      mepc: coverpoint data[31:0];
+      mepc: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mepc.mepc__write_cp";
       option.per_instance = 1;
-      mepc: coverpoint data[31:0];
+      mepc: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -2326,14 +2518,24 @@ class reg_mcause extends csr_reg;
       option.name = "csr_mcause__read_cg";
       option.per_instance = 1;
       Interrupt: coverpoint data[31:31];
-      exception_code: coverpoint data[30:0];
+      exception_code: coverpoint data[30:0] {
+         bins legal_values_interrupt[]  = {0,1,5,9} iff (data[31:31]==1);
+         bins other_values_interrupt[3] = {[0:$]} with (!(item inside {0,1,5,9})) iff (data[31:31]==1);
+         bins legal_values_notinterrupt[] = {[0:9],12,13,15} iff (data[31:31]==0);
+         bins other_values_notinterrupt[3] = {[0:$]} with (!(item inside {[0:9],12,13,15})) iff (data[31:31]==0);
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mcause.mcause__write_cp";
       option.per_instance = 1;
       Interrupt: coverpoint data[31:31];
-      exception_code: coverpoint data[30:0];
+      exception_code: coverpoint data[30:0] {
+         bins legal_values_interrupt[]  = {0,1,5,9} iff (data[31:31]==1);
+         bins other_values_interrupt[3] = {[0:$]} with (!(item inside {0,1,5,9})) iff (data[31:31]==1);
+         bins legal_values_notinterrupt[] = {[0:9],12,13,15} iff (data[31:31]==0);
+         bins other_values_notinterrupt[3] = {[0:$]} with (!(item inside {[0:9],12,13,15})) iff (data[31:31]==0);
+      }
   endgroup
 
   //---------------------------------------
@@ -2386,13 +2588,19 @@ class reg_mtval extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mtval__read_cg";
       option.per_instance = 1;
-      mtval: coverpoint data[31:0];
+      mtval: coverpoint data[31:0] {
+         bins ZERO[]  = {0};
+         bins other_values[3]  = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mtval.mtval__write_cp";
       option.per_instance = 1;
-      mtval: coverpoint data[31:0];
+      mtval: coverpoint data[31:0]{
+         bins ZERO[]  = {0};
+         bins other_values[3]  = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -2567,19 +2775,43 @@ class reg_pmpcfg0 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpcfg0__read_cg";
       option.per_instance = 1;
-      pmp3cfg: coverpoint data[31:24];
-      pmp2cfg: coverpoint data[23:16];
-      pmp1cfg: coverpoint data[15:8];
-      pmp0cfg: coverpoint data[7:0];
+      pmp3cfg: coverpoint data[31:24] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp2cfg: coverpoint data[23:16] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp1cfg: coverpoint data[15:8] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp0cfg: coverpoint data[7:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpcfg0.pmpcfg0__write_cp";
       option.per_instance = 1;
-      pmp3cfg: coverpoint data[31:24];
-      pmp2cfg: coverpoint data[23:16];
-      pmp1cfg: coverpoint data[15:8];
-      pmp0cfg: coverpoint data[7:0];
+      pmp3cfg: coverpoint data[31:24] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp2cfg: coverpoint data[23:16] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp1cfg: coverpoint data[15:8] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp0cfg: coverpoint data[7:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -2641,19 +2873,43 @@ class reg_pmpcfg1 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpcfg1__read_cg";
       option.per_instance = 1;
-      pmp7cfg: coverpoint data[31:24];
-      pmp6cfg: coverpoint data[23:16];
-      pmp5cfg: coverpoint data[15:8];
-      pmp4cfg: coverpoint data[7:0];
+      pmp7cfg: coverpoint data[31:24] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp6cfg: coverpoint data[23:16] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp5cfg: coverpoint data[15:8] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp4cfg: coverpoint data[7:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpcfg1.pmpcfg1__write_cp";
       option.per_instance = 1;
-      pmp7cfg: coverpoint data[31:24];
-      pmp6cfg: coverpoint data[23:16];
-      pmp5cfg: coverpoint data[15:8];
-      pmp4cfg: coverpoint data[7:0];
+      pmp7cfg: coverpoint data[31:24] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp6cfg: coverpoint data[23:16] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp5cfg: coverpoint data[15:8] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp4cfg: coverpoint data[7:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -2715,19 +2971,43 @@ class reg_pmpcfg2 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpcfg2__read_cg";
       option.per_instance = 1;
-      pmp11cfg: coverpoint data[31:24];
-      pmp10cfg: coverpoint data[23:16];
-      pmp9cfg: coverpoint data[15:8];
-      pmp8cfg: coverpoint data[7:0];
+      pmp11cfg: coverpoint data[31:24] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp10cfg: coverpoint data[23:16] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp9cfg: coverpoint data[15:8] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp8cfg: coverpoint data[7:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpcfg2.pmpcfg2__write_cp";
       option.per_instance = 1;
-      pmp11cfg: coverpoint data[31:24];
-      pmp10cfg: coverpoint data[23:16];
-      pmp9cfg: coverpoint data[15:8];
-      pmp8cfg: coverpoint data[7:0];
+      pmp11cfg: coverpoint data[31:24] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp10cfg: coverpoint data[23:16] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp9cfg: coverpoint data[15:8] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp8cfg: coverpoint data[7:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -2789,19 +3069,43 @@ class reg_pmpcfg3 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpcfg3__read_cg";
       option.per_instance = 1;
-      pmp15cfg: coverpoint data[31:24];
-      pmp14cfg: coverpoint data[23:16];
-      pmp13cfg: coverpoint data[15:8];
-      pmp12cfg: coverpoint data[7:0];
+      pmp15cfg: coverpoint data[31:24] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp14cfg: coverpoint data[23:16] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp13cfg: coverpoint data[15:8] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp12cfg: coverpoint data[7:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpcfg3.pmpcfg3__write_cp";
       option.per_instance = 1;
-      pmp15cfg: coverpoint data[31:24];
-      pmp14cfg: coverpoint data[23:16];
-      pmp13cfg: coverpoint data[15:8];
-      pmp12cfg: coverpoint data[7:0];
+      pmp15cfg: coverpoint data[31:24] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp14cfg: coverpoint data[23:16] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp13cfg: coverpoint data[15:8] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
+      pmp12cfg: coverpoint data[7:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -2860,13 +3164,19 @@ class reg_pmpaddr0 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr0__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr0.pmpaddr0__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -2916,13 +3226,19 @@ class reg_pmpaddr1 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr1__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr1.pmpaddr1__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -2972,13 +3288,19 @@ class reg_pmpaddr2 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr2__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr2.pmpaddr2__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3028,13 +3350,19 @@ class reg_pmpaddr3 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr3__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr3.pmpaddr3__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3084,13 +3412,19 @@ class reg_pmpaddr4 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr4__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]  {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr4.pmpaddr4__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3140,13 +3474,19 @@ class reg_pmpaddr5 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr5__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr5.pmpaddr5__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3196,13 +3536,19 @@ class reg_pmpaddr6 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr6__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr6.pmpaddr6__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3252,13 +3598,19 @@ class reg_pmpaddr7 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr7__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr7.pmpaddr7__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3308,13 +3660,19 @@ class reg_pmpaddr8 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr8__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr8.pmpaddr8__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3364,13 +3722,19 @@ class reg_pmpaddr9 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr9__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr9.pmpaddr9__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3420,13 +3784,19 @@ class reg_pmpaddr10 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr10__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr10.pmpaddr10__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3476,13 +3846,19 @@ class reg_pmpaddr11 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr11__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr11.pmpaddr11__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3532,13 +3908,19 @@ class reg_pmpaddr12 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr12__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr12.pmpaddr12__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3588,13 +3970,19 @@ class reg_pmpaddr13 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr13__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr13.pmpaddr13__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3644,13 +4032,19 @@ class reg_pmpaddr14 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr14__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr14.pmpaddr14__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3700,13 +4094,19 @@ class reg_pmpaddr15 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr15__read_cg";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_pmpaddr15.pmpaddr15__write_cp";
       option.per_instance = 1;
-      address: coverpoint data[31:0];
+      address: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3812,7 +4212,10 @@ class reg_mcycle extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mcycle__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       count_overflow: coverpoint data[31:0] {
          bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
       }
@@ -3821,7 +4224,10 @@ class reg_mcycle extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mcycle.mcycle__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3871,7 +4277,10 @@ class reg_minstret extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_minstret__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       count_overflow: coverpoint data[31:0] {
          bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
       }
@@ -3880,7 +4289,10 @@ class reg_minstret extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_minstret.minstret__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3930,7 +4342,10 @@ class reg_mcycleh extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mcycleh__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       count_overflow: coverpoint data[31:0] {
          bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
       }
@@ -3939,7 +4354,10 @@ class reg_mcycleh extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mcycleh.mcycleh__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -3989,7 +4407,10 @@ class reg_minstreth extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_minstreth__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       count_overflow: coverpoint data[31:0] {
          bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
       }
@@ -3998,7 +4419,10 @@ class reg_minstreth extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_minstreth.minstreth__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4048,13 +4472,19 @@ class reg_mhpmcounter3 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter3__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter3.mhpmcounter3__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4104,13 +4534,19 @@ class reg_mhpmcounter4 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter4__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter4.mhpmcounter4__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4160,13 +4596,19 @@ class reg_mhpmcounter5 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter5__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter5.mhpmcounter5__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4216,13 +4658,19 @@ class reg_mhpmcounter6 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter6__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter6.mhpmcounter6__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4272,13 +4720,19 @@ class reg_mhpmcounter7 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter7__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter7.mhpmcounter7__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4328,13 +4782,19 @@ class reg_mhpmcounter8 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter8__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+     }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter8.mhpmcounter8__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4384,13 +4844,19 @@ class reg_mhpmcounter9 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter9__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter9.mhpmcounter9__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4440,13 +4906,19 @@ class reg_mhpmcounter10 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter10__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter10.mhpmcounter10__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4496,13 +4968,19 @@ class reg_mhpmcounter11 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter11__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter11.mhpmcounter11__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4552,13 +5030,19 @@ class reg_mhpmcounter12 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter12__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter12.mhpmcounter12__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4608,13 +5092,19 @@ class reg_mhpmcounter13 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter13__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter13.mhpmcounter13__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4664,13 +5154,19 @@ class reg_mhpmcounter14 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter14__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter14.mhpmcounter14__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4720,13 +5216,19 @@ class reg_mhpmcounter15 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter15__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter15.mhpmcounter15__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4776,13 +5278,19 @@ class reg_mhpmcounter16 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter16__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter16.mhpmcounter16__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4832,13 +5340,19 @@ class reg_mhpmcounter17 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter17__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter17.mhpmcounter17__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4888,13 +5402,19 @@ class reg_mhpmcounter18 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter18__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter18.mhpmcounter18__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -4944,13 +5464,19 @@ class reg_mhpmcounter19 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter19__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter19.mhpmcounter19__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5000,13 +5526,19 @@ class reg_mhpmcounter20 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter20__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter20.mhpmcounter20__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5056,13 +5588,19 @@ class reg_mhpmcounter21 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter21__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter21.mhpmcounter21__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5112,13 +5650,19 @@ class reg_mhpmcounter22 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter22__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter22.mhpmcounter22__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5168,13 +5712,19 @@ class reg_mhpmcounter23 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter23__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter23.mhpmcounter23__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5224,13 +5774,19 @@ class reg_mhpmcounter24 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter24__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter24.mhpmcounter24__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5280,13 +5836,19 @@ class reg_mhpmcounter25 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter25__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter25.mhpmcounter25__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5336,13 +5898,19 @@ class reg_mhpmcounter26 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter26__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter26.mhpmcounter26__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5392,13 +5960,19 @@ class reg_mhpmcounter27 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter27__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter27.mhpmcounter27__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5448,13 +6022,19 @@ class reg_mhpmcounter28 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter28__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter28.mhpmcounter28__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5504,13 +6084,19 @@ class reg_mhpmcounter29 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter29__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter29.mhpmcounter29__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5560,13 +6146,19 @@ class reg_mhpmcounter30 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter30__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter30.mhpmcounter30__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5616,13 +6208,19 @@ class reg_mhpmcounter31 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter31__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounter31.mhpmcounter31__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5672,13 +6270,19 @@ class reg_mhpmcounterh3 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh3__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh3.mhpmcounterh3__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5728,13 +6332,19 @@ class reg_mhpmcounterh4 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh4__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh4.mhpmcounterh4__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5784,13 +6394,19 @@ class reg_mhpmcounterh5 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh5__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh5.mhpmcounterh5__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5840,13 +6456,19 @@ class reg_mhpmcounterh6 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh6__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh6.mhpmcounterh6__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5896,13 +6518,19 @@ class reg_mhpmcounterh7 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh7__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh7.mhpmcounterh7__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -5952,13 +6580,19 @@ class reg_mhpmcounterh8 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh8__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh8.mhpmcounterh8__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6008,13 +6642,19 @@ class reg_mhpmcounterh9 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh9__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh9.mhpmcounterh9__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6064,13 +6704,19 @@ class reg_mhpmcounterh10 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh10__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh10.mhpmcounterh10__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6120,13 +6766,19 @@ class reg_mhpmcounterh11 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh11__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh11.mhpmcounterh11__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6176,13 +6828,19 @@ class reg_mhpmcounterh12 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh12__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh12.mhpmcounterh12__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6232,13 +6890,19 @@ class reg_mhpmcounterh13 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh13__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+          illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+     }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh13.mhpmcounterh13__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6288,13 +6952,19 @@ class reg_mhpmcounterh14 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh14__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh14.mhpmcounterh14__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6344,13 +7014,19 @@ class reg_mhpmcounterh15 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh15__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh15.mhpmcounterh15__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6400,13 +7076,19 @@ class reg_mhpmcounterh16 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh16__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh16.mhpmcounterh16__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6456,13 +7138,19 @@ class reg_mhpmcounterh17 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh17__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh17.mhpmcounterh17__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6512,13 +7200,19 @@ class reg_mhpmcounterh18 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh18__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh18.mhpmcounterh18__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6568,13 +7262,19 @@ class reg_mhpmcounterh19 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh19__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh19.mhpmcounterh19__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6624,13 +7324,19 @@ class reg_mhpmcounterh20 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh20__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh20.mhpmcounterh20__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6680,13 +7386,19 @@ class reg_mhpmcounterh21 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh21__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh21.mhpmcounterh21__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6736,13 +7448,19 @@ class reg_mhpmcounterh22 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh22__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh22.mhpmcounterh22__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6792,13 +7510,19 @@ class reg_mhpmcounterh23 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh23__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh23.mhpmcounterh23__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6848,13 +7572,19 @@ class reg_mhpmcounterh24 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh24__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh24.mhpmcounterh24__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6904,13 +7634,19 @@ class reg_mhpmcounterh25 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh25__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh25.mhpmcounterh25__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -6960,13 +7696,19 @@ class reg_mhpmcounterh26 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh26__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh26.mhpmcounterh26__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7016,13 +7758,19 @@ class reg_mhpmcounterh27 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh27__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh27.mhpmcounterh27__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7072,13 +7820,19 @@ class reg_mhpmcounterh28 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh28__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh28.mhpmcounterh28__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7128,13 +7882,19 @@ class reg_mhpmcounterh29 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh29__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh29.mhpmcounterh29__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7184,13 +7944,19 @@ class reg_mhpmcounterh30 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh30__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh30.mhpmcounterh30__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7240,13 +8006,19 @@ class reg_mhpmcounterh31 extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh31__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhpmcounterh31.mhpmcounterh31__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7296,7 +8068,10 @@ class reg_cycle extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_cycle__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       count_overflow: coverpoint data[31:0] {
          bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
       }
@@ -7305,7 +8080,10 @@ class reg_cycle extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_cycle.cycle__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0]{
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7355,7 +8133,10 @@ class reg_instret extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_instret__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       count_overflow: coverpoint data[31:0] {
          bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
       }
@@ -7364,7 +8145,10 @@ class reg_instret extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_instret.instret__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7414,7 +8198,10 @@ class reg_cycleh extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_cycleh__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       count_overflow: coverpoint data[31:0] {
          bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
       }
@@ -7423,7 +8210,10 @@ class reg_cycleh extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_cycleh.cycleh__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7473,7 +8263,10 @@ class reg_instreth extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_instreth__read_cg";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
       count_overflow: coverpoint data[31:0] {
          bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
       }
@@ -7482,7 +8275,10 @@ class reg_instreth extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_instreth.instreth__write_cp";
       option.per_instance = 1;
-      count: coverpoint data[31:0];
+      count: coverpoint data[31:0] {
+         bins reset_value  = {0};
+         bins other_values[3] = {[1:$]};
+      }
   endgroup
 
   //---------------------------------------
@@ -7533,15 +8329,25 @@ class reg_mvendorid extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mvendorid__read_cg";
       option.per_instance = 1;
-      bank: coverpoint data[31:7];
-      offset: coverpoint data[6:0];
+      bank: coverpoint data[31:7] {
+         bins reset_value  = {'hC0};
+      }
+      offset: coverpoint data[6:0]{
+         bins reset_value  = {'h20};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mvendorid.mvendorid__write_cp";
       option.per_instance = 1;
-      bank: coverpoint data[31:7];
-      offset: coverpoint data[6:0];
+      bank: coverpoint data[31:7] {
+         bins reset_value  = {'hC0};
+         bins other_values[3] = {[0:$]} with (!(item inside {'hC0}));
+      }
+      offset: coverpoint data[6:0]{
+         bins reset_value  = {'h20};
+         bins other_values[3] = {[0:$]} with (!(item inside {'h20}));
+      }
   endgroup
 
   //---------------------------------------
@@ -7594,13 +8400,18 @@ class reg_marchid extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_marchid__read_cg";
       option.per_instance = 1;
-      architecture_id: coverpoint data[31:0];
+      architecture_id: coverpoint data[31:0] {
+         bins reset_value  = {'h3};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_marchid.marchid__write_cp";
       option.per_instance = 1;
-      architecture_id: coverpoint data[31:0];
+      architecture_id: coverpoint data[31:0] {
+         bins reset_value  = {'h3};
+         bins other_values[3] = {[0:$]} with (!(item inside {3}));
+      }
   endgroup
 
   //---------------------------------------
@@ -7650,13 +8461,18 @@ class reg_mimpid extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mimpid__read_cg";
       option.per_instance = 1;
-      implementation: coverpoint data[31:0];
+      implementation: coverpoint data[31:0] {
+         bins reset_value  = {'hF13};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mimpid.mimpid__write_cp";
       option.per_instance = 1;
-      implementation: coverpoint data[31:0];
+      implementation: coverpoint data[31:0] {
+         bins reset_value  = {'hF13};
+         bins other_values[3] = {[0:$]} with (!(item inside {'hF13}));
+      }
   endgroup
 
   //---------------------------------------
@@ -7706,13 +8522,18 @@ class reg_mhartid extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhartid__read_cg";
       option.per_instance = 1;
-      hart_id: coverpoint data[31:0];
+      hart_id: coverpoint data[31:0] {
+         bins reset_value  = {'hF14};
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mhartid.mhartid__write_cp";
       option.per_instance = 1;
-      hart_id: coverpoint data[31:0];
+      hart_id: coverpoint data[31:0] {
+         bins reset_value  = {'hF14};
+         bins other_values[3] = {[0:$]} with (!(item inside {'hF14}));
+      }
   endgroup
 
   //---------------------------------------
