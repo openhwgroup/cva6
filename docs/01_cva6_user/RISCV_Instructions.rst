@@ -36,7 +36,8 @@ In the next pages, the ISA (Instruction Set Architecture) for various CVA6 confi
 * RVZifencei   – Standard Extension for Instruction-Fetch Fence
 * RVZicond     – Standard Extension for Integer Conditional Operations
 
-The base RISC-V ISA has fixed-length 32-bit instructions or 16-bit instructions, so that must be naturally aligned on 4-byte boundary or 2-byte boundary.
+The base RISC-V ISA (RV32I or RV64I) has fixed-length 32-bit instructions or 16-bit instructions, so that must be naturally aligned on 2-byte boundary.
+If 16-bit instructions are not implemented (RVC, RVZcb), then instructions must be naturally aligned on 4-byte boundary.
 
 All CVA6 configurations support:
 
@@ -46,7 +47,11 @@ All CVA6 configurations support:
 General purpose registers
 --------------------------
 
-As shown in the Table 1.1, there are 31 general-purpose registers x1–x31, which hold integer values. Register x0 is hardwired to the constant 0. There is no hardwired subroutine return address link register, but the standard software calling convention uses register x1 to hold the return address on a call. For C32VA6_v5.0.0, the x registers are 32 bits wide. There is one additional register also 32 bits wide: the program counter pc holds the address of the current instruction.
+As shown in the Table 1.1, there are 31 general-purpose registers x1–x31, which hold integer values. Register x0 is hardwired to the constant 0. There is no hardwired subroutine return address link register, but the standard software calling convention uses register x1 to hold the return address on a call.
+
+In CV32A6 configurations, the x registers are 32-bit wide. There is one additional register also 32 bits wide: the program counter PC that holds the address of the current instruction.
+
+In CV64A6 configurations, the x registers and the PC are 64-bit wide.
 
 Table 1.1 shows the general-purpose registers :
 
@@ -130,8 +135,18 @@ Table 1.1 shows the general-purpose registers :
      - t3 - t6
      - Temporaries
 
+RISC-V Extensions
+-----------------
+
+The following pages detail the instructions of the RISC-V extensions that are included in each CVA6 configuration.
+
+Some extensions that are supported by CVA6, but not yet included in any verified CVA6 configuration, might not yet have a such a detailed description. Contributors are welcome to complete these extensions.
+
+
 Conventions and Terminology
 -----------------------------
+
+The notations below are used in the description of instructions.
 
 - **sext(val)**: Sign Extension is the operation of increasing the number of bits of a binary number while preserving the number's sign (positive(0)/negative(1)) and value. this is done by appending digits to the most significant side of the number.
 
@@ -158,19 +173,11 @@ Conventions and Terminology
 - **rx'**: rd', rs1' or rs2', stand for the 3-bit Compressed Encoding registers.
 
 
-RISC-V Extensions
------------------
 
-The following pages detail the instructions of the RISC-V extensions that are included in each CVA6 configuration.
+Illegal Instructions
+--------------------
 
-Some extensions that are supported by CVA6, but not yet included in any verified CVA6 configuration, might not yet have a such a detailed description. Contributors are welcome to complete these extensions.
-
-
-
-Illegal Instruction
----------------------------
-
-This section describe all kind of Illegal Instruction, in this case the Core generate an illegal instruction exception.
+This section describe all kind of Illegal Instructions. In this case the Core generate an illegal instruction exception.
 
 - **ILLEGAL OPCODE**: any instruction (compressed or not compressed) with a non supported opcode is an illegal instruction
 
