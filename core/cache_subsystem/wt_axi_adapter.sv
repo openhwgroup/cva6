@@ -20,7 +20,7 @@ module wt_axi_adapter
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned ReqFifoDepth = 2,
-    parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
+    parameter int unsigned MetaFifoDepth = CVA6Cfg.DCACHE_MAX_TX,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic,
     parameter type icache_req_t = logic,

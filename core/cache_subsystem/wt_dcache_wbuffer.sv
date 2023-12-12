@@ -105,8 +105,8 @@ module wt_dcache_wbuffer
     output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wr_user_o,
     // to forwarding logic and miss unit
     output wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_o,
-    output logic [DCACHE_MAX_TX-1:0][CVA6Cfg.PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
-    output logic [DCACHE_MAX_TX-1:0] tx_vld_o
+    output logic [CVA6Cfg.DCACHE_MAX_TX-1:0][CVA6Cfg.PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
+    output logic [CVA6Cfg.DCACHE_MAX_TX-1:0] tx_vld_o
 );
 
   typedef struct packed {
@@ -115,7 +115,7 @@ module wt_dcache_wbuffer
     logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
   } tx_stat_t;
 
-  tx_stat_t [DCACHE_MAX_TX-1:0] tx_stat_d, tx_stat_q;
+  tx_stat_t [CVA6Cfg.DCACHE_MAX_TX-1:0] tx_stat_d, tx_stat_q;
   wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_d, wbuffer_q;
   logic [DCACHE_WBUF_DEPTH-1:0] valid;
   logic [DCACHE_WBUF_DEPTH-1:0] dirty;
@@ -175,7 +175,7 @@ module wt_dcache_wbuffer
   assign miss_vld_bits_o = '0;
   assign wbuffer_data_o = wbuffer_q;
 
-  for (genvar k = 0; k < DCACHE_MAX_TX; k++) begin : gen_tx_vld
+  for (genvar k = 0; k < CVA6Cfg.DCACHE_MAX_TX; k++) begin : gen_tx_vld
     assign tx_vld_o[k]   = tx_stat_q[k].vld;
     assign tx_paddr_o[k] = {{CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[tx_stat_q[k].ptr].wtag << CVA6Cfg.XLEN_ALIGN_BYTES};
   end
@@ -293,8 +293,8 @@ module wt_dcache_wbuffer
   // TODO: todo: make this fall through if timing permits it
   fifo_v3 #(
       .FALL_THROUGH(1'b0),
-      .DATA_WIDTH  ($clog2(DCACHE_MAX_TX)),
-      .DEPTH       (DCACHE_MAX_TX),
+      .DATA_WIDTH  ($clog2(CVA6Cfg.DCACHE_MAX_TX)),
+      .DEPTH       (CVA6Cfg.DCACHE_MAX_TX),
       .FPGA_EN(CVA6Cfg.FPGA_EN)
   ) i_rtrn_id_fifo (
       .clk_i     (clk_i),
@@ -343,7 +343,7 @@ module wt_dcache_wbuffer
 
   // next word to lookup in the cache
   rr_arb_tree #(
-      .NumIn    (DCACHE_MAX_TX),
+      .NumIn    (CVA6Cfg.DCACHE_MAX_TX),
       .LockIn   (1'b1),
       .DataWidth(1)
   ) i_tx_id_rr (

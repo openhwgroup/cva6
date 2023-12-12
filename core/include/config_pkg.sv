@@ -203,6 +203,7 @@ package config_pkg;
     bit AXI_USER_EN;
     int unsigned AXI_USER_WIDTH;
     int unsigned MEM_TID_WIDTH;
+    int unsigned DCACHE_MAX_TX;
     // I$
     int unsigned ICACHE_SET_ASSOC;
     int unsigned ICACHE_SET_ASSOC_WIDTH;
@@ -337,6 +338,7 @@ package config_pkg;
       AXI_USER_EN: CVA6Cfg.DATA_USER_EN | CVA6Cfg.FETCH_USER_EN,
       AXI_USER_WIDTH: CVA6Cfg.AXI_USER_WIDTH,
       MEM_TID_WIDTH: CVA6Cfg.MemTidWidth,
+      DCACHE_MAX_TX: 2 ** CVA6Cfg.MemTidWidth,
 
       ICACHE_SET_ASSOC: ICACHE_SET_ASSOC,
       ICACHE_SET_ASSOC_WIDTH: $clog2(ICACHE_SET_ASSOC),
