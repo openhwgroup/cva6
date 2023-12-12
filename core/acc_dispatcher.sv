@@ -23,8 +23,35 @@ module acc_dispatcher
     parameter type scoreboard_entry_t = logic,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
-    parameter type                   acc_req_t  = acc_pkg::accelerator_req_t,
-    parameter type                   acc_resp_t = acc_pkg::accelerator_resp_t,
+    parameter type acc_req_t = struct packed {
+      logic                                 req_valid;
+      logic                                 resp_ready;
+      riscv::instruction_t                  insn;
+      logic [CVA6Cfg.XLEN-1:0]                         rs1;
+      logic [CVA6Cfg.XLEN-1:0]                         rs2;
+      fpnew_pkg::roundmode_e                frm;
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
+      logic                                 store_pending;
+      // Invalidation interface
+      logic                                 acc_cons_en;
+      logic                                 inval_ready;
+    },
+    parameter type acc_resp_t = struct packed {
+      logic                                 req_ready;
+      logic                                 resp_valid;
+      logic [CVA6Cfg.XLEN-1:0]                         result;
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
+      logic                                 error;
+      // Metadata
+      logic                                 store_pending;
+      logic                                 store_complete;
+      logic                                 load_complete;
+      logic [4:0]                           fflags;
+      logic                                 fflags_valid;
+      // Invalidation interface
+      logic                                 inval_valid;
+      logic [63:0]                          inval_addr;
+    },
     parameter type                   acc_cfg_t  = logic,
     parameter acc_cfg_t              AccCfg     = '0
 ) (
@@ -192,13 +219,13 @@ module acc_dispatcher
    *  Accelerator request  *
    *************************/
 
-  acc_pkg::accelerator_req_t acc_req;
+  acc_req_t acc_req;
   logic                      acc_req_valid;
   logic                      acc_req_ready;
 
-  acc_pkg::accelerator_req_t acc_req_int;
+  acc_req_t acc_req_int;
   fall_through_register #(
-      .T(acc_pkg::accelerator_req_t)
+      .T(acc_req_t)
   ) i_accelerator_req_register (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -229,7 +256,7 @@ module acc_dispatcher
     acc_req            = '0;
     acc_req_valid      = 1'b0;
 
-    // Unpack fu_data_t into accelerator_req_t
+    // Unpack fu_data_t into acc_req_t
     if (!acc_insn_queue_empty) begin
       acc_req = '{
           // Instruction is forwarded from the decoder as an immediate
