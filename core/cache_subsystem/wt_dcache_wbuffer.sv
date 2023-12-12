@@ -78,10 +78,10 @@ module wt_dcache_wbuffer
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // unused here (set to 0)
     output logic miss_nc_o,  // request to I/O space
     output logic [2:0] miss_size_o,  //
-    output logic [CACHE_ID_WIDTH-1:0]          miss_id_o,       // ID of this transaction (wbuffer uses all IDs from 0 to DCACHE_MAX_TX-1)
+    output logic [CVA6Cfg.MEM_TID_WIDTH-1:0]          miss_id_o,       // ID of this transaction (wbuffer uses all IDs from 0 to DCACHE_MAX_TX-1)
     // write responses from memory
     input logic miss_rtrn_vld_i,
-    input logic [CACHE_ID_WIDTH-1:0] miss_rtrn_id_i,  // transaction ID to clear
+    input logic [CVA6Cfg.MEM_TID_WIDTH-1:0] miss_rtrn_id_i,  // transaction ID to clear
     // cache read interface
     output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_o,  // tag in - comes one cycle later
     output logic [DCACHE_CL_IDX_WIDTH-1:0] rd_idx_o,
@@ -126,7 +126,7 @@ module wt_dcache_wbuffer
 
   logic [$clog2(DCACHE_WBUF_DEPTH)-1:0]
       next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
-  logic [CACHE_ID_WIDTH-1:0] tx_id, rtrn_id;
+  logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tx_id, rtrn_id;
 
   logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] bdirty_off;
   logic [(CVA6Cfg.XLEN/8)-1:0] tx_be;

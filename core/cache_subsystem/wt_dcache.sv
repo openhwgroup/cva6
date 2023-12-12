@@ -35,7 +35,7 @@ module wt_dcache
     },
     // ID to be used for read and AMO transactions.
     // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
-    parameter logic [CACHE_ID_WIDTH-1:0] RdAmoTxId = 1
+    parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdAmoTxId = 1
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni, // Asynchronous reset active low
@@ -98,10 +98,10 @@ module wt_dcache
   logic     [              NumPorts-1:0][  CVA6Cfg.DCACHE_USER_WIDTH-1:0] miss_wuser;
   logic     [              NumPorts-1:0][        CVA6Cfg.PLEN-1:0] miss_paddr;
   logic     [              NumPorts-1:0][                    2:0] miss_size;
-  logic     [              NumPorts-1:0][     CACHE_ID_WIDTH-1:0] miss_id;
+  logic     [              NumPorts-1:0][     CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id;
   logic     [              NumPorts-1:0]                          miss_replay;
   logic     [              NumPorts-1:0]                          miss_rtrn_vld;
-  logic     [        CACHE_ID_WIDTH-1:0]                          miss_rtrn_id;
+  logic     [        CVA6Cfg.MEM_TID_WIDTH-1:0]                          miss_rtrn_id;
 
   // memory <-> read controllers/miss unit
   logic     [              NumPorts-1:0]                          rd_prio;
@@ -243,7 +243,7 @@ module wt_dcache
       assign miss_paddr[k] = {{CVA6Cfg.PLEN}{1'b0}};
       assign miss_nc[k] = 1'b0;
       assign miss_size[k] = 3'b0;
-      assign miss_id[k] = {{CACHE_ID_WIDTH}{1'b0}};
+      assign miss_id[k] = {{CVA6Cfg.MEM_TID_WIDTH}{1'b0}};
       assign rd_tag[k] = {{CVA6Cfg.DCACHE_TAG_WIDTH}{1'b0}};
       assign rd_idx[k] = {{DCACHE_CL_IDX_WIDTH}{1'b0}};
       assign rd_off[k] = {{CVA6Cfg.DCACHE_OFFSET_WIDTH}{1'b0}};

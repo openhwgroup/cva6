@@ -19,7 +19,7 @@ module wt_dcache_missunit
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter logic [CACHE_ID_WIDTH-1:0] AmoTxId = 1,  // TX id to be used for AMOs
+    parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] AmoTxId = 1,  // TX id to be used for AMOs
     parameter int unsigned NumPorts = 4,  // number of miss ports
     parameter type dcache_req_t = logic,
     parameter type dcache_rtrn_t = logic,
@@ -48,12 +48,12 @@ module wt_dcache_missunit
     input logic [NumPorts-1:0][CVA6Cfg.PLEN-1:0] miss_paddr_i,
     input logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_i,
     input logic [NumPorts-1:0][2:0] miss_size_i,
-    input logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0] miss_id_i,  // used as transaction ID
+    input logic [NumPorts-1:0][CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id_i,  // used as transaction ID
     // signals that the request collided with a pending read
     output logic [NumPorts-1:0] miss_replay_o,
     // signals response from memory
     output logic [NumPorts-1:0] miss_rtrn_vld_o,
-    output logic [CACHE_ID_WIDTH-1:0]                  miss_rtrn_id_o,     // only used for writes, set to zero fro reads
+    output logic [CVA6Cfg.MEM_TID_WIDTH-1:0]                  miss_rtrn_id_o,     // only used for writes, set to zero fro reads
     // from writebuffer
     input  logic [DCACHE_MAX_TX-1:0][CVA6Cfg.PLEN-1:0]  tx_paddr_i,         // used to check for address collisions with read operations
     input  logic [DCACHE_MAX_TX-1:0]                   tx_vld_i,           // used to check for address collisions with read operations
@@ -122,7 +122,7 @@ module wt_dcache_missunit
     logic [CVA6Cfg.PLEN-1:0]              paddr;
     logic [2:0]                          size;
     logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]         vld_bits;
-    logic [CACHE_ID_WIDTH-1:0]           id;
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0]           id;
     logic                                nc;
     logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] repl_way;
     logic [$clog2(NumPorts)-1:0]         miss_port_idx;
