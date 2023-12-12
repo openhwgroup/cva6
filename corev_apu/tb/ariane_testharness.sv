@@ -23,29 +23,29 @@ module ariane_testharness #(
     logic [config_pkg::NRET*64-1:0]               order;
     logic [config_pkg::NRET*config_pkg::ILEN-1:0] insn;
     logic [config_pkg::NRET-1:0]                  trap;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      cause;
+    logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      cause;
     logic [config_pkg::NRET-1:0]                  halt;
     logic [config_pkg::NRET-1:0]                  intr;
     logic [config_pkg::NRET*2-1:0]                mode;
     logic [config_pkg::NRET*2-1:0]                ixl;
     logic [config_pkg::NRET*5-1:0]                rs1_addr;
     logic [config_pkg::NRET*5-1:0]                rs2_addr;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
+    logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      rs1_rdata;
+    logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      rs2_rdata;
     logic [config_pkg::NRET*5-1:0]                rd_addr;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
-    logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
-    logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
-    logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
-    logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+    logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      rd_wdata;
+    logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      pc_rdata;
+    logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      pc_wdata;
+    logic [config_pkg::NRET*CVA6Cfg.VLEN-1:0]      mem_addr;
+    logic [config_pkg::NRET*CVA6Cfg.PLEN-1:0]      mem_paddr;
+    logic [config_pkg::NRET*(CVA6Cfg.XLEN/8)-1:0]  mem_rmask;
+    logic [config_pkg::NRET*(CVA6Cfg.XLEN/8)-1:0]  mem_wmask;
+    logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      mem_rdata;
+    logic [config_pkg::NRET*CVA6Cfg.XLEN-1:0]      mem_wdata;
   },
   //
-  parameter int unsigned AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH,
-  parameter int unsigned AXI_USER_EN       = ariane_pkg::AXI_USER_EN,
+  parameter int unsigned AXI_USER_WIDTH    = CVA6Cfg.AXI_USER_WIDTH,
+  parameter int unsigned AXI_USER_EN       = CVA6Cfg.AXI_USER_EN,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
   parameter int unsigned AXI_DATA_WIDTH    = 64,
   parameter bit          InclSimDTM        = 1'b1,
@@ -134,7 +134,7 @@ module ariane_testharness #(
   initial begin
     if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
     if ($test$plusargs("debug_disable")) debug_enable = 'h0; else debug_enable = 'h1;
-    if (riscv::XLEN != 32 & riscv::XLEN != 64) $error("XLEN different from 32 and 64");
+    if (CVA6Cfg.XLEN != 32 & CVA6Cfg.XLEN != 64) $error("XLEN different from 32 and 64");
   end
 
   // debug if MUX
@@ -552,6 +552,7 @@ module ariane_testharness #(
   ariane_axi_soc::resp_slv_t axi_clint_resp;
 
   clint #(
+    .CVA6Cfg        ( CVA6Cfg                      ),
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH            ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH               ),
     .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),

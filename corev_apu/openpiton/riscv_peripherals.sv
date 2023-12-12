@@ -465,6 +465,7 @@ module riscv_peripherals #(
   ariane_axi::resp_t   clint_axi_resp;
 
   clint #(
+    .CVA6Cfg        ( CVA6Cfg      ),
     .AXI_ADDR_WIDTH ( AxiAddrWidth ),
     .AXI_DATA_WIDTH ( AxiDataWidth ),
     .AXI_ID_WIDTH   ( AxiIdWidth   ),
