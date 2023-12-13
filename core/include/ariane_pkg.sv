@@ -35,9 +35,6 @@ package ariane_pkg;
   );  // depending on the number of scoreboard entries we need that many bits
       // to uniquely identify the entry in the scoreboard
   localparam ASID_WIDTH = (riscv::XLEN == 64) ? 16 : 1;
-  localparam ASID_LEN      = (riscv::XLEN == 64) ? 16 : 9;
-  localparam VPN_LEN       = (riscv::XLEN == 64) ? 27 : 20;
-  localparam PT_LEVELS     = (riscv::XLEN == 64) ? 3  : 2;
   localparam BITS_SATURATION_COUNTER = 2;
 
   localparam ISSUE_WIDTH = 1;
@@ -769,14 +766,6 @@ package ariane_pkg;
     logic [9-1:0]     asid;     //ASID length = 9 for Sv32 mmu
     riscv::pte_sv32_t content;
   } tlb_update_sv32_t;
-
-  typedef struct packed {
-    logic                  valid;      // valid flag
-    logic  [PT_LEVELS-2:0] is_page;      //
-    logic [VPN_LEN-1:0]    vpn;        //
-    logic [ASID_LEN-1:0]   asid;       //
-    riscv::pte_cva6_t      content;
-} tlb_update_cva6_t;
 
   typedef enum logic [1:0] {
     FE_NONE,
