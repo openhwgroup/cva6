@@ -170,14 +170,19 @@ module load_store_unit
   //       .*
   //   );
   if (MMU_PRESENT) begin : gen_mmu
+
+    localparam ASID_LEN      = (riscv::XLEN == 64) ? 16 : 9;
+    localparam VPN_LEN       = (riscv::XLEN == 64) ? 27 : 20;
+    localparam PT_LEVELS     = (riscv::XLEN == 64) ? 3  : 2;
+
     cva6_mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
         .ASID_WIDTH       (ASID_WIDTH),
-        .ASID_LEN         (ariane_pkg::ASID_LEN),
-        .VPN_LEN          (ariane_pkg::VPN_LEN),
-        .PT_LEVELS        (ariane_pkg::PT_LEVELS)
+        .ASID_LEN         (ASID_LEN),
+        .VPN_LEN          (VPN_LEN),
+        .PT_LEVELS        (PT_LEVELS)
     ) i_cva6_mmu (
         // misaligned bypass
         .misaligned_ex_i(misaligned_exception),
