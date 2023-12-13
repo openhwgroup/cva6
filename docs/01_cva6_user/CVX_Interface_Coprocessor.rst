@@ -24,6 +24,17 @@ CV-X-IF Interface and Coprocessor
 The CV-X-IF interface of CVA6 allows to extend its supported instruction set
 with external coprocessors.
 
+*Applicability of this chapter to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60X", "CV-X-IF included"
+   "CV32E6?X", "CV-X-IF included"
+
+
 CV-X-IF interface specification
 -------------------------------
 

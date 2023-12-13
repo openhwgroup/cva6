@@ -18,6 +18,8 @@
 
 .. _cva6_pma:
 
+*This chapter is applicable to all configurations.*
+
 PMA
 ===
 

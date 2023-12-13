@@ -18,6 +18,8 @@
 
 .. _cva6_csr_cache_control:
 
+The team is looking for contributors for this chapter.
+
 CSR cache control
 =================
 Which cache controls are available to the user, what they do, how to use them.
