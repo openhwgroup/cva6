@@ -101,9 +101,9 @@ As of today, two configurations are being verified and addressed in this documen
    :header: "Configuration", "Short description", "Target", "Privilege levels", "Supported RISC-V ISA", "CV-X-IF"
 
    "**CV32A60X**", "32-bit **application** core", "ASIC", "Machine, Supervisor, User", "RV32IMACZicsr_Zifencei_Zicount_Zba_Zbb_Zbc_Zbs_Zcb_Zicond", "Included"
-   "**CV32E6?X**", "32-bit **embedded** core", "ASIC", "Machine only", "RV32IMCZicsr_Zifencei_Zba_Zbb_Zbc_Zbs_Zcb", "Included"
+   "**CV32E6-X**", "32-bit **embedded** core", "ASIC", "Machine only", "RV32IMCZicsr_Zifencei_Zba_Zbb_Zbc_Zbs_Zcb", "Included"
 
-The "?" digit in CV32E6?X is to be defined, as the team has not yet decided if this core will be extended with dual-issue.
+The "-" digit in CV32E6-X is to be defined, as the team has not yet decided if this core will be extended with dual-issue.
 
 In the future, dedicated user manuals for each configuration could be generated. The team is looking for a contributor to implement this through *templating*.
 

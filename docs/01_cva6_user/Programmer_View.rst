@@ -80,10 +80,10 @@ These extensions are available in CV32A60X:
    "RVZifencei - Instruction-Fetch Fence",                                  "✓"
    "RVZicond - Integer Conditional Operations(Ratification pending)",       "✓"
 
-CV32E6?X extensions
+CV32E6-X extensions
 ~~~~~~~~~~~~~~~~~~~
 
-These extensions are available in CV32E6?X:
+These extensions are available in CV32E6-X:
 
 .. csv-table::
    :widths: auto
@@ -139,15 +139,15 @@ These privilege modes are available in CV32A60X:
    "S - Supervior",                 "✓"
    "U - User",                      "✓"
 
-CV32E6?X privilege modes
+CV32E6-X privilege modes
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-These privilege modes are available in CV32E6?X:
+These privilege modes are available in CV32E6-X:
 
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Privileges", "Available in CV32E6?X"
+   :header: "Privileges", "Available in CV32E6-X"
 
    "M - Machine",                   "✓"
    "S - Supervior",                 ""
@@ -184,7 +184,7 @@ CV32A60X virtual memory
 CV32A60X integrates an MMU and supports both the **Bare** and **Sv32** addressing modes.
 
 
-CV32E6?X virtual memory
+CV32E6-X virtual memory
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 CV32A60X integrates no MMU and only supports the **Bare** addressing mode.

@@ -26,7 +26,7 @@
    :header: "Configuration", "Implementation"
 
    "CV32A60X", "Performance counters included"
-   "CV32E6?X", "No performance counters"
+   "CV32E6-X", "No performance counters"
 
 CSR performance counters control
 ================================
