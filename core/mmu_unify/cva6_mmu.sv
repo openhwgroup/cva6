@@ -82,6 +82,7 @@ logic                   ptw_access_exception;  // PTW threw an access exception 
 logic [riscv::PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
 
 logic [riscv::VLEN-1:0] update_vaddr;
+// tlb_update_t update_ptw_itlb, update_ptw_dtlb;
 tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
 logic                               itlb_lu_access;
@@ -286,7 +287,7 @@ genvar a;
 generate
   
     for (a=0; a < PT_LEVELS-1; a++) begin  
-     assign icache_areq_o.fetch_paddr [PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1] = //
+      assign icache_areq_o.fetch_paddr [PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1] = //
                           (enable_translation_i && (|itlb_is_page[a:0]==0)) ? //
                           itlb_content.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))] : //
                           icache_areq_i.fetch_vaddr[PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1];
@@ -304,7 +305,7 @@ always_comb begin : instr_interface
   icache_areq_o.fetch_exception = '0;
   // Check whether we are allowed to access this memory region from a fetch perspective
   iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
-                                               || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
+                                                || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
   // MMU enabled: address from TLB, request delayed until hit. Error when TLB
   // hit and no access right or TLB hit and translated address not valid (e.g.
@@ -351,7 +352,7 @@ always_comb begin : instr_interface
       if (ptw_error)
         icache_areq_o.fetch_exception = {
           riscv::INSTR_PAGE_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
-        };
+      };
       else
         icache_areq_o.fetch_exception = {
           riscv::INSTR_ACCESS_FAULT, ptw_bad_paddr[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1
@@ -411,26 +412,33 @@ assign lsu_paddr_o    [11:0] = lsu_vaddr_q[11:0];
 assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
                             (en_ld_st_translation_i && !misaligned_ex_q.valid) ? //
                             dtlb_pte_q.ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : // 
-                            riscv::PLEN'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
+                            (riscv::PLEN-PPNWMin)'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
+
+assign lsu_dtlb_ppn_o [11:0]   = 
+                            (en_ld_st_translation_i && !misaligned_ex_q.valid) ? //
+                            dtlb_content.ppn[11:0] : // 
+                            lsu_vaddr_n[23:12];
                             
 genvar i;
   generate
     
       for (i=0; i < PT_LEVELS-1; i++) begin  
-       assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
+        assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
                             (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
                             dtlb_pte_q.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
                             lsu_vaddr_q[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
 
-       assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
+        assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
                             (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-                            dtlb_content.ppn[(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
-                            lsu_vaddr_n[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
+                            dtlb_content.ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] : //
+                            (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]!=0)?
+                            lsu_vaddr_n[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]://
+                            (VPN_LEN/PT_LEVELS)'(lsu_vaddr_n[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1 : (24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-1) ) -1): (riscv::PLEN > riscv::VLEN) ? 24 :24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-2)]));
       end
       if(riscv::IS_XLEN64) begin
         assign lsu_dtlb_ppn_o[riscv::PPNW-1:PPNWMin+1] = (en_ld_st_translation_i && !misaligned_ex_q.valid) ? 
                             dtlb_content.ppn[riscv::PPNW-1:PPNWMin+1] : 
-                            lsu_vaddr_n[riscv::PPNW-1:PPNWMin+1] ;
+                            lsu_vaddr_n[riscv::PLEN-1:PPNWMin+1] ;
       end
 
   endgenerate 
