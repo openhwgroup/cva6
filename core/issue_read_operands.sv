@@ -260,7 +260,7 @@ module issue_read_operands
       operand_b_n = rs2_i;
     end
 
-    if (forward_rs3) begin
+    if (CVA6Cfg.FpPresent && forward_rs3) begin
       imm_n = imm_forward_rs3;
     end
 

@@ -20,9 +20,9 @@
 
 OpenHW Group CVA6 User Manual
 =============================
-This is a template for the CVA6 user guide.
+This is the user guide of the CVA6 family and its verified configurations.
 
 Changelog
 ---------
-We start filling in the Changelog after the first “official” release of the user manual, at the end of step 2.
+We will start filling in the Changelog after the first “official” release of a CVA6 configuration. In the meantime, GitHub history will prevail.
 
