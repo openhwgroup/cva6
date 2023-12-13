@@ -129,28 +129,11 @@ smoke:
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
-  parallel:
-    matrix:
-      - DV_SIMULATORS:
-        - "veri-testharness,spike"
-        - "vcs-testharness,spike"
-        - "vcs-uvm,spike"
-  script:
-    - source verif/regress/smoke-tests.sh
-    - !reference [.simu_after_script]
-
-smoke-tandem:
-  extends:
-    - .fe_smoke_test
-  variables:
-    DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS with tandem"
-    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
-    DASHBOARD_SORT_INDEX: 0
-    DASHBOARD_JOB_CATEGORY: "Basic"
     SPIKE_TANDEM: 1
   parallel:
     matrix:
       - DV_SIMULATORS:
+        - "veri-testharness,spike"
         - "vcs-testharness,spike"
         - "vcs-uvm,spike"
   script:

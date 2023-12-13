@@ -25,7 +25,6 @@ VCOM ?= vcom$(questa_version)
 VLIB ?= vlib$(questa_version)
 VMAP ?= vmap$(questa_version)
 # verilator version
-VERILATOR_INSTALL_DIR ?= $(PWD)/tmp/verilator-v5.008/verilator/
 verilator             ?= verilator
 # traget option
 target-options ?=
@@ -542,7 +541,7 @@ xrun-check-benchmarks:
 xrun-ci: xrun-asm-tests xrun-amo-tests xrun-mul-tests xrun-fp-tests xrun-benchmarks
 
 # verilator-specific
-verilate_command := $(verilator) --no-timing verilator_config.vlt                                                            \
+verilate_command := $(verilator) --no-timing verilator_config.vlt                                                \
                     -f core/Flist.cva6                                                                           \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(filter-out %_config_pkg.sv, $(src))))   \
@@ -568,9 +567,9 @@ verilate_command := $(verilator) --no-timing verilator_config.vlt               
                     $(if $(TRACE_COMPACT), --trace-fst $(VL_INC_DIR)/verilated_fst_c.cpp)                        \
                     $(if $(TRACE_FAST), --trace $(VL_INC_DIR)/verilated_vcd_c.cpp)                               \
                     -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv $(if $(PROFILE), -g -pg,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
-                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) -DVL_DEBUG"                                      \
+                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) -DVL_DEBUG -I$(SPIKE_INSTALL_DIR)"               \
                     $(if $(SPIKE_TANDEM), +define+SPIKE_TANDEM, )                                                \
-                    --cc  --vpi                                                                                  \
+                    --cc --vpi                                                                                   \
                     $(list_incdir) --top-module ariane_testharness                                               \
                     --threads-dpi none                                                                           \
                     --Mdir $(ver-library) -O3                                                                    \
