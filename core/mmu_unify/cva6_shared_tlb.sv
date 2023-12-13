@@ -162,7 +162,10 @@ module cva6_shared_tlb
     genvar w;
     generate
         for (w=0; w < PT_LEVELS; w++) begin  
-          assign vpn_d[w]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] :((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : vpn_q[w]);
+          assign vpn_d[w]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? //
+                                          itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : //
+                                          ((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? //
+                                          dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : vpn_q[w]);
         end
     endgenerate
 

@@ -386,6 +386,11 @@ genvar x;
       else state_d = LATENCY;
     end
   end
+  
+  //for simulation purposes
+  initial begin
+    ptw_lvl_q         <= 1;
+  end
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
