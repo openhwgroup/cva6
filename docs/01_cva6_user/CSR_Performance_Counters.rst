@@ -18,6 +18,16 @@
 
 .. _cva6_csr_performance_counters:
 
+*Applicability of this chapter to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60X", "Performance counters included"
+   "CV32E6?X", "No performance counters"
+
 CSR performance counters control
 ================================
 CVA6 implements performance counters according to the RISC-V Privileged Specification, version 1.11 (see Hardware Performance Monitor, Section 3.1.10). The performance counters are placed inside the Control and Status Registers(CSRs) and can be accessed with the ``CSRRW(I)`` and ``CSRRS/C(I)`` instructions.

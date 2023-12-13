@@ -33,6 +33,14 @@ Editor: **Jerome Quevremont**
    Traps_Interrupts_Exceptions
    Compiler_Command_Lines
    RISCV_Instructions
+   RISCV_Instructions_RV32I
+   RISCV_Instructions_RV32M
+   RISCV_Instructions_RV32A
+   RISCV_Instructions_RV32C
+   RISCV_Instructions_RV32ZCb
+   RISCV_Instructions_RVZicsr
+   RISCV_Instructions_RVZifencei
+   RISCV_Instructions_RVZicond
    CV32A6_Control_Status_Registers
    CV64A6_Control_Status_Registers
    CSR_Cache_Control

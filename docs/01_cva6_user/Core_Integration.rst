@@ -47,7 +47,6 @@ Suggested content:
 FPGA specific guidelines
 ------------------------
 Also needed for prototyping of ASICs
-
 Suggested content:
 
 * Typical critical paths in FPGA and suggestions for optimizations
