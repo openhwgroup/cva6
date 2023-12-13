@@ -73,6 +73,30 @@ import ariane_pkg::*;
   input logic [15:0][riscv::PLEN-3:0] pmpaddr_i
 );
 
+    // memory management, pte for cva6
+localparam type pte_cva6_t = struct packed {
+// typedef struct packed {
+  logic [riscv::PPNW-1:0] ppn; // PPN length for
+  logic [1:0]  rsw;
+  logic d;
+  logic a;
+  logic g;
+  logic u;
+  logic x;
+  logic w;
+  logic r;
+  logic v;
+} ;
+
+localparam type tlb_update_cva6_t = struct packed {
+// typedef struct packed {
+  logic                  valid;      // valid flag
+  logic  [PT_LEVELS-2:0] is_page;      //
+  logic [VPN_LEN-1:0]    vpn;        //
+  logic [ASID_LEN-1:0]   asid;       //
+  pte_cva6_t      content;
+} ;
+
 logic                   iaccess_err;  // insufficient privilege to access this instruction page
 logic                   daccess_err;  // insufficient privilege to access this data page
 logic                   ptw_active;  // PTW is currently walking a page table
@@ -86,12 +110,12 @@ logic [riscv::VLEN-1:0] update_vaddr;
 tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
 logic                               itlb_lu_access;
-riscv::pte_cva6_t                   itlb_content;
+pte_cva6_t                   itlb_content;
 logic [PT_LEVELS-2:0]               itlb_is_page;
 logic                               itlb_lu_hit;
 
 logic                               dtlb_lu_access;
-riscv::pte_cva6_t                   dtlb_content;
+pte_cva6_t                   dtlb_content;
 logic [PT_LEVELS-2:0]               dtlb_is_page;
 logic                               dtlb_lu_hit;
 
@@ -112,7 +136,9 @@ cva6_tlb #(
     .ASID_WIDTH (ASID_WIDTH),
     .ASID_LEN (ASID_LEN),
     .VPN_LEN(VPN_LEN),
-    .PT_LEVELS(PT_LEVELS)
+    .PT_LEVELS(PT_LEVELS),
+    .pte_cva6_t(pte_cva6_t),
+    .tlb_update_cva6_t(tlb_update_cva6_t)
 ) i_itlb (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -137,7 +163,9 @@ cva6_tlb #(
     .ASID_WIDTH (ASID_WIDTH),
     .ASID_LEN (ASID_LEN),
     .VPN_LEN(VPN_LEN),
-    .PT_LEVELS(PT_LEVELS)
+    .PT_LEVELS(PT_LEVELS),
+    .pte_cva6_t(pte_cva6_t),
+    .tlb_update_cva6_t(tlb_update_cva6_t)
 ) i_dtlb (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -163,7 +191,9 @@ cva6_shared_tlb #(
     .ASID_WIDTH      (ASID_WIDTH),
     .ASID_LEN (ASID_LEN),
     .VPN_LEN(VPN_LEN),
-    .PT_LEVELS(PT_LEVELS)
+    .PT_LEVELS(PT_LEVELS),
+    .pte_cva6_t(pte_cva6_t),
+    .tlb_update_cva6_t(tlb_update_cva6_t)
 ) i_shared_tlb (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -204,7 +234,9 @@ cva6_ptw #(
     .CVA6Cfg   (CVA6Cfg),
     .ASID_WIDTH(ASID_WIDTH),
     .VPN_LEN(VPN_LEN),
-    .PT_LEVELS(PT_LEVELS)
+    .PT_LEVELS(PT_LEVELS),
+    .pte_cva6_t(pte_cva6_t),
+    .tlb_update_cva6_t(tlb_update_cva6_t)
 ) i_ptw (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -394,7 +426,7 @@ pmp #(
 // Data Interface
 //-----------------------
 logic [riscv::VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
-riscv::pte_cva6_t dtlb_pte_n, dtlb_pte_q;
+pte_cva6_t dtlb_pte_n, dtlb_pte_q;
 exception_t misaligned_ex_n, misaligned_ex_q;
 logic lsu_req_n, lsu_req_q;
 logic lsu_is_store_n, lsu_is_store_q;
