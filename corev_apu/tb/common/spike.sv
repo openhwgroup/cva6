@@ -15,8 +15,6 @@
 import ariane_pkg::*;
 import rvfi_pkg::*;
 
-import "DPI-C" function void spike_step(inout st_rvfi rvfi);
-
 module spike #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg,
   parameter type rvfi_instr_t = struct packed {
@@ -59,7 +57,7 @@ module spike #(
         rvfi_initialize_spike('h1);
     end
 
-    st_rvfi t_core, t_reference_model;
+    st_rvfi s_core, s_reference_model;
     logic [63:0] pc64;
     logic [31:0] rtl_instr;
     logic [31:0] spike_instr;
@@ -71,30 +69,30 @@ module spike #(
             for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
 
                 if (rvfi_i[i].valid || rvfi_i[i].trap) begin
-                    spike_step(t_reference_model);
-                    t_core.order = rvfi_i[i].order;
-                    t_core.insn  = rvfi_i[i].insn;
-                    t_core.trap  = rvfi_i[i].trap;
-                    t_core.cause = rvfi_i[i].cause;
-                    t_core.halt  = rvfi_i[i].halt;
-                    t_core.intr  = rvfi_i[i].intr;
-                    t_core.mode  = rvfi_i[i].mode;
-                    t_core.ixl   = rvfi_i[i].ixl;
-                    t_core.rs1_addr  = rvfi_i[i].rs1_addr;
-                    t_core.rs2_addr  = rvfi_i[i].rs2_addr;
-                    t_core.rs1_rdata = rvfi_i[i].rs1_rdata;
-                    t_core.rs2_rdata = rvfi_i[i].rs2_rdata;
-                    t_core.rd1_addr   = rvfi_i[i].rd_addr;
-                    t_core.rd1_wdata  = rvfi_i[i].rd_wdata;
-                    t_core.pc_rdata  = rvfi_i[i].pc_rdata;
-                    t_core.pc_wdata  = rvfi_i[i].pc_wdata;
-                    t_core.mem_addr  = rvfi_i[i].mem_addr;
-                    t_core.mem_rmask = rvfi_i[i].mem_rmask;
-                    t_core.mem_wmask = rvfi_i[i].mem_wmask;
-                    t_core.mem_rdata = rvfi_i[i].mem_rdata;
-                    t_core.mem_wdata = rvfi_i[i].mem_wdata;
+                    s_core.order = rvfi_i[i].order;
+                    s_core.insn  = rvfi_i[i].insn;
+                    s_core.trap  = rvfi_i[i].trap;
+                    s_core.cause = rvfi_i[i].cause;
+                    s_core.halt  = rvfi_i[i].halt;
+                    s_core.intr  = rvfi_i[i].intr;
+                    s_core.mode  = rvfi_i[i].mode;
+                    s_core.ixl   = rvfi_i[i].ixl;
+                    s_core.rs1_addr  = rvfi_i[i].rs1_addr;
+                    s_core.rs2_addr  = rvfi_i[i].rs2_addr;
+                    s_core.rs1_rdata = rvfi_i[i].rs1_rdata;
+                    s_core.rs2_rdata = rvfi_i[i].rs2_rdata;
+                    s_core.rd1_addr   = rvfi_i[i].rd_addr;
+                    s_core.rd1_wdata  = rvfi_i[i].rd_wdata;
+                    s_core.pc_rdata  = rvfi_i[i].pc_rdata;
+                    s_core.pc_wdata  = rvfi_i[i].pc_wdata;
+                    s_core.mem_addr  = rvfi_i[i].mem_addr;
+                    s_core.mem_rmask = rvfi_i[i].mem_rmask;
+                    s_core.mem_wmask = rvfi_i[i].mem_wmask;
+                    s_core.mem_rdata = rvfi_i[i].mem_rdata;
+                    s_core.mem_wdata = rvfi_i[i].mem_wdata;
 
-                    rvfi_compare(t_core, t_reference_model);
+                    rvfi_spike_step(s_core, s_reference_model);
+                    rvfi_compare(s_core, s_reference_model);
                 end
             end
         end

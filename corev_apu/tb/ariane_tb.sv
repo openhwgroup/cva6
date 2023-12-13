@@ -82,8 +82,8 @@ module ariane_tb;
         //
         .NUM_WORDS         ( NUM_WORDS ),
         .InclSimDTM        ( 1'b1      ),
-        .StallRandomOutput ( 1'b1      ),
-        .StallRandomInput  ( 1'b1      )
+        .StallRandomOutput ( 1'b0      ),
+        .StallRandomInput  ( 1'b0      )
     ) dut (
         .clk_i,
         .rst_ni,

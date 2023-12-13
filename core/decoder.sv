@@ -1323,12 +1323,12 @@ module decoder
         // this exception is valid
         instruction_o.ex.valid = 1'b1;
         // depending on the privilege mode, set the appropriate cause
-        if (priv_lvl_i == riscv::PRIV_LVL_M) begin
-          instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
-        end else if (priv_lvl_i == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
+        if (priv_lvl_i == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
           instruction_o.ex.cause = riscv::ENV_CALL_SMODE;
         end else if (priv_lvl_i == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
           instruction_o.ex.cause = riscv::ENV_CALL_UMODE;
+        end else if (priv_lvl_i == riscv::PRIV_LVL_M) begin
+          instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
         end
       end else if (ebreak) begin
         // this exception is valid

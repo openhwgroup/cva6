@@ -25,6 +25,8 @@ Core Integration
 
 RTL Integration
 ---------------
+Suggested content:
+
 How to integrate CVA6 into a core complex/SoC
 Instantiation template as in https://docs.openhwgroup.org/projects/cv32e40p-user-manual/integration.html#instantiation-template
 Do we have specific constructs that we should mention for the implementation team:
@@ -49,4 +51,3 @@ Suggested content:
 
 * Typical critical paths in FPGA and suggestions for optimizations
 * We can also have typical command lines / settings for various FPGA tools
-

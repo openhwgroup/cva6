@@ -197,7 +197,7 @@ module frontend
         4'b0001: begin
           ras_pop  = 1'b0;
           ras_push = 1'b0;
-          if (btb_prediction_shifted[i].valid) begin
+          if (CVA6Cfg.BTBEntries && btb_prediction_shifted[i].valid) begin
             predict_address = btb_prediction_shifted[i].target_address;
             cf_type[i] = ariane_pkg::JumpR;
           end
@@ -390,7 +390,7 @@ module frontend
         icache_data_q  <= icache_data;
         icache_vaddr_q <= icache_dreq_i.vaddr;
         // Map the only three exceptions which can occur in the frontend to a two bit enum
-        if (icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
+        if (ariane_pkg::MMU_PRESENT && icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
         end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;

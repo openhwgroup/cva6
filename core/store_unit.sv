@@ -120,7 +120,7 @@ module store_unit
         st_valid_without_flush = 1'b1;
 
         // we have another request and its not an AMO (the AMO buffer only has depth 1)
-        if (valid_i && !instr_is_amo) begin
+        if ((valid_i && CVA6Cfg.RVA && !instr_is_amo) || (valid_i && !CVA6Cfg.RVA)) begin
 
           translation_req_o = 1'b1;
           state_d = VALID_STORE;
