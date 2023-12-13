@@ -257,28 +257,6 @@ module load_unit
         end
       end
 
-      // Wait until the write-back buffer is empty in the data cache.
-      WAIT_WB_EMPTY: begin
-        // the write buffer is empty, so lets go and re-do the translation.
-        if (CVA6Cfg.NonIdemPotenceEn && dcache_wbuffer_not_ni_i) state_d = WAIT_TRANSLATION;
-      end
-
-      WAIT_TRANSLATION: begin
-        if (ariane_pkg::MMU_PRESENT || CVA6Cfg.NonIdemPotenceEn) begin
-          translation_req_o = 1'b1;
-          // we've got a hit and we can continue with the request process
-          if (dtlb_hit_i) state_d = WAIT_GNT;
-
-          // we got an exception
-          if (ex_i.valid) begin
-            // the next state will be the idle state
-            state_d  = IDLE;
-            // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
-            pop_ld_o = ~req_port_i.data_rvalid;
-          end
-        end
-      end
-
       WAIT_GNT: begin
         // keep the translation request up
         translation_req_o   = 1'b1;
@@ -371,6 +349,22 @@ module load_unit
           req_port_o.tag_valid = 1'b1;
           // re-do the request
           state_d = WAIT_WB_EMPTY;
+        end else if (state_q == WAIT_WB_EMPTY && CVA6Cfg.NonIdemPotenceEn && dcache_wbuffer_not_ni_i) begin
+          // Wait until the write-back buffer is empty in the data cache.
+          // the write buffer is empty, so lets go and re-do the translation.
+          state_d = WAIT_TRANSLATION;
+        end else if(state_q == WAIT_TRANSLATION && (ariane_pkg::MMU_PRESENT || CVA6Cfg.NonIdemPotenceEn)) begin
+          translation_req_o = 1'b1;
+          // we've got a hit and we can continue with the request process
+          if (dtlb_hit_i) state_d = WAIT_GNT;
+
+          // we got an exception
+          if (ex_i.valid) begin
+            // the next state will be the idle state
+            state_d  = IDLE;
+            // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
+            pop_ld_o = ~req_port_i.data_rvalid;
+          end
         end else begin
           state_d = IDLE;
         end

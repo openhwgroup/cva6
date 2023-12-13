@@ -1347,12 +1347,12 @@ module csr_regfile
       // check counter-enabled counter CSR accesses
       // counter address range is C00 to C1F
       if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_HPM_COUNTER_31]}) begin
-        if (priv_lvl_o == riscv::PRIV_LVL_M) begin
-          privilege_violation = 1'b0;
-        end else if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
+        if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
           privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
         end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
           privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] | ~scounteren_q[csr_addr_i[4:0]];
+        end else if (priv_lvl_o == riscv::PRIV_LVL_M) begin
+          privilege_violation = 1'b0;
         end
       end
     end

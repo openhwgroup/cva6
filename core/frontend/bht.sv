@@ -74,7 +74,7 @@ module bht #(
       bht_d = bht_q;
       saturation_counter = bht_q[update_pc][update_row_index].saturation_counter;
 
-      if (bht_update_i.valid && !debug_mode_i) begin
+      if ((bht_update_i.valid && CVA6Cfg.DebugEn && !debug_mode_i) || (bht_update_i.valid && !CVA6Cfg.DebugEn)) begin
         bht_d[update_pc][update_row_index].valid = 1'b1;
 
         if (saturation_counter == 2'b11) begin
