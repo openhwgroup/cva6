@@ -20,6 +20,8 @@
 module cva6_shared_tlb
   import ariane_pkg::*;
 #(
+    parameter type pte_cva6_t = logic,
+    parameter type tlb_update_cva6_t = logic,
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int SHARED_TLB_DEPTH = 64,
     parameter int SHARED_TLB_WAYS = 2,
@@ -101,11 +103,11 @@ module cva6_shared_tlb
 
   logic [         SHARED_TLB_WAYS-1:0] pte_wr_en;
   logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_wr_addr;
-  logic [$bits(riscv::pte_cva6_t)-1:0] pte_wr_data;
+  logic [$bits(pte_cva6_t)-1:0] pte_wr_data;
 
   logic [         SHARED_TLB_WAYS-1:0] pte_rd_en;
   logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_rd_addr;
-  logic [$bits(riscv::pte_cva6_t)-1:0] pte_rd_data      [SHARED_TLB_WAYS-1:0];
+  logic [$bits(pte_cva6_t)-1:0] pte_rd_data      [SHARED_TLB_WAYS-1:0];
 
   logic [         SHARED_TLB_WAYS-1:0] pte_req;
   logic [         SHARED_TLB_WAYS-1:0] pte_we;
@@ -116,7 +118,7 @@ module cva6_shared_tlb
   logic [SHARED_TLB_WAYS-1:0][PT_LEVELS-1:0] page_match;
   logic [SHARED_TLB_WAYS-1:0][PT_LEVELS-1:0] level_match;
 
-  riscv::pte_cva6_t [SHARED_TLB_WAYS-1:0] pte;
+  pte_cva6_t [SHARED_TLB_WAYS-1:0] pte;
 
   logic [riscv::VLEN-1-12:0] itlb_vpn_q;
   logic [riscv::VLEN-1-12:0] dtlb_vpn_q;
@@ -375,7 +377,7 @@ module cva6_shared_tlb
 
     // PTE RAM
     sram #(
-        .DATA_WIDTH($bits(riscv::pte_cva6_t)),
+        .DATA_WIDTH($bits(pte_cva6_t)),
         .NUM_WORDS (SHARED_TLB_DEPTH)
     ) pte_sram (
         .clk_i  (clk_i),
@@ -389,7 +391,7 @@ module cva6_shared_tlb
         .ruser_o(),
         .rdata_o(pte_rd_data[i])
     );
-    assign pte[i] = riscv::pte_cva6_t'(pte_rd_data[i]);
+    assign pte[i] = pte_cva6_t'(pte_rd_data[i]);
   end
 endmodule
 

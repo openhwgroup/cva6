@@ -26,6 +26,8 @@
   module cva6_tlb
   import ariane_pkg::*;
 #(
+    parameter type pte_cva6_t = logic,
+    parameter type tlb_update_cva6_t = logic,
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned TLB_ENTRIES = 4,
     parameter int unsigned ASID_WIDTH = 1,
@@ -42,7 +44,7 @@
     input logic lu_access_i,
     input logic [ASID_WIDTH-1:0] lu_asid_i,
     input logic [riscv::VLEN-1:0] lu_vaddr_i,
-    output riscv::pte_cva6_t lu_content_o,
+    output pte_cva6_t lu_content_o,
     input logic [ASID_WIDTH-1:0] asid_to_be_flushed_i,
     input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
     output logic [PT_LEVELS-2:0] lu_is_page_o,
@@ -58,7 +60,7 @@
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 
-  riscv::pte_cva6_t [TLB_ENTRIES-1:0] content_q, content_n;
+  pte_cva6_t [TLB_ENTRIES-1:0] content_q, content_n;
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] vpn_match;
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] page_match;
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] level_match;

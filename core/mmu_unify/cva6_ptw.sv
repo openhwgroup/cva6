@@ -28,6 +28,8 @@
 module cva6_ptw
   import ariane_pkg::*;
 #(
+    parameter type pte_cva6_t = logic,
+    parameter type tlb_update_cva6_t = logic,
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int ASID_WIDTH = 1,
     parameter int unsigned VPN_LEN = 1,
@@ -80,8 +82,8 @@ module cva6_ptw
   logic data_rvalid_q;
   riscv::xlen_t data_rdata_q;
 
-  riscv::pte_cva6_t pte;
-  assign pte = riscv::pte_cva6_t'(data_rdata_q[riscv::PPNW+9:0]);
+  pte_cva6_t pte;
+  assign pte = pte_cva6_t'(data_rdata_q[riscv::PPNW+9:0]);
 
 
   enum logic [2:0] {
@@ -96,7 +98,8 @@ module cva6_ptw
       state_q, state_d;
 
   // page tables levels
-  logic [PT_LEVELS-1:0] ptw_lvl_q, ptw_lvl_n,misaligned_page;
+  logic [PT_LEVELS-1:0] misaligned_page;
+  logic [PT_LEVELS-2:0] ptw_lvl_n,ptw_lvl_q;
 
   // is this an instruction page table walk?
   logic is_instr_ptw_q, is_instr_ptw_n;
@@ -138,12 +141,12 @@ genvar x;
         for (x=0; x < PT_LEVELS-1; x++) begin  
 
             // update the correct page table level
-            assign shared_tlb_update_o.is_page[x] = (ptw_lvl_q == (x+1));
+            assign shared_tlb_update_o.is_page[x] = (ptw_lvl_q == (x));
 
             // check if the ppn is correctly aligned:
             // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
             // exception.
-            assign misaligned_page[x] = (ptw_lvl_q == (x+1)) && (pte.ppn[(VPN_LEN/PT_LEVELS)*(PT_LEVELS-1-x)-1:0] != '0);
+            assign misaligned_page[x] = (ptw_lvl_q == (x)) && (pte.ppn[(VPN_LEN/PT_LEVELS)*(PT_LEVELS-1-x)-1:0] != '0);
 
             //record the vaddr corresponding to each level
             assign vaddr_lvl[x] = vaddr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-x-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-x-2))];
@@ -235,7 +238,7 @@ genvar x;
 
       IDLE: begin
         // by default we start with the top-most page table
-        ptw_lvl_n        = 1;
+        ptw_lvl_n        = 0;
         global_mapping_n = 1'b0;
         is_instr_ptw_n   = 1'b0;
         // if we got a Shared TLB miss
@@ -324,16 +327,16 @@ genvar x;
             end else begin
                 // pointer to next level of page table
 
-                if (ptw_lvl_q == PT_LEVELS) begin
+                if (ptw_lvl_q == PT_LEVELS-1) begin
                     // Should already be the last level page table => Error
-                    ptw_lvl_n = PT_LEVELS;
+                    ptw_lvl_n = PT_LEVELS-1;
                     state_d   = PROPAGATE_ERROR;
                   end
                   else begin
                     // if (ptw_lvl_q == 1) begin
                         // we are in the second level now
                         ptw_lvl_n  = ptw_lvl_q+1;
-                        ptw_pptr_n = {pte.ppn, vaddr_lvl[ptw_lvl_q-1], (PT_LEVELS)'(0)};
+                        ptw_pptr_n = {pte.ppn, vaddr_lvl[ptw_lvl_q], (PT_LEVELS)'(0)};
                         state_d = WAIT_GRANT;
                     //   end
                   end
@@ -388,16 +391,16 @@ genvar x;
   end
   
   //for simulation purposes
-  initial begin
-    ptw_lvl_q         <= 1;
-  end
+  // initial begin
+  //   ptw_lvl_q         <= 1;
+  // end
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       state_q           <= IDLE;
       is_instr_ptw_q    <= 1'b0;
-      ptw_lvl_q         <= 1;
+      ptw_lvl_q         <= 0;
       tag_valid_q       <= 1'b0;
       tlb_update_asid_q <= '0;
       vaddr_q           <= '0;
