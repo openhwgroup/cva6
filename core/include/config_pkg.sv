@@ -219,6 +219,8 @@ package config_pkg;
     int unsigned DCACHE_LINE_WIDTH;
     int unsigned DCACHE_USER_LINE_WIDTH;  // in bit
     int unsigned DCACHE_USER_WIDTH;
+    int unsigned DCACHE_OFFSET_WIDTH;
+    int unsigned DCACHE_NUM_WORDS;
 
     bit DATA_USER_EN;
     bit FETCH_USER_EN;
@@ -322,8 +324,8 @@ package config_pkg;
       EnableAccelerator: bit'(EnableAccelerator),
       RVS: CVA6Cfg.RVS,
       RVU: CVA6Cfg.RVU,
-      HaltAddress: CVA6Cfg.HaltAddress,
-      ExceptionAddress: CVA6Cfg.ExceptionAddress,
+      HaltAddress: 64'h800,
+      ExceptionAddress: 64'h808,
       RASDepth: CVA6Cfg.RASDepth,
       BTBEntries: CVA6Cfg.BTBEntries,
       BHTEntries: CVA6Cfg.BHTEntries,

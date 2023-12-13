@@ -17,8 +17,7 @@ module cva6
   import ariane_pkg::*;
 #(
     // CVA6 config
-    parameter config_pkg::cva6_user_cfg_t CVA6UserCfg = cva6_config_pkg::cva6_cfg,
-    parameter config_pkg::cva6_cfg_t      CVA6Cfg     = config_pkg::build_config(CVA6UserCfg),
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg,
 
     // branch-predict
     // this is the struct we get back from ex stage and we will use it to update

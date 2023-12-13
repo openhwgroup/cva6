@@ -31,7 +31,7 @@ module uvmt_cva6_tb;
    import uvme_cva6_pkg::*;
 
    // CVA6 config
-   localparam config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg;
+   localparam config_pkg::cva6_cfg_t CVA6Cfg = build_config(cva6_config_pkg::cva6_cfg);
    localparam bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace);
    localparam type rvfi_instr_t = struct packed {
      logic [config_pkg::NRET-1:0]                  valid;

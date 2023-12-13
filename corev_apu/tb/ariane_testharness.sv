@@ -16,7 +16,7 @@
 `include "axi/assign.svh"
 
 module ariane_testharness #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::build_config(cva6_config_pkg::cva6_cfg),
   parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
   parameter type rvfi_instr_t = struct packed {
     logic [config_pkg::NRET-1:0]                  valid;
