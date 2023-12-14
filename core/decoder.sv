@@ -1344,53 +1344,29 @@ module decoder
       // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
       // for two privilege levels: Supervisor and Machine Mode
       // Supervisor Timer Interrupt
-      if (irq_ctrl_i.mie[riscv::S_TIMER_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]] && irq_ctrl_i.mip[riscv::S_TIMER_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]]) begin
+      if (irq_ctrl_i.mie[riscv::IRQ_S_TIMER] && irq_ctrl_i.mip[riscv::IRQ_S_TIMER]) begin
         interrupt_cause = riscv::S_TIMER_INTERRUPT;
       end
       // Supervisor Software Interrupt
-      if (irq_ctrl_i.mie[riscv::S_SW_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]] && irq_ctrl_i.mip[riscv::S_SW_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]]) begin
+      if (irq_ctrl_i.mie[riscv::IRQ_S_SOFT] && irq_ctrl_i.mip[riscv::IRQ_S_SOFT]) begin
         interrupt_cause = riscv::S_SW_INTERRUPT;
       end
       // Supervisor External Interrupt
       // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
       // used to generate external interrupts to the supervisor
-      if (irq_ctrl_i.mie[riscv::S_EXT_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]] && (irq_ctrl_i.mip[riscv::S_EXT_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]] | irq_i[ariane_pkg::SupervisorIrq])) begin
+      if (irq_ctrl_i.mie[riscv::IRQ_S_EXT] && (irq_ctrl_i.mip[riscv::IRQ_S_EXT] | irq_i[ariane_pkg::SupervisorIrq])) begin
         interrupt_cause = riscv::S_EXT_INTERRUPT;
       end
       // Machine Timer Interrupt
-      if (irq_ctrl_i.mip[riscv::M_TIMER_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]] && irq_ctrl_i.mie[riscv::M_TIMER_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]]) begin
+      if (irq_ctrl_i.mip[riscv::IRQ_M_TIMER] && irq_ctrl_i.mie[riscv::IRQ_M_TIMER]) begin
         interrupt_cause = riscv::M_TIMER_INTERRUPT;
       end
       // Machine Mode Software Interrupt
-      if (irq_ctrl_i.mip[riscv::M_SW_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]] && irq_ctrl_i.mie[riscv::M_SW_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]]) begin
+      if (irq_ctrl_i.mip[riscv::IRQ_M_SOFT] && irq_ctrl_i.mie[riscv::IRQ_M_SOFT]) begin
         interrupt_cause = riscv::M_SW_INTERRUPT;
       end
       // Machine Mode External Interrupt
-      if (irq_ctrl_i.mip[riscv::M_EXT_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]] && irq_ctrl_i.mie[riscv::M_EXT_INTERRUPT[$clog2(
-              riscv::XLEN
-          )-1:0]]) begin
+      if (irq_ctrl_i.mip[riscv::IRQ_M_EXT] && irq_ctrl_i.mie[riscv::IRQ_M_EXT]) begin
         interrupt_cause = riscv::M_EXT_INTERRUPT;
       end
 
