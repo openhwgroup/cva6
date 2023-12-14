@@ -542,7 +542,7 @@ module load_store_unit
       // check the operator to activate the right functional unit accordingly
       hs_ld_st_inst = 1'b0;
       hlvx_inst     = 1'b0;
-      case (lsu_ctrl.operator)
+      case (lsu_ctrl.operation)
         // all loads go here
         HLV_B, HLV_BU, HLV_H, HLV_HU, HLV_W, HSV_B, HSV_H, HSV_W, HLV_WU, HLV_D, HSV_D: begin
           hs_ld_st_inst = 1'b1;
