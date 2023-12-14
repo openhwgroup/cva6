@@ -48,6 +48,8 @@ module ex_stage
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
     // Report whether isntruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
+    // Report instruction encoding - ISSUE_STAGE
+    input logic [riscv::XLEN-1:0] tinst_i,
     // Fixed Latency Unit result - ISSUE_STAGE
     output logic [CVA6Cfg.XLEN-1:0] flu_result_o,
     // ID of the scoreboard entry at which a=to write back - ISSUE_STAGE
@@ -152,22 +154,46 @@ module ex_stage
     input logic acc_valid_i,
     // Enable virtual memory translation - CSR_REGFILE
     input logic enable_translation_i,
+    // Enable G-Stage memory translation - CSR_REGFILE
+    input logic enable_g_translation_i,
     // Enable virtual memory translation for load/stores - CSR_REGFILE
     input logic en_ld_st_translation_i,
+    // Enable G-Stage memory translation for load/stores - CSR_REGFILE
+    input logic en_ld_st_g_translation_i,
     // Flush TLB - CONTROLLER
     input logic flush_tlb_i,
+    input logic flush_tlb_vvma_i,
+    input logic flush_tlb_gvma_i,
     // Privilege mode - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
+    // Virtualization mode - CSR_REGFILE
+    input  logic v_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
     input riscv::priv_lvl_t ld_st_priv_lvl_i,
+    // Virtualization mode at which load and stores should happen - CSR_REGFILE
+    input  logic ld_st_v_i,
+    // Instruction is hypervisor load/store - CSR_REGFILE
+    output logic csr_hs_ld_st_inst_o,
     // Supervisor user memory - CSR_REGFILE
     input logic sum_i,
+    // Virtual Supervisor user memory - CSR_REGFILE
+    input  logic vs_sum_i,
     // Make executable readable - CSR_REGFILE
     input logic mxr_i,
+    // Make executable readable Virtual Supervisor - CSR_REGFILE
+    input  logic vmxr_i,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] vs_asid_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
     // icache translation response - CACHE
     input icache_arsp_t icache_areq_i,
     // icache translation request - CACHE
@@ -220,10 +246,14 @@ module ex_stage
 
 
   logic current_instruction_is_sfence_vma;
+  logic current_instruction_is_hfence_vvma;
+  logic current_instruction_is_hfence_gvma;
   // These two register store the rs1 and rs2 parameters in case of `SFENCE_VMA`
   // instruction to be used for TLB flush in the next clock cycle.
+  logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_to_be_flushed;
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed;
   logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed;
+  logic [CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed;
 
   // from ALU to branch unit
   logic alu_branch_res;  // branch comparison result
@@ -261,6 +291,7 @@ module ex_stage
   ) branch_unit_i (
       .clk_i,
       .rst_ni,
+      .v_i,
       .debug_mode_i,
       .fu_data_i,
       .pc_i,
@@ -412,18 +443,33 @@ module ex_stage
       .commit_ready_o       (lsu_commit_ready_o),
       .commit_tran_id_i,
       .enable_translation_i,
+      .enable_g_translation_i,
       .en_ld_st_translation_i,
+      .en_ld_st_g_translation_i,
       .icache_areq_i,
       .icache_areq_o,
       .priv_lvl_i,
+      .v_i,
       .ld_st_priv_lvl_i,
+      .ld_st_v_i,
+      .csr_hs_ld_st_inst_o,
       .sum_i,
+      .vs_sum_i,
       .mxr_i,
+      .vmxr_i,
       .satp_ppn_i,
+      .vsatp_ppn_i,
+      .hgatp_ppn_i,
       .asid_i,
-      .asid_to_be_flushed_i (asid_to_be_flushed),
-      .vaddr_to_be_flushed_i(vaddr_to_be_flushed),
+      .vs_asid_i,
+      .asid_to_be_flushed_i  (asid_to_be_flushed),
+      .vmid_i,
+      .vmid_to_be_flushed_i  (vmid_to_be_flushed),
+      .vaddr_to_be_flushed_i (vaddr_to_be_flushed),
+      .gpaddr_to_be_flushed_i(gpaddr_to_be_flushed),
       .flush_tlb_i,
+      .flush_tlb_vvma_i,
+      .flush_tlb_gvma_i,
       .itlb_miss_o,
       .dtlb_miss_o,
       .dcache_req_ports_i,
@@ -433,6 +479,7 @@ module ex_stage
       .amo_valid_commit_i,
       .amo_req_o,
       .amo_resp_i,
+      .tinst_i,
       .pmpcfg_i,
       .pmpaddr_i,
       .rvfi_lsu_ctrl_o,
@@ -474,11 +521,19 @@ module ex_stage
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         current_instruction_is_sfence_vma <= 1'b0;
+        current_instruction_is_hfence_vvma <= 1'b0;
+        current_instruction_is_hfence_gvma <= 1'b0;
       end else begin
         if (flush_i) begin
-          current_instruction_is_sfence_vma <= 1'b0;
-        end else if ((fu_data_i.operation == SFENCE_VMA) && csr_valid_i) begin
+          current_instruction_is_sfence_vma  <= 1'b0;
+          current_instruction_is_hfence_vvma <= 1'b0;
+          current_instruction_is_hfence_gvma <= 1'b0;
+        end else if ((fu_data_i.operation == SFENCE_VMA && !v_i) && csr_valid_i) begin
           current_instruction_is_sfence_vma <= 1'b1;
+        end else if (((fu_data_i.operation == SFENCE_VMA && v_i) || fu_data_i.operation == HFENCE_VVMA) && csr_valid_i) begin
+          current_instruction_is_hfence_vvma <= 1'b1;
+        end else if ((fu_data_i.operation == HFENCE_GVMA) && csr_valid_i) begin
+          current_instruction_is_hfence_gvma <= 1'b1;
         end
       end
     end
@@ -486,18 +541,26 @@ module ex_stage
     // This process stores the rs1 and rs2 parameters of a SFENCE_VMA instruction.
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
-        asid_to_be_flushed  <= '0;
-        vaddr_to_be_flushed <= '0;
+        vmid_to_be_flushed   <= '0;
+        asid_to_be_flushed   <= '0;
+        vaddr_to_be_flushed  <= '0;
+        gpaddr_to_be_flushed <= '0;
         // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
-      end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operation == SFENCE_VMA) && csr_valid_i))) begin
-        vaddr_to_be_flushed <= rs1_forwarding_i;
-        asid_to_be_flushed  <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
+      end else if ((~(current_instruction_is_sfence_vma || current_instruction_is_hfence_vvma || current_instruction_is_hfence_gvma)) && (~((fu_data_i.operation == SFENCE_VMA || fu_data_i.operation == HFENCE_VVMA || fu_data_i.operation == HFENCE_GVMA ) && csr_valid_i))) begin
+        vaddr_to_be_flushed  <= rs1_forwarding_i;
+        gpaddr_to_be_flushed <= rs1_forwarding_i >> 2;
+        asid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
+        vmid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.VMID_WIDTH-1:0];
       end
-    end
+    end 
   end else begin
     assign current_instruction_is_sfence_vma = 1'b0;
+    assign current_instruction_is_hfence_vvma = 1'b0;
+    assign current_instruction_is_hfence_gvma = 1'b0;
     assign asid_to_be_flushed                = '0;
     assign vaddr_to_be_flushed               = '0;
+    assign vmid_to_be_flushed                = '0;
+    assign gpaddr_to_be_flushed              = '0;
   end
 
 endmodule

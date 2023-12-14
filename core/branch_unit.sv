@@ -23,6 +23,8 @@ module branch_unit #(
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
+    // Virtualization mode state - CSR_REGFILE
+    input logic v_i,
     // Debug mode state - CSR_REGFILE
     input logic debug_mode_i,
     // FU data needed to execute instruction - ISSUE_STAGE
@@ -115,7 +117,9 @@ module branch_unit #(
     if (CVA6Cfg.TvalEn)
       branch_exception_o.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
     else branch_exception_o.tval = '0;
+    branch_exception_o.tval2 = {CVA6Cfg.XLEN{1'b0}};
     branch_exception_o.tinst = {CVA6Cfg.XLEN{1'b0}};
+    branch_exception_o.gva = v_i;
     // Only throw instruction address misaligned exception if this is indeed a `taken` conditional branch or
     // an unconditional jump
     if (branch_valid_i && (target_address[0] || (!CVA6Cfg.RVC && target_address[1])) && jump_taken) begin

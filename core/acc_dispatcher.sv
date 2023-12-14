@@ -300,7 +300,7 @@ module acc_dispatcher
   assign acc_trans_id_o       = acc_resp_i.trans_id;
   assign acc_result_o         = acc_resp_i.result;
   assign acc_valid_o          = acc_resp_i.resp_valid;
-  assign acc_exception_o      = '{cause: riscv::ILLEGAL_INSTR, tval : '0, valid: acc_resp_i.error};
+  assign acc_exception_o      = '{cause: riscv::ILLEGAL_INSTR, tval : '0, tval2 : '0, tinst : '0, gva : '0,valid: acc_resp_i.error};
   assign acc_fflags_valid_o   = acc_resp_i.fflags_valid;
   assign acc_fflags_o         = acc_resp_i.fflags;
   // Always ready to receive responses

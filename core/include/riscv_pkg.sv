@@ -370,6 +370,14 @@ package riscv;
   localparam logic [31:0] M_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_EXT);
   localparam logic [31:0] HS_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_HS_EXT);
 
+  // ----------------------
+  // PseudoInstructions Codes
+  // ----------------------
+  localparam logic [XLEN-1:0] READ_32_PSEUDOINSTRUCTION = 32'h00002000;
+  localparam logic [XLEN-1:0] WRITE_32_PSEUDOINSTRUCTION = 32'h00002020;
+  localparam logic [XLEN-1:0] READ_64_PSEUDOINSTRUCTION = 64'h00003000;
+  localparam logic [XLEN-1:0] WRITE_64_PSEUDOINSTRUCTION = 64'h00003020;
+
   // -----
   // CSRs
   // -----
@@ -469,6 +477,7 @@ package riscv;
     CSR_MTVAL            = 12'h343,
     CSR_MIP              = 12'h344,
     CSR_MTINST           = 12'h34A,
+    CSR_MTVAL2           = 12'h34B,
     CSR_MENVCFG          = 12'h30A,
     CSR_MENVCFGH         = 12'h31A,
     CSR_PMPCFG0          = 12'h3A0,

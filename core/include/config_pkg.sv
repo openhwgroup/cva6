@@ -168,6 +168,7 @@ package config_pkg;
     int unsigned XLEN;
     int unsigned VLEN;
     int unsigned PLEN;
+    int unsigned GPLEN;
     bit IS_XLEN32;
     bit IS_XLEN64;
     int unsigned XLEN_ALIGN_BYTES;
@@ -274,9 +275,12 @@ package config_pkg;
 
     int unsigned ModeW;
     int unsigned ASIDW;
+    int unsigned VMIDW;
     int unsigned PPNW;
+    int unsigned GPPNW;
     vm_mode_t MODE_SV;
     int unsigned SV;
+    int unsigned SVX;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever

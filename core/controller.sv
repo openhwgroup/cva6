@@ -43,6 +43,8 @@ module controller
     input logic flush_dcache_ack_i,
     // Flush TLBs - EX_STAGE
     output logic flush_tlb_o,
+    output logic flush_tlb_vvma_o,
+    output logic flush_tlb_gvma_o,
     // Halt request from CSR (WFI instruction) - CSR_REGFILE
     input logic halt_csr_i,
     // Halt request from accelerator dispatcher - ACC_DISPATCHER
@@ -65,6 +67,8 @@ module controller
     input logic fence_i,
     // We got an instruction to flush the TLBs and pipeline - COMMIT_STAGE
     input logic sfence_vma_i,
+    input logic hfence_vvma_i,
+    input logic hfence_gvma_i,
     // Flush request from commit stage - COMMIT_STAGE
     input logic flush_commit_i,
     // Flush request from accelerator - ACC_DISPATCHER
@@ -88,6 +92,8 @@ module controller
     flush_dcache           = 1'b0;
     flush_icache_o         = 1'b0;
     flush_tlb_o            = 1'b0;
+    flush_tlb_vvma_o       = 1'b0;
+    flush_tlb_gvma_o       = 1'b0;
     flush_bp_o             = 1'b0;
     // ------------
     // Mis-predict
@@ -157,7 +163,34 @@ module controller
       flush_id_o             = 1'b1;
       flush_ex_o             = 1'b1;
 
-      flush_tlb_o            = 1'b1;
+      if (v_i) flush_tlb_vvma_o = 1'b1;
+      else flush_tlb_o = 1'b1;
+    end
+
+    // ---------------------------------
+    // HFENCE.VVMA
+    // ---------------------------------
+    if (hfence_vvma_i) begin
+      set_pc_commit_o        = 1'b1;
+      flush_if_o             = 1'b1;
+      flush_unissued_instr_o = 1'b1;
+      flush_id_o             = 1'b1;
+      flush_ex_o             = 1'b1;
+
+      flush_tlb_vvma_o       = 1'b1;
+    end
+
+    // ---------------------------------
+    // HFENCE.GVMA
+    // ---------------------------------
+    if (hfence_gvma_i) begin
+      set_pc_commit_o        = 1'b1;
+      flush_if_o             = 1'b1;
+      flush_unissued_instr_o = 1'b1;
+      flush_id_o             = 1'b1;
+      flush_ex_o             = 1'b1;
+
+      flush_tlb_gvma_o       = 1'b1;
     end
 
     // ---------------------------------

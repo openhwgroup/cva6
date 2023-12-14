@@ -42,7 +42,9 @@ module cva6
       logic [CVA6Cfg.XLEN-1:0] cause;  // cause of exception
       logic [CVA6Cfg.XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
       // address of LD/ST fault
+      logic [CVA6Cfg.XLEN-1:0] tval2;  // additional information when the causing exception in a guest exception
       logic [CVA6Cfg.XLEN-1:0] tinst;  // transformed instruction information
+      logic gva;  // signals when a guest virtual address is written to tval
       logic valid;
     },
 
@@ -139,7 +141,11 @@ module cva6
     localparam type lsu_ctrl_t = struct packed {
       logic                             valid;
       logic [CVA6Cfg.VLEN-1:0]          vaddr;
+      logic [CVA6Cfg.XLEN-1:0]          tinst;
+      logic                             hs_ld_st_inst;
+      logic                             hlvx_inst;
       logic                             overflow;
+      logic                             g_overflow;
       logic [CVA6Cfg.XLEN-1:0]          data;
       logic [(CVA6Cfg.XLEN/8)-1:0]      be;
       fu_t                              fu;
@@ -362,6 +368,7 @@ module cva6
   fu_data_t fu_data_id_ex;
   logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
   logic is_compressed_instr_id_ex;
+  riscv::xlen_t tinst_ex;
   // fixed latency units
   logic flu_ready_ex_id;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
@@ -413,6 +420,7 @@ module cva6
   logic single_step_acc_commit;
   // CSR
   logic csr_valid_id_ex;
+  logic csr_hs_ld_st_inst_ex;
   // CVXIF
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_ex_id;
   logic [CVA6Cfg.XLEN-1:0] x_result_ex_id;
@@ -465,12 +473,21 @@ module cva6
   logic [6:0] fprec_csr_ex;
   riscv::xs_t vs;
   logic enable_translation_csr_ex;
+  logic enable_g_translation_csr_ex;
   logic en_ld_st_translation_csr_ex;
+  logic en_ld_st_g_translation_csr_ex;
   riscv::priv_lvl_t ld_st_priv_lvl_csr_ex;
+  logic ld_st_v_csr_ex;
   logic sum_csr_ex;
+  logic vs_sum_csr_ex;
   logic mxr_csr_ex;
+  logic vmxr_csr_ex;
   logic [CVA6Cfg.PPNW-1:0] satp_ppn_csr_ex;
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid_csr_ex;
+  logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_csr_ex;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] vs_asid_csr_ex;
+  logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_csr_ex;
+  logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_csr_ex;
   logic [11:0] csr_addr_ex_csr;
   fu_op csr_op_commit_csr;
   logic [CVA6Cfg.XLEN-1:0] csr_wdata_commit_csr;
@@ -508,24 +525,28 @@ module cva6
   // --------------
   // CTRL <-> *
   // --------------
-  logic                                                              set_pc_ctrl_pcgen;
-  logic                                                              flush_csr_ctrl;
-  logic                                                              flush_unissued_instr_ctrl_id;
-  logic                                                              flush_ctrl_if;
-  logic                                                              flush_ctrl_id;
-  logic                                                              flush_ctrl_ex;
-  logic                                                              flush_ctrl_bp;
-  logic                                                              flush_tlb_ctrl_ex;
-  logic                                                              fence_i_commit_controller;
-  logic                                                              fence_commit_controller;
-  logic                                                              sfence_vma_commit_controller;
-  logic                                                              halt_ctrl;
-  logic                                                              halt_csr_ctrl;
-  logic                                                              dcache_flush_ctrl_cache;
-  logic                                                              dcache_flush_ack_cache_ctrl;
-  logic                                                              set_debug_pc;
-  logic                                                              flush_commit;
-  logic                                                              flush_acc;
+  logic                                                     set_pc_ctrl_pcgen;
+  logic                                                     flush_csr_ctrl;
+  logic                                                     flush_unissued_instr_ctrl_id;
+  logic                                                     flush_ctrl_if;
+  logic                                                     flush_ctrl_id;
+  logic                                                     flush_ctrl_ex;
+  logic                                                     flush_ctrl_bp;
+  logic                                                     flush_tlb_ctrl_ex;
+  logic                                                     flush_tlb_vvma_ctrl_ex;
+  logic                                                     flush_tlb_gvma_ctrl_ex;
+  logic                                                     fence_i_commit_controller;
+  logic                                                     fence_commit_controller;
+  logic                                                     sfence_vma_commit_controller;
+    logic                                                   hfence_vvma_commit_controller;
+  logic                                                     hfence_gvma_commit_controller;
+  logic                                                     halt_ctrl;
+  logic                                                     halt_csr_ctrl;
+  logic                                                     dcache_flush_ctrl_cache;
+  logic                                                     dcache_flush_ack_cache_ctrl;
+  logic                                                     set_debug_pc;
+  logic                                                     flush_commit;
+  logic                                                     flush_acc;
 
   icache_areq_t                                                      icache_areq_ex_cache;
   icache_arsp_t                                                      icache_areq_cache_ex;
@@ -727,6 +748,7 @@ module cva6
       .fu_data_o             (fu_data_id_ex),
       .pc_o                  (pc_id_ex),
       .is_compressed_instr_o (is_compressed_instr_id_ex),
+      .tinst_o               (tinst_ex),
       // fixed latency unit ready
       .flu_ready_i           (flu_ready_ex_id),
       // ALU
@@ -793,37 +815,39 @@ module cva6
       .icache_drsp_t(icache_drsp_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) ex_stage_i (
-      .clk_i                (clk_i),
-      .rst_ni               (rst_ni),
-      .debug_mode_i         (debug_mode),
-      .flush_i              (flush_ctrl_ex),
-      .rs1_forwarding_i     (rs1_forwarding_id_ex),
-      .rs2_forwarding_i     (rs2_forwarding_id_ex),
-      .fu_data_i            (fu_data_id_ex),
-      .pc_i                 (pc_id_ex),
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .debug_mode_i(debug_mode),
+      .flush_i(flush_ctrl_ex),
+      .rs1_forwarding_i(rs1_forwarding_id_ex),
+      .rs2_forwarding_i(rs2_forwarding_id_ex),
+      .fu_data_i(fu_data_id_ex),
+      .pc_i(pc_id_ex),
       .is_compressed_instr_i(is_compressed_instr_id_ex),
+      .tinst_i(tinst_ex),
       // fixed latency units
-      .flu_result_o         (flu_result_ex_id),
-      .flu_trans_id_o       (flu_trans_id_ex_id),
-      .flu_valid_o          (flu_valid_ex_id),
-      .flu_exception_o      (flu_exception_ex_id),
-      .flu_ready_o          (flu_ready_ex_id),
+      .flu_result_o(flu_result_ex_id),
+      .flu_trans_id_o(flu_trans_id_ex_id),
+      .flu_valid_o(flu_valid_ex_id),
+      .flu_exception_o(flu_exception_ex_id),
+      .flu_ready_o(flu_ready_ex_id),
       // ALU
-      .alu_valid_i          (alu_valid_id_ex),
+      .alu_valid_i(alu_valid_id_ex),
       // Branches and Jumps
-      .branch_valid_i       (branch_valid_id_ex),
-      .branch_predict_i     (branch_predict_id_ex),       // branch predict to ex
-      .resolved_branch_o    (resolved_branch),
-      .resolve_branch_o     (resolve_branch_ex_id),
+      .branch_valid_i(branch_valid_id_ex),
+      .branch_predict_i(branch_predict_id_ex),  // branch predict to ex
+      .resolved_branch_o(resolved_branch),
+      .resolve_branch_o(resolve_branch_ex_id),
       // CSR
-      .csr_valid_i          (csr_valid_id_ex),
-      .csr_addr_o           (csr_addr_ex_csr),
-      .csr_commit_i         (csr_commit_commit_ex),       // from commit
+      .csr_valid_i(csr_valid_id_ex),
+      .csr_addr_o(csr_addr_ex_csr),
+      .csr_commit_i(csr_commit_commit_ex),  // from commit
+      .csr_hs_ld_st_inst_o(csr_hs_ld_st_inst_ex),  // signals a Hypervisor Load/Store Instruction
       // MULT
-      .mult_valid_i         (mult_valid_id_ex),
+      .mult_valid_i(mult_valid_id_ex),
       // LSU
-      .lsu_ready_o          (lsu_ready_ex_id),
-      .lsu_valid_i          (lsu_valid_id_ex),
+      .lsu_ready_o(lsu_ready_ex_id),
+      .lsu_valid_i(lsu_valid_id_ex),
 
       .load_result_o   (load_result_ex_id),
       .load_trans_id_o (load_trans_id_ex_id),
@@ -835,61 +859,73 @@ module cva6
       .store_valid_o    (store_valid_ex_id),
       .store_exception_o(store_exception_ex_id),
 
-      .lsu_commit_i           (lsu_commit_commit_ex),          // from commit
-      .lsu_commit_ready_o     (lsu_commit_ready_ex_commit),    // to commit
-      .commit_tran_id_i       (lsu_commit_trans_id),           // from commit
-      .stall_st_pending_i     (stall_st_pending_ex),
-      .no_st_pending_o        (no_st_pending_ex),
+      .lsu_commit_i            (lsu_commit_commit_ex),           // from commit
+      .lsu_commit_ready_o      (lsu_commit_ready_ex_commit),     // to commit
+      .commit_tran_id_i        (lsu_commit_trans_id),            // from commit
+      .stall_st_pending_i      (stall_st_pending_ex),
+      .no_st_pending_o         (no_st_pending_ex),
       // FPU
-      .fpu_ready_o            (fpu_ready_ex_id),
-      .fpu_valid_i            (fpu_valid_id_ex),
-      .fpu_fmt_i              (fpu_fmt_id_ex),
-      .fpu_rm_i               (fpu_rm_id_ex),
-      .fpu_frm_i              (frm_csr_id_issue_ex),
-      .fpu_prec_i             (fprec_csr_ex),
-      .fpu_trans_id_o         (fpu_trans_id_ex_id),
-      .fpu_result_o           (fpu_result_ex_id),
-      .fpu_valid_o            (fpu_valid_ex_id),
-      .fpu_exception_o        (fpu_exception_ex_id),
-      .amo_valid_commit_i     (amo_valid_commit),
-      .amo_req_o              (amo_req),
-      .amo_resp_i             (amo_resp),
+      .fpu_ready_o             (fpu_ready_ex_id),
+      .fpu_valid_i             (fpu_valid_id_ex),
+      .fpu_fmt_i               (fpu_fmt_id_ex),
+      .fpu_rm_i                (fpu_rm_id_ex),
+      .fpu_frm_i               (frm_csr_id_issue_ex),
+      .fpu_prec_i              (fprec_csr_ex),
+      .fpu_trans_id_o          (fpu_trans_id_ex_id),
+      .fpu_result_o            (fpu_result_ex_id),
+      .fpu_valid_o             (fpu_valid_ex_id),
+      .fpu_exception_o         (fpu_exception_ex_id),
+      .amo_valid_commit_i      (amo_valid_commit),
+      .amo_req_o               (amo_req),
+      .amo_resp_i              (amo_resp),
       // CoreV-X-Interface
-      .x_valid_i              (x_issue_valid_id_ex),
-      .x_ready_o              (x_issue_ready_ex_id),
-      .x_off_instr_i          (x_off_instr_id_ex),
-      .x_trans_id_o           (x_trans_id_ex_id),
-      .x_exception_o          (x_exception_ex_id),
-      .x_result_o             (x_result_ex_id),
-      .x_valid_o              (x_valid_ex_id),
-      .x_we_o                 (x_we_ex_id),
-      .cvxif_req_o            (cvxif_req),
-      .cvxif_resp_i           (cvxif_resp),
+      .x_valid_i               (x_issue_valid_id_ex),
+      .x_ready_o               (x_issue_ready_ex_id),
+      .x_off_instr_i           (x_off_instr_id_ex),
+      .x_trans_id_o            (x_trans_id_ex_id),
+      .x_exception_o           (x_exception_ex_id),
+      .x_result_o              (x_result_ex_id),
+      .x_valid_o               (x_valid_ex_id),
+      .x_we_o                  (x_we_ex_id),
+      .cvxif_req_o             (cvxif_req),
+      .cvxif_resp_i            (cvxif_resp),
       // Accelerator
-      .acc_valid_i            (acc_valid_acc_ex),
+      .acc_valid_i             (acc_valid_acc_ex),
       // Performance counters
-      .itlb_miss_o            (itlb_miss_ex_perf),
-      .dtlb_miss_o            (dtlb_miss_ex_perf),
+      .itlb_miss_o             (itlb_miss_ex_perf),
+      .dtlb_miss_o             (dtlb_miss_ex_perf),
       // Memory Management
-      .enable_translation_i   (enable_translation_csr_ex),     // from CSR
-      .en_ld_st_translation_i (en_ld_st_translation_csr_ex),
-      .flush_tlb_i            (flush_tlb_ctrl_ex),
-      .priv_lvl_i             (priv_lvl),                      // from CSR
-      .ld_st_priv_lvl_i       (ld_st_priv_lvl_csr_ex),         // from CSR
-      .sum_i                  (sum_csr_ex),                    // from CSR
-      .mxr_i                  (mxr_csr_ex),                    // from CSR
-      .satp_ppn_i             (satp_ppn_csr_ex),               // from CSR
-      .asid_i                 (asid_csr_ex),                   // from CSR
-      .icache_areq_i          (icache_areq_cache_ex),
-      .icache_areq_o          (icache_areq_ex_cache),
+      .enable_translation_i    (enable_translation_csr_ex),      // from CSR
+      .enable_g_translation_i  (enable_g_translation_csr_ex),    // from CSR
+      .en_ld_st_translation_i  (en_ld_st_translation_csr_ex),
+      .en_ld_st_g_translation_i(en_ld_st_g_translation_csr_ex),
+      .flush_tlb_i             (flush_tlb_ctrl_ex),
+      .flush_tlb_vvma_i        (flush_tlb_vvma_ctrl_ex),
+      .flush_tlb_gvma_i        (flush_tlb_gvma_ctrl_ex),
+      .priv_lvl_i              (priv_lvl),                       // from CSR
+      .v_i                     (v),                              // from CSR
+      .ld_st_priv_lvl_i        (ld_st_priv_lvl_csr_ex),          // from CSR
+      .ld_st_v_i               (ld_st_v_csr_ex),                 // from CSR
+      .sum_i                   (sum_csr_ex),                     // from CSR
+      .vs_sum_i                (vs_sum_csr_ex),                  // from CSR
+      .mxr_i                   (mxr_csr_ex),                     // from CSR
+      .vmxr_i                  (vmxr_csr_ex),                    // from CSR
+      .satp_ppn_i              (satp_ppn_csr_ex),                // from CSR
+      .asid_i                  (asid_csr_ex),                    // from CSR
+      .vsatp_ppn_i             (vsatp_ppn_csr_ex),               // from CSR
+      .vs_asid_i               (vs_asid_csr_ex),                 // from CSR
+      .hgatp_ppn_i             (hgatp_ppn_csr_ex),               // from CSR
+      .vmid_i                  (vmid_csr_ex),                    // from CSR
+      .icache_areq_i           (icache_areq_cache_ex),
+      .icache_areq_o           (icache_areq_ex_cache),
       // DCACHE interfaces
-      .dcache_req_ports_i     (dcache_req_ports_cache_ex),
-      .dcache_req_ports_o     (dcache_req_ports_ex_cache),
-      .dcache_wbuffer_empty_i (dcache_commit_wbuffer_empty),
-      .dcache_wbuffer_not_ni_i(dcache_commit_wbuffer_not_ni),
+      .dcache_req_ports_i      (dcache_req_ports_cache_ex),
+      .dcache_req_ports_o      (dcache_req_ports_ex_cache),
+      .dcache_wbuffer_empty_i  (dcache_commit_wbuffer_empty),
+      .dcache_wbuffer_not_ni_i (dcache_commit_wbuffer_not_ni),
       // PMP
-      .pmpcfg_i               (pmpcfg),
-      .pmpaddr_i              (pmpaddr),
+      .pmpcfg_i                (pmpcfg),
+      .pmpaddr_i               (pmpaddr),
       //RVFI
       .rvfi_lsu_ctrl_o        (rvfi_lsu_ctrl),
       .rvfi_mem_paddr_o       (rvfi_mem_paddr)
@@ -938,6 +974,8 @@ module cva6
       .fence_i_o         (fence_i_commit_controller),
       .fence_o           (fence_commit_controller),
       .sfence_vma_o      (sfence_vma_commit_controller),
+      .hfence_vvma_o     (hfence_vvma_commit_controller),
+      .hfence_gvma_o     (hfence_gvma_commit_controller),
       .flush_commit_o    (flush_commit),
       .*
   );
@@ -985,12 +1023,22 @@ module cva6
       .vs_o                  (vs),
       .irq_ctrl_o            (irq_ctrl_csr_id),
       .ld_st_priv_lvl_o      (ld_st_priv_lvl_csr_ex),
+      .ld_st_v_o             (ld_st_v_csr_ex),
+      .csr_hs_ld_st_inst_i   (csr_hs_ld_st_inst_ex),
       .en_translation_o      (enable_translation_csr_ex),
+      .en_g_translation_o    (enable_g_translation_csr_ex),
       .en_ld_st_translation_o(en_ld_st_translation_csr_ex),
+      .en_ld_st_g_translation_o(en_ld_st_g_translation_csr_ex),
       .sum_o                 (sum_csr_ex),
+      .vs_sum_o              (vs_sum_csr_ex),
       .mxr_o                 (mxr_csr_ex),
+      .vmxr_o                (vmxr_csr_ex),
       .satp_ppn_o            (satp_ppn_csr_ex),
       .asid_o                (asid_csr_ex),
+      .vsatp_ppn_o           (vsatp_ppn_csr_ex),
+      .vs_asid_o             (vs_asid_csr_ex),
+      .hgatp_ppn_o           (hgatp_ppn_csr_ex),
+      .vmid_o                (vmid_csr_ex),
       .tvm_o                 (tvm_csr_id),
       .tw_o                  (tw_csr_id),
       .vtw_o                 (vtw_csr_id),
@@ -1070,6 +1118,8 @@ module cva6
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t)
   ) controller_i (
+      // virtualization mode
+      .v_i                   (v),
       // flush ports
       .set_pc_commit_o       (set_pc_ctrl_pcgen),
       .flush_unissued_instr_o(flush_unissued_instr_ctrl_id),
@@ -1078,6 +1128,8 @@ module cva6
       .flush_ex_o            (flush_ctrl_ex),
       .flush_bp_o            (flush_ctrl_bp),
       .flush_tlb_o           (flush_tlb_ctrl_ex),
+      .flush_tlb_vvma_o      (flush_tlb_vvma_ctrl_ex),
+      .flush_tlb_gvma_o      (flush_tlb_gvma_ctrl_ex),
       .flush_dcache_o        (dcache_flush_ctrl_cache),
       .flush_dcache_ack_i    (dcache_flush_ack_cache_ctrl),
 
@@ -1093,6 +1145,8 @@ module cva6
       .fence_i_i        (fence_i_commit_controller),
       .fence_i          (fence_commit_controller),
       .sfence_vma_i     (sfence_vma_commit_controller),
+      .hfence_vvma_i    (hfence_vvma_commit_controller),
+      .hfence_gvma_i    (hfence_gvma_commit_controller),
       .flush_commit_i   (flush_commit),
       .flush_acc_i      (flush_acc),
 

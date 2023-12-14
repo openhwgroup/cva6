@@ -78,6 +78,8 @@ module issue_read_operands
     output logic alu_valid_o,
     // Branch instruction is valid - TO_BE_COMPLETED
     output logic branch_valid_o,
+    // Transformed instruction - TO_BE_COMPLETED
+    output logic [riscv::XLEN-1:0] tinst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output branchpredict_sbe_t branch_predict_o,
     // Load Store Unit is ready - TO_BE_COMPLETED
@@ -139,6 +141,7 @@ module issue_read_operands
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
   fu_op operator_n, operator_q;  // operation to perform
   fu_t fu_n, fu_q;  // functional unit to use
+  riscv::xlen_t tinst_n, tinst_q;  // transformed instruction
 
   // forwarding signals
   logic forward_rs1, forward_rs2, forward_rs3;
@@ -156,19 +159,20 @@ module issue_read_operands
   assign fu_data_o.operand_b = operand_b_q;
   assign fu_data_o.fu = fu_q;
   assign fu_data_o.operation = operator_q;
-  assign fu_data_o.trans_id = trans_id_q;
-  assign fu_data_o.imm = imm_q;
-  assign alu_valid_o = alu_valid_q;
-  assign branch_valid_o = branch_valid_q;
-  assign lsu_valid_o = lsu_valid_q;
-  assign csr_valid_o = csr_valid_q;
-  assign mult_valid_o = mult_valid_q;
-  assign fpu_valid_o = fpu_valid_q;
-  assign fpu_fmt_o = fpu_fmt_q;
-  assign fpu_rm_o = fpu_rm_q;
-  assign cvxif_valid_o = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
-  assign cvxif_off_instr_o = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
-  assign stall_issue_o = stall;
+  assign fu_data_o.trans_id  = trans_id_q;
+  assign fu_data_o.imm       = imm_q;
+  assign alu_valid_o         = alu_valid_q;
+  assign branch_valid_o      = branch_valid_q;
+  assign lsu_valid_o         = lsu_valid_q;
+  assign csr_valid_o         = csr_valid_q;
+  assign mult_valid_o        = mult_valid_q;
+  assign fpu_valid_o         = fpu_valid_q;
+  assign fpu_fmt_o           = fpu_fmt_q;
+  assign fpu_rm_o            = fpu_rm_q;
+  assign cvxif_valid_o       = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
+  assign cvxif_off_instr_o   = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
+  assign stall_issue_o       = stall;
+  assign tinst_o             = tinst_q;
   // ---------------
   // Issue Stage
   // ---------------
@@ -283,6 +287,7 @@ module issue_read_operands
     trans_id_n = issue_instr_i.trans_id;
     fu_n       = issue_instr_i.fu;
     operator_n = issue_instr_i.op;
+    tinst_n    = issue_instr_i.ex.tinst;
     // or should we forward
     if (forward_rs1) begin
       operand_a_n = rs1_i;
@@ -597,6 +602,7 @@ module issue_read_operands
       fu_q                  <= NONE;
       operator_q            <= ADD;
       trans_id_q            <= '0;
+      tinst_q               <= '0;
       pc_o                  <= '0;
       is_compressed_instr_o <= 1'b0;
       branch_predict_o      <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
@@ -607,6 +613,7 @@ module issue_read_operands
       fu_q                  <= fu_n;
       operator_q            <= operator_n;
       trans_id_q            <= trans_id_n;
+      tinst_q               <= tinst_n;
       pc_o                  <= issue_instr_i.pc;
       is_compressed_instr_o <= issue_instr_i.is_compressed;
       branch_predict_o      <= issue_instr_i.bp;

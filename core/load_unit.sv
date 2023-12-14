@@ -51,6 +51,12 @@ module load_unit
     output logic translation_req_o,
     // Virtual address - TO_BE_COMPLETED
     output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
+    // Transformed trap instruction out - TO_BE_COMPLETED
+    output logic [CVA6Cfg.XLEN-1:0] tinst_o,
+    // Instruction is a hyp load store instruction - TO_BE_COMPLETED
+    output logic hs_ld_st_inst_o,
+    // Hyp load store with execute permissions - TO_BE_COMPLETED
+    output logic hlvx_inst_o,
     // Physical address - TO_BE_COMPLETED
     input logic [CVA6Cfg.PLEN-1:0] paddr_i,
     // Excepted which appears before load - TO_BE_COMPLETED
@@ -183,6 +189,10 @@ module load_unit
   assign page_offset_o = lsu_ctrl_i.vaddr[11:0];
   // feed-through the virtual address for VA translation
   assign vaddr_o = lsu_ctrl_i.vaddr;
+  assign hs_ld_st_inst_o = lsu_ctrl_i.hs_ld_st_inst;
+  assign hlvx_inst_o = lsu_ctrl_i.hlvx_inst;
+  // feed-through the transformed instruction for mmu
+  assign tinst_o = lsu_ctrl_i.tinst;
   // this is a read-only interface so set the write enable to 0
   assign req_port_o.data_we = 1'b0;
   assign req_port_o.data_wdata = '0;
@@ -202,7 +212,9 @@ module load_unit
   // directly forward exception fields (valid bit is set below)
   assign ex_o.cause = ex_i.cause;
   assign ex_o.tval = ex_i.tval;
+  assign ex_o.tval2 = ex_i.tval2;
   assign ex_o.tinst = ex_i.tinst;
+  assign ex_o.gva = ex_i.gva;
 
   // Check that NI operations follow the necessary conditions
   logic paddr_ni;
@@ -480,10 +492,10 @@ module load_unit
 
 
   // prepare these signals for faster selection in the next cycle
-  assign rdata_is_signed    =   ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
+  assign rdata_is_signed    =   ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB, ariane_pkg::HLV_W, ariane_pkg::HLV_H, ariane_pkg::HLV_B};
   assign rdata_is_fp_signed =   ldbuf_rdata.operation inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW}) & CVA6Cfg.IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
-                                ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH})                     ? ldbuf_rdata.address_offset + 1 :
+  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW, ariane_pkg::HLV_W}) & CVA6Cfg.IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
+                                ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH, ariane_pkg::HLV_H})                     ? ldbuf_rdata.address_offset + 1 :
                                                                                                                          ldbuf_rdata.address_offset;
 
   for (genvar i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : gen_sign_bits
@@ -498,11 +510,11 @@ module load_unit
   // result mux
   always_comb begin
     unique case (ldbuf_rdata.operation)
-      ariane_pkg::LW, ariane_pkg::LWU:
+      ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::HLV_W, ariane_pkg::HLV_WU, ariane_pkg::HLVX_WU:
       result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
-      ariane_pkg::LH, ariane_pkg::LHU:
+      ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::HLV_H, ariane_pkg::HLV_HU, ariane_pkg::HLVX_HU:
       result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
-      ariane_pkg::LB, ariane_pkg::LBU:
+      ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::HLV_B, ariane_pkg::HLV_BU:
       result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
       default: begin
         // FLW, FLH and FLB have been defined here in default case to improve Code Coverage

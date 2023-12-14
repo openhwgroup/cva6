@@ -56,6 +56,8 @@ module issue_stage
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
+    // Transformed trap instruction - EX_STAGE
+    output riscv::xlen_t tinst_o,
     // Fixed Latency Unit is ready - EX_STAGE
     input logic flu_ready_i,
     // ALU FU is valid - EX_STAGE
@@ -235,6 +237,7 @@ module issue_stage
       .rs1_forwarding_o   (rs1_forwarding_xlen),
       .rs2_forwarding_o   (rs2_forwarding_xlen),
       .stall_issue_o      (stall_issue_o),
+      .tinst_o            (tinst_o),
       .*
   );
 

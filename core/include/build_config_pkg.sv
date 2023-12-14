@@ -32,11 +32,12 @@ package build_config_pkg;
     cfg.XLEN = CVA6Cfg.XLEN;
     cfg.VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;
     cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
+    cfg.GPLEN = (XLEN == 32) ? 34 : 41;
     cfg.IS_XLEN32 = IS_XLEN32;
     cfg.IS_XLEN64 = IS_XLEN64;
     cfg.XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
     cfg.ASID_WIDTH = (CVA6Cfg.XLEN == 64) ? 16 : 1;
-    cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 7;
+    cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 1;
 
     cfg.FPGA_EN = CVA6Cfg.FPGA_EN;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
@@ -132,9 +133,12 @@ package build_config_pkg;
 
     cfg.ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
     cfg.ASIDW = (CVA6Cfg.XLEN == 32) ? 9 : 16;
+    cfg.VMIDW = (CVA6Cfg.XLEN == 32) ? 7 : 14;
     cfg.PPNW = (CVA6Cfg.XLEN == 32) ? 22 : 44;
+    cfg.GPPNW = (CVA6Cfg.XLEN == 32) ? 22 : 29;
     cfg.MODE_SV = (CVA6Cfg.XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
     cfg.SV = (cfg.MODE_SV == config_pkg::ModeSv32) ? 32 : 39;
+    cfg.SVX = (cfg.MODE_SV == config_pkg::ModeSv32) ? 34 : 41;
 
     return cfg;
   endfunction
