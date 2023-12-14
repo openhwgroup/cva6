@@ -418,6 +418,9 @@ module csr_regfile
             read_access_exception = 1'b1;
           end
         end
+        riscv::CSR_SENVCFG:
+        if (CVA6Cfg.RVS) csr_rdata = '0 | fiom_q;
+        else read_access_exception = 1'b1;
         // hypervisor mode registers
         riscv::CSR_HSTATUS: csr_rdata = hstatus_q[CVA6Cfg.XLEN-1:0];
         riscv::CSR_HEDELEG: csr_rdata = hedeleg_q;
@@ -429,6 +432,7 @@ module csr_regfile
         riscv::CSR_HTINST: ;  //TODO: implement htinst
         riscv::CSR_HGEIE: csr_rdata = '0;
         riscv::CSR_HGEIP: csr_rdata = '0;
+        riscv::CSR_HENVCFG: csr_rdata = '0 | fiom_q;
         riscv::CSR_HGATP: begin
           // intercept reads to HGATP if in HS-Mode and TVM is enabled
           if (priv_lvl_o == riscv::PRIV_LVL_S && !v_q && mstatus_q.tvm) begin
@@ -1008,6 +1012,9 @@ module csr_regfile
             update_access_exception = 1'b1;
           end
         end
+        riscv::CSR_SENVCFG:
+        if (CVA6Cfg.RVU) fiom_d = csr_wdata[0];
+        else update_access_exception = 1'b1;
         //hypervisor mode registers
         riscv::CSR_HSTATUS: begin
           mask = ariane_pkg::HSTATUS_WRITE_MASK[CVA6Cfg.XLEN-1:0];
@@ -1069,6 +1076,7 @@ module csr_regfile
           // the next instruction by executing a flush
           flush_o = 1'b1;
         end
+        riscv::CSR_HENVCFG: fiom_d = csr_wdata[0];
 
         riscv::CSR_MSTATUS: begin
           mstatus_d    = {{64 - CVA6Cfg.XLEN{1'b0}}, csr_wdata};
