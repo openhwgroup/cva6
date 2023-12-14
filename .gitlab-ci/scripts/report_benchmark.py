@@ -24,10 +24,12 @@ valid_cycles = {
 for arg in sys.argv[1:]:
     if arg == '--dhrystone':
         mode = 'dhrystone'
+        # Standard value for Dhrystone
         iterations = 500
     elif arg == '--coremark':
         mode = 'coremark'
-        # Too few iterations to consider a score
+        # Defined in verif/regress/coremark.sh
+        iterations = 2
     else:
         path = arg
 
@@ -54,6 +56,8 @@ if iterations is not None:
     if mode == 'dhrystone':
         score_metric.add_value('Dhrystone/MHz', ipmhz)
         score_metric.add_value('DMIPS/MHz', ipmhz / 1757)
+    if mode == 'coremark':
+        score_metric.add_value('CoreMark/MHz', ipmhz)
 
 diff = cycles - valid_cycles[mode]
 if diff != 0:
