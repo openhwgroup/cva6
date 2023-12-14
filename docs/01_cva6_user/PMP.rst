@@ -40,3 +40,5 @@ Writes to ``pmpaddr`` are WARL and depend on the address mode. For naturally
 aligned power-of 2 addressing mode (``NAPOT``) it is set to ``1``, for top
 boundary of an arbitrary range (``TOR``) or ``OFF`` it is set to ``0``.
 
+If, on write to `pmpcfgX`, ``R=0`` and ``W=1`` are set the CSR will not be
+updated.
