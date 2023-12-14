@@ -23,10 +23,11 @@ import ariane_pkg::*;
   parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
   parameter int unsigned           INSTR_TLB_ENTRIES = 4,
   parameter int unsigned           DATA_TLB_ENTRIES  = 4,
-  parameter int unsigned           ASID_WIDTH        = 1,
+  parameter int unsigned           ASID_WIDTH [HYP_EXT:0]= {1},
   parameter int unsigned           ASID_LEN = 1,
   parameter int unsigned           VPN_LEN = 1,
-  parameter int unsigned           PT_LEVELS = 1
+  parameter int unsigned           PT_LEVELS = 1,
+  parameter logic                  HYP_EXT = 0
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -41,7 +42,7 @@ import ariane_pkg::*;
   // in the LSU as we distinguish load and stores, what we do here is simple address translation
   input exception_t misaligned_ex_i,
   input logic lsu_req_i,  // request address translation
-  input logic [riscv::VLEN-1:0] lsu_vaddr_i,  // virtual address in
+  input logic [riscv::VLEN-1:0] lsu_vaddr_i[HYP_EXT:0],  // virtual address in
   input logic lsu_is_store_i,  // the translation is requested by a store
   // if we need to walk the page table we can't grant in the same cycle
   // Cycle 0
@@ -58,9 +59,9 @@ import ariane_pkg::*;
   input logic mxr_i,
   // input logic flag_mprv_i,
   input logic [riscv::PPNW-1:0] satp_ppn_i,
-  input logic [ASID_WIDTH-1:0] asid_i,
-  input logic [ASID_WIDTH-1:0] asid_to_be_flushed_i,
-  input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+  input logic [ASID_WIDTH[0]-1:0] asid_i [HYP_EXT:0],
+  input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i [HYP_EXT:0],
+  input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i [HYP_EXT:0],
   input logic flush_tlb_i,
   // Performance counters
   output logic itlb_miss_o,
@@ -91,11 +92,12 @@ localparam type pte_cva6_t = struct packed {
 localparam type tlb_update_cva6_t = struct packed {
 // typedef struct packed {
   logic                  valid;      // valid flag
-  logic  [PT_LEVELS-2:0] is_page;      //
+  logic [HYP_EXT:0][PT_LEVELS-2:0] is_page;      //
   logic [VPN_LEN-1:0]    vpn;        //
-  logic [ASID_LEN-1:0]   asid;       //
-  pte_cva6_t      content;
+  logic [HYP_EXT:0][ASID_LEN-1:0]   asid;       //
+  pte_cva6_t  [HYP_EXT:0]          content;
 } ;
+
 
 logic                   iaccess_err;  // insufficient privilege to access this instruction page
 logic                   daccess_err;  // insufficient privilege to access this data page
@@ -110,12 +112,12 @@ logic [riscv::VLEN-1:0] update_vaddr;
 tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
 logic                               itlb_lu_access;
-pte_cva6_t                   itlb_content;
+pte_cva6_t  [HYP_EXT:0]             itlb_content ;
 logic [PT_LEVELS-2:0]               itlb_is_page;
 logic                               itlb_lu_hit;
 
 logic                               dtlb_lu_access;
-pte_cva6_t                   dtlb_content;
+pte_cva6_t  [HYP_EXT:0]             dtlb_content;
 logic [PT_LEVELS-2:0]               dtlb_is_page;
 logic                               dtlb_lu_hit;
 
@@ -129,6 +131,8 @@ logic                               itlb_req;
 assign itlb_lu_access = icache_areq_i.fetch_req;
 assign dtlb_lu_access = lsu_req_i;
 
+logic [riscv::VLEN-1:0] lu_vaddr_i [HYP_EXT:0];
+assign lu_vaddr_i[0]=icache_areq_i.fetch_vaddr;
 
 cva6_tlb #(
     .CVA6Cfg    (CVA6Cfg),
@@ -150,11 +154,12 @@ cva6_tlb #(
     .lu_asid_i            (asid_i),
     .asid_to_be_flushed_i (asid_to_be_flushed_i),
     .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
-    .lu_vaddr_i           (icache_areq_i.fetch_vaddr),
+    .lu_vaddr_i           (lu_vaddr_i),
     .lu_content_o         (itlb_content),
 
     .lu_is_page_o(itlb_is_page),
-    .lu_hit_o  (itlb_lu_hit)
+    .lu_hit_o  (itlb_lu_hit),
+    .v_st_enbl_i(1)
 );
 
 cva6_tlb #(
@@ -181,14 +186,15 @@ cva6_tlb #(
     .lu_content_o         (dtlb_content),
 
     .lu_is_page_o(dtlb_is_page),
-    .lu_hit_o  (dtlb_lu_hit)
+    .lu_hit_o  (dtlb_lu_hit),
+    .v_st_enbl_i(1)
 );
 
 cva6_shared_tlb #(
     .CVA6Cfg         (CVA6Cfg),
     .SHARED_TLB_DEPTH(64),
     .SHARED_TLB_WAYS (2),
-    .ASID_WIDTH      (ASID_WIDTH),
+    .ASID_WIDTH      (ASID_WIDTH[0]),
     .ASID_LEN (ASID_LEN),
     .VPN_LEN(VPN_LEN),
     .PT_LEVELS(PT_LEVELS),
@@ -202,7 +208,7 @@ cva6_shared_tlb #(
     .enable_translation_i  (enable_translation_i),
     .en_ld_st_translation_i(en_ld_st_translation_i),
 
-    .asid_i       (asid_i),
+    .asid_i       (asid_i[0]),
     // from TLBs
     // did we miss?
     .itlb_access_i(itlb_lu_access),
@@ -211,7 +217,7 @@ cva6_shared_tlb #(
 
     .dtlb_access_i(dtlb_lu_access),
     .dtlb_hit_i   (dtlb_lu_hit),
-    .dtlb_vaddr_i (lsu_vaddr_i),
+    .dtlb_vaddr_i (lsu_vaddr_i[0]),
 
     // to TLBs, update logic
     .itlb_update_o(update_itlb),
@@ -232,7 +238,7 @@ cva6_shared_tlb #(
 
 cva6_ptw #(
     .CVA6Cfg   (CVA6Cfg),
-    .ASID_WIDTH(ASID_WIDTH),
+    .ASID_WIDTH(ASID_WIDTH[0]),
     .VPN_LEN(VPN_LEN),
     .PT_LEVELS(PT_LEVELS),
     .pte_cva6_t(pte_cva6_t),
@@ -257,7 +263,7 @@ cva6_ptw #(
 
     .update_vaddr_o(update_vaddr),
 
-    .asid_i(asid_i),
+    .asid_i(asid_i[0]),
 
     // from shared TLB
     // did we miss?
@@ -312,8 +318,8 @@ localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 assign icache_areq_o.fetch_paddr    [11:0] = icache_areq_i.fetch_vaddr[11:0];
 assign icache_areq_o.fetch_paddr [riscv::PLEN-1:PPNWMin+1]   = //
                           (enable_translation_i) ? //
-                          itlb_content.ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : //
-                          riscv::PLEN'(icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
+                          itlb_content[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : //
+                          (riscv::PLEN-PPNWMin-1)'(icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
 
 genvar a;
 generate
@@ -321,7 +327,7 @@ generate
     for (a=0; a < PT_LEVELS-1; a++) begin  
       assign icache_areq_o.fetch_paddr [PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1] = //
                           (enable_translation_i && (|itlb_is_page[a:0]==0)) ? //
-                          itlb_content.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))] : //
+                          itlb_content[0].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))] : //
                           icache_areq_i.fetch_vaddr[PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1];
     end
 
@@ -336,8 +342,8 @@ always_comb begin : instr_interface
   // 2. We got an access error because of insufficient permissions -> throw an access exception
   icache_areq_o.fetch_exception = '0;
   // Check whether we are allowed to access this memory region from a fetch perspective
-  iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
-                                                || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
+  iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content[0].u)
+                                                || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content[0].u));
 
   // MMU enabled: address from TLB, request delayed until hit. Error when TLB
   // hit and no access right or TLB hit and translated address not valid (e.g.
@@ -444,11 +450,11 @@ assign lsu_paddr_o    [11:0] = lsu_vaddr_q[11:0];
 assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
                             (en_ld_st_translation_i && !misaligned_ex_q.valid) ? //
                             dtlb_pte_q.ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : // 
-                            (riscv::PLEN-PPNWMin)'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
+                            (riscv::PLEN-PPNWMin-1)'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
 
 assign lsu_dtlb_ppn_o [11:0]   = 
                             (en_ld_st_translation_i && !misaligned_ex_q.valid) ? //
-                            dtlb_content.ppn[11:0] : // 
+                            dtlb_content[0].ppn[11:0] : // 
                             lsu_vaddr_n[23:12];
                             
 genvar i;
@@ -462,14 +468,14 @@ genvar i;
 
         assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
                             (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-                            dtlb_content.ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] : //
+                            dtlb_content[0].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] : //
                             (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]!=0)?
                             lsu_vaddr_n[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]://
                             (VPN_LEN/PT_LEVELS)'(lsu_vaddr_n[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1 : (24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-1) ) -1): (riscv::PLEN > riscv::VLEN) ? 24 :24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-2)]));
       end
       if(riscv::IS_XLEN64) begin
         assign lsu_dtlb_ppn_o[riscv::PPNW-1:PPNWMin+1] = (en_ld_st_translation_i && !misaligned_ex_q.valid) ? 
-                            dtlb_content.ppn[riscv::PPNW-1:PPNWMin+1] : 
+                            dtlb_content[0].ppn[riscv::PPNW-1:PPNWMin+1] : 
                             lsu_vaddr_n[riscv::PLEN-1:PPNWMin+1] ;
       end
 
@@ -477,7 +483,7 @@ genvar i;
 // The data interface is simpler and only consists of a request/response interface
 always_comb begin : data_interface
   // save request and DTLB response
-  lsu_vaddr_n = lsu_vaddr_i;
+  lsu_vaddr_n = lsu_vaddr_i[0];
   lsu_req_n = lsu_req_i;
   misaligned_ex_n = misaligned_ex_i;
   dtlb_pte_n = dtlb_content;

@@ -237,14 +237,14 @@ module cva6_shared_tlb
           if (itlb_req_q) begin
             itlb_update_o.valid = 1'b1;
             itlb_update_o.vpn = itlb_vpn_q;
-            itlb_update_o.is_page = shared_tag_rd[i].is_page;
-            itlb_update_o.asid = tlb_update_asid_q;
+            itlb_update_o.is_page[0] = shared_tag_rd[i].is_page;
+            itlb_update_o.asid[0] = tlb_update_asid_q;
             itlb_update_o.content = pte[i];
           end else if (dtlb_req_q) begin
             dtlb_update_o.valid = 1'b1;
             dtlb_update_o.vpn = dtlb_vpn_q;
-            dtlb_update_o.is_page = shared_tag_rd[i].is_page;
-            dtlb_update_o.asid = tlb_update_asid_q;
+            dtlb_update_o.is_page[0] = shared_tag_rd[i].is_page;
+            dtlb_update_o.asid[0] = tlb_update_asid_q;
             dtlb_update_o.content = pte[i];
           end
         end
@@ -300,10 +300,10 @@ module cva6_shared_tlb
     end
   end  //update_flush
 
-  assign shared_tag_wr.asid = shared_tlb_update_i.asid;
+  assign shared_tag_wr.asid = shared_tlb_update_i.asid[0];
   // assign shared_tag_wr.vpn[1] = shared_tlb_update_i.vpn[19:10];
   // assign shared_tag_wr.vpn[0] = shared_tlb_update_i.vpn[9:0];
-  assign shared_tag_wr.is_page = shared_tlb_update_i.is_page;
+  assign shared_tag_wr.is_page = shared_tlb_update_i.is_page[0];
 
 
   genvar z;
@@ -318,7 +318,7 @@ module cva6_shared_tlb
   assign tag_wr_data = shared_tag_wr;
 
   assign pte_wr_addr = shared_tlb_update_i.vpn[$clog2(SHARED_TLB_DEPTH)-1:0];
-  assign pte_wr_data = shared_tlb_update_i.content;
+  assign pte_wr_data = shared_tlb_update_i.content[0];
 
   assign way_valid = shared_tag_valid_q[shared_tlb_update_i.vpn[$clog2(SHARED_TLB_DEPTH)-1:0]];
   assign repl_way = (all_ways_valid) ? rnd_way : inv_way;
