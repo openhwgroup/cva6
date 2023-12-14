@@ -226,6 +226,13 @@ package config_pkg;
     int unsigned INSTR_PER_FETCH;
     // maximum instructions we can fetch on one request (we support compressed instructions)
     int unsigned LOG2_INSTR_PER_FETCH;
+
+    int unsigned X_DATAWIDTH;
+    int unsigned X_NUM_RS;
+    int unsigned X_ID_WIDTH;
+    int unsigned X_MEM_WIDTH;
+    int unsigned X_RFR_WIDTH;
+    int unsigned X_RFW_WIDTH;
   } cva6_cfg_t;
 
   function automatic cva6_cfg_t build_config(cva6_user_cfg_t CVA6Cfg);
@@ -262,6 +269,8 @@ package config_pkg;
     int unsigned ICACHE_INDEX_WIDTH = $clog2(CVA6Cfg.IcacheByteSize / ICACHE_SET_ASSOC);
     int unsigned DCACHE_INDEX_WIDTH = $clog2(CVA6Cfg.DcacheByteSize / DCACHE_SET_ASSOC);
     int unsigned DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DcacheLineWidth / 8);
+
+    int unsigned NrRgprPorts = 2;
 
     return
     '{
@@ -308,7 +317,7 @@ package config_pkg;
       XF16Vec: bit'(XF16Vec),
       XF16ALTVec: bit'(XF16ALTVec),
       XF8Vec: bit'(XF8Vec),
-      NrRgprPorts: unsigned'(2),
+      NrRgprPorts: unsigned'(NrRgprPorts),
       NrWbPorts: unsigned'(NrWbPorts),
       EnableAccelerator: bit'(EnableAccelerator),
       RVS: CVA6Cfg.RVS,
@@ -361,7 +370,14 @@ package config_pkg;
       FETCH_USER_EN: CVA6Cfg.FETCH_USER_EN,
       FETCH_WIDTH: FETCH_WIDTH,
       INSTR_PER_FETCH: INSTR_PER_FETCH,
-      LOG2_INSTR_PER_FETCH: CVA6Cfg.RVC == 1'b1 ? $clog2(INSTR_PER_FETCH) : 1
+      LOG2_INSTR_PER_FETCH: CVA6Cfg.RVC == 1'b1 ? $clog2(INSTR_PER_FETCH) : 1,
+
+      X_DATAWIDTH: CVA6Cfg.XLEN,
+      X_NUM_RS: unsigned'(NrRgprPorts),  //2 or 3
+      X_ID_WIDTH: $clog2(4),
+      X_MEM_WIDTH: unsigned'(64),
+      X_RFR_WIDTH: CVA6Cfg.XLEN,
+      X_RFW_WIDTH: CVA6Cfg.XLEN
     }
     ;
 
