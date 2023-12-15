@@ -88,7 +88,7 @@ module uvmt_cva6_tb;
 
     uvma_rvfi_csr_if#(uvme_cva6_pkg::XLEN)       rvfi_csr_if [RVFI_NRET-1:0]();
 
-   uvmt_default_inputs_intf         default_inputs_vif();
+    uvmt_default_inputs_intf         default_inputs_vif();
 
    //bind assertion module for cvxif interface
    bind uvmt_cva6_dut_wrap
@@ -98,10 +98,8 @@ module uvmt_cva6_tb;
                                              );
    //bind assertion module for axi interface
    bind uvmt_cva6_dut_wrap
-      uvmt_axi_assert            axi_assert(.axi_assert(axi_if.passive),
-                                            .clk(clknrst_if.clk),
-                                            .rst_n(clknrst_if.reset_n)
-                                           );
+      uvmt_axi_assert            axi_assert(.axi_assert_if(axi_if));
+
    // DUT Wrapper Interfaces
    uvmt_rvfi_if #(
      // RVFI
@@ -309,6 +307,14 @@ module uvmt_cva6_tb;
 
      // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
      $timeformat(-9, 3, " ns", 8);
+
+     axi_if.aw_assertion_enabled      = 1;
+     axi_if.w_assertion_enabled       = 1;
+     axi_if.b_assertion_enabled       = 1;
+     axi_if.ar_assertion_enabled      = 1;
+     axi_if.r_assertion_enabled       = 1;
+     axi_if.axi_assertion_enabled     = 1;
+     axi_if.axi_amo_assertion_enabled = 1;
 
      // Add interfaces handles to uvm_config_db
      uvm_config_db#(virtual uvma_clknrst_if )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),       .value(clknrst_if));

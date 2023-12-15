@@ -201,6 +201,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
    assign axi_slave.aw_prot   = axi_ariane_req.aw.prot;
    assign axi_slave.aw_qos    = axi_ariane_req.aw.qos;
    assign axi_slave.aw_region = axi_ariane_req.aw.region;
+   assign axi_slave.aw_atop   = axi_ariane_req.aw.atop;
    assign axi_slave.aw_user   = 0;
     // W Channel
    assign axi_slave.w_data = axi_ariane_req.w.data;

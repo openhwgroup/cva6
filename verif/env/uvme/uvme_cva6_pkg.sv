@@ -51,6 +51,9 @@ package uvme_cva6_pkg;
    import uvmc_rvfi_scoreboard_pkg::*;
    import uvmc_rvfi_reference_model_pkg::*;
    import uvma_isacov_pkg::*;
+   import "DPI-C" function read_elf(input string filename);
+   import "DPI-C" function byte get_section(output longint address, output longint len);
+   import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
 
   // Default legal opcode and funct7 for RV32I instructions
   bit [6:0]  legal_i_opcode[$] = '{7'b0000011,
@@ -96,12 +99,15 @@ package uvme_cva6_pkg;
    `include "uvme_illegal_instr_covg.sv"
    `include "uvme_exception_covg.sv"
    `include "uvme_cva6_config_covg.sv"
+   `include "uvme_axi_covg.sv"
+   `include "uvme_axi_ext_covg.sv"
    `include "uvme_cva6_cov_model.sv"
    `include "uvme_cva6_env.sv"
 
    // Virtual sequences
    `include "uvme_cva6_base_vseq.sv"
    `include "uvme_cva6_reset_vseq.sv"
+   `include "uvme_axi_fw_preload_seq.sv"
 //   `include "uvme_cva6_interrupt_noise_vseq.sv"
    `include "uvme_cva6_vseq_lib.sv"
 

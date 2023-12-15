@@ -179,6 +179,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       if (cov_model_enabled) {
          cvxif_cfg.cov_model_enabled  == 1;
          isacov_cfg.cov_model_enabled == 1;
+         axi_cfg.cov_model_enabled == 1;
          //env coverage models
          cov_cvxif_model_enabled == 1;
          cov_isa_model_enabled   == 1;
