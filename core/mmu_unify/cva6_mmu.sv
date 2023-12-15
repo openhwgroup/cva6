@@ -92,7 +92,7 @@ localparam type pte_cva6_t = struct packed {
 localparam type tlb_update_cva6_t = struct packed {
 // typedef struct packed {
   logic                  valid;      // valid flag
-  logic [PT_LEVELS-2:0][HYP_EXT:0] is_page;      //
+  logic [HYP_EXT:0][PT_LEVELS-2:0] is_page;      //
   logic [VPN_LEN-1:0]    vpn;        //
   logic [HYP_EXT:0][ASID_LEN-1:0]   asid;       //
   pte_cva6_t  [HYP_EXT:0]          content;
@@ -131,10 +131,11 @@ logic                               itlb_req;
 assign itlb_lu_access = icache_areq_i.fetch_req;
 assign dtlb_lu_access = lsu_req_i;
 
+logic [riscv::VLEN-1:0] lu_vaddr_i [HYP_EXT:0];
+assign lu_vaddr_i[0]=icache_areq_i.fetch_vaddr;
 
 cva6_tlb #(
     .CVA6Cfg    (CVA6Cfg),
-    .HYP_EXT(HYP_EXT),
     .TLB_ENTRIES(INSTR_TLB_ENTRIES),
     .ASID_WIDTH (ASID_WIDTH),
     .ASID_LEN (ASID_LEN),
@@ -153,8 +154,7 @@ cva6_tlb #(
     .lu_asid_i            (asid_i),
     .asid_to_be_flushed_i (asid_to_be_flushed_i),
     .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
-    .lu_vaddr_i           (icache_areq_i.fetch_vaddr),
-    .lu_gpaddr_o(),
+    .lu_vaddr_i           (lu_vaddr_i),
     .lu_content_o         (itlb_content),
 
     .lu_is_page_o(itlb_is_page),
@@ -164,7 +164,6 @@ cva6_tlb #(
 
 cva6_tlb #(
     .CVA6Cfg    (CVA6Cfg),
-    .HYP_EXT(HYP_EXT),
     .TLB_ENTRIES(DATA_TLB_ENTRIES),
     .ASID_WIDTH (ASID_WIDTH),
     .ASID_LEN (ASID_LEN),
@@ -183,8 +182,7 @@ cva6_tlb #(
     .lu_asid_i            (asid_i),
     .asid_to_be_flushed_i (asid_to_be_flushed_i),
     .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
-    .lu_vaddr_i           (lsu_vaddr_i[0]),
-    .lu_gpaddr_o(),
+    .lu_vaddr_i           (lsu_vaddr_i),
     .lu_content_o         (dtlb_content),
 
     .lu_is_page_o(dtlb_is_page),
