@@ -12,15 +12,15 @@
 // Date: 20/11/2023
 //
 // Description: Translation Lookaside Buffer, parameterizable to Sv32 or Sv39 , 
-//              fully set-associative
+//              or sv39x4 fully set-associative
 //              This module is an merge of the Sv32 TLB developed by Sebastien
-//              Jacq (Thales Research & Technology) and the Sv39 TLB developed
-//              by Florian Zaruba and David Schaffenrath.
+//              Jacq (Thales Research & Technology), the Sv39 TLB developed
+//              by Florian Zaruba and David Schaffenrath and the Sv39x4 by Bruno Sá.
 //
 // =========================================================================== //
 // Revisions  :
 // Date        Version  Author       Description
-// 2023-11-20  0.1      A.Gonzalez   Generic TLB for CVA6
+// 2023-12-13  0.2      A.Gonzalez   Generic TLB for CVA6 with Hypervisor support
 // =========================================================================== //
 
   module cva6_tlb
@@ -29,39 +29,43 @@
     parameter type pte_cva6_t = logic,
     parameter type tlb_update_cva6_t = logic,
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter logic HYP_EXT = 0,
     parameter int unsigned TLB_ENTRIES = 4,
-    parameter int unsigned ASID_WIDTH = 1,
-    parameter int unsigned ASID_LEN = 1,
+    parameter int unsigned  ASID_WIDTH [HYP_EXT:0] = {1}, //[vmid_width,asid_width]
+    parameter int unsigned  ASID_LEN[HYP_EXT:0] = 1, //[vmid_len,asid_len]
     parameter int unsigned VPN_LEN = 1,
     parameter int unsigned PT_LEVELS = 1
   ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
-    input logic flush_i,  // Flush signal
+    input logic [HYP_EXT*2:0] flush_i,  // Flush signal [g_stage,vs stage, normal translation signal]
+    input  logic  [HYP_EXT*2:0] v_st_enbl_i,  // v_i,g-stage enabled, s-stage enabled
     // Update TLB
     input tlb_update_cva6_t update_i,
     // Lookup signals
     input logic lu_access_i,
-    input logic [ASID_WIDTH-1:0] lu_asid_i,
-    input logic [riscv::VLEN-1:0] lu_vaddr_i,
-    output pte_cva6_t lu_content_o,
-    input logic [ASID_WIDTH-1:0] asid_to_be_flushed_i,
-    input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+    input logic [ASID_WIDTH[0]-1:0] lu_asid_i [HYP_EXT:0], //[lu_vmid,lu_asid]
+    input logic [riscv::VLEN-1:0] lu_vaddr_i [HYP_EXT:0], //[gp_addr,vaddr]
+    output  pte_cva6_t [HYP_EXT:0] lu_content_o ,
+    input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i [HYP_EXT:0], //[vmid,asid]
+    input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i [HYP_EXT:0], // [gpaddr,vaddr]
     output logic [PT_LEVELS-2:0] lu_is_page_o,
     output logic lu_hit_o
 );
 
   // Sv32 defines two levels of page tables, Sv39 defines 3
   struct packed {
-    logic [ASID_LEN-1:0] asid;   
-    logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
-    logic [PT_LEVELS-2:0] is_page;
+    logic [HYP_EXT:0][ASID_LEN-1:0] asid;   
+    logic [PT_LEVELS+HYP_EXT-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
+    logic [HYP_EXT:0][PT_LEVELS-2:0] is_page;
+    logic  [HYP_EXT*2:0] v_st_enbl_i; // v_i,g-stage enabled, s-stage enabled
     logic       valid;
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 
-  pte_cva6_t [TLB_ENTRIES-1:0] content_q, content_n;
+  pte_cva6_t [HYP_EXT:0][TLB_ENTRIES-1:0] content_q , content_n;
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] vpn_match;
+  logic [TLB_ENTRIES-1:0][HYP_EXT:0]     asid_match;
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] page_match;
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] level_match;
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] vaddr_vpn_match;
@@ -78,21 +82,23 @@
     //AND the page_match is also set
     //At level 0 the page match is always set, so this level will have a match
     //if all vpn levels match
-  genvar i,x;
+  genvar i,x,z;
       generate
         for (i=0; i < TLB_ENTRIES; i++) begin
-          //identify page_match for all TLB Entries
-          // assign page_match[i]        = (tags_q[i].is_page[PT_LEVELS-2:0])*2 +1;
+          
+          for(z=0;z<HYP_EXT+1;z++) begin
+              assign asid_match[i][z]= (lu_asid_i[z] == tags_q[i].asid[z][ASID_WIDTH[z]-1:0]) ||!v_st_enbl_i[z];
+          end
 
           for (x=0; x < PT_LEVELS; x++) begin  
               //identify page_match for all TLB Entries
               assign page_match[i][x] = x==0 ? 1 :tags_q[i].is_page[PT_LEVELS-1-x];
               //identify if vpn matches at all PT levels for all TLB entries  
-              assign vpn_match[i][x]        = lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+              assign vpn_match[i][x]        = lu_vaddr_i[0][12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
               //identify if there is a hit at each PT level for all TLB entries  
               assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
               //identify if virtual address vpn matches at all PT levels for all TLB entries  
-              assign vaddr_vpn_match[i][x]  = vaddr_to_be_flushed_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+              assign vaddr_vpn_match[i][x]  = vaddr_to_be_flushed_i[0][12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
               //identify if there is a hit at each PT level for all TLB entries  
               assign vaddr_level_match[i][x]= &vaddr_vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
               //update vpn field in tags_n for each TLB when the update is valid and the tag needs to be replaced
@@ -112,11 +118,11 @@
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // first level match, this may be a page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-      if (tags_q[i].valid && ((lu_asid_i == tags_q[i].asid[ASID_WIDTH-1:0]) || content_q[i].g)) begin
+      if (tags_q[i].valid && (&asid_match || (v_st_enbl_i[0]&&content_q[0][i].g))) begin
         // find if there is a match at any level
         if (|level_match[i]) begin
               lu_is_page_o   = tags_q[i].is_page; //the page size is indicated here
-              lu_content_o = content_q[i];
+              lu_content_o = content_q[0][i];
               lu_hit_o     = 1'b1;
               lu_hit[i]    = 1'b1;
         end
@@ -127,8 +133,8 @@
   logic asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2)is 0, active high
   logic vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
 
-  assign asid_to_be_flushed_is0  = ~(|asid_to_be_flushed_i);
-  assign vaddr_to_be_flushed_is0 = ~(|vaddr_to_be_flushed_i);
+  assign asid_to_be_flushed_is0  = ~(|asid_to_be_flushed_i[0]);
+  assign vaddr_to_be_flushed_is0 = ~(|vaddr_to_be_flushed_i[0]);
 
   // ------------------
   // Update and Flush
@@ -149,10 +155,10 @@
         else if (asid_to_be_flushed_is0 && (|vaddr_level_match[i]) && (~vaddr_to_be_flushed_is0))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
-        else if ((!content_q[i].g) && (|vaddr_level_match[i]) && (asid_to_be_flushed_i == tags_q[i].asid[ASID_WIDTH-1:0]) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
+        else if ((!content_q[0][i].g) && (|vaddr_level_match[i]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
-        else if ((!content_q[i].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i == tags_q[i].asid[ASID_WIDTH-1:0]) && (!asid_to_be_flushed_is0))
+        else if ((!content_q[0][i].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!asid_to_be_flushed_is0))
           tags_n[i].valid = 1'b0;
         // normal replacement
       end else if (update_i.valid & replace_en[i]) begin
@@ -162,7 +168,7 @@
         tags_n[i].valid  = 1'b1;
 
       // and content as well
-      content_n[i] = update_i.content;
+      content_n[0][i] = update_i.content;
     end
   end
 end
@@ -276,7 +282,7 @@ initial begin : p_assertions
     $error("TLB size must be a multiple of 2 and greater than 1");
     $stop();
   end
-  assert (ASID_WIDTH >= 1)
+  assert (ASID_WIDTH[0] >= 1)
   else begin
     $error("ASID width must be at least 1");
     $stop();

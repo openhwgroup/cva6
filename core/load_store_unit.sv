@@ -171,15 +171,26 @@ module load_store_unit
   //   );
   if (MMU_PRESENT) begin : gen_mmu
 
+    localparam HYP_EXT = 0; //CVA6Cfg.CVA6ConfigHExtEn
     localparam ASID_LEN      = (riscv::XLEN == 64) ? 16 : 9;
-    localparam VPN_LEN       = (riscv::XLEN == 64) ? 27 : 20;
+    localparam VPN_LEN       = (riscv::XLEN == 64) ? (HYP_EXT ? 29 : 27) : 20;
     localparam PT_LEVELS     = (riscv::XLEN == 64) ? 3  : 2;
+    localparam int unsigned mmu_ASID_WIDTH [HYP_EXT:0] = {ASID_WIDTH};
 
+    logic [mmu_ASID_WIDTH[0]-1:0] mmu_asid_i [HYP_EXT:0];
+    logic [mmu_ASID_WIDTH[0]-1:0] mmu_asid_to_be_flushed_i [HYP_EXT:0];
+    logic [riscv::VLEN-1:0] mmu_vaddr_to_be_flushed_i [HYP_EXT:0];
+    logic [riscv::VLEN-1:0] mmu_lsu_vaddr_i[HYP_EXT:0];
+
+    assign mmu_asid_i[0] = asid_i;
+    assign mmu_asid_to_be_flushed_i[0] =asid_to_be_flushed_i;
+    assign mmu_vaddr_to_be_flushed_i[0] =vaddr_to_be_flushed_i;
+    assign mmu_lsu_vaddr_i[0]= mmu_vaddr;
     cva6_mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (ASID_WIDTH),
+        .ASID_WIDTH       (mmu_ASID_WIDTH),
         .ASID_LEN         (ASID_LEN),
         .VPN_LEN          (VPN_LEN),
         .PT_LEVELS        (PT_LEVELS)
@@ -188,7 +199,7 @@ module load_store_unit
         .misaligned_ex_i(misaligned_exception),
         .lsu_is_store_i (st_translation_req),
         .lsu_req_i      (translation_req),
-        .lsu_vaddr_i    (mmu_vaddr),
+        .lsu_vaddr_i    (mmu_lsu_vaddr_i),
         .lsu_valid_o    (translation_valid),
         .lsu_paddr_o    (mmu_paddr),
         .lsu_exception_o(mmu_exception),
@@ -199,11 +210,14 @@ module load_store_unit
         .req_port_o     (dcache_req_ports_o[0]),
         // icache address translation requests
         .icache_areq_i  (icache_areq_i),
-        .asid_to_be_flushed_i,
-        .vaddr_to_be_flushed_i,
+        // .asid_to_be_flushed_i,
+        // .vaddr_to_be_flushed_i,
         .icache_areq_o  (icache_areq_o),
         .pmpcfg_i,
         .pmpaddr_i,
+        .asid_i(mmu_asid_i),
+        .asid_to_be_flushed_i(mmu_asid_to_be_flushed_i),
+        .vaddr_to_be_flushed_i(mmu_vaddr_to_be_flushed_i),
         .*
     );
   end else begin : gen_no_mmu

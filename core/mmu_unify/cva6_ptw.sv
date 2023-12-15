@@ -141,7 +141,7 @@ genvar x;
         for (x=0; x < PT_LEVELS-1; x++) begin  
 
             // update the correct page table level
-            assign shared_tlb_update_o.is_page[x] = (ptw_lvl_q == (x));
+            assign shared_tlb_update_o.is_page[0][x] = (ptw_lvl_q == (x));
 
             // check if the ppn is correctly aligned:
             // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
@@ -157,7 +157,7 @@ genvar x;
 
 
   // output the correct ASID
-  assign shared_tlb_update_o.asid = tlb_update_asid_q;
+  assign shared_tlb_update_o.asid[0] = tlb_update_asid_q;
   // set the global mapping bit
   assign shared_tlb_update_o.content = pte | (global_mapping_q << 5);
 
