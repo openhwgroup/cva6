@@ -303,16 +303,6 @@ independent requirements.
 |                                   | **Zifencei** extension, version   |
 |                                   | 2.0.                              |
 +-----------------------------------+-----------------------------------+
-| ISA‑110                           | | As an **option**, the duration  |
-|                                   |   of instructions shall be        |
-|                                   |   independent from the operand    |
-|                                   |   values.                         |
-|                                   | | *Unlike other options, this one |
-|                                   |   can be design-time (selected    |
-|                                   |   before compiling the RTL) or    |
-|                                   |   run-time (selected through a    |
-|                                   |   register).*                     |
-+-----------------------------------+-----------------------------------+
 | ISA-120                           | CVA6 should support as an         |
 |                                   | **option** the **Zba**, **Zbb**,  |
 |                                   | **Zbc** and **Zbs** extensions    |
@@ -331,9 +321,6 @@ independent requirements.
 
 Note to ISA-60 and ISA-70: CV64A6 cannot support the D extension with
 the F extension.
-
-Note to ISA-110: In the current design, the duration of the division
-is data-dependent, which can be a security issue.
 
 .. _privileges_and_virtual_memory:
 
