@@ -239,13 +239,13 @@ module cva6_shared_tlb
             itlb_update_o.vpn = itlb_vpn_q;
             itlb_update_o.is_page[0] = shared_tag_rd[i].is_page;
             itlb_update_o.asid[0] = tlb_update_asid_q;
-            itlb_update_o.content[0] = pte[i];
+            itlb_update_o.content = pte[i];
           end else if (dtlb_req_q) begin
             dtlb_update_o.valid = 1'b1;
             dtlb_update_o.vpn = dtlb_vpn_q;
             dtlb_update_o.is_page[0] = shared_tag_rd[i].is_page;
             dtlb_update_o.asid[0] = tlb_update_asid_q;
-            dtlb_update_o.content[0] = pte[i];
+            dtlb_update_o.content = pte[i];
           end
         end
       end
