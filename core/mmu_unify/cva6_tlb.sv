@@ -57,13 +57,13 @@
   struct packed {
     logic [HYP_EXT:0][ASID_LEN-1:0] asid;   
     logic [PT_LEVELS+HYP_EXT-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
-    logic [HYP_EXT:0][PT_LEVELS-2:0] is_page;
-    logic  [HYP_EXT*2:0] v_st_enbl_i; // v_i,g-stage enabled, s-stage enabled
+    logic [PT_LEVELS-2:0][HYP_EXT:0] is_page;
+    logic  [HYP_EXT*2:0] v_st_enbl; // v_i,g-stage enabled, s-stage enabled
     logic       valid;
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 
-  pte_cva6_t [HYP_EXT:0][TLB_ENTRIES-1:0] content_q , content_n;
+  pte_cva6_t [TLB_ENTRIES-1:0][HYP_EXT:0] content_q , content_n;
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] vpn_match;
   logic [TLB_ENTRIES-1:0][HYP_EXT:0]     asid_match;
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] page_match;
@@ -72,6 +72,7 @@
   logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] vaddr_level_match;
   logic [TLB_ENTRIES-1:0] lu_hit;  // to replacement logic
   logic [TLB_ENTRIES-1:0] replace_en;  // replace the following entry, set by replacement strategy
+  logic [TLB_ENTRIES-1:0] match_stage;
   //-------------
   // Translation
   //-------------
@@ -86,15 +87,19 @@
       generate
         for (i=0; i < TLB_ENTRIES; i++) begin
           
+          assign match_stage[i] = tags_q[i].v_st_enbl == v_st_enbl_i;
+
           for(z=0;z<HYP_EXT+1;z++) begin
               assign asid_match[i][z]= (lu_asid_i[z] == tags_q[i].asid[z][ASID_WIDTH[z]-1:0]) ||!v_st_enbl_i[z];
           end
 
           for (x=0; x < PT_LEVELS; x++) begin  
               //identify page_match for all TLB Entries
-              assign page_match[i][x] = x==0 ? 1 :tags_q[i].is_page[PT_LEVELS-1-x];
+              assign page_match[i][x] = x==0 ? 1 : &(tags_q[i].is_page[PT_LEVELS-1-x] | !v_st_enbl_i[PT_LEVELS-1-x]);
               //identify if vpn matches at all PT levels for all TLB entries  
-              assign vpn_match[i][x]        = lu_vaddr_i[0][12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+              assign vpn_match[i][x]        = (HYP_EXT && x==(PT_LEVELS-1) && !v_st_enbl_i[0]) ? //
+                                              lu_vaddr_i[0][12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x] && lu_vaddr_i[0][VPN_LEN-1: VPN_LEN-VPN_LEN%PT_LEVELS] == tags_q[i].vpn[x+1][VPN_LEN%PT_LEVELS-1:0]: //
+                                              lu_vaddr_i[0][12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
               //identify if there is a hit at each PT level for all TLB entries  
               assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
               //identify if virtual address vpn matches at all PT levels for all TLB entries  
@@ -104,6 +109,11 @@
               //update vpn field in tags_n for each TLB when the update is valid and the tag needs to be replaced
               assign tags_n[i].vpn[x]       = (!flush_i && update_i.valid && replace_en[i]) ? update_i.vpn[(1+x)*(VPN_LEN/PT_LEVELS)-1:x*(VPN_LEN/PT_LEVELS)] : tags_q[i].vpn[x];
           end
+
+          if(HYP_EXT) begin
+              assign tags_n[i].vpn[PT_LEVELS+HYP_EXT-1][VPN_LEN%PT_LEVELS-1:0] =(!flush_i && update_i.valid && replace_en[i]) ? update_i.vpn[VPN_LEN-1: VPN_LEN-VPN_LEN%PT_LEVELS] : tags_q[i].vpn[PT_LEVELS+HYP_EXT-1][VPN_LEN%PT_LEVELS-1:0];
+          end
+
         end
       endgenerate
 
@@ -118,11 +128,11 @@
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // first level match, this may be a page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-      if (tags_q[i].valid && (&asid_match || (v_st_enbl_i[0]&&content_q[0][i].g))) begin
+      if (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) begin
         // find if there is a match at any level
         if (|level_match[i]) begin
-              lu_is_page_o   = tags_q[i].is_page; //the page size is indicated here
-              lu_content_o = content_q[0][i];
+              lu_is_page_o   = page_match[i] >>1; //the page size is indicated here
+              lu_content_o = content_q[i];
               lu_hit_o     = 1'b1;
               lu_hit[i]    = 1'b1;
         end
@@ -147,6 +157,7 @@
       tags_n[i].asid    = tags_q[i].asid;
       tags_n[i].is_page    = tags_q[i].is_page;
       tags_n[i].valid    = tags_q[i].valid;
+      tags_n[i].v_st_enbl =tags_q[i].v_st_enbl;
       if (flush_i) begin
         // invalidate logic
         // flush everything if ASID is 0 and vaddr is 0 ("SFENCE.VMA x0 x0" case)
@@ -155,10 +166,10 @@
         else if (asid_to_be_flushed_is0 && (|vaddr_level_match[i]) && (~vaddr_to_be_flushed_is0))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
-        else if ((!content_q[0][i].g) && (|vaddr_level_match[i]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
+        else if ((!content_q[i][0].g) && (|vaddr_level_match[i]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
-        else if ((!content_q[0][i].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!asid_to_be_flushed_is0))
+        else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!asid_to_be_flushed_is0))
           tags_n[i].valid = 1'b0;
         // normal replacement
       end else if (update_i.valid & replace_en[i]) begin
@@ -166,9 +177,10 @@
         tags_n[i].asid   = update_i.asid;
         tags_n[i].is_page= update_i.is_page;
         tags_n[i].valid  = 1'b1;
+        tags_n[i].v_st_enbl = v_st_enbl_i;
 
       // and content as well
-      content_n[0][i] = update_i.content;
+      content_n[i] = update_i.content;
     end
   end
 end
