@@ -1,6 +1,6 @@
 .. code-block:: none
 
-   Copyright (c) 2023 Thales Silicon Security
+   Copyright (c) 2023 Thales DIS France SAS
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
    Author: Mohamed Aziz FRIKHA
 
