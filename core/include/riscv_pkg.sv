@@ -39,7 +39,9 @@ package riscv;
   // Warning: VLEN must be superior or equal to PLEN
   localparam VLEN = (XLEN == 32) ? 32 : 64;  // virtual address length
   localparam PLEN = (XLEN == 32) ? 34 : 56;  // physical address length
-
+  localparam GPLEN            = (XLEN == 32) ? 34 : 41; 
+  localparam GPPNW            = (XLEN == 32) ? 22 : 29;
+  localparam GPPN2            = (XLEN == 32) ? riscv::VLEN-33 : 10;
   localparam IS_XLEN32 = (XLEN == 32) ? 1'b1 : 1'b0;
   localparam IS_XLEN64 = (XLEN == 32) ? 1'b0 : 1'b1;
   localparam ModeW = (XLEN == 32) ? 1 : 4;
