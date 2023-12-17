@@ -722,8 +722,8 @@ module decoder
               end
               3'b101: begin
                 if (instr.instr[31:20] == 12'b001010000111) instruction_o.op = ariane_pkg::ORCB;
-                else if (instr.instr[31:20] == 12'b011010111000 || instr.instr[31:20] == 12'b011010011000)
-                  instruction_o.op = ariane_pkg::REV8;
+                else if (riscv::IS_XLEN64 && instr.instr[31:20] == 12'b011010111000) instruction_o.op = ariane_pkg::REV8;
+                else if (instr.instr[31:20] == 12'b011010011000) instruction_o.op = ariane_pkg::REV8;
                 else if (instr.instr[31:26] == 6'b010_010) instruction_o.op = ariane_pkg::BEXTI;
                 else if (instr.instr[31:26] == 6'b011_000) instruction_o.op = ariane_pkg::RORI;
                 else illegal_instr_bm = 1'b1;
