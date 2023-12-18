@@ -84,22 +84,22 @@ module cva6_tlb
       //identify page_match for all TLB Entries
       // assign page_match[i]        = (tags_q[i].is_page[PT_LEVELS-2:0])*2 +1;
 
-          for (x=0; x < PT_LEVELS; x++) begin  
-              //identify page_match for all TLB Entries
-              assign page_match[i][x] = x==0 ? 1 :tags_q[i].is_page[PT_LEVELS-1-x];
-              //identify if vpn matches at all PT levels for all TLB entries  
-              assign vpn_match[i][x]        = lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
-              //identify if there is a hit at each PT level for all TLB entries  
-              assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
-              //identify if virtual address vpn matches at all PT levels for all TLB entries  
-              assign vaddr_vpn_match[i][x]  = vaddr_to_be_flushed_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
-              //identify if there is a hit at each PT level for all TLB entries  
-              assign vaddr_level_match[i][x]= &vaddr_vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
-              //update vpn field in tags_n for each TLB when the update is valid and the tag needs to be replaced
-              assign tags_n[i].vpn[x]       = (!flush_i && update_i.valid && replace_en[i]) ? update_i.vpn[(1+x)*(VPN_LEN/PT_LEVELS)-1:x*(VPN_LEN/PT_LEVELS)] : tags_q[i].vpn[x];
-          end
-        end
-      endgenerate
+      for (x = 0; x < PT_LEVELS; x++) begin
+        //identify page_match for all TLB Entries
+        assign page_match[i][x] = x == 0 ? 1 : tags_q[i].is_page[PT_LEVELS-1-x];
+        //identify if vpn matches at all PT levels for all TLB entries  
+        assign vpn_match[i][x]        = lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+        //identify if there is a hit at each PT level for all TLB entries  
+        assign level_match[i][x] = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
+        //identify if virtual address vpn matches at all PT levels for all TLB entries  
+        assign vaddr_vpn_match[i][x]  = vaddr_to_be_flushed_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+        //identify if there is a hit at each PT level for all TLB entries  
+        assign vaddr_level_match[i][x] = &vaddr_vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
+        //update vpn field in tags_n for each TLB when the update is valid and the tag needs to be replaced
+        assign tags_n[i].vpn[x]       = (!flush_i && update_i.valid && replace_en[i]) ? update_i.vpn[(1+x)*(VPN_LEN/PT_LEVELS)-1:x*(VPN_LEN/PT_LEVELS)] : tags_q[i].vpn[x];
+      end
+    end
+  endgenerate
 
   always_comb begin : translation
 
@@ -107,7 +107,7 @@ module cva6_tlb
     lu_hit       = '{default: 0};
     lu_hit_o     = 1'b0;
     lu_content_o = '{default: 0};
-    lu_is_page_o   = 0;
+    lu_is_page_o = 0;
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // first level match, this may be a page, check the ASID flags as well
