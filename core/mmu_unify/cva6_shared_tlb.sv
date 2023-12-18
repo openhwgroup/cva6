@@ -77,8 +77,8 @@ module cva6_shared_tlb
   endfunction
 
   typedef struct packed {
-    logic [ASID_LEN-1:0] asid;   
-    logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
+    logic [ASID_LEN-1:0] asid;
+    logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;
     logic [PT_LEVELS-2:0] is_page;
   } shared_tag_t;
 
@@ -113,7 +113,7 @@ module cva6_shared_tlb
   logic [         SHARED_TLB_WAYS-1:0] pte_we;
   logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_addr;
 
-  logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn_d,vpn_q;   
+  logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn_d, vpn_q;
   logic [SHARED_TLB_WAYS-1:0][PT_LEVELS-1:0] vpn_match;
   logic [SHARED_TLB_WAYS-1:0][PT_LEVELS-1:0] page_match;
   logic [SHARED_TLB_WAYS-1:0][PT_LEVELS-1:0] level_match;
@@ -147,10 +147,10 @@ module cva6_shared_tlb
 
   assign itlb_req_o = itlb_req_q;
 
-  genvar i,x;
-    generate
-      for (i=0; i < SHARED_TLB_WAYS; i++) begin
-        //identify page_match for all TLB Entries
+  genvar i, x;
+  generate
+    for (i = 0; i < SHARED_TLB_WAYS; i++) begin
+      //identify page_match for all TLB Entries
 
         for (x=0; x < PT_LEVELS; x++) begin  
           assign page_match[i][x] = x==0 ? 1 :shared_tag_rd[i].is_page[PT_LEVELS-1-x];
@@ -307,11 +307,11 @@ module cva6_shared_tlb
 
 
   genvar z;
-    generate
-        for (z=0; z < PT_LEVELS; z++) begin  
-          assign shared_tag_wr.vpn[z] = shared_tlb_update_i.vpn[((VPN_LEN/PT_LEVELS)*(z+1))-1:((VPN_LEN/PT_LEVELS)*z)];
-        end
-    endgenerate
+  generate
+    for (z = 0; z < PT_LEVELS; z++) begin
+      assign shared_tag_wr.vpn[z] = shared_tlb_update_i.vpn[((VPN_LEN/PT_LEVELS)*(z+1))-1:((VPN_LEN/PT_LEVELS)*z)];
+    end
+  endgenerate
 
 
   assign tag_wr_addr = shared_tlb_update_i.vpn[$clog2(SHARED_TLB_DEPTH)-1:0];

@@ -23,7 +23,7 @@
 // 2023-11-20  0.1      A.Gonzalez   Generic TLB for CVA6
 // =========================================================================== //
 
-  module cva6_tlb
+module cva6_tlb
   import ariane_pkg::*;
 #(
     parameter type pte_cva6_t = logic,
@@ -34,7 +34,7 @@
     parameter int unsigned ASID_LEN = 1,
     parameter int unsigned VPN_LEN = 1,
     parameter int unsigned PT_LEVELS = 1
-  ) (
+) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
     input logic flush_i,  // Flush signal
@@ -53,10 +53,10 @@
 
   // Sv32 defines two levels of page tables, Sv39 defines 3
   struct packed {
-    logic [ASID_LEN-1:0] asid;   
-    logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
-    logic [PT_LEVELS-2:0] is_page;
-    logic       valid;
+    logic [ASID_LEN-1:0]                           asid;
+    logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;
+    logic [PT_LEVELS-2:0]                          is_page;
+    logic                                          valid;
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 
@@ -72,17 +72,17 @@
   // Translation
   //-------------
 
-    //at level 0 make page match always 1
-    //build level match vector according to vpn_match and page_match
-    //a level has a match if all vpn of higher levels and current have a match, 
-    //AND the page_match is also set
-    //At level 0 the page match is always set, so this level will have a match
-    //if all vpn levels match
-  genvar i,x;
-      generate
-        for (i=0; i < TLB_ENTRIES; i++) begin
-          //identify page_match for all TLB Entries
-          // assign page_match[i]        = (tags_q[i].is_page[PT_LEVELS-2:0])*2 +1;
+  //at level 0 make page match always 1
+  //build level match vector according to vpn_match and page_match
+  //a level has a match if all vpn of higher levels and current have a match, 
+  //AND the page_match is also set
+  //At level 0 the page match is always set, so this level will have a match
+  //if all vpn levels match
+  genvar i, x;
+  generate
+    for (i = 0; i < TLB_ENTRIES; i++) begin
+      //identify page_match for all TLB Entries
+      // assign page_match[i]        = (tags_q[i].is_page[PT_LEVELS-2:0])*2 +1;
 
           for (x=0; x < PT_LEVELS; x++) begin  
               //identify page_match for all TLB Entries

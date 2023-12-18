@@ -171,9 +171,9 @@ module load_store_unit
   //   );
   if (MMU_PRESENT) begin : gen_mmu
 
-    localparam ASID_LEN      = (riscv::XLEN == 64) ? 16 : 9;
-    localparam VPN_LEN       = (riscv::XLEN == 64) ? 27 : 20;
-    localparam PT_LEVELS     = (riscv::XLEN == 64) ? 3  : 2;
+    localparam ASID_LEN = (riscv::XLEN == 64) ? 16 : 9;
+    localparam VPN_LEN = (riscv::XLEN == 64) ? 27 : 20;
+    localparam PT_LEVELS = (riscv::XLEN == 64) ? 3 : 2;
 
     cva6_mmu #(
         .CVA6Cfg          (CVA6Cfg),
