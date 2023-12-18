@@ -115,10 +115,10 @@ module cva6_tlb
       if (tags_q[i].valid && ((lu_asid_i == tags_q[i].asid[ASID_WIDTH-1:0]) || content_q[i].g)) begin
         // find if there is a match at any level
         if (|level_match[i]) begin
-              lu_is_page_o   = tags_q[i].is_page; //the page size is indicated here
-              lu_content_o = content_q[i];
-              lu_hit_o     = 1'b1;
-              lu_hit[i]    = 1'b1;
+          lu_is_page_o = tags_q[i].is_page;  //the page size is indicated here
+          lu_content_o = content_q[i];
+          lu_hit_o     = 1'b1;
+          lu_hit[i]    = 1'b1;
         end
       end
     end
@@ -134,7 +134,6 @@ module cva6_tlb
   // Update and Flush
   // ------------------
   always_comb begin : update_flush
-    
     content_n = content_q;
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
@@ -157,9 +156,9 @@ module cva6_tlb
         // normal replacement
       end else if (update_i.valid & replace_en[i]) begin
         // update tag array
-        tags_n[i].asid   = update_i.asid;
-        tags_n[i].is_page= update_i.is_page;
-        tags_n[i].valid  = 1'b1;
+        tags_n[i].asid = update_i.asid;
+        tags_n[i].is_page = update_i.is_page;
+        tags_n[i].valid = 1'b1;
 
       // and content as well
       content_n[i] = update_i.content;
