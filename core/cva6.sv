@@ -295,6 +295,24 @@ module cva6
     input noc_resp_t noc_resp_i
 );
 
+  localparam type interrupts_t = struct packed {
+    logic [riscv::XLEN-1:0] S_SW;
+    logic [riscv::XLEN-1:0] M_SW;
+    logic [riscv::XLEN-1:0] S_TIMER;
+    logic [riscv::XLEN-1:0] M_TIMER;
+    logic [riscv::XLEN-1:0] S_EXT;
+    logic [riscv::XLEN-1:0] M_EXT;
+  };
+
+  localparam interrupts_t INTERRUPTS = '{
+      S_SW: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_S_SOFT),
+      M_SW: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_M_SOFT),
+      S_TIMER: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_S_TIMER),
+      M_TIMER: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_M_TIMER),
+      S_EXT: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_S_EXT),
+      M_EXT: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_M_EXT)
+  };
+
   // ------------------------------------------
   // Global Signals
   // Signals connecting more than one module
@@ -573,7 +591,9 @@ module cva6
       .exception_t(exception_t),
       .fetch_entry_t(fetch_entry_t),
       .irq_ctrl_t(irq_ctrl_t),
-      .scoreboard_entry_t(scoreboard_entry_t)
+      .scoreboard_entry_t(scoreboard_entry_t),
+      .interrupts_t(interrupts_t),
+      .INTERRUPTS(INTERRUPTS)
   ) id_stage_i (
       .clk_i,
       .rst_ni,
@@ -1456,7 +1476,9 @@ module cva6
   instr_tracer #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
-      .scoreboard_entry_t(scoreboard_entry_t)
+      .scoreboard_entry_t(scoreboard_entry_t),
+      .interrupts_t(interrupts_t),
+      .INTERRUPTS(INTERRUPTS)
   ) instr_tracer_i (
       .tracer_if(tracer_if),
       .hart_id_i
