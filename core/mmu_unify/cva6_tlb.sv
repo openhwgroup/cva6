@@ -122,20 +122,20 @@
 
           if(HYP_EXT) begin
               assign tags_n[i].vpn[PT_LEVELS+HYP_EXT-1][VPN_LEN%PT_LEVELS-1:0] =(!flush_i && update_i.valid && replace_en[i]) ? update_i.vpn[VPN_LEN-1: VPN_LEN-VPN_LEN%PT_LEVELS] : tags_q[i].vpn[PT_LEVELS+HYP_EXT-1][VPN_LEN%PT_LEVELS-1:0];
-              assign lu_gpaddr_o[29:12] = (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) ? 
-                                  (v_st_enbl_i[0] ? 
-                                  (page_match[i][1] ? (lu_vaddr_i[29:12]):
-                                  (page_match[i][2] ? {content_q[i][0].ppn[17:9],lu_vaddr_i[20:12]}: content_q[i][0].ppn[17:0] )) :
-                                  (lu_vaddr_i[29:12])) :
-                                  0;
+              // assign lu_gpaddr_o[29:12] = (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) ? 
+              //                     (v_st_enbl_i[0] ? 
+              //                     (page_match[i][1] ? (lu_vaddr_i[29:12]):
+              //                     (page_match[i][2] ? {content_q[i][0].ppn[17:9],lu_vaddr_i[20:12]}: content_q[i][0].ppn[17:0] )) :
+              //                     (lu_vaddr_i[29:12])) :
+              //                     0;
               
               
-              assign lu_gpaddr_o[(riscv::GPLEN-1):30] = (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) ? 
-                                  (v_st_enbl_i[0] ? content_q[i][0].ppn[(riscv::GPPNW-1):18] : lu_vaddr_i[(riscv::GPLEN-1):30] ) :
-                                  0;
-              assign lu_gpaddr_o[11:0] = (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) ? 
-                                  lu_vaddr_i[11:0] :
-                                  0;
+              // assign lu_gpaddr_o[(riscv::GPLEN-1):30] = (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) ? 
+              //                     (v_st_enbl_i[0] ? content_q[i][0].ppn[(riscv::GPPNW-1):18] : lu_vaddr_i[(riscv::GPLEN-1):30] ) :
+              //                     0;
+              // assign lu_gpaddr_o[11:0] = (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) ? 
+              //                     lu_vaddr_i[11:0] :
+              //                     0;
           
             end
 
@@ -155,10 +155,28 @@
       // first level match, this may be a page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
       if (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) begin
+
+        if(HYP_EXT) begin
+          lu_gpaddr_o[29:12] = (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) ? 
+                                  (v_st_enbl_i[0] ? 
+                                  (page_match[i][1] ? (lu_vaddr_i[29:12]):
+                                  (page_match[i][2] ? {content_q[i][0].ppn[17:9],lu_vaddr_i[20:12]}: content_q[i][0].ppn[17:0] )) :
+                                  (lu_vaddr_i[29:12])) :
+                                  0;
+          lu_gpaddr_o[(riscv::GPLEN-1):30] = (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) ? 
+                                  (v_st_enbl_i[0] ? content_q[i][0].ppn[(riscv::GPPNW-1):18] : lu_vaddr_i[(riscv::GPLEN-1):30] ) :
+                                  0;
+          lu_gpaddr_o[11:0] = (tags_q[i].valid && (&asid_match[i] || (v_st_enbl_i[0] && content_q[i][0].g)) && match_stage[i]) ? 
+                                  lu_vaddr_i[11:0] :
+                                  0;
+        end
+        
+
+
         // find if there is a match at any level
         if (|level_match[i]) begin
               lu_is_page_o   = page_match[i] >>1; //the page size is indicated here
-              lu_content_o = content_q[i];
+              lu_content_o[0] = content_q[i][0];
               lu_hit_o     = 1'b1;
               lu_hit[i]    = 1'b1;
               // Compute G-Stage PPN based on the gpaddr
@@ -168,6 +186,7 @@
                   g_content.ppn[8:0] = lu_gpaddr_o[20:12];
                 if(tags_q[i].is_page[0][1])
                   g_content.ppn[17:0] = lu_gpaddr_o[29:12];
+                  lu_content_o[1] = page_match[1] ? content_q[i][1] : g_content;
               end
         end
       end
@@ -201,38 +220,41 @@
       tags_n[i].is_page    = tags_q[i].is_page;
       tags_n[i].valid    = tags_q[i].valid;
       tags_n[i].v_st_enbl =tags_q[i].v_st_enbl;
+
+      if (HYP_EXT) begin
+
+        // computes the final gppn based on the guest physical address
+   
+       if ( tags_q[i].v_st_enbl[0]) begin
+         gppn[i] = content_q[i][0].ppn[(riscv::GPPNW-1):0];
+         if(tags_q[i].is_page[1][0])
+             gppn[i][8:0] = tags_q[i].vpn[0];
+         if(tags_q[i].is_page[0][0])
+             gppn[i][17:0] = {tags_q[i].vpn[1],tags_q[i].vpn[0]};
+        end else begin
+         gppn[i] = {tags_q[i].vpn[3],tags_q[i].vpn[2],tags_q[i].vpn[1],tags_q[i].vpn[0]};
+        end
+
+       gpaddr_gppn0_match[i] = (vaddr_to_be_flushed_i[1][20:12] == gppn[i][8:0]);
+       gpaddr_gppn1_match[i] = (vaddr_to_be_flushed_i[1][29:21] == gppn[i][17:9]);
+       gpaddr_gppn2_match[i] = (vaddr_to_be_flushed_i[1][30+riscv::GPPN2:30] == gppn[i][18+riscv::GPPN2:18]);
+      end
+
       if ((flush_i[0] & (!HYP_EXT || (HYP_EXT && !tags_q[i].v_st_enbl[HYP_EXT*2])))) begin
         // invalidate logic
         // flush everything if ASID is 0 and vaddr is 0 ("SFENCE.VMA x0 x0" case)
-        if (asid_to_be_flushed_is0 && vaddr_to_be_flushed_is0) tags_n[i].valid = 1'b0;
+        if (asid_to_be_flushed_is0[0] && vaddr_to_be_flushed_is0[0]) 
+          tags_n[i].valid = 1'b0;
         // flush vaddr in all addressing space ("SFENCE.VMA vaddr x0" case), it should happen only for leaf pages
-        else if (asid_to_be_flushed_is0 && (|vaddr_level_match[i]) && (~vaddr_to_be_flushed_is0))
+        else if (asid_to_be_flushed_is0[0] && (|vaddr_level_match[i]) && (~vaddr_to_be_flushed_is0[0]))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
-        else if ((!content_q[i][0].g) && (|vaddr_level_match[i]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
+        else if ((!content_q[i][0].g) && (|vaddr_level_match[i]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
-        else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!asid_to_be_flushed_is0))
+        else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) && (!asid_to_be_flushed_is0[0]))
           tags_n[i].valid = 1'b0;
-      end else if (HYP_EXT) begin
-
-         // computes the final gppn based on the guest physical address
-    
-        if ( tags_q[i].v_st_enbl[0]) begin
-          gppn[i] = content_q[i][0].ppn[(riscv::GPPNW-1):0];
-          if(tags_q[i].is_page[1][0])
-              gppn[i][8:0] = tags_q[i].vpn[0];
-          if(tags_q[i].is_page[0][0])
-              gppn[i][17:0] = {tags_q[i].vpn[1],tags_q[i].vpn[0]};
-         end else begin
-          gppn[i] = {tags_q[i].vpn[3],tags_q[i].vpn[2],tags_q[i].vpn[1],tags_q[i].vpn[0]};
-         end
-
-        gpaddr_gppn0_match[i] = (vaddr_to_be_flushed_i[1][20:12] == gppn[i][8:0]);
-        gpaddr_gppn1_match[i] = (vaddr_to_be_flushed_i[1][29:21] == gppn[i][17:9]);
-        gpaddr_gppn2_match[i] = (vaddr_to_be_flushed_i[1][30+riscv::GPPN2:30] == gppn[i][18+riscv::GPPN2:18]);
-
-        if (flush_i[1]) begin
+      end else if (HYP_EXT && flush_i[HYP_EXT]) begin
           if(tags_q[i].v_st_enbl[HYP_EXT*2] && tags_q[i].v_st_enbl[0]) begin
               // invalidate logic
               // flush everything if current VMID matches and ASID is 0 and vaddr is 0 ("SFENCE.VMA/HFENCE.VVMA x0 x0" case)
@@ -248,7 +270,7 @@
               else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0] && ((tags_q[i].v_st_enbl[1] && lu_asid_i[1] == tags_q[i].asid[1]) || !tags_q[i].v_st_enbl[1])) && (!asid_to_be_flushed_is0[0]))
                   tags_n[i].valid = 1'b0;
           end
-      end else if (flush_i[2]) begin
+      end else if (HYP_EXT && flush_i[HYP_EXT*2]) begin
           if(tags_q[i].v_st_enbl[1]) begin
               // invalidate logic
               // flush everything if vmid is 0 and addr is 0 ("HFENCE.GVMA x0 x0" case)
@@ -263,9 +285,7 @@
               // the entry is flushed if the vmid matches and gpaddr is 0. ("HFENCE.GVMA 0 vmid" case)
               else if ((vaddr_to_be_flushed_is0[1]) && (asid_to_be_flushed_i[1] == tags_q[i].asid[1]) && (!asid_to_be_flushed_is0[1]))
                   tags_n[i].valid = 1'b0;
-          end
-      end
-        
+          end       
       
         // normal replacement
       end else if (update_i.valid & replace_en[i]) begin

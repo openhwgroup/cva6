@@ -23,11 +23,12 @@ import ariane_pkg::*;
   parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
   parameter int unsigned           INSTR_TLB_ENTRIES = 4,
   parameter int unsigned           DATA_TLB_ENTRIES  = 4,
+  parameter logic                  HYP_EXT = 0,
   parameter int unsigned           ASID_WIDTH [HYP_EXT:0]= {1},
   parameter int unsigned           ASID_LEN = 1,
   parameter int unsigned           VPN_LEN = 1,
-  parameter int unsigned           PT_LEVELS = 1,
-  parameter logic                  HYP_EXT = 0
+  parameter int unsigned           PT_LEVELS = 1
+  
 ) (
   input logic clk_i,
   input logic rst_ni,

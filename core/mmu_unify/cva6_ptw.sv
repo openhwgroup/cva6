@@ -159,7 +159,7 @@ genvar x;
   // output the correct ASID
   assign shared_tlb_update_o.asid[0] = tlb_update_asid_q;
   // set the global mapping bit
-  assign shared_tlb_update_o.content = pte | (global_mapping_q << 5);
+  assign shared_tlb_update_o.content[0] = pte | (global_mapping_q << 5);
 
 
   assign req_port_o.tag_valid = tag_valid_q;
