@@ -32,7 +32,7 @@ with external coprocessors.
    :header: "Configuration", "Implementation"
 
    "CV32A60X", "CV-X-IF included"
-   "CV32E6?X", "CV-X-IF included"
+   "CV32A60MX", "CV-X-IF included"
 
 
 CV-X-IF interface specification

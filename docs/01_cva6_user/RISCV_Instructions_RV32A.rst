@@ -26,7 +26,7 @@
    :header: "Configuration", "Implementation"
 
    "CV32A60X", "Implemented extension"
-   "CV32E6?X", "Not implemented extension"
+   "CV32A60MX", "Not implemented extension"
 
 **Note**: This chapter is specific to CV32A6 configurations. CV64A6 configurations implement as an option RV64A, that includes additional instructions.
    
