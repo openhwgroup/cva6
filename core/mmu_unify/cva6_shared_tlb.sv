@@ -79,7 +79,7 @@ module cva6_shared_tlb
   typedef struct packed {
     logic [ASID_LEN-1:0] asid;   
     logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
-    logic [PT_LEVELS-2:0] is_page;
+    logic [PT_LEVELS-2:0][0:0] is_page;
   } shared_tag_t;
 
   shared_tag_t shared_tag_wr;
@@ -153,7 +153,7 @@ module cva6_shared_tlb
         //identify page_match for all TLB Entries
 
         for (x=0; x < PT_LEVELS; x++) begin  
-          assign page_match[i][x] = x==0 ? 1 :shared_tag_rd[i].is_page[PT_LEVELS-1-x];
+          assign page_match[i][x] = x==0 ? 1 :shared_tag_rd[i].is_page[PT_LEVELS-1-x][0];
           // assign vpn_d[x]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] :((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] : vpn_q[x]);
           assign vpn_match[i][x]        = vpn_q[x] == shared_tag_rd[i].vpn[x];
           assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
@@ -237,13 +237,13 @@ module cva6_shared_tlb
           if (itlb_req_q) begin
             itlb_update_o.valid = 1'b1;
             itlb_update_o.vpn = itlb_vpn_q;
-            itlb_update_o.is_page[0] = shared_tag_rd[i].is_page;
+            itlb_update_o.is_page = shared_tag_rd[i].is_page;
             itlb_update_o.asid[0] = tlb_update_asid_q;
             itlb_update_o.content[0] = pte[i];
           end else if (dtlb_req_q) begin
             dtlb_update_o.valid = 1'b1;
             dtlb_update_o.vpn = dtlb_vpn_q;
-            dtlb_update_o.is_page[0] = shared_tag_rd[i].is_page;
+            dtlb_update_o.is_page = shared_tag_rd[i].is_page;
             dtlb_update_o.asid[0] = tlb_update_asid_q;
             dtlb_update_o.content[0] = pte[i];
           end
@@ -303,7 +303,7 @@ module cva6_shared_tlb
   assign shared_tag_wr.asid = shared_tlb_update_i.asid[0];
   // assign shared_tag_wr.vpn[1] = shared_tlb_update_i.vpn[19:10];
   // assign shared_tag_wr.vpn[0] = shared_tlb_update_i.vpn[9:0];
-  assign shared_tag_wr.is_page = shared_tlb_update_i.is_page[0];
+  assign shared_tag_wr.is_page = shared_tlb_update_i.is_page;
 
 
   genvar z;

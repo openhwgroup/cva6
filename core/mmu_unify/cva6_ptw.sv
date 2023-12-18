@@ -141,7 +141,7 @@ genvar x;
         for (x=0; x < PT_LEVELS-1; x++) begin  
 
             // update the correct page table level
-            assign shared_tlb_update_o.is_page[0][x] = (ptw_lvl_q == (x));
+            assign shared_tlb_update_o.is_page[x][0] = (ptw_lvl_q == (x));
 
             // check if the ppn is correctly aligned:
             // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
