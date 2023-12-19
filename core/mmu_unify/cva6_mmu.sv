@@ -445,14 +445,13 @@ module cva6_mmu
   assign lsu_paddr_o[11:0] = lsu_vaddr_q[11:0];
   assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
                               (en_ld_st_translation_i && !misaligned_ex_q.valid) ? //
-                              dtlb_pte_q.ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : // 
-                              (riscv::PLEN-PPNWMin)'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
+      dtlb_pte_q.ppn[riscv::PPNW-1:(riscv::PPNW-(riscv::PLEN-PPNWMin-1))] :  // 
+      (riscv::PLEN-PPNWMin)'(lsu_vaddr_q[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
 
-  assign lsu_dtlb_ppn_o [11:0]   = 
-                              (en_ld_st_translation_i && !misaligned_ex_q.valid) ? //
-                              dtlb_content.ppn[11:0] : // 
-                              lsu_vaddr_n[23:12];
-                              
+  assign lsu_dtlb_ppn_o[11:0] = (en_ld_st_translation_i && !misaligned_ex_q.valid) ?  //
+      dtlb_content.ppn[11:0] :  // 
+      lsu_vaddr_n[23:12];
+
   genvar i;
   generate
     for (i = 0; i < PT_LEVELS - 1; i++) begin
