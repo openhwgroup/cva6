@@ -1,1 +1,1 @@
-.. include:: ../../csr-from-ip-xact/embedded/embedded_csr.rst
+.. include:: ../../csr-from-ip-xact/cv32a60mx/cv32a60mx_csr.rst

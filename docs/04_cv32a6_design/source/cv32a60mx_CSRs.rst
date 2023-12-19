@@ -14,6 +14,6 @@ CSR
 .. toctree::
    :hidden:
 
-   embedded_csr_list
-   embedded_csr
+   cv32a60mx_csr_list
+   cv32a60mx_csr
 

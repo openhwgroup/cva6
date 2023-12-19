@@ -4,19 +4,6 @@
 
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
-.. Level 1
-   =======
-
-   Level 2
-   -------
-
-   Level 3
-   ~~~~~~~
-
-   Level 4
-   ^^^^^^^
-
-.. _cva6_traps_interrupts_exceptions:
 
 Traps, Interrupts, Exceptions
 =============================
@@ -29,8 +16,7 @@ On the other hand, an instruction may raise exceptions synchronously.
 Raising Traps
 -------------
 When a trap is raised, the behaviour of the CVA6 core depends on
-several CSRs and some CSRs are modified. The CSR description is available
-in :doc:`CV32A6_Control_Status_Registers`.
+several CSRs and some CSRs are modified.
 
 Configuration CSRs
 ~~~~~~~~~~~~~~~~~~
