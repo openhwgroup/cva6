@@ -143,15 +143,15 @@ module cva6_ptw
       // update the correct page table level
       assign shared_tlb_update_o.is_page[x] = (ptw_lvl_q == (x));
 
-            // check if the ppn is correctly aligned:
-            // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
-            // exception.
-            assign misaligned_page[x] = (ptw_lvl_q == (x)) && (pte.ppn[(VPN_LEN/PT_LEVELS)*(PT_LEVELS-1-x)-1:0] != '0);
+      // check if the ppn is correctly aligned:
+      // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
+      // exception.
+      assign misaligned_page[x] = (ptw_lvl_q == (x)) && (pte.ppn[(VPN_LEN/PT_LEVELS)*(PT_LEVELS-1-x)-1:0] != '0);
 
-            //record the vaddr corresponding to each level
-            assign vaddr_lvl[x] = vaddr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-x-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-x-2))];
-        end
-    endgenerate
+      //record the vaddr corresponding to each level
+      assign vaddr_lvl[x] = vaddr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-x-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-x-2))];
+    end
+  endgenerate
 
 
 
