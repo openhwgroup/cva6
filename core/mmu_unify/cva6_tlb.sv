@@ -244,7 +244,6 @@ module cva6_tlb
           en &= ~plru_tree_q[idx_base+(i>>shift)];
         end
       end
-      
       replace_en[i] = en;
     end
   end
