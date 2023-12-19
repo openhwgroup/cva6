@@ -103,11 +103,11 @@ module cva6_shared_tlb
 
   logic [         SHARED_TLB_WAYS-1:0] pte_wr_en;
   logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_wr_addr;
-  logic [$bits(pte_cva6_t)-1:0] pte_wr_data;
+  logic [       $bits(pte_cva6_t)-1:0] pte_wr_data;
 
   logic [         SHARED_TLB_WAYS-1:0] pte_rd_en;
   logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_rd_addr;
-  logic [$bits(pte_cva6_t)-1:0] pte_rd_data      [SHARED_TLB_WAYS-1:0];
+  logic [       $bits(pte_cva6_t)-1:0] pte_rd_data      [SHARED_TLB_WAYS-1:0];
 
   logic [         SHARED_TLB_WAYS-1:0] pte_req;
   logic [         SHARED_TLB_WAYS-1:0] pte_we;
@@ -152,24 +152,23 @@ module cva6_shared_tlb
     for (i = 0; i < SHARED_TLB_WAYS; i++) begin
       //identify page_match for all TLB Entries
 
-        for (x=0; x < PT_LEVELS; x++) begin  
-          assign page_match[i][x] = x==0 ? 1 :shared_tag_rd[i].is_page[PT_LEVELS-1-x];
-          // assign vpn_d[x]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] :((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] : vpn_q[x]);
-          assign vpn_match[i][x]        = vpn_q[x] == shared_tag_rd[i].vpn[x];
-          assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
-        end
+      for (x=0; x < PT_LEVELS; x++) begin  
+        assign page_match[i][x] = x==0 ? 1 :shared_tag_rd[i].is_page[PT_LEVELS-1-x];
+        assign vpn_match[i][x]        = vpn_q[x] == shared_tag_rd[i].vpn[x];
+        assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
       end
-    endgenerate
+    end
+  endgenerate
 
-    genvar w;
-    generate
-        for (w=0; w < PT_LEVELS; w++) begin  
-          assign vpn_d[w]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? //
-                                          itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : //
-                                          ((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? //
-                                          dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : vpn_q[w]);
-        end
-    endgenerate
+  genvar w;
+  generate
+    for (w=0; w < PT_LEVELS; w++) begin  
+      assign vpn_d[w]               = (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? //
+                                      itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : //
+                                      ((en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i)? //
+                                      dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : vpn_q[w]);
+    end
+  endgenerate
 
 
   ///////////////////////////////////////////////////////

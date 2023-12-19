@@ -160,149 +160,147 @@ module cva6_tlb
         tags_n[i].is_page = update_i.is_page;
         tags_n[i].valid = 1'b1;
 
-      // and content as well
-      content_n[i] = update_i.content;
+        // and content as well
+        content_n[i] = update_i.content;
+      end
     end
   end
-end
 
-// -----------------------------------------------
-// PLRU - Pseudo Least Recently Used Replacement
-// -----------------------------------------------
-logic [2*(TLB_ENTRIES-1)-1:0] plru_tree_q, plru_tree_n;
-logic en;
-int unsigned idx_base, shift, new_index;
-always_comb begin : plru_replacement
-  plru_tree_n = plru_tree_q;
-  en = '0;
-  idx_base = '0;
-  shift = '0;
-  new_index = '0;
-  // The PLRU-tree indexing:
-  // lvl0        0
-  //            / \
-      //           /   \
-      // lvl1     1     2
-      //         / \   / \
-      // lvl2   3   4 5   6
-      //       / \ /\/\  /\
-      //      ... ... ... ...
-      // Just predefine which nodes will be set/cleared
-      // E.g. for a TLB with 8 entries, the for-loop is semantically
-      // equivalent to the following pseudo-code:
-      // unique case (1'b1)
-      // lu_hit[7]: plru_tree_n[0, 2, 6] = {1, 1, 1};
-      // lu_hit[6]: plru_tree_n[0, 2, 6] = {1, 1, 0};
-      // lu_hit[5]: plru_tree_n[0, 2, 5] = {1, 0, 1};
-      // lu_hit[4]: plru_tree_n[0, 2, 5] = {1, 0, 0};
-      // lu_hit[3]: plru_tree_n[0, 1, 4] = {0, 1, 1};
-      // lu_hit[2]: plru_tree_n[0, 1, 4] = {0, 1, 0};
-      // lu_hit[1]: plru_tree_n[0, 1, 3] = {0, 0, 1};
-      // lu_hit[0]: plru_tree_n[0, 1, 3] = {0, 0, 0};
-      // default: begin /* No hit */ end
-      // endcase
-      for (
-      int unsigned i = 0; i < TLB_ENTRIES; i++
-  ) begin
+  // -----------------------------------------------
+  // PLRU - Pseudo Least Recently Used Replacement
+  // -----------------------------------------------
+  logic [2*(TLB_ENTRIES-1)-1:0] plru_tree_q, plru_tree_n;
+  logic en;
+  int unsigned idx_base, shift, new_index;
+  always_comb begin : plru_replacement
+    plru_tree_n = plru_tree_q;
+    en = '0;
+    idx_base = '0;
+    shift = '0;
+    new_index = '0;
+    // The PLRU-tree indexing:
+    // lvl0        0
+    //            / \
+    //           /   \
+    // lvl1     1     2
+    //         / \   / \
+    // lvl2   3   4 5   6
+    //       / \ /\/\  /\
+    //      ... ... ... ...
+    // Just predefine which nodes will be set/cleared
+    // E.g. for a TLB with 8 entries, the for-loop is semantically
+    // equivalent to the following pseudo-code:
+    // unique case (1'b1)
+    // lu_hit[7]: plru_tree_n[0, 2, 6] = {1, 1, 1};
+    // lu_hit[6]: plru_tree_n[0, 2, 6] = {1, 1, 0};
+    // lu_hit[5]: plru_tree_n[0, 2, 5] = {1, 0, 1};
+    // lu_hit[4]: plru_tree_n[0, 2, 5] = {1, 0, 0};
+    // lu_hit[3]: plru_tree_n[0, 1, 4] = {0, 1, 1};
+    // lu_hit[2]: plru_tree_n[0, 1, 4] = {0, 1, 0};
+    // lu_hit[1]: plru_tree_n[0, 1, 3] = {0, 0, 1};
+    // lu_hit[0]: plru_tree_n[0, 1, 3] = {0, 0, 0};
+    // default: begin /* No hit */ end
+    // endcase
+    for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
     // we got a hit so update the pointer as it was least recently used
-    if (lu_hit[i] & lu_access_i) begin
-      // Set the nodes to the values we would expect
+      if (lu_hit[i] & lu_access_i) begin
+        // Set the nodes to the values we would expect
+        for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
+          idx_base = $unsigned((2 ** lvl) - 1);
+          // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
+          shift = $clog2(TLB_ENTRIES) - lvl;
+          // to circumvent the 32 bit integer arithmetic assignment
+          new_index = ~((i >> (shift - 1)) & 32'b1);
+          plru_tree_n[idx_base+(i>>shift)] = new_index[0];
+        end
+      end
+    end
+    // Decode tree to write enable signals
+    // Next for-loop basically creates the following logic for e.g. an 8 entry
+    // TLB (note: pseudo-code obviously):
+    // replace_en[7] = &plru_tree_q[ 6, 2, 0]; //plru_tree_q[0,2,6]=={1,1,1}
+    // replace_en[6] = &plru_tree_q[~6, 2, 0]; //plru_tree_q[0,2,6]=={1,1,0}
+    // replace_en[5] = &plru_tree_q[ 5,~2, 0]; //plru_tree_q[0,2,5]=={1,0,1}
+    // replace_en[4] = &plru_tree_q[~5,~2, 0]; //plru_tree_q[0,2,5]=={1,0,0}
+    // replace_en[3] = &plru_tree_q[ 4, 1,~0]; //plru_tree_q[0,1,4]=={0,1,1}
+    // replace_en[2] = &plru_tree_q[~4, 1,~0]; //plru_tree_q[0,1,4]=={0,1,0}
+    // replace_en[1] = &plru_tree_q[ 3,~1,~0]; //plru_tree_q[0,1,3]=={0,0,1}
+    // replace_en[0] = &plru_tree_q[~3,~1,~0]; //plru_tree_q[0,1,3]=={0,0,0}
+    // For each entry traverse the tree. If every tree-node matches,
+    // the corresponding bit of the entry's index, this is
+    // the next entry to replace.
+    for (int unsigned i = 0; i < TLB_ENTRIES; i += 1) begin
+      en = 1'b1;
       for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
         idx_base = $unsigned((2 ** lvl) - 1);
         // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
         shift = $clog2(TLB_ENTRIES) - lvl;
-        // to circumvent the 32 bit integer arithmetic assignment
-        new_index = ~((i >> (shift - 1)) & 32'b1);
-        plru_tree_n[idx_base+(i>>shift)] = new_index[0];
+
+        // en &= plru_tree_q[idx_base + (i>>shift)] == ((i >> (shift-1)) & 1'b1);
+        new_index = (i >> (shift - 1)) & 32'b1;
+        if (new_index[0]) begin
+          en &= plru_tree_q[idx_base+(i>>shift)];
+        end else begin
+          en &= ~plru_tree_q[idx_base+(i>>shift)];
+        end
       end
+      replace_en[i] = en;
     end
   end
-  // Decode tree to write enable signals
-  // Next for-loop basically creates the following logic for e.g. an 8 entry
-  // TLB (note: pseudo-code obviously):
-  // replace_en[7] = &plru_tree_q[ 6, 2, 0]; //plru_tree_q[0,2,6]=={1,1,1}
-  // replace_en[6] = &plru_tree_q[~6, 2, 0]; //plru_tree_q[0,2,6]=={1,1,0}
-  // replace_en[5] = &plru_tree_q[ 5,~2, 0]; //plru_tree_q[0,2,5]=={1,0,1}
-  // replace_en[4] = &plru_tree_q[~5,~2, 0]; //plru_tree_q[0,2,5]=={1,0,0}
-  // replace_en[3] = &plru_tree_q[ 4, 1,~0]; //plru_tree_q[0,1,4]=={0,1,1}
-  // replace_en[2] = &plru_tree_q[~4, 1,~0]; //plru_tree_q[0,1,4]=={0,1,0}
-  // replace_en[1] = &plru_tree_q[ 3,~1,~0]; //plru_tree_q[0,1,3]=={0,0,1}
-  // replace_en[0] = &plru_tree_q[~3,~1,~0]; //plru_tree_q[0,1,3]=={0,0,0}
-  // For each entry traverse the tree. If every tree-node matches,
-  // the corresponding bit of the entry's index, this is
-  // the next entry to replace.
-  for (int unsigned i = 0; i < TLB_ENTRIES; i += 1) begin
-    en = 1'b1;
-    for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
-      idx_base = $unsigned((2 ** lvl) - 1);
-      // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
-      shift = $clog2(TLB_ENTRIES) - lvl;
 
-      // en &= plru_tree_q[idx_base + (i>>shift)] == ((i >> (shift-1)) & 1'b1);
-      new_index = (i >> (shift - 1)) & 32'b1;
-      if (new_index[0]) begin
-        en &= plru_tree_q[idx_base+(i>>shift)];
-      end else begin
-        en &= ~plru_tree_q[idx_base+(i>>shift)];
-      end
+  // sequential process
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      tags_q      <= '{default: 0};
+      content_q   <= '{default: 0};
+      plru_tree_q <= '{default: 0};
+    end else begin
+      tags_q      <= tags_n;
+      content_q   <= content_n;
+      plru_tree_q <= plru_tree_n;
     end
-    replace_en[i] = en;
   end
-end
+  //--------------
+  // Sanity checks
+  //--------------
 
-// sequential process
-always_ff @(posedge clk_i or negedge rst_ni) begin
-  if (~rst_ni) begin
-    tags_q      <= '{default: 0};
-    content_q   <= '{default: 0};
-    plru_tree_q <= '{default: 0};
-  end else begin
-    tags_q      <= tags_n;
-    content_q   <= content_n;
-    plru_tree_q <= plru_tree_n;
+  //pragma translate_off
+  `ifndef VERILATOR
+
+  initial begin : p_assertions
+    assert ((TLB_ENTRIES % 2 == 0) && (TLB_ENTRIES > 1))
+    else begin
+      $error("TLB size must be a multiple of 2 and greater than 1");
+      $stop();
+    end
+    assert (ASID_WIDTH >= 1)
+    else begin
+      $error("ASID width must be at least 1");
+      $stop();
+    end
   end
-end
-//--------------
-// Sanity checks
-//--------------
 
-//pragma translate_off
-`ifndef VERILATOR
+  // Just for checking
+  function int countSetBits(logic [TLB_ENTRIES-1:0] vector);
+    automatic int count = 0;
+    foreach (vector[idx]) begin
+      count += vector[idx];
+    end
+    return count;
+  endfunction
 
-initial begin : p_assertions
-  assert ((TLB_ENTRIES % 2 == 0) && (TLB_ENTRIES > 1))
+  assert property (@(posedge clk_i) (countSetBits(lu_hit) <= 1))
   else begin
-    $error("TLB size must be a multiple of 2 and greater than 1");
+    $error("More then one hit in TLB!");
     $stop();
   end
-  assert (ASID_WIDTH >= 1)
+  assert property (@(posedge clk_i) (countSetBits(replace_en) <= 1))
   else begin
-    $error("ASID width must be at least 1");
+    $error("More then one TLB entry selected for next replace!");
     $stop();
   end
-end
 
-// Just for checking
-function int countSetBits(logic [TLB_ENTRIES-1:0] vector);
-  automatic int count = 0;
-  foreach (vector[idx]) begin
-    count += vector[idx];
-  end
-  return count;
-endfunction
-
-assert property (@(posedge clk_i) (countSetBits(lu_hit) <= 1))
-else begin
-  $error("More then one hit in TLB!");
-  $stop();
-end
-assert property (@(posedge clk_i) (countSetBits(replace_en) <= 1))
-else begin
-  $error("More then one TLB entry selected for next replace!");
-  $stop();
-end
-
-`endif
-//pragma translate_on
+  `endif
+  //pragma translate_on
 
 endmodule

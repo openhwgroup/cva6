@@ -140,35 +140,6 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
-  // if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
-  //   mmu #(
-  //       .CVA6Cfg          (CVA6Cfg),
-  //       .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-  //       .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-  //       .ASID_WIDTH       (ASID_WIDTH)
-  //   ) i_cva6_mmu (
-  //       // misaligned bypass
-  //       .misaligned_ex_i(misaligned_exception),
-  //       .lsu_is_store_i (st_translation_req),
-  //       .lsu_req_i      (translation_req),
-  //       .lsu_vaddr_i    (mmu_vaddr),
-  //       .lsu_valid_o    (translation_valid),
-  //       .lsu_paddr_o    (mmu_paddr),
-  //       .lsu_exception_o(mmu_exception),
-  //       .lsu_dtlb_hit_o (dtlb_hit),               // send in the same cycle as the request
-  //       .lsu_dtlb_ppn_o (dtlb_ppn),               // send in the same cycle as the request
-  //       // connecting PTW to D$ IF
-  //       .req_port_i     (dcache_req_ports_i[0]),
-  //       .req_port_o     (dcache_req_ports_o[0]),
-  //       // icache address translation requests
-  //       .icache_areq_i  (icache_areq_i),
-  //       .asid_to_be_flushed_i,
-  //       .vaddr_to_be_flushed_i,
-  //       .icache_areq_o  (icache_areq_o),
-  //       .pmpcfg_i,
-  //       .pmpaddr_i,
-  //       .*
-  //   );
   if (MMU_PRESENT) begin : gen_mmu
 
     localparam ASID_LEN = (riscv::XLEN == 64) ? 16 : 9;

@@ -321,7 +321,6 @@ package riscv;
     logic v;
   } pte_sv32_t;
 
-
   // ----------------------
   // Exception Cause Codes
   // ----------------------
