@@ -452,9 +452,9 @@ module cva6_mmu
   genvar i;
   generate
     
-    for (i=0; i < PT_LEVELS-1; i++) begin  
+    for (i = 0; i < PT_LEVELS - 1; i++) begin  
       assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-                          (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
+                          (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0] == 0)) ?  //
                           dtlb_pte_q.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
                           lsu_vaddr_q[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
 

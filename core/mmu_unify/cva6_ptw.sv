@@ -325,21 +325,18 @@ genvar x;
               end
               // this is a pointer to the next TLB level
             end else begin
-                // pointer to next level of page table
-
-                if (ptw_lvl_q == PT_LEVELS-1) begin
-                    // Should already be the last level page table => Error
-                    ptw_lvl_n = PT_LEVELS-1;
-                    state_d   = PROPAGATE_ERROR;
-                  end
-                  else begin
-                    // if (ptw_lvl_q == 1) begin
-                        // we are in the second level now
-                        ptw_lvl_n  = ptw_lvl_q+1;
-                        ptw_pptr_n = {pte.ppn, vaddr_lvl[ptw_lvl_q], (PT_LEVELS)'(0)};
-                        state_d = WAIT_GRANT;
-                    //   end
-                  end
+              // pointer to next level of page table
+              if (ptw_lvl_q == PT_LEVELS-1) begin
+                // Should already be the last level page table => Error
+                ptw_lvl_n = PT_LEVELS-1;
+                state_d   = PROPAGATE_ERROR;
+              end
+              else begin
+                // we are in the second level now
+                ptw_lvl_n  = ptw_lvl_q+1;
+                ptw_pptr_n = {pte.ppn, vaddr_lvl[ptw_lvl_q], (PT_LEVELS)'(0)};
+                state_d = WAIT_GRANT;
+              end
             end
           end
 
