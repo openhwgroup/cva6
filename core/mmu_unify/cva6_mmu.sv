@@ -71,11 +71,10 @@ module cva6_mmu
     // PMP
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
     input logic [15:0][riscv::PLEN-3:0] pmpaddr_i
-  );
+);
 
-      // memory management, pte for cva6
+  // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
-  // typedef struct packed {
     logic [riscv::PPNW-1:0] ppn; // PPN length for
     logic [1:0]  rsw;
     logic d;
@@ -86,16 +85,15 @@ module cva6_mmu
     logic w;
     logic r;
     logic v;
-  } ;
+  };
 
   localparam type tlb_update_cva6_t = struct packed {
-  // typedef struct packed {
-    logic                  valid;      // valid flag
-    logic  [PT_LEVELS-2:0] is_page;      //
-    logic [VPN_LEN-1:0]    vpn;        //
-    logic [ASID_LEN-1:0]   asid;       //
+    logic                  valid;   // valid flag
+    logic  [PT_LEVELS-2:0] is_page; //
+    logic [VPN_LEN-1:0]    vpn;     //
+    logic [ASID_LEN-1:0]   asid;    //
     pte_cva6_t      content;
-  } ;
+  };
 
   logic                   iaccess_err;  // insufficient privilege to access this instruction page
   logic                   daccess_err;  // insufficient privilege to access this data page
@@ -452,28 +450,27 @@ module cva6_mmu
                               lsu_vaddr_n[23:12];
                               
   genvar i;
-    generate
-      
-        for (i=0; i < PT_LEVELS-1; i++) begin  
-          assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-                              (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-                              dtlb_pte_q.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
-                              lsu_vaddr_q[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
+  generate
+    
+    for (i=0; i < PT_LEVELS-1; i++) begin  
+      assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
+                          (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
+                          dtlb_pte_q.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
+                          lsu_vaddr_q[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
 
-          assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-                              (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-                              dtlb_content.ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] : //
-                              (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]!=0)?
-                              lsu_vaddr_n[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]://
-                              (VPN_LEN/PT_LEVELS)'(lsu_vaddr_n[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1 : (24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-1) ) -1): (riscv::PLEN > riscv::VLEN) ? 24 :24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-2)]));
-        end
-        if(riscv::IS_XLEN64) begin
-          assign lsu_dtlb_ppn_o[riscv::PPNW-1:PPNWMin+1] = (en_ld_st_translation_i && !misaligned_ex_q.valid) ? 
-                              dtlb_content.ppn[riscv::PPNW-1:PPNWMin+1] : 
-                              lsu_vaddr_n[riscv::PLEN-1:PPNWMin+1] ;
-        end
-
-    endgenerate 
+      assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
+                          (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
+                          dtlb_content.ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] : //
+                          (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]!=0)?
+                          lsu_vaddr_n[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]://
+                          (VPN_LEN/PT_LEVELS)'(lsu_vaddr_n[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1 : (24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-1) ) -1): (riscv::PLEN > riscv::VLEN) ? 24 :24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-2)]));
+    end
+    if (riscv::IS_XLEN64) begin
+      assign lsu_dtlb_ppn_o[riscv::PPNW-1:PPNWMin+1] = (en_ld_st_translation_i && !misaligned_ex_q.valid) ? 
+                          dtlb_content.ppn[riscv::PPNW-1:PPNWMin+1] : 
+                          lsu_vaddr_n[riscv::PLEN-1:PPNWMin+1] ;
+    end
+  endgenerate 
   // The data interface is simpler and only consists of a request/response interface
   always_comb begin : data_interface
     // save request and DTLB response
