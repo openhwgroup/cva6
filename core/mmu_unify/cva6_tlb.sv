@@ -264,8 +264,8 @@ module cva6_tlb
   // Sanity checks
   //--------------
 
-  //pragma translate_off
-  `ifndef VERILATOR
+//pragma translate_off
+`ifndef VERILATOR
 
   initial begin : p_assertions
     assert ((TLB_ENTRIES % 2 == 0) && (TLB_ENTRIES > 1))
@@ -300,7 +300,7 @@ module cva6_tlb
     $stop();
   end
 
-  `endif
-  //pragma translate_on
+`endif
+//pragma translate_on
 
 endmodule
