@@ -75,7 +75,7 @@ module cva6_mmu
 
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
-    logic [riscv::PPNW-1:0] ppn; // PPN length for
+    logic [riscv::PPNW-1:0] ppn;  // PPN length for
     logic [1:0]  rsw;
     logic d;
     logic a;
@@ -88,11 +88,11 @@ module cva6_mmu
   };
 
   localparam type tlb_update_cva6_t = struct packed {
-    logic                  valid;   // valid flag
-    logic  [PT_LEVELS-2:0] is_page; //
-    logic [VPN_LEN-1:0]    vpn;     //
-    logic [ASID_LEN-1:0]   asid;    //
-    pte_cva6_t      content;
+    logic                  valid;    // valid flag
+    logic  [PT_LEVELS-2:0] is_page;  //
+    logic [VPN_LEN-1:0]    vpn;      //
+    logic [ASID_LEN-1:0]   asid;     //
+    pte_cva6_t             content;
   };
 
   logic                   iaccess_err;  // insufficient privilege to access this instruction page
