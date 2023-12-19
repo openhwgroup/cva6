@@ -76,7 +76,7 @@ module cva6_mmu
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
     logic [riscv::PPNW-1:0] ppn;  // PPN length for
-    logic [1:0]  rsw;
+    logic [1:0] rsw;
     logic d;
     logic a;
     logic g;
@@ -88,11 +88,11 @@ module cva6_mmu
   };
 
   localparam type tlb_update_cva6_t = struct packed {
-    logic                  valid;    // valid flag
-    logic  [PT_LEVELS-2:0] is_page;  //
-    logic [VPN_LEN-1:0]    vpn;      //
-    logic [ASID_LEN-1:0]   asid;     //
-    pte_cva6_t             content;
+    logic                 valid;    // valid flag
+    logic [PT_LEVELS-2:0] is_page;  //
+    logic [VPN_LEN-1:0]   vpn;      //
+    logic [ASID_LEN-1:0]  asid;     //
+    pte_cva6_t            content;
   };
 
   logic                   iaccess_err;  // insufficient privilege to access this instruction page
@@ -450,9 +450,8 @@ module cva6_mmu
                               lsu_vaddr_n[23:12];
                               
   genvar i;
-  generate
-    
-    for (i = 0; i < PT_LEVELS - 1; i++) begin  
+  generate 
+    for (i = 0; i < PT_LEVELS - 1; i++) begin
       assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
                           (en_ld_st_translation_i && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0] == 0)) ?  //
                           dtlb_pte_q.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
