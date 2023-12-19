@@ -107,21 +107,21 @@ module cva6_mmu
   // tlb_update_t update_ptw_itlb, update_ptw_dtlb;
   tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
-  logic                               itlb_lu_access;
-  pte_cva6_t                   itlb_content;
-  logic [PT_LEVELS-2:0]               itlb_is_page;
-  logic                               itlb_lu_hit;
+  logic                   itlb_lu_access;
+  pte_cva6_t              itlb_content;
+  logic [PT_LEVELS-2:0]   itlb_is_page;
+  logic                   itlb_lu_hit;
 
-  logic                               dtlb_lu_access;
-  pte_cva6_t                   dtlb_content;
-  logic [PT_LEVELS-2:0]               dtlb_is_page;
-  logic                               dtlb_lu_hit;
+  logic                   dtlb_lu_access;
+  pte_cva6_t              dtlb_content;
+  logic [PT_LEVELS-2:0]   dtlb_is_page;
+  logic                   dtlb_lu_hit;
 
-  logic                               shared_tlb_access;
-  logic             [riscv::VLEN-1:0] shared_tlb_vaddr;
-  logic                               shared_tlb_hit;
+  logic                   shared_tlb_access;
+  logic [riscv::VLEN-1:0] shared_tlb_vaddr;
+  logic                   shared_tlb_hit;
 
-  logic                               itlb_req;
+  logic                   itlb_req;
 
   // Assignments
   assign itlb_lu_access = icache_areq_i.fetch_req;
