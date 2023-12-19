@@ -28,7 +28,6 @@ import ariane_pkg::*;
   parameter int unsigned           ASID_LEN = 1,
   parameter int unsigned           VPN_LEN = 1,
   parameter int unsigned           PT_LEVELS = 1
-  
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -99,6 +98,15 @@ localparam type tlb_update_cva6_t = struct packed {
   pte_cva6_t  [HYP_EXT:0]          content;
 } ;
 
+localparam type tlb_update_cva6_t1 = struct packed {
+// typedef struct packed {
+  logic                  valid;      // valid flag
+  logic  [PT_LEVELS-2:0] is_page;      //
+  logic [VPN_LEN-1:0]    vpn;        //
+  logic [ASID_LEN-1:0]   asid;       //
+  pte_cva6_t      content;
+} ;
+
 
 logic                   iaccess_err;  // insufficient privilege to access this instruction page
 logic                   daccess_err;  // insufficient privilege to access this data page
@@ -111,6 +119,7 @@ logic [riscv::PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
 logic [riscv::VLEN-1:0] update_vaddr;
 // tlb_update_t update_ptw_itlb, update_ptw_dtlb;
 tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
+tlb_update_cva6_t1 update_itlb1, update_dtlb1, update_shared_tlb1;
 
 logic                               itlb_lu_access;
 pte_cva6_t  [HYP_EXT:0]             itlb_content ;
@@ -131,6 +140,34 @@ logic                               itlb_req;
 // Assignments
 assign itlb_lu_access = icache_areq_i.fetch_req;
 assign dtlb_lu_access = lsu_req_i;
+
+assign update_shared_tlb.valid   = update_shared_tlb1.valid;
+assign update_shared_tlb.vpn     = update_shared_tlb1.vpn;
+assign update_shared_tlb.asid[0] = update_shared_tlb1.asid;
+assign update_shared_tlb.content[0]   = update_shared_tlb1.content;
+
+assign update_itlb.valid   = update_itlb1.valid;
+assign update_itlb.vpn     = update_itlb1.vpn;
+assign update_itlb.asid[0] = update_itlb1.asid;
+assign update_itlb.content[0]   = update_itlb1.content;
+
+assign update_dtlb.valid   = update_dtlb1.valid;
+assign update_dtlb.vpn     = update_dtlb1.vpn;
+assign update_dtlb.asid[0] = update_dtlb1.asid;
+assign update_dtlb.content[0]   = update_dtlb1.content;
+
+
+genvar x;
+  generate
+      for (x=0; x < PT_LEVELS-1; x++) begin  
+        assign update_shared_tlb.is_page[x][0] = update_shared_tlb1.is_page[x];
+        assign update_itlb.is_page[x][0] = update_itlb1.is_page[x];
+        assign update_dtlb.is_page[x][0] = update_dtlb1.is_page[x];
+      end
+  endgenerate
+
+
+
 
 
 cva6_tlb #(
@@ -202,7 +239,7 @@ cva6_shared_tlb #(
     .VPN_LEN(VPN_LEN),
     .PT_LEVELS(PT_LEVELS),
     .pte_cva6_t(pte_cva6_t),
-    .tlb_update_cva6_t(tlb_update_cva6_t)
+    .tlb_update_cva6_t(tlb_update_cva6_t1)
 ) i_shared_tlb (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -223,8 +260,8 @@ cva6_shared_tlb #(
     .dtlb_vaddr_i (lsu_vaddr_i[0]),
 
     // to TLBs, update logic
-    .itlb_update_o(update_itlb),
-    .dtlb_update_o(update_dtlb),
+    .itlb_update_o(update_itlb1),
+    .dtlb_update_o(update_dtlb1),
 
     // Performance counters
     .itlb_miss_o(itlb_miss_o),
@@ -245,7 +282,7 @@ cva6_ptw #(
     .VPN_LEN(VPN_LEN),
     .PT_LEVELS(PT_LEVELS),
     .pte_cva6_t(pte_cva6_t),
-    .tlb_update_cva6_t(tlb_update_cva6_t)
+    .tlb_update_cva6_t(tlb_update_cva6_t1)
 ) i_ptw (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -262,7 +299,7 @@ cva6_ptw #(
     .req_port_o    (req_port_o),
 
     // to Shared TLB, update logic
-    .shared_tlb_update_o(update_shared_tlb),
+    .shared_tlb_update_o(update_shared_tlb1),
 
     .update_vaddr_o(update_vaddr),
 
@@ -489,7 +526,7 @@ always_comb begin : data_interface
   lsu_vaddr_n = lsu_vaddr_i[0];
   lsu_req_n = lsu_req_i;
   misaligned_ex_n = misaligned_ex_i;
-  dtlb_pte_n = dtlb_content;
+  dtlb_pte_n = dtlb_content[0];
   dtlb_hit_n = dtlb_lu_hit;
   lsu_is_store_n = lsu_is_store_i;
   dtlb_is_page_n = dtlb_is_page;

@@ -78,6 +78,7 @@
   logic [TLB_ENTRIES-1:0] lu_hit;  // to replacement logic
   logic [TLB_ENTRIES-1:0] replace_en;  // replace the following entry, set by replacement strategy
   logic [TLB_ENTRIES-1:0] match_stage;
+  logic [TLB_ENTRIES-1:0][PT_LEVELS-2:0] is_page_o;
   //-------------
   // Translation
   //-------------
@@ -88,7 +89,7 @@
     //AND the page_match is also set
     //At level 0 the page match is always set, so this level will have a match
     //if all vpn levels match
-  genvar i,x,z;
+  genvar i,x,z,w;
       generate
         for (i=0; i < TLB_ENTRIES; i++) begin
           
@@ -100,11 +101,11 @@
 
           for (x=0; x < PT_LEVELS; x++) begin  
               //identify page_match for all TLB Entries  
-              assign page_match[i][x] = x==0 ? 1 :(HYP_EXT && x==(PT_LEVELS-1)? //
+              assign page_match[i][x] = x==0 ? 1 :(HYP_EXT && x==(PT_LEVELS-2)? //
                                                 ((&v_st_enbl_i[HYP_EXT:0]) ? 
-                                                ((tags_q[i].is_page[PT_LEVELS-x][0] && (tags_q[i].is_page[PT_LEVELS-1-x][1] || tags_q[i].is_page[PT_LEVELS-x][1])) //
-                                              || (tags_q[i].is_page[PT_LEVELS-x][1] && (tags_q[i].is_page[PT_LEVELS-1-x][0] || tags_q[i].is_page[PT_LEVELS-x][0]))):
-                                                  tags_q[i].is_page[PT_LEVELS-x][0] && v_st_enbl_i[0] || tags_q[i].is_page[PT_LEVELS-1-x][1] && v_st_enbl_i[1]):
+                                                ((tags_q[i].is_page[PT_LEVELS-1-x][0] && (tags_q[i].is_page[PT_LEVELS-2-x][1] || tags_q[i].is_page[PT_LEVELS-1-x][1])) //
+                                              || (tags_q[i].is_page[PT_LEVELS-1-x][1] && (tags_q[i].is_page[PT_LEVELS-2-x][0] || tags_q[i].is_page[PT_LEVELS-1-x][0]))):
+                                                  tags_q[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl_i[0] || tags_q[i].is_page[PT_LEVELS-1-x][1] && v_st_enbl_i[1]):
                                                   &(tags_q[i].is_page[PT_LEVELS-1-x] | (~v_st_enbl_i[HYP_EXT:0])));
               //identify if vpn matches at all PT levels for all TLB entries  
               assign vpn_match[i][x]        = (HYP_EXT && x==(PT_LEVELS-1) && ~v_st_enbl_i[0]) ? //
@@ -113,13 +114,17 @@
               //identify if there is a hit at each PT level for all TLB entries  
               assign level_match[i][x]      = &vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
               //identify if virtual address vpn matches at all PT levels for all TLB entries  
-              assign vaddr_vpn_match[i][x]  = (HYP_EXT && x==(PT_LEVELS-1)? //
+              assign vaddr_vpn_match[i][x]  = (HYP_EXT && x==(PT_LEVELS-1))? //
                                               vaddr_to_be_flushed_i[0][12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x] && vaddr_to_be_flushed_i[0][VPN_LEN-1: VPN_LEN-VPN_LEN%PT_LEVELS] == tags_q[i].vpn[x+1][VPN_LEN%PT_LEVELS-1:0]: //  
                                               vaddr_to_be_flushed_i[0][12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
               //identify if there is a hit at each PT level for all TLB entries  
               assign vaddr_level_match[i][x]= &vaddr_vpn_match[i][PT_LEVELS-1:x] & page_match[i][x];
               //update vpn field in tags_n for each TLB when the update is valid and the tag needs to be replaced
               assign tags_n[i].vpn[x]       = (~flush_i[0] && update_i.valid && replace_en[i]) ? update_i.vpn[(1+x)*(VPN_LEN/PT_LEVELS)-1:x*(VPN_LEN/PT_LEVELS)] : tags_q[i].vpn[x];
+          end
+
+          for (w=0; w < PT_LEVELS - 1; w++) begin  
+            assign is_page_o[i][w] = page_match[i][PT_LEVELS - 1 - w];
           end
 
           if(HYP_EXT) begin
@@ -177,7 +182,7 @@
 
         // find if there is a match at any level
         if (|level_match[i]) begin
-              lu_is_page_o   = page_match[i] >>1; //the page size is indicated here
+              lu_is_page_o   = is_page_o[i]; //the page size is indicated here
               lu_content_o[0] = content_q[i][0];
               lu_hit_o     = 1'b1;
               lu_hit[i]    = 1'b1;
