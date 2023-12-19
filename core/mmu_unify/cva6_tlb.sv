@@ -179,14 +179,14 @@ module cva6_tlb
     shift = '0;
     new_index = '0;
     // The PLRU-tree indexing:
-    // lvl0        0
-    //            / \
-    //           /   \
-    // lvl1     1     2
-    //         / \   / \
-    // lvl2   3   4 5   6
-    //       / \ /\/\  /\
-    //      ... ... ... ...
+    // | lvl0        0        |
+    // |            / \       |
+    // |           /   \      |
+    // | lvl1     1     2     |
+    // |         / \   / \    |
+    // | lvl2   3   4 5   6   |
+    // |       / \ /\/\  /\   |
+    // |      ... ... ... ... |
     // Just predefine which nodes will be set/cleared
     // E.g. for a TLB with 8 entries, the for-loop is semantically
     // equivalent to the following pseudo-code:
