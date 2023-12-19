@@ -8,12 +8,15 @@
    Original Author: Jean-Roch COULON - Thales
 
 
-CSR
-===
+
+Functionality
+=============
 
 .. toctree::
    :hidden:
 
-   cv32a60mx_csr_list
-   cv32a60mx_csr
-
+   instructions
+   traps
+   CSRs
+   AXI
+   CVXIF

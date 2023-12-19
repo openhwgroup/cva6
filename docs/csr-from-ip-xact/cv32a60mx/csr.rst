@@ -77,7 +77,7 @@ The ``mstatus`` register keeps track of and controls the hart’s current operat
      - Modify privilege
      - 0x0 
      - read-write
-     - The MPRV bit modifies the privilege mode at which loads and stores execute\.  ``Enumerated Values``( "Normal" :0)( "Protected" :1)'\n'
+     - The MPRV bit modifies the privilege mode at which loads and stores execute\.  ``Enumerated Values`` ( "Normal" :0)( "Protected" :1)'\n'
    * - 16:15
      - XS
      - Extension state

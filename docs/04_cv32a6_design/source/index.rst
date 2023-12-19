@@ -16,9 +16,9 @@ Editor: **Jean Roch Coulon**
    :maxdepth: 4
    :caption: Contents:
 
-   cv32a60mx_intro
-   cv32a60mx_overview
-   cv32a60mx_subsystem
-   cv32a60mx_functionality
-   cv32a60mx_architecture
+   intro
+   overview
+   subsystem
+   functionality
+   architecture
    cv32a6_glossary
