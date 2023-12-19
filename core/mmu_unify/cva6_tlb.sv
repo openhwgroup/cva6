@@ -202,7 +202,7 @@ module cva6_tlb
     // default: begin /* No hit */ end
     // endcase
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
-    // we got a hit so update the pointer as it was least recently used
+      // we got a hit so update the pointer as it was least recently used
       if (lu_hit[i] & lu_access_i) begin
         // Set the nodes to the values we would expect
         for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
