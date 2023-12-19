@@ -264,7 +264,7 @@ module cva6_tlb
   // Sanity checks
   //--------------
 
-//pragma translate_off
+  //pragma translate_off
 `ifndef VERILATOR
 
   initial begin : p_assertions
@@ -301,6 +301,6 @@ module cva6_tlb
   end
 
 `endif
-//pragma translate_on
+  //pragma translate_on
 
 endmodule
