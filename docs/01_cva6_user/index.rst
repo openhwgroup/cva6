@@ -37,6 +37,10 @@ Editor: **Jerome Quevremont**
    RISCV_Instructions_RV32M
    RISCV_Instructions_RV32A
    RISCV_Instructions_RV32C
+   RISCV_Instructions_RVZba
+   RISCV_Instructions_RVZbb
+   RISCV_Instructions_RVZbc
+   RISCV_Instructions_RVZbs
    RISCV_Instructions_RV32ZCb
    RISCV_Instructions_RVZicsr
    RISCV_Instructions_RVZifencei
