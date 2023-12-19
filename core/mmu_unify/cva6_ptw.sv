@@ -34,7 +34,7 @@ module cva6_ptw
     parameter int ASID_WIDTH = 1,
     parameter int unsigned VPN_LEN = 1,
     parameter int unsigned PT_LEVELS = 1
-    ) (
+) (
     input  logic clk_i,                  // Clock
     input  logic rst_ni,                 // Asynchronous reset active low
     input  logic flush_i,                // flush everything, we need to do this because
@@ -99,7 +99,7 @@ module cva6_ptw
 
   // page tables levels
   logic [PT_LEVELS-1:0] misaligned_page;
-  logic [PT_LEVELS-2:0] ptw_lvl_n,ptw_lvl_q;
+  logic [PT_LEVELS-2:0] ptw_lvl_n, ptw_lvl_q;
 
   // is this an instruction page table walk?
   logic is_instr_ptw_q, is_instr_ptw_n;
@@ -110,7 +110,7 @@ module cva6_ptw
   logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VPN we need to walk
   logic [riscv::VLEN-1:0] vaddr_q, vaddr_n;
-  logic [PT_LEVELS-2:0][(VPN_LEN/PT_LEVELS)-1:0] vaddr_lvl;   
+  logic [PT_LEVELS-2:0][(VPN_LEN/PT_LEVELS)-1:0] vaddr_lvl;
   // 4 byte aligned physical pointer
   logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 
@@ -136,12 +136,12 @@ module cva6_ptw
   assign shared_tlb_update_o.vpn = vaddr_q[riscv::SV-1:12];
 
 
-genvar x;
-    generate
-        for (x=0; x < PT_LEVELS-1; x++) begin  
+  genvar x;
+  generate
+    for (x = 0; x < PT_LEVELS - 1; x++) begin
 
-            // update the correct page table level
-            assign shared_tlb_update_o.is_page[x] = (ptw_lvl_q == (x));
+      // update the correct page table level
+      assign shared_tlb_update_o.is_page[x] = (ptw_lvl_q == (x));
 
             // check if the ppn is correctly aligned:
             // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
@@ -153,7 +153,6 @@ genvar x;
         end
     endgenerate
 
-    
 
 
   // output the correct ASID
@@ -244,7 +243,9 @@ genvar x;
         // if we got a Shared TLB miss
         if (shared_tlb_access_i & ~shared_tlb_hit_i) begin
           ptw_pptr_n = {
-            satp_ppn_i, shared_tlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)
+            satp_ppn_i,
+            shared_tlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)],
+            (PT_LEVELS)'(0)
           };  // SATP.PPN * PAGESIZE + VPN*PTESIZE = SATP.PPN * 2^(12) + VPN*4
           is_instr_ptw_n = itlb_req_i;
           tlb_update_asid_n = asid_i;
