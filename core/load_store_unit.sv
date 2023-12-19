@@ -199,7 +199,7 @@ module load_store_unit
         .misaligned_ex_i(misaligned_exception),
         .lsu_is_store_i (st_translation_req),
         .lsu_req_i      (translation_req),
-        .lsu_vaddr_i    (mmu_lsu_vaddr_i),
+        .lsu_vaddr_i    (mmu_vaddr),
         .lsu_valid_o    (translation_valid),
         .lsu_paddr_o    (mmu_paddr),
         .lsu_exception_o(mmu_exception),
@@ -218,6 +218,13 @@ module load_store_unit
         .asid_i(mmu_asid_i),
         .asid_to_be_flushed_i(mmu_asid_to_be_flushed_i),
         .vaddr_to_be_flushed_i(mmu_vaddr_to_be_flushed_i),
+        .lsu_tinst_i(0),
+        .csr_hs_ld_st_inst_o(),
+        .v_i(1),
+        .ld_st_v_i(0),
+        .hlvx_inst_i            ( 0          ),
+        .hs_ld_st_inst_i        ( 0      ),
+        
         .*
     );
   end else begin : gen_no_mmu
