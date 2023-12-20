@@ -136,7 +136,7 @@ covergroup cg_cva6_config(string name) with function sample();
       bins BTBEntries ={0};
    }
    cp_BHTEntries : coverpoint cva6_config_pkg::CVA6ConfigBHTEntries {
-      bins BHTEntries ={16};
+      bins BHTEntries ={32};
    }
    cp_NrPMPEntries : coverpoint cva6_config_pkg::CVA6ConfigNrPMPEntries {
       bins NrPMPEntries ={8};
