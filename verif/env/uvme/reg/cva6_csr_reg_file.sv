@@ -256,8 +256,8 @@ class reg_misa extends csr_reg;
          illegal_bins illegal_values = {[0:$]} with (!(item inside {1}));
       }
       Extensions: coverpoint data[25:0] {
-         bins legal_values[] = {26'h141104};
-         //ISSUE in tests: illegal_bins illegal_values = {[0:$]} with (!(item inside {26'h141104}));
+         bins legal_values[] = {26'h0001104};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {26'h0001104}));
       }
   endgroup
 
@@ -269,8 +269,8 @@ class reg_misa extends csr_reg;
          bins illegal_values[] = {[0:$]} with (!(item inside {1}));
       }
       Extensions: coverpoint data[25:0] {
-         bins legal_values[] = {26'h141104};
-         bins illegal_values[3] = {[0:$]} with (!(item inside {26'h141104}));
+         bins legal_values[] = {26'h0001104};
+         bins illegal_values[3] = {[0:$]} with (!(item inside {26'h0001104}));
       }
   endgroup
 
@@ -2519,10 +2519,10 @@ class reg_mcause extends csr_reg;
       option.per_instance = 1;
       Interrupt: coverpoint data[31:31];
       exception_code: coverpoint data[30:0] {
-         bins legal_values_interrupt[]  = {0,1,5,9} iff (data[31:31]==1);
-         bins other_values_interrupt[3] = {[0:$]} with (!(item inside {0,1,5,9})) iff (data[31:31]==1);
-         bins legal_values_notinterrupt[] = {[0:9],12,13,15} iff (data[31:31]==0);
-         bins other_values_notinterrupt[3] = {[0:$]} with (!(item inside {[0:9],12,13,15})) iff (data[31:31]==0);
+         bins legal_values_interrupt[]  = {3,7,11} iff (data[31:31]==1);
+         bins other_values_interrupt[3] = {[0:$]} with (!(item inside {3,7,11})) iff (data[31:31]==1);
+         bins legal_values_exception[] = {[0:7],11,12,13,15} iff (data[31:31]==0);
+         bins other_values_exception[3] = {[0:$]} with (!(item inside {[0:7],11,12,13,15})) iff (data[31:31]==0);
       }
   endgroup
 
@@ -2531,10 +2531,10 @@ class reg_mcause extends csr_reg;
       option.per_instance = 1;
       Interrupt: coverpoint data[31:31];
       exception_code: coverpoint data[30:0] {
-         bins legal_values_interrupt[]  = {0,1,5,9} iff (data[31:31]==1);
-         bins other_values_interrupt[3] = {[0:$]} with (!(item inside {0,1,5,9})) iff (data[31:31]==1);
-         bins legal_values_notinterrupt[] = {[0:9],12,13,15} iff (data[31:31]==0);
-         bins other_values_notinterrupt[3] = {[0:$]} with (!(item inside {[0:9],12,13,15})) iff (data[31:31]==0);
+         bins legal_values_interrupt[]  = {3,7,11} iff (data[31:31]==1);
+         bins other_values_interrupt[3] = {[0:$]} with (!(item inside {3,7,11})) iff (data[31:31]==1);
+         bins legal_values_exception[] = {[0:7],11,12,13,15}  iff (data[31:31]==0);
+         bins other_values_exception[3] = {[0:$]} with (!(item inside {[0:7],11,12,13,15} )) iff (data[31:31]==0);
       }
   endgroup
 
@@ -2777,19 +2777,19 @@ class reg_pmpcfg0 extends csr_reg;
       option.per_instance = 1;
       pmp3cfg: coverpoint data[31:24] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp2cfg: coverpoint data[23:16] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp1cfg: coverpoint data[15:8] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp0cfg: coverpoint data[7:0] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
   endgroup
 
@@ -2875,19 +2875,19 @@ class reg_pmpcfg1 extends csr_reg;
       option.per_instance = 1;
       pmp7cfg: coverpoint data[31:24] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp6cfg: coverpoint data[23:16] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp5cfg: coverpoint data[15:8] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp4cfg: coverpoint data[7:0] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
   endgroup
 
@@ -2973,19 +2973,19 @@ class reg_pmpcfg2 extends csr_reg;
       option.per_instance = 1;
       pmp11cfg: coverpoint data[31:24] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp10cfg: coverpoint data[23:16] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp9cfg: coverpoint data[15:8] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp8cfg: coverpoint data[7:0] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
   endgroup
 
@@ -3071,19 +3071,19 @@ class reg_pmpcfg3 extends csr_reg;
       option.per_instance = 1;
       pmp15cfg: coverpoint data[31:24] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp14cfg: coverpoint data[23:16] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp13cfg: coverpoint data[15:8] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
       pmp12cfg: coverpoint data[7:0] {
          bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins other_values[3] = {[1:$]} with (((item & 'h3)!=2) && ((item & 'h60) ==0));
       }
   endgroup
 
@@ -4213,11 +4213,11 @@ class reg_mcycle extends csr_reg;
       option.name = "csr_mcycle__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins reset_value  = {[0:10001]};
+         bins other_values[3] = {[10001:$]};
       }
       count_overflow: coverpoint data[31:0] {
-         bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
+         bins overflow = ([32'hFFFFFBFF:$] => [0:10000]);
       }
   endgroup
 
@@ -4278,11 +4278,11 @@ class reg_minstret extends csr_reg;
       option.name = "csr_minstret__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins reset_value  = {[0:1000]};
+         bins other_values[3] = {[1001:$]};
       }
       count_overflow: coverpoint data[31:0] {
-         bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
+         bins overflow = ([32'hFFFFFC17:$] => [0:1000]);
       }
   endgroup
 
@@ -8069,11 +8069,11 @@ class reg_cycle extends csr_reg;
       option.name = "csr_cycle__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins reset_value  = {[0:10000]};
+         bins other_values[3] = {[10001:$]};
       }
       count_overflow: coverpoint data[31:0] {
-         bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
+         bins overflow = ([32'hFFFFFBFF:$] => [0:10000]);
       }
   endgroup
 
@@ -8134,11 +8134,11 @@ class reg_instret extends csr_reg;
       option.name = "csr_instret__read_cg";
       option.per_instance = 1;
       count: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
+         bins reset_value  = {[0:1000]};
+         bins other_values[3] = {[1001:$]};
       }
       count_overflow: coverpoint data[31:0] {
-         bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
+         bins overflow = ([32'hFFFFFC17:$] => [0:100]);
       }
   endgroup
 
@@ -8330,10 +8330,10 @@ class reg_mvendorid extends csr_reg;
       option.name = "csr_mvendorid__read_cg";
       option.per_instance = 1;
       bank: coverpoint data[31:7] {
-         bins reset_value  = {'hC0};
+         bins reset_value  = {'hC};
       }
       offset: coverpoint data[6:0]{
-         bins reset_value  = {'h20};
+         bins reset_value  = {'h2};
       }
   endgroup
 
@@ -8341,11 +8341,11 @@ class reg_mvendorid extends csr_reg;
       option.name = "csr_mvendorid.mvendorid__write_cp";
       option.per_instance = 1;
       bank: coverpoint data[31:7] {
-         bins reset_value  = {'hC0};
+         bins reset_value  = {'hC};
          bins other_values[3] = {[0:$]} with (!(item inside {'hC0}));
       }
       offset: coverpoint data[6:0]{
-         bins reset_value  = {'h20};
+         bins reset_value  = {'h2};
          bins other_values[3] = {[0:$]} with (!(item inside {'h20}));
       }
   endgroup
@@ -8410,7 +8410,7 @@ class reg_marchid extends csr_reg;
       option.per_instance = 1;
       architecture_id: coverpoint data[31:0] {
          bins reset_value  = {'h3};
-         bins other_values[3] = {[0:$]} with (!(item inside {3}));
+         bins other_values[3] = {[0:$]} with (!(item inside {'h3}));
       }
   endgroup
 
@@ -8462,7 +8462,7 @@ class reg_mimpid extends csr_reg;
       option.name = "csr_mimpid__read_cg";
       option.per_instance = 1;
       implementation: coverpoint data[31:0] {
-         bins reset_value  = {'hF13};
+         bins reset_value  = {0};
       }
   endgroup
 
@@ -8470,8 +8470,8 @@ class reg_mimpid extends csr_reg;
       option.name = "csr_mimpid.mimpid__write_cp";
       option.per_instance = 1;
       implementation: coverpoint data[31:0] {
-         bins reset_value  = {'hF13};
-         bins other_values[3] = {[0:$]} with (!(item inside {'hF13}));
+         bins reset_value  = {0};
+         bins other_values[3] = {[0:$]} with (!(item inside {0}));
       }
   endgroup
 
@@ -8523,7 +8523,7 @@ class reg_mhartid extends csr_reg;
       option.name = "csr_mhartid__read_cg";
       option.per_instance = 1;
       hart_id: coverpoint data[31:0] {
-         bins reset_value  = {'hF14};
+         bins reset_value  = {0};
       }
   endgroup
 
@@ -8531,8 +8531,8 @@ class reg_mhartid extends csr_reg;
       option.name = "csr_mhartid.mhartid__write_cp";
       option.per_instance = 1;
       hart_id: coverpoint data[31:0] {
-         bins reset_value  = {'hF14};
-         bins other_values[3] = {[0:$]} with (!(item inside {'hF14}));
+         bins reset_value  = {0};
+         bins other_values[3] = {[0:$]} with (!(item inside {0}));
       }
   endgroup
 
