@@ -185,8 +185,8 @@ module cva6_ptw
   );
 
 
-   assign req_port_o.data_be = (riscv::XLEN == 32) ? //
-          be_gen_32(req_port_o.address_index[1:0], req_port_o.data_size) : //
+   assign req_port_o.data_be = (riscv::XLEN == 32) ?
+          be_gen_32(req_port_o.address_index[1:0], req_port_o.data_size) :
           be_gen(req_port_o.address_index[2:0], req_port_o.data_size);
 
   //-------------------
