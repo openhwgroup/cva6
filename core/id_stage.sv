@@ -51,8 +51,12 @@ module id_stage #(
     output logic rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
+    // Current virtualization mode - CSR_REGFILE
+    input logic v_i,
     // Floating point extension status - CSR_REGFILE
     input riscv::xs_t fs_i,
+    // Floating point extension virtual status - CSR_REGFILE
+    input riscv::xs_t vfs_i,
     // Floating point dynamic rounding mode - CSR_REGFILE
     input logic [2:0] frm_i,
     // Vector extension status - CSR_REGFILE
@@ -67,8 +71,12 @@ module id_stage #(
     input logic tvm_i,
     // Timeout wait - CSR_REGFILE
     input logic tw_i,
+    // Virtual timeout wait - CSR_REGFILE
+    input logic vtw_i,
     // Trap sret - CSR_REGFILE
     input logic tsr_i
+    // Hypervisor user mode - CSR_REGFILE
+    input logic hu_i
 );
   // ID/ISSUE register stage
   typedef struct packed {
@@ -169,13 +177,17 @@ module id_stage #(
       .branch_predict_i          (fetch_entry_i.branch_predict),
       .ex_i                      (fetch_entry_i.ex),
       .priv_lvl_i                (priv_lvl_i),
+      .v_i                       (v_i),
       .debug_mode_i              (debug_mode_i),
       .fs_i,
+      .vfs_i,
       .frm_i,
       .vs_i,
       .tvm_i,
       .tw_i,
+      .vtw_i,
       .tsr_i,
+      .hu_i,
       .instruction_o             (decoded_instruction),
       .orig_instr_o              (orig_instr),
       .is_control_flow_instr_o   (is_control_flow_instr)

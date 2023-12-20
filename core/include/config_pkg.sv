@@ -172,6 +172,7 @@ package config_pkg;
     bit IS_XLEN64;
     int unsigned XLEN_ALIGN_BYTES;
     int unsigned ASID_WIDTH;
+    int unsigned VMID_WIDTH;
 
     bit          FPGA_EN;
     /// Number of commit ports, i.e., maximum number of instructions that the

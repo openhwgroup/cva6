@@ -42,6 +42,7 @@ module cva6
       logic [CVA6Cfg.XLEN-1:0] cause;  // cause of exception
       logic [CVA6Cfg.XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
       // address of LD/ST fault
+      logic [CVA6Cfg.XLEN-1:0] tinst;  // transformed instruction information
       logic valid;
     },
 
@@ -130,8 +131,9 @@ module cva6
       logic [CVA6Cfg.XLEN-1:0] mie;
       logic [CVA6Cfg.XLEN-1:0] mip;
       logic [CVA6Cfg.XLEN-1:0] mideleg;
-      logic                    sie;
-      logic                    global_enable;
+      logic [CVA6Cfg.XLEN-1:0] hideleg;
+      logic                   sie;
+      logic                   global_enable;
     },
 
     localparam type lsu_ctrl_t = struct packed {
@@ -318,6 +320,7 @@ module cva6
   // Signals connecting more than one module
   // ------------------------------------------
   riscv::priv_lvl_t                             priv_lvl;
+  logic                                         v;
   exception_t                                   ex_commit;  // exception from commit stage
   bp_resolve_t                                  resolved_branch;
   logic             [         CVA6Cfg.VLEN-1:0] pc_commit;
@@ -457,6 +460,7 @@ module cva6
   // --------------
   logic [4:0] fflags_csr_commit;
   riscv::xs_t fs;
+  riscv::xs_t vfs;
   logic [2:0] frm_csr_id_issue_ex;
   logic [6:0] fprec_csr_ex;
   riscv::xs_t vs;
@@ -474,7 +478,9 @@ module cva6
   exception_t csr_exception_csr_commit;
   logic tvm_csr_id;
   logic tw_csr_id;
+  logic vtw_csr_id;
   logic tsr_csr_id;
+  logic hu;
   irq_ctrl_t irq_ctrl_csr_id;
   logic dcache_en_csr_nbdcache;
   logic csr_write_fflags_commit_cs;
@@ -613,7 +619,9 @@ module cva6
       .rvfi_is_compressed_o(rvfi_is_compressed),
 
       .priv_lvl_i  (priv_lvl),
+      .v_i         (v),
       .fs_i        (fs),
+      .vfs_i       (vfs),
       .frm_i       (frm_csr_id_issue_ex),
       .vs_i        (vs),
       .irq_i       (irq_i),
@@ -621,7 +629,9 @@ module cva6
       .debug_mode_i(debug_mode),
       .tvm_i       (tvm_csr_id),
       .tw_i        (tw_csr_id),
-      .tsr_i       (tsr_csr_id)
+      .vtw_i       (vtw_csr_id),
+      .tsr_i       (tsr_csr_id),
+      .hu_i        (hu)
   );
 
   logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
@@ -964,9 +974,11 @@ module cva6
       .set_debug_pc_o        (set_debug_pc),
       .trap_vector_base_o    (trap_vector_base_commit_pcgen),
       .priv_lvl_o            (priv_lvl),
+      .v_o                   (v),
       .acc_fflags_ex_i       (acc_resp_fflags),
       .acc_fflags_ex_valid_i (acc_resp_fflags_valid),
       .fs_o                  (fs),
+      .vfs_o                 (vfs),
       .fflags_o              (fflags_csr_commit),
       .frm_o                 (frm_csr_id_issue_ex),
       .fprec_o               (fprec_csr_ex),
@@ -981,7 +993,9 @@ module cva6
       .asid_o                (asid_csr_ex),
       .tvm_o                 (tvm_csr_id),
       .tw_o                  (tw_csr_id),
+      .vtw_o                 (vtw_csr_id),
       .tsr_o                 (tsr_csr_id),
+      .hu_o                  (hu),
       .debug_mode_o          (debug_mode),
       .single_step_o         (single_step_csr_commit),
       .dcache_en_o           (dcache_en_csr_nbdcache),

@@ -36,6 +36,7 @@ package build_config_pkg;
     cfg.IS_XLEN64 = IS_XLEN64;
     cfg.XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
     cfg.ASID_WIDTH = (CVA6Cfg.XLEN == 64) ? 16 : 1;
+    cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 7;
 
     cfg.FPGA_EN = CVA6Cfg.FPGA_EN;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;

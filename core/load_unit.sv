@@ -202,6 +202,7 @@ module load_unit
   // directly forward exception fields (valid bit is set below)
   assign ex_o.cause = ex_i.cause;
   assign ex_o.tval = ex_i.tval;
+  assign ex_o.tinst = ex_i.tinst;
 
   // Check that NI operations follow the necessary conditions
   logic paddr_ni;
