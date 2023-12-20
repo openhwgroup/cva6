@@ -3225,15 +3225,15 @@ csrrw:
     ##########################
     #MISA testing W/R values '{'hfdbf7bfb, 'h2408404, 'h55555555, 'haaaaaaaa, 'heefe0e69} 
     ##########################
-    #MISA Write value 0xfdbf7bfb
-    li x3, 0xfdbf7bfb
+    #MISA Write value 0xbfffeef9
+    li x3, 0xbfffeef9
     csrw 0x301, x3
 
     #MISA read value
     csrr x14, 0x301
 
-    #MISA Write value 0x2408404
-    li x3, 0x2408404
+    #MISA Write value 0x40001106
+    li x3, 0x40001106
     csrw 0x301, x3
 
     #MISA read value

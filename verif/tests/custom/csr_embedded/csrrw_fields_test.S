@@ -2813,6 +2813,13 @@ csrrw_fields:
     #PMPCFG0 fields testing W/R
     ##########################
     #PMPCFG0.PMP0CFG testing W/R values '{'hff, 'h0, 'h55, 'haa, 'h79} 
+    #PMPCFG0 Write value 0x00088808
+    li x3, 0x00088808
+    csrw 0x3a0, x3
+
+    #PMPCFG0 read value
+    csrr x14, 0x3a0
+
     #PMPCFG0 Write value 0xff
     li x3, 0xff
     csrw 0x3a0, x3
@@ -2848,7 +2855,7 @@ csrrw_fields:
     #PMPCFG0 read value
     csrr x14, 0x3a0
 
-    #PMPCFG0.PMP1CFG testing W/R values '{'hff, 'h0, 'h55, 'haa, 'hcd} 
+    #PMPCFG0.PMP1CFG testing W/R values '{'hff, 'h0, 'h55, 'haa, 'hcd}
     #PMPCFG0 Write value 0xff00
     li x3, 0xff00
     csrw 0x3a0, x3
