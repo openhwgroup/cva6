@@ -142,7 +142,7 @@ logic             [riscv::VLEN-1:0] shared_tlb_vaddr;
 logic                               shared_tlb_hit;
 
 logic                               itlb_req;
-logic  [HYP_EXT*2:0]                v_st_enbl_i
+logic  [HYP_EXT*2:0]                v_st_enbl_i;
 
 // Assignments
 assign itlb_lu_access = icache_areq_i.fetch_req;
@@ -173,10 +173,10 @@ genvar x;
       end
   endgenerate
 
-  v_st_enbl_i[0]=v_i;
+  assign v_st_enbl_i[0]=v_i;
 
   if(HYP_EXT) begin
-    v_st_enbl_i[2*HYP_EXT:HYP_EXT]=enable_translation_i;
+    assign v_st_enbl_i[2*HYP_EXT:HYP_EXT]=enable_translation_i;
   end
 
 
@@ -369,7 +369,7 @@ localparam PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 
 assign icache_areq_o.fetch_paddr    [11:0] = icache_areq_i.fetch_vaddr[11:0];
 assign icache_areq_o.fetch_paddr [riscv::PLEN-1:PPNWMin+1]   = //
-                          ([enable_translation_i[0]]) ? //
+                          (enable_translation_i[0]) ? //
                           itlb_content[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] : //
                           (riscv::PLEN-PPNWMin-1)'(icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
 
@@ -413,7 +413,7 @@ always_comb begin : instr_interface
         icache_areq_o.fetch_exception.tinst = {riscv::XLEN{1'b0}};
         icache_areq_o.fetch_exception.gva   = v_i;
       end
-
+    end
     icache_areq_o.fetch_valid = 1'b0;
 
     // ---------
@@ -451,14 +451,14 @@ always_comb begin : instr_interface
     if (ptw_active && walking_instr) begin
       icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
       if (ptw_error)
-      icache_areq_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
-      icache_areq_o.fetch_exception.tval  = {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr};
-      icache_areq_o.fetch_exception.valid  = 1'b1;
-      if(HYP_EXT) begin
-        icache_areq_o.fetch_exception.tval2 = {riscv::GPLEN{1'b0}};
-        icache_areq_o.fetch_exception.tinst = {riscv::XLEN{1'b0}};
-        icache_areq_o.fetch_exception.gva   = v_i;
-      end
+        icache_areq_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
+        icache_areq_o.fetch_exception.tval  = {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr};
+        icache_areq_o.fetch_exception.valid  = 1'b1;
+        if(HYP_EXT) begin
+          icache_areq_o.fetch_exception.tval2 = {riscv::GPLEN{1'b0}};
+          icache_areq_o.fetch_exception.tinst = {riscv::XLEN{1'b0}};
+          icache_areq_o.fetch_exception.gva   = v_i;
+        end
 
 
       else
@@ -470,8 +470,8 @@ always_comb begin : instr_interface
           icache_areq_o.fetch_exception.tinst = {riscv::XLEN{1'b0}};
           icache_areq_o.fetch_exception.gva   = v_i;
         end
+      end
     end
-  end
   // if it didn't match any execute region throw an `Instruction Access Fault`
   // or: if we are not translating, check PMPs immediately on the paddr
   if (!match_any_execute_region || (~(|enable_translation_i) && !pmp_instr_allow)) begin
@@ -520,7 +520,7 @@ logic dtlb_hit_n, dtlb_hit_q;
 logic [PT_LEVELS-2:0] dtlb_is_page_n, dtlb_is_page_q;
 
 // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
-assign lsu_dtlb_hit_o = ([en_ld_st_translation_i[0]]) ? dtlb_lu_hit : 1'b1;
+assign lsu_dtlb_hit_o = (en_ld_st_translation_i[0]) ? dtlb_lu_hit : 1'b1;
 
 // Wires to PMP checks
 riscv::pmp_access_t pmp_access_type;
@@ -542,7 +542,7 @@ genvar i;
     
       for (i=0; i < PT_LEVELS-1; i++) begin  
         assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-                            ([en_ld_st_translation_i[0]] && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
+                            (en_ld_st_translation_i[0] && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
                             dtlb_pte_q.ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] : //
                             lsu_vaddr_q[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
 
