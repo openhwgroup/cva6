@@ -1,5 +1,36 @@
+..
+   Copyright (c) 2023 OpenHW Group
+   Copyright (c) 2023 10xEngineers
+
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+
+.. Level 1
+   =======
+
+   Level 2
+   -------
+
+   Level 3
+   ~~~~~~~
+
+   Level 4
+   ^^^^^^^
+
+.. _cva6_riscv_instructions_RV32Zbs:
+
+*Applicability of this chapter to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60AX", "Implemented extension"
+   "CV32A60X", "Implemented extension"
+
+   
 ============================
-Zbs: Single-bit instructions
+RVZbs: Single-bit instructions
 ============================
 The single-bit instructions provide a mechanism to set, clear, invert, or extract a single bit in a register. The bit is specified by its index.
 
@@ -24,6 +55,9 @@ The following instructions (and pseudoinstructions) comprise the Zbs extension:
 +-----------+-----------+-----------------------+
 | ✔         | ✔         | bseti rd, rs1, imm    |
 +-----------+-----------+-----------------------+
+
+RV32 and RV64 Instructions
+--------------------------
 
 - **BCLR**: Single-Bit Clear (Register)
 

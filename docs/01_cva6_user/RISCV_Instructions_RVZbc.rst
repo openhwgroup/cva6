@@ -1,5 +1,36 @@
+..
+   Copyright (c) 2023 OpenHW Group
+   Copyright (c) 2023 10xEngineers
+
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+
+.. Level 1
+   =======
+
+   Level 2
+   -------
+
+   Level 3
+   ~~~~~~~
+
+   Level 4
+   ^^^^^^^
+
+.. _cva6_riscv_instructions_RV32Zbc:
+
+*Applicability of this chapter to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60AX", "Implemented extension"
+   "CV32A60X", "Implemented extension"
+
+   
 =================================
-Zbc: Carry-less multiplication
+RVZbc: Carry-less multiplication
 =================================
 Carry-less multiplication is the multiplication in the polynomial ring over GF(2).
 
@@ -18,6 +49,9 @@ The following instructions (and pseudoinstructions) comprise the Zbc extension:
 +-----------+-----------+-----------------------+
 | ✔         | ✔         | clmulr rd, rs1, rs2   |
 +-----------+-----------+-----------------------+
+
+RV32 and RV64 Instructions
+--------------------------
 
 - **CLMUL**: Carry-less multiply (low-part)
 

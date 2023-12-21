@@ -31,8 +31,8 @@ with external coprocessors.
    :align: left
    :header: "Configuration", "Implementation"
 
+   "CV32A60AX", "CV-X-IF included"
    "CV32A60X", "CV-X-IF included"
-   "CV32A60MX", "CV-X-IF included"
 
 
 CV-X-IF interface specification

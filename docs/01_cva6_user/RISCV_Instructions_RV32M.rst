@@ -27,8 +27,8 @@ This chapter is applicable to all CV32A6 configurations.
    :align: left
    :header: "Configuration", "Implementation"
 
+   "CV32A60AX", "Implemented extension"
    "CV32A60X", "Implemented extension"
-   "CV32A60MX", "Implemented extension"
 
 **Note**: CV64A6 implements RV64M that includes additional instructions.
 

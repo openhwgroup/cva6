@@ -25,8 +25,8 @@
    :align: left
    :header: "Configuration", "Implementation"
 
-   "CV32A60X", "Implemented extension"
-   "CV32A60MX", "Not implemented extension"
+   "CV32A60AX", "Implemented extension"
+   "CV32A60X", "Not implemented extension"
 
 **Note**: RV32Zicond and RV64Zicond are identical.
 

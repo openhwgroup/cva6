@@ -100,11 +100,11 @@ As of today, two configurations are being verified and addressed in this documen
    :align: left
    :header: "Configuration", "Short description", "Target", "Privilege levels", "Supported RISC-V ISA", "CV-X-IF"
 
-   "**CV32A60X**", "32-bit **application** core", "ASIC", "Machine, Supervisor, User", "RV32IMACZicsr_Zifencei_Zicount_Zba_Zbb_Zbc_Zbs_Zcb_Zicond", "Included"
-   "**CV32A60MX**", "32-bit **embedded** core", "ASIC", "Machine only", "RV32IMCZicsr_Zifencei_Zba_Zbb_Zbc_Zbs_Zcb", "Included"
+   "**CV32A60AX**", "32-bit **application** core", "ASIC", "Machine, Supervisor, User", "RV32IMACZicsr_Zifencei_Zicount_Zba_Zbb_Zbc_Zbs_Zcb_Zicond", "Included"
+   "**CV32A60X**", "32-bit **embedded** core", "ASIC", "Machine only", "RV32IMCZicsr_Zifencei_Zba_Zbb_Zbc_Zbs_Zcb", "Included"
 
-CV32A60MX is an interim part number until the team can decide if this configuration is single- or dual-issue.
-If the dual-issue architecture is selected, the part number will become CV32A65MX to denote the extra performance.
+CV32A60X is an interim part number until the team can decide if this configuration is single- or dual-issue.
+If the dual-issue architecture is selected, the part number will become CV32A65X to denote the extra performance.
 
 In the future, dedicated user manuals for each configuration could be generated. The team is looking for a contributor to implement this through *templating*.
 
