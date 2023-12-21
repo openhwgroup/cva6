@@ -196,6 +196,7 @@ package config_pkg;
     bit          RVB;
     bit          RVV;
     bit          RVC;
+    bit          RVH;
     bit          RVZCB;
     bit          RVZCMP;
     bit          XFVec;

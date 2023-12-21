@@ -163,14 +163,14 @@ module controller
       flush_id_o             = 1'b1;
       flush_ex_o             = 1'b1;
 
-      if (v_i) flush_tlb_vvma_o = 1'b1;
+      if (CVA6Cfg.RVH && v_i) flush_tlb_vvma_o = 1'b1;
       else flush_tlb_o = 1'b1;
     end
 
     // ---------------------------------
     // HFENCE.VVMA
     // ---------------------------------
-    if (hfence_vvma_i) begin
+    if (CVA6Cfg.RVH && hfence_vvma_i) begin
       set_pc_commit_o        = 1'b1;
       flush_if_o             = 1'b1;
       flush_unissued_instr_o = 1'b1;
@@ -183,7 +183,7 @@ module controller
     // ---------------------------------
     // HFENCE.GVMA
     // ---------------------------------
-    if (hfence_gvma_i) begin
+    if (CVA6Cfg.RVH && hfence_gvma_i) begin
       set_pc_commit_o        = 1'b1;
       flush_if_o             = 1'b1;
       flush_unissued_instr_o = 1'b1;

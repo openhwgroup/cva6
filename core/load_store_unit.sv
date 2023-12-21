@@ -40,7 +40,7 @@ module load_store_unit
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [riscv::XLEN-1:0] tinst_i,
+    input logic [CVA6Cfg.XLEN-1:0] tinst_i,
     // FU data needed to execute instruction - ISSUE_STAGE
     input fu_data_t fu_data_i,
     // Load Store Unit is ready - ISSUE_STAGE
@@ -183,7 +183,7 @@ module load_store_unit
   assign vaddr_i = vaddr_xlen[CVA6Cfg.VLEN-1:0];
   // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
   assign overflow = (CVA6Cfg.IS_XLEN64 && (!((&vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SV-1]) == 1'b0)));
-  assign g_overflow = !((|vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SVX]) == 1'b0);
+  assign g_overflow = (CVA6Cfg.RVH) ? !((|vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SVX]) == 1'b0) : 1'b0;
 
   logic                   st_valid_i;
   logic                   ld_valid_i;
@@ -227,8 +227,8 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
-  if (MMU_PRESENT && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39
-    mmu #(
+  if (MMU_PRESENT && CVA6Cfg.RVH && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39x4
+    cva6_mmu_sv39x4 #(
         .CVA6Cfg          (CVA6Cfg),
         .exception_t      (exception_t),
         .icache_areq_t    (icache_areq_t),
@@ -266,6 +266,35 @@ module load_store_unit
         // Hypervisor load/store signals
         .hlvx_inst_i    (mmu_hlvx_inst),
         .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
+        .*
+    );
+  end else if (MMU_PRESENT && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39
+    mmu #(
+        .CVA6Cfg          (CVA6Cfg),
+        .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
+        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
+        .ASID_WIDTH       (ASID_WIDTH)
+    ) i_cva6_mmu (
+        // misaligned bypass
+        .misaligned_ex_i(misaligned_exception),
+        .lsu_is_store_i (st_translation_req),
+        .lsu_req_i      (translation_req),
+        .lsu_vaddr_i    (mmu_vaddr),
+        .lsu_valid_o    (translation_valid),
+        .lsu_paddr_o    (mmu_paddr),
+        .lsu_exception_o(mmu_exception),
+        .lsu_dtlb_hit_o (dtlb_hit),               // send in the same cycle as the request
+        .lsu_dtlb_ppn_o (dtlb_ppn),               // send in the same cycle as the request
+        // connecting PTW to D$ IF
+        .req_port_i     (dcache_req_ports_i[0]),
+        .req_port_o     (dcache_req_ports_o[0]),
+        // icache address translation requests
+        .icache_areq_i  (icache_areq_i),
+        .asid_to_be_flushed_i,
+        .vaddr_to_be_flushed_i,
+        .icache_areq_o  (icache_areq_o),
+        .pmpcfg_i,
+        .pmpaddr_i,
         .*
     );
   end else if (MMU_PRESENT && (CVA6Cfg.XLEN == 32)) begin : gen_mmu_sv32
@@ -479,21 +508,25 @@ module load_store_unit
     unique case (lsu_ctrl.fu)
       // all loads go here
       LOAD: begin
-        ld_valid_i        = lsu_ctrl.valid;
-        translation_req   = ld_translation_req;
-        mmu_vaddr         = ld_vaddr;
-        mmu_tinst         = ld_tinst;
-        mmu_hs_ld_st_inst = ld_hs_ld_st_inst;
-        mmu_hlvx_inst     = ld_hlvx_inst;
+        ld_valid_i      = lsu_ctrl.valid;
+        translation_req = ld_translation_req;
+        mmu_vaddr       = ld_vaddr;
+        if (CVA6Cfg.RVH) begin
+          mmu_tinst         = ld_tinst;
+          mmu_hs_ld_st_inst = ld_hs_ld_st_inst;
+          mmu_hlvx_inst     = ld_hlvx_inst;
+        end
       end
       // all stores go here
       STORE: begin
-        st_valid_i        = lsu_ctrl.valid;
-        translation_req   = st_translation_req;
-        mmu_vaddr         = st_vaddr;
-        mmu_tinst         = st_tinst;
-        mmu_hs_ld_st_inst = st_hs_ld_st_inst;
-        mmu_hlvx_inst     = st_hlvx_inst;
+        st_valid_i      = lsu_ctrl.valid;
+        translation_req = st_translation_req;
+        mmu_vaddr       = st_vaddr;
+        if (CVA6Cfg.RVH) begin
+          mmu_tinst         = st_tinst;
+          mmu_hs_ld_st_inst = st_hs_ld_st_inst;
+          mmu_hlvx_inst     = st_hlvx_inst;
+        end
       end
       // not relevant for the LSU
       default: ;
@@ -504,21 +537,26 @@ module load_store_unit
   // Hypervisor Load/Store
   // ------------------------
   // determine whether this is a hypervisor load or store
-  always_comb begin : hyp_ld_st
-    // check the operator to activate the right functional unit accordingly
-    hs_ld_st_inst = 1'b0;
-    hlvx_inst     = 1'b0;
-    case (lsu_ctrl.operator)
-      // all loads go here
-      HLV_B, HLV_BU, HLV_H, HLV_HU, HLV_W, HSV_B, HSV_H, HSV_W, HLV_WU, HLV_D, HSV_D: begin
-        hs_ld_st_inst = 1'b1;
-      end
-      HLVX_WU, HLVX_HU: begin
-        hs_ld_st_inst = 1'b1;
-        hlvx_inst     = 1'b1;
-      end
-      default: ;
-    endcase
+  if (CVA6Cfg.RVH) begin
+    always_comb begin : hyp_ld_st
+      // check the operator to activate the right functional unit accordingly
+      hs_ld_st_inst = 1'b0;
+      hlvx_inst     = 1'b0;
+      case (lsu_ctrl.operator)
+        // all loads go here
+        HLV_B, HLV_BU, HLV_H, HLV_HU, HLV_W, HSV_B, HSV_H, HSV_W, HLV_WU, HLV_D, HSV_D: begin
+          hs_ld_st_inst = 1'b1;
+        end
+        HLVX_WU, HLVX_HU: begin
+          hs_ld_st_inst = 1'b1;
+          hlvx_inst     = 1'b1;
+        end
+        default: ;
+      endcase
+    end
+  end else begin
+    assign hs_ld_st_inst = 1'b0;
+    assign hlvx_inst     = 1'b0;
   end
 
   // ---------------

@@ -518,49 +518,80 @@ module ex_stage
   end
 
   if (CVA6Cfg.RVS) begin
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (~rst_ni) begin
-        current_instruction_is_sfence_vma <= 1'b0;
-        current_instruction_is_hfence_vvma <= 1'b0;
-        current_instruction_is_hfence_gvma <= 1'b0;
-      end else begin
-        if (flush_i) begin
+    if (CVA6Cfg.RVH) begin
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
           current_instruction_is_sfence_vma  <= 1'b0;
           current_instruction_is_hfence_vvma <= 1'b0;
           current_instruction_is_hfence_gvma <= 1'b0;
-        end else if ((fu_data_i.operation == SFENCE_VMA && !v_i) && csr_valid_i) begin
-          current_instruction_is_sfence_vma <= 1'b1;
-        end else if (((fu_data_i.operation == SFENCE_VMA && v_i) || fu_data_i.operation == HFENCE_VVMA) && csr_valid_i) begin
-          current_instruction_is_hfence_vvma <= 1'b1;
-        end else if ((fu_data_i.operation == HFENCE_GVMA) && csr_valid_i) begin
-          current_instruction_is_hfence_gvma <= 1'b1;
+        end else begin
+          if (flush_i) begin
+            current_instruction_is_sfence_vma  <= 1'b0;
+            current_instruction_is_hfence_vvma <= 1'b0;
+            current_instruction_is_hfence_gvma <= 1'b0;
+          end else if ((fu_data_i.operation == SFENCE_VMA && !v_i) && csr_valid_i) begin
+            current_instruction_is_sfence_vma <= 1'b1;
+          end else if (((fu_data_i.operation == SFENCE_VMA && v_i) || fu_data_i.operation == HFENCE_VVMA) && csr_valid_i) begin
+            current_instruction_is_hfence_vvma <= 1'b1;
+          end else if ((fu_data_i.operation == HFENCE_GVMA) && csr_valid_i) begin
+            current_instruction_is_hfence_gvma <= 1'b1;
+          end
+        end
+      end
+    end else begin
+      assign current_instruction_is_hfence_vvma = 1'b0;
+      assign current_instruction_is_hfence_gvma = 1'b0;
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+          current_instruction_is_sfence_vma <= 1'b0;
+        end else begin
+          if (flush_i) begin
+            current_instruction_is_sfence_vma <= 1'b0;
+          end else if (fu_data_i.operation == SFENCE_VMA && csr_valid_i) begin
+            current_instruction_is_sfence_vma <= 1'b1;
+          end
         end
       end
     end
-
-    // This process stores the rs1 and rs2 parameters of a SFENCE_VMA instruction.
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (~rst_ni) begin
-        vmid_to_be_flushed   <= '0;
-        asid_to_be_flushed   <= '0;
-        vaddr_to_be_flushed  <= '0;
-        gpaddr_to_be_flushed <= '0;
-        // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
-      end else if ((~(current_instruction_is_sfence_vma || current_instruction_is_hfence_vvma || current_instruction_is_hfence_gvma)) && (~((fu_data_i.operation == SFENCE_VMA || fu_data_i.operation == HFENCE_VVMA || fu_data_i.operation == HFENCE_GVMA ) && csr_valid_i))) begin
-        vaddr_to_be_flushed  <= rs1_forwarding_i;
-        gpaddr_to_be_flushed <= rs1_forwarding_i >> 2;
-        asid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
-        vmid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.VMID_WIDTH-1:0];
+    if (CVA6Cfg.RVH) begin
+      // This process stores the rs1 and rs2 parameters of a SFENCE_VMA instruction.
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+          vmid_to_be_flushed   <= '0;
+          asid_to_be_flushed   <= '0;
+          vaddr_to_be_flushed  <= '0;
+          gpaddr_to_be_flushed <= '0;
+          // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
+        end else if ((~(current_instruction_is_sfence_vma || current_instruction_is_hfence_vvma || current_instruction_is_hfence_gvma)) && (~((fu_data_i.operation == SFENCE_VMA || fu_data_i.operation == HFENCE_VVMA || fu_data_i.operation == HFENCE_GVMA ) && csr_valid_i))) begin
+          vaddr_to_be_flushed  <= rs1_forwarding_i;
+          gpaddr_to_be_flushed <= rs1_forwarding_i >> 2;
+          asid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
+          vmid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.VMID_WIDTH-1:0];
+        end
       end
-    end 
+    end else begin
+      assign vmid_to_be_flushed   = '0;
+      assign gpaddr_to_be_flushed = '0;
+      // This process stores the rs1 and rs2 parameters of a SFENCE_VMA instruction.
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+          asid_to_be_flushed  <= '0;
+          vaddr_to_be_flushed <= '0;
+          // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
+        end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operation == SFENCE_VMA) && csr_valid_i))) begin
+          vaddr_to_be_flushed <= rs1_forwarding_i;
+          asid_to_be_flushed  <= rs2_forwarding_i[ASID_WIDTH-1:0];
+        end
+      end
+    end
   end else begin
-    assign current_instruction_is_sfence_vma = 1'b0;
+    assign current_instruction_is_sfence_vma  = 1'b0;
     assign current_instruction_is_hfence_vvma = 1'b0;
     assign current_instruction_is_hfence_gvma = 1'b0;
-    assign asid_to_be_flushed                = '0;
-    assign vaddr_to_be_flushed               = '0;
-    assign vmid_to_be_flushed                = '0;
-    assign gpaddr_to_be_flushed              = '0;
+    assign asid_to_be_flushed                 = '0;
+    assign vaddr_to_be_flushed                = '0;
+    assign vmid_to_be_flushed                 = '0;
+    assign gpaddr_to_be_flushed               = '0;
   end
 
 endmodule
