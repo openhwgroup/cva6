@@ -189,7 +189,7 @@ CV32A60AX integrates an MMU and supports both the **Bare** and **Sv32** addressi
 CV32A60X virtual memory
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-CV32A60AX integrates no MMU and only supports the **Bare** addressing mode.
+CV32A60X integrates no MMU and only supports the **Bare** addressing mode.
 
 
 Memory Alignment
