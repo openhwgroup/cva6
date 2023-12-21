@@ -1,6 +1,36 @@
-============================
-Zbb: Basic bit-manipulation
-============================
+..
+   Copyright (c) 2023 OpenHW Group
+   Copyright (c) 2023 10xEngineers
+
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+
+.. Level 1
+   =======
+
+   Level 2
+   -------
+
+   Level 3
+   ~~~~~~~
+
+   Level 4
+   ^^^^^^^
+
+.. _cva6_riscv_instructions_RV32Zbb:
+
+*Applicability of this chapter to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60AX", "Implemented extension"
+   "CV32A60X", "Implemented extension"
+
+=============================
+RVZbb: Basic bit-manipulation
+=============================
 
 The following instructions comprise the Zbb extension:
 
@@ -17,6 +47,10 @@ The Logical with Negate instructions can be implemented by inverting the rs2 inp
 +-----------+-----------+-----------------------+
 | ✔         | ✔         | xnor rd, rs1, rs2     |
 +-----------+-----------+-----------------------+
+
+RV32 and RV64 Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 - **ANDN**: AND with inverted operand
 
@@ -71,23 +105,14 @@ These instructions are used to count the leading/trailing zero bits.
 |           | ✔         | ctzw rd, rs           |
 +-----------+-----------+-----------------------+
 
+RV32 and RV64 Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 - **CLZ**: Count leading zero bits
 
     **Format**: clz rd, rs 
 
     **Description**: This instruction counts the number of 0’s before the first 1, starting at the most-significant bit (i.e., XLEN-1) and progressing to bit 0. Accordingly, if the input is 0, the output is XLEN, and if the most-significant bit of the input is a 1, the output is 0
-
-    **Pseudocode**: if [x[i]] == 1 then return(i) else return -1
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-- **CLZW**: Count leading zero bits in word
-
-    **Format**: clzw rd, rs
-
-    **Description**: This instruction counts the number of 0’s before the first 1 starting at bit 31 and progressing to bit 0. Accordingly, if the least-significant word is 0, the output is 32, and if the most-significant bit of the word (i.e., bit 31) is a 1, the output is 0.
 
     **Pseudocode**: if [x[i]] == 1 then return(i) else return -1
 
@@ -107,6 +132,21 @@ These instructions are used to count the leading/trailing zero bits.
 
     **Exception raised**: NONE
 
+RV64 specific instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~	
+
+- **CLZW**: Count leading zero bits in word
+
+    **Format**: clzw rd, rs
+
+    **Description**: This instruction counts the number of 0’s before the first 1 starting at bit 31 and progressing to bit 0. Accordingly, if the least-significant word is 0, the output is 32, and if the most-significant bit of the word (i.e., bit 31) is a 1, the output is 0.
+
+    **Pseudocode**: if [x[i]] == 1 then return(i) else return -1
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
 - **CTZW**: Count trailing zero bits in word
 
     **Format**: ctzw rd, rs 
@@ -119,7 +159,7 @@ These instructions are used to count the leading/trailing zero bits.
 
     **Exception raised**: NONE
 
-
+	
 Count population
 -------------------
 These instructions count the number of set bits (1-bits). This is also commonly referred to as population count.
@@ -131,6 +171,9 @@ These instructions count the number of set bits (1-bits). This is also commonly 
 +-----------+-----------+-----------------------+
 |           | ✔         | cpopw rd, rs          |
 +-----------+-----------+-----------------------+
+
+RV32 and RV64 Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **CPOP**: Count set bits
 
@@ -144,6 +187,9 @@ These instructions count the number of set bits (1-bits). This is also commonly 
 
     **Exception raised**: NONE
 
+RV64 specific instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	
 - **CPOPW**: Count set bits in word
 
     **Format**: cpopw rd, rs 
@@ -173,6 +219,9 @@ The integer minimum/maximum instructions are arithmetic R-type instructions that
 +-----------+-----------+-----------------------+
 | ✔         | ✔         | minu rd, rs1, rs2     |
 +-----------+-----------+-----------------------+
+
+RV32 and RV64 Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **MAX**: Maximum
 
@@ -239,6 +288,9 @@ These instructions replace the generalized idioms slli rD,rS,(XLEN-<size>) + srl
 | ✔         | ✔         | zext.h rd, rs         |
 +-----------+-----------+-----------------------+
 
+RV32 and RV64 Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 - **SEXT.B**: Sign-extend byte
 
     **Format**: sext.b rd, rs 
@@ -295,6 +347,9 @@ Bitwise rotation instructions are similar to the shift-logical operations from t
 |           | ✔         | rorw rd, rs1, rs2     |
 +-----------+-----------+-----------------------+
 
+RV32 and RV64 Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 - **ROL**: Rotate Left (Register)
 
     **Format**: rol rd, rs1, rs2
@@ -302,18 +357,6 @@ Bitwise rotation instructions are similar to the shift-logical operations from t
     **Description**: This instruction performs a rotate left of rs1 by the amount in least-significant log2(XLEN) bits of rs2.
 
     **Pseudocode**: (X(rs1) << log2(XLEN)) | (X(rs1) >> (xlen - log2(XLEN)))
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-- **ROLW**: Rotate Left Word (Register)
-
-    **Format**: rolw rd, rs1, rs2
-
-    **Description**: This instruction performs a rotate left on the least-significant word of rs1 by the amount in least-significant 5 bits of rs2. The resulting word value is sign-extended by copying bit 31 to all of the more-significant bits.
-
-    **Pseudocode**: EXTS((rs1 << X(rs2)[4..0];) | (rs1 >> (32 - X(rs2)[4..0];)))
 
     **Invalid values**: NONE
 
@@ -343,6 +386,21 @@ Bitwise rotation instructions are similar to the shift-logical operations from t
 
     **Exception raised**: NONE
 
+RV64 specific instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	
+- **ROLW**: Rotate Left Word (Register)
+
+    **Format**: rolw rd, rs1, rs2
+
+    **Description**: This instruction performs a rotate left on the least-significant word of rs1 by the amount in least-significant 5 bits of rs2. The resulting word value is sign-extended by copying bit 31 to all of the more-significant bits.
+
+    **Pseudocode**: EXTS((rs1 << X(rs2)[4..0];) | (rs1 >> (32 - X(rs2)[4..0];)))
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
 - **RORIW**: Rotate Right Word by Immediate
 
     **Format**: roriw rd, rs1, shamt
@@ -366,7 +424,7 @@ Bitwise rotation instructions are similar to the shift-logical operations from t
     **Invalid values**: NONE
 
     **Exception raised**: NONE
-
+	
 OR Combine
 ------------
 orc.b sets the bits of each byte in the result rd to all zeros if no bit within the respective byte of rs is set, or to all ones if any bit within the respective byte of rs is set.
@@ -378,6 +436,9 @@ One use-case is string-processing functions, such as strlen and strcpy, which ca
 +===========+===========+=======================+
 | ✔         | ✔         | orc.b rd, rs          |
 +-----------+-----------+-----------------------+
+
+RV32 and RV64 Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **ORC.B**: Bitwise OR-Combine, byte granule
 
@@ -400,6 +461,9 @@ rev8 reverses the byte-ordering of rs.
 +===========+===========+=======================+
 | ✔         | ✔         | rev8 rd, rs           |
 +-----------+-----------+-----------------------+
+
+RV32 and RV64 Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **REV8**: Byte-reverse register
 

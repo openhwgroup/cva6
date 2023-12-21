@@ -31,6 +31,10 @@ In the next pages, the ISA (Instruction Set Architecture) for various CVA6 confi
 * RV32M        – Standard Extension for Integer Multiplication and Division Instructions
 * RV32A        – Standard Extension for Atomic Instructions
 * RV32C        – Standard Extension for Compressed Instructions
+* RVZba        - Standard Extension for Bit Manipulation: Address generation instructions (RV32 and RV64)
+* RVZbb        - Standard Extension for Bit Manipulation: Basic bit manipulation (RV32 and RV64)
+* RVZbc        - Standard Extension for Bit Manipulation: Carry-less multiplication (RV32 and RV64)
+* RVZbs        - Standard Extension for Bit Manipulation: Single-bit instructions (RV32 and RV64)
 * RV32Zcb      – Standard Extension for Code Size Reduction
 * RVZicsr      – Standard Extension for CSR Instructions
 * RVZifencei   – Standard Extension for Instruction-Fetch Fence

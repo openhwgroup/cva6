@@ -25,8 +25,8 @@
    :align: left
    :header: "Configuration", "Implementation"
 
-   "CV32A60X", "Performance counters included"
-   "CV32A60MX", "No performance counters"
+   "CV32A60AX", "Performance counters included"
+   "CV32A60X", "No performance counters"
 
 CSR performance counters control
 ================================

@@ -1,5 +1,36 @@
+..
+   Copyright (c) 2023 OpenHW Group
+   Copyright (c) 2023 10xEngineers
+
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+
+.. Level 1
+   =======
+
+   Level 2
+   -------
+
+   Level 3
+   ~~~~~~~
+
+   Level 4
+   ^^^^^^^
+
+.. _cva6_riscv_instructions_RV32Zba:
+
+*Applicability of this chapter to configurations:*
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Configuration", "Implementation"
+
+   "CV32A60AX", "Implemented extension"
+   "CV32A60X", "Implemented extension"
+
+   
 ======================================
-Zba: Address generation instructions
+RVZba: Address generation instructions
 ======================================
 The Zba instructions can be used to accelerate the generation of addresses that index into arrays of basic types (halfword, word, doubleword) using both unsigned word-sized and XLEN-sized indices: a shifted index is added to a base address.
 
@@ -29,17 +60,9 @@ The following instructions (and pseudoinstructions) comprise the Zba extension:
 |           | ✔         | slli.uw rd, rs1, imm  |
 +-----------+-----------+-----------------------+
 
-- **ADD.UW**: Add unsigned word
+RV32 and RV64 Instructions
+--------------------------
 
-    **Format**: add.uw rd, rs1, rs2
-
-    **Description**: This instruction performs an XLEN-wide addition between rs2 and the zero-extended least-significant word of rs1.
-
-    **Pseudocode**: X(rd) = rs2 + EXTZ(X(rs1)[31..0])
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
 
 - **SH1ADD**: Shift left by 1 and add
 
@@ -48,18 +71,6 @@ The following instructions (and pseudoinstructions) comprise the Zba extension:
     **Description**: This instruction shifts rs1 to the left by 1 bit and adds it to rs2.
 
     **Pseudocode**: X(rd) = X(rs2) + (X(rs1) << 1)
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
-- **SH1ADD.UW**: Shift unsigned word left by 1 and add
-
-    **Format**: sh1add.uw rd, rs1, rs2
-
-    **Description**: This instruction performs an XLEN-wide addition of two addends. The first addend is rs2. The second addend is the unsigned value formed by extracting the least-significant word of rs1 and shifting it left by 1 place.
-
-    **Pseudocode**: X(rd) = rs2 + (EXTZ(X(rs1)[31..0]) << 1)
 
     **Invalid values**: NONE
 
@@ -77,18 +88,6 @@ The following instructions (and pseudoinstructions) comprise the Zba extension:
 
     **Exception raised**: NONE
 
-- **SH2ADD.UW**: Shift unsigned word left by 2 and add
-
-    **Format**: sh2add.uw rd, rs1, rs2
-
-    **Description**: This instruction performs an XLEN-wide addition of two addends. The first addend is rs2. The second addend is the unsigned value formed by extracting the least-significant word of rs1 and shifting it left by 2 places.
-
-    **Pseudocode**: X(rd) = rs2 + (EXTZ(X(rs1)[31..0]) << 2)
-
-    **Invalid values**: NONE
-
-    **Exception raised**: NONE
-
 - **SH3ADD**: Shift left by 3 and add
 
     **Format**: sh3add rd, rs1, rs2
@@ -100,6 +99,46 @@ The following instructions (and pseudoinstructions) comprise the Zba extension:
     **Invalid values**: NONE
 
     **Exception raised**: NONE    
+
+
+RV64 specific instructions
+--------------------------
+
+- **ADD.UW**: Add unsigned word
+
+    **Format**: add.uw rd, rs1, rs2
+
+    **Description**: This instruction performs an XLEN-wide addition between rs2 and the zero-extended least-significant word of rs1.
+
+    **Pseudocode**: X(rd) = rs2 + EXTZ(X(rs1)[31..0])
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+- **SH1ADD.UW**: Shift unsigned word left by 1 and add
+
+    **Format**: sh1add.uw rd, rs1, rs2
+
+    **Description**: This instruction performs an XLEN-wide addition of two addends. The first addend is rs2. The second addend is the unsigned value formed by extracting the least-significant word of rs1 and shifting it left by 1 place.
+
+    **Pseudocode**: X(rd) = rs2 + (EXTZ(X(rs1)[31..0]) << 1)
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
+
+- **SH2ADD.UW**: Shift unsigned word left by 2 and add
+
+    **Format**: sh2add.uw rd, rs1, rs2
+
+    **Description**: This instruction performs an XLEN-wide addition of two addends. The first addend is rs2. The second addend is the unsigned value formed by extracting the least-significant word of rs1 and shifting it left by 2 places.
+
+    **Pseudocode**: X(rd) = rs2 + (EXTZ(X(rs1)[31..0]) << 2)
+
+    **Invalid values**: NONE
+
+    **Exception raised**: NONE
 
 - **SH3ADD.UW**: Shift unsigned word left by 3 and add
 
@@ -124,5 +163,3 @@ The following instructions (and pseudoinstructions) comprise the Zba extension:
     **Invalid values**: NONE
 
     **Exception raised**: NONE   
-   
-

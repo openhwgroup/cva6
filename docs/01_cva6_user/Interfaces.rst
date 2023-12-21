@@ -32,8 +32,8 @@ The AXI interface is described in a separate chapter.
    :align: left
    :header: "Configuration", "Implementation"
 
+   "CV32A60AX", "AXI implemented"
    "CV32A60X", "AXI implemented"
-   "CV32A60MX", "AXI implemented"
 
 Debug Interface
 ---------------
@@ -50,8 +50,8 @@ Debug Interface
    :align: left
    :header: "Configuration", "Implementation"
 
-   "CV32A60X", "Debug interface implemented"
-   "CV32A60MX", "No debug interface"
+   "CV32A60AX", "Debug interface implemented"
+   "CV32A60X", "No debug interface"
 
 Interrupt Interface
 -------------------
@@ -75,5 +75,5 @@ For more information, refer to OpenPiton documents.
    :align: left
    :header: "Configuration", "Implementation"
 
+   "CV32A60AX", "No TRI interface"
    "CV32A60X", "No TRI interface"
-   "CV32A60MX", "No TRI interface"

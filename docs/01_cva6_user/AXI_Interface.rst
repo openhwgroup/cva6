@@ -24,8 +24,8 @@ In order to understand how the AXI memory interface behaves in CVA6, it is neces
    :align: left
    :header: "Configuration", "Implementation"
 
+   "CV32A60AX", "AXI included"
    "CV32A60X", "AXI included"
-   "CV32A60MX", "AXI included"
 
 About the AXI4 protocol
 ~~~~~~~~~~~~~~~~~~~~~~~
