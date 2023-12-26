@@ -40,7 +40,7 @@ On macOS, you can use [Homebrew](http://brew.sh) to install the dependencies:
 
 ## Getting started
 
-Once the prerequisites (see [below](#prerequisites)) are satisfied, you can fetch and build the
+Once the prerequisites (see [above](#prerequisites)) are satisfied, you can fetch and build the
 upstream GCC toolchain (default: 13.1.0) for bare-metal 32-bit and 64-bit applications in just three steps.
 
     # 1. Select an installation location for the toolchain (here: the default RISC-V tooling directory $RISCV).

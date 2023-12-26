@@ -34,16 +34,24 @@ cd cva6
 git submodule update --init --recursive
 ```
 
-2. Install the [GCC Toolchain](file:util/gcc-toolchain-builder/README.md#Prerequisites).
+2. Install the GCC Toolchain [build prerequisites](util/gcc-toolchain-builder/README.md#Prerequisites) then [the toolchain itself](util/gcc-toolchain-builder/README.md#Getting-started).
 
-:warning: It is **strongly recommanded** to use the toolchain built with the provided scripts.
+:warning: It is **strongly recommended** to use the toolchain built with the provided scripts.
 
 3. Set the RISCV environment variable.
 ```sh
 export RISCV=/path/to/toolchain/installation/directory
 ```
 
-4. Run these commands to install a custom Spike and Verilator (i.e. these versions must be used to simulate the CVA6) and [these](#running-regression-tests-simulations) tests suites.
+4. Install `help2man` and `device-tree-compiler` packages. 
+
+For Debian-based Linux distributions, run :
+
+```sh
+sudo apt-get install help2man device-tree-compiler
+```
+
+5. Run these commands to install a custom Spike and Verilator (i.e. these versions must be used to simulate the CVA6) and [these](#running-regression-tests-simulations) tests suites.
 ```sh
 # DV_SIMULATORS is detailed in the next section
 export DV_SIMULATORS=veri-testharness,spike
