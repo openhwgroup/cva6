@@ -1,6 +1,7 @@
 
 plan "CVA6 Verification Master Plan";
 
+    attribute string Comment = "";
 
     description = "CVA6 Verification Master Plan";
     feature "Programmer view level";
@@ -608,6 +609,7 @@ plan "CVA6 Verification Master Plan";
             endfeature
             feature "Illegal instructions";
                 weight = 0;
+                Comment = "RVFI limitation issue(#1338)";
                 measure Group illegal_instructions;
                 endmeasure
             endfeature
@@ -1343,6 +1345,11 @@ plan "CVA6 Verification Master Plan";
                 measure Group Features;
                 endmeasure
             endfeature
+            feature "Code Coverage";
+                measure Line, Cond, Toggle, Assert, SnpsAvg AXI;
+                    source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.gen_cache_wt.i_cache_subsystem.i_adapter.i_axi_shim";
+                endmeasure
+            endfeature
             feature Assertions;
                 measure Assert axi_protocol_assertion;
                     source = "property: **.axi_ar_assert.*", "property: **.axi_aw_assert.*", "property: **.axi_b_assert.*", "property: **.axi_r_assert.*", "property: **.axi_w_assert.*";
@@ -1361,6 +1368,11 @@ plan "CVA6 Verification Master Plan";
                 endmeasure
                 measure Assert Assertions;
                     source = "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_commit_after_n_cycle", "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_commit_kill", "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_commit_same_cycle", "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_commit_valid_pulse", "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_issue_multic", "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_issue_resp_null_when_n_accept", "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_res_multic", "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_res_multic_we", "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_result_dualwrite", "property: uvmt_cva6_tb.cva6_dut_wrap.cvxif_assert.c_sync_exc";
+                endmeasure
+            endfeature
+            feature "Code Coverage";
+                measure Line, Cond, Toggle, Assert, SnpsAvg CVXIF;
+                    source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.ex_stage_i.gen_cvxif.cvxif_fu_i";
                 endmeasure
             endfeature
             feature "Extended instructions";
