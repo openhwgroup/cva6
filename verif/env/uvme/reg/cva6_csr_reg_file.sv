@@ -96,22 +96,22 @@ class reg_mstatus extends csr_reg;
       MPRV: coverpoint data[17:17];
       XS: coverpoint data[16:15] {
          bins legal_values[] = {0};
-         //GIT ISSUE #1417: illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
       FS: coverpoint data[14:13] {
          bins legal_values[] = {0};
-         //GIT ISSUE #1417: illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
       MPP: coverpoint data[12:11];
       VS: coverpoint data[10:9] {
          bins legal_values[] = {0};
-         //GIT ISSUE #1417: illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
       SPP: coverpoint data[8:8];
       MPIE: coverpoint data[7:7];
       UBE: coverpoint data[6:6] {
          bins legal_values[] = {0};
-         //GIT ISSUE #1417: illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
       SPIE: coverpoint data[5:5];
       MIE: coverpoint data[3:3];
