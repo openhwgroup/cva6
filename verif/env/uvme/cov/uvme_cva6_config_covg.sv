@@ -121,7 +121,7 @@ covergroup cg_cva6_config(string name) with function sample();
       bins NrStorePipeRegs ={0};
    }
    cp_NrLoadBufEntries : coverpoint cva6_config_pkg::CVA6ConfigNrLoadBufEntries {
-      bins NrLoadBufEntries ={2};
+      bins NrLoadBufEntries ={1};
    }
    cp_InstrTlbEntries : coverpoint cva6_config_pkg::CVA6ConfigInstrTlbEntries {
       bins InstrTlbEntries ={2};
@@ -130,7 +130,7 @@ covergroup cg_cva6_config(string name) with function sample();
       bins DataTlbEntries ={2};
    }
    cp_RASDepth : coverpoint cva6_config_pkg::CVA6ConfigRASDepth {
-      bins RASDepth ={0};
+      bins RASDepth ={2};
    }
    cp_BTBEntries : coverpoint cva6_config_pkg::CVA6ConfigBTBEntries {
       bins BTBEntries ={0};
