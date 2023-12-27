@@ -256,8 +256,9 @@ class reg_misa extends csr_reg;
          illegal_bins illegal_values = {[0:$]} with (!(item inside {1}));
       }
       Extensions: coverpoint data[25:0] {
-         bins legal_values[] = {26'h0001104};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {26'h0001104}));
+         bins legal_values[] = {26'h0001106};
+         //TODO : Fix issue#1734
+         //illegal_bins illegal_values = {[0:$]} with (!(item inside {26'h0001106}));
       }
   endgroup
 
@@ -269,8 +270,8 @@ class reg_misa extends csr_reg;
          bins illegal_values[] = {[0:$]} with (!(item inside {1}));
       }
       Extensions: coverpoint data[25:0] {
-         bins legal_values[] = {26'h0001104};
-         bins illegal_values[3] = {[0:$]} with (!(item inside {26'h0001104}));
+         bins legal_values[] = {26'h0001106};
+         bins illegal_values[3] = {[0:$]} with (!(item inside {26'h0001106}));
       }
   endgroup
 
@@ -297,7 +298,7 @@ class reg_misa extends csr_reg;
     MXL.configure(.parent(this), .size(2), .lsb_pos(30), .access("RW"), .volatile(0), .reset(0), .has_reset(1), .is_rand(1),  .individually_accessible(0));  
    
     Extensions = uvm_reg_field::type_id::create("Extensions");   
-    Extensions.configure(.parent(this), .size(26), .lsb_pos(0), .access("RW"), .volatile(0), .reset(37782532), .has_reset(1), .is_rand(1),  .individually_accessible(0));  
+    Extensions.configure(.parent(this), .size(26), .lsb_pos(0), .access("RW"), .volatile(0), .reset(26'h0001106), .has_reset(1), .is_rand(1),  .individually_accessible(0));  
   endfunction
 
   virtual function void sample(uvm_reg_data_t data, uvm_reg_data_t byte_en,bit is_read, uvm_reg_map map);
