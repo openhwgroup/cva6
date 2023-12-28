@@ -1,0 +1,32 @@
+# Copyright 2024 Thales DIS design services SAS
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https:#solderpad.org/licenses/
+#
+# Original Author: Ayoub JALALI (ayoub.jalali@external.thalesgroup.com)
+
+# ================================================================================
+#                  Regression test list format
+# --------------------------------------------------------------------------------
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulator (Optional)
+# gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
+# gcc_opts        : gcc compile options
+# --------------------------------------------------------------------------------
+
+- test: jump_to_zero
+  iterations: 1
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
+  asm_tests: <path_var>/custom/interrupt/jump_to_zero.S

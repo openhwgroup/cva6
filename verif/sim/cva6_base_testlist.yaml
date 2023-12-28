@@ -730,3 +730,34 @@
   iterations: 2
   gen_test: cva6_instr_hazard_test_c
   rtl_test: core_base_test
+
+- test: riscv_interrupt_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions no compressed
+  gcc_opts: >
+    -static
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_data_page=1
+    +enable_interrupt=1
+    +enable_timer_irq=1
+    +no_branch_jump=1
+    +no_wfi=0
+    +boot_mode=m
+    +no_csr_instr=1
+    +tvec_alignment=8
+    +disable_compressed_instr=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
+    +enable_zcb_extension=1
+  iterations: 2
+  gen_test: cva6_instr_base_test_c
+  rtl_test: core_base_test
