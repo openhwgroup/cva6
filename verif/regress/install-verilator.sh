@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2021 Thales DIS design services SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
@@ -7,21 +8,18 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
+# Customise this to a fast local disk
+ROOT_PROJECT=$(readlink -f $(dirname "${BASH_SOURCE[0]}")/../../)
+
 if [ -z "$NUM_JOBS" ]; then
     NUM_JOBS=1
-fi
-
-# Ensure the location of tools is known (usually, .../core-v-verif/tools).
-if [ -z "$TOP" ]; then
-  echo "Error: location of core-v-verif 'tools' tree (\$TOP) is not defined."
-  return
 fi
 
 VERILATOR_REPO="https://github.com/verilator/verilator.git"
 VERILATOR_BRANCH="master"
 # Use the release tag instead of a full SHA1 hash.
 VERILATOR_HASH="v5.018"
-VERILATOR_PATCH="$TOP/../verif/regress/verilator-v5.patch"
+VERILATOR_PATCH="$ROOT_PROJECT/verif/regress/verilator-v5.patch"
 
 # Unset historical variable VERILATOR_ROOT as it collides with the build process.
 if [ -n "$VERILATOR_ROOT" ]; then
@@ -31,7 +29,7 @@ fi
 # Define the default src+build location of Verilator.
 # No need to force this location in Continuous Integration scripts.
 if [ -z "$VERILATOR_BUILD_DIR" ]; then
-  export VERILATOR_BUILD_DIR=${TOP}/verilator-$VERILATOR_HASH/verilator
+  VERILATOR_BUILD_DIR="$ROOT_PROJECT"/tools/verilator-$VERILATOR_HASH/verilator
 fi
 
 # Define the default installation location of Verilator: one level up
@@ -39,7 +37,7 @@ fi
 # Continuous Integration may need to override this particular variable
 # to use a preinstalled build of Verilator.
 if [ -z "$VERILATOR_INSTALL_DIR" ]; then
-  export VERILATOR_INSTALL_DIR="$(dirname $VERILATOR_BUILD_DIR)"
+  VERILATOR_INSTALL_DIR="$(dirname $VERILATOR_BUILD_DIR)"
 fi
 
 # Build and install Verilator only if not already installed at the expected
@@ -71,9 +69,5 @@ if [ ! -f "$VERILATOR_INSTALL_DIR/bin/verilator" ]; then
     #make test || echo "### 'make test' in $VERILATOR_ROOT: some tests failed."
     cd -
 else
-    echo "Using Verilator from cached directory $VERILATOR_INSTALL_DIR."
+    echo "Verilator already installed in $VERILATOR_INSTALL_DIR."
 fi
-
-# Update PATH to match the verilator installation.
-export PATH="$VERILATOR_INSTALL_DIR/bin:$PATH"
-

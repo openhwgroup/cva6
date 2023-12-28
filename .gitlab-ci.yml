@@ -216,7 +216,7 @@ asic-synthesis:
     - echo $PERIOD
     - echo $TECH_NAME
     - echo $DV_TARGET
-    - source verif/regress/install-cva6.sh
+    - source ./verif/sim/setup-env.sh
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
     - make -C pd/synth cva6_synth TARGET="$DV_TARGET"
     - mv pd/synth/cva6_${DV_TARGET}_synth_modified.v artifacts/cva6_${DV_TARGET}_synth_modified.v
@@ -233,7 +233,7 @@ fpga-build:
     TARGET: cv32a60x
   script:
     - source $VIVADO_SETUP
-    - source verif/regress/install-cva6.sh
+    - source ./verif/sim/setup-env.sh
     - make fpga target=$TARGET
     - mkdir -p artifacts/reports
     - mv corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
@@ -460,8 +460,7 @@ smoke-gate:
     - echo $FOUNDRY_PATH
     - echo $PERIOD
     - echo $TECH_NAME
-    - source verif/regress/install-cva6.sh
-    - source verif/regress/install-riscv-dv.sh
+    - source ./verif/sim/setup-env.sh
     - source verif/regress/install-riscv-tests.sh
     - mv artifacts/cva6_${DV_TARGET}_synth_modified.v pd/synth/cva6_${DV_TARGET}_synth_modified.v
     - cd verif/sim
@@ -481,10 +480,8 @@ fpga-boot:
     DASHBOARD_JOB_DESCRIPTION: "Test of Linux 32 bits boot on FPGA Genesys2"
     DASHBOARD_SORT_INDEX: 10
     DASHBOARD_JOB_CATEGORY: "Synthesis"
-    VERILATOR_INSTALL_DIR: "NO" # Skip install and checks of verilator
-    SPIKE_INSTALL_DIR: "NO"  # Skip install and checks of spike
   script:
-    - source verif/regress/install-cva6.sh
+    - source ./verif/sim/setup-env.sh
     - source $VIVADO2022_SETUP
     - mkdir -p corev_apu/fpga/work-fpga
     - mv artifacts/ariane_xilinx_cv32a60x.bit corev_apu/fpga/work-fpga/ariane_xilinx.bit

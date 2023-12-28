@@ -14,8 +14,10 @@ if [ -z "$RISCV" ]; then
 fi
 
 # install the required tools
-source verif/regress/install-cva6.sh
-source verif/regress/install-riscv-dv.sh
+source ./verif/regress/install-verilator.sh
+source ./verif/regress/install-spike.sh
+
+source ./verif/sim/setup-env.sh
 
 if [ -z "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness,spike
