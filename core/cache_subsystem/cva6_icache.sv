@@ -321,7 +321,7 @@ module cva6_icache
               // only write to cache if this address is cacheable
               cache_wren   = ~paddr_is_nc;
             end
-          // bail out if this request is being killed
+            // bail out if this request is being killed
           end else if (dreq_i.kill_s2 || flush_d) begin
             state_d = IDLE;
             // track if there is an outstanding miss,
