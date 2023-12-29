@@ -257,9 +257,8 @@ module issue_read_operands
           end
         end
         CSR: begin
-          fus_busy[1].alu = 1'b1;
-          fus_busy[1].ctrl_flow = 1'b1;
-          fus_busy[1].csr = 1'b1;
+          // Control hazard
+          fus_busy[1] = '1;
         end
         MULT:  fus_busy[1].mult = 1'b1;
         FPU, FPU_VEC: begin
