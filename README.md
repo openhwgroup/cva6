@@ -51,10 +51,10 @@ For Debian-based Linux distributions, run :
 sudo apt-get install help2man device-tree-compiler
 ```
 
-5. Install the riscv-dv requirements :
+5. Install the riscv-dv requirements:
 
 ```sh
-pip3 install pip3 install -r verif/sim/dv/requirements.txt
+pip3 install -r verif/sim/dv/requirements.txt
 ```
 
 6. Run these commands to install a custom Spike and Verilator (i.e. these versions must be used to simulate the CVA6) and [these](#running-regression-tests-simulations) tests suites.
