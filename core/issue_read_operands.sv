@@ -219,6 +219,9 @@ module issue_read_operands
     if (CVA6Cfg.SuperscalarEn) begin
       fus_busy[1] = fus_busy[0];
 
+      // Never issue CSR instruction on second issue port.
+      fus_busy[1].csr = 1'b1;
+
       unique case (issue_instr_i[0].fu)
         NONE:  fus_busy[1].none = 1'b1;
         CTRL_FLOW: begin
