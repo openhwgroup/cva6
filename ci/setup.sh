@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 export ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 export ROOT_PROJECT=$ROOT
 
