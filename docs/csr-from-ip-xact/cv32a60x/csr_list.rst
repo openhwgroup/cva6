@@ -7,7 +7,6 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _EMBEDDED_CSR_LIST:
 
 
 CSR list

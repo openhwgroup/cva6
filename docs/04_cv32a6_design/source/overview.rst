@@ -7,7 +7,6 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _EMBEDDED_OVERVIEW:
 
 
 Overview
@@ -15,7 +14,7 @@ Overview
 
 [TO BE COMPLETED]
 
-The CV32A6 v0.1.0 core is fully synthesizable. It has been designed mainly for ASIC designs, but FPGA synthesis is supported as well.
+The CVA6 core is fully synthesizable. It has been designed mainly for ASIC designs, but FPGA synthesis is supported as well.
 
 For ASIC synthesis, the whole design is completely synchronous and uses positive-edge triggered flip-flops. The core occupies an area of about 80 kGE. The clock frequency can be more than 1GHz depending of technology.
 

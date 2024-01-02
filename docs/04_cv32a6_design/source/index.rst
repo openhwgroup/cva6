@@ -8,17 +8,17 @@
    Original Author: Jean-Roch COULON - Thales
 
 
-Embedded CVA6 Design Document
-=============================
+CV32A60X Design Document
+========================
 Editor: **Jean Roch Coulon**
 
 .. toctree::
    :maxdepth: 4
    :caption: Contents:
 
-   embedded_intro
-   embedded_overview
-   embedded_subsystem
-   embedded_functionality
-   embedded_architecture
+   intro
+   overview
+   subsystem
+   functionality
+   architecture
    cv32a6_glossary

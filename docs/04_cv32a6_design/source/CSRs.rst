@@ -14,6 +14,6 @@ CSR
 .. toctree::
    :hidden:
 
-   embedded_csr_list
-   embedded_csr
+   csr_list
+   csr
 

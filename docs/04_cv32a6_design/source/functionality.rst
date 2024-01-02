@@ -7,7 +7,6 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _EMBEDDED_FUNCTIONALITY:
 
 
 Functionality
@@ -16,8 +15,8 @@ Functionality
 .. toctree::
    :hidden:
 
-   embedded_instructions
-   embedded_traps
-   embedded_CSRs
-   embedded_AXI
-   embedded_CVXIF
+   instructions
+   traps
+   CSRs
+   AXI
+   CVXIF
