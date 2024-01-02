@@ -8,4 +8,4 @@
    Original Author: Jean-Roch COULON - Thales
 
 
-.. include:: ../../csr-from-ip-xact/cv32a60mx/csr_list.rst
+.. include:: ../../csr-from-ip-xact/cv32a60x/csr_list.rst
