@@ -26,4 +26,5 @@ tar -x -f $RISCV64_UNKNOWN_ELF_GCC --strip-components=1 -C $RISCV
 
 sudo apt install libfl-dev help2man
 
+bash verif/regress/install-spike.sh
 ci/build-riscv-tests.sh
