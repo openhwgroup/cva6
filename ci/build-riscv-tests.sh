@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 VERSION="eeacd5507db7a0f50ca8c4f27aff220fcbb60bdf"
 

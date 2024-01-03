@@ -18,9 +18,10 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install the required tools
-source verif/regress/install-cva6.sh
-source verif/regress/install-riscv-dv.sh
-source verif/regress/install-spike.sh
+source ./verif/regress/install-verilator.sh
+source ./verif/regress/install-spike.sh
+
+source ./verif/sim/setup-env.sh
 
 if ! [ -n "$DV_TARGET" ]; then
   DV_TARGET=cv32a6_embedded

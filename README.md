@@ -51,7 +51,13 @@ For Debian-based Linux distributions, run :
 sudo apt-get install help2man device-tree-compiler
 ```
 
-5. Run these commands to install a custom Spike and Verilator (i.e. these versions must be used to simulate the CVA6) and [these](#running-regression-tests-simulations) tests suites.
+5. Install the riscv-dv requirements:
+
+```sh
+pip3 install -r verif/sim/dv/requirements.txt
+```
+
+6. Run these commands to install a custom Spike and Verilator (i.e. these versions must be used to simulate the CVA6) and [these](#running-regression-tests-simulations) tests suites.
 ```sh
 # DV_SIMULATORS is detailed in the next section
 export DV_SIMULATORS=veri-testharness,spike
@@ -81,9 +87,9 @@ If exactly 2 simulators are given, their trace is compared ([see the Regression 
 Here is how you can run the hello world C program with the Verilator model: 
 
 ```sh
-# Make sure to source these 2 scripts to correctly set the environment variables related to the tools
-source ./verif/regress/install-cva6.sh
-source ./verif/regress/install-riscv-dv.sh
+# Make sure to source this script from the root directory 
+# to correctly set the environment variables related to the tools
+source verif/sim/setup-env.sh
 
 # Set the NUM_JOBS variable to increase the number of parallel make jobs
 # export NUM_JOBS=
@@ -387,4 +393,3 @@ If you use CVA6 in your academic work you can cite us:
 # Acknowledgements
 
 Check out the [acknowledgements](ACKNOWLEDGEMENTS.md).
-

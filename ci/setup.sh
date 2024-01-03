@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 export ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 export ROOT_PROJECT=$ROOT
 
@@ -25,5 +26,6 @@ tar -x -f $RISCV64_UNKNOWN_ELF_GCC --strip-components=1 -C $RISCV
 
 sudo apt install libfl-dev help2man
 
-verif/regress/install-cva6.sh
+bash verif/regress/install-verilator.sh
+(source verif/sim/setup-env.sh; bash verif/regress/install-spike.sh)
 ci/build-riscv-tests.sh
