@@ -50,6 +50,7 @@ jobs:
         name: compiled-tools
     - name: Run Tests
       run: |
+          set -x
           tar xf tools.tar
           tar xf tmp.tar
           source verif/sim/setup-env.sh
