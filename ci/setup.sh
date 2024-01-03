@@ -26,5 +26,6 @@ tar -x -f $RISCV64_UNKNOWN_ELF_GCC --strip-components=1 -C $RISCV
 
 sudo apt install libfl-dev help2man
 
-(source verif/sim/setup-env.sh; bash verif/regress/install-verilator.sh; bash verif/regress/install-spike.sh)
+bash verif/regress/install-verilator.sh
+(source verif/sim/setup-env.sh; bash verif/regress/install-spike.sh)
 ci/build-riscv-tests.sh
