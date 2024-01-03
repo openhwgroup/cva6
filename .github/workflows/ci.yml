@@ -53,5 +53,4 @@ jobs:
           tar xf tools.tar
           tar xf tmp.tar
           source verif/sim/setup-env.sh
-          bash verif/regress/install-verilator.sh
           make run-${{ matrix.testcase}}-verilator target=${{ matrix.target }}
