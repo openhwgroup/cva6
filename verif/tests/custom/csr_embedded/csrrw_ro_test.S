@@ -903,17 +903,17 @@ main:
     ##########################
     #MVENDORID testing W/R values '{'hffff3fbf, 'hc040, 'h55555555, 'haaaaaaaa, 'h49c2df61} 
     ##########################
-    #MVENDORID Writing data 0xffff3fbf to RO register/fields with mask 0xffffffff will generate exception
-    #MVENDORID Write value 0xffff3fbf
+    #MVENDORID Writing data 0xfffff9fd to RO register/fields with mask 0xffffffff will generate exception
+    #MVENDORID Write value 0xfffff9fd
     li x3, 0xffff3fbf
     csrw 0xf11, x3
 
     #MVENDORID read value
     csrr x14, 0xf11
 
-    #MVENDORID Writing data 0xc040 to RO register/fields with mask 0xffffffff will generate exception
-    #MVENDORID Write value 0xc040
-    li x3, 0xc040
+    #MVENDORID Writing data 0x0602 to RO register/fields with mask 0xffffffff will generate exception
+    #MVENDORID Write value 0x0602
+    li x3, 0x0602
     csrw 0xf11, x3
 
     #MVENDORID read value
