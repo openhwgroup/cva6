@@ -166,7 +166,7 @@ package ariane_pkg;
   // maximum instructions we can fetch on one request (we support compressed instructions)
   localparam int unsigned INSTR_PER_FETCH = RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
   localparam int unsigned LOG2_INSTR_PER_FETCH = RVC == 1'b1 ? $clog2(
-      ariane_pkg::INSTR_PER_FETCH
+      INSTR_PER_FETCH
   ) : 1;
 
   // ---------------
