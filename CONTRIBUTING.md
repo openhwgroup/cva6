@@ -36,6 +36,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - We call this the "parachute" rule: The CVA6 team does not want to use it but is far more comfortable getting one.
     * Your contribution shall pass the Continuous Integration (CI) flow
         - When the contribution is disabled: in all cases, to ensure you have not broken the design.
+        - When the contribution is disabled: the line and condition code coverage shall not be impacted.
         - When the contribution is enabled: in relevant cases.
         - You can issue a "do not merge" pull request to test your contribution.
         - RTL code located in `core` directory is formatted with `verible-verilog-format`.
