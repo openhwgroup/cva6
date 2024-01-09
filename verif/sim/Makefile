@@ -253,7 +253,7 @@ vcs-uvm:
 	$(tool_path)/spike-dasm --isa=$(variant) < ./vcs_results/default/vcs.d/trace_rvfi_hart_00.dasm > $(log)
 
 generate_cov_dash:
-	urg -hvp_proj cva6_embedded -format both -group instcov_for_score -hvp_attributes description -dir vcs_results/default/vcs.d/simv.vdb -plan cva6.hvp -mod modifier_embedded.hvp -tgl portsonly
+	urg -hvp_proj cva6_embedded -format both -group instcov_for_score -hvp_attributes weight+description+Comment -dir vcs_results/default/vcs.d/simv.vdb -plan cva6.hvp -tgl portsonly
 
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
