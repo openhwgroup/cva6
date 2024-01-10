@@ -136,7 +136,7 @@ module ariane_tb;
     // Note that we are loosing the capabilities to use risc-fesvr though
     initial begin
         automatic logic [7:0][7:0] mem_row;
-        longint address, len;
+        longint address, load_address, last_load_address, len;
         byte buffer[];
         void'(uvcl.get_arg_value("+elf_file=", binary));
 
@@ -147,6 +147,7 @@ module ariane_tb;
             // wait with preloading, otherwise randomization will overwrite the existing value
             wait(clk_i);
 
+            last_load_address = 'hFFFFFFFF;
             // while there are more sections to process
             while (get_section(address, len)) begin
                 automatic int num_words = (len+7)/8;
@@ -160,7 +161,14 @@ module ariane_tb;
                     for (int j = 0; j < 8; j++) begin
                         mem_row[j] = buffer[i*8 + j];
                     end
-                    `MAIN_MEM((address[23:0] >> 3) + i) = mem_row;
+                    load_address = (address[23:0] >> 3) + i;
+                    if (load_address != last_load_address) begin
+                        `MAIN_MEM(load_address) = mem_row;
+                        last_load_address = load_address;
+                    end else begin
+                        `uvm_info( "Debug info", $sformatf(" Address: %x Already Loaded! ELF file might have less than 64 bits granularity on segments.", load_address), UVM_LOW)
+                    end
+
                 end
             end
         end
