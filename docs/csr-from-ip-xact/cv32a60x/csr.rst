@@ -3661,13 +3661,13 @@ This register provids the JEDEC manufacturer ID of the provider of the core.
    * - 31:7
      - bank
      - Bank
-     - 0xC0 
+     - 0xC
      - read-only
      - Contain encoding for number of one\-byte continuation codes discarding the parity bit\.
    * - 6:0
      - offset
      - Offset
-     - 0x20 
+     - 0x2
      - read-only
      - Contain encording for the final byte discarding the parity bit\.
 
