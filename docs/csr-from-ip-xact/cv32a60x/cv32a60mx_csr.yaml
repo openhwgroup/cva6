@@ -3604,7 +3604,7 @@ component:
             bitOffset: '7'
             resets:
               reset:
-                value: '0xC0'
+                value: '0xC'
                 mask: '0x1ffffff'
             bitWidth: '25'
             volatile: 'true'
@@ -3615,7 +3615,7 @@ component:
             bitOffset: '0'
             resets:
               reset:
-                value: '0x20'
+                value: '0x2'
                 mask: '0x7f'
             bitWidth: '7'
             volatile: 'true'
