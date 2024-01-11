@@ -18,7 +18,7 @@
   # Always keep this value in sync with the settings of RTL simulators (cf.
   # <issrun_opts> values below).
   cmd: >
-    make spike steps=2000000 variant=<variant> elf=<elf> tool_path=<tool_path> log=<log>
+    make spike steps=2000000 variant=<variant> priv=<priv> elf=<elf> tool_path=<tool_path> log=<log>
 
 ###############################################################################
 # Verilator

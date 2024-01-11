@@ -44,6 +44,7 @@ issrun_opts     ?=
 isspostrun_opts ?=
 log             ?=
 variant         ?=
+priv            ?=
 
 # Spike tandem mode: default to environment setting (DISABLED if envariable SPIKE_TANDEM is not set).
 export spike-tandem ?= $(SPIKE_TANDEM)
@@ -120,7 +121,7 @@ endif
 ###############################################################################
 spike:
 	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
-		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) -l $(elf)
+		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) -l $(elf)
 	cp $(log).iss $(log)
 
 ###############################################################################
