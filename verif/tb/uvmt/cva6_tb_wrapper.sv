@@ -241,7 +241,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
         );
         if(!axi_switch_vif.active) begin
            automatic logic [7:0][7:0] mem_row;
-           longint address;
+           longint address, load_address, last_load_address;
            longint len;
            byte buffer[];
            void'(uvcl.get_arg_value("+elf_file=", binary));
@@ -251,6 +251,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
                void'(read_elf(binary));
                wait(clk_i);
 
+               last_load_address = 'hFFFFFFFF;
                // while there are more sections to process
                while (get_section(address, len)) begin
                    automatic int num_words0 = (len+7)/8;
@@ -264,7 +265,13 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
                        for (int j = 0; j < 8; j++) begin
                            mem_row[j] = buffer[i*8 + j];
                        end
-                       `MAIN_MEM((address[23:0] >> 3) + i) = mem_row;
+                       load_address = (address[23:0] >> 3) + i;
+                       if (load_address != last_load_address) begin
+                           `MAIN_MEM(load_address) = mem_row;
+                           last_load_address = load_address;
+                       end else begin
+                           `uvm_info( "Debug info", $sformatf(" Address: %x Already Loaded! ELF file might have less than 64 bits granularity on segments.", load_address), UVM_LOW)
+                       end
                    end
                end
            end
