@@ -54,8 +54,13 @@ module id_stage #(
   ariane_pkg::scoreboard_entry_t        decoded_instruction;
 
   logic                                 is_illegal;
+  logic                                 is_illegal_cmp;
   logic                          [31:0] instruction;
+  logic                          [31:0] compressed_instr;
   logic                                 is_compressed;
+  logic                                 is_compressed_cmp;
+  logic                                 is_push_pop;
+  logic                                 stall_instr_fetch;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -65,10 +70,32 @@ module id_stage #(
         .CVA6Cfg(CVA6Cfg)
     ) compressed_decoder_i (
         .instr_i        (fetch_entry_i.instruction),
-        .instr_o        (instruction),
+        .instr_o        (compressed_instr),
         .illegal_instr_o(is_illegal),
-        .is_compressed_o(is_compressed)
+        .is_compressed_o(is_compressed),
+        .is_push_pop_instr_o(is_push_pop)
     );
+    /*if (CVA6Cfg.CVA6ConfigZcmpExtEn) begin*/
+      //sequencial decoder
+      zcmp_decoder #(
+        .CVA6Cfg(CVA6Cfg)
+      ) zcmp_decoder_i (
+        .instr_i              (compressed_instr),
+        .is_push_pop_instr_i  (is_push_pop),
+        .clk_i                (clk_i),
+        .rst_ni               (rst_ni),
+        .instr_o              (instruction),
+        .illegal_instr_i      (is_illegal),
+        .is_compressed_i      (is_compressed),
+        .illegal_instr_o      (is_illegal_cmp),
+        .is_compressed_o      (is_compressed_cmp),
+        .fetch_stall          (stall_instr_fetch)
+      );
+    /*end else begin
+      instruction = compressed_instr;
+      is_compressed_cmp = is_compressed;
+      is_illegal_cmp = is_illegal;
+    end*/
   end else begin
     assign instruction = fetch_entry_i.instruction;
     assign is_illegal = '0;
@@ -84,8 +111,8 @@ module id_stage #(
       .irq_ctrl_i,
       .irq_i,
       .pc_i                   (fetch_entry_i.address),
-      .is_compressed_i        (is_compressed),
-      .is_illegal_i           (is_illegal),
+      .is_compressed_i        (is_compressed_cmp),
+      .is_illegal_i           (is_illegal_cmp),
       .instruction_i          (instruction),
       .compressed_instr_i     (fetch_entry_i.instruction[15:0]),
       .branch_predict_i       (fetch_entry_i.branch_predict),
@@ -119,7 +146,7 @@ module id_stage #(
     // if we have a space in the register and the fetch is valid, go get it
     // or the issue stage is currently acknowledging an instruction, which means that we will have space
     // for a new instruction
-    if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i) begin
+    if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i && !stall_instr_fetch) begin
       fetch_entry_ready_o = 1'b1;
       issue_n = '{1'b1, decoded_instruction, is_control_flow_instr};
     end
