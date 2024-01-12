@@ -123,11 +123,8 @@ module ex_stage
     input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
 
     // RVFI
-    output [              riscv::VLEN-1:0] lsu_addr_o,
-    output [              riscv::PLEN-1:0] mem_paddr_o,
-    output [          (riscv::XLEN/8)-1:0] lsu_rmask_o,
-    output [          (riscv::XLEN/8)-1:0] lsu_wmask_o,
-    output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
+    output lsu_ctrl_t                   rvfi_lsu_ctrl_o,
+    output            [riscv::PLEN-1:0] rvfi_mem_paddr_o
 );
 
   // -------------------------
@@ -350,11 +347,8 @@ module ex_stage
       .amo_resp_i,
       .pmpcfg_i,
       .pmpaddr_i,
-      .lsu_addr_o,
-      .mem_paddr_o,
-      .lsu_rmask_o,
-      .lsu_wmask_o,
-      .lsu_addr_trans_id_o
+      .rvfi_lsu_ctrl_o,
+      .rvfi_mem_paddr_o
   );
 
   if (CVA6Cfg.CvxifEn) begin : gen_cvxif

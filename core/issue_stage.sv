@@ -17,9 +17,7 @@
 module issue_stage
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter bit IsRVFI = bit'(0),
-    parameter int unsigned NR_ENTRIES = 8
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni, // Asynchronous reset active low
@@ -89,10 +87,8 @@ module issue_stage
     output logic stall_issue_o,  // Used in Performance Counters
 
     //RVFI
-    input [              riscv::VLEN-1:0] lsu_addr_i,
-    input [          (riscv::XLEN/8)-1:0] lsu_rmask_i,
-    input [          (riscv::XLEN/8)-1:0] lsu_wmask_i,
-    input [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_i
+    output logic [TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
+    output logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
 );
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)
@@ -132,10 +128,8 @@ module issue_stage
   // 2. Manage instructions in a scoreboard
   // ---------------------------------------------------------
   scoreboard #(
-      .CVA6Cfg   (CVA6Cfg),
-      .IsRVFI    (IsRVFI),
-      .rs3_len_t (rs3_len_t),
-      .NR_ENTRIES(NR_ENTRIES)
+      .CVA6Cfg  (CVA6Cfg),
+      .rs3_len_t(rs3_len_t)
   ) i_scoreboard (
       .sb_full_o          (sb_full_o),
       .unresolved_branch_i(1'b0),
@@ -158,16 +152,10 @@ module issue_stage
       .issue_instr_valid_o  (issue_instr_valid_sb_iro),
       .issue_ack_i          (issue_ack_iro_sb),
 
-      .resolved_branch_i  (resolved_branch_i),
-      .trans_id_i         (trans_id_i),
-      .wbdata_i           (wbdata_i),
-      .ex_i               (ex_ex_i),
-      .lsu_addr_i         (lsu_addr_i),
-      .lsu_rmask_i        (lsu_rmask_i),
-      .lsu_wmask_i        (lsu_wmask_i),
-      .lsu_addr_trans_id_i(lsu_addr_trans_id_i),
-      .rs1_forwarding_i   (rs1_forwarding_xlen),
-      .rs2_forwarding_i   (rs2_forwarding_xlen),
+      .resolved_branch_i(resolved_branch_i),
+      .trans_id_i       (trans_id_i),
+      .wbdata_i         (wbdata_i),
+      .ex_i             (ex_ex_i),
       .*
   );
 

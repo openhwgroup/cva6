@@ -34,6 +34,7 @@ ${CVA6_REPO_DIR}/corev_apu/tb/ariane_axi_pkg.sv
 ${CVA6_REPO_DIR}/corev_apu/tb/ariane_axi_soc_pkg.sv
 
 // RVFI tracer
+${CVA6_REPO_DIR}/core/cva6_rvfi.sv
 ${CVA6_REPO_DIR}/corev_apu/tb/rvfi_tracer.sv
 
 // AXI master connect

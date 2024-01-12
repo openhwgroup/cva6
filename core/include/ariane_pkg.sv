@@ -696,12 +696,6 @@ package ariane_pkg;
     branchpredict_sbe_t bp;  // branch predict scoreboard data structure
     logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                              // we want jump accordingly e.g.: +4, +2
-    riscv::xlen_t rs1_rdata;  // information needed by RVFI
-    riscv::xlen_t rs2_rdata;  // information needed by RVFI
-    logic [riscv::VLEN-1:0] lsu_addr;  // information needed by RVFI
-    logic [(riscv::XLEN/8)-1:0] lsu_rmask;  // information needed by RVFI
-    logic [(riscv::XLEN/8)-1:0] lsu_wmask;  // information needed by RVFI
-    riscv::xlen_t lsu_wdata;  // information needed by RVFI
     logic vfp;  // is this a vector floating-point instruction?
   } scoreboard_entry_t;
 

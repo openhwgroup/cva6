@@ -54,17 +54,39 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   uvmt_default_inputs_intf             default_inputs_vif
 );
 
+
+  localparam type rvfi_probes_t = struct packed { 
+    logic [ariane_pkg::TRANS_ID_BITS-1:0] issue_pointer; 
+    logic [CVA6Cfg.NrCommitPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0] commit_pointer; 
+    logic                            flush_unissued_instr;
+    logic                            decoded_instr_valid;
+    logic                            decoded_instr_ack;
+    riscv::xlen_t                    rs1_forwarding;
+    riscv::xlen_t                    rs2_forwarding;
+    ariane_pkg::scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr;
+    ariane_pkg::exception_t ex_commit; 
+    riscv::priv_lvl_t priv_lvl;
+    ariane_pkg::lsu_ctrl_t                       lsu_ctrl;
+    logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
+    logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
+    logic [riscv::PLEN-1:0] mem_paddr;
+    logic debug_mode;
+    logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata;
+  };
+
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
 
   static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
   string binary = "";
 
-  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi;
-  assign rvfi_o = rvfi;
+  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
+  rvfi_probes_t rvfi_probes;
+  assign rvfi_o = rvfi_instr;
 
   cva6 #(
      .CVA6Cfg ( CVA6Cfg ),
+     .rvfi_probes_t        ( rvfi_probes_t       ),
      .IsRVFI ( IsRVFI )
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
@@ -75,7 +97,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .ipi_i                ( default_inputs_vif.ipi       ),
     .time_irq_i           ( default_inputs_vif.time_irq  ),
     .debug_req_i          ( default_inputs_vif.debug_req ),
-    .rvfi_o               ( rvfi                      ),
+    .rvfi_probes_o        ( rvfi_probes                  ),
     .cvxif_req_o          ( cvxif_req                 ),
     .cvxif_resp_i         ( cvxif_resp                ),
     .noc_req_o            ( axi_ariane_req            ),
@@ -86,6 +108,17 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   // RVFI
   //----------------------------------------------------------------------------
 
+  cva6_rvfi #(
+      .CVA6Cfg   (CVA6Cfg),
+      .rvfi_instr_t(rvfi_instr_t),
+      .rvfi_probes_t(rvfi_probes_t)
+  ) i_cva6_rvfi (
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .rvfi_probes_i(rvfi_probes),
+      .rvfi_o(rvfi_instr)
+  );
+
   rvfi_tracer  #(
     .CVA6Cfg(CVA6Cfg),
     .rvfi_instr_t(rvfi_instr_t),
@@ -93,10 +126,10 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .HART_ID(8'h0),
     .DEBUG_START(0),
     .DEBUG_STOP(0)
-  ) rvfi_tracer_i (
+  ) i_rvfi_tracer (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .rvfi_i(rvfi),
+    .rvfi_i(rvfi_instr),
     .end_of_test_o(tb_exit_o)
   ) ;
 
