@@ -23,7 +23,7 @@ fi
 
 # Expect/perform Spike installation in directory $SPIKE_INSTALL_DIR.
 # which defaults to $ROOT_PROJECT/tools/spike.
-if [ -n "$SPIKE_INSTALL_DIR" -o "$SPIKE_INSTALL_DIR" = "__local__" ]; then
+if [ -z "$SPIKE_INSTALL_DIR" -o "$SPIKE_INSTALL_DIR" = "__local__" ]; then
   SPIKE_INSTALL_DIR="$ROOT_PROJECT/tools/spike"
 fi
 
@@ -46,7 +46,7 @@ if ! [ -f "$SPIKE_INSTALL_DIR/bin/spike" ]; then
   fi
   make -j${NUM_JOBS}
   echo "Installing Spike in '$SPIKE_INSTALL_DIR'..."
-  make install
+  sudo make install
   cd $CALLER_DIR
 else
   echo "Spike already installed in '$SPIKE_INSTALL_DIR'."
