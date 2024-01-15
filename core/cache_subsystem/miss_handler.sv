@@ -727,7 +727,6 @@ module axi_adapter_arbiter #(
 
     rsp_o = '0;
     rsp_o[sel_q].rdata = rsp_i.rdata;
-    rsp_o[sel_q].valid = rsp_i.valid;
 
     case (state_q)
 
@@ -754,6 +753,18 @@ module axi_adapter_arbiter #(
       end
 
       SERVING: begin
+        // We can accept multiple outstanding transactions from same port.
+        // To ensure fairness, we allow this only if all other ports are idle
+        if ((!req_o.req) && !any_unselected_port_valid &&
+          (outstanding_cnt_q != (MAX_OUTSTANDING_REQ - 1))) begin
+          if (req_i[sel_q].req) begin
+            req_d = req_i[sel_q];
+            req_o = req_i[sel_q];
+            rsp_o[sel_q].gnt = 1'b1;
+            state_d = SERVING;
+          end
+        end
+
         // Count outstanding transactions, i.e. requests which have been
         // granted but response hasn't arrived yet
         if (req_o.req && rsp_i.gnt) begin
@@ -765,17 +776,6 @@ module axi_adapter_arbiter #(
           rsp_o[sel_q].valid = 1'b1;
 
           if ((outstanding_cnt_d == 0) && (!req_o.req || rsp_i.gnt)) state_d = IDLE;
-        end
-
-        // We can accept multiple outstanding transactions from same port.
-        // To ensure fairness, we allow this only if all other ports are idle
-        if ((!req_o.req || rsp_i.gnt) && !any_unselected_port_valid &&
-          (outstanding_cnt_d != MAX_OUTSTANDING_REQ)) begin
-          if (req_i[sel_q].req) begin
-            req_d = req_i[sel_q];
-            rsp_o[sel_q].gnt = 1'b1;
-            state_d = SERVING;
-          end
         end
       end
 
