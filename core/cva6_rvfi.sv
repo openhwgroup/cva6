@@ -65,6 +65,7 @@ module cva6_rvfi
     CVA6Cfg.XF16ALT,
     CVA6Cfg.XF8,
     CVA6Cfg.RVA,
+    CVA6Cfg.RVB,
     CVA6Cfg.RVV,
     CVA6Cfg.RVC,
     CVA6Cfg.RVZCB,
