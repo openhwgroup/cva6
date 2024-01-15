@@ -25,7 +25,12 @@ module cva6
       logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0]                    commit_pointer;
       logic                                                                   flush_unissued_instr;
       logic                                                                   decoded_instr_valid;
+      logic                                                                   flush;
       logic                                                                   decoded_instr_ack;
+      logic                                                                   issue_instr_ack;
+      logic                                                                   fetch_entry_valid;
+      logic [31:0]                                                            instruction;
+      logic                                                                   is_compressed;
       riscv::xlen_t                                                           rs1_forwarding;
       riscv::xlen_t                                                           rs2_forwarding;
       scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0]                          commit_instr;
@@ -444,6 +449,7 @@ module cva6
   //RVFI
   lsu_ctrl_t                                             rvfi_lsu_ctrl;
   logic          [riscv::PLEN-1:0]                       rvfi_mem_paddr;
+  logic                                                  rvfi_is_compressed;
   rvfi_probes_t                                          rvfi_probes;
 
 
@@ -498,6 +504,8 @@ module cva6
       .issue_entry_valid_o(issue_entry_valid_id_issue),
       .is_ctrl_flow_o     (is_ctrl_fow_id_issue),
       .issue_instr_ack_i  (issue_instr_issue_id),
+
+      .rvfi_is_compressed_o(rvfi_is_compressed),
 
       .priv_lvl_i  (priv_lvl),
       .fs_i        (fs),
@@ -1349,6 +1357,12 @@ module cva6
         .CVA6Cfg   (CVA6ExtendCfg),
         .rvfi_probes_t(rvfi_probes_t)
     ) i_cva6_rvfi_combi (
+
+        .flush_i            (flush_ctrl_if),
+        .issue_instr_ack_i  (issue_instr_issue_id),
+        .fetch_entry_valid_i(fetch_valid_if_id),
+        .instruction_i      (fetch_entry_if_id.instruction),
+        .is_compressed_i    (rvfi_is_compressed),
 
         .issue_pointer_i (rvfi_issue_pointer),
         .commit_pointer_i(rvfi_commit_pointer),

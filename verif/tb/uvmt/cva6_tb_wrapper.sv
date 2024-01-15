@@ -61,6 +61,11 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     logic                            flush_unissued_instr;
     logic                            decoded_instr_valid;
     logic                            decoded_instr_ack;
+    logic                            flush;
+    logic                            issue_instr_ack;
+    logic                            fetch_entry_valid;
+    logic [31:0]                     instruction;
+    logic                            is_compressed;
     riscv::xlen_t                    rs1_forwarding;
     riscv::xlen_t                    rs2_forwarding;
     ariane_pkg::scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr;

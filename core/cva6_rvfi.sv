@@ -109,34 +109,43 @@ module cva6_rvfi
     CVA6Cfg.AxiBurstWriteEn
   };
 
+  logic                                                                   flush;
+  logic                                                                   issue_instr_ack;
+  logic                                                                   fetch_entry_valid;
+  logic              [                           31:0]                    instruction;
+  logic                                                                   is_compressed;
 
+  logic              [              TRANS_ID_BITS-1:0]                    issue_pointer;
+  logic              [CVA6ExtendCfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] commit_pointer;
 
-  logic [TRANS_ID_BITS-1:0] issue_pointer;
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] commit_pointer;
+  logic                                                                   flush_unissued_instr;
+  logic                                                                   decoded_instr_valid;
+  logic                                                                   decoded_instr_ack;
 
-  logic flush_unissued_instr;
-  logic decoded_instr_valid;
-  logic decoded_instr_ack;
+  riscv::xlen_t                                                           rs1_forwarding;
+  riscv::xlen_t                                                           rs2_forwarding;
 
-  riscv::xlen_t rs1_forwarding;
-  riscv::xlen_t rs2_forwarding;
+  scoreboard_entry_t [CVA6ExtendCfg.NrCommitPorts-1:0]                    commit_instr;
+  exception_t                                                             ex_commit;
+  riscv::priv_lvl_t                                                       priv_lvl;
 
-  scoreboard_entry_t [CVA6ExtendCfg.NrCommitPorts-1:0] commit_instr;
-  exception_t ex_commit;
-  riscv::priv_lvl_t priv_lvl;
+  lsu_ctrl_t                                                              lsu_ctrl;
+  logic              [    CVA6ExtendCfg.NrWbPorts-1:0][  riscv::XLEN-1:0] wbdata;
+  logic              [CVA6ExtendCfg.NrCommitPorts-1:0]                    commit_ack;
+  logic              [                riscv::PLEN-1:0]                    mem_paddr;
+  logic                                                                   debug_mode;
+  logic              [CVA6ExtendCfg.NrCommitPorts-1:0][  riscv::XLEN-1:0] wdata;
 
-  lsu_ctrl_t lsu_ctrl;
-  logic [CVA6ExtendCfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata;
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0] commit_ack;
-  logic [riscv::PLEN-1:0] mem_paddr;
-  logic debug_mode;
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata;
+  logic              [                riscv::VLEN-1:0]                    lsu_addr;
+  logic              [            (riscv::XLEN/8)-1:0]                    lsu_rmask;
+  logic              [            (riscv::XLEN/8)-1:0]                    lsu_wmask;
+  logic              [              TRANS_ID_BITS-1:0]                    lsu_addr_trans_id;
 
-  logic [riscv::VLEN-1:0] lsu_addr;
-  logic [(riscv::XLEN/8)-1:0] lsu_rmask;
-  logic [(riscv::XLEN/8)-1:0] lsu_wmask;
-  logic [TRANS_ID_BITS-1:0] lsu_addr_trans_id;
-
+  assign flush = rvfi_probes_i.flush;
+  assign issue_instr_ack = rvfi_probes_i.issue_instr_ack;
+  assign fetch_entry_valid = rvfi_probes_i.fetch_entry_valid;
+  assign instruction = rvfi_probes_i.instruction;
+  assign is_compressed = rvfi_probes_i.is_compressed;
 
   assign issue_pointer = rvfi_probes_i.issue_pointer;
   assign commit_pointer = rvfi_probes_i.commit_pointer;
@@ -164,14 +173,47 @@ module cva6_rvfi
   assign lsu_wmask = lsu_ctrl.fu == STORE ? lsu_ctrl.be : '0;
   assign lsu_addr_trans_id = lsu_ctrl.trans_id;
 
+
+  //ID STAGE
+
+  typedef struct packed {
+    logic        valid;
+    logic [31:0] instr;
+  } issue_struct_t;
+  issue_struct_t issue_n, issue_q;
+
+  always_comb begin
+    issue_n = issue_q;
+
+    if (issue_instr_ack) issue_n.valid = 1'b0;
+
+    if ((!issue_q.valid || issue_instr_ack) && fetch_entry_valid) begin
+      issue_n.valid = 1'b1;
+      issue_n.instr = (is_compressed) ? {{16{1'b0}}, instruction[15:0]} : instruction;
+    end
+
+    if (flush) issue_n.valid = 1'b0;
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      issue_q <= '0;
+    end else begin
+      issue_q <= issue_n;
+    end
+  end
+
+  //ISSUE STAGE
+
   // this is the FIFO struct of the issue queue
   typedef struct packed {
-    riscv::xlen_t rs1_rdata;  // information needed by RVFI
-    riscv::xlen_t rs2_rdata;  // information needed by RVFI
-    logic [riscv::VLEN-1:0] lsu_addr;  // information needed by RVFI
-    logic [(riscv::XLEN/8)-1:0] lsu_rmask;  // information needed by RVFI
-    logic [(riscv::XLEN/8)-1:0] lsu_wmask;  // information needed by RVFI
-    riscv::xlen_t lsu_wdata;  // information needed by RVFI
+    riscv::xlen_t rs1_rdata;
+    riscv::xlen_t rs2_rdata;
+    logic [riscv::VLEN-1:0] lsu_addr;
+    logic [(riscv::XLEN/8)-1:0] lsu_rmask;
+    logic [(riscv::XLEN/8)-1:0] lsu_wmask;
+    riscv::xlen_t lsu_wdata;
+    logic [31:0] instr;
   } sb_mem_t;
   sb_mem_t [NR_SB_ENTRIES-1:0] mem_q, mem_n;
 
@@ -185,7 +227,8 @@ module cva6_rvfi
           lsu_addr: '0,
           lsu_rmask: '0,
           lsu_wmask: '0,
-          lsu_wdata: '0
+          lsu_wdata: '0,
+          instr: issue_q.instr
       };
     end
 
@@ -219,7 +262,7 @@ module cva6_rvfi
         (exception && (ex_commit.cause == riscv::ENV_CALL_MMODE ||
                   ex_commit.cause == riscv::ENV_CALL_SMODE ||
                   ex_commit.cause == riscv::ENV_CALL_UMODE));
-      rvfi_o[i].insn = ex_commit.valid ? ex_commit.tval[31:0] : commit_instr[i].ex.tval[31:0];
+      rvfi_o[i].insn = mem_q[commit_pointer[i]].instr;
       // when trap, the instruction is not executed
       rvfi_o[i].trap = exception;
       rvfi_o[i].cause = ex_commit.cause;

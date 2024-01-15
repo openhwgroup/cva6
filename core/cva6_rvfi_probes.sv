@@ -15,6 +15,13 @@ module cva6_rvfi_probes
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type rvfi_probes_t = logic
 ) (
+
+    input logic        flush_i,
+    input logic        issue_instr_ack_i,
+    input logic        fetch_entry_valid_i,
+    input logic [31:0] instruction_i,
+    input logic        is_compressed_i,
+
     input logic [TRANS_ID_BITS-1:0] issue_pointer_i,
     input logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] commit_pointer_i,
 
@@ -40,6 +47,12 @@ module cva6_rvfi_probes
 
   always_comb begin
     rvfi_probes_o = '0;
+
+    rvfi_probes_o.flush = flush_i;
+    rvfi_probes_o.issue_instr_ack = issue_instr_ack_i;
+    rvfi_probes_o.fetch_entry_valid = fetch_entry_valid_i;
+    rvfi_probes_o.instruction = instruction_i;
+    rvfi_probes_o.is_compressed = is_compressed_i;
 
     rvfi_probes_o.issue_pointer = issue_pointer_i;
     rvfi_probes_o.commit_pointer = commit_pointer_i;
