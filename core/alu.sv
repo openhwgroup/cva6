@@ -75,7 +75,7 @@ module alu
   always_comb begin
     operand_a_bitmanip = fu_data_i.operand_a;
 
-    if (ariane_pkg::BITMANIP) begin
+    if (CVA6Cfg.RVB) begin
       if (riscv::IS_XLEN64) begin
         unique case (fu_data_i.operation)
           SH1ADDUW:           operand_a_bitmanip = fu_data_i.operand_a[31:0] << 1;
@@ -194,7 +194,7 @@ module alu
             $signed({sgn & fu_data_i.operand_b[riscv::XLEN-1], fu_data_i.operand_b}));
   end
 
-  if (ariane_pkg::BITMANIP) begin : gen_bitmanip
+  if (CVA6Cfg.RVB) begin : gen_bitmanip
     // Count Population + Count population Word
 
     popcount #(
@@ -227,7 +227,7 @@ module alu
     end
   end
 
-  if (ariane_pkg::BITMANIP) begin : gen_orcbw_rev8w_results
+  if (CVA6Cfg.RVB) begin : gen_orcbw_rev8w_results
     assign orcbw = {
       {8{|fu_data_i.operand_a[31:24]}},
       {8{|fu_data_i.operand_a[23:16]}},
@@ -290,7 +290,7 @@ module alu
       default: ;  // default case to suppress unique warning
     endcase
 
-    if (ariane_pkg::BITMANIP) begin
+    if (CVA6Cfg.RVB) begin
       // Index for Bitwise Rotation
       bit_indx = 1 << (fu_data_i.operand_b & (riscv::XLEN - 1));
       // rolw, roriw, rorw

@@ -157,9 +157,10 @@ module csr_regfile
   logic [3:0] index;
 
   localparam riscv::xlen_t IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
+  | (riscv::XLEN'(CVA6Cfg.RVB) << 1)  // C - Bitmanip extension
   | (riscv::XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
-  | (riscv::XLEN'(CVA6Cfg.RVD) << 3)  // D - Double precsision floating-point extension
-  | (riscv::XLEN'(CVA6Cfg.RVF) << 5)  // F - Single precsision floating-point extension
+  | (riscv::XLEN'(CVA6Cfg.RVD) << 3)  // D - Double precision floating-point extension
+  | (riscv::XLEN'(CVA6Cfg.RVF) << 5)  // F - Single precision floating-point extension
   | (riscv::XLEN'(1) << 8)  // I - RV32I/64I/128I base ISA
   | (riscv::XLEN'(1) << 12)  // M - Integer Multiply/Divide extension
   | (riscv::XLEN'(0) << 13)  // N - User level interrupts supported

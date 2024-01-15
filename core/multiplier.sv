@@ -37,7 +37,7 @@ module multiplier
       clmul_q, clmul_d, clmulr_q, clmulr_d, operand_a, operand_b, operand_a_rev, operand_b_rev;
   logic clmul_rmode, clmul_hmode;
 
-  if (ariane_pkg::BITMANIP) begin : gen_bitmanip
+  if (CVA6Cfg.RVB) begin : gen_bitmanip
     // checking for clmul_rmode and clmul_hmode
     assign clmul_rmode = (operation_i == CLMULR);
     assign clmul_hmode = (operation_i == CLMULH);
@@ -126,7 +126,7 @@ module multiplier
       end
     endcase
   end
-  if (ariane_pkg::BITMANIP) begin
+  if (CVA6Cfg.RVB) begin
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         clmul_q  <= '0;

@@ -588,7 +588,7 @@ module compressed_decoder #(
                         end
 
                         3'b001: begin
-                          if (ariane_pkg::BITMANIP) begin
+                          if (CVA6Cfg.RVB) begin
                             // c.sext.b -> sext.b rd', rd'
                             instr_o = {
                               7'h30,
@@ -604,7 +604,7 @@ module compressed_decoder #(
                         end
 
                         3'b010: begin
-                          if (ariane_pkg::BITMANIP) begin
+                          if (CVA6Cfg.RVB) begin
                             // c.zext.h -> zext.h rd', rd'
                             if (riscv::IS_XLEN64) begin
                               instr_o = {
@@ -633,7 +633,7 @@ module compressed_decoder #(
                         end
 
                         3'b011: begin
-                          if (ariane_pkg::BITMANIP) begin
+                          if (CVA6Cfg.RVB) begin
                             // c.sext.h -> sext.h rd', rd'
                             instr_o = {
                               7'h30,
@@ -649,7 +649,7 @@ module compressed_decoder #(
                         end
 
                         3'b100: begin
-                          if (ariane_pkg::BITMANIP) begin
+                          if (CVA6Cfg.RVB) begin
                             // c.zext.w -> add.uw
                             if (riscv::IS_XLEN64) begin
                               instr_o = {

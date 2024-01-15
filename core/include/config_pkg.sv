@@ -52,6 +52,7 @@ package config_pkg;
     bit                          XF16ALT;
     bit                          XF8;
     bit                          RVA;
+    bit                          RVB;
     bit                          RVV;
     bit                          RVC;
     bit                          RVZCB;

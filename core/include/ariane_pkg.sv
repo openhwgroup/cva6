@@ -167,11 +167,6 @@ package ariane_pkg;
   localparam int unsigned INSTR_PER_FETCH = RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
   localparam int unsigned LOG2_INSTR_PER_FETCH = RVC == 1'b1 ? $clog2(INSTR_PER_FETCH) : 1;
 
-  // ---------------
-  // Enable BITMANIP
-  // ---------------
-  localparam bit BITMANIP = cva6_config_pkg::CVA6ConfigBExtEn;
-
   // Only use struct when signals have same direction
   // exception
   typedef struct packed {
