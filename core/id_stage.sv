@@ -75,7 +75,6 @@ module id_stage #(
         .is_compressed_o(is_compressed),
         .is_push_pop_instr_o(is_push_pop)
     );
-    /*if (CVA6Cfg.CVA6ConfigZcmpExtEn) begin*/
       //sequencial decoder
       zcmp_decoder #(
         .CVA6Cfg(CVA6Cfg)
@@ -91,11 +90,6 @@ module id_stage #(
         .is_compressed_o      (is_compressed_cmp),
         .fetch_stall          (stall_instr_fetch)
       );
-    /*end else begin
-      instruction = compressed_instr;
-      is_compressed_cmp = is_compressed;
-      is_illegal_cmp = is_illegal;
-    end*/
   end else begin
     assign instruction = fetch_entry_i.instruction;
     assign is_illegal = '0;

@@ -850,11 +850,10 @@ module compressed_decoder #(
           end
 
           riscv::OpcodeC2Fsdsp: begin
-            if (CVA6Cfg.FpPresent) begin
-               if (instr_i[12:10] == 3'b110 || instr_i[12:10] == 3'b111 || instr_i[12:10] == 3'b011) begin //is a push/pop instruction
+            if (instr_i[12:10] == 3'b110 || instr_i[12:10] == 3'b111 || instr_i[12:10] == 3'b011) begin //is a push/pop instruction
                 is_push_pop_instr_o = 1;
                 instr_o = instr_i;
-              end else begin
+            end else if (CVA6Cfg.FpPresent) begin
               // c.fsdsp -> fsd rs2, imm(x2)
               instr_o = {
                 3'b0,
@@ -867,8 +866,7 @@ module compressed_decoder #(
                 3'b000,
                 riscv::OpcodeStoreFp
               };
-              end
-            end else begin
+              end else begin
               illegal_instr_o = 1'b1;
             end
           end

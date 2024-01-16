@@ -1,4 +1,4 @@
-module zcmp_decoder #(
+module zcmp_decoder  #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty) 
   (
   input   logic [31:0]  instr_i,
@@ -15,7 +15,7 @@ module zcmp_decoder #(
   
   // FSM States
   enum logic [2:0] {
-    IDLE, PUSH_POP_INSTR_1, PUSH_ADDI, PUSH_POP_INSTR_2, POPRETZ_1, MOVE, INIT
+    IDLE, INIT, PUSH_ADDI, POPRETZ_1, MOVE, PUSH_POP_INSTR_2
   } state_d, state_q;
 
   // Instruction Types
@@ -41,7 +41,7 @@ module zcmp_decoder #(
 
   always_comb begin
     illegal_instr_o = 1'b0;
-    fetch_stall     = is_push_pop_instr_i ? 1'b1 : 1'b0;
+    fetch_stall     = 1'b0;
     instr_o         = instr_i;
     is_compressed_o = is_push_pop_instr_i ? 1'b1 : is_compressed_i;
     reg_numbers     = '0;
@@ -116,18 +116,18 @@ module zcmp_decoder #(
       
       // push/pop/popret/popretz instructions
       unique case (instr_i[7:4])
-        4'b0100: reg_numbers = 1; // 4
-        4'b0101: reg_numbers = 2; // 5
-        4'b0110: reg_numbers = 3; // 6
-        4'b0111: reg_numbers = 4; // 7
-        4'b1000: reg_numbers = 5; // 8
-        4'b1001: reg_numbers = 6; // 9
-        4'b1010: reg_numbers = 7; // 10
-        4'b1011: reg_numbers = 8; // 11
-        4'b1100: reg_numbers = 9; // 12
-        4'b1101: reg_numbers = 10; // 13
-        4'b1110: reg_numbers = 11; // 14
-        4'b1111: reg_numbers = 12; // 15
+        4'b0100: reg_numbers = 4'b0001; // 4
+        4'b0101: reg_numbers = 4'b0010; // 5
+        4'b0110: reg_numbers = 4'b0011; // 6
+        4'b0111: reg_numbers = 4'b0100; // 7
+        4'b1000: reg_numbers = 4'b0101; // 8
+        4'b1001: reg_numbers = 4'b0110; // 9
+        4'b1010: reg_numbers = 4'b0111; // 10
+        4'b1011: reg_numbers = 4'b1000; // 11
+        4'b1100: reg_numbers = 4'b1001; // 12
+        4'b1101: reg_numbers = 4'b1010; // 13
+        4'b1110: reg_numbers = 4'b1011; // 14
+        4'b1111: reg_numbers = 4'b1100; // 15
         default: illegal_instr_o = 1'b1;
       endcase
 
@@ -232,7 +232,7 @@ module zcmp_decoder #(
       if(zcmp_instr_type == PUSH) begin
         itype_inst.imm = ~stack_adj + 1'b1;
       end else begin
-        itype_inst.imm = stack_adj - 4;
+        itype_inst.imm = stack_adj - 3'b100;
       end
     end else begin
       illegal_instr_o = illegal_instr_i;
@@ -251,13 +251,13 @@ module zcmp_decoder #(
               offset_d = itype_inst.imm;
               case (zcmp_instr_type)
                 POPRETZ: begin
-                  popretz_inst_d = 3;
+                  popretz_inst_d = 2'b11;
                 end
                 POPRET: begin
-                  popretz_inst_d = 1;
+                  popretz_inst_d = 2'b01;
                 end
                 default: begin
-                  popretz_inst_d = 0;
+                  popretz_inst_d = 'b0;
                 end
               endcase             
             end
@@ -267,19 +267,19 @@ module zcmp_decoder #(
           endcase
           // when rlist is 4, max reg is x18 i.e. 14(const) + 4
           // when rlist is 12, max reg is x27 i.e. 15(const) + 12 
-          if(reg_numbers == 12) begin
-            store_reg_d = 15 + reg_numbers;
+          if(reg_numbers == 4'b1100) begin
+            store_reg_d = 4'b1111 + reg_numbers;
           end else begin
-            store_reg_d = 14 + reg_numbers;
+            store_reg_d = 4'b1110 + reg_numbers;
           end  
         end
       end
       INIT: begin
         if(is_push_pop_instr_i && zcmp_instr_type == PUSH) begin
-          state_d =   PUSH_POP_INSTR_1;
-          fetch_stall = 1;  // stall inst fetch
+         // state_d =   PUSH_POP_INSTR_1;
+          fetch_stall = 1'b1;  // stall inst fetch
 
-          if (reg_numbers_q == 1) begin
+          if (reg_numbers_q == 4'b0001) begin
             if (riscv::XLEN == 64) begin
               instr_o = {offset_d[11:5],5'h1,5'h2,3'h3,offset_d[4:0],riscv::OpcodeStore};
             end else begin
@@ -288,7 +288,7 @@ module zcmp_decoder #(
             state_d =   PUSH_ADDI;
           end
 
-          if (reg_numbers_q == 2) begin
+          if (reg_numbers_q == 4'b0010) begin
             if (riscv::XLEN == 64) begin
               instr_o = {offset_d[11:5],5'h8,5'h2,3'h3,offset_d[4:0],riscv::OpcodeStore};
             end else begin
@@ -298,7 +298,7 @@ module zcmp_decoder #(
             offset_d = offset_q + 12'hFFC;  // decrement offset by -4 i.e. add 2's compilment of 4
           end
           
-          if (reg_numbers_q == 3) begin
+          if (reg_numbers_q == 4'b0011) begin
             if (riscv::XLEN == 64) begin
               instr_o = {offset_d[11:5],5'h9,5'h2,3'h3,offset_d[4:0],riscv::OpcodeStore};
             end else begin
@@ -308,23 +308,23 @@ module zcmp_decoder #(
             offset_d = offset_q + 12'hFFC;  
           end
 
-          if (reg_numbers_q >= 4 && reg_numbers_q <= 27) begin
+          if (reg_numbers_q >= 4 && reg_numbers_q <= 12) begin
             if (riscv::XLEN == 64) begin
               instr_o = {offset_d[11:5],store_reg_q,5'h2,3'h3,offset_d[4:0],riscv::OpcodeStore};
             end else begin
-              instr_o = {offset_d[11:5],store_reg_q,5'h2,3'h2,offset_d[4:0],riscv::OpcodeStore};
+              instr_o = {offset_d[11:5], store_reg_q, 5'h2, 3'h2, offset_d[4:0], riscv::OpcodeStore};
             end
               reg_numbers_d = reg_numbers_q - 1;
               store_reg_d = store_reg_q - 1;
               offset_d = offset_q + 12'hFFC;
-            if (reg_numbers_q == 26) begin
-              state_d = PUSH_POP_INSTR_2;
-            end
+              if (reg_numbers_q == 12) begin
+                state_d = PUSH_POP_INSTR_2;
+              end
           end
         end
 
         if (is_push_pop_instr_i && (zcmp_instr_type == POP || zcmp_instr_type == POPRETZ || zcmp_instr_type == POPRET)) begin
-          state_d = PUSH_POP_INSTR_1;
+         // state_d = PUSH_POP_INSTR_1;
           fetch_stall = 1;  // stall inst fetch
           if (reg_numbers_q == 1) begin
             if (riscv::XLEN == 64) begin
@@ -339,6 +339,9 @@ module zcmp_decoder #(
               POPRETZ: begin
                 state_d = POPRETZ_1;  
               end
+              default: begin
+                state_d = state_q;
+              end
             endcase
           end
 
@@ -346,7 +349,7 @@ module zcmp_decoder #(
             if (riscv::XLEN == 64) begin
               instr_o = {offset_d[11:5],5'h8,5'h2,3'h3,offset_d[4:0],riscv::OpcodeLoad};
             end else begin
-              instr_o = {offset_d[11:0],5'h2,3'h3, 5'h8,riscv::OpcodeLoad};
+              instr_o = {offset_d[11:0],5'h2,3'h2, 5'h8,riscv::OpcodeLoad};
             end
             reg_numbers_d = reg_numbers_q -1;
             offset_d = offset_q + 12'hFFC;  // decrement offset by -4 i.e. add 2's compilment of 4
@@ -356,13 +359,13 @@ module zcmp_decoder #(
             if (riscv::XLEN == 64) begin
               instr_o = {offset_d[11:5],5'h9,5'h2,3'h3,offset_d[4:0],riscv::OpcodeLoad};
             end else begin
-              instr_o = {offset_d[11:0],5'h2,3'h3, 5'h9,riscv::OpcodeLoad};
+              instr_o = {offset_d[11:0],5'h2,3'h2, 5'h9,riscv::OpcodeLoad};
             end
             reg_numbers_d = reg_numbers_q -1;
             offset_d = offset_q + 12'hFFC;  
           end
 
-          if (reg_numbers_q >= 4 && reg_numbers_q <= 27) begin
+          if (reg_numbers_q >= 4 && reg_numbers_q <= 12) begin
             if (riscv::XLEN == 64) begin
               instr_o = {offset_d[11:5],store_reg_q,5'h2,3'h3,offset_d[4:0],riscv::OpcodeLoad};
             end else begin
@@ -371,9 +374,9 @@ module zcmp_decoder #(
               reg_numbers_d = reg_numbers_q - 1;
               store_reg_d = store_reg_q - 1;
               offset_d = offset_q + 12'hFFC;
-            if (reg_numbers_q == 26) begin
-              state_d = PUSH_POP_INSTR_2;
-            end
+              if (reg_numbers_q == 12) begin
+                state_d = PUSH_POP_INSTR_2;
+              end
           end
         end
 
@@ -390,111 +393,6 @@ module zcmp_decoder #(
         end
       end
 
-      PUSH_POP_INSTR_1:begin
-        if (reg_numbers_q == 1) begin
-          if (riscv::XLEN == 64) begin
-            case(zcmp_instr_type)
-              PUSH: begin
-                instr_o = {offset_d[11:5],5'h1,5'h2,3'h3,offset_d[4:0],riscv::OpcodeStore};
-              end
-              POP,POPRETZ,POPRET: begin
-                instr_o = {offset_d[11:0],5'h2,3'h3, 5'h1,riscv::OpcodeLoad};
-              end
-            endcase
-          end else begin
-            case(zcmp_instr_type)
-              PUSH: begin
-                instr_o = {offset_d[11:5], 5'h1, 5'h2, 3'h2, offset_d[4:0], riscv::OpcodeStore};
-              end
-              POP,POPRETZ,POPRET: begin
-                instr_o =  {offset_d[11:0],5'h2,3'h2, 5'h1,riscv::OpcodeLoad};
-              end
-            endcase
-          end
-          unique case (zcmp_instr_type)
-            PUSH,POP,POPRET: begin
-              state_d =   PUSH_ADDI;  
-            end
-            POPRETZ: begin
-              state_d = POPRETZ_1;  
-            end
-          endcase
-        end
-        if (reg_numbers_q == 2) begin
-          if (riscv::XLEN == 64) begin
-            case(zcmp_instr_type)
-              PUSH: begin
-                instr_o = {offset_d[11:5], 5'h8, 5'h2, 3'h3, offset_d[4:0], riscv::OpcodeStore};
-              end
-              POP,POPRETZ,POPRET: begin
-                instr_o = {offset_d[11:0],5'h2,3'h3, 5'h8,riscv::OpcodeLoad};
-              end
-            endcase
-          end else begin
-            case(zcmp_instr_type)
-              PUSH: begin
-                instr_o = {offset_d[11:5], 5'h8, 5'h2, 3'h2, offset_d[4:0], riscv::OpcodeStore};
-              end
-              POP,POPRETZ, POPRET: begin
-                instr_o = {offset_d[11:0],5'h2,3'h2, 5'h8,riscv::OpcodeLoad};
-              end
-            endcase
-          end
-          reg_numbers_d = reg_numbers_q -1;
-          offset_d = offset_q + 12'hFFC;  // decrement offset by -4 i.e. add 2's compilment of 4
-        end
-        if (reg_numbers_q == 3) begin
-          if (riscv::XLEN == 64) begin
-            case(zcmp_instr_type)
-              PUSH: begin
-                instr_o = {offset_d[11:5], 5'h9, 5'h2, 3'h3, offset_d[4:0], riscv::OpcodeStore};
-              end
-              POP,POPRETZ,POPRET: begin
-                instr_o = {offset_d[11:0],5'h2,3'h3, 5'h9,riscv::OpcodeLoad};
-              end
-            endcase
-          end else begin
-            case(zcmp_instr_type)
-              PUSH: begin
-                instr_o = {offset_d[11:5], 5'h9, 5'h2, 3'h2, offset_d[4:0], riscv::OpcodeStore};
-              end
-              POP,POPRETZ,POPRET: begin
-                instr_o = {offset_d[11:0],5'h2,3'h2, 5'h9,riscv::OpcodeLoad};
-              end
-            endcase
-          end
-          reg_numbers_d = reg_numbers_q -1;
-          offset_d = offset_q + 12'hFFC;  
-        end
-        if (reg_numbers_q >= 4 && reg_numbers_q <= 27) begin
-          if (riscv::XLEN == 64) begin
-            case(zcmp_instr_type)
-              PUSH: begin
-                instr_o = {offset_d[11:5], store_reg_q, 5'h2, 3'h3, offset_d[4:0], riscv::OpcodeStore};
-              end
-              POP,POPRETZ,POPRET: begin
-                instr_o = {offset_d[11:0],5'h2,3'h3,store_reg_q,riscv::OpcodeLoad};
-              end
-            endcase
-          end else begin
-            case(zcmp_instr_type)
-              PUSH: begin
-                instr_o = {offset_d[11:5], store_reg_q,5'h2, 3'h2, offset_d[4:0], riscv::OpcodeStore};
-              end
-              POP,POPRETZ,POPRET: begin
-                instr_o = {offset_d[11:0],5'h2,3'h2,store_reg_q,riscv::OpcodeLoad};
-              end
-            endcase
-          end
-            reg_numbers_d = reg_numbers_q - 1;
-            store_reg_d = store_reg_d - 1;
-            offset_d = offset_d + 12'hFFC;
-          if (reg_numbers_q == 26) begin
-            state_d = PUSH_POP_INSTR_2;
-          end
-        end                
-      end
-
       MOVE: begin
         case (zcmp_instr_type)
           MVSA01:  begin
@@ -502,6 +400,9 @@ module zcmp_decoder #(
           end
           MVA01S: begin
             instr_o = {12'h0,xreg2, 3'h0,5'hB,riscv::OpcodeOpImm};
+          end
+          default: begin
+            illegal_instr_o = 1'b1;
           end
         endcase
         fetch_stall = 0;
@@ -540,10 +441,14 @@ module zcmp_decoder #(
                 POP,POPRETZ,POPRET: begin
                   instr_o = {offset_d[11:0],5'h2,3'h2,store_reg_q,riscv::OpcodeLoad};
                 end
+                default: begin
+                  illegal_instr_o = 1'b1;
+                end
               endcase
         end
-        offset_d = offset_d + 12'hFFC;
-        state_d =   PUSH_POP_INSTR_1;
+        offset_d = offset_q + 12'hFFC;
+        store_reg_d = store_reg_q - 1;
+        state_d = INIT;
       end
 
       POPRETZ_1: begin
@@ -568,6 +473,7 @@ module zcmp_decoder #(
           end
         endcase
       end
+      
       default: begin
         state_d = IDLE;
       end
