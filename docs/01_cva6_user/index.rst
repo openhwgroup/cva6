@@ -47,6 +47,7 @@ Editor: **Jerome Quevremont**
    RISCV_Instructions_RVZicond
    CSR_CV32A60X_list
    CSR_CV32A60X
+   CSR_CV32A60AX
    CV64A6_Control_Status_Registers
    CSR_Cache_Control
    CSR_Performance_Counters
