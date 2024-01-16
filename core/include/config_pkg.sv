@@ -89,6 +89,10 @@ package config_pkg;
     logic [63:0]                 DmBaseAddress;
     /// Number of PMP entries.
     int unsigned                 NrPMPEntries;
+    /// Physical Memory Protection (PMP) CSR reset values and read-only bits
+    logic [15:0][63:0]           PMPCfgRstVal;
+    logic [15:0][63:0]           PMPAddrRstVal;
+    bit [15:0]                   PMPEntryReadOnly;
     /// Set to the bus type in use.
     noc_type_e                   NOCType;
     /// Physical Memory Attributes (PMAs)

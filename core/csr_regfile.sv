@@ -1554,8 +1554,15 @@ module csr_regfile
       // wait for interrupt
       wfi_q                  <= 1'b0;
       // pmp
-      pmpcfg_q               <= '0;
-      pmpaddr_q              <= '0;
+      for (int i = 0; i < 16; i++) begin
+        if (i < CVA6Cfg.NrPMPEntries) begin
+          pmpcfg_q[i]  <= riscv::pmpcfg_t'(CVA6Cfg.PMPCfgRstVal[i]);
+          pmpaddr_q[i] <= CVA6Cfg.PMPAddrRstVal[i][riscv::PLEN-3:0];
+        end else begin
+          pmpcfg_q[i]  <= '0;
+          pmpaddr_q[i] <= '0;
+        end
+      end
     end else begin
       priv_lvl_q <= priv_lvl_d;
       // floating-point registers
@@ -1607,12 +1614,16 @@ module csr_regfile
       for (int i = 0; i < 16; i++) begin
         if (i < CVA6Cfg.NrPMPEntries) begin
           // We only support >=8-byte granularity, NA4 is disabled
-          if(pmpcfg_d[i].addr_mode != riscv::NA4 && !(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1)) begin
+          if(!CVA6Cfg.PMPEntryReadOnly[i] && pmpcfg_d[i].addr_mode != riscv::NA4 && !(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1)) begin
             pmpcfg_q[i] <= pmpcfg_d[i];
           end else begin
             pmpcfg_q[i] <= pmpcfg_q[i];
           end
-          pmpaddr_q[i] <= pmpaddr_d[i];
+          if (!CVA6Cfg.PMPEntryReadOnly[i]) begin
+            pmpaddr_q[i] <= pmpaddr_d[i];
+          end else begin
+            pmpaddr_q[i] <= pmpaddr_q[i];
+          end
         end else begin
           pmpcfg_q[i]  <= '0;
           pmpaddr_q[i] <= '0;

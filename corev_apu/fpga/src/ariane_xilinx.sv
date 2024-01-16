@@ -197,6 +197,9 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   ExceptionAddress:      dm::ExceptionAddress,
   DmBaseAddress:         ariane_soc::DebugBase,
   NrPMPEntries:          unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries),
+  PMPCfgRstVal:          {16{64'h0}},
+  PMPAddrRstVal:         {16{64'h0}},
+  PMPEntryReadOnly:      16'd0,
   NOCType:               config_pkg::NOC_TYPE_AXI4_ATOP,
   // idempotent region
   NrNonIdempotentRules:  unsigned'(1),
