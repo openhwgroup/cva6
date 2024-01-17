@@ -116,6 +116,9 @@ package cva6_config_pkg;
       BHTEntries: unsigned'(CVA6ConfigBHTEntries),
       DmBaseAddress: 64'h0,
       NrPMPEntries: unsigned'(CVA6ConfigNrPMPEntries),
+      PMPCfgRstVal: {16{64'h0}},
+      PMPAddrRstVal: {16{64'h0}},
+      PMPEntryReadOnly: 16'd0,
       NOCType: config_pkg::NOC_TYPE_AXI4_ATOP,
       // idempotent region
       NrNonIdempotentRules:
