@@ -218,7 +218,7 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   AxiBurstWriteEn: bit'(0)
 };
 
-localparam type rvfi_instr_t = logic;
+localparam type rvfi_probes_t = logic;
 
 
 // 24 MByte in 8 byte words
@@ -766,7 +766,7 @@ ariane_axi::resp_t   axi_ariane_resp;
 ariane #(
     .CVA6Cfg ( CVA6Cfg ),
     .IsRVFI ( IsRVFI ),
-    .rvfi_instr_t ( rvfi_instr_t )
+    .rvfi_probes_t ( rvfi_probes_t )
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),
@@ -775,7 +775,7 @@ ariane #(
     .irq_i        ( irq                 ),
     .ipi_i        ( ipi                 ),
     .time_irq_i   ( timer_irq           ),
-    .rvfi_o       ( /* open */          ),
+    .rvfi_probes_o( /* open */          ),
     .debug_req_i  ( debug_req_irq       ),
     .noc_req_o    ( axi_ariane_req      ),
     .noc_resp_i   ( axi_ariane_resp     )

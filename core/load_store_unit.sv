@@ -77,11 +77,8 @@ module load_store_unit
     input  logic           [15:0][riscv::PLEN-3:0] pmpaddr_i,
 
     //RVFI
-    output [              riscv::VLEN-1:0] lsu_addr_o,
-    output [              riscv::PLEN-1:0] mem_paddr_o,
-    output [          (riscv::XLEN/8)-1:0] lsu_rmask_o,
-    output [          (riscv::XLEN/8)-1:0] lsu_wmask_o,
-    output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
+    output lsu_ctrl_t                   rvfi_lsu_ctrl_o,
+    output            [riscv::PLEN-1:0] rvfi_mem_paddr_o
 );
   // data is misaligned
   logic                               data_misaligned;
@@ -269,7 +266,7 @@ module load_store_unit
       // MMU port
       .translation_req_o    (st_translation_req),
       .vaddr_o              (st_vaddr),
-      .mem_paddr_o          (mem_paddr_o),
+      .rvfi_mem_paddr_o     (rvfi_mem_paddr_o),
       .paddr_i              (mmu_paddr),
       .ex_i                 (mmu_exception),
       .dtlb_hit_i           (dtlb_hit),
@@ -490,10 +487,7 @@ module load_store_unit
       .*
   );
 
-  assign lsu_addr_o = lsu_ctrl.vaddr;
-  assign lsu_rmask_o = lsu_ctrl.fu == LOAD ? lsu_ctrl.be : '0;
-  assign lsu_wmask_o = lsu_ctrl.fu == STORE ? lsu_ctrl.be : '0;
-  assign lsu_addr_trans_id_o = lsu_ctrl.trans_id;
+  assign rvfi_lsu_ctrl_o = lsu_ctrl;
 
 endmodule
 

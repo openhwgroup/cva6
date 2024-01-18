@@ -20,31 +20,30 @@ module cva6
     parameter config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg,
     parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
     // RVFI
-    parameter type rvfi_instr_t = struct packed {
-      logic [config_pkg::NRET-1:0]                  valid;
-      logic [config_pkg::NRET*64-1:0]               order;
-      logic [config_pkg::NRET*config_pkg::ILEN-1:0] insn;
-      logic [config_pkg::NRET-1:0]                  trap;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      cause;
-      logic [config_pkg::NRET-1:0]                  halt;
-      logic [config_pkg::NRET-1:0]                  intr;
-      logic [config_pkg::NRET*2-1:0]                mode;
-      logic [config_pkg::NRET*2-1:0]                ixl;
-      logic [config_pkg::NRET*5-1:0]                rs1_addr;
-      logic [config_pkg::NRET*5-1:0]                rs2_addr;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
-      logic [config_pkg::NRET*5-1:0]                rd_addr;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
-      logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
-      logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
-      logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
-      logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
-      logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+    parameter type rvfi_probes_t = struct packed {
+      logic [TRANS_ID_BITS-1:0]                                               issue_pointer;
+      logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0]                    commit_pointer;
+      logic                                                                   flush_unissued_instr;
+      logic                                                                   decoded_instr_valid;
+      logic                                                                   flush;
+      logic                                                                   decoded_instr_ack;
+      logic                                                                   issue_instr_ack;
+      logic                                                                   fetch_entry_valid;
+      logic [31:0]                                                            instruction;
+      logic                                                                   is_compressed;
+      riscv::xlen_t                                                           rs1_forwarding;
+      riscv::xlen_t                                                           rs2_forwarding;
+      scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0]                          commit_instr;
+      exception_t                                                             ex_commit;
+      riscv::priv_lvl_t                                                       priv_lvl;
+      lsu_ctrl_t                                                              lsu_ctrl;
+      logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
+      logic [CVA6Cfg.NrCommitPorts-1:0]                                       commit_ack;
+      logic [riscv::PLEN-1:0]                                                 mem_paddr;
+      logic                                                                   debug_mode;
+      logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]                      wdata;
     },
+
     // AXI types
     parameter type axi_ar_chan_t = struct packed {
       logic [CVA6Cfg.AxiIdWidth-1:0]   id;
@@ -129,7 +128,7 @@ module cva6
     input logic debug_req_i,  // debug request (async)
     // RISC-V formal interface port (`rvfi`):
     // Can be left open when formal tracing is not needed.
-    output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
+    output rvfi_probes_t rvfi_probes_o,
     output cvxif_req_t cvxif_req_o,
     input cvxif_resp_t cvxif_resp_i,
     // memory side
@@ -351,6 +350,11 @@ module cva6
   // --------------
   scoreboard_entry_t [CVA6ExtendCfg.NrCommitPorts-1:0] commit_instr_id_commit;
   // --------------
+  // RVFI
+  // --------------
+  logic [TRANS_ID_BITS-1:0] rvfi_issue_pointer;
+  logic [CVA6ExtendCfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] rvfi_commit_pointer;
+  // --------------
   // COMMIT <-> ID
   // --------------
   logic [CVA6ExtendCfg.NrCommitPorts-1:0][4:0] waddr_commit_id;
@@ -395,66 +399,67 @@ module cva6
   // ----------------------------
   logic [11:0] addr_csr_perf;
   riscv::xlen_t data_csr_perf, data_perf_csr;
-  logic                                                                we_csr_perf;
+  logic                                                  we_csr_perf;
 
-  logic                                                                icache_flush_ctrl_cache;
-  logic                                                                itlb_miss_ex_perf;
-  logic                                                                dtlb_miss_ex_perf;
-  logic                                                                dcache_miss_cache_perf;
-  logic                                                                icache_miss_cache_perf;
-  logic          [                 NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits;
-  logic                                                                stall_issue;
+  logic                                                  icache_flush_ctrl_cache;
+  logic                                                  itlb_miss_ex_perf;
+  logic                                                  dtlb_miss_ex_perf;
+  logic                                                  dcache_miss_cache_perf;
+  logic                                                  icache_miss_cache_perf;
+  logic          [   NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits;
+  logic                                                  stall_issue;
   // --------------
   // CTRL <-> *
   // --------------
-  logic                                                                set_pc_ctrl_pcgen;
-  logic                                                                flush_csr_ctrl;
-  logic                                                                flush_unissued_instr_ctrl_id;
-  logic                                                                flush_ctrl_if;
-  logic                                                                flush_ctrl_id;
-  logic                                                                flush_ctrl_ex;
-  logic                                                                flush_ctrl_bp;
-  logic                                                                flush_tlb_ctrl_ex;
-  logic                                                                fence_i_commit_controller;
-  logic                                                                fence_commit_controller;
-  logic                                                                sfence_vma_commit_controller;
-  logic                                                                halt_ctrl;
-  logic                                                                halt_csr_ctrl;
-  logic                                                                dcache_flush_ctrl_cache;
-  logic                                                                dcache_flush_ack_cache_ctrl;
-  logic                                                                set_debug_pc;
-  logic                                                                flush_commit;
-  logic                                                                flush_acc;
+  logic                                                  set_pc_ctrl_pcgen;
+  logic                                                  flush_csr_ctrl;
+  logic                                                  flush_unissued_instr_ctrl_id;
+  logic                                                  flush_ctrl_if;
+  logic                                                  flush_ctrl_id;
+  logic                                                  flush_ctrl_ex;
+  logic                                                  flush_ctrl_bp;
+  logic                                                  flush_tlb_ctrl_ex;
+  logic                                                  fence_i_commit_controller;
+  logic                                                  fence_commit_controller;
+  logic                                                  sfence_vma_commit_controller;
+  logic                                                  halt_ctrl;
+  logic                                                  halt_csr_ctrl;
+  logic                                                  dcache_flush_ctrl_cache;
+  logic                                                  dcache_flush_ack_cache_ctrl;
+  logic                                                  set_debug_pc;
+  logic                                                  flush_commit;
+  logic                                                  flush_acc;
 
-  icache_areq_t                                                        icache_areq_ex_cache;
-  icache_arsp_t                                                        icache_areq_cache_ex;
-  icache_dreq_t                                                        icache_dreq_if_cache;
-  icache_drsp_t                                                        icache_dreq_cache_if;
+  icache_areq_t                                          icache_areq_ex_cache;
+  icache_arsp_t                                          icache_areq_cache_ex;
+  icache_dreq_t                                          icache_dreq_if_cache;
+  icache_drsp_t                                          icache_dreq_cache_if;
 
-  amo_req_t                                                            amo_req;
-  amo_resp_t                                                           amo_resp;
-  logic                                                                sb_full;
+  amo_req_t                                              amo_req;
+  amo_resp_t                                             amo_resp;
+  logic                                                  sb_full;
 
   // ----------------
   // DCache <-> *
   // ----------------
-  dcache_req_i_t [                          2:0]                       dcache_req_ports_ex_cache;
-  dcache_req_o_t [                          2:0]                       dcache_req_ports_cache_ex;
-  dcache_req_i_t [                          1:0]                       dcache_req_ports_acc_cache;
-  dcache_req_o_t [                          1:0]                       dcache_req_ports_cache_acc;
-  logic                                                                dcache_commit_wbuffer_empty;
-  logic                                                                dcache_commit_wbuffer_not_ni;
+  dcache_req_i_t [            2:0]                       dcache_req_ports_ex_cache;
+  dcache_req_o_t [            2:0]                       dcache_req_ports_cache_ex;
+  dcache_req_i_t [            1:0]                       dcache_req_ports_acc_cache;
+  dcache_req_o_t [            1:0]                       dcache_req_ports_cache_acc;
+  logic                                                  dcache_commit_wbuffer_empty;
+  logic                                                  dcache_commit_wbuffer_not_ni;
 
-  logic          [              riscv::VLEN-1:0]                       lsu_addr;
-  logic          [              riscv::PLEN-1:0]                       mem_paddr;
-  logic          [          (riscv::XLEN/8)-1:0]                       lsu_rmask;
-  logic          [          (riscv::XLEN/8)-1:0]                       lsu_wmask;
-  logic          [ariane_pkg::TRANS_ID_BITS-1:0]                       lsu_addr_trans_id;
+  //RVFI
+  lsu_ctrl_t                                             rvfi_lsu_ctrl;
+  logic          [riscv::PLEN-1:0]                       rvfi_mem_paddr;
+  logic                                                  rvfi_is_compressed;
+  rvfi_probes_t                                          rvfi_probes;
+
 
   // Accelerator port
-  logic          [                         63:0]                       inval_addr;
-  logic                                                                inval_valid;
-  logic                                                                inval_ready;
+  logic          [           63:0]                       inval_addr;
+  logic                                                  inval_valid;
+  logic                                                  inval_ready;
 
   // --------------
   // Frontend
@@ -502,6 +507,8 @@ module cva6
       .issue_entry_valid_o(issue_entry_valid_id_issue),
       .is_ctrl_flow_o     (is_ctrl_fow_id_issue),
       .issue_instr_ack_i  (issue_instr_issue_id),
+
+      .rvfi_is_compressed_o(rvfi_is_compressed),
 
       .priv_lvl_i  (priv_lvl),
       .fs_i        (fs),
@@ -583,9 +590,7 @@ module cva6
   // Issue
   // ---------
   issue_stage #(
-      .CVA6Cfg   (CVA6ExtendCfg),
-      .IsRVFI    (IsRVFI),
-      .NR_ENTRIES(NR_SB_ENTRIES)
+      .CVA6Cfg(CVA6ExtendCfg)
   ) issue_stage_i (
       .clk_i,
       .rst_ni,
@@ -639,19 +644,17 @@ module cva6
       .wt_valid_i            (wt_valid_ex_id),
       .x_we_i                (x_we_ex_id),
 
-      .waddr_i            (waddr_commit_id),
-      .wdata_i            (wdata_commit_id),
-      .we_gpr_i           (we_gpr_commit_id),
-      .we_fpr_i           (we_fpr_commit_id),
-      .commit_instr_o     (commit_instr_id_commit),
-      .commit_ack_i       (commit_ack),
+      .waddr_i              (waddr_commit_id),
+      .wdata_i              (wdata_commit_id),
+      .we_gpr_i             (we_gpr_commit_id),
+      .we_fpr_i             (we_fpr_commit_id),
+      .commit_instr_o       (commit_instr_id_commit),
+      .commit_ack_i         (commit_ack),
       // Performance Counters
-      .stall_issue_o      (stall_issue),
+      .stall_issue_o        (stall_issue),
       //RVFI
-      .lsu_addr_i         (lsu_addr),
-      .lsu_rmask_i        (lsu_rmask),
-      .lsu_wmask_i        (lsu_wmask),
-      .lsu_addr_trans_id_i(lsu_addr_trans_id),
+      .rvfi_issue_pointer_o (rvfi_issue_pointer),
+      .rvfi_commit_pointer_o(rvfi_commit_pointer),
       .*
   );
 
@@ -760,11 +763,8 @@ module cva6
       .pmpcfg_i               (pmpcfg),
       .pmpaddr_i              (pmpaddr),
       //RVFI
-      .lsu_addr_o             (lsu_addr),
-      .mem_paddr_o            (mem_paddr),
-      .lsu_rmask_o            (lsu_rmask),
-      .lsu_wmask_o            (lsu_wmask),
-      .lsu_addr_trans_id_o    (lsu_addr_trans_id)
+      .rvfi_lsu_ctrl_o        (rvfi_lsu_ctrl),
+      .rvfi_mem_paddr_o       (rvfi_mem_paddr)
   );
 
   // ---------
@@ -1357,41 +1357,45 @@ module cva6
 `endif  // VERILATOR
   //pragma translate_on
 
+
   if (IsRVFI) begin
-    always_comb begin
-      for (int i = 0; i < CVA6ExtendCfg.NrCommitPorts; i++) begin
-        logic exception;
-        exception = commit_instr_id_commit[i].valid && ex_commit.valid;
-        rvfi_o[i].valid    = (commit_ack[i] && !ex_commit.valid) ||
-          (exception && (ex_commit.cause == riscv::ENV_CALL_MMODE ||
-                    ex_commit.cause == riscv::ENV_CALL_SMODE ||
-                    ex_commit.cause == riscv::ENV_CALL_UMODE));
-        rvfi_o[i].insn = ex_commit.valid ? ex_commit.tval[31:0] : commit_instr_id_commit[i].ex.tval[31:0];
-        // when trap, the instruction is not executed
-        rvfi_o[i].trap = exception;
-        rvfi_o[i].cause = ex_commit.cause;
-        rvfi_o[i].mode = (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
-        rvfi_o[i].ixl = riscv::XLEN == 64 ? 2 : 1;
-        rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1[4:0];
-        rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2[4:0];
-        rvfi_o[i].rd_addr = commit_instr_id_commit[i].rd[4:0];
-        rvfi_o[i].rd_wdata =
-            (CVA6ExtendCfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op)) ?
-            commit_instr_id_commit[i].result : wdata_commit_id[i];
-        rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
 
-        rvfi_o[i].mem_addr = commit_instr_id_commit[i].lsu_addr;
-        // So far, only write paddr is reported. TODO: read paddr
-        rvfi_o[i].mem_paddr = mem_paddr;
-        rvfi_o[i].mem_wmask = commit_instr_id_commit[i].lsu_wmask;
-        rvfi_o[i].mem_wdata = commit_instr_id_commit[i].lsu_wdata;
-        rvfi_o[i].mem_rmask = commit_instr_id_commit[i].lsu_rmask;
-        rvfi_o[i].mem_rdata = commit_instr_id_commit[i].result;
-        rvfi_o[i].rs1_rdata = commit_instr_id_commit[i].rs1_rdata;
-        rvfi_o[i].rs2_rdata = commit_instr_id_commit[i].rs2_rdata;
+    cva6_rvfi_probes #(
+        .CVA6Cfg   (CVA6ExtendCfg),
+        .rvfi_probes_t(rvfi_probes_t)
+    ) i_cva6_rvfi_combi (
 
-      end
-    end
-  end
+        .flush_i            (flush_ctrl_if),
+        .issue_instr_ack_i  (issue_instr_issue_id),
+        .fetch_entry_valid_i(fetch_valid_if_id),
+        .instruction_i      (fetch_entry_if_id.instruction),
+        .is_compressed_i    (rvfi_is_compressed),
+
+        .issue_pointer_i (rvfi_issue_pointer),
+        .commit_pointer_i(rvfi_commit_pointer),
+
+        .flush_unissued_instr_i(flush_unissued_instr_ctrl_id),
+        .decoded_instr_valid_i (issue_entry_valid_id_issue),
+        .decoded_instr_ack_i   (issue_instr_issue_id),
+
+        .rs1_forwarding_i(rs1_forwarding_id_ex),
+        .rs2_forwarding_i(rs2_forwarding_id_ex),
+
+        .commit_instr_i(commit_instr_id_commit),
+        .ex_commit_i   (ex_commit),
+        .priv_lvl_i    (priv_lvl),
+
+        .lsu_ctrl_i  (rvfi_lsu_ctrl),
+        .wbdata_i    (wbdata_ex_id),
+        .commit_ack_i(commit_ack),
+        .mem_paddr_i (rvfi_mem_paddr),
+        .debug_mode_i(debug_mode),
+        .wdata_i     (wdata_commit_id),
+
+        .rvfi_probes_o(rvfi_probes_o)
+
+    );
+
+  end  //IsRVFI
 
 endmodule  // ariane

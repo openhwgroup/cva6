@@ -18,31 +18,6 @@
 module ariane_testharness #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg,
   parameter bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace),
-  parameter type rvfi_instr_t = struct packed {
-    logic [config_pkg::NRET-1:0]                  valid;
-    logic [config_pkg::NRET*64-1:0]               order;
-    logic [config_pkg::NRET*config_pkg::ILEN-1:0] insn;
-    logic [config_pkg::NRET-1:0]                  trap;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      cause;
-    logic [config_pkg::NRET-1:0]                  halt;
-    logic [config_pkg::NRET-1:0]                  intr;
-    logic [config_pkg::NRET*2-1:0]                mode;
-    logic [config_pkg::NRET*2-1:0]                ixl;
-    logic [config_pkg::NRET*5-1:0]                rs1_addr;
-    logic [config_pkg::NRET*5-1:0]                rs2_addr;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
-    logic [config_pkg::NRET*5-1:0]                rd_addr;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
-    logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
-    logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
-    logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
-    logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
-    logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
-  },
   //
   parameter int unsigned AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH,
   parameter int unsigned AXI_USER_EN       = ariane_pkg::AXI_USER_EN,
@@ -60,6 +35,56 @@ module ariane_testharness #(
 );
 
   localparam [7:0] hart_id = '0;
+  
+  localparam type rvfi_instr_t = struct packed {
+      logic [config_pkg::NRET-1:0]                  valid;
+      logic [config_pkg::NRET*64-1:0]               order;
+      logic [config_pkg::NRET*config_pkg::ILEN-1:0] insn;
+      logic [config_pkg::NRET-1:0]                  trap;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]      cause;
+      logic [config_pkg::NRET-1:0]                  halt;
+      logic [config_pkg::NRET-1:0]                  intr;
+      logic [config_pkg::NRET*2-1:0]                mode;
+      logic [config_pkg::NRET*2-1:0]                ixl;
+      logic [config_pkg::NRET*5-1:0]                rs1_addr;
+      logic [config_pkg::NRET*5-1:0]                rs2_addr;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]      rs1_rdata;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]      rs2_rdata;
+      logic [config_pkg::NRET*5-1:0]                rd_addr;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]      rd_wdata;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata;
+      logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr;
+      logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr;
+      logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask;
+      logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
+  };
+    
+  localparam type rvfi_probes_t = struct packed { 
+    logic [ariane_pkg::TRANS_ID_BITS-1:0] issue_pointer; 
+    logic [CVA6Cfg.NrCommitPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0] commit_pointer; 
+    logic                            flush_unissued_instr;
+    logic                            decoded_instr_valid;
+    logic                            decoded_instr_ack;
+    logic                            flush;
+    logic                            issue_instr_ack;
+    logic                            fetch_entry_valid;
+    logic [31:0]                     instruction;
+    logic                            is_compressed;
+    riscv::xlen_t                    rs1_forwarding;
+    riscv::xlen_t                    rs2_forwarding;
+    ariane_pkg::scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr;
+    ariane_pkg::exception_t ex_commit; 
+    riscv::priv_lvl_t priv_lvl;
+    ariane_pkg::lsu_ctrl_t                       lsu_ctrl;
+    logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
+    logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
+    logic [riscv::PLEN-1:0] mem_paddr;
+    logic debug_mode;
+    logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata;
+  };
 
   // disable test-enable
   logic        test_en;
@@ -625,12 +650,13 @@ module ariane_testharness #(
   // ---------------
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
-  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi;
-
+  rvfi_probes_t rvfi_probes;
+  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
+  
   ariane #(
     .CVA6Cfg              ( CVA6Cfg             ),
     .IsRVFI               ( IsRVFI              ),
-    .rvfi_instr_t         ( rvfi_instr_t        ),
+    .rvfi_probes_t        ( rvfi_probes_t       ),
     .noc_req_t            ( ariane_axi::req_t   ),
     .noc_resp_t           ( ariane_axi::resp_t  )
   ) i_ariane (
@@ -641,7 +667,7 @@ module ariane_testharness #(
     .irq_i                ( irqs                ),
     .ipi_i                ( ipi                 ),
     .time_irq_i           ( timer_irq           ),
-    .rvfi_o               ( rvfi                ),
+    .rvfi_probes_o        ( rvfi_probes         ),
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
     .debug_req_i          ( 1'b0                ),
@@ -672,6 +698,17 @@ module ariane_testharness #(
     end
   end
 
+  cva6_rvfi #(
+      .CVA6Cfg   (CVA6Cfg),
+      .rvfi_instr_t(rvfi_instr_t),
+      .rvfi_probes_t(rvfi_probes_t)
+  ) i_cva6_rvfi (
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .rvfi_probes_i(rvfi_probes),
+      .rvfi_o(rvfi_instr)
+  );
+
   rvfi_tracer  #(
     .CVA6Cfg(CVA6Cfg),
     .rvfi_instr_t(rvfi_instr_t),
@@ -679,10 +716,10 @@ module ariane_testharness #(
     .HART_ID(hart_id),
     .DEBUG_START(0),
     .DEBUG_STOP(0)
-  ) rvfi_tracer_i (
+  ) i_rvfi_tracer (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .rvfi_i(rvfi),
+    .rvfi_i(rvfi_instr),
     .end_of_test_o(rvfi_exit)
   );
 
@@ -694,7 +731,7 @@ module ariane_testharness #(
         .clk_i,
         .rst_ni,
         .clint_tick_i   ( rtc_i    ),
-        .rvfi_i         ( rvfi )
+        .rvfi_i         ( rvfi_instr )
     );
     initial begin
         $display("Running binary in tandem mode");

@@ -30,6 +30,7 @@ module id_stage #(
     output logic issue_entry_valid_o,  // issue entry is valid
     output logic is_ctrl_flow_o,  // the instruction we issue is a ctrl flow instructions
     input logic issue_instr_ack_i,  // issue stage acknowledged sampling of instructions
+    output logic rvfi_is_compressed_o,
     // from CSR file
     input riscv::priv_lvl_t priv_lvl_i,  // current privilege level
     input riscv::xs_t fs_i,  // floating point extension status
@@ -74,6 +75,8 @@ module id_stage #(
     assign is_illegal = '0;
     assign is_compressed = '0;
   end
+
+  assign rvfi_is_compressed_o = is_compressed;
   // ---------------------------------------------------------
   // 2. Decode and emit instruction to issue stage
   // ---------------------------------------------------------

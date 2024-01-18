@@ -213,7 +213,7 @@ fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/b
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
-tbs := core/include/$(target)_config_pkg.sv corev_apu/tb/ariane_tb.sv corev_apu/tb/ariane_testharness.sv
+tbs := core/include/$(target)_config_pkg.sv corev_apu/tb/ariane_tb.sv corev_apu/tb/ariane_testharness.sv core/cva6_rvfi.sv
 
 tbs := $(addprefix $(root-dir), $(tbs))
 
@@ -543,6 +543,7 @@ xrun-ci: xrun-asm-tests xrun-amo-tests xrun-mul-tests xrun-fp-tests xrun-benchma
 # verilator-specific
 verilate_command := $(verilator) --no-timing verilator_config.vlt                                                \
                     -f core/Flist.cva6                                                                           \
+                    core/cva6_rvfi.sv                                                                            \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(filter-out %_config_pkg.sv, $(src))))   \
                     +define+$(defines)$(if $(TRACE_FAST),+VM_TRACE)$(if $(TRACE_COMPACT),+VM_TRACE+VM_TRACE_FST) \

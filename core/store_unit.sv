@@ -39,7 +39,7 @@ module store_unit
     // MMU -> Address Translation
     output logic translation_req_o,  // request address translation
     output logic [riscv::VLEN-1:0] vaddr_o,  // virtual address out
-    output [riscv::PLEN-1:0] mem_paddr_o,
+    output [riscv::PLEN-1:0] rvfi_mem_paddr_o,
     input logic [riscv::PLEN-1:0] paddr_i,  // physical address in
     input exception_t ex_i,
     input  logic                     dtlb_hit_i,       // will be one in the same cycle translation_req was asserted if it hits
@@ -245,7 +245,7 @@ module store_unit
       // the whole pipeline anyway
       .valid_without_flush_i(st_valid_without_flush),
       .paddr_i,
-      .mem_paddr_o          (mem_paddr_o),
+      .rvfi_mem_paddr_o     (rvfi_mem_paddr_o),
       .data_i               (st_data_q),
       .be_i                 (st_be_q),
       .data_size_i          (st_data_size_q),
