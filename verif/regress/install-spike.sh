@@ -46,7 +46,7 @@ if ! [ -f "$SPIKE_INSTALL_DIR/bin/spike" ]; then
   fi
   make -j${NUM_JOBS}
   echo "Installing Spike in '$SPIKE_INSTALL_DIR'..."
-  sudo make install
+  make install
   cd $CALLER_DIR
 else
   echo "Spike already installed in '$SPIKE_INSTALL_DIR'."
