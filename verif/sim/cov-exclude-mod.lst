@@ -10,3 +10,4 @@
 
 -tree uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.instr_tracer_i
 -tree uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.tracer_if
+-tree uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.genblk6.i_cva6_rvfi_combi
