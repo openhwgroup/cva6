@@ -90,7 +90,8 @@ module cvxif_fu
         x_valid_o = 1'b1;
         x_exception_o.cause = riscv::ILLEGAL_INSTR;
         x_exception_o.valid = 1'b1;
-        x_exception_o.tval = illegal_instr_n;
+        if (CVA6Cfg.TvalEn)
+          x_exception_o.tval = illegal_instr_n;
         x_we_o = '0;
         illegal_n             = '0; // Reset flag for illegal instr. illegal_id and illegal instr values are a don't care, no need to reset it.
       end

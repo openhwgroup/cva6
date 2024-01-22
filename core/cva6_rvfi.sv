@@ -93,6 +93,7 @@ module cva6_rvfi
     CVA6Cfg.BTBEntries,
     CVA6Cfg.BHTEntries,
     CVA6Cfg.DmBaseAddress,
+    CVA6Cfg.TvalEn,
     CVA6Cfg.NrPMPEntries,
     CVA6Cfg.PMPCfgRstVal,
     CVA6Cfg.PMPAddrRstVal,

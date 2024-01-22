@@ -44,6 +44,7 @@ module decoder
     input logic tw_i,  // timeout wait
     input logic tsr_i,  // trap sret
     output scoreboard_entry_t instruction_o,  // scoreboard entry to scoreboard
+    output logic [31:0] orig_instr_o, // instruction opcode to issue read operand for CVXIF
     output logic is_control_flow_instr_o  // this instruction will change the control flow
 );
   logic illegal_instr;
@@ -1306,12 +1307,18 @@ module decoder
   always_comb begin : exception_handling
     interrupt_cause  = '0;
     instruction_o.ex = ex_i;
+    orig_instr_o = '0;
     // look if we didn't already get an exception in any previous
     // stage - we should not overwrite it as we retain order regarding the exception
     if (~ex_i.valid) begin
       // if we didn't already get an exception save the instruction here as we may need it
       // in the commit stage if we got a access exception to one of the CSR registers
-      instruction_o.ex.tval  = (is_compressed_i) ? {{riscv::XLEN-16{1'b0}}, compressed_instr_i} : {{riscv::XLEN-32{1'b0}}, instruction_i};
+      if (CVA6Cfg.CvxifEn)
+        orig_instr_o = (is_compressed_i) ? {{riscv::XLEN-16{1'b0}}, compressed_instr_i} : {{riscv::XLEN-32{1'b0}}, instruction_i};
+      if (CVA6Cfg.TvalEn)
+        instruction_o.ex.tval  = (is_compressed_i) ? {{riscv::XLEN-16{1'b0}}, compressed_instr_i} : {{riscv::XLEN-32{1'b0}}, instruction_i};
+      else
+        instruction_o.ex.tval = '0;
       // instructions which will throw an exception are marked as valid
       // e.g.: they can be committed anytime and do not need to wait for any functional unit
       // check here if we decoded an invalid instruction or if the compressed decoder already decoded

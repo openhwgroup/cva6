@@ -760,7 +760,7 @@ module csr_regfile
         if (CVA6Cfg.RVS) scause_d = csr_wdata;
         else update_access_exception = 1'b1;
         riscv::CSR_STVAL:
-        if (CVA6Cfg.RVS) stval_d = csr_wdata;
+        if (CVA6Cfg.RVS && CVA6Cfg.TvalEn) stval_d = csr_wdata;
         else update_access_exception = 1'b1;
         // supervisor address translation and protection
         riscv::CSR_SATP: begin
@@ -846,7 +846,12 @@ module csr_regfile
         riscv::CSR_MSCRATCH: mscratch_d = csr_wdata;
         riscv::CSR_MEPC: mepc_d = {csr_wdata[riscv::XLEN-1:1], 1'b0};
         riscv::CSR_MCAUSE: mcause_d = csr_wdata;
-        riscv::CSR_MTVAL: mtval_d = csr_wdata;
+        riscv::CSR_MTVAL: begin
+          if (CVA6Cfg.TvalEn)
+            mtval_d = csr_wdata;
+          else
+            update_access_exception = 1'b1;
+        end
         riscv::CSR_MIP: begin
           mask  = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
           mip_d = (mip_q & ~mask) | (csr_wdata & mask);
@@ -1128,14 +1133,18 @@ module csr_regfile
         // set epc
         mepc_d = {{riscv::XLEN - riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
         // set mtval or stval
-        mtval_d        = (ariane_pkg::ZERO_TVAL
-                                  && (ex_i.cause inside {
-                                    riscv::ILLEGAL_INSTR,
-                                    riscv::BREAKPOINT,
-                                    riscv::ENV_CALL_UMODE,
-                                    riscv::ENV_CALL_SMODE,
-                                    riscv::ENV_CALL_MMODE
-                                  } || ex_i.cause[riscv::XLEN-1])) ? '0 : ex_i.tval;
+        if (CVA6Cfg.TvalEn) begin
+          mtval_d        = (ariane_pkg::ZERO_TVAL
+                                    && (ex_i.cause inside {
+                                      riscv::ILLEGAL_INSTR,
+                                      riscv::BREAKPOINT,
+                                      riscv::ENV_CALL_UMODE,
+                                      riscv::ENV_CALL_SMODE,
+                                      riscv::ENV_CALL_MMODE
+                                    } || ex_i.cause[riscv::XLEN-1])) ? '0 : ex_i.tval;
+        end else begin
+          mtval_d  = '0;
+        end
       end
 
       priv_lvl_d = trap_to_priv_lvl;
@@ -1585,7 +1594,8 @@ module csr_regfile
       mcause_q         <= mcause_d;
       mcounteren_q     <= mcounteren_d;
       mscratch_q       <= mscratch_d;
-      mtval_q          <= mtval_d;
+      if (CVA6Cfg.TvalEn)
+        mtval_q          <= mtval_d;
       fiom_q           <= fiom_d;
       dcache_q         <= dcache_d;
       icache_q         <= icache_d;
@@ -1600,7 +1610,8 @@ module csr_regfile
         stvec_q      <= stvec_d;
         scounteren_q <= scounteren_d;
         sscratch_q   <= sscratch_d;
-        stval_q      <= stval_d;
+        if (CVA6Cfg.TvalEn)
+          stval_q      <= stval_d;
         satp_q       <= satp_d;
       end
       // timer and counters

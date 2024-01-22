@@ -196,6 +196,7 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   HaltAddress:           dm::HaltAddress,
   ExceptionAddress:      dm::ExceptionAddress,
   DmBaseAddress:         ariane_soc::DebugBase,
+  TvalEn:                bit'(cva6_config_pkg::CVA6ConfigTvalEn),
   NrPMPEntries:          unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries),
   PMPCfgRstVal:          {16{64'h0}},
   PMPAddrRstVal:         {16{64'h0}},

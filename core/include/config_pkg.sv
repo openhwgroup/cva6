@@ -87,6 +87,8 @@ package config_pkg;
     int unsigned                 BHTEntries;
     /// Offset of the debug module.
     logic [63:0]                 DmBaseAddress;
+    /// Tval Support Enable
+    bit                          TvalEn;
     /// Number of PMP entries.
     int unsigned                 NrPMPEntries;
     /// Physical Memory Protection (PMP) CSR reset values and read-only bits

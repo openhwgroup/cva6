@@ -282,9 +282,10 @@ ariane_pkg::FETCH_FIFO_DEPTH
           end
           fetch_entry_o.instruction = instr_data_out[i].instr;
           fetch_entry_o.ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
-          fetch_entry_o.ex.tval = {
-            {(riscv::XLEN - riscv::VLEN) {1'b0}}, instr_data_out[i].ex_vaddr
-          };
+          if (CVA6Cfg.TvalEn)
+            fetch_entry_o.ex.tval = {
+              {(riscv::XLEN - riscv::VLEN) {1'b0}}, instr_data_out[i].ex_vaddr
+            };
           fetch_entry_o.branch_predict.cf = instr_data_out[i].cf;
           pop_instr[i] = fetch_entry_valid_o & fetch_entry_ready_i;
         end
@@ -309,8 +310,10 @@ ariane_pkg::FETCH_FIFO_DEPTH
       end else begin
         fetch_entry_o.ex.cause = riscv::INSTR_PAGE_FAULT;
       end
-      fetch_entry_o.ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[0].ex_vaddr};
-
+      if (CVA6Cfg.TvalEn)
+        fetch_entry_o.ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[0].ex_vaddr};
+      else
+        fetch_entry_o.ex.tval = '0;
       fetch_entry_o.branch_predict.predict_address = address_out;
       fetch_entry_o.branch_predict.cf = instr_data_out[0].cf;
 

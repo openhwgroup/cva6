@@ -431,28 +431,32 @@ module load_store_unit
     if (data_misaligned) begin
 
       if (lsu_ctrl.fu == LOAD) begin
-        misaligned_exception = {
-          riscv::LD_ADDR_MISALIGNED, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
-        };
+        misaligned_exception.cause = riscv::LD_ADDR_MISALIGNED;
+        misaligned_exception.valid = 1'b1;
+        if (CVA6Cfg.TvalEn)
+          misaligned_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr};
 
       end else if (lsu_ctrl.fu == STORE) begin
-        misaligned_exception = {
-          riscv::ST_ADDR_MISALIGNED, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
-        };
+        misaligned_exception.cause = riscv::ST_ADDR_MISALIGNED;
+        misaligned_exception.valid = 1'b1;
+        if (CVA6Cfg.TvalEn)
+          misaligned_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr};
       end
     end
 
     if (ariane_pkg::MMU_PRESENT && en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
       if (lsu_ctrl.fu == LOAD) begin
-        misaligned_exception = {
-          riscv::LD_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
-        };
+        misaligned_exception.cause = riscv::LD_ACCESS_FAULT;
+        misaligned_exception.valid = 1'b1;
+        if (CVA6Cfg.TvalEn)
+          misaligned_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr};
 
       end else if (lsu_ctrl.fu == STORE) begin
-        misaligned_exception = {
-          riscv::ST_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr}, 1'b1
-        };
+        misaligned_exception.cause = riscv::ST_ACCESS_FAULT;
+        misaligned_exception.valid = 1'b1;
+        if (CVA6Cfg.TvalEn)
+          misaligned_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr};
       end
     end
   end
