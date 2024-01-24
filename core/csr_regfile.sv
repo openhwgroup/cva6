@@ -1031,7 +1031,9 @@ module csr_regfile
 
     mstatus_d.sxl = riscv::XLEN_64;
     mstatus_d.uxl = riscv::XLEN_64;
-
+    if (!CVA6Cfg.RVU) begin
+            mstatus_d.mpp  = riscv::PRIV_LVL_M;
+    end
     // mark the floating point extension register as dirty
     if (CVA6Cfg.FpPresent && (dirty_fp_state_csr || dirty_fp_state_i)) begin
       mstatus_d.fs = riscv::Dirty;
@@ -1254,8 +1256,11 @@ module csr_regfile
       mstatus_d.mie  = mstatus_q.mpie;
       // restore the previous privilege level
       priv_lvl_d     = mstatus_q.mpp;
-      // set mpp to user mode
-      mstatus_d.mpp  = riscv::PRIV_LVL_U;
+      mstatus_d.mpp  = riscv::PRIV_LVL_M;
+      if (CVA6Cfg.RVU) begin
+        // set mpp to user mode
+        mstatus_d.mpp  = riscv::PRIV_LVL_U;
+      end
       // set mpie to 1
       mstatus_d.mpie = 1'b1;
     end
