@@ -112,7 +112,7 @@ module issue_stage
   logic                                     rs3_valid_iro_sb;
 
   scoreboard_entry_t                        issue_instr_sb_iro;
-  logic [31:0]                              orig_instr_sb_iro;
+  logic              [                31:0] orig_instr_sb_iro;
   logic                                     issue_instr_valid_sb_iro;
   logic                                     issue_ack_iro_sb;
 

@@ -847,10 +847,8 @@ module csr_regfile
         riscv::CSR_MEPC: mepc_d = {csr_wdata[riscv::XLEN-1:1], 1'b0};
         riscv::CSR_MCAUSE: mcause_d = csr_wdata;
         riscv::CSR_MTVAL: begin
-          if (CVA6Cfg.TvalEn)
-            mtval_d = csr_wdata;
-          else
-            update_access_exception = 1'b1;
+          if (CVA6Cfg.TvalEn) mtval_d = csr_wdata;
+          else update_access_exception = 1'b1;
         end
         riscv::CSR_MIP: begin
           mask  = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
@@ -1143,7 +1141,7 @@ module csr_regfile
                                       riscv::ENV_CALL_MMODE
                                     } || ex_i.cause[riscv::XLEN-1])) ? '0 : ex_i.tval;
         end else begin
-          mtval_d  = '0;
+          mtval_d = '0;
         end
       end
 
@@ -1594,13 +1592,12 @@ module csr_regfile
       mcause_q         <= mcause_d;
       mcounteren_q     <= mcounteren_d;
       mscratch_q       <= mscratch_d;
-      if (CVA6Cfg.TvalEn)
-        mtval_q          <= mtval_d;
-      fiom_q           <= fiom_d;
-      dcache_q         <= dcache_d;
-      icache_q         <= icache_d;
-      mcountinhibit_q  <= mcountinhibit_d;
-      acc_cons_q       <= acc_cons_d;
+      if (CVA6Cfg.TvalEn) mtval_q <= mtval_d;
+      fiom_q          <= fiom_d;
+      dcache_q        <= dcache_d;
+      icache_q        <= icache_d;
+      mcountinhibit_q <= mcountinhibit_d;
+      acc_cons_q      <= acc_cons_d;
       // supervisor mode registers
       if (CVA6Cfg.RVS) begin
         medeleg_q    <= medeleg_d;
@@ -1610,9 +1607,8 @@ module csr_regfile
         stvec_q      <= stvec_d;
         scounteren_q <= scounteren_d;
         sscratch_q   <= sscratch_d;
-        if (CVA6Cfg.TvalEn)
-          stval_q      <= stval_d;
-        satp_q       <= satp_d;
+        if (CVA6Cfg.TvalEn) stval_q <= stval_d;
+        satp_q <= satp_d;
       end
       // timer and counters
       cycle_q                <= cycle_d;

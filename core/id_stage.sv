@@ -55,7 +55,7 @@ module id_stage #(
 
   logic                                 is_control_flow_instr;
   ariane_pkg::scoreboard_entry_t        decoded_instruction;
-  logic [31:0]                          orig_instr;
+  logic                          [31:0] orig_instr;
 
   logic                                 is_illegal;
   logic                          [31:0] instruction;

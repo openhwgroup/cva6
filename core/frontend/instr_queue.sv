@@ -312,8 +312,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
       end
       if (CVA6Cfg.TvalEn)
         fetch_entry_o.ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[0].ex_vaddr};
-      else
-        fetch_entry_o.ex.tval = '0;
+      else fetch_entry_o.ex.tval = '0;
       fetch_entry_o.branch_predict.predict_address = address_out;
       fetch_entry_o.branch_predict.cf = instr_data_out[0].cf;
 
