@@ -130,7 +130,7 @@ spike:
 vcs-testharness:
 	make -C $(path_var) work-dpi/ariane_dpi.so
 	make -C $(path_var) vcs_build target=$(target) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
-	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/init_testharness.do,) +permissive \
+	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/util/init_testharness.do,) +permissive \
 	  +tohost_addr=$(shell $$RISCV/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	  +elf_file=$(elf) +permissive-off ++$(elf) $(issrun_opts) $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv) \
 	  -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr
