@@ -15,7 +15,7 @@
   .globl main
 main:
 # core of the test
-  li         s1, 0xffff0000 # Init reg value
+  li         s1, 0x80000000 # Init reg value
   li         s2, 0x80000000
   li         a1, 0x1
   li         a2, 0x1
@@ -37,8 +37,6 @@ jump4:
   mul        a1, a1, s8
   csrrw      s8, 0x340, a1
   mul        a1, a2, s1
-  lb         a1, 0(a1)
-  mulh       a1, a2, s1
   lb         a1, 0(a1)
   div        a1, s1, a2
   lb         a1, 0(a1)
