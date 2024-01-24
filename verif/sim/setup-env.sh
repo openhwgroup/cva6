@@ -44,4 +44,4 @@ fi
 export SPIKE_PATH=$SPIKE_INSTALL_DIR/bin
 
 # Update the PATH to add all the tools
-export PATH="$VERILATOR_INSTALL_DIR/bin:$RISCV/bin:$PATH"
+export PATH="$VERILATOR_INSTALL_DIR/verilator/bin:$RISCV/bin:$PATH"
