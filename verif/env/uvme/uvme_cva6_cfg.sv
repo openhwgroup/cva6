@@ -110,6 +110,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_zifencei_supported == 1;
       ext_zicsr_supported    == 1;
       ext_zicond_supported   == 0;
+      ext_zcb_supported      == 1;
 
       mode_s_supported       == 0;
       mode_u_supported       == 0;
@@ -129,6 +130,12 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       dm_halt_addr_valid      == 1;
       dm_exception_addr_valid == 1;
       nmi_addr_valid          == 1;
+   }
+
+   constraint ext_const {
+      if (!ext_c_supported) {
+         ext_zcb_supported == 0;
+      }
    }
 
    constraint default_cva6_boot_cons {
