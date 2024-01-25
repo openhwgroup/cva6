@@ -171,7 +171,7 @@ genvar x;
 
 
 cva6_tlb #(
-    .CVA6Cfg    (CVA6Cfg),
+    // .CVA6Cfg    (CVA6Cfg),
     .HYP_EXT(HYP_EXT),
     .TLB_ENTRIES(INSTR_TLB_ENTRIES),
     .ASID_WIDTH (ASID_WIDTH),
@@ -201,7 +201,7 @@ cva6_tlb #(
 );
 
 cva6_tlb #(
-    .CVA6Cfg    (CVA6Cfg),
+    // .CVA6Cfg    (CVA6Cfg),
     .HYP_EXT(HYP_EXT),
     .TLB_ENTRIES(DATA_TLB_ENTRIES),
     .ASID_WIDTH (ASID_WIDTH),
