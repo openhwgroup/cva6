@@ -96,7 +96,9 @@ module branch_unit #(
         ((ariane_pkg::op_is_branch(fu_data_i.operation)) && branch_comp_res_i);
     branch_exception_o.cause = riscv::INSTR_ADDR_MISALIGNED;
     branch_exception_o.valid = 1'b0;
-    branch_exception_o.tval = {{riscv::XLEN - riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
+    if (CVA6Cfg.TvalEn)
+      branch_exception_o.tval = {{riscv::XLEN - riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
+    else branch_exception_o.tval = '0;
     // Only throw instruction address misaligned exception if this is indeed a `taken` conditional branch or
     // an unconditional jump
     if (branch_valid_i && (target_address[0] || (!CVA6Cfg.RVC && target_address[1])) && jump_taken) begin

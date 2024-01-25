@@ -61,6 +61,8 @@ package cva6_config_pkg;
   localparam CVA6ConfigBTBEntries = 32;
   localparam CVA6ConfigBHTEntries = 128;
 
+  localparam CVA6ConfigTvalEn = 1;
+
   localparam CVA6ConfigNrPMPEntries = 8;
 
   localparam CVA6ConfigPerfCounterEn = 1;
@@ -114,6 +116,7 @@ package cva6_config_pkg;
       BTBEntries: unsigned'(CVA6ConfigBTBEntries),
       BHTEntries: unsigned'(CVA6ConfigBHTEntries),
       DmBaseAddress: 64'h0,
+      TvalEn: bit'(CVA6ConfigTvalEn),
       NrPMPEntries: unsigned'(CVA6ConfigNrPMPEntries),
       PMPCfgRstVal: {16{64'h0}},
       PMPAddrRstVal: {16{64'h0}},

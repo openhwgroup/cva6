@@ -204,6 +204,7 @@ module cva6
     CVA6Cfg.BTBEntries,
     CVA6Cfg.BHTEntries,
     CVA6Cfg.DmBaseAddress,
+    CVA6Cfg.TvalEn,
     CVA6Cfg.NrPMPEntries,
     CVA6Cfg.PMPCfgRstVal,
     CVA6Cfg.PMPAddrRstVal,
@@ -256,6 +257,7 @@ module cva6
   // ID <-> ISSUE
   // --------------
   scoreboard_entry_t issue_entry_id_issue;
+  logic [31:0] orig_instr_id_issue;
   logic issue_entry_valid_id_issue;
   logic is_ctrl_fow_id_issue;
   logic issue_instr_issue_id;
@@ -504,6 +506,7 @@ module cva6
       .fetch_entry_ready_o(fetch_ready_id_if),
 
       .issue_entry_o      (issue_entry_id_issue),
+      .orig_instr_o       (orig_instr_id_issue),
       .issue_entry_valid_o(issue_entry_valid_id_issue),
       .is_ctrl_flow_o     (is_ctrl_fow_id_issue),
       .issue_instr_ack_i  (issue_instr_issue_id),
@@ -600,6 +603,7 @@ module cva6
       .stall_i               (stall_acc_id),
       // ID Stage
       .decoded_instr_i       (issue_entry_id_issue),
+      .orig_instr_i          (orig_instr_id_issue),
       .decoded_instr_valid_i (issue_entry_valid_id_issue),
       .is_ctrl_flow_i        (is_ctrl_fow_id_issue),
       .decoded_instr_ack_o   (issue_instr_issue_id),

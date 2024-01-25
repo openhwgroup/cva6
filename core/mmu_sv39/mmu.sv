@@ -222,11 +222,12 @@ module mmu
     if (enable_translation_i) begin
       // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
       if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0)) begin
-        icache_areq_o.fetch_exception = {
-          riscv::INSTR_ACCESS_FAULT,
-          {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-          1'b1
-        };
+        icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
+        icache_areq_o.fetch_exception.valid = 1'b1;
+        if (CVA6Cfg.TvalEn)
+          icache_areq_o.fetch_exception.tval = {
+            {riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr
+          };
       end
 
       icache_areq_o.fetch_valid = 1'b0;
@@ -251,17 +252,19 @@ module mmu
         // we got an access error
         if (iaccess_err) begin
           // throw a page fault
-          icache_areq_o.fetch_exception = {
-            riscv::INSTR_PAGE_FAULT,
-            {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-            1'b1
-          };
+          icache_areq_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
+          icache_areq_o.fetch_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            icache_areq_o.fetch_exception.tval = {
+              {riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr
+            };
         end else if (!pmp_instr_allow) begin
-          icache_areq_o.fetch_exception = {
-            riscv::INSTR_ACCESS_FAULT,
-            {{riscv::XLEN - riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-            1'b1
-          };
+          icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
+          icache_areq_o.fetch_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            icache_areq_o.fetch_exception.tval = {
+              {riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr
+            };
         end
       end else
       // ---------
@@ -270,24 +273,28 @@ module mmu
       // watch out for exceptions happening during walking the page table
       if (ptw_active && walking_instr) begin
         icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
-        if (ptw_error)
-          icache_areq_o.fetch_exception = {
-            riscv::INSTR_PAGE_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
-          };
-        else
-          icache_areq_o.fetch_exception = {
-            riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
-          };
+        if (ptw_error) begin
+          icache_areq_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
+          icache_areq_o.fetch_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            icache_areq_o.fetch_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr};
+        end else begin
+          icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
+          icache_areq_o.fetch_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            icache_areq_o.fetch_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr};
+        end
       end
     end
     // if it didn't match any execute region throw an `Instruction Access Fault`
     // or: if we are not translating, check PMPs immediately on the paddr
     if ((!match_any_execute_region && !ptw_error) || (!enable_translation_i && !pmp_instr_allow)) begin
-      icache_areq_o.fetch_exception = {
-        riscv::INSTR_ACCESS_FAULT,
-        {{riscv::XLEN - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr},
-        1'b1
-      };
+      icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
+      icache_areq_o.fetch_exception.valid = 1'b1;
+      if (CVA6Cfg.TvalEn)
+        icache_areq_o.fetch_exception.tval = {
+          {riscv::XLEN - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr
+        };
     end
   end
 
@@ -388,36 +395,40 @@ module mmu
           // check if the page is write-able and we are not violating privileges
           // also check if the dirty flag is set
           if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
-            lsu_exception_o = {
-              riscv::STORE_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-              1'b1
-            };
+            lsu_exception_o.cause = riscv::STORE_PAGE_FAULT;
+            lsu_exception_o.valid = 1'b1;
+            if (CVA6Cfg.TvalEn)
+              lsu_exception_o.tval = {
+                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q
+              };
             // Check if any PMPs are violated
           end else if (!pmp_data_allow) begin
-            lsu_exception_o = {
-              riscv::ST_ACCESS_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-              1'b1
-            };
+            lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
+            lsu_exception_o.valid = 1'b1;
+            if (CVA6Cfg.TvalEn)
+              lsu_exception_o.tval = {
+                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q
+              };
           end
 
           // this is a load
         end else begin
           // check for sufficient access privileges - throw a page fault if necessary
           if (daccess_err) begin
-            lsu_exception_o = {
-              riscv::LOAD_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-              1'b1
-            };
+            lsu_exception_o.cause = riscv::LOAD_PAGE_FAULT;
+            lsu_exception_o.valid = 1'b1;
+            if (CVA6Cfg.TvalEn)
+              lsu_exception_o.tval = {
+                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q
+              };
             // Check if any PMPs are violated
           end else if (!pmp_data_allow) begin
-            lsu_exception_o = {
-              riscv::LD_ACCESS_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-              1'b1
-            };
+            lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
+            lsu_exception_o.valid = 1'b1;
+            if (CVA6Cfg.TvalEn)
+              lsu_exception_o.tval = {
+                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q
+              };
           end
         end
       end else
@@ -433,17 +444,19 @@ module mmu
           lsu_valid_o = 1'b1;
           // the page table walker can only throw page faults
           if (lsu_is_store_q) begin
-            lsu_exception_o = {
-              riscv::STORE_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-              1'b1
-            };
+            lsu_exception_o.cause = riscv::STORE_PAGE_FAULT;
+            lsu_exception_o.valid = 1'b1;
+            if (CVA6Cfg.TvalEn)
+              lsu_exception_o.tval = {
+                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr
+              };
           end else begin
-            lsu_exception_o = {
-              riscv::LOAD_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-              1'b1
-            };
+            lsu_exception_o.cause = riscv::LOAD_PAGE_FAULT;
+            lsu_exception_o.valid = 1'b1;
+            if (CVA6Cfg.TvalEn)
+              lsu_exception_o.tval = {
+                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr
+              };
           end
         end
 
@@ -452,26 +465,28 @@ module mmu
           lsu_valid_o = 1'b1;
           // Any fault of the page table walk should be based of the original access type
           if (lsu_is_store_q) begin
-            lsu_exception_o = {
-              riscv::ST_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1
-            };
+            lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
+            lsu_exception_o.valid = 1'b1;
+            if (CVA6Cfg.TvalEn)
+              lsu_exception_o.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n};
           end else begin
-            lsu_exception_o = {
-              riscv::LD_ACCESS_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1
-            };
+            lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
+            lsu_exception_o.valid = 1'b1;
+            if (CVA6Cfg.TvalEn)
+              lsu_exception_o.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n};
           end
         end
       end
     end  // If translation is not enabled, check the paddr immediately against PMPs
     else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
       if (lsu_is_store_q) begin
-        lsu_exception_o = {
-          riscv::ST_ACCESS_FAULT, {{riscv::XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1
-        };
+        lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
+        lsu_exception_o.valid = 1'b1;
+        if (CVA6Cfg.TvalEn) lsu_exception_o.tval = {{riscv::XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o};
       end else begin
-        lsu_exception_o = {
-          riscv::LD_ACCESS_FAULT, {{riscv::XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1
-        };
+        lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
+        lsu_exception_o.valid = 1'b1;
+        if (CVA6Cfg.TvalEn) lsu_exception_o.tval = {{riscv::XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o};
       end
     end
   end

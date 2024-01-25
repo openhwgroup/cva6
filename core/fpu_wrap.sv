@@ -557,6 +557,7 @@ module fpu_wrap
     // Pack status flag into exception cause, tval ignored in wb, exception is always invalid
     assign fpu_exception_o.cause = {59'h0, fpu_status};
     assign fpu_exception_o.valid = 1'b0;
+    assign fpu_exception_o.tval = '0;
 
     // Donwstream write port is dedicated to FPU and always ready
     assign fpu_out_ready = 1'b1;

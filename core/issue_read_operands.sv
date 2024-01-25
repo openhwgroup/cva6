@@ -28,6 +28,7 @@ module issue_read_operands
     input logic stall_i,
     // coming from decoder
     input scoreboard_entry_t issue_instr_i,
+    input logic [31:0] orig_instr_i,
     input logic issue_instr_valid_i,
     output logic issue_ack_o,
     // lookup rd in scoreboard
@@ -111,9 +112,9 @@ module issue_read_operands
   // forwarding signals
   logic forward_rs1, forward_rs2, forward_rs3;
 
-  // original instruction stored in tval
+  // original instruction
   riscv::instruction_t orig_instr;
-  assign orig_instr          = riscv::instruction_t'(issue_instr_i.ex.tval[31:0]);
+  assign orig_instr          = riscv::instruction_t'(orig_instr_i);
 
   // ID <-> EX registers
 

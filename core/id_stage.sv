@@ -27,6 +27,7 @@ module id_stage #(
     output logic fetch_entry_ready_o,  // acknowledge the instruction (fetch entry)
     // to ID
     output ariane_pkg::scoreboard_entry_t issue_entry_o,  // a decoded instruction
+    output logic [31:0] orig_instr_o,
     output logic issue_entry_valid_o,  // issue entry is valid
     output logic is_ctrl_flow_o,  // the instruction we issue is a ctrl flow instructions
     input logic issue_instr_ack_i,  // issue stage acknowledged sampling of instructions
@@ -47,12 +48,14 @@ module id_stage #(
   typedef struct packed {
     logic                          valid;
     ariane_pkg::scoreboard_entry_t sbe;
+    logic [31:0]                   orig_instr;
     logic                          is_ctrl_flow;
   } issue_struct_t;
   issue_struct_t issue_n, issue_q;
 
   logic                                 is_control_flow_instr;
   ariane_pkg::scoreboard_entry_t        decoded_instruction;
+  logic                          [31:0] orig_instr;
 
   logic                                 is_illegal;
   logic                          [31:0] instruction;
@@ -102,6 +105,7 @@ module id_stage #(
       .tw_i,
       .tsr_i,
       .instruction_o          (decoded_instruction),
+      .orig_instr_o           (orig_instr),
       .is_control_flow_instr_o(is_control_flow_instr)
   );
 
@@ -111,6 +115,7 @@ module id_stage #(
   assign issue_entry_o = issue_q.sbe;
   assign issue_entry_valid_o = issue_q.valid;
   assign is_ctrl_flow_o = issue_q.is_ctrl_flow;
+  assign orig_instr_o = issue_q.orig_instr;
 
   always_comb begin
     issue_n             = issue_q;
@@ -124,7 +129,7 @@ module id_stage #(
     // for a new instruction
     if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i) begin
       fetch_entry_ready_o = 1'b1;
-      issue_n = '{1'b1, decoded_instruction, is_control_flow_instr};
+      issue_n = '{1'b1, decoded_instruction, orig_instr, is_control_flow_instr};
     end
 
     // invalidate the pipeline register on a flush

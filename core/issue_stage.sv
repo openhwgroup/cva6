@@ -28,6 +28,7 @@ module issue_stage
     input logic stall_i,  // Stall issue stage
     // from ISSUE
     input scoreboard_entry_t decoded_instr_i,
+    input logic [31:0] orig_instr_i,
     input logic decoded_instr_valid_i,
     input logic is_ctrl_flow_i,
     output logic decoded_instr_ack_o,
@@ -111,6 +112,7 @@ module issue_stage
   logic                                     rs3_valid_iro_sb;
 
   scoreboard_entry_t                        issue_instr_sb_iro;
+  logic              [                31:0] orig_instr_sb_iro;
   logic                                     issue_instr_valid_sb_iro;
   logic                                     issue_ack_iro_sb;
 
@@ -149,6 +151,7 @@ module issue_stage
       .decoded_instr_valid_i(decoded_instr_valid_i),
       .decoded_instr_ack_o  (decoded_instr_ack_o),
       .issue_instr_o        (issue_instr_sb_iro),
+      .orig_instr_o         (orig_instr_sb_iro),
       .issue_instr_valid_o  (issue_instr_valid_sb_iro),
       .issue_ack_i          (issue_ack_iro_sb),
 
@@ -168,6 +171,7 @@ module issue_stage
   ) i_issue_read_operands (
       .flush_i            (flush_unissued_instr_i),
       .issue_instr_i      (issue_instr_sb_iro),
+      .orig_instr_i       (orig_instr_sb_iro),
       .issue_instr_valid_i(issue_instr_valid_sb_iro),
       .issue_ack_o        (issue_ack_iro_sb),
       .fu_data_o          (fu_data_o),

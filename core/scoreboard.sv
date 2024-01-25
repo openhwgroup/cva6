@@ -45,14 +45,16 @@ module scoreboard #(
 
     // instruction to put on top of scoreboard e.g.: top pointer
     // we can always put this instruction to the top unless we signal with asserted full_o
-    input  ariane_pkg::scoreboard_entry_t decoded_instr_i,
-    input  logic                          decoded_instr_valid_i,
-    output logic                          decoded_instr_ack_o,
+    input  ariane_pkg::scoreboard_entry_t        decoded_instr_i,
+    input  logic                          [31:0] orig_instr_i,
+    input  logic                                 decoded_instr_valid_i,
+    output logic                                 decoded_instr_ack_o,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
-    output ariane_pkg::scoreboard_entry_t issue_instr_o,
-    output logic                          issue_instr_valid_o,
-    input  logic                          issue_ack_i,
+    output ariane_pkg::scoreboard_entry_t        issue_instr_o,
+    output logic                          [31:0] orig_instr_o,
+    output logic                                 issue_instr_valid_o,
+    input  logic                                 issue_ack_i,
 
     // write-back port
     input ariane_pkg::bp_resolve_t resolved_branch_i,
@@ -104,6 +106,7 @@ module scoreboard #(
   // an instruction is ready for issue if we have place in the issue FIFO and it the decoder says it is valid
   always_comb begin
     issue_instr_o          = decoded_instr_i;
+    orig_instr_o           = orig_instr_i;
     // make sure we assign the correct trans ID
     issue_instr_o.trans_id = issue_pointer_q;
     // we are ready if we are not full and don't have any unresolved branches, but it can be
