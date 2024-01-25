@@ -1031,7 +1031,9 @@ module csr_regfile
 
     mstatus_d.sxl = riscv::XLEN_64;
     mstatus_d.uxl = riscv::XLEN_64;
-
+    if (!CVA6Cfg.RVU) begin
+      mstatus_d.mpp = riscv::PRIV_LVL_M;
+    end
     // mark the floating point extension register as dirty
     if (CVA6Cfg.FpPresent && (dirty_fp_state_csr || dirty_fp_state_i)) begin
       mstatus_d.fs = riscv::Dirty;
@@ -1248,14 +1250,17 @@ module csr_regfile
     // mode is changed to y; xPIE is set to 1; and xPP is set to U
     if (mret) begin
       // return from exception, IF doesn't care from where we are returning
-      eret_o         = 1'b1;
+      eret_o        = 1'b1;
       // return to the previous privilege level and restore all enable flags
       // get the previous machine interrupt enable flag
-      mstatus_d.mie  = mstatus_q.mpie;
+      mstatus_d.mie = mstatus_q.mpie;
       // restore the previous privilege level
-      priv_lvl_d     = mstatus_q.mpp;
-      // set mpp to user mode
-      mstatus_d.mpp  = riscv::PRIV_LVL_U;
+      priv_lvl_d    = mstatus_q.mpp;
+      mstatus_d.mpp = riscv::PRIV_LVL_M;
+      if (CVA6Cfg.RVU) begin
+        // set mpp to user mode
+        mstatus_d.mpp = riscv::PRIV_LVL_U;
+      end
       // set mpie to 1
       mstatus_d.mpie = 1'b1;
     end
