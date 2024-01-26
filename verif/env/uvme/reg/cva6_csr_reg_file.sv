@@ -2590,8 +2590,7 @@ class reg_mtval extends csr_reg;
       option.name = "csr_mtval__read_cg";
       option.per_instance = 1;
       mtval: coverpoint data[31:0] {
-         bins ZERO[]  = {0};
-         bins other_values[3]  = {[1:$]};
+         bins reset_value = {0};
       }
   endgroup
 
