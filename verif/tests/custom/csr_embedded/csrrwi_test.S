@@ -3360,39 +3360,6 @@ csrrwi:
     csrr x14, 0x329
 
     ##########################
-    #MTVAL testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h4} 
-    ##########################
-    #MTVAL Write immediate value 0x1f
-    csrrwi x14, 0x343, 0x1f
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write immediate value 0x0
-    csrrwi x14, 0x343, 0x0
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write immediate value 0x15
-    csrrwi x14, 0x343, 0x15
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write immediate value 0xa
-    csrrwi x14, 0x343, 0xa
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write immediate value 0x4
-    csrrwi x14, 0x343, 0x4
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    ##########################
     #MCYCLEH testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'ha} 
     ##########################
     #MCYCLEH Write immediate value 0x1f

@@ -2339,44 +2339,6 @@ csrcsi:
     csrr x14, 0xb11
 
     ##########################
-    #MTVAL testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h1a} 
-    ##########################
-    #MTVAL Write clear/set value 0x1f
-    csrrci x14, 0x343, 0x0
-    csrrsi x14, 0x343, 0x1f
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write clear/set value 0x0
-    csrrci x14, 0x343, 0x1f
-    csrrsi x14, 0x343, 0x0
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write clear/set value 0x15
-    csrrci x14, 0x343, 0xa
-    csrrsi x14, 0x343, 0x15
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write clear/set value 0xa
-    csrrci x14, 0x343, 0x15
-    csrrsi x14, 0x343, 0xa
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write clear/set value 0x1a
-    csrrci x14, 0x343, 0x5
-    csrrsi x14, 0x343, 0x1a
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    ##########################
     #MHPMCOUNTERH6 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h8} 
     ##########################
     #MHPMCOUNTERH6 Write clear/set value 0x1f

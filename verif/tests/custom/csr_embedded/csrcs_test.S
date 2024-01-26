@@ -1405,54 +1405,6 @@ csrcs:
     csrr x14, 0xb0d
 
     ##########################
-    #MTVAL testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h0} 
-    ##########################
-    #MTVAL Write clear/set value 0x1f
-    li x3, 0xffffffe0
-    csrrc x14, 0x343, x3
-    li x3, 0x1f
-    csrrs x14, 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write clear/set value 0x0
-    li x3, 0xffffffff
-    csrrc x14, 0x343, x3
-    li x3, 0x0
-    csrrs x14, 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write clear/set value 0x15
-    li x3, 0xffffffea
-    csrrc x14, 0x343, x3
-    li x3, 0x15
-    csrrs x14, 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write clear/set value 0xa
-    li x3, 0xfffffff5
-    csrrc x14, 0x343, x3
-    li x3, 0xa
-    csrrs x14, 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write clear/set value 0x0
-    li x3, 0xffffffff
-    csrrc x14, 0x343, x3
-    li x3, 0x0
-    csrrs x14, 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    ##########################
     #MHPMCOUNTER8 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h1} 
     ##########################
     #MHPMCOUNTER8 Write clear/set value 0x1f

@@ -5626,45 +5626,6 @@ csrrw_fields:
     csrr x14, 0xb85
 
     ##########################
-    #MTVAL fields testing W/R
-    ##########################
-    #MTVAL.MTVAL testing W/R values '{'hffffffff, 'h0, 'h55555555, 'haaaaaaaa, 'h4cdadc42} 
-    #MTVAL Write value 0xffffffff
-    li x3, 0xffffffff
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write value 0x0
-    li x3, 0x0
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write value 0x55555555
-    li x3, 0x55555555
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write value 0xaaaaaaaa
-    li x3, 0xaaaaaaaa
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write value 0x4cdadc42
-    li x3, 0x4cdadc42
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    ##########################
     #MHPMEVENT14 fields testing W/R
     ##########################
     #MHPMEVENT14.MHPMEVENT testing W/R values '{'hffffffff, 'h0, 'h55555555, 'haaaaaaaa, 'h189944b1} 

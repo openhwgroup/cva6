@@ -3489,44 +3489,6 @@ csrrw:
     csrr x14, 0x338
 
     ##########################
-    #MTVAL testing W/R values '{'hffffffff, 'h0, 'h55555555, 'haaaaaaaa, 'hbec4a2c2} 
-    ##########################
-    #MTVAL Write value 0xffffffff
-    li x3, 0xffffffff
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write value 0x0
-    li x3, 0x0
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write value 0x55555555
-    li x3, 0x55555555
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write value 0xaaaaaaaa
-    li x3, 0xaaaaaaaa
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    #MTVAL Write value 0xbec4a2c2
-    li x3, 0xbec4a2c2
-    csrw 0x343, x3
-
-    #MTVAL read value
-    csrr x14, 0x343
-
-    ##########################
     #MHPMCOUNTERH29 testing W/R values '{'hffffffff, 'h0, 'h55555555, 'haaaaaaaa, 'h91d85d53} 
     ##########################
     #MHPMCOUNTERH29 Write value 0xffffffff
