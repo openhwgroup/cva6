@@ -253,8 +253,9 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
 
    super.set_unsupported_csr_mask();
 
-   // Remove unsupported CSRs for STEP1 configuration
+   // Remove unsupported CSRs for Embedded configuration
    unsupported_csr_mask[uvma_core_cntrl_pkg::MCOUNTINHIBIT] = 1;
+   unsupported_csr_mask[uvma_core_cntrl_pkg::MTVAL] = 1;
 
 endfunction : set_unsupported_csr_mask
 
