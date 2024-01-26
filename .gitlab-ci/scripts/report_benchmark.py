@@ -41,7 +41,7 @@ with open(path, 'r') as f:
 
 stopwatch = []
 for index, line in enumerate(log):
-    if line.split()[-1] == 'mcycle':
+    if line.split()[-1] == 'mcycle' or line.split()[-2] == 'mcycle,':
         stopwatch.append(int(log[index + 1].split()[-1], 16))
 # There might be > 2 matches, we use the two at the center
 N = len(stopwatch)
