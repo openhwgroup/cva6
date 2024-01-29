@@ -209,7 +209,7 @@ module load_store_unit
         .lsu_vaddr_i            ( mmu_vaddr              ),
         .lsu_tinst_i            ( 0              ),
         .lsu_is_store_i         ( st_translation_req     ),
-        .csr_hs_ld_st_inst_o    (0     ),
+        .csr_hs_ld_st_inst_o    (     ),
         .lsu_dtlb_hit_o         ( dtlb_hit               ), // send in the same cycle as the request
         .lsu_dtlb_ppn_o         ( dtlb_ppn               ), // send in the same cycle as the request
         
