@@ -162,7 +162,7 @@ The notations below are used in the description of instructions.
 
 - **>>u**: Right shift of 2 unsigned values.
 
-- **M[address]**: Value existe in the address of the memory.
+- **M[address]**: Value exists in the address of the memory.
 
 - **/s**: Division of 2 signed values.
 
