@@ -293,7 +293,7 @@ cva6_shared_tlb #(
 
     .dtlb_access_i(dtlb_lu_access),
     .dtlb_hit_i   (dtlb_lu_hit),
-    .dtlb_vaddr_i (lsu_vaddr_i[0]),
+    .dtlb_vaddr_i (lsu_vaddr_i),
 
     // to TLBs, update logic
     .itlb_update_o(update_itlb1),
@@ -506,7 +506,7 @@ always_comb begin : instr_interface
                 if(HYP_EXT==1) begin
                     icache_areq_o.fetch_exception = {
                         riscv::INSTR_ACCESS_FAULT,
-                        {{riscv::XLEN-riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                        {riscv::XLEN '(icache_areq_i.fetch_vaddr)},
                         {riscv::GPLEN{1'b0}},
                         {riscv::XLEN{1'b0}},
                         mmu_v_st_enbl_i[HYP_EXT*2],
@@ -580,7 +580,7 @@ always_comb begin : instr_interface
         if(HYP_EXT==1) begin
             icache_areq_o.fetch_exception = {
                 riscv::INSTR_ACCESS_FAULT,
-                {{riscv::XLEN-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr},
+                {riscv::XLEN '(icache_areq_o.fetch_paddr)},
                 {riscv::GPLEN{1'b0}},
                 {riscv::XLEN{1'b0}},
                 mmu_v_st_enbl_i[HYP_EXT*2],
@@ -780,7 +780,7 @@ always_comb begin : data_interface
                     if(HYP_EXT==1) begin
                         lsu_exception_o = {
                             riscv::ST_ACCESS_FAULT,
-                            {{riscv::XLEN-riscv::PLEN{1'b0}},lsu_paddr_o},
+                            {riscv::XLEN '(lsu_paddr_o)},
                             {riscv::GPLEN{1'b0}},
                             lsu_tinst_q,
                             mmu_v_st_enbl_d[HYP_EXT*2],
