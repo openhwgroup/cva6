@@ -85,9 +85,9 @@ for (i=0; i < TLB_ENTRIES; i++) begin
     assign page_match[i][x] = x==0 ? 1 :((HYP_EXT==0 || x==(PT_LEVELS-1)) ? // PAGE_MATCH CONTAINS THE MATCH INFORMATION FOR EACH TAG OF is_1G and is_2M in sv39x4. HIGHER LEVEL (Giga page), THEN THERE IS THE Mega page AND AT THE LOWER LEVEL IS ALWAYS 1
                                             &(tags_q[i].is_page[PT_LEVELS-1-x] | (~v_st_enbl_i[HYP_EXT:0])):
                                             ((&v_st_enbl_i[HYP_EXT:0]) ? 
-                                            ((tags_q[i].is_page[PT_LEVELS-1-x][0] && (tags_q[i].is_page[PT_LEVELS-2-x][1] || tags_q[i].is_page[PT_LEVELS-1-x][1])) 
-                                          || (tags_q[i].is_page[PT_LEVELS-1-x][1] && (tags_q[i].is_page[PT_LEVELS-2-x][0] || tags_q[i].is_page[PT_LEVELS-1-x][0]))):
-                                              tags_q[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl_i[0] || tags_q[i].is_page[PT_LEVELS-1-x][1] && v_st_enbl_i[1]));
+                                            ((tags_q[i].is_page[PT_LEVELS-1-x][0] && (tags_q[i].is_page[PT_LEVELS-2-x][HYP_EXT] || tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT])) 
+                                          || (tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT] && (tags_q[i].is_page[PT_LEVELS-2-x][0] || tags_q[i].is_page[PT_LEVELS-1-x][0]))):
+                                              tags_q[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl_i[0] || tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT] && v_st_enbl_i[HYP_EXT]));
 
     //identify if vpn matches at all PT levels for all TLB entries  
     assign vpn_match[i][x]        = (HYP_EXT==1 && x==(PT_LEVELS-1) && ~v_st_enbl_i[0]) ? //
