@@ -175,50 +175,83 @@ module load_store_unit
     localparam ASID_LEN      = (riscv::XLEN == 64) ? 16 : 9;
     localparam VPN_LEN       = (riscv::XLEN == 64) ? (HYP_EXT ? 29 : 27) : 20;
     localparam PT_LEVELS     = (riscv::XLEN == 64) ? 3  : 2;
-    localparam int unsigned mmu_ASID_WIDTH [HYP_EXT:0] = {ASID_WIDTH};
+    // localparam int unsigned mmu_ASID_WIDTH [HYP_EXT:0] = {ASID_WIDTH};
 
-    logic [mmu_ASID_WIDTH[0]-1:0] mmu_asid_i [HYP_EXT:0];
-    logic [mmu_ASID_WIDTH[0]-1:0] mmu_asid_to_be_flushed_i [HYP_EXT:0];
-    logic [riscv::VLEN-1:0] mmu_vaddr_to_be_flushed_i [HYP_EXT:0];
-    logic [riscv::VLEN-1:0] mmu_lsu_vaddr_i[HYP_EXT:0];
+    // logic [mmu_ASID_WIDTH[0]-1:0] mmu_asid_i [HYP_EXT:0];
+    // logic [mmu_ASID_WIDTH[0]-1:0] mmu_asid_to_be_flushed_i [HYP_EXT:0];
+    // logic [riscv::VLEN-1:0] mmu_vaddr_to_be_flushed_i [HYP_EXT:0];
+    // logic [riscv::VLEN-1:0] mmu_lsu_vaddr_i[HYP_EXT:0];
 
-    assign mmu_asid_i[0] = asid_i;
-    assign mmu_asid_to_be_flushed_i[0] =asid_to_be_flushed_i;
-    assign mmu_vaddr_to_be_flushed_i[0] =vaddr_to_be_flushed_i;
-    assign mmu_lsu_vaddr_i[0]= mmu_vaddr;
+    // assign mmu_asid_i[0] = asid_i;
+    // assign mmu_asid_to_be_flushed_i[0] =asid_to_be_flushed_i;
+    // assign mmu_vaddr_to_be_flushed_i[0] =vaddr_to_be_flushed_i;
+    // assign mmu_lsu_vaddr_i[0]= mmu_vaddr;
     cva6_mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (mmu_ASID_WIDTH),
+        .HYP_EXT          (HYP_EXT),
+        .ASID_WIDTH       ({ASID_WIDTH}),
         .ASID_LEN         (ASID_LEN),
         .VPN_LEN          (VPN_LEN),
         .PT_LEVELS        (PT_LEVELS)
     ) i_cva6_mmu (
+        .clk_i(clk_i),
+        .rst_ni(rst_ni),
+        .flush_i(flush_i),
+        .enable_translation_i   ({enable_translation_i}),
+        .en_ld_st_translation_i ({en_ld_st_translation_i}),
+        .icache_areq_i          ( icache_areq_i          ),
+        .icache_areq_o          ( icache_areq_o          ),
         // misaligned bypass
-        .misaligned_ex_i(misaligned_exception),
-        .lsu_is_store_i (st_translation_req),
-        .lsu_req_i      (translation_req),
-        .lsu_vaddr_i    (mmu_lsu_vaddr_i),
-        .lsu_valid_o    (translation_valid),
-        .lsu_paddr_o    (mmu_paddr),
-        .lsu_exception_o(mmu_exception),
-        .lsu_dtlb_hit_o (dtlb_hit),               // send in the same cycle as the request
-        .lsu_dtlb_ppn_o (dtlb_ppn),               // send in the same cycle as the request
+        .misaligned_ex_i        ( misaligned_exception   ),
+        .lsu_req_i              ( translation_req        ),
+        .lsu_vaddr_i            ( mmu_vaddr              ),
+        .lsu_tinst_i            ( 0              ),
+        .lsu_is_store_i         ( st_translation_req     ),
+        .csr_hs_ld_st_inst_o    (0     ),
+        .lsu_dtlb_hit_o         ( dtlb_hit               ), // send in the same cycle as the request
+        .lsu_dtlb_ppn_o         ( dtlb_ppn               ), // send in the same cycle as the request
+        
+        .lsu_valid_o            ( translation_valid      ),
+        .lsu_paddr_o            ( mmu_paddr              ),
+        .lsu_exception_o        ( mmu_exception          ),
+        
+        .priv_lvl_i             (priv_lvl_i              ),
+        .ld_st_priv_lvl_i       (ld_st_priv_lvl_i        ),
         // connecting PTW to D$ IF
-        .req_port_i     (dcache_req_ports_i[0]),
-        .req_port_o     (dcache_req_ports_o[0]),
+        
+
+        .sum_i                  ({sum_i}),
+        .mxr_i                  ({mxr_i}),
+        .hlvx_inst_i            ( 0          ),
+        .hs_ld_st_inst_i        ( 0      ),
+
         // icache address translation requests
-        .icache_areq_i  (icache_areq_i),
+        
         // .asid_to_be_flushed_i,
+        // .vmid_to_be_flushed_i,
         // .vaddr_to_be_flushed_i,
-        .icache_areq_o  (icache_areq_o),
+        // .gpaddr_to_be_flushed_i,
+        
+        
+        // Hypervisor load/store signals
+        
+        
+        
+        .satp_ppn_i             ({satp_ppn_i}),
+        .asid_i                 ({asid_i}),
+        .asid_to_be_flushed_i   ({asid_to_be_flushed_i}),
+        .vaddr_to_be_flushed_i  ({vaddr_to_be_flushed_i}),
+        .flush_tlb_i            ({flush_tlb_i}),
+
+        .itlb_miss_o            (itlb_miss_o),
+        .dtlb_miss_o            (dtlb_miss_o),
+
+        .req_port_i             ( dcache_req_ports_i [0] ),
+        .req_port_o             ( dcache_req_ports_o [0] ),
         .pmpcfg_i,
-        .pmpaddr_i,
-        .asid_i(mmu_asid_i),
-        .asid_to_be_flushed_i(mmu_asid_to_be_flushed_i),
-        .vaddr_to_be_flushed_i(mmu_vaddr_to_be_flushed_i),
-        .*
+        .pmpaddr_i
     );
   end else begin : gen_no_mmu
 
