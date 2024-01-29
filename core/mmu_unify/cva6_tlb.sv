@@ -213,7 +213,7 @@ always_comb begin : update_flush
       
 
       if (flush_i[0]) begin
-          if(!tags_q[i].v_st_enbl[HYP_EXT*2]) begin
+          if(!tags_q[i].v_st_enbl[HYP_EXT*2] || HYP_EXT==0) begin
               // invalidate logic
               // flush everything if ASID is 0 and vaddr is 0 ("SFENCE.VMA x0 x0" case)
               if (asid_to_be_flushed_is0[0] && vaddr_to_be_flushed_is0[0] )
