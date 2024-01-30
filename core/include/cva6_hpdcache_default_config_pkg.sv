@@ -69,8 +69,9 @@ package hpdcache_params_pkg;
 
   //  Definition of constants and types for HPDcache data memory
   //  {{{
-  localparam int unsigned PARAM_DATA_WAYS_PER_RAM_WORD =
-      __minu(__MAX_RAM_WORD_BITS / PARAM_WORD_WIDTH, PARAM_WAYS);
+  localparam int unsigned PARAM_DATA_WAYS_PER_RAM_WORD = __minu(
+      __MAX_RAM_WORD_BITS / PARAM_WORD_WIDTH, PARAM_WAYS
+  );
 
   localparam int unsigned PARAM_DATA_SETS_PER_RAM = PARAM_SETS;
 
