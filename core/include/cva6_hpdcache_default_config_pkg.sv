@@ -36,7 +36,7 @@ package hpdcache_params_pkg;
   endfunction
 
   function int unsigned __maxu(int unsigned x, int unsigned y);
-      return y < x ? x : y;
+    return y < x ? x : y;
   endfunction
   //  }}}
 
