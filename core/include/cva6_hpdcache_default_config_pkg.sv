@@ -25,11 +25,19 @@ package hpdcache_params_pkg;
   import cva6_config_pkg::CVA6ConfigNrLoadBufEntries;
   //  }}}
 
-  //  Definition of constants used only in this file
+  //  Definition of constants and functions used only in this file
   //  {{{
   localparam int unsigned __BYTES_PER_WAY = CVA6ConfigDcacheByteSize / CVA6ConfigDcacheSetAssoc;
-
   localparam int unsigned __BYTES_PER_CACHELINE = CVA6ConfigDcacheLineWidth / 8;
+  localparam int unsigned __MAX_RAM_WORD_BITS = 128;
+
+  function int unsigned __minu(int unsigned x, int unsigned y);
+    return x < y ? x : y;
+  endfunction
+
+  function int unsigned __maxu(int unsigned x, int unsigned y);
+    return y < x ? x : y;
+  endfunction
   //  }}}
 
   //  Definition of global constants for the HPDcache data and directory
@@ -61,7 +69,10 @@ package hpdcache_params_pkg;
 
   //  Definition of constants and types for HPDcache data memory
   //  {{{
-  localparam int unsigned PARAM_DATA_WAYS_PER_RAM_WORD = 128 / PARAM_WORD_WIDTH;
+  localparam int unsigned PARAM_DATA_WAYS_PER_RAM_WORD = __minu(
+      __MAX_RAM_WORD_BITS / PARAM_WORD_WIDTH, PARAM_WAYS
+  );
+
   localparam int unsigned PARAM_DATA_SETS_PER_RAM = PARAM_SETS;
 
   //  HPDcache DATA RAM macros whether implements:
