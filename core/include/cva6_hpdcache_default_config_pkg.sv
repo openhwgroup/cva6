@@ -32,7 +32,7 @@ package hpdcache_params_pkg;
   localparam int unsigned __MAX_RAM_WORD_BITS = 128;
 
   function int unsigned __minu(int unsigned x, int unsigned y);
-      return x < y ? x : y;
+    return x < y ? x : y;
   endfunction
 
   function int unsigned __maxu(int unsigned x, int unsigned y);
