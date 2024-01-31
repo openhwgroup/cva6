@@ -207,6 +207,11 @@ asic-synthesis:
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"
     PERIOD: "0.85"
+  parallel:
+    matrix:
+      - DV_TARGET:
+        - "cv32a6_embedded"
+        - "cv32a65x"
   script:
     - echo $SYNTH_PERIOD
     - echo $INPUT_DELAY
