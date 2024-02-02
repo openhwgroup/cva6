@@ -311,19 +311,19 @@ module cva6_ptw import ariane_pkg::*; #(
                 if ((|enable_translation_i[HYP_EXT:0]) & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
                     if (&enable_translation_i[HYP_EXT:0] && HYP_EXT==1) begin
                         ptw_stage_d = G_INTERMED_STAGE;
-                        pptr = {satp_ppn_i[HYP_EXT], itlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                        pptr = {satp_ppn_i[HYP_EXT], itlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                         gptw_pptr_n = pptr;
-                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], pptr[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], pptr[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                     end else if (!enable_translation_i[0] && HYP_EXT==1) begin
                         ptw_stage_d = G_FINAL_STAGE;
                         gpaddr_n = itlb_vaddr_i[riscv::SV+HYP_EXT*2-1:0];
-                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], itlb_vaddr_i[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], itlb_vaddr_i[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                     end else begin
                         ptw_stage_d = S_STAGE;
                         if(enable_translation_i[HYP_EXT*2] && HYP_EXT==1)
-                            ptw_pptr_n  = {satp_ppn_i[HYP_EXT], itlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                            ptw_pptr_n  = {satp_ppn_i[HYP_EXT], itlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                         else
-                            ptw_pptr_n  = {satp_ppn_i[0], itlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                            ptw_pptr_n  = {satp_ppn_i[0], itlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                     end
 
                     is_instr_ptw_n      = 1'b1;
@@ -339,19 +339,19 @@ module cva6_ptw import ariane_pkg::*; #(
                 end else if ((|en_ld_st_translation_i[HYP_EXT:0]) & dtlb_access_i & ~dtlb_hit_i) begin
                     if (&en_ld_st_translation_i[HYP_EXT:0] && HYP_EXT==1) begin
                         ptw_stage_d = G_INTERMED_STAGE;
-                        pptr = {satp_ppn_i[HYP_EXT], dtlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                        pptr = {satp_ppn_i[HYP_EXT], dtlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                         gptw_pptr_n = pptr;
-                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], pptr[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], pptr[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                     end else if (!en_ld_st_translation_i[0] && HYP_EXT==1) begin
                         ptw_stage_d = G_FINAL_STAGE;
                         gpaddr_n = dtlb_vaddr_i[riscv::SV+HYP_EXT*2-1:0];
-                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], dtlb_vaddr_i[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], dtlb_vaddr_i[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                     end else begin
                         ptw_stage_d = S_STAGE;
                         if(en_ld_st_translation_i[HYP_EXT*2] && HYP_EXT==1)
-                            ptw_pptr_n  = {satp_ppn_i[HYP_EXT], dtlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                            ptw_pptr_n  = {satp_ppn_i[HYP_EXT], dtlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                         else
-                            ptw_pptr_n  = {satp_ppn_i[0], dtlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                            ptw_pptr_n  = {satp_ppn_i[0], dtlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                     end
 
                     vaddr_n             = dtlb_vaddr_i;
@@ -411,7 +411,7 @@ module cva6_ptw import ariane_pkg::*; #(
                                         // if(ptw_lvl_q[0] == 0)
                                         //     gpaddr[29:0] = vaddr_q[29:0];
                                         gpaddr_n = gpaddr[ptw_lvl_q[0]];
-                                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], gpaddr[ptw_lvl_q[0]][riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                                        ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], gpaddr[ptw_lvl_q[0]][riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                                         ptw_lvl_n[0] = 0;
                                     end
                                 end
@@ -505,7 +505,7 @@ module cva6_ptw import ariane_pkg::*; #(
                                             ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0]+1;
                                             pptr = {pte[0].ppn, vaddr_lvl[0][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
                                             gptw_pptr_n = pptr;
-                                            ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], pptr[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], 3'b0};
+                                            ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], pptr[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                                             ptw_lvl_n[0] = 0;
                                         end else begin
                                             ptw_pptr_n = {pte[0].ppn, vaddr_lvl[0][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
