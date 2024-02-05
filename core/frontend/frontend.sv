@@ -28,13 +28,13 @@ module frontend
     input logic flush_i,
     // flush branch prediction - zero
     input logic flush_bp_i,
-    // halt commit stage
+    // halt commit stage - CONTROLLER
     input logic halt_i,
     // Debug mode state - CSR
     input logic debug_mode_i,
     // Next PC when reset - SUBSYSTEM
     input logic [riscv::VLEN-1:0] boot_addr_i,
-    // mispredict event and next PC
+    // mispredict event and next PC - EXECUTE
     input bp_resolve_t resolved_branch_i,
     // Set the PC coming from COMMIT as next PC - CONTROLLER
     input logic set_pc_commit_i,
@@ -46,7 +46,7 @@ module frontend
     input logic eret_i,
     // Next PC when jumping into exception - CSR
     input logic [riscv::VLEN-1:0] trap_vector_base_i,
-    // Exception event
+    // Exception event - COMMIT
     input logic ex_valid_i,
     // Debug event - CSR
     input logic set_debug_pc_i,

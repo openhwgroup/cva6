@@ -10,10 +10,6 @@
 #!/usr/bin/python3
 
 import re
-import sys
-import os
-import collections
-import argparse
 
 
 class portIO:
@@ -60,20 +56,15 @@ if __name__ == "__main__":
                 if e:
                     name = e.group(3)
                     name = name.split(",")
-                    # print(l1)
-                    # print(name[0], e.group(1), e.group(2), comment0, connection0)
                     port.append(
                         portIO(name[0], e.group(1), e.group(2), comment0, connection0)
                     )
                     comment0 = "none"
                     connection0 = "none"
 
-        # for i in range(len(port)):
-        # print(port[i][0], port[i][1], port[i][2], port[i][3], port[i][4])
-
         with open(fileout, "w") as fout:
             fout.write("..\n")
-            fout.write("   Copyright 2021 Thales DIS design services SAS\n")
+            fout.write("   Copyright 2024 Thales DIS France SAS\n")
             fout.write(
                 '   Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");\n'
             )

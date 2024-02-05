@@ -1,5 +1,5 @@
 ..
-   Copyright 2021 Thales DIS design services SAS
+   Copyright 2024 Thales DIS France SAS
    Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
@@ -44,9 +44,9 @@
 
    * - ``halt_i``
      - in
-     - none
+     - CONTROLLER
      - logic
-     - none
+     - halt commit stage
 
    * - ``debug_mode_i``
      - in
@@ -62,9 +62,9 @@
 
    * - ``resolved_branch_i``
      - in
-     - none
+     - EXECUTE
      - bp_resolve_t
-     - none
+     - mispredict event and next PC
 
    * - ``set_pc_commit_i``
      - in
@@ -98,9 +98,9 @@
 
    * - ``ex_valid_i``
      - in
-     - none
+     - COMMIT
      - logic
-     - none
+     - Exception event
 
    * - ``set_debug_pc_i``
      - in
