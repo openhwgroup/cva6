@@ -9,7 +9,7 @@
 
 .. _CV32A6_frontend:
 
-.. list-table:: frontend interface signals
+.. list-table:: frontend module IO ports
    :header-rows: 1
 
    * - Signal

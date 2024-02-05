@@ -32,6 +32,7 @@ if __name__ == "__main__":
 
     file0 = []
     file0.append("../core/frontend/frontend.sv")
+    file0.append("../core/cva6.sv")
 
     for filein in file0:
         a = re.match(".*\/(.*).sv", filein)
@@ -73,7 +74,7 @@ if __name__ == "__main__":
             )
             fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
             fout.write(".. _CV32A6_%s:\n\n" % (module))
-            fout.write(".. list-table:: %s interface signals\n" % (module))
+            fout.write(".. list-table:: %s module IO ports\n" % (module))
             fout.write("   :header-rows: 1\n")
             fout.write("\n")
             fout.write("   * - Signal\n")
