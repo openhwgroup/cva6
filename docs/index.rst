@@ -54,10 +54,10 @@ One of the key attributes of this document is to specify the feature set of spec
 This document focuses on _what_ the CVA6 does, without detailed consideration of _how_ a specific requirement is implemented.
 The target audience of this document is current and existing members of the OpenHW Group who wish to participate in the definition of future cores based on the CVA6.
 
-The :doc:`CVA6 Design Document <03_cva6_design/index>` describes in detail the **CVA6**, the code base that can be used to compile/synthesize a specific core instance (e.g. cv32a6).
+The :doc:`CVA6 Design Document <03_cva6_design/index>` describes in detail the **CVA6**, the code base that can be used to compile/synthesize a specific core instance (e.g. cv32a65x).
 
-The :doc:`CV32A6 Design Document <04_cv32a6_design/source/index>` describes in detail the **CV32A6**, a specific core based on the CVA6 and the first production quality 32-bit application processor derived from the CVA6.
-The primary audience for this documentation are design and verification engineers working to bring the CV32A6 to TRL-5.
+The :doc:`CV32A65X Design Document <04_cv32a65x_design/source/index>` describes in detail the **CV32A65X**, a specific core based on the CVA6 and the first production quality 32-bit application processor derived from the CVA6.
+The primary audience for this documentation are design and verification engineers working to bring the CV32A65X to TRL-5.
 
 The :doc:`CVA6 APU <05_cva6_apu/index>` describes an Application Processor Unit built around the CVA6.
 
@@ -68,6 +68,6 @@ The :doc:`CVA6 APU <05_cva6_apu/index>` describes an Application Processor Unit 
    01_cva6_user/index.rst
    02_cva6_requirements/cva6_requirements_specification.rst
    03_cva6_design/index.rst
-   04_cv32a6_design/source/index.rst
+   04_cv32a65x_design/source/index.rst
    05_cva6_apu/index.rst
 
