@@ -31,8 +31,14 @@ class portIO:
 if __name__ == "__main__":
 
     file0 = []
-    file0.append("../core/frontend/frontend.sv")
     file0.append("../core/cva6.sv")
+    file0.append("../core/frontend/frontend.sv")
+    file0.append("../core/frontend/bht.sv")
+    file0.append("../core/frontend/btb.sv")
+    file0.append("../core/frontend/ras.sv")
+    file0.append("../core/frontend/instr_queue.sv")
+    file0.append("../core/frontend/instr_scan.sv")
+    file0.append("../core/instr_realign.sv")
 
     for filein in file0:
         a = re.match(".*\/(.*).sv", filein)

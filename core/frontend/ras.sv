@@ -18,13 +18,20 @@ module ras #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned DEPTH = 2
 ) (
-    input  logic                               clk_i,
-    input  logic                               rst_ni,
-    input  logic                               flush_i,
-    input  logic                               push_i,
-    input  logic                               pop_i,
-    input  logic             [riscv::VLEN-1:0] data_i,
-    output ariane_pkg::ras_t                   data_o
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Fetch flush request - CONTROLLER
+    input logic flush_i,
+    // Push address in RAS - FRONTEND
+    input logic push_i,
+    // Pop address from RAS - FRONTEND
+    input logic pop_i,
+    // Data to be pushed - FRONTEND
+    input logic [riscv::VLEN-1:0] data_i,
+    // Popped data - FRONTEND
+    output ariane_pkg::ras_t data_o
 );
 
   ariane_pkg::ras_t [DEPTH-1:0] stack_d, stack_q;

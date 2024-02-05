@@ -22,13 +22,19 @@ module bht #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned NR_ENTRIES = 1024
 ) (
-    input  logic                                                          clk_i,
-    input  logic                                                          rst_ni,
-    input  logic                                                          flush_i,
-    input  logic                                                          debug_mode_i,
-    input  logic                        [                riscv::VLEN-1:0] vpc_i,
-    input  ariane_pkg::bht_update_t                                       bht_update_i,
-    // we potentially need INSTR_PER_FETCH predictions/cycle
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Fetch flush request - CONTROLLER
+    input logic flush_i,
+    // Debug mode state - CSR
+    input logic debug_mode_i,
+    // Virtual PC - CACHE
+    input logic [riscv::VLEN-1:0] vpc_i,
+    // Update bht with resolved address - EXECUTE
+    input ariane_pkg::bht_update_t bht_update_i,
+    // Prediction from bht - FRONTEND
     output ariane_pkg::bht_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] bht_prediction_o
 );
   // the last bit is always zero, we don't need it for indexing
