@@ -476,7 +476,6 @@ module cva6_hpdcache_subsystem
 
   //  AXI arbiter instantiation
   //  {{{
-  
   cva6_hpdcache_subsystem_axi_arbiter #(
       .HPDcacheMemIdWidth   (ariane_pkg::MEM_TID_WIDTH),
       .HPDcacheMemDataWidth (CVA6Cfg.AxiDataWidth),
