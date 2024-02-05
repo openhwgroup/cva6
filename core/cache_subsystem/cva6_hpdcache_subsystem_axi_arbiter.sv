@@ -30,6 +30,8 @@ module cva6_hpdcache_subsystem_axi_arbiter
     parameter type axi_ar_chan_t = logic,
     parameter type axi_aw_chan_t = logic,
     parameter type axi_w_chan_t = logic,
+    parameter type axi_b_chan_t = logic,
+    parameter type axi_r_chan_t = logic,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic,
 
@@ -112,19 +114,6 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
   //  Internal type definitions
   //  {{{
-  typedef struct packed {
-    logic [AxiIdWidth-1:0]   id;
-    logic [AxiDataWidth-1:0] data;
-    axi_pkg::resp_t          resp;
-    logic                    last;
-    logic [AxiUserWidth-1:0] user;
-  } axi_r_chan_t;
-
-  typedef struct packed {
-    logic [AxiIdWidth-1:0]   id;
-    axi_pkg::resp_t          resp;
-    logic [AxiUserWidth-1:0] user;
-  } axi_b_chan_t;
 
   localparam int MEM_RESP_RT_DEPTH = (1 << HPDcacheMemIdWidth);
   typedef hpdcache_mem_id_t [MEM_RESP_RT_DEPTH-1:0] mem_resp_rt_t;
@@ -493,8 +482,6 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
   //  AXI adapters
   //  {{{
-  axi_req_t axi_req;
-  axi_rsp_t axi_resp;
 
   hpdcache_mem_to_axi_write #(
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
@@ -516,17 +503,17 @@ module cva6_hpdcache_subsystem_axi_arbiter
       .resp_valid_o(mem_resp_write_valid),
       .resp_o      (mem_resp_write),
 
-      .axi_aw_valid_o(axi_req.aw_valid),
-      .axi_aw_o      (axi_req.aw),
-      .axi_aw_ready_i(axi_resp.aw_ready),
+      .axi_aw_valid_o(axi_req_o.aw_valid),
+      .axi_aw_o      (axi_req_o.aw),
+      .axi_aw_ready_i(axi_resp_i.aw_ready),
 
-      .axi_w_valid_o(axi_req.w_valid),
-      .axi_w_o      (axi_req.w),
-      .axi_w_ready_i(axi_resp.w_ready),
+      .axi_w_valid_o(axi_req_o.w_valid),
+      .axi_w_o      (axi_req_o.w),
+      .axi_w_ready_i(axi_resp_i.w_ready),
 
-      .axi_b_valid_i(axi_resp.b_valid),
-      .axi_b_i      (axi_resp.b),
-      .axi_b_ready_o(axi_req.b_ready)
+      .axi_b_valid_i(axi_resp_i.b_valid),
+      .axi_b_i      (axi_resp_i.b),
+      .axi_b_ready_o(axi_req_o.b_ready)
   );
 
   hpdcache_mem_to_axi_read #(
@@ -543,17 +530,15 @@ module cva6_hpdcache_subsystem_axi_arbiter
       .resp_valid_o(mem_resp_read_valid),
       .resp_o      (mem_resp_read),
 
-      .axi_ar_valid_o(axi_req.ar_valid),
-      .axi_ar_o      (axi_req.ar),
-      .axi_ar_ready_i(axi_resp.ar_ready),
+      .axi_ar_valid_o(axi_req_o.ar_valid),
+      .axi_ar_o      (axi_req_o.ar),
+      .axi_ar_ready_i(axi_resp_i.ar_ready),
 
-      .axi_r_valid_i(axi_resp.r_valid),
-      .axi_r_i      (axi_resp.r),
-      .axi_r_ready_o(axi_req.r_ready)
+      .axi_r_valid_i(axi_resp_i.r_valid),
+      .axi_r_i      (axi_resp_i.r),
+      .axi_r_ready_o(axi_req_o.r_ready)
   );
 
-  assign axi_req_o = axi_req;
-  assign axi_resp  = axi_resp_i;
   //  }}}
 
   //  Assertions

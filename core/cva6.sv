@@ -1031,6 +1031,11 @@ module cva6
     cva6_hpdcache_subsystem #(
         .CVA6Cfg   (CVA6ExtendCfg),
         .NumPorts  (NumPorts),
+        .axi_ar_chan_t(axi_ar_chan_t),
+        .axi_aw_chan_t(axi_aw_chan_t),
+        .axi_w_chan_t (axi_w_chan_t),
+        .axi_b_chan_t (b_chan_t),
+        .axi_r_chan_t (r_chan_t),
         .noc_req_t (noc_req_t),
         .noc_resp_t(noc_resp_t),
         .cmo_req_t (logic  /*FIXME*/),
