@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_instr_realign:
+.. _CVA6_instr_realign_ports:
 
 .. list-table:: instr_realign module IO ports
    :header-rows: 1

@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_cva6:
+.. _CVA6_cva6_ports:
 
 .. list-table:: cva6 module IO ports
    :header-rows: 1

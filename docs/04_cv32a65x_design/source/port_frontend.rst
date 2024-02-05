@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_frontend:
+.. _CVA6_frontend_ports:
 
 .. list-table:: frontend module IO ports
    :header-rows: 1
@@ -122,18 +122,18 @@
 
    * - ``fetch_entry_o``
      - out
-     - DECODE
+     - ID_STAGE
      - fetch_entry_t
      - Handshake's data between fetch and decode
 
    * - ``fetch_entry_valid_o``
      - out
-     - DECODE
+     - ID_STAGE
      - logic
      - Handshake's valid between fetch and decode
 
    * - ``fetch_entry_ready_i``
      - in
-     - DECODE
+     - ID_STAGE
      - logic
      - Handshake's ready between fetch and decode

@@ -1,16 +1,26 @@
-.. _CV32A6_EXECUTE:
+.. _CVA6_EX_STAGE:
 
-##############
-Execute Module
-##############
+###############
+EX_STAGE Module
+###############
 
 ***********
 Description
 ***********
 
+The EX_STAGE module implements ... TO BE COMPLETED
+
+The module is connected to:
+
+* TO BE COMPLETED
+
+.. include:: port_ex_stage.rst
+
 *************
 Functionality
 *************
+
+TO BE COMPLETED
 
 ***************************
 Architecture and Submodules

@@ -34,4 +34,6 @@ Connections between modules are illustrated in the following block diagram. FRON
    :hidden:
 
    cv32a6_frontend
+   cva6_id_stage
+   cva6_issue_stage
    cv32a6_execute

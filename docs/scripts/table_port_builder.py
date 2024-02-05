@@ -38,6 +38,9 @@ if __name__ == "__main__":
     file.append("../core/frontend/instr_queue.sv")
     file.append("../core/frontend/instr_scan.sv")
     file.append("../core/instr_realign.sv")
+    file.append("../core/id_stage.sv")
+    file.append("../core/issue_stage.sv")
+    file.append("../core/ex_stage.sv")
 
     for filein in file:
         a = re.match(r".*\/(.*).sv", filein)
@@ -78,7 +81,7 @@ if __name__ == "__main__":
                 "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
             )
             fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
-            fout.write(f".. _CVA6_{module}:\n\n")
+            fout.write(f".. _CVA6_{module}_ports:\n\n")
             fout.write(f".. list-table:: {module} module IO ports\n")
             fout.write("   :header-rows: 1\n")
             fout.write("\n")

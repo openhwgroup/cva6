@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_instr_queue:
+.. _CVA6_instr_queue_ports:
 
 .. list-table:: instr_queue module IO ports
    :header-rows: 1
@@ -64,7 +64,7 @@
      - out
      - FRONTEND
      - logic [ariane_pkg::INSTR_PER_FETCH-1:0]
-     - Indicates instructions consummed, or popped by DECODE
+     - Indicates instructions consummed, or popped by ID_STAGE
 
    * - ``exception_i``
      - in
@@ -104,18 +104,18 @@
 
    * - ``fetch_entry_o``
      - out
-     - DECODE
+     - ID_STAGE
      - ariane_pkg::fetch_entry_t
-     - Handshake’s data with DECODE
+     - Handshake’s data with ID_STAGE
 
    * - ``fetch_entry_valid_o``
      - out
-     - DECODE
+     - ID_STAGE
      - logic
-     - Handshake’s valid with DECODE
+     - Handshake’s valid with ID_STAGE
 
    * - ``fetch_entry_ready_i``
      - in
-     - DECODE
+     - ID_STAGE
      - logic
-     - Handshake’s ready with DECODE
+     - Handshake’s ready with ID_STAGE

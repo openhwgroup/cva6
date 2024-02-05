@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_instr_scan:
+.. _CVA6_instr_scan_ports:
 
 .. list-table:: instr_scan module IO ports
    :header-rows: 1

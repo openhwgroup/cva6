@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_btb:
+.. _CVA6_btb_ports:
 
 .. list-table:: btb module IO ports
    :header-rows: 1
