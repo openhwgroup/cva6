@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CV32A6_ras:
+.. _CVA6_ras:
 
 .. list-table:: ras module IO ports
    :header-rows: 1

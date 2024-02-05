@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CV32A6_bht:
+.. _CVA6_bht:
 
 .. list-table:: bht module IO ports
    :header-rows: 1

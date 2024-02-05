@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CV32A6_frontend:
+.. _CVA6_frontend:
 
 .. list-table:: frontend module IO ports
    :header-rows: 1

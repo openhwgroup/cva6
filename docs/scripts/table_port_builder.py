@@ -43,7 +43,7 @@ if __name__ == "__main__":
     for filein in file0:
         a = re.match(".*\/(.*).sv", filein)
         module = a.group(1)
-        fileout = "./04_cv32a6_design/source/port_" + module + ".rst"
+        fileout = "./04_cv32a65x_design/source/port_" + module + ".rst"
         print("Input file " + filein)
         print("Output file " + fileout)
         port = []
@@ -79,7 +79,7 @@ if __name__ == "__main__":
                 "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
             )
             fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
-            fout.write(".. _CV32A6_%s:\n\n" % (module))
+            fout.write(".. _CVA6_%s:\n\n" % (module))
             fout.write(".. list-table:: %s module IO ports\n" % (module))
             fout.write("   :header-rows: 1\n")
             fout.write("\n")

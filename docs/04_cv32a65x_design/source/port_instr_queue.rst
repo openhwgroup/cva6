@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CV32A6_instr_queue:
+.. _CVA6_instr_queue:
 
 .. list-table:: instr_queue module IO ports
    :header-rows: 1
