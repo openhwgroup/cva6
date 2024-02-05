@@ -7,9 +7,9 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CV32A6_FRONTEND:
+.. _CV32A6_frontend:
 
-.. list-table:: FRONTEND interface signals
+.. list-table:: frontend interface signals
    :header-rows: 1
 
    * - Signal

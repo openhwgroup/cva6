@@ -31,16 +31,12 @@ class portIO:
 if __name__ == "__main__":
 
     file0 = []
-    file0.append(
-        [
-            "FRONTEND",
-            "../core/frontend/frontend.sv",
-            "./04_cv32a6_design/source/port_frontend.rst",
-        ]
-    )
+    file0.append("../core/frontend/frontend.sv")
 
-    for i in file0:
-        [module, filein, fileout] = i
+    for filein in file0:
+        a = re.match(".*\/(.*).sv", filein)
+        module = a.group(1)
+        fileout = "./04_cv32a6_design/source/port_" + module + ".rst"
         print("Input file " + filein)
         print("Output file " + fileout)
         port = []
