@@ -76,6 +76,7 @@ module cva6_icache
       cmp_en_d,
       cmp_en_q;  // enable tag comparison in next cycle. used to cut long path due to NC signal.
   logic flush_d, flush_q;  // used to register and signal pending flushes
+  logic [1:0] outst_miss_cnt_d, outst_miss_cnt_q; // tracks number of outstanding misses
 
   // replacement strategy
   logic                                update_lfsr;  // shift the LFSR
@@ -189,6 +190,7 @@ module cva6_icache
     cache_wren = 1'b0;
     inv_en = 1'b0;
     flush_d = flush_q | flush_i;  // register incoming flush
+    outst_miss_cnt_d = outst_miss_cnt_q;
 
     // interfaces
     dreq_o.ready = 1'b0;
@@ -205,6 +207,11 @@ module cva6_icache
     // do not trigger a cache readout at the same time...
     if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_INV_REQ) begin
       inv_en = 1'b1;
+    end
+
+    // kill an outstanding miss
+    if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK && outst_miss_cnt_q != '0) begin
+      outst_miss_cnt_d = outst_miss_cnt_q - 1;
     end
 
     unique case (state_q)
@@ -307,16 +314,47 @@ module cva6_icache
         // note: this is mutually exclusive with ICACHE_INV_REQ,
         // so we do not have to check for invals here
         if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
-          state_d = IDLE;
-          // only return data if request is not being killed
-          if (!(dreq_i.kill_s2 || flush_d)) begin
+          // only return data if not a killed miss
+          if (outst_miss_cnt_q == '0 && !(dreq_i.kill_s2 || flush_d)) begin
             dreq_o.valid = 1'b1;
             // only write to cache if this address is cacheable
             cache_wren   = ~paddr_is_nc;
           end
-          // bail out if this request is being killed
+        end
+
+        // we must wait in this state for the return data of the miss.
+        // if the miss is killed we can go back to IDLE and process other
+        // cache requests in parallel, so long as we keep track of the
+        // outstanding killed misses and discard the return data.
+        // we support max 1 outstanding killed miss: in case of a second
+        // killed miss we must wait in the KILL_MISS state
+        if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
+          if (outst_miss_cnt_q == 0) begin
+            state_d = IDLE;
+          end else begin
+            state_d = state_q;
+          end
         end else if (dreq_i.kill_s2 || flush_d) begin
-          state_d = KILL_MISS;
+          if (outst_miss_cnt_q == 0) begin
+            state_d = IDLE;
+          end else begin
+            state_d = KILL_MISS;
+          end
+        end
+
+        // track outstanding killed misses
+        if (dreq_i.kill_s2 || flush_d) begin
+          if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
+            outst_miss_cnt_d = outst_miss_cnt_q;
+          end else begin
+            outst_miss_cnt_d = outst_miss_cnt_q + 1;
+          end
+        end else begin
+          if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK && outst_miss_cnt_q != '0) begin
+            outst_miss_cnt_d = outst_miss_cnt_q - 1;
+          end else begin
+            outst_miss_cnt_d = outst_miss_cnt_q;
+          end
         end
       end
       //////////////////////////////////
@@ -492,27 +530,29 @@ module cva6_icache
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      cl_tag_q      <= '0;
-      flush_cnt_q   <= '0;
-      vaddr_q       <= '0;
-      cmp_en_q      <= '0;
-      cache_en_q    <= '0;
-      flush_q       <= '0;
-      state_q       <= FLUSH;
-      cl_offset_q   <= '0;
-      repl_way_oh_q <= '0;
-      inv_q         <= '0;
+      cl_tag_q         <= '0;
+      flush_cnt_q      <= '0;
+      vaddr_q          <= '0;
+      cmp_en_q         <= '0;
+      cache_en_q       <= '0;
+      flush_q          <= '0;
+      state_q          <= FLUSH;
+      cl_offset_q      <= '0;
+      repl_way_oh_q    <= '0;
+      inv_q            <= '0;
+      outst_miss_cnt_q <= '0;
     end else begin
-      cl_tag_q      <= cl_tag_d;
-      flush_cnt_q   <= flush_cnt_d;
-      vaddr_q       <= vaddr_d;
-      cmp_en_q      <= cmp_en_d;
-      cache_en_q    <= cache_en_d;
-      flush_q       <= flush_d;
-      state_q       <= state_d;
-      cl_offset_q   <= cl_offset_d;
-      repl_way_oh_q <= repl_way_oh_d;
-      inv_q         <= inv_d;
+      cl_tag_q         <= cl_tag_d;
+      flush_cnt_q      <= flush_cnt_d;
+      vaddr_q          <= vaddr_d;
+      cmp_en_q         <= cmp_en_d;
+      cache_en_q       <= cache_en_d;
+      flush_q          <= flush_d;
+      state_q          <= state_d;
+      cl_offset_q      <= cl_offset_d;
+      repl_way_oh_q    <= repl_way_oh_d;
+      inv_q            <= inv_d;
+      outst_miss_cnt_q <= outst_miss_cnt_d;
     end
   end
 
@@ -543,6 +583,10 @@ module cva6_icache
       cl_hit
   ))
   else $fatal(1, "[l1 icache] cl_hit signal must be hot1");
+
+  outst_miss: assert property (
+    @(posedge clk_i) disable iff (!rst_ni) (state_q == MISS) |-> outst_miss_cnt_q <= 1 )
+      else $fatal(1,"[l1 icache] max one outstanding killed miss");
 
   // this is only used for verification!
   logic vld_mirror[wt_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
