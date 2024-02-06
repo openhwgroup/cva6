@@ -349,7 +349,7 @@ class Model:
             sb_len=8,
             fetch_size=None,
             has_forwarding=True,
-            has_renaming=False):
+            has_renaming=True):
         self.ras = Ras(debug=debug)
         self.bht = Bht()
         self.instr_queue = []
