@@ -147,8 +147,10 @@ spike:
 ###############################################################################
 ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+all -lca,) -sverilog -full64 -timescale=1ns/1ns
 VCS_WORK_DIR            = $(CVA6_REPO_DIR)/verif/sim/vcs_results/default/vcs.d
-VSIM_WORK_DIR            = $(CVA6_REPO_DIR)/verif/sim/vsim_results/default/vsim.d
-SIMV                    = $(VCS_WORK_DIR)/simv
+VSIM_WORK_DIR           = $(CVA6_REPO_DIR)/verif/sim/vsim_results/default/vsim.d
+VCS_SIMV                = $(VCS_WORK_DIR)/simv
+XRUN_WORK_DIR           = $(CVA6_REPO_DIR)/verif/sim/xrun_results
+XRUN_SIMV               = $(XRUN_WORK_DIR)/simv
 
 export CVA6_UVMT_DIR          = $(CVA6_REPO_DIR)/verif/tb/uvmt
 export CVA6_CORET_DIR          = $(CVA6_REPO_DIR)/verif/tb/core
@@ -214,7 +216,38 @@ ALL_UVM_FLAGS   = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
 	  $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb) $(if $(TRACE_COMPACT),+vcs+fsdbon)) \
 	  -cm_seqnoconst -diag noconst \
 
-ALL_SIMV_UVM_FLAGS      = +vcs+lic+wait $(issrun_opts) \
+ALL_SIMV_UVM_FLAGS      = +vcs+lic+wait -licwait 20  \
+		-sv_lib $(CVA6_REPO_DIR)/verif/core-v-verif/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
+		+UVM_TESTNAME=uvmt_cva6_firmware_test_c
+
+ALL_XRUN_UVM_FLAGS      = -elaborate -messages -sv +incdir+$(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src/ \
+	  $(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_LOW -uvm -uvmhome CDNS-1.2 \
+	  -64 +incdir+$(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src \
+	  +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/tb/uvmt \
+	  -xmerror CUNOTB -nowarn CUDEFB -nowarn CUSRCH -warn_multiple_driver -relax_svbtis -timescale 1ns/1ps -status -access +rwc -log   $(XRUN_WORK_DIR)/tb_compile.log
+##-relax_svbtis
+##ALL_XRUN_SIMV_UVM_FLAGS      = -licwait 20 $(issrun_opts) 
+ALL_XRUN_SIMV_UVM_FLAGS      =  +sv_lib=$(CVA6_REPO_DIR)/verif/core-v-verif/lib/dpi_dasm/lib/Linux64/libdpi_dasm.so 
+##		+UVM_TESTNAME=uvmt_cva6_firmware_test_c
+
+##XRUN_RUN_FLAGS := -R -64bit -disable_sem2009 -uvmhome CDNS-1.2  +UVM_VERBOSITY=UVM_LOW -svseed 1 -access +rwc -sv -timescale 1ns/1ps		
+		          
+XRUN_RUN_FLAGS := -R -messages -status -64bit -licqueue -noupdate -log xrun.log -uvmhome CDNS-1.2  +UVM_VERBOSITY=UVM_LOW -svseed 1 		
+		          
+##                          -xceligen on=1903	
+
+XRUN_DISABLED_WARNINGS := BIGWIX 	\
+                        ZROMCW 		\
+			STRINT 		\
+			ENUMERR 	\
+			SPDUSD		\
+			RNDXCELON
+
+XRUN_DISABLED_WARNINGS 	:= $(patsubst %, -nowarn %, $(XRUN_DISABLED_WARNINGS))
+
+XRUN_RUN = $(XRUN_RUN_FLAGS) 		\
+	   $(ALL_XRUN_SIMV_UVM_FLAGS)	\
+	   $(XRUN_DISABLED_WARNINGS)	
 
 ifneq ($(DEBUG),)               # If RTL DEBUG support requested
   ifneq ($(VERDI),)             #   If VERDI interactive mode requested, use GUI and do not run simulation
@@ -314,12 +347,81 @@ questa-uvm:
 	make questa_uvm_run
 
 
+xrun_dpi-library = $(XRUN_WORK_DIR)/work-dpi
+
+xrun_dpi_build:
+	mkdir -p $(xrun_dpi-library)
+	$(CXX) -shared -fPIC -std=c++17 -Bsymbolic -I$(CVA6_REPO_DIR)/corev_apu/tb/dpi -O3 -I$(SPIKE_ROOT)/include \
+	-I$(XCELIUM_HOME)/tools/include -I$(XCELIUM_HOME)/tools/xcelium/include -I$(RISCV)/include -c $(CVA6_REPO_DIR)/corev_apu/tb/dpi/elfloader.cc \
+	-o $(xrun_dpi-library)/elfloader.o
+	$(CXX) -shared -m64 -o $(xrun_dpi-library)/libdpi.so $(xrun_dpi-library)/elfloader.o -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib
+#	$(CXX) -shared -m64 -o $(xrun_dpi-library)/ariane_dpi.so $(xrun_dpi-library)/elfloader.o -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib
+
+xrun_uvm_comp: xrun_dpi_build
+	@echo "[XRUN] Building Model"
+	mkdir -p $(XRUN_WORK_DIR)
+	cd $(XRUN_WORK_DIR) && \
+          xrun $(ALL_XRUN_UVM_FLAGS) \
+          -xmlibdirpath ${XRUN_WORK_DIR}/work-dpi \
+          -sv_lib  $(xrun_dpi-library)/libdpi.so \
+          -f $(FLIST_CORE) \
+          -f $(FLIST_TB) \
+          -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
+          $(cov-comp-opt) $(isscomp_opts)\
+	  -top uvmt_cva6_tb
+
+xrun_uvm_run:
+	@echo "[XRUN] Running"
+	cd $(XRUN_WORK_DIR) && 	\
+	  xrun +permissive			\
+	  $(XRUN_RUN)			\
+          -xmlibdirpath ${XRUN_WORK_DIR}/work-dpi \
+          +sv_lib=$(xrun_dpi-library)/libdpi.so \
+          +define+UVM_NO_DEPRECATED  \
+	  +MAX_CYCLES=$(max_cycles)	\
+	  +UVM_CONFIG_DB_TRACE	\
+	  +UVM_TESTNAME=uvmt_cva6_firmware_test_c	\
+	  +time_out=2000000000            \
+	  +tohost_addr=80001000           \
+	  -gui				\
+	  +permissive-off			
+##		++$(elf-bin)
+
+#	$(if $(TRACE_FAST), unset VERDI_HOME ;) \
+#	cd $(VCS_WORK_DIR)/ && \
+#	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
+#	++$(elf) \
+#	+PRELOAD=$(elf) \
+#	+tohost_addr=$(shell $$RISCV/bin/riscv-none-elf-nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
+#	-sv_lib $(dpi-library)/ariane_dpi \
+#	$(cov-run-opt) $(issrun_opts) && \
+#	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CVA6_REPO_DIR)/verif/sim/ && \
+#	{ [ -z "`ls $(VCS_WORK_DIR)/*.$(SIMV_TRACE_EXTN)`" ] || \
+#	  for i in `ls $(VCS_WORK_DIR)/*.$(SIMV_TRACE_EXTN)` ; do mv $$i $(CVA6_REPO_DIR)/verif/sim/`basename $$i` ; done || \
+#	  true ; }
+
+xrun-uvm: xrun_uvm_comp xrun_uvm_run
+#	make xrun_uvm_comp
+#	make xrun_uvm_run
+#	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
+#	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+#	[ -z "`ls *.$(SIMV_TRACE_EXTN)`" ] || \
+#          for i in `ls *.$(SIMV_TRACE_EXTN)` ; do mv $$i `dirname $(log)`/`basename $(log) .log`.$(target).$$i ; done || true
+
+#xrun_comp_gen_inst:$(filelist)
+#	$(comp_sv_cmd) $(comp_sv_opt) -log tb_sv_compile.log $(filter %.sv %.v, $^)
+#	@touch $@
+
 generate_cov_dash:
 	urg -warn none -hvp_proj cva6_embedded -format both -group instcov_for_score -hvp_attributes weight+description+Comment -dir vcs_results/default/vcs.d/simv.vdb -plan cva6.hvp -tgl portsonly
 
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
 	rm -rf $(CVA6_REPO_DIR)/verif/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.fsdb *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
+
+xrun_clean_all:
+	@echo "[XRUN] Cleanup (entire xrun_work dir)"
+#	rm -rf $(XRUN_WORK_DIR) 
 
 ###############################################################################
 # testharness specific commands, variables
@@ -366,6 +468,12 @@ clean_all: vcs_clean_all
 	rm -f trace*.log
 	rm -f trace*.dasm
 	rm -f *.vpd *.fsdb *.vcd *.fst
+
+#xrun_clean_all: xrun_clean_all
+#	rm -f *.txt
+#	rm -f trace*.log
+#	rm -f trace*.dasm
+##	rm -f *.vpd *.fsdb *.vcd *.fst
 
 help:
 	@echo "Shell environment:"
