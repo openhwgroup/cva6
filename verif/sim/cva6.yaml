@@ -69,6 +69,23 @@
     make questa-uvm target=<target> cov=${cov} variant=<variant> elf=<elf> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
 
 ###############################################################################
+# Cadence Xcelium specific commands, variables
+###############################################################################
+#- iss: xrun-testharness
+#  path_var: RTL_PATH
+#  tool_path: SPIKE_PATH
+#  tb_path: TB_PATH
+#  cmd: >
+#    make xrun-testharness target=<target> variant=<variant> elf=<elf> path_var=<path_var> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
+
+- iss: xrun-uvm
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  cmd: >
+    make xrun-uvm target=<target> cov=${cov} variant=<variant> elf=<elf> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
+
+###############################################################################
 # Questasim specific commands, variables
 ###############################################################################
 - iss: questa-testharness
