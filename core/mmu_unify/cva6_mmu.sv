@@ -127,19 +127,19 @@ module cva6_mmu import ariane_pkg::*; #(
     logic                   ptw_access_exception; // PTW threw an access exception (PMPs)
     logic [HYP_EXT:0][riscv::PLEN-1:0] ptw_bad_paddr; // PTW guest page fault bad guest physical addr
 
-    logic [riscv::VLEN-1:0] update_vaddr, shared_tlb_vaddr;;
+    logic [riscv::VLEN-1:0] update_vaddr, shared_tlb_vaddr;
 
     tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
     logic        itlb_lu_access;
-    pte_cva6_t  [HYP_EXT:0]  mmu_itlb_content ;
+    pte_cva6_t  [HYP_EXT:0]  itlb_content ;
     logic [PT_LEVELS-2:0]               itlb_is_page;
     logic        itlb_lu_hit;
     logic [riscv::GPLEN-1:0]  itlb_gpaddr;
     logic [ASID_WIDTH[0]-1:0]    itlb_lu_asid;
 
     logic        dtlb_lu_access;
-    pte_cva6_t  [HYP_EXT:0]  mmu_dtlb_content ;
+    pte_cva6_t  [HYP_EXT:0]  dtlb_content ;
     logic [PT_LEVELS-2:0]               dtlb_is_page;
     logic [ASID_WIDTH[0]-1:0]    dtlb_lu_asid;
     logic        dtlb_lu_hit;
@@ -151,12 +151,13 @@ module cva6_mmu import ariane_pkg::*; #(
   // Assignments
 
     assign itlb_lu_access = icache_areq_i.fetch_req;
-    assign dtlb_lu_access = lsu_req_i;   
+    assign dtlb_lu_access = lsu_req_i;  
+
 
     cva6_tlb #(
         .pte_cva6_t(pte_cva6_t),
         .tlb_update_cva6_t(tlb_update_cva6_t),
-        .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
+        .TLB_ENTRIES      ( INSTR_TLB_ENTRIES),
         .HYP_EXT(HYP_EXT),
         .ASID_WIDTH (ASID_WIDTH),
         .ASID_LEN (ASID_LEN),
@@ -174,7 +175,7 @@ module cva6_mmu import ariane_pkg::*; #(
         .asid_to_be_flushed_i (asid_to_be_flushed_i),
         .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
         .lu_vaddr_i       ( icache_areq_i.fetch_vaddr  ),
-        .lu_content_o     ( mmu_itlb_content           ),
+        .lu_content_o     ( itlb_content               ),
         .lu_gpaddr_o      ( itlb_gpaddr                ),
         .lu_is_page_o     ( itlb_is_page               ),
         .lu_hit_o         ( itlb_lu_hit                )
@@ -183,7 +184,7 @@ module cva6_mmu import ariane_pkg::*; #(
     cva6_tlb #(
         .pte_cva6_t(pte_cva6_t),
         .tlb_update_cva6_t(tlb_update_cva6_t),
-        .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
+        .TLB_ENTRIES    (DATA_TLB_ENTRIES),
         .HYP_EXT(HYP_EXT),
         .ASID_WIDTH (ASID_WIDTH),
         .ASID_LEN (ASID_LEN),
@@ -201,8 +202,8 @@ module cva6_mmu import ariane_pkg::*; #(
         .asid_to_be_flushed_i ( asid_to_be_flushed_i),
         .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
         .lu_vaddr_i       ( lsu_vaddr_i                 ),
-        .lu_content_o     ( mmu_dtlb_content            ),
-        .lu_gpaddr_o      ( dtlb_gpaddr                ),
+        .lu_content_o     ( dtlb_content                ),
+        .lu_gpaddr_o      ( dtlb_gpaddr                 ),
         .lu_is_page_o     ( dtlb_is_page                ),
         .lu_hit_o         ( dtlb_lu_hit                 )
     );
@@ -221,7 +222,7 @@ module cva6_mmu import ariane_pkg::*; #(
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
         .flush_i(flush_tlb_i),
-  
+        .v_st_enbl_i('1),
         .enable_translation_i  (enable_translation_i),
         .en_ld_st_translation_i(en_ld_st_translation_i),
   
@@ -254,51 +255,60 @@ module cva6_mmu import ariane_pkg::*; #(
     );
   
       cva6_ptw  #(
+          .CVA6Cfg   (CVA6Cfg),
           .pte_cva6_t(pte_cva6_t),
           .tlb_update_cva6_t(tlb_update_cva6_t),
           .HYP_EXT(HYP_EXT),
           .ASID_WIDTH             ( ASID_WIDTH            ),
           .VPN_LEN(VPN_LEN),
-          .CVA6Cfg              ( CVA6Cfg             ),
           .PT_LEVELS(PT_LEVELS)
       ) i_ptw (
           .clk_i                  ( clk_i                 ),
           .rst_ni                 ( rst_ni                ),
+          .flush_i(flush_i),
+
           .ptw_active_o           ( ptw_active            ),
           .walking_instr_o        ( walking_instr         ),
           .ptw_error_o            ( ptw_error             ),
           .ptw_access_exception_o ( ptw_access_exception  ),
+
+          .lsu_is_store_i(lsu_is_store_i),
+          // PTW memory interface
+          .req_port_i             ( req_port_i            ),
+          .req_port_o             ( req_port_o            ),
           // .enable_translation_i   ( enable_translation_i  ),
           // .en_ld_st_translation_i ( en_ld_st_translation_i),
           .asid_i                 (asid_i),
   
           .update_vaddr_o         ( update_vaddr          ),
+
+          // to Shared TLB, update logic
           .shared_tlb_update_o(update_shared_tlb),
   
+          
+        // from shared TLB
+        // did we miss?
           .shared_tlb_access_i(shared_tlb_access),
           .shared_tlb_hit_i   (shared_tlb_hit),
           .shared_tlb_vaddr_i (shared_tlb_vaddr),
   
           .itlb_req_i(itlb_req),
-  
           // .dtlb_access_i          ( dtlb_lu_access        ),
           // .dtlb_hit_i             ( dtlb_lu_hit           ),
           // .dtlb_vaddr_i           ( lsu_vaddr_i           ),
           .hlvx_inst_i            ( hlvx_inst_i           ),
-  
-          .req_port_i             ( req_port_i            ),
-          .req_port_o             ( req_port_o            ),
+          // from CSR file
+          .satp_ppn_i             (satp_ppn_i             ),
           .mxr_i                  (mxr_i                  ),
+
           // Performance counters
           .shared_tlb_miss_o(),  //open for now
   
-          .satp_ppn_i             (satp_ppn_i             ),
-  
-          .pmpcfg_i,
-          .pmpaddr_i,
-  
-          .bad_paddr_o           ( ptw_bad_paddr          ),
-          .*
+        // PMP
+          .pmpcfg_i   (pmpcfg_i),
+          .pmpaddr_i  (pmpaddr_i),
+          .bad_paddr_o(ptw_bad_paddr)
+
       );
   
     // ila_1 i_ila_1 (
@@ -330,8 +340,8 @@ module cva6_mmu import ariane_pkg::*; #(
     assign icache_areq_o.fetch_paddr    [11:0] = icache_areq_i.fetch_vaddr[11:0];
     assign icache_areq_o.fetch_paddr [riscv::PLEN-1:PPNWMin+1]   = //
                               (|enable_translation_i[HYP_EXT:0]) ? //
-                              (enable_translation_i[HYP_EXT] ? mmu_itlb_content[HYP_EXT].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] :
-                              mmu_itlb_content[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] ): //
+                              (enable_translation_i[HYP_EXT] ? itlb_content[HYP_EXT].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] :
+                              itlb_content[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] ): //
                               (riscv::PLEN-PPNWMin-1)'(icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
     genvar a;
     generate
@@ -339,8 +349,8 @@ module cva6_mmu import ariane_pkg::*; #(
         for (a=0; a < PT_LEVELS-1; a++) begin  
         assign icache_areq_o.fetch_paddr [PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1] = //
                             (|enable_translation_i[HYP_EXT:0] && (|itlb_is_page[a:0]==0)) ? //
-                            (enable_translation_i[HYP_EXT] ? mmu_itlb_content[HYP_EXT].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]:
-                            mmu_itlb_content[0].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]) : //
+                            (enable_translation_i[HYP_EXT] ? itlb_content[HYP_EXT].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]:
+                            itlb_content[0].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]) : //
                             icache_areq_i.fetch_vaddr[PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1];
         end
 
@@ -356,11 +366,11 @@ module cva6_mmu import ariane_pkg::*; #(
         // 2. We got an access error because of insufficient permissions -> throw an access exception
         icache_areq_o.fetch_exception      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err[0]   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~mmu_itlb_content[0].u)
-                                                    || ((priv_lvl_i == riscv::PRIV_LVL_S) && mmu_itlb_content[0].u));
+        iaccess_err[0]   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content[0].u)
+                                                    || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content[0].u));
 
         if(HYP_EXT==1)
-            iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && !mmu_itlb_content[HYP_EXT].u;
+            iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && !itlb_content[HYP_EXT].u;
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
@@ -393,7 +403,7 @@ module cva6_mmu import ariane_pkg::*; #(
             icache_areq_o.fetch_valid = 1'b0;
 
             // // 4K page
-            // icache_areq_o.fetch_paddr = {mmu_v_st_enbl_i[1] ? mmu_itlb_content[1].ppn : itlb_content.ppn, icache_areq_i.fetch_vaddr[11:0]};
+            // icache_areq_o.fetch_paddr = {mmu_v_st_enbl_i[1] ? itlb_content[1].ppn : itlb_content.ppn, icache_areq_i.fetch_vaddr[11:0]};
             // // Mega page
             // if (itlb_is_2M) begin
             //     icache_areq_o.fetch_paddr[20:12] = icache_areq_i.fetch_vaddr[20:12];
@@ -512,7 +522,7 @@ module cva6_mmu import ariane_pkg::*; #(
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
-        if ((!match_any_execute_region && !ptw_error[0]) || (!(|enable_translation_i[HYP_EXT:0]) && !pmp_instr_allow)) begin
+        if ((!match_any_execute_region) || (!(|enable_translation_i[HYP_EXT:0]) && !pmp_instr_allow)) begin
             if(HYP_EXT==1) begin
                 icache_areq_o.fetch_exception = {
                     riscv::INSTR_ACCESS_FAULT,
@@ -580,8 +590,8 @@ module cva6_mmu import ariane_pkg::*; #(
 
     assign lsu_dtlb_ppn_o [11:0]   = 
                             (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ? //
-                            (en_ld_st_translation_i[HYP_EXT] ? mmu_dtlb_content[HYP_EXT].ppn[11:0]:
-                            mmu_dtlb_content[0].ppn[11:0]) : // 
+                            (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[11:0]:
+                            dtlb_content[0].ppn[11:0]) : // 
                             lsu_vaddr_n[0][23:12];
 
     genvar i;
@@ -596,16 +606,16 @@ module cva6_mmu import ariane_pkg::*; #(
 
             assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
                                 (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-                                (en_ld_st_translation_i[HYP_EXT] ? mmu_dtlb_content[HYP_EXT].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]:
-                                mmu_dtlb_content[0].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] ): //
+                                (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]:
+                                dtlb_content[0].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] ): //
                                 (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]!=0)?
                                 lsu_vaddr_n[0][PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]://
                                 (VPN_LEN/PT_LEVELS)'(lsu_vaddr_n[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1 : (24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-1) ) -1): (riscv::PLEN > riscv::VLEN) ? 24 :24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-2)]));
         end
         if(riscv::IS_XLEN64) begin
             assign lsu_dtlb_ppn_o[riscv::PPNW-1:PPNWMin+1] = (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ? 
-                                (en_ld_st_translation_i[HYP_EXT] ? mmu_dtlb_content[HYP_EXT].ppn[riscv::PPNW-1:PPNWMin+1]:
-                                mmu_dtlb_content[0].ppn[riscv::PPNW-1:PPNWMin+1] ): 
+                                (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[riscv::PPNW-1:PPNWMin+1]:
+                                dtlb_content[0].ppn[riscv::PPNW-1:PPNWMin+1] ): 
                                 lsu_vaddr_n[0][riscv::PLEN-1:PPNWMin+1] ;
         end
 
@@ -620,7 +630,7 @@ module cva6_mmu import ariane_pkg::*; #(
         lsu_req_n             = lsu_req_i;
         hs_ld_st_inst_n       = hs_ld_st_inst_i;
         misaligned_ex_n       = misaligned_ex_i;
-        dtlb_pte_n            = mmu_dtlb_content;
+        dtlb_pte_n            = dtlb_content;
         dtlb_hit_n            = dtlb_lu_hit;
         lsu_is_store_n        = lsu_is_store_i;
         dtlb_is_page_n        = dtlb_is_page;
@@ -863,9 +873,8 @@ module cva6_mmu import ariane_pkg::*; #(
                         1'b1
                     };
                 end
-                else begin
+                else 
                     lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1};
-                end
                 end else begin
                     if(HYP_EXT==1) begin
                     lsu_exception_o = {
@@ -913,7 +922,7 @@ module cva6_mmu import ariane_pkg::*; #(
             dtlb_pte_q       <= '0;
             dtlb_hit_q       <= '0;
             lsu_is_store_q   <= '0;
-            dtlb_is_page_q  <= '0;
+            dtlb_is_page_q   <= '0;
         end else begin
             lsu_vaddr_q      <=  lsu_vaddr_n;
             lsu_tinst_q      <=  lsu_tinst_n;

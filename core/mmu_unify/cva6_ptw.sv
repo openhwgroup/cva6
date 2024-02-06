@@ -75,9 +75,8 @@ module cva6_ptw import ariane_pkg::*; #(
 
     // input registers
     logic data_rvalid_q;
-    riscv::xlen_t  data_rdata_q;
+    riscv::xlen_t data_rdata_q;
 
-    logic [PT_LEVELS-1:0] misaligned_page;
     pte_cva6_t [HYP_EXT*2:0] pte; //[gpte_d,gpte_q,pte]
     // register to perform context switch between stages
     // pte_cva6_t gpte_q, gpte_d;
@@ -93,7 +92,8 @@ module cva6_ptw import ariane_pkg::*; #(
       LATENCY
     } state_q, state_d;
 
-    logic [HYP_EXT:0][PT_LEVELS-2:0] ptw_lvl_q, ptw_lvl_n;  
+    logic [PT_LEVELS-1:0] misaligned_page;
+    logic [HYP_EXT:0][PT_LEVELS-2:0] ptw_lvl_n,ptw_lvl_q;  
 
     // define 3 PTW stages to be used in sv39x4. sv32 and sv39 are always in S_STAGE
     // S_STAGE -> S/VS-stage normal translation controlled by the satp/vsatp CSRs
@@ -112,7 +112,6 @@ module cva6_ptw import ariane_pkg::*; #(
     logic tag_valid_n,      tag_valid_q;
     // register the ASIDs
     logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]  tlb_update_asid_q, tlb_update_asid_n;
-
     // register the VPN we need to walk, SV39 defines a 39 bit virtual address
     logic [riscv::VLEN-1:0] vaddr_q,   vaddr_n;
     logic [HYP_EXT*2:0][PT_LEVELS-2:0][(VPN_LEN/PT_LEVELS)-1:0] vaddr_lvl;   
@@ -147,7 +146,7 @@ module cva6_ptw import ariane_pkg::*; #(
     genvar z,w;
     generate
         for (z=0; z < PT_LEVELS-1; z++) begin  
-    
+
             // check if the ppn is correctly aligned:
             // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
             // exception.
@@ -177,7 +176,7 @@ module cva6_ptw import ariane_pkg::*; #(
             for (int unsigned x=0; x < PT_LEVELS-1; x++) begin
                 if(&shared_tlb_access_i[HYP_EXT:0] && HYP_EXT==1) 
                     shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==HYP_EXT? 0 : 1] == x);
-                else if(shared_tlb_access_i[0]) 
+                else if(shared_tlb_access_i[0] || HYP_EXT==0) 
                     shared_tlb_update_o.is_page[x][y] = y==0 ? (ptw_lvl_q[0]== x) : 1'b0;
                 else 
                     shared_tlb_update_o.is_page[x][y] = y!=0 ? (ptw_lvl_q[0]== x) : 1'b0;
@@ -407,8 +406,8 @@ module cva6_ptw import ariane_pkg::*; #(
                                     if((ptw_stage_q == G_FINAL_STAGE) || !shared_tlb_access_i[HYP_EXT] || HYP_EXT==0)
                                         shared_tlb_update_o.valid = 1'b1;
                                 end else begin
-                                state_d   = PROPAGATE_ERROR;
-                                ptw_stage_d = ptw_stage_q;
+                                    state_d   = PROPAGATE_ERROR;
+                                    ptw_stage_d = ptw_stage_q;
                                 end
                                 // Request is a store: perform some additional checks
                                 // If the request was a store and the page is not write-able, raise an error
@@ -531,7 +530,7 @@ module cva6_ptw import ariane_pkg::*; #(
             // 1. in the PTE Lookup check whether we still need to wait for an rvalid
             // 2. waiting for a grant, if so: wait for it
             // if not, go back to idle
-            if ((state_q inside {PTE_LOOKUP, WAIT_RVALID} && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
+            if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
                 state_d = WAIT_RVALID;
             else
                 state_d = LATENCY;
