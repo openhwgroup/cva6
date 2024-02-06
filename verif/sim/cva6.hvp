@@ -12,8 +12,6 @@ plan "CVA6 Verification Master Plan";
                 description = "I extension";
                 Comment = "";
                 feature ADD;
-                    Comment = "Issue in Spike-dasm decoder
-Waiting for ISA_DECODER to be merge on master";
                     measure Group ADD;
                         source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_add_cg";
                     endmeasure
@@ -68,20 +66,12 @@ Waiting for ISA_DECODER to be merge on master";
                         source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_bne_cg";
                     endmeasure
                 endfeature
-                feature DRET;
-                    Comment = "RVFI limitation issue(#1338)";
-                    measure Group DRET;
-                        source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_dret_cg";
-                    endmeasure
-                endfeature
                 feature EBREAK;
-                    Comment = "RVFI limitation issue(#1338)";
                     measure Group EBREAK;
                         source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_ebreak_cg";
                     endmeasure
                 endfeature
                 feature ECALL;
-                    Comment = "RVFI limitation issue(#1338)";
                     measure Group ECALL;
                         source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32i_ecall_cg";
                     endmeasure
@@ -338,7 +328,6 @@ Waiting for ISA_DECODER to be merge on master";
                     endmeasure
                 endfeature
                 feature EBREAK;
-                    Comment = "RVFI limitation issue(#1338)";
                     measure Group EBREAK;
                         source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32c_ebreak_cg";
                     endmeasure
@@ -469,43 +458,49 @@ Waiting for ISA_DECODER to be merge on master";
             endfeature
             feature RV32ZIFENCEI;
                 description = "ZIFENCE.I extension";
-                Comment = "Issue in Spike-dasm decoder\nWaiting for ISA_DECODER to be merge on master";
                 measure Group FEINCE_I;
                     source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zifencei_fence_i_cg";
                 endmeasure
             endfeature
-            feature RV32ZICOND;
-                weight = 0;
-                description = "ZICOND extension";
-                measure Group CZERO_EQZ;
-                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.rv32zicond_czero_eqz_cg";
-                endmeasure
-                measure Group CZERO_NEZ;
-                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.rv32zicond_czero_nez_cg";
-                endmeasure
-            endfeature
             feature RV32ZCB;
-                weight = 0;
+                weight = 1;
                 description = "ZCB extension";
-                Comment = "Issue in Spike-dasm decoder\nWaiting for ISA_DECODER to be merge on master";
                 measure Group C_MUL;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_mul_cg";
                 endmeasure
                 measure Group C_ZEXT_B;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_zext_b_cg";
                 endmeasure
                 measure Group C_SEXT_B;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_sext_b_cg";
                 endmeasure
                 measure Group C_ZEXT_H;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_zext_h_cg";
                 endmeasure
                 measure Group C_SEXT_H;
-                endmeasure
-                measure Group C_ZEXT_W;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_sext_h_cg";
                 endmeasure
                 measure Group C_NOT;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_not_cg";
+                endmeasure
+                measure Group C_SB;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_sb_cg";
+                endmeasure
+                measure Group C_LHU;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_lhu_cg";
+                endmeasure
+                measure Group C_LH;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_lh_cg";
+                endmeasure
+                measure Group C_LBU;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_lbu_cg";
+                endmeasure
+                measure Group C_SH;
+                    source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zcb_sh_cg";
                 endmeasure
             endfeature
             feature RV32ZB;
                 description = "Bitmanip extension";
-                Comment = "Issue in Spike-dasm decoder\nWaiting for ISA_DECODER to be merge on master";
                 feature RV32ZBA;
                     measure Group SH1ADD;
                         source = "group instance: uvma_isacov_pkg.uvma_isacov_pkg.rv32zba_sh1add_cg";
@@ -626,7 +621,6 @@ Waiting for ISA_DECODER to be merge on master";
         endfeature
         feature "CSR access";
             description = "CSR registers access.\nSpecification: Done, Dvplan: Done, Verification execution: Done";
-            Comment = "Issue in Spike-dasm decoder\nWaiting for ISA_DECODER to be merge on master";
             feature "CSR CODE COVERAGE";
                 measure Line, Cond, Toggle CSR_code_cov;
                     source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.csr_regfile_i";
@@ -1445,7 +1439,7 @@ Waiting for ISA_DECODER to be merge on master";
         endfeature
     endfeature
     feature Sanity;
-        weight = 1;
+        weight = 0;
         description = "CVA6 Sanity features";
         feature Configuration;
             description = "RTL configuration";
