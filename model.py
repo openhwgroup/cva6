@@ -354,7 +354,7 @@ class Model:
         self.bht = Bht()
         self.instr_queue = []
         self.scoreboard = []
-        self.fus = FusBusy(True)
+        self.fus = FusBusy(issue > 1)
         self.last_issued = None
         self.last_committed = None
         self.retired = []
