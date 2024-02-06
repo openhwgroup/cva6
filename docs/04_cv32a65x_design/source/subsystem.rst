@@ -29,105 +29,12 @@ Connection with other sub-systems
 [TO BE COMPLETED]
 
 
-Parameter list
---------------
-
-[TO BE COMPLETED]
-
-
 Parameter configuration
 -----------------------
 
-.. list-table:: Risc-V Configuration
-   :header-rows: 1
 
-   * - Standard Extension
-     - Specification
-     - Configurability
+.. include:: parameters_cv32a65x.rst
 
-   * - **I**: RV32i Base Integer Instruction Set
-     - [RVunpriv]
-     - ON
-
-   * - **C**: Standard Extension for Compressed Instructions
-     - [RVunpriv]
-     - ON
-
-   * - **M**: Standard Extension for Integer Multiplication and Division
-     - [RVunpriv]
-     - ON
-
-   * - **A**: Standard Extension for Atomic transaction
-     - [RVunpriv]
-     - OFF
-
-   * - **F and D**: Single and Double Precision Floating-Point
-     - [RVunpriv]
-     - OFF
-
-   * - **Zicount**: Performance Counters
-     - [RVunpriv]
-     - OFF
-
-   * - **Zicsr**: Control and Status Register Instructions
-     - [RVpriv]
-     - ON
-
-   * - **Zifencei**: Instruction-Fetch Fence
-     - [RVunpriv]
-     - ON
-
-   * - **Privilege**: Standard privilege modes M, S and U
-     - [RVpriv]
-     - ON
-
-   * - **SV39, SV32, SV0**: MMU capability
-     - [RVpriv]
-     - OFF
-
-   * - **PMP**: Memory Protection Unit
-     - [RVpriv]
-     - OFF
-
-   * - **CSR**: Control and Status Registers
-     - [RVpriv]
-     - ON
-
-   * - **AXI**: AXI interface
-     - [CV-X-IF]
-     - ON
-
-   * - **TRI**: Translation Response Interface (TRI)
-     - [OpenPiton]
-     - OFF
-
-
-.. list-table:: Micro-Architecture Configuration
-   :header-rows: 1
-
-   * - Micro-architecture
-     - Specification
-     - Configurability
-
-   * - **I$**: Instruction cache
-     - current spec
-     - ON
-
-   * - **D$**: Data cache
-     - current spec
-     - OFF
-
-   * - **Rename**: register Renaming
-     - current spec
-     - OFF
-
-   * - **Double Commit**: out of order pipeline execute stage
-     - current spec
-     - ON
-
-   * - **BP**: Branch Prediction
-     - current spec
-     - ON with no info storage
 
 
 IO ports

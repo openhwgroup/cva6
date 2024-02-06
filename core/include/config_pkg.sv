@@ -36,90 +36,119 @@ package config_pkg;
   localparam NrMaxRules = 16;
 
   typedef struct packed {
-    /// Number of commit ports, i.e., maximum number of instructions that the
-    /// core can retire per cycle. It can be beneficial to have more commit
-    /// ports than issue ports, for the scoreboard to empty out in case one
-    /// instruction stalls a little longer.
+    // Number of commit ports
     int unsigned                 NrCommitPorts;
-    /// AXI parameters.
+    // AXI address width
     int unsigned                 AxiAddrWidth;
+    // AXI data width
     int unsigned                 AxiDataWidth;
+    // AXI ID width
     int unsigned                 AxiIdWidth;
+    // AXI User width
     int unsigned                 AxiUserWidth;
+    // TO_BE_COMPLETED
     int unsigned                 NrLoadBufEntries;
+    // FPU is enabled
     bit                          FpuEn;
+    // TO_BE_COMPLETED
     bit                          XF16;
+    // TO_BE_COMPLETED
     bit                          XF16ALT;
+    // TO_BE_COMPLETED
     bit                          XF8;
+    // Atomic RISC-V extension
     bit                          RVA;
+    // Bit manipulation RISC-V extension
     bit                          RVB;
+    // Vector RISC-V extension
     bit                          RVV;
+    // Compress RISC-V extension
     bit                          RVC;
+    // Zcb RISC-V extension
     bit                          RVZCB;
+    // TO_BE_COMPLETED
     bit                          XFVec;
+    // CV-X-IF coprocessor interface is supported
     bit                          CvxifEn;
+    // Zicond RISC-V extension is enabled
     bit                          ZiCondExtEn;
-    // Calculated
+    // Single precision FP RISC-V extension
     bit                          RVF;
+    // Double precision FP RISC-V extension
     bit                          RVD;
+    // Floating point is present
     bit                          FpPresent;
+    // TO_BE_COMPLETED
     bit                          NSX;
+    // TO_BE_COMPLETED
     int unsigned                 FLen;
+    // Vector floating point extension
     bit                          RVFVec;
+    // 16 bits vector floating point extension
     bit                          XF16Vec;
+    // TO_BE_COMPLETED
     bit                          XF16ALTVec;
+    // 8 bits vector floating point extension
     bit                          XF8Vec;
+    // TO_BE_COMPLETED
     int unsigned                 NrRgprPorts;
+    // TO_BE_COMPLETED
     int unsigned                 NrWbPorts;
+    // Accelerate Port coprocessor interface
     bit                          EnableAccelerator;
-    bit                          RVS;                    //Supervisor mode
-    bit                          RVU;                    //User mode
-    // Debug Module
-    // address to which a hart should jump when it was requested to halt
+    // Supervisor mode is enabled
+    bit                          RVS;
+    // User mode is enabled
+    bit                          RVU;
+    // Address to jump when halt request
     logic [63:0]                 HaltAddress;
+    // Address to jump when exception 
     logic [63:0]                 ExceptionAddress;
-    /// Return address stack depth, good values are around 2 to 4.
+    // Address stack depth
     int unsigned                 RASDepth;
-    /// Branch target buffer entries.
+    // Branch target buffer entries
     int unsigned                 BTBEntries;
-    /// Branch history (2-bit saturation counter) size, to keep track of
-    /// branch otucomes.
+    // Branch history entries
     int unsigned                 BHTEntries;
-    /// Offset of the debug module.
+    // Base address of the debug module.
     logic [63:0]                 DmBaseAddress;
-    /// Tval Support Enable
+    // Tval Support Enable
     bit                          TvalEn;
-    /// Number of PMP entries.
+    // Number of PMP entries.
     int unsigned                 NrPMPEntries;
-    /// Physical Memory Protection (PMP) CSR reset values and read-only bits
+    // PMP CSR configuration reset values
     logic [15:0][63:0]           PMPCfgRstVal;
+    // PMP CSR address reset values
     logic [15:0][63:0]           PMPAddrRstVal;
+    // PMP CSR read-only bits
     bit [15:0]                   PMPEntryReadOnly;
-    /// Set to the bus type in use.
+    // NOC bus type, can be AXI or Open Piton
     noc_type_e                   NOCType;
-    /// Physical Memory Attributes (PMAs)
-    /// Number of non idempotent rules.
+    // Number of PMA non idempotent rules
     int unsigned                 NrNonIdempotentRules;
-    /// Base which needs to match.
+    // PMA NonIdempotent region base address
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
-    /// Bit mask which bits to consider when matching the rule.
+    // PMA NonIdempotent region length
     logic [NrMaxRules-1:0][63:0] NonIdempotentLength;
-    /// Number of regions which have execute property.
+    // PMA Execute region rules
     int unsigned                 NrExecuteRegionRules;
-    /// Base which needs to match.
+    // PMA Execute region base address
     logic [NrMaxRules-1:0][63:0] ExecuteRegionAddrBase;
-    /// Bit mask which bits to consider when matching the rule.
+    // PMA Execute region address base
     logic [NrMaxRules-1:0][63:0] ExecuteRegionLength;
-    /// Number of regions which have cached property.
+    // PMA cache region properties
     int unsigned                 NrCachedRegionRules;
-    /// Base which needs to match.
+    // PMA cache region base address
     logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
-    /// Bit mask which bits to consider when matching the rule.
+    // PMA cache region rules
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
-    /// Maximum number of outstanding stores.
+    // Maximum number of outstanding stores
     int unsigned                 MaxOutstandingStores;
+    // Debug mode is enabled
     bit                          DebugEn;
+    // Non idem potency is enabled
     bit                          NonIdemPotenceEn;
+    // AXI burst in write is enabled
     bit                          AxiBurstWriteEn;
   } cva6_cfg_t;
 
