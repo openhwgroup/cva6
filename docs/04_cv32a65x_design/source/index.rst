@@ -8,7 +8,7 @@
    Original Author: Jean-Roch COULON - Thales
 
 
-CV32A60X Design Document
+CV32A65X Design Document
 ========================
 Editor: **Jean Roch Coulon**
 

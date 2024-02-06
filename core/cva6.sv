@@ -115,24 +115,31 @@ module cva6
     parameter type cvxif_req_t = cvxif_pkg::cvxif_req_t,
     parameter type cvxif_resp_t = cvxif_pkg::cvxif_resp_t
 ) (
+    // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // Core ID, Cluster ID and boot address are considered more or less static
-    input logic [riscv::VLEN-1:0] boot_addr_i,  // reset boot address
-    input  logic [riscv::XLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
-    // Interrupt inputs
-    input logic [1:0] irq_i,  // level sensitive IR lines, mip & sip (async)
-    input logic ipi_i,  // inter-processor interrupts (async)
-    // Timer facilities
-    input logic time_irq_i,  // timer interrupt in (async)
-    input logic debug_req_i,  // debug request (async)
-    // RISC-V formal interface port (`rvfi`):
-    // Can be left open when formal tracing is not needed.
+    // Reset boot address - SUBSYSTEM
+    input logic [riscv::VLEN-1:0] boot_addr_i,
+    // Hard ID reflected as CSR - SUBSYSTEM
+    input logic [riscv::XLEN-1:0] hart_id_i,
+    // Level sensitive (async) interrupts - SUBSYSTEM
+    input logic [1:0] irq_i,
+    // Inter-processor (async) interrupt - SUBSYSTEM
+    input logic ipi_i,
+    // Timer (async) interrupt - SUBSYSTEM
+    input logic time_irq_i,
+    // Debug (async) request - SUBSYSTEM
+    input logic debug_req_i,
+    // Probes to build RVFI, can be left open when not used - SUBSYSTEM
     output rvfi_probes_t rvfi_probes_o,
+    // CVXIF request - SUBSYSTEM
     output cvxif_req_t cvxif_req_o,
+    // CVXIF response - SUBSYSTEM
     input cvxif_resp_t cvxif_resp_i,
-    // memory side
+    // noc request, can be AXI or OpenPiton - SUBSYSTEM
     output noc_req_t noc_req_o,
+    // noc response, can be AXI or OpenPiton - SUBSYSTEM
     input noc_resp_t noc_resp_i
 );
 

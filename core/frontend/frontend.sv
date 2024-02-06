@@ -20,33 +20,46 @@ module frontend
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
-    input logic clk_i,  // Clock
-    input logic rst_ni,  // Asynchronous reset active low
-    input logic flush_i,  // flush request for PCGEN
-    input logic flush_bp_i,  // flush branch prediction
-    input logic halt_i,  // halt commit stage
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Fetch flush request - CONTROLLER
+    input logic flush_i,
+    // flush branch prediction - zero
+    input logic flush_bp_i,
+    // halt commit stage - CONTROLLER
+    input logic halt_i,
+    // Debug mode state - CSR
     input logic debug_mode_i,
-    // global input
+    // Next PC when reset - SUBSYSTEM
     input logic [riscv::VLEN-1:0] boot_addr_i,
-    // Set a new PC
-    // mispredict
-    input  bp_resolve_t        resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
-    // from commit, when flushing the whole pipeline
-    input logic set_pc_commit_i,  // Take the PC from commit stage
-    input logic [riscv::VLEN-1:0] pc_commit_i,  // PC of instruction in commit stage
-    // CSR input
-    input logic [riscv::VLEN-1:0] epc_i,  // exception PC which we need to return to
-    input logic eret_i,  // return from exception
-    input logic [riscv::VLEN-1:0] trap_vector_base_i,  // base of trap vector
-    input logic ex_valid_i,  // exception is valid - from commit
-    input logic set_debug_pc_i,  // jump to debug address
-    // Instruction Fetch
+    // mispredict event and next PC - EXECUTE
+    input bp_resolve_t resolved_branch_i,
+    // Set the PC coming from COMMIT as next PC - CONTROLLER
+    input logic set_pc_commit_i,
+    // Next PC when flushing pipeline - COMMIT
+    input logic [riscv::VLEN-1:0] pc_commit_i,
+    // Next PC when returning from exception - CSR
+    input logic [riscv::VLEN-1:0] epc_i,
+    // Return from exception event - CSR
+    input logic eret_i,
+    // Next PC when jumping into exception - CSR
+    input logic [riscv::VLEN-1:0] trap_vector_base_i,
+    // Exception event - COMMIT
+    input logic ex_valid_i,
+    // Debug event - CSR
+    input logic set_debug_pc_i,
+    // Handshake between CACHE and FRONTEND (fetch) - CACHES
     output icache_dreq_t icache_dreq_o,
+    // Handshake between CACHE and FRONTEND (fetch) - CACHES
     input icache_drsp_t icache_dreq_i,
-    // instruction output port -> to processor back-end
-    output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
-    output logic fetch_entry_valid_o,  // instruction in IF is valid
-    input logic fetch_entry_ready_i  // ID acknowledged this instruction
+    // Handshake's data between fetch and decode - DECODE
+    output fetch_entry_t fetch_entry_o,
+    // Handshake's valid between fetch and decode - DECODE
+    output logic fetch_entry_valid_o,
+    // Handshake's ready between fetch and decode - DECODE
+    input logic fetch_entry_ready_i
 );
   // Instruction Cache Registers, from I$
   logic                            [                FETCH_WIDTH-1:0] icache_data_q;

@@ -13,7 +13,7 @@ Introduction
 ============
 
 The OpenHW Group uses `semantic versioning <https://semver.org/>`_ to describe the release status of its IP.
-This document describes the CV32A60X configuration version of CVA6.
+This document describes the CV32A65X configuration version of CVA6.
 This intends to be the first formal release of CVA6.
 
 CVA6 is a 6-stage in-order and single issue processor core which implements the RISC-V instruction set.

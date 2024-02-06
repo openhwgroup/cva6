@@ -48,26 +48,39 @@ module instr_queue
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
+    // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
+    // Fetch flush request - CONTROLLER
     input logic flush_i,
+    // Instruction - instr_realign
     input logic [ariane_pkg::INSTR_PER_FETCH-1:0][31:0] instr_i,
+    // Instruction address - instr_realign
     input logic [ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr_i,
+    // Instruction is valid - instr_realign
     input logic [ariane_pkg::INSTR_PER_FETCH-1:0] valid_i,
+    // Handshake’s ready with CACHE - CACHE
     output logic ready_o,
+    // Indicates instructions consummed, or popped by DECODE - FRONTEND
     output logic [ariane_pkg::INSTR_PER_FETCH-1:0] consumed_o,
-    // we've encountered an exception, at this point the only possible exceptions are page-table faults
+    // Exception (which is page-table fault) - CACHE
     input ariane_pkg::frontend_exception_t exception_i,
+    // Exception address - CACHE
     input logic [riscv::VLEN-1:0] exception_addr_i,
-    // branch predict
+    // Branch predict - FRONTEND
     input logic [riscv::VLEN-1:0] predict_address_i,
+    // Instruction predict address - FRONTEND
     input ariane_pkg::cf_t [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type_i,
-    // replay instruction because one of the FIFO was already full
+    // Replay instruction because one of the FIFO was  full - FRONTEND
     output logic replay_o,
-    output logic [riscv::VLEN-1:0] replay_addr_o,  // address at which to replay this instruction
-    // to processor backend
+    // Address at which to replay the fetch - FRONTEND
+    output logic [riscv::VLEN-1:0] replay_addr_o,
+    // Handshake’s data with DECODE - DECODE
     output ariane_pkg::fetch_entry_t fetch_entry_o,
+    // Handshake’s valid with DECODE - DECODE
     output logic fetch_entry_valid_o,
+    // Handshake’s ready with DECODE - DECODE
     input logic fetch_entry_ready_i
 );
 

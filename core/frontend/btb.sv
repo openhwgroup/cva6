@@ -29,14 +29,20 @@ module btb #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int NR_ENTRIES = 8
 ) (
-    input logic clk_i,        // Clock
-    input logic rst_ni,       // Asynchronous reset active low
-    input logic flush_i,      // flush the btb
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Fetch flush request - CONTROLLER
+    input logic flush_i,
+    // Debug mode state - CSR
     input logic debug_mode_i,
-
-    input logic [riscv::VLEN-1:0] vpc_i,  // virtual PC from IF stage
-    input ariane_pkg::btb_update_t btb_update_i,  // update btb with this information
-    output ariane_pkg::btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o // prediction from btb
+    // Virtual PC - CACHE
+    input logic [riscv::VLEN-1:0] vpc_i,
+    // Update BTB with resolved address - EXECUTE
+    input ariane_pkg::btb_update_t btb_update_i,
+    // BTB Prediction - FRONTEND
+    output ariane_pkg::btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o
 );
   // the last bit is always zero, we don't need it for indexing
   localparam OFFSET = CVA6Cfg.RVC == 1'b1 ? 1 : 2;
