@@ -85,7 +85,7 @@ if __name__ == "__main__":
             fout.write("\n")
             fout.write("   * - Signal\n")
             fout.write("     - IO\n")
-            fout.write("     - connection\n")
+            fout.write("     - Connection\n")
             fout.write("     - Type\n")
             fout.write("     - Description\n")
             for i in range(len(port)):

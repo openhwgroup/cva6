@@ -14,7 +14,7 @@
 
    * - Signal
      - IO
-     - connection
+     - Connection
      - Type
      - Description
 
