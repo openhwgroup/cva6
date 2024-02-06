@@ -37,3 +37,4 @@ Connections between modules are illustrated in the following block diagram. FRON
    cva6_id_stage
    cva6_issue_stage
    cv32a6_execute
+   cva6_commit_stage
