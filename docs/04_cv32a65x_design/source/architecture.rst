@@ -39,3 +39,4 @@ Connections between modules are illustrated in the following block diagram. FRON
    cv32a6_execute
    cva6_commit_stage
    cva6_controller
+   cva6_csr_regfile
