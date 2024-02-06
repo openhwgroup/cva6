@@ -1,8 +1,8 @@
 # Copyright 2024 Thales DIS France SAS
 #
-# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# Licensed under the Solderpad Hardware License, Version 2.1 (the "License");
 # you may not use this file except in compliance with the License.
-# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
 # Original Author: Jean-Roch COULON - Thales
@@ -69,12 +69,12 @@ if __name__ == "__main__":
             fout.write("..\n")
             fout.write("   Copyright 2024 Thales DIS France SAS\n")
             fout.write(
-                '   Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");\n'
+                '   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");\n'
             )
             fout.write(
                 "   you may not use this file except in compliance with the License.\n"
             )
-            fout.write("   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0\n")
+            fout.write("   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1\n")
             fout.write(
                 "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
             )
