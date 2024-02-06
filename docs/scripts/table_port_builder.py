@@ -42,6 +42,7 @@ if __name__ == "__main__":
     file.append("../core/issue_stage.sv")
     file.append("../core/ex_stage.sv")
     file.append("../core/commit_stage.sv")
+    file.append("../core/controller.sv")
 
     for filein in file:
         a = re.match(r".*\/(.*).sv", filein)
