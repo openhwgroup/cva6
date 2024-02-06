@@ -63,6 +63,8 @@ package cva6_config_pkg;
   localparam CVA6ConfigBTBEntries = 32;
   localparam CVA6ConfigBHTEntries = 128;
 
+  localparam CVA6ConfigTvalEn = 1;
+
   localparam CVA6ConfigNrPMPEntries = 8;
 
   localparam CVA6ConfigPerfCounterEn = 1;
@@ -85,6 +87,7 @@ package cva6_config_pkg;
       XF16ALT: bit'(CVA6ConfigF16AltEn),
       XF8: bit'(CVA6ConfigF8En),
       RVA: bit'(CVA6ConfigAExtEn),
+      RVB: bit'(CVA6ConfigBExtEn),
       RVV: bit'(CVA6ConfigVExtEn),
       RVC: bit'(CVA6ConfigCExtEn),
       RVH: bit'(CVA6ConfigHExtEn),
@@ -116,7 +119,11 @@ package cva6_config_pkg;
       BTBEntries: unsigned'(CVA6ConfigBTBEntries),
       BHTEntries: unsigned'(CVA6ConfigBHTEntries),
       DmBaseAddress: 64'h0,
+      TvalEn: bit'(CVA6ConfigTvalEn),
       NrPMPEntries: unsigned'(CVA6ConfigNrPMPEntries),
+      PMPCfgRstVal: {16{64'h0}},
+      PMPAddrRstVal: {16{64'h0}},
+      PMPEntryReadOnly: 16'd0,
       NOCType: config_pkg::NOC_TYPE_AXI4_ATOP,
       // idempotent region
       NrNonIdempotentRules:
