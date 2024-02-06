@@ -639,7 +639,7 @@ module load_store_unit
       end
     end
 
-    if (en_ld_st_translation_i && lsu_ctrl.overflow) begin
+    if (ariane_pkg::MMU_PRESENT && en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception.cause = riscv::LD_ACCESS_FAULT;
@@ -661,7 +661,7 @@ module load_store_unit
       end
     end
 
-    if (en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
+    if (ariane_pkg::MMU_PRESENT && CVA6Cfg.RVH && en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception.cause = riscv::LOAD_GUEST_PAGE_FAULT;

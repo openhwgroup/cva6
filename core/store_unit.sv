@@ -134,9 +134,9 @@ module store_unit
 
   // output assignments
   assign vaddr_o         = lsu_ctrl_i.vaddr;  // virtual address
-  assign hs_ld_st_inst_o = lsu_ctrl_i.hs_ld_st_inst;
-  assign hlvx_inst_o     = lsu_ctrl_i.hlvx_inst;
-  assign tinst_o         = lsu_ctrl_i.tinst;  // transformed instruction
+  assign hs_ld_st_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hs_ld_st_inst : 1'b0;
+  assign hlvx_inst_o     = CVA6Cfg.RVH ? lsu_ctrl_i.hlvx_inst : 1'b0;
+  assign tinst_o         = CVA6Cfg.RVH ? lsu_ctrl_i.tinst : '0;  // transformed instruction
   assign trans_id_o      = trans_id_q;  // transaction id from previous cycle
 
   always_comb begin : store_control

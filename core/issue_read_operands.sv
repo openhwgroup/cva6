@@ -172,7 +172,7 @@ module issue_read_operands
   assign cvxif_valid_o       = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
   assign cvxif_off_instr_o   = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
   assign stall_issue_o       = stall;
-  assign tinst_o             = tinst_q;
+  assign tinst_o             = CVA6Cfg.RVH ? tinst_q : '0;
   // ---------------
   // Issue Stage
   // ---------------
@@ -287,7 +287,9 @@ module issue_read_operands
     trans_id_n = issue_instr_i.trans_id;
     fu_n       = issue_instr_i.fu;
     operator_n = issue_instr_i.op;
-    tinst_n    = issue_instr_i.ex.tinst;
+    if (CVA6Cfg.RVH) begin
+      tinst_n    = issue_instr_i.ex.tinst;
+    end
     // or should we forward
     if (forward_rs1) begin
       operand_a_n = rs1_i;
@@ -602,7 +604,9 @@ module issue_read_operands
       fu_q                  <= NONE;
       operator_q            <= ADD;
       trans_id_q            <= '0;
-      tinst_q               <= '0;
+      if (CVA6Cfg.RVH) begin
+        tinst_q               <= '0;
+      end
       pc_o                  <= '0;
       is_compressed_instr_o <= 1'b0;
       branch_predict_o      <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
@@ -613,7 +617,9 @@ module issue_read_operands
       fu_q                  <= fu_n;
       operator_q            <= operator_n;
       trans_id_q            <= trans_id_n;
-      tinst_q               <= tinst_n;
+      if (CVA6Cfg.RVH) begin
+        tinst_q               <= tinst_n;
+      end
       pc_o                  <= issue_instr_i.pc;
       is_compressed_instr_o <= issue_instr_i.is_compressed;
       branch_predict_o      <= issue_instr_i.bp;
