@@ -96,25 +96,25 @@ package config_pkg;
     int unsigned                 NrWbPorts;
     // Accelerate Port coprocessor interface
     bit                          EnableAccelerator;
-    // Supervisor mode is enabled
+    // Supervisor mode
     bit                          RVS;
-    // User mode is enabled
+    // User mode
     bit                          RVU;
     // Address to jump when halt request
     logic [63:0]                 HaltAddress;
     // Address to jump when exception 
     logic [63:0]                 ExceptionAddress;
-    // Address stack depth
+    // Return address stack depth
     int unsigned                 RASDepth;
     // Branch target buffer entries
     int unsigned                 BTBEntries;
     // Branch history entries
     int unsigned                 BHTEntries;
-    // Base address of the debug module.
+    // Base address of the debug module
     logic [63:0]                 DmBaseAddress;
     // Tval Support Enable
     bit                          TvalEn;
-    // Number of PMP entries.
+    // Number of PMP entries
     int unsigned                 NrPMPEntries;
     // PMP CSR configuration reset values
     logic [15:0][63:0]           PMPCfgRstVal;
@@ -122,7 +122,7 @@ package config_pkg;
     logic [15:0][63:0]           PMPAddrRstVal;
     // PMP CSR read-only bits
     bit [15:0]                   PMPEntryReadOnly;
-    // NOC bus type, can be AXI or Open Piton
+    // NOC bus type
     noc_type_e                   NOCType;
     // Number of PMA non idempotent rules
     int unsigned                 NrNonIdempotentRules;
@@ -130,13 +130,13 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
     // PMA NonIdempotent region length
     logic [NrMaxRules-1:0][63:0] NonIdempotentLength;
-    // PMA Execute region rules
+    // Number of PMA regions with execute rules
     int unsigned                 NrExecuteRegionRules;
     // PMA Execute region base address
     logic [NrMaxRules-1:0][63:0] ExecuteRegionAddrBase;
     // PMA Execute region address base
     logic [NrMaxRules-1:0][63:0] ExecuteRegionLength;
-    // PMA cache region properties
+    // Number of PMA regions with cache rules
     int unsigned                 NrCachedRegionRules;
     // PMA cache region base address
     logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
@@ -144,11 +144,11 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
     // Maximum number of outstanding stores
     int unsigned                 MaxOutstandingStores;
-    // Debug mode is enabled
+    // Debug mode
     bit                          DebugEn;
-    // Non idem potency is enabled
+    // Non idem potency
     bit                          NonIdemPotenceEn;
-    // AXI burst in write is enabled
+    // AXI burst in write
     bit                          AxiBurstWriteEn;
   } cva6_cfg_t;
 

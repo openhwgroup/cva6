@@ -29,6 +29,7 @@ if __name__ == "__main__":
     parameters = {}
     FILE_IN = "../core/include/config_pkg.sv"
 
+    print("Input file " + FILE_IN)
     with open(FILE_IN, "r", encoding="utf-8") as fin:
         PRINT_ENABLE = 0
         DESCRIPT = "TO_BE_COMPLETED"
@@ -46,7 +47,6 @@ if __name__ == "__main__":
                     d.group(1), DESCRIPT, "TO_BE_COMPLETED"
                 )
                 DESCRIPT = "TO_BE_COMPLETED"
-    fin.close()
 
     FILE_IN = "../core/include/cv32a65x_config_pkg.sv"
     a = re.match(r".*\/(.*)_config_pkg.sv", FILE_IN)
@@ -60,7 +60,6 @@ if __name__ == "__main__":
             e = re.match(r"^ +([\S]*): (.*)(?:,|)\n", line)
             if e:
                 parameters[e.group(1)].value = e.group(2)
-    fin.close()
 
     with open(FILE_IN, "r", encoding="utf-8") as fin:
         for line in fin:
@@ -70,7 +69,6 @@ if __name__ == "__main__":
                     if c.group(1) in parameters[name].value:
                         parameters[name].value = c.group(2)
                         break
-    fin.close()
 
     for name in parameters:
         variable = parameters[name].value
@@ -80,7 +78,6 @@ if __name__ == "__main__":
         variable = variable.replace(")", "")
         variable = variable.replace(",", "")
         parameters[name].value = variable
-        print(name, parameters[name].value, parameters[name].description)
 
     with open(fileout, "w") as fout:
         fout.write("..\n")
@@ -101,7 +98,7 @@ if __name__ == "__main__":
         fout.write("   :header-rows: 1\n")
         fout.write("\n")
         fout.write("   * - Name\n")
-        fout.write("     - description\n")
+        fout.write("     - Description\n")
         fout.write("     - Value\n")
         for name in parameters:
             fout.write("\n")

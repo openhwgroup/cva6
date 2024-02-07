@@ -30,15 +30,14 @@ module csr_regfile
     output logic flush_o,
     // halt requested - CONTROLLER
     output logic halt_csr_o,
-    // commit acknowledge
-    // the instruction we want to commit - ID_STAGE
-    input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
+    // Instruction to be committed - ID_STAGE
+    input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     // Commit acknowledged a instruction -> increase instret CSR - COMMIT_STAGE
-    input  logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     // Address from which to start booting, mtvec is set to the same address - SUBSYSTEM
-    input  logic[riscv::VLEN-1:0] boot_addr_i,
+    input logic[riscv::VLEN-1:0] boot_addr_i,
     // Hart id in a multicore environment (reflected in a CSR) - SUBSYSTEM
-    input  logic[riscv::XLEN-1:0] hart_id_i,
+    input logic[riscv::XLEN-1:0] hart_id_i,
     // we are taking an exception
     // We've got an exception from the commit stage, take it - COMMIT_STAGE
     input exception_t ex_i,

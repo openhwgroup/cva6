@@ -29,9 +29,9 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiAddrWidth = 64;
   localparam CVA6ConfigAxiDataWidth = 64;
   localparam CVA6ConfigFetchUserEn = 0;
-  localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
+  localparam CVA6ConfigFetchUserWidth = 32;
   localparam CVA6ConfigDataUserEn = 0;
-  localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
+  localparam CVA6ConfigDataUserWidth = 32;
 
   localparam CVA6ConfigIcacheByteSize = 2048;
   localparam CVA6ConfigIcacheSetAssoc = 2;
@@ -93,10 +93,7 @@ package cva6_config_pkg;
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       ZiCondExtEn: bit'(CVA6ConfigZiCondExtEn),
       // Extended
-      RVF:
-      bit'(
-      0
-      ),
+      RVF: bit'(0),
       RVD: bit'(0),
       FpPresent: bit'(0),
       NSX: bit'(0),
@@ -123,24 +120,15 @@ package cva6_config_pkg;
       PMPEntryReadOnly: 16'd0,
       NOCType: config_pkg::NOC_TYPE_AXI4_ATOP,
       // idempotent region
-      NrNonIdempotentRules:
-      unsigned'(
-      2
-      ),
+      NrNonIdempotentRules: unsigned'(2),
       NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
       NonIdempotentLength: 1024'({64'b0, 64'b0}),
       NrExecuteRegionRules: unsigned'(3),
       //                      DRAM,          Boot ROM,   Debug Module
-      ExecuteRegionAddrBase:
-      1024'(
-      {64'h8000_0000, 64'h1_0000, 64'h0}
-      ),
+      ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
       ExecuteRegionLength: 1024'({64'h40000000, 64'h10000, 64'h1000}),
       // cached region
-      NrCachedRegionRules:
-      unsigned'(
-      1
-      ),
+      NrCachedRegionRules: unsigned'(1),
       CachedRegionAddrBase: 1024'({64'h8000_0000}),
       CachedRegionLength: 1024'({64'h40000000}),
       MaxOutstandingStores: unsigned'(7),

@@ -13,7 +13,7 @@
    :header-rows: 1
 
    * - Name
-     - description
+     - Description
      - Value
 
    * - NrCommitPorts
@@ -34,7 +34,7 @@
 
    * - AxiUserWidth
      - AXI User width
-     - CVA6ConfigXlen
+     - 32
 
    * - NrLoadBufEntries
      - TO_BE_COMPLETED
@@ -90,7 +90,7 @@
 
    * - RVF
      - Single precision FP RISC-V extension
-     - TO_BE_COMPLETED
+     - 0
 
    * - RVD
      - Double precision FP RISC-V extension
@@ -137,11 +137,11 @@
      - 0
 
    * - RVS
-     - Supervisor mode is enabled
+     - Supervisor mode
      - 0
 
    * - RVU
-     - User mode is enabled
+     - User mode
      - 0
 
    * - HaltAddress
@@ -153,7 +153,7 @@
      - 64'h808
 
    * - RASDepth
-     - Address stack depth
+     - Return address stack depth
      - 2
 
    * - BTBEntries
@@ -165,7 +165,7 @@
      - 32
 
    * - DmBaseAddress
-     - Base address of the debug module.
+     - Base address of the debug module
      - 64'h0
 
    * - TvalEn
@@ -173,7 +173,7 @@
      - 0
 
    * - NrPMPEntries
-     - Number of PMP entries.
+     - Number of PMP entries
      - 8
 
    * - PMPCfgRstVal
@@ -189,12 +189,12 @@
      - 16'd0
 
    * - NOCType
-     - NOC bus type, can be AXI or Open Piton
+     - NOC bus type
      - config_pkg::NOC_TYPE_AXI4_ATOP
 
    * - NrNonIdempotentRules
      - Number of PMA non idempotent rules
-     - TO_BE_COMPLETED
+     - 2
 
    * - NonIdempotentAddrBase
      - PMA NonIdempotent region base address
@@ -205,20 +205,20 @@
      - {64'b0 64'b0}
 
    * - NrExecuteRegionRules
-     - PMA Execute region rules
+     - Number of PMA regions with execute rules
      - 3
 
    * - ExecuteRegionAddrBase
      - PMA Execute region base address
-     - TO_BE_COMPLETED
+     - {64'h8000_0000 64'h1_0000 64'h0}
 
    * - ExecuteRegionLength
      - PMA Execute region address base
      - {64'h40000000 64'h10000 64'h1000}
 
    * - NrCachedRegionRules
-     - PMA cache region properties
-     - TO_BE_COMPLETED
+     - Number of PMA regions with cache rules
+     - 1
 
    * - CachedRegionAddrBase
      - PMA cache region base address
@@ -233,13 +233,13 @@
      - 7
 
    * - DebugEn
-     - Debug mode is enabled
+     - Debug mode
      - 0
 
    * - NonIdemPotenceEn
-     - Non idem potency is enabled
+     - Non idem potency
      - 0
 
    * - AxiBurstWriteEn
-     - AXI burst in write is enabled
+     - AXI burst in write
      - 0
