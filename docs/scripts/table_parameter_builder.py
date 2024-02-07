@@ -33,14 +33,18 @@ if __name__ == "__main__":
         print_enable = 0
         description = "TO_BE_COMPLETED"
         for line in fin:
-            if "typedef struct packed" in line: print_enable = 1
-            if "cva6_cfg_t" in line: print_enable = 0
+            if "typedef struct packed" in line:
+                print_enable = 1
+            if "cva6_cfg_t" in line:
+                print_enable = 0
             d = re.match("^ *(.*) ([\S]*);\n", line)
             h = re.match("^ *\/\/ (.*)\n", line)
             if h and print_enable:
                 description = h.group(1)
             if d and print_enable:
-                parameters[d.group(2)] = Parameter(d.group(1), description, "TO_BE_COMPLETED")
+                parameters[d.group(2)] = Parameter(
+                    d.group(1), description, "TO_BE_COMPLETED"
+                )
                 description = "TO_BE_COMPLETED"
     fin.close()
 
