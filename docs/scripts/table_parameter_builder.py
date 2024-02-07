@@ -27,44 +27,44 @@ class Parameter:
 if __name__ == "__main__":
 
     parameters = {}
-    filein = "../core/include/config_pkg.sv"
+    FILE_IN = "../core/include/config_pkg.sv"
 
-    with open(filein, "r", encoding="utf-8") as fin:
-        print_enable = 0
-        description = "TO_BE_COMPLETED"
+    with open(FILE_IN, "r", encoding="utf-8") as fin:
+        PRINT_ENABLE = 0
+        DESCRIPT = "TO_BE_COMPLETED"
         for line in fin:
             if "typedef struct packed" in line:
-                print_enable = 1
+                PRINT_ENABLE = 1
             if "cva6_cfg_t" in line:
-                print_enable = 0
-            d = re.match("^ *(.*) ([\S]*);\n", line)
-            h = re.match("^ *\/\/ (.*)\n", line)
-            if h and print_enable:
-                description = h.group(1)
-            if d and print_enable:
+                PRINT_ENABLE = 0
+            d = re.match(r"^ *(.*) ([\S]*);\n", line)
+            h = re.match(r"^ *\/\/ (.*)\n", line)
+            if h and PRINT_ENABLE:
+                DESCRIPT = h.group(1)
+            if d and PRINT_ENABLE:
                 parameters[d.group(2)] = Parameter(
-                    d.group(1), description, "TO_BE_COMPLETED"
+                    d.group(1), DESCRIPT, "TO_BE_COMPLETED"
                 )
-                description = "TO_BE_COMPLETED"
+                DESCRIPT = "TO_BE_COMPLETED"
     fin.close()
 
-    filein = "../core/include/cv32a65x_config_pkg.sv"
-    a = re.match(r".*\/(.*)_config_pkg.sv", filein)
+    FILE_IN = "../core/include/cv32a65x_config_pkg.sv"
+    a = re.match(r".*\/(.*)_config_pkg.sv", FILE_IN)
     module = a.group(1)
     fileout = "./04_cv32a65x_design/source/parameters_" + module + ".rst"
-    print("Input file " + filein)
+    print("Input file " + FILE_IN)
     print("Output file " + fileout)
 
-    with open(filein, "r", encoding="utf-8") as fin:
+    with open(FILE_IN, "r", encoding="utf-8") as fin:
         for line in fin:
-            e = re.match("^ +([\S]*): (.*)(?:,|)\n", line)
+            e = re.match(r"^ +([\S]*): (.*)(?:,|)\n", line)
             if e:
                 parameters[e.group(1)].value = e.group(2)
     fin.close()
 
-    with open(filein, "r", encoding="utf-8") as fin:
+    with open(FILE_IN, "r", encoding="utf-8") as fin:
         for line in fin:
-            c = re.match("^ +localparam ([\S]*) = (.*);\n", line)
+            c = re.match(r"^ +localparam ([\S]*) = (.*);\n", line)
             if c:
                 for name in parameters:
                     if c.group(1) in parameters[name].value:
