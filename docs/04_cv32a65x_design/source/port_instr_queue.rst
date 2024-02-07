@@ -39,19 +39,19 @@
    * - ``instr_i``
      - in
      - instr_realign
-     - logic [ariane_pkg::INSTR_PER_FETCH-1:0][31:0]
+     - logic[ariane_pkg::INSTR_PER_FETCH-1:0][31:0]
      - Instruction
 
    * - ``addr_i``
      - in
      - instr_realign
-     - logic [ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
+     - logic[ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
      - Instruction address
 
    * - ``valid_i``
      - in
      - instr_realign
-     - logic [ariane_pkg::INSTR_PER_FETCH-1:0]
+     - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
      - Instruction is valid
 
    * - ``ready_o``
@@ -63,7 +63,7 @@
    * - ``consumed_o``
      - out
      - FRONTEND
-     - logic [ariane_pkg::INSTR_PER_FETCH-1:0]
+     - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
      - Indicates instructions consummed, or popped by ID_STAGE
 
    * - ``exception_i``
@@ -75,19 +75,19 @@
    * - ``exception_addr_i``
      - in
      - CACHE
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Exception address
 
    * - ``predict_address_i``
      - in
      - FRONTEND
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Branch predict
 
    * - ``cf_type_i``
      - in
      - FRONTEND
-     - ariane_pkg::cf_t [ariane_pkg::INSTR_PER_FETCH-1:0]
+     - ariane_pkg::cf_t[ariane_pkg::INSTR_PER_FETCH-1:0]
      - Instruction predict address
 
    * - ``replay_o``
@@ -99,7 +99,7 @@
    * - ``replay_addr_o``
      - out
      - FRONTEND
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Address at which to replay the fetch
 
    * - ``fetch_entry_o``

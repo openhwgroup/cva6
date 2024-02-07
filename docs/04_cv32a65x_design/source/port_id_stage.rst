@@ -69,7 +69,7 @@
    * - ``orig_instr_o``
      - out
      - ISSUE
-     - logic [31:0]
+     - logic[31:0]
      - instruction value
 
    * - ``issue_entry_valid_o``
@@ -111,7 +111,7 @@
    * - ``frm_i``
      - in
      - CSR
-     - logic [2:0]
+     - logic[2:0]
      - Report floating point dynamic rounding mode
 
    * - ``vs_i``
@@ -123,7 +123,7 @@
    * - ``irq_i``
      - in
      - SUBSYSTEM
-     - logic [1:0]
+     - logic[1:0]
      - Level sensitive (async) interrupts
 
    * - ``irq_ctrl_i``

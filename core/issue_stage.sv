@@ -108,7 +108,7 @@ module issue_stage
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
     // TO_BE_COMPLETED - COMMIT_STAGE
-    output scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] COMMIT_STAGE,
+    output scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
     // TO_BE_COMPLETED - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     // Issue stall - PERF_COUNTERS

@@ -51,29 +51,29 @@
    * - ``address_i``
      - in
      - CACHE
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - 32-bit block address
 
    * - ``data_i``
      - in
      - CACHE
-     - logic [FETCH_WIDTH-1:0]
+     - logic[FETCH_WIDTH-1:0]
      - 32-bit block
 
    * - ``valid_o``
      - out
      - FRONTEND
-     - logic [INSTR_PER_FETCH-1:0]
+     - logic[INSTR_PER_FETCH-1:0]
      - instruction is valid
 
    * - ``addr_o``
      - out
      - FRONTEND
-     - logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
+     - logic[INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
      - Instruction address
 
    * - ``instr_o``
      - out
      - none
-     - logic [INSTR_PER_FETCH-1:0][31:0]
+     - logic[INSTR_PER_FETCH-1:0][31:0]
      - none

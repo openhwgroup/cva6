@@ -57,7 +57,7 @@
    * - ``boot_addr_i``
      - in
      - SUBSYSTEM
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Next PC when reset
 
    * - ``resolved_branch_i``
@@ -75,13 +75,13 @@
    * - ``pc_commit_i``
      - in
      - COMMIT
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Next PC when flushing pipeline
 
    * - ``epc_i``
      - in
      - CSR
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Next PC when returning from exception
 
    * - ``eret_i``
@@ -93,7 +93,7 @@
    * - ``trap_vector_base_i``
      - in
      - CSR
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Next PC when jumping into exception
 
    * - ``ex_valid_i``

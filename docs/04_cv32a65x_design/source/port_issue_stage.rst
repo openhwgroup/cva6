@@ -63,7 +63,7 @@
    * - ``orig_instr_i``
      - in
      - ID_STAGE
-     - logic [31:0]
+     - logic[31:0]
      - instruction value
 
    * - ``decoded_instr_valid_i``
@@ -105,7 +105,7 @@
    * - ``pc_o``
      - out
      - EX_STAGE
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - TO_BE_COMPLETED
 
    * - ``is_compressed_instr_o``
@@ -177,13 +177,13 @@
    * - ``fpu_fmt_o``
      - out
      - EX_STAGE
-     - logic [1:0]
+     - logic[1:0]
      - Report FP fmt field
 
    * - ``fpu_rm_o``
      - out
      - EX_STAGE
-     - logic [2:0]
+     - logic[2:0]
      - report FP rm field
 
    * - ``csr_valid_o``
@@ -207,7 +207,7 @@
    * - ``x_off_instr_o``
      - out
      - EX_STAGE
-     - logic [31:0]
+     - logic[31:0]
      - TO_BE_COMPLETED
 
    * - ``issue_instr_o``
@@ -225,7 +225,7 @@
    * - ``trans_id_i``
      - in
      - EX_STAGE
-     - logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0]
      - TO_BE_COMPLETED
 
    * - ``resolved_branch_i``
@@ -237,19 +237,19 @@
    * - ``wbdata_i``
      - in
      - EX_STAGE
-     - logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]
+     - logic[CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]
      - TO_BE_COMPLETED
 
    * - ``ex_ex_i``
      - in
      - EX_STAGE
-     - exception_t [CVA6Cfg.NrWbPorts-1:0]
+     - exception_t[CVA6Cfg.NrWbPorts-1:0]
      - exception from execute stage or CVXIF offloaded instruction
 
    * - ``wt_valid_i``
      - in
      - EX_STAGE
-     - logic [CVA6Cfg.NrWbPorts-1:0]
+     - logic[CVA6Cfg.NrWbPorts-1:0]
      - TO_BE_COMPLETED
 
    * - ``x_we_i``
@@ -261,37 +261,37 @@
    * - ``waddr_i``
      - in
      - EX_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0][4:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0][4:0]
      - TO_BE_COMPLETED
 
    * - ``wdata_i``
      - in
      - EX_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
      - TO_BE_COMPLETED
 
    * - ``we_gpr_i``
      - in
      - EX_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
      - TO_BE_COMPLETED
 
    * - ``we_fpr_i``
      - in
      - EX_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
      - TO_BE_COMPLETED
 
-   * - ``COMMIT_STAGE``
+   * - ``commit_instr_o``
      - out
      - COMMIT_STAGE
-     - scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0]
+     - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
      - TO_BE_COMPLETED
 
    * - ``commit_ack_i``
      - in
      - COMMIT_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
      - TO_BE_COMPLETED
 
    * - ``stall_issue_o``
@@ -303,11 +303,11 @@
    * - ``rvfi_issue_pointer_o``
      - out
      - SUBSYSTEM
-     - logic [TRANS_ID_BITS-1:0]
+     - logic[TRANS_ID_BITS-1:0]
      - Information dedicated to RVFI
 
    * - ``rvfi_commit_pointer_o``
      - out
      - SUBSYSTEM
-     - logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0]
      - Information dedicated to RVFI

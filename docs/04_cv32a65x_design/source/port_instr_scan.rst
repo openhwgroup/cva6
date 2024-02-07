@@ -21,7 +21,7 @@
    * - ``instr_i``
      - in
      - instr_realign
-     - logic [31:0]
+     - logic[31:0]
      - Instruction to be predecoded
 
    * - ``rvi_return_o``
@@ -57,7 +57,7 @@
    * - ``rvi_imm_o``
      - out
      - FRONTEND
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Instruction immediat
 
    * - ``rvc_branch_o``
@@ -99,5 +99,5 @@
    * - ``rvc_imm_o``
      - out
      - FRONTEND
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Instruction compressed immediat

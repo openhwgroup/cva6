@@ -45,7 +45,7 @@
    * - ``vpc_i``
      - in
      - CACHE
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Virtual PC
 
    * - ``bht_update_i``
@@ -57,5 +57,5 @@
    * - ``bht_prediction_o``
      - out
      - FRONTEND
-     - ariane_pkg::bht_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0]
+     - ariane_pkg::bht_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
      - Prediction from bht

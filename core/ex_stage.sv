@@ -159,7 +159,7 @@ module ex_stage
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [ASID_WIDTH-1:0] asid_i,
     // icache translation response - CACHE
-    input  icache_arsp_t icache_areq_i,
+    input icache_arsp_t icache_areq_i,
     // icache translation request - CACHE
     output icache_areq_t icache_areq_o,
     // TO_BE_COMPLETED - CACHE

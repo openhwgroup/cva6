@@ -60,34 +60,40 @@
      - logic
      - TO_BE_COMPLETED
 
+   * - ``commit_instr_i``
+     - in
+     - ISSUE_STAGE
+     - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
+     - The instruction we want to commit
+
    * - ``commit_ack_o``
      - out
      - ISSUE_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
      - Acknowledge that we are indeed committing
 
    * - ``waddr_o``
      - out
      - ID_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0][4:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0][4:0]
      - Register file write address
 
    * - ``wdata_o``
      - out
      - ID_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
      - Register file write data
 
    * - ``we_gpr_o``
      - out
      - ID_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
      - Register file write enable
 
    * - ``we_fpr_o``
      - out
      - ID_STAGE
-     - logic [CVA6Cfg.NrCommitPorts-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
      - Floating point register enable
 
    * - ``amo_resp_i``
@@ -99,7 +105,7 @@
    * - ``pc_o``
      - out
      - FRONTEND_CSR
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - TO_BE_COMPLETED
 
    * - ``csr_op_o``
@@ -123,7 +129,7 @@
    * - ``csr_exception_i``
      - in
      - CSR_REGFILE
-     -  exception_t
+     - exception_t
      - Exception or interrupt occurred in CSR stage (the same as commit)
 
    * - ``csr_write_fflags_o``
@@ -147,7 +153,7 @@
    * - ``commit_tran_id_o``
      - out
      - ID_STAGE
-     - logic [TRANS_ID_BITS-1:0]
+     - logic[TRANS_ID_BITS-1:0]
      - Transaction id of first commit port
 
    * - ``amo_valid_commit_o``

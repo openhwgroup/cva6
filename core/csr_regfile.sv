@@ -21,121 +21,121 @@ module csr_regfile
     parameter int unsigned           MHPMCounterNum = 6
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input logic clk_i,
+    input  logic                                                           clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input logic rst_ni,
+    input  logic                                                           rst_ni,
     // Timer threw a interrupt - SUBSYSTEM
-    input logic time_irq_i,
+    input  logic                                                           time_irq_i,
     // send a flush request out when a CSR with a side effect changes - CONTROLLER
-    output logic flush_o,
+    output logic                                                           flush_o,
     // halt requested - CONTROLLER
-    output logic halt_csr_o,
+    output logic                                                           halt_csr_o,
     // Instruction to be committed - ID_STAGE
-    input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
+    input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0]                  commit_instr_i,
     // Commit acknowledged a instruction -> increase instret CSR - COMMIT_STAGE
-    input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
+    input  logic              [CVA6Cfg.NrCommitPorts-1:0]                  commit_ack_i,
     // Address from which to start booting, mtvec is set to the same address - SUBSYSTEM
-    input logic[riscv::VLEN-1:0] boot_addr_i,
+    input  logic              [          riscv::VLEN-1:0]                  boot_addr_i,
     // Hart id in a multicore environment (reflected in a CSR) - SUBSYSTEM
-    input logic[riscv::XLEN-1:0] hart_id_i,
+    input  logic              [          riscv::XLEN-1:0]                  hart_id_i,
     // we are taking an exception
     // We've got an exception from the commit stage, take it - COMMIT_STAGE
-    input exception_t ex_i,
+    input  exception_t                                                     ex_i,
     // Operation to perform on the CSR file - COMMIT_STAGE
-    input fu_op csr_op_i,
+    input  fu_op                                                           csr_op_i,
     // Address of the register to read/write - EX_STAGE
-    input logic [11:0] csr_addr_i,
+    input  logic              [                     11:0]                  csr_addr_i,
     // Write data in - COMMIT_STAGE
-    input logic [riscv::XLEN-1:0] csr_wdata_i,
+    input  logic              [          riscv::XLEN-1:0]                  csr_wdata_i,
     // Read data out - COMMIT_STAGE
-    output logic [riscv::XLEN-1:0] csr_rdata_o,
+    output logic              [          riscv::XLEN-1:0]                  csr_rdata_o,
     // Mark the FP sate as dirty - COMMIT_STAGE
-    input logic dirty_fp_state_i,
+    input  logic                                                           dirty_fp_state_i,
     // Write fflags register e.g.: we are retiring a floating point instruction - COMMIT_STAGE
-    input  logic csr_write_fflags_i,
+    input  logic                                                           csr_write_fflags_i,
     // Mark the V state as dirty - ACC_DISPATCHER
-    input logic dirty_v_state_i,
+    input  logic                                                           dirty_v_state_i,
     // PC of instruction accessing the CSR - COMMIT_STAGE
-    input logic [riscv::VLEN-1:0] pc_i,
+    input  logic              [          riscv::VLEN-1:0]                  pc_i,
     // attempts to access a CSR without appropriate privilege - COMMIT_STAGE
-    output exception_t csr_exception_o,
+    output exception_t                                                     csr_exception_o,
     // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly - FRONTEND
-    output logic [riscv::VLEN-1:0] epc_o,
+    output logic              [          riscv::VLEN-1:0]                  epc_o,
     // Return from exception, set the PC of epc_o - FRONTEND
-    output logic eret_o,
+    output logic                                                           eret_o,
     // Output base of exception vector, correct CSR is output (mtvec, stvec) - FRONTEND
-    output logic [riscv::VLEN-1:0] trap_vector_base_o,
+    output logic              [          riscv::VLEN-1:0]                  trap_vector_base_o,
     // Current privilege level the CPU is in - EX_STAGE
-    output riscv::priv_lvl_t priv_lvl_o,
+    output riscv::priv_lvl_t                                               priv_lvl_o,
     // Imprecise FP exception from the accelerator (fcsr.fflags format) - ACC_DISPATCHER
-    input  logic [4:0] acc_fflags_ex_i,
+    input  logic              [                      4:0]                  acc_fflags_ex_i,
     // An FP exception from the accelerator occurred - ACC_DISPATCHER
-    input logic acc_fflags_ex_valid_i,
+    input  logic                                                           acc_fflags_ex_valid_i,
     // Floating point extension status - ID_STAGE
-    output riscv::xs_t fs_o,
+    output riscv::xs_t                                                     fs_o,
     // Floating-Point Accured Exceptions - COMMIT_STAGE
-    output logic [4:0] fflags_o,
+    output logic              [                      4:0]                  fflags_o,
     // Floating-Point Dynamic Rounding Mode - EX_STAGE
-    output logic [2:0] frm_o,
+    output logic              [                      2:0]                  frm_o,
     // Floating-Point Precision Control - EX_STAGE
-    output logic [6:0] fprec_o,
+    output logic              [                      6:0]                  fprec_o,
     // Vector extension status - ID_STAGE
-    output riscv::xs_t vs_o,
+    output riscv::xs_t                                                     vs_o,
     // interrupt management to id stage - ID_STAGE
-    output irq_ctrl_t irq_ctrl_o,
+    output irq_ctrl_t                                                      irq_ctrl_o,
     // enable VA translation - EX_STAGE
-    output logic en_translation_o,
+    output logic                                                           en_translation_o,
     // enable VA translation for load and stores - EX_STAGE
-    output logic en_ld_st_translation_o,
+    output logic                                                           en_ld_st_translation_o,
     // Privilege level at which load and stores should happen - EX_STAGE
-    output riscv::priv_lvl_t      ld_st_priv_lvl_o,
+    output riscv::priv_lvl_t                                               ld_st_priv_lvl_o,
     // TO_BE_COMPLETED - EX_STAGE
-    output logic sum_o,
+    output logic                                                           sum_o,
     // TO_BE_COMPLETED - EX_STAGE
-    output logic mxr_o,
+    output logic                                                           mxr_o,
     // TO_BE_COMPLETED - EX_STAGE
-    output logic [riscv::PPNW-1:0] satp_ppn_o,
+    output logic              [          riscv::PPNW-1:0]                  satp_ppn_o,
     // TO_BE_COMPLETED - EX_STAGE
-    output logic [AsidWidth-1:0] asid_o,
+    output logic              [            AsidWidth-1:0]                  asid_o,
     // external interrupt in - SUBSYSTEM
-    input logic [1:0] irq_i,
+    input  logic              [                      1:0]                  irq_i,
     // inter processor interrupt -> connected to machine mode sw - SUBSYSTEM
-    input logic ipi_i,
+    input  logic                                                           ipi_i,
     // debug request in - ID_STAGE
-    input logic debug_req_i,
+    input  logic                                                           debug_req_i,
     // TO_BE_COMPLETED - FRONTEND
-    output logic set_debug_pc_o,
+    output logic                                                           set_debug_pc_o,
     // trap virtual memory - ID_STAGE
-    output logic tvm_o,
+    output logic                                                           tvm_o,
     // timeout wait - ID_STAGE
-    output logic tw_o,
+    output logic                                                           tw_o,
     // trap sret - ID_STAGE
-    output logic tsr_o,
+    output logic                                                           tsr_o,
     // we are in debug mode -> that will change some decoding - EX_STAGE
-    output logic debug_mode_o,
+    output logic                                                           debug_mode_o,
     // we are in single-step mode - COMMIT_STAGE
-    output logic single_step_o,
+    output logic                                                           single_step_o,
     // L1 ICache Enable - CACHE
-    output logic icache_en_o,
+    output logic                                                           icache_en_o,
     // L1 DCache Enable - CACHE
-    output logic dcache_en_o,
+    output logic                                                           dcache_en_o,
     // Accelerator memory consistent mode - ACC_DISPATCHER
-    output logic acc_cons_en_o,
+    output logic                                                           acc_cons_en_o,
     // Performance Counter
     // read/write address to performance counter module - PERF_COUNTERS
-    output logic [11:0] perf_addr_o,
+    output logic              [                     11:0]                  perf_addr_o,
     // write data to performance counter module - PERF_COUNTERS
-    output logic [riscv::XLEN-1:0] perf_data_o,
+    output logic              [          riscv::XLEN-1:0]                  perf_data_o,
     // read data from performance counter module - PERF_COUNTERS
-    input logic [riscv::XLEN-1:0] perf_data_i,
+    input  logic              [          riscv::XLEN-1:0]                  perf_data_i,
     // TO_BE_COMPLETED - PERF_COUNTERS
-    output logic perf_we_o,
+    output logic                                                           perf_we_o,
     // PMP configuration containing pmpcfg for max 16 PMPs - ACC_DISPATCHER
-    output riscv::pmpcfg_t [15:0] pmpcfg_o,
+    output riscv::pmpcfg_t    [                     15:0]                  pmpcfg_o,
     // PMP addresses - ACC_DISPATCHER
-    output logic [15:0][riscv::PLEN-3:0] pmpaddr_o,
+    output logic              [                     15:0][riscv::PLEN-3:0] pmpaddr_o,
     // TO_BE_COMPLETED - PERF_COUNTERS
-    output logic [31:0] mcountinhibit_o
+    output logic              [                     31:0]                  mcountinhibit_o
 );
   // internal signal to keep track of access exceptions
   logic read_access_exception, update_access_exception, privilege_violation;

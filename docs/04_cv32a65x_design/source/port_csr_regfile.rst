@@ -48,16 +48,28 @@
      - logic
      - halt requested
 
+   * - ``commit_instr_i``
+     - in
+     - ID_STAGE
+     - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
+     - Instruction to be committed
+
+   * - ``commit_ack_i``
+     - in
+     - COMMIT_STAGE
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
+     - Commit acknowledged a instruction -> increase instret CSR
+
    * - ``boot_addr_i``
      - in
      - SUBSYSTEM
-     -  logic[riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Address from which to start booting, mtvec is set to the same address
 
    * - ``hart_id_i``
      - in
      - SUBSYSTEM
-     -  logic[riscv::XLEN-1:0]
+     - logic[riscv::XLEN-1:0]
      - Hart id in a multicore environment (reflected in a CSR)
 
    * - ``ex_i``
@@ -75,19 +87,19 @@
    * - ``csr_addr_i``
      - in
      - EX_STAGE
-     - logic [11:0]
+     - logic[11:0]
      - Address of the register to read/write
 
    * - ``csr_wdata_i``
      - in
      - COMMIT_STAGE
-     - logic [riscv::XLEN-1:0]
+     - logic[riscv::XLEN-1:0]
      - Write data in
 
    * - ``csr_rdata_o``
      - out
      - COMMIT_STAGE
-     - logic [riscv::XLEN-1:0]
+     - logic[riscv::XLEN-1:0]
      - Read data out
 
    * - ``dirty_fp_state_i``
@@ -99,7 +111,7 @@
    * - ``csr_write_fflags_i``
      - in
      - COMMIT_STAGE
-     -  logic
+     - logic
      - Write fflags register e.g.: we are retiring a floating point instruction
 
    * - ``dirty_v_state_i``
@@ -111,7 +123,7 @@
    * - ``pc_i``
      - in
      - COMMIT_STAGE
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - PC of instruction accessing the CSR
 
    * - ``csr_exception_o``
@@ -123,7 +135,7 @@
    * - ``epc_o``
      - out
      - FRONTEND
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
 
    * - ``eret_o``
@@ -135,7 +147,7 @@
    * - ``trap_vector_base_o``
      - out
      - FRONTEND
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Output base of exception vector, correct CSR is output (mtvec, stvec)
 
    * - ``priv_lvl_o``
@@ -143,6 +155,12 @@
      - EX_STAGE
      - riscv::priv_lvl_t
      - Current privilege level the CPU is in
+
+   * - ``acc_fflags_ex_i``
+     - in
+     - ACC_DISPATCHER
+     - logic[4:0]
+     - Imprecise FP exception from the accelerator (fcsr.fflags format)
 
    * - ``acc_fflags_ex_valid_i``
      - in
@@ -159,19 +177,19 @@
    * - ``fflags_o``
      - out
      - COMMIT_STAGE
-     - logic [4:0]
+     - logic[4:0]
      - Floating-Point Accured Exceptions
 
    * - ``frm_o``
      - out
      - EX_STAGE
-     - logic [2:0]
+     - logic[2:0]
      - Floating-Point Dynamic Rounding Mode
 
    * - ``fprec_o``
      - out
      - EX_STAGE
-     - logic [6:0]
+     - logic[6:0]
      - Floating-Point Precision Control
 
    * - ``vs_o``
@@ -198,6 +216,12 @@
      - logic
      - enable VA translation for load and stores
 
+   * - ``ld_st_priv_lvl_o``
+     - out
+     - EX_STAGE
+     - riscv::priv_lvl_t
+     - Privilege level at which load and stores should happen
+
    * - ``sum_o``
      - out
      - EX_STAGE
@@ -213,19 +237,19 @@
    * - ``satp_ppn_o``
      - out
      - EX_STAGE
-     - logic [riscv::PPNW-1:0]
+     - logic[riscv::PPNW-1:0]
      - TO_BE_COMPLETED
 
    * - ``asid_o``
      - out
      - EX_STAGE
-     - logic [AsidWidth-1:0]
+     - logic[AsidWidth-1:0]
      - TO_BE_COMPLETED
 
    * - ``irq_i``
      - in
      - SUBSYSTEM
-     - logic [1:0]
+     - logic[1:0]
      - external interrupt in
 
    * - ``ipi_i``
@@ -297,19 +321,19 @@
    * - ``perf_addr_o``
      - out
      - PERF_COUNTERS
-     - logic [11:0]
+     - logic[11:0]
      - read/write address to performance counter module
 
    * - ``perf_data_o``
      - out
      - PERF_COUNTERS
-     - logic [riscv::XLEN-1:0]
+     - logic[riscv::XLEN-1:0]
      - write data to performance counter module
 
    * - ``perf_data_i``
      - in
      - PERF_COUNTERS
-     - logic [riscv::XLEN-1:0]
+     - logic[riscv::XLEN-1:0]
      - read data from performance counter module
 
    * - ``perf_we_o``
@@ -321,17 +345,17 @@
    * - ``pmpcfg_o``
      - out
      - ACC_DISPATCHER
-     - riscv::pmpcfg_t [15:0]
+     - riscv::pmpcfg_t[15:0]
      - PMP configuration containing pmpcfg for max 16 PMPs
 
    * - ``pmpaddr_o``
      - out
      - ACC_DISPATCHER
-     - logic [15:0][riscv::PLEN-3:0]
+     - logic[15:0][riscv::PLEN-3:0]
      - PMP addresses
 
    * - ``mcountinhibit_o``
      - out
      - PERF_COUNTERS
-     - logic [31:0]
+     - logic[31:0]
      - TO_BE_COMPLETED

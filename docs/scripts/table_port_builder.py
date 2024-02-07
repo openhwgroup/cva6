@@ -56,16 +56,18 @@ if __name__ == "__main__":
             description = "none"
             connection = "none"
             for line in fin:
-                e = re.match(r"^ +(?:(in|out))put ([\S]*(?: [\S]*|)) ([\S]*)\n", line)
+                e = re.match(r"^ +(?:(in|out))put +([\S]*(?: +.* *|)) ([\S]*)\n", line)
                 d = re.match(r"^ +\/\/ (.*) - ([\S]*)\n", line)
                 if d:
                     description = d.group(1)
                     connection = d.group(2)
                 if e:
                     name = e.group(3)
-                    name = name.split(",")
+                    name = name.replace(",", "")
+                    data_type = e.group(2)
+                    data_type = data_type.replace(" ", "")
                     ports.append(
-                        PortIO(name[0], e.group(1), e.group(2), description, connection)
+                        PortIO(name, e.group(1), data_type, description, connection)
                     )
                     description = "none"
                     connection = "none"

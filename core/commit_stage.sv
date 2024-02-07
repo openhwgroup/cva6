@@ -33,7 +33,7 @@ module commit_stage
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic single_step_i,
     // The instruction we want to commit - ISSUE_STAGE
-    input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
+    input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     // Acknowledge that we are indeed committing - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_o,
     // Register file write address - ID_STAGE
@@ -55,7 +55,7 @@ module commit_stage
     // Data to read from CSR - CSR_REGFILE
     input riscv::xlen_t csr_rdata_i,
     // Exception or interrupt occurred in CSR stage (the same as commit) - CSR_REGFILE
-    input  exception_t csr_exception_i,
+    input exception_t csr_exception_i,
     // Write the fflags CSR - CSR_REGFILE
     output logic csr_write_fflags_o,
     // Commit the pending store - EX_STAGE

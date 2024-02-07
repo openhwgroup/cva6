@@ -45,13 +45,13 @@
    * - ``rs1_forwarding_i``
      - in
      - ID_STAGE
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - TO_BE_COMPLETED
 
    * - ``rs2_forwarding_i``
      - in
      - ID_STAGE
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - TO_BE_COMPLETED
 
    * - ``fu_data_i``
@@ -63,7 +63,7 @@
    * - ``pc_i``
      - in
      - ID_STAGE
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - PC of the current instruction
 
    * - ``is_compressed_instr_i``
@@ -81,7 +81,7 @@
    * - ``flu_trans_id_o``
      - out
      - ID_STAGE
-     - logic [TRANS_ID_BITS-1:0]
+     - logic[TRANS_ID_BITS-1:0]
      - ID of the scoreboard entry at which a=to write back
 
    * - ``flu_exception_o``
@@ -141,7 +141,7 @@
    * - ``csr_addr_o``
      - out
      - CSR_REGISTERS
-     - logic [11:0]
+     - logic[11:0]
      - TO_BE_COMPLETED
 
    * - ``csr_commit_i``
@@ -183,7 +183,7 @@
    * - ``load_trans_id_o``
      - out
      - ID_STAGE
-     - logic [TRANS_ID_BITS-1:0]
+     - logic[TRANS_ID_BITS-1:0]
      - TO_BE_COMPLETED
 
    * - ``load_exception_o``
@@ -207,7 +207,7 @@
    * - ``store_trans_id_o``
      - out
      - ID_STAGE
-     - logic [TRANS_ID_BITS-1:0]
+     - logic[TRANS_ID_BITS-1:0]
      - TO_BE_COMPLETED
 
    * - ``store_exception_o``
@@ -231,7 +231,7 @@
    * - ``commit_tran_id_i``
      - in
      - COMMIT_STAGE
-     - logic [TRANS_ID_BITS-1:0]
+     - logic[TRANS_ID_BITS-1:0]
      - TO_BE_COMPLETED
 
    * - ``stall_st_pending_i``
@@ -267,31 +267,31 @@
    * - ``fpu_fmt_i``
      - in
      - ID_STAGE
-     - logic [1:0]
+     - logic[1:0]
      - report FP format
 
    * - ``fpu_rm_i``
      - in
      - ID_STAGE
-     - logic [2:0]
+     - logic[2:0]
      - FP rm
 
    * - ``fpu_frm_i``
      - in
      - ID_STAGE
-     - logic [2:0]
+     - logic[2:0]
      - FP frm
 
    * - ``fpu_prec_i``
      - in
      - CSR_REGFILE
-     - logic [6:0]
+     - logic[6:0]
      - FP precision control
 
    * - ``fpu_trans_id_o``
      - out
      - ID_STAGE
-     - logic [TRANS_ID_BITS-1:0]
+     - logic[TRANS_ID_BITS-1:0]
      - TO_BE_COMPLETED
 
    * - ``fpu_result_o``
@@ -327,13 +327,13 @@
    * - ``x_off_instr_i``
      - in
      - ID_STAGE
-     - logic [31:0]
+     - logic[31:0]
      - TO_BE_COMPLETED
 
    * - ``x_trans_id_o``
      - out
      - ID_STAGE
-     - logic [TRANS_ID_BITS-1:0]
+     - logic[TRANS_ID_BITS-1:0]
      - TO_BE_COMPLETED
 
    * - ``x_exception_o``
@@ -423,19 +423,19 @@
    * - ``satp_ppn_i``
      - in
      - CSR_REGFILE
-     - logic [riscv::PPNW-1:0]
+     - logic[riscv::PPNW-1:0]
      - TO_BE_COMPLETED
 
    * - ``asid_i``
      - in
      - CSR_REGFILE
-     - logic [ASID_WIDTH-1:0]
+     - logic[ASID_WIDTH-1:0]
      - TO_BE_COMPLETED
 
    * - ``icache_areq_i``
      - in
      - CACHE
-     -  icache_arsp_t
+     - icache_arsp_t
      - icache translation response
 
    * - ``icache_areq_o``
@@ -447,13 +447,13 @@
    * - ``dcache_req_ports_i``
      - in
      - CACHE
-     - dcache_req_o_t [2:0]
+     - dcache_req_o_t[2:0]
      - TO_BE_COMPLETED
 
    * - ``dcache_req_ports_o``
      - out
      - CACHE
-     - dcache_req_i_t [2:0]
+     - dcache_req_i_t[2:0]
      - TO_BE_COMPLETED
 
    * - ``dcache_wbuffer_empty_i``
@@ -495,13 +495,13 @@
    * - ``pmpcfg_i``
      - in
      - CSR_REGFILE
-     - riscv::pmpcfg_t [15:0]
+     - riscv::pmpcfg_t[15:0]
      - Report the PMP configuration
 
    * - ``pmpaddr_i``
      - in
      - CSR_REGFILE
-     - logic [15:0][riscv::PLEN-3:0]
+     - logic[15:0][riscv::PLEN-3:0]
      - Report the PMP addresses
 
    * - ``rvfi_lsu_ctrl_o``
