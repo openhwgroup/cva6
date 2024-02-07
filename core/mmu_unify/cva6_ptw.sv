@@ -186,7 +186,7 @@ module cva6_ptw import ariane_pkg::*; #(
             if(shared_tlb_access_i[HYP_EXT] && HYP_EXT==1) begin
                 shared_tlb_update_o.content[y] = y==0 ? pte[HYP_EXT] | (global_mapping_q << 5) : pte[0];
             end else begin
-                shared_tlb_update_o.content[y] = y==0 ? pte[0] | (global_mapping_q << 5) : '0;
+                shared_tlb_update_o.content[y] = y==0 ? (pte[0] | (global_mapping_q << 5)) : '0;
             end
         end
         // output the correct ASIDs
@@ -497,7 +497,7 @@ module cva6_ptw import ariane_pkg::*; #(
             end
             // Propagate error to MMU/LSU
             PROPAGATE_ERROR: begin
-                state_d     = IDLE;
+                state_d     = LATENCY;
                 ptw_error_o[0] = 1'b1;
                 if(HYP_EXT==1) begin
                     ptw_error_o[HYP_EXT]   = (ptw_stage_q != S_STAGE) ? 1'b1 : 1'b0;
