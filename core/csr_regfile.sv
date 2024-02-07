@@ -2060,7 +2060,7 @@ module csr_regfile
   // ----------------------
   always_comb begin : exception_ctrl
     csr_exception_o = {
-      {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, 1'b0, 1'b0
+      {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.GPLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, 1'b0, 1'b0
     };
     // ----------------------------------
     // Illegal Access (decode exception)

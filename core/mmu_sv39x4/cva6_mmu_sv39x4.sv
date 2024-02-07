@@ -300,7 +300,7 @@ module cva6_mmu_sv39x4
         icache_areq_o.fetch_exception = {
           riscv::INSTR_ACCESS_FAULT,
           {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-          {{riscv::XLEN{1'b0}}},
+          {riscv::GPLEN{1'b0}},
           {{riscv::XLEN{1'b0}}},
           v_i,
           1'b1
@@ -332,7 +332,7 @@ module cva6_mmu_sv39x4
           icache_areq_o.fetch_exception = {
             riscv::INSTR_GUEST_PAGE_FAULT,
             {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-            {{riscv::XLEN - CVA6Cfg.GPLEN{1'b0}}, itlb_gpaddr[CVA6Cfg.GPLEN-1:0]},
+            itlb_gpaddr[CVA6Cfg.GPLEN-1:0],
             {riscv::XLEN{1'b0}},
             v_i,
             1'b1
@@ -343,7 +343,7 @@ module cva6_mmu_sv39x4
           icache_areq_o.fetch_exception = {
             riscv::INSTR_PAGE_FAULT,
             {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-            {riscv::XLEN{1'b0}},
+            {riscv::GPLEN{1'b0}},
             {riscv::XLEN{1'b0}},
             v_i,
             1'b1
@@ -351,8 +351,8 @@ module cva6_mmu_sv39x4
         end else if (!pmp_instr_allow) begin
           icache_areq_o.fetch_exception = {
             riscv::INSTR_ACCESS_FAULT,
-            {{riscv::XLEN - riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-            {riscv::XLEN{1'b0}},
+            {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+            {riscv::GPLEN{1'b0}},
             {riscv::XLEN{1'b0}},
             v_i,
             1'b1
@@ -370,7 +370,7 @@ module cva6_mmu_sv39x4
             icache_areq_o.fetch_exception = {
               riscv::INSTR_GUEST_PAGE_FAULT,
               {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr},
-              {{riscv::XLEN - CVA6Cfg.GPLEN{1'b0}}, ptw_bad_gpaddr},
+               ptw_bad_gpaddr,
               (ptw_err_at_g_int_st ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
               v_i,
               1'b1
@@ -379,7 +379,7 @@ module cva6_mmu_sv39x4
             icache_areq_o.fetch_exception = {
               riscv::INSTR_PAGE_FAULT,
               {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr},
-              {riscv::XLEN{1'b0}},
+              {riscv::GPLEN{1'b0}},
               {riscv::XLEN{1'b0}},
               v_i,
               1'b1
@@ -390,7 +390,7 @@ module cva6_mmu_sv39x4
           icache_areq_o.fetch_exception = {
             riscv::INSTR_ACCESS_FAULT,
             {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr},
-            {riscv::XLEN{1'b0}},
+            {riscv::GPLEN{1'b0}},
             {riscv::XLEN{1'b0}},
             v_i,
             1'b1
@@ -403,7 +403,7 @@ module cva6_mmu_sv39x4
       icache_areq_o.fetch_exception = {
         riscv::INSTR_ACCESS_FAULT,
         {{riscv::XLEN - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr},
-        {riscv::XLEN{1'b0}},
+        {riscv::GPLEN{1'b0}},
         {riscv::XLEN{1'b0}},
         v_i,
         1'b1
@@ -437,7 +437,7 @@ module cva6_mmu_sv39x4
   // Data Interface
   //-----------------------
   logic [riscv::VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
-  logic [riscv::VLEN-1:0] lsu_gpaddr_n, lsu_gpaddr_q;
+  logic [riscv::GPLEN-1:0] lsu_gpaddr_n, lsu_gpaddr_q;
   logic [riscv::XLEN-1:0] lsu_tinst_n, lsu_tinst_q;
   logic hs_ld_st_inst_n, hs_ld_st_inst_q;
   riscv::pte_t dtlb_pte_n, dtlb_pte_q;
@@ -524,7 +524,7 @@ module cva6_mmu_sv39x4
             lsu_exception_o = {
               riscv::STORE_GUEST_PAGE_FAULT,
               {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-              {{riscv::XLEN - CVA6Cfg.GPLEN{1'b0}}, lsu_gpaddr_q},
+              lsu_gpaddr_q,
               {riscv::XLEN{1'b0}},
               ld_st_v_i,
               1'b1
@@ -533,7 +533,7 @@ module cva6_mmu_sv39x4
             lsu_exception_o = {
               riscv::STORE_PAGE_FAULT,
               {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-              {riscv::XLEN{1'b0}},
+              {riscv::GPLEN{1'b0}},
               lsu_tinst_q,
               ld_st_v_i,
               1'b1
@@ -543,7 +543,7 @@ module cva6_mmu_sv39x4
             lsu_exception_o = {
               riscv::ST_ACCESS_FAULT,
               {{riscv::XLEN - riscv::PLEN{1'b0}}, lsu_paddr_o},
-              {riscv::XLEN{1'b0}},
+              {riscv::GPLEN{1'b0}},
               lsu_tinst_q,
               ld_st_v_i,
               1'b1
@@ -556,7 +556,7 @@ module cva6_mmu_sv39x4
             lsu_exception_o = {
               riscv::LOAD_GUEST_PAGE_FAULT,
               {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-              {{riscv::XLEN - CVA6Cfg.GPLEN{1'b0}}, lsu_gpaddr_q},
+              lsu_gpaddr_q,
               {riscv::XLEN{1'b0}},
               ld_st_v_i,
               1'b1
@@ -566,7 +566,7 @@ module cva6_mmu_sv39x4
             lsu_exception_o = {
               riscv::LOAD_PAGE_FAULT,
               {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-              {riscv::XLEN{1'b0}},
+              {riscv::GPLEN{1'b0}},
               lsu_tinst_q,
               ld_st_v_i,
               1'b1
@@ -576,7 +576,7 @@ module cva6_mmu_sv39x4
             lsu_exception_o = {
               riscv::LD_ACCESS_FAULT,
               {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q},
-              {riscv::XLEN{1'b0}},
+              {riscv::GPLEN{1'b0}},
               lsu_tinst_q,
               ld_st_v_i,
               1'b1
@@ -600,7 +600,7 @@ module cva6_mmu_sv39x4
               lsu_exception_o = {
                 riscv::STORE_GUEST_PAGE_FAULT,
                 {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-                {{riscv::XLEN - CVA6Cfg.GPLEN{1'b0}}, ptw_bad_gpaddr},
+                ptw_bad_gpaddr,
                 (ptw_err_at_g_int_st ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
                 ld_st_v_i,
                 1'b1
@@ -609,7 +609,7 @@ module cva6_mmu_sv39x4
               lsu_exception_o = {
                 riscv::STORE_PAGE_FAULT,
                 {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-                {riscv::XLEN{1'b0}},
+                {riscv::GPLEN{1'b0}},
                 lsu_tinst_q,
                 ld_st_v_i,
                 1'b1
@@ -620,7 +620,7 @@ module cva6_mmu_sv39x4
               lsu_exception_o = {
                 riscv::LOAD_GUEST_PAGE_FAULT,
                 {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-                {{riscv::XLEN - CVA6Cfg.GPLEN{1'b0}}, ptw_bad_gpaddr},
+                ptw_bad_gpaddr,
                 (ptw_err_at_g_int_st ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
                 ld_st_v_i,
                 1'b1
@@ -629,7 +629,7 @@ module cva6_mmu_sv39x4
               lsu_exception_o = {
                 riscv::LOAD_PAGE_FAULT,
                 {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-                {riscv::XLEN{1'b0}},
+                {riscv::GPLEN{1'b0}},
                 lsu_tinst_q,
                 ld_st_v_i,
                 1'b1
@@ -645,7 +645,7 @@ module cva6_mmu_sv39x4
           lsu_exception_o = {
             riscv::LD_ACCESS_FAULT,
             {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-            {riscv::XLEN{1'b0}},
+            {riscv::GPLEN{1'b0}},
             lsu_tinst_q,
             ld_st_v_i,
             1'b1
@@ -658,7 +658,7 @@ module cva6_mmu_sv39x4
         lsu_exception_o = {
           riscv::ST_ACCESS_FAULT,
           {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-          {riscv::XLEN{1'b0}},
+          {riscv::GPLEN{1'b0}},
           lsu_tinst_q,
           ld_st_v_i,
           1'b1
@@ -667,7 +667,7 @@ module cva6_mmu_sv39x4
         lsu_exception_o = {
           riscv::LD_ACCESS_FAULT,
           {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr},
-          {riscv::XLEN{1'b0}},
+          {riscv::GPLEN{1'b0}},
           lsu_tinst_q,
           ld_st_v_i,
           1'b1
