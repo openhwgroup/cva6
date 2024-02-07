@@ -44,6 +44,7 @@ module cva6_rvfi
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVD) << 3)  // D - Double precision floating-point extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVF) << 5)  // F - Single precision floating-point extension
+  | (CVA6Cfg.XLEN'(CVA6Cfg.RVH) << 7)  // H - Hypervisor extension
   | (CVA6Cfg.XLEN'(1) << 8)  // I - RV32I/64I/128I base ISA
   | (CVA6Cfg.XLEN'(1) << 12)  // M - Integer Multiply/Divide extension
   | (CVA6Cfg.XLEN'(0) << 13)  // N - User level interrupts supported
