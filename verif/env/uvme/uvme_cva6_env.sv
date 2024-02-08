@@ -370,6 +370,8 @@ function void uvme_cva6_env_c::connect_coverage_model();
    end
    if (cfg.cov_isa_model_enabled) begin
       isacov_agent.monitor.ap.connect(cov_model.isa_covg.mon_trn_fifo.analysis_export);
+      isacov_agent.monitor.ap.connect(cov_model.illegal_covg.mon_trn_fifo.analysis_export);
+      isacov_agent.monitor.ap.connect(cov_model.exception_covg.mon_trn_fifo.analysis_export);
    end
 
    clknrst_agent.mon_ap.connect(cov_model.reset_export);
