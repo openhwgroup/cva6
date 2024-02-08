@@ -20,111 +20,173 @@ module ex_stage
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned ASID_WIDTH = 1
 ) (
-    input logic clk_i,        // Clock
-    input logic rst_ni,       // Asynchronous reset active low
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Fetch flush request - CONTROLLER
     input logic flush_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
     input logic debug_mode_i,
-
+    // TO_BE_COMPLETED - ID_STAGE
     input logic [riscv::VLEN-1:0] rs1_forwarding_i,
+    // TO_BE_COMPLETED - ID_STAGE
     input logic [riscv::VLEN-1:0] rs2_forwarding_i,
+    // TO_BE_COMPLETED - ID_STAGE
     input fu_data_t fu_data_i,
-    input logic [riscv::VLEN-1:0] pc_i,  // PC of current instruction
-    input logic is_compressed_instr_i,  // we need to know if this was a compressed instruction
-                                        // in order to calculate the next PC on a mis-predict
-    // Fixed latency unit(s)
+    // PC of the current instruction - ID_STAGE
+    input logic [riscv::VLEN-1:0] pc_i,
+    // Report whether isntruction is compressed - ID_STAGE
+    input logic is_compressed_instr_i,
+    // TO_BE_COMPLETED - ID_STAGE
     output riscv::xlen_t flu_result_o,
-    output logic [TRANS_ID_BITS-1:0]               flu_trans_id_o,        // ID of scoreboard entry at which to write back
+    // ID of the scoreboard entry at which a=to write back - ID_STAGE
+    output logic [TRANS_ID_BITS-1:0] flu_trans_id_o,
+    // TO_BE_COMPLETED - ID_STAGE
     output exception_t flu_exception_o,
-    output logic flu_ready_o,  // FLU is ready
-    output logic flu_valid_o,  // FLU result is valid
-    // Branches and Jumps
-    // ALU 1
-    input logic alu_valid_i,  // Output is valid
-    // Branch Unit
-    input logic branch_valid_i,  // we are using the branch unit
+    // FLU is ready - ID_STAGE
+    output logic flu_ready_o,
+    // FLU result is valid - ID_STAGE
+    output logic flu_valid_o,
+    // ALU result is valid - ID_STAGE
+    input logic alu_valid_i,
+    // Branch unit result is valid - ID_STAGE
+    input logic branch_valid_i,
+    // TO_BE_COMPLETED - ID_STAGE
     input branchpredict_sbe_t branch_predict_i,
-    output bp_resolve_t resolved_branch_o,  // the branch engine uses the write back from the ALU
-    output logic resolve_branch_o,  // to ID signaling that we resolved the branch
-    // CSR
+    // The branch engine uses the write back from the ALU - CONTROLLER PERF_COUNTER FRONTEND ISSUE_STAGE
+    output bp_resolve_t resolved_branch_o,
+    // ID signaling that we resolved the branch - ID_STAGE
+    output logic resolve_branch_o,
+    // TO_BE_COMPLETED - ID_STAGE
     input logic csr_valid_i,
+    // TO_BE_COMPLETED - CSR_REGISTERS
     output logic [11:0] csr_addr_o,
+    // TO_BE_COMPLETED - COMMIT_STAGE
     input logic csr_commit_i,
-    // MULT
-    input logic mult_valid_i,  // Output is valid
-    // LSU
-    output logic lsu_ready_o,  // FU is ready
-    input logic lsu_valid_i,  // Input is valid
-
-    output logic                             load_valid_o,
-    output riscv::xlen_t                     load_result_o,
-    output logic         [TRANS_ID_BITS-1:0] load_trans_id_o,
-    output exception_t                       load_exception_o,
-    output logic                             store_valid_o,
-    output riscv::xlen_t                     store_result_o,
-    output logic         [TRANS_ID_BITS-1:0] store_trans_id_o,
-    output exception_t                       store_exception_o,
-
+    // MULT result is valid - ID_STAGE
+    input logic mult_valid_i,
+    // FU is ready - ID_STAGE
+    output logic lsu_ready_o,
+    // LSU result is valid - ID_STAGE
+    input logic lsu_valid_i,
+    // TO_BE_COMPLETED - ID_STAGE
+    output logic load_valid_o,
+    // TO_BE_COMPLETED - ID_STAGE
+    output riscv::xlen_t load_result_o,
+    // TO_BE_COMPLETED - ID_STAGE
+    output logic [TRANS_ID_BITS-1:0] load_trans_id_o,
+    // TO_BE_COMPLETED - ID_STAGE
+    output exception_t load_exception_o,
+    // TO_BE_COMPLETED - ID_STAGE
+    output logic store_valid_o,
+    // TO_BE_COMPLETED - ID_STAGE
+    output riscv::xlen_t store_result_o,
+    // TO_BE_COMPLETED - ID_STAGE
+    output logic [TRANS_ID_BITS-1:0] store_trans_id_o,
+    // TO_BE_COMPLETED - ID_STAGE
+    output exception_t store_exception_o,
+    // TO_BE_COMPLETED - COMMIT_STAGE
     input logic lsu_commit_i,
-    output logic lsu_commit_ready_o,  // commit queue is ready to accept another commit request
+    // Commit queue is ready to accept another commit request - COMMIT_STAGE
+    output logic lsu_commit_ready_o,
+    // TO_BE_COMPLETED - COMMIT_STAGE
     input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // TO_BE_COMPLETED - ACC_DISPATCHER
     input logic stall_st_pending_i,
+    // TO_BE_COMPLETED - COMMIT_STAGE
     output logic no_st_pending_o,
+    // TO_BE_COMPLETED - COMMIT_STAGE
     input logic amo_valid_commit_i,
-    // FPU
-    output logic fpu_ready_o,  // FU is ready
-    input logic fpu_valid_i,  // Output is valid
-    input logic [1:0] fpu_fmt_i,  // FP format
-    input logic [2:0] fpu_rm_i,  // FP rm
-    input logic [2:0] fpu_frm_i,  // FP frm csr
-    input logic [6:0] fpu_prec_i,  // FP precision control
+    // FU is ready - ID_STAGE
+    output logic fpu_ready_o,
+    // Output is ready - ID_STAGE
+    input logic fpu_valid_i,
+    // report FP format - ID_STAGE
+    input logic [1:0] fpu_fmt_i,
+    // FP rm - ID_STAGE
+    input logic [2:0] fpu_rm_i,
+    // FP frm - ID_STAGE
+    input logic [2:0] fpu_frm_i,
+    // FP precision control - CSR_REGFILE
+    input logic [6:0] fpu_prec_i,
+    // TO_BE_COMPLETED - ID_STAGE
     output logic [TRANS_ID_BITS-1:0] fpu_trans_id_o,
+    // TO_BE_COMPLETED - ID_STAGE
     output riscv::xlen_t fpu_result_o,
+    // TO_BE_COMPLETED - ID_STAGE
     output logic fpu_valid_o,
+    // TO_BE_COMPLETED - ID_STAGE
     output exception_t fpu_exception_o,
-    // CoreV-X-Interface
+    // TO_BE_COMPLETED - ID_STAGE
     input logic x_valid_i,
+    // TO_BE_COMPLETED - ID_STAGE
     output logic x_ready_o,
+    // TO_BE_COMPLETED - ID_STAGE
     input logic [31:0] x_off_instr_i,
+    // TO_BE_COMPLETED - ID_STAGE
     output logic [TRANS_ID_BITS-1:0] x_trans_id_o,
+    // TO_BE_COMPLETED - ID_STAGE
     output exception_t x_exception_o,
+    // TO_BE_COMPLETED - ID_STAGE
     output riscv::xlen_t x_result_o,
+    // TO_BE_COMPLETED - ID_STAGE
     output logic x_valid_o,
+    // TO_BE_COMPLETED - ID_STAGE
     output logic x_we_o,
+    // TO_BE_COMPLETED - SUBSYSTEM
     output cvxif_pkg::cvxif_req_t cvxif_req_o,
+    // TO_BE_COMPLETED - SUBSYSTEM
     input cvxif_pkg::cvxif_resp_t cvxif_resp_i,
-    input logic acc_valid_i,  // Output is valid
-    // Memory Management
+    // TO_BE_COMPLETED - ACC_DISPATCHER
+    input logic acc_valid_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
     input logic enable_translation_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
     input logic en_ld_st_translation_i,
+    // TO_BE_COMPLETED - CONTROLLER
     input logic flush_tlb_i,
-
-    input  riscv::priv_lvl_t                   priv_lvl_i,
-    input  riscv::priv_lvl_t                   ld_st_priv_lvl_i,
-    input  logic                               sum_i,
-    input  logic                               mxr_i,
-    input  logic             [riscv::PPNW-1:0] satp_ppn_i,
-    input  logic             [ ASID_WIDTH-1:0] asid_i,
-    // icache translation requests
-    input  icache_arsp_t                       icache_areq_i,
-    output icache_areq_t                       icache_areq_o,
-
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input riscv::priv_lvl_t priv_lvl_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input riscv::priv_lvl_t ld_st_priv_lvl_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input logic sum_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input logic mxr_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input logic [riscv::PPNW-1:0] satp_ppn_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input logic [ASID_WIDTH-1:0] asid_i,
+    // icache translation response - CACHE
+    input icache_arsp_t icache_areq_i,
+    // icache translation request - CACHE
+    output icache_areq_t icache_areq_o,
+    // TO_BE_COMPLETED - CACHE
     // interface to dcache
     input dcache_req_o_t [2:0] dcache_req_ports_i,
+    // TO_BE_COMPLETED - CACHE
     output dcache_req_i_t [2:0] dcache_req_ports_o,
+    // TO_BE_COMPLETED - CACHE
     input logic dcache_wbuffer_empty_i,
+    // TO_BE_COMPLETED - CACHE
     input logic dcache_wbuffer_not_ni_i,
-    output amo_req_t amo_req_o,  // request to cache subsytem
-    input amo_resp_t amo_resp_i,  // response from cache subsystem
-    // Performance counters
+    // AMO request - CACHE
+    output amo_req_t amo_req_o,
+    // AMO response from cache - CACHE
+    input amo_resp_t amo_resp_i,
+    // To count the instruction TLB misses - PERF_COUNTERS
     output logic itlb_miss_o,
+    // To count the data TLB misses - PERF_COUNTERS
     output logic dtlb_miss_o,
-    // PMPs
+    // Report the PMP configuration - CSR_REGFILE
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
+    // Report the PMP addresses - CSR_REGFILE
     input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
-
-    // RVFI
-    output lsu_ctrl_t                   rvfi_lsu_ctrl_o,
-    output            [riscv::PLEN-1:0] rvfi_mem_paddr_o
+    // Information dedicated to RVFI - SUBSYSTEM
+    output lsu_ctrl_t rvfi_lsu_ctrl_o,
+    // Information dedicated to RVFI - SUBSYSTEM
+    output [riscv::PLEN-1:0] rvfi_mem_paddr_o
 );
 
   // -------------------------

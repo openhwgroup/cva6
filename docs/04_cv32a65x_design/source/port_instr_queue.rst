@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_instr_queue:
+.. _CVA6_instr_queue_ports:
 
 .. list-table:: instr_queue module IO ports
    :header-rows: 1
@@ -39,19 +39,19 @@
    * - ``instr_i``
      - in
      - instr_realign
-     - logic [ariane_pkg::INSTR_PER_FETCH-1:0][31:0]
+     - logic[ariane_pkg::INSTR_PER_FETCH-1:0][31:0]
      - Instruction
 
    * - ``addr_i``
      - in
      - instr_realign
-     - logic [ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
+     - logic[ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
      - Instruction address
 
    * - ``valid_i``
      - in
      - instr_realign
-     - logic [ariane_pkg::INSTR_PER_FETCH-1:0]
+     - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
      - Instruction is valid
 
    * - ``ready_o``
@@ -63,8 +63,8 @@
    * - ``consumed_o``
      - out
      - FRONTEND
-     - logic [ariane_pkg::INSTR_PER_FETCH-1:0]
-     - Indicates instructions consummed, or popped by DECODE
+     - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - Indicates instructions consummed, or popped by ID_STAGE
 
    * - ``exception_i``
      - in
@@ -75,19 +75,19 @@
    * - ``exception_addr_i``
      - in
      - CACHE
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Exception address
 
    * - ``predict_address_i``
      - in
      - FRONTEND
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Branch predict
 
    * - ``cf_type_i``
      - in
      - FRONTEND
-     - ariane_pkg::cf_t [ariane_pkg::INSTR_PER_FETCH-1:0]
+     - ariane_pkg::cf_t[ariane_pkg::INSTR_PER_FETCH-1:0]
      - Instruction predict address
 
    * - ``replay_o``
@@ -99,23 +99,23 @@
    * - ``replay_addr_o``
      - out
      - FRONTEND
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Address at which to replay the fetch
 
    * - ``fetch_entry_o``
      - out
-     - DECODE
+     - ID_STAGE
      - ariane_pkg::fetch_entry_t
-     - Handshake’s data with DECODE
+     - Handshake’s data with ID_STAGE
 
    * - ``fetch_entry_valid_o``
      - out
-     - DECODE
+     - ID_STAGE
      - logic
-     - Handshake’s valid with DECODE
+     - Handshake’s valid with ID_STAGE
 
    * - ``fetch_entry_ready_i``
      - in
-     - DECODE
+     - ID_STAGE
      - logic
-     - Handshake’s ready with DECODE
+     - Handshake’s ready with ID_STAGE

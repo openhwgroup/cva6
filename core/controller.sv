@@ -18,32 +18,56 @@ module controller
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
-    input  logic clk_i,
-    input  logic rst_ni,
-    output logic set_pc_commit_o,         // Set PC om PC Gen
-    output logic flush_if_o,              // Flush the IF stage
-    output logic flush_unissued_instr_o,  // Flush un-issued instructions of the scoreboard
-    output logic flush_id_o,              // Flush ID stage
-    output logic flush_ex_o,              // Flush EX stage
-    output logic flush_bp_o,              // Flush branch predictors
-    output logic flush_icache_o,          // Flush ICache
-    output logic flush_dcache_o,          // Flush DCache
-    input  logic flush_dcache_ack_i,      // Acknowledge the whole DCache Flush
-    output logic flush_tlb_o,             // Flush TLBs
-
-    input logic halt_csr_i,  // Halt request from CSR (WFI instruction)
-    input logic halt_acc_i,  // Halt request from accelerator dispatcher
-    output logic halt_o,  // Halt signal to commit stage
-    input logic eret_i,  // Return from exception
-    input logic ex_valid_i,  // We got an exception, flush the pipeline
-    input logic set_debug_pc_i,  // set the debug pc from CSR
-    input  bp_resolve_t     resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
-    input logic flush_csr_i,  // We got an instruction which altered the CSR, flush the pipeline
-    input logic fence_i_i,  // fence.i in
-    input logic fence_i,  // fence in
-    input logic sfence_vma_i,  // We got an instruction to flush the TLBs and pipeline
-    input logic flush_commit_i,  // Flush request from commit stage
-    input logic flush_acc_i  // Flush request from accelerator
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Set PC om PC Gen - FRONTEND
+    output logic set_pc_commit_o,
+    // Flush the IF stage - FRONTEND
+    output logic flush_if_o,
+    // Flush un-issued instructions of the scoreboard - FRONTEND
+    output logic flush_unissued_instr_o,
+    // Flush ID stage - ID_STAGE
+    output logic flush_id_o,
+    // Flush EX stage - EX_STAGE
+    output logic flush_ex_o,
+    // Flush branch predictors - FRONTEND
+    output logic flush_bp_o,
+    // Flush ICache - CACHE
+    output logic flush_icache_o,
+    // Flush DCache - CACHE
+    output logic flush_dcache_o,
+    // Acknowledge the whole DCache Flush - CACHE
+    input logic flush_dcache_ack_i,
+    // Flush TLBs - EX_STAGE
+    output logic flush_tlb_o,
+    // Halt request from CSR (WFI instruction) - CSR_REGFILE
+    input logic halt_csr_i,
+    // Halt request from accelerator dispatcher - ACC_DISPATCHER
+    input logic halt_acc_i,
+    // Halt signal to commit stage - COMMIT_STAGE
+    output logic halt_o,
+    // Return from exception - CSR_REGFILE
+    input logic eret_i,
+    // We got an exception, flush the pipeline - FRONTEND
+    input logic ex_valid_i,
+    // set the debug pc from CSR - FRONTEND
+    input logic set_debug_pc_i,
+    // We got a resolved branch, check if we need to flush the front-end - EX_STAGE
+    input bp_resolve_t resolved_branch_i,
+    // We got an instruction which altered the CSR, flush the pipeline - CSR_REGFILE
+    input logic flush_csr_i,
+    // fence.i in - ACC_DISPATCH
+    input logic fence_i_i,
+    // fence in - ACC_DISPATCH
+    input logic fence_i,
+    // We got an instruction to flush the TLBs and pipeline - COMMIT_STAGE
+    input logic sfence_vma_i,
+    // Flush request from commit stage - COMMIT_STAGE
+    input logic flush_commit_i,
+    // Flush request from accelerator - ACC_DISPATCHER
+    input logic flush_acc_i
 );
 
   // active fence - high if we are currently flushing the dcache

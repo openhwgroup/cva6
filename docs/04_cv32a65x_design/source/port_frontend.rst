@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_frontend:
+.. _CVA6_frontend_ports:
 
 .. list-table:: frontend module IO ports
    :header-rows: 1
@@ -57,7 +57,7 @@
    * - ``boot_addr_i``
      - in
      - SUBSYSTEM
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Next PC when reset
 
    * - ``resolved_branch_i``
@@ -75,13 +75,13 @@
    * - ``pc_commit_i``
      - in
      - COMMIT
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Next PC when flushing pipeline
 
    * - ``epc_i``
      - in
      - CSR
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Next PC when returning from exception
 
    * - ``eret_i``
@@ -93,7 +93,7 @@
    * - ``trap_vector_base_i``
      - in
      - CSR
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Next PC when jumping into exception
 
    * - ``ex_valid_i``
@@ -122,18 +122,18 @@
 
    * - ``fetch_entry_o``
      - out
-     - DECODE
+     - ID_STAGE
      - fetch_entry_t
      - Handshake's data between fetch and decode
 
    * - ``fetch_entry_valid_o``
      - out
-     - DECODE
+     - ID_STAGE
      - logic
      - Handshake's valid between fetch and decode
 
    * - ``fetch_entry_ready_i``
      - in
-     - DECODE
+     - ID_STAGE
      - logic
      - Handshake's ready between fetch and decode

@@ -38,6 +38,12 @@ if __name__ == "__main__":
     file.append("../core/frontend/instr_queue.sv")
     file.append("../core/frontend/instr_scan.sv")
     file.append("../core/instr_realign.sv")
+    file.append("../core/id_stage.sv")
+    file.append("../core/issue_stage.sv")
+    file.append("../core/ex_stage.sv")
+    file.append("../core/commit_stage.sv")
+    file.append("../core/controller.sv")
+    file.append("../core/csr_regfile.sv")
 
     for filein in file:
         a = re.match(r".*\/(.*).sv", filein)
@@ -50,16 +56,18 @@ if __name__ == "__main__":
             description = "none"
             connection = "none"
             for line in fin:
-                e = re.match(r"^ +(?:(in|out))put ([\S]*(?: [\S]*|)) ([\S]*)\n", line)
+                e = re.match(r"^ +(?:(in|out))put +([\S]*(?: +.* *|)) ([\S]*)\n", line)
                 d = re.match(r"^ +\/\/ (.*) - ([\S]*)\n", line)
                 if d:
                     description = d.group(1)
                     connection = d.group(2)
                 if e:
                     name = e.group(3)
-                    name = name.split(",")
+                    name = name.replace(",", "")
+                    data_type = e.group(2)
+                    data_type = data_type.replace(" ", "")
                     ports.append(
-                        PortIO(name[0], e.group(1), e.group(2), description, connection)
+                        PortIO(name, e.group(1), data_type, description, connection)
                     )
                     description = "none"
                     connection = "none"
@@ -78,7 +86,7 @@ if __name__ == "__main__":
                 "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
             )
             fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
-            fout.write(f".. _CVA6_{module}:\n\n")
+            fout.write(f".. _CVA6_{module}_ports:\n\n")
             fout.write(f".. list-table:: {module} module IO ports\n")
             fout.write("   :header-rows: 1\n")
             fout.write("\n")

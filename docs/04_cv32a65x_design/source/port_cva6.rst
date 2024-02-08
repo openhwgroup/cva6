@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_cva6:
+.. _CVA6_cva6_ports:
 
 .. list-table:: cva6 module IO ports
    :header-rows: 1
@@ -33,19 +33,19 @@
    * - ``boot_addr_i``
      - in
      - SUBSYSTEM
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Reset boot address
 
    * - ``hart_id_i``
      - in
      - SUBSYSTEM
-     - logic [riscv::XLEN-1:0]
+     - logic[riscv::XLEN-1:0]
      - Hard ID reflected as CSR
 
    * - ``irq_i``
      - in
      - SUBSYSTEM
-     - logic [1:0]
+     - logic[1:0]
      - Level sensitive (async) interrupts
 
    * - ``ipi_i``

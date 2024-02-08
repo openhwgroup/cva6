@@ -7,7 +7,7 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_ras:
+.. _CVA6_ras_ports:
 
 .. list-table:: ras module IO ports
    :header-rows: 1
@@ -51,7 +51,7 @@
    * - ``data_i``
      - in
      - FRONTEND
-     - logic [riscv::VLEN-1:0]
+     - logic[riscv::VLEN-1:0]
      - Data to be pushed
 
    * - ``data_o``

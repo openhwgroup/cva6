@@ -16,32 +16,51 @@
 module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
+    // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-
+    // Fetch flush request - CONTROLLER
     input logic flush_i,
+    // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
-    // from IF
+    // Handshake's data between fetch and decode - FRONTEND
     input ariane_pkg::fetch_entry_t fetch_entry_i,
+    // Handshake's valid between fetch and decode - FRONTEND
     input logic fetch_entry_valid_i,
-    output logic fetch_entry_ready_o,  // acknowledge the instruction (fetch entry)
-    // to ID
-    output ariane_pkg::scoreboard_entry_t issue_entry_o,  // a decoded instruction
+    // Handshake's ready between fetch and decode - FRONTEND
+    output logic fetch_entry_ready_o,
+    // Handshake's data between decode and issue - ISSUE
+    output ariane_pkg::scoreboard_entry_t issue_entry_o,
+    // instruction value - ISSUE
     output logic [31:0] orig_instr_o,
-    output logic issue_entry_valid_o,  // issue entry is valid
-    output logic is_ctrl_flow_o,  // the instruction we issue is a ctrl flow instructions
-    input logic issue_instr_ack_i,  // issue stage acknowledged sampling of instructions
+    // Handshake's valid between decode and issue - ISSUE
+    output logic issue_entry_valid_o,
+    // Report if instruction is a control flow instruction - ISSUE
+    output logic is_ctrl_flow_o,
+    // Handshake's acknowlege between decode and issue - ISSUE
+    input logic issue_instr_ack_i,
+    // Information dedicated to RVFI- SUBSYSTEM
     output logic rvfi_is_compressed_o,
-    // from CSR file
-    input riscv::priv_lvl_t priv_lvl_i,  // current privilege level
-    input riscv::xs_t fs_i,  // floating point extension status
-    input logic [2:0] frm_i,  // floating-point dynamic rounding mode
-    input riscv::xs_t vs_i,  // vector extension status
+    // Report current privilege level - CSR
+    input riscv::priv_lvl_t priv_lvl_i,
+    // Report floating point extension status - CSR
+    input riscv::xs_t fs_i,
+    // Report floating point dynamic rounding mode - CSR
+    input logic [2:0] frm_i,
+    // Report vector extension status - CSR
+    input riscv::xs_t vs_i,
+    // Level sensitive (async) interrupts - SUBSYSTEM
     input logic [1:0] irq_i,
+    // TBD - CSR
     input ariane_pkg::irq_ctrl_t irq_ctrl_i,
-    input logic debug_mode_i,  // we are in debug mode
+    // Report if current mode is debug - CSR
+    input logic debug_mode_i,
+    // TBD - CSR
     input logic tvm_i,
+    // TBD - CSR
     input logic tw_i,
+    // TBD- CSR
     input logic tsr_i
 );
   // ID/ISSUE register stage

@@ -62,7 +62,7 @@ module instr_queue
     input logic [ariane_pkg::INSTR_PER_FETCH-1:0] valid_i,
     // Handshake’s ready with CACHE - CACHE
     output logic ready_o,
-    // Indicates instructions consummed, or popped by DECODE - FRONTEND
+    // Indicates instructions consummed, or popped by ID_STAGE - FRONTEND
     output logic [ariane_pkg::INSTR_PER_FETCH-1:0] consumed_o,
     // Exception (which is page-table fault) - CACHE
     input ariane_pkg::frontend_exception_t exception_i,
@@ -76,11 +76,11 @@ module instr_queue
     output logic replay_o,
     // Address at which to replay the fetch - FRONTEND
     output logic [riscv::VLEN-1:0] replay_addr_o,
-    // Handshake’s data with DECODE - DECODE
+    // Handshake’s data with ID_STAGE - ID_STAGE
     output ariane_pkg::fetch_entry_t fetch_entry_o,
-    // Handshake’s valid with DECODE - DECODE
+    // Handshake’s valid with ID_STAGE - ID_STAGE
     output logic fetch_entry_valid_o,
-    // Handshake’s ready with DECODE - DECODE
+    // Handshake’s ready with ID_STAGE - ID_STAGE
     input logic fetch_entry_ready_i
 );
 
