@@ -179,7 +179,7 @@ module miss_handler
     amo_bypass_req.wdata        = '0;
     amo_bypass_req.be           = '0;
     amo_bypass_req.size         = 2'b11;
-    amo_bypass_req.id           = 4'b1011;
+    amo_bypass_req.id           = 4'b1000 | 4'(NR_PORTS);  // map AMO id to the first non-MSHR id
     // core
     flush_ack_o                 = 1'b0;
     miss_o                      = 1'b0;  // to performance counter
