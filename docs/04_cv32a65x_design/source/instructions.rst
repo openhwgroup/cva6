@@ -13,7 +13,7 @@ Instructions
 The next first subchapter lists the extensions implemented in CVA6.
 By configuration, we can enable/disable the extensions.
 CV32A65X supports the extensions described in the next subchapters.
-RVZicond, RV32A and RVZifencei extensions are not supported by CV32A65X.
+Zicond and Atomic extensions are not supported by CV32A65X.
 
 
 .. toctree::
