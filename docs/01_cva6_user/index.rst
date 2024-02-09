@@ -18,7 +18,6 @@
 
 CVA6 User Manual
 ================
-Editor: **Jerome Quevremont**
 
 .. toctree::
    :maxdepth: 2
@@ -33,24 +32,30 @@ Editor: **Jerome Quevremont**
    Traps_Interrupts_Exceptions
    Compiler_Command_Lines
    RISCV_Instructions
-   RISCV_Instructions_RV32I
-   RISCV_Instructions_RV32M
-   RISCV_Instructions_RV32A
-   RISCV_Instructions_RV32C
-   RISCV_Instructions_RVZba
-   RISCV_Instructions_RVZbb
-   RISCV_Instructions_RVZbc
-   RISCV_Instructions_RVZbs
-   RISCV_Instructions_RV32ZCb
-   RISCV_Instructions_RVZicsr
-   RISCV_Instructions_RVZifencei
-   RISCV_Instructions_RVZicond
-   CV32A6_Control_Status_Registers
-   CV64A6_Control_Status_Registers
+   RV32I <RISCV_Instructions_RV32I>
+   RV32M <RISCV_Instructions_RV32M>
+   RV32A <RISCV_Instructions_RV32A>
+   RV32C <RISCV_Instructions_RV32C>
+   RV32Zcb <RISCV_Instructions_RV32ZCb>
+   RVZba <RISCV_Instructions_RVZba>
+   RVZbb <RISCV_Instructions_RVZbb>
+   RVZbc <RISCV_Instructions_RVZbc>
+   RVZbs <RISCV_Instructions_RVZbs>
+   RVZicsr <RISCV_Instructions_RVZicsr>
+   RVZifencei <RISCV_Instructions_RVZifencei>
+   RVZicond <RISCV_Instructions_RVZicond>
+   CV32A60X CSR List <CSR_CV32A60X_list>
+   CV32A60X CSR Details <CSR_CV32A60X>
+   CV32A60AX CSR List <CSR_CV32A60AX_list>
+   CV32A60AX CSR Details <CSR_CV32A60AX>
+   CV64A6 CSR <CV64A6_Control_Status_Registers>
    CSR_Cache_Control
-   CSR_Performance_Counters
+   CSR Performance Counters <CSR_Performance_Counters>
    Parameters_Configuration
    Interfaces
+   AXI Bus Interface <AXI_Interface>
+   CV-X-IF Interface <CVX_Interface_Coprocessor>
    Core_Integration
-   CVX_Interface_Coprocessor
-   AXI_Interface
+
+   
+   

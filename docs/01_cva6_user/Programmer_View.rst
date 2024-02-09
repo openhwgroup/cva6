@@ -60,7 +60,7 @@ Notes:
 *The following tables detail the availability of extensions for the various CVA6 configurations:*
 
 CV32A60AX extensions
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 These extensions are available in CV32A60AX:
 
@@ -128,7 +128,7 @@ Note: The addition of the H Extension is in the process. After that, HS, VS, and
 *The following tables detail the availability of privileges modes for the various CVA6 configurations:*
 
 CV32A60AX privilege modes
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These privilege modes are available in CV32A60AX:
 
@@ -181,7 +181,7 @@ Notes for the integrator:
 *These are the addressing modes supported by the various CVA6 configurations:*
 
 CV32A60AX virtual memory
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 CV32A60AX integrates an MMU and supports both the **Bare** and **Sv32** addressing modes.
 

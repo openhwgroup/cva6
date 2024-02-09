@@ -29,9 +29,9 @@
    "CV32A60X", "Implemented extension"
 
    
-============================
+==============================
 RVZbs: Single-bit instructions
-============================
+==============================
 The single-bit instructions provide a mechanism to set, clear, invert, or extract a single bit in a register. The bit is specified by its index.
 
 The following instructions (and pseudoinstructions) comprise the Zbs extension:
