@@ -13,7 +13,7 @@ Functionality
 =============
 
 .. toctree::
-   :hidden:
+   :maxdepth: 1
 
    instructions
    traps
