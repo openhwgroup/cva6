@@ -52,6 +52,22 @@ package uvme_cva6_pkg;
    import uvmc_rvfi_reference_model_pkg::*;
    import uvma_isacov_pkg::*;
 
+  // Default legal opcode and funct7 for RV32I instructions
+  bit [6:0]  legal_i_opcode[$] = '{7'b0000011,
+                                   7'b0001111,
+                                   7'b0010011,
+                                   7'b0010111,
+                                   7'b0100011,
+                                   7'b0110111,
+                                   7'b1100011,
+                                   7'b0110011,
+                                   7'b1100111,
+                                   7'b1110011,
+                                   7'b1101111};
+
+  bit [6:0]  legal_i_funct7[$] = '{7'b0000000,
+                                   7'b0100000};
+
    // Constants / Structs / Enums
    `include "uvme_cva6_constants.sv"
    `include "uvme_cva6_tdefs.sv"
@@ -77,6 +93,8 @@ package uvme_cva6_pkg;
    `include "uvme_cva6_vsqr.sv"
    `include "uvme_cvxif_covg.sv"
    `include "uvme_isa_covg.sv"
+   `include "uvme_illegal_instr_covg.sv"
+   `include "uvme_exception_covg.sv"
    `include "uvme_cva6_config_covg.sv"
    `include "uvme_cva6_cov_model.sv"
    `include "uvme_cva6_env.sv"
