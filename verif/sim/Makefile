@@ -349,21 +349,11 @@ questa-uvm:
 
 xrun_dpi-library = $(XRUN_WORK_DIR)/work-dpi
 
-xrun_dpi_build:
-	mkdir -p $(xrun_dpi-library)
-	$(CXX) -shared -fPIC -std=c++17 -Bsymbolic -I$(CVA6_REPO_DIR)/corev_apu/tb/dpi -O3 -I$(SPIKE_ROOT)/include \
-	-I$(XCELIUM_HOME)/tools/include -I$(XCELIUM_HOME)/tools/xcelium/include -I$(RISCV)/include -c $(CVA6_REPO_DIR)/corev_apu/tb/dpi/elfloader.cc \
-	-o $(xrun_dpi-library)/elfloader.o
-	$(CXX) -shared -m64 -o $(xrun_dpi-library)/libdpi.so $(xrun_dpi-library)/elfloader.o -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib
-#	$(CXX) -shared -m64 -o $(xrun_dpi-library)/ariane_dpi.so $(xrun_dpi-library)/elfloader.o -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib
-
-xrun_uvm_comp: xrun_dpi_build
+xrun_uvm_comp: 
 	@echo "[XRUN] Building Model"
 	mkdir -p $(XRUN_WORK_DIR)
 	cd $(XRUN_WORK_DIR) && \
           xrun $(ALL_XRUN_UVM_FLAGS) \
-          -xmlibdirpath ${XRUN_WORK_DIR}/work-dpi \
-          -sv_lib  $(xrun_dpi-library)/libdpi.so \
           -f $(FLIST_CORE) \
           -f $(FLIST_TB) \
           -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
@@ -375,8 +365,8 @@ xrun_uvm_run:
 	cd $(XRUN_WORK_DIR) && 	\
 	  xrun +permissive			\
 	  $(XRUN_RUN)			\
-          -xmlibdirpath ${XRUN_WORK_DIR}/work-dpi \
-          +sv_lib=$(xrun_dpi-library)/libdpi.so \
+	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libriscv \
+	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libfesvr \
           +define+UVM_NO_DEPRECATED  \
 	  +MAX_CYCLES=$(max_cycles)	\
 	  +UVM_CONFIG_DB_TRACE	\
@@ -385,32 +375,8 @@ xrun_uvm_run:
 	  +tohost_addr=80001000           \
 	  -gui				\
 	  +permissive-off			
-##		++$(elf-bin)
-
-#	$(if $(TRACE_FAST), unset VERDI_HOME ;) \
-#	cd $(VCS_WORK_DIR)/ && \
-#	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
-#	++$(elf) \
-#	+PRELOAD=$(elf) \
-#	+tohost_addr=$(shell $$RISCV/bin/riscv-none-elf-nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
-#	-sv_lib $(dpi-library)/ariane_dpi \
-#	$(cov-run-opt) $(issrun_opts) && \
-#	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CVA6_REPO_DIR)/verif/sim/ && \
-#	{ [ -z "`ls $(VCS_WORK_DIR)/*.$(SIMV_TRACE_EXTN)`" ] || \
-#	  for i in `ls $(VCS_WORK_DIR)/*.$(SIMV_TRACE_EXTN)` ; do mv $$i $(CVA6_REPO_DIR)/verif/sim/`basename $$i` ; done || \
-#	  true ; }
 
 xrun-uvm: xrun_uvm_comp xrun_uvm_run
-#	make xrun_uvm_comp
-#	make xrun_uvm_run
-#	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
-#	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
-#	[ -z "`ls *.$(SIMV_TRACE_EXTN)`" ] || \
-#          for i in `ls *.$(SIMV_TRACE_EXTN)` ; do mv $$i `dirname $(log)`/`basename $(log) .log`.$(target).$$i ; done || true
-
-#xrun_comp_gen_inst:$(filelist)
-#	$(comp_sv_cmd) $(comp_sv_opt) -log tb_sv_compile.log $(filter %.sv %.v, $^)
-#	@touch $@
 
 generate_cov_dash:
 	urg -warn none -hvp_proj cva6_embedded -format both -group instcov_for_score -hvp_attributes weight+description+Comment -dir vcs_results/default/vcs.d/simv.vdb -plan cva6.hvp -tgl portsonly
