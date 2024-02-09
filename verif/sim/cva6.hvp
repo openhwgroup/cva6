@@ -613,9 +613,10 @@ plan "CVA6 Verification Master Plan";
                 endmeasure
             endfeature
             feature "Illegal instructions";
-                weight = 0;
+                weight = 1;
                 Comment = "RVFI limitation issue(#1338)";
                 measure Group illegal_instructions;
+                    source = "group: uvme_cva6_pkg::cg_illegal_i", "group: uvme_cva6_pkg::cg_illegal_m", "group: uvme_cva6_pkg::cg_illegal_zicsr", "group: uvme_cva6_pkg::cg_illegal_zifencei";
                 endmeasure
             endfeature
         endfeature
@@ -1286,6 +1287,7 @@ plan "CVA6 Verification Master Plan";
             endfeature
             feature Exceptions;
                 measure Group Exceptions;
+                    source = "group: uvme_cva6_pkg::cg_exception::SHAPE{Guard_ON(cp_exception.IGN_ACCESS_FAULT_EXC,cp_exception.IGN_DEBUG_REQUEST,cp_exception.IGN_ENV_CALL_SMODE,cp_exception.IGN_ENV_CALL_UMODE),Guard_OFF(cp_exception.IGN_ADDR_MISALIGNED_EXC)}";
                 endmeasure
             endfeature
         endfeature
