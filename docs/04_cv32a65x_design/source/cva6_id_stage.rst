@@ -27,3 +27,27 @@ Functionality
 -------------
 
 TO BE COMPLETED
+
+
+Submodules
+----------
+
+.. figure:: ../images/id_stage_modules.png
+   :name: ID_STAGE submodules
+   :align: center
+   :alt:
+
+   ID_STAGE submodules
+
+
+Decoder
+~~~~~~~
+
+TO BE COMPLETED
+
+
+Compressed_decoder
+~~~~~~~~~~~~~~~~~~
+
+TO BE COMPLETED
+

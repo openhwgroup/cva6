@@ -9,8 +9,8 @@
 
 .. _CVA6_ISSUE_STAGE:
 
-ID_STAGE Module
-===============
+ISSUE_STAGE Module
+==================
 
 Description
 -----------
@@ -25,5 +25,27 @@ The module is connected to:
 
 Functionality
 -------------
+
+TO BE COMPLETED
+
+
+Submodules
+----------
+
+.. figure:: ../images/issue_stage_modules.png
+   :name: ISSUE_STAGE submodules
+   :align: center
+   :alt:
+
+   ISSUE_STAGE submodules
+
+Scoreboard
+~~~~~~~~~~
+
+TO BE COMPLETED
+
+
+Issue_read_operands
+~~~~~~~~~~~~~~~~~~~
 
 TO BE COMPLETED

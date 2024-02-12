@@ -80,8 +80,8 @@ Memory *and MMU (MMU is not enabled in CV32A6 v0.1.0)* can feedback potential ex
 
 
 
-Architecture and Submodules
----------------------------
+Submodules
+----------
 
 .. figure:: ../images/frontend_modules.png
    :name: FRONTEND submodules

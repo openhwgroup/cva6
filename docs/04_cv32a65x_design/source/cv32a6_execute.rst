@@ -22,18 +22,61 @@ Functionality
 
 TO BE COMPLETED
 
-***************************
-Architecture and Submodules
-***************************
+**********
+Submodules
+**********
+
+.. figure:: ../images/ex_stage_modules.png
+   :name: EX_STAGE submodules
+   :align: center
+   :alt:
+
+   EX_STAGE submodules
+
 
 ALU
 ===
 
+TO BE COMPLETED
+
+
 Branch Unit
 ===========
 
+TO BE COMPLETED
+
+
+CSR Buffer
+==========
+
+TO BE COMPLETED
+
+
+Mult
+====
+
+TO BE COMPLETED
+
+.. figure:: ../images/mult_modules.png
+   :name: mult submodules
+   :align: center
+   :alt:
+
+   mult submodules
+
+
 Load Store Unit (LSU)
 =====================
+
+TO BE COMPLETED
+
+.. figure:: ../images/load_store_unit_modules.png
+   :name: load_store_unit submodules
+   :align: center
+   :alt:
+
+   load_store_unit submodules
+
 
 ----------------------
 Memory Management Unit
@@ -1616,8 +1659,8 @@ The first step when a flush is triggered is to check whether the Page Table Entr
 PMA/PMP Checks
 ==============
 
-Multipler
-=========
 
-CSR Buffer
-==========
+CVXIF_fu
+========
+
+TO BE COMPLETED

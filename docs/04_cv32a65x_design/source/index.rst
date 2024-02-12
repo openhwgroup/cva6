@@ -17,7 +17,6 @@ Editor: **Jean Roch Coulon**
    :caption: Contents:
 
    intro
-   overview
    subsystem
    functionality
    architecture
