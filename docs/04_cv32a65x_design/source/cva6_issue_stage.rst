@@ -56,11 +56,8 @@ Scoreboard
 
 TO BE COMPLETED
 
-.. include:: port_scoreboard.rst
 
 Issue_read_operands
 ~~~~~~~~~~~~~~~~~~~
 
 TO BE COMPLETED
-
-.. include:: port_issue_read_operands.rst
