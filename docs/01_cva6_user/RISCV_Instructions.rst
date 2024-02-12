@@ -20,8 +20,8 @@
 
 *This chapter is applicable to all configurations.*
 
-RISC-V Instructions
-===================
+CVA6 RISC-V Instructions
+========================
 
 Introduction
 ------------------

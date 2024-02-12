@@ -12,7 +12,7 @@ CSR
 ===
 
 .. toctree::
-   :hidden:
+   :maxdepth: 1
 
    csr_list
    csr
