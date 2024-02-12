@@ -64,6 +64,19 @@ TO BE COMPLETED
 
    mult submodules
 
+----------
+multiplier
+----------
+
+TO BE COMPLETED
+
+
+------
+serdiv
+------
+
+TO BE COMPLETED
+
 
 Load Store Unit (LSU)
 =====================
@@ -76,6 +89,27 @@ TO BE COMPLETED
    :alt:
 
    load_store_unit submodules
+
+----------
+store_unit
+----------
+
+TO BE COMPLETED
+
+
+---------
+load unit
+---------
+
+TO BE COMPLETED
+
+
+----------
+lsu_bypass
+----------
+
+TO BE COMPLETED
+
 
 
 CVXIF_fu
