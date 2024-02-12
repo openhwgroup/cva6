@@ -189,21 +189,21 @@ task uvme_illegal_instr_cov_model_c::sample_isa (uvma_isacov_instr_c instr);
 
   logic is_illegal_instr = (instr.cause == 2);
 
-  if (!have_sampled && is_illegal_instr && cfg.ext_i_supported) begin
-    have_sampled = 1;
+  if (is_illegal_instr && cfg.ext_i_supported) begin
     illegal_i_cg.sample(instr);
-  end
-  if (!have_sampled && is_illegal_instr && cfg.ext_m_supported) begin
     have_sampled = 1;
+  end
+  if (is_illegal_instr && cfg.ext_m_supported) begin
     illegal_m_cg.sample(instr);
-  end
-  if (!have_sampled && is_illegal_instr && cfg.ext_zicsr_supported) begin
     have_sampled = 1;
+  end
+  if (is_illegal_instr && cfg.ext_zicsr_supported) begin
     illegal_zicsr_cg.sample(instr);
-  end
-  if (!have_sampled && is_illegal_instr && cfg.ext_zifencei_supported) begin
     have_sampled = 1;
+  end
+  if (is_illegal_instr && cfg.ext_zifencei_supported) begin
     illegal_zifencei_cg.sample(instr);
+    have_sampled = 1;
   end
   if (!have_sampled && is_illegal_instr) begin
     `uvm_error("ILLEGAL_INSTR", $sformatf("Could not sample instruction: %h", instr.rvfi.insn));
