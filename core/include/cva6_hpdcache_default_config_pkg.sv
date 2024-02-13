@@ -108,7 +108,12 @@ package hpdcache_params_pkg;
 
   //  HPDcache MSHR whether uses FFs or SRAM
   localparam bit PARAM_MSHR_USE_REGBANK = (PARAM_MSHR_SETS * PARAM_MSHR_WAYS) <= 16;
+
+  //  HPDcache feedthrough FIFOs from the refill handler to the core
   localparam bit PARAM_REFILL_CORE_RSP_FEEDTHROUGH = 1'b1;
+
+  //  HPDcache depth of the refill FIFO
+  localparam int PARAM_REFILL_FIFO_DEPTH = 32'd2;
   //  }}}
 
   //  Definition of constants and types for the Write Buffer (WBUF)
