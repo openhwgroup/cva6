@@ -134,6 +134,8 @@ vcs-testharness:
 	  +tohost_addr=$(shell $$RISCV/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	  +elf_file=$(elf) +permissive-off ++$(elf) $(issrun_opts) $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv) \
 	  -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr
+	# TODO: Add support for waveform collection.
+	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
@@ -141,15 +143,18 @@ veri-testharness:
 	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) $(elf) $(issrun_opts) \
 	  +elf_file=$(elf) +tohost_addr=$(shell $$RISCV/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)
-	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
-	# If present, move default trace files to per-test directory.
+	# If present, move default waveform files to log directory.
+	# Keep track of target in waveform file name.
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.$(target).fst
 	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.$(target).vcd
+	# Generate disassembled log.
+	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 questa-testharness:
 	mkdir -p $(path_var)/tmp
 	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)) batch-mode=1 $(issrun_opts)
+	# TODO: Add support for waveform collection.
 	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
 
@@ -251,6 +256,13 @@ vcs_uvm_run:
 vcs-uvm:
 	make vcs_uvm_comp
 	make vcs_uvm_run
+	# If present, move default waveform files to log directory.
+	# Keep track of target in waveform file name.
+	[ ! -f $(VCS_WORK_DIR)/novas.vpd  ] || \
+	  mv $(VCS_WORK_DIR)/novas.vpd  `dirname $(log)`/`basename $(log) .log`.$(target).vpd
+	[ ! -f $(VCS_WORK_DIR)/novas.fsdb ] || \
+	  mv $(VCS_WORK_DIR)/novas.fsdb `dirname $(log)`/`basename $(log) .log`.$(target).fsdb
+	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./vcs_results/default/vcs.d/trace_rvfi_hart_00.dasm > $(log)
 
 generate_cov_dash:

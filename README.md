@@ -70,7 +70,7 @@ Simulating the CVA6 is done by using `verif/sim/cva6.py`.
 
 The environment variable `DV_SIMULATORS` allows you to specify which simulator to use.
 
-4 simulation types are supported:
+Four simulation types are supported:
 - **veri-testharness**: verilator with corev_apu/testharness testbench
 - **vcs-testharness**: vcs with corev_apu/testharness testbench
 - **vcs-uvm**: vcs with UVM testbench
@@ -141,7 +141,7 @@ bash verif/regress/dv-riscv-arch-test.sh
 
 # Logs
 
-The logs from cva6.py are located in `./verif/sim/out-year-month-day`.
+The logs from cva6.py are located in `./verif/sim/out_YEAR-MONTH-DAY`.
 
 Assuming you ran the smoke-tests scripts in the previous step, here is the log directory hierarchy:
 
@@ -152,6 +152,36 @@ Assuming you ran the smoke-tests scripts in the previous step, here is the log d
 - **iss_regr.log**: The regression test log 
 
 The regression test log summarizes the comparison between the simulator trace and the Spike trace. Beware that a if a test fails before the comparison step, it will not appear in this log, check the output of cva6.py and the logs of the simulation instead.
+
+
+# Waveform generation
+
+Waveform generation is currently supported for Verilator (`veri-testharness`)
+and VCS with full UVM testbench (`vcs-uvm`) simulation types.  It is disabled
+by default to save simulation time and storage space.
+
+To enable waveform generation for a supported simulation mode, set either
+of the two shell variables that control tracing before running any of the
+test scripts under `verif/regress`:
+- `export TRACE_FAST=1` enables "fast" waveform generation (keep simulation
+   time low at the expense of space).  This will produce VCD files when using
+   Verilator, and VPD files when using Synopsys VCS with UVM testbench (`vcs-uvm`).
+- `export TRACE_COMPACT=1` enables "compact" waveform generation (keep waveform
+   files smaller at the expense of increased simulation time).  This will
+   produce FST files when using Verilator, and FSDB files when using Synopsys
+   VCS with UVM testbench (`vcs-uvm`).
+
+To generate VCD waveforms of the `smoke-tests` regression suite using Verilator, use:
+```sh
+export DV_SIMULATORS=veri-testharness,spike
+export TRACE_FAST=1
+bash verif/regress/smoke-tests.sh
+```
+
+After each simulation run involving Verilator or VCS, the generated waveforms
+will be copied  to the directory containing the log files (see above,) with
+the name of the current HW configuration added to the file name right before
+the file type suffix (e.g., `I-ADD-01.cv32a60x.vcd`).
 
 
 # Physical Implementation
