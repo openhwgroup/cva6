@@ -24,7 +24,8 @@ covergroup cg_exception(
     bit unaligned_access_supported,
     bit mode_u_supported,
     bit mode_s_supported,
-    bit debug_supported
+    bit debug_supported,
+    bit [CSR_MASK_WL-1:0] cfg_illegal_csr
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -86,6 +87,65 @@ covergroup cg_exception(
 
   }
 
+  cp_is_ebreak: coverpoint instr.name {
+    bins is_ebreak = {uvma_isacov_pkg::EBREAK,
+                      uvma_isacov_pkg::C_EBREAK};
+  }
+
+  cp_is_dret: coverpoint instr.name {
+    bins is_dret = {uvma_isacov_pkg::DRET};
+  }
+
+  cp_is_ecall: coverpoint instr.name {
+    bins is_ecall = {uvma_isacov_pkg::ECALL};
+  }
+
+  cp_is_csr: coverpoint instr.group {
+    bins is_csr_instr = {uvma_isacov_pkg::CSR_GROUP};
+  }
+
+  cp_illegal_csr: coverpoint instr.csr {
+    bins UNSUPPORTED_CSR[] = {[uvma_isacov_pkg::USTATUS:uvma_isacov_pkg::VLENB]} with (cfg_illegal_csr[item] == 1) iff(instr.trap);
+  }
+
+  cp_misalign_load: coverpoint instr.group {
+    bins misalign_load = {uvma_isacov_pkg::MISALIGN_LOAD_GROUP};
+  }
+
+  cp_misalign_store: coverpoint instr.group {
+    bins misalign_store = {uvma_isacov_pkg::MISALIGN_STORE_GROUP};
+  }
+
+  cp_add_mem: coverpoint instr.rvfi.mem_addr[1:0] {
+    bins add_mem[] = {[0:$]};
+  }
+
+  cross_breakpoint : cross cp_exception, cp_is_ebreak {
+    ignore_bins IGN = !binsof(cp_exception) intersect{3};
+  }
+
+  cross_ecall : cross cp_exception, cp_is_ecall {
+    ignore_bins IGN = !binsof(cp_exception) intersect{11};
+  }
+
+  cross_dret : cross cp_exception, cp_is_dret iff(!debug_supported){
+    ignore_bins IGN = !binsof(cp_exception) intersect{2};
+  }
+
+  cross_illegal_csr : cross cp_exception, cp_illegal_csr,  cp_is_csr {
+    ignore_bins IGN = !binsof(cp_exception) intersect{2};
+  }
+
+  cross_misaligned_load : cross cp_exception, cp_misalign_load, cp_add_mem iff(!unaligned_access_supported){
+    ignore_bins IGN_EXC = !binsof(cp_exception) intersect{4};
+    ignore_bins IGN_ADD =  binsof(cp_add_mem) intersect{0};
+  }
+
+  cross_misaligned_store : cross cp_exception, cp_misalign_store, cp_add_mem iff(!unaligned_access_supported){
+    ignore_bins IGN_EXC = !binsof(cp_exception) intersect{6};
+    ignore_bins IGN_ADD =  binsof(cp_add_mem) intersect{0};
+  }
+
 endgroup : cg_exception
 
 class uvme_exception_cov_model_c extends uvm_component;
@@ -133,7 +193,8 @@ function void uvme_exception_cov_model_c::build_phase(uvm_phase phase);
                       .unaligned_access_supported(cfg.unaligned_access_supported),
                       .mode_u_supported(cfg.mode_u_supported),
                       .mode_s_supported(cfg.mode_s_supported),
-                      .debug_supported(cfg.debug_supported));
+                      .debug_supported(cfg.debug_supported),
+                      .cfg_illegal_csr(cfg.unsupported_csr_mask));
 
    mon_trn_fifo   = new("mon_trn_fifo" , this);
 

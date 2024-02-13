@@ -40,6 +40,14 @@ covergroup cg_illegal_i(
     bins ILLEGAL_NOPCODE_FUNCT7[3] = {[0:$]} with (!(item inside legal_i_funct7)) iff (!(instr.rvfi.insn[6:0] inside legal_i_opcode)); //with the wrong opcode
   }
 
+  cp_is_illegal: coverpoint instr.cause {
+    bins ILLEGAL_INSTR = {2};
+  }
+
+   cross_exc_illegal_0 : cross cp_illegal_opcode, cp_is_illegal;
+   cross_exc_illegal_1 : cross cp_illegal_funct3, cp_is_illegal;
+   cross_exc_illegal_2 : cross cp_illegal_funct7, cp_is_illegal;
+
 endgroup : cg_illegal_i
 
 covergroup cg_illegal_m(
@@ -64,6 +72,14 @@ covergroup cg_illegal_m(
     bins ILLEGAL_NOPCODE_FUNCT7[3] = {[0:$]} with (item != 7'b0000001) iff (instr.rvfi.insn[6:0] != 7'b0110011); //with the wrong opcode
   }
 
+  cp_is_illegal: coverpoint instr.cause {
+    bins ILLEGAL_INSTR = {2};
+  }
+
+   cross_exc_illegal_0 : cross cp_illegal_opcode, cp_is_illegal;
+   cross_exc_illegal_1 : cross cp_illegal_funct3, cp_is_illegal;
+   cross_exc_illegal_2 : cross cp_illegal_funct7, cp_is_illegal;
+
 endgroup : cg_illegal_m
 
 covergroup cg_illegal_zicsr(
@@ -83,6 +99,13 @@ covergroup cg_illegal_zicsr(
     bins ILLEGAL_NOPCODE_FUNCT3 = {0,4} iff (instr.rvfi.insn[6:0] != 7'b1110011); //with the wrong opcode
   }
 
+  cp_is_illegal: coverpoint instr.cause {
+    bins ILLEGAL_INSTR = {2};
+  }
+
+   cross_exc_illegal_0 : cross cp_illegal_opcode, cp_is_illegal;
+   cross_exc_illegal_1 : cross cp_illegal_funct3, cp_is_illegal;
+
 endgroup : cg_illegal_zicsr
 
 covergroup cg_illegal_zifencei(
@@ -101,6 +124,13 @@ covergroup cg_illegal_zifencei(
     bins ILLEGAL_FUNCT3[3] = {[0:$]} with (item != 7'b001) iff (instr.rvfi.insn[6:0] == 7'b0001111); //with the right opcode
     bins ILLEGAL_NOPCODE_FUNCT3[3] = {[0:$]} with (item != 7'b001) iff (instr.rvfi.insn[6:0] != 7'b0001111); //with the wrong opcode
   }
+
+  cp_is_illegal: coverpoint instr.cause {
+    bins ILLEGAL_INSTR = {2};
+  }
+
+   cross_exc_illegal_0 : cross cp_illegal_opcode, cp_is_illegal;
+   cross_exc_illegal_1 : cross cp_illegal_funct3, cp_is_illegal;
 
 endgroup : cg_illegal_zifencei
 
