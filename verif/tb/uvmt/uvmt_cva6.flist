@@ -42,6 +42,8 @@
 +incdir+${CVA6_UVMT_PATH}/../../tests/uvmt/vseq
 
 // CVA6 tests (includes constants/macros/types meant for test bench)
++incdir+${CVA6_CORET_DIR}
+${CVA6_CORET_DIR}/uvma_cva6pkg_utils_pkg.sv
 +incdir+${TBSRC_HOME}
 ${CVA6_UVMT_DIR}/uvmt_cva6_pkg.sv
 

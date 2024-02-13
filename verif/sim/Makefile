@@ -161,6 +161,7 @@ VCS_WORK_DIR            = $(CVA6_REPO_DIR)/verif/sim/vcs_results/default/vcs.d
 SIMV                    = $(VCS_WORK_DIR)/simv
 
 export CVA6_UVMT_DIR          = $(CVA6_REPO_DIR)/verif/tb/uvmt
+export CVA6_CORET_DIR          = $(CVA6_REPO_DIR)/verif/tb/core
 export CVA6_UVMT_PATH         = $(CVA6_REPO_DIR)/verif/tb/uvmt
 export CVA6_UVME_PATH         = $(CVA6_REPO_DIR)/verif/env/uvme
 export CV_CORE_LC             = cva6

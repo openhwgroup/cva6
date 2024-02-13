@@ -145,7 +145,9 @@ endif
 
 # this list contains the standalone components
 src :=  core/include/$(target)_config_pkg.sv                                         \
-        $(if $(spike-tandem),verif/tb/core/rvfi_pkg.sv)                              \
+        $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)                   \
+        $(if $(spike-tandem),verif/tb/core/uvma_cva6pkg_utils_pkg.sv)                \
+        $(if $(spike-tandem),verif/tb/core/uvma_rvfi_pkg.sv)                         \
         $(if $(spike-tandem),corev_apu/tb/common/spike.sv)                           \
         corev_apu/src/ariane.sv                                                      \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
@@ -235,7 +237,10 @@ riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-li
 # Search here for include files (e.g.: non-standalone components)
 incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REPO_DIR)/vendor/pulp-platform/axi/include/ \
           $(CVA6_REPO_DIR)/corev_apu/register_interface/include/ $(CVA6_REPO_DIR)/corev_apu/tb/common/ \
-          $(CVA6_REPO_DIR)/vendor/pulp-platform/axi/include/ $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_rvfi/
+          $(CVA6_REPO_DIR)/vendor/pulp-platform/axi/include/ \
+          $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_rvfi/ \
+          $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_core_cntrl/ \
+          $(CVA6_REPO_DIR)/verif/tb/core/
 
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive -svinputport=compat +define+$(defines)
