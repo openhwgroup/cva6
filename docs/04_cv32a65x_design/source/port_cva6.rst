@@ -21,77 +21,77 @@
    * - ``clk_i``
      - in
      - SUBSYSTEM
-     - logic
      - Subsystem Clock
+     - logic
 
    * - ``rst_ni``
      - in
      - SUBSYSTEM
-     - logic
      - Asynchronous reset active low
+     - logic
 
    * - ``boot_addr_i``
      - in
      - SUBSYSTEM
-     - logic[riscv::VLEN-1:0]
      - Reset boot address
+     - logic[riscv::VLEN-1:0]
 
    * - ``hart_id_i``
      - in
      - SUBSYSTEM
-     - logic[riscv::XLEN-1:0]
      - Hard ID reflected as CSR
+     - logic[riscv::XLEN-1:0]
 
    * - ``irq_i``
      - in
      - SUBSYSTEM
-     - logic[1:0]
      - Level sensitive (async) interrupts
+     - logic[1:0]
 
    * - ``ipi_i``
      - in
      - SUBSYSTEM
-     - logic
      - Inter-processor (async) interrupt
+     - logic
 
    * - ``time_irq_i``
      - in
      - SUBSYSTEM
-     - logic
      - Timer (async) interrupt
+     - logic
 
    * - ``debug_req_i``
      - in
      - SUBSYSTEM
-     - logic
      - Debug (async) request
+     - logic
 
    * - ``rvfi_probes_o``
      - out
      - SUBSYSTEM
-     - rvfi_probes_t
      - Probes to build RVFI, can be left open when not used
+     - rvfi_probes_t
 
    * - ``cvxif_req_o``
      - out
      - SUBSYSTEM
-     - cvxif_req_t
      - CVXIF request
+     - cvxif_req_t
 
    * - ``cvxif_resp_i``
      - in
      - SUBSYSTEM
-     - cvxif_resp_t
      - CVXIF response
+     - cvxif_resp_t
 
    * - ``noc_req_o``
      - out
      - SUBSYSTEM
-     - noc_req_t
      - noc request, can be AXI or OpenPiton
+     - noc_req_t
 
    * - ``noc_resp_i``
      - in
      - SUBSYSTEM
-     - noc_resp_t
      - noc response, can be AXI or OpenPiton
+     - noc_resp_t

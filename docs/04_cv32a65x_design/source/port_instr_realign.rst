@@ -21,59 +21,59 @@
    * - ``clk_i``
      - in
      - SUBSYSTEM
-     - logic
      - Subsystem Clock
+     - logic
 
    * - ``rst_ni``
      - in
      - SUBSYSTEM
-     - logic
      - Asynchronous reset active low
+     - logic
 
    * - ``flush_i``
      - in
      - CONTROLLER
-     - logic
      - Fetch flush request
+     - logic
 
    * - ``valid_i``
      - in
      - CACHE
-     - logic
      - 32-bit block is valid
+     - logic
 
    * - ``serving_unaligned_o``
      - out
      - FRONTEND
-     - logic
      - Instruction is unaligned
+     - logic
 
    * - ``address_i``
      - in
      - CACHE
-     - logic[riscv::VLEN-1:0]
      - 32-bit block address
+     - logic[riscv::VLEN-1:0]
 
    * - ``data_i``
      - in
      - CACHE
-     - logic[FETCH_WIDTH-1:0]
      - 32-bit block
+     - logic[FETCH_WIDTH-1:0]
 
    * - ``valid_o``
      - out
      - FRONTEND
-     - logic[INSTR_PER_FETCH-1:0]
      - instruction is valid
+     - logic[INSTR_PER_FETCH-1:0]
 
    * - ``addr_o``
      - out
      - FRONTEND
-     - logic[INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
      - Instruction address
+     - logic[INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
 
    * - ``instr_o``
      - out
      - none
-     - logic[INSTR_PER_FETCH-1:0][31:0]
      - none
+     - logic[INSTR_PER_FETCH-1:0][31:0]

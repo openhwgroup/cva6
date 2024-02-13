@@ -100,5 +100,5 @@ if __name__ == "__main__":
                 fout.write(f"   * - ``{port.name}``\n")
                 fout.write(f"     - {port.direction}\n")
                 fout.write(f"     - {port.connection}\n")
-                fout.write(f"     - {port.data_type}\n")
                 fout.write(f"     - {port.description}\n")
+                fout.write(f"     - {port.data_type}\n")

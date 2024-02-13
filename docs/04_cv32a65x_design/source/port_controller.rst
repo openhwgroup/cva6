@@ -21,149 +21,149 @@
    * - ``clk_i``
      - in
      - SUBSYSTEM
-     - logic
      - Subsystem Clock
+     - logic
 
    * - ``rst_ni``
      - in
      - SUBSYSTEM
-     - logic
      - Asynchronous reset active low
+     - logic
 
    * - ``set_pc_commit_o``
      - out
      - FRONTEND
-     - logic
      - Set PC om PC Gen
+     - logic
 
    * - ``flush_if_o``
      - out
      - FRONTEND
-     - logic
      - Flush the IF stage
+     - logic
 
    * - ``flush_unissued_instr_o``
      - out
      - FRONTEND
-     - logic
      - Flush un-issued instructions of the scoreboard
+     - logic
 
    * - ``flush_id_o``
      - out
      - ID_STAGE
-     - logic
      - Flush ID stage
+     - logic
 
    * - ``flush_ex_o``
      - out
      - EX_STAGE
-     - logic
      - Flush EX stage
+     - logic
 
    * - ``flush_bp_o``
      - out
      - FRONTEND
-     - logic
      - Flush branch predictors
+     - logic
 
    * - ``flush_icache_o``
      - out
      - CACHE
-     - logic
      - Flush ICache
+     - logic
 
    * - ``flush_dcache_o``
      - out
      - CACHE
-     - logic
      - Flush DCache
+     - logic
 
    * - ``flush_dcache_ack_i``
      - in
      - CACHE
-     - logic
      - Acknowledge the whole DCache Flush
+     - logic
 
    * - ``flush_tlb_o``
      - out
      - EX_STAGE
-     - logic
      - Flush TLBs
+     - logic
 
    * - ``halt_csr_i``
      - in
      - CSR_REGFILE
-     - logic
      - Halt request from CSR (WFI instruction)
+     - logic
 
    * - ``halt_acc_i``
      - in
      - ACC_DISPATCHER
-     - logic
      - Halt request from accelerator dispatcher
+     - logic
 
    * - ``halt_o``
      - out
      - COMMIT_STAGE
-     - logic
      - Halt signal to commit stage
+     - logic
 
    * - ``eret_i``
      - in
      - CSR_REGFILE
-     - logic
      - Return from exception
+     - logic
 
    * - ``ex_valid_i``
      - in
      - FRONTEND
-     - logic
      - We got an exception, flush the pipeline
+     - logic
 
    * - ``set_debug_pc_i``
      - in
      - FRONTEND
-     - logic
      - set the debug pc from CSR
+     - logic
 
    * - ``resolved_branch_i``
      - in
      - EX_STAGE
-     - bp_resolve_t
      - We got a resolved branch, check if we need to flush the front-end
+     - bp_resolve_t
 
    * - ``flush_csr_i``
      - in
      - CSR_REGFILE
-     - logic
      - We got an instruction which altered the CSR, flush the pipeline
+     - logic
 
    * - ``fence_i_i``
      - in
      - ACC_DISPATCH
-     - logic
      - fence.i in
+     - logic
 
    * - ``fence_i``
      - in
      - ACC_DISPATCH
-     - logic
      - fence in
+     - logic
 
    * - ``sfence_vma_i``
      - in
      - COMMIT_STAGE
-     - logic
      - We got an instruction to flush the TLBs and pipeline
+     - logic
 
    * - ``flush_commit_i``
      - in
      - COMMIT_STAGE
-     - logic
      - Flush request from commit stage
+     - logic
 
    * - ``flush_acc_i``
      - in
      - ACC_DISPATCHER
-     - logic
      - Flush request from accelerator
+     - logic

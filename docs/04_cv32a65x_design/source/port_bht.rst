@@ -21,41 +21,41 @@
    * - ``clk_i``
      - in
      - SUBSYSTEM
-     - logic
      - Subsystem Clock
+     - logic
 
    * - ``rst_ni``
      - in
      - SUBSYSTEM
-     - logic
      - Asynchronous reset active low
+     - logic
 
    * - ``flush_i``
      - in
      - CONTROLLER
-     - logic
      - Fetch flush request
+     - logic
 
    * - ``debug_mode_i``
      - in
      - CSR
-     - logic
      - Debug mode state
+     - logic
 
    * - ``vpc_i``
      - in
      - CACHE
-     - logic[riscv::VLEN-1:0]
      - Virtual PC
+     - logic[riscv::VLEN-1:0]
 
    * - ``bht_update_i``
      - in
      - EXECUTE
-     - ariane_pkg::bht_update_t
      - Update bht with resolved address
+     - ariane_pkg::bht_update_t
 
    * - ``bht_prediction_o``
      - out
      - FRONTEND
-     - ariane_pkg::bht_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
      - Prediction from bht
+     - ariane_pkg::bht_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]

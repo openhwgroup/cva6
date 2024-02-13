@@ -21,119 +21,119 @@
    * - ``clk_i``
      - in
      - SUBSYSTEM
-     - logic
      - Subsystem Clock
+     - logic
 
    * - ``rst_ni``
      - in
      - SUBSYSTEM
-     - logic
      - Asynchronous reset active low
+     - logic
 
    * - ``flush_i``
      - in
      - CONTROLLER
-     - logic
      - Fetch flush request
+     - logic
 
    * - ``flush_bp_i``
      - in
      - zero
-     - logic
      - flush branch prediction
+     - logic
 
    * - ``halt_i``
      - in
      - CONTROLLER
-     - logic
      - halt commit stage
+     - logic
 
    * - ``debug_mode_i``
      - in
      - CSR
-     - logic
      - Debug mode state
+     - logic
 
    * - ``boot_addr_i``
      - in
      - SUBSYSTEM
-     - logic[riscv::VLEN-1:0]
      - Next PC when reset
+     - logic[riscv::VLEN-1:0]
 
    * - ``resolved_branch_i``
      - in
      - EXECUTE
-     - bp_resolve_t
      - mispredict event and next PC
+     - bp_resolve_t
 
    * - ``set_pc_commit_i``
      - in
      - CONTROLLER
-     - logic
      - Set the PC coming from COMMIT as next PC
+     - logic
 
    * - ``pc_commit_i``
      - in
      - COMMIT
-     - logic[riscv::VLEN-1:0]
      - Next PC when flushing pipeline
+     - logic[riscv::VLEN-1:0]
 
    * - ``epc_i``
      - in
      - CSR
-     - logic[riscv::VLEN-1:0]
      - Next PC when returning from exception
+     - logic[riscv::VLEN-1:0]
 
    * - ``eret_i``
      - in
      - CSR
-     - logic
      - Return from exception event
+     - logic
 
    * - ``trap_vector_base_i``
      - in
      - CSR
-     - logic[riscv::VLEN-1:0]
      - Next PC when jumping into exception
+     - logic[riscv::VLEN-1:0]
 
    * - ``ex_valid_i``
      - in
      - COMMIT
-     - logic
      - Exception event
+     - logic
 
    * - ``set_debug_pc_i``
      - in
      - CSR
-     - logic
      - Debug event
+     - logic
 
    * - ``icache_dreq_o``
      - out
      - CACHES
-     - icache_dreq_t
      - Handshake between CACHE and FRONTEND (fetch)
+     - icache_dreq_t
 
    * - ``icache_dreq_i``
      - in
      - CACHES
-     - icache_drsp_t
      - Handshake between CACHE and FRONTEND (fetch)
+     - icache_drsp_t
 
    * - ``fetch_entry_o``
      - out
      - ID_STAGE
-     - fetch_entry_t
      - Handshake's data between fetch and decode
+     - fetch_entry_t
 
    * - ``fetch_entry_valid_o``
      - out
      - ID_STAGE
-     - logic
      - Handshake's valid between fetch and decode
+     - logic
 
    * - ``fetch_entry_ready_i``
      - in
      - ID_STAGE
-     - logic
      - Handshake's ready between fetch and decode
+     - logic

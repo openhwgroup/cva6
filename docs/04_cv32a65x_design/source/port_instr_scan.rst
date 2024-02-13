@@ -21,83 +21,83 @@
    * - ``instr_i``
      - in
      - instr_realign
-     - logic[31:0]
      - Instruction to be predecoded
+     - logic[31:0]
 
    * - ``rvi_return_o``
      - out
      - FRONTEND
-     - logic
      - Return instruction
+     - logic
 
    * - ``rvi_call_o``
      - out
      - FRONTEND
-     - logic
      - JAL instruction
+     - logic
 
    * - ``rvi_branch_o``
      - out
      - FRONTEND
-     - logic
      - Branch instruction
+     - logic
 
    * - ``rvi_jalr_o``
      - out
      - FRONTEND
-     - logic
      - JALR instruction
+     - logic
 
    * - ``rvi_jump_o``
      - out
      - FRONTEND
-     - logic
      - Unconditional jump instruction
+     - logic
 
    * - ``rvi_imm_o``
      - out
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
      - Instruction immediat
+     - logic[riscv::VLEN-1:0]
 
    * - ``rvc_branch_o``
      - out
      - FRONTEND
-     - logic
      - Branch compressed instruction
+     - logic
 
    * - ``rvc_jump_o``
      - out
      - FRONTEND
-     - logic
      - Unconditional jump compressed instruction
+     - logic
 
    * - ``rvc_jr_o``
      - out
      - FRONTEND
-     - logic
      - JR compressed instruction
+     - logic
 
    * - ``rvc_return_o``
      - out
      - FRONTEND
-     - logic
      - Return compressed instruction
+     - logic
 
    * - ``rvc_jalr_o``
      - out
      - FRONTEND
-     - logic
      - JALR compressed instruction
+     - logic
 
    * - ``rvc_call_o``
      - out
      - FRONTEND
-     - logic
      - JAL compressed instruction
+     - logic
 
    * - ``rvc_imm_o``
      - out
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
      - Instruction compressed immediat
+     - logic[riscv::VLEN-1:0]
