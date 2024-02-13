@@ -137,6 +137,8 @@ class uvmt_cva6_base_test_c extends uvm_test;
     */
    extern virtual function void create_cfg();
 
+   extern virtual function void pkg_to_cfg();
+
    /**
     * 1. Calls test_cfg's process_cli_args()
     * 2. Calls randomize on 'this' and fatals out if it fails.
@@ -213,6 +215,7 @@ function void uvmt_cva6_base_test_c::build_phase(uvm_phase phase);
    retrieve_vifs    ();
    create_cfg       ();
    randomize_test   ();
+   pkg_to_cfg       ();
    cfg_hrtbt_monitor();
    assign_cfg       ();
    create_cntxt     ();
@@ -319,6 +322,16 @@ function void uvmt_cva6_base_test_c::create_cfg();
 
 endfunction : create_cfg
 
+function void uvmt_cva6_base_test_c::pkg_to_cfg();
+
+    st_core_cntrl_cfg st = env_cfg.to_struct();
+    st = cva6pkg_to_core_cntrl_cfg(st);
+
+    env_cfg.from_struct(st);
+
+    env_cfg.post_randomize();
+
+endfunction : pkg_to_cfg
 
 function void uvmt_cva6_base_test_c::randomize_test();
 
@@ -326,8 +339,8 @@ function void uvmt_cva6_base_test_c::randomize_test();
    if (!this.randomize()) begin
       `uvm_fatal("BASE TEST", "Failed to randomize test");
    end
-   `uvm_info("BASE TEST", $sformatf("Top-level environment configuration:\n%s", env_cfg.sprint()), UVM_NONE)
-   `uvm_info("BASE TEST", $sformatf("Testcase configuration:\n%s", test_cfg.sprint()), UVM_NONE)
+   `uvm_info("BASE TEST", $sformatf("Top-level environment configuration:\n%s", env_cfg.sprint()), UVM_HIGH)
+   `uvm_info("BASE TEST", $sformatf("Testcase configuration:\n%s", test_cfg.sprint()), UVM_HIGH)
 
 endfunction : randomize_test
 

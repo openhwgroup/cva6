@@ -38,7 +38,7 @@ class uvme_cva6_env_c extends uvm_env;
    uvme_cva6_vsqr_c       vsequencer;
    uvme_cva6_cov_model_c  cov_model;
 
-   uvmc_rvfi_reference_model m_reference_model;
+   uvmc_rvfi_reference_model reference_model;
 
    // Agents
    uvma_clknrst_agent_c   clknrst_agent;
@@ -227,7 +227,7 @@ endfunction: connect_phase
 function void uvme_cva6_env_c::end_of_elaboration_phase(uvm_phase phase);
    super.end_of_elaboration_phase(phase);
 
-   `uvm_info("UVMECVA6ENV", $sformatf("Configuration:\n%s", cfg.sprint()), UVM_LOW)
+   `uvm_info("UVMECVA6ENV", $sformatf("Configuration:\n%s", cfg.sprint()), UVM_MEDIUM)
 
 endfunction : end_of_elaboration_phase
 
@@ -246,6 +246,10 @@ function void uvme_cva6_env_c::assign_cfg();
    uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "*rvfi_agent", "cfg", cfg.rvfi_cfg);
 
    uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
+
+   if (cfg.scoreboard_enabled) begin
+      uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "reference_model", "cfg", cfg);
+   end
 
 endfunction: assign_cfg
 
@@ -277,7 +281,7 @@ function void uvme_cva6_env_c::create_env_components();
    if (cfg.scoreboard_enabled) begin
       predictor = uvme_cva6_prd_c::type_id::create("predictor", this);
       sb        = uvme_cva6_sb_c ::type_id::create("sb"       , this);
-      m_reference_model = uvmc_rvfi_reference_model#(ILEN,XLEN)::type_id::create("m_reference_model", this);
+      reference_model = uvmc_rvfi_reference_model#(ILEN,XLEN)::type_id::create("reference_model", this);
    end
 
    if (cfg.cov_model_enabled) begin
@@ -328,8 +332,8 @@ function void uvme_cva6_env_c::connect_scoreboard();
    //      Ex: predictor.debug_ap.connect(sb.debug_sb.exp_export);
 
     rvfi_agent.rvfi_core_ap.connect(sb.m_rvfi_scoreboard.m_imp_core);
-    rvfi_agent.rvfi_core_ap.connect(m_reference_model.m_analysis_imp);
-    m_reference_model.m_analysis_port.connect(sb.m_rvfi_scoreboard.m_imp_reference_model);
+    rvfi_agent.rvfi_core_ap.connect(reference_model.m_analysis_imp);
+    reference_model.m_analysis_port.connect(sb.m_rvfi_scoreboard.m_imp_reference_model);
 
 endfunction: connect_scoreboard
 

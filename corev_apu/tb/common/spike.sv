@@ -13,7 +13,9 @@
 // Description: Wrapped Spike Model for Tandem Verification
 
 import ariane_pkg::*;
-import rvfi_pkg::*;
+import uvma_rvfi_pkg::*;
+import uvma_core_cntrl_pkg::*;
+import uvma_cva6pkg_utils_pkg::*;
 
 module spike #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg,
@@ -54,7 +56,12 @@ module spike #(
     string rtl_isa = "";
 
     initial begin
-        rvfi_initialize_spike('h1);
+        st_core_cntrl_cfg st = cva6pkg_to_core_cntrl_cfg(st);
+        st.boot_addr_valid = 1'b1;
+        st.boot_addr = 64'h0x10000;
+
+        rvfi_initialize_spike("cva6", st);
+
     end
 
     st_rvfi s_core, s_reference_model;
