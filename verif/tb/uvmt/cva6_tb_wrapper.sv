@@ -32,7 +32,7 @@ import uvm_pkg::*;
 
 import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
-import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
+import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);
 
 module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
