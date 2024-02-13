@@ -114,7 +114,7 @@ printf "+=======================================================================
 j=0
 while [[ $j -lt ${#TEST_NAME[@]} ]];do
   cp ../env/corev-dv/custom/riscv_custom_instr_enum.sv ./dv/src/isa/custom/
-  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=vcs-uvm,spike -i ${I[j]} -bz 1 --iss_timeout 300
+  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=vcs-uvm,spike --priv=m -i ${I[j]} -bz 1 --iss_timeout 300
   n=0
   echo "Generate the test: ${TEST_NAME[j]}"
 #this while loop detects the failed tests from the log file and remove them
@@ -137,6 +137,6 @@ done
 j=0
 elif [[ "$list_num" = 0 ]];then
    printf "==== Execute Directed tests to improve functional coverage of isa, by hitting corners !!! ====\n\n"
-   python3 cva6.py --testlist=$DIRECTED_TESTLIST --iss_yaml cva6.yaml --target $DV_TARGET --iss=vcs-uvm,spike
+   python3 cva6.py --testlist=$DIRECTED_TESTLIST --iss_yaml cva6.yaml --target $DV_TARGET --iss=vcs-uvm,spike --priv=m
 fi
 cd -

@@ -31,6 +31,6 @@ if ! [ -n "$DV_SIMULATORS" ]; then
 fi
 
 cd verif/sim/
-python3 cva6.py --testlist=../tests/testlist_csr_embedded.yaml --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS $DV_OPTS -i 1 --iss_timeout 300
+python3 cva6.py --testlist=../tests/testlist_csr_embedded.yaml --iss_yaml cva6.yaml --target $DV_TARGET --iss=$DV_SIMULATORS $DV_OPTS --priv=m -i 1 --iss_timeout 300
 
 cd -
