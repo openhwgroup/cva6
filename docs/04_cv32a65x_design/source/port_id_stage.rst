@@ -22,109 +22,148 @@
      - in
      - Subsystem Clock
      - SUBSYSTEM
+     - Subsystem Clock
      - logic
 
    * - ``rst_ni``
      - in
      - Asynchronous reset active low
      - SUBSYSTEM
+     - Asynchronous reset active low
      - logic
 
    * - ``flush_i``
      - in
      - Fetch flush request
      - CONTROLLER
+     - Fetch flush request
+     - logic
+
+   * - ``debug_req_i``
+     - in
+     - SUBSYSTEM
+     - Debug (async) request
      - logic
 
    * - ``fetch_entry_i``
      - in
      - Handshake's data between fetch and decode
      - FRONTEND
+     - Handshake's data between fetch and decode
      - ariane_pkg::fetch_entry_t
 
    * - ``fetch_entry_valid_i``
      - in
      - Handshake's valid between fetch and decode
      - FRONTEND
+     - Handshake's valid between fetch and decode
      - logic
 
    * - ``fetch_entry_ready_o``
      - out
      - Handshake's ready between fetch and decode
      - FRONTEND
+     - Handshake's ready between fetch and decode
      - logic
 
    * - ``issue_entry_o``
      - out
      - Handshake's data between decode and issue
      - ISSUE
+     - Handshake's data between decode and issue
      - ariane_pkg::scoreboard_entry_t
 
    * - ``orig_instr_o``
      - out
      - Instruction value
      - ISSUE
+     - instruction value
      - logic[31:0]
 
    * - ``issue_entry_valid_o``
      - out
      - Handshake's valid between decode and issue
      - ISSUE
+     - Handshake's valid between decode and issue
      - logic
 
    * - ``is_ctrl_flow_o``
      - out
      - Report if instruction is a control flow instruction
      - ISSUE
+     - Report if instruction is a control flow instruction
      - logic
 
    * - ``issue_instr_ack_i``
      - in
      - Handshake's acknowlege between decode and issue
      - ISSUE
+     - Handshake's acknowlege between decode and issue
      - logic
+
+   * - ``rvfi_is_compressed_o``
+     - out
+     - none
+     - none
+     - logic
+
+   * - ``priv_lvl_i``
+     - in
+     - CSR
+     - Report current privilege level
+     - riscv::priv_lvl_t
+
+   * - ``fs_i``
+     - in
+     - CSR
+     - Report floating point extension status
+     - riscv::xs_t
+
+   * - ``frm_i``
+     - in
+     - CSR
+     - Report floating point dynamic rounding mode
+     - logic[2:0]
+
+   * - ``vs_i``
+     - in
+     - CSR
+     - Report vector extension status
+     - riscv::xs_t
 
    * - ``irq_i``
      - in
      - Level sensitive (async) interrupts
      - SUBSYSTEM
+     - Level sensitive (async) interrupts
      - logic[1:0]
 
    * - ``irq_ctrl_i``
      - in
-     - Interrupt control status
-     - CSR_REGFILE
+     - CSR
+     - TBD
      - ariane_pkg::irq_ctrl_t
+
+   * - ``debug_mode_i``
+     - in
+     - CSR
+     - Report if current mode is debug
+     - logic
 
    * - ``tvm_i``
      - in
-     - Trap virtual memory
-     - CSR_REGFILE
+     - CSR
+     - TBD
      - logic
 
    * - ``tw_i``
      - in
-     - Timeout wait
-     - CSR_REGFILE
+     - CSR
+     - TBD
      - logic
 
    * - ``tsr_i``
      - in
-     - Trap sret
-     - CSR_REGFILE
+     - none
+     - none
      - logic
-
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
-
-| As DebugEn = 0,
-|   ``debug_req_i`` input is tied to 0
-|   ``debug_mode_i`` input is tied to 0
-| As IsRVFI = 0,
-|   ``rvfi_is_compressed_o`` output is tied to 0
-| As PRIV = MachineOnly,
-|   ``priv_lvl_i`` input is tied to MachineMode
-| As RVF = 0,
-|   ``fs_i`` input is tied to 0
-|   ``frm_i`` input is tied to 0
-| As RVV = 0,
-|   ``vs_i`` input is tied to 0

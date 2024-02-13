@@ -22,108 +22,135 @@
      - in
      - Subsystem Clock
      - SUBSYSTEM
+     - Subsystem Clock
      - logic
 
    * - ``rst_ni``
      - in
      - Asynchronous reset active low
      - SUBSYSTEM
+     - Asynchronous reset active low
      - logic
 
    * - ``flush_i``
      - in
      - Fetch flush request
      - CONTROLLER
+     - Fetch flush request
+     - logic
+
+   * - ``flush_bp_i``
+     - in
+     - zero
+     - flush branch prediction
      - logic
 
    * - ``halt_i``
      - in
      - halt commit stage
      - CONTROLLER
+     - halt commit stage
+     - logic
+
+   * - ``debug_mode_i``
+     - in
+     - CSR
+     - Debug mode state
      - logic
 
    * - ``boot_addr_i``
      - in
      - Next PC when reset
      - SUBSYSTEM
+     - Next PC when reset
      - logic[riscv::VLEN-1:0]
 
    * - ``resolved_branch_i``
      - in
      - mispredict event and next PC
      - EXECUTE
+     - mispredict event and next PC
      - bp_resolve_t
 
    * - ``set_pc_commit_i``
      - in
      - Set the PC coming from COMMIT as next PC
      - CONTROLLER
+     - Set the PC coming from COMMIT as next PC
      - logic
 
    * - ``pc_commit_i``
      - in
      - Next PC when flushing pipeline
      - COMMIT
+     - Next PC when flushing pipeline
      - logic[riscv::VLEN-1:0]
 
    * - ``epc_i``
      - in
      - Next PC when returning from exception
      - CSR
+     - Next PC when returning from exception
      - logic[riscv::VLEN-1:0]
 
    * - ``eret_i``
      - in
      - Return from exception event
      - CSR
+     - Return from exception event
      - logic
 
    * - ``trap_vector_base_i``
      - in
      - Next PC when jumping into exception
      - CSR
+     - Next PC when jumping into exception
      - logic[riscv::VLEN-1:0]
 
    * - ``ex_valid_i``
      - in
      - Exception event
      - COMMIT
+     - Exception event
+     - logic
+
+   * - ``set_debug_pc_i``
+     - in
+     - CSR
+     - Debug event
      - logic
 
    * - ``icache_dreq_o``
      - out
      - Handshake between CACHE and FRONTEND (fetch)
      - CACHES
+     - Handshake between CACHE and FRONTEND (fetch)
      - icache_dreq_t
 
    * - ``icache_dreq_i``
      - in
      - Handshake between CACHE and FRONTEND (fetch)
      - CACHES
+     - Handshake between CACHE and FRONTEND (fetch)
      - icache_drsp_t
 
    * - ``fetch_entry_o``
      - out
      - Handshake's data between fetch and decode
      - ID_STAGE
+     - Handshake's data between fetch and decode
      - fetch_entry_t
 
    * - ``fetch_entry_valid_o``
      - out
      - Handshake's valid between fetch and decode
      - ID_STAGE
+     - Handshake's valid between fetch and decode
      - logic
 
    * - ``fetch_entry_ready_i``
      - in
      - Handshake's ready between fetch and decode
      - ID_STAGE
+     - Handshake's ready between fetch and decode
      - logic
-
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
-
-| For any HW configuration,
-|   ``flush_bp_i`` input is tied to zero
-| As DebugEn = 0,
-|   ``debug_mode_i`` input is tied to 0
-|   ``set_debug_pc_i`` input is tied to 0

@@ -22,44 +22,47 @@
      - in
      - Subsystem Clock
      - SUBSYSTEM
+     - Subsystem Clock
      - logic
 
    * - ``rst_ni``
      - in
      - Asynchronous reset active low
      - SUBSYSTEM
+     - Asynchronous reset active low
      - logic
 
    * - ``flush_i``
      - in
      - Fetch flush request
      - CONTROLLER
+     - Fetch flush request
      - logic
 
    * - ``push_i``
      - in
      - Push address in RAS
      - FRONTEND
+     - Push address in RAS
      - logic
 
    * - ``pop_i``
      - in
      - Pop address from RAS
      - FRONTEND
+     - Pop address from RAS
      - logic
 
    * - ``data_i``
      - in
      - Data to be pushed
      - FRONTEND
+     - Data to be pushed
      - logic[riscv::VLEN-1:0]
 
    * - ``data_o``
      - out
      - Popped data
      - FRONTEND
+     - Popped data
      - ariane_pkg::ras_t
-
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
-
-none

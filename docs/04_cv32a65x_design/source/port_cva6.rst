@@ -22,75 +22,87 @@
      - in
      - Subsystem Clock
      - SUBSYSTEM
+     - Subsystem Clock
      - logic
 
    * - ``rst_ni``
      - in
      - Asynchronous reset active low
      - SUBSYSTEM
+     - Asynchronous reset active low
      - logic
 
    * - ``boot_addr_i``
      - in
      - Reset boot address
      - SUBSYSTEM
+     - Reset boot address
      - logic[riscv::VLEN-1:0]
 
    * - ``hart_id_i``
      - in
      - Hard ID reflected as CSR
      - SUBSYSTEM
+     - Hard ID reflected as CSR
      - logic[riscv::XLEN-1:0]
 
    * - ``irq_i``
      - in
      - Level sensitive (async) interrupts
      - SUBSYSTEM
+     - Level sensitive (async) interrupts
      - logic[1:0]
 
    * - ``ipi_i``
      - in
      - Inter-processor (async) interrupt
      - SUBSYSTEM
+     - Inter-processor (async) interrupt
      - logic
 
    * - ``time_irq_i``
      - in
-     - Timer (async) interrupt
      - SUBSYSTEM
+     - Timer (async) interrupt
+     - logic
+
+   * - ``debug_req_i``
+     - in
+     - SUBSYSTEM
+     - Debug (async) request
      - logic
 
    * - ``rvfi_probes_o``
      - out
      - Probes to build RVFI, can be left open when not used
      - SUBSYSTEM
+     - Probes to build RVFI, can be left open when not used
      - rvfi_probes_t
 
    * - ``cvxif_req_o``
      - out
      - CVXIF request
      - SUBSYSTEM
+     - CVXIF request
      - cvxif_req_t
 
    * - ``cvxif_resp_i``
      - in
      - CVXIF response
      - SUBSYSTEM
+     - CVXIF response
      - cvxif_resp_t
 
    * - ``noc_req_o``
      - out
      - noc request, can be AXI or OpenPiton
      - SUBSYSTEM
+     - noc request, can be AXI or OpenPiton
      - noc_req_t
 
    * - ``noc_resp_i``
      - in
      - noc response, can be AXI or OpenPiton
      - SUBSYSTEM
+     - noc response, can be AXI or OpenPiton
      - noc_resp_t
-
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
-
-| As DebugEn = 0,
-|   ``debug_req_i`` input is tied to 0
