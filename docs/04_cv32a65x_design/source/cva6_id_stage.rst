@@ -16,7 +16,7 @@ Description
 -----------
 
 The ID_STAGE module implements the decode stage of the pipeline.
-Its main purpose is to decode instructions coming from FRONTEND module
+Its main purpose is to decode RISC-V instructions coming from FRONTEND module
 (fetch stage) and send them to the ISSUE_STAGE module (issue stage).
 
 The compressed_decoder module checks whether the incoming instruction is
