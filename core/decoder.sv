@@ -24,29 +24,29 @@ module decoder
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
-    // External debug request - TO_BE_COMPLETED
+    // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
-    // PC from IF - TO_BE_COMPLETED
+    // PC from fetch stage - FRONTEND
     input logic [riscv::VLEN-1:0] pc_i,
-    // Is a compressed instruction - TO_BE_COMPLETED
+    // Is a compressed instruction - ID_STAGE
     input logic is_compressed_i,
-    // Compressed form of instruction - TO_BE_COMPLETED
+    // Compressed form of instruction - FRONTEND
     input logic [15:0] compressed_instr_i,
-    // Illegal compressed instruction - TO_BE_COMPLETED
+    // Illegal compressed instruction - ID_STAGE
     input logic is_illegal_i,
-    // Instruction from IF - TO_BE_COMPLETED
+    // Instruction from fetch stage - FRONTEND
     input logic [31:0] instruction_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Is a branch predict instruction - ID_STAGE
     input branchpredict_sbe_t branch_predict_i,
-    // If an exception occured in if - TO_BE_COMPLETED
+    // If an exception occured in fetch stage - FRONTEND
     input exception_t ex_i,
-    // External interrupt - TO_BE_COMPLETED
+    // Level sensitive (async) interrupts - SUBSYSTEM
     input logic [1:0] irq_i,
-    // Interrupt control and status information from CSRs - TO_BE_COMPLETED
+    // Interrupt control status - CSR_REGFILE
     input irq_ctrl_t irq_ctrl_i,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
-    // We are in debug mode - CSR_REGFILE
+    // Is debug mode - CSR_REGFILE
     input logic debug_mode_i,
     // Floating point extension status - CSR_REGFILE
     input riscv::xs_t fs_i,
@@ -60,11 +60,11 @@ module decoder
     input logic tw_i,
     // Trap sret - CSR_REGFILE
     input logic tsr_i,
-    // Scoreboard entry to scoreboard - COMMIT_STAGE
+    // Instruction to be added to scoreboard entry - ID_STAGE
     output scoreboard_entry_t instruction_o,
-    // Instruction opcode to issue read operand for CVXIF - TO_BE_COMPLETED
+    // Instruction - ISSUE_STAGE
     output logic [31:0] orig_instr_o,
-    // This instruction will change the control flow - TO_BE_COMPLETED
+    // Is a control flow instruction - ID_STAGE
     output logic is_control_flow_instr_o
 );
   logic illegal_instr;

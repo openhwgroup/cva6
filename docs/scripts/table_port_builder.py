@@ -46,6 +46,8 @@ if __name__ == "__main__":
     file.append("../core/csr_regfile.sv")
     file.append("../core/decoder.sv")
     file.append("../core/compressed_decoder.sv")
+    file.append("../core/scoreboard.sv")
+    file.append("../core/issue_read_operands.sv")
 
     for filein in file:
         a = re.match(r".*\/(.*).sv", filein)
@@ -94,13 +96,13 @@ if __name__ == "__main__":
             fout.write("\n")
             fout.write("   * - Signal\n")
             fout.write("     - IO\n")
+            fout.write("     - Description\n")
             fout.write("     - Connection\n")
             fout.write("     - Type\n")
-            fout.write("     - Description\n")
             for i, port in enumerate(ports):
                 fout.write("\n")
                 fout.write(f"   * - ``{port.name}``\n")
                 fout.write(f"     - {port.direction}\n")
-                fout.write(f"     - {port.connection}\n")
                 fout.write(f"     - {port.description}\n")
+                fout.write(f"     - {port.connection}\n")
                 fout.write(f"     - {port.data_type}\n")

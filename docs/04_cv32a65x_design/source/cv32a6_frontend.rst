@@ -15,11 +15,19 @@ FRONTEND Module
 Description
 -----------
 
-The FRONTEND module implements two first stages of the cva6 pipeline, PC gen and Fetch stages.
+The FRONTEND module implements two first stages of the cva6 pipeline,
+PC gen and Fetch stages.
 
-PC gen stage is responsible for generating the next program counter hosting a Branch Target Buffer (BTB) a Branch History Table (BHT) and a Return Address Stack (RAS) to speculate on the branch target address.
+PC gen stage is responsible for generating the next program counter
+hosting a Branch Target Buffer (BTB) a Branch History Table (BHT) and
+a Return Address Stack (RAS) to speculate on the branch target address.
 
-Fetch stage requests data to the CACHE module, realigns the data to store them in instruction queue and transmits the instructions to the DECODE module. FRONTEND can fetch up to 2 instructions per cycles when C extension instructions is used, but as instruction queue limits the data rate, up to one instruction per cycle can be sent to DECODE.
+Fetch stage requests data to the CACHE module, realigns the data to
+store them in instruction queue and transmits the instructions to the
+DECODE module.
+FRONTEND can fetch up to 2 instructions per cycles when
+C extension instructions is used, but as instruction queue limits the
+data rate, up to one instruction per cycle can be sent to DECODE.
 
 The module is connected to:
 
@@ -130,11 +138,16 @@ BHT (Branch History Table) submodule
 
 
 
-When a branch instruction is resolved by the EXECUTE, the relative information is stored in the Branch History Table.
+When a branch instruction is resolved by the EXECUTE, the relative
+information is stored in the Branch History Table.
 
 The information is stored in a 1024 entry table.
 
-The Branch History table is a two-bit saturation counter that takes the virtual address of the current fetched instruction by the CACHE. It states whether the current branch request should be taken or not. The two bit counter is updated by the successive execution of the current instructions as shown in the following figure.
+The Branch History table is a two-bit saturation counter that takes the
+virtual address of the current fetched instruction by the CACHE.
+It states whether the current branch request should be taken or not.
+The two bit counter is updated by the successive execution of the current
+instructions as shown in the following figure.
 
 .. figure:: ../images/bht.png
    :name: BHT saturation
@@ -145,7 +158,10 @@ The Branch History table is a two-bit saturation counter that takes the virtual 
 
 The BHT is not updated if processor is in debug mode.
 
-When a branch instruction is pre-decoded by instr_scan submodule, the BHT informs whether the PC address is in the BHT. In this case, the BHT predicts whether the branch is taken and provides the corresponding target address.
+When a branch instruction is pre-decoded by instr_scan submodule, the BHT
+informs whether the PC address is in the BHT. In this case, the BHT
+predicts whether the branch is taken and provides the corresponding target
+address.
 
 The BHT is never flushed.
 
@@ -156,13 +172,17 @@ BTB (Branch Target Buffer) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-When a unconditional jumps to a register (JALR instruction) is mispredicted by the EXECUTE, the relative information is stored into the BTB, that is to say the JALR PC and the target address.
+When a unconditional jumps to a register (JALR instruction) is mispredicted
+by the EXECUTE, the relative information is stored into the BTB, that is
+to say the JALR PC and the target address.
 
 The information is stored in a 8 entry table.
 
 The BTB is not updated if processor is in debug mode.
 
-When a branch instruction is pre-decoded by instr_scan submodule, the BTB informs whether the input PC address is in BTB. In this case, the BTB provides the corresponding target address.
+When a branch instruction is pre-decoded by instr_scan submodule, the BTB
+informs whether the input PC address is in BTB. In this case, the BTB
+provides the corresponding target address.
 
 The BTB is never flushed.
 
@@ -174,11 +194,15 @@ RAS (Return Address Stack) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-When an unconditional jumps to a known target address (JAL instruction) is consummed by the instr_queue, the next pc after the JAL instruction and the return address are stored into a FIFO.
+When an unconditional jumps to a known target address (JAL instruction)
+is consummed by the instr_queue, the next pc after the JAL instruction
+and the return address are stored into a FIFO.
 
 The RAS FIFO depth is 2.
 
-When a branch instruction is pre-decoded by instr_scan submodule, the RAS informs whether the input PC address is in RAS. In this case, the RAS provides the corresponding target address.
+When a branch instruction is pre-decoded by instr_scan submodule, the
+RAS informs whether the input PC address is in RAS. In this case, the
+RAS provides the corresponding target address.
 
 The RAS is never flushed.
 

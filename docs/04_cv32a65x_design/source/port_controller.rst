@@ -14,156 +14,156 @@
 
    * - Signal
      - IO
+     - Description
      - Connection
      - Type
-     - Description
 
    * - ``clk_i``
      - in
-     - SUBSYSTEM
      - Subsystem Clock
+     - SUBSYSTEM
      - logic
 
    * - ``rst_ni``
      - in
-     - SUBSYSTEM
      - Asynchronous reset active low
+     - SUBSYSTEM
      - logic
 
    * - ``set_pc_commit_o``
      - out
-     - FRONTEND
      - Set PC om PC Gen
+     - FRONTEND
      - logic
 
    * - ``flush_if_o``
      - out
-     - FRONTEND
      - Flush the IF stage
+     - FRONTEND
      - logic
 
    * - ``flush_unissued_instr_o``
      - out
-     - FRONTEND
      - Flush un-issued instructions of the scoreboard
+     - FRONTEND
      - logic
 
    * - ``flush_id_o``
      - out
-     - ID_STAGE
      - Flush ID stage
+     - ID_STAGE
      - logic
 
    * - ``flush_ex_o``
      - out
-     - EX_STAGE
      - Flush EX stage
+     - EX_STAGE
      - logic
 
    * - ``flush_bp_o``
      - out
-     - FRONTEND
      - Flush branch predictors
+     - FRONTEND
      - logic
 
    * - ``flush_icache_o``
      - out
-     - CACHE
      - Flush ICache
+     - CACHE
      - logic
 
    * - ``flush_dcache_o``
      - out
-     - CACHE
      - Flush DCache
+     - CACHE
      - logic
 
    * - ``flush_dcache_ack_i``
      - in
-     - CACHE
      - Acknowledge the whole DCache Flush
+     - CACHE
      - logic
 
    * - ``flush_tlb_o``
      - out
-     - EX_STAGE
      - Flush TLBs
+     - EX_STAGE
      - logic
 
    * - ``halt_csr_i``
      - in
-     - CSR_REGFILE
      - Halt request from CSR (WFI instruction)
+     - CSR_REGFILE
      - logic
 
    * - ``halt_acc_i``
      - in
-     - ACC_DISPATCHER
      - Halt request from accelerator dispatcher
+     - ACC_DISPATCHER
      - logic
 
    * - ``halt_o``
      - out
-     - COMMIT_STAGE
      - Halt signal to commit stage
+     - COMMIT_STAGE
      - logic
 
    * - ``eret_i``
      - in
-     - CSR_REGFILE
      - Return from exception
+     - CSR_REGFILE
      - logic
 
    * - ``ex_valid_i``
      - in
-     - FRONTEND
      - We got an exception, flush the pipeline
+     - FRONTEND
      - logic
 
    * - ``set_debug_pc_i``
      - in
-     - FRONTEND
      - set the debug pc from CSR
+     - FRONTEND
      - logic
 
    * - ``resolved_branch_i``
      - in
-     - EX_STAGE
      - We got a resolved branch, check if we need to flush the front-end
+     - EX_STAGE
      - bp_resolve_t
 
    * - ``flush_csr_i``
      - in
-     - CSR_REGFILE
      - We got an instruction which altered the CSR, flush the pipeline
+     - CSR_REGFILE
      - logic
 
    * - ``fence_i_i``
      - in
-     - ACC_DISPATCH
      - fence.i in
+     - ACC_DISPATCH
      - logic
 
    * - ``fence_i``
      - in
-     - ACC_DISPATCH
      - fence in
+     - ACC_DISPATCH
      - logic
 
    * - ``sfence_vma_i``
      - in
-     - COMMIT_STAGE
      - We got an instruction to flush the TLBs and pipeline
+     - COMMIT_STAGE
      - logic
 
    * - ``flush_commit_i``
      - in
-     - COMMIT_STAGE
      - Flush request from commit stage
+     - COMMIT_STAGE
      - logic
 
    * - ``flush_acc_i``
      - in
-     - ACC_DISPATCHER
      - Flush request from accelerator
+     - ACC_DISPATCHER
      - logic

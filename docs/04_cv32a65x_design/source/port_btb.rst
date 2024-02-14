@@ -14,48 +14,48 @@
 
    * - Signal
      - IO
+     - Description
      - Connection
      - Type
-     - Description
 
    * - ``clk_i``
      - in
-     - SUBSYSTEM
      - Subsystem Clock
+     - SUBSYSTEM
      - logic
 
    * - ``rst_ni``
      - in
-     - SUBSYSTEM
      - Asynchronous reset active low
+     - SUBSYSTEM
      - logic
 
    * - ``flush_i``
      - in
-     - CONTROLLER
      - Fetch flush request
+     - CONTROLLER
      - logic
 
    * - ``debug_mode_i``
      - in
-     - CSR
      - Debug mode state
+     - CSR
      - logic
 
    * - ``vpc_i``
      - in
-     - CACHE
      - Virtual PC
+     - CACHE
      - logic[riscv::VLEN-1:0]
 
    * - ``btb_update_i``
      - in
-     - EXECUTE
      - Update BTB with resolved address
+     - EXECUTE
      - ariane_pkg::btb_update_t
 
    * - ``btb_prediction_o``
      - out
-     - FRONTEND
      - BTB Prediction
+     - FRONTEND
      - ariane_pkg::btb_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]

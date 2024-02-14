@@ -14,132 +14,132 @@
 
    * - Signal
      - IO
+     - Description
      - Connection
      - Type
-     - Description
 
    * - ``debug_req_i``
      - in
-     - TO_BE_COMPLETED
-     - External debug request
+     - Debug (async) request
+     - SUBSYSTEM
      - logic
 
    * - ``pc_i``
      - in
-     - TO_BE_COMPLETED
-     - PC from IF
+     - PC from fetch stage
+     - FRONTEND
      - logic[riscv::VLEN-1:0]
 
    * - ``is_compressed_i``
      - in
-     - TO_BE_COMPLETED
      - Is a compressed instruction
+     - ID_STAGE
      - logic
 
    * - ``compressed_instr_i``
      - in
-     - TO_BE_COMPLETED
      - Compressed form of instruction
+     - FRONTEND
      - logic[15:0]
 
    * - ``is_illegal_i``
      - in
-     - TO_BE_COMPLETED
      - Illegal compressed instruction
+     - ID_STAGE
      - logic
 
    * - ``instruction_i``
      - in
-     - TO_BE_COMPLETED
-     - Instruction from IF
+     - Instruction from fetch stage
+     - FRONTEND
      - logic[31:0]
 
    * - ``branch_predict_i``
      - in
-     - TO_BE_COMPLETED
-     - TO_BE_COMPLETED
+     - Is a branch predict instruction
+     - ID_STAGE
      - branchpredict_sbe_t
 
    * - ``ex_i``
      - in
-     - TO_BE_COMPLETED
-     - If an exception occured in if
+     - If an exception occured in fetch stage
+     - FRONTEND
      - exception_t
 
    * - ``irq_i``
      - in
-     - TO_BE_COMPLETED
-     - External interrupt
+     - Level sensitive (async) interrupts
+     - SUBSYSTEM
      - logic[1:0]
 
    * - ``irq_ctrl_i``
      - in
-     - TO_BE_COMPLETED
-     - Interrupt control and status information from CSRs
+     - Interrupt control status
+     - CSR_REGFILE
      - irq_ctrl_t
 
    * - ``priv_lvl_i``
      - in
-     - CSR_REGFILE
      - Current privilege level
+     - CSR_REGFILE
      - riscv::priv_lvl_t
 
    * - ``debug_mode_i``
      - in
+     - Is debug mode
      - CSR_REGFILE
-     - We are in debug mode
      - logic
 
    * - ``fs_i``
      - in
-     - CSR_REGFILE
      - Floating point extension status
+     - CSR_REGFILE
      - riscv::xs_t
 
    * - ``frm_i``
      - in
-     - CSR_REGFILE
      - Floating-point dynamic rounding mode
+     - CSR_REGFILE
      - logic[2:0]
 
    * - ``vs_i``
      - in
-     - CSR_REGFILE
      - Vector extension status
+     - CSR_REGFILE
      - riscv::xs_t
 
    * - ``tvm_i``
      - in
-     - CSR_REGFILE
      - Trap virtual memory
+     - CSR_REGFILE
      - logic
 
    * - ``tw_i``
      - in
-     - CSR_REGFILE
      - Timeout wait
+     - CSR_REGFILE
      - logic
 
    * - ``tsr_i``
      - in
-     - CSR_REGFILE
      - Trap sret
+     - CSR_REGFILE
      - logic
 
    * - ``instruction_o``
      - out
-     - COMMIT_STAGE
-     - Scoreboard entry to scoreboard
+     - Instruction to be added to scoreboard entry
+     - ID_STAGE
      - scoreboard_entry_t
 
    * - ``orig_instr_o``
      - out
-     - TO_BE_COMPLETED
-     - Instruction opcode to issue read operand for CVXIF
+     - Instruction
+     - ISSUE_STAGE
      - logic[31:0]
 
    * - ``is_control_flow_instr_o``
      - out
-     - TO_BE_COMPLETED
-     - This instruction will change the control flow
+     - Is a control flow instruction
+     - ID_STAGE
      - logic

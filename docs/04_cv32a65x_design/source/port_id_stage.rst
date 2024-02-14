@@ -14,144 +14,144 @@
 
    * - Signal
      - IO
+     - Description
      - Connection
      - Type
-     - Description
 
    * - ``clk_i``
      - in
-     - SUBSYSTEM
      - Subsystem Clock
+     - SUBSYSTEM
      - logic
 
    * - ``rst_ni``
      - in
-     - SUBSYSTEM
      - Asynchronous reset active low
+     - SUBSYSTEM
      - logic
 
    * - ``flush_i``
      - in
-     - CONTROLLER
      - Fetch flush request
+     - CONTROLLER
      - logic
 
    * - ``debug_req_i``
      - in
-     - SUBSYSTEM
      - Debug (async) request
+     - SUBSYSTEM
      - logic
 
    * - ``fetch_entry_i``
      - in
-     - FRONTEND
      - Handshake's data between fetch and decode
+     - FRONTEND
      - ariane_pkg::fetch_entry_t
 
    * - ``fetch_entry_valid_i``
      - in
-     - FRONTEND
      - Handshake's valid between fetch and decode
+     - FRONTEND
      - logic
 
    * - ``fetch_entry_ready_o``
      - out
-     - FRONTEND
      - Handshake's ready between fetch and decode
+     - FRONTEND
      - logic
 
    * - ``issue_entry_o``
      - out
-     - ISSUE
      - Handshake's data between decode and issue
+     - ISSUE
      - ariane_pkg::scoreboard_entry_t
 
    * - ``orig_instr_o``
      - out
+     - Instruction value
      - ISSUE
-     - instruction value
      - logic[31:0]
 
    * - ``issue_entry_valid_o``
      - out
-     - ISSUE
      - Handshake's valid between decode and issue
+     - ISSUE
      - logic
 
    * - ``is_ctrl_flow_o``
      - out
-     - ISSUE
      - Report if instruction is a control flow instruction
+     - ISSUE
      - logic
 
    * - ``issue_instr_ack_i``
      - in
-     - ISSUE
      - Handshake's acknowlege between decode and issue
+     - ISSUE
      - logic
 
    * - ``rvfi_is_compressed_o``
      - out
-     - none
-     - none
+     - Information dedicated to RVFI
+     - SUBSYSTEM
      - logic
 
    * - ``priv_lvl_i``
      - in
-     - CSR
-     - Report current privilege level
+     - Current privilege level
+     - CSR_REGFILE
      - riscv::priv_lvl_t
 
    * - ``fs_i``
      - in
-     - CSR
-     - Report floating point extension status
+     - Floating point extension status
+     - CSR_REGFILE
      - riscv::xs_t
 
    * - ``frm_i``
      - in
-     - CSR
-     - Report floating point dynamic rounding mode
+     - Floating point dynamic rounding mode
+     - CSR_REGFILE
      - logic[2:0]
 
    * - ``vs_i``
      - in
-     - CSR
-     - Report vector extension status
+     - Vector extension status
+     - CSR_REGFILE
      - riscv::xs_t
 
    * - ``irq_i``
      - in
-     - SUBSYSTEM
      - Level sensitive (async) interrupts
+     - SUBSYSTEM
      - logic[1:0]
 
    * - ``irq_ctrl_i``
      - in
-     - CSR
-     - TBD
+     - Interrupt control status
+     - CSR_REGFILE
      - ariane_pkg::irq_ctrl_t
 
    * - ``debug_mode_i``
      - in
-     - CSR
-     - Report if current mode is debug
+     - Is current mode debug ?
+     - CSR_REGFILE
      - logic
 
    * - ``tvm_i``
      - in
-     - CSR
-     - TBD
+     - Trap virtual memory
+     - CSR_REGFILE
      - logic
 
    * - ``tw_i``
      - in
-     - CSR
-     - TBD
+     - Timeout wait
+     - CSR_REGFILE
      - logic
 
    * - ``tsr_i``
      - in
-     - none
-     - none
+     - Trap sret
+     - CSR_REGFILE
      - logic

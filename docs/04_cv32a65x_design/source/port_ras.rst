@@ -14,48 +14,48 @@
 
    * - Signal
      - IO
+     - Description
      - Connection
      - Type
-     - Description
 
    * - ``clk_i``
      - in
-     - SUBSYSTEM
      - Subsystem Clock
+     - SUBSYSTEM
      - logic
 
    * - ``rst_ni``
      - in
-     - SUBSYSTEM
      - Asynchronous reset active low
+     - SUBSYSTEM
      - logic
 
    * - ``flush_i``
      - in
-     - CONTROLLER
      - Fetch flush request
+     - CONTROLLER
      - logic
 
    * - ``push_i``
      - in
-     - FRONTEND
      - Push address in RAS
+     - FRONTEND
      - logic
 
    * - ``pop_i``
      - in
-     - FRONTEND
      - Pop address from RAS
+     - FRONTEND
      - logic
 
    * - ``data_i``
      - in
-     - FRONTEND
      - Data to be pushed
+     - FRONTEND
      - logic[riscv::VLEN-1:0]
 
    * - ``data_o``
      - out
-     - FRONTEND
      - Popped data
+     - FRONTEND
      - ariane_pkg::ras_t

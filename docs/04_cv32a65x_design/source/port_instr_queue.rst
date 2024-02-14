@@ -14,108 +14,108 @@
 
    * - Signal
      - IO
+     - Description
      - Connection
      - Type
-     - Description
 
    * - ``clk_i``
      - in
-     - SUBSYSTEM
      - Subsystem Clock
+     - SUBSYSTEM
      - logic
 
    * - ``rst_ni``
      - in
-     - SUBSYSTEM
      - Asynchronous reset active low
+     - SUBSYSTEM
      - logic
 
    * - ``flush_i``
      - in
-     - CONTROLLER
      - Fetch flush request
+     - CONTROLLER
      - logic
 
    * - ``instr_i``
      - in
-     - instr_realign
      - Instruction
+     - instr_realign
      - logic[ariane_pkg::INSTR_PER_FETCH-1:0][31:0]
 
    * - ``addr_i``
      - in
-     - instr_realign
      - Instruction address
+     - instr_realign
      - logic[ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
 
    * - ``valid_i``
      - in
-     - instr_realign
      - Instruction is valid
+     - instr_realign
      - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
 
    * - ``ready_o``
      - out
-     - CACHE
      - Handshake’s ready with CACHE
+     - CACHE
      - logic
 
    * - ``consumed_o``
      - out
-     - FRONTEND
      - Indicates instructions consummed, or popped by ID_STAGE
+     - FRONTEND
      - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
 
    * - ``exception_i``
      - in
-     - CACHE
      - Exception (which is page-table fault)
+     - CACHE
      - ariane_pkg::frontend_exception_t
 
    * - ``exception_addr_i``
      - in
-     - CACHE
      - Exception address
+     - CACHE
      - logic[riscv::VLEN-1:0]
 
    * - ``predict_address_i``
      - in
-     - FRONTEND
      - Branch predict
+     - FRONTEND
      - logic[riscv::VLEN-1:0]
 
    * - ``cf_type_i``
      - in
-     - FRONTEND
      - Instruction predict address
+     - FRONTEND
      - ariane_pkg::cf_t[ariane_pkg::INSTR_PER_FETCH-1:0]
 
    * - ``replay_o``
      - out
-     - FRONTEND
      - Replay instruction because one of the FIFO was  full
+     - FRONTEND
      - logic
 
    * - ``replay_addr_o``
      - out
-     - FRONTEND
      - Address at which to replay the fetch
+     - FRONTEND
      - logic[riscv::VLEN-1:0]
 
    * - ``fetch_entry_o``
      - out
-     - ID_STAGE
      - Handshake’s data with ID_STAGE
+     - ID_STAGE
      - ariane_pkg::fetch_entry_t
 
    * - ``fetch_entry_valid_o``
      - out
-     - ID_STAGE
      - Handshake’s valid with ID_STAGE
+     - ID_STAGE
      - logic
 
    * - ``fetch_entry_ready_i``
      - in
-     - ID_STAGE
      - Handshake’s ready with ID_STAGE
+     - ID_STAGE
      - logic

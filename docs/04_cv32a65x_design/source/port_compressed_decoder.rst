@@ -14,30 +14,30 @@
 
    * - Signal
      - IO
+     - Description
      - Connection
      - Type
-     - Description
 
    * - ``instr_i``
      - in
+     - Input instruction coming from fetch stage
      - FRONTEND
-     - Input instruction which can be compressed
      - logic[31:0]
 
    * - ``instr_o``
      - out
+     - Output instruction in uncompressed format
      - ID_STAGE
-     - Output instruction which is uncompressed
      - logic[31:0]
 
    * - ``illegal_instr_o``
      - out
-     - TO_BE_COMPLETED
-     - Illegal instruction exception
+     - Input instruction is illegal
+     - ID_STAGE
      - logic
 
    * - ``is_compressed_o``
      - out
-     - TO_BE_COMPLETED
-     - report if instruction is compressed
+     - Output instruction is compressed
+     - ID_STAGE
      - logic

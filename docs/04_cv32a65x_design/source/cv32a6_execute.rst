@@ -8,11 +8,14 @@ EX_STAGE Module
 Description
 ***********
 
-The EX_STAGE module implements ... TO BE COMPLETED
+The EX_STAGE module is a logical stage which implements the execute stage.
+It encapsulates the following functional units:
+ALU, Branch Unit, CSR buffer, Mult, load and store and CVXIF.
 
 The module is connected to:
 
-* TO BE COMPLETED
+* ID_STAGE module provides scoreboard entry.
+* 
 
 .. include:: port_ex_stage.rst
 

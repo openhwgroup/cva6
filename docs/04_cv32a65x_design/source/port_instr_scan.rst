@@ -14,90 +14,90 @@
 
    * - Signal
      - IO
+     - Description
      - Connection
      - Type
-     - Description
 
    * - ``instr_i``
      - in
-     - instr_realign
      - Instruction to be predecoded
+     - instr_realign
      - logic[31:0]
 
    * - ``rvi_return_o``
      - out
-     - FRONTEND
      - Return instruction
+     - FRONTEND
      - logic
 
    * - ``rvi_call_o``
      - out
-     - FRONTEND
      - JAL instruction
+     - FRONTEND
      - logic
 
    * - ``rvi_branch_o``
      - out
-     - FRONTEND
      - Branch instruction
+     - FRONTEND
      - logic
 
    * - ``rvi_jalr_o``
      - out
-     - FRONTEND
      - JALR instruction
+     - FRONTEND
      - logic
 
    * - ``rvi_jump_o``
      - out
-     - FRONTEND
      - Unconditional jump instruction
+     - FRONTEND
      - logic
 
    * - ``rvi_imm_o``
      - out
-     - FRONTEND
      - Instruction immediat
+     - FRONTEND
      - logic[riscv::VLEN-1:0]
 
    * - ``rvc_branch_o``
      - out
-     - FRONTEND
      - Branch compressed instruction
+     - FRONTEND
      - logic
 
    * - ``rvc_jump_o``
      - out
-     - FRONTEND
      - Unconditional jump compressed instruction
+     - FRONTEND
      - logic
 
    * - ``rvc_jr_o``
      - out
-     - FRONTEND
      - JR compressed instruction
+     - FRONTEND
      - logic
 
    * - ``rvc_return_o``
      - out
-     - FRONTEND
      - Return compressed instruction
+     - FRONTEND
      - logic
 
    * - ``rvc_jalr_o``
      - out
-     - FRONTEND
      - JALR compressed instruction
+     - FRONTEND
      - logic
 
    * - ``rvc_call_o``
      - out
-     - FRONTEND
      - JAL compressed instruction
+     - FRONTEND
      - logic
 
    * - ``rvc_imm_o``
      - out
-     - FRONTEND
      - Instruction compressed immediat
+     - FRONTEND
      - logic[riscv::VLEN-1:0]

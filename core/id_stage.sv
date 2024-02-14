@@ -32,7 +32,7 @@ module id_stage #(
     output logic fetch_entry_ready_o,
     // Handshake's data between decode and issue - ISSUE
     output ariane_pkg::scoreboard_entry_t issue_entry_o,
-    // instruction value - ISSUE
+    // Instruction value - ISSUE
     output logic [31:0] orig_instr_o,
     // Handshake's valid between decode and issue - ISSUE
     output logic issue_entry_valid_o,
@@ -40,27 +40,27 @@ module id_stage #(
     output logic is_ctrl_flow_o,
     // Handshake's acknowlege between decode and issue - ISSUE
     input logic issue_instr_ack_i,
-    // Information dedicated to RVFI- SUBSYSTEM
+    // Information dedicated to RVFI - SUBSYSTEM
     output logic rvfi_is_compressed_o,
-    // Report current privilege level - CSR
+    // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
-    // Report floating point extension status - CSR
+    // Floating point extension status - CSR_REGFILE
     input riscv::xs_t fs_i,
-    // Report floating point dynamic rounding mode - CSR
+    // Floating point dynamic rounding mode - CSR_REGFILE
     input logic [2:0] frm_i,
-    // Report vector extension status - CSR
+    // Vector extension status - CSR_REGFILE
     input riscv::xs_t vs_i,
     // Level sensitive (async) interrupts - SUBSYSTEM
     input logic [1:0] irq_i,
-    // TBD - CSR
+    // Interrupt control status - CSR_REGFILE
     input ariane_pkg::irq_ctrl_t irq_ctrl_i,
-    // Report if current mode is debug - CSR
+    // Is current mode debug ? - CSR_REGFILE
     input logic debug_mode_i,
-    // TBD - CSR
+    // Trap virtual memory - CSR_REGFILE
     input logic tvm_i,
-    // TBD - CSR
+    // Timeout wait - CSR_REGFILE
     input logic tw_i,
-    // TBD- CSR
+    // Trap sret - CSR_REGFILE
     input logic tsr_i
 );
   // ID/ISSUE register stage
