@@ -33,7 +33,7 @@
    * - ``is_compressed_i``
      - in
      - Is a compressed instruction
-     - ID_STAGE
+     - compressed_decoder
      - logic
 
    * - ``compressed_instr_i``
@@ -45,7 +45,7 @@
    * - ``is_illegal_i``
      - in
      - Illegal compressed instruction
-     - ID_STAGE
+     - compressed_decoder
      - logic
 
    * - ``instruction_i``
@@ -57,7 +57,7 @@
    * - ``branch_predict_i``
      - in
      - Is a branch predict instruction
-     - ID_STAGE
+     - FRONTEND
      - branchpredict_sbe_t
 
    * - ``ex_i``
@@ -129,7 +129,7 @@
    * - ``instruction_o``
      - out
      - Instruction to be added to scoreboard entry
-     - ID_STAGE
+     - ISSUE_STAGE
      - scoreboard_entry_t
 
    * - ``orig_instr_o``
@@ -141,5 +141,5 @@
    * - ``is_control_flow_instr_o``
      - out
      - Is a control flow instruction
-     - ID_STAGE
+     - ISSUE_STAGE
      - logic

@@ -74,6 +74,6 @@
 
    * - ``instr_o``
      - out
-     - none
-     - none
+     - Instruction
+     - instr_scan&instr_queue
      - logic[INSTR_PER_FETCH-1:0][31:0]

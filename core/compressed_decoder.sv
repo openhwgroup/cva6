@@ -24,11 +24,11 @@ module compressed_decoder #(
 ) (
     // Input instruction coming from fetch stage - FRONTEND
     input  logic [31:0] instr_i,
-    // Output instruction in uncompressed format - ID_STAGE
+    // Output instruction in uncompressed format - decoder
     output logic [31:0] instr_o,
-    // Input instruction is illegal - ID_STAGE
+    // Input instruction is illegal - decoder
     output logic        illegal_instr_o,
-    // Output instruction is compressed - ID_STAGE
+    // Output instruction is compressed - decoder
     output logic        is_compressed_o
 );
 

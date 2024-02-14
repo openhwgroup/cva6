@@ -28,15 +28,15 @@ module decoder
     input logic debug_req_i,
     // PC from fetch stage - FRONTEND
     input logic [riscv::VLEN-1:0] pc_i,
-    // Is a compressed instruction - ID_STAGE
+    // Is a compressed instruction - compressed_decoder
     input logic is_compressed_i,
     // Compressed form of instruction - FRONTEND
     input logic [15:0] compressed_instr_i,
-    // Illegal compressed instruction - ID_STAGE
+    // Illegal compressed instruction - compressed_decoder
     input logic is_illegal_i,
     // Instruction from fetch stage - FRONTEND
     input logic [31:0] instruction_i,
-    // Is a branch predict instruction - ID_STAGE
+    // Is a branch predict instruction - FRONTEND
     input branchpredict_sbe_t branch_predict_i,
     // If an exception occured in fetch stage - FRONTEND
     input exception_t ex_i,
@@ -60,11 +60,11 @@ module decoder
     input logic tw_i,
     // Trap sret - CSR_REGFILE
     input logic tsr_i,
-    // Instruction to be added to scoreboard entry - ID_STAGE
+    // Instruction to be added to scoreboard entry - ISSUE_STAGE
     output scoreboard_entry_t instruction_o,
     // Instruction - ISSUE_STAGE
     output logic [31:0] orig_instr_o,
-    // Is a control flow instruction - ID_STAGE
+    // Is a control flow instruction - ISSUE_STAGE
     output logic is_control_flow_instr_o
 );
   logic illegal_instr;

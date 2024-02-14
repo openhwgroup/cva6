@@ -27,17 +27,17 @@
    * - ``instr_o``
      - out
      - Output instruction in uncompressed format
-     - ID_STAGE
+     - decoder
      - logic[31:0]
 
    * - ``illegal_instr_o``
      - out
      - Input instruction is illegal
-     - ID_STAGE
+     - decoder
      - logic
 
    * - ``is_compressed_o``
      - out
      - Output instruction is compressed
-     - ID_STAGE
+     - decoder
      - logic
