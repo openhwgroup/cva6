@@ -227,7 +227,7 @@ ALL_XRUN_UVM_FLAGS      = -elaborate -messages -sv +incdir+$(XCELIUM_HOME)/tools
 	  -xmerror CUNOTB -nowarn CUDEFB -nowarn CUSRCH -warn_multiple_driver -relax_svbtis -timescale 1ns/1ps -status -access +rwc -log   $(XRUN_WORK_DIR)/tb_compile.log
 ##-relax_svbtis
 ##ALL_XRUN_SIMV_UVM_FLAGS      = -licwait 20 $(issrun_opts) 
-ALL_XRUN_SIMV_UVM_FLAGS      =  +sv_lib=$(CVA6_REPO_DIR)/verif/core-v-verif/lib/dpi_dasm/lib/Linux64/libdpi_dasm.so 
+ALL_XRUN_SIMV_UVM_FLAGS      =  +sv_lib=$(CVA6_REPO_DIR)/tools/spike/lib/libdisasm +signature=I-ADD-01.signature_output
 ##		+UVM_TESTNAME=uvmt_cva6_firmware_test_c
 
 ##XRUN_RUN_FLAGS := -R -64bit -disable_sem2009 -uvmhome CDNS-1.2  +UVM_VERBOSITY=UVM_LOW -svseed 1 -access +rwc -sv -timescale 1ns/1ps		
@@ -268,9 +268,11 @@ ifneq ($(DEBUG),)               # If RTL DEBUG support requested
 endif
 
 ifneq ($(SPIKE_TANDEM),)
-COMMON_RUN_ARGS += +tandem_enabled=1
+ALL_SIMV_UVM_FLAGS += +scoreboard_enabled=1
+ALL_XRUN_SIMV_UVM_FLAGS += +scoreboard_enabled=1
 else
-COMMON_RUN_ARGS += +tandem_enabled=0
+ALL_SIMV_UVM_FLAGS += +scoreboard_enabled=0
+ALL_XRUN_SIMV_UVM_FLAGS += +scoreboard_enabled=0
 endif
 
 vcs_uvm_comp:
@@ -363,18 +365,18 @@ xrun_uvm_comp:
 xrun_uvm_run:
 	@echo "[XRUN] Running"
 	cd $(XRUN_WORK_DIR) && 	\
-	  xrun +permissive			\
+	  xrun 			\
 	  $(XRUN_RUN)			\
 	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libriscv \
 	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libfesvr \
+	  ++$(elf) \
+	  +elf_file=$(elf) \
           +define+UVM_NO_DEPRECATED  \
-	  +MAX_CYCLES=$(max_cycles)	\
-	  +UVM_CONFIG_DB_TRACE	\
 	  +UVM_TESTNAME=uvmt_cva6_firmware_test_c	\
-	  +time_out=2000000000            \
-	  +tohost_addr=80001000           \
+	  +tohost_addr=$(shell ${RISCV}/bin/riscv32-unknown-elf-nm -B $(elf) | grep -w tohost | cut -d' ' -f1)          \
+	  $(cov-comp-opt) $(issrun_opts)    \
 	  -gui				\
-	  +permissive-off			
+	  			
 
 xrun-uvm: xrun_uvm_comp xrun_uvm_run
 
