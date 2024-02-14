@@ -7,9 +7,9 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_btb_ports:
+.. _CVA6_mult_ports:
 
-.. list-table:: btb module IO ports
+.. list-table:: mult module IO ports
    :header-rows: 1
 
    * - Signal
@@ -32,29 +32,46 @@
 
    * - ``flush_i``
      - in
-     - Fetch flush request
+     - Flush
      - CONTROLLER
      - logic
 
-   * - ``vpc_i``
+   * - ``fu_data_i``
      - in
-     - Virtual PC
-     - CACHE
-     - logic[riscv::VLEN-1:0]
+     - FU data needed to execute instruction
+     - ISSUE_STAGE
+     - fu_data_t
 
-   * - ``btb_update_i``
+   * - ``mult_valid_i``
      - in
-     - Update BTB with resolved address
-     - EXECUTE
-     - ariane_pkg::btb_update_t
+     - Mult instruction is valid
+     - ISSUE_STAGE
+     - logic
 
-   * - ``btb_prediction_o``
+   * - ``result_o``
      - out
-     - BTB Prediction
-     - FRONTEND
-     - ariane_pkg::btb_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - Mult result
+     - ISSUE_STAGE
+     - riscv::xlen_t
+
+   * - ``mult_valid_o``
+     - out
+     - Mult result is valid
+     - ISSUE_STAGE
+     - logic
+
+   * - ``mult_ready_o``
+     - out
+     - Mutl is ready
+     - ISSUE_STAGE
+     - logic
+
+   * - ``mult_trans_id_o``
+     - out
+     - Mult transaction ID
+     - ISSUE_STAGE
+     - logic[TRANS_ID_BITS-1:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As DebugEn = 0,
-|   ``debug_mode_i`` input is tied to 0
+none

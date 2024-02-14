@@ -14,30 +14,34 @@
 
    * - Signal
      - IO
-     - Connection
-     - Type
      - Description
+     - connexion
+     - Type
 
    * - ``instr_i``
      - in
+     - Input instruction coming from fetch stage
      - FRONTEND
-     - Input instruction which can be compressed
      - logic[31:0]
 
    * - ``instr_o``
      - out
-     - ID_STAGE
-     - Output instruction which is uncompressed
+     - Output instruction in uncompressed format
+     - decoder
      - logic[31:0]
 
    * - ``illegal_instr_o``
      - out
-     - TO_BE_COMPLETED
-     - Illegal instruction exception
+     - Input instruction is illegal
+     - decoder
      - logic
 
    * - ``is_compressed_o``
      - out
-     - TO_BE_COMPLETED
-     - report if instruction is compressed
+     - Output instruction is compressed
+     - decoder
      - logic
+
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+none

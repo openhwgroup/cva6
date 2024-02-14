@@ -18,216 +18,202 @@
      - connexion
      - Type
 
-   * - ``Clock``
+   * - ``clk_i``
      - in
-     - none
-     - none
-     - logicclk_i,//
+     - Subsystem Clock
+     - SUBSYSTEM
+     - logic
 
-   * - ``low``
+   * - ``rst_ni``
      - in
-     - none
-     - none
-     - logicrst_ni,//Asynchronousresetactive
+     - Asynchronous reset active low
+     - SUBSYSTEM
+     - logic
 
    * - ``sb_full_o``
      - out
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic
 
-   * - ``instructions``
+   * - ``flush_unissued_instr_i``
      - in
-     - none
-     - none
-     - logicflush_unissued_instr_i,//flushonlyun-issued
+     - Flush only un-issued instructions
+     - TO_BE_COMPLETED
+     - logic
 
-   * - ``scoreboard``
+   * - ``flush_i``
      - in
-     - none
-     - none
-     - logicflush_i,//flushwhole
+     - Flush whole scoreboard
+     - TO_BE_COMPLETED
+     - logic
 
-   * - ``branch``
+   * - ``unresolved_branch_i``
      - in
-     - none
-     - none
-     - logicunresolved_branch_i,//wehaveanunresolved
+     - We have an unresolved branch
+     - TO_BE_COMPLETED
+     - logic
 
    * - ``rd_clobber_gpr_o``
      - out
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - ariane_pkg::fu_t[2**ariane_pkg::REG_ADDR_SIZE-1:0]
 
    * - ``rd_clobber_fpr_o``
      - out
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - ariane_pkg::fu_t[2**ariane_pkg::REG_ADDR_SIZE-1:0]
 
    * - ``rs1_i``
      - in
-     - none
-     - none
+     - rs1 operand
+     - issue_read_operands
      - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
 
    * - ``rs1_o``
      - out
-     - none
-     - none
+     - rs1 operand
+     - issue_read_operands
      - riscv::xlen_t
 
    * - ``rs1_valid_o``
      - out
-     - none
-     - none
+     - rs1 operand is valid
+     - issue_read_operands
      - logic
 
    * - ``rs2_i``
      - in
-     - none
-     - none
+     - rs2 operand
+     - issue_read_operands
      - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
 
    * - ``rs2_o``
      - out
-     - none
-     - none
+     - rs2 operand
+     - issue_read_operands
      - riscv::xlen_t
 
    * - ``rs2_valid_o``
      - out
-     - none
-     - none
+     - rs2 operand is valid
+     - issue_read_operands
      - logic
 
    * - ``rs3_i``
      - in
-     - none
-     - none
+     - rs3 operand
+     - issue_read_operands
      - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
 
    * - ``rs3_o``
      - out
-     - none
-     - none
+     - rs3 operand
+     - issue_read_operands
      - rs3_len_t
 
    * - ``rs3_valid_o``
      - out
-     - none
-     - none
+     - rs3 operand is valid
+     - issue_read_operands
      - logic
 
    * - ``commit_instr_o``
      - out
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - ariane_pkg::scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
 
    * - ``commit_ack_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic[CVA6Cfg.NrCommitPorts-1:0]
 
    * - ``decoded_instr_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - ariane_pkg::scoreboard_entry_t
 
    * - ``orig_instr_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic[31:0]
 
    * - ``decoded_instr_valid_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic
 
    * - ``decoded_instr_ack_o``
      - out
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic
-
-   * - ``issue_instr_o``
-     - out
-     - none
-     - none
-     - ariane_pkg::scoreboard_entry_t
 
    * - ``orig_instr_o``
      - out
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic[31:0]
 
    * - ``issue_instr_valid_o``
      - out
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic
 
    * - ``issue_ack_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic
 
    * - ``resolved_branch_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - ariane_pkg::bp_resolve_t
 
-   * - ``back``
+   * - ``trans_id_i``
      - in
-     - none
-     - none
-     - logic[CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]trans_id_i,//transactionIDatwhichtowritetheresult
+     - Transaction ID at which to write the result back
+     - TO_BE_COMPLETED
+     - logic[CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]
 
-   * - ``in``
+   * - ``wbdata_i``
      - in
-     - none
-     - none
-     - logic[CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]wbdata_i,//writedata
+     - Write data in
+     - TO_BE_COMPLETED
+     - logic[CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]
 
-   * - ``exception)``
+   * - ``ex_i``
      - in
-     - none
-     - none
-     - ariane_pkg::exception_t[CVA6Cfg.NrWbPorts-1:0]ex_i,//exceptionfromafunctionalunit(e.g.:ld/st
+     - Exception from a functional unit (e.g.: ld/st exception)
+     - TO_BE_COMPLETED
+     - ariane_pkg::exception_t[CVA6Cfg.NrWbPorts-1:0]
 
-   * - ``valid``
+   * - ``wt_valid_i``
      - in
-     - none
-     - none
-     - logic[CVA6Cfg.NrWbPorts-1:0]wt_valid_i,//datainis
+     - Data in is valid
+     - TO_BE_COMPLETED
+     - logic[CVA6Cfg.NrWbPorts-1:0]
 
-   * - ``writeback``
+   * - ``x_we_i``
      - in
-     - none
-     - none
-     - logicx_we_i,//cvxifwefor
-
-   * - ``rvfi_issue_pointer_o``
-     - out
-     - none
-     - none
-     - logic[ariane_pkg::TRANS_ID_BITS-1:0]
-
-   * - ``rvfi_commit_pointer_o``
-     - out
-     - none
-     - none
-     - logic[CVA6Cfg.NrCommitPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]
+     - Cvxif we for writeback
+     - TO_BE_COMPLETED
+     - logic
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-none
+| As EnableAccelerator = 0,
+|   ``issue_instr_o`` output is tied to 0
+| As IsRVFI = 0,
+|   ``rvfi_issue_pointer_o`` output is tied to 0
+|   ``rvfi_commit_pointer_o`` output is tied to 0

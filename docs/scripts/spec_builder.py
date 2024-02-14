@@ -48,6 +48,17 @@ if __name__ == "__main__":
     file.append("../core/compressed_decoder.sv")
     file.append("../core/scoreboard.sv")
     file.append("../core/issue_read_operands.sv")
+    file.append("../core/alu.sv")
+    file.append("../core/branch_unit.sv")
+    file.append("../core/csr_buffer.sv")
+    file.append("../core/mult.sv")
+    file.append("../core/multiplier.sv")
+    file.append("../core/serdiv.sv")
+    file.append("../core/load_store_unit.sv")
+    file.append("../core/load_unit.sv")
+    file.append("../core/store_unit.sv")
+    file.append("../core/lsu_bypass.sv")
+    file.append("../core/cvxif_fu.sv")
 
     black_list = define_blacklist(parameters)
 

@@ -18,38 +18,61 @@ module store_unit
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
-    input logic clk_i,  // Clock
-    input logic rst_ni,  // Asynchronous reset active low
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Flush - CONTROLLER
     input logic flush_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic stall_st_pending_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic no_st_pending_o,
+    // Store buffer is empty - TO_BE_COMPLETED
     output logic store_buffer_empty_o,
-    // store unit input port
+    // Store instruction is valid - ISSUE_STAGE
     input logic valid_i,
+    // data input - ISSUE_STAGE
     input lsu_ctrl_t lsu_ctrl_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic pop_st_o,
+    // Instruction commit - TO_BE_COMPLETED
     input logic commit_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic commit_ready_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
-    // store unit output port
+    // Store result is valid - ISSUE_STAGE
     output logic valid_o,
+    // Transaction ID - ISSUE_STAGE
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
+    // Store result - ISSUE_STAGE
     output riscv::xlen_t result_o,
+    // Store exception output - TO_BE_COMPLETED
     output exception_t ex_o,
-    // MMU -> Address Translation
-    output logic translation_req_o,  // request address translation
-    output logic [riscv::VLEN-1:0] vaddr_o,  // virtual address out
+    // Address translation request - TO_BE_COMPLETED
+    output logic translation_req_o,
+    // Virtual address - TO_BE_COMPLETED
+    output logic [riscv::VLEN-1:0] vaddr_o,
+    // RVFI information - RVFI
     output [riscv::PLEN-1:0] rvfi_mem_paddr_o,
-    input logic [riscv::PLEN-1:0] paddr_i,  // physical address in
+    // Physical address - TO_BE_COMPLETED
+    input logic [riscv::PLEN-1:0] paddr_i,
+    // Exception raised before store - TO_BE_COMPLETED
     input exception_t ex_i,
-    input  logic                     dtlb_hit_i,       // will be one in the same cycle translation_req was asserted if it hits
-    // address checker
+    // Data TLB hit - lsu
+    input  logic dtlb_hit_i,
+    // Address to be checked - load_unit
     input logic [11:0] page_offset_i,
+    // Address check result - load_unit
     output logic page_offset_matches_o,
-    // D$ interface
+    // AMO request - CACHES
     output amo_req_t amo_req_o,
+    // AMO response - CACHES
     input amo_resp_t amo_resp_i,
+    // Data cache request - CACHES
     input dcache_req_o_t req_port_i,
+    // Data cache response - CACHES
     output dcache_req_i_t req_port_o
 );
   // it doesn't matter what we are writing back as stores don't return anything

@@ -54,10 +54,16 @@ Submodules
 Scoreboard
 ~~~~~~~~~~
 
-TO BE COMPLETED
+The scoreboard is contains a FIFO to store the decoded instructions.
+Instruction is pushed to the FIFO whether the scoreboard is not full.
+It indicates which registers are going to be clobbered by a previously
+scheduled instruction.
 
+.. include:: port_scoreboard.rst
 
 Issue_read_operands
 ~~~~~~~~~~~~~~~~~~~
 
 TO BE COMPLETED
+
+.. include:: port_issue_read_operands.rst

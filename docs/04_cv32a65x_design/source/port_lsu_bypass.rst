@@ -7,9 +7,9 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_btb_ports:
+.. _CVA6_lsu_bypass_ports:
 
-.. list-table:: btb module IO ports
+.. list-table:: lsu_bypass module IO ports
    :header-rows: 1
 
    * - Signal
@@ -32,29 +32,46 @@
 
    * - ``flush_i``
      - in
-     - Fetch flush request
-     - CONTROLLER
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic
 
-   * - ``vpc_i``
+   * - ``lsu_req_i``
      - in
-     - Virtual PC
-     - CACHE
-     - logic[riscv::VLEN-1:0]
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - lsu_ctrl_t
 
-   * - ``btb_update_i``
+   * - ``lsu_req_valid_i``
      - in
-     - Update BTB with resolved address
-     - EXECUTE
-     - ariane_pkg::btb_update_t
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
 
-   * - ``btb_prediction_o``
+   * - ``pop_ld_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``pop_st_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``lsu_ctrl_o``
      - out
-     - BTB Prediction
-     - FRONTEND
-     - ariane_pkg::btb_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - lsu_ctrl_t
+
+   * - ``ready_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As DebugEn = 0,
-|   ``debug_mode_i`` input is tied to 0
+none

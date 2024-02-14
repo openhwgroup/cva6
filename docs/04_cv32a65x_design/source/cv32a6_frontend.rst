@@ -172,7 +172,9 @@ BTB (Branch Target Buffer) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-When a unconditional jumps to a register (JALR instruction) is mispredicted by the EXECUTE, the relative information is stored into the BTB, that is to say the JALR PC and the target address.
+When a unconditional jumps to a register (JALR instruction) is mispredicted
+by the EXECUTE, the relative information is stored into the BTB, that is
+to say the JALR PC and the target address.
 
 The information is stored in a 8 entry table.
 
@@ -192,7 +194,9 @@ RAS (Return Address Stack) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-When an unconditional jumps to a known target address (JAL instruction) is consummed by the instr_queue, the next pc after the JAL instruction and the return address are stored into a FIFO.
+When an unconditional jumps to a known target address (JAL instruction)
+is consummed by the instr_queue, the next pc after the JAL instruction
+and the return address are stored into a FIFO.
 
 The RAS FIFO depth is 2.
 

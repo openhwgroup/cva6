@@ -7,9 +7,9 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_btb_ports:
+.. _CVA6_alu_ports:
 
-.. list-table:: btb module IO ports
+.. list-table:: alu module IO ports
    :header-rows: 1
 
    * - Signal
@@ -30,31 +30,24 @@
      - SUBSYSTEM
      - logic
 
-   * - ``flush_i``
+   * - ``fu_data_i``
      - in
-     - Fetch flush request
-     - CONTROLLER
-     - logic
+     - FU data needed to execute instruction
+     - ISSUE_STAGE
+     - fu_data_t
 
-   * - ``vpc_i``
-     - in
-     - Virtual PC
-     - CACHE
-     - logic[riscv::VLEN-1:0]
-
-   * - ``btb_update_i``
-     - in
-     - Update BTB with resolved address
-     - EXECUTE
-     - ariane_pkg::btb_update_t
-
-   * - ``btb_prediction_o``
+   * - ``result_o``
      - out
-     - BTB Prediction
-     - FRONTEND
-     - ariane_pkg::btb_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - ALU result
+     - ISSUE_STAGE
+     - riscv::xlen_t
+
+   * - ``alu_branch_res_o``
+     - out
+     - ALU branch compare result
+     - branch_unit
+     - logic
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As DebugEn = 0,
-|   ``debug_mode_i`` input is tied to 0
+none

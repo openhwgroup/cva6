@@ -7,9 +7,9 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_instr_realign_ports:
+.. _CVA6_multiplier_ports:
 
-.. list-table:: instr_realign module IO ports
+.. list-table:: multiplier module IO ports
    :header-rows: 1
 
    * - Signal
@@ -30,53 +30,59 @@
      - SUBSYSTEM
      - logic
 
-   * - ``flush_i``
+   * - ``trans_id_i``
      - in
-     - Fetch flush request
-     - CONTROLLER
+     - Multiplier transaction ID
+     - Mult
+     - logic[TRANS_ID_BITS-1:0]
+
+   * - ``mult_valid_i``
+     - in
+     - Multiplier instruction is valid
+     - Mult
      - logic
 
-   * - ``valid_i``
+   * - ``operation_i``
      - in
-     - 32-bit block is valid
-     - CACHE
+     - Multiplier operation
+     - Mult
+     - fu_op
+
+   * - ``operand_a_i``
+     - in
+     - A operand
+     - Mult
+     - riscv::xlen_t
+
+   * - ``operand_b_i``
+     - in
+     - B operand
+     - Mult
+     - riscv::xlen_t
+
+   * - ``result_o``
+     - out
+     - Multiplier result
+     - Mult
+     - riscv::xlen_t
+
+   * - ``mult_valid_o``
+     - out
+     - Mutliplier result is valid
+     - Mult
      - logic
 
-   * - ``serving_unaligned_o``
+   * - ``mult_ready_o``
      - out
-     - Instruction is unaligned
-     - FRONTEND
+     - Multiplier FU is ready
+     - Mult
      - logic
 
-   * - ``address_i``
-     - in
-     - 32-bit block address
-     - CACHE
-     - logic[riscv::VLEN-1:0]
-
-   * - ``data_i``
-     - in
-     - 32-bit block
-     - CACHE
-     - logic[FETCH_WIDTH-1:0]
-
-   * - ``valid_o``
+   * - ``mult_trans_id_o``
      - out
-     - instruction is valid
-     - FRONTEND
-     - logic[INSTR_PER_FETCH-1:0]
-
-   * - ``addr_o``
-     - out
-     - Instruction address
-     - FRONTEND
-     - logic[INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
-
-   * - ``instr_o``
-     - out
-     - Instruction
-     - instr_scan&instr_queue
-     - logic[INSTR_PER_FETCH-1:0][31:0]
+     - Multiplier transaction ID
+     - Mult
+     - logic[TRANS_ID_BITS-1:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
