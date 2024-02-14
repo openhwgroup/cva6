@@ -23,7 +23,6 @@
 /* verilator lint_off WIDTH */
 
 module cva6_shared_tlb
-import ariane_pkg::*;
 #(
   parameter type pte_cva6_t = logic,
   parameter type tlb_update_cva6_t = logic,
@@ -37,13 +36,14 @@ import ariane_pkg::*;
 ) (
     input logic clk_i,   // Clock
     input logic rst_ni,  // Asynchronous reset active low
-    input  logic      [HYP_EXT*2:0] flush_i,  // Flush signal [g_stage,vs stage, normal translation signal]
-    input  logic      [HYP_EXT*2:0] v_st_enbl_i,  // v_i,g-stage enabled, s-stage enabled
+    input  logic   [HYP_EXT*2:0]    flush_i,  // Flush signal [g_stage,vs stage, normal translation signal]
+    input  logic   [1:0][HYP_EXT*2:0] v_st_enbl_i,  // v_i,g-stage enabled, s-stage enabled
     input  logic   [HYP_EXT*2:0]    enable_translation_i, //[v_i,enable_g_translation,enable_translation]
     input  logic   [HYP_EXT*2:0]    en_ld_st_translation_i,   // enable virtual memory translation for load/stores
 
 
-    input logic [ASID_WIDTH[0]-1:0] asid_i[HYP_EXT*2:0],//[vmid,vs_asid,asid]
+    input logic [ASID_WIDTH[0]-1:0] dtlb_asid_i[HYP_EXT:0],//[vmid,vs_asid,asid]
+    input logic [ASID_WIDTH[0]-1:0] itlb_asid_i[HYP_EXT:0],//[vmid,vs_asid,asid]
 
     // from TLBs
     // did we miss?
@@ -63,7 +63,7 @@ import ariane_pkg::*;
     output logic itlb_miss_o,
     output logic dtlb_miss_o,
 
-    output logic [HYP_EXT*2:0]     shared_tlb_access_o,
+    output logic                   shared_tlb_access_o,
     output logic                   shared_tlb_hit_o,
     output logic [riscv::VLEN-1:0] shared_tlb_vaddr_o,
 
@@ -110,17 +110,17 @@ logic [$clog2(SHARED_TLB_DEPTH)-1:0] tag_addr;
 
 logic [         SHARED_TLB_WAYS-1:0] pte_wr_en;
 logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_wr_addr;
-logic [$bits(pte_cva6_t)-1:0] pte_wr_data;
+logic [$bits(pte_cva6_t)-1:0] pte_wr_data [HYP_EXT:0];
 
 logic [         SHARED_TLB_WAYS-1:0] pte_rd_en;
 logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_rd_addr;
-logic [$bits(pte_cva6_t)-1:0] pte_rd_data      [SHARED_TLB_WAYS-1:0];
+logic [$bits(pte_cva6_t)-1:0] pte_rd_data      [SHARED_TLB_WAYS-1:0][HYP_EXT:0];
 
 logic [         SHARED_TLB_WAYS-1:0] pte_req;
 logic [         SHARED_TLB_WAYS-1:0] pte_we;
 logic [$clog2(SHARED_TLB_DEPTH)-1:0] pte_addr;
 
-logic [PT_LEVELS-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn_d,vpn_q;   
+logic [PT_LEVELS+HYP_EXT-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn_d,vpn_q;   
 logic [SHARED_TLB_WAYS-1:0][PT_LEVELS-1:0] vpn_match;
 logic [SHARED_TLB_WAYS-1:0][PT_LEVELS-1:0] page_match;
 logic [SHARED_TLB_WAYS-1:0][PT_LEVELS-1:0] level_match;
@@ -135,12 +135,14 @@ logic [riscv::VLEN-1-12:0] dtlb_vpn_q;
 
 logic [ASID_WIDTH[0]-1:0] tlb_update_asid_q [HYP_EXT:0], tlb_update_asid_d[HYP_EXT:0];
 
-logic [HYP_EXT*2:0] shared_tlb_access_q, shared_tlb_access_d;
+logic shared_tlb_access_q, shared_tlb_access_d;
 logic shared_tlb_hit_d;
 logic [riscv::VLEN-1:0] shared_tlb_vaddr_q, shared_tlb_vaddr_d;
 
 logic itlb_req_d, itlb_req_q;
 logic dtlb_req_d, dtlb_req_q;
+
+int i_req;
 
 // replacement strategy
 logic [SHARED_TLB_WAYS-1:0] way_valid;
@@ -157,6 +159,8 @@ assign shared_tlb_vaddr_o = shared_tlb_vaddr_q;
 
 assign itlb_req_o = itlb_req_q;
 
+assign i_req = itlb_req_q ? 1 : 0;
+
 genvar i,x;
   generate
     for (i=0; i < SHARED_TLB_WAYS; i++) begin
@@ -164,15 +168,15 @@ genvar i,x;
 
       for (x=0; x < PT_LEVELS; x++) begin
           assign page_match[i][x] = x==0 ? 1 :((HYP_EXT==0 || x==(PT_LEVELS-1)) ? // PAGE_MATCH CONTAINS THE MATCH INFORMATION FOR EACH TAG OF is_1G and is_2M in sv39x4. HIGHER LEVEL (Giga page), THEN THERE IS THE Mega page AND AT THE LOWER LEVEL IS ALWAYS 1
-                                    &(shared_tag_rd[i].is_page[PT_LEVELS-1-x] | (~v_st_enbl_i[HYP_EXT:0])):
-                                    ((&v_st_enbl_i[HYP_EXT:0]) ? 
+                                    &(shared_tag_rd[i].is_page[PT_LEVELS-1-x] | (~v_st_enbl_i[i_req][HYP_EXT:0])):
+                                    ((&v_st_enbl_i[i_req][HYP_EXT:0]) ? 
                                     ((shared_tag_rd[i].is_page[PT_LEVELS-1-x][0] && (shared_tag_rd[i].is_page[PT_LEVELS-2-x][HYP_EXT] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT])) 
-                                || (shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT] && (shared_tag_rd[i].is_page[PT_LEVELS-2-x][0] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][0]))):
-                                shared_tag_rd[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl_i[0] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT] && v_st_enbl_i[HYP_EXT]));
+                                  || (shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT] && (shared_tag_rd[i].is_page[PT_LEVELS-2-x][0] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][0]))):
+                                      shared_tag_rd[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl_i[i_req][0] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT] && v_st_enbl_i[i_req][HYP_EXT]));
 
             //identify if vpn matches at all PT levels for all TLB entries  
-            assign vpn_match[i][x]        = (HYP_EXT==1 && x==(PT_LEVELS-1) && ~v_st_enbl_i[0]) ? //
-                                            vpn_q[x] == shared_tag_rd[i].vpn[x] &&  shared_tag_rd[x+1][(VPN_LEN%PT_LEVELS)-1:0] == shared_tag_rd[i].vpn[x+1][(VPN_LEN%PT_LEVELS)-1:0]: //
+            assign vpn_match[i][x]        = (HYP_EXT==1 && x==(PT_LEVELS-1) && ~v_st_enbl_i[i_req][0]) ? //
+                                            vpn_q[x] == shared_tag_rd[i].vpn[x] &&  vpn_q[x+1][(VPN_LEN%PT_LEVELS)-1:0] == shared_tag_rd[i].vpn[x+1][(VPN_LEN%PT_LEVELS)-1:0]: //
                                             vpn_q[x] == shared_tag_rd[i].vpn[x];
             
             //identify if there is a hit at each PT level for all TLB entries  
@@ -229,13 +233,9 @@ genvar w;
         
             itlb_miss_o         = 1'b1;
             itlb_req_d          = 1'b1;
-            // tlb_update_asid_d   = asid_i;
-
-            for (int unsigned b=0; b < HYP_EXT+1; b++) begin  
-                tlb_update_asid_d[b] = b==0 ? (enable_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0]) : asid_i[HYP_EXT*2];
-            end
+            tlb_update_asid_d   = itlb_asid_i;
         
-            shared_tlb_access_d = v_st_enbl_i;
+            shared_tlb_access_d = '1;
             shared_tlb_vaddr_d  = itlb_vaddr_i;
 
             // we got an DTLB miss
@@ -247,16 +247,12 @@ genvar w;
 
             dtlb_miss_o         = 1'b1;
             dtlb_req_d          = 1'b1;
+            tlb_update_asid_d   = dtlb_asid_i;
 
-            for (int unsigned b=0; b < HYP_EXT+1; b++) begin  
-                tlb_update_asid_d[b] = b==0 ? (en_ld_st_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0]) : asid_i[HYP_EXT*2];
-            end
-
-            shared_tlb_access_d = v_st_enbl_i;
+            shared_tlb_access_d = '1;
             shared_tlb_vaddr_d  = dtlb_vaddr_i;
           end
         end  //itlb_dtlb_miss
-   
    
         always_comb begin : tag_comparison
             shared_tlb_hit_d = 1'b0;
@@ -266,14 +262,14 @@ genvar w;
             for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
                 // first level match, this may be a giga page, check the ASID flags as well
                 // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-                match_asid[i][0] = (((tlb_update_asid_q[0] == shared_tag_rd[i].asid[0]) || pte[i][0].g) && v_st_enbl_i[0]) || !v_st_enbl_i[0];
+                match_asid[i][0] = (((tlb_update_asid_q[0][ASID_WIDTH[0]-1:0] == shared_tag_rd[i].asid[0][ASID_WIDTH[0]-1:0]) || pte[i][0].g) && v_st_enbl_i[i_req][0]) || !v_st_enbl_i[i_req][0];
 
                 if(HYP_EXT==1) begin
-                    match_asid[i][HYP_EXT] = (tlb_update_asid_q[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == shared_tag_rd[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl_i[HYP_EXT]) || !v_st_enbl_i[HYP_EXT];
+                    match_asid[i][HYP_EXT] = (tlb_update_asid_q[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == shared_tag_rd[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl_i[i_req][HYP_EXT]) || !v_st_enbl_i[i_req][HYP_EXT];
                 end
                 
                 // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
-                match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl_i;
+                match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl_i[i_req];
 
                 if (shared_tag_valid[i] && &match_asid[i] && match_stage[i]) begin
                     if (|level_match[i]) begin
@@ -283,24 +279,24 @@ genvar w;
                             itlb_update_o.vpn = itlb_vpn_q;
                             itlb_update_o.is_page = shared_tag_rd[i].is_page;
                             // itlb_update_o.asid = tlb_update_asid_q;
-                            itlb_update_o.content[0] = pte[i][0];
+                            itlb_update_o.content = pte[i];
                             for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
                                 itlb_update_o.asid[a] = tlb_update_asid_q[a];
-                            end
+                            end                            
                         end else if (dtlb_req_q) begin
                             dtlb_update_o.valid = 1'b1;
                             dtlb_update_o.vpn = dtlb_vpn_q;
                             dtlb_update_o.is_page = shared_tag_rd[i].is_page;
                             // dtlb_update_o.asid = tlb_update_asid_q;
-                            dtlb_update_o.content[0] = pte[i][0];
+                            dtlb_update_o.content = pte[i];
                             for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
                                 dtlb_update_o.asid[a] = tlb_update_asid_q[a];
                             end
                         end
                     end
                 end
-            end  //tag_comparison
-        end
+            end  
+        end //tag_comparison
 
         // sequential process
         always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -333,7 +329,7 @@ genvar w;
         // Update and Flush
         // ------------------
         always_comb begin : update_flush
-            shared_tag_valid_d = shared_tag_valid_q;
+            shared_tag_valid_d =shared_tag_valid_q;
             tag_wr_en = '0;
             pte_wr_en = '0;
         
@@ -345,6 +341,7 @@ genvar w;
                     shared_tag_valid_d[shared_tlb_update_i.vpn[$clog2(SHARED_TLB_DEPTH)-1:0]][i] = 1'b1;
                     tag_wr_en[i] = 1'b1;
                     pte_wr_en[i] = 1'b1;
+                    shared_tag_wr.v_st_enbl = v_st_enbl_i[i_req];
                   end
               end
             end
@@ -352,12 +349,15 @@ genvar w;
 
         assign shared_tag_wr.asid = shared_tlb_update_i.asid;
         assign shared_tag_wr.is_page = shared_tlb_update_i.is_page;
-        assign shared_tag_wr.v_st_enbl = v_st_enbl_i;
 
         genvar z;
         generate
             for (z=0; z < PT_LEVELS; z++) begin  
                 assign shared_tag_wr.vpn[z] = shared_tlb_update_i.vpn[((VPN_LEN/PT_LEVELS)*(z+1))-1:((VPN_LEN/PT_LEVELS)*z)];
+            end
+            if(HYP_EXT==1) begin 
+                //THIS UPDATES THE EXTRA BITS OF VPN IN SV39x4
+                assign shared_tag_wr.vpn[PT_LEVELS][(VPN_LEN%PT_LEVELS)-1:0] = shared_tlb_update_i.vpn[VPN_LEN-1: VPN_LEN-(VPN_LEN%PT_LEVELS)];         
             end
         endgenerate
 
@@ -366,7 +366,14 @@ genvar w;
         assign tag_wr_data = shared_tag_wr;
 
         assign pte_wr_addr = shared_tlb_update_i.vpn[$clog2(SHARED_TLB_DEPTH)-1:0];
-        assign pte_wr_data = shared_tlb_update_i.content[0];
+
+        genvar h;
+        generate
+            for (h=0; h < HYP_EXT+1; h++) begin  
+                assign pte_wr_data[h] = shared_tlb_update_i.content[h];
+            end
+        endgenerate
+        
 
         assign way_valid = shared_tag_valid_q[shared_tlb_update_i.vpn[$clog2(SHARED_TLB_DEPTH)-1:0]];
         assign repl_way = (all_ways_valid) ? rnd_way : inv_way;
@@ -423,23 +430,25 @@ genvar w;
 
           assign shared_tag_rd[i] = shared_tag_t'(tag_rd_data[i]);
 
-          // PTE RAM
-          sram #(
-              .DATA_WIDTH($bits(pte_cva6_t)),
-              .NUM_WORDS (SHARED_TLB_DEPTH)
-          ) pte_sram (
-              .clk_i  (clk_i),
-              .rst_ni (rst_ni),
-              .req_i  (pte_req[i]),
-              .we_i   (pte_we[i]),
-              .addr_i (pte_addr),
-              .wuser_i('0),
-              .wdata_i(pte_wr_data),
-              .be_i   ('1),
-              .ruser_o(),
-              .rdata_o(pte_rd_data[i])
-          );
-          assign pte[i][0] = pte_cva6_t'(pte_rd_data[i]);
+            for (genvar a = 0; a < HYP_EXT+1; a++) begin : content_sram
+                // PTE RAM
+                sram #(
+                    .DATA_WIDTH($bits(pte_cva6_t)),
+                    .NUM_WORDS (SHARED_TLB_DEPTH)
+                ) pte_sram (
+                    .clk_i  (clk_i),
+                    .rst_ni (rst_ni),
+                    .req_i  (pte_req[i]),
+                    .we_i   (pte_we[i]),
+                    .addr_i (pte_addr),
+                    .wuser_i('0),
+                    .wdata_i(pte_wr_data[a]),
+                    .be_i   ('1),
+                    .ruser_o(),
+                    .rdata_o(pte_rd_data[i][a])
+                );
+                assign pte[i][a] = pte_cva6_t'(pte_rd_data[i][a]);
+            end
         end
 endmodule
 
