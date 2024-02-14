@@ -22,9 +22,13 @@
 module compressed_decoder #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
+    // Input instruction which can be compressed - FRONTEND
     input  logic [31:0] instr_i,
+    // Output instruction which is uncompressed - ID_STAGE
     output logic [31:0] instr_o,
+    // Illegal instruction exception - TO_BE_COMPLETED
     output logic        illegal_instr_o,
+    // report if instruction is compressed - TO_BE_COMPLETED
     output logic        is_compressed_o
 );
 

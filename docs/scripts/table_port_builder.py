@@ -44,6 +44,8 @@ if __name__ == "__main__":
     file.append("../core/commit_stage.sv")
     file.append("../core/controller.sv")
     file.append("../core/csr_regfile.sv")
+    file.append("../core/decoder.sv")
+    file.append("../core/compressed_decoder.sv")
 
     for filein in file:
         a = re.match(r".*\/(.*).sv", filein)
