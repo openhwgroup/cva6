@@ -22,7 +22,7 @@ module cva6_ptw import ariane_pkg::*; #(
     parameter int unsigned HYP_EXT = 0,
     parameter int unsigned ASID_WIDTH [HYP_EXT:0] = {1},
     parameter int unsigned VPN_LEN = 1,
-    parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned PT_LEVELS = 1
 ) (
     input  logic                    clk_i,                  // Clock
@@ -34,7 +34,8 @@ module cva6_ptw import ariane_pkg::*; #(
     output logic                    walking_instr_o,        // set when walking for TLB
     output logic   [HYP_EXT*2:0]    ptw_error_o,            // set when an error occurred
     output logic                    ptw_access_exception_o, // set when an PMP access exception occured
-
+    input  logic   [HYP_EXT*2:0]    enable_translation_i, //[v_i,enable_g_translation,enable_translation]
+    input  logic   [HYP_EXT*2:0]    en_ld_st_translation_i,   // enable virtual memory translation for load/stores
     input  logic                    hlvx_inst_i,            // is a HLVX load/store instruction
 
     input  logic                    lsu_is_store_i,         // this translation was triggered by a store
@@ -52,7 +53,7 @@ module cva6_ptw import ariane_pkg::*; #(
 
     // from TLBs
     // did we miss?
-    input  logic [HYP_EXT*2:0]      shared_tlb_access_i,
+    input  logic                    shared_tlb_access_i,
     input  logic                    shared_tlb_hit_i,
     input  logic [riscv::VLEN-1:0]  shared_tlb_vaddr_i,
 
@@ -174,16 +175,17 @@ module cva6_ptw import ariane_pkg::*; #(
         // update the correct page table level
         for (int unsigned y=0; y < HYP_EXT+1; y++) begin
             for (int unsigned x=0; x < PT_LEVELS-1; x++) begin
-                if(&shared_tlb_access_i[HYP_EXT:0] && HYP_EXT==1) 
+                if((&enable_translation_i[HYP_EXT:0] || &en_ld_st_translation_i[HYP_EXT:0])&& HYP_EXT==1) begin
                     shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==HYP_EXT? 0 : 1] == x);
-                else if(shared_tlb_access_i[0] || HYP_EXT==0) 
+                end else if(enable_translation_i[0] || en_ld_st_translation_i[0] || HYP_EXT==0) begin
                     shared_tlb_update_o.is_page[x][y] = y==0 ? (ptw_lvl_q[0]== x) : 1'b0;
-                else 
+                end else begin
                     shared_tlb_update_o.is_page[x][y] = y!=0 ? (ptw_lvl_q[0]== x) : 1'b0;
+                end
             end
 
             // set the global mapping bit
-            if(shared_tlb_access_i[HYP_EXT] && HYP_EXT==1) begin
+            if((enable_translation_i[HYP_EXT] || en_ld_st_translation_i[HYP_EXT]) && HYP_EXT==1) begin
                 shared_tlb_update_o.content[y] = y==0 ? pte[HYP_EXT] | (global_mapping_q << 5) : pte[0];
             end else begin
                 shared_tlb_update_o.content[y] = y==0 ? (pte[0] | (global_mapping_q << 5)) : '0;
@@ -291,19 +293,19 @@ module cva6_ptw import ariane_pkg::*; #(
                 if(HYP_EXT==1)
                     pte[HYP_EXT*2] = '0;
                 // if we got an ITLB miss
-                if (|shared_tlb_access_i & ~shared_tlb_hit_i) begin
-                    if (&shared_tlb_access_i[HYP_EXT:0] && HYP_EXT==1) begin
+                if (((|enable_translation_i[HYP_EXT:0]) || |en_ld_st_translation_i[HYP_EXT:0]) && shared_tlb_access_i && ~shared_tlb_hit_i) begin
+                    if ((&enable_translation_i[HYP_EXT:0] || &en_ld_st_translation_i[HYP_EXT:0]) && HYP_EXT==1) begin
                         ptw_stage_d = G_INTERMED_STAGE;
                         pptr = {satp_ppn_i[HYP_EXT], shared_tlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                         gptw_pptr_n = pptr;
                         ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], pptr[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
-                    end else if (!shared_tlb_access_i[0] && HYP_EXT==1) begin
+                    end else if (((|enable_translation_i[HYP_EXT:0] && !enable_translation_i[0]) || (|en_ld_st_translation_i[HYP_EXT:0] && !en_ld_st_translation_i[0])) && HYP_EXT==1) begin
                         ptw_stage_d = G_FINAL_STAGE;
                         gpaddr_n = shared_tlb_vaddr_i[riscv::SV+HYP_EXT*2-1:0];
                         ptw_pptr_n = {satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2], shared_tlb_vaddr_i[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                     end else begin
                         ptw_stage_d = S_STAGE;
-                        if(shared_tlb_access_i[HYP_EXT*2] && HYP_EXT==1)
+                        if((enable_translation_i[HYP_EXT*2] || en_ld_st_translation_i[HYP_EXT*2]) && HYP_EXT==1)
                             ptw_pptr_n  = {satp_ppn_i[HYP_EXT], shared_tlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
                         else
                             ptw_pptr_n  = {satp_ppn_i[0], shared_tlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)], (PT_LEVELS)'(0)};
@@ -315,7 +317,7 @@ module cva6_ptw import ariane_pkg::*; #(
                     shared_tlb_miss_o         = 1'b1;
 
                     for (int unsigned b=0; b < HYP_EXT+1; b++) begin  
-                        tlb_update_asid_n[b] = b==0 ? (shared_tlb_access_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0]) : asid_i[HYP_EXT*2];
+                        tlb_update_asid_n[b] = b==0 ? ((enable_translation_i[2*HYP_EXT] || en_ld_st_translation_i[2*HYP_EXT]) ? asid_i[HYP_EXT] : asid_i[0]) : asid_i[HYP_EXT*2];
                     end
                 end
             end
@@ -355,7 +357,7 @@ module cva6_ptw import ariane_pkg::*; #(
                         if (pte[0].r || pte[0].x) begin
                             case (ptw_stage_q)
                                 S_STAGE: begin
-                                    if (HYP_EXT==1 && shared_tlb_access_i[HYP_EXT]) begin
+                                    if (HYP_EXT==1 && ((is_instr_ptw_q && enable_translation_i[HYP_EXT]) || (!is_instr_ptw_q && en_ld_st_translation_i[HYP_EXT]))) begin
                                         state_d = WAIT_GRANT;
                                         ptw_stage_d = G_FINAL_STAGE;
                                         if(HYP_EXT==1)
@@ -390,7 +392,7 @@ module cva6_ptw import ariane_pkg::*; #(
                                 if (!pte[0].x || !pte[0].a) begin
                                     state_d = PROPAGATE_ERROR;
                                     ptw_stage_d = ptw_stage_q;
-                                end else if((ptw_stage_q == G_FINAL_STAGE) || !shared_tlb_access_i[HYP_EXT] || HYP_EXT==0)
+                                end else if((ptw_stage_q == G_FINAL_STAGE) || !enable_translation_i[HYP_EXT] || HYP_EXT==0)
                                     shared_tlb_update_o.valid = 1'b1;
 
                             end else begin
@@ -402,8 +404,8 @@ module cva6_ptw import ariane_pkg::*; #(
                                 // If page is not readable (there are no write-only pages)
                                 // we can directly raise an error. This doesn't put a useless
                                 // entry into the TLB.
-                                if (pte[0].a && ((pte[0].r && !hlvx_inst_i) || (pte[0].x && (mxr_i[0] || hlvx_inst_i || (ptw_stage_q == S_STAGE && mxr_i[HYP_EXT] && shared_tlb_access_i[HYP_EXT*2] && HYP_EXT==1))))) begin
-                                    if((ptw_stage_q == G_FINAL_STAGE) || !shared_tlb_access_i[HYP_EXT] || HYP_EXT==0)
+                                if (pte[0].a && ((pte[0].r && !hlvx_inst_i) || (pte[0].x && (mxr_i[0] || hlvx_inst_i || (ptw_stage_q == S_STAGE && mxr_i[HYP_EXT] && en_ld_st_translation_i[HYP_EXT*2] && HYP_EXT==1))))) begin
+                                    if((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_translation_i[HYP_EXT] || HYP_EXT==0)
                                         shared_tlb_update_o.valid = 1'b1;
                                 end else begin
                                     state_d   = PROPAGATE_ERROR;
@@ -427,7 +429,7 @@ module cva6_ptw import ariane_pkg::*; #(
                             end 
 
                             // check if 63:41 are all zeros
-                            if (HYP_EXT==1 && shared_tlb_access_i[HYP_EXT*2] && ptw_stage_q == S_STAGE && !((|pte[0].ppn[riscv::PPNW-HYP_EXT:riscv::GPPNW]) == 1'b0)) begin
+                            if (HYP_EXT==1 && ((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte[0].ppn[riscv::PPNW-HYP_EXT:riscv::GPPNW]) == 1'b0)) begin
                                 state_d = PROPAGATE_ERROR;
                                 ptw_stage_d = G_FINAL_STAGE;
                             end
@@ -448,7 +450,7 @@ module cva6_ptw import ariane_pkg::*; #(
 
                                 case (ptw_stage_q)
                                     S_STAGE: begin
-                                        if (HYP_EXT==1 && shared_tlb_access_i[HYP_EXT]) begin
+                                        if (HYP_EXT==1 && ((is_instr_ptw_q && enable_translation_i[HYP_EXT]) || (!is_instr_ptw_q && en_ld_st_translation_i[HYP_EXT]))) begin
                                             ptw_stage_d = G_INTERMED_STAGE;
                                             if(HYP_EXT==1)
                                                 pte[HYP_EXT*2] = pte[0];
@@ -477,7 +479,7 @@ module cva6_ptw import ariane_pkg::*; #(
                             end
 
                             // check if 63:41 are all zeros
-                            if (HYP_EXT==1 && (shared_tlb_access_i[HYP_EXT*2]  && ptw_stage_q == S_STAGE && !((|pte[0].ppn[riscv::PPNW-1:riscv::GPPNW]) == 1'b0))) begin
+                            if (HYP_EXT==1 && (((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte[0].ppn[riscv::PPNW-1:riscv::GPPNW]) == 1'b0))) begin
                                 state_d = PROPAGATE_ERROR;
                                 ptw_stage_d = ptw_stage_q;
                             end
@@ -554,7 +556,7 @@ module cva6_ptw import ariane_pkg::*; #(
             data_rdata_q       <= '0;
             data_rvalid_q      <= 1'b0;
             if(HYP_EXT==1)
-                pte[HYP_EXT] = '0;
+                pte[HYP_EXT] <= '0;
         end else begin
             state_q            <= state_d;
             ptw_stage_q        <= ptw_stage_d;
@@ -571,7 +573,7 @@ module cva6_ptw import ariane_pkg::*; #(
             data_rvalid_q      <= req_port_i.data_rvalid;
 
             if(HYP_EXT==1)
-                pte[HYP_EXT] = pte[HYP_EXT*2];
+                pte[HYP_EXT] <= pte[HYP_EXT*2];
         end
     end
 

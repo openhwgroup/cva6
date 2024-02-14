@@ -146,7 +146,7 @@ module cva6_mmu import ariane_pkg::*; #(
     logic [riscv::GPLEN-1:0] dtlb_gpaddr;
 
     logic  [HYP_EXT*2:0] shared_tlb_access;
-    logic        shared_tlb_hit,itlb_req;
+    logic        shared_tlb_hit, itlb_req;
 
   // Assignments
 
@@ -212,6 +212,7 @@ module cva6_mmu import ariane_pkg::*; #(
     cva6_shared_tlb #(
         .SHARED_TLB_DEPTH (64),
         .SHARED_TLB_WAYS  (2),
+        .HYP_EXT(HYP_EXT),
         .ASID_WIDTH       (ASID_WIDTH),
         .ASID_LEN         (ASID_LEN),
         .VPN_LEN          (VPN_LEN),
@@ -222,11 +223,12 @@ module cva6_mmu import ariane_pkg::*; #(
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
         .flush_i(flush_tlb_i),
-        .v_st_enbl_i('1),
+        .v_st_enbl_i({'1,'1}),
         .enable_translation_i  (enable_translation_i),
         .en_ld_st_translation_i(en_ld_st_translation_i),
   
-        .asid_i       (asid_i),
+        .dtlb_asid_i       (dtlb_mmu_asid_i),
+        .itlb_asid_i       (itlb_mmu_asid_i),
         // from TLBs
         // did we miss?
         .itlb_access_i(itlb_lu_access),
@@ -272,6 +274,9 @@ module cva6_mmu import ariane_pkg::*; #(
           .ptw_error_o            ( ptw_error             ),
           .ptw_access_exception_o ( ptw_access_exception  ),
 
+          .enable_translation_i  (enable_translation_i),
+          .en_ld_st_translation_i(en_ld_st_translation_i),
+
           .lsu_is_store_i(lsu_is_store_i),
           // PTW memory interface
           .req_port_i             ( req_port_i            ),
@@ -310,7 +315,7 @@ module cva6_mmu import ariane_pkg::*; #(
           .bad_paddr_o(ptw_bad_paddr)
 
       );
-  
+
     // ila_1 i_ila_1 (
     //     .clk(clk_i), // input wire clk
     //     .probe0({req_port_o.address_tag, req_port_o.address_index}),
@@ -402,16 +407,7 @@ module cva6_mmu import ariane_pkg::*; #(
 
             icache_areq_o.fetch_valid = 1'b0;
 
-            // // 4K page
-            // icache_areq_o.fetch_paddr = {mmu_v_st_enbl_i[1] ? itlb_content[1].ppn : itlb_content.ppn, icache_areq_i.fetch_vaddr[11:0]};
-            // // Mega page
-            // if (itlb_is_2M) begin
-            //     icache_areq_o.fetch_paddr[20:12] = icache_areq_i.fetch_vaddr[20:12];
-            // end
-            // // Giga page
-            // if (itlb_is_1G) begin
-            //     icache_areq_o.fetch_paddr[29:12] = icache_areq_i.fetch_vaddr[29:12];
-            // end
+
             // ---------
             // ITLB Hit
             // --------

@@ -144,7 +144,7 @@ always_comb begin : translation
   for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // first level match, this may be a giga page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-      match_asid[i][0] = (((lu_asid_i[0] == tags_q[i].asid[0]) || content_q[i][0].g) && v_st_enbl_i[0]) || !v_st_enbl_i[0];
+      match_asid[i][0] = (((lu_asid_i[0][ASID_WIDTH[0]-1:0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) || content_q[i][0].g) && v_st_enbl_i[0]) || !v_st_enbl_i[0];
 
       if(HYP_EXT==1) begin
         match_asid[i][HYP_EXT] = (lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl_i[HYP_EXT]) || !v_st_enbl_i[HYP_EXT];
@@ -222,39 +222,39 @@ always_comb begin : update_flush
               else if (asid_to_be_flushed_is0[0] && (|vaddr_level_match[i][0] ) && (~vaddr_to_be_flushed_is0[0]))
                   tags_n[i].valid = 1'b0;
               // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
-              else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0]) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
+              else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0][ASID_WIDTH[0]-1:0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0] ) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
                   tags_n[i].valid = 1'b0;
               // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
-              else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0]) && (!asid_to_be_flushed_is0[0]))
+              else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0][ASID_WIDTH[0]-1:0]  == tags_q[i].asid[0][ASID_WIDTH[0]-1:0] ) && (!asid_to_be_flushed_is0[0]))
                   tags_n[i].valid = 1'b0;
           end
-      end else if (flush_i[HYP_EXT]) begin
+      end else if (flush_i[HYP_EXT] &&  HYP_EXT==1) begin
           if(tags_q[i].v_st_enbl[HYP_EXT*2] && tags_q[i].v_st_enbl[0]) begin
               // invalidate logic
               // flush everything if current VMID matches and ASID is 0 and vaddr is 0 ("SFENCE.VMA/HFENCE.VVMA x0 x0" case)
-              if (asid_to_be_flushed_is0[0] && vaddr_to_be_flushed_is0[0] && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[1][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
+              if (asid_to_be_flushed_is0[0] && vaddr_to_be_flushed_is0[0] && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
                   tags_n[i].valid = 1'b0;
               // flush vaddr in all addressing space if current VMID matches ("SFENCE.VMA/HFENCE.VVMA vaddr x0" case), it should happen only for leaf pages
               else if (asid_to_be_flushed_is0[0] && (|vaddr_level_match[i][0]) && (~vaddr_to_be_flushed_is0[0]) && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[1][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
                   tags_n[i].valid = 1'b0;
               // the entry is flushed if it's not global and asid and vaddr and current VMID matches with the entry to be flushed ("SFENCE.VMA/HFENCE.VVMA vaddr asid" case)
-              else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0] && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
+              else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0][ASID_WIDTH[0]-1:0]  == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
                   tags_n[i].valid = 1'b0;
               // the entry is flushed if it's not global, and the asid and the current VMID matches and vaddr is 0. ("SFENCE.VMA/HFENCE.VVMA 0 asid" case)
-              else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0] == tags_q[i].asid[0] && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!asid_to_be_flushed_is0[0]))
+              else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0][ASID_WIDTH[0]-1:0]  == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!asid_to_be_flushed_is0[0]))
                   tags_n[i].valid = 1'b0;
           end
-      end else if (flush_i[HYP_EXT*2]) begin
+      end else if (flush_i[HYP_EXT*2] &&  HYP_EXT==1) begin
           if(tags_q[i].v_st_enbl[HYP_EXT]) begin
               // invalidate logic
               // flush everything if vmid is 0 and addr is 0 ("HFENCE.GVMA x0 x0" case)
               if (asid_to_be_flushed_is0[HYP_EXT] && vaddr_to_be_flushed_is0[HYP_EXT] )
                   tags_n[i].valid = 1'b0;
               // flush gpaddr in all addressing space ("HFENCE.GVMA gpaddr x0" case), it should happen only for leaf pages
-              else if (asid_to_be_flushed_is0[HYP_EXT] && (|vaddr_level_match[i][1] ) && (~vaddr_to_be_flushed_is0[HYP_EXT]))
+              else if (asid_to_be_flushed_is0[HYP_EXT] && (|vaddr_level_match[i][HYP_EXT] ) && (~vaddr_to_be_flushed_is0[HYP_EXT]))
                   tags_n[i].valid = 1'b0;
               // the entry vmid and gpaddr both matches with the entry to be flushed ("HFENCE.GVMA gpaddr vmid" case)
-              else if ((|vaddr_level_match[i][1]) && (asid_to_be_flushed_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) && (~vaddr_to_be_flushed_is0[HYP_EXT]) && (~asid_to_be_flushed_is0[HYP_EXT]))
+              else if ((|vaddr_level_match[i][HYP_EXT]) && (asid_to_be_flushed_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) && (~vaddr_to_be_flushed_is0[HYP_EXT]) && (~asid_to_be_flushed_is0[HYP_EXT]))
                   tags_n[i].valid = 1'b0;
               // the entry is flushed if the vmid matches and gpaddr is 0. ("HFENCE.GVMA 0 vmid" case)
               else if ((vaddr_to_be_flushed_is0[HYP_EXT]) && (asid_to_be_flushed_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) && (!asid_to_be_flushed_is0[HYP_EXT]))
