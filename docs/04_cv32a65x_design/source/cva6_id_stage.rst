@@ -61,6 +61,8 @@ instructions taking a 16-bit compressed instruction and expanding it
 to its 32-bit equivalent.
 All compressed instructions have a 32-bit equivalent.
 
+.. include:: port_compressed_decoder.rst
+
 Decoder
 ~~~~~~~
 
@@ -75,4 +77,6 @@ As TVALEn configuration parameter is zero, the TVAL field is not implemented.
 A potential illegal instruction exception can be detected during decoding.
 If no exception has happened previously in fetch stage, the decoder will
 valid the exception and add the cause and tval value to the scoreboard entry.
+
+.. include:: port_decoder.rst
 

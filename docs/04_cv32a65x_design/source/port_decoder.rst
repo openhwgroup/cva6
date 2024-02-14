@@ -14,109 +14,132 @@
 
    * - Signal
      - IO
-     - Description
-     - connexion
+     - Connection
      - Type
+     - Description
+
+   * - ``debug_req_i``
+     - in
+     - TO_BE_COMPLETED
+     - External debug request
+     - logic
 
    * - ``pc_i``
      - in
-     - PC from fetch stage
-     - FRONTEND
+     - TO_BE_COMPLETED
+     - PC from IF
      - logic[riscv::VLEN-1:0]
 
    * - ``is_compressed_i``
      - in
+     - TO_BE_COMPLETED
      - Is a compressed instruction
-     - compressed_decoder
      - logic
 
    * - ``compressed_instr_i``
      - in
+     - TO_BE_COMPLETED
      - Compressed form of instruction
-     - FRONTEND
      - logic[15:0]
 
    * - ``is_illegal_i``
      - in
+     - TO_BE_COMPLETED
      - Illegal compressed instruction
-     - compressed_decoder
      - logic
 
    * - ``instruction_i``
      - in
-     - Instruction from fetch stage
-     - FRONTEND
+     - TO_BE_COMPLETED
+     - Instruction from IF
      - logic[31:0]
 
    * - ``branch_predict_i``
      - in
-     - Is a branch predict instruction
-     - FRONTEND
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - branchpredict_sbe_t
 
    * - ``ex_i``
      - in
-     - If an exception occured in fetch stage
-     - FRONTEND
+     - TO_BE_COMPLETED
+     - If an exception occured in if
      - exception_t
 
    * - ``irq_i``
      - in
-     - Level sensitive (async) interrupts
-     - SUBSYSTEM
+     - TO_BE_COMPLETED
+     - External interrupt
      - logic[1:0]
 
    * - ``irq_ctrl_i``
      - in
-     - Interrupt control status
-     - CSR_REGFILE
+     - TO_BE_COMPLETED
+     - Interrupt control and status information from CSRs
      - irq_ctrl_t
+
+   * - ``priv_lvl_i``
+     - in
+     - CSR_REGFILE
+     - Current privilege level
+     - riscv::priv_lvl_t
+
+   * - ``debug_mode_i``
+     - in
+     - CSR_REGFILE
+     - We are in debug mode
+     - logic
+
+   * - ``fs_i``
+     - in
+     - CSR_REGFILE
+     - Floating point extension status
+     - riscv::xs_t
+
+   * - ``frm_i``
+     - in
+     - CSR_REGFILE
+     - Floating-point dynamic rounding mode
+     - logic[2:0]
+
+   * - ``vs_i``
+     - in
+     - CSR_REGFILE
+     - Vector extension status
+     - riscv::xs_t
 
    * - ``tvm_i``
      - in
-     - Trap virtual memory
      - CSR_REGFILE
+     - Trap virtual memory
      - logic
 
    * - ``tw_i``
      - in
-     - Timeout wait
      - CSR_REGFILE
+     - Timeout wait
      - logic
 
    * - ``tsr_i``
      - in
-     - Trap sret
      - CSR_REGFILE
+     - Trap sret
      - logic
 
    * - ``instruction_o``
      - out
-     - Instruction to be added to scoreboard entry
-     - ISSUE_STAGE
+     - COMMIT_STAGE
+     - Scoreboard entry to scoreboard
      - scoreboard_entry_t
 
    * - ``orig_instr_o``
      - out
-     - Instruction
-     - ISSUE_STAGE
+     - TO_BE_COMPLETED
+     - Instruction opcode to issue read operand for CVXIF
      - logic[31:0]
 
    * - ``is_control_flow_instr_o``
      - out
-     - Is a control flow instruction
-     - ISSUE_STAGE
+     - TO_BE_COMPLETED
+     - This instruction will change the control flow
      - logic
-
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
-
-| As DebugEn = 0,
-|   ``debug_req_i`` input is tied to 0
-|   ``debug_mode_i`` input is tied to 0
-| As PRIV = MachineOnly,
-|   ``priv_lvl_i`` input is tied to MachineMode
-| As RVF = 0,
-|   ``fs_i`` input is tied to 0
-|   ``frm_i`` input is tied to 0
-| As RVV = 0,
-|   ``vs_i`` input is tied to 0
