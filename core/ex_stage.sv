@@ -54,11 +54,11 @@ module ex_stage
     input logic branch_valid_i,
     // TO_BE_COMPLETED - ID_STAGE
     input branchpredict_sbe_t branch_predict_i,
-    // The branch engine uses the write back from the ALU - CONTROLLER PERF_COUNTER FRONTEND ISSUE_STAGE
+    // The branch engine uses the write back from the ALU - several_modules
     output bp_resolve_t resolved_branch_o,
     // ID signaling that we resolved the branch - ID_STAGE
     output logic resolve_branch_o,
-    // TO_BE_COMPLETED - ID_STAGE
+    // CSR result is valid - ID_STAGE
     input logic csr_valid_i,
     // TO_BE_COMPLETED - CSR_REGISTERS
     output logic [11:0] csr_addr_o,
@@ -70,7 +70,7 @@ module ex_stage
     output logic lsu_ready_o,
     // LSU result is valid - ID_STAGE
     input logic lsu_valid_i,
-    // TO_BE_COMPLETED - ID_STAGE
+    // Load result is valid - ID_STAGE
     output logic load_valid_o,
     // TO_BE_COMPLETED - ID_STAGE
     output riscv::xlen_t load_result_o,
@@ -78,7 +78,7 @@ module ex_stage
     output logic [TRANS_ID_BITS-1:0] load_trans_id_o,
     // TO_BE_COMPLETED - ID_STAGE
     output exception_t load_exception_o,
-    // TO_BE_COMPLETED - ID_STAGE
+    // Store result is valid - ID_STAGE
     output logic store_valid_o,
     // TO_BE_COMPLETED - ID_STAGE
     output riscv::xlen_t store_result_o,
@@ -88,7 +88,7 @@ module ex_stage
     output exception_t store_exception_o,
     // TO_BE_COMPLETED - COMMIT_STAGE
     input logic lsu_commit_i,
-    // Commit queue is ready to accept another commit request - COMMIT_STAGE
+    // Commit queue ready to accept another commit request - COMMIT_STAGE
     output logic lsu_commit_ready_o,
     // TO_BE_COMPLETED - COMMIT_STAGE
     input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
@@ -96,29 +96,29 @@ module ex_stage
     input logic stall_st_pending_i,
     // TO_BE_COMPLETED - COMMIT_STAGE
     output logic no_st_pending_o,
-    // TO_BE_COMPLETED - COMMIT_STAGE
+    // Atomic result is valid - COMMIT_STAGE
     input logic amo_valid_commit_i,
     // FU is ready - ID_STAGE
     output logic fpu_ready_o,
-    // Output is ready - ID_STAGE
+    // FPU result is ready - ID_STAGE
     input logic fpu_valid_i,
-    // report FP format - ID_STAGE
+    // FPU format - ID_STAGE
     input logic [1:0] fpu_fmt_i,
-    // FP rm - ID_STAGE
+    // FPU rm - ID_STAGE
     input logic [2:0] fpu_rm_i,
-    // FP frm - ID_STAGE
+    // FPU frm - ID_STAGE
     input logic [2:0] fpu_frm_i,
-    // FP precision control - CSR_REGFILE
+    // FPU precision control - CSR_REGFILE
     input logic [6:0] fpu_prec_i,
-    // TO_BE_COMPLETED - ID_STAGE
+    // FPU transaction ID - ID_STAGE
     output logic [TRANS_ID_BITS-1:0] fpu_trans_id_o,
-    // TO_BE_COMPLETED - ID_STAGE
+    // FPU result - ID_STAGE
     output riscv::xlen_t fpu_result_o,
-    // TO_BE_COMPLETED - ID_STAGE
+    // FPU valid - ID_STAGE
     output logic fpu_valid_o,
-    // TO_BE_COMPLETED - ID_STAGE
+    // FPU exception - ID_STAGE
     output exception_t fpu_exception_o,
-    // TO_BE_COMPLETED - ID_STAGE
+    // CVXIF result is valid - ID_STAGE
     input logic x_valid_i,
     // TO_BE_COMPLETED - ID_STAGE
     output logic x_ready_o,
@@ -138,7 +138,7 @@ module ex_stage
     output cvxif_pkg::cvxif_req_t cvxif_req_o,
     // TO_BE_COMPLETED - SUBSYSTEM
     input cvxif_pkg::cvxif_resp_t cvxif_resp_i,
-    // TO_BE_COMPLETED - ACC_DISPATCHER
+    // accelerate port result is valid - ACC_DISPATCHER
     input logic acc_valid_i,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic enable_translation_i,
@@ -146,13 +146,13 @@ module ex_stage
     input logic en_ld_st_translation_i,
     // TO_BE_COMPLETED - CONTROLLER
     input logic flush_tlb_i,
-    // TO_BE_COMPLETED - CSR_REGFILE
+    // Privilege mode - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
-    // TO_BE_COMPLETED - CSR_REGFILE
+    // Privilege level at which load and stores should happen - CSR_REGFILE
     input riscv::priv_lvl_t ld_st_priv_lvl_i,
-    // TO_BE_COMPLETED - CSR_REGFILE
+    // Supervisor user memory - CSR_REGFILE
     input logic sum_i,
-    // TO_BE_COMPLETED - CSR_REGFILE
+    // Make executable readable - CSR_REGFILE
     input logic mxr_i,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [riscv::PPNW-1:0] satp_ppn_i,
@@ -183,9 +183,9 @@ module ex_stage
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
     // Report the PMP addresses - CSR_REGFILE
     input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
-    // Information dedicated to RVFI - SUBSYSTEM
+    // Information dedicated to RVFI - RVFI
     output lsu_ctrl_t rvfi_lsu_ctrl_o,
-    // Information dedicated to RVFI - SUBSYSTEM
+    // Information dedicated to RVFI - RVFI
     output [riscv::PLEN-1:0] rvfi_mem_paddr_o
 );
 

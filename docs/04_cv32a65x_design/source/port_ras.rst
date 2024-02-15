@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -59,3 +59,4 @@
      - Popped data
      - FRONTEND
      - ariane_pkg::ras_t
+

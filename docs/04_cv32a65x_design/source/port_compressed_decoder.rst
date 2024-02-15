@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``instr_i``
@@ -41,3 +41,4 @@
      - Output instruction is compressed
      - decoder
      - logic
+

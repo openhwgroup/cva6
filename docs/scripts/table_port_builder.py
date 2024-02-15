@@ -19,13 +19,13 @@ class PortIO:
         direction,
         data_type,
         description,
-        connection,
+        connexion,
     ):
         self.name = name
         self.direction = direction
         self.data_type = data_type
         self.description = description
-        self.connection = connection
+        self.connexion = connexion
 
 
 if __name__ == "__main__":
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     file.append("../core/issue_read_operands.sv")
 
     black_list = {}
-    black_list["flush_bp_i"] = ["", "zero"]
+    black_list["flush_bp_i"] = ["For any HW configuration", "zero"]
     black_list["set_debug_pc_i"] = ["As debug is disabled", "zero"]
     black_list["debug_mode_i"] = ["As debug is disabled", "zero"]
     black_list["debug_req_i"] = ["As debug is disabled", "zero"]
@@ -58,11 +58,29 @@ if __name__ == "__main__":
     black_list["fs_i"] = ["As FPU is not present", "zero"]
     black_list["frm_i"] = ["As FPU is not present", "zero"]
     black_list["vs_i"] = ["As vector extension is not present", "zero"]
-    black_list["tvm_i"] = ["As supervisor mode is not supported", "zero"]
-    black_list["tw_i"] = ["As TO_BE_COMPLETED", "zero"]
-    black_list["tsr_i"] = ["As supervisor mode is not supported", "zero"]
+    # black_list["tvm_i"] = ["As supervisor mode is not supported", "zero"]
+    # black_list["tw_i"] = ["As privilege mode is machine mode only", "zero"]
+    # black_list["tsr_i"] = ["As supervisor mode is not supported", "zero"]
     black_list["ACC_DISPATCHER"] = ["As Accelerate port is not supported", "zero"]
     black_list["PERF_COUNTERS"] = ["As performance counters are not supported", "zero"]
+    black_list["RVFI"] = ["As RVFI is not implemented", "zero"]
+    black_list["fpu_valid_o"] = ["As FPU is not present", "zero"]
+    black_list["fpu_ready_o"] = ["As FPU is not present", "zero"]
+    black_list["fpu_fmt_o"] = ["As FPU is not present", "zero"]
+    black_list["fpu_rm_o"] = ["As FPU is not present", "zero"]
+    black_list["fpu_valid_i"] = ["As FPU is not present", "zero"]
+    black_list["fpu_fmt_i"] = ["As FPU is not present", "zero"]
+    black_list["fpu_rm_i"] = ["As FPU is not present", "zero"]
+    black_list["fpu_frm_i"] = ["As FPU is not present", "zero"]
+    black_list["fpu_prec_i"] = ["As FPU is not present", "zero"]
+    black_list["fpu_trans_id_o"] = ["As FPU is not present", "zero"]
+    black_list["fpu_result_o"] = ["As FPU is not present", "zero"]
+    black_list["fpu_exception_o"] = ["As FPU is not present", "zero"]
+    black_list["amo_req_o"] = ["As A extension is disabled", "zero"]
+    black_list["amo_resp_i"] = ["As A extension is disabled", "zero"]
+    black_list["amo_valid_commit_i"] = ["As A extension is disabled", "zero"]
+    black_list["flush_tlb_i"] = ["As MMU is not present", "zero"]
+    black_list["ld_st_priv_lvl_i"] = ["As privilege mode is machine mode only", "zero"]
 
     for filein in file:
         comments = []
@@ -74,31 +92,39 @@ if __name__ == "__main__":
         ports = []
         with open(filein, "r", encoding="utf-8") as fin:
             description = "none"
-            connection = "none"
+            connexion = "none"
             for line in fin:
                 e = re.match(r"^ +(?:(in|out))put +([\S]*(?: +.* *|)) ([\S]*)\n", line)
                 d = re.match(r"^ +\/\/ (.*) - ([\S]*)\n", line)
                 if d:
                     description = d.group(1)
-                    connection = d.group(2)
+                    connexion = d.group(2)
                 if e:
                     name = e.group(3)
                     name = name.replace(",", "")
                     data_type = e.group(2)
                     data_type = data_type.replace(" ", "")
-                    if name not in black_list:
-                        ports.append(
-                            PortIO(name, e.group(1), data_type, description, connection)
-                        )
-                    else:
+                    if connexion in black_list:
                         for i, comment in enumerate(comments):
-                            if black_list[name][0] == comment[0]:
-                                comment[1] = comment[1]+f" and ``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"
+                            if black_list[connexion][0] == comment[0]:
+                                comment[1] = comment[1]+f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}"
                                 break
                         else:
-                            comments.append([black_list[name][0], f"``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"])
+                            comments.append([black_list[connexion][0], f"``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}"])
+                    else:
+                        if name in black_list:
+                            for i, comment in enumerate(comments):
+                                if black_list[name][0] == comment[0]:
+                                    comment[1] = comment[1]+f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"
+                                    break
+                            else:
+                                comments.append([black_list[name][0], f"``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"])
+                        else:
+                            ports.append(
+                                PortIO(name, e.group(1), data_type, description, connexion)
+                            )
                     description = "none"
-                    connection = "none"
+                    connexion = "none"
 
         with open(fileout, "w", encoding="utf-8") as fout:
             fout.write("..\n")
@@ -121,15 +147,15 @@ if __name__ == "__main__":
             fout.write("   * - Signal\n")
             fout.write("     - IO\n")
             fout.write("     - Description\n")
-            fout.write("     - Connection\n")
+            fout.write("     - connexion\n")
             fout.write("     - Type\n")
             for i, port in enumerate(ports):
                 fout.write("\n")
                 fout.write(f"   * - ``{port.name}``\n")
                 fout.write(f"     - {port.direction}\n")
                 fout.write(f"     - {port.description}\n")
-                fout.write(f"     - {port.connection}\n")
+                fout.write(f"     - {port.connexion}\n")
                 fout.write(f"     - {port.data_type}\n")
             fout.write(f"\n")
             for comment in comments:
-                fout.write(f"* {comment[0]}, {comment[1]}\n")
+                fout.write(f"| {comment[0]},\n|   {comment[1]}\n")

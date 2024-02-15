@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -60,12 +60,6 @@
      - SUBSYSTEM
      - logic
 
-   * - ``debug_req_i``
-     - in
-     - Debug (async) request
-     - SUBSYSTEM
-     - logic
-
    * - ``rvfi_probes_o``
      - out
      - Probes to build RVFI, can be left open when not used
@@ -95,3 +89,6 @@
      - noc response, can be AXI or OpenPiton
      - SUBSYSTEM
      - noc_resp_t
+
+| As debug is disabled,
+|   ``debug_req_i`` input is tied to zero

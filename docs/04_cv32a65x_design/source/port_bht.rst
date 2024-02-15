@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -36,12 +36,6 @@
      - CONTROLLER
      - logic
 
-   * - ``debug_mode_i``
-     - in
-     - Debug mode state
-     - CSR
-     - logic
-
    * - ``vpc_i``
      - in
      - Virtual PC
@@ -59,3 +53,6 @@
      - Prediction from bht
      - FRONTEND
      - ariane_pkg::bht_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
+
+| As debug is disabled,
+|   ``debug_mode_i`` input is tied to zero

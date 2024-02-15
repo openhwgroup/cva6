@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -95,12 +95,6 @@
      - Floating point register enable
      - ID_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
-
-   * - ``amo_resp_i``
-     - in
-     - Result of AMO operation
-     - CACHE
-     - amo_resp_t
 
    * - ``pc_o``
      - out
@@ -197,3 +191,6 @@
      - Flush TLBs and pipeline
      - CONTROLLER
      - logic
+
+| As A extension is disabled,
+|   ``amo_resp_i`` input is tied to zero

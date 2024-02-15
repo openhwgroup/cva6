@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -114,12 +114,6 @@
      - COMMIT_STAGE
      - logic
 
-   * - ``dirty_v_state_i``
-     - in
-     - Mark the V state as dirty
-     - ACC_DISPATCHER
-     - logic
-
    * - ``pc_i``
      - in
      - PC of instruction accessing the CSR
@@ -155,18 +149,6 @@
      - Current privilege level the CPU is in
      - EX_STAGE
      - riscv::priv_lvl_t
-
-   * - ``acc_fflags_ex_i``
-     - in
-     - Imprecise FP exception from the accelerator (fcsr.fflags format)
-     - ACC_DISPATCHER
-     - logic[4:0]
-
-   * - ``acc_fflags_ex_valid_i``
-     - in
-     - An FP exception from the accelerator occurred
-     - ACC_DISPATCHER
-     - logic
 
    * - ``fs_o``
      - out
@@ -258,12 +240,6 @@
      - SUBSYSTEM
      - logic
 
-   * - ``debug_req_i``
-     - in
-     - debug request in
-     - ID_STAGE
-     - logic
-
    * - ``set_debug_pc_o``
      - out
      - TO_BE_COMPLETED
@@ -312,50 +288,18 @@
      - CACHE
      - logic
 
-   * - ``acc_cons_en_o``
-     - out
-     - Accelerator memory consistent mode
-     - ACC_DISPATCHER
-     - logic
-
-   * - ``perf_addr_o``
-     - out
-     - read/write address to performance counter module
-     - PERF_COUNTERS
-     - logic[11:0]
-
-   * - ``perf_data_o``
-     - out
-     - write data to performance counter module
-     - PERF_COUNTERS
-     - logic[riscv::XLEN-1:0]
-
-   * - ``perf_data_i``
-     - in
-     - read data from performance counter module
-     - PERF_COUNTERS
-     - logic[riscv::XLEN-1:0]
-
-   * - ``perf_we_o``
-     - out
-     - TO_BE_COMPLETED
-     - PERF_COUNTERS
-     - logic
-
-   * - ``pmpcfg_o``
-     - out
-     - PMP configuration containing pmpcfg for max 16 PMPs
-     - ACC_DISPATCHER
-     - riscv::pmpcfg_t[15:0]
-
-   * - ``pmpaddr_o``
-     - out
-     - PMP addresses
-     - ACC_DISPATCHER
-     - logic[15:0][riscv::PLEN-3:0]
-
-   * - ``mcountinhibit_o``
-     - out
-     - TO_BE_COMPLETED
-     - PERF_COUNTERS
-     - logic[31:0]
+| As Accelerate port is not supported,
+|   ``dirty_v_state_i`` input is tied to zero
+|   ``acc_fflags_ex_i`` input is tied to zero
+|   ``acc_fflags_ex_valid_i`` input is tied to zero
+|   ``acc_cons_en_o`` output is tied to zero
+|   ``pmpcfg_o`` output is tied to zero
+|   ``pmpaddr_o`` output is tied to zero
+| As debug is disabled,
+|   ``debug_req_i`` input is tied to zero
+| As performance counters are not supported,
+|   ``perf_addr_o`` output is tied to zero
+|   ``perf_data_o`` output is tied to zero
+|   ``perf_data_i`` input is tied to zero
+|   ``perf_we_o`` output is tied to zero
+|   ``mcountinhibit_o`` output is tied to zero

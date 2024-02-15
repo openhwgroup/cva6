@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -77,3 +77,4 @@
      - Instruction
      - instr_scan&instr_queue
      - logic[INSTR_PER_FETCH-1:0][31:0]
+

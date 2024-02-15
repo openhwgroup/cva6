@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -36,22 +36,10 @@
      - CONTROLLER
      - logic
 
-   * - ``flush_bp_i``
-     - in
-     - flush branch prediction
-     - zero
-     - logic
-
    * - ``halt_i``
      - in
      - halt commit stage
      - CONTROLLER
-     - logic
-
-   * - ``debug_mode_i``
-     - in
-     - Debug mode state
-     - CSR
      - logic
 
    * - ``boot_addr_i``
@@ -102,12 +90,6 @@
      - COMMIT
      - logic
 
-   * - ``set_debug_pc_i``
-     - in
-     - Debug event
-     - CSR
-     - logic
-
    * - ``icache_dreq_o``
      - out
      - Handshake between CACHE and FRONTEND (fetch)
@@ -137,3 +119,9 @@
      - Handshake's ready between fetch and decode
      - ID_STAGE
      - logic
+
+| For any HW configuration,
+|   ``flush_bp_i`` input is tied to zero
+| As debug is disabled,
+|   ``debug_mode_i`` input is tied to zero
+|   ``set_debug_pc_i`` input is tied to zero

@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``instr_i``
@@ -101,3 +101,4 @@
      - Instruction compressed immediat
      - FRONTEND
      - logic[riscv::VLEN-1:0]
+

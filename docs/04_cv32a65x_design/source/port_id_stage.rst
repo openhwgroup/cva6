@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -34,12 +34,6 @@
      - in
      - Fetch flush request
      - CONTROLLER
-     - logic
-
-   * - ``debug_req_i``
-     - in
-     - Debug (async) request
-     - SUBSYSTEM
      - logic
 
    * - ``fetch_entry_i``
@@ -90,36 +84,6 @@
      - ISSUE
      - logic
 
-   * - ``rvfi_is_compressed_o``
-     - out
-     - Information dedicated to RVFI
-     - SUBSYSTEM
-     - logic
-
-   * - ``priv_lvl_i``
-     - in
-     - Current privilege level
-     - CSR_REGFILE
-     - riscv::priv_lvl_t
-
-   * - ``fs_i``
-     - in
-     - Floating point extension status
-     - CSR_REGFILE
-     - riscv::xs_t
-
-   * - ``frm_i``
-     - in
-     - Floating point dynamic rounding mode
-     - CSR_REGFILE
-     - logic[2:0]
-
-   * - ``vs_i``
-     - in
-     - Vector extension status
-     - CSR_REGFILE
-     - riscv::xs_t
-
    * - ``irq_i``
      - in
      - Level sensitive (async) interrupts
@@ -131,12 +95,6 @@
      - Interrupt control status
      - CSR_REGFILE
      - ariane_pkg::irq_ctrl_t
-
-   * - ``debug_mode_i``
-     - in
-     - Is current mode debug ?
-     - CSR_REGFILE
-     - logic
 
    * - ``tvm_i``
      - in
@@ -155,3 +113,16 @@
      - Trap sret
      - CSR_REGFILE
      - logic
+
+| As debug is disabled,
+|   ``debug_req_i`` input is tied to zero
+|   ``debug_mode_i`` input is tied to zero
+| As RVFI is not implemented,
+|   ``rvfi_is_compressed_o`` output is tied to zero
+| As privilege mode is machine mode only,
+|   ``priv_lvl_i`` input is tied to Machine mode
+| As FPU is not present,
+|   ``fs_i`` input is tied to zero
+|   ``frm_i`` input is tied to zero
+| As vector extension is not present,
+|   ``vs_i`` input is tied to zero

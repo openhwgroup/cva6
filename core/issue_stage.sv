@@ -23,67 +23,67 @@ module issue_stage
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // TO_BE_COMPLETED - PERF_COUNTERS
+    // Is scoreboard full - PERF_COUNTERS
     output logic sb_full_o,
     // TO_BE_COMPLETED - CONTROLLER
     input logic flush_unissued_instr_i,
     // TO_BE_COMPLETED - CONTROLLER
     input logic flush_i,
-    // zero when accelerate port is disable - ACC_DISPATCHER
+    // Stall inserted by Acc dispatcher - ACC_DISPATCHER
     input logic stall_i,
-    // Handshake's data between decode and issue - ID_STAGE
+    // Handshake's data with decode stage - ID_STAGE
     input scoreboard_entry_t decoded_instr_i,
     // instruction value - ID_STAGE
     input logic [31:0] orig_instr_i,
-    // Handshake's valid between decode and issue - ID_STAGE
+    // Handshake's valid with decode stage - ID_STAGE
     input logic decoded_instr_valid_i,
-    // Report if instruction is a control flow instruction - ID_STAGE
+    // Is instruction a control flow instruction - ID_STAGE
     input logic is_ctrl_flow_i,
-    // Handshake's acknowlege between decode and issue - ID_STAGE
+    // Handshake's acknowlege with decode stage - ID_STAGE
     output logic decoded_instr_ack_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // rs1 forwarding - EX_STAGE
     output [riscv::VLEN-1:0] rs1_forwarding_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // rs2 forwarding - EX_STAGE
     output [riscv::VLEN-1:0] rs2_forwarding_o,
     // TO_BE_COMPLETED - EX_STAGE
     output fu_data_t fu_data_o,
     // TO_BE_COMPLETED - EX_STAGE
     output logic [riscv::VLEN-1:0] pc_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
     // TO_BE_COMPLETED - EX_STAGE
     input logic flu_ready_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // ALU FU is valid - EX_STAGE
     output logic alu_valid_o,
     // TO_BE_COMPLETED - EX_STAGE
     input logic resolve_branch_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Load store unit FU is ready - EX_STAGE
     input logic lsu_ready_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Load store unit FU is valid - EX_STAGE
     output logic lsu_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Branch unit is valid - EX_STAGE
     output logic branch_valid_o,
     // TO_BE_COMPLETED - EX_STAGE
     output branchpredict_sbe_t branch_predict_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Mult FU is valid - EX_STAGE
     output logic mult_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // FPU FU is ready - EX_STAGE
     input logic fpu_ready_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // FPU FU is valid - EX_STAGE
     output logic fpu_valid_o,
-    // Report FP fmt field - EX_STAGE
+    // FPU fmt field - EX_STAGE
     output logic [1:0] fpu_fmt_o,
-    // report FP rm field - EX_STAGE
+    // FPU rm field - EX_STAGE
     output logic [2:0] fpu_rm_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CSR is valid - EX_STAGE
     output logic csr_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF FU is valid - EX_STAGE
     output logic x_issue_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF is FU ready - EX_STAGE
     input logic x_issue_ready_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF offloader instruction value - EX_STAGE
     output logic [31:0] x_off_instr_o,
-    // TO_BE_COMPLETED - ACC_DISPATCHER
+    // Issue scoreboard entry - ACC_DISPATCHER
     output scoreboard_entry_t issue_instr_o,
     // TO_BE_COMPLETED - ACC_DISPATCHER
     output logic issue_instr_hs_o,
@@ -93,7 +93,7 @@ module issue_stage
     input bp_resolve_t resolved_branch_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
-    // exception from execute stage or CVXIF offloaded instruction - EX_STAGE
+    // exception from execute stage or CVXIF - EX_STAGE
     input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
@@ -113,9 +113,9 @@ module issue_stage
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     // Issue stall - PERF_COUNTERS
     output logic stall_issue_o,
-    // Information dedicated to RVFI - SUBSYSTEM
+    // Information dedicated to RVFI - RVFI
     output logic [TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
-    // Information dedicated to RVFI - SUBSYSTEM
+    // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
 );
   // ---------------------------------------------------

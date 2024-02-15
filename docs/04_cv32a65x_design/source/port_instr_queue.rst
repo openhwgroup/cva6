@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -119,3 +119,4 @@
      - Handshake’s ready with ID_STAGE
      - ID_STAGE
      - logic
+

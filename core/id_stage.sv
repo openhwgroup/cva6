@@ -40,7 +40,7 @@ module id_stage #(
     output logic is_ctrl_flow_o,
     // Handshake's acknowlege between decode and issue - ISSUE
     input logic issue_instr_ack_i,
-    // Information dedicated to RVFI - SUBSYSTEM
+    // Information dedicated to RVFI - RVFI
     output logic rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,

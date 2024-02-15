@@ -15,20 +15,18 @@ ISSUE_STAGE Module
 Description
 -----------
 
-The execution can be roughly divided into four parts:
- 1. issue, 2. read operands, 3. execute and 4. write-back.
+The execution can be roughly divided into four parts: issue(1),
+read operands(2), execute(3) and write-back(4).
 The ISSUE_STAGE module handles step one, two and four.
+The ISSUE_STAGE module receives the decoded instructions and issues them
+to the various functional units.
 
-It receives the decoded instructions and issues them to the various
-functional units.
-
-A data-structure called
-scoreboard is used to keep track of data related to the issue instruction: which
-functional unit it is in and which register it will write-back to.
+A data-structure called scoreboard is used to keep track of data related
+to the issue instruction: which functional unit it is in and which
+register it will write-back to.
 The scoreboard handle the write-back data received from the COMMIT_STAGE module.
 
-Furthermore it
-contains the CPU’s register file.
+Furthermore it contains the CPU’s register file.
 
 
 The module is connected to:

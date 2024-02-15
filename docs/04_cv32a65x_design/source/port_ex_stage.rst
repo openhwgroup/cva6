@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -34,12 +34,6 @@
      - in
      - Fetch flush request
      - CONTROLLER
-     - logic
-
-   * - ``debug_mode_i``
-     - in
-     - TO_BE_COMPLETED
-     - CSR_REGFILE
      - logic
 
    * - ``rs1_forwarding_i``
@@ -122,8 +116,8 @@
 
    * - ``resolved_branch_o``
      - out
-     - none
-     - none
+     - The branch engine uses the write back from the ALU
+     - several_modules
      - bp_resolve_t
 
    * - ``resolve_branch_o``
@@ -134,7 +128,7 @@
 
    * - ``csr_valid_i``
      - in
-     - TO_BE_COMPLETED
+     - CSR result is valid
      - ID_STAGE
      - logic
 
@@ -170,7 +164,7 @@
 
    * - ``load_valid_o``
      - out
-     - TO_BE_COMPLETED
+     - Load result is valid
      - ID_STAGE
      - logic
 
@@ -194,7 +188,7 @@
 
    * - ``store_valid_o``
      - out
-     - TO_BE_COMPLETED
+     - Store result is valid
      - ID_STAGE
      - logic
 
@@ -224,7 +218,7 @@
 
    * - ``lsu_commit_ready_o``
      - out
-     - Commit queue is ready to accept another commit request
+     - Commit queue ready to accept another commit request
      - COMMIT_STAGE
      - logic
 
@@ -234,87 +228,15 @@
      - COMMIT_STAGE
      - logic[TRANS_ID_BITS-1:0]
 
-   * - ``stall_st_pending_i``
-     - in
-     - TO_BE_COMPLETED
-     - ACC_DISPATCHER
-     - logic
-
    * - ``no_st_pending_o``
      - out
      - TO_BE_COMPLETED
      - COMMIT_STAGE
      - logic
 
-   * - ``amo_valid_commit_i``
-     - in
-     - TO_BE_COMPLETED
-     - COMMIT_STAGE
-     - logic
-
-   * - ``fpu_ready_o``
-     - out
-     - FU is ready
-     - ID_STAGE
-     - logic
-
-   * - ``fpu_valid_i``
-     - in
-     - Output is ready
-     - ID_STAGE
-     - logic
-
-   * - ``fpu_fmt_i``
-     - in
-     - report FP format
-     - ID_STAGE
-     - logic[1:0]
-
-   * - ``fpu_rm_i``
-     - in
-     - FP rm
-     - ID_STAGE
-     - logic[2:0]
-
-   * - ``fpu_frm_i``
-     - in
-     - FP frm
-     - ID_STAGE
-     - logic[2:0]
-
-   * - ``fpu_prec_i``
-     - in
-     - FP precision control
-     - CSR_REGFILE
-     - logic[6:0]
-
-   * - ``fpu_trans_id_o``
-     - out
-     - TO_BE_COMPLETED
-     - ID_STAGE
-     - logic[TRANS_ID_BITS-1:0]
-
-   * - ``fpu_result_o``
-     - out
-     - TO_BE_COMPLETED
-     - ID_STAGE
-     - riscv::xlen_t
-
-   * - ``fpu_valid_o``
-     - out
-     - TO_BE_COMPLETED
-     - ID_STAGE
-     - logic
-
-   * - ``fpu_exception_o``
-     - out
-     - TO_BE_COMPLETED
-     - ID_STAGE
-     - exception_t
-
    * - ``x_valid_i``
      - in
-     - TO_BE_COMPLETED
+     - CVXIF result is valid
      - ID_STAGE
      - logic
 
@@ -372,12 +294,6 @@
      - SUBSYSTEM
      - cvxif_pkg::cvxif_resp_t
 
-   * - ``acc_valid_i``
-     - in
-     - TO_BE_COMPLETED
-     - ACC_DISPATCHER
-     - logic
-
    * - ``enable_translation_i``
      - in
      - TO_BE_COMPLETED
@@ -390,33 +306,15 @@
      - CSR_REGFILE
      - logic
 
-   * - ``flush_tlb_i``
-     - in
-     - TO_BE_COMPLETED
-     - CONTROLLER
-     - logic
-
-   * - ``priv_lvl_i``
-     - in
-     - TO_BE_COMPLETED
-     - CSR_REGFILE
-     - riscv::priv_lvl_t
-
-   * - ``ld_st_priv_lvl_i``
-     - in
-     - TO_BE_COMPLETED
-     - CSR_REGFILE
-     - riscv::priv_lvl_t
-
    * - ``sum_i``
      - in
-     - TO_BE_COMPLETED
+     - Supervisor user memory
      - CSR_REGFILE
      - logic
 
    * - ``mxr_i``
      - in
-     - TO_BE_COMPLETED
+     - Make executable readable
      - CSR_REGFILE
      - logic
 
@@ -468,30 +366,6 @@
      - CACHE
      - logic
 
-   * - ``amo_req_o``
-     - out
-     - AMO request
-     - CACHE
-     - amo_req_t
-
-   * - ``amo_resp_i``
-     - in
-     - AMO response from cache
-     - CACHE
-     - amo_resp_t
-
-   * - ``itlb_miss_o``
-     - out
-     - To count the instruction TLB misses
-     - PERF_COUNTERS
-     - logic
-
-   * - ``dtlb_miss_o``
-     - out
-     - To count the data TLB misses
-     - PERF_COUNTERS
-     - logic
-
    * - ``pmpcfg_i``
      - in
      - Report the PMP configuration
@@ -504,14 +378,34 @@
      - CSR_REGFILE
      - logic[15:0][riscv::PLEN-3:0]
 
-   * - ``rvfi_lsu_ctrl_o``
-     - out
-     - Information dedicated to RVFI
-     - SUBSYSTEM
-     - lsu_ctrl_t
-
-   * - ``rvfi_mem_paddr_o``
-     - out
-     - Information dedicated to RVFI
-     - SUBSYSTEM
-     - [riscv::PLEN-1:0]
+| As debug is disabled,
+|   ``debug_mode_i`` input is tied to zero
+| As Accelerate port is not supported,
+|   ``stall_st_pending_i`` input is tied to zero
+|   ``acc_valid_i`` input is tied to zero
+| As A extension is disabled,
+|   ``amo_valid_commit_i`` input is tied to zero
+|   ``amo_req_o`` output is tied to zero
+|   ``amo_resp_i`` input is tied to zero
+| As FPU is not present,
+|   ``fpu_ready_o`` output is tied to zero
+|   ``fpu_valid_i`` input is tied to zero
+|   ``fpu_fmt_i`` input is tied to zero
+|   ``fpu_rm_i`` input is tied to zero
+|   ``fpu_frm_i`` input is tied to zero
+|   ``fpu_prec_i`` input is tied to zero
+|   ``fpu_trans_id_o`` output is tied to zero
+|   ``fpu_result_o`` output is tied to zero
+|   ``fpu_valid_o`` output is tied to zero
+|   ``fpu_exception_o`` output is tied to zero
+| As MMU is not present,
+|   ``flush_tlb_i`` input is tied to zero
+| As privilege mode is machine mode only,
+|   ``priv_lvl_i`` input is tied to Machine mode
+|   ``ld_st_priv_lvl_i`` input is tied to zero
+| As performance counters are not supported,
+|   ``itlb_miss_o`` output is tied to zero
+|   ``dtlb_miss_o`` output is tied to zero
+| As RVFI is not implemented,
+|   ``rvfi_lsu_ctrl_o`` output is tied to zero
+|   ``rvfi_mem_paddr_o`` output is tied to zero

@@ -15,7 +15,7 @@
    * - Signal
      - IO
      - Description
-     - Connection
+     - connexion
      - Type
 
    * - ``clk_i``
@@ -96,12 +96,6 @@
      - CSR_REGFILE
      - logic
 
-   * - ``halt_acc_i``
-     - in
-     - Halt request from accelerator dispatcher
-     - ACC_DISPATCHER
-     - logic
-
    * - ``halt_o``
      - out
      - Halt signal to commit stage
@@ -117,12 +111,6 @@
    * - ``ex_valid_i``
      - in
      - We got an exception, flush the pipeline
-     - FRONTEND
-     - logic
-
-   * - ``set_debug_pc_i``
-     - in
-     - set the debug pc from CSR
      - FRONTEND
      - logic
 
@@ -162,8 +150,8 @@
      - COMMIT_STAGE
      - logic
 
-   * - ``flush_acc_i``
-     - in
-     - Flush request from accelerator
-     - ACC_DISPATCHER
-     - logic
+| As Accelerate port is not supported,
+|   ``halt_acc_i`` input is tied to zero
+|   ``flush_acc_i`` input is tied to zero
+| As debug is disabled,
+|   ``set_debug_pc_i`` input is tied to zero
