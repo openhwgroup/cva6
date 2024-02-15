@@ -12,6 +12,17 @@
 import re
 
 
+class Parameter:
+    def __init__(
+        self,
+        datatype,
+        description,
+        value,
+    ):
+        self.datatype = datatype
+        self.description = description
+        self.value = value
+
 class PortIO:
     def __init__(
         self,
@@ -28,7 +39,98 @@ class PortIO:
         self.connexion = connexion
 
 
+def parameters_extractor(spec_number, target):
+
+    parameters = {}
+    FILE_IN = "../core/include/config_pkg.sv"
+
+    print("Input file " + FILE_IN)
+    with open(FILE_IN, "r", encoding="utf-8") as fin:
+        PRINT_ENABLE = 0
+        DESCRIPT = "TO_BE_COMPLETED"
+        for line in fin:
+            if "typedef struct packed" in line:
+                PRINT_ENABLE = 1
+            if "cva6_cfg_t" in line:
+                PRINT_ENABLE = 0
+            d = re.match(r"^ *(.*) ([\S]*);\n", line)
+            h = re.match(r"^ *\/\/ (.*)\n", line)
+            if h and PRINT_ENABLE:
+                DESCRIPT = h.group(1)
+            if d and PRINT_ENABLE:
+                parameters[d.group(2)] = Parameter(
+                    d.group(1), DESCRIPT, "TO_BE_COMPLETED"
+                )
+                DESCRIPT = "TO_BE_COMPLETED"
+
+    FILE_IN = f"../core/include/{target}_config_pkg.sv"
+    a = re.match(r".*\/(.*)_config_pkg.sv", FILE_IN)
+    module = a.group(1)
+    fileout = f"./{spec_number}_{target}_design/source/parameters_{module}.rst"
+    print("Input file " + FILE_IN)
+    print("Output file " + fileout)
+
+    with open(FILE_IN, "r", encoding="utf-8") as fin:
+        for line in fin:
+            e = re.match(r"^ +([\S]*): (.*)(?:,|)\n", line)
+            if e:
+                parameters[e.group(1)].value = e.group(2)
+
+    with open(FILE_IN, "r", encoding="utf-8") as fin:
+        for line in fin:
+            c = re.match(r"^ +localparam ([\S]*) = (.*);\n", line)
+            if c:
+                for name in parameters:
+                    if c.group(1) in parameters[name].value:
+                        parameters[name].value = c.group(2)
+                        break
+
+    for name in parameters:
+        variable = parameters[name].value
+        variable = variable.replace("1024'(", "")
+        variable = variable.replace("bit'(", "")
+        variable = variable.replace("unsigned'(", "")
+        variable = variable.replace(")", "")
+        variable = variable.replace(",", "")
+        parameters[name].value = variable
+
+    with open(fileout, "w") as fout:
+        fout.write("..\n")
+        fout.write("   Copyright 2024 Thales DIS France SAS\n")
+        fout.write(
+            '   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");\n'
+        )
+        fout.write(
+            "   you may not use this file except in compliance with the License.\n"
+        )
+        fout.write("   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1\n")
+        fout.write(
+            "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
+        )
+        fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
+        fout.write(f".. _{module}_PARAMETERS:\n\n")
+        fout.write(f".. list-table:: {module} parameter configuration\n")
+        fout.write("   :header-rows: 1\n")
+        fout.write("\n")
+        fout.write("   * - Name\n")
+        fout.write("     - Description\n")
+        fout.write("     - Value\n")
+        for name in parameters:
+            fout.write("\n")
+            fout.write(f"   * - {name}\n")
+            fout.write(f"     - {parameters[name].description}\n")
+            fout.write(f"     - {parameters[name].value}\n")
+
+    return parameters
+
+
 if __name__ == "__main__":
+
+    path = "04_cv32a65x"
+    [spec_number, target] = path.split("_")
+
+    parameters = parameters_extractor(spec_number, target)
+
     file = []
     file.append("../core/cva6.sv")
     file.append("../core/frontend/frontend.sv")
@@ -51,36 +153,73 @@ if __name__ == "__main__":
 
     black_list = {}
     black_list["flush_bp_i"] = ["For any HW configuration", "zero"]
-    black_list["set_debug_pc_i"] = ["As debug is disabled", "zero"]
-    black_list["debug_mode_i"] = ["As debug is disabled", "zero"]
-    black_list["debug_req_i"] = ["As debug is disabled", "zero"]
-    black_list["priv_lvl_i"] = ["As privilege mode is machine mode only", "Machine mode"]
-    black_list["fs_i"] = ["As FPU is not present", "zero"]
-    black_list["frm_i"] = ["As FPU is not present", "zero"]
-    black_list["vs_i"] = ["As vector extension is not present", "zero"]
-    # black_list["tvm_i"] = ["As supervisor mode is not supported", "zero"]
-    # black_list["tw_i"] = ["As privilege mode is machine mode only", "zero"]
-    # black_list["tsr_i"] = ["As supervisor mode is not supported", "zero"]
-    black_list["ACC_DISPATCHER"] = ["As Accelerate port is not supported", "zero"]
-    black_list["PERF_COUNTERS"] = ["As performance counters are not supported", "zero"]
-    black_list["RVFI"] = ["As RVFI is not implemented", "zero"]
-    black_list["fpu_valid_o"] = ["As FPU is not present", "zero"]
-    black_list["fpu_ready_o"] = ["As FPU is not present", "zero"]
-    black_list["fpu_fmt_o"] = ["As FPU is not present", "zero"]
-    black_list["fpu_rm_o"] = ["As FPU is not present", "zero"]
-    black_list["fpu_valid_i"] = ["As FPU is not present", "zero"]
-    black_list["fpu_fmt_i"] = ["As FPU is not present", "zero"]
-    black_list["fpu_rm_i"] = ["As FPU is not present", "zero"]
-    black_list["fpu_frm_i"] = ["As FPU is not present", "zero"]
-    black_list["fpu_prec_i"] = ["As FPU is not present", "zero"]
-    black_list["fpu_trans_id_o"] = ["As FPU is not present", "zero"]
-    black_list["fpu_result_o"] = ["As FPU is not present", "zero"]
-    black_list["fpu_exception_o"] = ["As FPU is not present", "zero"]
-    black_list["amo_req_o"] = ["As A extension is disabled", "zero"]
-    black_list["amo_resp_i"] = ["As A extension is disabled", "zero"]
-    black_list["amo_valid_commit_i"] = ["As A extension is disabled", "zero"]
-    black_list["flush_tlb_i"] = ["As MMU is not present", "zero"]
-    black_list["ld_st_priv_lvl_i"] = ["As privilege mode is machine mode only", "zero"]
+
+    param = "IsRVFI"
+    paramvalue = "0"
+    if paramvalue == "0":
+        black_list["RVFI"] = [f"As {param} = {paramvalue}", "0"]
+
+    param = "DebugEn"
+    paramvalue = parameters[param].value
+    if paramvalue == "0":
+        black_list["set_debug_pc_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["debug_mode_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["debug_req_i"] = [f"As {param} = {paramvalue}", "0"]
+
+    param = "RVV"
+    paramvalue = parameters[param].value
+    if paramvalue == "0":
+        black_list["vs_i"] = [f"As {param} = {paramvalue}", "0"]
+
+    param = "EnableAccelerator"
+    paramvalue = parameters[param].value
+    if paramvalue == "0":
+        black_list["ACC_DISPATCHER"] = [f"As {param} = {paramvalue}", "0"]
+
+    param = "RVF"
+    paramvalue = parameters[param].value
+    if paramvalue == "0":
+        black_list["fs_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["frm_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_valid_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_ready_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_fmt_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_rm_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_valid_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_fmt_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_rm_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_frm_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_prec_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_trans_id_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_result_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fpu_exception_o"] = [f"As {param} = {paramvalue}", "0"]
+
+    param = "RVA"
+    paramvalue = parameters[param].value
+    if paramvalue == "0":
+        black_list["amo_req_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["amo_resp_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["amo_valid_commit_i"] = [f"As {param} = {paramvalue}", "0"]
+
+    param = "PRIV"
+    paramvalue = "MachineOnly"
+    if paramvalue == "MachineOnly": # TODO PRIV to be added to RTL parameters
+        black_list["ld_st_priv_lvl_i"] = [f"As {param} = {paramvalue}", "MAchineMode"]
+        black_list["priv_lvl_i"] = [f"As {param} = {paramvalue}", "MachineMode"]
+        # black_list["tvm_i"] = [f"As {param} = {paramvalue}", "0"]
+        # black_list["tw_i"] = [f"As {param} = {paramvalue}", "0"]
+        # black_list["tsr_i"] = [f"As {param} = {paramvalue}", "0"]
+
+    param = "PerfCounterEn"
+    paramvalue = "0"
+    if paramvalue == "0": # TODO PerfCounterEn to be added to RTL parameters
+        black_list["PERF_COUNTERS"] = [f"As {param} = {paramvalue}", "0"]
+
+    param = "MMUPresent"
+    paramvalue = "0"
+    if paramvalue == "0": # TODO the MMUPresent to be added to RTL parameters
+        black_list["flush_tlb_i"] = [f"As {param} = {paramvalue}", "0"]
+
 
     for filein in file:
         comments = []
@@ -157,5 +296,10 @@ if __name__ == "__main__":
                 fout.write(f"     - {port.connexion}\n")
                 fout.write(f"     - {port.data_type}\n")
             fout.write(f"\n")
+            fout.write(f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n")
+            fout.write(f"\n")
             for comment in comments:
                 fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
+            else:
+                fout.write(f"none\n")
+                

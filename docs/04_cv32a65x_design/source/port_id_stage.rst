@@ -114,15 +114,18 @@
      - CSR_REGFILE
      - logic
 
-| As debug is disabled,
-|   ``debug_req_i`` input is tied to zero
-|   ``debug_mode_i`` input is tied to zero
-| As RVFI is not implemented,
-|   ``rvfi_is_compressed_o`` output is tied to zero
-| As privilege mode is machine mode only,
-|   ``priv_lvl_i`` input is tied to Machine mode
-| As FPU is not present,
-|   ``fs_i`` input is tied to zero
-|   ``frm_i`` input is tied to zero
-| As vector extension is not present,
-|   ``vs_i`` input is tied to zero
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As DebugEn = 0,
+|   ``debug_req_i`` input is tied to 0
+|   ``debug_mode_i`` input is tied to 0
+| As IsRVFI = 0,
+|   ``rvfi_is_compressed_o`` output is tied to 0
+| As PRIV = MachineOnly,
+|   ``priv_lvl_i`` input is tied to MachineMode
+| As RVF = 0,
+|   ``fs_i`` input is tied to 0
+|   ``frm_i`` input is tied to 0
+| As RVV = 0,
+|   ``vs_i`` input is tied to 0
+none

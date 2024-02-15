@@ -282,3 +282,6 @@
      - none
      - logicstall_issue_o//stallsignal,wedonotwanttofetchanymore
 
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+none

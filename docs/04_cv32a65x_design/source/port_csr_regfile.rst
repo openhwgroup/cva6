@@ -288,18 +288,21 @@
      - CACHE
      - logic
 
-| As Accelerate port is not supported,
-|   ``dirty_v_state_i`` input is tied to zero
-|   ``acc_fflags_ex_i`` input is tied to zero
-|   ``acc_fflags_ex_valid_i`` input is tied to zero
-|   ``acc_cons_en_o`` output is tied to zero
-|   ``pmpcfg_o`` output is tied to zero
-|   ``pmpaddr_o`` output is tied to zero
-| As debug is disabled,
-|   ``debug_req_i`` input is tied to zero
-| As performance counters are not supported,
-|   ``perf_addr_o`` output is tied to zero
-|   ``perf_data_o`` output is tied to zero
-|   ``perf_data_i`` input is tied to zero
-|   ``perf_we_o`` output is tied to zero
-|   ``mcountinhibit_o`` output is tied to zero
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As EnableAccelerator = 0,
+|   ``dirty_v_state_i`` input is tied to 0
+|   ``acc_fflags_ex_i`` input is tied to 0
+|   ``acc_fflags_ex_valid_i`` input is tied to 0
+|   ``acc_cons_en_o`` output is tied to 0
+|   ``pmpcfg_o`` output is tied to 0
+|   ``pmpaddr_o`` output is tied to 0
+| As DebugEn = 0,
+|   ``debug_req_i`` input is tied to 0
+| As PerfCounterEn = 0,
+|   ``perf_addr_o`` output is tied to 0
+|   ``perf_data_o`` output is tied to 0
+|   ``perf_data_i`` input is tied to 0
+|   ``perf_we_o`` output is tied to 0
+|   ``mcountinhibit_o`` output is tied to 0
+none

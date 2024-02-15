@@ -252,17 +252,20 @@
      - COMMIT_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
 
-| As performance counters are not supported,
-|   ``sb_full_o`` output is tied to zero
-|   ``stall_issue_o`` output is tied to zero
-| As Accelerate port is not supported,
-|   ``stall_i`` input is tied to zero
-|   ``issue_instr_o`` output is tied to zero
-|   ``issue_instr_hs_o`` output is tied to zero
-| As FPU is not present,
-|   ``fpu_valid_o`` output is tied to zero
-|   ``fpu_fmt_o`` output is tied to zero
-|   ``fpu_rm_o`` output is tied to zero
-| As RVFI is not implemented,
-|   ``rvfi_issue_pointer_o`` output is tied to zero
-|   ``rvfi_commit_pointer_o`` output is tied to zero
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As PerfCounterEn = 0,
+|   ``sb_full_o`` output is tied to 0
+|   ``stall_issue_o`` output is tied to 0
+| As EnableAccelerator = 0,
+|   ``stall_i`` input is tied to 0
+|   ``issue_instr_o`` output is tied to 0
+|   ``issue_instr_hs_o`` output is tied to 0
+| As RVF = 0,
+|   ``fpu_valid_o`` output is tied to 0
+|   ``fpu_fmt_o`` output is tied to 0
+|   ``fpu_rm_o`` output is tied to 0
+| As IsRVFI = 0,
+|   ``rvfi_issue_pointer_o`` output is tied to 0
+|   ``rvfi_commit_pointer_o`` output is tied to 0
+none

@@ -378,34 +378,37 @@
      - CSR_REGFILE
      - logic[15:0][riscv::PLEN-3:0]
 
-| As debug is disabled,
-|   ``debug_mode_i`` input is tied to zero
-| As Accelerate port is not supported,
-|   ``stall_st_pending_i`` input is tied to zero
-|   ``acc_valid_i`` input is tied to zero
-| As A extension is disabled,
-|   ``amo_valid_commit_i`` input is tied to zero
-|   ``amo_req_o`` output is tied to zero
-|   ``amo_resp_i`` input is tied to zero
-| As FPU is not present,
-|   ``fpu_ready_o`` output is tied to zero
-|   ``fpu_valid_i`` input is tied to zero
-|   ``fpu_fmt_i`` input is tied to zero
-|   ``fpu_rm_i`` input is tied to zero
-|   ``fpu_frm_i`` input is tied to zero
-|   ``fpu_prec_i`` input is tied to zero
-|   ``fpu_trans_id_o`` output is tied to zero
-|   ``fpu_result_o`` output is tied to zero
-|   ``fpu_valid_o`` output is tied to zero
-|   ``fpu_exception_o`` output is tied to zero
-| As MMU is not present,
-|   ``flush_tlb_i`` input is tied to zero
-| As privilege mode is machine mode only,
-|   ``priv_lvl_i`` input is tied to Machine mode
-|   ``ld_st_priv_lvl_i`` input is tied to zero
-| As performance counters are not supported,
-|   ``itlb_miss_o`` output is tied to zero
-|   ``dtlb_miss_o`` output is tied to zero
-| As RVFI is not implemented,
-|   ``rvfi_lsu_ctrl_o`` output is tied to zero
-|   ``rvfi_mem_paddr_o`` output is tied to zero
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As DebugEn = 0,
+|   ``debug_mode_i`` input is tied to 0
+| As EnableAccelerator = 0,
+|   ``stall_st_pending_i`` input is tied to 0
+|   ``acc_valid_i`` input is tied to 0
+| As RVA = 0,
+|   ``amo_valid_commit_i`` input is tied to 0
+|   ``amo_req_o`` output is tied to 0
+|   ``amo_resp_i`` input is tied to 0
+| As RVF = 0,
+|   ``fpu_ready_o`` output is tied to 0
+|   ``fpu_valid_i`` input is tied to 0
+|   ``fpu_fmt_i`` input is tied to 0
+|   ``fpu_rm_i`` input is tied to 0
+|   ``fpu_frm_i`` input is tied to 0
+|   ``fpu_prec_i`` input is tied to 0
+|   ``fpu_trans_id_o`` output is tied to 0
+|   ``fpu_result_o`` output is tied to 0
+|   ``fpu_valid_o`` output is tied to 0
+|   ``fpu_exception_o`` output is tied to 0
+| As MMUPresent = 0,
+|   ``flush_tlb_i`` input is tied to 0
+| As PRIV = MachineOnly,
+|   ``priv_lvl_i`` input is tied to MachineMode
+|   ``ld_st_priv_lvl_i`` input is tied to MAchineMode
+| As PerfCounterEn = 0,
+|   ``itlb_miss_o`` output is tied to 0
+|   ``dtlb_miss_o`` output is tied to 0
+| As IsRVFI = 0,
+|   ``rvfi_lsu_ctrl_o`` output is tied to 0
+|   ``rvfi_mem_paddr_o`` output is tied to 0
+none

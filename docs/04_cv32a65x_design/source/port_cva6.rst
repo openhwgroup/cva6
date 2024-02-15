@@ -90,5 +90,8 @@
      - SUBSYSTEM
      - noc_resp_t
 
-| As debug is disabled,
-|   ``debug_req_i`` input is tied to zero
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As DebugEn = 0,
+|   ``debug_req_i`` input is tied to 0
+none

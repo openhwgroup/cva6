@@ -150,8 +150,11 @@
      - COMMIT_STAGE
      - logic
 
-| As Accelerate port is not supported,
-|   ``halt_acc_i`` input is tied to zero
-|   ``flush_acc_i`` input is tied to zero
-| As debug is disabled,
-|   ``set_debug_pc_i`` input is tied to zero
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As EnableAccelerator = 0,
+|   ``halt_acc_i`` input is tied to 0
+|   ``flush_acc_i`` input is tied to 0
+| As DebugEn = 0,
+|   ``set_debug_pc_i`` input is tied to 0
+none
