@@ -28,7 +28,7 @@
               -64
               +incdir+<setting>
               +incdir+<user_extension>
-              -f <cwd>/dv/files.f
+              -f <cwd>/../env/corev-dv/cva6-files.f
               +define+UVM_REGEX_NO_DPI
               -timescale 1ns/10ps
 	      -status
