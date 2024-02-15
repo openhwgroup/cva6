@@ -9,17 +9,18 @@
 // specific language governing permissions and limitations under the License.
 //
 // Author: Angela Gonzalez, PlanV Technology
-// Date: 26/01/2024
+// Date: 14/02/2024
 //
 // Description: Memory Management Unit for CVA6, contains TLB and
-//              address translation unit. SV32 and SV39 as defined in RISC-V
+//              address translation unit. SV32 SV39 and SV39x4 as defined in RISC-V
 //              privilege specification 1.11-WIP.
 //              This module is an merge of the MMU Sv39 developed
-//              by Florian Zaruba and the MMU Sv32 developed by Sebastien Jacq.
+//              by Florian Zaruba, the MMU Sv32 developed by Sebastien Jacq and the MMU Sv39x4 developed by Bruno Sá.
 
 
 module cva6_mmu import ariane_pkg::*; #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
+    // parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig, //This is the required config param in the hypervisor version for now
     parameter int unsigned INSTR_TLB_ENTRIES     = 4,
     parameter int unsigned DATA_TLB_ENTRIES      = 4,
     parameter logic                  HYP_EXT = 0,
@@ -37,6 +38,9 @@ module cva6_mmu import ariane_pkg::*; #(
     // IF interface
     input  icache_arsp_t                  icache_areq_i,
     output icache_areq_t                  icache_areq_o,
+    // input  icache_areq_o_t                  icache_areq_i, this is the data type in the hypervisor version for now
+    // output icache_areq_i_t                  icache_areq_o,
+
     // LSU interface
     // this is a more minimalistic interface because the actual addressing logic is handled
     // in the LSU as we distinguish load and stores, what we do here is simple address translation
@@ -145,7 +149,7 @@ module cva6_mmu import ariane_pkg::*; #(
     logic        dtlb_lu_hit;
     logic [riscv::GPLEN-1:0] dtlb_gpaddr;
 
-    logic  [HYP_EXT*2:0] shared_tlb_access;
+    logic  shared_tlb_access;
     logic        shared_tlb_hit, itlb_req;
 
   // Assignments
@@ -167,8 +171,7 @@ module cva6_mmu import ariane_pkg::*; #(
         .clk_i            ( clk_i                      ),
         .rst_ni           ( rst_ni                     ),
         .flush_i          ( flush_tlb_i                ),
-        // .v_st_enbl_i      ( enable_translation_i            ),
-        .v_st_enbl_i('1),
+        .v_st_enbl_i      ( enable_translation_i            ),
         .update_i         ( update_itlb                ),
         .lu_access_i      ( itlb_lu_access             ),
         .lu_asid_i        ( itlb_mmu_asid_i            ),
@@ -194,8 +197,7 @@ module cva6_mmu import ariane_pkg::*; #(
         .clk_i            ( clk_i                       ),
         .rst_ni           ( rst_ni                      ),
         .flush_i          ( flush_tlb_i                 ),
-        // .v_st_enbl_i      ( en_ld_st_translation_i             ),
-        .v_st_enbl_i('1),
+        .v_st_enbl_i      ( en_ld_st_translation_i             ),
         .update_i         ( update_dtlb                 ),
         .lu_access_i      ( dtlb_lu_access              ),
         .lu_asid_i        ( dtlb_mmu_asid_i             ),
@@ -223,9 +225,7 @@ module cva6_mmu import ariane_pkg::*; #(
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
         .flush_i(flush_tlb_i),
-        .v_st_enbl_i({'1,'1}),
-        .enable_translation_i  (enable_translation_i),
-        .en_ld_st_translation_i(en_ld_st_translation_i),
+        .v_st_enbl_i({enable_translation_i,en_ld_st_translation_i}),
   
         .dtlb_asid_i       (dtlb_mmu_asid_i),
         .itlb_asid_i       (itlb_mmu_asid_i),
@@ -258,6 +258,7 @@ module cva6_mmu import ariane_pkg::*; #(
   
       cva6_ptw  #(
           .CVA6Cfg   (CVA6Cfg),
+        //   .ArianeCfg              ( ArianeCfg             ), this is the configuration needed in the hypervisor extension for now
           .pte_cva6_t(pte_cva6_t),
           .tlb_update_cva6_t(tlb_update_cva6_t),
           .HYP_EXT(HYP_EXT),
@@ -371,11 +372,11 @@ module cva6_mmu import ariane_pkg::*; #(
         // 2. We got an access error because of insufficient permissions -> throw an access exception
         icache_areq_o.fetch_exception      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err[0]   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content[0].u)
+        iaccess_err[0]   = icache_areq_i.fetch_req && (enable_translation_i[0] || HYP_EXT==0) && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content[0].u)
                                                     || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content[0].u));
 
         if(HYP_EXT==1)
-            iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && !itlb_content[HYP_EXT].u;
+            iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && enable_translation_i[HYP_EXT] && !itlb_content[HYP_EXT].u;
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
@@ -518,7 +519,7 @@ module cva6_mmu import ariane_pkg::*; #(
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
-        if ((!match_any_execute_region) || (!(|enable_translation_i[HYP_EXT:0]) && !pmp_instr_allow)) begin
+        if ((!match_any_execute_region && (!ptw_error[0]|| HYP_EXT==0) ) || (!(|enable_translation_i[HYP_EXT:0]) && !pmp_instr_allow)) begin
             if(HYP_EXT==1) begin
                 icache_areq_o.fetch_exception = {
                     riscv::INSTR_ACCESS_FAULT,
@@ -539,13 +540,15 @@ module cva6_mmu import ariane_pkg::*; #(
 
     // check for execute flag on memory
     assign match_any_execute_region = config_pkg::is_inside_execute_regions(CVA6Cfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
+    // assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}); this is the package used in the hypervisor extension for now
 
     // Instruction fetch
     pmp #(
-        .CVA6Cfg   (CVA6Cfg),
+        .CVA6Cfg   (CVA6Cfg), //comment for hypervisor extension
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( CVA6Cfg.NrPMPEntries )
+        // .NR_ENTRIES ( ArianeCfg.NrPMPEntries ) configuration used in hypervisor extension
     ) i_pmp_if (
         .addr_i        ( icache_areq_o.fetch_paddr ),
         .priv_lvl_i,
@@ -645,11 +648,12 @@ module cva6_mmu import ariane_pkg::*; #(
 
         // Check if the User flag is set, then we may only access it in supervisor mode
         // if SUM is enabled
-        daccess_err[0] = ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && (en_ld_st_translation_i[HYP_EXT*2] ? !sum_i[HYP_EXT] : !sum_i[0] ) && dtlb_pte_q[0].u) || // SUM is not set and we are trying to access a user page in supervisor mode
+        daccess_err[0] = (en_ld_st_translation_i[0] || HYP_EXT==0)&&
+                        ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && (en_ld_st_translation_i[HYP_EXT*2] ? !sum_i[HYP_EXT] : !sum_i[0] ) && dtlb_pte_q[0].u) || // SUM is not set and we are trying to access a user page in supervisor mode
                         (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q[0].u));
         
         if(HYP_EXT==1)
-            daccess_err[HYP_EXT] = !dtlb_pte_q[1].u;
+            daccess_err[HYP_EXT] = en_ld_st_translation_i[HYP_EXT] && !dtlb_pte_q[1].u;
         // translation is enabled and no misaligned exception occurred
         if ((|en_ld_st_translation_i[HYP_EXT:0]) && !misaligned_ex_q.valid) begin
             lsu_valid_o = 1'b0;
@@ -668,7 +672,7 @@ module cva6_mmu import ariane_pkg::*; #(
                 if (lsu_is_store_q) begin
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
-                    if(HYP_EXT==1  && (!dtlb_pte_q[HYP_EXT].w || daccess_err[HYP_EXT] || !dtlb_pte_q[HYP_EXT].d)) begin
+                    if(HYP_EXT==1 && en_ld_st_translation_i[HYP_EXT] && (!dtlb_pte_q[HYP_EXT].w || daccess_err[HYP_EXT] || !dtlb_pte_q[HYP_EXT].d)) begin
                         lsu_exception_o = {
                             riscv::STORE_GUEST_PAGE_FAULT,
                             {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}},lsu_vaddr_q[0]},
@@ -677,7 +681,7 @@ module cva6_mmu import ariane_pkg::*; #(
                             en_ld_st_translation_i[HYP_EXT*2],
                             1'b1
                         };
-                    end else if ((!dtlb_pte_q[0].w || daccess_err[0] || !dtlb_pte_q[0].d)) begin
+                    end else if ((en_ld_st_translation_i[0] || HYP_EXT==0) && (!dtlb_pte_q[0].w || daccess_err[0] || !dtlb_pte_q[0].d)) begin
                         if(HYP_EXT==1) begin
                             lsu_exception_o = {
                                 riscv::STORE_PAGE_FAULT,
@@ -891,10 +895,11 @@ module cva6_mmu import ariane_pkg::*; #(
 
     // Load/store PMP check
     pmp #(
-        .CVA6Cfg   (CVA6Cfg),
+        .CVA6Cfg   (CVA6Cfg), // COMMENT IN HYPERVISOR EXTENSION
         .PLEN       ( riscv::PLEN            ),
         .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( CVA6Cfg.NrPMPEntries )
+        // .NR_ENTRIES ( ArianeCfg.NrPMPEntries ) CONFIGURATION USED IN HYPERVISOR EXTENSION
     ) i_pmp_data (
         .addr_i        ( lsu_paddr_o         ),
         .priv_lvl_i    ( ld_st_priv_lvl_i    ),

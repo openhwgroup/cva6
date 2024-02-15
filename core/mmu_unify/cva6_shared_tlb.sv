@@ -38,9 +38,6 @@ module cva6_shared_tlb
     input logic rst_ni,  // Asynchronous reset active low
     input  logic   [HYP_EXT*2:0]    flush_i,  // Flush signal [g_stage,vs stage, normal translation signal]
     input  logic   [1:0][HYP_EXT*2:0] v_st_enbl_i,  // v_i,g-stage enabled, s-stage enabled
-    input  logic   [HYP_EXT*2:0]    enable_translation_i, //[v_i,enable_g_translation,enable_translation]
-    input  logic   [HYP_EXT*2:0]    en_ld_st_translation_i,   // enable virtual memory translation for load/stores
-
 
     input logic [ASID_WIDTH[0]-1:0] dtlb_asid_i[HYP_EXT:0],//[vmid,vs_asid,asid]
     input logic [ASID_WIDTH[0]-1:0] itlb_asid_i[HYP_EXT:0],//[vmid,vs_asid,asid]
@@ -189,18 +186,18 @@ endgenerate
 genvar w;
   generate
       for (w=0; w < PT_LEVELS; w++) begin  
-        assign vpn_d[w]               = (enable_translation_i[0] & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? //
+        assign vpn_d[w]               = (v_st_enbl_i[1][0] & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? //
                                         itlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : //
-                                        ((en_ld_st_translation_i[0] & dtlb_access_i & ~dtlb_hit_i)? //
+                                        ((v_st_enbl_i[0][0] & dtlb_access_i & ~dtlb_hit_i)? //
                                         dtlb_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(w+1))-1:12+((VPN_LEN/PT_LEVELS)*w)] : vpn_q[w]);
       end
   endgenerate
 
   if(HYP_EXT==1)  
     //THIS UPDATES THE EXTRA BITS OF VPN IN SV39x4
-    assign vpn_d[PT_LEVELS][(VPN_LEN%PT_LEVELS)-1:0] = (enable_translation_i[0] & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? //
+    assign vpn_d[PT_LEVELS][(VPN_LEN%PT_LEVELS)-1:0] = (v_st_enbl_i[1][0] & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) ? //
                                                         itlb_vaddr_i[VPN_LEN-1: VPN_LEN-(VPN_LEN%PT_LEVELS)] : //
-                                                        ((en_ld_st_translation_i[0] & dtlb_access_i & ~dtlb_hit_i)? //
+                                                        ((v_st_enbl_i[0][0] & dtlb_access_i & ~dtlb_hit_i)? //
                                                         dtlb_vaddr_i[VPN_LEN-1: VPN_LEN-(VPN_LEN%PT_LEVELS)] : vpn_q[PT_LEVELS][(VPN_LEN%PT_LEVELS)-1:0]);
     
 ///////////////////////////////////////////////////////
@@ -225,7 +222,7 @@ genvar w;
         pte_rd_addr         = '0;
 
  // if we got an ITLB miss
-        if ((|enable_translation_i[HYP_EXT:0]) & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
+        if ((|v_st_enbl_i[1][HYP_EXT:0]) & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
             tag_rd_en           = '1;
             tag_rd_addr         = itlb_vaddr_i[12+:$clog2(SHARED_TLB_DEPTH)];
             pte_rd_en           = '1;
@@ -239,7 +236,7 @@ genvar w;
             shared_tlb_vaddr_d  = itlb_vaddr_i;
 
             // we got an DTLB miss
-          end else if ((|en_ld_st_translation_i[HYP_EXT:0]) & dtlb_access_i & ~dtlb_hit_i) begin
+          end else if ((|v_st_enbl_i[0][HYP_EXT:0]) & dtlb_access_i & ~dtlb_hit_i) begin
             tag_rd_en           = '1;
             tag_rd_addr         = dtlb_vaddr_i[12+:$clog2(SHARED_TLB_DEPTH)];
             pte_rd_en           = '1;

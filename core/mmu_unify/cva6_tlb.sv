@@ -73,6 +73,9 @@ logic [TLB_ENTRIES-1:0][HYP_EXT:0][PT_LEVELS-1:0] vpage_match;
 logic [TLB_ENTRIES-1:0][PT_LEVELS-2:0] is_page_o;
 logic [TLB_ENTRIES-1:0] match_stage;
 pte_cva6_t  g_content;
+logic      [HYP_EXT*2:0] v_st_enbl;
+
+assign v_st_enbl = (HYP_EXT==1) ? v_st_enbl_i : '1;
 //-------------
 // Translation
 //-------------
@@ -83,14 +86,14 @@ for (i=0; i < TLB_ENTRIES; i++) begin
   for (x=0; x < PT_LEVELS; x++) begin 
     //identify page_match for all TLB Entries  
     assign page_match[i][x] = x==0 ? 1 :((HYP_EXT==0 || x==(PT_LEVELS-1)) ? // PAGE_MATCH CONTAINS THE MATCH INFORMATION FOR EACH TAG OF is_1G and is_2M in sv39x4. HIGHER LEVEL (Giga page), THEN THERE IS THE Mega page AND AT THE LOWER LEVEL IS ALWAYS 1
-                                            &(tags_q[i].is_page[PT_LEVELS-1-x] | (~v_st_enbl_i[HYP_EXT:0])):
-                                            ((&v_st_enbl_i[HYP_EXT:0]) ? 
+                                            &(tags_q[i].is_page[PT_LEVELS-1-x] | (~v_st_enbl[HYP_EXT:0])):
+                                            ((&v_st_enbl[HYP_EXT:0]) ? 
                                             ((tags_q[i].is_page[PT_LEVELS-1-x][0] && (tags_q[i].is_page[PT_LEVELS-2-x][HYP_EXT] || tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT])) 
                                           || (tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT] && (tags_q[i].is_page[PT_LEVELS-2-x][0] || tags_q[i].is_page[PT_LEVELS-1-x][0]))):
-                                              tags_q[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl_i[0] || tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT] && v_st_enbl_i[HYP_EXT]));
+                                              tags_q[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl[0] || tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT] && v_st_enbl[HYP_EXT]));
 
     //identify if vpn matches at all PT levels for all TLB entries  
-    assign vpn_match[i][x]        = (HYP_EXT==1 && x==(PT_LEVELS-1) && ~v_st_enbl_i[0]) ? //
+    assign vpn_match[i][x]        = (HYP_EXT==1 && x==(PT_LEVELS-1) && ~v_st_enbl[0]) ? //
                                     lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x] && lu_vaddr_i[12+VPN_LEN-1: 12+VPN_LEN-(VPN_LEN%PT_LEVELS)] == tags_q[i].vpn[x+1][(VPN_LEN%PT_LEVELS)-1:0]: //
                                     lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
     
@@ -144,19 +147,19 @@ always_comb begin : translation
   for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // first level match, this may be a giga page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-      match_asid[i][0] = (((lu_asid_i[0][ASID_WIDTH[0]-1:0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) || content_q[i][0].g) && v_st_enbl_i[0]) || !v_st_enbl_i[0];
+      match_asid[i][0] = (((lu_asid_i[0][ASID_WIDTH[0]-1:0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) || content_q[i][0].g) && v_st_enbl[0]) || !v_st_enbl[0];
 
       if(HYP_EXT==1) begin
-        match_asid[i][HYP_EXT] = (lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl_i[HYP_EXT]) || !v_st_enbl_i[HYP_EXT];
+        match_asid[i][HYP_EXT] = (lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl[HYP_EXT]) || !v_st_enbl[HYP_EXT];
       end
       
       // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
-      match_stage[i] = tags_q[i].v_st_enbl == v_st_enbl_i;
+      match_stage[i] = tags_q[i].v_st_enbl == v_st_enbl;
 
       if (tags_q[i].valid && &match_asid[i] && match_stage[i]) begin
 
         if(HYP_EXT==1 && vpn_match[i][HYP_EXT*2])
-          lu_gpaddr_o = make_gpaddr(v_st_enbl_i[0], tags_q[i].is_page[0][0], tags_q[i].is_page[1][0], lu_vaddr_i, content_q[i][0]);
+          lu_gpaddr_o = make_gpaddr(v_st_enbl[0], tags_q[i].is_page[0][0], tags_q[i].is_page[1][0], lu_vaddr_i, content_q[i][0]);
 
         if (|level_match[i]) begin
               lu_is_page_o      = is_page_o[i];
@@ -264,7 +267,7 @@ always_comb begin : update_flush
       end else if (update_i.valid & replace_en[i]) begin
           // update tag array
           tags_n[i].asid =  update_i.asid;
-          tags_n[i].v_st_enbl=  v_st_enbl_i;
+          tags_n[i].v_st_enbl=  v_st_enbl;
           tags_n[i].is_page= update_i.is_page;
           tags_n[i].valid= 1'b1;
 
