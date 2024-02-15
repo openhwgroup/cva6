@@ -23,7 +23,6 @@
       - "vcs -file <cwd>/dv/vcs.compile.option.f
               +incdir+<setting>
               +incdir+<user_extension>
-             -f <cwd>/dv/files.f
              -f <cwd>/../env/corev-dv/cva6-files.f
              -full64
              -l <out>/compile.log
