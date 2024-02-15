@@ -49,7 +49,21 @@ if __name__ == "__main__":
     file.append("../core/scoreboard.sv")
     file.append("../core/issue_read_operands.sv")
 
+    black_list = {}
+    black_list["flush_bp_i"] = ["", "zero"]
+    black_list["set_debug_pc_i"] = ["As debug is disabled", "zero"]
+    black_list["debug_mode_i"] = ["As debug is disabled", "zero"]
+    black_list["debug_req_i"] = ["As debug is disabled", "zero"]
+    black_list["priv_lvl_i"] = ["As privilege mode is machine mode only", "Machine mode"]
+    black_list["fs_i"] = ["As FPU is not present", "zero"]
+    black_list["frm_i"] = ["As FPU is not present", "zero"]
+    black_list["vs_i"] = ["As vector extension is not present", "zero"]
+    black_list["tvm_i"] = ["As supervisor mode is not supported", "zero"]
+    black_list["tw_i"] = ["As ?", "zero"]
+    black_list["tsr_i"] = ["As supervisor mode is not supported", "zero"]
+
     for filein in file:
+        comment = []
         a = re.match(r".*\/(.*).sv", filein)
         module = a.group(1)
         fileout = "./04_cv32a65x_design/source/port_" + module + ".rst"
@@ -70,9 +84,12 @@ if __name__ == "__main__":
                     name = name.replace(",", "")
                     data_type = e.group(2)
                     data_type = data_type.replace(" ", "")
-                    ports.append(
-                        PortIO(name, e.group(1), data_type, description, connection)
-                    )
+                    if name not in black_list:
+                        ports.append(
+                            PortIO(name, e.group(1), data_type, description, connection)
+                        )
+                    else:
+                        comment.append(f"* {black_list[name][0]}, ``{name}`` {e.group(1)}put is tied to {black_list[name][1]}\n")
                     description = "none"
                     connection = "none"
 
@@ -106,3 +123,6 @@ if __name__ == "__main__":
                 fout.write(f"     - {port.description}\n")
                 fout.write(f"     - {port.connection}\n")
                 fout.write(f"     - {port.data_type}\n")
+            fout.write(f"\n")
+            for element in comment:
+                fout.write(f"{element}")
