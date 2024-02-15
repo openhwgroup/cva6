@@ -101,7 +101,7 @@ module decoder
   riscv::instruction_t instr;
   assign instr = riscv::instruction_t'(instruction_i);
   // transformed instruction
-  riscv::xlen_t tinst;
+  riscv::xlen_t                                                        tinst;
   // --------------------
   // Immediate select
   // --------------------

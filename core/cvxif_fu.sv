@@ -97,7 +97,7 @@ module cvxif_fu
     x_exception_o.tval = '0;
     x_exception_o.tinst = '0;
     x_exception_o.tval2 = '0;
-    x_exception_o.gva   = '0;
+    x_exception_o.gva = '0;
     x_we_o = x_valid_o ? cvxif_resp_i.x_result.we : '0;
     if (illegal_n) begin
       if (~x_valid_o) begin

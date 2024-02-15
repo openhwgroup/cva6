@@ -760,14 +760,15 @@ package ariane_pkg;
   // ----------------------
 
   // checks if final translation page size is 1G when H-extension is enabled
-  function automatic logic is_trans_1G(input logic s_st_enbl, input logic g_st_enbl, input logic is_s_1G,
-                             input logic is_g_1G);
+  function automatic logic is_trans_1G(input logic s_st_enbl, input logic g_st_enbl,
+                                       input logic is_s_1G, input logic is_g_1G);
     return (((is_s_1G && s_st_enbl) || !s_st_enbl) && ((is_g_1G && g_st_enbl) || !g_st_enbl));
   endfunction : is_trans_1G
 
   // checks if final translation page size is 2M when H-extension is enabled
-  function automatic logic is_trans_2M(input logic s_st_enbl, input logic g_st_enbl, input logic is_s_1G,
-                             input logic is_s_2M, input logic is_g_1G, input logic is_g_2M);
+  function automatic logic is_trans_2M(input logic s_st_enbl, input logic g_st_enbl,
+                                       input logic is_s_1G, input logic is_s_2M,
+                                       input logic is_g_1G, input logic is_g_2M);
     return  (s_st_enbl && g_st_enbl) ? 
                 ((is_s_2M && (is_g_1G || is_g_2M)) || (is_g_2M && (is_s_1G || is_s_2M))) :
                 ((is_s_2M && s_st_enbl) || (is_g_2M && g_st_enbl));
@@ -792,8 +793,8 @@ package ariane_pkg;
 
   // computes the final gppn based on the guest physical address
   function automatic logic [(riscv::GPPNW-1):0] make_gppn(input logic s_st_enbl, input logic is_1G,
-                                                input logic is_2M, input logic [28:0] vpn,
-                                                input riscv::pte_t pte);
+                                                          input logic is_2M, input logic [28:0] vpn,
+                                                          input riscv::pte_t pte);
     logic [(riscv::GPPNW-1):0] gppn;
     if (s_st_enbl) begin
       gppn = pte.ppn[(riscv::GPPNW-1):0];

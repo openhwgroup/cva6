@@ -320,7 +320,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
           if (CVA6Cfg.RVH) begin
             fetch_entry_o.ex.tval2 = instr_data_out[i].ex_gpaddr;
             fetch_entry_o.ex.tinst = instr_data_out[i].ex_tinst;
-            fetch_entry_o.ex.gva = instr_data_out[i].ex_gva;
+            fetch_entry_o.ex.gva   = instr_data_out[i].ex_gva;
           end
           fetch_entry_o.branch_predict.cf = instr_data_out[i].cf;
           pop_instr[i] = fetch_entry_valid_o & fetch_entry_ready_i;
@@ -353,7 +353,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
       if (CVA6Cfg.RVH) begin
         fetch_entry_o.ex.tval2 = instr_data_out[0].ex_gpaddr;
         fetch_entry_o.ex.tinst = instr_data_out[0].ex_tinst;
-        fetch_entry_o.ex.gva = instr_data_out[0].ex_gva;
+        fetch_entry_o.ex.gva   = instr_data_out[0].ex_gva;
       end
 
       fetch_entry_o.branch_predict.predict_address = address_out;

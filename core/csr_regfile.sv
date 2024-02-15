@@ -296,7 +296,9 @@ module csr_regfile
   // Assignments
   // ----------------
   assign csr_addr = riscv::csr_t'(csr_addr_i);
-  assign conv_csr_addr = (CVA6Cfg.RVH) ? riscv::convert_vs_access_csr((riscv::csr_t'(csr_addr_i)), v_q) : csr_addr;
+  assign conv_csr_addr = (CVA6Cfg.RVH) ? riscv::convert_vs_access_csr(
+      (riscv::csr_t'(csr_addr_i)), v_q
+  ) : csr_addr;
   assign fs_o = mstatus_q.fs;
   assign vfs_o = (CVA6Cfg.RVH) ? vsstatus_q.fs : riscv::Off;
   assign vs_o = mstatus_q.vs;
@@ -370,13 +372,13 @@ module csr_regfile
         else read_access_exception = 1'b1;
         riscv::CSR_VSIE:
         if (CVA6Cfg.RVH) csr_rdata = (mie_q & VS_DELEG_INTERRUPTS & hideleg_q) >> 1;
-        else  read_access_exception = 1'b1;
+        else read_access_exception = 1'b1;
         riscv::CSR_VSIP:
         if (CVA6Cfg.RVH) csr_rdata = (mip_q & VS_DELEG_INTERRUPTS & hideleg_q) >> 1;
         else read_access_exception = 1'b1;
         riscv::CSR_VSTVEC:
         if (CVA6Cfg.RVH) csr_rdata = vstvec_q;
-        else  read_access_exception = 1'b1;
+        else read_access_exception = 1'b1;
         riscv::CSR_VSSCRATCH:
         if (CVA6Cfg.RVH) csr_rdata = vsscratch_q;
         else read_access_exception = 1'b1;
@@ -390,7 +392,7 @@ module csr_regfile
         if (CVA6Cfg.RVH) csr_rdata = vstval_q;
         else read_access_exception = 1'b1;
         riscv::CSR_VSATP:
-          // intercept reads to VSATP if in VS-Mode and VTVM is enabled
+        // intercept reads to VSATP if in VS-Mode and VTVM is enabled
         if (CVA6Cfg.RVH) begin
           if (priv_lvl_o == riscv::PRIV_LVL_S && hstatus_q.vtvm && v_q)
             virtual_read_access_exception = 1'b1;
@@ -404,10 +406,12 @@ module csr_regfile
           else read_access_exception = 1'b1;
         end
         riscv::CSR_SIE:
-        if (CVA6Cfg.RVS) csr_rdata = (CVA6Cfg.RVH) ? mie_q & mideleg_q & ~HS_DELEG_INTERRUPTS : mie_q & mideleg_q;
+        if (CVA6Cfg.RVS)
+          csr_rdata = (CVA6Cfg.RVH) ? mie_q & mideleg_q & ~HS_DELEG_INTERRUPTS : mie_q & mideleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_SIP:
-        if (CVA6Cfg.RVS) csr_rdata = (CVA6Cfg.RVH) ? mip_q & mideleg_q & ~HS_DELEG_INTERRUPTS : mip_q & mideleg_q;
+        if (CVA6Cfg.RVS)
+          csr_rdata = (CVA6Cfg.RVH) ? mip_q & mideleg_q & ~HS_DELEG_INTERRUPTS : mip_q & mideleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_STVEC:
         if (CVA6Cfg.RVS) csr_rdata = stvec_q;
@@ -967,7 +971,7 @@ module csr_regfile
         end
         riscv::CSR_VSIE:
         if (CVA6Cfg.RVH) mie_d = (mie_q & ~hideleg_q) | ((csr_wdata << 1) & hideleg_q);
-        else  update_access_exception = 1'b1;
+        else update_access_exception = 1'b1;
         riscv::CSR_VSIP: begin
           if (CVA6Cfg.RVH) begin
             // only the virtual supervisor software interrupt is write-able, iff delegated
@@ -1728,7 +1732,7 @@ module csr_regfile
       if (CVA6Cfg.DebugEn && ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
         dcsr_d.prv = priv_lvl_o;
         // save virtualization mode bit
-      dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
+        dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
         // check that we actually want to enter debug depending on the privilege level we are currently in
         unique case (priv_lvl_o)
           riscv::PRIV_LVL_M: begin
@@ -1914,9 +1918,9 @@ module csr_regfile
     // return from debug mode
     if (CVA6Cfg.DebugEn && dret) begin
       // return from exception, IF doesn't care from where we are returning
-      eret_o       = 1'b1;
+      eret_o     = 1'b1;
       // restore the previous privilege level
-      priv_lvl_d   = riscv::priv_lvl_t'(dcsr_q.prv);
+      priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
       if (CVA6Cfg.RVH) begin
         // restore the previous virtualization mode
         v_d = dcsr_q.v;
@@ -2060,7 +2064,12 @@ module csr_regfile
   // ----------------------
   always_comb begin : exception_ctrl
     csr_exception_o = {
-      {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.GPLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, 1'b0, 1'b0
+      {CVA6Cfg.XLEN{1'b0}},
+      {CVA6Cfg.XLEN{1'b0}},
+      {CVA6Cfg.GPLEN{1'b0}},
+      {CVA6Cfg.XLEN{1'b0}},
+      1'b0,
+      1'b0
     };
     // ----------------------------------
     // Illegal Access (decode exception)
@@ -2327,11 +2336,11 @@ module csr_regfile
       mcounteren_q     <= mcounteren_d;
       mscratch_q       <= mscratch_d;
       if (CVA6Cfg.TvalEn) mtval_q <= mtval_d;
-      fiom_q           <= fiom_d;
-      dcache_q         <= dcache_d;
-      icache_q         <= icache_d;
-      mcountinhibit_q  <= mcountinhibit_d;
-      acc_cons_q       <= acc_cons_d;
+      fiom_q          <= fiom_d;
+      dcache_q        <= dcache_d;
+      icache_q        <= icache_d;
+      mcountinhibit_q <= mcountinhibit_d;
+      acc_cons_q      <= acc_cons_d;
       // supervisor mode registers
       if (CVA6Cfg.RVS) begin
         medeleg_q    <= medeleg_d;
@@ -2368,12 +2377,12 @@ module csr_regfile
         en_ld_st_g_translation_q <= en_ld_st_g_translation_d;
       end
       // timer and counters
-      cycle_q                  <= cycle_d;
-      instret_q                <= instret_d;
+      cycle_q                <= cycle_d;
+      instret_q              <= instret_d;
       // aux registers
-      en_ld_st_translation_q   <= en_ld_st_translation_d;
+      en_ld_st_translation_q <= en_ld_st_translation_d;
       // wait for interrupt
-      wfi_q                    <= wfi_d;
+      wfi_q                  <= wfi_d;
       // pmp
       pmpcfg_q               <= pmpcfg_next;
       pmpaddr_q              <= pmpaddr_next;

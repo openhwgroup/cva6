@@ -189,7 +189,7 @@ module load_unit
   assign page_offset_o = lsu_ctrl_i.vaddr[11:0];
   // feed-through the virtual address for VA translation
   assign vaddr_o = lsu_ctrl_i.vaddr;
-  assign hs_ld_st_inst_o =  CVA6Cfg.RVH ? lsu_ctrl_i.hs_ld_st_inst : 1'b0;
+  assign hs_ld_st_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hs_ld_st_inst : 1'b0;
   assign hlvx_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hlvx_inst : 1'b0;
   // feed-through the transformed instruction for mmu
   assign tinst_o = CVA6Cfg.RVH ? lsu_ctrl_i.tinst : '0;

@@ -370,7 +370,7 @@ module cva6_mmu_sv39x4
             icache_areq_o.fetch_exception = {
               riscv::INSTR_GUEST_PAGE_FAULT,
               {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr},
-               ptw_bad_gpaddr,
+              ptw_bad_gpaddr,
               (ptw_err_at_g_int_st ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
               v_i,
               1'b1

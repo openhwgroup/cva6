@@ -288,7 +288,7 @@ module issue_read_operands
     fu_n       = issue_instr_i.fu;
     operator_n = issue_instr_i.op;
     if (CVA6Cfg.RVH) begin
-      tinst_n    = issue_instr_i.ex.tinst;
+      tinst_n = issue_instr_i.ex.tinst;
     end
     // or should we forward
     if (forward_rs1) begin
@@ -598,27 +598,27 @@ module issue_read_operands
   // ----------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      operand_a_q           <= '{default: 0};
-      operand_b_q           <= '{default: 0};
-      imm_q                 <= '0;
-      fu_q                  <= NONE;
-      operator_q            <= ADD;
-      trans_id_q            <= '0;
+      operand_a_q <= '{default: 0};
+      operand_b_q <= '{default: 0};
+      imm_q       <= '0;
+      fu_q        <= NONE;
+      operator_q  <= ADD;
+      trans_id_q  <= '0;
       if (CVA6Cfg.RVH) begin
-        tinst_q               <= '0;
+        tinst_q <= '0;
       end
       pc_o                  <= '0;
       is_compressed_instr_o <= 1'b0;
       branch_predict_o      <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
     end else begin
-      operand_a_q           <= operand_a_n;
-      operand_b_q           <= operand_b_n;
-      imm_q                 <= imm_n;
-      fu_q                  <= fu_n;
-      operator_q            <= operator_n;
-      trans_id_q            <= trans_id_n;
+      operand_a_q <= operand_a_n;
+      operand_b_q <= operand_b_n;
+      imm_q       <= imm_n;
+      fu_q        <= fu_n;
+      operator_q  <= operator_n;
+      trans_id_q  <= trans_id_n;
       if (CVA6Cfg.RVH) begin
-        tinst_q               <= tinst_n;
+        tinst_q <= tinst_n;
       end
       pc_o                  <= issue_instr_i.pc;
       is_compressed_instr_o <= issue_instr_i.is_compressed;

@@ -927,8 +927,8 @@ module cva6
       .pmpcfg_i                (pmpcfg),
       .pmpaddr_i               (pmpaddr),
       //RVFI
-      .rvfi_lsu_ctrl_o        (rvfi_lsu_ctrl),
-      .rvfi_mem_paddr_o       (rvfi_mem_paddr)
+      .rvfi_lsu_ctrl_o         (rvfi_lsu_ctrl),
+      .rvfi_mem_paddr_o        (rvfi_mem_paddr)
   );
 
   // ---------
