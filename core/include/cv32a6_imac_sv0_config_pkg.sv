@@ -74,7 +74,7 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigRvfiTrace = 1;
 
-  localparam config_pkg::cva6_cfg_t cva6_cfg = '{
+  localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       NrCommitPorts: unsigned'(CVA6ConfigNrCommitPorts),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
@@ -93,22 +93,6 @@ package cva6_config_pkg;
       XFVec: bit'(CVA6ConfigFVecEn),
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       ZiCondExtEn: bit'(CVA6ConfigZiCondExtEn),
-      // Extended
-      RVF:
-      bit'(
-      0
-      ),
-      RVD: bit'(0),
-      FpPresent: bit'(0),
-      NSX: bit'(0),
-      FLen: unsigned'(0),
-      RVFVec: bit'(0),
-      XF16Vec: bit'(0),
-      XF16ALTVec: bit'(0),
-      XF8Vec: bit'(0),
-      NrRgprPorts: unsigned'(0),
-      NrWbPorts: unsigned'(0),
-      EnableAccelerator: bit'(0),
       RVS: bit'(1),
       RVU: bit'(1),
       HaltAddress: 64'h800,
@@ -123,30 +107,18 @@ package cva6_config_pkg;
       PMPAddrRstVal: {16{64'h0}},
       PMPEntryReadOnly: 16'd0,
       NOCType: config_pkg::NOC_TYPE_AXI4_ATOP,
-      // idempotent region
-      NrNonIdempotentRules:
-      unsigned'(
-      2
-      ),
+      NrNonIdempotentRules: unsigned'(2),
       NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
       NonIdempotentLength: 1024'({64'b0, 64'b0}),
       NrExecuteRegionRules: unsigned'(3),
       //                      DRAM,          Boot ROM,   Debug Module
-      ExecuteRegionAddrBase:
-      1024'(
-      {64'h8000_0000, 64'h1_0000, 64'h0}
-      ),
+      ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
       ExecuteRegionLength: 1024'({64'h40000000, 64'h10000, 64'h1000}),
-      // cached region
-      NrCachedRegionRules:
-      unsigned'(
-      1
-      ),
+      NrCachedRegionRules: unsigned'(1),
       CachedRegionAddrBase: 1024'({64'h8000_0000}),
       CachedRegionLength: 1024'({64'h40000000}),
       MaxOutstandingStores: unsigned'(7),
       DebugEn: bit'(1),
-      NonIdemPotenceEn: bit'(0),
       AxiBurstWriteEn: bit'(0)
   };
 endpackage
