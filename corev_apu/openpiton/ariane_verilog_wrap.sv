@@ -92,7 +92,10 @@ module ariane_verilog_wrap
   parameter logic [NrMaxRules*64-1:0]  CachedRegionAddrBase  = '0,
   parameter logic [NrMaxRules*64-1:0]  CachedRegionLength    = '0,
   // PMP
-  parameter int unsigned               NrPMPEntries          =  8
+  parameter int unsigned               NrPMPEntries          =  8,
+  // HPDC Write coalescing
+  parameter bit                        WriteCoalescingEn     =  0,
+  parameter int unsigned               WriteCoalescingTh     =  0
 ) (
   input                       clk_i,
   input                       reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
