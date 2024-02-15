@@ -101,8 +101,8 @@ module wt_dcache
   logic         [      DCACHE_SET_ASSOC-1:0]                          rd_hit_oh;
 
   // miss unit <-> wbuffer
-  logic         [         DCACHE_MAX_TX-1:0][        riscv::PLEN-1:0] tx_paddr;
-  logic         [         DCACHE_MAX_TX-1:0]                          tx_vld;
+  logic         [ CVA6Cfg.DCACHE_MAX_TX-1:0][        riscv::PLEN-1:0] tx_paddr;
+  logic         [ CVA6Cfg.DCACHE_MAX_TX-1:0]                          tx_vld;
 
   // wbuffer <-> memory
   wbuffer_t     [     DCACHE_WBUF_DEPTH-1:0]                          wbuffer_data;

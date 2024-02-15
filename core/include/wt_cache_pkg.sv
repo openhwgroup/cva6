@@ -64,7 +64,6 @@ package wt_cache_pkg;
 
   // write buffer parameterization
   localparam DCACHE_WBUF_DEPTH = ariane_pkg::WT_DCACHE_WBUF_DEPTH;
-  localparam DCACHE_MAX_TX = 2 ** L15_TID_WIDTH;
   localparam CACHE_ID_WIDTH = L15_TID_WIDTH;
 
 
