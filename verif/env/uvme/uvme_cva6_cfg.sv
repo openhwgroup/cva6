@@ -48,6 +48,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // Zicond extension
    rand bit                      ext_zicond_supported;
 
+   //pmp entries
+   rand int                      nr_pmp_entries;
+
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
@@ -55,6 +58,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zicond_supported        , UVM_DEFAULT          )
+      `uvm_field_int (                         nr_pmp_entries              , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
 
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
@@ -116,12 +120,14 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       mode_u_supported       == 0;
 
       pmp_supported          == 1;
+      nr_pmp_entries         == 16;
       debug_supported        == 0;
 
       unaligned_access_supported     == 0;
       unaligned_access_amo_supported == 0;
 
       bitmanip_version        == BITMANIP_VERSION_1P00;
+      priv_spec_version       == PRIV_VERSION_MASTER;
       endianness              == ENDIAN_LITTLE;
 
       boot_addr_valid         == 1;
@@ -134,6 +140,15 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    constraint ext_const {
       if (!ext_c_supported) {
          ext_zcb_supported == 0;
+      }
+   }
+
+   constraint pmp_const {
+      if (!pmp_supported) {
+         nr_pmp_entries == 0;
+      }
+      else {
+         nr_pmp_entries inside {0, 16, 64};
       }
    }
 
@@ -273,67 +288,18 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
    unsupported_csr_mask[uvma_core_cntrl_pkg::MCOUNTINHIBIT] = 0;
 
    // Remove unsupported pmp CSRs
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG4] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG5] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG6] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG7] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG8] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG9] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG10] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG11] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG12] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG13] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG14] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG15] = 1;
-
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR16] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR17] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR18] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR19] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR20] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR21] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR22] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR23] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR24] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR25] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR26] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR27] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR28] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR29] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR30] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR31] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR32] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR33] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR34] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR35] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR36] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR37] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR38] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR39] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR40] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR41] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR42] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR43] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR44] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR45] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR46] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR47] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR48] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR49] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR50] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR51] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR52] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR53] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR54] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR55] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR56] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR57] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR58] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR59] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR60] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR61] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR62] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR63] = 1;
+   if (nr_pmp_entries == 0) begin
+       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG0+:16]  = 16'hffff;
+       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR0+:64] = 64'hffffffffffffffff;
+   end
+   else if (nr_pmp_entries == 16) begin
+       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG4+:12]   = 12'hfff;
+       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR16+:48] = 48'hffffffffffff;
+   end
+   else if (nr_pmp_entries == 64) begin //if pmp entries is 64 we support all the pmp CSRs
+       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG0+:16]  = 16'h0;
+       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR0+:64] = 64'h0;
+   end
 
 endfunction : set_unsupported_csr_mask
 
