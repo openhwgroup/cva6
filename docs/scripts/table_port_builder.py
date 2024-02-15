@@ -59,11 +59,13 @@ if __name__ == "__main__":
     black_list["frm_i"] = ["As FPU is not present", "zero"]
     black_list["vs_i"] = ["As vector extension is not present", "zero"]
     black_list["tvm_i"] = ["As supervisor mode is not supported", "zero"]
-    black_list["tw_i"] = ["As ?", "zero"]
+    black_list["tw_i"] = ["As TO_BE_COMPLETED", "zero"]
     black_list["tsr_i"] = ["As supervisor mode is not supported", "zero"]
+    black_list["ACC_DISPATCHER"] = ["As Accelerate port is not supported", "zero"]
+    black_list["PERF_COUNTERS"] = ["As performance counters are not supported", "zero"]
 
     for filein in file:
-        comment = []
+        comments = []
         a = re.match(r".*\/(.*).sv", filein)
         module = a.group(1)
         fileout = "./04_cv32a65x_design/source/port_" + module + ".rst"
@@ -89,7 +91,12 @@ if __name__ == "__main__":
                             PortIO(name, e.group(1), data_type, description, connection)
                         )
                     else:
-                        comment.append(f"* {black_list[name][0]}, ``{name}`` {e.group(1)}put is tied to {black_list[name][1]}\n")
+                        for i, comment in enumerate(comments):
+                            if black_list[name][0] == comment[0]:
+                                comment[1] = comment[1]+f" and ``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"
+                                break
+                        else:
+                            comments.append([black_list[name][0], f"``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"])
                     description = "none"
                     connection = "none"
 
@@ -124,5 +131,5 @@ if __name__ == "__main__":
                 fout.write(f"     - {port.connection}\n")
                 fout.write(f"     - {port.data_type}\n")
             fout.write(f"\n")
-            for element in comment:
-                fout.write(f"{element}")
+            for comment in comments:
+                fout.write(f"* {comment[0]}, {comment[1]}\n")
