@@ -373,9 +373,8 @@ xrun_uvm_run:
 	  +elf_file=$(elf) \
           +define+UVM_NO_DEPRECATED  \
 	  +UVM_TESTNAME=uvmt_cva6_firmware_test_c	\
-	  +tohost_addr=$(shell ${RISCV}/bin/riscv32-unknown-elf-nm -B $(elf) | grep -w tohost | cut -d' ' -f1)          \
-	  $(cov-comp-opt) $(issrun_opts)    \
-	  -gui				\
+	  +tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)          \
+	  $(cov-comp-opt) $(issrun_opts)
 	  			
 
 xrun-uvm: xrun_uvm_comp xrun_uvm_run
