@@ -4025,4 +4025,43 @@ csrrwi:
     #MHPMEVENT31 read value
     csrr x14, 0x33f
 
+    ##########################
+    #MCOUNTINHBIT testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h1}
+    ##########################
+    #MCOUNTINHBIT Write immediate value 0x1f
+    csrrwi x14, 0x320, 0x1f
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write immediate value 0x0
+    csrrwi x14, 0x320, 0x0
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write immediate value 0x15
+    csrrwi x14, 0x320, 0x15
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write immediate value 0xa
+    csrrwi x14, 0x320, 0xa
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write immediate value 0x1
+    csrrwi x14, 0x320, 0x1
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write immediate value 0x1
+    csrrwi x0, 0x320, 0x1
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
     ret

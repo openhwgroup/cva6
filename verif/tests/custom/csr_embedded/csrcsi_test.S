@@ -4630,4 +4630,49 @@ csrcsi:
     #MHPMEVENT9 read value
     csrr x14, 0x329
 
+    ##########################
+    #MCOUNTINHBIT testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h6}
+    ##########################
+    #MCOUNTINHBIT Write clear/set value 0x1f
+    csrrci x14, 0x320, 0x0
+    csrrsi x14, 0x320, 0x1f
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0x0
+    csrrci x14, 0x320, 0x1f
+    csrrsi x14, 0x320, 0x0
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0x15
+    csrrci x14, 0x320, 0xa
+    csrrsi x14, 0x320, 0x15
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0xa
+    csrrci x14, 0x320, 0x15
+    csrrsi x14, 0x320, 0xa
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0x6
+    csrrci x14, 0x320, 0x19
+    csrrsi x14, 0x320, 0x6
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0x6
+    csrrci x0, 0x320, 0x19
+    csrrsi x0, 0x320, 0x6
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
     ret
