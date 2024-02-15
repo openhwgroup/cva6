@@ -10,11 +10,16 @@
 // ------------------------------------------------------------------------------ //
 
 // HEADERS
++incdir+${RISCV_DV_ROOT}/src
++incdir+${RISCV_DV_ROOT}/test
 +incdir+${CVA6_DV_ROOT}/
 +incdir+${CVA6_DV_ROOT}/custom
 +incdir+${CVA6_DV_ROOT}/user_extension
 
 // SOURCES
+${RISCV_DV_ROOT}/src/riscv_signature_pkg.sv
+${RISCV_DV_ROOT}/src/riscv_instr_pkg.sv
+${RISCV_DV_ROOT}/test/riscv_instr_test_pkg.sv
 ${CVA6_DV_ROOT}/cva6_signature_pkg.sv
 ${CVA6_DV_ROOT}/cva6_instr_test_pkg.sv
-
+${RISCV_DV_ROOT}/test/riscv_instr_gen_tb_top.sv
