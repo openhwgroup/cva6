@@ -14,108 +14,112 @@
 
    * - Signal
      - IO
-     - Connection
-     - Type
      - Description
+     - connexion
+     - Type
 
    * - ``clk_i``
      - in
+     - Subsystem Clock
      - SUBSYSTEM
      - logic
-     - Subsystem Clock
 
    * - ``rst_ni``
      - in
+     - Asynchronous reset active low
      - SUBSYSTEM
      - logic
-     - Asynchronous reset active low
 
    * - ``flush_i``
      - in
+     - Fetch flush request
      - CONTROLLER
      - logic
-     - Fetch flush request
 
    * - ``instr_i``
      - in
+     - Instruction
      - instr_realign
      - logic[ariane_pkg::INSTR_PER_FETCH-1:0][31:0]
-     - Instruction
 
    * - ``addr_i``
      - in
+     - Instruction address
      - instr_realign
      - logic[ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
-     - Instruction address
 
    * - ``valid_i``
      - in
+     - Instruction is valid
      - instr_realign
      - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
-     - Instruction is valid
 
    * - ``ready_o``
      - out
+     - Handshake’s ready with CACHE
      - CACHE
      - logic
-     - Handshake’s ready with CACHE
 
    * - ``consumed_o``
      - out
+     - Indicates instructions consummed, or popped by ID_STAGE
      - FRONTEND
      - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
-     - Indicates instructions consummed, or popped by ID_STAGE
 
    * - ``exception_i``
      - in
+     - Exception (which is page-table fault)
      - CACHE
      - ariane_pkg::frontend_exception_t
-     - Exception (which is page-table fault)
 
    * - ``exception_addr_i``
      - in
+     - Exception address
      - CACHE
      - logic[riscv::VLEN-1:0]
-     - Exception address
 
    * - ``predict_address_i``
      - in
+     - Branch predict
      - FRONTEND
      - logic[riscv::VLEN-1:0]
-     - Branch predict
 
    * - ``cf_type_i``
      - in
+     - Instruction predict address
      - FRONTEND
      - ariane_pkg::cf_t[ariane_pkg::INSTR_PER_FETCH-1:0]
-     - Instruction predict address
 
    * - ``replay_o``
      - out
+     - Replay instruction because one of the FIFO was  full
      - FRONTEND
      - logic
-     - Replay instruction because one of the FIFO was  full
 
    * - ``replay_addr_o``
      - out
+     - Address at which to replay the fetch
      - FRONTEND
      - logic[riscv::VLEN-1:0]
-     - Address at which to replay the fetch
 
    * - ``fetch_entry_o``
      - out
+     - Handshake’s data with ID_STAGE
      - ID_STAGE
      - ariane_pkg::fetch_entry_t
-     - Handshake’s data with ID_STAGE
 
    * - ``fetch_entry_valid_o``
      - out
+     - Handshake’s valid with ID_STAGE
      - ID_STAGE
      - logic
-     - Handshake’s valid with ID_STAGE
 
    * - ``fetch_entry_ready_i``
      - in
+     - Handshake’s ready with ID_STAGE
      - ID_STAGE
      - logic
-     - Handshake’s ready with ID_STAGE
+
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+none

@@ -1,0 +1,229 @@
+..
+   Copyright 2024 Thales DIS France SAS
+   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");
+   you may not use this file except in compliance with the License.
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+   You may obtain a copy of the License at https://solderpad.org/licenses/
+
+   Original Author: Jean-Roch COULON - Thales
+
+.. _CVA6_scoreboard_ports:
+
+.. list-table:: scoreboard module IO ports
+   :header-rows: 1
+
+   * - Signal
+     - IO
+     - Description
+     - Connection
+     - Type
+
+   * - ``clk_i``
+     - in
+     - Clock
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``rst_ni``
+     - in
+     - Asynchronous reset active low
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``sb_full_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``flush_unissued_instr_i``
+     - in
+     - flush only un-issued instructions
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``flush_i``
+     - in
+     - flush whole scoreboard
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``unresolved_branch_i``
+     - in
+     - we have an unresolved branch
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``rd_clobber_gpr_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - ariane_pkg::fu_t[2**ariane_pkg::REG_ADDR_SIZE-1:0]
+
+   * - ``rd_clobber_fpr_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - ariane_pkg::fu_t[2**ariane_pkg::REG_ADDR_SIZE-1:0]
+
+   * - ``rs1_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
+
+   * - ``rs1_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - riscv::xlen_t
+
+   * - ``rs1_valid_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``rs2_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
+
+   * - ``rs2_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - riscv::xlen_t
+
+   * - ``rs2_valid_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``rs3_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
+
+   * - ``rs3_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - rs3_len_t
+
+   * - ``rs3_valid_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``commit_instr_o``
+     - out
+     - TO_BE_COMPLETED
+     - COMMIT_STAGE
+     - ariane_pkg::scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
+
+   * - ``commit_ack_i``
+     - in
+     - Advance the commit pointer when acknowledge
+     - COMMIT_STAGE
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
+
+   * - ``decoded_instr_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - ariane_pkg::scoreboard_entry_t
+
+   * - ``orig_instr_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic[31:0]
+
+   * - ``decoded_instr_valid_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``decoded_instr_ack_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``issue_instr_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - ariane_pkg::scoreboard_entry_t
+
+   * - ``orig_instr_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic[31:0]
+
+   * - ``issue_instr_valid_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``issue_ack_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``resolved_branch_i``
+     - in
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - ariane_pkg::bp_resolve_t
+
+   * - ``trans_id_i``
+     - in
+     - transaction ID at which to write the result back
+     - TO_BE_COMPLETED
+     - logic[CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]
+
+   * - ``wbdata_i``
+     - in
+     - write data in
+     - TO_BE_COMPLETED
+     - logic[CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]
+
+   * - ``ex_i``
+     - in
+     - exception from a functional unit (e.g.: ld/st exception)
+     - TO_BE_COMPLETED
+     - ariane_pkg::exception_t[CVA6Cfg.NrWbPorts-1:0]
+
+   * - ``wt_valid_i``
+     - in
+     - data in is valid
+     - TO_BE_COMPLETED
+     - logic[CVA6Cfg.NrWbPorts-1:0]
+
+   * - ``x_we_i``
+     - in
+     - cvxif we for writeback
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``rvfi_issue_pointer_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic[ariane_pkg::TRANS_ID_BITS-1:0]
+
+   * - ``rvfi_commit_pointer_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic[CVA6Cfg.NrCommitPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]

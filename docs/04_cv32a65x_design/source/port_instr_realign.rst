@@ -14,66 +14,70 @@
 
    * - Signal
      - IO
-     - Connection
-     - Type
      - Description
+     - connexion
+     - Type
 
    * - ``clk_i``
      - in
+     - Subsystem Clock
      - SUBSYSTEM
      - logic
-     - Subsystem Clock
 
    * - ``rst_ni``
      - in
+     - Asynchronous reset active low
      - SUBSYSTEM
      - logic
-     - Asynchronous reset active low
 
    * - ``flush_i``
      - in
+     - Fetch flush request
      - CONTROLLER
      - logic
-     - Fetch flush request
 
    * - ``valid_i``
      - in
+     - 32-bit block is valid
      - CACHE
      - logic
-     - 32-bit block is valid
 
    * - ``serving_unaligned_o``
      - out
+     - Instruction is unaligned
      - FRONTEND
      - logic
-     - Instruction is unaligned
 
    * - ``address_i``
      - in
+     - 32-bit block address
      - CACHE
      - logic[riscv::VLEN-1:0]
-     - 32-bit block address
 
    * - ``data_i``
      - in
+     - 32-bit block
      - CACHE
      - logic[FETCH_WIDTH-1:0]
-     - 32-bit block
 
    * - ``valid_o``
      - out
+     - instruction is valid
      - FRONTEND
      - logic[INSTR_PER_FETCH-1:0]
-     - instruction is valid
 
    * - ``addr_o``
      - out
+     - Instruction address
      - FRONTEND
      - logic[INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
-     - Instruction address
 
    * - ``instr_o``
      - out
-     - none
+     - Instruction
+     - instr_scan&instr_queue
      - logic[INSTR_PER_FETCH-1:0][31:0]
-     - none
+
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+none

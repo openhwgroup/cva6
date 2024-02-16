@@ -7,9 +7,9 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_ras_ports:
+.. _CVA6_compressed_decoder_ports:
 
-.. list-table:: ras module IO ports
+.. list-table:: compressed_decoder module IO ports
    :header-rows: 1
 
    * - Signal
@@ -18,47 +18,29 @@
      - connexion
      - Type
 
-   * - ``clk_i``
+   * - ``instr_i``
      - in
-     - Subsystem Clock
-     - SUBSYSTEM
-     - logic
-
-   * - ``rst_ni``
-     - in
-     - Asynchronous reset active low
-     - SUBSYSTEM
-     - logic
-
-   * - ``flush_i``
-     - in
-     - Fetch flush request
-     - CONTROLLER
-     - logic
-
-   * - ``push_i``
-     - in
-     - Push address in RAS
+     - Input instruction coming from fetch stage
      - FRONTEND
-     - logic
+     - logic[31:0]
 
-   * - ``pop_i``
-     - in
-     - Pop address from RAS
-     - FRONTEND
-     - logic
-
-   * - ``data_i``
-     - in
-     - Data to be pushed
-     - FRONTEND
-     - logic[riscv::VLEN-1:0]
-
-   * - ``data_o``
+   * - ``instr_o``
      - out
-     - Popped data
-     - FRONTEND
-     - ariane_pkg::ras_t
+     - Output instruction in uncompressed format
+     - decoder
+     - logic[31:0]
+
+   * - ``illegal_instr_o``
+     - out
+     - Input instruction is illegal
+     - decoder
+     - logic
+
+   * - ``is_compressed_o``
+     - out
+     - Output instruction is compressed
+     - decoder
+     - logic
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 

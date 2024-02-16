@@ -43,7 +43,7 @@ module instr_realign
     output logic [INSTR_PER_FETCH-1:0] valid_o,
     // Instruction address - FRONTEND
     output logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr_o,
-    // Instruction - instr_scan, instr_queue
+    // Instruction - instr_scan&instr_queue
     output logic [INSTR_PER_FETCH-1:0][31:0] instr_o
 );
   // as a maximum we support a fetch width of 64-bit, hence there can be 4 compressed instructions

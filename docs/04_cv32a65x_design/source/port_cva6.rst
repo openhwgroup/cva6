@@ -14,84 +14,83 @@
 
    * - Signal
      - IO
-     - Connection
-     - Type
      - Description
+     - connexion
+     - Type
 
    * - ``clk_i``
      - in
+     - Subsystem Clock
      - SUBSYSTEM
      - logic
-     - Subsystem Clock
 
    * - ``rst_ni``
      - in
+     - Asynchronous reset active low
      - SUBSYSTEM
      - logic
-     - Asynchronous reset active low
 
    * - ``boot_addr_i``
      - in
+     - Reset boot address
      - SUBSYSTEM
      - logic[riscv::VLEN-1:0]
-     - Reset boot address
 
    * - ``hart_id_i``
      - in
+     - Hard ID reflected as CSR
      - SUBSYSTEM
      - logic[riscv::XLEN-1:0]
-     - Hard ID reflected as CSR
 
    * - ``irq_i``
      - in
+     - Level sensitive (async) interrupts
      - SUBSYSTEM
      - logic[1:0]
-     - Level sensitive (async) interrupts
 
    * - ``ipi_i``
      - in
+     - Inter-processor (async) interrupt
      - SUBSYSTEM
      - logic
-     - Inter-processor (async) interrupt
 
    * - ``time_irq_i``
      - in
-     - SUBSYSTEM
-     - logic
      - Timer (async) interrupt
-
-   * - ``debug_req_i``
-     - in
      - SUBSYSTEM
      - logic
-     - Debug (async) request
 
    * - ``rvfi_probes_o``
      - out
+     - Probes to build RVFI, can be left open when not used
      - SUBSYSTEM
      - rvfi_probes_t
-     - Probes to build RVFI, can be left open when not used
 
    * - ``cvxif_req_o``
      - out
+     - CVXIF request
      - SUBSYSTEM
      - cvxif_req_t
-     - CVXIF request
 
    * - ``cvxif_resp_i``
      - in
+     - CVXIF response
      - SUBSYSTEM
      - cvxif_resp_t
-     - CVXIF response
 
    * - ``noc_req_o``
      - out
+     - noc request, can be AXI or OpenPiton
      - SUBSYSTEM
      - noc_req_t
-     - noc request, can be AXI or OpenPiton
 
    * - ``noc_resp_i``
      - in
+     - noc response, can be AXI or OpenPiton
      - SUBSYSTEM
      - noc_resp_t
-     - noc response, can be AXI or OpenPiton
+
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As DebugEn = 0,
+|   ``debug_req_i`` input is tied to 0

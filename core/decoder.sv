@@ -24,28 +24,48 @@ module decoder
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
-    input logic debug_req_i,  // external debug request
-    input logic [riscv::VLEN-1:0] pc_i,  // PC from IF
-    input logic is_compressed_i,  // is a compressed instruction
-    input logic [15:0] compressed_instr_i,  // compressed form of instruction
-    input logic is_illegal_i,  // illegal compressed instruction
-    input logic [31:0] instruction_i,  // instruction from IF
+    // Debug (async) request - SUBSYSTEM
+    input logic debug_req_i,
+    // PC from fetch stage - FRONTEND
+    input logic [riscv::VLEN-1:0] pc_i,
+    // Is a compressed instruction - compressed_decoder
+    input logic is_compressed_i,
+    // Compressed form of instruction - FRONTEND
+    input logic [15:0] compressed_instr_i,
+    // Illegal compressed instruction - compressed_decoder
+    input logic is_illegal_i,
+    // Instruction from fetch stage - FRONTEND
+    input logic [31:0] instruction_i,
+    // Is a branch predict instruction - FRONTEND
     input branchpredict_sbe_t branch_predict_i,
-    input exception_t ex_i,  // if an exception occured in if
-    input logic [1:0] irq_i,  // external interrupt
-    input irq_ctrl_t irq_ctrl_i,  // interrupt control and status information from CSRs
-    // From CSR
-    input riscv::priv_lvl_t priv_lvl_i,  // current privilege level
-    input logic debug_mode_i,  // we are in debug mode
-    input riscv::xs_t fs_i,  // floating point extension status
-    input logic [2:0] frm_i,  // floating-point dynamic rounding mode
-    input riscv::xs_t vs_i,  // vector extension status
-    input logic tvm_i,  // trap virtual memory
-    input logic tw_i,  // timeout wait
-    input logic tsr_i,  // trap sret
-    output scoreboard_entry_t instruction_o,  // scoreboard entry to scoreboard
-    output logic [31:0] orig_instr_o,  // instruction opcode to issue read operand for CVXIF
-    output logic is_control_flow_instr_o  // this instruction will change the control flow
+    // If an exception occured in fetch stage - FRONTEND
+    input exception_t ex_i,
+    // Level sensitive (async) interrupts - SUBSYSTEM
+    input logic [1:0] irq_i,
+    // Interrupt control status - CSR_REGFILE
+    input irq_ctrl_t irq_ctrl_i,
+    // Current privilege level - CSR_REGFILE
+    input riscv::priv_lvl_t priv_lvl_i,
+    // Is debug mode - CSR_REGFILE
+    input logic debug_mode_i,
+    // Floating point extension status - CSR_REGFILE
+    input riscv::xs_t fs_i,
+    // Floating-point dynamic rounding mode - CSR_REGFILE
+    input logic [2:0] frm_i,
+    // Vector extension status - CSR_REGFILE
+    input riscv::xs_t vs_i,
+    // Trap virtual memory - CSR_REGFILE
+    input logic tvm_i,
+    // Timeout wait - CSR_REGFILE
+    input logic tw_i,
+    // Trap sret - CSR_REGFILE
+    input logic tsr_i,
+    // Instruction to be added to scoreboard entry - ISSUE_STAGE
+    output scoreboard_entry_t instruction_o,
+    // Instruction - ISSUE_STAGE
+    output logic [31:0] orig_instr_o,
+    // Is a control flow instruction - ISSUE_STAGE
+    output logic is_control_flow_instr_o
 );
   logic illegal_instr;
   logic illegal_instr_bm;

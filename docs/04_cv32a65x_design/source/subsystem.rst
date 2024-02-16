@@ -26,7 +26,12 @@ At least 6 cycles are needed to execute one instruction.
 Connection with other sub-systems
 ---------------------------------
 
-[TO BE COMPLETED]
+The submodule is connected to :
+
+* NOC interconnect provides memory content
+* COPROCESSOR connects through CV-X-IF coprocessor interface protocol
+* TRACER provides support for verification
+* TRAP provides traps inputs
 
 
 Parameter configuration

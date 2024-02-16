@@ -11,57 +11,47 @@
 
 import re
 
-
-class Parameter:
-    def __init__(
-        self,
-        datatype,
-        description,
-        value,
-    ):
-        self.datatype = datatype
-        self.description = description
-        self.value = value
+from classes import Parameter
 
 
-if __name__ == "__main__":
+def parameters_extractor(spec_number, target):
 
     parameters = {}
-    FILE_IN = "../core/include/config_pkg.sv"
+    file_in = "../core/include/config_pkg.sv"
 
-    print("Input file " + FILE_IN)
-    with open(FILE_IN, "r", encoding="utf-8") as fin:
-        PRINT_ENABLE = 0
-        DESCRIPT = "TO_BE_COMPLETED"
+    print("Input file " + file_in)
+    with open(file_in, "r", encoding="utf-8") as fin:
+        print_enable = 0
+        descript = "TO_BE_COMPLETED"
         for line in fin:
             if "typedef struct packed" in line:
-                PRINT_ENABLE = 1
+                print_enable = 1
             if "cva6_cfg_t" in line:
-                PRINT_ENABLE = 0
+                print_enable = 0
             d = re.match(r"^ *(.*) ([\S]*);\n", line)
             h = re.match(r"^ *\/\/ (.*)\n", line)
-            if h and PRINT_ENABLE:
-                DESCRIPT = h.group(1)
-            if d and PRINT_ENABLE:
+            if h and print_enable:
+                descript = h.group(1)
+            if d and print_enable:
                 parameters[d.group(2)] = Parameter(
-                    d.group(1), DESCRIPT, "TO_BE_COMPLETED"
+                    d.group(1), descript, "TO_BE_COMPLETED"
                 )
-                DESCRIPT = "TO_BE_COMPLETED"
+                descript = "TO_BE_COMPLETED"
 
-    FILE_IN = "../core/include/cv32a65x_config_pkg.sv"
-    a = re.match(r".*\/(.*)_config_pkg.sv", FILE_IN)
+    file_in = f"../core/include/{target}_config_pkg.sv"
+    a = re.match(r".*\/(.*)_config_pkg.sv", file_in)
     module = a.group(1)
-    fileout = "./04_cv32a65x_design/source/parameters_" + module + ".rst"
-    print("Input file " + FILE_IN)
+    fileout = f"./{spec_number}_{target}_design/source/parameters_{module}.rst"
+    print("Input file " + file_in)
     print("Output file " + fileout)
 
-    with open(FILE_IN, "r", encoding="utf-8") as fin:
+    with open(file_in, "r", encoding="utf-8") as fin:
         for line in fin:
             e = re.match(r"^ +([\S]*): (.*)(?:,|)\n", line)
             if e:
                 parameters[e.group(1)].value = e.group(2)
 
-    with open(FILE_IN, "r", encoding="utf-8") as fin:
+    with open(file_in, "r", encoding="utf-8") as fin:
         for line in fin:
             c = re.match(r"^ +localparam ([\S]*) = (.*);\n", line)
             if c:
@@ -78,6 +68,11 @@ if __name__ == "__main__":
         variable = variable.replace(")", "")
         variable = variable.replace(",", "")
         parameters[name].value = variable
+
+    return parameters
+
+
+def writeout_parameter_table(fileout, parameters, module):
 
     with open(fileout, "w") as fout:
         fout.write("..\n")
@@ -98,7 +93,7 @@ if __name__ == "__main__":
         fout.write("   :header-rows: 1\n")
         fout.write("\n")
         fout.write("   * - Name\n")
-        fout.write("     - Description\n")
+        fout.write("     - description\n")
         fout.write("     - Value\n")
         for name in parameters:
             fout.write("\n")

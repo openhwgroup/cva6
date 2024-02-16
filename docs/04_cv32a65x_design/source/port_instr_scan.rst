@@ -14,90 +14,94 @@
 
    * - Signal
      - IO
-     - Connection
-     - Type
      - Description
+     - connexion
+     - Type
 
    * - ``instr_i``
      - in
+     - Instruction to be predecoded
      - instr_realign
      - logic[31:0]
-     - Instruction to be predecoded
 
    * - ``rvi_return_o``
      - out
+     - Return instruction
      - FRONTEND
      - logic
-     - Return instruction
 
    * - ``rvi_call_o``
      - out
+     - JAL instruction
      - FRONTEND
      - logic
-     - JAL instruction
 
    * - ``rvi_branch_o``
      - out
+     - Branch instruction
      - FRONTEND
      - logic
-     - Branch instruction
 
    * - ``rvi_jalr_o``
      - out
+     - JALR instruction
      - FRONTEND
      - logic
-     - JALR instruction
 
    * - ``rvi_jump_o``
      - out
+     - Unconditional jump instruction
      - FRONTEND
      - logic
-     - Unconditional jump instruction
 
    * - ``rvi_imm_o``
      - out
+     - Instruction immediat
      - FRONTEND
      - logic[riscv::VLEN-1:0]
-     - Instruction immediat
 
    * - ``rvc_branch_o``
      - out
+     - Branch compressed instruction
      - FRONTEND
      - logic
-     - Branch compressed instruction
 
    * - ``rvc_jump_o``
      - out
+     - Unconditional jump compressed instruction
      - FRONTEND
      - logic
-     - Unconditional jump compressed instruction
 
    * - ``rvc_jr_o``
      - out
+     - JR compressed instruction
      - FRONTEND
      - logic
-     - JR compressed instruction
 
    * - ``rvc_return_o``
      - out
+     - Return compressed instruction
      - FRONTEND
      - logic
-     - Return compressed instruction
 
    * - ``rvc_jalr_o``
      - out
+     - JALR compressed instruction
      - FRONTEND
      - logic
-     - JALR compressed instruction
 
    * - ``rvc_call_o``
      - out
+     - JAL compressed instruction
      - FRONTEND
      - logic
-     - JAL compressed instruction
 
    * - ``rvc_imm_o``
      - out
+     - Instruction compressed immediat
      - FRONTEND
      - logic[riscv::VLEN-1:0]
-     - Instruction compressed immediat
+
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+none

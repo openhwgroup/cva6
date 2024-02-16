@@ -14,186 +14,185 @@
 
    * - Signal
      - IO
-     - Connection
-     - Type
      - Description
+     - connexion
+     - Type
 
    * - ``clk_i``
      - in
+     - Subsystem Clock
      - SUBSYSTEM
      - logic
-     - Subsystem Clock
 
    * - ``rst_ni``
      - in
+     - Asynchronous reset active low
      - SUBSYSTEM
      - logic
-     - Asynchronous reset active low
 
    * - ``halt_i``
      - in
+     - Request to halt the core
      - CONTROLLER
      - logic
-     - Request to halt the core
 
    * - ``flush_dcache_i``
      - in
+     - request to flush dcache, also flush the pipeline
      - CACHE
      - logic
-     - request to flush dcache, also flush the pipeline
 
    * - ``exception_o``
      - out
+     - TO_BE_COMPLETED
      - EX_STAGE
      - exception_t
-     - TO_BE_COMPLETED
 
    * - ``dirty_fp_state_o``
      - out
+     - Mark the F state as dirty
      - CSR_REGFILE
      - logic
-     - Mark the F state as dirty
 
    * - ``single_step_i``
      - in
+     - TO_BE_COMPLETED
      - CSR_REGFILE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``commit_instr_i``
      - in
+     - The instruction we want to commit
      - ISSUE_STAGE
      - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
-     - The instruction we want to commit
 
    * - ``commit_ack_o``
      - out
+     - Acknowledge that we are indeed committing
      - ISSUE_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
-     - Acknowledge that we are indeed committing
 
    * - ``waddr_o``
      - out
+     - Register file write address
      - ID_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0][4:0]
-     - Register file write address
 
    * - ``wdata_o``
      - out
+     - Register file write data
      - ID_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
-     - Register file write data
 
    * - ``we_gpr_o``
      - out
+     - Register file write enable
      - ID_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
-     - Register file write enable
 
    * - ``we_fpr_o``
      - out
+     - Floating point register enable
      - ID_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
-     - Floating point register enable
-
-   * - ``amo_resp_i``
-     - in
-     - CACHE
-     - amo_resp_t
-     - Result of AMO operation
 
    * - ``pc_o``
      - out
+     - TO_BE_COMPLETED
      - FRONTEND_CSR
      - logic[riscv::VLEN-1:0]
-     - TO_BE_COMPLETED
 
    * - ``csr_op_o``
      - out
+     - Decoded CSR operation
      - CSR_REGFILE
      - fu_op
-     - Decoded CSR operation
 
    * - ``csr_wdata_o``
      - out
+     - Data to write to CSR
      - CSR_REGFILE
      - riscv::xlen_t
-     - Data to write to CSR
 
    * - ``csr_rdata_i``
      - in
+     - Data to read from CSR
      - CSR_REGFILE
      - riscv::xlen_t
-     - Data to read from CSR
 
    * - ``csr_exception_i``
      - in
+     - Exception or interrupt occurred in CSR stage (the same as commit)
      - CSR_REGFILE
      - exception_t
-     - Exception or interrupt occurred in CSR stage (the same as commit)
 
    * - ``csr_write_fflags_o``
      - out
+     - Write the fflags CSR
      - CSR_REGFILE
      - logic
-     - Write the fflags CSR
 
    * - ``commit_lsu_o``
      - out
+     - Commit the pending store
      - EX_STAGE
      - logic
-     - Commit the pending store
 
    * - ``commit_lsu_ready_i``
      - in
+     - Commit buffer of LSU is ready
      - EX_STAGE
      - logic
-     - Commit buffer of LSU is ready
 
    * - ``commit_tran_id_o``
      - out
+     - Transaction id of first commit port
      - ID_STAGE
      - logic[TRANS_ID_BITS-1:0]
-     - Transaction id of first commit port
 
    * - ``amo_valid_commit_o``
      - out
+     - Valid AMO in commit stage
      - EX_STAGE
      - logic
-     - Valid AMO in commit stage
 
    * - ``no_st_pending_i``
      - in
+     - no store is pending
      - EX_STAGE
      - logic
-     - no store is pending
 
    * - ``commit_csr_o``
      - out
+     - Commit the pending CSR instruction
      - EX_STAGE
      - logic
-     - Commit the pending CSR instruction
 
    * - ``fence_i_o``
      - out
+     - Flush I$ and pipeline
      - CONTROLLER
      - logic
-     - Flush I$ and pipeline
 
    * - ``fence_o``
      - out
+     - Flush D$ and pipeline
      - CONTROLLER
      - logic
-     - Flush D$ and pipeline
 
    * - ``flush_commit_o``
      - out
+     - Request a pipeline flush
      - CONTROLLER
      - logic
-     - Request a pipeline flush
 
    * - ``sfence_vma_o``
      - out
+     - Flush TLBs and pipeline
      - CONTROLLER
      - logic
-     - Flush TLBs and pipeline
+
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As RVA = 0,
+|   ``amo_resp_i`` input is tied to 0

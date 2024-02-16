@@ -14,48 +14,47 @@
 
    * - Signal
      - IO
-     - Connection
-     - Type
      - Description
+     - connexion
+     - Type
 
    * - ``clk_i``
      - in
+     - Subsystem Clock
      - SUBSYSTEM
      - logic
-     - Subsystem Clock
 
    * - ``rst_ni``
      - in
+     - Asynchronous reset active low
      - SUBSYSTEM
      - logic
-     - Asynchronous reset active low
 
    * - ``flush_i``
      - in
+     - Fetch flush request
      - CONTROLLER
      - logic
-     - Fetch flush request
-
-   * - ``debug_mode_i``
-     - in
-     - CSR
-     - logic
-     - Debug mode state
 
    * - ``vpc_i``
      - in
+     - Virtual PC
      - CACHE
      - logic[riscv::VLEN-1:0]
-     - Virtual PC
 
    * - ``bht_update_i``
      - in
+     - Update bht with resolved address
      - EXECUTE
      - ariane_pkg::bht_update_t
-     - Update bht with resolved address
 
    * - ``bht_prediction_o``
      - out
+     - Prediction from bht
      - FRONTEND
      - ariane_pkg::bht_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
-     - Prediction from bht
+
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As DebugEn = 0,
+|   ``debug_mode_i`` input is tied to 0

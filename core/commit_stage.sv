@@ -36,13 +36,13 @@ module commit_stage
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     // Acknowledge that we are indeed committing - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_o,
-    // Register file write address - ID_STAGE
+    // Register file write address - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_o,
-    // Register file write data - ID_STAGE
+    // Register file write data - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_o,
-    // Register file write enable - ID_STAGE
+    // Register file write enable - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_o,
-    // Floating point register enable - ID_STAGE
+    // Floating point register enable - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_o,
     // Result of AMO operation - CACHE
     input amo_resp_t amo_resp_i,

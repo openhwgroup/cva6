@@ -14,156 +14,146 @@
 
    * - Signal
      - IO
-     - Connection
-     - Type
      - Description
+     - connexion
+     - Type
 
    * - ``clk_i``
      - in
+     - Subsystem Clock
      - SUBSYSTEM
      - logic
-     - Subsystem Clock
 
    * - ``rst_ni``
      - in
+     - Asynchronous reset active low
      - SUBSYSTEM
      - logic
-     - Asynchronous reset active low
 
    * - ``set_pc_commit_o``
      - out
+     - Set PC om PC Gen
      - FRONTEND
      - logic
-     - Set PC om PC Gen
 
    * - ``flush_if_o``
      - out
+     - Flush the IF stage
      - FRONTEND
      - logic
-     - Flush the IF stage
 
    * - ``flush_unissued_instr_o``
      - out
+     - Flush un-issued instructions of the scoreboard
      - FRONTEND
      - logic
-     - Flush un-issued instructions of the scoreboard
 
    * - ``flush_id_o``
      - out
+     - Flush ID stage
      - ID_STAGE
      - logic
-     - Flush ID stage
 
    * - ``flush_ex_o``
      - out
+     - Flush EX stage
      - EX_STAGE
      - logic
-     - Flush EX stage
 
    * - ``flush_bp_o``
      - out
+     - Flush branch predictors
      - FRONTEND
      - logic
-     - Flush branch predictors
 
    * - ``flush_icache_o``
      - out
+     - Flush ICache
      - CACHE
      - logic
-     - Flush ICache
 
    * - ``flush_dcache_o``
      - out
+     - Flush DCache
      - CACHE
      - logic
-     - Flush DCache
 
    * - ``flush_dcache_ack_i``
      - in
+     - Acknowledge the whole DCache Flush
      - CACHE
      - logic
-     - Acknowledge the whole DCache Flush
 
    * - ``flush_tlb_o``
      - out
+     - Flush TLBs
      - EX_STAGE
      - logic
-     - Flush TLBs
 
    * - ``halt_csr_i``
      - in
+     - Halt request from CSR (WFI instruction)
      - CSR_REGFILE
      - logic
-     - Halt request from CSR (WFI instruction)
-
-   * - ``halt_acc_i``
-     - in
-     - ACC_DISPATCHER
-     - logic
-     - Halt request from accelerator dispatcher
 
    * - ``halt_o``
      - out
+     - Halt signal to commit stage
      - COMMIT_STAGE
      - logic
-     - Halt signal to commit stage
 
    * - ``eret_i``
      - in
+     - Return from exception
      - CSR_REGFILE
      - logic
-     - Return from exception
 
    * - ``ex_valid_i``
      - in
-     - FRONTEND
-     - logic
      - We got an exception, flush the pipeline
-
-   * - ``set_debug_pc_i``
-     - in
      - FRONTEND
      - logic
-     - set the debug pc from CSR
 
    * - ``resolved_branch_i``
      - in
+     - We got a resolved branch, check if we need to flush the front-end
      - EX_STAGE
      - bp_resolve_t
-     - We got a resolved branch, check if we need to flush the front-end
 
    * - ``flush_csr_i``
      - in
+     - We got an instruction which altered the CSR, flush the pipeline
      - CSR_REGFILE
      - logic
-     - We got an instruction which altered the CSR, flush the pipeline
 
    * - ``fence_i_i``
      - in
+     - fence.i in
      - ACC_DISPATCH
      - logic
-     - fence.i in
 
    * - ``fence_i``
      - in
+     - fence in
      - ACC_DISPATCH
      - logic
-     - fence in
 
    * - ``sfence_vma_i``
      - in
+     - We got an instruction to flush the TLBs and pipeline
      - COMMIT_STAGE
      - logic
-     - We got an instruction to flush the TLBs and pipeline
 
    * - ``flush_commit_i``
      - in
+     - Flush request from commit stage
      - COMMIT_STAGE
      - logic
-     - Flush request from commit stage
 
-   * - ``flush_acc_i``
-     - in
-     - ACC_DISPATCHER
-     - logic
-     - Flush request from accelerator
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As EnableAccelerator = 0,
+|   ``halt_acc_i`` input is tied to 0
+|   ``flush_acc_i`` input is tied to 0
+| As DebugEn = 0,
+|   ``set_debug_pc_i`` input is tied to 0

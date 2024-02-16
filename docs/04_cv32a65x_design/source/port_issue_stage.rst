@@ -14,300 +14,257 @@
 
    * - Signal
      - IO
-     - Connection
-     - Type
      - Description
+     - connexion
+     - Type
 
    * - ``clk_i``
      - in
+     - Subsystem Clock
      - SUBSYSTEM
      - logic
-     - Subsystem Clock
 
    * - ``rst_ni``
      - in
+     - Asynchronous reset active low
      - SUBSYSTEM
      - logic
-     - Asynchronous reset active low
-
-   * - ``sb_full_o``
-     - out
-     - PERF_COUNTERS
-     - logic
-     - TO_BE_COMPLETED
 
    * - ``flush_unissued_instr_i``
      - in
+     - TO_BE_COMPLETED
      - CONTROLLER
      - logic
-     - TO_BE_COMPLETED
 
    * - ``flush_i``
      - in
+     - TO_BE_COMPLETED
      - CONTROLLER
      - logic
-     - TO_BE_COMPLETED
-
-   * - ``stall_i``
-     - in
-     - ACC_DISPATCHER
-     - logic
-     - zero when accelerate port is disable
 
    * - ``decoded_instr_i``
      - in
+     - Handshake's data with decode stage
      - ID_STAGE
      - scoreboard_entry_t
-     - Handshake's data between decode and issue
 
    * - ``orig_instr_i``
      - in
+     - instruction value
      - ID_STAGE
      - logic[31:0]
-     - instruction value
 
    * - ``decoded_instr_valid_i``
      - in
+     - Handshake's valid with decode stage
      - ID_STAGE
      - logic
-     - Handshake's valid between decode and issue
 
    * - ``is_ctrl_flow_i``
      - in
+     - Is instruction a control flow instruction
      - ID_STAGE
      - logic
-     - Report if instruction is a control flow instruction
 
    * - ``decoded_instr_ack_o``
      - out
+     - Handshake's acknowlege with decode stage
      - ID_STAGE
      - logic
-     - Handshake's acknowlege between decode and issue
 
    * - ``rs1_forwarding_o``
      - out
+     - rs1 forwarding
      - EX_STAGE
      - [riscv::VLEN-1:0]
-     - TO_BE_COMPLETED
 
    * - ``rs2_forwarding_o``
      - out
+     - rs2 forwarding
      - EX_STAGE
      - [riscv::VLEN-1:0]
-     - TO_BE_COMPLETED
 
    * - ``fu_data_o``
      - out
+     - FU data useful to execute instruction
      - EX_STAGE
      - fu_data_t
-     - TO_BE_COMPLETED
 
    * - ``pc_o``
      - out
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic[riscv::VLEN-1:0]
-     - TO_BE_COMPLETED
 
    * - ``is_compressed_instr_o``
      - out
+     - Is compressed instruction
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``flu_ready_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``alu_valid_o``
      - out
+     - ALU FU is valid
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``resolve_branch_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``lsu_ready_i``
      - in
+     - Load store unit FU is ready
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``lsu_valid_o``
      - out
+     - Load store unit FU is valid
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``branch_valid_o``
      - out
+     - Branch unit is valid
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``branch_predict_o``
      - out
+     - Information of branch prediction
      - EX_STAGE
      - branchpredict_sbe_t
-     - TO_BE_COMPLETED
 
    * - ``mult_valid_o``
      - out
+     - Mult FU is valid
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``fpu_ready_i``
      - in
+     - FPU FU is ready
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
-
-   * - ``fpu_valid_o``
-     - out
-     - EX_STAGE
-     - logic
-     - TO_BE_COMPLETED
-
-   * - ``fpu_fmt_o``
-     - out
-     - EX_STAGE
-     - logic[1:0]
-     - Report FP fmt field
-
-   * - ``fpu_rm_o``
-     - out
-     - EX_STAGE
-     - logic[2:0]
-     - report FP rm field
 
    * - ``csr_valid_o``
      - out
+     - CSR is valid
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``x_issue_valid_o``
      - out
+     - CVXIF FU is valid
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``x_issue_ready_i``
      - in
+     - CVXIF is FU ready
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``x_off_instr_o``
      - out
+     - CVXIF offloader instruction value
      - EX_STAGE
      - logic[31:0]
-     - TO_BE_COMPLETED
-
-   * - ``issue_instr_o``
-     - out
-     - ACC_DISPATCHER
-     - scoreboard_entry_t
-     - TO_BE_COMPLETED
-
-   * - ``issue_instr_hs_o``
-     - out
-     - ACC_DISPATCHER
-     - logic
-     - TO_BE_COMPLETED
 
    * - ``trans_id_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic[CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0]
-     - TO_BE_COMPLETED
 
    * - ``resolved_branch_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - bp_resolve_t
-     - TO_BE_COMPLETED
 
    * - ``wbdata_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic[CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]
-     - TO_BE_COMPLETED
 
    * - ``ex_ex_i``
      - in
+     - exception from execute stage or CVXIF
      - EX_STAGE
      - exception_t[CVA6Cfg.NrWbPorts-1:0]
-     - exception from execute stage or CVXIF offloaded instruction
 
    * - ``wt_valid_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic[CVA6Cfg.NrWbPorts-1:0]
-     - TO_BE_COMPLETED
 
    * - ``x_we_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic
-     - TO_BE_COMPLETED
 
    * - ``waddr_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0][4:0]
-     - TO_BE_COMPLETED
 
    * - ``wdata_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
-     - TO_BE_COMPLETED
 
    * - ``we_gpr_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
-     - TO_BE_COMPLETED
 
    * - ``we_fpr_i``
      - in
+     - TO_BE_COMPLETED
      - EX_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
-     - TO_BE_COMPLETED
 
    * - ``commit_instr_o``
      - out
+     - TO_BE_COMPLETED
      - COMMIT_STAGE
      - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
-     - TO_BE_COMPLETED
 
    * - ``commit_ack_i``
      - in
+     - TO_BE_COMPLETED
      - COMMIT_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
-     - TO_BE_COMPLETED
 
-   * - ``stall_issue_o``
-     - out
-     - PERF_COUNTERS
-     - logic
-     - Issue stall
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-   * - ``rvfi_issue_pointer_o``
-     - out
-     - SUBSYSTEM
-     - logic[TRANS_ID_BITS-1:0]
-     - Information dedicated to RVFI
-
-   * - ``rvfi_commit_pointer_o``
-     - out
-     - SUBSYSTEM
-     - logic[CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0]
-     - Information dedicated to RVFI
+| As PerfCounterEn = 0,
+|   ``sb_full_o`` output is tied to 0
+|   ``stall_issue_o`` output is tied to 0
+| As EnableAccelerator = 0,
+|   ``stall_i`` input is tied to 0
+|   ``issue_instr_o`` output is tied to 0
+|   ``issue_instr_hs_o`` output is tied to 0
+| As RVF = 0,
+|   ``fpu_valid_o`` output is tied to 0
+|   ``fpu_fmt_o`` output is tied to 0
+|   ``fpu_rm_o`` output is tied to 0
+| As IsRVFI = 0,
+|   ``rvfi_issue_pointer_o`` output is tied to 0
+|   ``rvfi_commit_pointer_o`` output is tied to 0
