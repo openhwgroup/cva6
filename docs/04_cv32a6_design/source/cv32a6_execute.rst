@@ -225,7 +225,7 @@ The MMU maintains interfaces with the instruction cache (ICache) and the load-st
      - logic [HYP_EXT:0]
      - Indicates that Instruction is a hypervisor load store instruction
 
-   * - ``satp_ppn_I``
+   * - ``satp_ppn_i``
      - in
      - CSR RegFile
      - logic [HYP_EXT*2:0][riscv::PPNW-1:0]
@@ -1016,7 +1016,7 @@ The input and output signals of the shared TLB are shown in the following two fi
      - logic
      - Signal indicating a shared TLB hit
 
-   * - ``shared_tlb_vadd_o``
+   * - ``shared_tlb_vaddr_o``
      - out
      - PTW
      - logic [riscv::VLEN-1:0]
