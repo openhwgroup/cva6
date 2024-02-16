@@ -76,21 +76,39 @@ if __name__ == "__main__":
                     if connexion in black_list:
                         for i, comment in enumerate(comments):
                             if black_list[connexion][0] == comment[0]:
-                                comment[1] = comment[1]+f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}"
+                                comment[1] = (
+                                    comment[1]
+                                    + f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}"
+                                )
                                 break
                         else:
-                            comments.append([black_list[connexion][0], f"``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}"])
+                            comments.append(
+                                [
+                                    black_list[connexion][0],
+                                    f"``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}",
+                                ]
+                            )
                     else:
                         if name in black_list:
                             for i, comment in enumerate(comments):
                                 if black_list[name][0] == comment[0]:
-                                    comment[1] = comment[1]+f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"
+                                    comment[1] = (
+                                        comment[1]
+                                        + f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"
+                                    )
                                     break
                             else:
-                                comments.append([black_list[name][0], f"``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"])
+                                comments.append(
+                                    [
+                                        black_list[name][0],
+                                        f"``{name}`` {e.group(1)}put is tied to {black_list[name][1]}",
+                                    ]
+                                )
                         else:
                             ports.append(
-                                PortIO(name, e.group(1), data_type, description, connexion)
+                                PortIO(
+                                    name, e.group(1), data_type, description, connexion
+                                )
                             )
                     description = "none"
                     connexion = "none"
@@ -126,10 +144,11 @@ if __name__ == "__main__":
                 fout.write(f"     - {port.connexion}\n")
                 fout.write(f"     - {port.data_type}\n")
             fout.write(f"\n")
-            fout.write(f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n")
+            fout.write(
+                f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n"
+            )
             fout.write(f"\n")
             for comment in comments:
                 fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
             if len(comments) == 0:
                 fout.write(f"none\n")
-                
