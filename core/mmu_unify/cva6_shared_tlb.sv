@@ -29,6 +29,7 @@ module cva6_shared_tlb
   parameter int SHARED_TLB_DEPTH = 64,
   parameter int SHARED_TLB_WAYS = 2,
   parameter int unsigned HYP_EXT = 0,
+  parameter int unsigned BYPASS = 0,
   parameter int unsigned ASID_WIDTH [HYP_EXT:0] = {1}, //[vmid_width,asid_width]
   parameter int unsigned ASID_LEN = 1,
   parameter int unsigned VPN_LEN = 1,
@@ -70,6 +71,9 @@ module cva6_shared_tlb
     input tlb_update_cva6_t shared_tlb_update_i
 
 );
+
+tlb_update_cva6_t shared_tlb_update_delayed,shared_tlb_update_delayed2;
+logic shared_tlb_update_valid_delayed,shared_tlb_update_valid_delayed2;
 
 function logic [SHARED_TLB_WAYS-1:0] shared_tlb_way_bin2oh(input logic [$clog2(SHARED_TLB_WAYS
 )-1:0] in);
@@ -255,44 +259,66 @@ genvar w;
             shared_tlb_hit_d = 1'b0;
             dtlb_update_o = '0;
             itlb_update_o = '0;
-            //number of ways
-            for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
-                // first level match, this may be a giga page, check the ASID flags as well
-                // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-                match_asid[i][0] = (((tlb_update_asid_q[0][ASID_WIDTH[0]-1:0] == shared_tag_rd[i].asid[0][ASID_WIDTH[0]-1:0]) || pte[i][0].g) && v_st_enbl_i[i_req][0]) || !v_st_enbl_i[i_req][0];
 
-                if(HYP_EXT==1) begin
-                    match_asid[i][HYP_EXT] = (tlb_update_asid_q[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == shared_tag_rd[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl_i[i_req][HYP_EXT]) || !v_st_enbl_i[i_req][HYP_EXT];
-                end
-                
-                // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
-                match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl_i[i_req];
+            if(BYPASS==1) begin
+                if(shared_tlb_update_valid_delayed2) begin
+                    shared_tlb_hit_d = 1'b1;
+                    if (itlb_req_q) begin
+                        itlb_update_o.valid = 1'b1;
+                        itlb_update_o.vpn = shared_tlb_update_delayed2.vpn;
+                        itlb_update_o.is_page = shared_tlb_update_delayed2.is_page;
+                        itlb_update_o.content = shared_tlb_update_delayed2.content;
+                        itlb_update_o.asid = shared_tlb_update_delayed2.asid;
+                        
+                    end else if (dtlb_req_q) begin
+                        dtlb_update_o.valid = 1'b1;
+                        dtlb_update_o.vpn = shared_tlb_update_delayed2.vpn;
+                        dtlb_update_o.is_page = shared_tlb_update_delayed2.is_page;
+                        dtlb_update_o.content = shared_tlb_update_delayed2.content;
+                        dtlb_update_o.asid = shared_tlb_update_delayed2.asid;
+                    end
+                end 
+            end
+            else begin
+                //number of ways
+                for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
+                    // first level match, this may be a giga page, check the ASID flags as well
+                    // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
+                    match_asid[i][0] = (((tlb_update_asid_q[0][ASID_WIDTH[0]-1:0] == shared_tag_rd[i].asid[0][ASID_WIDTH[0]-1:0]) || pte[i][0].g) && v_st_enbl_i[i_req][0]) || !v_st_enbl_i[i_req][0];
 
-                if (shared_tag_valid[i] && &match_asid[i] && match_stage[i]) begin
-                    if (|level_match[i]) begin
-                        shared_tlb_hit_d = 1'b1;
-                        if (itlb_req_q) begin
-                            itlb_update_o.valid = 1'b1;
-                            itlb_update_o.vpn = itlb_vpn_q;
-                            itlb_update_o.is_page = shared_tag_rd[i].is_page;
-                            // itlb_update_o.asid = tlb_update_asid_q;
-                            itlb_update_o.content = pte[i];
-                            for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
-                                itlb_update_o.asid[a] = tlb_update_asid_q[a];
-                            end                            
-                        end else if (dtlb_req_q) begin
-                            dtlb_update_o.valid = 1'b1;
-                            dtlb_update_o.vpn = dtlb_vpn_q;
-                            dtlb_update_o.is_page = shared_tag_rd[i].is_page;
-                            // dtlb_update_o.asid = tlb_update_asid_q;
-                            dtlb_update_o.content = pte[i];
-                            for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
-                                dtlb_update_o.asid[a] = tlb_update_asid_q[a];
+                    if(HYP_EXT==1) begin
+                        match_asid[i][HYP_EXT] = (tlb_update_asid_q[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == shared_tag_rd[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl_i[i_req][HYP_EXT]) || !v_st_enbl_i[i_req][HYP_EXT];
+                    end
+                    
+                    // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
+                    match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl_i[i_req];
+
+                    if (shared_tag_valid[i] && &match_asid[i] && match_stage[i]) begin
+                        if (|level_match[i]) begin
+                            shared_tlb_hit_d = 1'b1;
+                            if (itlb_req_q) begin
+                                itlb_update_o.valid = 1'b1;
+                                itlb_update_o.vpn = itlb_vpn_q;
+                                itlb_update_o.is_page = shared_tag_rd[i].is_page;
+                                // itlb_update_o.asid = tlb_update_asid_q;
+                                itlb_update_o.content = pte[i];
+                                for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
+                                    itlb_update_o.asid[a] = tlb_update_asid_q[a];
+                                end                            
+                            end else if (dtlb_req_q) begin
+                                dtlb_update_o.valid = 1'b1;
+                                dtlb_update_o.vpn = dtlb_vpn_q;
+                                dtlb_update_o.is_page = shared_tag_rd[i].is_page;
+                                // dtlb_update_o.asid = tlb_update_asid_q;
+                                dtlb_update_o.content = pte[i];
+                                for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
+                                    dtlb_update_o.asid[a] = tlb_update_asid_q[a];
+                                end
                             end
                         end
                     end
-                end
-            end  
+                end 
+            end 
         end //tag_comparison
 
         // sequential process
@@ -308,6 +334,10 @@ genvar w;
                 itlb_req_q <= '0;
                 dtlb_req_q <= '0;
                 shared_tag_valid <= '0;
+                shared_tlb_update_valid_delayed<='0;
+                shared_tlb_update_valid_delayed2<='0;
+                shared_tlb_update_delayed<='0;
+                shared_tlb_update_delayed2<='0;
             end else begin
                 itlb_vpn_q <= itlb_vaddr_i[riscv::SV-1:12];
                 dtlb_vpn_q <= dtlb_vaddr_i[riscv::SV-1:12];
@@ -319,6 +349,23 @@ genvar w;
                 itlb_req_q <= itlb_req_d;
                 dtlb_req_q <= dtlb_req_d;
                 shared_tag_valid <= shared_tag_valid_q[tag_rd_addr];
+
+                if(shared_tlb_update_i.valid) begin
+                    shared_tlb_update_valid_delayed <=shared_tlb_update_i.valid;
+                    shared_tlb_update_delayed <= shared_tlb_update_i; 
+                end
+                
+
+                shared_tlb_update_valid_delayed2 <=  shared_tlb_update_valid_delayed;
+                shared_tlb_update_delayed2 <= shared_tlb_update_delayed;
+
+                if(|flush_i) begin
+                    shared_tlb_update_valid_delayed<='0;
+                    shared_tlb_update_valid_delayed2<='0;
+                    shared_tlb_update_delayed<='0;
+                    shared_tlb_update_delayed2<='0;
+                end
+
             end
         end
 
