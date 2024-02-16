@@ -103,12 +103,12 @@ module cva6_hpdcache_if_adapter
       hpdcache_req_addr_t   amo_addr;
       hpdcache_req_offset_t amo_addr_offset;
       hpdcache_tag_t        amo_tag;
-      logic                 amo_is_word, amo_is_word_hi;
-      logic [63:0]          amo_data;
-      logic [7:0]           amo_data_be;
-      hpdcache_req_op_t     amo_op;
-      logic [31:0]          amo_resp_word;
-      logic                 amo_pending_q;
+      logic amo_is_word, amo_is_word_hi;
+      logic             [63:0] amo_data;
+      logic             [ 7:0] amo_data_be;
+      hpdcache_req_op_t        amo_op;
+      logic             [31:0] amo_resp_word;
+      logic                    amo_pending_q;
 
       //  AMO logic
       //  {{{
