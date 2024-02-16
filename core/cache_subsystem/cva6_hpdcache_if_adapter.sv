@@ -195,8 +195,7 @@ module cva6_hpdcache_if_adapter
                                                         : hpdcache_rsp_i.rdata[0];
       //  }}}
 
-      always_ff @(posedge clk_i or negedge rst_ni)
-      begin : amo_pending_ff
+      always_ff @(posedge clk_i or negedge rst_ni) begin : amo_pending_ff
         if (!rst_ni) begin
           amo_pending_q <= 1'b0;
         end else begin
