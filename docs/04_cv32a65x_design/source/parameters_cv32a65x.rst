@@ -13,7 +13,7 @@
    :header-rows: 1
 
    * - Name
-     - Description
+     - description
      - Value
 
    * - NrCommitPorts

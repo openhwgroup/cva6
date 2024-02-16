@@ -20,8 +20,8 @@ from parameters_extractor import writeout_parameter_table
 
 if __name__ == "__main__":
 
-    path = "04_cv32a65x"
-    [spec_number, target] = path.split("_")
+    PATH = "04_cv32a65x"
+    [spec_number, target] = PATH.split("_")
 
     print(spec_number, target)
     parameters = parameters_extractor(spec_number, target)
@@ -54,8 +54,8 @@ if __name__ == "__main__":
     for filein in file:
         comments = []
         a = re.match(r".*\/(.*).sv", filein)
-        toto = a.group(1)
-        fileout = "./04_cv32a65x_design/source/port_" + toto + ".rst"
+        module = a.group(1)
+        fileout = "./04_cv32a65x_design/source/port_" + module + ".rst"
         print("Input file " + filein)
         print("Output file " + fileout)
         ports = []
@@ -127,8 +127,8 @@ if __name__ == "__main__":
                 "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
             )
             fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
-            fout.write(f".. _CVA6_{toto}_ports:\n\n")
-            fout.write(f".. list-table:: {toto} module IO ports\n")
+            fout.write(f".. _CVA6_{module}_ports:\n\n")
+            fout.write(f".. list-table:: {module} module IO ports\n")
             fout.write("   :header-rows: 1\n")
             fout.write("\n")
             fout.write("   * - Signal\n")
@@ -143,12 +143,12 @@ if __name__ == "__main__":
                 fout.write(f"     - {port.description}\n")
                 fout.write(f"     - {port.connexion}\n")
                 fout.write(f"     - {port.data_type}\n")
-            fout.write(f"\n")
+            fout.write("\n")
             fout.write(
                 f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n"
             )
-            fout.write(f"\n")
+            fout.write("\n")
             for comment in comments:
                 fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
             if len(comments) == 0:
-                fout.write(f"none\n")
+                fout.write("none\n")
