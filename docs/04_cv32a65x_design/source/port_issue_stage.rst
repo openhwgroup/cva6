@@ -86,7 +86,7 @@
 
    * - ``fu_data_o``
      - out
-     - TO_BE_COMPLETED
+     - FU data useful to execute instruction
      - EX_STAGE
      - fu_data_t
 
@@ -140,7 +140,7 @@
 
    * - ``branch_predict_o``
      - out
-     - TO_BE_COMPLETED
+     - Information of branch prediction
      - EX_STAGE
      - branchpredict_sbe_t
 
@@ -268,4 +268,3 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 | As IsRVFI = 0,
 |   ``rvfi_issue_pointer_o`` output is tied to 0
 |   ``rvfi_commit_pointer_o`` output is tied to 0
-none

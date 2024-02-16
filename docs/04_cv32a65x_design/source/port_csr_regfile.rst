@@ -305,4 +305,3 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``perf_data_i`` input is tied to 0
 |   ``perf_we_o`` output is tied to 0
 |   ``mcountinhibit_o`` output is tied to 0
-none

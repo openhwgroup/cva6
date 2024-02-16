@@ -127,4 +127,3 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 | As DebugEn = 0,
 |   ``debug_mode_i`` input is tied to 0
 |   ``set_debug_pc_i`` input is tied to 0
-none

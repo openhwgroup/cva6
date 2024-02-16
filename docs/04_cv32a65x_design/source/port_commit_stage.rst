@@ -196,4 +196,3 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 
 | As RVA = 0,
 |   ``amo_resp_i`` input is tied to 0
-none

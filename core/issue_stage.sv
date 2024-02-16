@@ -45,7 +45,7 @@ module issue_stage
     output [riscv::VLEN-1:0] rs1_forwarding_o,
     // rs2 forwarding - EX_STAGE
     output [riscv::VLEN-1:0] rs2_forwarding_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // FU data useful to execute instruction - EX_STAGE
     output fu_data_t fu_data_o,
     // TO_BE_COMPLETED - EX_STAGE
     output logic [riscv::VLEN-1:0] pc_o,
@@ -63,7 +63,7 @@ module issue_stage
     output logic lsu_valid_o,
     // Branch unit is valid - EX_STAGE
     output logic branch_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Information of branch prediction - EX_STAGE
     output branchpredict_sbe_t branch_predict_o,
     // Mult FU is valid - EX_STAGE
     output logic mult_valid_o,
