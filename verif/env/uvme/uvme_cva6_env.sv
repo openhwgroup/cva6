@@ -381,6 +381,11 @@ function void uvme_cva6_env_c::connect_coverage_model();
    clknrst_agent.mon_ap.connect(cov_model.reset_export);
    rvfi_agent.rvfi_core_ap.connect(isacov_agent.monitor.rvfi_instr_imp);
 
+   if(cfg.axi_cfg.cov_model_enabled) begin
+      axi_agent.vsequencer.synchronizer.uvma_sqr_trs_port.connect(cov_model.axi_covg.uvme_axi_cov_resp_fifo.analysis_export);
+      axi_agent.vsequencer.synchronizer.uvma_sqr_trs_port.connect(cov_model.axi_ext_covg.uvme_axi_cov_fifo.analysis_export);
+   end
+
 endfunction: connect_coverage_model
 
 `endif // __UVME_CVA6_ENV_SV__
