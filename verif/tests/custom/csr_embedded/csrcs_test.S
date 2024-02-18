@@ -5840,4 +5840,61 @@ csrcs:
     #MHPMEVENT20 read value
     csrr x14, 0x334
 
+    ##########################
+    #MCOUNTINHBIT testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h4}
+    ##########################
+    #MCOUNTINHBIT Write clear/set value 0x1f
+    li x3, 0xffffffe0
+    csrrc x14, 0x320, x3
+    li x3, 0x1f
+    csrrs x14, 0x320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0x0
+    li x3, 0xffffffff
+    csrrc x14, 0x320, x3
+    li x3, 0x0
+    csrrs x14, 0x320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0x15
+    li x3, 0xffffffea
+    csrrc x14, 0x320, x3
+    li x3, 0x15
+    csrrs x14, 0x320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0xa
+    li x3, 0xfffffff5
+    csrrc x14, 0x320, x3
+    li x3, 0xa
+    csrrs x14, 0x320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0x4
+    li x3, 0xfffffffb
+    csrrc x14, 0x320, x3
+    li x3, 0x4
+    csrrs x14, 0x320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
+    #MCOUNTINHBIT Write clear/set value 0x4
+    li x19, 0xfffffffb
+    csrrc x19, 0x320, x19
+    li x3, 0x4
+    csrrs x19, 0x320, x19
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0x320
+
     ret

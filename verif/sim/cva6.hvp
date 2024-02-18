@@ -615,8 +615,17 @@ plan "CVA6 Verification Master Plan";
             feature "Illegal instructions";
                 weight = 1;
                 Comment = "RVFI limitation issue(#1338)";
-                measure Group illegal_instructions;
-                    source = "group: uvme_cva6_pkg::cg_illegal_i", "group: uvme_cva6_pkg::cg_illegal_m", "group: uvme_cva6_pkg::cg_illegal_zicsr", "group: uvme_cva6_pkg::cg_illegal_zifencei";
+                measure Group ILLEGAL_I_EXT;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.illegal_i_cg";
+                endmeasure
+                measure Group ILLEGAL_ZICSR_EXT;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.illegal_zicsr_cg";
+                endmeasure
+                measure Group ILLEGAL_ZIFENCEI_EXT;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.illegal_zifencei_cg";
+                endmeasure
+                measure Group ILLEGAL_M_EXT;
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.illegal_m_cg";
                 endmeasure
             endfeature
         endfeature
@@ -1287,7 +1296,7 @@ plan "CVA6 Verification Master Plan";
             endfeature
             feature Exceptions;
                 measure Group Exceptions;
-                    source = "group: uvme_cva6_pkg::cg_exception::SHAPE{Guard_ON(cp_exception.IGN_ACCESS_FAULT_EXC,cp_exception.IGN_DEBUG_REQUEST,cp_exception.IGN_ENV_CALL_SMODE,cp_exception.IGN_ENV_CALL_UMODE),Guard_OFF(cp_exception.IGN_ADDR_MISALIGNED_EXC)}";
+                    source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.exception_cg";
                 endmeasure
             endfeature
         endfeature

@@ -4630,4 +4630,42 @@ csrrw:
     #MHPMCOUNTERH14 read value
     csrr x14, 0xb8e
 
+    ##########################
+    #MCOUNTINHBIT testing W/R values '{'hffffffff, 'h0, 'h55555555, 'haaaaaaaa, 'h9683580}
+    ##########################
+    #MCOUNTINHBIT Write value 0xffffffff
+    li x3, 0xffffffff
+    csrw 0X320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0X320
+
+    #MCOUNTINHBIT Write value 0x0
+    li x3, 0x0
+    csrw 0X320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0X320
+
+    #MCOUNTINHBIT Write value 0x55555555
+    li x3, 0x55555555
+    csrw 0X320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0X320
+
+    #MCOUNTINHBIT Write value 0xaaaaaaaa
+    li x3, 0xaaaaaaaa
+    csrw 0X320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0X320
+
+    #MCOUNTINHBIT Write value 0x9683580
+    li x3, 0x9683580
+    csrw 0X320, x3
+
+    #MCOUNTINHBIT read value
+    csrr x14, 0X320
+
     ret
