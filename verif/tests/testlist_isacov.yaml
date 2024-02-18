@@ -32,7 +32,7 @@
   asm_tests: <path_var>/custom/isacov/branch_to_zero.S
 
 - test: load_reg_hazard
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
   asm_tests: <path_var>/custom/isacov/load_reg_hazard.S

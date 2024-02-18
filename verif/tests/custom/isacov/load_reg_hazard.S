@@ -45,7 +45,7 @@ main:
   li         t4, 0x80000000
   li         t5, 0x80000000
   li         t6, 0x80000000
-  lw         zero, -16(zero)
+
   lw         sp, 1024(sp)
   lw         ra, 52(ra)
   lw         gp, 52(gp)
@@ -108,7 +108,7 @@ main:
   li         t4, 0x80000000
   li         t5, 0x80000000
   li         t6, 0x80000000
-  lh         zero, -16(zero)
+
   lh         sp, 1024(sp)
   lh         ra, 52(ra)
   lh         gp, 52(gp)
@@ -171,7 +171,7 @@ main:
   li         t4, 0x80000000
   li         t5, 0x80000000
   li         t6, 0x80000000
-  lb         zero, -16(zero)
+
   lb         sp, 1024(sp)
   lb         ra, 52(ra)
   lb         gp, 52(gp)
@@ -234,7 +234,7 @@ main:
   li         t4, 0x80000000
   li         t5, 0x80000000
   li         t6, 0x80000000
-  lbu         zero, -16(zero)
+
   lbu         sp, 1024(sp)
   lbu         ra, 52(ra)
   lbu         gp, 52(gp)
@@ -297,7 +297,7 @@ main:
   li         t4, 0x80000000
   li         t5, 0x80000000
   li         t6, 0x80000000
-  lhu         zero, -16(zero)
+
   lhu         sp, 1024(sp)
   lhu         ra, 52(ra)
   lhu         gp, 52(gp)
@@ -329,21 +329,20 @@ main:
   lhu         t4, 16(t4)
   lhu         t5, 12(t5)
   lhu         t6, 16(t6)
-  add        t0, s8, t0
-  addi       s8, t0, -420
-  lui        s8, 902640
-# (example of) final self-check test
-  li a0, 0xCAFE;
-  li a1, 0xCAFE;
-  xor a2, a0, a1;
-  beqz a2, pass;
 
-fail:
-  # Failure post-processing (messages, ecall setup etc.)
-  li a0, 0x0;
-  jal exit;
+  #End of csr test
+  j test_pass
 
-pass:
-  # Success post-processing (messages, ecall setup etc.)
-  li a0, 0x0;
-  jal exit;
+test_pass:
+    li ra, 0
+    slli ra, ra, 1
+    addi ra, ra, 1
+    sw ra, tohost, t5
+    self_loop: j self_loop
+
+test_fail:
+    li ra, 1
+    slli ra, ra, 1
+    addi ra, ra, 1
+    sw ra, tohost, t5
+    self_loop_2: j self_loop_2
