@@ -397,9 +397,9 @@ module cva6_mmu
                     riscv::INSTR_ACCESS_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},1'b1
                 };
         icache_areq_o.fetch_valid = 1'b0;
-        // ---------
+        // ---------//
         // ITLB Hit
-        // --------
+        // --------//
         // if we hit the ITLB output the request signal immediately
         if (itlb_lu_hit) begin
             icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
