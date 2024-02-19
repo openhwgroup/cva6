@@ -386,7 +386,7 @@ module cva6_mmu
             if (HYP_EXT == 1) 
                 icache_areq_o.fetch_exception = {
                     riscv::INSTR_ACCESS_FAULT,
-                    {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                    {riscv::XLEN '(icache_areq_i.fetch_vaddr)},
                     {riscv::GPLEN{1'b0}},
                     {riscv::XLEN{1'b0}},
                     enable_translation_i[HYP_EXT*2],
@@ -394,8 +394,8 @@ module cva6_mmu
                 };
             else 
                 icache_areq_o.fetch_exception = {
-                    riscv::INSTR_ACCESS_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}}, 
-                    icache_areq_i.fetch_vaddr},
+                    riscv::INSTR_ACCESS_FAULT,
+                    {riscv::XLEN '(icache_areq_i.fetch_vaddr)},
                     1'b1
                 };
         icache_areq_o.fetch_valid = 1'b0;
@@ -408,7 +408,7 @@ module cva6_mmu
             if (HYP_EXT==1 && iaccess_err[HYP_EXT]) 
                 icache_areq_o.fetch_exception = {
                     riscv::INSTR_GUEST_PAGE_FAULT,
-                    {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                    {riscv::XLEN '(icache_areq_i.fetch_vaddr)},
                     itlb_gpaddr[riscv::GPLEN-1:0],
                     {riscv::XLEN{1'b0}},
                     enable_translation_i[HYP_EXT*2],
@@ -420,7 +420,7 @@ module cva6_mmu
                 if(HYP_EXT==1) 
                     icache_areq_o.fetch_exception = {
                         riscv::INSTR_PAGE_FAULT,
-                        {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                        {riscv::XLEN '(icache_areq_i.fetch_vaddr)},
                         {riscv::GPLEN{1'b0}},
                         {riscv::XLEN{1'b0}},
                         enable_translation_i[HYP_EXT*2],
@@ -436,7 +436,7 @@ module cva6_mmu
                 if(HYP_EXT==1) 
                     icache_areq_o.fetch_exception = {
                         riscv::INSTR_ACCESS_FAULT,
-                        {riscv::XLEN '(icache_areq_i.fetch_vaddr)},
+                        {riscv::XLEN'(icache_areq_i.fetch_vaddr)},
                         {riscv::GPLEN{1'b0}},
                         {riscv::XLEN{1'b0}},
                         enable_translation_i[HYP_EXT*2],
@@ -459,7 +459,7 @@ module cva6_mmu
                     if (HYP_EXT==1  && ptw_error[HYP_EXT])
                         icache_areq_o.fetch_exception = {
                             riscv::INSTR_GUEST_PAGE_FAULT,
-                            {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
+                            {{riscv::XLEN'(update_vaddr)},
                             ptw_bad_paddr[HYP_EXT][riscv::GPLEN-1:0],
                             (ptw_error[HYP_EXT*2] ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
                             enable_translation_i[2*HYP_EXT],
@@ -469,7 +469,7 @@ module cva6_mmu
                         if (HYP_EXT==1)
                             icache_areq_o.fetch_exception = {
                                 riscv::INSTR_PAGE_FAULT,
-                                {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
+                                {{riscv::XLEN'(update_vaddr)},
                                 {riscv::GPLEN{1'b0}},
                                 {riscv::XLEN{1'b0}},
                                 enable_translation_i[2*HYP_EXT],
@@ -478,7 +478,7 @@ module cva6_mmu
                         else
                             icache_areq_o.fetch_exception = {
                                 riscv::INSTR_PAGE_FAULT, 
-                                {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 
+                                {{riscv::XLEN'(update_vaddr)},
                                 1'b1
                             };
                 end
@@ -487,7 +487,7 @@ module cva6_mmu
                     if(HYP_EXT==1)
                         icache_areq_o.fetch_exception = {
                             riscv::INSTR_ACCESS_FAULT,
-                            {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
+                            {{riscv::XLEN'(update_vaddr)},
                             {riscv::GPLEN{1'b0}},
                             {riscv::XLEN{1'b0}},
                             enable_translation_i[HYP_EXT*2],
