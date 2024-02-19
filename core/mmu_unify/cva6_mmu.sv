@@ -499,7 +499,7 @@ module cva6_mmu
             if(HYP_EXT==1)
                 icache_areq_o.fetch_exception = {
                     riscv::INSTR_ACCESS_FAULT,
-                    {riscv::XLEN '(icache_areq_o.fetch_paddr)},
+                    {riscv::XLEN'(icache_areq_o.fetch_paddr)},
                     {riscv::GPLEN{1'b0}},
                     {riscv::XLEN{1'b0}},
                     enable_translation_i[HYP_EXT*2],
