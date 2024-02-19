@@ -355,8 +355,8 @@ module cva6_mmu
           (enable_translation_i[HYP_EXT] ? itlb_content[HYP_EXT].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]:
           itlb_content[0].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]) : //
           icache_areq_i.fetch_vaddr[PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1];
-  end
-endgenerate
+    end
+  endgenerate
 
 // The instruction interface is a simple request response interface
 always_comb begin : instr_interface
