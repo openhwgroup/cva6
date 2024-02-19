@@ -20,7 +20,7 @@ module wt_dcache_ctrl
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
-    parameter logic [ariane_pkg::MEM_TID_WIDTH-1:0] RdTxId = 1
+    parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 1
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -38,7 +38,7 @@ module wt_dcache_ctrl
     output logic [riscv::PLEN-1:0] miss_paddr_o,
     output logic miss_nc_o,  // request to I/O space
     output logic [2:0] miss_size_o,  // 00: 1byte, 01: 2byte, 10: 4byte, 11: 8byte, 111: cacheline
-    output logic [ariane_pkg::MEM_TID_WIDTH-1:0] miss_id_o,  // set to constant ID
+    output logic [CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id_o,  // set to constant ID
     input logic miss_replay_i,  // request collided with pending miss - have to replay the request
     input  logic                            miss_rtrn_vld_i, // signals that the miss has been served, asserted in the same cycle as when the data returns from memory
     // used to detect readout mux collisions

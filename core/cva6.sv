@@ -158,7 +158,7 @@ module cva6
       logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] way;  // way to replace
       logic [riscv::PLEN-1:0] paddr;  // physical address
       logic nc;  // noncacheable
-      logic [ariane_pkg::MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+      logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     },
     localparam type icache_rtrn_t = struct packed {
       wt_cache_pkg::icache_in_t rtype;  // see definitions above
@@ -170,7 +170,7 @@ module cva6
         logic [ariane_pkg::ICACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
         logic [wt_cache_pkg::L1I_WAY_WIDTH-1:0]    way;  // way to invalidate
       } inv;  // invalidation vector
-      logic [ariane_pkg::MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+      logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     },
 
     // D$ data requests

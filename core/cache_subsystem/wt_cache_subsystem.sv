@@ -91,7 +91,7 @@ module wt_cache_subsystem
     logic [riscv::XLEN-1:0] data;  // word width of processor (no block stores at the moment)
     logic [ariane_pkg::DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
     logic nc;  // noncacheable
-    logic [ariane_pkg::MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     ariane_pkg::amo_t amo_op;  // amo opcode
   };
 
@@ -100,7 +100,7 @@ module wt_cache_subsystem
     logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
     logic [ariane_pkg::DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
     dcache_inval_t inv;  // invalidation vector
-    logic [ariane_pkg::MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
   };
 
   logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
