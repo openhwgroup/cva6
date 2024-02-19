@@ -117,10 +117,10 @@ module cva6_mmu
 
   localparam type tlb_update_cva6_t = struct packed {
     // typedef struct packed {
-        logic                                valid;      // valid flag
-        logic [PT_LEVELS-2:0][HYP_EXT:0]     is_page;      //
-        logic [VPN_LEN-1:0]                  vpn;        //
-        logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;       //
+        logic                                valid;     // valid flag
+        logic [PT_LEVELS-2:0][HYP_EXT:0]     is_page;    
+        logic [VPN_LEN-1:0]                  vpn;        
+        logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;       
         logic [HYP_EXT*2:0]                  v_st_enbl; // v_i,g-stage enabled, s-stage enabled
         pte_cva6_t  [HYP_EXT:0]              content;
     } ;
