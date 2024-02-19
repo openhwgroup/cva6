@@ -494,11 +494,7 @@ module cva6_mmu
                             1'b1
                         };
                     else
-                        icache_areq_o.fetch_exception = {
-                            riscv::INSTR_ACCESS_FAULT, 
-                            ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 
-                            1'b1
-                        };
+                        icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1};
             end
         end
     end
