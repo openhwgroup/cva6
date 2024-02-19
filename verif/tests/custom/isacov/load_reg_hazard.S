@@ -330,7 +330,61 @@ main:
   lhu         t5, 12(t5)
   lhu         t6, 16(t6)
 
-  #End of csr test
+  li         s0, 0x80000000
+  li         s1, 0x80000000
+  li         a0, 0x80000000
+  li         a1, 0x80000000
+  li         a2, 0x80000000
+  li         a3, 0x80000000
+  li         a4, 0x80000000
+  li         a5, 0x80000000
+
+  c.lbu         s0, 2(s0)
+  c.lbu         s1, 2(s1)
+  c.lbu         a0, 2(a0)
+  c.lbu         a1, 2(a1)
+  c.lbu         a2, 2(a2)
+  c.lbu         a3, 2(a3)
+  c.lbu         a4, 2(a4)
+  c.lbu         a5, 2(a5)
+
+  li         s0, 0x80000000
+  li         s1, 0x80000000
+  li         a0, 0x80000000
+  li         a1, 0x80000000
+  li         a2, 0x80000000
+  li         a3, 0x80000000
+  li         a4, 0x80000000
+  li         a5, 0x80000000
+
+  c.lh         s0, 0(s0)
+  c.lh         s1, 0(s1)
+  c.lh         a0, 0(a0)
+  c.lh         a1, 0(a1)
+  c.lh         a2, 0(a2)
+  c.lh         a3, 0(a3)
+  c.lh         a4, 0(a4)
+  c.lh         a5, 0(a5)
+
+  li         s0, 0x80000000
+  li         s1, 0x80000000
+  li         a0, 0x80000000
+  li         a1, 0x80000000
+  li         a2, 0x80000000
+  li         a3, 0x80000000
+  li         a4, 0x80000000
+  li         a5, 0x80000000
+
+  c.lhu         s0, 0(s0)
+  c.lhu         s1, 0(s1)
+  c.lhu         a0, 0(a0)
+  c.lhu         a1, 0(a1)
+  c.lhu         a2, 0(a2)
+  c.lhu         a3, 0(a3)
+  c.lhu         a4, 0(a4)
+  c.lhu         a5, 0(a5)
+
+  #End of test
   j test_pass
 
 test_pass:
