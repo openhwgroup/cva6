@@ -361,137 +361,136 @@ module cva6_mmu
 
   endgenerate
 
-    // The instruction interface is a simple request response interface
-    always_comb begin : instr_interface
+  // The instruction interface is a simple request response interface
+  always_comb begin : instr_interface
         // MMU disabled: just pass through
-        icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-        // icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
-        // // two potential exception sources:
-        // 1. HPTW threw an exception -> signal with a page fault exception
-        // 2. We got an access error because of insufficient permissions -> throw an access exception
-        icache_areq_o.fetch_exception = '0;
-        // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err[0]   = icache_areq_i.fetch_req && (enable_translation_i[0] || HYP_EXT==0) && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content[0].u)
-                                                            || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content[0].u));
+    icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
+    // icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
+    // // two potential exception sources:
+    // 1. HPTW threw an exception -> signal with a page fault exception
+    // 2. We got an access error because of insufficient permissions -> throw an access exception
+    icache_areq_o.fetch_exception = '0;
+    // Check whether we are allowed to access this memory region from a fetch perspective
+    iaccess_err[0]   = icache_areq_i.fetch_req && (enable_translation_i[0] || HYP_EXT==0) && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content[0].u)
+                                                        || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content[0].u));
 
-        if (HYP_EXT == 1) iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && enable_translation_i[HYP_EXT] && !itlb_content[HYP_EXT].u;
-        // MMU enabled: address from TLB, request delayed until hit. Error when TLB
-        // hit and no access right or TLB hit and translated address not valid (e.g.
-        // AXI decode error), or when PTW performs walk due to ITLB miss and raises
-        // an error.
-        if ((|enable_translation_i[HYP_EXT:0])) begin
-        // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
-            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0))
-                if (HYP_EXT == 1) 
+    if (HYP_EXT == 1) iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && enable_translation_i[HYP_EXT] && !itlb_content[HYP_EXT].u;
+    // MMU enabled: address from TLB, request delayed until hit. Error when TLB
+    // hit and no access right or TLB hit and translated address not valid (e.g.
+    // AXI decode error), or when PTW performs walk due to ITLB miss and raises
+    // an error.
+    if ((|enable_translation_i[HYP_EXT:0])) begin
+    // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
+        if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0))
+            if (HYP_EXT == 1) 
+                icache_areq_o.fetch_exception = {
+                    riscv::INSTR_ACCESS_FAULT,
+                    {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                    {riscv::GPLEN{1'b0}},
+                    {{riscv::XLEN{1'b0}}},
+                    enable_translation_i[HYP_EXT*2],
+                    1'b1
+                };
+            else 
+                icache_areq_o.fetch_exception = {
+                    riscv::INSTR_ACCESS_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},1'b1
+                };
+        icache_areq_o.fetch_valid = 1'b0;
+        // ---------
+        // ITLB Hit
+        // --------
+        // if we hit the ITLB output the request signal immediately
+        if (itlb_lu_hit) begin
+            icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
+            if (HYP_EXT==1 && iaccess_err[HYP_EXT]) 
+                icache_areq_o.fetch_exception = {
+                    riscv::INSTR_GUEST_PAGE_FAULT,
+                    {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                    itlb_gpaddr[riscv::GPLEN-1:0],
+                    {riscv::XLEN{1'b0}},
+                    enable_translation_i[HYP_EXT*2],
+                    1'b1
+                };
+                // we got an access error
+            else if (iaccess_err[0]) 
+                // throw a page fault
+                if(HYP_EXT==1) 
                     icache_areq_o.fetch_exception = {
-                        riscv::INSTR_ACCESS_FAULT,
-                        {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-                        {riscv::GPLEN{1'b0}},
-                        {{riscv::XLEN{1'b0}}},
-                        enable_translation_i[HYP_EXT*2],
-                        1'b1
-                    };
-                else 
-                    icache_areq_o.fetch_exception = {
-                        riscv::INSTR_ACCESS_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},1'b1
-                    };
-            icache_areq_o.fetch_valid = 1'b0;
-            // ---------
-            // ITLB Hit
-            // --------
-            // if we hit the ITLB output the request signal immediately
-            if (itlb_lu_hit) begin
-                icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-                if (HYP_EXT==1 && iaccess_err[HYP_EXT]) 
-                    icache_areq_o.fetch_exception = {
-                        riscv::INSTR_GUEST_PAGE_FAULT,
+                        riscv::INSTR_PAGE_FAULT,
                         {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-                        itlb_gpaddr[riscv::GPLEN-1:0],
+                        {riscv::GPLEN{1'b0}},
                         {riscv::XLEN{1'b0}},
                         enable_translation_i[HYP_EXT*2],
                         1'b1
                     };
-                    // we got an access error
-                else if (iaccess_err[0]) 
-                    // throw a page fault
-                    if(HYP_EXT==1) 
+                else
+                    icache_areq_o.fetch_exception = {
+                        riscv::INSTR_PAGE_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},1'b1
+                        };
+            else if (!pmp_instr_allow)
+                if(HYP_EXT==1) 
+                    icache_areq_o.fetch_exception = {
+                        riscv::INSTR_ACCESS_FAULT,
+                        {riscv::XLEN '(icache_areq_i.fetch_vaddr)},
+                        {riscv::GPLEN{1'b0}},
+                        {riscv::XLEN{1'b0}},
+                        enable_translation_i[HYP_EXT*2],
+                        1'b1
+                    };
+                else
+                    icache_areq_o.fetch_exception = {
+                        riscv::INSTR_ACCESS_FAULT, riscv::XLEN '(icache_areq_i.fetch_vaddr), 1'b1
+                    }; 
+        end else begin
+            // ---------
+            // ITLB Miss
+            // ---------
+            // watch out for exceptions happening during walking the page table
+            if (ptw_active && walking_instr) begin
+                icache_areq_o.fetch_valid = ptw_error[0] | ptw_access_exception;
+                if (ptw_error[0]) begin
+                    if (HYP_EXT==1  && ptw_error[HYP_EXT])
                         icache_areq_o.fetch_exception = {
-                            riscv::INSTR_PAGE_FAULT,
-                            {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-                            {riscv::GPLEN{1'b0}},
-                            {riscv::XLEN{1'b0}},
-                            enable_translation_i[HYP_EXT*2],
+                            riscv::INSTR_GUEST_PAGE_FAULT,
+                            {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
+                            ptw_bad_paddr[HYP_EXT][riscv::GPLEN-1:0],
+                            (ptw_error[HYP_EXT*2] ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
+                            enable_translation_i[2*HYP_EXT],
                             1'b1
                         };
                     else
-                        icache_areq_o.fetch_exception = {
-                            riscv::INSTR_PAGE_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},1'b1
-                            };
-                else if (!pmp_instr_allow) begin
-                    if(HYP_EXT==1) 
-                        icache_areq_o.fetch_exception = {
-                            riscv::INSTR_ACCESS_FAULT,
-                            {riscv::XLEN '(icache_areq_i.fetch_vaddr)},
-                            {riscv::GPLEN{1'b0}},
-                            {riscv::XLEN{1'b0}},
-                            enable_translation_i[HYP_EXT*2],
-                            1'b1
-                        };
-                    else
-                        icache_areq_o.fetch_exception = {
-                            riscv::INSTR_ACCESS_FAULT, riscv::XLEN '(icache_areq_i.fetch_vaddr), 1'b1
-                        }; 
-                end
-            end else begin
-                // ---------
-                // ITLB Miss
-                // ---------
-                // watch out for exceptions happening during walking the page table
-                if (ptw_active && walking_instr) begin
-                    icache_areq_o.fetch_valid = ptw_error[0] | ptw_access_exception;
-                    if (ptw_error[0]) begin
-                        if (HYP_EXT==1  && ptw_error[HYP_EXT])
+                        if (HYP_EXT==1)
                             icache_areq_o.fetch_exception = {
-                                riscv::INSTR_GUEST_PAGE_FAULT,
+                                riscv::INSTR_PAGE_FAULT,
                                 {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
-                                ptw_bad_paddr[HYP_EXT][riscv::GPLEN-1:0],
-                                (ptw_error[HYP_EXT*2] ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
+                                {riscv::GPLEN{1'b0}},
+                                {riscv::XLEN{1'b0}},
                                 enable_translation_i[2*HYP_EXT],
                                 1'b1
                             };
                         else
-                            if (HYP_EXT==1)
-                                icache_areq_o.fetch_exception = {
-                                    riscv::INSTR_PAGE_FAULT,
-                                    {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
-                                    {riscv::GPLEN{1'b0}},
-                                    {riscv::XLEN{1'b0}},
-                                    enable_translation_i[2*HYP_EXT],
-                                    1'b1
-                                };
-                            else
-                                icache_areq_o.fetch_exception = {
-                                    riscv::INSTR_PAGE_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
-                                };
-                    end
-                    // TODO(moschn,zarubaf): What should the value of tval be in this case?
-                    else
-                        if(HYP_EXT==1)
                             icache_areq_o.fetch_exception = {
-                                riscv::INSTR_ACCESS_FAULT,
-                                {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
-                                {riscv::GPLEN{1'b0}},
-                                {riscv::XLEN{1'b0}},
-                                enable_translation_i[HYP_EXT*2],
-                                1'b1
-                            };
-                        else
-                            icache_areq_o.fetch_exception = {
-                                riscv::INSTR_ACCESS_FAULT, ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1
+                                riscv::INSTR_PAGE_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
                             };
                 end
+                // TODO(moschn,zarubaf): What should the value of tval be in this case?
+                else
+                    if(HYP_EXT==1)
+                        icache_areq_o.fetch_exception = {
+                            riscv::INSTR_ACCESS_FAULT,
+                            {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
+                            {riscv::GPLEN{1'b0}},
+                            {riscv::XLEN{1'b0}},
+                            enable_translation_i[HYP_EXT*2],
+                            1'b1
+                        };
+                    else
+                        icache_areq_o.fetch_exception = {
+                            riscv::INSTR_ACCESS_FAULT, ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1
+                        };
             end
         end
+    end
 
         // if it didn't match any execute region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
