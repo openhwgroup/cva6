@@ -577,39 +577,39 @@ module cva6_mmu
 
     assign lsu_paddr_o    [11:0] = lsu_vaddr_q[0][11:0];
     assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
-                            (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ? //
-      (en_ld_st_translation_i[HYP_EXT] ? dtlb_pte_q[HYP_EXT].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))]:
-                            dtlb_pte_q[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] ): // 
-      (riscv::PLEN-PPNWMin-1)'(lsu_vaddr_q[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
+        (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ? //
+        (en_ld_st_translation_i[HYP_EXT] ? dtlb_pte_q[HYP_EXT].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))]:
+        dtlb_pte_q[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] ): // 
+        (riscv::PLEN-PPNWMin-1)'(lsu_vaddr_q[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
 
   assign lsu_dtlb_ppn_o[11:0] = (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ?  //
-      (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[11:0]:
-                            dtlb_content[0].ppn[11:0]) : // 
-      lsu_vaddr_n[0][23:12];
+        (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[11:0]:
+        dtlb_content[0].ppn[11:0]) : // 
+        lsu_vaddr_n[0][23:12];
 
   genvar i;
   generate
 
     for (i = 0; i < PT_LEVELS - 1; i++) begin
-      assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-          (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-          (en_ld_st_translation_i[HYP_EXT] ? dtlb_pte_q[HYP_EXT].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))]:
-                                dtlb_pte_q[0].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] ): //
-          lsu_vaddr_q[0][PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
+        assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
+            (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
+            (en_ld_st_translation_i[HYP_EXT] ? dtlb_pte_q[HYP_EXT].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))]:
+            dtlb_pte_q[0].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] ): //
+            lsu_vaddr_q[0][PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
 
-      assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-          (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-          (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]:
-                                dtlb_content[0].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] ): //
-          (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]!=0)?
-                                lsu_vaddr_n[0][PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]://
-          (VPN_LEN/PT_LEVELS)'(lsu_vaddr_n[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1 : (24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-1) ) -1): (riscv::PLEN > riscv::VLEN) ? 24 :24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-2)]));
+        assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
+            (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
+            (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]:
+            dtlb_content[0].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] ): //
+            (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]!=0)?
+            lsu_vaddr_n[0][PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]://
+            (VPN_LEN/PT_LEVELS)'(lsu_vaddr_n[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1 : (24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-1) ) -1): (riscv::PLEN > riscv::VLEN) ? 24 :24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-2)]));
     end
     if (riscv::IS_XLEN64) begin
       assign lsu_dtlb_ppn_o[riscv::PPNW-1:PPNWMin+1] = (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ? 
-                                (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[riscv::PPNW-1:PPNWMin+1]:
-                                dtlb_content[0].ppn[riscv::PPNW-1:PPNWMin+1] ): 
-                                lsu_vaddr_n[0][riscv::PLEN-1:PPNWMin+1] ;
+        (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[riscv::PPNW-1:PPNWMin+1]:
+        dtlb_content[0].ppn[riscv::PPNW-1:PPNWMin+1] ): 
+        lsu_vaddr_n[0][riscv::PLEN-1:PPNWMin+1] ;
     end
 
   endgenerate
