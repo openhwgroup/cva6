@@ -143,9 +143,9 @@ module load_store_unit
  
   if (MMU_PRESENT) begin : gen_mmu
 
-    localparam HYP_EXT = 0; //CVA6Cfg.CVA6ConfigHExtEn
-    localparam VPN_LEN       = (riscv::XLEN == 64) ? (HYP_EXT ? 29 : 27) : 20;
-    localparam PT_LEVELS     = (riscv::XLEN == 64) ? 3  : 2;
+    localparam HYP_EXT = 0;  //CVA6Cfg.CVA6ConfigHExtEn
+    localparam VPN_LEN = (riscv::XLEN == 64) ? (HYP_EXT ? 29 : 27) : 20;
+    localparam PT_LEVELS = (riscv::XLEN == 64) ? 3  : 2;
     localparam int unsigned mmu_ASID_WIDTH [HYP_EXT:0] = {ASID_WIDTH};
 
 
@@ -158,13 +158,13 @@ module load_store_unit
         .VPN_LEN          (VPN_LEN),
         .PT_LEVELS        (PT_LEVELS)
     ) i_cva6_mmu (
-        .clk_i(clk_i),
-        .rst_ni(rst_ni),
-        .flush_i(flush_i),
+        .clk_i                  (clk_i),
+        .rst_ni                 (rst_ni),
+        .flush_i                (flush_i),
         .enable_translation_i   ({enable_translation_i}),
         .en_ld_st_translation_i ({en_ld_st_translation_i}),
-        .icache_areq_i          ( icache_areq_i          ),
-        .icache_areq_o          ( icache_areq_o          ),
+        .icache_areq_i          ( icache_areq_i),
+        .icache_areq_o          ( icache_areq_o),
         // misaligned bypass
         .misaligned_ex_i        ( misaligned_exception   ),
         .lsu_req_i              ( translation_req        ),

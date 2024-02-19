@@ -49,6 +49,40 @@ output logic [PT_LEVELS-2:0]    lu_is_page_o,
 output logic                    lu_hit_o
 );
 
+  // computes the paddr based on the page size, ppn and offset
+function automatic logic [(riscv::GPLEN-1):0] make_gpaddr(
+    input logic s_st_enbl, input logic is_1G, input logic is_2M, 
+    input logic [(riscv::VLEN-1):0] vaddr, input riscv::pte_t pte);
+  logic [(riscv::GPLEN-1):0] gpaddr;
+  if (s_st_enbl) begin
+      gpaddr = {pte.ppn[(riscv::GPPNW-1):0], vaddr[11:0]};
+      // Giga page
+      if (is_1G) gpaddr[29:12] = vaddr[29:12];
+      // Mega page
+      if (is_2M) gpaddr[20:12] = vaddr[20:12];
+  end else begin
+      gpaddr = vaddr[(riscv::GPLEN-1):0];
+  end
+return gpaddr;
+endfunction : make_gpaddr
+
+// computes the final gppn based on the guest physical address
+function automatic logic [(riscv::GPPNW-1):0] make_gppn(
+    input logic s_st_enbl, input logic is_1G, input logic is_2M, 
+    input logic [28:0] vpn, input riscv::pte_t pte);
+  logic [(riscv::GPPNW-1):0] gppn;
+  if (s_st_enbl) begin
+      gppn = pte.ppn[(riscv::GPPNW-1):0];
+      if(is_2M)
+          gppn[8:0] = vpn[8:0];
+      if(is_1G)
+          gppn[17:0] = vpn[17:0];
+  end else begin
+      gppn = vpn;
+  end
+return gppn;
+endfunction : make_gppn
+
 // SV39 defines three levels of page tables
 struct packed {
 logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]                        asid;   
@@ -211,10 +245,6 @@ always_comb begin : update_flush
 
   for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
 
-      // tags_n[i].asid    = tags_q[i].asid;
-      // tags_n[i].is_page    = tags_q[i].is_page;
-      // tags_n[i].valid    = tags_q[i].valid;
-      // tags_n[i].v_st_enbl =tags_q[i].v_st_enbl;
     tag_valid[i] = tags_q[i].valid;
       
       if(HYP_EXT==1) begin
@@ -272,13 +302,7 @@ always_comb begin : update_flush
           end
       // normal replacement
       end else if (update_i.valid & replace_en[i] && !lu_hit_o) begin
-          // update tag array
-          // tags_n[i].asid =  update_i.asid;
-          // tags_n[i].v_st_enbl=  v_st_enbl;
-          // tags_n[i].is_page= update_i.is_page;
-          // tags_n[i].valid= 1'b1;
-
-          // and content as well
+          // update content as well
           content_n[i] = update_i.content;
       end
   end
