@@ -18,8 +18,10 @@
 //              by Florian Zaruba, the MMU Sv32 developed by Sebastien Jacq and the MMU Sv39x4 developed by Bruno Sá.
 
 
-module cva6_mmu import ariane_pkg::*; #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
+module cva6_mmu
+  import ariane_pkg::*;
+#(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg                      = config_pkg::cva6_cfg_empty,
     // parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig, //This is the required config param in the hypervisor version for now
     parameter int unsigned INSTR_TLB_ENTRIES     = 4,
     parameter int unsigned DATA_TLB_ENTRIES      = 4,
