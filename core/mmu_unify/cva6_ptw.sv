@@ -17,160 +17,160 @@
 /* verilator lint_off WIDTH */
 
 module cva6_ptw
-import ariane_pkg::*;
+  import ariane_pkg::*;
 #(
-  parameter type pte_cva6_t = logic,
-  parameter type tlb_update_cva6_t = logic,
-  parameter int unsigned HYP_EXT = 0,
-  parameter int unsigned ASID_WIDTH[HYP_EXT:0] = {1},
-  parameter int unsigned VPN_LEN = 1,
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter int unsigned PT_LEVELS = 1
+    parameter type pte_cva6_t = logic,
+    parameter type tlb_update_cva6_t = logic,
+    parameter int unsigned HYP_EXT = 0,
+    parameter int unsigned ASID_WIDTH[HYP_EXT:0] = {1},
+    parameter int unsigned VPN_LEN = 1,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter int unsigned PT_LEVELS = 1
 ) (
-  input logic clk_i,  // Clock
-  input logic rst_ni,  // Asynchronous reset active low
-  input logic flush_i,  // flush everything, we need to do this because
-                        // actually everything we do is speculative at this stage
-                        // e.g.: there could be a CSR instruction that changes everything
-  output logic ptw_active_o,
-  output logic walking_instr_o,  // set when walking for TLB
-  output logic [HYP_EXT*2:0] ptw_error_o,  // set when an error occurred
-  output logic ptw_access_exception_o,  // set when an PMP access exception occured
-  input logic [HYP_EXT*2:0] enable_translation_i,  //[v_i,enable_g_translation,enable_translation]
-  input  logic   [HYP_EXT*2:0]    en_ld_st_translation_i,   // enable virtual memory translation for load/stores
-  input logic hlvx_inst_i,  // is a HLVX load/store instruction
+    input logic clk_i,  // Clock
+    input logic rst_ni,  // Asynchronous reset active low
+    input logic flush_i,  // flush everything, we need to do this because
+                          // actually everything we do is speculative at this stage
+                          // e.g.: there could be a CSR instruction that changes everything
+    output logic ptw_active_o,
+    output logic walking_instr_o,  // set when walking for TLB
+    output logic [HYP_EXT*2:0] ptw_error_o,  // set when an error occurred
+    output logic ptw_access_exception_o,  // set when an PMP access exception occured
+    input logic [HYP_EXT*2:0] enable_translation_i,  //[v_i,enable_g_translation,enable_translation]
+    input  logic   [HYP_EXT*2:0]    en_ld_st_translation_i,   // enable virtual memory translation for load/stores
+    input logic hlvx_inst_i,  // is a HLVX load/store instruction
 
-  input  logic          lsu_is_store_i,  // this translation was triggered by a store
-  // PTW memory interface
-  input  dcache_req_o_t req_port_i,
-  output dcache_req_i_t req_port_o,
+    input  logic          lsu_is_store_i,  // this translation was triggered by a store
+    // PTW memory interface
+    input  dcache_req_o_t req_port_i,
+    output dcache_req_i_t req_port_o,
 
 
-  // to TLBs, update logic
-  output tlb_update_cva6_t shared_tlb_update_o,
+    // to TLBs, update logic
+    output tlb_update_cva6_t shared_tlb_update_o,
 
-  output logic [riscv::VLEN-1:0] update_vaddr_o,
+    output logic [riscv::VLEN-1:0] update_vaddr_o,
 
-  input logic [ASID_WIDTH[0]-1:0] asid_i[HYP_EXT*2:0],  //[vmid,vs_asid,asid]
+    input logic [ASID_WIDTH[0]-1:0] asid_i[HYP_EXT*2:0],  //[vmid,vs_asid,asid]
 
-  // from TLBs
-  // did we miss?
-  input logic                   shared_tlb_access_i,
-  input logic                   shared_tlb_hit_i,
-  input logic [riscv::VLEN-1:0] shared_tlb_vaddr_i,
+    // from TLBs
+    // did we miss?
+    input logic                   shared_tlb_access_i,
+    input logic                   shared_tlb_hit_i,
+    input logic [riscv::VLEN-1:0] shared_tlb_vaddr_i,
 
-  input logic itlb_req_i,
+    input logic itlb_req_i,
 
-  // from CSR file
-  input logic [riscv::PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
-  input logic [      HYP_EXT:0] mxr_i,
+    // from CSR file
+    input logic [riscv::PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
+    input logic [      HYP_EXT:0] mxr_i,
 
-  // Performance counters
-  output logic shared_tlb_miss_o,
+    // Performance counters
+    output logic shared_tlb_miss_o,
 
-  // PMP
+    // PMP
 
-  input riscv::pmpcfg_t [15:0] pmpcfg_i,
-  input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
-  output logic [HYP_EXT:0][riscv::PLEN-1:0] bad_paddr_o
+    input riscv::pmpcfg_t [15:0] pmpcfg_i,
+    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
+    output logic [HYP_EXT:0][riscv::PLEN-1:0] bad_paddr_o
 
 );
 
-// input registers
-logic data_rvalid_q;
-riscv::xlen_t data_rdata_q;
+  // input registers
+  logic data_rvalid_q;
+  riscv::xlen_t data_rdata_q;
 
-pte_cva6_t [HYP_EXT*2:0] pte;  //[gpte_d,gpte_q,pte]
-// register to perform context switch between stages
-// pte_cva6_t gpte_q, gpte_d;
-assign pte[0] = pte_cva6_t'(data_rdata_q[riscv::PPNW+9:0]);
+  pte_cva6_t [HYP_EXT*2:0] pte;  //[gpte_d,gpte_q,pte]
+  // register to perform context switch between stages
+  // pte_cva6_t gpte_q, gpte_d;
+  assign pte[0] = pte_cva6_t'(data_rdata_q[riscv::PPNW+9:0]);
 
-enum logic [2:0] {
-  IDLE,
-  WAIT_GRANT,
-  PTE_LOOKUP,
-  WAIT_RVALID,
-  PROPAGATE_ERROR,
-  PROPAGATE_ACCESS_ERROR,
-  LATENCY
-}
-    state_q, state_d;
+  enum logic [2:0] {
+    IDLE,
+    WAIT_GRANT,
+    PTE_LOOKUP,
+    WAIT_RVALID,
+    PROPAGATE_ERROR,
+    PROPAGATE_ACCESS_ERROR,
+    LATENCY
+  }
+      state_q, state_d;
 
-logic [PT_LEVELS-1:0] misaligned_page;
-logic [HYP_EXT:0][PT_LEVELS-2:0] ptw_lvl_n, ptw_lvl_q;
+  logic [PT_LEVELS-1:0] misaligned_page;
+  logic [HYP_EXT:0][PT_LEVELS-2:0] ptw_lvl_n, ptw_lvl_q;
 
-// define 3 PTW stages to be used in sv39x4. sv32 and sv39 are always in S_STAGE
-// S_STAGE -> S/VS-stage normal translation controlled by the satp/vsatp CSRs
-// G_INTERMED_STAGE -> Converts the S/VS-stage non-leaf GPA pointers to HPA (controlled by hgatp)
-// G_FINAL_STAGE -> Converts the S/VS-stage final GPA to HPA (controlled by hgatp)
-enum logic [1:0] {
-  S_STAGE,
-  G_INTERMED_STAGE,
-  G_FINAL_STAGE
-}
-    ptw_stage_q, ptw_stage_d;
+  // define 3 PTW stages to be used in sv39x4. sv32 and sv39 are always in S_STAGE
+  // S_STAGE -> S/VS-stage normal translation controlled by the satp/vsatp CSRs
+  // G_INTERMED_STAGE -> Converts the S/VS-stage non-leaf GPA pointers to HPA (controlled by hgatp)
+  // G_FINAL_STAGE -> Converts the S/VS-stage final GPA to HPA (controlled by hgatp)
+  enum logic [1:0] {
+    S_STAGE,
+    G_INTERMED_STAGE,
+    G_FINAL_STAGE
+  }
+      ptw_stage_q, ptw_stage_d;
 
-// is this an instruction page table walk?
-logic is_instr_ptw_q, is_instr_ptw_n;
-logic global_mapping_q, global_mapping_n;
-// latched tag signal
-logic tag_valid_n, tag_valid_q;
-// register the ASIDs
-logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] tlb_update_asid_q, tlb_update_asid_n;
-// register the VPN we need to walk, SV39 defines a 39 bit virtual address
-logic [riscv::VLEN-1:0] vaddr_q, vaddr_n;
-logic [HYP_EXT*2:0][PT_LEVELS-2:0][(VPN_LEN/PT_LEVELS)-1:0] vaddr_lvl;
-// register the VPN we need to walk, SV39x4 defines a 41 bit virtual address for the G-Stage
-logic [riscv::GPLEN-1:0] gpaddr_q, gpaddr_n, gpaddr_base;
-logic [PT_LEVELS-2:0][riscv::GPLEN-1:0] gpaddr;
-// 4 byte aligned physical pointer
-logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
-logic [riscv::PLEN-1:0] gptw_pptr_q, gptw_pptr_n;
+  // is this an instruction page table walk?
+  logic is_instr_ptw_q, is_instr_ptw_n;
+  logic global_mapping_q, global_mapping_n;
+  // latched tag signal
+  logic tag_valid_n, tag_valid_q;
+  // register the ASIDs
+  logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] tlb_update_asid_q, tlb_update_asid_n;
+  // register the VPN we need to walk, SV39 defines a 39 bit virtual address
+  logic [riscv::VLEN-1:0] vaddr_q, vaddr_n;
+  logic [HYP_EXT*2:0][PT_LEVELS-2:0][(VPN_LEN/PT_LEVELS)-1:0] vaddr_lvl;
+  // register the VPN we need to walk, SV39x4 defines a 41 bit virtual address for the G-Stage
+  logic [riscv::GPLEN-1:0] gpaddr_q, gpaddr_n, gpaddr_base;
+  logic [PT_LEVELS-2:0][riscv::GPLEN-1:0] gpaddr;
+  // 4 byte aligned physical pointer
+  logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
+  logic [riscv::PLEN-1:0] gptw_pptr_q, gptw_pptr_n;
 
-// Assignments
-assign update_vaddr_o = vaddr_q;
+  // Assignments
+  assign update_vaddr_o = vaddr_q;
 
-assign ptw_active_o = (state_q != IDLE);
-assign walking_instr_o = is_instr_ptw_q;
-// directly output the correct physical address
-assign req_port_o.address_index = ptw_pptr_q[DCACHE_INDEX_WIDTH-1:0];
-assign req_port_o.address_tag   = ptw_pptr_q[DCACHE_INDEX_WIDTH+DCACHE_TAG_WIDTH-1:DCACHE_INDEX_WIDTH];
-// we are never going to kill this request
-assign req_port_o.kill_req = '0;
-// we are never going to write with the HPTW
-assign req_port_o.data_wdata = '0;
-// we only issue one single request at a time
-assign req_port_o.data_id = '0;
+  assign ptw_active_o = (state_q != IDLE);
+  assign walking_instr_o = is_instr_ptw_q;
+  // directly output the correct physical address
+  assign req_port_o.address_index = ptw_pptr_q[DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_tag   = ptw_pptr_q[DCACHE_INDEX_WIDTH+DCACHE_TAG_WIDTH-1:DCACHE_INDEX_WIDTH];
+  // we are never going to kill this request
+  assign req_port_o.kill_req = '0;
+  // we are never going to write with the HPTW
+  assign req_port_o.data_wdata = '0;
+  // we only issue one single request at a time
+  assign req_port_o.data_id = '0;
 
-// -----------
-// TLB Update
-// -----------
+  // -----------
+  // TLB Update
+  // -----------
 
-assign gpaddr_base = {pte[0].ppn[riscv::GPPNW-1:0], vaddr_q[11:0]};
+  assign gpaddr_base = {pte[0].ppn[riscv::GPPNW-1:0], vaddr_q[11:0]};
 
-genvar z, w;
-generate
-  for (z = 0; z < PT_LEVELS - 1; z++) begin
+  genvar z, w;
+  generate
+    for (z = 0; z < PT_LEVELS - 1; z++) begin
 
-    // check if the ppn is correctly aligned:
-    // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
-    // exception.
-    assign misaligned_page[z] = (ptw_lvl_q[0] == (z)) && (pte[0].ppn[(VPN_LEN/PT_LEVELS)*(PT_LEVELS-1-z)-1:0] != '0);
+      // check if the ppn is correctly aligned:
+      // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
+      // exception.
+      assign misaligned_page[z] = (ptw_lvl_q[0] == (z)) && (pte[0].ppn[(VPN_LEN/PT_LEVELS)*(PT_LEVELS-1-z)-1:0] != '0);
 
-    //record the vaddr corresponding to each level
-    for (w = 0; w < HYP_EXT * 2 + 1; w++) begin
-      assign vaddr_lvl[w][z] = w==0 ?  vaddr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-2))] :
+      //record the vaddr corresponding to each level
+      for (w = 0; w < HYP_EXT * 2 + 1; w++) begin
+        assign vaddr_lvl[w][z] = w==0 ?  vaddr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-2))] :
                                 w==1 ?  gptw_pptr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-2))]:
                                 gpaddr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-2))];
+      end
+
+      assign gpaddr[z][VPN_LEN-(VPN_LEN/PT_LEVELS):0]= (ptw_lvl_q[0] == z) ? vaddr_q[VPN_LEN-(VPN_LEN/PT_LEVELS):0] : gpaddr_base[VPN_LEN-(VPN_LEN/PT_LEVELS):0];
+      assign gpaddr[z][VPN_LEN:VPN_LEN-(VPN_LEN/PT_LEVELS)+1]= (ptw_lvl_q[0] == 0) ? vaddr_q[VPN_LEN:VPN_LEN-(VPN_LEN/PT_LEVELS)+1] : gpaddr_base[VPN_LEN:VPN_LEN-(VPN_LEN/PT_LEVELS)+1];
+      assign gpaddr[z][riscv::GPLEN-1:VPN_LEN+1] = gpaddr_base[riscv::GPLEN-1:VPN_LEN+1];
+
+
     end
-
-    assign gpaddr[z][VPN_LEN-(VPN_LEN/PT_LEVELS):0]= (ptw_lvl_q[0] == z) ? vaddr_q[VPN_LEN-(VPN_LEN/PT_LEVELS):0] : gpaddr_base[VPN_LEN-(VPN_LEN/PT_LEVELS):0];
-    assign gpaddr[z][VPN_LEN:VPN_LEN-(VPN_LEN/PT_LEVELS)+1]= (ptw_lvl_q[0] == 0) ? vaddr_q[VPN_LEN:VPN_LEN-(VPN_LEN/PT_LEVELS)+1] : gpaddr_base[VPN_LEN:VPN_LEN-(VPN_LEN/PT_LEVELS)+1];
-    assign gpaddr[z][riscv::GPLEN-1:VPN_LEN+1] = gpaddr_base[riscv::GPLEN-1:VPN_LEN+1];
-
-
-  end
-endgenerate
+  endgenerate
 
 always_comb begin : tlb_update
   // update the correct page table level
