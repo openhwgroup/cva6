@@ -213,7 +213,6 @@ module cva6_mmu import ariane_pkg::*; #(
         .SHARED_TLB_DEPTH (64),
         .SHARED_TLB_WAYS  (2),
         .HYP_EXT(HYP_EXT),
-        .BYPASS(HYP_EXT),
         .ASID_WIDTH       (ASID_WIDTH),
         .VPN_LEN          (VPN_LEN),
         .PT_LEVELS        (PT_LEVELS),
