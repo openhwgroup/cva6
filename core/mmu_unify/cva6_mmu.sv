@@ -464,8 +464,7 @@ module cva6_mmu
                         enable_translation_i[2*HYP_EXT],
                         1'b1
                     };
-                else
-                    if (HYP_EXT==1)
+                else if (HYP_EXT==1)
                         icache_areq_o.fetch_exception = {
                             riscv::INSTR_PAGE_FAULT,
                             {riscv::XLEN'(update_vaddr)},
@@ -490,8 +489,11 @@ module cva6_mmu
                         enable_translation_i[HYP_EXT*2],
                         1'b1
                     };
-                else
-                    icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0], 1'b1};
+                else icache_areq_o.fetch_exception = {
+                        riscv::INSTR_ACCESS_FAULT,
+                        ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0],
+                        1'b1
+                    };
             end
         end    
     end
