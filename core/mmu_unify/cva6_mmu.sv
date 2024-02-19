@@ -102,18 +102,18 @@ module cva6_mmu
 
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
-        // typedef struct packed {
-        logic [riscv::PPNW-1:0] ppn;  // PPN length for
-        logic [1:0] rsw;
-        logic d;
-        logic a;
-        logic g;
-        logic u;
-        logic x;
-        logic w;
-        logic r;
-        logic v;
-    } ;
+    // typedef struct packed {
+    logic [riscv::PPNW-1:0] ppn;  // PPN length for
+    logic [1:0] rsw;
+    logic d;
+    logic a;
+    logic g;
+    logic u;
+    logic x;
+    logic w;
+    logic r;
+    logic v;
+} ;
 
     localparam type tlb_update_cva6_t = struct packed {
     // typedef struct packed {
