@@ -337,15 +337,15 @@ package riscv;
   localparam logic [XLEN-1:0] ENV_CALL_UMODE        = 8;  // environment call from user mode or virtual user mode
   localparam logic [XLEN-1:0] ENV_CALL_SMODE        = 9;  // environment call from hypervisor-extended supervisor mode
   localparam logic [XLEN-1:0] ENV_CALL_VSMODE       = 10; // environment call from virtual supervisor mode
-  localparam logic [XLEN-1:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
-  localparam logic [XLEN-1:0] INSTR_PAGE_FAULT      = 12; // Instruction page fault
-  localparam logic [XLEN-1:0] LOAD_PAGE_FAULT       = 13; // Load page fault
-  localparam logic [XLEN-1:0] STORE_PAGE_FAULT      = 15; // Store page fault
-  localparam logic [XLEN-1:0] INSTR_GUEST_PAGE_FAULT= 20; // Instruction guest-page fault
-  localparam logic [XLEN-1:0] LOAD_GUEST_PAGE_FAULT = 21; // Load guest-page fault
-  localparam logic [XLEN-1:0] VIRTUAL_INSTRUCTION   = 22; // virtual instruction
-  localparam logic [XLEN-1:0] STORE_GUEST_PAGE_FAULT= 23; // Store guest-page fault
-  localparam logic [XLEN-1:0] DEBUG_REQUEST         = 24; // Debug request
+  localparam logic [XLEN-1:0] ENV_CALL_MMODE = 11;  // environment call from machine mode
+  localparam logic [XLEN-1:0] INSTR_PAGE_FAULT = 12;  // Instruction page fault
+  localparam logic [XLEN-1:0] LOAD_PAGE_FAULT = 13;  // Load page fault
+  localparam logic [XLEN-1:0] STORE_PAGE_FAULT = 15;  // Store page fault
+  localparam logic [XLEN-1:0] INSTR_GUEST_PAGE_FAULT = 20;  // Instruction guest-page fault
+  localparam logic [XLEN-1:0] LOAD_GUEST_PAGE_FAULT = 21;  // Load guest-page fault
+  localparam logic [XLEN-1:0] VIRTUAL_INSTRUCTION = 22;  // virtual instruction
+  localparam logic [XLEN-1:0] STORE_GUEST_PAGE_FAULT = 23;  // Store guest-page fault
+  localparam logic [XLEN-1:0] DEBUG_REQUEST = 24;  // Debug request
 
   localparam int unsigned IRQ_S_SOFT = 1;
   localparam int unsigned IRQ_M_SOFT = 3;
