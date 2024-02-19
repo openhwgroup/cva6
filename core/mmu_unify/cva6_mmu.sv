@@ -394,7 +394,9 @@ module cva6_mmu
                 };
             else 
                 icache_areq_o.fetch_exception = {
-                    riscv::INSTR_ACCESS_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},1'b1
+                    riscv::INSTR_ACCESS_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}}, 
+                    icache_areq_i.fetch_vaddr},
+                    1'b1
                 };
         icache_areq_o.fetch_valid = 1'b0;
         // ---------//
@@ -426,7 +428,9 @@ module cva6_mmu
                     };
                 else
                     icache_areq_o.fetch_exception = {
-                        riscv::INSTR_PAGE_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},1'b1
+                        riscv::INSTR_PAGE_FAULT,{{riscv::XLEN - riscv::VLEN{1'b0}},
+                        icache_areq_i.fetch_vaddr},
+                        1'b1
                         };
             else if (!pmp_instr_allow)
                 if(HYP_EXT==1) 
@@ -440,7 +444,9 @@ module cva6_mmu
                     };
                 else
                     icache_areq_o.fetch_exception = {
-                        riscv::INSTR_ACCESS_FAULT, riscv::XLEN '(icache_areq_i.fetch_vaddr), 1'b1
+                        riscv::INSTR_ACCESS_FAULT,
+                        riscv::XLEN '(icache_areq_i.fetch_vaddr), 
+                        1'b1
                     }; 
         end else begin
             // ---------
@@ -471,7 +477,9 @@ module cva6_mmu
                             };
                         else
                             icache_areq_o.fetch_exception = {
-                                riscv::INSTR_PAGE_FAULT, {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 1'b1
+                                riscv::INSTR_PAGE_FAULT, 
+                                {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr}, 
+                                1'b1
                             };
                 end
                 // TODO(moschn,zarubaf): What should the value of tval be in this case?
