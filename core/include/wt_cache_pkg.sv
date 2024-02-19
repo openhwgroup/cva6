@@ -50,10 +50,6 @@ package wt_cache_pkg;
 
 
   // Calculated parameter
-  localparam ICACHE_OFFSET_WIDTH = $clog2(ariane_pkg::ICACHE_LINE_WIDTH / 8);
-  localparam ICACHE_NUM_WORDS = 2 ** (ariane_pkg::ICACHE_INDEX_WIDTH - ICACHE_OFFSET_WIDTH);
-  localparam ICACHE_CL_IDX_WIDTH = $clog2(ICACHE_NUM_WORDS);  // excluding byte offset
-
   localparam DCACHE_OFFSET_WIDTH = $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8);
   localparam DCACHE_NUM_WORDS = 2 ** (ariane_pkg::DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
   localparam DCACHE_CL_IDX_WIDTH = $clog2(DCACHE_NUM_WORDS);  // excluding byte offset
