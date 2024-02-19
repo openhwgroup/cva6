@@ -444,9 +444,9 @@ module cva6_mmu
               riscv::INSTR_ACCESS_FAULT, riscv::XLEN'(icache_areq_i.fetch_vaddr), 1'b1
             };
       end else if (ptw_active && walking_instr) begin
-        // ---------
+        // ---------//
         // ITLB Miss
-        // ---------
+        // ---------//
         // watch out for exceptions happening during walking the page table
         icache_areq_o.fetch_valid = ptw_error[0] | ptw_access_exception;
         if (ptw_error[0])
