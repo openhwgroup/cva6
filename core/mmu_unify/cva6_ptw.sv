@@ -173,7 +173,6 @@ generate
 endgenerate
 
 always_comb begin : tlb_update
-
   // update the correct page table level
   for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
     for (int unsigned x = 0; x < PT_LEVELS - 1; x++) begin
