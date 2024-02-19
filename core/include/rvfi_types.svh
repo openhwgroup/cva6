@@ -93,8 +93,8 @@
 
 // RVFI PROBES
 `define RVFI_PROBES_INSTR_T(Cfg) struct packed { \
-  logic [ariane_pkg::TRANS_ID_BITS-1:0] issue_pointer; \
-  logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0] commit_pointer; \
+  logic [Cfg.TRANS_ID_BITS-1:0] issue_pointer; \
+  logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][Cfg.TRANS_ID_BITS-1:0] commit_pointer; \
   logic flush_unissued_instr; \
   logic decoded_instr_valid; \
   logic decoded_instr_ack; \
@@ -106,7 +106,7 @@
   logic [riscv::XLEN-1:0] rs1_forwarding; \
   logic [riscv::XLEN-1:0] rs2_forwarding; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_pc; \
-  ariane_pkg::fu_op [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0] commit_instr_op; \
+  ariane_pkg::fu_op [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][Cfg.TRANS_ID_BITS-1:0] commit_instr_op; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] commit_instr_rs1; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] commit_instr_rs2; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] commit_instr_rd; \
@@ -118,7 +118,7 @@
   logic [riscv::VLEN-1:0] lsu_ctrl_vaddr; \
   ariane_pkg::fu_t lsu_ctrl_fu; \
   logic [(riscv::XLEN/8)-1:0] lsu_ctrl_be; \
-  logic [ariane_pkg::TRANS_ID_BITS-1:0] lsu_ctrl_trans_id; \
+  logic [Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id; \
   logic [((cva6_config_pkg::CVA6ConfigCvxifEn || cva6_config_pkg::CVA6ConfigVExtEn) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0] commit_ack; \
   logic [riscv::PLEN-1:0] mem_paddr; \

@@ -48,7 +48,7 @@ module load_store_unit
     input logic lsu_valid_i,
 
     // Load transaction ID - ISSUE_STAGE
-    output logic [TRANS_ID_BITS-1:0] load_trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_o,
     // Load result - ISSUE_STAGE
     output logic [riscv::XLEN-1:0] load_result_o,
     // Load result is valid - ISSUE_STAGE
@@ -57,7 +57,7 @@ module load_store_unit
     output exception_t load_exception_o,
 
     // Store transaction ID - ISSUE_STAGE
-    output logic [TRANS_ID_BITS-1:0] store_trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] store_trans_id_o,
     // Store result - ISSUE_STAGE
     output logic [riscv::XLEN-1:0] store_result_o,
     // Store result is valid - ISSUE_STAGE
@@ -70,7 +70,7 @@ module load_store_unit
     // Commit queue is ready to accept another commit request - TO_BE_COMPLETED
     output logic commit_ready_o,
     // Commit transaction ID - TO_BE_COMPLETED
-    input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
 
     // Enable virtual memory translation - TO_BE_COMPLETED
     input logic enable_translation_i,
@@ -169,10 +169,10 @@ module load_store_unit
   logic       [  riscv::PPNW-1:0] dtlb_ppn;
 
   logic                           ld_valid;
-  logic       [TRANS_ID_BITS-1:0] ld_trans_id;
+  logic       [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
   logic       [  riscv::XLEN-1:0] ld_result;
   logic                           st_valid;
-  logic       [TRANS_ID_BITS-1:0] st_trans_id;
+  logic       [CVA6Cfg.TRANS_ID_BITS-1:0] st_trans_id;
   logic       [  riscv::XLEN-1:0] st_result;
 
   logic       [             11:0] page_offset;

@@ -49,7 +49,7 @@ module store_unit
     // Store result is valid - ISSUE_STAGE
     output logic valid_o,
     // Transaction ID - ISSUE_STAGE
-    output logic [TRANS_ID_BITS-1:0] trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     // Store result - ISSUE_STAGE
     output logic [riscv::XLEN-1:0] result_o,
     // Store exception output - TO_BE_COMPLETED
@@ -124,7 +124,7 @@ module store_unit
   logic [1:0] st_data_size_n, st_data_size_q;
   amo_t amo_op_d, amo_op_q;
 
-  logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
   // output assignments
   assign vaddr_o    = lsu_ctrl_i.vaddr; // virtual address

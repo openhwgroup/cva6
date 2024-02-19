@@ -67,7 +67,7 @@ module commit_stage
     // Commit buffer of LSU is ready - EX_STAGE
     input logic commit_lsu_ready_i,
     // Transaction id of first commit port - ID_STAGE
-    output logic [TRANS_ID_BITS-1:0] commit_tran_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_o,
     // Valid AMO in commit stage - EX_STAGE
     output logic amo_valid_commit_o,
     // no store is pending - EX_STAGE

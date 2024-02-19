@@ -25,7 +25,7 @@ module multiplier
     // Asynchronous reset active low - SUBSYSTEM
     input  logic                     rst_ni,
     // Multiplier transaction ID - Mult
-    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
+    input  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_i,
     // Multiplier instruction is valid - Mult
     input  logic                     mult_valid_i,
     // Multiplier operation - Mult
@@ -41,7 +41,7 @@ module multiplier
     // Multiplier FU is ready - Mult
     output logic                     mult_ready_o,
     // Multiplier transaction ID - Mult
-    output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id_o
 );
   // Carry-less multiplication
   logic [riscv::XLEN-1:0]
@@ -78,7 +78,7 @@ module multiplier
   end
 
   // Pipeline register
-  logic [TRANS_ID_BITS-1:0] trans_id_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_q;
   logic                     mult_valid_q;
   fu_op operator_d, operator_q;
   logic [riscv::XLEN*2-1:0] mult_result_d, mult_result_q;

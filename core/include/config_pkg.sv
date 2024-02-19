@@ -80,6 +80,8 @@ package config_pkg;
     bit                          RVS;
     // User mode
     bit                          RVU;
+    // Scoreboard length
+    int unsigned                 NrScoreboardEntries;
     // Address to jump when halt request
     logic [63:0]                 HaltAddress;
     // Address to jump when exception 
@@ -156,7 +158,10 @@ package config_pkg;
     bit          XFVec;
     bit          CvxifEn;
     bit          ZiCondExtEn;
-    // Calculated
+
+    int unsigned NR_SB_ENTRIES;
+    int unsigned TRANS_ID_BITS;
+
     bit          RVF;
     bit          RVD;
     bit          FpPresent;

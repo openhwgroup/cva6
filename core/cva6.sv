@@ -86,7 +86,7 @@ module cva6
     // ID/EX/WB Stage
     localparam type scoreboard_entry_t = struct packed {
       logic [riscv::VLEN-1:0] pc;  // PC of instruction
-      logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
                                                // with the transaction id in any case make the width more generic
       fu_t fu;  // functional unit to use
       fu_op op;  // operation to perform in each functional unit
@@ -142,7 +142,7 @@ module cva6
       logic [(riscv::XLEN/8)-1:0]           be;
       fu_t                                  fu;
       fu_op                                 operation;
-      logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     },
 
     localparam type fu_data_t = struct packed {
@@ -151,7 +151,7 @@ module cva6
       logic [riscv::XLEN-1:0]               operand_a;
       logic [riscv::XLEN-1:0]               operand_b;
       logic [riscv::XLEN-1:0]               imm;
-      logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     },
 
     localparam type icache_req_t = struct packed {
@@ -343,7 +343,7 @@ module cva6
   logic is_compressed_instr_id_ex;
   // fixed latency units
   logic flu_ready_ex_id;
-  logic [TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
   logic flu_valid_ex_id;
   logic [riscv::XLEN-1:0] flu_result_ex_id;
   exception_t flu_exception_ex_id;
@@ -358,13 +358,13 @@ module cva6
   logic lsu_valid_id_ex;
   logic lsu_ready_ex_id;
 
-  logic [TRANS_ID_BITS-1:0] load_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_ex_id;
   logic [riscv::XLEN-1:0] load_result_ex_id;
   logic load_valid_ex_id;
   exception_t load_exception_ex_id;
 
   logic [riscv::XLEN-1:0] store_result_ex_id;
-  logic [TRANS_ID_BITS-1:0] store_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] store_trans_id_ex_id;
   logic store_valid_ex_id;
   exception_t store_exception_ex_id;
   // MULT
@@ -374,7 +374,7 @@ module cva6
   logic fpu_valid_id_ex;
   logic [1:0] fpu_fmt_id_ex;
   logic [2:0] fpu_rm_id_ex;
-  logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
   logic [riscv::XLEN-1:0] fpu_result_ex_id;
   logic fpu_valid_ex_id;
   exception_t fpu_exception_ex_id;
@@ -382,7 +382,7 @@ module cva6
   logic stall_acc_id;
   scoreboard_entry_t issue_instr_id_acc;
   logic issue_instr_hs_id_acc;
-  logic [TRANS_ID_BITS-1:0] acc_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] acc_trans_id_ex_id;
   logic [riscv::XLEN-1:0] acc_result_ex_id;
   logic acc_valid_ex_id;
   exception_t acc_exception_ex_id;
@@ -393,7 +393,7 @@ module cva6
   // CSR
   logic csr_valid_id_ex;
   // CVXIF
-  logic [TRANS_ID_BITS-1:0] x_trans_id_ex_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_ex_id;
   logic [riscv::XLEN-1:0] x_result_ex_id;
   logic x_valid_ex_id;
   exception_t x_exception_ex_id;
@@ -411,7 +411,7 @@ module cva6
   // LSU Commit
   logic lsu_commit_commit_ex;
   logic lsu_commit_ready_ex_commit;
-  logic [TRANS_ID_BITS-1:0] lsu_commit_trans_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_commit_trans_id;
   logic stall_st_pending_ex;
   logic no_st_pending_ex;
   logic no_st_pending_commit;
@@ -425,8 +425,8 @@ module cva6
   // --------------
   // RVFI
   // --------------
-  logic [TRANS_ID_BITS-1:0] rvfi_issue_pointer;
-  logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] rvfi_commit_pointer;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_commit_pointer;
   // --------------
   // COMMIT <-> ID
   // --------------
@@ -604,7 +604,7 @@ module cva6
       .tsr_i       (tsr_csr_id)
   );
 
-  logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
+  logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
   logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_ex_id;
   exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_ex_id;  // exception from execute, ex_stage to id_stage
   logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_ex_id;

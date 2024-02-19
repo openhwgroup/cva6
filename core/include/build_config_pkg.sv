@@ -43,6 +43,8 @@ package build_config_pkg;
     cfg.XFVec = CVA6Cfg.XFVec;
     cfg.CvxifEn = CVA6Cfg.CvxifEn;
     cfg.ZiCondExtEn = CVA6Cfg.ZiCondExtEn;
+    cfg.NR_SB_ENTRIES = CVA6Cfg.NrScoreboardEntries;
+    cfg.TRANS_ID_BITS = $clog2(CVA6Cfg.NrScoreboardEntries);
 
     cfg.RVF = bit'(RVF);
     cfg.RVD = bit'(RVD);

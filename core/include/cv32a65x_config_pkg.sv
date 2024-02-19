@@ -95,6 +95,7 @@ package cva6_config_pkg;
       XFVec: bit'(CVA6ConfigFVecEn),
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       ZiCondExtEn: bit'(CVA6ConfigZiCondExtEn),
+      NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
       RVS: bit'(0),
       RVU: bit'(0),
       HaltAddress: 64'h800,

@@ -23,13 +23,13 @@ module mult
     // Mutl is ready - ISSUE_STAGE
     output logic                         mult_ready_o,
     // Mult transaction ID - ISSUE_STAGE
-    output logic     [TRANS_ID_BITS-1:0] mult_trans_id_o
+    output logic     [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id_o
 );
   logic mul_valid;
   logic div_valid;
   logic div_ready_i;  // receiver of division result is able to accept the result
-  logic [TRANS_ID_BITS-1:0] mul_trans_id;
-  logic [TRANS_ID_BITS-1:0] div_trans_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] mul_trans_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] div_trans_id;
   logic [riscv::XLEN-1:0] mul_result;
   logic [riscv::XLEN-1:0] div_result;
 

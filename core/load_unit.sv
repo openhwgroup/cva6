@@ -42,7 +42,7 @@ module load_unit
     // Load unit result is valid - TO_BE_COMPLETED
     output logic valid_o,
     // Load transaction ID - TO_BE_COMPLETED
-    output logic [TRANS_ID_BITS-1:0] trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     // Load result - TO_BE_COMPLETED
     output logic [riscv::XLEN-1:0] result_o,
     // Load exception - TO_BE_COMPLETED
@@ -66,7 +66,7 @@ module load_unit
     // Store buffer is empty - TO_BE_COMPLETED
     input logic store_buffer_empty_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // Data cache request out - CACHES
     input dcache_req_o_t req_port_i,
     // Data cache request in - CACHES
@@ -90,7 +90,7 @@ module load_unit
   // in order to decouple the response interface from the request interface,
   // we need a a buffer which can hold all inflight memory load requests
   typedef struct packed {
-    logic [TRANS_ID_BITS-1:0]           trans_id;        // scoreboard identifier
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0]           trans_id;        // scoreboard identifier
     logic [riscv::XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
     fu_op                               operation;       // type of load
   } ldbuf_t;
