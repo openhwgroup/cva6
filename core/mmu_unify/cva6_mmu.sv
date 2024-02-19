@@ -384,20 +384,20 @@ module cva6_mmu
         // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
             if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0)) begin
                 if (HYP_EXT == 1) begin
-                icache_areq_o.fetch_exception = {
-                    riscv::INSTR_ACCESS_FAULT,
-                    {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-                    {riscv::GPLEN{1'b0}},
-                    {{riscv::XLEN{1'b0}}},
-                    enable_translation_i[HYP_EXT*2],
-                    1'b1
-                };
+                    icache_areq_o.fetch_exception = {
+                        riscv::INSTR_ACCESS_FAULT,
+                        {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                        {riscv::GPLEN{1'b0}},
+                        {{riscv::XLEN{1'b0}}},
+                        enable_translation_i[HYP_EXT*2],
+                        1'b1
+                    };
                 end else begin
-                icache_areq_o.fetch_exception = {
-                    riscv::INSTR_ACCESS_FAULT,
-                    {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
-                    1'b1
-                };
+                    icache_areq_o.fetch_exception = {
+                        riscv::INSTR_ACCESS_FAULT,
+                        {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                        1'b1
+                    };
                 end
             end
             icache_areq_o.fetch_valid = 1'b0;
@@ -510,7 +510,7 @@ module cva6_mmu
                 end
             end
         end
-        
+
         // if it didn't match any execute region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
         if ((!match_any_execute_region && (!ptw_error[0]|| HYP_EXT==0) ) || (!(|enable_translation_i[HYP_EXT:0]) && !pmp_instr_allow)) begin
