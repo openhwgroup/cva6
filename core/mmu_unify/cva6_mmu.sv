@@ -498,7 +498,7 @@ module cva6_mmu
 
     // if it didn't match any execute region throw an `Instruction Access Fault`
     // or: if we are not translating, check PMPs immediately on the paddr
-    if ((!match_any_execute_region && (!ptw_error[0]|| HYP_EXT==0) ) || (!(|enable_translation_i[HYP_EXT:0]) && !pmp_instr_allow)) begin
+    if ((!match_any_execute_region && (!ptw_error[0]|| HYP_EXT==0) ) || (!(|enable_translation_i[HYP_EXT:0]) && !pmp_instr_allow)) 
         if(HYP_EXT==1)
             icache_areq_o.fetch_exception = {
                 riscv::INSTR_ACCESS_FAULT,
@@ -510,9 +510,11 @@ module cva6_mmu
             }; 
         else
             icache_areq_o.fetch_exception = {
-                riscv::INSTR_ACCESS_FAULT, riscv::VLEN'(icache_areq_o.fetch_paddr[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0]), 1'b1
+                riscv::INSTR_ACCESS_FAULT, 
+                riscv::VLEN'(icache_areq_o.fetch_paddr[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0]), 
+                1'b1
             };
-    end
+    
   end
 
     // check for execute flag on memory
