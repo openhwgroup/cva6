@@ -400,9 +400,7 @@ module cva6_mmu
             };
             end
 
-
             icache_areq_o.fetch_valid = 1'b0;
-
 
             // ---------
             // ITLB Hit
