@@ -19,16 +19,16 @@
 
 
 module cva6_mmu
-import ariane_pkg::*;
+  import ariane_pkg::*;
 #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg                      = config_pkg::cva6_cfg_empty,
-  // parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig, //This is the required config param in the hypervisor version for now
-  parameter int unsigned           INSTR_TLB_ENTRIES            = 4,
-  parameter int unsigned           DATA_TLB_ENTRIES             = 4,
-  parameter logic                  HYP_EXT                      = 0,
-  parameter int unsigned           ASID_WIDTH       [HYP_EXT:0],
-  parameter int unsigned           VPN_LEN                      = 1,
-  parameter int unsigned           PT_LEVELS                    = 1
+    parameter config_pkg::cva6_cfg_t CVA6Cfg                      = config_pkg::cva6_cfg_empty,
+    // parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig, //This is the required config param in the hypervisor version for now
+    parameter int unsigned           INSTR_TLB_ENTRIES            = 4,
+    parameter int unsigned           DATA_TLB_ENTRIES             = 4,
+    parameter logic                  HYP_EXT                      = 0,
+    parameter int unsigned           ASID_WIDTH       [HYP_EXT:0],
+    parameter int unsigned           VPN_LEN                      = 1,
+    parameter int unsigned           PT_LEVELS                    = 1
 
 ) (
   input logic clk_i,
@@ -98,7 +98,7 @@ generate
           (enable_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0]):
           asid_i[HYP_EXT*2];
   end
-endgenerate
+  endgenerate
 
 // memory management, pte for cva6
 localparam type pte_cva6_t = struct packed {
