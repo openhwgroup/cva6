@@ -113,9 +113,9 @@ module cva6_mmu
     logic w;
     logic r;
     logic v;
-} ;
+  };
 
-    localparam type tlb_update_cva6_t = struct packed {
+  localparam type tlb_update_cva6_t = struct packed {
     // typedef struct packed {
         logic                  valid;      // valid flag
         logic [PT_LEVELS-2:0][HYP_EXT:0] is_page;      //
