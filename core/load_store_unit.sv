@@ -140,7 +140,6 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
- 
   if (MMU_PRESENT) begin : gen_mmu
 
     localparam HYP_EXT = 0;  //CVA6Cfg.CVA6ConfigHExtEn
@@ -166,38 +165,38 @@ module load_store_unit
         .icache_areq_i         (icache_areq_i),
         .icache_areq_o         (icache_areq_o),
         // misaligned bypass
-        .misaligned_ex_i        ( misaligned_exception   ),
-        .lsu_req_i              ( translation_req        ),
-        .lsu_vaddr_i            ( mmu_vaddr              ),
-        .lsu_tinst_i            ( 0              ),
-        .lsu_is_store_i         ( st_translation_req     ),
-        .csr_hs_ld_st_inst_o    (     ),
-        .lsu_dtlb_hit_o         ( dtlb_hit               ), // send in the same cycle as the request
-        .lsu_dtlb_ppn_o         ( dtlb_ppn               ), // send in the same cycle as the request
-        
-        .lsu_valid_o            ( translation_valid      ),
-        .lsu_paddr_o            ( mmu_paddr              ),
-        .lsu_exception_o        ( mmu_exception          ),
-        
-        .priv_lvl_i             (priv_lvl_i              ),
-        .ld_st_priv_lvl_i       (ld_st_priv_lvl_i        ),
+        .misaligned_ex_i       (misaligned_exception),
+        .lsu_req_i             (translation_req),
+        .lsu_vaddr_i           (mmu_vaddr),
+        .lsu_tinst_i           (0),
+        .lsu_is_store_i        (st_translation_req),
+        .csr_hs_ld_st_inst_o   (),
+        .lsu_dtlb_hit_o        (dtlb_hit),                  // send in the same cycle as the request
+        .lsu_dtlb_ppn_o        (dtlb_ppn),                  // send in the same cycle as the request
 
-        .sum_i                  ({sum_i}),
-        .mxr_i                  ({mxr_i}),
-        .hlvx_inst_i            ( 0          ),
-        .hs_ld_st_inst_i        ( 0      ),    
-        
-        .satp_ppn_i             ({satp_ppn_i}),
-        .asid_i                 ({asid_i}),
-        .asid_to_be_flushed_i   ({asid_to_be_flushed_i}),
-        .vaddr_to_be_flushed_i  ({vaddr_to_be_flushed_i}),
-        .flush_tlb_i            ({flush_tlb_i}),
+        .lsu_valid_o    (translation_valid),
+        .lsu_paddr_o    (mmu_paddr),
+        .lsu_exception_o(mmu_exception),
 
-        .itlb_miss_o            (itlb_miss_o),
-        .dtlb_miss_o            (dtlb_miss_o),
+        .priv_lvl_i      (priv_lvl_i),
+        .ld_st_priv_lvl_i(ld_st_priv_lvl_i),
 
-        .req_port_i             ( dcache_req_ports_i [0] ),
-        .req_port_o             ( dcache_req_ports_o [0] ),
+        .sum_i          ({sum_i}),
+        .mxr_i          ({mxr_i}),
+        .hlvx_inst_i    (0),
+        .hs_ld_st_inst_i(0),
+
+        .satp_ppn_i           ({satp_ppn_i}),
+        .asid_i               ({asid_i}),
+        .asid_to_be_flushed_i ({asid_to_be_flushed_i}),
+        .vaddr_to_be_flushed_i({vaddr_to_be_flushed_i}),
+        .flush_tlb_i          ({flush_tlb_i}),
+
+        .itlb_miss_o(itlb_miss_o),
+        .dtlb_miss_o(dtlb_miss_o),
+
+        .req_port_i(dcache_req_ports_i[0]),
+        .req_port_o(dcache_req_ports_o[0]),
         .pmpcfg_i,
         .pmpaddr_i
     );
