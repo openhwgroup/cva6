@@ -387,7 +387,7 @@ module cva6_mmu
                     riscv::INSTR_ACCESS_FAULT,
                     {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
                     {riscv::GPLEN{1'b0}},
-                    {{riscv::XLEN{1'b0}}},
+                    {riscv::XLEN{1'b0}},
                     enable_translation_i[HYP_EXT*2],
                     1'b1
                 };
