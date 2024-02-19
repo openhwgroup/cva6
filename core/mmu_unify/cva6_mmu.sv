@@ -479,7 +479,7 @@ module cva6_mmu
                             {riscv::XLEN'(update_vaddr)},
                             1'b1
                         };
-            else begin
+            else 
                 if(HYP_EXT==1)
                     icache_areq_o.fetch_exception = {
                         riscv::INSTR_ACCESS_FAULT,
@@ -494,7 +494,6 @@ module cva6_mmu
                         ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0],
                         1'b1
                     };
-            end
         end    
     end
 
