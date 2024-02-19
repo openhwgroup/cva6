@@ -328,12 +328,12 @@ package riscv;
   // ----------------------
   localparam logic [XLEN-1:0] INSTR_ADDR_MISALIGNED = 0;
   localparam logic [XLEN-1:0] INSTR_ACCESS_FAULT    = 1;  // Illegal access as governed by PMPs and PMAs
-  localparam logic [XLEN-1:0] ILLEGAL_INSTR         = 2;
-  localparam logic [XLEN-1:0] BREAKPOINT            = 3;
-  localparam logic [XLEN-1:0] LD_ADDR_MISALIGNED    = 4;
-  localparam logic [XLEN-1:0] LD_ACCESS_FAULT       = 5;  // Illegal access as governed by PMPs and PMAs
-  localparam logic [XLEN-1:0] ST_ADDR_MISALIGNED    = 6;
-  localparam logic [XLEN-1:0] ST_ACCESS_FAULT       = 7;  // Illegal access as governed by PMPs and PMAs
+  localparam logic [XLEN-1:0] ILLEGAL_INSTR = 2;
+  localparam logic [XLEN-1:0] BREAKPOINT = 3;
+  localparam logic [XLEN-1:0] LD_ADDR_MISALIGNED = 4;
+  localparam logic [XLEN-1:0] LD_ACCESS_FAULT = 5;  // Illegal access as governed by PMPs and PMAs
+  localparam logic [XLEN-1:0] ST_ADDR_MISALIGNED = 6;
+  localparam logic [XLEN-1:0] ST_ACCESS_FAULT = 7;  // Illegal access as governed by PMPs and PMAs
   localparam logic [XLEN-1:0] ENV_CALL_UMODE        = 8;  // environment call from user mode or virtual user mode
   localparam logic [XLEN-1:0] ENV_CALL_SMODE        = 9;  // environment call from hypervisor-extended supervisor mode
   localparam logic [XLEN-1:0] ENV_CALL_VSMODE       = 10; // environment call from virtual supervisor mode
