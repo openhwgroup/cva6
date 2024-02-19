@@ -630,17 +630,17 @@ module cva6_mmu
       lsu_vaddr_n[HYP_EXT] = dtlb_gpaddr;
     end
 
-        lsu_valid_o           = lsu_req_q;
-        lsu_exception_o       = misaligned_ex_q;
-        csr_hs_ld_st_inst_o   = hs_ld_st_inst_i || hs_ld_st_inst_q;
-        pmp_access_type       = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
+    lsu_valid_o = lsu_req_q;
+    lsu_exception_o = misaligned_ex_q;
+    csr_hs_ld_st_inst_o = hs_ld_st_inst_i || hs_ld_st_inst_q;
+    pmp_access_type = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
 
-        // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
-        misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
+    // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
+    misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
 
-        // Check if the User flag is set, then we may only access it in supervisor mode
-        // if SUM is enabled
-        daccess_err[0] = (en_ld_st_translation_i[0] || HYP_EXT==0)&&
+    // Check if the User flag is set, then we may only access it in supervisor mode
+    // if SUM is enabled
+    daccess_err[0] = (en_ld_st_translation_i[0] || HYP_EXT==0)&&
                         ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && (en_ld_st_translation_i[HYP_EXT*2] ? !sum_i[HYP_EXT] : !sum_i[0] ) && dtlb_pte_q[0].u) || // SUM is not set and we are trying to access a user page in supervisor mode
                         (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q[0].u));
         
