@@ -31,328 +31,328 @@ module cva6_mmu
     parameter int unsigned           PT_LEVELS                    = 1
 
 ) (
-  input logic clk_i,
-  input logic rst_ni,
-  input logic flush_i,
-  input logic [HYP_EXT*2:0] enable_translation_i,  //[v_i,enable_g_translation,enable_translation]
-  input logic [HYP_EXT*2:0] en_ld_st_translation_i, // enable virtual memory translation for ld/st
-  // IF interface
-  input icache_arsp_t icache_areq_i,
-  output icache_areq_t icache_areq_o,
-  // input  icache_areq_o_t                  icache_areq_i, this is the data type in the hypervisor version for now
-  // output icache_areq_i_t                  icache_areq_o,
+    input logic clk_i,
+    input logic rst_ni,
+    input logic flush_i,
+    input logic [HYP_EXT*2:0] enable_translation_i,  //[v_i,enable_g_translation,enable_translation]
+    input logic [HYP_EXT*2:0] en_ld_st_translation_i, // enable virtual memory translation for ld/st
+    // IF interface
+    input icache_arsp_t icache_areq_i,
+    output icache_areq_t icache_areq_o,
+    // input  icache_areq_o_t                  icache_areq_i, this is the data type in the hypervisor version for now
+    // output icache_areq_i_t                  icache_areq_o,
 
-  // LSU interface
-  // this is a more minimalistic interface because the actual addressing logic is handled
-  // in the LSU as we distinguish load and stores, what we do here is simple address translation
-  input exception_t misaligned_ex_i,
-  input logic lsu_req_i,  // request address translation
-  input logic [riscv::VLEN-1:0] lsu_vaddr_i,  // virtual address in
-  input riscv::xlen_t lsu_tinst_i,  // transformed instruction in
-  input logic lsu_is_store_i,  // the translation is requested by a store
-  output logic csr_hs_ld_st_inst_o,  // hyp load store instruction
-  // if we need to walk the page table we can't grant in the same cycle
-  // Cycle 0
-  output logic lsu_dtlb_hit_o,  // sent in same cycle as the request if translation hits in DTLB
-  output logic [riscv::PPNW-1:0] lsu_dtlb_ppn_o,  // ppn (send same cycle as hit)
-  // Cycle 1
-  output logic lsu_valid_o,  // translation is valid
-  output logic [riscv::PLEN-1:0] lsu_paddr_o,  // translated address
-  output exception_t lsu_exception_o,  // address translation threw an exception
-  // General control signals
-  input riscv::priv_lvl_t priv_lvl_i,
-  input riscv::priv_lvl_t ld_st_priv_lvl_i,
-  input logic [HYP_EXT:0] sum_i,
-  input logic [HYP_EXT:0] mxr_i,
-  input logic hlvx_inst_i,
-  input logic hs_ld_st_inst_i,
-  // input logic flag_mprv_i,
-  input logic [riscv::PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
+    // LSU interface
+    // this is a more minimalistic interface because the actual addressing logic is handled
+    // in the LSU as we distinguish load and stores, what we do here is simple address translation
+    input exception_t misaligned_ex_i,
+    input logic lsu_req_i,  // request address translation
+    input logic [riscv::VLEN-1:0] lsu_vaddr_i,  // virtual address in
+    input riscv::xlen_t lsu_tinst_i,  // transformed instruction in
+    input logic lsu_is_store_i,  // the translation is requested by a store
+    output logic csr_hs_ld_st_inst_o,  // hyp load store instruction
+    // if we need to walk the page table we can't grant in the same cycle
+    // Cycle 0
+    output logic lsu_dtlb_hit_o,  // sent in same cycle as the request if translation hits in DTLB
+    output logic [riscv::PPNW-1:0] lsu_dtlb_ppn_o,  // ppn (send same cycle as hit)
+    // Cycle 1
+    output logic lsu_valid_o,  // translation is valid
+    output logic [riscv::PLEN-1:0] lsu_paddr_o,  // translated address
+    output exception_t lsu_exception_o,  // address translation threw an exception
+    // General control signals
+    input riscv::priv_lvl_t priv_lvl_i,
+    input riscv::priv_lvl_t ld_st_priv_lvl_i,
+    input logic [HYP_EXT:0] sum_i,
+    input logic [HYP_EXT:0] mxr_i,
+    input logic hlvx_inst_i,
+    input logic hs_ld_st_inst_i,
+    // input logic flag_mprv_i,
+    input logic [riscv::PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
 
-  input logic [ASID_WIDTH[0]-1:0] asid_i               [HYP_EXT*2:0],  //[vmid,vs_asid,asid]
-  input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i [  HYP_EXT:0],
-  input logic [  riscv::VLEN-1:0] vaddr_to_be_flushed_i[  HYP_EXT:0],
+    input logic [ASID_WIDTH[0]-1:0] asid_i               [HYP_EXT*2:0],  //[vmid,vs_asid,asid]
+    input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i [  HYP_EXT:0],
+    input logic [  riscv::VLEN-1:0] vaddr_to_be_flushed_i[  HYP_EXT:0],
 
-  input logic [HYP_EXT*2:0] flush_tlb_i,
+    input logic [HYP_EXT*2:0] flush_tlb_i,
 
-  // Performance counters
-  output logic                                   itlb_miss_o,
-  output logic                                   dtlb_miss_o,
-  // PTW memory interface
-  input  dcache_req_o_t                          req_port_i,
-  output dcache_req_i_t                          req_port_o,
-  // PMP
-  input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
-  input  logic           [15:0][riscv::PLEN-3:0] pmpaddr_i
+    // Performance counters
+    output logic                                   itlb_miss_o,
+    output logic                                   dtlb_miss_o,
+    // PTW memory interface
+    input  dcache_req_o_t                          req_port_i,
+    output dcache_req_i_t                          req_port_o,
+    // PMP
+    input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
+    input  logic           [15:0][riscv::PLEN-3:0] pmpaddr_i
 );
-logic [ASID_WIDTH[0]-1:0] dtlb_mmu_asid_i[HYP_EXT:0];
-logic [ASID_WIDTH[0]-1:0] itlb_mmu_asid_i[HYP_EXT:0];
+  logic [ASID_WIDTH[0]-1:0] dtlb_mmu_asid_i[HYP_EXT:0];
+  logic [ASID_WIDTH[0]-1:0] itlb_mmu_asid_i[HYP_EXT:0];
 
-genvar b;
-generate
-  for (b = 0; b < HYP_EXT + 1; b++) begin : gen_tlbs_asid
-    assign dtlb_mmu_asid_i[b] = b==0 ?
+  genvar b;
+  generate
+    for (b = 0; b < HYP_EXT + 1; b++) begin : gen_tlbs_asid
+      assign dtlb_mmu_asid_i[b] = b==0 ?
           ((en_ld_st_translation_i[2*HYP_EXT] || flush_tlb_i[HYP_EXT]) ? asid_i[HYP_EXT] : asid_i[0]):
           asid_i[HYP_EXT*2];
-    assign itlb_mmu_asid_i[b] = b==0 ?
+      assign itlb_mmu_asid_i[b] = b==0 ?
           (enable_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0]):
           asid_i[HYP_EXT*2];
-  end
+    end
   endgenerate
 
-// memory management, pte for cva6
-localparam type pte_cva6_t = struct packed {
-  logic [riscv::PPNW-1:0] ppn;  // PPN length for
-  logic [1:0] rsw;
-  logic d;
-  logic a;
-  logic g;
-  logic u;
-  logic x;
-  logic w;
-  logic r;
-  logic v;
-};
+  // memory management, pte for cva6
+  localparam type pte_cva6_t = struct packed {
+    logic [riscv::PPNW-1:0] ppn;  // PPN length for
+    logic [1:0] rsw;
+    logic d;
+    logic a;
+    logic g;
+    logic u;
+    logic x;
+    logic w;
+    logic r;
+    logic v;
+  };
 
-localparam type tlb_update_cva6_t = struct packed {
-  logic                                valid;
-  logic [PT_LEVELS-2:0][HYP_EXT:0]     is_page;
-  logic [VPN_LEN-1:0]                  vpn;
-  logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;
-  logic [HYP_EXT*2:0]                  v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
-  pte_cva6_t [HYP_EXT:0]               content;
-};
+  localparam type tlb_update_cva6_t = struct packed {
+    logic                                valid;
+    logic [PT_LEVELS-2:0][HYP_EXT:0]     is_page;
+    logic [VPN_LEN-1:0]                  vpn;
+    logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;
+    logic [HYP_EXT*2:0]                  v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
+    pte_cva6_t [HYP_EXT:0]               content;
+  };
 
-logic [HYP_EXT:0] iaccess_err;  // insufficient privilege to access this instruction page
-logic [HYP_EXT:0] daccess_err;  // insufficient privilege to access this data page
-logic ptw_active;  // PTW is currently walking a page table
-logic walking_instr;  // PTW is walking because of an ITLB miss
-logic [HYP_EXT*2:0] ptw_error;  // PTW threw an exception
-logic ptw_access_exception;  // PTW threw an access exception (PMPs)
-logic [HYP_EXT:0][riscv::PLEN-1:0] ptw_bad_paddr;  // PTW guest page fault bad guest physical addr
+  logic [HYP_EXT:0] iaccess_err;  // insufficient privilege to access this instruction page
+  logic [HYP_EXT:0] daccess_err;  // insufficient privilege to access this data page
+  logic ptw_active;  // PTW is currently walking a page table
+  logic walking_instr;  // PTW is walking because of an ITLB miss
+  logic [HYP_EXT*2:0] ptw_error;  // PTW threw an exception
+  logic ptw_access_exception;  // PTW threw an access exception (PMPs)
+  logic [HYP_EXT:0][riscv::PLEN-1:0] ptw_bad_paddr;  // PTW guest page fault bad guest physical addr
 
-logic [riscv::VLEN-1:0] update_vaddr, shared_tlb_vaddr;
+  logic [riscv::VLEN-1:0] update_vaddr, shared_tlb_vaddr;
 
-tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
+  tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
-logic                          itlb_lu_access;
-pte_cva6_t [        HYP_EXT:0] itlb_content;
-logic      [    PT_LEVELS-2:0] itlb_is_page;
-logic                          itlb_lu_hit;
-logic      [ riscv::GPLEN-1:0] itlb_gpaddr;
-logic      [ASID_WIDTH[0]-1:0] itlb_lu_asid;
+  logic                          itlb_lu_access;
+  pte_cva6_t [        HYP_EXT:0] itlb_content;
+  logic      [    PT_LEVELS-2:0] itlb_is_page;
+  logic                          itlb_lu_hit;
+  logic      [ riscv::GPLEN-1:0] itlb_gpaddr;
+  logic      [ASID_WIDTH[0]-1:0] itlb_lu_asid;
 
-logic                          dtlb_lu_access;
-pte_cva6_t [        HYP_EXT:0] dtlb_content;
-logic      [    PT_LEVELS-2:0] dtlb_is_page;
-logic      [ASID_WIDTH[0]-1:0] dtlb_lu_asid;
-logic                          dtlb_lu_hit;
-logic      [ riscv::GPLEN-1:0] dtlb_gpaddr;
+  logic                          dtlb_lu_access;
+  pte_cva6_t [        HYP_EXT:0] dtlb_content;
+  logic      [    PT_LEVELS-2:0] dtlb_is_page;
+  logic      [ASID_WIDTH[0]-1:0] dtlb_lu_asid;
+  logic                          dtlb_lu_hit;
+  logic      [ riscv::GPLEN-1:0] dtlb_gpaddr;
 
-logic                          shared_tlb_access;
-logic shared_tlb_hit, itlb_req;
+  logic                          shared_tlb_access;
+  logic shared_tlb_hit, itlb_req;
 
-// Assignments
+  // Assignments
 
-assign itlb_lu_access = icache_areq_i.fetch_req;
-assign dtlb_lu_access = lsu_req_i;
-
-
-cva6_tlb #(
-    .pte_cva6_t       (pte_cva6_t),
-    .tlb_update_cva6_t(tlb_update_cva6_t),
-    .TLB_ENTRIES      (INSTR_TLB_ENTRIES),
-    .HYP_EXT          (HYP_EXT),
-    .ASID_WIDTH       (ASID_WIDTH),
-    .VPN_LEN          (VPN_LEN),
-    .PT_LEVELS        (PT_LEVELS)
-) i_itlb (
-    .clk_i                (clk_i),
-    .rst_ni               (rst_ni),
-    .flush_i              (flush_tlb_i),
-    .v_st_enbl_i          (enable_translation_i),
-    .update_i             (update_itlb),
-    .lu_access_i          (itlb_lu_access),
-    .lu_asid_i            (itlb_mmu_asid_i),
-    .asid_to_be_flushed_i (asid_to_be_flushed_i),
-    .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
-    .lu_vaddr_i           (icache_areq_i.fetch_vaddr),
-    .lu_content_o         (itlb_content),
-    .lu_gpaddr_o          (itlb_gpaddr),
-    .lu_is_page_o         (itlb_is_page),
-    .lu_hit_o             (itlb_lu_hit)
-);
-
-cva6_tlb #(
-    .pte_cva6_t       (pte_cva6_t),
-    .tlb_update_cva6_t(tlb_update_cva6_t),
-    .TLB_ENTRIES      (DATA_TLB_ENTRIES),
-    .HYP_EXT          (HYP_EXT),
-    .ASID_WIDTH       (ASID_WIDTH),
-    .VPN_LEN          (VPN_LEN),
-    .PT_LEVELS        (PT_LEVELS)
-) i_dtlb (
-    .clk_i                (clk_i),
-    .rst_ni               (rst_ni),
-    .flush_i              (flush_tlb_i),
-    .v_st_enbl_i          (en_ld_st_translation_i),
-    .update_i             (update_dtlb),
-    .lu_access_i          (dtlb_lu_access),
-    .lu_asid_i            (dtlb_mmu_asid_i),
-    .asid_to_be_flushed_i (asid_to_be_flushed_i),
-    .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
-    .lu_vaddr_i           (lsu_vaddr_i),
-    .lu_content_o         (dtlb_content),
-    .lu_gpaddr_o          (dtlb_gpaddr),
-    .lu_is_page_o         (dtlb_is_page),
-    .lu_hit_o             (dtlb_lu_hit)
-);
+  assign itlb_lu_access = icache_areq_i.fetch_req;
+  assign dtlb_lu_access = lsu_req_i;
 
 
-cva6_shared_tlb #(
-    .SHARED_TLB_DEPTH (64),
-    .SHARED_TLB_WAYS  (2),
-    .HYP_EXT          (HYP_EXT),
-    .ASID_WIDTH       (ASID_WIDTH),
-    .VPN_LEN          (VPN_LEN),
-    .PT_LEVELS        (PT_LEVELS),
-    .pte_cva6_t       (pte_cva6_t),
-    .tlb_update_cva6_t(tlb_update_cva6_t)
-) i_shared_tlb (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .flush_i(flush_tlb_i),
-    .v_st_enbl_i({enable_translation_i, en_ld_st_translation_i}),
+  cva6_tlb #(
+      .pte_cva6_t       (pte_cva6_t),
+      .tlb_update_cva6_t(tlb_update_cva6_t),
+      .TLB_ENTRIES      (INSTR_TLB_ENTRIES),
+      .HYP_EXT          (HYP_EXT),
+      .ASID_WIDTH       (ASID_WIDTH),
+      .VPN_LEN          (VPN_LEN),
+      .PT_LEVELS        (PT_LEVELS)
+  ) i_itlb (
+      .clk_i                (clk_i),
+      .rst_ni               (rst_ni),
+      .flush_i              (flush_tlb_i),
+      .v_st_enbl_i          (enable_translation_i),
+      .update_i             (update_itlb),
+      .lu_access_i          (itlb_lu_access),
+      .lu_asid_i            (itlb_mmu_asid_i),
+      .asid_to_be_flushed_i (asid_to_be_flushed_i),
+      .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
+      .lu_vaddr_i           (icache_areq_i.fetch_vaddr),
+      .lu_content_o         (itlb_content),
+      .lu_gpaddr_o          (itlb_gpaddr),
+      .lu_is_page_o         (itlb_is_page),
+      .lu_hit_o             (itlb_lu_hit)
+  );
 
-    .dtlb_asid_i  (dtlb_mmu_asid_i),
-    .itlb_asid_i  (itlb_mmu_asid_i),
-    // from TLBs
-    // did we miss?
-    .itlb_access_i(itlb_lu_access),
-    .itlb_hit_i   (itlb_lu_hit),
-    .itlb_vaddr_i (icache_areq_i.fetch_vaddr),
-
-    .dtlb_access_i(dtlb_lu_access),
-    .dtlb_hit_i   (dtlb_lu_hit),
-    .dtlb_vaddr_i (lsu_vaddr_i),
-
-    // to TLBs, update logic
-    .itlb_update_o(update_itlb),
-    .dtlb_update_o(update_dtlb),
-
-    // Performance counters
-    .itlb_miss_o(itlb_miss_o),
-    .dtlb_miss_o(dtlb_miss_o),
-
-    .shared_tlb_access_o(shared_tlb_access),
-    .shared_tlb_hit_o   (shared_tlb_hit),
-    .shared_tlb_vaddr_o (shared_tlb_vaddr),
-
-    .itlb_req_o         (itlb_req),
-    // to update shared tlb
-    .shared_tlb_update_i(update_shared_tlb)
-);
-
-cva6_ptw #(
-    .CVA6Cfg          (CVA6Cfg),
-    //   .ArianeCfg              ( ArianeCfg             ), this is the configuration needed in the hypervisor extension for now
-    .pte_cva6_t       (pte_cva6_t),
-    .tlb_update_cva6_t(tlb_update_cva6_t),
-    .HYP_EXT          (HYP_EXT),
-    .ASID_WIDTH       (ASID_WIDTH),
-    .VPN_LEN          (VPN_LEN),
-    .PT_LEVELS        (PT_LEVELS)
-) i_ptw (
-    .clk_i  (clk_i),
-    .rst_ni (rst_ni),
-    .flush_i(flush_i),
-
-    .ptw_active_o          (ptw_active),
-    .walking_instr_o       (walking_instr),
-    .ptw_error_o           (ptw_error),
-    .ptw_access_exception_o(ptw_access_exception),
-
-    .enable_translation_i  (enable_translation_i),
-    .en_ld_st_translation_i(en_ld_st_translation_i),
-
-    .lsu_is_store_i(lsu_is_store_i),
-    // PTW memory interface
-    .req_port_i    (req_port_i),
-    .req_port_o    (req_port_o),
-    // .enable_translation_i   ( enable_translation_i  ),
-    // .en_ld_st_translation_i ( en_ld_st_translation_i),
-    .asid_i        (asid_i),
-
-    .update_vaddr_o(update_vaddr),
-
-    // to Shared TLB, update logic
-    .shared_tlb_update_o(update_shared_tlb),
+  cva6_tlb #(
+      .pte_cva6_t       (pte_cva6_t),
+      .tlb_update_cva6_t(tlb_update_cva6_t),
+      .TLB_ENTRIES      (DATA_TLB_ENTRIES),
+      .HYP_EXT          (HYP_EXT),
+      .ASID_WIDTH       (ASID_WIDTH),
+      .VPN_LEN          (VPN_LEN),
+      .PT_LEVELS        (PT_LEVELS)
+  ) i_dtlb (
+      .clk_i                (clk_i),
+      .rst_ni               (rst_ni),
+      .flush_i              (flush_tlb_i),
+      .v_st_enbl_i          (en_ld_st_translation_i),
+      .update_i             (update_dtlb),
+      .lu_access_i          (dtlb_lu_access),
+      .lu_asid_i            (dtlb_mmu_asid_i),
+      .asid_to_be_flushed_i (asid_to_be_flushed_i),
+      .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
+      .lu_vaddr_i           (lsu_vaddr_i),
+      .lu_content_o         (dtlb_content),
+      .lu_gpaddr_o          (dtlb_gpaddr),
+      .lu_is_page_o         (dtlb_is_page),
+      .lu_hit_o             (dtlb_lu_hit)
+  );
 
 
-    // from shared TLB
-    // did we miss?
-    .shared_tlb_access_i(shared_tlb_access),
-    .shared_tlb_hit_i   (shared_tlb_hit),
-    .shared_tlb_vaddr_i (shared_tlb_vaddr),
+  cva6_shared_tlb #(
+      .SHARED_TLB_DEPTH (64),
+      .SHARED_TLB_WAYS  (2),
+      .HYP_EXT          (HYP_EXT),
+      .ASID_WIDTH       (ASID_WIDTH),
+      .VPN_LEN          (VPN_LEN),
+      .PT_LEVELS        (PT_LEVELS),
+      .pte_cva6_t       (pte_cva6_t),
+      .tlb_update_cva6_t(tlb_update_cva6_t)
+  ) i_shared_tlb (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .flush_i(flush_tlb_i),
+      .v_st_enbl_i({enable_translation_i, en_ld_st_translation_i}),
 
-    .itlb_req_i (itlb_req),
-    // .dtlb_access_i          ( dtlb_lu_access        ),
-    // .dtlb_hit_i             ( dtlb_lu_hit           ),
-    // .dtlb_vaddr_i           ( lsu_vaddr_i           ),
-    .hlvx_inst_i(hlvx_inst_i),
-    // from CSR file
-    .satp_ppn_i (satp_ppn_i),
-    .mxr_i      (mxr_i),
+      .dtlb_asid_i  (dtlb_mmu_asid_i),
+      .itlb_asid_i  (itlb_mmu_asid_i),
+      // from TLBs
+      // did we miss?
+      .itlb_access_i(itlb_lu_access),
+      .itlb_hit_i   (itlb_lu_hit),
+      .itlb_vaddr_i (icache_areq_i.fetch_vaddr),
 
-    // Performance counters
-    .shared_tlb_miss_o(),  //open for now
+      .dtlb_access_i(dtlb_lu_access),
+      .dtlb_hit_i   (dtlb_lu_hit),
+      .dtlb_vaddr_i (lsu_vaddr_i),
 
-    // PMP
-    .pmpcfg_i   (pmpcfg_i),
-    .pmpaddr_i  (pmpaddr_i),
-    .bad_paddr_o(ptw_bad_paddr)
+      // to TLBs, update logic
+      .itlb_update_o(update_itlb),
+      .dtlb_update_o(update_dtlb),
 
-);
+      // Performance counters
+      .itlb_miss_o(itlb_miss_o),
+      .dtlb_miss_o(dtlb_miss_o),
 
-// ila_1 i_ila_1 (
-//     .clk(clk_i), // input wire clk
-//     .probe0({req_port_o.address_tag, req_port_o.address_index}),
-//     .probe1(req_port_o.data_req), // input wire [63:0]  probe1
-//     .probe2(req_port_i.data_gnt), // input wire [0:0]  probe2
-//     .probe3(req_port_i.data_rdata), // input wire [0:0]  probe3
-//     .probe4(req_port_i.data_rvalid), // input wire [0:0]  probe4
-//     .probe5(ptw_error), // input wire [1:0]  probe5
-//     .probe6(update_vaddr), // input wire [0:0]  probe6
-//     .probe7(update_ptw_itlb.valid), // input wire [0:0]  probe7
-//     .probe8(update_ptw_dtlb.valid), // input wire [0:0]  probe8
-//     .probe9(dtlb_lu_access), // input wire [0:0]  probe9
-//     .probe10(lsu_vaddr_i), // input wire [0:0]  probe10
-//     .probe11(dtlb_lu_hit), // input wire [0:0]  probe11
-//     .probe12(itlb_lu_access), // input wire [0:0]  probe12
-//     .probe13(icache_areq_i.fetch_vaddr), // input wire [0:0]  probe13
-//     .probe14(itlb_lu_hit) // input wire [0:0]  probe13
-// );
+      .shared_tlb_access_o(shared_tlb_access),
+      .shared_tlb_hit_o   (shared_tlb_hit),
+      .shared_tlb_vaddr_o (shared_tlb_vaddr),
 
-//-----------------------
-// Instruction Interface
-//-----------------------
-logic match_any_execute_region;
-logic pmp_instr_allow;
-localparam int PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
+      .itlb_req_o         (itlb_req),
+      // to update shared tlb
+      .shared_tlb_update_i(update_shared_tlb)
+  );
 
-assign icache_areq_o.fetch_paddr[11:0] = icache_areq_i.fetch_vaddr[11:0];
-assign icache_areq_o.fetch_paddr[riscv::PLEN-1:PPNWMin+1] =  //
-    (|enable_translation_i[HYP_EXT:0]) ?  //
-    (enable_translation_i[HYP_EXT] ? itlb_content[HYP_EXT].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] :
+  cva6_ptw #(
+      .CVA6Cfg          (CVA6Cfg),
+      //   .ArianeCfg              ( ArianeCfg             ), this is the configuration needed in the hypervisor extension for now
+      .pte_cva6_t       (pte_cva6_t),
+      .tlb_update_cva6_t(tlb_update_cva6_t),
+      .HYP_EXT          (HYP_EXT),
+      .ASID_WIDTH       (ASID_WIDTH),
+      .VPN_LEN          (VPN_LEN),
+      .PT_LEVELS        (PT_LEVELS)
+  ) i_ptw (
+      .clk_i  (clk_i),
+      .rst_ni (rst_ni),
+      .flush_i(flush_i),
+
+      .ptw_active_o          (ptw_active),
+      .walking_instr_o       (walking_instr),
+      .ptw_error_o           (ptw_error),
+      .ptw_access_exception_o(ptw_access_exception),
+
+      .enable_translation_i  (enable_translation_i),
+      .en_ld_st_translation_i(en_ld_st_translation_i),
+
+      .lsu_is_store_i(lsu_is_store_i),
+      // PTW memory interface
+      .req_port_i    (req_port_i),
+      .req_port_o    (req_port_o),
+      // .enable_translation_i   ( enable_translation_i  ),
+      // .en_ld_st_translation_i ( en_ld_st_translation_i),
+      .asid_i        (asid_i),
+
+      .update_vaddr_o(update_vaddr),
+
+      // to Shared TLB, update logic
+      .shared_tlb_update_o(update_shared_tlb),
+
+
+      // from shared TLB
+      // did we miss?
+      .shared_tlb_access_i(shared_tlb_access),
+      .shared_tlb_hit_i   (shared_tlb_hit),
+      .shared_tlb_vaddr_i (shared_tlb_vaddr),
+
+      .itlb_req_i (itlb_req),
+      // .dtlb_access_i          ( dtlb_lu_access        ),
+      // .dtlb_hit_i             ( dtlb_lu_hit           ),
+      // .dtlb_vaddr_i           ( lsu_vaddr_i           ),
+      .hlvx_inst_i(hlvx_inst_i),
+      // from CSR file
+      .satp_ppn_i (satp_ppn_i),
+      .mxr_i      (mxr_i),
+
+      // Performance counters
+      .shared_tlb_miss_o(),  //open for now
+
+      // PMP
+      .pmpcfg_i   (pmpcfg_i),
+      .pmpaddr_i  (pmpaddr_i),
+      .bad_paddr_o(ptw_bad_paddr)
+
+  );
+
+  // ila_1 i_ila_1 (
+  //     .clk(clk_i), // input wire clk
+  //     .probe0({req_port_o.address_tag, req_port_o.address_index}),
+  //     .probe1(req_port_o.data_req), // input wire [63:0]  probe1
+  //     .probe2(req_port_i.data_gnt), // input wire [0:0]  probe2
+  //     .probe3(req_port_i.data_rdata), // input wire [0:0]  probe3
+  //     .probe4(req_port_i.data_rvalid), // input wire [0:0]  probe4
+  //     .probe5(ptw_error), // input wire [1:0]  probe5
+  //     .probe6(update_vaddr), // input wire [0:0]  probe6
+  //     .probe7(update_ptw_itlb.valid), // input wire [0:0]  probe7
+  //     .probe8(update_ptw_dtlb.valid), // input wire [0:0]  probe8
+  //     .probe9(dtlb_lu_access), // input wire [0:0]  probe9
+  //     .probe10(lsu_vaddr_i), // input wire [0:0]  probe10
+  //     .probe11(dtlb_lu_hit), // input wire [0:0]  probe11
+  //     .probe12(itlb_lu_access), // input wire [0:0]  probe12
+  //     .probe13(icache_areq_i.fetch_vaddr), // input wire [0:0]  probe13
+  //     .probe14(itlb_lu_hit) // input wire [0:0]  probe13
+  // );
+
+  //-----------------------
+  // Instruction Interface
+  //-----------------------
+  logic match_any_execute_region;
+  logic pmp_instr_allow;
+  localparam int PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
+
+  assign icache_areq_o.fetch_paddr[11:0] = icache_areq_i.fetch_vaddr[11:0];
+  assign icache_areq_o.fetch_paddr[riscv::PLEN-1:PPNWMin+1] =  //
+      (|enable_translation_i[HYP_EXT:0]) ?  //
+      (enable_translation_i[HYP_EXT] ? itlb_content[HYP_EXT].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] :
     itlb_content[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] ): //
-    (riscv::PLEN-PPNWMin-1)'(icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
-genvar a;
-generate
+      (riscv::PLEN-PPNWMin-1)'(icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
+  genvar a;
+  generate
 
-  for (a = 0; a < PT_LEVELS - 1; a++) begin : gen_fetch_paddr
-    assign icache_areq_o.fetch_paddr [PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1] = //
-        (|enable_translation_i[HYP_EXT:0] && (|itlb_is_page[a:0] == 0)) ?  //
-        (enable_translation_i[HYP_EXT] ? itlb_content[HYP_EXT].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]:
+    for (a = 0; a < PT_LEVELS - 1; a++) begin : gen_fetch_paddr
+      assign icache_areq_o.fetch_paddr [PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1] = //
+          (|enable_translation_i[HYP_EXT:0] && (|itlb_is_page[a:0] == 0)) ?  //
+          (enable_translation_i[HYP_EXT] ? itlb_content[HYP_EXT].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]:
         itlb_content[0].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]) : //
         icache_areq_i.fetch_vaddr[PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1];
   end
