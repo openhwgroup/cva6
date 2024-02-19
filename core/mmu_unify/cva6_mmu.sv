@@ -382,7 +382,7 @@ module cva6_mmu
         // an error.
         if ((|enable_translation_i[HYP_EXT:0])) begin
         // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
-            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0)) begin
+            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0))
                 if (HYP_EXT == 1) 
                     icache_areq_o.fetch_exception = {
                         riscv::INSTR_ACCESS_FAULT,
@@ -398,7 +398,6 @@ module cva6_mmu
                         {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
                         1'b1
                     };
-            end
             icache_areq_o.fetch_valid = 1'b0;
             // ---------
             // ITLB Hit
