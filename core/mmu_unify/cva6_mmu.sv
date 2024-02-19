@@ -493,7 +493,7 @@ module cva6_mmu
                         riscv::INSTR_ACCESS_FAULT,
                         ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0],
                         1'b1
-                    };
+                     };
         end    
     end
 
@@ -506,7 +506,7 @@ module cva6_mmu
                 {riscv::XLEN'(icache_areq_o.fetch_paddr)},
                 {riscv::GPLEN{1'b0}},
                 {riscv::XLEN{1'b0}},
-                enable_translation_i[HYP_EXT*2],
+                enable_translation_i[2*HYP_EXT],
                 1'b1
             }; 
         else
