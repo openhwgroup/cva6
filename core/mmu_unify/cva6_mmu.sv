@@ -98,7 +98,7 @@ module cva6_mmu
                                     (enable_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0]):
                                     asid_i[HYP_EXT*2];
     end
-    endgenerate
+  endgenerate
 
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
