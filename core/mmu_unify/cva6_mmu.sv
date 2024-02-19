@@ -383,7 +383,7 @@ module cva6_mmu
         if ((|enable_translation_i[HYP_EXT:0])) begin
         // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
             if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0)) begin
-                if (HYP_EXT == 1) begin
+                if (HYP_EXT == 1) 
                     icache_areq_o.fetch_exception = {
                         riscv::INSTR_ACCESS_FAULT,
                         {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
@@ -392,13 +392,12 @@ module cva6_mmu
                         enable_translation_i[HYP_EXT*2],
                         1'b1
                     };
-                end else begin
+                else 
                     icache_areq_o.fetch_exception = {
                         riscv::INSTR_ACCESS_FAULT,
                         {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
                         1'b1
                     };
-                end
             end
             icache_areq_o.fetch_valid = 1'b0;
             // ---------
