@@ -174,8 +174,6 @@ endgenerate
 
 always_comb begin : tlb_update
 
-  shared_tlb_update_o.vpn = VPN_LEN'(vaddr_q[riscv::SV+HYP_EXT*2-1:12]);
-
   // update the correct page table level
   for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
     for (int unsigned x = 0; x < PT_LEVELS - 1; x++) begin
@@ -231,6 +229,8 @@ assign req_port_o.data_be = riscv::XLEN == 32 ? be_gen_32(
 ) : be_gen(
     req_port_o.address_index[2:0], req_port_o.data_size
 );
+
+assign shared_tlb_update_o.vpn = VPN_LEN'(vaddr_q[riscv::SV+HYP_EXT*2-1:12]);
 
 //-------------------
 // Page table walker
