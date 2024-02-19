@@ -363,7 +363,7 @@ module cva6_mmu
 
   // The instruction interface is a simple request response interface
   always_comb begin : instr_interface
-        // MMU disabled: just pass through
+    // MMU disabled: just pass through
     icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
     // icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
     // // two potential exception sources:
