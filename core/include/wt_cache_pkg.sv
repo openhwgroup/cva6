@@ -63,7 +63,6 @@ package wt_cache_pkg;
 
   // write buffer parameterization
   localparam DCACHE_WBUF_DEPTH = ariane_pkg::WT_DCACHE_WBUF_DEPTH;
-  localparam CACHE_ID_WIDTH = ariane_pkg::MEM_TID_WIDTH;
 
   // TX status registers are indexed with the transaction ID
   // they basically store which bytes from which buffer entry are part
