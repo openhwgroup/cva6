@@ -555,8 +555,7 @@ module cva6_mmu
     logic        pmp_data_allow;
 
     assign lsu_paddr_o    [11:0] = lsu_vaddr_q[0][11:0];
-    assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = 
-        (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ? //
+    assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ? //
         (en_ld_st_translation_i[HYP_EXT] ? dtlb_pte_q[HYP_EXT].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))]:
         dtlb_pte_q[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] ): // 
         (riscv::PLEN-PPNWMin-1)'(lsu_vaddr_q[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
