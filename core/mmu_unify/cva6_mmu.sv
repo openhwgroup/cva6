@@ -25,7 +25,6 @@ module cva6_mmu import ariane_pkg::*; #(
     parameter int unsigned DATA_TLB_ENTRIES      = 4,
     parameter logic                  HYP_EXT = 0,
     parameter int unsigned           ASID_WIDTH [HYP_EXT:0],
-    parameter int unsigned           ASID_LEN = 1,
     parameter int unsigned           VPN_LEN = 1,
     parameter int unsigned           PT_LEVELS = 1
     
@@ -119,7 +118,7 @@ module cva6_mmu import ariane_pkg::*; #(
       logic                  valid;      // valid flag
       logic [PT_LEVELS-2:0][HYP_EXT:0] is_page;      //
       logic [VPN_LEN-1:0]    vpn;        //
-      logic [HYP_EXT:0][ASID_LEN-1:0]   asid;       //
+      logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]   asid;       //
       logic [HYP_EXT*2:0]               v_st_enbl; // v_i,g-stage enabled, s-stage enabled
       pte_cva6_t  [HYP_EXT:0]          content;
     } ;
@@ -165,7 +164,6 @@ module cva6_mmu import ariane_pkg::*; #(
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES),
         .HYP_EXT(HYP_EXT),
         .ASID_WIDTH (ASID_WIDTH),
-        .ASID_LEN (ASID_LEN),
         .VPN_LEN(VPN_LEN),
         .PT_LEVELS(PT_LEVELS)
     ) i_itlb (
@@ -191,7 +189,6 @@ module cva6_mmu import ariane_pkg::*; #(
         .TLB_ENTRIES    (DATA_TLB_ENTRIES),
         .HYP_EXT(HYP_EXT),
         .ASID_WIDTH (ASID_WIDTH),
-        .ASID_LEN (ASID_LEN),
         .VPN_LEN(VPN_LEN),
         .PT_LEVELS(PT_LEVELS)
     ) i_dtlb (
@@ -218,7 +215,6 @@ module cva6_mmu import ariane_pkg::*; #(
         .HYP_EXT(HYP_EXT),
         .BYPASS(HYP_EXT),
         .ASID_WIDTH       (ASID_WIDTH),
-        .ASID_LEN         (ASID_LEN),
         .VPN_LEN          (VPN_LEN),
         .PT_LEVELS        (PT_LEVELS),
         .pte_cva6_t       (pte_cva6_t),

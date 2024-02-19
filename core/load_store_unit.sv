@@ -140,59 +140,20 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
-  // if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
-  //   mmu #(
-  //       .CVA6Cfg          (CVA6Cfg),
-  //       .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-  //       .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-  //       .ASID_WIDTH       (ASID_WIDTH)
-  //   ) i_cva6_mmu (
-  //       // misaligned bypass
-  //       .misaligned_ex_i(misaligned_exception),
-  //       .lsu_is_store_i (st_translation_req),
-  //       .lsu_req_i      (translation_req),
-  //       .lsu_vaddr_i    (mmu_vaddr),
-  //       .lsu_valid_o    (translation_valid),
-  //       .lsu_paddr_o    (mmu_paddr),
-  //       .lsu_exception_o(mmu_exception),
-  //       .lsu_dtlb_hit_o (dtlb_hit),               // send in the same cycle as the request
-  //       .lsu_dtlb_ppn_o (dtlb_ppn),               // send in the same cycle as the request
-  //       // connecting PTW to D$ IF
-  //       .req_port_i     (dcache_req_ports_i[0]),
-  //       .req_port_o     (dcache_req_ports_o[0]),
-  //       // icache address translation requests
-  //       .icache_areq_i  (icache_areq_i),
-  //       .asid_to_be_flushed_i,
-  //       .vaddr_to_be_flushed_i,
-  //       .icache_areq_o  (icache_areq_o),
-  //       .pmpcfg_i,
-  //       .pmpaddr_i,
-  //       .*
-  //   );
+ 
   if (MMU_PRESENT) begin : gen_mmu
 
     localparam HYP_EXT = 0; //CVA6Cfg.CVA6ConfigHExtEn
-    localparam ASID_LEN      = (riscv::XLEN == 64) ? 16 : 9;
     localparam VPN_LEN       = (riscv::XLEN == 64) ? (HYP_EXT ? 29 : 27) : 20;
     localparam PT_LEVELS     = (riscv::XLEN == 64) ? 3  : 2;
-    // localparam int unsigned mmu_ASID_WIDTH [HYP_EXT:0] = {ASID_WIDTH};
 
-    // logic [mmu_ASID_WIDTH[0]-1:0] mmu_asid_i [HYP_EXT:0];
-    // logic [mmu_ASID_WIDTH[0]-1:0] mmu_asid_to_be_flushed_i [HYP_EXT:0];
-    // logic [riscv::VLEN-1:0] mmu_vaddr_to_be_flushed_i [HYP_EXT:0];
-    // logic [riscv::VLEN-1:0] mmu_lsu_vaddr_i[HYP_EXT:0];
 
-    // assign mmu_asid_i[0] = asid_i;
-    // assign mmu_asid_to_be_flushed_i[0] =asid_to_be_flushed_i;
-    // assign mmu_vaddr_to_be_flushed_i[0] =vaddr_to_be_flushed_i;
-    // assign mmu_lsu_vaddr_i[0]= mmu_vaddr;
     cva6_mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
         .HYP_EXT          (HYP_EXT),
         .ASID_WIDTH       ({ASID_WIDTH}),
-        .ASID_LEN         (ASID_LEN),
         .VPN_LEN          (VPN_LEN),
         .PT_LEVELS        (PT_LEVELS)
     ) i_cva6_mmu (
@@ -219,25 +180,11 @@ module load_store_unit
         
         .priv_lvl_i             (priv_lvl_i              ),
         .ld_st_priv_lvl_i       (ld_st_priv_lvl_i        ),
-        // connecting PTW to D$ IF
-        
 
         .sum_i                  ({sum_i}),
         .mxr_i                  ({mxr_i}),
         .hlvx_inst_i            ( 0          ),
-        .hs_ld_st_inst_i        ( 0      ),
-
-        // icache address translation requests
-        
-        // .asid_to_be_flushed_i,
-        // .vmid_to_be_flushed_i,
-        // .vaddr_to_be_flushed_i,
-        // .gpaddr_to_be_flushed_i,
-        
-        
-        // Hypervisor load/store signals
-        
-        
+        .hs_ld_st_inst_i        ( 0      ),    
         
         .satp_ppn_i             ({satp_ppn_i}),
         .asid_i                 ({asid_i}),

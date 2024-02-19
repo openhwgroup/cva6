@@ -29,9 +29,7 @@ module cva6_shared_tlb
   parameter int SHARED_TLB_DEPTH = 64,
   parameter int SHARED_TLB_WAYS = 2,
   parameter int unsigned HYP_EXT = 0,
-  parameter int unsigned BYPASS = 0,
   parameter int unsigned ASID_WIDTH [HYP_EXT:0] = {1}, //[vmid_width,asid_width]
-  parameter int unsigned ASID_LEN = 1,
   parameter int unsigned VPN_LEN = 1,
   parameter int unsigned PT_LEVELS = 1
 ) (
@@ -84,7 +82,7 @@ function logic [SHARED_TLB_WAYS-1:0] shared_tlb_way_bin2oh(input logic [$clog2(S
 endfunction
 
 typedef struct packed {
-logic [HYP_EXT:0][ASID_LEN-1:0]                        asid;   
+logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]                        asid;   
 logic [PT_LEVELS+HYP_EXT-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
 logic [PT_LEVELS-2:0][HYP_EXT:0]                       is_page;
 logic [HYP_EXT*2:0]                                    v_st_enbl; // v_i,g-stage enabled, s-stage enabled
@@ -159,8 +157,6 @@ assign shared_tlb_hit_o = shared_tlb_hit_d;
 assign shared_tlb_vaddr_o = shared_tlb_vaddr_q;
 
 assign itlb_req_o = itlb_req_q;
-
-// assign i_req = itlb_req_q ? 1 : 0;
 
 genvar i,x;
   generate
@@ -263,66 +259,43 @@ genvar w;
             dtlb_update_o = '0;
             itlb_update_o = '0;
 
-            if(BYPASS==1) begin
-                if(shared_tlb_update_i.valid) begin
-                    shared_tlb_hit_d = 1'b1;
-                    if (itlb_req_q) begin
-                        itlb_update_o.valid = 1'b1;
-                        itlb_update_o.vpn = shared_tlb_update_i.vpn;
-                        itlb_update_o.is_page = shared_tlb_update_i.is_page;
-                        itlb_update_o.content = shared_tlb_update_i.content;
-                        itlb_update_o.asid = shared_tlb_update_i.asid;
-                        
-                    end else if (dtlb_req_q) begin
-                        dtlb_update_o.valid = 1'b1;
-                        dtlb_update_o.vpn = shared_tlb_update_i.vpn;
-                        dtlb_update_o.is_page = shared_tlb_update_i.is_page;
-                        dtlb_update_o.content = shared_tlb_update_i.content;
-                        dtlb_update_o.asid = shared_tlb_update_i.asid;
-                    end
-                end 
-            end
-            else begin
-                //number of ways
-                for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
-                    // first level match, this may be a giga page, check the ASID flags as well
-                    // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-                    match_asid[i][0] = (((tlb_update_asid_q[0][ASID_WIDTH[0]-1:0] == shared_tag_rd[i].asid[0][ASID_WIDTH[0]-1:0]) || pte[i][0].g) && v_st_enbl_i[i_req_q][0]) || !v_st_enbl_i[i_req_q][0];
+            //number of ways
+            for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
+                // first level match, this may be a giga page, check the ASID flags as well
+                // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
+                match_asid[i][0] = (((tlb_update_asid_q[0][ASID_WIDTH[0]-1:0] == shared_tag_rd[i].asid[0][ASID_WIDTH[0]-1:0]) || pte[i][0].g) && v_st_enbl_i[i_req_q][0]) || !v_st_enbl_i[i_req_q][0];
 
-                    if(HYP_EXT==1) begin
-                        match_asid[i][HYP_EXT] = (tlb_update_asid_q[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == shared_tag_rd[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl_i[i_req_q][HYP_EXT]) || !v_st_enbl_i[i_req_q][HYP_EXT];
-                    end
-                    
-                    // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
-                    match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl_i[i_req_q];
+                if(HYP_EXT==1) begin
+                    match_asid[i][HYP_EXT] = (tlb_update_asid_q[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == shared_tag_rd[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl_i[i_req_q][HYP_EXT]) || !v_st_enbl_i[i_req_q][HYP_EXT];
+                end
+                
+                // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
+                match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl_i[i_req_q];
 
-                    if (shared_tag_valid[i] && &match_asid[i] && match_stage[i]) begin
-                        if (|level_match[i]) begin
-                            shared_tlb_hit_d = 1'b1;
-                            if (itlb_req_q) begin
-                                itlb_update_o.valid = 1'b1;
-                                itlb_update_o.vpn = itlb_vpn_q;
-                                itlb_update_o.is_page = shared_tag_rd[i].is_page;
-                                // itlb_update_o.asid = tlb_update_asid_q;
-                                itlb_update_o.content = pte[i];
-                                itlb_update_o.v_st_enbl = shared_tag_rd[i].v_st_enbl;
-                                for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
-                                    itlb_update_o.asid[a] = tlb_update_asid_q[a];
-                                end                            
-                            end else if (dtlb_req_q) begin
-                                dtlb_update_o.valid = 1'b1;
-                                dtlb_update_o.vpn = dtlb_vpn_q;
-                                dtlb_update_o.is_page = shared_tag_rd[i].is_page;
-                                // dtlb_update_o.asid = tlb_update_asid_q;
-                                dtlb_update_o.content = pte[i];
-                                dtlb_update_o.v_st_enbl = shared_tag_rd[i].v_st_enbl;
-                                for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
-                                    dtlb_update_o.asid[a] = tlb_update_asid_q[a];
-                                end
+                if (shared_tag_valid[i] && &match_asid[i] && match_stage[i]) begin
+                    if (|level_match[i]) begin
+                        shared_tlb_hit_d = 1'b1;
+                        if (itlb_req_q) begin
+                            itlb_update_o.valid = 1'b1;
+                            itlb_update_o.vpn = itlb_vpn_q;
+                            itlb_update_o.is_page = shared_tag_rd[i].is_page;
+                            itlb_update_o.content = pte[i];
+                            itlb_update_o.v_st_enbl = shared_tag_rd[i].v_st_enbl;
+                            for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
+                                itlb_update_o.asid[a] = tlb_update_asid_q[a];
+                            end                            
+                        end else if (dtlb_req_q) begin
+                            dtlb_update_o.valid = 1'b1;
+                            dtlb_update_o.vpn = dtlb_vpn_q;
+                            dtlb_update_o.is_page = shared_tag_rd[i].is_page;
+                            dtlb_update_o.content = pte[i];
+                            dtlb_update_o.v_st_enbl = shared_tag_rd[i].v_st_enbl;
+                            for (int unsigned a = 0; a < HYP_EXT+1; a++) begin
+                                dtlb_update_o.asid[a] = tlb_update_asid_q[a];
                             end
                         end
                     end
-                end 
+                end
             end 
         end //tag_comparison
 

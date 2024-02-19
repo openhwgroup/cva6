@@ -28,7 +28,6 @@ module cva6_tlb import ariane_pkg::*; #(
   parameter int unsigned TLB_ENTRIES = 4,
   parameter int unsigned HYP_EXT = 0,
   parameter int unsigned ASID_WIDTH [HYP_EXT:0] = {1}, //[vmid_width,asid_width]
-  parameter int unsigned ASID_LEN = 1, //[vmid_len,asid_len]
   parameter int unsigned VPN_LEN = 1,
   parameter int unsigned PT_LEVELS = 1
 )(
@@ -52,7 +51,7 @@ output logic                    lu_hit_o
 
 // SV39 defines three levels of page tables
 struct packed {
-logic [HYP_EXT:0][ASID_LEN-1:0]                        asid;   
+logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]                        asid;   
 logic [PT_LEVELS+HYP_EXT-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;   
 logic [PT_LEVELS-2:0][HYP_EXT:0]                       is_page;
 logic [HYP_EXT*2:0]                                    v_st_enbl; // v_i,g-stage enabled, s-stage enabled
