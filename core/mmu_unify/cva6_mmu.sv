@@ -374,8 +374,7 @@ module cva6_mmu
         iaccess_err[0]   = icache_areq_i.fetch_req && (enable_translation_i[0] || HYP_EXT==0) && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content[0].u)
                                                             || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content[0].u));
 
-        if (HYP_EXT == 1)
-            iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && enable_translation_i[HYP_EXT] && !itlb_content[HYP_EXT].u;
+        if (HYP_EXT == 1) iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && enable_translation_i[HYP_EXT] && !itlb_content[HYP_EXT].u;
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
