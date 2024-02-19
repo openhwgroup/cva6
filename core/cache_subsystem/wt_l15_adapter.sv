@@ -89,7 +89,7 @@ module wt_l15_adapter
     wt_cache_pkg::l15_reqtypes_t l15_rqtype;  // see below for encoding
     logic l15_nc;  // non-cacheable bit
     logic [2:0]                        l15_size;                  // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
-    logic [wt_cache_pkg::L15_TID_WIDTH-1:0] l15_threadid;  // currently 0 or 1
+    logic [ariane_pkg::MEM_TID_WIDTH-1:0] l15_threadid;  // currently 0 or 1
     logic l15_prefetch;  // unused in openpiton
     logic l15_invalidate_cacheline;  // unused by Ariane as L1 has no ECC at the moment
     logic l15_blockstore;  // unused in openpiton
@@ -110,7 +110,7 @@ module wt_l15_adapter
     logic [1:0] l15_error;  // unused in openpiton
     logic l15_noncacheable;  // non-cacheable bit
     logic l15_atomic;  // asserted in load return and store ack packets of atomic tx
-    logic [wt_cache_pkg::L15_TID_WIDTH-1:0] l15_threadid;  // used as transaction ID
+    logic [ariane_pkg::MEM_TID_WIDTH-1:0] l15_threadid;  // used as transaction ID
     logic l15_prefetch;  // unused in openpiton
     logic l15_f4b;  // 4byte instruction fill from I/O space (nc).
     logic [63:0] l15_data_0;  // used for both caches
@@ -151,7 +151,7 @@ module wt_l15_adapter
   // l15_req_t                          l15_req_o.l15_rqtype;                // see below for encoding
   // logic                              l15_req_o.l15_nc;                    // non-cacheable bit
   // logic [2:0]                        l15_req_o.l15_size;                  // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
-  // logic [L15_TID_WIDTH-1:0]          l15_req_o.l15_threadid;              // currently 0 or 1
+  // logic [ariane_pkg::MEM_TID_WIDTH-1:0]          l15_req_o.l15_threadid;              // currently 0 or 1
   // logic                              l15_req_o.l15_invalidate_cacheline;  // unused by Ariane as L1 has no ECC at the moment
   // logic [L15_WAY_WIDTH-1:0]          l15_req_o.l15_l1rplway;              // way to replace
   // logic [39:0]                       l15_req_o.l15_address;               // physical address

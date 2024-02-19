@@ -40,7 +40,6 @@ package wt_cache_pkg;
   localparam L15_SET_ASSOC           = ariane_pkg::DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Ariane setup
   localparam L15_TLB_CSM_WIDTH = 33;
 `endif
-  localparam L15_TID_WIDTH = ariane_pkg::MEM_TID_WIDTH;
   localparam L15_WAY_WIDTH = $clog2(L15_SET_ASSOC);
   localparam L1I_WAY_WIDTH = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
   localparam L1D_WAY_WIDTH = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
@@ -64,7 +63,7 @@ package wt_cache_pkg;
 
   // write buffer parameterization
   localparam DCACHE_WBUF_DEPTH = ariane_pkg::WT_DCACHE_WBUF_DEPTH;
-  localparam CACHE_ID_WIDTH = L15_TID_WIDTH;
+  localparam CACHE_ID_WIDTH = ariane_pkg::MEM_TID_WIDTH;
 
   // TX status registers are indexed with the transaction ID
   // they basically store which bytes from which buffer entry are part
