@@ -291,8 +291,8 @@ module cva6_mmu
         .shared_tlb_update_o(update_shared_tlb),
 
         
-    // from shared TLB
-    // did we miss?
+        // from shared TLB
+        // did we miss?
         .shared_tlb_access_i(shared_tlb_access),
         .shared_tlb_hit_i   (shared_tlb_hit),
         .shared_tlb_vaddr_i (shared_tlb_vaddr),
@@ -309,7 +309,7 @@ module cva6_mmu
         // Performance counters
         .shared_tlb_miss_o(),  //open for now
 
-    // PMP
+        // PMP
         .pmpcfg_i   (pmpcfg_i),
         .pmpaddr_i  (pmpaddr_i),
         .bad_paddr_o(ptw_bad_paddr)
