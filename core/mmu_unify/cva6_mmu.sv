@@ -501,24 +501,24 @@ module cva6_mmu
         end
     end
 
-        // if it didn't match any execute region throw an `Instruction Access Fault`
-        // or: if we are not translating, check PMPs immediately on the paddr
-        if ((!match_any_execute_region && (!ptw_error[0]|| HYP_EXT==0) ) || (!(|enable_translation_i[HYP_EXT:0]) && !pmp_instr_allow)) begin
-            if(HYP_EXT==1)
-                icache_areq_o.fetch_exception = {
-                    riscv::INSTR_ACCESS_FAULT,
-                    {riscv::XLEN'(icache_areq_o.fetch_paddr)},
-                    {riscv::GPLEN{1'b0}},
-                    {riscv::XLEN{1'b0}},
-                    enable_translation_i[HYP_EXT*2],
-                    1'b1
-                }; 
-            else
-                icache_areq_o.fetch_exception = {
-                    riscv::INSTR_ACCESS_FAULT, riscv::VLEN'(icache_areq_o.fetch_paddr[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0]), 1'b1
-                };
-        end
+    // if it didn't match any execute region throw an `Instruction Access Fault`
+    // or: if we are not translating, check PMPs immediately on the paddr
+    if ((!match_any_execute_region && (!ptw_error[0]|| HYP_EXT==0) ) || (!(|enable_translation_i[HYP_EXT:0]) && !pmp_instr_allow)) begin
+        if(HYP_EXT==1)
+            icache_areq_o.fetch_exception = {
+                riscv::INSTR_ACCESS_FAULT,
+                {riscv::XLEN'(icache_areq_o.fetch_paddr)},
+                {riscv::GPLEN{1'b0}},
+                {riscv::XLEN{1'b0}},
+                enable_translation_i[HYP_EXT*2],
+                1'b1
+            }; 
+        else
+            icache_areq_o.fetch_exception = {
+                riscv::INSTR_ACCESS_FAULT, riscv::VLEN'(icache_areq_o.fetch_paddr[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0]), 1'b1
+            };
     end
+  end
 
     // check for execute flag on memory
     assign match_any_execute_region = config_pkg::is_inside_execute_regions(CVA6Cfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
