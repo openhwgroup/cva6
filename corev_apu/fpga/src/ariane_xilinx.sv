@@ -155,57 +155,17 @@ module ariane_xilinx (
 );
 
 // CVA6 Xilinx configuration
-localparam config_pkg::cva6_user_cfg_t CVA6UserCfg = '{
-  NrCommitPorts:         cva6_config_pkg::CVA6ConfigNrCommitPorts,
-  AxiAddrWidth:          cva6_config_pkg::CVA6ConfigAxiAddrWidth,
-  AxiDataWidth:          cva6_config_pkg::CVA6ConfigAxiDataWidth,
-  AxiIdWidth:            cva6_config_pkg::CVA6ConfigAxiIdWidth,
-  AxiUserWidth:          cva6_config_pkg::CVA6ConfigDataUserWidth,
-  MemTidWidth:           cva6_config_pkg::CVA6ConfigMemTidWidth,
-  NrLoadBufEntries:      cva6_config_pkg::CVA6ConfigNrLoadBufEntries,
-  RASDepth:              cva6_config_pkg::CVA6ConfigRASDepth,
-  BTBEntries:            cva6_config_pkg::CVA6ConfigBTBEntries,
-  BHTEntries:            cva6_config_pkg::CVA6ConfigBHTEntries,
-  FpuEn:                 bit'(cva6_config_pkg::CVA6ConfigFpuEn),
-  XF16:                  bit'(cva6_config_pkg::CVA6ConfigF16En),
-  XF16ALT:               bit'(cva6_config_pkg::CVA6ConfigF16AltEn),
-  XF8:                   bit'(cva6_config_pkg::CVA6ConfigF8En),
-  RVA:                   bit'(cva6_config_pkg::CVA6ConfigAExtEn),
-  RVB:                   bit'(cva6_config_pkg::CVA6ConfigAExtEn),
-  RVV:                   bit'(cva6_config_pkg::CVA6ConfigVExtEn),
-  RVC:                   bit'(cva6_config_pkg::CVA6ConfigCExtEn),
-  RVZCB:                 bit'(cva6_config_pkg::CVA6ConfigZcbExtEn),
-  RVZCMP:                bit'(cva6_config_pkg::CVA6ConfigZcmpExtEn),
-  XFVec:                 bit'(cva6_config_pkg::CVA6ConfigFVecEn),
-  CvxifEn:               bit'(cva6_config_pkg::CVA6ConfigCvxifEn),
-  ZiCondExtEn:           bit'(0),
-  RVS:                   bit'(1),
-  RVU:                   bit'(1),
-  HaltAddress:           dm::HaltAddress,
-  ExceptionAddress:      dm::ExceptionAddress,
-  DmBaseAddress:         ariane_soc::DebugBase,
-  TvalEn:                bit'(cva6_config_pkg::CVA6ConfigTvalEn),
-  NrPMPEntries:          unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries),
-  PMPCfgRstVal:          {16{64'h0}},
-  PMPAddrRstVal:         {16{64'h0}},
-  PMPEntryReadOnly:      16'd0,
-  NOCType:               config_pkg::NOC_TYPE_AXI4_ATOP,
-  // idempotent region
-  NrNonIdempotentRules:  unsigned'(1),
-  NonIdempotentAddrBase: 1024'({64'b0}),
-  NonIdempotentLength:   1024'({ariane_soc::DRAMBase}),
-  NrExecuteRegionRules:  unsigned'(3),
-  ExecuteRegionAddrBase: 1024'({ariane_soc::DRAMBase,   ariane_soc::ROMBase,   ariane_soc::DebugBase}),
-  ExecuteRegionLength:   1024'({ariane_soc::DRAMLength, ariane_soc::ROMLength, ariane_soc::DebugLength}),
-  // cached region
-  NrCachedRegionRules:   unsigned'(1),
-  CachedRegionAddrBase:  1024'({ariane_soc::DRAMBase}),
-  CachedRegionLength:    1024'({ariane_soc::DRAMLength}),
-  MaxOutstandingStores:  unsigned'(7),
-  DebugEn: bit'(1),
-  AxiBurstWriteEn: bit'(0)
-};
-localparam config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(CVA6UserCfg);
+function automatic config_pkg::cva6_cfg_t build_fpga_config(config_pkg::cva6_user_cfg_t CVA6UserCfg);
+  config_pkg::cva6_user_cfg_t cfg = CVA6UserCfg;
+  cfg.ZiCondExtEn = bit'(0);
+  cfg.NrNonIdempotentRules = unsigned'(1);
+  cfg.NonIdempotentAddrBase = 1024'({64'b0});
+  cfg.NonIdempotentLength = 1024'({ariane_soc::DRAMBase});
+  return build_config_pkg::build_config(cfg);
+endfunction
+
+// CVA6 Xilinx configuration
+localparam config_pkg::cva6_cfg_t CVA6Cfg = build_fpga_config(cva6_config_pkg::cva6_cfg);
 
 localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
 localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg);
