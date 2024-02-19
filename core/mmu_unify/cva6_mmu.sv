@@ -117,7 +117,7 @@ module cva6_mmu
 
   localparam type tlb_update_cva6_t = struct packed {
     // typedef struct packed {
-    logic                                valid;     // valid flag
+    logic                                valid;
     logic [PT_LEVELS-2:0][HYP_EXT:0]     is_page;
     logic [VPN_LEN-1:0]                  vpn;
     logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;
@@ -359,7 +359,7 @@ module cva6_mmu
           icache_areq_i.fetch_vaddr[PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1];
     end
 
-    endgenerate
+  endgenerate
 
     // The instruction interface is a simple request response interface
     always_comb begin : instr_interface
