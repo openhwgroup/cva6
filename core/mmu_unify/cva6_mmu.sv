@@ -34,7 +34,7 @@ module cva6_mmu
     input logic clk_i,
     input logic rst_ni,
     input logic flush_i,
-    input logic [HYP_EXT*2:0] enable_translation_i, //[v_i,enable_g_translation,enable_translation]
+    input logic [HYP_EXT*2:0] enable_translation_i,  //[v_i,enable_g_translation,enable_translation]
     input logic [HYP_EXT*2:0] en_ld_st_translation_i, // enable virtual memory translation for ld/st
     // IF interface
     input icache_arsp_t icache_areq_i,
@@ -53,7 +53,7 @@ module cva6_mmu
     output logic csr_hs_ld_st_inst_o,  // hyp load store instruction
     // if we need to walk the page table we can't grant in the same cycle
     // Cycle 0
-    output logic lsu_dtlb_hit_o, // sent in same cycle as the request if translation hits in DTLB
+    output logic lsu_dtlb_hit_o,  // sent in same cycle as the request if translation hits in DTLB
     output logic [riscv::PPNW-1:0] lsu_dtlb_ppn_o,  // ppn (send same cycle as hit)
     // Cycle 1
     output logic lsu_valid_o,  // translation is valid
@@ -491,7 +491,7 @@ module cva6_mmu
                         ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0],
                         1'b1
                      };
-        end
+          end
     end
 
     // if it didn't match any execute region throw an `Instruction Access Fault`
