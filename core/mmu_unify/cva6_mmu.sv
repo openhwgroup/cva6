@@ -23,85 +23,85 @@ module cva6_mmu
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg                      = config_pkg::cva6_cfg_empty,
     // parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig, //This is the required config param in the hypervisor version for now
-    parameter int unsigned INSTR_TLB_ENTRIES     = 4,
-    parameter int unsigned DATA_TLB_ENTRIES      = 4,
-    parameter logic                  HYP_EXT = 0,
-    parameter int unsigned           ASID_WIDTH [HYP_EXT:0],
-    parameter int unsigned           VPN_LEN = 1,
-    parameter int unsigned           PT_LEVELS = 1
-    
+    parameter int unsigned           INSTR_TLB_ENTRIES            = 4,
+    parameter int unsigned           DATA_TLB_ENTRIES             = 4,
+    parameter logic                  HYP_EXT                      = 0,
+    parameter int unsigned           ASID_WIDTH       [HYP_EXT:0],
+    parameter int unsigned           VPN_LEN                      = 1,
+    parameter int unsigned           PT_LEVELS                    = 1
+
 ) (
-    input  logic                            clk_i,
-    input  logic                            rst_ni,
-    input  logic                            flush_i,
-    input  logic   [HYP_EXT*2:0]              enable_translation_i, //[v_i,enable_g_translation,enable_translation]
+    input logic clk_i,
+    input logic rst_ni,
+    input logic flush_i,
+    input logic [HYP_EXT*2:0] enable_translation_i,  //[v_i,enable_g_translation,enable_translation]
     input  logic   [HYP_EXT*2:0]              en_ld_st_translation_i,   // enable virtual memory translation for load/stores
     // IF interface
-    input  icache_arsp_t                  icache_areq_i,
-    output icache_areq_t                  icache_areq_o,
+    input icache_arsp_t icache_areq_i,
+    output icache_areq_t icache_areq_o,
     // input  icache_areq_o_t                  icache_areq_i, this is the data type in the hypervisor version for now
     // output icache_areq_i_t                  icache_areq_o,
 
     // LSU interface
     // this is a more minimalistic interface because the actual addressing logic is handled
     // in the LSU as we distinguish load and stores, what we do here is simple address translation
-    input  exception_t                      misaligned_ex_i,
-    input  logic                            lsu_req_i,        // request address translation
-    input  logic [riscv::VLEN-1:0]          lsu_vaddr_i,      // virtual address in
-    input  riscv::xlen_t                    lsu_tinst_i,      // transformed instruction in
-    input  logic                            lsu_is_store_i,   // the translation is requested by a store
-    output logic                            csr_hs_ld_st_inst_o, // hyp load store instruction
+    input exception_t misaligned_ex_i,
+    input logic lsu_req_i,  // request address translation
+    input logic [riscv::VLEN-1:0] lsu_vaddr_i,  // virtual address in
+    input riscv::xlen_t lsu_tinst_i,  // transformed instruction in
+    input logic lsu_is_store_i,  // the translation is requested by a store
+    output logic csr_hs_ld_st_inst_o,  // hyp load store instruction
     // if we need to walk the page table we can't grant in the same cycle
     // Cycle 0
     output logic                            lsu_dtlb_hit_o,   // sent in the same cycle as the request if translation hits in the DTLB
-    output logic [riscv::PPNW-1:0]          lsu_dtlb_ppn_o,   // ppn (send same cycle as hit)
+    output logic [riscv::PPNW-1:0] lsu_dtlb_ppn_o,  // ppn (send same cycle as hit)
     // Cycle 1
-    output logic                            lsu_valid_o,      // translation is valid
-    output logic [riscv::PLEN-1:0]          lsu_paddr_o,      // translated address
-    output exception_t                      lsu_exception_o,  // address translation threw an exception
+    output logic lsu_valid_o,  // translation is valid
+    output logic [riscv::PLEN-1:0] lsu_paddr_o,  // translated address
+    output exception_t lsu_exception_o,  // address translation threw an exception
     // General control signals
-    input riscv::priv_lvl_t                 priv_lvl_i,
-    input riscv::priv_lvl_t                 ld_st_priv_lvl_i,
-    input logic    [HYP_EXT:0]              sum_i,
-    input logic    [HYP_EXT:0]              mxr_i,
-    input logic                             hlvx_inst_i,
-    input logic                             hs_ld_st_inst_i,
+    input riscv::priv_lvl_t priv_lvl_i,
+    input riscv::priv_lvl_t ld_st_priv_lvl_i,
+    input logic [HYP_EXT:0] sum_i,
+    input logic [HYP_EXT:0] mxr_i,
+    input logic hlvx_inst_i,
+    input logic hs_ld_st_inst_i,
     // input logic flag_mprv_i,
-    input logic [riscv::PPNW-1:0]           satp_ppn_i[HYP_EXT*2:0],//[hgatp,vsatp,satp]
+    input logic [riscv::PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
 
-    input logic [ASID_WIDTH[0]-1:0]            asid_i[HYP_EXT*2:0],//[vmid,vs_asid,asid]
-    input logic [ASID_WIDTH[0]-1:0]            asid_to_be_flushed_i[HYP_EXT:0],
-    input logic [riscv::VLEN-1:0]           vaddr_to_be_flushed_i[HYP_EXT:0],
+    input logic [ASID_WIDTH[0]-1:0] asid_i               [HYP_EXT*2:0],  //[vmid,vs_asid,asid]
+    input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i [  HYP_EXT:0],
+    input logic [  riscv::VLEN-1:0] vaddr_to_be_flushed_i[  HYP_EXT:0],
 
-    input logic    [HYP_EXT*2:0]               flush_tlb_i,
+    input logic [HYP_EXT*2:0] flush_tlb_i,
 
     // Performance counters
-    output logic                            itlb_miss_o,
-    output logic                            dtlb_miss_o,
+    output logic                                   itlb_miss_o,
+    output logic                                   dtlb_miss_o,
     // PTW memory interface
-    input  dcache_req_o_t                   req_port_i,
-    output dcache_req_i_t                   req_port_o,
+    input  dcache_req_o_t                          req_port_i,
+    output dcache_req_i_t                          req_port_o,
     // PMP
-    input  riscv::pmpcfg_t [15:0]           pmpcfg_i,
-    input  logic [15:0][riscv::PLEN-3:0]    pmpaddr_i
+    input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
+    input  logic           [15:0][riscv::PLEN-3:0] pmpaddr_i
 );
-logic [ASID_WIDTH[0]-1:0] dtlb_mmu_asid_i[HYP_EXT:0];
-logic [ASID_WIDTH[0]-1:0] itlb_mmu_asid_i[HYP_EXT:0];
+  logic [ASID_WIDTH[0]-1:0] dtlb_mmu_asid_i[HYP_EXT:0];
+  logic [ASID_WIDTH[0]-1:0] itlb_mmu_asid_i[HYP_EXT:0];
 
-    genvar b;
-    generate
-    for (b = 0; b < HYP_EXT + 1; b++) begin  
-        assign dtlb_mmu_asid_i[b] = b==0 ? 
+  genvar b;
+  generate
+    for (b = 0; b < HYP_EXT + 1; b++) begin
+      assign dtlb_mmu_asid_i[b] = b==0 ? 
                                     ((en_ld_st_translation_i[2*HYP_EXT] || flush_tlb_i[HYP_EXT]) ? asid_i[HYP_EXT] : asid_i[0]): 
                                     asid_i[HYP_EXT*2];
-        assign itlb_mmu_asid_i[b] = b==0 ?
+      assign itlb_mmu_asid_i[b] = b==0 ?
                                     (enable_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0]):
                                     asid_i[HYP_EXT*2];
     end
     endgenerate
 
-    // memory management, pte for cva6
-    localparam type pte_cva6_t = struct packed {
+  // memory management, pte for cva6
+  localparam type pte_cva6_t = struct packed {
         // typedef struct packed {
         logic [riscv::PPNW-1:0] ppn;  // PPN length for
         logic [1:0] rsw;
