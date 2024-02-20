@@ -20,9 +20,8 @@ if ! [ -n "$BBL_ROOT" ]; then
   return 1
 fi
 
-# install the required tools
-source verif/regress/install-cva6.sh
-source verif/regress/install-riscv-dv.sh
+# setup sim env
+source verif/sim/setup-env.sh
 
 if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness

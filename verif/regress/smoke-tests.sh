@@ -13,14 +13,20 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-source ./verif/sim/setup-env.sh
 
 # install the required tools
 source ./verif/regress/install-verilator.sh
 source ./verif/regress/install-spike.sh
+
+# install the required test suites
 source ./verif/regress/install-riscv-compliance.sh
 source ./verif/regress/install-riscv-tests.sh
 source ./verif/regress/install-riscv-arch-test.sh
+
+# setup sim env
+source ./verif/sim/setup-env.sh
+
+echo "$SPIKE_INSTALL_DIR$"
 
 if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=vcs-testharness,spike

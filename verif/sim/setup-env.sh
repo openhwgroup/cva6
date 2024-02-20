@@ -30,7 +30,7 @@ fi
 
 # Set verilator and spike related variables
 if [ -z "$VERILATOR_INSTALL_DIR" ]; then
-    export VERILATOR_INSTALL_DIR="$ROOT_PROJECT"/tools/$(ls $ROOT_PROJECT/tools | grep verilator)
+    export VERILATOR_INSTALL_DIR="$ROOT_PROJECT"/tools/$(ls $ROOT_PROJECT/tools | grep verilator | head -n 1)
 fi
 
 if [ -z "$SPIKE_SRC_DIR" -o "$SPIKE_INSTALL_DIR" = "__local__" ]; then

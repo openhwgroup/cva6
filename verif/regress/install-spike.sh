@@ -18,13 +18,13 @@ ROOT_PROJECT=$(readlink -f $(dirname "${BASH_SOURCE[0]}")/../..)
 # Use the in-tree vendorized Spike if SPIKE_SRC_DIR is not set
 # or when a fully local installation was requested.
 if [ -z "$SPIKE_SRC_DIR" -o "$SPIKE_INSTALL_DIR" = "__local__" ]; then
-  SPIKE_SRC_DIR=$ROOT_PROJECT/verif/core-v-verif/vendor/riscv/riscv-isa-sim
+  export SPIKE_SRC_DIR=$ROOT_PROJECT/verif/core-v-verif/vendor/riscv/riscv-isa-sim
 fi
 
 # Expect/perform Spike installation in directory $SPIKE_INSTALL_DIR.
 # which defaults to $ROOT_PROJECT/tools/spike.
 if [ -z "$SPIKE_INSTALL_DIR" -o "$SPIKE_INSTALL_DIR" = "__local__" ]; then
-  SPIKE_INSTALL_DIR="$ROOT_PROJECT/tools/spike"
+  export SPIKE_INSTALL_DIR="$ROOT_PROJECT/tools/spike"
 fi
 
 # Do not clean up the destination directory: leave that to the user (real or CI job).
