@@ -29,7 +29,7 @@ fi
 # Define the default src+build location of Verilator.
 # No need to force this location in Continuous Integration scripts.
 if [ -z "$VERILATOR_BUILD_DIR" ]; then
-  VERILATOR_BUILD_DIR="$ROOT_PROJECT"/tools/verilator-$VERILATOR_HASH/verilator
+  export VERILATOR_BUILD_DIR="$ROOT_PROJECT"/tools/verilator-$VERILATOR_HASH/verilator
 fi
 
 # Define the default installation location of Verilator: one level up
@@ -37,7 +37,7 @@ fi
 # Continuous Integration may need to override this particular variable
 # to use a preinstalled build of Verilator.
 if [ -z "$VERILATOR_INSTALL_DIR" ]; then
-  VERILATOR_INSTALL_DIR="$(dirname $VERILATOR_BUILD_DIR)"
+  export VERILATOR_INSTALL_DIR="$(dirname $VERILATOR_BUILD_DIR)"
 fi
 
 # Build and install Verilator only if not already installed at the expected
