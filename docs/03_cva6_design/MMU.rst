@@ -4,7 +4,7 @@ Memory Management Unit
 
 The Memory Management Unit (MMU) module is a crucial component in the RISC-V-based processor, serving as the backbone for virtual memory management and address translation. 
 
-.. figure:: ../images/mmu_in_out.png
+.. figure:: _static/mmu_in_out.png
    :name: **Figure 1:** Inputs and Outputs of CVA6 MMU
    :align: center
    :width: 70%
@@ -19,7 +19,7 @@ At its core, the MMU plays a pivotal role in translating virtual addresses into 
 * Shared TLB
 * Page Table Walker (PTW)
 
-.. figure:: ../images/mmu_major_blocks.png
+.. figure:: _static/mmu_major_blocks.png
    :name: **Figure 2:** Major Blocks in CVA6 MMU
    :align: center
    :width: 60%
@@ -465,7 +465,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
 
    <span style="font-size:18px; font-weight:bold;">Control Flow in MMU Module</span>
 
-.. figure:: ../images/mmu_control_flow.png
+.. figure:: _static/mmu_control_flow.png
    :name: **Figure 3:** Control Flow in CVA6 MMU
    :align: center
    :width: 95%
@@ -539,7 +539,7 @@ The CVA6 TLB is structured as a fully associative cache, where the virtual addre
 
 The input and output signals of the TLB are shown in the following figure. 
 
-.. figure:: ../images/in_out_tlb.png
+.. figure:: _static/in_out_tlb.png
    :name: **Figure 4:** Inputs and Outputs of CVA6 TLB
    :align: center
    :width: 65%
@@ -754,7 +754,7 @@ The input and output signals of the TLB are shown in the following figure.
 
 The number of TLB entries can be changed via a design parameter. Each TLB entry is made up of two fields: Tag and Content. The Tag field holds the virtual page number, ASID and page size along with a valid bit (VALID) indicating that the entry is valid. The virtual page number, is further split into several separate virtual page numbers according to the number of PT_LEVELS used in each configuration. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page. Note that the V bit in the Content field is the V bit which is present in the page table in memory. It is copied from the page table, as is,  and the VALID bit in the Tag is set based on its value.The TLB entry fields are shown in **Figure 2**.
 
-.. figure:: ../images/cva6_tlb_entry.png
+.. figure:: _static/cva6_tlb_entry.png
    :name: **Figure 5:** Fields in CVA6 TLB entry
    :align: center
    :width: 80%
@@ -787,7 +787,7 @@ This function takes in the virtual address and certain other fields, examines th
 
 All the conditions listed above are checked against every TLB entry. If there is a TLB hit then the corresponding bit in the hit array is set. **Figure 3** Illustrates the TLB hit/miss process listed above.
 
-.. figure:: ../images/cva6_tlb_hit.png
+.. figure:: _static/cva6_tlb_hit.png
    :name: **Figure 6:** Block diagram of CVA6 TLB hit or miss
    :align: center
    :width: 75%
@@ -803,7 +803,7 @@ The SFENCE.VMA instruction can be used with certain specific source register spe
 
 * **If rs1 is not equal to x0 and rs2 is not equal to x0:** Invalidate all TLB entries which contain leaf page table entries corresponding to the virtual address in rs1 (shown below as Virtual Address to be flushed) and that match the address space identifier as specified by integer register rs2 (shown below as asid_to_be_flushed_i), except for entries containing global mappings. This is referred to as the “SFENCE.VMA vaddr asid” case.
 
-.. figure:: ../images/sfence_vaddr_asid.png
+.. figure:: _static/sfence_vaddr_asid.png
    :name: **Figure 7:** Invalidate TLB entry if ASID and virtual address match
    :align: center
    :width: 75%
@@ -813,7 +813,7 @@ The SFENCE.VMA instruction can be used with certain specific source register spe
 
 * **If rs1 is equal to x0 and rs2 is equal to x0:** Invalidate all TLB entries for all address spaces. This is referred to as the "SFENCE.VMA x0 x0" case.
 
-.. figure:: ../images/sfence_x0_x0.png
+.. figure:: _static/sfence_x0_x0.png
    :name: **Figure 8:** Invalidate all TLB entries if both source register specifiers are x0
    :align: center
    :width: 62%
@@ -823,7 +823,7 @@ The SFENCE.VMA instruction can be used with certain specific source register spe
 
 * **If rs1 is not equal to x0 and rs2 is equal to x0:** invalidate all TLB entries that contain leaf page table entries corresponding to the virtual address in rs1, for all address spaces. This is referred to as the “SFENCE.VMA vaddr x0” case.
 
-.. figure:: ../images/sfence_vaddr_x0.png
+.. figure:: _static/sfence_vaddr_x0.png
    :name: **Figure 9:** Invalidate TLB entry with matching virtual address for all address spaces
    :align: center
    :width: 75%
@@ -833,7 +833,7 @@ The SFENCE.VMA instruction can be used with certain specific source register spe
 
 * **If rs1 is equal to x0 and rs2 is not equal to x0:** Invalidate all TLB entries matching the address space identified by integer register rs2, except for entries containing global mappings. This is referred to as the “SFENCE.VMA 0 asid” case.
 
-.. figure:: ../images/sfence_x0_asid.png
+.. figure:: _static/sfence_x0_asid.png
    :name: **Figure 10:** Invalidate TLB entry for matching ASIDs
    :align: center
    :width: 75%
@@ -857,7 +857,7 @@ CVA6 implements the PLRU algorithm via the Tree-PLRU method which implements a b
 
 The PLRU binary tree is implemented as an array of node values. Nodes are organized in the array based on levels, with those from lower levels appearing before higher ones. Furthermore those on the left side of a node appear before those on the right side of a node. The figure below shows a tree and the corresponding array.
 
-.. figure:: ../images/plru_tree_indexing.png
+.. figure:: _static/plru_tree_indexing.png
    :name: **Figure 11:** PLRU Tree Indexing
    :align: center
    :width: 60%
@@ -884,7 +884,7 @@ For a TLB entry which is accessed, the following steps are taken to make it the 
 
 At level 0, no bit of the TLB entry’s index determines the offset from the index base because it’s a root node. At level 1, MSB of entry’s index determines the amount of offset from index base at that level. At level 2, the first two bits of the entry's index from MSB side determine the offset from the index base because there are 4 nodes at the level 2 and so on. 
 
-.. figure:: ../images/update_tree.png
+.. figure:: _static/update_tree.png
    :name: **Figure 12:** Promote Entry to be MRU
    :align: center
    :width: 82%
@@ -905,7 +905,7 @@ Every TLB entry is checked for the replacement entry. The following steps are ta
 3. Calculate the shift amount to identify the relevant node based on the level and TLB entry index.
 4. If the corresponding bit of the entry's index matches the value of the node being traversed at the current level, keep the replacement signal high for that entry; otherwise, set the replacement signal to low.
 
-.. figure:: ../images/replacement_entry.png
+.. figure:: _static/replacement_entry.png
    :name: **Figure 13:** Possible path traverse for entry selection for replacement
    :align: center
    :width: 65%
@@ -947,7 +947,7 @@ The CVA6 shared TLB is structured as a 2-way associative cache, where the virtua
 
 The input and output signals of the shared TLB are shown in the following two figures. 
 
-.. figure:: ../images/shared_tlb_in_out.png
+.. figure:: _static/shared_tlb_in_out.png
    :name: **Figure 14:** Inputs and outputs of CVA6 shared TLB
    :align: center
    :width: 60%
@@ -1131,7 +1131,7 @@ The input and output signals of the shared TLB are shown in the following two fi
 
 Shared TLB is 2-way associative, with a depth of 64. A single entry in the set contains the valid bit, tag and the content. The Tag segment stores details such as the virtual page number, ASID, and page size. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page.
 
-.. figure:: ../images/shared_tlb.png
+.. figure:: _static/shared_tlb.png
    :name: **Figure 15:** CVA6 Shared TLB Structure
    :align: center
    :width: 60%
@@ -1179,7 +1179,7 @@ In the case of a DTLB miss, the same logic is employed as described for an ITLB 
 
 Shared TLB lookup for a hit occurs under the same conditions as described for the TLB modules used as ITLB and DTLB. However, there are some distinctions. In both the ITLB and DTLB, the virtual address requiring translation is compared against all TLB entries. In contrast, the shared TLB only compares the tag and content of the set indicated by the provided virtual page number. The index of the set is extracted from VPN0 of the requested virtual address. Given that the shared TLB is 2-way associative, each set contains two entries. Consequently, both of these entries are compared. Below figure illustrates how the set is opted for the lookup.
 
-.. figure:: ../images/shared_tlb_set.png
+.. figure:: _static/shared_tlb_set.png
    :name: **Figure 16:** Set opted for lookup in shared TLB
    :align: center
    :width: 60%
@@ -1224,7 +1224,7 @@ The input signal is the vector to be counted, and the output represents the coun
 
 When initializing the module, the width of the input vector is set to the number of shared TLB ways. The trailing zero counter mode is selected. The vector of valid bits is set as the input vector, but with negation. This is because we want the index of the first non-valid entry, and LZC returns the count of trailing zeros, which actually corresponds to the index of the first occurrence of 1 from the least significant bit (LSB). if there is at least one non-valid entry, that entry is opted for the replacement, and If not then this is signaled by LZC.
 
-.. figure:: ../images/LZC.png
+.. figure:: _static/LZC.png
    :name: **Figure 17:** Replacement of First invalid entry.
    :align: center
    :width: 60%
@@ -1238,7 +1238,7 @@ When initializing the module, the width of the input vector is set to the number
 
 If all ways are valid, a random replacement policy is employed for the replacement process. The Linear Feedback Shift Register (LFSR) is utilized to select the replacement entry randomly. LFSR is commonly used in generating sequences of pseudo-random numbers. When the enable signal is active, the current state of the LFSR undergoes a transformation. Specifically, the state is shifted right by one bit, and the result is combined with a predetermined masking pattern. This masking pattern is derived from the predefined “Masks” array, introducing a non-linear behavior to the sequence generation of the LFSR. The masking process involves XOR operations between the shifted state bits and specific pattern bits, contributing to the complexity and unpredictability of the generated sequence.
 
-.. figure:: ../images/RR.png
+.. figure:: _static/RR.png
    :name: **Figure 18:** Entry selection for replacement using LFSR
    :align: center
    :width: 95%
@@ -1252,7 +1252,7 @@ Page Table Walker
 
 The "CVA6 Page Table Walker (PTW)" is a hardware module designed to facilitate the translation of virtual addresses into physical addresses, a crucial task in memory access management.
 
-.. figure:: ../images/ptw_in_out.png
+.. figure:: _static/ptw_in_out.png
    :name: **Figure 19:** Input and Outputs of Page Table Walker
    :align: center
    :width: 60%
@@ -1286,7 +1286,7 @@ In addition to its translation capabilities, the PTW module is equipped to detec
 
    <p style="text-align:center;"> <b>Table 12:</b> Signal Description of PTW </p>
 
-  .. list-table::
+.. list-table::
     :header-rows: 1
 
     * - Signal
@@ -1337,11 +1337,11 @@ In addition to its translation capabilities, the PTW module is equipped to detec
       - logic
       - Output signal indicating that a PMP (Physical Memory Protection) access exception occurred during PTW operation.
 
-      * - ``enable_translation_i``
-        - in
-        - CSR RegFile
-        - logic [HYP_EXT*2:0]  
-        - Bit 0 indicates address translation request for instruction. In Hypervisor mode, bit 1 enables virtual memory translation for instrucionts, and bit 2 indicates the virtualization mode state
+    * - ``enable_translation_i``
+      - in
+      - CSR RegFile
+      - logic [HYP_EXT*2:0]  
+      - Bit 0 indicates address translation request for instruction. In Hypervisor mode, bit 1 enables virtual memory translation for instrucionts, and bit 2 indicates the virtualization mode state
 
     * - ``en_ld_st_translation_i``
       - in
@@ -1354,12 +1354,12 @@ In addition to its translation capabilities, the PTW module is equipped to detec
       - Store / Load Unit
       - logic [HYP_EXT:0]
       - Indicates that Instruction is a hypervisor load store with execute permissions 
-      
-      * - ``lsu_is_store_i``
-        - in
-        - Store Unit
-        - logic
-        - Input signal indicating whether the translation was triggered by a store operation.
+    
+    * - ``lsu_is_store_i``
+      - in
+      - Store Unit
+      - logic
+      - Input signal indicating whether the translation was triggered by a store operation.
 
     * - ``req_port_i``
       - in
@@ -1555,7 +1555,7 @@ Page Table Walker is implemented as a finite state machine. It listens to shared
 * **WAIT_RVALID:** After processing a PTE, the PTW waits for a valid data signal, indicating that relevant data is ready for further processing.
 * **LATENCY:** Introduces a delay to account for synchronization or timing requirements between states.
 
-.. figure:: ../images/ptw_state_diagram.png
+.. figure:: _static/ptw_state_diagram.png
    :name: **Figure 20:** State Machine Diagram of CVA6 PTW
    :align: center
    :width: 95%
@@ -1576,7 +1576,7 @@ In the IDLE state of the Page Table Walker (PTW) finite state machine, the syste
 
    a. The address of the desired Page Table Entry within the level 0  page table is calculated by multiplying the Physical Page Number (PPN) of the level 0 page table from the SATP register by the page size. This result is then added to the product of the Virtual Page Number, and the size of a page table entry. Depending on the translation indicated by enable_translation_i and en_ld_st_translation_i at the different levels [HYP_EXT * 2:0] the corresponding register (satp_ppn_i[HYP_EXT * 2:0] and bits of the VPN are used.
 
-.. figure:: ../images/ptw_idle.png
+.. figure:: _static/ptw_idle.png
    :name: **Figure 21:** Address of Desired PTE at Level 0
    :align: center
    :width: 68%
@@ -1609,7 +1609,7 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 
    a. If the valid bit of the PTE is not set, or if the PTE has reserved RWX field encodings, it signifies an Invalid PTE. In such cases, the state transitions to the "PROPAGATE_ERROR" state, indicating a page-fault exception due to an invalid translation.
 
-.. figure:: ../images/ptw_pte_1.png
+.. figure:: _static/ptw_pte_1.png
    :name: **Figure 22:** Invalid PTE and reserved RWX encoding leads to page fault
    :align: center
    :width: 70%
@@ -1625,7 +1625,7 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 
    a. For instruction page table walk, if the page is not executable (pte.x is not set) or not marked as accessible (pte.a is not set), the state transitions to the "PROPAGATE_ERROR" state. Otherwise, the translation is valid. In tcase that the Hypervisor Extension is enabled, a valid translation requires being in the G_FINAL_STAGE, or the G stage being disabled.
 
-.. figure:: ../images/ptw_iptw.png
+.. figure:: _static/ptw_iptw.png
    :name: **Figure 23:** For Instruction Page Table Walk
    :align: center
    :width: 70%
@@ -1637,7 +1637,7 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 
    b. For data page table walk, the state checks if the page is readable (pte.r is set) or if the page is executable only but made readable by setting the MXR bit in xSTATUS CSR register. If either condition is met, it indicates a valid translation. If not, the state transitions to the "PROPAGATE_ERROR" state. When Hypervisor Extension is enabled, a valid translation also requires that it is in the G_FINAL_STAGE or the G stage is not enabled.
 
-.. figure:: ../images/ptw_dptw.png
+.. figure:: _static/ptw_dptw.png
    :name: **Figure 24:** Data Access Page Table Walk
    :width: 70%
    :alt: ptw_dptw
@@ -1648,7 +1648,7 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 
    c. If the access is intended for storing data, additional checks are performed: If the page is not writable (pte.w is not set) or if it is not marked as dirty (pte.d is not set), the state transitions to the "PROPAGATE_ERROR" state.
 
-.. figure:: ../images/ptw_dptw_s.png
+.. figure:: _static/ptw_dptw_s.png
    :name: **Figure 25:** Data Access Page Table Walk, Store requested
    :align: center
    :width: 70%
@@ -1658,7 +1658,7 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 
 6. The state also checks for potential misalignment issues in the translation: If the current page table level is the first level and if the PPN of in PTE is not zero, it indicates a misaligned superpage, leading to a transition to the "PROPAGATE_ERROR" state.
 
-.. figure:: ../images/ptw_mis_sup.png
+.. figure:: _static/ptw_mis_sup.png
    :name: **Figure 26:** Misaligned Superpage Check
    :align: center
    :width: 70%
@@ -1669,7 +1669,7 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 7. If the PTE is valid but the page is neither readable nor executable, the PTW recognizes the PTE as a pointer to the next level of the page table, indicating that additional translation information can be found in the referenced page table at a lower level.
 8. If the current page table level is not the last level, the PTW proceeds to switch to the next level page table, updating the next level pointer and calculating the address for the next page table entry using the Physical Page Number from the PTE and the index from virtual address. Depending on the level and ptw_stage, the pptr is updated accordingly.
 
-.. figure:: ../images/ptw_nlvl.png
+.. figure:: _static/ptw_nlvl.png
    :name: **Figure 27:** Address of desired PTE at next level of Page Table
    :align: center
    :width: 70%
@@ -1682,7 +1682,7 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 11. If the translation access is found to be restricted by the Physical Memory Protection (PMP) settings (allow_access is false), the state updates the shared TLB update signal to indicate that the TLB entry should not be updated. Additionally, the saved address for the page table walk is restored to its previous value, and the state transitions to the "PROPAGATE_ACCESS_ERROR" state.
 12. Lastly, if the data request for the page table entry was granted, the state indicates to the cache subsystem that the tag associated with the data is now valid.
 
-.. figure:: ../images/ptw_pte_flowchart.png
+.. figure:: _static/ptw_pte_flowchart.png
    :name: **Figure 28:** Flow Chart of PTE LOOKUP State
    :align: center
    :alt: ptw_pte_flowchart
