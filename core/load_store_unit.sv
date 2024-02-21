@@ -137,63 +137,65 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
-  if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
-    mmu #(
+  if (MMU_PRESENT) begin : gen_mmu
+
+    localparam HYP_EXT = 0;  //CVA6Cfg.CVA6ConfigHExtEn
+    localparam VPN_LEN = (riscv::XLEN == 64) ? (HYP_EXT ? 29 : 27) : 20;
+    localparam PT_LEVELS = (riscv::XLEN == 64) ? 3 : 2;
+    localparam int unsigned mmu_ASID_WIDTH[HYP_EXT:0] = {ASID_WIDTH};
+
+
+    cva6_mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (ASID_WIDTH)
+        .HYP_EXT          (HYP_EXT),
+        .ASID_WIDTH       (mmu_ASID_WIDTH),
+        .VPN_LEN          (VPN_LEN),
+        .PT_LEVELS        (PT_LEVELS)
     ) i_cva6_mmu (
+        .clk_i                 (clk_i),
+        .rst_ni                (rst_ni),
+        .flush_i               (flush_i),
+        .enable_translation_i  ({enable_translation_i}),
+        .en_ld_st_translation_i({en_ld_st_translation_i}),
+        .icache_areq_i         (icache_areq_i),
+        .icache_areq_o         (icache_areq_o),
         // misaligned bypass
-        .misaligned_ex_i(misaligned_exception),
-        .lsu_is_store_i (st_translation_req),
-        .lsu_req_i      (translation_req),
-        .lsu_vaddr_i    (mmu_vaddr),
+        .misaligned_ex_i       (misaligned_exception),
+        .lsu_req_i             (translation_req),
+        .lsu_vaddr_i           (mmu_vaddr),
+        .lsu_tinst_i           (0),
+        .lsu_is_store_i        (st_translation_req),
+        .csr_hs_ld_st_inst_o   (),
+        .lsu_dtlb_hit_o        (dtlb_hit),                  // send in the same cycle as the request
+        .lsu_dtlb_ppn_o        (dtlb_ppn),                  // send in the same cycle as the request
+
         .lsu_valid_o    (translation_valid),
         .lsu_paddr_o    (mmu_paddr),
         .lsu_exception_o(mmu_exception),
-        .lsu_dtlb_hit_o (dtlb_hit),               // send in the same cycle as the request
-        .lsu_dtlb_ppn_o (dtlb_ppn),               // send in the same cycle as the request
-        // connecting PTW to D$ IF
-        .req_port_i     (dcache_req_ports_i[0]),
-        .req_port_o     (dcache_req_ports_o[0]),
-        // icache address translation requests
-        .icache_areq_i  (icache_areq_i),
-        .asid_to_be_flushed_i,
-        .vaddr_to_be_flushed_i,
-        .icache_areq_o  (icache_areq_o),
+
+        .priv_lvl_i      (priv_lvl_i),
+        .ld_st_priv_lvl_i(ld_st_priv_lvl_i),
+
+        .sum_i          ({sum_i}),
+        .mxr_i          ({mxr_i}),
+        .hlvx_inst_i    (0),
+        .hs_ld_st_inst_i(0),
+
+        .satp_ppn_i           ({satp_ppn_i}),
+        .asid_i               ({asid_i}),
+        .asid_to_be_flushed_i ({asid_to_be_flushed_i}),
+        .vaddr_to_be_flushed_i({vaddr_to_be_flushed_i}),
+        .flush_tlb_i          ({flush_tlb_i}),
+
+        .itlb_miss_o(itlb_miss_o),
+        .dtlb_miss_o(dtlb_miss_o),
+
+        .req_port_i(dcache_req_ports_i[0]),
+        .req_port_o(dcache_req_ports_o[0]),
         .pmpcfg_i,
-        .pmpaddr_i,
-        .*
-    );
-  end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
-    cva6_mmu_sv32 #(
-        .CVA6Cfg          (CVA6Cfg),
-        .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (ASID_WIDTH)
-    ) i_cva6_mmu (
-        // misaligned bypass
-        .misaligned_ex_i(misaligned_exception),
-        .lsu_is_store_i (st_translation_req),
-        .lsu_req_i      (translation_req),
-        .lsu_vaddr_i    (mmu_vaddr),
-        .lsu_valid_o    (translation_valid),
-        .lsu_paddr_o    (mmu_paddr),
-        .lsu_exception_o(mmu_exception),
-        .lsu_dtlb_hit_o (dtlb_hit),               // send in the same cycle as the request
-        .lsu_dtlb_ppn_o (dtlb_ppn),               // send in the same cycle as the request
-        // connecting PTW to D$ IF
-        .req_port_i     (dcache_req_ports_i[0]),
-        .req_port_o     (dcache_req_ports_o[0]),
-        // icache address translation requests
-        .icache_areq_i  (icache_areq_i),
-        .asid_to_be_flushed_i,
-        .vaddr_to_be_flushed_i,
-        .icache_areq_o  (icache_areq_o),
-        .pmpcfg_i,
-        .pmpaddr_i,
-        .*
+        .pmpaddr_i
     );
   end else begin : gen_no_mmu
 
