@@ -345,9 +345,12 @@ module csr_regfile
         riscv::CSR_MCAUSE: csr_rdata = mcause_q;
         riscv::CSR_MTVAL: csr_rdata = mtval_q;
         riscv::CSR_MIP: csr_rdata = mip_q;
-        riscv::CSR_MENVCFG: csr_rdata = '0 | fiom_q;
+        riscv::CSR_MENVCFG: begin
+          if (CVA6Cfg.RVU) csr_rdata = '0 | fiom_q;
+          else read_access_exception = 1'b1;
+        end
         riscv::CSR_MENVCFGH: begin
-          if (riscv::XLEN == 32) csr_rdata = '0;
+          if (CVA6Cfg.RVU && riscv::XLEN == 32) csr_rdata = '0;
           else read_access_exception = 1'b1;
         end
         riscv::CSR_MVENDORID: csr_rdata = OPENHWGROUP_MVENDORID;
@@ -884,7 +887,10 @@ module csr_regfile
           // alignment constraint of 64 * 4 bytes
           if (csr_wdata[0]) mtvec_d = {csr_wdata[riscv::XLEN-1:8], 7'b0, csr_wdata[0]};
         end
-        riscv::CSR_MCOUNTEREN: mcounteren_d = {{riscv::XLEN - 32{1'b0}}, csr_wdata[31:0]};
+        riscv::CSR_MCOUNTEREN: begin
+          if (CVA6Cfg.RVU) mcounteren_d = {{riscv::XLEN - 32{1'b0}}, csr_wdata[31:0]};
+          else update_access_exception = 1'b1;
+        end
 
         riscv::CSR_MSCRATCH: mscratch_d = csr_wdata;
         riscv::CSR_MEPC: mepc_d = {csr_wdata[riscv::XLEN-1:1], 1'b0};
@@ -897,9 +903,9 @@ module csr_regfile
           mask  = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
           mip_d = (mip_q & ~mask) | (csr_wdata & mask);
         end
-        riscv::CSR_MENVCFG: if (CVA6Cfg.RVS) fiom_d = csr_wdata[0];
+        riscv::CSR_MENVCFG: if (CVA6Cfg.RVU) fiom_d = csr_wdata[0];
         riscv::CSR_MENVCFGH: begin
-          if (riscv::XLEN != 32) update_access_exception = 1'b1;
+          if (!CVA6Cfg.RVU || riscv::XLEN != 32) update_access_exception = 1'b1;
         end
         riscv::CSR_MCOUNTINHIBIT:
         if (PERF_COUNTER_EN) mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
