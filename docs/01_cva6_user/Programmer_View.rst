@@ -169,11 +169,25 @@ CV64A6 supports the RISC-V **Sv39** virtual memory when the ``MMUEn`` parameter 
 Within CV64A6, the hypervisor extension is enabled and supports **Sv39x4** virtual memory when the ``CVA6ConfigHExtEn`` parameter is set to 1 (and ``Xlen`` is set to 64).
 
 
-By default, CV32A6 and CV64A6 are in RISC-V **Bare** mode. **Sv32** or **Sv39** are enabled by writing 1 to ``satp[0]`` register bit.
+By default, CV32A6 and CV64A6 are in RISC-V **Bare** mode. **Sv32** or **Sv39** are enabled by writing the required configuration to satp register mode bits.
 
-When the ``MMUEn`` parameter is set to 0, CV32A6 and CV64A6 are always in RISC-V **Bare** mode; ``satp[0]`` remains at 0 and writes to this register are ignored.
+In CV32A6 the mode bit of satp register is bit 31.  **Sv32** is enabled by writing 1 to ``satp[31]``.
 
-**PENDING: THE HYPERVISOR EXTENSION? HOW IS IT ENABLED VIA SW?**
+In CV64A6 the mode bits of satp register are bits [63:60]. **Sv39** is enabled by writing ``8`` to ``satp[63:60]``.
+
+When the ``MMUEn`` parameter is set to 0, CV32A6 and CV64A6 are always in RISC-V **Bare** mode; satp mode bit(s) remain at 0 and writes to this register are ignored.
+
+
+By default, the hypervisor extension is disabled. It can be enabled by setting bit 7 in the ``misa CSR``, which corresponds to the letter H.
+
+When ``CVA6ConfigHExtEn`` parameter is set to 0, the hypervisor extension is always disabled; bit 7 in the ``misa CSR`` remains at 0 and writes to this register are ignored.
+
+Even if Hypervisor extension is enabled, by default, address translation for Supervisor, Hypervisor and Virtual Supervisor are disabled. They can be enabled by writing the required configuration to satp, hgatp and vsatp registers respectively.
+
+**Sv39** is enabled for Supervisor or Virtual Supervisor by writing ``8`` to ``satp[63:60]`` or ``vsatp[63:60]`` respectively.
+
+**Sv39x4** is enabled for Hypervisor by writing  ``8`` to ``hgatp[63:60]``.
+
 
 Notes for the integrator:
 
