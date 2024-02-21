@@ -15,19 +15,12 @@ COMMIT_STAGE Module
 Description
 -----------
 
-The COMMIT_STAGE module implements the commit stage, which is the
-last stage in the processor’s
-pipeline. It takes incoming instruction and update the architectural
-state: writing CSR registers, committing stores and writing back data to
-the register file. The commit stage controls the stalling and the
-flushing of the processor.
+The COMMIT_STAGE module implements the commit stage, which is the last stage in the processor’s pipeline.
+It takes incoming instruction and update the architectural state: writing CSR registers, committing stores and writing back data to the register file.
+The commit stage controls the stalling and the flushing of the processor.
 
-The commit stage also manages the exceptions. An exception can occur
-during the first four pipeline stages (PCgen cannot generate an
-exception) or happen during commit stage coming from the CSR_REGFILE or
-from an interrupt. To allow precise interrupts to happen they are
-considered during the commit only and associated with teh related
-instruction.
+The commit stage also manages the exceptions. An exception can occur during the first four pipeline stages (PCgen cannot generate an exception) or happen during commit stage coming from the CSR_REGFILE or from an interrupt.
+To allow precise interrupts to happen they are considered during the commit only and associated with teh related instruction.
 
 The module is connected to:
 
