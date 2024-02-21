@@ -22,7 +22,7 @@ import random
 import re
 import sys
 import logging
-import time
+import subprocess
 import datetime
 
 from dv.scripts.lib import *
@@ -1025,7 +1025,48 @@ def load_config(args, cwd):
     if not args.testlist:
       args.testlist = args.custom_target + "/testlist.yaml"
 
+def incorrect_version_exit(tool, tool_version, required_version):
+  logging.error(f"You are currently using version {tool_version} of {tool}, should be: {required_version}. Please install or reinstall it with the installation script." )
+  sys.exit(RET_FAIL)
+  
+def check_gcc_version():
+  REQUIRED_GCC_VERSION = 11
+  
+  gcc_path = get_env_var("RISCV_GCC")
+  gcc_version = run_cmd(f"{gcc_path} --version")
+  gcc_version_string = re.match(".*\s(\d+\.\d+\.\d+).*", gcc_version).group(1)
+  gcc_version_number = gcc_version_string.split('.')
+  logging.info(f"GCC Version: {gcc_version_string}")
+  
+  if int(gcc_version_number[0]) < REQUIRED_GCC_VERSION:
+    incorrect_version_exit("GCC", gcc_version_string, f">={REQUIRED_GCC_VERSION}")
+      
+def check_spike_version():
+  # Get Spike User version
+  user_spike_version = run_cmd("$SPIKE_PATH/spike -v").strip()
+  logging.info(f"Spike Version: {user_spike_version}")
+  
+  # Get Spike hash from core-v-verif submodule
+  spike_hash = subprocess.run('git log -1 --pretty=tformat:%h -- $SPIKE_SRC_DIR/..', capture_output=True, text=True, shell=True, cwd=os.environ.get("SPIKE_SRC_DIR"))
+  spike_version = "1.1.1-dev " + spike_hash.stdout.strip()
 
+  if user_spike_version != spike_version:
+    incorrect_version_exit("Spike", user_spike_version, spike_version)
+      
+def check_verilator_version():
+  REQUIRED_VERILATOR_VERSION = "5.008"
+  
+  verilator_version_string = run_cmd("verilator --version")
+  logging.info(f"Verilator Version: {verilator_version_string.strip()}")
+  verilator_version = verilator_version_string.split(" ")[1]
+  
+  if REQUIRED_VERILATOR_VERSION != verilator_version:
+    incorrect_version_exit("Verilator", verilator_version, REQUIRED_VERILATOR_VERSION)
+      
+def check_tools_version():
+  check_gcc_version()
+  check_spike_version()
+  check_verilator_version()
 
 def main():
   """This is the main entry point."""
@@ -1063,21 +1104,9 @@ def main():
     isscomp_opts = "\""+args.isscomp_opts+"\""
     setup_logging(args.verbose)
     logg = logging.getLogger()
-    #Check gcc version
-    gcc_path=get_env_var("RISCV_GCC")
-    version=run_cmd("%s --version" % gcc_path)
-    gcc_version=re.match(".*\s(\d+\.\d+\.\d+).*", version)
-    gcc_version=gcc_version.group(1)
-    version_number=gcc_version.split('.')
-    if int(version_number[0])<11 :
-      logging.error('Your are currently using version %s of gcc, please update your version to version 11.1.0 or more to use all features of this script' % gcc_version)
-      sys.exit(RET_FAIL)
-    #print environment softwares
-    logging.info("GCC Version : %s" % (gcc_version))
-    spike_version=get_env_var("SPIKE_INSTALL_DIR")
-    logging.info("Spike Version : %s" % (spike_version))
-    verilator_version=run_cmd("verilator --version")
-    logging.info("Verilator Version : %s" % (verilator_version))
+    
+    check_tools_version()
+    
     # create file handler which logs even debug messages13.1.1
     fh = logging.FileHandler('logfile.log')
     fh.setLevel(logging.DEBUG)
