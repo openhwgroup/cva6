@@ -280,7 +280,7 @@ module cva6_mmu
       .req_port_i    (req_port_i),
       .req_port_o    (req_port_o),
 
-      .asid_i        (asid_i),
+      .asid_i(asid_i),
 
       .update_vaddr_o(update_vaddr),
 
@@ -294,7 +294,7 @@ module cva6_mmu
       .shared_tlb_hit_i   (shared_tlb_hit),
       .shared_tlb_vaddr_i (shared_tlb_vaddr),
 
-      .itlb_req_i (itlb_req),
+      .itlb_req_i(itlb_req),
 
       .hlvx_inst_i(hlvx_inst_i),
       // from CSR file
