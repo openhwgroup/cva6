@@ -85,11 +85,11 @@ module scoreboard #(
     input ariane_pkg::bp_resolve_t resolved_branch_i,
     // Transaction ID at which to write the result back - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,
-    // Write data in - TO_BE_COMPLETED
+    // Results to write back - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
     // Exception from a functional unit (e.g.: ld/st exception) - TO_BE_COMPLETED
     input ariane_pkg::exception_t [CVA6Cfg.NrWbPorts-1:0] ex_i,
-    // Data in is valid - TO_BE_COMPLETED
+    // Indicates valid results - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
     // Cvxif we for writeback - TO_BE_COMPLETED
     input logic x_we_i,

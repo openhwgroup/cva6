@@ -39,7 +39,7 @@ module branch_unit #(
     input ariane_pkg::branchpredict_sbe_t branch_predict_i,
     // Signaling that we resolved the branch - ISSUE_STAGE
     output ariane_pkg::bp_resolve_t resolved_branch_o,
-    // Branch is resolved, new entries can be accept by scoreboard - ID_STAGE
+    // Branch is resolved, new entries can be accepted by scoreboard - ID_STAGE
     output logic resolve_branch_o,
     // Branch exception out - TO_BE_COMPLETED
     output ariane_pkg::exception_t branch_exception_o

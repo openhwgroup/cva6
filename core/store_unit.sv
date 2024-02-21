@@ -32,7 +32,7 @@ module store_unit
     output logic store_buffer_empty_o,
     // Store instruction is valid - ISSUE_STAGE
     input logic valid_i,
-    // data input - ISSUE_STAGE
+    // Data input - ISSUE_STAGE
     input lsu_ctrl_t lsu_ctrl_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic pop_st_o,

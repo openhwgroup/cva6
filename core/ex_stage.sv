@@ -26,7 +26,7 @@ module ex_stage
     input logic rst_ni,
     // Fetch flush request - CONTROLLER
     input logic flush_i,
-    // Mode is debug - CSR_REGFILE
+    // Debug mode is enabled - CSR_REGFILE
     input logic debug_mode_i,
     // rs1 forwarding - ISSUE_STAGE
     input logic [riscv::VLEN-1:0] rs1_forwarding_i,

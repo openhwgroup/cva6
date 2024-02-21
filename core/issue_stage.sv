@@ -107,7 +107,7 @@ module issue_stage
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
     // FPR write enable - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
-    // Commit instruction - COMMIT_STAGE
+    // Instructions to commit - COMMIT_STAGE
     output scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
     // Commit acknowledge - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,

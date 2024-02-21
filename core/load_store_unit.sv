@@ -33,7 +33,7 @@ module load_store_unit
     input  logic amo_valid_commit_i,
     // FU data needed to execute instruction - ISSUE_STAGE
     input  fu_data_t fu_data_i,
-    // Load and store unit is ready - ISSUE_STAGE
+    // Load Store Unit is ready - ISSUE_STAGE
     output logic lsu_ready_o,
     // Load and Store unit is valid - ISSUE_STAGE
     input  logic lsu_valid_i,
@@ -56,9 +56,9 @@ module load_store_unit
     // Store exception - ISSUE_STAGE
     output exception_t store_exception_o,
 
-    // Commit the pending store - TO_BE_COMPLETED
+    // Commit the first pending store - TO_BE_COMPLETED
     input logic commit_i,
-    // commit queue is ready to accept another commit request - TO_BE_COMPLETED
+    // Commit queue is ready to accept another commit request - TO_BE_COMPLETED
     output logic commit_ready_o,
     // Commit transaction ID - TO_BE_COMPLETED
     input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
@@ -91,9 +91,9 @@ module load_store_unit
     input  logic             [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
     // TLB flush - CONTROLLER
     input  logic                               flush_tlb_i,
-    // instruction TLB miss - PERF_COUNTERS
+    // Instruction TLB miss - PERF_COUNTERS
     output logic                               itlb_miss_o,
-    // data TLB miss - PERF_COUNTERS
+    // Data TLB miss - PERF_COUNTERS
     output logic                               dtlb_miss_o,
 
     // Data cache request output - CACHES

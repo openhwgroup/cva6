@@ -61,27 +61,27 @@ module issue_read_operands
     input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output fu_data_t fu_data_o,
-    // unregistered version of fu_data_o.operanda - TO_BE_COMPLETED
+    // Unregistered version of fu_data_o.operanda - TO_BE_COMPLETED
     output riscv::xlen_t rs1_forwarding_o,
-    // unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
+    // Unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
     output riscv::xlen_t rs2_forwarding_o,
     // Instruction pc - TO_BE_COMPLETED
     output logic [riscv::VLEN-1:0] pc_o,
     // Is compressed instruction - TO_BE_COMPLETED
     output logic is_compressed_instr_o,
-    // Fixed latency unit ready to accept new request - TO_BE_COMPLETED
+    // Fixed Latency Unit ready to accept new request - TO_BE_COMPLETED
     input logic flu_ready_i,
     // ALU output is valid - TO_BE_COMPLETED
     output logic alu_valid_o,
-    // branch instruction is valid - TO_BE_COMPLETED
+    // Branch instruction is valid - TO_BE_COMPLETED
     output logic branch_valid_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output branchpredict_sbe_t branch_predict_o,
-    // load store unit is ready - TO_BE_COMPLETED
+    // Load Store Unit is ready - TO_BE_COMPLETED
     input logic lsu_ready_i,
-    // load store unit result is valid - TO_BE_COMPLETED
+    // Load Store Unit result is valid - TO_BE_COMPLETED
     output logic lsu_valid_o,
-    // mult result is valid - TO_BE_COMPLETED
+    // Mult result is valid - TO_BE_COMPLETED
     output logic mult_valid_o,
     // FPU is ready - TO_BE_COMPLETED
     input logic fpu_ready_i,

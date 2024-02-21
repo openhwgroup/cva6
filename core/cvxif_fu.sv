@@ -27,7 +27,7 @@ module cvxif_fu
     input  logic                                       x_valid_i,
     // CVXIF is ready - ISSUE_STAGE
     output logic                                       x_ready_o,
-    // undecoded instruction - ISSUE_STAGE
+    // Offloaded instruction - ISSUE_STAGE
     input  logic                   [             31:0] x_off_instr_i,
     // CVXIF transaction ID - ISSUE_STAGE
     output logic                   [TRANS_ID_BITS-1:0] x_trans_id_o,

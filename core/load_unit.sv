@@ -29,13 +29,13 @@ module load_unit
     input logic rst_ni,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic flush_i,
-    // load unit input port - TO_BE_COMPLETED
+    // Load unit input port - TO_BE_COMPLETED
     input logic valid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input lsu_ctrl_t lsu_ctrl_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic pop_ld_o,
-    // load unit result is valid - TO_BE_COMPLETED
+    // Load unit result is valid - TO_BE_COMPLETED
     output logic valid_o,
     // Load transaction ID - TO_BE_COMPLETED
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
@@ -45,7 +45,7 @@ module load_unit
     output exception_t ex_o,
     // Request address translation - TO_BE_COMPLETED
     output logic translation_req_o,
-    // Vistual address - TO_BE_COMPLETED
+    // Virtual address - TO_BE_COMPLETED
     output logic [riscv::VLEN-1:0] vaddr_o,
     // Physical address - TO_BE_COMPLETED
     input logic [riscv::PLEN-1:0] paddr_i,
@@ -59,7 +59,7 @@ module load_unit
     output logic [11:0] page_offset_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic page_offset_matches_i,
-    // Stoer buffer is empty - TO_BE_COMPLETED
+    // Store buffer is empty - TO_BE_COMPLETED
     input logic store_buffer_empty_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
