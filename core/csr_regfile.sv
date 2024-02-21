@@ -356,7 +356,9 @@ module csr_regfile
         riscv::CSR_MHARTID: csr_rdata = hart_id_i;
         riscv::CSR_MCONFIGPTR: csr_rdata = '0;  // not implemented
         riscv::CSR_MCOUNTINHIBIT:
-        csr_rdata = {{(riscv::XLEN - (MHPMCounterNum + 3)) {1'b0}}, mcountinhibit_q};
+        if (PERF_COUNTER_EN)
+          csr_rdata = {{(riscv::XLEN - (MHPMCounterNum + 3)) {1'b0}}, mcountinhibit_q};
+        else read_access_exception = 1'b1;
         // Counters and Timers
         riscv::CSR_MCYCLE: csr_rdata = cycle_q[riscv::XLEN-1:0];
         riscv::CSR_MCYCLEH:
@@ -605,11 +607,12 @@ module csr_regfile
     if (!debug_mode_q) begin
       // increase instruction retired counter
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-        if (commit_ack_i[i] && !ex_i.valid && !mcountinhibit_q[2]) instret++;
+        if (commit_ack_i[i] && !ex_i.valid && (!PERF_COUNTER_EN || (PERF_COUNTER_EN && !mcountinhibit_q[2])))
+          instret++;
       end
       instret_d = instret;
       // increment the cycle count
-      if (!mcountinhibit_q[0]) cycle_d = cycle_q + 1'b1;
+      if (!PERF_COUNTER_EN || (PERF_COUNTER_EN && !mcountinhibit_q[0])) cycle_d = cycle_q + 1'b1;
       else cycle_d = cycle_q;
     end
 
@@ -899,7 +902,8 @@ module csr_regfile
           if (riscv::XLEN != 32) update_access_exception = 1'b1;
         end
         riscv::CSR_MCOUNTINHIBIT:
-        mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
+        if (PERF_COUNTER_EN) mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
+        else update_access_exception = 1'b1;
         // performance counters
         riscv::CSR_MCYCLE: cycle_d[riscv::XLEN-1:0] = csr_wdata;
         riscv::CSR_MCYCLEH:
