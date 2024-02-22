@@ -278,13 +278,13 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``hlvx_inst_i``
      - in
      - Store / Load Unit
-     - logic [HYP_EXT:0]
+     - logic 
      - Indicates that Instruction is a hypervisor load store with execute permissions 
 
    * - ``hs_ld_st_inst_i``
      - in
      - CSR RegFile
-     - logic [HYP_EXT:0]
+     - logic 
      - Indicates that Instruction is a hypervisor load store instruction
 
    * - ``satp_ppn_i``
@@ -674,7 +674,7 @@ The input and output signals of the TLB are shown in the following figure.
     - Vector 0 is the Address Space Identifier (ASID) used for updating the TLB. Vector 1 is the analogous one for virtual supervisor or hypervisor when Hypervisor extension is enabled.
   
   * - ``v_st_enbl``
-    - logic[HYP_EXT:0][ASID_WIDTH[0]-1:0] 
+    - logic [HYP_EXT*2:0]
     - Used only in Hypervisor mode. Indicates for which stage the translation was requested and for which it is therefore valid (s_stage, g_stage or virtualization enabled).
 
   * - ``content``
@@ -947,7 +947,7 @@ Shared Translation Lookaside Buffer
 
 The CVA6 shared TLB is structured as a 2-way associative cache, where the virtual address requiring translation is compared with the set indicated by the virtual page number. The shared TLB is looked up in case of an Instruction TLB (ITLB) or data TLB (DTLB) miss, signaled by these TLBs. If the entry is found in the shared TLB set, the respective TLB, whose translation is being requested, is updated. If the entry is not found in the shared TLB, then the processor has to perform a page table walk. Once the processor obtains a PPN corresponding to the VPN, the shared TLB is updated with this information. If the physical page is not found in the page table, it results in a page fault, which is handled by the operating system. The operating system will then place the corresponding physical page in memory.
 
-The input and output signals of the shared TLB are shown in the following two figures. 
+The input and output signals of the shared TLB are shown in the following Figure. 
 
 .. figure:: _static/shared_tlb_in_out.png
    :name: **Figure 14:** Inputs and outputs of CVA6 shared TLB
@@ -1004,11 +1004,17 @@ The input and output signals of the shared TLB are shown in the following two fi
       - logic
       - Bit 0 indicates address translation request for load or store. In Hypervisor mode, bit 1 enables virtual memory translation for load or store, and bit 2 indicates the virtualization mode at which load and stores should happen
 
-    * - ``asid_i``
+    * - ``dtlb_asid_i``
       - in
-      - CSR Regfile
-      - logic [HYP_EXT*2:0][ASID_WIDTH[0]-1:0]
-      - Vector 0 is the ASID for the lookup. Vectors 1 and 2 are the analogous one for virtual supervisor and hypervisor when Hypervisor extension is enabled.
+      - MMU
+      - logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]
+      - Vector 0 is the ASID for the lookup in case of a DTLB miss. Vector 1 is the analogous one for virtual supervisor (VMID) when Hypervisor extension is enabled.
+
+    * - ``itlb_asid_i``
+      - in
+      - MMU
+      - logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]
+      - Vector 0 is the ASID for the lookup in case of an ITLB miss. Vector 1 is the analogous one for virtual supervisor (VMID) when Hypervisor extension is enabled.
 
     * - ``itlb_access_i``
       - in
@@ -1117,15 +1123,19 @@ The input and output signals of the shared TLB are shown in the following two fi
 
    * - ``is_page``
      - logic [PT_LEVELS-2:0][HYP_EXT:0] 
-     - Indicates if the shared TLB entry corresponds to a any page. When Hypervisor extenxion is used it includes information for G-stage too.
+     - Indicates if the shared TLB entry corresponds to any page. When Hypervisor extenxion is used it includes information for G-stage too.
 
    * - ``vpn``
      - logic[PT_LEVELS+HYP_EXT-1:0][(VPN_LEN/PT_LEVELS)-1:0] 
      - Virtual Page Number (VPN) represents the index of PTE in each page table level.
 
    * - ``asid``
-     - logic
-     - Address Space Identifier (ASID) used to identify different address spaces
+     - logic [HYP_EXT*2:0][ASID_WIDTH[0]-1:0]
+     - Vector 0 is the Address Space Identifier (ASID) used to identify different address spaces.  Vector 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
+
+   * - ``v_st_enbl``
+     - logic [HYP_EXT*2:0]
+     - Used only in Hypervisor mode. Indicates for which stage the translation was requested and for which it is therefore valid (s_stage, g_stage or virtualization enabled).
 
 .. raw:: html
 
@@ -1179,7 +1189,7 @@ In the case of a DTLB miss, the same logic is employed as described for an ITLB 
 
    <span style="font-size:18px; font-weight:bold;">Tag Comparison</span>
 
-Shared TLB lookup for a hit occurs under the same conditions as described for the TLB modules used as ITLB and DTLB. However, there are some distinctions. In both the ITLB and DTLB, the virtual address requiring translation is compared against all TLB entries. In contrast, the shared TLB only compares the tag and content of the set indicated by the provided virtual page number. The index of the set is extracted from VPN0 of the requested virtual address. Given that the shared TLB is 2-way associative, each set contains two entries. Consequently, both of these entries are compared. Below figure illustrates how the set is opted for the lookup.
+Shared TLB lookup for a hit occurs under the same conditions as described for the TLB modules used as ITLB and DTLB. However, there are some distinctions. In both the ITLB and DTLB, the virtual address requiring translation is compared against all TLB entries. In contrast, the shared TLB only compares the tag and content of the set indicated by the provided virtual page number. The index of the set is extracted from the VPN of the requested virtual address. Given that the shared TLB is 2-way associative, each set contains two entries. Consequently, both of these entries are compared. Below figure illustrates how the set is opted for the lookup.
 
 .. figure:: _static/shared_tlb_set.png
    :name: **Figure 16:** Set opted for lookup in shared TLB
@@ -1348,13 +1358,13 @@ In addition to its translation capabilities, the PTW module is equipped to detec
     * - ``en_ld_st_translation_i``
       - in
       - CSR RegFile
-      - logic
+      - logic [HYP_EXT*2:0]
       - Bit 0 indicates address translation request for load or store. In Hypervisor mode, bit 1 enables virtual memory translation for load or store, and bit 2 indicates the virtualization mode at which load and stores should happen
     
     * - ``hlvx_inst_i``
       - in
       - Store / Load Unit
-      - logic [HYP_EXT:0]
+      - logic 
       - Indicates that Instruction is a hypervisor load store with execute permissions 
     
     * - ``lsu_is_store_i``
@@ -1421,7 +1431,7 @@ In addition to its translation capabilities, the PTW module is equipped to detec
       - in
       - CSR RegFile
       - logic [HYP_EXT*2:0][riscv::PPNW-1:0]
-      - PPN of top level page table from SATP register (bit 0), VSATP register (bit 1 when Hypervisor Extension is enabled) and HGATP (bit 2 when Hypervisor Extension is enabled).
+      - PPN of top level page table from SATP register (vector 0), VSATP register (vector 1 when Hypervisor Extension is enabled) and HGATP (vector 2 when Hypervisor Extension is enabled).
 
     * - ``mxr_i``
       - in
@@ -1552,8 +1562,8 @@ Page Table Walker is implemented as a finite state machine. It listens to shared
 * **IDLE:** The initial state where the PTW is awaiting a trigger, often a Shared TLB miss, to initiate a memory access request. In the case of the Hypervisor extension, the stage to which the translation belongs is determined by the enable_translation_i and en_ld_st_translation_i signals. There are 3 possible stages: G_INTERMED_STAGE, G_FINAL_STAGE and S_STAGE. When Hypervisor is not enabled PTW is always in S_STAGE.
 * **WAIT_GRANT:** Request memory access and wait for data grant
 * **PTE_LOOKUP:** Once granted access, the PTW examines the valid Page Table Entry (PTE), checking attributes to determine the appropriate course of action. Depending on the STAGE determined in the previous state, pptr and other atributes are updated accordingly.
-* **PROPOGATE_ERROR:** If the PTE is invalid, this state handles the propagation of an error, often leading to a page-fault exception due to non-compliance with access conditions.
-* **PROPOGATE_ACCESS_ERROR:** Propagate access fault if access is not allowed from a PMP perspective
+* **PROPAGATE_ERROR:** If the PTE is invalid, this state handles the propagation of an error, often leading to a page-fault exception due to non-compliance with access conditions.
+* **PROPAGATE_ACCESS_ERROR:** Propagate access fault if access is not allowed from a PMP perspective
 * **WAIT_RVALID:** After processing a PTE, the PTW waits for a valid data signal, indicating that relevant data is ready for further processing.
 * **LATENCY:** Introduces a delay to account for synchronization or timing requirements between states.
 
@@ -1576,15 +1586,15 @@ In the IDLE state of the Page Table Walker (PTW) finite state machine, the syste
 3. The signal indicating the instruction page table walk is set to 0.
 4. A conditional check is performed: if there is a shared TLB access request and the entry is not found in the shared TLB (indicating a shared TLB miss), the following steps are executed:
 
-   a. The address of the desired Page Table Entry within the level 0  page table is calculated by multiplying the Physical Page Number (PPN) of the level 0 page table from the SATP register by the page size. This result is then added to the product of the Virtual Page Number, and the size of a page table entry. Depending on the translation indicated by enable_translation_i and en_ld_st_translation_i at the different levels [HYP_EXT * 2:0] the corresponding register (satp_ppn_i[HYP_EXT * 2:0] and bits of the VPN are used.
+   a. The address of the desired Page Table Entry within the level 0  page table is calculated by multiplying the Physical Page Number (PPN) of the level 0 page table from the SATP register by the page size. This result is then added to the product of the Virtual Page Number, and the size of a page table entry. Depending on the translation indicated by enable_translation_i and en_ld_st_translation_i at the different levels [HYP_EXT * 2:0] the corresponding register (satp_ppn_i[HYP_EXT * 2:0]) and bits of the VPN are used.
 
 .. figure:: _static/ptw_idle.png
-   :name: **Figure 21:** Address of Desired PTE at Level 0
+   :name: **Figure 21:** Address of Desired PTE at level 0
    :align: center
    :width: 68%
    :alt: ptw_idle
 
-   **Figure 21:** Address of Desired PTE at Level 0
+   **Figure 21:** Address of Desired PTE at level 0
 
 .. _example:
 
@@ -1625,7 +1635,7 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 
 5. Within the Valid PTE scenario, the ptw_stage is checked to decide the next state. When no Hypervisor Extension is used, the stage is always S_STAGE and has no impact on the progress of the table walk. However, when the Hypervisor Extension is used, if the stage is not the G_FINAL_STAGE, it has to continue advancing the different stages before proceeding with the translation. In this case, the state machine goes back to WAIT_GRANT state. Afterwards, the state performs further checks based on whether the translation is intended for instruction fetching or data access:
 
-   a. For instruction page table walk, if the page is not executable (pte.x is not set) or not marked as accessible (pte.a is not set), the state transitions to the "PROPAGATE_ERROR" state. Otherwise, the translation is valid. In tcase that the Hypervisor Extension is enabled, a valid translation requires being in the G_FINAL_STAGE, or the G stage being disabled.
+   a. For instruction page table walk, if the page is not executable (pte.x is not set) or not marked as accessible (pte.a is not set), the state transitions to the "PROPAGATE_ERROR" state. Otherwise, the translation is valid. In case that the Hypervisor Extension is enabled, a valid translation requires being in the G_FINAL_STAGE, or the G stage being disabled.
 
 .. figure:: _static/ptw_iptw.png
    :name: **Figure 23:** For Instruction Page Table Walk
