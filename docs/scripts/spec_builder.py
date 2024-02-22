@@ -155,11 +155,11 @@ if __name__ == "__main__":
                 fout.write(f"     - {port.connexion}\n")
                 fout.write(f"     - {port.data_type}\n")
             fout.write("\n")
-            fout.write(
-                f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n"
-            )
+            if len(comments) != 0:
+                fout.write(
+                    f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n"
+                )
+                fout.write("\n")
+                for comment in comments:
+                    fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
             fout.write("\n")
-            for comment in comments:
-                fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
-            if len(comments) == 0:
-                fout.write("none\n")

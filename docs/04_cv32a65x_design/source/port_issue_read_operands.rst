@@ -256,3 +256,4 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``fpu_fmt_o`` output is tied to 0
 |   ``fpu_rm_o`` output is tied to 0
 |   ``we_fpr_i`` input is tied to 0
+

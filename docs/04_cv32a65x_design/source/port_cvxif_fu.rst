@@ -100,3 +100,4 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 
 | As PRIV = MachineOnly,
 |   ``priv_lvl_i`` input is tied to MachineMode
+

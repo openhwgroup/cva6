@@ -217,3 +217,4 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 | As IsRVFI = 0,
 |   ``rvfi_issue_pointer_o`` output is tied to 0
 |   ``rvfi_commit_pointer_o`` output is tied to 0
+

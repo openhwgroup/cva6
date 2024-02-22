@@ -150,3 +150,4 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``dtlb_hit_i`` input is tied to 1
 | As MMUPresent = 0,
 |   ``dtlb_ppn_i`` input is tied to 0
+

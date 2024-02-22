@@ -382,3 +382,4 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 | As IsRVFI = 0,
 |   ``rvfi_lsu_ctrl_o`` output is tied to 0
 |   ``rvfi_mem_paddr_o`` output is tied to 0
+

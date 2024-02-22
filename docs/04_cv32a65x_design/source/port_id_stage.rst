@@ -113,3 +113,4 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``frm_i`` input is tied to 0
 | As RVV = 0,
 |   ``vs_i`` input is tied to 0
+

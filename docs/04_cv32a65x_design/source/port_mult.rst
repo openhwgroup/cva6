@@ -72,6 +72,4 @@
      - ISSUE_STAGE
      - logic[TRANS_ID_BITS-1:0]
 
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-none

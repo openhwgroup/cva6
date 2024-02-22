@@ -165,3 +165,4 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``fence_o`` output is tied to 0
 | As RVS = 0,
 |   ``sfence_vma_o`` output is tied to 0
+

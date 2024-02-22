@@ -90,3 +90,4 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``debug_req_i`` input is tied to 0
 | As IsRVFI = 0,
 |   ``rvfi_probes_o`` output is tied to 0
+
