@@ -9,7 +9,7 @@
 
 .. _CVA6_id_stage_ports:
 
-.. list-table:: id_stage module IO ports
+.. list-table:: **id_stage module** IO ports
    :header-rows: 1
 
    * - Signal

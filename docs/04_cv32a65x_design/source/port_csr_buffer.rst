@@ -9,7 +9,7 @@
 
 .. _CVA6_csr_buffer_ports:
 
-.. list-table:: csr_buffer module IO ports
+.. list-table:: **csr_buffer module** IO ports
    :header-rows: 1
 
    * - Signal

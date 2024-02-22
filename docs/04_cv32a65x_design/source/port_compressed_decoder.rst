@@ -9,7 +9,7 @@
 
 .. _CVA6_compressed_decoder_ports:
 
-.. list-table:: compressed_decoder module IO ports
+.. list-table:: **compressed_decoder module** IO ports
    :header-rows: 1
 
    * - Signal

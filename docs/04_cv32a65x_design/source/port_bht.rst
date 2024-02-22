@@ -9,7 +9,7 @@
 
 .. _CVA6_bht_ports:
 
-.. list-table:: bht module IO ports
+.. list-table:: **bht module** IO ports
    :header-rows: 1
 
    * - Signal

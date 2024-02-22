@@ -9,7 +9,7 @@
 
 .. _CVA6_instr_scan_ports:
 
-.. list-table:: instr_scan module IO ports
+.. list-table:: **instr_scan module** IO ports
    :header-rows: 1
 
    * - Signal

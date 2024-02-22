@@ -9,7 +9,7 @@
 
 .. _CVA6_commit_stage_ports:
 
-.. list-table:: commit_stage module IO ports
+.. list-table:: **commit_stage module** IO ports
    :header-rows: 1
 
    * - Signal

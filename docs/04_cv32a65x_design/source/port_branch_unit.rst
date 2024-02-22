@@ -9,7 +9,7 @@
 
 .. _CVA6_branch_unit_ports:
 
-.. list-table:: branch_unit module IO ports
+.. list-table:: **branch_unit module** IO ports
    :header-rows: 1
 
    * - Signal

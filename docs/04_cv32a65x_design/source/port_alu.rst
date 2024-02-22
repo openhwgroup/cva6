@@ -9,7 +9,7 @@
 
 .. _CVA6_alu_ports:
 
-.. list-table:: alu module IO ports
+.. list-table:: **alu module** IO ports
    :header-rows: 1
 
    * - Signal

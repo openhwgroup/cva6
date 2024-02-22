@@ -9,7 +9,7 @@
 
 .. _CVA6_instr_realign_ports:
 
-.. list-table:: instr_realign module IO ports
+.. list-table:: **instr_realign module** IO ports
    :header-rows: 1
 
    * - Signal

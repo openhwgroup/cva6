@@ -9,7 +9,7 @@
 
 .. _CVA6_csr_regfile_ports:
 
-.. list-table:: csr_regfile module IO ports
+.. list-table:: **csr_regfile module** IO ports
    :header-rows: 1
 
    * - Signal

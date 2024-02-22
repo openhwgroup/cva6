@@ -9,7 +9,7 @@
 
 .. _CVA6_instr_queue_ports:
 
-.. list-table:: instr_queue module IO ports
+.. list-table:: **instr_queue module** IO ports
    :header-rows: 1
 
    * - Signal

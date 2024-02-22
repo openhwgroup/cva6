@@ -9,7 +9,7 @@
 
 .. _CVA6_lsu_bypass_ports:
 
-.. list-table:: lsu_bypass module IO ports
+.. list-table:: **lsu_bypass module** IO ports
    :header-rows: 1
 
    * - Signal

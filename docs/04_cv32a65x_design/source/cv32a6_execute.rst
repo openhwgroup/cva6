@@ -36,7 +36,7 @@ Submodules
    EX_STAGE submodules
 
 
-ALU
+alu
 ===
 
 The arithmetic logic unit (ALU) is a small piece of hardware which performs 32 and 64-bit arithmetic and bitwise operations: subtraction, addition, shifts, comparisons...
@@ -45,7 +45,7 @@ It always completes its operation in a single cycle.
 .. include:: port_alu.rst
 
 
-Branch Unit
+branch_unit
 ===========
 
 The branch unit module manages all kinds of control flow changes i.e.: conditional and unconditional jumps.
@@ -55,7 +55,7 @@ It also decides if a branch was mis-predicted or not and reports corrective acti
 .. include:: port_branch_unit.rst
 
 
-CSR Buffer
+CSR_buffer
 ==========
 
 The CSR buffer module stores the CSR address at which the instruction is going to read/write.
@@ -64,7 +64,7 @@ As the CSR instruction alters the processor architectural state, this instructio
 .. include:: port_csr_buffer.rst
 
 
-Mult
+mult
 ====
 
 The multiplier module supports the division and multiplication operations.
@@ -97,7 +97,7 @@ The division is a simple serial divider which needs 64 cycles in the worst case.
 .. include:: port_serdiv.rst
 
 
-Load_Store_Unit (LSU)
+load_store_unit (LSU)
 =====================
 
 The load store module interfaces with the data cache (D$) to manage the load and store operations.

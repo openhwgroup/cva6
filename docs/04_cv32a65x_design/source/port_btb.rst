@@ -9,7 +9,7 @@
 
 .. _CVA6_btb_ports:
 
-.. list-table:: btb module IO ports
+.. list-table:: **btb module** IO ports
    :header-rows: 1
 
    * - Signal

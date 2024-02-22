@@ -139,7 +139,7 @@ if __name__ == "__main__":
             )
             fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
             fout.write(f".. _CVA6_{module}_ports:\n\n")
-            fout.write(f".. list-table:: {module} module IO ports\n")
+            fout.write(f".. list-table:: **{module} module** IO ports\n")
             fout.write("   :header-rows: 1\n")
             fout.write("\n")
             fout.write("   * - Signal\n")

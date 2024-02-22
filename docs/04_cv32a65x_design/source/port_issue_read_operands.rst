@@ -9,7 +9,7 @@
 
 .. _CVA6_issue_read_operands_ports:
 
-.. list-table:: issue_read_operands module IO ports
+.. list-table:: **issue_read_operands module** IO ports
    :header-rows: 1
 
    * - Signal

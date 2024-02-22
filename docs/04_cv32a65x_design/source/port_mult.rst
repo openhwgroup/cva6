@@ -9,7 +9,7 @@
 
 .. _CVA6_mult_ports:
 
-.. list-table:: mult module IO ports
+.. list-table:: **mult module** IO ports
    :header-rows: 1
 
    * - Signal

@@ -9,7 +9,7 @@
 
 .. _CVA6_multiplier_ports:
 
-.. list-table:: multiplier module IO ports
+.. list-table:: **multiplier module** IO ports
    :header-rows: 1
 
    * - Signal

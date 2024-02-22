@@ -9,7 +9,7 @@
 
 .. _CVA6_issue_stage_ports:
 
-.. list-table:: issue_stage module IO ports
+.. list-table:: **issue_stage module** IO ports
    :header-rows: 1
 
    * - Signal

@@ -9,7 +9,7 @@
 
 .. _CVA6_frontend_ports:
 
-.. list-table:: frontend module IO ports
+.. list-table:: **frontend module** IO ports
    :header-rows: 1
 
    * - Signal

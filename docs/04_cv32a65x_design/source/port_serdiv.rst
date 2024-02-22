@@ -9,7 +9,7 @@
 
 .. _CVA6_serdiv_ports:
 
-.. list-table:: serdiv module IO ports
+.. list-table:: **serdiv module** IO ports
    :header-rows: 1
 
    * - Signal

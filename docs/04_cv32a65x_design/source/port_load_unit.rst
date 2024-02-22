@@ -9,7 +9,7 @@
 
 .. _CVA6_load_unit_ports:
 
-.. list-table:: load_unit module IO ports
+.. list-table:: **load_unit module** IO ports
    :header-rows: 1
 
    * - Signal

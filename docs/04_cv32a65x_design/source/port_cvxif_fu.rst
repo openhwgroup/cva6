@@ -9,7 +9,7 @@
 
 .. _CVA6_cvxif_fu_ports:
 
-.. list-table:: cvxif_fu module IO ports
+.. list-table:: **cvxif_fu module** IO ports
    :header-rows: 1
 
    * - Signal

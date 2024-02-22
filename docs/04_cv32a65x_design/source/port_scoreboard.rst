@@ -9,7 +9,7 @@
 
 .. _CVA6_scoreboard_ports:
 
-.. list-table:: scoreboard module IO ports
+.. list-table:: **scoreboard module** IO ports
    :header-rows: 1
 
    * - Signal

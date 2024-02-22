@@ -9,7 +9,7 @@
 
 .. _CVA6_decoder_ports:
 
-.. list-table:: decoder module IO ports
+.. list-table:: **decoder module** IO ports
    :header-rows: 1
 
    * - Signal
