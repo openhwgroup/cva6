@@ -54,12 +54,12 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``INSTR_TLB_ENTRIES``
      - Number of entries in Instruction TLB
      - Natural
-     - ``>0``
+     - ``>0 and multiple of 2``
 
    * - ``DATA_TLB_ENTRIES``
      - Number of entries in Data TLB
      - Natural
-     - ``>0``
+     - ``>0 and multiple of 2``
 
    * - ``HYP_EXT``
      - Indicates if Hypervisor extension is used (1) or not (0)
@@ -95,13 +95,13 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
 
    * - ``INSTR_TLB_ENTRIES``
      - 2
-     - 2
-     - 2
+     - 4
+     - 4
 
    * - ``DATA_TLB_ENTRIES``
      - 2
-     - 2
-     - 2
+     - 4
+     - 4
 
    * - ``HYP_EXT``
      - 0
@@ -170,7 +170,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``en_ld_st_translation_i``
      - in
      - CSR RegFile
-     - logic
+     - logic [HYP_EXT*2:0]
      - Bit 0 indicates address translation request for load or store. In Hypervisor mode, bit 1 enables virtual memory translation for load or store, and bit 2 indicates the virtualization mode at which load and stores should happen
 
    * - ``icache_areq_i``
@@ -683,7 +683,7 @@ The input and output signals of the TLB are shown in the following figure.
 
 .. raw:: html
 
-   <p style="text-align:center;"> <b>Table 8:</b> SV32 PTE Struct (<b>riscv::pte_cva6_t</b>) </p>
+   <p style="text-align:center;"> <b>Table 8:</b> CVA6 PTE Struct (<b>pte_cva6_t</b>) </p>
 
 .. list-table::
   :header-rows: 1
@@ -752,7 +752,7 @@ The input and output signals of the TLB are shown in the following figure.
 
    <span style="font-size:18px; font-weight:bold;">TLB Entry Fields</span>
 
-The number of TLB entries can be changed via a design parameter. Each TLB entry is made up of two fields: Tag and Content. The Tag field holds the virtual page number, ASID and page size along with a valid bit (VALID) indicating that the entry is valid. The virtual page number, is further split into several separate virtual page numbers according to the number of PT_LEVELS used in each configuration. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page. Note that the V bit in the Content field is the V bit which is present in the page table in memory. It is copied from the page table, as is,  and the VALID bit in the Tag is set based on its value.The TLB entry fields are shown in **Figure 2**.
+The number of TLB entries can be changed via a design parameter. Each TLB entry is made up of two fields: Tag and Content. The Tag field holds the virtual page number, ASID and page size along with a valid bit (VALID) indicating that the entry is valid, and a v_st_enbl fiedl that indicates at which level the translation is valid when hypervisor mode is enabled. The virtual page number, is further split into several separate virtual page numbers according to the number of PT_LEVELS used in each configuration. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page. Note that the V bit in the Content field is the V bit which is present in the page table in memory. It is copied from the page table, as is,  and the VALID bit in the Tag is set based on its value.The TLB entry fields are shown in this Figure.
 
 .. figure:: _static/cva6_tlb_entry.png
    :name: **Figure 5:** Fields in CVA6 TLB entry
@@ -779,13 +779,13 @@ The CVA6 TLB implements the following three functions:
 This function takes in the virtual address and certain other fields, examines the TLB to determine if the virtual page number of the page being accessed is in the TLB or not. If a TLB entry is found (TLB hit), the TLB returns the corresponding physical page number (PPN) which is then used to calculate the target physical address. The following checks are done as part of this lookup function to find a match in the TLB:
 
 * **Validity Check:** For a TLB hit, the associated TLB entry must be valid .
-* **ASID and Global Flag Check:** The TLB entry's ASID must match the given ASID (ASID associated with the Virtual address). If the TLB entry’s Global bit (G) bit is set then this check is not done. This ensures that the translation is either specific to the provided ASID or it is globally applicable.
+* **ASID and Global Flag Check:** The TLB entry's ASID must match the given ASID (ASID associated with the Virtual address). If the TLB entry’s Global bit (G) is set then this check is not done. This ensures that the translation is either specific to the provided ASID or it is globally applicable. When the hypervisor extension is enabled, either the ASID or the VMID (i.e. ASID[0] and ASID[1]) in the TLB entry must match ASID[0] and/or ASID[1] in the input, depending on which level of translation is enabled. For the VMID (ASID[1]) the check is always applicable, regardless of G bit in the TLB entry.
 * **Level VPN match:** CVA6 implements a multi-level page table. As such the virtual address is broken up into multiple parts which are the virtual page number used in the different levels. So the condition that is checked next is that the virtual page number of the virtual address matches the virtual page number of the TLB entry at each level. 
 * **Page match:** Without Hypervisor extension, there is a match at a certain level X if the is_page component of the tag is set to 1 at level PT_LEVELS-X. At level 0 page_match is always set to 1. For the Hypervisor extension ... **(MORE COMPLEX, THINK HOW TO EXPLAIN THIS)**
   **Level match** The last condition to be checked at each page level, for a TLB hit, is that there is a vpn match for the current level and the higher ones, together with a page match at the current one. E.g. If PT_LEVELS=2, a match at level 2 will occur if there is a VPN match at level 2 and a page match at level 2. For level 1, there will be a match if there is a VPN match at levels 2 and 1, together with a page match at level 1.
 
 
-All the conditions listed above are checked against every TLB entry. If there is a TLB hit then the corresponding bit in the hit array is set. **Figure 3** Illustrates the TLB hit/miss process listed above.
+All the conditions listed above are checked against every TLB entry. If there is a TLB hit then the corresponding bit in the hit array is set. The following Figure Illustrates the TLB hit/miss process listed above.
 
 .. figure:: _static/cva6_tlb_hit.png
    :name: **Figure 6:** Block diagram of CVA6 TLB hit or miss
@@ -840,6 +840,8 @@ The SFENCE.VMA instruction can be used with certain specific source register spe
    :alt: sfence_x0_asid
 
    **Figure 10:** Invalidate TLB entry for matching ASIDs
+
+   **UPDATE WITH THE REST OF FLUSH CASES FOR HYPERVISOR. WHICH ARE THE INSTRUCTIONS IN EACH CASE? **
 
 .. raw:: html
 
