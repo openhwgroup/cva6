@@ -39,7 +39,7 @@ Submodules
 ALU
 ===
 
-The arithmetic logic unit (ALU) is a small piece of hardware which performs 32 and 64-bit arithmetical operations: subtraction, addition, shifts, comparisons...
+The arithmetic logic unit (ALU) is a small piece of hardware which performs 32 and 64-bit arithmetic and bitwise operations: subtraction, addition, shifts, comparisons...
 It always completes its operation in a single cycle.
 
 .. include:: port_alu.rst
@@ -48,7 +48,7 @@ It always completes its operation in a single cycle.
 Branch Unit
 ===========
 
-The branch unit module manages all kind of control flow changes i.e.: conditional and unconditional jumps.
+The branch unit module manages all kinds of control flow changes i.e.: conditional and unconditional jumps.
 It calculates the target address and decides whether to take the branch or not.
 It also decides if a branch was mis-predicted or not and reports corrective actions to the pipeline stages.
 
@@ -100,10 +100,11 @@ The division is a simple serial divider which needs 64 cycles in the worst case.
 Load_Store_Unit (LSU)
 =====================
 
-The load store module interfaces with the data memory (D$) to manage the load and store operations.
+The load store module interfaces with the data cache (D$) to manage the load and store operations.
 
-The LSU does not handle misaligned accesses: access which are not aligned to a 64 bit boundary for double word accesses, access which are not aligned to a 32-bit boundary for word access and the accesses which are not aligned on 16-bit boundary for half word access.
-If encounters such a load or store it will throw a misaligned exception.
+The LSU does not handle misaligned accesses.
+Misaligned accesses are double word accesses which are not aligned to a 64-bit boundary, word accesses which are not aligned to a 32-bit boundary and half word accesses which are not aligned on 16-bit boundary.
+If the LSU encounters a misaligned load or store, it throws a misaligned exception.
 
 .. figure:: ../images/load_store_unit_modules.png
    :name: load_store_unit submodules
@@ -130,7 +131,7 @@ becomes committed.
 
 When commit buffer is not empty, the buffer automatically tries to write the oldest store to the data cache.
 
-Furthermore, the store_unit module provides information to the load_unit to know if any outstanding store matches load.
+Furthermore, the store_unit module provides information to the load_unit to know if an outstanding store matches addresses with a load.
 
 .. include:: port_store_unit.rst
 
@@ -142,7 +143,8 @@ load_unit
 The load_unit module manages the data load operations.
 
 Before issuing a load, the load unit needs to check the store buffer for potential aliasing.
-It will insert stalls until it can't satisfy the current request. This means:
+It inserts stalls until it can satisfy the current request. This means:
+
 * Two loads to the same address are allowed.
 * Two stores to the same address are allowed.
 * A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the store buffer).
