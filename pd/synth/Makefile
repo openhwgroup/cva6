@@ -27,10 +27,23 @@ endif
 ifndef TECH_NAME
   $(error "Please provide TECH_NAME techno")
 endif
-
+# Create Flist with good compilation order for synthesis
+#	- config_pkg.sv
+#	- hpdcache_params_pkg.sv before hdpcache_pkg.sv
+#	- pkg before rtl
 pre_cva6_synth:
-	grep "CVA6_REPO_DIR\}" ../../core/Flist.cva6|grep -v "instr_tracer"|grep -v "incdir" > Flist.cva6_synth
-	sed -i "s/^/analyze -f sverilog -lib ariane_lib /" Flist.cva6_synth
+	grep "{\w*}" ../../core/Flist.cva6|grep -v "instr_tracer"|grep -v "incdir"|grep -v "hpdcache.Flist" > Flist.cva6_synth
+	grep "{\w*}" ../../core/cache_subsystem/hpdcache/rtl/hpdcache.Flist|grep -v "incdir" >> Flist.cva6_synth
+	grep "hpdcache_pkg.sv" Flist.cva6_synth > hpdcache_pkg.tmp
+	grep "HPDCACHE_TARGET_CFG" Flist.cva6_synth > HPDCACHE_TARGET_CFG.tmp
+	grep "_pkg.sv" Flist.cva6_synth | grep -v "hpdcache_pkg.sv" > packages.tmp
+	grep -v "hpdcache_pkg.sv" Flist.cva6_synth | grep -v "HPDCACHE_TARGET_CFG" | grep -v "_pkg.sv" > rtl.tmp
+	cat packages.tmp > Flist.cva6_synth
+	cat HPDCACHE_TARGET_CFG.tmp >> Flist.cva6_synth
+	cat hpdcache_pkg.tmp >> Flist.cva6_synth
+	cat rtl.tmp >> Flist.cva6_synth
+	sed -i "s/^/analyze -f sverilog -lib ariane_lib -define HPDCACHE_ASSERT_OFF /" Flist.cva6_synth
+	sed -i -e 's/behav/blackbox/g' Flist.cva6_synth
 
 cva6_synth: pre_cva6_synth
 	@echo $(PERIOD)
@@ -38,7 +51,8 @@ cva6_synth: pre_cva6_synth
 	python scripts/gate_analysis.py '$(DESIGN_NAME)_$(TARGET)/reports/$(PERIOD)/$(DESIGN_NAME)_$(TECH_NAME)_synth_area.rpt' $(NAND2_AREA)
 	mv $(DESIGN_NAME)_synth.v $(DESIGN_NAME)_$(TARGET)_synth.v
 	mv $(DESIGN_NAME)_synth.v.sdf $(DESIGN_NAME)_$(TARGET)_synth.v.sdf
-	sed -n -e '/module tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0/,/endmodule/!p' $(DESIGN_NAME)_$(TARGET)_synth.v > $(DESIGN_NAME)_$(TARGET)_synth_modified.v
+	sed -n -e '/module tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0/,/endmodule/!p' $(DESIGN_NAME)_$(TARGET)_synth.v > tmp.v
+	sed -n -e '/module tc_sram_wrapper_64_64_00000008_00000001_00000001_none_0/,/endmodule/!p' tmp.v > $(DESIGN_NAME)_$(TARGET)_synth_modified.v
 	sed -i 's/cva6_ /cva6 /g' $(DESIGN_NAME)_$(TARGET)_synth_modified.v
 
 cva6_read:

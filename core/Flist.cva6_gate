@@ -24,6 +24,18 @@ ${LIB_VERILOG}
 ${CVA6_REPO_DIR}/pd/synth/cva6_${TARGET_CFG}_synth_modified.v
 
 ${CVA6_REPO_DIR}/pd/synth/tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0.sv
+${CVA6_REPO_DIR}/pd/synth/tc_sram_wrapper_64_64_00000008_00000001_00000001_none_0.sv
+${CVA6_REPO_DIR}/pd/synth/hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080.sv 
+${CVA6_REPO_DIR}/pd/synth/hpdcache_sram_1rw_00000006_0000001a_00000040.sv
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
+
+${HPDCACHE_TARGET_CFG}
+${HPDCACHE_DIR}/rtl/src/hpdcache_pkg.sv
+${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_sram_wbyteenable.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_sram_wmask.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_sram.sv

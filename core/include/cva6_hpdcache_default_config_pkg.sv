@@ -31,11 +31,11 @@ package hpdcache_params_pkg;
   localparam int unsigned __BYTES_PER_CACHELINE = CVA6ConfigDcacheLineWidth / 8;
   localparam int unsigned __MAX_RAM_WORD_BITS = 128;
 
-  function int unsigned __minu(int unsigned x, int unsigned y);
+  function automatic int unsigned __minu(int unsigned x, int unsigned y);
     return x < y ? x : y;
   endfunction
 
-  function int unsigned __maxu(int unsigned x, int unsigned y);
+  function automatic int unsigned __maxu(int unsigned x, int unsigned y);
     return y < x ? x : y;
   endfunction
   //  }}}
@@ -98,7 +98,7 @@ package hpdcache_params_pkg;
   localparam int unsigned PARAM_MSHR_SETS = 1;
 
   //  HPDcache MSHR number of ways
-  localparam int unsigned PARAM_MSHR_WAYS = CVA6ConfigNrLoadBufEntries;
+  localparam int unsigned PARAM_MSHR_WAYS = 1;
 
   //  HPDcache MSHR number of ways in the same SRAM word
   localparam int unsigned PARAM_MSHR_WAYS_PER_RAM_WORD = (PARAM_MSHR_WAYS > 1) ? 2 : 1;
@@ -118,7 +118,7 @@ package hpdcache_params_pkg;
   localparam bit PARAM_REFILL_CORE_RSP_FEEDTHROUGH = 1'b1;
 
   //  HPDcache depth of the refill FIFO
-  localparam int PARAM_REFILL_FIFO_DEPTH = 32'd2;
+  localparam int PARAM_REFILL_FIFO_DEPTH = 32'd1; //1
   //  }}}
 
   //  Definition of constants and types for the Write Buffer (WBUF)
@@ -139,6 +139,6 @@ package hpdcache_params_pkg;
 
   //  Definition of constants and types for the Replay Table (RTAB)
   //  {{{
-  localparam int PARAM_RTAB_ENTRIES = 4;
+  localparam int PARAM_RTAB_ENTRIES = 1;
   //  }}}
 endpackage

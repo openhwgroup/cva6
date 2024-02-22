@@ -453,7 +453,7 @@ module cva6_hpdcache_subsystem
       .wbuf_empty_o(wbuffer_empty_o),
 
       .cfg_enable_i                       (dcache_enable_i),
-      .cfg_wbuf_threshold_i               (4'd2),
+      .cfg_wbuf_threshold_i               (3'd2),
       .cfg_wbuf_reset_timecnt_on_write_i  (1'b1),
       .cfg_wbuf_sequential_waw_i          (1'b0),
       .cfg_wbuf_inhibit_write_coalescing_i(1'b0),

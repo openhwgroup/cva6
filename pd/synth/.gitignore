@@ -6,3 +6,8 @@ command.tcl
 command_read.tcl
 default.svf
 ariane
+Flist.cva6_synth
+cva6_*/
+*.v
+cva6_*.sdf
+*.tmp
