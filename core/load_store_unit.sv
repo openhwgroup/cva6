@@ -35,7 +35,7 @@ module load_store_unit
     input  fu_data_t fu_data_i,
     // Load Store Unit is ready - ISSUE_STAGE
     output logic lsu_ready_o,
-    // Load and Store unit is valid - ISSUE_STAGE
+    // Load Store Unit instruction is valid - ISSUE_STAGE
     input  logic lsu_valid_i,
 
     // Load transaction ID - ISSUE_STAGE

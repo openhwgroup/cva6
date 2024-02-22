@@ -36,19 +36,19 @@ module issue_read_operands
     input logic issue_instr_valid_i,
     // Issue stage acknowledge - TO_BE_COMPLETED
     output logic issue_ack_o,
-    // rs1 operand - scoreboard
+    // rs1 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs1_o,
     // rs1 operand - scoreboard
     input riscv::xlen_t rs1_i,
     // rs1 operand is valid - scoreboard
     input logic rs1_valid_i,
-    // rs2 operand - scoreboard
+    // rs2 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs2_o,
     // rs2 operand - scoreboard
     input riscv::xlen_t rs2_i,
     // rs2 operand is valid - scoreboard
     input logic rs2_valid_i,
-    // rs3 operand - scoreboard
+    // rs3 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs3_o,
     // rs3 operand - scoreboard
     input rs3_len_t rs3_i,

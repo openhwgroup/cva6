@@ -78,7 +78,7 @@ Fetch Stage
 
 Fetch stage controls the CACHE module by a handshaking protocol.
 Fetched data is a 32-bit block with a word-aligned address.
-A granted fetch is realigned into instr_realign submodule to produce instructions.
+A granted fetch is processed by the instr_realign submodule to produce instructions.
 Then instructions are pushed into an internal instruction FIFO called instruction queue (instr_queue submodule).
 This submodule stores the instructions and related information which allow to identify the outstanding transactions.
 In the case CONTROLLER decides to flush the instruction queue, the outstanding transactions are discarded.
@@ -138,9 +138,9 @@ The instruction queue can be flushed by CONTROLLER.
 Instr_scan submodule
 ~~~~~~~~~~~~~~~~~~~~
 
-The instr_scan submodule pre-decodes the fetched instructions, instructions could be compressed or not.
-The outputs are used by the branch prediction feature.
+The instr_scan submodule pre-decodes the fetched instructions coming from the instr_realign module, instructions could be compressed or not.
 The instr_scan submodule tells if the instruction is compressed and provides the intruction type: branch, jump, return, jalr, imm, call or others.
+These outputs are used by the branch prediction feature.
 
 .. include:: port_instr_scan.rst
 
@@ -155,9 +155,9 @@ information is stored in the Branch History Table.
 
 The information is stored in a 1024 entry table.
 
-The Branch History Table is a two-bit saturating counter that takes the virtual address of the current fetched instruction by the CACHE.
+The Branch History Table is a table of two-bit saturating counters that takes the virtual address of the current fetched instruction by the CACHE.
 It states whether the current branch request should be taken or not.
-The two bit counter is updated by the successive execution of the current instructions as shown in the following figure.
+The two bit counter is updated by the successive execution of the instructions as shown in the following figure.
 
 .. figure:: ../images/bht.png
    :name: BHT saturation
@@ -180,7 +180,7 @@ BTB (Branch Target Buffer) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-When an unconditional jump to a register (JALR instruction) is mispredicted by the EXECUTE, the JALR PC and the target address are stored into the BTB.
+When an unconditional jump to a register (JALR instruction) is mispredicted by the EXECUTE module, the JALR PC and the target address are stored into the BTB.
 
 The information is stored in a 8 entry table.
 

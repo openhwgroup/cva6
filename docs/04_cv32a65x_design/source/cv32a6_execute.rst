@@ -123,11 +123,10 @@ store_unit
 The store_unit module manages the data store operations.
 
 As stores can be speculative, the store instructions need to be committed by ISSUE_STAGE module before possibily altering the processor state.
-Store buffer keeps track of store requests. XXXXXXXXXXX for outstanding store
-instructions (which are still speculative) and one buffer for committed
-store instructions.
-When ISSUE_STAGE module commits a store instruction, outstanding store
-becomes committed.
+Store buffer keeps track of store requests.
+Outstanding store instructions (which are speculative) are differentiated from committed stores.
+When ISSUE_STAGE module commits a store instruction, outstanding stores
+become committed.
 
 When commit buffer is not empty, the buffer automatically tries to write the oldest store to the data cache.
 
