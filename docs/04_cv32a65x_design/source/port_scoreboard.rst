@@ -68,7 +68,7 @@
 
    * - ``rs1_i``
      - in
-     - rs1 operand
+     - rs1 operand address
      - issue_read_operands
      - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
 
@@ -86,7 +86,7 @@
 
    * - ``rs2_i``
      - in
-     - rs2 operand
+     - rs2 operand address
      - issue_read_operands
      - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
 
@@ -104,7 +104,7 @@
 
    * - ``rs3_i``
      - in
-     - rs3 operand
+     - rs3 operand address
      - issue_read_operands
      - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
 
@@ -188,7 +188,7 @@
 
    * - ``wbdata_i``
      - in
-     - Write data in
+     - Results to write back
      - TO_BE_COMPLETED
      - logic[CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]
 
@@ -200,7 +200,7 @@
 
    * - ``wt_valid_i``
      - in
-     - Data in is valid
+     - Indicates valid results
      - TO_BE_COMPLETED
      - logic[CVA6Cfg.NrWbPorts-1:0]
 

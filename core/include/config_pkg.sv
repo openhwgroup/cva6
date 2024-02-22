@@ -46,15 +46,15 @@ package config_pkg;
     int unsigned                 AxiIdWidth;
     // AXI User width
     int unsigned                 AxiUserWidth;
-    // TO_BE_COMPLETED
+    // Load buffer entry buffer
     int unsigned                 NrLoadBufEntries;
-    // FPU is enabled
+    // Floating Point
     bit                          FpuEn;
-    // TO_BE_COMPLETED
+    // Non standard 16bits Floating Point
     bit                          XF16;
-    // TO_BE_COMPLETED
+    // Non standard 16bits Floating Point Alt
     bit                          XF16ALT;
-    // TO_BE_COMPLETED
+    // Non standard 8bits Floating Point
     bit                          XF8;
     // Atomic RISC-V extension
     bit                          RVA;
@@ -66,33 +66,33 @@ package config_pkg;
     bit                          RVC;
     // Zcb RISC-V extension
     bit                          RVZCB;
-    // TO_BE_COMPLETED
+    // Non standard Vector Floating Point
     bit                          XFVec;
     // CV-X-IF coprocessor interface is supported
     bit                          CvxifEn;
-    // Zicond RISC-V extension is enabled
+    // Zicond RISC-V extension
     bit                          ZiCondExtEn;
     // Single precision FP RISC-V extension
     bit                          RVF;
     // Double precision FP RISC-V extension
     bit                          RVD;
-    // Floating point is present
+    // Floating Point is present
     bit                          FpPresent;
-    // TO_BE_COMPLETED
+    // Non standard Floating is Point present
     bit                          NSX;
-    // TO_BE_COMPLETED
+    // Floating Point lenght
     int unsigned                 FLen;
-    // Vector floating point extension
+    // Vector Floating Point extension
     bit                          RVFVec;
-    // 16 bits vector floating point extension
+    // 16 bits vector Floating Point extension
     bit                          XF16Vec;
-    // TO_BE_COMPLETED
+    // 16 bits vector Floating Point Alt extension
     bit                          XF16ALTVec;
-    // 8 bits vector floating point extension
+    // 8 bits vector Floating Point extension
     bit                          XF8Vec;
     // TO_BE_COMPLETED
     int unsigned                 NrRgprPorts;
-    // TO_BE_COMPLETED
+    // Function Unit write back port number
     int unsigned                 NrWbPorts;
     // Accelerate Port coprocessor interface
     bit                          EnableAccelerator;
@@ -144,7 +144,7 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
     // Maximum number of outstanding stores
     int unsigned                 MaxOutstandingStores;
-    // Debug mode
+    // Debug support
     bit                          DebugEn;
     // Non idem potency
     bit                          NonIdemPotenceEn;

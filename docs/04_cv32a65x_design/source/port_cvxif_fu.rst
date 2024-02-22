@@ -50,7 +50,7 @@
 
    * - ``x_off_instr_i``
      - in
-     - undecoded instruction
+     - Offloaded instruction
      - ISSUE_STAGE
      - logic[31:0]
 

@@ -62,7 +62,7 @@
 
    * - ``lsu_ctrl_i``
      - in
-     - data input
+     - Data input
      - ISSUE_STAGE
      - lsu_ctrl_t
 

@@ -62,7 +62,7 @@
 
    * - ``rs1_o``
      - out
-     - rs1 operand
+     - rs1 operand address
      - scoreboard
      - logic[REG_ADDR_SIZE-1:0]
 
@@ -80,7 +80,7 @@
 
    * - ``rs2_o``
      - out
-     - rs2 operand
+     - rs2 operand address
      - scoreboard
      - logic[REG_ADDR_SIZE-1:0]
 
@@ -98,7 +98,7 @@
 
    * - ``rs3_o``
      - out
-     - rs3 operand
+     - rs3 operand address
      - scoreboard
      - logic[REG_ADDR_SIZE-1:0]
 
@@ -134,13 +134,13 @@
 
    * - ``rs1_forwarding_o``
      - out
-     - unregistered version of fu_data_o.operanda
+     - Unregistered version of fu_data_o.operanda
      - TO_BE_COMPLETED
      - riscv::xlen_t
 
    * - ``rs2_forwarding_o``
      - out
-     - unregistered version of fu_data_o.operandb
+     - Unregistered version of fu_data_o.operandb
      - TO_BE_COMPLETED
      - riscv::xlen_t
 
@@ -158,7 +158,7 @@
 
    * - ``flu_ready_i``
      - in
-     - Fixed latency unit ready to accept new request
+     - Fixed Latency Unit ready to accept new request
      - TO_BE_COMPLETED
      - logic
 
@@ -170,7 +170,7 @@
 
    * - ``branch_valid_o``
      - out
-     - branch instruction is valid
+     - Branch instruction is valid
      - TO_BE_COMPLETED
      - logic
 
@@ -182,19 +182,19 @@
 
    * - ``lsu_ready_i``
      - in
-     - load store unit is ready
+     - Load Store Unit is ready
      - TO_BE_COMPLETED
      - logic
 
    * - ``lsu_valid_o``
      - out
-     - load store unit result is valid
+     - Load Store Unit result is valid
      - TO_BE_COMPLETED
      - logic
 
    * - ``mult_valid_o``
      - out
-     - mult result is valid
+     - Mult result is valid
      - TO_BE_COMPLETED
      - logic
 

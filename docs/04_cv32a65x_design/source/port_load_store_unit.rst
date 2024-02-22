@@ -56,13 +56,13 @@
 
    * - ``lsu_ready_o``
      - out
-     - Load and store unit is ready
+     - Load Store Unit is ready
      - ISSUE_STAGE
      - logic
 
    * - ``lsu_valid_i``
      - in
-     - Load and Store unit is valid
+     - Load Store Unit instruction is valid
      - ISSUE_STAGE
      - logic
 
@@ -116,13 +116,13 @@
 
    * - ``commit_i``
      - in
-     - Commit the pending store
+     - Commit the first pending store
      - TO_BE_COMPLETED
      - logic
 
    * - ``commit_ready_o``
      - out
-     - commit queue is ready to accept another commit request
+     - Commit queue is ready to accept another commit request
      - TO_BE_COMPLETED
      - logic
 

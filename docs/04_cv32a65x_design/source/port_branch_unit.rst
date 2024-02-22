@@ -86,7 +86,7 @@
 
    * - ``resolve_branch_o``
      - out
-     - Branch is resolved, new entries can be accept by scoreboard
+     - Branch is resolved, new entries can be accepted by scoreboard
      - ID_STAGE
      - logic
 

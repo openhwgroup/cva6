@@ -38,7 +38,7 @@
 
    * - ``valid_i``
      - in
-     - load unit input port
+     - Load unit input port
      - TO_BE_COMPLETED
      - logic
 
@@ -56,7 +56,7 @@
 
    * - ``valid_o``
      - out
-     - load unit result is valid
+     - Load unit result is valid
      - TO_BE_COMPLETED
      - logic
 
@@ -86,7 +86,7 @@
 
    * - ``vaddr_o``
      - out
-     - Vistual address
+     - Virtual address
      - TO_BE_COMPLETED
      - logic[riscv::VLEN-1:0]
 
@@ -116,7 +116,7 @@
 
    * - ``store_buffer_empty_i``
      - in
-     - Stoer buffer is empty
+     - Store buffer is empty
      - TO_BE_COMPLETED
      - logic
 

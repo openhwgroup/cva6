@@ -230,7 +230,7 @@
 
    * - ``commit_instr_o``
      - out
-     - Commit instruction
+     - Instructions to commit
      - COMMIT_STAGE
      - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
 
