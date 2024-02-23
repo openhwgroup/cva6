@@ -7,9 +7,9 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_bht_ports:
+.. _CVA6_csr_buffer_ports:
 
-.. list-table:: **bht module** IO ports
+.. list-table:: **csr_buffer module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -32,30 +32,44 @@
 
    * - ``flush_i``
      - in
-     - Fetch flush request
+     - Flush CSR
      - CONTROLLER
      - logic
 
-   * - ``vpc_i``
+   * - ``fu_data_i``
      - in
-     - Virtual PC
-     - CACHE
-     - logic[riscv::VLEN-1:0]
+     - FU data needed to execute instruction
+     - ISSUE_STAGE
+     - fu_data_t
 
-   * - ``bht_update_i``
-     - in
-     - Update bht with resolved address
-     - EXECUTE
-     - ariane_pkg::bht_update_t
-
-   * - ``bht_prediction_o``
+   * - ``csr_ready_o``
      - out
-     - Prediction from bht
-     - FRONTEND
-     - ariane_pkg::bht_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - CSR FU is ready
+     - ISSUE_STAGE
+     - logic
 
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+   * - ``csr_valid_i``
+     - in
+     - CSR instruction is valid
+     - ISSUE_STAGE
+     - logic
 
-| As DebugEn = 0,
-|   ``debug_mode_i`` input is tied to 0
+   * - ``csr_result_o``
+     - out
+     - CSR buffer result
+     - ISSUE_STAGE
+     - riscv::xlen_t
+
+   * - ``csr_commit_i``
+     - in
+     - commit the pending CSR OP
+     - TO_BE_COMPLETED
+     - logic
+
+   * - ``csr_addr_o``
+     - out
+     - CSR address to write
+     - COMMIT_STAGE
+     - logic[11:0]
+
 

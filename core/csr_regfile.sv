@@ -83,15 +83,15 @@ module csr_regfile
     output riscv::xs_t                                                     vs_o,
     // interrupt management to id stage - ID_STAGE
     output irq_ctrl_t                                                      irq_ctrl_o,
-    // enable VA translation - EX_STAGE
+    // Enable virtual address translation - EX_STAGE
     output logic                                                           en_translation_o,
-    // enable VA translation for load and stores - EX_STAGE
+    // Enable virtual address translation for load and stores - EX_STAGE
     output logic                                                           en_ld_st_translation_o,
     // Privilege level at which load and stores should happen - EX_STAGE
     output riscv::priv_lvl_t                                               ld_st_priv_lvl_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Supervisor User Memory - EX_STAGE
     output logic                                                           sum_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Make Executable Readable - EX_STAGE
     output logic                                                           mxr_o,
     // TO_BE_COMPLETED - EX_STAGE
     output logic              [          riscv::PPNW-1:0]                  satp_ppn_o,

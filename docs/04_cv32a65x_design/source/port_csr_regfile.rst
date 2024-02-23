@@ -9,7 +9,7 @@
 
 .. _CVA6_csr_regfile_ports:
 
-.. list-table:: csr_regfile module IO ports
+.. list-table:: **csr_regfile module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -102,18 +102,6 @@
      - COMMIT_STAGE
      - logic[riscv::XLEN-1:0]
 
-   * - ``dirty_fp_state_i``
-     - in
-     - Mark the FP sate as dirty
-     - COMMIT_STAGE
-     - logic
-
-   * - ``csr_write_fflags_i``
-     - in
-     - Write fflags register e.g.: we are retiring a floating point instruction
-     - COMMIT_STAGE
-     - logic
-
    * - ``pc_i``
      - in
      - PC of instruction accessing the CSR
@@ -144,89 +132,11 @@
      - FRONTEND
      - logic[riscv::VLEN-1:0]
 
-   * - ``priv_lvl_o``
-     - out
-     - Current privilege level the CPU is in
-     - EX_STAGE
-     - riscv::priv_lvl_t
-
-   * - ``fs_o``
-     - out
-     - Floating point extension status
-     - ID_STAGE
-     - riscv::xs_t
-
-   * - ``fflags_o``
-     - out
-     - Floating-Point Accured Exceptions
-     - COMMIT_STAGE
-     - logic[4:0]
-
-   * - ``frm_o``
-     - out
-     - Floating-Point Dynamic Rounding Mode
-     - EX_STAGE
-     - logic[2:0]
-
-   * - ``fprec_o``
-     - out
-     - Floating-Point Precision Control
-     - EX_STAGE
-     - logic[6:0]
-
-   * - ``vs_o``
-     - out
-     - Vector extension status
-     - ID_STAGE
-     - riscv::xs_t
-
    * - ``irq_ctrl_o``
      - out
      - interrupt management to id stage
      - ID_STAGE
      - irq_ctrl_t
-
-   * - ``en_translation_o``
-     - out
-     - enable VA translation
-     - EX_STAGE
-     - logic
-
-   * - ``en_ld_st_translation_o``
-     - out
-     - enable VA translation for load and stores
-     - EX_STAGE
-     - logic
-
-   * - ``ld_st_priv_lvl_o``
-     - out
-     - Privilege level at which load and stores should happen
-     - EX_STAGE
-     - riscv::priv_lvl_t
-
-   * - ``sum_o``
-     - out
-     - TO_BE_COMPLETED
-     - EX_STAGE
-     - logic
-
-   * - ``mxr_o``
-     - out
-     - TO_BE_COMPLETED
-     - EX_STAGE
-     - logic
-
-   * - ``satp_ppn_o``
-     - out
-     - TO_BE_COMPLETED
-     - EX_STAGE
-     - logic[riscv::PPNW-1:0]
-
-   * - ``asid_o``
-     - out
-     - TO_BE_COMPLETED
-     - EX_STAGE
-     - logic[AsidWidth-1:0]
 
    * - ``irq_i``
      - in
@@ -238,42 +148,6 @@
      - in
      - inter processor interrupt -> connected to machine mode sw
      - SUBSYSTEM
-     - logic
-
-   * - ``set_debug_pc_o``
-     - out
-     - TO_BE_COMPLETED
-     - FRONTEND
-     - logic
-
-   * - ``tvm_o``
-     - out
-     - trap virtual memory
-     - ID_STAGE
-     - logic
-
-   * - ``tw_o``
-     - out
-     - timeout wait
-     - ID_STAGE
-     - logic
-
-   * - ``tsr_o``
-     - out
-     - trap sret
-     - ID_STAGE
-     - logic
-
-   * - ``debug_mode_o``
-     - out
-     - we are in debug mode -> that will change some decoding
-     - EX_STAGE
-     - logic
-
-   * - ``single_step_o``
-     - out
-     - we are in single-step mode
-     - COMMIT_STAGE
      - logic
 
    * - ``icache_en_o``
@@ -290,6 +164,13 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
+| As RVF = 0,
+|   ``dirty_fp_state_i`` input is tied to 0
+|   ``csr_write_fflags_i`` input is tied to 0
+|   ``fs_o`` output is tied to 0
+|   ``fflags_o`` output is tied to 0
+|   ``frm_o`` output is tied to 0
+|   ``fprec_o`` output is tied to 0
 | As EnableAccelerator = 0,
 |   ``dirty_v_state_i`` input is tied to 0
 |   ``acc_fflags_ex_i`` input is tied to 0
@@ -297,11 +178,30 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``acc_cons_en_o`` output is tied to 0
 |   ``pmpcfg_o`` output is tied to 0
 |   ``pmpaddr_o`` output is tied to 0
+| As PRIV = MachineOnly,
+|   ``priv_lvl_o`` output is tied to MachineMode
+|   ``ld_st_priv_lvl_o`` output is tied to MAchineMode
+|   ``tvm_o`` output is tied to 0
+|   ``tw_o`` output is tied to 0
+|   ``tsr_o`` output is tied to 0
+| As RVV = 0,
+|   ``vs_o`` output is tied to 0
+| As RVS = 0,
+|   ``en_translation_o`` output is tied to 0
+|   ``en_ld_st_translation_o`` output is tied to 0
+|   ``sum_o`` output is tied to 0
+|   ``mxr_o`` output is tied to 0
+|   ``satp_ppn_o`` output is tied to 0
+|   ``asid_o`` output is tied to 0
 | As DebugEn = 0,
 |   ``debug_req_i`` input is tied to 0
+|   ``set_debug_pc_o`` output is tied to 0
+|   ``debug_mode_o`` output is tied to 0
+|   ``single_step_o`` output is tied to 0
 | As PerfCounterEn = 0,
 |   ``perf_addr_o`` output is tied to 0
 |   ``perf_data_o`` output is tied to 0
 |   ``perf_data_i`` input is tied to 0
 |   ``perf_we_o`` output is tied to 0
 |   ``mcountinhibit_o`` output is tied to 0
+

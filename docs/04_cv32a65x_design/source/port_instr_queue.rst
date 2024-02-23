@@ -9,7 +9,7 @@
 
 .. _CVA6_instr_queue_ports:
 
-.. list-table:: instr_queue module IO ports
+.. list-table:: **instr_queue module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -120,6 +120,4 @@
      - ID_STAGE
      - logic
 
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-none

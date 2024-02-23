@@ -9,7 +9,7 @@
 
 .. _CVA6_id_stage_ports:
 
-.. list-table:: id_stage module IO ports
+.. list-table:: **id_stage module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -96,24 +96,6 @@
      - CSR_REGFILE
      - ariane_pkg::irq_ctrl_t
 
-   * - ``tvm_i``
-     - in
-     - Trap virtual memory
-     - CSR_REGFILE
-     - logic
-
-   * - ``tw_i``
-     - in
-     - Timeout wait
-     - CSR_REGFILE
-     - logic
-
-   * - ``tsr_i``
-     - in
-     - Trap sret
-     - CSR_REGFILE
-     - logic
-
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
 | As DebugEn = 0,
@@ -123,8 +105,12 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``rvfi_is_compressed_o`` output is tied to 0
 | As PRIV = MachineOnly,
 |   ``priv_lvl_i`` input is tied to MachineMode
+|   ``tvm_i`` input is tied to 0
+|   ``tw_i`` input is tied to 0
+|   ``tsr_i`` input is tied to 0
 | As RVF = 0,
 |   ``fs_i`` input is tied to 0
 |   ``frm_i`` input is tied to 0
 | As RVV = 0,
 |   ``vs_i`` input is tied to 0
+

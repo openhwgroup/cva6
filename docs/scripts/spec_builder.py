@@ -48,6 +48,17 @@ if __name__ == "__main__":
     file.append("../core/compressed_decoder.sv")
     file.append("../core/scoreboard.sv")
     file.append("../core/issue_read_operands.sv")
+    file.append("../core/alu.sv")
+    file.append("../core/branch_unit.sv")
+    file.append("../core/csr_buffer.sv")
+    file.append("../core/mult.sv")
+    file.append("../core/multiplier.sv")
+    file.append("../core/serdiv.sv")
+    file.append("../core/load_store_unit.sv")
+    file.append("../core/load_unit.sv")
+    file.append("../core/store_unit.sv")
+    file.append("../core/lsu_bypass.sv")
+    file.append("../core/cvxif_fu.sv")
 
     black_list = define_blacklist(parameters)
 
@@ -128,7 +139,7 @@ if __name__ == "__main__":
             )
             fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
             fout.write(f".. _CVA6_{module}_ports:\n\n")
-            fout.write(f".. list-table:: {module} module IO ports\n")
+            fout.write(f".. list-table:: **{module} module** IO ports\n")
             fout.write("   :header-rows: 1\n")
             fout.write("\n")
             fout.write("   * - Signal\n")
@@ -144,11 +155,11 @@ if __name__ == "__main__":
                 fout.write(f"     - {port.connexion}\n")
                 fout.write(f"     - {port.data_type}\n")
             fout.write("\n")
-            fout.write(
-                f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n"
-            )
+            if len(comments) != 0:
+                fout.write(
+                    f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n"
+                )
+                fout.write("\n")
+                for comment in comments:
+                    fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
             fout.write("\n")
-            for comment in comments:
-                fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
-            if len(comments) == 0:
-                fout.write("none\n")

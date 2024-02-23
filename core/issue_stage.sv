@@ -47,15 +47,15 @@ module issue_stage
     output [riscv::VLEN-1:0] rs2_forwarding_o,
     // FU data useful to execute instruction - EX_STAGE
     output fu_data_t fu_data_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Program Counter - EX_STAGE
     output logic [riscv::VLEN-1:0] pc_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Fixed Latency Unit is ready - EX_STAGE
     input logic flu_ready_i,
     // ALU FU is valid - EX_STAGE
     output logic alu_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Signaling that we resolved the branch - EX_STAGE
     input logic resolve_branch_i,
     // Load store unit FU is ready - EX_STAGE
     input logic lsu_ready_i,
@@ -87,9 +87,9 @@ module issue_stage
     output scoreboard_entry_t issue_instr_o,
     // TO_BE_COMPLETED - ACC_DISPATCHER
     output logic issue_instr_hs_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Transaction ID - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // The branch engine uses the write back from the ALU - EX_STAGE
     input bp_resolve_t resolved_branch_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
@@ -97,19 +97,19 @@ module issue_stage
     input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF write enable - EX_STAGE
     input logic x_we_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // GPR write enable - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // FPR write enable - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
-    // TO_BE_COMPLETED - COMMIT_STAGE
+    // Instructions to commit - COMMIT_STAGE
     output scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
-    // TO_BE_COMPLETED - COMMIT_STAGE
+    // Commit acknowledge - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     // Issue stall - PERF_COUNTERS
     output logic stall_issue_o,
