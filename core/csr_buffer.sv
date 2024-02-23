@@ -30,11 +30,11 @@ module csr_buffer
     // CSR FU is ready - ISSUE_STAGE
     output logic csr_ready_o,
     // CSR instruction is valid - ISSUE_STAGE
-    input  logic csr_valid_i,
+    input logic csr_valid_i,
     // CSR buffer result - ISSUE_STAGE
     output riscv::xlen_t csr_result_o,
     // commit the pending CSR OP - TO_BE_COMPLETED
-    input  logic csr_commit_i,
+    input logic csr_commit_i,
     // CSR address to write - COMMIT_STAGE
     output logic [11:0] csr_addr_o
 );

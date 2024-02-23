@@ -50,11 +50,11 @@ module load_unit
     // Physical address - TO_BE_COMPLETED
     input logic [riscv::PLEN-1:0] paddr_i,
     // Excepted which appears before load - TO_BE_COMPLETED
-    input  exception_t ex_i,
+    input exception_t ex_i,
     // Data TLB hit - lsu
     input logic dtlb_hit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic [riscv::PPNW-1:0] dtlb_ppn_i,
+    input logic [riscv::PPNW-1:0] dtlb_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [11:0] page_offset_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED

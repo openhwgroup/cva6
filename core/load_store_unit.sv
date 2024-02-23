@@ -24,19 +24,19 @@ module load_store_unit
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic flush_i,
+    input logic flush_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic stall_st_pending_i,
+    input logic stall_st_pending_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic no_st_pending_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic amo_valid_commit_i,
+    input logic amo_valid_commit_i,
     // FU data needed to execute instruction - ISSUE_STAGE
-    input  fu_data_t fu_data_i,
+    input fu_data_t fu_data_i,
     // Load Store Unit is ready - ISSUE_STAGE
     output logic lsu_ready_o,
     // Load Store Unit instruction is valid - ISSUE_STAGE
-    input  logic lsu_valid_i,
+    input logic lsu_valid_i,
 
     // Load transaction ID - ISSUE_STAGE
     output logic [TRANS_ID_BITS-1:0] load_trans_id_o,

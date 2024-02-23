@@ -28,7 +28,7 @@ module alu
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
     // FU data needed to execute instruction - ISSUE_STAGE
-    input  fu_data_t fu_data_i,
+    input fu_data_t fu_data_i,
     // ALU result - ISSUE_STAGE
     output riscv::xlen_t result_o,
     // ALU branch compare result - branch_unit

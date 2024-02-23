@@ -6,9 +6,9 @@ module mult
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input logic clk_i,
+    input  logic                             clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input logic rst_ni,
+    input  logic                             rst_ni,
     // Flush - CONTROLLER
     input  logic                             flush_i,
     // FU data needed to execute instruction - ISSUE_STAGE

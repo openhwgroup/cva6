@@ -61,7 +61,7 @@ module store_unit
     // Exception raised before store - TO_BE_COMPLETED
     input exception_t ex_i,
     // Data TLB hit - lsu
-    input  logic dtlb_hit_i,
+    input logic dtlb_hit_i,
     // Address to be checked - load_unit
     input logic [11:0] page_offset_i,
     // Address check result - load_unit

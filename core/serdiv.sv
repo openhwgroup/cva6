@@ -35,7 +35,7 @@ module serdiv
     // Serdiv operation - Mult
     input logic [1:0] opcode_i,  // 0: udiv, 2: urem, 1: div, 3: rem
     // Serdiv instruction is valid - Mult
-    input  logic in_vld_i,
+    input logic in_vld_i,
     // Serdiv FU is ready - Mult
     output logic in_rdy_o,
     // Flush - CONTROLLER
