@@ -20,69 +20,96 @@ module issue_read_operands
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type rs3_len_t = logic
 ) (
-    input logic clk_i,  // Clock
-    input logic rst_ni,  // Asynchronous reset active low
-    // flush
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Flush - CONTROLLER
     input logic flush_i,
-    // stall
+    // Stall inserted by Acc dispatcher - ACC_DISPATCHER
     input logic stall_i,
-    // coming from decoder
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input scoreboard_entry_t issue_instr_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [31:0] orig_instr_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic issue_instr_valid_i,
+    // Issue stage acknowledge - TO_BE_COMPLETED
     output logic issue_ack_o,
-    // lookup rd in scoreboard
+    // rs1 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs1_o,
+    // rs1 operand - scoreboard
     input riscv::xlen_t rs1_i,
+    // rs1 operand is valid - scoreboard
     input logic rs1_valid_i,
+    // rs2 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs2_o,
+    // rs2 operand - scoreboard
     input riscv::xlen_t rs2_i,
+    // rs2 operand is valid - scoreboard
     input logic rs2_valid_i,
+    // rs3 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs3_o,
+    // rs3 operand - scoreboard
     input rs3_len_t rs3_i,
+    // rs3 operand is valid - scoreboard
     input logic rs3_valid_i,
     // get clobber input
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_i,
-    // To FU, just single issue for now
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output fu_data_t fu_data_o,
-    output riscv::xlen_t rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
-    output riscv::xlen_t rs2_forwarding_o,  // unregistered version of fu_data_o.operandb
+    // Unregistered version of fu_data_o.operanda - TO_BE_COMPLETED
+    output riscv::xlen_t rs1_forwarding_o,
+    // Unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
+    output riscv::xlen_t rs2_forwarding_o,
+    // Instruction pc - TO_BE_COMPLETED
     output logic [riscv::VLEN-1:0] pc_o,
+    // Is compressed instruction - TO_BE_COMPLETED
     output logic is_compressed_instr_o,
-    // ALU 1
-    input logic flu_ready_i,  // Fixed latency unit ready to accept a new request
-    output logic alu_valid_o,  // Output is valid
-    // Branches and Jumps
-    output logic branch_valid_o,  // this is a valid branch instruction
+    // Fixed Latency Unit ready to accept new request - TO_BE_COMPLETED
+    input logic flu_ready_i,
+    // ALU output is valid - TO_BE_COMPLETED
+    output logic alu_valid_o,
+    // Branch instruction is valid - TO_BE_COMPLETED
+    output logic branch_valid_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output branchpredict_sbe_t branch_predict_o,
-    // LSU
-    input logic lsu_ready_i,  // FU is ready
-    output logic lsu_valid_o,  // Output is valid
-    // MULT
-    output logic mult_valid_o,  // Output is valid
-    // FPU
-    input logic fpu_ready_i,  // FU is ready
-    output logic fpu_valid_o,  // Output is valid
-    output logic [1:0] fpu_fmt_o,  // FP fmt field from instr.
-    output logic [2:0] fpu_rm_o,  // FP rm field from instr.
-    // CSR
-    output logic csr_valid_o,  // Output is valid
-    // CVXIF
+    // Load Store Unit is ready - TO_BE_COMPLETED
+    input logic lsu_ready_i,
+    // Load Store Unit result is valid - TO_BE_COMPLETED
+    output logic lsu_valid_o,
+    // Mult result is valid - TO_BE_COMPLETED
+    output logic mult_valid_o,
+    // FPU is ready - TO_BE_COMPLETED
+    input logic fpu_ready_i,
+    // FPU result is valid - TO_BE_COMPLETED
+    output logic fpu_valid_o,
+    // FPU fmt field from instruction - TO_BE_COMPLETED
+    output logic [1:0] fpu_fmt_o,
+    // FPU rm field from isntruction - TO_BE_COMPLETED
+    output logic [2:0] fpu_rm_o,
+    // CSR result is valid - TO_BE_COMPLETED
+    output logic csr_valid_o,
+    // CVXIF result is valid - TO_BE_COMPLETED
     output logic cvxif_valid_o,
+    // CVXIF is ready - TO_BE_COMPLETED
     input logic cvxif_ready_i,
+    // CVXIF offloaded instruction - TO_BE_COMPLETED
     output logic [31:0] cvxif_off_instr_o,
-    // commit port
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
 
-    output logic stall_issue_o  // stall signal, we do not want to fetch any more entries
-    // committing instruction instruction
-    // from scoreboard
-    // input  scoreboard_entry     commit_instr_i,
-    // output logic                commit_ack_o
+    // Stall signal, we do not want to fetch any more entries - TO_BE_COMPLETED
+    output logic stall_issue_o
 );
   logic stall;
   logic fu_busy;  // functional unit is busy

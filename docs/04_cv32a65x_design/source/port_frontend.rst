@@ -9,7 +9,7 @@
 
 .. _CVA6_frontend_ports:
 
-.. list-table:: frontend module IO ports
+.. list-table:: **frontend module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -123,7 +123,8 @@
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
 | For any HW configuration,
-|   ``flush_bp_i`` input is tied to zero
+|   ``flush_bp_i`` input is tied to 0
 | As DebugEn = 0,
 |   ``debug_mode_i`` input is tied to 0
 |   ``set_debug_pc_i`` input is tied to 0
+

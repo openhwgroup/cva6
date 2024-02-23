@@ -9,7 +9,7 @@
 
 .. _CVA6_commit_stage_ports:
 
-.. list-table:: commit_stage module IO ports
+.. list-table:: **commit_stage module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -48,18 +48,6 @@
      - EX_STAGE
      - exception_t
 
-   * - ``dirty_fp_state_o``
-     - out
-     - Mark the F state as dirty
-     - CSR_REGFILE
-     - logic
-
-   * - ``single_step_i``
-     - in
-     - TO_BE_COMPLETED
-     - CSR_REGFILE
-     - logic
-
    * - ``commit_instr_i``
      - in
      - The instruction we want to commit
@@ -75,25 +63,25 @@
    * - ``waddr_o``
      - out
      - Register file write address
-     - ID_STAGE
+     - ISSUE_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0][4:0]
 
    * - ``wdata_o``
      - out
      - Register file write data
-     - ID_STAGE
+     - ISSUE_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
 
    * - ``we_gpr_o``
      - out
      - Register file write enable
-     - ID_STAGE
+     - ISSUE_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
 
    * - ``we_fpr_o``
      - out
      - Floating point register enable
-     - ID_STAGE
+     - ISSUE_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
 
    * - ``pc_o``
@@ -126,12 +114,6 @@
      - CSR_REGFILE
      - exception_t
 
-   * - ``csr_write_fflags_o``
-     - out
-     - Write the fflags CSR
-     - CSR_REGFILE
-     - logic
-
    * - ``commit_lsu_o``
      - out
      - Commit the pending store
@@ -150,12 +132,6 @@
      - ID_STAGE
      - logic[TRANS_ID_BITS-1:0]
 
-   * - ``amo_valid_commit_o``
-     - out
-     - Valid AMO in commit stage
-     - EX_STAGE
-     - logic
-
    * - ``no_st_pending_i``
      - in
      - no store is pending
@@ -168,31 +144,25 @@
      - EX_STAGE
      - logic
 
-   * - ``fence_i_o``
-     - out
-     - Flush I$ and pipeline
-     - CONTROLLER
-     - logic
-
-   * - ``fence_o``
-     - out
-     - Flush D$ and pipeline
-     - CONTROLLER
-     - logic
-
    * - ``flush_commit_o``
      - out
      - Request a pipeline flush
      - CONTROLLER
      - logic
 
-   * - ``sfence_vma_o``
-     - out
-     - Flush TLBs and pipeline
-     - CONTROLLER
-     - logic
-
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
+| As RVF = 0,
+|   ``dirty_fp_state_o`` output is tied to 0
+|   ``csr_write_fflags_o`` output is tied to 0
+| As DebugEn = 0,
+|   ``single_step_i`` input is tied to 0
 | As RVA = 0,
 |   ``amo_resp_i`` input is tied to 0
+|   ``amo_valid_commit_o`` output is tied to 0
+| As FenceEn = 0,
+|   ``fence_i_o`` output is tied to 0
+|   ``fence_o`` output is tied to 0
+| As RVS = 0,
+|   ``sfence_vma_o`` output is tied to 0
+

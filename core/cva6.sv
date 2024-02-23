@@ -111,7 +111,7 @@ module cva6
     input logic time_irq_i,
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
-    // Probes to build RVFI, can be left open when not used - SUBSYSTEM
+    // Probes to build RVFI, can be left open when not used - RVFI
     output rvfi_probes_t rvfi_probes_o,
     // CVXIF request - SUBSYSTEM
     output cvxif_req_t cvxif_req_o,

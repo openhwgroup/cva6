@@ -7,9 +7,9 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_compressed_decoder_ports:
+.. _CVA6_alu_ports:
 
-.. list-table:: **compressed_decoder module** IO ports
+.. list-table:: **alu module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -18,28 +18,34 @@
      - connexion
      - Type
 
-   * - ``instr_i``
+   * - ``clk_i``
      - in
-     - Input instruction coming from fetch stage
-     - FRONTEND
-     - logic[31:0]
-
-   * - ``instr_o``
-     - out
-     - Output instruction in uncompressed format
-     - decoder
-     - logic[31:0]
-
-   * - ``illegal_instr_o``
-     - out
-     - Input instruction is illegal
-     - decoder
+     - Subsystem Clock
+     - SUBSYSTEM
      - logic
 
-   * - ``is_compressed_o``
+   * - ``rst_ni``
+     - in
+     - Asynchronous reset active low
+     - SUBSYSTEM
+     - logic
+
+   * - ``fu_data_i``
+     - in
+     - FU data needed to execute instruction
+     - ISSUE_STAGE
+     - fu_data_t
+
+   * - ``result_o``
      - out
-     - Output instruction is compressed
-     - decoder
+     - ALU result
+     - ISSUE_STAGE
+     - riscv::xlen_t
+
+   * - ``alu_branch_res_o``
+     - out
+     - ALU branch compare result
+     - branch_unit
      - logic
 
 
