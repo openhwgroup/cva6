@@ -38,6 +38,8 @@ module commit_stage
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     // Acknowledge that we are indeed committing - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_o,
+    // Acknowledge that we are indeed committing - CSR_REGFILE
+    output logic [CVA6Cfg.NrCommitPorts-1:0] commit_zcmp_ack_o,
     // Register file write address - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_o,
     // Register file write data - ISSUE_STAGE
@@ -116,6 +118,7 @@ module commit_stage
   assign commit_tran_id_o = commit_instr_i[0].trans_id;
 
   logic instr_0_is_amo;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_zcmp_ack;
   assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
   // -------------------
   // Commit Instruction
@@ -124,6 +127,7 @@ module commit_stage
   always_comb begin : commit
     // default assignments
     commit_ack_o[0] = 1'b0;
+    commit_zcmp_ack[0] = 1'b0;
 
     amo_valid_commit_o = 1'b0;
 
@@ -140,6 +144,10 @@ module commit_stage
     sfence_vma_o = 1'b0;
     csr_write_fflags_o = 1'b0;
     flush_commit_o = 1'b0;
+
+    if (commit_instr_i[0].valid && !commit_instr_i[0].ex.valid && !halt_i && (commit_instr_i[0].is_zcmp_instr && commit_instr_i[0].is_last_zcmp_instr))
+      commit_zcmp_ack[0] = 1'b1;
+    else commit_zcmp_ack[0] = 1'b0;
 
     // we will not commit the instruction if we took an exception
     // and we do not commit the instruction if we requested a halt
@@ -281,6 +289,7 @@ module commit_stage
         end
       end
     end
+    commit_zcmp_ack_o = (commit_instr_i[0].is_zcmp_instr) ? commit_zcmp_ack : commit_ack_o;
   end
 
   // -----------------------------

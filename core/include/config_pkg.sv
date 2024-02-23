@@ -68,6 +68,8 @@ package config_pkg;
     bit                          RVC;
     // Zcb RISC-V extension
     bit                          RVZCB;
+    // Zcmp RISC-V extension
+    bit                          RVZCMP;
     // Non standard Vector Floating Point
     bit                          XFVec;
     // CV-X-IF coprocessor interface is supported

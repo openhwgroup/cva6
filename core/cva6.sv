@@ -302,6 +302,7 @@ module cva6
   logic             [          riscv::VLEN-1:0] pc_commit;
   logic                                         eret;
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
+  logic             [CVA6Cfg.NrCommitPorts-1:0] commit_zcmp_ack;
 
   localparam NumPorts = 4;
   cvxif_pkg::cvxif_req_t cvxif_req;
@@ -884,6 +885,7 @@ module cva6
       .single_step_i     (single_step_csr_commit || single_step_acc_commit),
       .commit_instr_i    (commit_instr_id_commit),
       .commit_ack_o      (commit_ack),
+      .commit_zcmp_ack_o (commit_zcmp_ack),
       .no_st_pending_i   (no_st_pending_commit),
       .waddr_o           (waddr_commit_id),
       .wdata_o           (wdata_commit_id),
@@ -923,7 +925,7 @@ module cva6
       .flush_o               (flush_csr_ctrl),
       .halt_csr_o            (halt_csr_ctrl),
       .commit_instr_i        (commit_instr_id_commit),
-      .commit_ack_i          (commit_ack),
+      .commit_ack_i          (commit_zcmp_ack),
       .boot_addr_i           (boot_addr_i[riscv::VLEN-1:0]),
       .hart_id_i             (hart_id_i[riscv::XLEN-1:0]),
       .ex_i                  (ex_commit),
@@ -1548,7 +1550,7 @@ module cva6
 
       .lsu_ctrl_i  (rvfi_lsu_ctrl),
       .wbdata_i    (wbdata_ex_id),
-      .commit_ack_i(commit_ack),
+      .commit_ack_i(commit_zcmp_ack),
       .mem_paddr_i (rvfi_mem_paddr),
       .debug_mode_i(debug_mode),
       .wdata_i     (wdata_commit_id),

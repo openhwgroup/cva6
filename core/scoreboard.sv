@@ -185,7 +185,16 @@ module scoreboard #(
       // check if this instruction was issued (e.g.: it could happen after a flush that there is still
       // something in the pipeline e.g. an incomplete memory operation)
       if (wt_valid_i[i] && mem_q[trans_id_i[i]].issued) begin
-        mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
+        if (mem_q[trans_id_i[i]].sbe.is_mv_zcmp_instr && mem_q[trans_id_i[i]].sbe.is_zcmp_instr) begin
+          if (mem_q[trans_id_i[i]].sbe.is_last_zcmp_instr) begin
+            mem_n[trans_id_i[i]].sbe.valid   = 1'b1;
+            mem_n[trans_id_i[i-1]].sbe.valid = 1'b1;
+          end else begin
+            mem_n[trans_id_i[i]].sbe.valid  = 1'b0;
+          end
+        end else begin  
+          mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
+        end
         mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
         // save the target address of a branch (needed for debug in commit stage)
         if (CVA6Cfg.DebugEn) begin
