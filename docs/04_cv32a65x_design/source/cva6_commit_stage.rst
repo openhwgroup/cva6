@@ -16,7 +16,7 @@ Description
 -----------
 
 The COMMIT_STAGE module implements the commit stage, which is the last stage in the processor’s pipeline.
-It takes incoming instruction and updates the architectural state: writing CSR registers, committing stores and writing back data to the register file.
+For the instructions for which the execution is completed, it updates the architectural state: writing CSR registers, committing stores and writing back data to the register file.
 The commit stage controls the stalling and the flushing of the processor.
 
 The commit stage also manages the exceptions.

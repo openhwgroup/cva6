@@ -148,6 +148,7 @@ It inserts stalls until it can satisfy the current request. This means:
 * Two stores to the same address are allowed.
 * A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the store buffer).
 
+.. TO_BE_COMPLETED, But once the store is committed, do we do forwarding without waiting for the store to actually be finished? Or do we authorize the outcome of the load, which will be carried out in memory/cache?
 
 .. include:: port_load_unit.rst
 
