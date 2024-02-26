@@ -137,7 +137,7 @@ smoke:
         - "vcs-testharness,spike"
         - "vcs-uvm,spike"
   script:
-    - source verif/regress/smoke-tests.sh
+    - bash verif/regress/smoke-tests.sh
     - !reference [.simu_after_script]
 
 gen_smoke:
@@ -150,7 +150,7 @@ gen_smoke:
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "vcs-uvm,spike"
   script:
-    - source verif/regress/smoke-gen_tests.sh
+    - bash verif/regress/smoke-gen_tests.sh
     - !reference [.simu_after_script]
 
 coremark:

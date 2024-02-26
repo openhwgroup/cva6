@@ -9,7 +9,7 @@
 
 .. _CVA6_btb_ports:
 
-.. list-table:: btb module IO ports
+.. list-table:: **btb module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -58,3 +58,4 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 
 | As DebugEn = 0,
 |   ``debug_mode_i`` input is tied to 0
+

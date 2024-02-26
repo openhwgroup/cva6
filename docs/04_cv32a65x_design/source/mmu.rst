@@ -15,7 +15,10 @@ The Memory Management Unit (MMU) SV32 module is a crucial component in the RISC-
 
    **Figure 1:** Inputs and Outputs of CVA6 MMU SV32
 
-At its core, the MMU SV32 plays a pivotal role in translating virtual addresses into their corresponding physical counterparts. This translation process is paramount for providing memory protection, isolation, and efficient memory management in modern computer systems. Importantly, it handles both instruction and data accesses, ensuring a seamless interaction between the processor and virtual memory. Within the MMU, several major blocks play pivotal roles in this address translation process. These includes:
+At its core, the MMU SV32 plays a pivotal role in translating virtual addresses into their corresponding physical counterparts.
+This translation process is paramount for providing memory protection, isolation, and efficient memory management in modern computer systems.
+Importantly, it handles both instruction and data accesses, ensuring a seamless interaction between the processor and virtual memory.
+Within the MMU, several major blocks play pivotal roles in this address translation process. These includes:
 
 * Instruction TLB (ITLB)
 * Data TLB (DTLB)
@@ -30,15 +33,19 @@ At its core, the MMU SV32 plays a pivotal role in translating virtual addresses 
 
    **Figure 2:** Major Blocks in CVA6 MMU SV32
 
-The MMU SV32 manages privilege levels and access control, enforcing permissions for user and supervisor modes while handling access exceptions. It employs Translation Lookaside Buffers (TLBs) for efficient address translation, reducing the need for page table access. TLB hits yield quick translations, but on misses, the shared TLB is consulted, and if necessary, the Page Table Walker (PTW) performs page table walks, updating TLBs and managing exceptions during the process.
+The MMU SV32 manages privilege levels and access control, enforcing permissions for user and supervisor modes while handling access exceptions.
+It employs Translation Lookaside Buffers (TLBs) for efficient address translation, reducing the need for page table access.
+TLB hits yield quick translations, but on misses, the shared TLB is consulted, and if necessary, the Page Table Walker (PTW) performs page table walks, updating TLBs and managing exceptions during the process.
 
-In addition to these functionalities, the MMU SV32 seamlessly integrates support for Physical Memory Protection (PMP), enabling it to enforce access permissions and memory protection configurations as specified by the PMP settings. This additional layer of security and control enhances the management of memory accesses
+In addition to these functionalities, the MMU SV32 seamlessly integrates support for Physical Memory Protection (PMP), enabling it to enforce access permissions and memory protection configurations as specified by the PMP settings.
+This additional layer of security and control enhances the management of memory accesses
 
 .. raw:: html
 
         <span style="font-size:18px; font-weight:bold;">Instruction and Data Interfaces</span>
 
-The MMU SV32 maintains interfaces with the instruction cache (ICache) and the load-store unit (LSU). It receives virtual addresses from these components and proceeds to translate them into physical addresses, a fundamental task for ensuring proper program execution and memory access.
+The MMU SV32 maintains interfaces with the instruction cache (ICache) and the load-store unit (LSU).
+It receives virtual addresses from these components and proceeds to translate them into physical addresses, a fundamental task for ensuring proper program execution and memory access.
 
 .. raw:: html
 

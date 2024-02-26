@@ -19,65 +19,103 @@ module load_store_unit
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned ASID_WIDTH = 1
 ) (
-    input  logic clk_i,
-    input  logic rst_ni,
-    input  logic flush_i,
-    input  logic stall_st_pending_i,
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic flush_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic stall_st_pending_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic no_st_pending_o,
-    input  logic amo_valid_commit_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic amo_valid_commit_i,
+    // FU data needed to execute instruction - ISSUE_STAGE
+    input fu_data_t fu_data_i,
+    // Load Store Unit is ready - ISSUE_STAGE
+    output logic lsu_ready_o,
+    // Load Store Unit instruction is valid - ISSUE_STAGE
+    input logic lsu_valid_i,
 
-    input  fu_data_t fu_data_i,
-    output logic     lsu_ready_o,  // FU is ready e.g. not busy
-    input  logic     lsu_valid_i,  // Input is valid
-
-    output logic [TRANS_ID_BITS-1:0] load_trans_id_o,          // ID of scoreboard entry at which to write back
+    // Load transaction ID - ISSUE_STAGE
+    output logic [TRANS_ID_BITS-1:0] load_trans_id_o,
+    // Load result - ISSUE_STAGE
     output riscv::xlen_t load_result_o,
+    // Load result is valid - ISSUE_STAGE
     output logic load_valid_o,
-    output exception_t load_exception_o,  // to WB, signal exception status LD exception
+    // Load exception - ISSUE_STAGE
+    output exception_t load_exception_o,
 
-    output logic [TRANS_ID_BITS-1:0] store_trans_id_o,         // ID of scoreboard entry at which to write back
+    // Store transaction ID - ISSUE_STAGE
+    output logic [TRANS_ID_BITS-1:0] store_trans_id_o,
+    // Store result - ISSUE_STAGE
     output riscv::xlen_t store_result_o,
+    // Store result is valid - ISSUE_STAGE
     output logic store_valid_o,
-    output exception_t store_exception_o,  // to WB, signal exception status ST exception
+    // Store exception - ISSUE_STAGE
+    output exception_t store_exception_o,
 
-    input logic commit_i,  // commit the pending store
-    output logic commit_ready_o,  // commit queue is ready to accept another commit request
+    // Commit the first pending store - TO_BE_COMPLETED
+    input logic commit_i,
+    // Commit queue is ready to accept another commit request - TO_BE_COMPLETED
+    output logic commit_ready_o,
+    // Commit transaction ID - TO_BE_COMPLETED
     input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
 
-    input logic enable_translation_i,   // enable virtual memory translation
-    input logic en_ld_st_translation_i, // enable virtual memory translation for load/stores
+    // Enable virtual memory translation - TO_BE_COMPLETED
+    input logic enable_translation_i,
+    // Enable virtual memory translation for load/stores - TO_BE_COMPLETED
+    input logic en_ld_st_translation_i,
 
-    // icache translation requests
+    // Instruction cache input request - CACHES
     input  icache_arsp_t icache_areq_i,
+    // Instruction cache output request - CACHES
     output icache_areq_t icache_areq_o,
 
-    input  riscv::priv_lvl_t                   priv_lvl_i,             // From CSR register file
-    input  riscv::priv_lvl_t                   ld_st_priv_lvl_i,       // From CSR register file
-    input  logic                               sum_i,                  // From CSR register file
-    input  logic                               mxr_i,                  // From CSR register file
-    input  logic             [riscv::PPNW-1:0] satp_ppn_i,             // From CSR register file
-    input  logic             [ ASID_WIDTH-1:0] asid_i,                 // From CSR register file
+    // Current privilege mode - CSR_REGFILE
+    input  riscv::priv_lvl_t                   priv_lvl_i,
+    // Privilege level at which load and stores should happen - CSR_REGFILE
+    input  riscv::priv_lvl_t                   ld_st_priv_lvl_i,
+    // Supervisor User Memory - CSR_REGFILE
+    input  logic                               sum_i,
+    // Make Executable Readable - CSR_REGFILE
+    input  logic                               mxr_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input  logic             [riscv::PPNW-1:0] satp_ppn_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input  logic             [ ASID_WIDTH-1:0] asid_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [ ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+    // TLB flush - CONTROLLER
     input  logic                               flush_tlb_i,
-    // Performance counters
+    // Instruction TLB miss - PERF_COUNTERS
     output logic                               itlb_miss_o,
+    // Data TLB miss - PERF_COUNTERS
     output logic                               dtlb_miss_o,
 
-    // interface to dcache
+    // Data cache request output - CACHES
     input  dcache_req_o_t  [ 2:0]                  dcache_req_ports_i,
+    // Data cache request input - CACHES
     output dcache_req_i_t  [ 2:0]                  dcache_req_ports_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic                                   dcache_wbuffer_empty_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic                                   dcache_wbuffer_not_ni_i,
-    // AMO interface
+    // AMO request - CACHE
     output amo_req_t                               amo_req_o,
+    // AMO response - CACHE
     input  amo_resp_t                              amo_resp_i,
-    // PMP
+    // PMP configuration - CSR_REGFILE
     input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
+    // PMP address - CSR_REGFILE
     input  logic           [15:0][riscv::PLEN-3:0] pmpaddr_i,
 
-    //RVFI
+    // RVFI inforamtion - RVFI
     output lsu_ctrl_t                   rvfi_lsu_ctrl_o,
+    // RVFI information - RVFI
     output            [riscv::PLEN-1:0] rvfi_mem_paddr_o
 );
   // data is misaligned

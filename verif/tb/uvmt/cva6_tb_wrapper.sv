@@ -36,8 +36,8 @@ import "DPI-C" context function void read_section_sv(input longint address, inou
 
 module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter bit IsRVFI = 1'b0,
   parameter type rvfi_instr_t = logic,
+  parameter type rvfi_csr_t = logic,
   //
   parameter int unsigned AXI_USER_EN       = 0,
   parameter int unsigned NUM_WORDS         = 2**25
@@ -47,6 +47,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   input  logic [XLEN-1:0]              boot_addr_i,
   output logic [31:0]                  tb_exit_o,
   output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
+  output rvfi_csr_t                    rvfi_csr_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
   uvma_axi_intf                        axi_slave,
@@ -54,31 +55,11 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   uvmt_default_inputs_intf             default_inputs_vif
 );
 
-
   localparam type rvfi_probes_t = struct packed { 
-    logic [ariane_pkg::TRANS_ID_BITS-1:0] issue_pointer; 
-    logic [CVA6Cfg.NrCommitPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0] commit_pointer; 
-    logic                            flush_unissued_instr;
-    logic                            decoded_instr_valid;
-    logic                            decoded_instr_ack;
-    logic                            flush;
-    logic                            issue_instr_ack;
-    logic                            fetch_entry_valid;
-    logic [31:0]                     instruction;
-    logic                            is_compressed;
-    riscv::xlen_t                    rs1_forwarding;
-    riscv::xlen_t                    rs2_forwarding;
-    ariane_pkg::scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr;
-    ariane_pkg::exception_t ex_commit; 
-    riscv::priv_lvl_t priv_lvl;
-    ariane_pkg::lsu_ctrl_t                       lsu_ctrl;
-    logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
-    logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
-    logic [riscv::PLEN-1:0] mem_paddr;
-    logic debug_mode;
-    logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata;
+      ariane_pkg::rvfi_probes_csr_t csr;
+      ariane_pkg::rvfi_probes_instr_t instr;
   };
-
+  
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
 
@@ -87,13 +68,14 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
   rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
   rvfi_probes_t rvfi_probes;
+  rvfi_csr_t rvfi_csr;
   assign rvfi_o = rvfi_instr;
-
+  assign rvfi_csr_o = rvfi_csr;
+  
   cva6 #(
      .CVA6Cfg ( CVA6Cfg ),
-     .rvfi_probes_t        ( rvfi_probes_t       ),
-     .IsRVFI ( IsRVFI )
-  ) i_cva6 (
+     .rvfi_probes_t        ( rvfi_probes_t       )
+   ) i_cva6 (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
     .boot_addr_i          ( boot_addr_i               ),//Driving the boot_addr value from the core control agent
@@ -116,17 +98,20 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   cva6_rvfi #(
       .CVA6Cfg   (CVA6Cfg),
       .rvfi_instr_t(rvfi_instr_t),
+      .rvfi_csr_t(rvfi_csr_t),
       .rvfi_probes_t(rvfi_probes_t)
   ) i_cva6_rvfi (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
       .rvfi_probes_i(rvfi_probes),
-      .rvfi_o(rvfi_instr)
+      .rvfi_instr_o(rvfi_instr),
+      .rvfi_csr_o(rvfi_csr)
   );
 
   rvfi_tracer  #(
     .CVA6Cfg(CVA6Cfg),
     .rvfi_instr_t(rvfi_instr_t),
+    .rvfi_csr_t(rvfi_csr_t),
     //
     .HART_ID(8'h0),
     .DEBUG_START(0),
@@ -135,6 +120,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .rvfi_i(rvfi_instr),
+    .rvfi_csr_i(rvfi_csr),
     .end_of_test_o(tb_exit_o)
   ) ;
 

@@ -22,4 +22,4 @@ ${RISCV_DV_ROOT}/src/riscv_instr_pkg.sv
 ${RISCV_DV_ROOT}/test/riscv_instr_test_pkg.sv
 ${CVA6_DV_ROOT}/cva6_signature_pkg.sv
 ${CVA6_DV_ROOT}/cva6_instr_test_pkg.sv
-${RISCV_DV_ROOT}/test/riscv_instr_gen_tb_top.sv
+${CVA6_DV_ROOT}/cva6_instr_gen_tb_top.sv

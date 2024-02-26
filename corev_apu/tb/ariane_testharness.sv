@@ -36,6 +36,8 @@ module ariane_testharness #(
 
   localparam [7:0] hart_id = '0;
   
+  
+    // RVFI
   localparam type rvfi_instr_t = struct packed {
       logic [config_pkg::NRET-1:0]                  valid;
       logic [config_pkg::NRET*64-1:0]               order;
@@ -61,29 +63,11 @@ module ariane_testharness #(
       logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
       logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
   };
-    
+  
+  
   localparam type rvfi_probes_t = struct packed { 
-    logic [ariane_pkg::TRANS_ID_BITS-1:0] issue_pointer; 
-    logic [CVA6Cfg.NrCommitPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0] commit_pointer; 
-    logic                            flush_unissued_instr;
-    logic                            decoded_instr_valid;
-    logic                            decoded_instr_ack;
-    logic                            flush;
-    logic                            issue_instr_ack;
-    logic                            fetch_entry_valid;
-    logic [31:0]                     instruction;
-    logic                            is_compressed;
-    riscv::xlen_t                    rs1_forwarding;
-    riscv::xlen_t                    rs2_forwarding;
-    ariane_pkg::scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr;
-    ariane_pkg::exception_t ex_commit; 
-    riscv::priv_lvl_t priv_lvl;
-    ariane_pkg::lsu_ctrl_t                       lsu_ctrl;
-    logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
-    logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
-    logic [riscv::PLEN-1:0] mem_paddr;
-    logic debug_mode;
-    logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata;
+      ariane_pkg::rvfi_probes_csr_t csr;
+      ariane_pkg::rvfi_probes_instr_t instr;
   };
 
   // disable test-enable
@@ -651,11 +635,11 @@ module ariane_testharness #(
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
   rvfi_probes_t rvfi_probes;
+  ariane_pkg::rvfi_csr_t rvfi_csr;
   rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
   
   ariane #(
     .CVA6Cfg              ( CVA6Cfg             ),
-    .IsRVFI               ( IsRVFI              ),
     .rvfi_probes_t        ( rvfi_probes_t       ),
     .noc_req_t            ( ariane_axi::req_t   ),
     .noc_resp_t           ( ariane_axi::resp_t  )
@@ -698,20 +682,25 @@ module ariane_testharness #(
     end
   end
 
+  
+ 
   cva6_rvfi #(
       .CVA6Cfg   (CVA6Cfg),
       .rvfi_instr_t(rvfi_instr_t),
+      .rvfi_csr_t(ariane_pkg::rvfi_csr_t),
       .rvfi_probes_t(rvfi_probes_t)
   ) i_cva6_rvfi (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
       .rvfi_probes_i(rvfi_probes),
-      .rvfi_o(rvfi_instr)
+      .rvfi_instr_o(rvfi_instr),
+      .rvfi_csr_o(rvfi_csr)
   );
 
   rvfi_tracer  #(
     .CVA6Cfg(CVA6Cfg),
     .rvfi_instr_t(rvfi_instr_t),
+    .rvfi_csr_t(ariane_pkg::rvfi_csr_t),
     //
     .HART_ID(hart_id),
     .DEBUG_START(0),
@@ -720,6 +709,7 @@ module ariane_testharness #(
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .rvfi_i(rvfi_instr),
+    .rvfi_csr_i(rvfi_csr),
     .end_of_test_o(rvfi_exit)
   );
 

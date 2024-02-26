@@ -58,6 +58,9 @@ set_output_delay $output_delay -max -clock main_clk i_cache_subsystem/i_wt_dcach
 set_output_delay $output_delay -max -clock main_clk i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
 set_output_delay $output_delay -max -clock main_clk i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
 
+
+set_false_path -to [get_ports {rvfi_probes_o}]
+
 # Check the current design for consistency
 check_design -summary > ${DCRM_CHECK_DESIGN_REPORT}
 

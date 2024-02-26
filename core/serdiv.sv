@@ -22,21 +22,31 @@ module serdiv
     parameter WIDTH = 64,
     parameter STABLE_HANDSHAKE = 0             // Guarantee a stable in_rdy_o during the input handshake. Keep it at 0 in CVA6
 ) (
+    // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // input IF
+    // Serdiv translation ID - Mult
     input logic [TRANS_ID_BITS-1:0] id_i,
+    // A operand - Mult
     input logic [WIDTH-1:0] op_a_i,
+    // B operand - Mult
     input logic [WIDTH-1:0] op_b_i,
+    // Serdiv operation - Mult
     input logic [1:0] opcode_i,  // 0: udiv, 2: urem, 1: div, 3: rem
-    // handshake
-    input  logic                      in_vld_i, // there is a cycle delay from in_rdy_o->in_vld_i, see issue_read_operands.sv stage
+    // Serdiv instruction is valid - Mult
+    input logic in_vld_i,
+    // Serdiv FU is ready - Mult
     output logic in_rdy_o,
+    // Flush - CONTROLLER
     input logic flush_i,
-    // output IF
+    // Serdiv result is valid - Mult
     output logic out_vld_o,
+    // Serdiv is ready - Mult
     input logic out_rdy_i,
+    // Serdiv transaction ID - Mult
     output logic [TRANS_ID_BITS-1:0] id_o,
+    // Serdiv result - Mult
     output logic [WIDTH-1:0] res_o
 );
 

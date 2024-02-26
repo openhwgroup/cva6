@@ -23,11 +23,16 @@ module alu
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
-    input  logic         clk_i,            // Clock
-    input  logic         rst_ni,           // Asynchronous reset active low
-    input  fu_data_t     fu_data_i,
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // FU data needed to execute instruction - ISSUE_STAGE
+    input fu_data_t fu_data_i,
+    // ALU result - ISSUE_STAGE
     output riscv::xlen_t result_o,
-    output logic         alu_branch_res_o
+    // ALU branch compare result - branch_unit
+    output logic alu_branch_res_o
 );
 
   riscv::xlen_t                   operand_a_rev;
