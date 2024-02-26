@@ -22,7 +22,7 @@ module cva6_ptw
     parameter type pte_cva6_t = logic,
     parameter type tlb_update_cva6_t = logic,
     parameter int unsigned HYP_EXT = 0,
-    parameter int unsigned ASID_WIDTH[HYP_EXT:0],
+    parameter int ASID_WIDTH[HYP_EXT:0],
     parameter int unsigned VPN_LEN = 1,
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned PT_LEVELS = 1
