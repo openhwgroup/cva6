@@ -145,13 +145,12 @@ module commit_stage
     csr_write_fflags_o = 1'b0;
     flush_commit_o = 1'b0;
 
-    if (commit_instr_i[0].valid && !commit_instr_i[0].ex.valid && !halt_i && (commit_instr_i[0].is_zcmp_instr && commit_instr_i[0].is_last_zcmp_instr))
-      commit_zcmp_ack[0] = 1'b1;
-    else commit_zcmp_ack[0] = 1'b0;
-
     // we will not commit the instruction if we took an exception
     // and we do not commit the instruction if we requested a halt
     if (commit_instr_i[0].valid && !commit_instr_i[0].ex.valid && !halt_i) begin
+      if (commit_instr_i[0].is_zcmp_instr && commit_instr_i[0].is_last_zcmp_instr)
+        commit_zcmp_ack[0] = 1'b1;
+      else commit_zcmp_ack[0] = 1'b0;
       // we can definitely write the register file
       // if the instruction is not committing anything the destination
       commit_ack_o[0] = 1'b1;
@@ -272,6 +271,10 @@ module commit_stage
           if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[1].op)) we_fpr_o[1] = 1'b1;
           else we_gpr_o[1] = 1'b1;
 
+          if (commit_instr_i[1].is_zcmp_instr && commit_instr_i[1].is_last_zcmp_instr)
+            commit_zcmp_ack[1] = 1'b1;
+          else commit_zcmp_ack[1] = 1'b0;
+
           commit_ack_o[1] = 1'b1;
 
           // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
@@ -289,7 +292,7 @@ module commit_stage
         end
       end
     end
-    commit_zcmp_ack_o = (commit_instr_i[0].is_zcmp_instr) ? commit_zcmp_ack : commit_ack_o;
+    commit_zcmp_ack_o = (commit_instr_i[0].is_zcmp_instr || commit_instr_i[1].is_zcmp_instr) ? commit_zcmp_ack : commit_ack_o;
   end
 
   // -----------------------------

@@ -561,7 +561,6 @@ module zcmp_decoder #(
             instr_o_reg     = instr_i;
           end
         endcase
-        fetch_stall_o = 1;
       end
 
       PUSH_ADDI: begin
