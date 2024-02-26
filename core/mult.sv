@@ -5,14 +5,23 @@ module mult
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
+    // Subsystem Clock - SUBSYSTEM
     input  logic                             clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input  logic                             rst_ni,
+    // Flush - CONTROLLER
     input  logic                             flush_i,
+    // FU data needed to execute instruction - ISSUE_STAGE
     input  fu_data_t                         fu_data_i,
+    // Mult instruction is valid - ISSUE_STAGE
     input  logic                             mult_valid_i,
+    // Mult result - ISSUE_STAGE
     output riscv::xlen_t                     result_o,
+    // Mult result is valid - ISSUE_STAGE
     output logic                             mult_valid_o,
+    // Mutl is ready - ISSUE_STAGE
     output logic                             mult_ready_o,
+    // Mult transaction ID - ISSUE_STAGE
     output logic         [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
   logic mul_valid;

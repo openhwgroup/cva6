@@ -9,7 +9,7 @@
 
 .. _CVA6_issue_stage_ports:
 
-.. list-table:: issue_stage module IO ports
+.. list-table:: **issue_stage module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -92,7 +92,7 @@
 
    * - ``pc_o``
      - out
-     - TO_BE_COMPLETED
+     - Program Counter
      - EX_STAGE
      - logic[riscv::VLEN-1:0]
 
@@ -104,7 +104,7 @@
 
    * - ``flu_ready_i``
      - in
-     - TO_BE_COMPLETED
+     - Fixed Latency Unit is ready
      - EX_STAGE
      - logic
 
@@ -116,7 +116,7 @@
 
    * - ``resolve_branch_i``
      - in
-     - TO_BE_COMPLETED
+     - Signaling that we resolved the branch
      - EX_STAGE
      - logic
 
@@ -150,12 +150,6 @@
      - EX_STAGE
      - logic
 
-   * - ``fpu_ready_i``
-     - in
-     - FPU FU is ready
-     - EX_STAGE
-     - logic
-
    * - ``csr_valid_o``
      - out
      - CSR is valid
@@ -182,13 +176,13 @@
 
    * - ``trans_id_i``
      - in
-     - TO_BE_COMPLETED
+     - Transaction ID
      - EX_STAGE
      - logic[CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0]
 
    * - ``resolved_branch_i``
      - in
-     - TO_BE_COMPLETED
+     - The branch engine uses the write back from the ALU
      - EX_STAGE
      - bp_resolve_t
 
@@ -212,7 +206,7 @@
 
    * - ``x_we_i``
      - in
-     - TO_BE_COMPLETED
+     - CVXIF write enable
      - EX_STAGE
      - logic
 
@@ -230,25 +224,19 @@
 
    * - ``we_gpr_i``
      - in
-     - TO_BE_COMPLETED
-     - EX_STAGE
-     - logic[CVA6Cfg.NrCommitPorts-1:0]
-
-   * - ``we_fpr_i``
-     - in
-     - TO_BE_COMPLETED
+     - GPR write enable
      - EX_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
 
    * - ``commit_instr_o``
      - out
-     - TO_BE_COMPLETED
+     - Instructions to commit
      - COMMIT_STAGE
      - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
 
    * - ``commit_ack_i``
      - in
-     - TO_BE_COMPLETED
+     - Commit acknowledge
      - COMMIT_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
 
@@ -262,9 +250,12 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``issue_instr_o`` output is tied to 0
 |   ``issue_instr_hs_o`` output is tied to 0
 | As RVF = 0,
+|   ``fpu_ready_i`` input is tied to 0
 |   ``fpu_valid_o`` output is tied to 0
 |   ``fpu_fmt_o`` output is tied to 0
 |   ``fpu_rm_o`` output is tied to 0
+|   ``we_fpr_i`` input is tied to 0
 | As IsRVFI = 0,
 |   ``rvfi_issue_pointer_o`` output is tied to 0
 |   ``rvfi_commit_pointer_o`` output is tied to 0
+

@@ -37,23 +37,23 @@
      - 32
 
    * - NrLoadBufEntries
-     - TO_BE_COMPLETED
+     - Load buffer entry buffer
      - 1
 
    * - FpuEn
-     - FPU is enabled
+     - Floating Point
      - 0
 
    * - XF16
-     - TO_BE_COMPLETED
+     - Non standard 16bits Floating Point
      - 0
 
    * - XF16ALT
-     - TO_BE_COMPLETED
+     - Non standard 16bits Floating Point Alt
      - 0
 
    * - XF8
-     - TO_BE_COMPLETED
+     - Non standard 8bits Floating Point
      - 0
 
    * - RVA
@@ -77,7 +77,7 @@
      - 1
 
    * - XFVec
-     - TO_BE_COMPLETED
+     - Non standard Vector Floating Point
      - 0
 
    * - CvxifEn
@@ -85,7 +85,7 @@
      - 1
 
    * - ZiCondExtEn
-     - Zicond RISC-V extension is enabled
+     - Zicond RISC-V extension
      - 0
 
    * - RVF
@@ -97,31 +97,31 @@
      - 0
 
    * - FpPresent
-     - Floating point is present
+     - Floating Point is present
      - 0
 
    * - NSX
-     - TO_BE_COMPLETED
+     - Non standard Floating is Point present
      - 0
 
    * - FLen
-     - TO_BE_COMPLETED
+     - Floating Point lenght
      - 0
 
    * - RVFVec
-     - Vector floating point extension
+     - Vector Floating Point extension
      - 0
 
    * - XF16Vec
-     - 16 bits vector floating point extension
+     - 16 bits vector Floating Point extension
      - 0
 
    * - XF16ALTVec
-     - TO_BE_COMPLETED
+     - 16 bits vector Floating Point Alt extension
      - 0
 
    * - XF8Vec
-     - 8 bits vector floating point extension
+     - 8 bits vector Floating Point extension
      - 0
 
    * - NrRgprPorts
@@ -129,7 +129,7 @@
      - 0
 
    * - NrWbPorts
-     - TO_BE_COMPLETED
+     - Function Unit write back port number
      - 0
 
    * - EnableAccelerator
@@ -233,7 +233,7 @@
      - 7
 
    * - DebugEn
-     - Debug mode
+     - Debug support
      - 0
 
    * - NonIdemPotenceEn

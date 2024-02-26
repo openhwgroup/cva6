@@ -34,7 +34,9 @@ module uvmt_cva6_tb;
 
    // CVA6 config
    localparam config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg;
-   localparam bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace);
+
+    // RVFI
+ 
    localparam type rvfi_instr_t = struct packed {
      logic [config_pkg::NRET-1:0]                  valid;
      logic [config_pkg::NRET*64-1:0]               order;
@@ -60,7 +62,7 @@ module uvmt_cva6_tb;
      logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata;
      logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_wdata;
    };
-
+   
    localparam AXI_USER_EN       = ariane_pkg::AXI_USER_EN;
    localparam NUM_WORDS         = 2**24;
 
@@ -115,9 +117,9 @@ module uvmt_cva6_tb;
    */
 
    uvmt_cva6_dut_wrap #(
-     .CVA6Cfg           ( CVA6Cfg       ),
-     .IsRVFI            ( IsRVFI        ),
-     .rvfi_instr_t      ( rvfi_instr_t  ),
+     .CVA6Cfg           ( CVA6Cfg                ),
+     .rvfi_instr_t      ( rvfi_instr_t           ),
+     .rvfi_csr_t        ( ariane_pkg::rvfi_csr_t ),
      //
      .AXI_USER_EN       (AXI_USER_EN),
      .NUM_WORDS         (NUM_WORDS)
@@ -129,7 +131,8 @@ module uvmt_cva6_tb;
                     .default_inputs_vif    (default_inputs_vif),
                     .core_cntrl_if(core_cntrl_if),
                     .tb_exit_o(rvfi_if.tb_exit_o),
-                    .rvfi_o(rvfi_if.rvfi_o)
+                    .rvfi_o(rvfi_if.rvfi_o),
+                    .rvfi_csr_o()
                     );
 
    for (genvar i = 0; i < RVFI_NRET; i++) begin

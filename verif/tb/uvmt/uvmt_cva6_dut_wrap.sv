@@ -16,8 +16,8 @@
 
 module uvmt_cva6_dut_wrap # (
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter bit IsRVFI = 1'b0,
   parameter type rvfi_instr_t = logic,
+  parameter type rvfi_csr_t = logic,
   //
   parameter int unsigned AXI_USER_EN       = 0,
   parameter int unsigned NUM_WORDS         = 2**25
@@ -31,15 +31,16 @@ module uvmt_cva6_dut_wrap # (
                             uvmt_default_inputs_intf            default_inputs_vif,
                             uvme_cva6_core_cntrl_if             core_cntrl_if,
                             output logic[31:0]                  tb_exit_o,
-                            output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o
+                            output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
+                            output rvfi_csr_t                   rvfi_csr_o
                            );
 
 
 
     cva6_tb_wrapper #(
      .CVA6Cfg ( CVA6Cfg ),
-     .IsRVFI ( IsRVFI ),
-     .rvfi_instr_t ( rvfi_instr_t ),
+     .rvfi_instr_t      ( rvfi_instr_t      ),
+     .rvfi_csr_t        ( rvfi_csr_t        ),
      //
      .AXI_USER_EN       (AXI_USER_EN),
      .NUM_WORDS         (NUM_WORDS)
@@ -54,6 +55,7 @@ module uvmt_cva6_dut_wrap # (
          .axi_switch_vif         ( axi_switch_vif                 ),
          .default_inputs_vif     ( default_inputs_vif             ),
          .tb_exit_o              ( tb_exit_o                      ),
+         .rvfi_csr_o             ( rvfi_csr_o                     ),
          .rvfi_o                 ( rvfi_o                         )
 );
 

@@ -7,9 +7,9 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. _CVA6_bht_ports:
+.. _CVA6_mult_ports:
 
-.. list-table:: **bht module** IO ports
+.. list-table:: **mult module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -32,30 +32,44 @@
 
    * - ``flush_i``
      - in
-     - Fetch flush request
+     - Flush
      - CONTROLLER
      - logic
 
-   * - ``vpc_i``
+   * - ``fu_data_i``
      - in
-     - Virtual PC
-     - CACHE
-     - logic[riscv::VLEN-1:0]
+     - FU data needed to execute instruction
+     - ISSUE_STAGE
+     - fu_data_t
 
-   * - ``bht_update_i``
+   * - ``mult_valid_i``
      - in
-     - Update bht with resolved address
-     - EXECUTE
-     - ariane_pkg::bht_update_t
+     - Mult instruction is valid
+     - ISSUE_STAGE
+     - logic
 
-   * - ``bht_prediction_o``
+   * - ``result_o``
      - out
-     - Prediction from bht
-     - FRONTEND
-     - ariane_pkg::bht_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - Mult result
+     - ISSUE_STAGE
+     - riscv::xlen_t
 
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+   * - ``mult_valid_o``
+     - out
+     - Mult result is valid
+     - ISSUE_STAGE
+     - logic
 
-| As DebugEn = 0,
-|   ``debug_mode_i`` input is tied to 0
+   * - ``mult_ready_o``
+     - out
+     - Mutl is ready
+     - ISSUE_STAGE
+     - logic
+
+   * - ``mult_trans_id_o``
+     - out
+     - Mult transaction ID
+     - ISSUE_STAGE
+     - logic[TRANS_ID_BITS-1:0]
+
 

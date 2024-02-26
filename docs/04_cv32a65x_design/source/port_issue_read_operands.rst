@@ -9,7 +9,7 @@
 
 .. _CVA6_issue_read_operands_ports:
 
-.. list-table:: issue_read_operands module IO ports
+.. list-table:: **issue_read_operands module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -18,270 +18,242 @@
      - connexion
      - Type
 
-   * - ``Clock``
+   * - ``clk_i``
      - in
-     - none
-     - none
-     - logicclk_i,//
+     - Subsystem Clock
+     - SUBSYSTEM
+     - logic
 
-   * - ``low``
+   * - ``rst_ni``
      - in
-     - none
-     - none
-     - logicrst_ni,//Asynchronousresetactive
+     - Asynchronous reset active low
+     - SUBSYSTEM
+     - logic
 
    * - ``flush_i``
      - in
-     - none
-     - none
-     - logic
-
-   * - ``stall_i``
-     - in
-     - none
-     - none
+     - Flush
+     - CONTROLLER
      - logic
 
    * - ``issue_instr_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - scoreboard_entry_t
 
    * - ``orig_instr_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic[31:0]
 
    * - ``issue_instr_valid_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic
 
    * - ``issue_ack_o``
      - out
-     - none
-     - none
+     - Issue stage acknowledge
+     - TO_BE_COMPLETED
      - logic
 
    * - ``rs1_o``
      - out
-     - none
-     - none
+     - rs1 operand address
+     - scoreboard
      - logic[REG_ADDR_SIZE-1:0]
 
    * - ``rs1_i``
      - in
-     - none
-     - none
+     - rs1 operand
+     - scoreboard
      - riscv::xlen_t
 
    * - ``rs1_valid_i``
      - in
-     - none
-     - none
+     - rs1 operand is valid
+     - scoreboard
      - logic
 
    * - ``rs2_o``
      - out
-     - none
-     - none
+     - rs2 operand address
+     - scoreboard
      - logic[REG_ADDR_SIZE-1:0]
 
    * - ``rs2_i``
      - in
-     - none
-     - none
+     - rs2 operand
+     - scoreboard
      - riscv::xlen_t
 
    * - ``rs2_valid_i``
      - in
-     - none
-     - none
+     - rs2 operand is valid
+     - scoreboard
      - logic
 
    * - ``rs3_o``
      - out
-     - none
-     - none
+     - rs3 operand address
+     - scoreboard
      - logic[REG_ADDR_SIZE-1:0]
 
    * - ``rs3_i``
      - in
-     - none
-     - none
+     - rs3 operand
+     - scoreboard
      - rs3_len_t
 
    * - ``rs3_valid_i``
      - in
-     - none
-     - none
+     - rs3 operand is valid
+     - scoreboard
      - logic
 
    * - ``rd_clobber_gpr_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - fu_t[2**REG_ADDR_SIZE-1:0]
 
    * - ``rd_clobber_fpr_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - fu_t[2**REG_ADDR_SIZE-1:0]
 
    * - ``fu_data_o``
      - out
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - fu_data_t
 
-   * - ``fu_data_o.operanda``
+   * - ``rs1_forwarding_o``
      - out
-     - none
-     - none
-     - riscv::xlen_trs1_forwarding_o,//unregisteredversionof
+     - Unregistered version of fu_data_o.operanda
+     - TO_BE_COMPLETED
+     - riscv::xlen_t
 
-   * - ``fu_data_o.operandb``
+   * - ``rs2_forwarding_o``
      - out
-     - none
-     - none
-     - riscv::xlen_trs2_forwarding_o,//unregisteredversionof
+     - Unregistered version of fu_data_o.operandb
+     - TO_BE_COMPLETED
+     - riscv::xlen_t
 
    * - ``pc_o``
      - out
-     - none
-     - none
+     - Instruction pc
+     - TO_BE_COMPLETED
      - logic[riscv::VLEN-1:0]
 
    * - ``is_compressed_instr_o``
      - out
-     - none
-     - none
+     - Is compressed instruction
+     - TO_BE_COMPLETED
      - logic
 
-   * - ``request``
+   * - ``flu_ready_i``
      - in
-     - none
-     - none
-     - logicflu_ready_i,//Fixedlatencyunitreadytoacceptanew
+     - Fixed Latency Unit ready to accept new request
+     - TO_BE_COMPLETED
+     - logic
 
-   * - ``valid``
+   * - ``alu_valid_o``
      - out
-     - none
-     - none
-     - logicalu_valid_o,//Outputis
+     - ALU output is valid
+     - TO_BE_COMPLETED
+     - logic
 
-   * - ``instruction``
+   * - ``branch_valid_o``
      - out
-     - none
-     - none
-     - logicbranch_valid_o,//thisisavalidbranch
+     - Branch instruction is valid
+     - TO_BE_COMPLETED
+     - logic
 
    * - ``branch_predict_o``
      - out
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - branchpredict_sbe_t
 
-   * - ``ready``
+   * - ``lsu_ready_i``
      - in
-     - none
-     - none
-     - logiclsu_ready_i,//FUis
+     - Load Store Unit is ready
+     - TO_BE_COMPLETED
+     - logic
 
-   * - ``valid``
+   * - ``lsu_valid_o``
      - out
-     - none
-     - none
-     - logiclsu_valid_o,//Outputis
+     - Load Store Unit result is valid
+     - TO_BE_COMPLETED
+     - logic
 
-   * - ``valid``
+   * - ``mult_valid_o``
      - out
-     - none
-     - none
-     - logicmult_valid_o,//Outputis
+     - Mult result is valid
+     - TO_BE_COMPLETED
+     - logic
 
-   * - ``ready``
-     - in
-     - none
-     - none
-     - logicfpu_ready_i,//FUis
-
-   * - ``valid``
+   * - ``csr_valid_o``
      - out
-     - none
-     - none
-     - logicfpu_valid_o,//Outputis
-
-   * - ``instr.``
-     - out
-     - none
-     - none
-     - logic[1:0]fpu_fmt_o,//FPfmtfieldfrom
-
-   * - ``instr.``
-     - out
-     - none
-     - none
-     - logic[2:0]fpu_rm_o,//FPrmfieldfrom
-
-   * - ``valid``
-     - out
-     - none
-     - none
-     - logiccsr_valid_o,//Outputis
+     - CSR result is valid
+     - TO_BE_COMPLETED
+     - logic
 
    * - ``cvxif_valid_o``
      - out
-     - none
-     - none
+     - CVXIF result is valid
+     - TO_BE_COMPLETED
      - logic
 
    * - ``cvxif_ready_i``
      - in
-     - none
-     - none
+     - CVXIF is ready
+     - TO_BE_COMPLETED
      - logic
 
    * - ``cvxif_off_instr_o``
      - out
-     - none
-     - none
+     - CVXIF offloaded instruction
+     - TO_BE_COMPLETED
      - logic[31:0]
 
    * - ``waddr_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic[CVA6Cfg.NrCommitPorts-1:0][4:0]
 
    * - ``wdata_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic[CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
 
    * - ``we_gpr_i``
      - in
-     - none
-     - none
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
      - logic[CVA6Cfg.NrCommitPorts-1:0]
 
-   * - ``we_fpr_i``
-     - in
-     - none
-     - none
-     - logic[CVA6Cfg.NrCommitPorts-1:0]
-
-   * - ``entries``
+   * - ``stall_issue_o``
      - out
-     - none
-     - none
-     - logicstall_issue_o//stallsignal,wedonotwanttofetchanymore
+     - Stall signal, we do not want to fetch any more entries
+     - TO_BE_COMPLETED
+     - logic
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-none
+| As EnableAccelerator = 0,
+|   ``stall_i`` input is tied to 0
+| As RVF = 0,
+|   ``fpu_ready_i`` input is tied to 0
+|   ``fpu_valid_o`` output is tied to 0
+|   ``fpu_fmt_o`` output is tied to 0
+|   ``fpu_rm_o`` output is tied to 0
+|   ``we_fpr_i`` input is tied to 0
+
