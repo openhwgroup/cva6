@@ -26,7 +26,7 @@ module cva6_tlb
     parameter type tlb_update_cva6_t = logic,
     parameter int unsigned TLB_ENTRIES = 4,
     parameter int unsigned HYP_EXT = 0,
-    parameter int unsigned ASID_WIDTH[HYP_EXT:0] = {1},  //[vmid_width,asid_width]
+    parameter int unsigned ASID_WIDTH[HYP_EXT:0],  //[vmid_width,asid_width]
     parameter int unsigned VPN_LEN = 1,
     parameter int unsigned PT_LEVELS = 1
 ) (
