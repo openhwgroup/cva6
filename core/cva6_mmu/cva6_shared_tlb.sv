@@ -69,9 +69,6 @@ module cva6_shared_tlb #(
 
 );
 
-  tlb_update_cva6_t shared_tlb_update_delayed, shared_tlb_update_delayed2;
-  logic shared_tlb_update_valid_delayed, shared_tlb_update_valid_delayed2;
-
   function logic [SHARED_TLB_WAYS-1:0] shared_tlb_way_bin2oh(input logic [$clog2(SHARED_TLB_WAYS
 )-1:0] in);
     logic [SHARED_TLB_WAYS-1:0] out;
@@ -165,10 +162,10 @@ module cva6_shared_tlb #(
       for (x = 0; x < PT_LEVELS; x++) begin : gen_match
         assign page_match[i][x] = x==0 ? 1 :((HYP_EXT==0 || x==(PT_LEVELS-1)) ? // PAGE_MATCH CONTAINS THE MATCH INFORMATION FOR EACH TAG OF is_1G and is_2M in sv39x4. HIGHER LEVEL (Giga page), THEN THERE IS THE Mega page AND AT THE LOWER LEVEL IS ALWAYS 1
             &(shared_tag_rd[i].is_page[PT_LEVELS-1-x] | (~v_st_enbl_i[i_req_q][HYP_EXT:0])):
-                                    ((&v_st_enbl_i[i_req_q][HYP_EXT:0]) ?
-                                    ((shared_tag_rd[i].is_page[PT_LEVELS-1-x][0] && (shared_tag_rd[i].is_page[PT_LEVELS-2-x][HYP_EXT] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT]))
-                                  || (shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT] && (shared_tag_rd[i].is_page[PT_LEVELS-2-x][0] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][0]))):
-                                      shared_tag_rd[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl_i[i_req_q][0] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT] && v_st_enbl_i[i_req_q][HYP_EXT]));
+                                  ((&v_st_enbl_i[i_req_q][HYP_EXT:0]) ?
+                                  ((shared_tag_rd[i].is_page[PT_LEVELS-1-x][0] && (shared_tag_rd[i].is_page[PT_LEVELS-2-x][HYP_EXT] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT]))
+                                || (shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT] && (shared_tag_rd[i].is_page[PT_LEVELS-2-x][0] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][0]))):
+                                    shared_tag_rd[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl_i[i_req_q][0] || shared_tag_rd[i].is_page[PT_LEVELS-1-x][HYP_EXT] && v_st_enbl_i[i_req_q][HYP_EXT]));
 
         //identify if vpn matches at all PT levels for all TLB entries
         assign vpn_match[i][x]        = (HYP_EXT==1 && x==(PT_LEVELS-1) && ~v_st_enbl_i[i_req_q][0]) ? //
@@ -311,10 +308,6 @@ module cva6_shared_tlb #(
       dtlb_req_q <= '0;
       i_req_q <= 0;
       shared_tag_valid <= '0;
-      shared_tlb_update_valid_delayed <= '0;
-      shared_tlb_update_valid_delayed2 <= '0;
-      shared_tlb_update_delayed <= '0;
-      shared_tlb_update_delayed2 <= '0;
     end else begin
       itlb_vpn_q <= itlb_vaddr_i[riscv::SV-1:12];
       dtlb_vpn_q <= dtlb_vaddr_i[riscv::SV-1:12];
@@ -327,14 +320,6 @@ module cva6_shared_tlb #(
       dtlb_req_q <= dtlb_req_d;
       i_req_q <= i_req_d;
       shared_tag_valid <= shared_tag_valid_q[tag_rd_addr];
-
-      if (shared_tlb_update_i.valid) begin
-        shared_tlb_update_valid_delayed <= shared_tlb_update_i.valid;
-        shared_tlb_update_delayed <= shared_tlb_update_i;
-      end
-
-      shared_tlb_update_valid_delayed2 <= shared_tlb_update_valid_delayed;
-      shared_tlb_update_delayed2 <= shared_tlb_update_delayed;
     end
   end
 

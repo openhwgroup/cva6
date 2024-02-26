@@ -39,7 +39,7 @@ module cva6_mmu
     // IF interface
     input icache_arsp_t icache_areq_i,
     output icache_areq_t icache_areq_o,
-    // input  icache_areq_o_t                  icache_areq_i, this is the data type in the hypervisor version for now
+    // input  icache_areq_o_t                  icache_areq_i, // this is the data type in the hypervisor version for now
     // output icache_areq_i_t                  icache_areq_o,
 
     // LSU interface
@@ -92,11 +92,11 @@ module cva6_mmu
   generate
     for (b = 0; b < HYP_EXT + 1; b++) begin : gen_tlbs_asid
       assign dtlb_mmu_asid_i[b] = b==0 ?
-          ((en_ld_st_translation_i[2*HYP_EXT] || flush_tlb_i[HYP_EXT]) ? asid_i[HYP_EXT] : asid_i[0]):
-          asid_i[HYP_EXT*2];
+        ((en_ld_st_translation_i[2*HYP_EXT] || flush_tlb_i[HYP_EXT]) ? asid_i[HYP_EXT] : asid_i[0]):
+        asid_i[HYP_EXT*2];
       assign itlb_mmu_asid_i[b] = b==0 ?
-          (enable_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0]):
-          asid_i[HYP_EXT*2];
+        (enable_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0]):
+        asid_i[HYP_EXT*2];
     end
   endgenerate
 
@@ -255,7 +255,7 @@ module cva6_mmu
 
   cva6_ptw #(
       .CVA6Cfg          (CVA6Cfg),
-      //   .ArianeCfg              ( ArianeCfg             ), this is the configuration needed in the hypervisor extension for now
+      //   .ArianeCfg              ( ArianeCfg             ), // this is the configuration needed in the hypervisor extension for now
       .pte_cva6_t       (pte_cva6_t),
       .tlb_update_cva6_t(tlb_update_cva6_t),
       .HYP_EXT          (HYP_EXT),
@@ -337,30 +337,12 @@ module cva6_mmu
   logic pmp_instr_allow;
   localparam int PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
 
-  assign icache_areq_o.fetch_paddr[11:0] = icache_areq_i.fetch_vaddr[11:0];
-  assign icache_areq_o.fetch_paddr[riscv::PLEN-1:PPNWMin+1] =  //
-      (|enable_translation_i[HYP_EXT:0]) ?  //
-      (enable_translation_i[HYP_EXT] ? itlb_content[HYP_EXT].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] :
-    itlb_content[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] ): //
-      (riscv::PLEN-PPNWMin-1)'(icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
-  genvar a;
-  generate
-
-    for (a = 0; a < PT_LEVELS - 1; a++) begin : gen_fetch_paddr
-      assign icache_areq_o.fetch_paddr [PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1] = //
-          (|enable_translation_i[HYP_EXT:0] && (|itlb_is_page[a:0] == 0)) ?  //
-          (enable_translation_i[HYP_EXT] ? itlb_content[HYP_EXT].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]:
-          itlb_content[0].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(a+1)))]) : //
-          icache_areq_i.fetch_vaddr[PPNWMin-((VPN_LEN/PT_LEVELS)*(a)):PPNWMin-((VPN_LEN/PT_LEVELS)*(a+1))+1];
-    end
-  endgenerate
-
   // The instruction interface is a simple request response interface
   always_comb begin : instr_interface
     // MMU disabled: just pass through
     icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-    // icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
-    // // two potential exception sources:
+    icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1: riscv::PLEN -1 ):0];
+    // two potential exception sources:
     // 1. HPTW threw an exception -> signal with a page fault exception
     // 2. We got an access error because of insufficient permissions -> throw an access exception
     icache_areq_o.fetch_exception = '0;
@@ -393,6 +375,21 @@ module cva6_mmu
           };
 
       icache_areq_o.fetch_valid = 1'b0;
+
+      icache_areq_o.fetch_paddr = {
+        (enable_translation_i[HYP_EXT] && HYP_EXT == 1)? itlb_content[HYP_EXT].ppn : itlb_content[0].ppn,
+        icache_areq_i.fetch_vaddr[11:0]
+      };
+
+      if (itlb_is_page[0]) begin
+
+        icache_areq_o.fetch_paddr[PPNWMin:12] = icache_areq_i.fetch_vaddr[PPNWMin:12];
+
+      end else if (PT_LEVELS == 3 && itlb_is_page[PT_LEVELS-2]) begin
+
+        icache_areq_o.fetch_paddr[PPNWMin-(VPN_LEN/PT_LEVELS):12] = icache_areq_i.fetch_vaddr[PPNWMin-(VPN_LEN/PT_LEVELS):12];
+
+      end
       // ---------//
       // ITLB Hit
       // --------//
@@ -511,7 +508,7 @@ module cva6_mmu
   assign match_any_execute_region = config_pkg::is_inside_execute_regions(
       CVA6Cfg, {{64 - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}
   );
-  // assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}); this is the package used in the hypervisor extension for now
+  // assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}); // this is the package used in the hypervisor extension for now
 
   // Instruction fetch
   pmp #(
@@ -519,7 +516,7 @@ module cva6_mmu
       .PLEN      (riscv::PLEN),
       .PMP_LEN   (riscv::PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
-      // .NR_ENTRIES ( ArianeCfg.NrPMPEntries ) configuration used in hypervisor extension
+      // .NR_ENTRIES ( ArianeCfg.NrPMPEntries ) // configuration used in hypervisor extension
   ) i_pmp_if (
       .addr_i       (icache_areq_o.fetch_paddr),
       .priv_lvl_i,
@@ -545,71 +542,26 @@ module cva6_mmu
   logic [PT_LEVELS-2:0] dtlb_is_page_n, dtlb_is_page_q;
 
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
-  assign lsu_dtlb_hit_o = (|en_ld_st_translation_i[HYP_EXT:0]) ? dtlb_lu_hit : 1'b1;
+  assign lsu_dtlb_hit_o = (en_ld_st_translation_i[HYP_EXT:0]) ? dtlb_lu_hit : 1'b1;
 
   // Wires to PMP checks
   riscv::pmp_access_t pmp_access_type;
   logic               pmp_data_allow;
 
-  assign lsu_paddr_o[11:0] = lsu_vaddr_q[0][11:0];
-  assign lsu_paddr_o [riscv::PLEN-1:PPNWMin+1]   = (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ? //
-      (en_ld_st_translation_i[HYP_EXT] ? dtlb_pte_q[HYP_EXT].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))]:
-      dtlb_pte_q[0].ppn[riscv::PPNW-1:(riscv::PPNW - (riscv::PLEN - PPNWMin-1))] ): //
-      (riscv::PLEN-PPNWMin-1)'(lsu_vaddr_q[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN : riscv::PLEN )-1:PPNWMin+1]);
-
-  assign lsu_dtlb_ppn_o[11:0] = (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ?  //
-      (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[11:0]:
-      dtlb_content[0].ppn[11:0]) : //
-      lsu_vaddr_n[0][23:12];
-
-  genvar i;
-  generate
-
-    for (i = 0; i < PT_LEVELS - 1; i++) begin : gen_paddr_ppn_o
-      assign lsu_paddr_o   [PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-          (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-          (en_ld_st_translation_i[HYP_EXT] ? dtlb_pte_q[HYP_EXT].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))]:
-          dtlb_pte_q[0].ppn  [(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i))-1):(riscv::PPNW - (riscv::PLEN - PPNWMin-1)-((VPN_LEN/PT_LEVELS)*(i+1)))] ): //
-          lsu_vaddr_q[0][PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1];
-
-      assign lsu_dtlb_ppn_o[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] = //
-          (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]==0)) ? //
-          (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]:
-          dtlb_content[0].ppn[PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1] ): //
-          (|en_ld_st_translation_i[HYP_EXT:0]  && !misaligned_ex_q.valid && (|dtlb_is_page_q[i:0]!=0)?
-          lsu_vaddr_n[0][PPNWMin-((VPN_LEN/PT_LEVELS)*(i)):PPNWMin-((VPN_LEN/PT_LEVELS)*(i+1))+1]://
-          (VPN_LEN/PT_LEVELS)'(lsu_vaddr_n[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1 : (24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-1) ) -1): (riscv::PLEN > riscv::VLEN) ? 24 :24 + (VPN_LEN/PT_LEVELS)*(PT_LEVELS-i-2)]));
-    end
-    if (riscv::IS_XLEN64) begin : gen_ppn_64
-      assign lsu_dtlb_ppn_o[riscv::PPNW-1:PPNWMin+1] = (|en_ld_st_translation_i[HYP_EXT:0] && !misaligned_ex_q.valid) ?
-      (en_ld_st_translation_i[HYP_EXT] ? dtlb_content[HYP_EXT].ppn[riscv::PPNW-1:PPNWMin+1]:
-      dtlb_content[0].ppn[riscv::PPNW-1:PPNWMin+1] ):
-      lsu_vaddr_n[0][riscv::PLEN-1:PPNWMin+1] ;
-    end
-
-  endgenerate
 
   // The data interface is simpler and only consists of a request/response interface
   always_comb begin : data_interface
     // save request and DTLB response
-    lsu_vaddr_n[0]  = lsu_vaddr_i;
-    lsu_tinst_n     = lsu_tinst_i;
-
-    lsu_req_n       = lsu_req_i;
-    hs_ld_st_inst_n = hs_ld_st_inst_i;
+    lsu_vaddr_n[0] = lsu_vaddr_i;
+    lsu_req_n = lsu_req_i;
     misaligned_ex_n = misaligned_ex_i;
-    dtlb_pte_n      = dtlb_content;
-    dtlb_hit_n      = dtlb_lu_hit;
-    lsu_is_store_n  = lsu_is_store_i;
-    dtlb_is_page_n  = dtlb_is_page;
-
-    if (HYP_EXT == 1) begin
-      lsu_vaddr_n[HYP_EXT] = dtlb_gpaddr;
-    end
+    dtlb_pte_n = dtlb_content;
+    dtlb_hit_n = dtlb_lu_hit;
+    lsu_is_store_n = lsu_is_store_i;
+    dtlb_is_page_n = dtlb_is_page;
 
     lsu_valid_o = lsu_req_q;
     lsu_exception_o = misaligned_ex_q;
-    csr_hs_ld_st_inst_o = hs_ld_st_inst_i || hs_ld_st_inst_q;
     pmp_access_type = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
 
     // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
@@ -618,13 +570,41 @@ module cva6_mmu
     // Check if the User flag is set, then we may only access it in supervisor mode
     // if SUM is enabled
     daccess_err[0] = (en_ld_st_translation_i[0] || HYP_EXT==0)&&
-                      ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && (en_ld_st_translation_i[HYP_EXT*2] ? !sum_i[HYP_EXT] : !sum_i[0] ) && dtlb_pte_q[0].u) || // SUM is not set and we are trying to access a user page in supervisor mode
+                    ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && (en_ld_st_translation_i[HYP_EXT*2] ? !sum_i[HYP_EXT] : !sum_i[0] ) && dtlb_pte_q[0].u) || // SUM is not set and we are trying to access a user page in supervisor mode
     (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q[0].u));
 
-    if (HYP_EXT == 1) daccess_err[HYP_EXT] = en_ld_st_translation_i[HYP_EXT] && !dtlb_pte_q[1].u;
+    if (HYP_EXT == 1) begin
+      lsu_tinst_n          = lsu_tinst_i;
+      hs_ld_st_inst_n      = hs_ld_st_inst_i;
+      lsu_vaddr_n[HYP_EXT] = dtlb_gpaddr;
+      csr_hs_ld_st_inst_o  = hs_ld_st_inst_i || hs_ld_st_inst_q;
+      daccess_err[HYP_EXT] = en_ld_st_translation_i[HYP_EXT] && !dtlb_pte_q[1].u;
+    end
+
+    lsu_paddr_o = (riscv::PLEN)'(lsu_vaddr_q[0]);
+    lsu_dtlb_ppn_o        = (riscv::PPNW)'(lsu_vaddr_n[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1: riscv::PLEN -1 ):12]);
+
     // translation is enabled and no misaligned exception occurred
     if ((|en_ld_st_translation_i[HYP_EXT:0]) && !misaligned_ex_q.valid) begin
       lsu_valid_o = 1'b0;
+
+      lsu_dtlb_ppn_o = (en_ld_st_translation_i[HYP_EXT] && HYP_EXT == 1)? dtlb_content[HYP_EXT].ppn :dtlb_content[0].ppn;
+      lsu_paddr_o = {
+        (en_ld_st_translation_i[HYP_EXT] && HYP_EXT == 1)? dtlb_pte_q[HYP_EXT].ppn : dtlb_pte_q[0].ppn,
+        lsu_vaddr_q[0][11:0]
+      };
+      // Mega page
+      if (dtlb_is_page_q[0]) begin
+
+        lsu_dtlb_ppn_o[PPNWMin:12] = lsu_vaddr_n[0][PPNWMin:12];
+        lsu_paddr_o[PPNWMin:12] = lsu_vaddr_q[0][PPNWMin:12];
+
+      end else if (PT_LEVELS == 3 && dtlb_is_page_q[PT_LEVELS-2]) begin
+
+        lsu_paddr_o[PPNWMin-(VPN_LEN/PT_LEVELS):12] = lsu_vaddr_q[0][PPNWMin-(VPN_LEN/PT_LEVELS):12];
+        lsu_dtlb_ppn_o[PPNWMin-(VPN_LEN/PT_LEVELS):12] = lsu_vaddr_n[0][PPNWMin-(VPN_LEN/PT_LEVELS):12];
+
+      end
 
       // ---------
       // DTLB Hit
@@ -829,7 +809,7 @@ module cva6_mmu
         end
       end
     end  // If translation is not enabled, check the paddr immediately against PMPs
-  else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
+else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
       if (lsu_is_store_q) begin
         if (HYP_EXT == 1) begin
           lsu_exception_o = {
@@ -873,7 +853,7 @@ module cva6_mmu
       .PLEN      (riscv::PLEN),
       .PMP_LEN   (riscv::PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
-      // .NR_ENTRIES ( ArianeCfg.NrPMPEntries ) CONFIGURATION USED IN HYPERVISOR EXTENSION
+      // .NR_ENTRIES ( ArianeCfg.NrPMPEntries ) // CONFIGURATION USED IN HYPERVISOR EXTENSION
   ) i_pmp_data (
       .addr_i       (lsu_paddr_o),
       .priv_lvl_i   (ld_st_priv_lvl_i),
@@ -890,24 +870,30 @@ module cva6_mmu
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       lsu_vaddr_q     <= '0;
-      lsu_tinst_q     <= '0;
-      hs_ld_st_inst_q <= '0;
       lsu_req_q       <= '0;
       misaligned_ex_q <= '0;
       dtlb_pte_q      <= '0;
       dtlb_hit_q      <= '0;
       lsu_is_store_q  <= '0;
       dtlb_is_page_q  <= '0;
+
+      if (HYP_EXT == 1) begin
+        lsu_tinst_q     <= '0;
+        hs_ld_st_inst_q <= '0;
+      end
     end else begin
       lsu_vaddr_q     <= lsu_vaddr_n;
-      lsu_tinst_q     <= lsu_tinst_n;
-      hs_ld_st_inst_q <= hs_ld_st_inst_n;
       lsu_req_q       <= lsu_req_n;
       misaligned_ex_q <= misaligned_ex_n;
       dtlb_pte_q      <= dtlb_pte_n;
       dtlb_hit_q      <= dtlb_hit_n;
       lsu_is_store_q  <= lsu_is_store_n;
       dtlb_is_page_q  <= dtlb_is_page_n;
+
+      if (HYP_EXT == 1) begin
+        lsu_tinst_q     <= lsu_tinst_n;
+        hs_ld_st_inst_q <= hs_ld_st_inst_n;
+      end
     end
   end
 endmodule
