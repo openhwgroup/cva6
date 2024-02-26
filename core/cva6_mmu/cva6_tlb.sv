@@ -219,7 +219,7 @@ module cva6_tlb
   logic [HYP_EXT:0]asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2)is 0, active high
   logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
 
-  localparam int unsigned VADDR_WIDTH[1:0] = {riscv::GPLEN, riscv::VLEN};
+  localparam int VADDR_WIDTH[1:0] = {riscv::GPLEN, riscv::VLEN};
 
   genvar a;
   generate
