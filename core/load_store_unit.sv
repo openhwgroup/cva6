@@ -180,7 +180,7 @@ module load_store_unit
     localparam HYP_EXT = 0;  //CVA6Cfg.CVA6ConfigHExtEn
     localparam VPN_LEN = (riscv::XLEN == 64) ? (HYP_EXT ? 29 : 27) : 20;
     localparam PT_LEVELS = (riscv::XLEN == 64) ? 3 : 2;
-    localparam int unsigned mmu_ASID_WIDTH[HYP_EXT:0] = {ASID_WIDTH};
+    localparam int mmu_ASID_WIDTH[HYP_EXT:0] = {ASID_WIDTH};
 
 
     cva6_mmu #(
