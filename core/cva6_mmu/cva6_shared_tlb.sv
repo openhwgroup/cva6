@@ -28,7 +28,7 @@ module cva6_shared_tlb #(
     parameter int SHARED_TLB_DEPTH = 64,
     parameter int SHARED_TLB_WAYS = 2,
     parameter int unsigned HYP_EXT = 0,
-    parameter int unsigned ASID_WIDTH[HYP_EXT:0] = {1},  //[vmid_width,asid_width]
+    parameter int unsigned ASID_WIDTH[HYP_EXT:0],  //[vmid_width,asid_width]
     parameter int unsigned VPN_LEN = 1,
     parameter int unsigned PT_LEVELS = 1
 ) (
