@@ -29,8 +29,8 @@ The module is connected to:
 * CACHES module provides fethed instructions to FRONTEND.
 * DECODE module receives instructions from FRONTEND.
 * CONTROLLER module can flush FRONTEND PC gen stage
-* EXECUTE, CONTROLLER, CSR and COMMIT modules triggers PC jumping due to a branch mispredict, an exception, a return from exception, a debug entry or pipeline flush.
-  They provides related PC next value.
+* EXECUTE, CONTROLLER, CSR and COMMIT modules trigger PC jumping due to a branch misprediction, an exception, a return from an exception, a debug entry or a pipeline flush.
+  They provides the PC next value.
 * CSR module states about debug mode.
 
 .. include:: port_frontend.rst
@@ -46,17 +46,17 @@ PC gen generates the next program counter. The next PC can originate from the fo
 * **Reset state:** At reset, the PC is assigned to the boot address.
 
 * **Branch Predict:** Fetched instruction is predecoded thanks to instr_scan submodule.
-  When instruction is a control flow, three cases need to be considered:
+  When the instruction is a control flow, three cases are considered:
 
-  + 1) When instruction is a JALR which corresponds to a return (rs1 = x1 or rs1 = x5).
+    1. When the instruction is a JALR which corresponds to a return (rs1 = x1 or rs1 = x5).
        RAS provides next PC as a prediction.
 
-  + 2) When instruction is a JALR which **does not** correspond to a return.
+    2. When the instruction is a JALR which **does not** correspond to a return.
        If BTB (Branch Target Buffer) returns a valid address, then BTB predicts next PC.
        Else JALR is not considered as a control flow instruction, which will generate a mispredict.
 
-  + 3) When instruction is an unconditional branch.
-       If BTH (Branch History table) returns a valid address, then BHT predicts next PC.
+    3. When the instruction is a conditional branch.
+       If BHT (Branch History table) returns a valid address, then BHT predicts next PC.
        Else branch is not considered as an control flow instruction, which will generate a mispredict when branch is taken.
 
   Then the PC gen informs the Fetch stage that it performed a prediction on the PC.
@@ -65,7 +65,7 @@ PC gen generates the next program counter. The next PC can originate from the fo
   PC Gen always fetches on a word boundary (32-bit).
   Compressed instructions are handled by fetch stage.
 
-* **Mispredict:** When a branch prediction is mispredicted, the EX_STAGE module feedbacks a misprediction.
+* **Mispredict:** When the EX_STAGE module raises a misprediction.
   This can either be a 'real' mis-prediction or a branch which was not recognized as one.
   In any case we need to correct our action and start fetching from the correct address.
 
@@ -203,9 +203,10 @@ BTB (Branch Target Buffer) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-BTB is implemented as a memory which is composed of **BTBDepth configuration parameter** entries. The lower address bits of the virtual address point to the memory entry.
+BTB is implemented as an array which is composed of **BTBDepth configuration parameter** entries.
+The lower address bits of the virtual address point to the memory entry.
 
-When an JALR instruction jumps to a register is mispredicted by the EX_STAGE module, the JALR PC and the target address are stored into the BTB.
+When an JALR instruction is found mispredicted by the EX_STAGE module, the JALR PC and the target address are stored into the BTB.
 
 The information is stored in a **BTBDepth configuration parameter** entry table.
 
@@ -230,7 +231,7 @@ RAS is implemented as a LIFO which is composed of **RASDepth configuration param
 
 When a JAL instruction is confirmed to be not speculative by EX_STAGE submodule, the relative information is pushed into the RAS.
 
-When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) is confirmed to be not speculative by EX_STAGE submodule, the relative informaiton is pushed/popped as follow (in the below, *link* is true when the register is either x1 or x5):
+When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) is confirmed to be not speculative by EX_STAGE submodule, the relative informaiton is pushed/popped as follows (in the list below, *link* is true when the register is either x1 or x5):
 
 * when rd=!link and rs1=!link, none
 * when rd=!link and rs1=link, pop
@@ -243,7 +244,7 @@ RAS misprediction occurrence is rare because RAS push and pop are done by not sp
 
 The RAS is never flushed.
 
-Note: the current implementation is not aligend on the description. Test should highlight the misfunctionality and help to fix implementation.
+Note: the current implementation is not aligned with this description. Tests should highlight the differences and help fixing the implementation.
 
 .. include:: port_ras.rst
 

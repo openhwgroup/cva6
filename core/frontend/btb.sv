@@ -33,7 +33,7 @@ module btb #(
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // Fetch flush request - zero
+    // Branch prediction flush request - zero
     input logic flush_bp_i,
     // Debug mode state - CSR
     input logic debug_mode_i,
