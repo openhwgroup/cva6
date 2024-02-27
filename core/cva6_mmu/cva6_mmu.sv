@@ -1,4 +1,6 @@
 // Copyright (c) 2021 Thales.
+// Copyright (c) 2024, PlanV Technology
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -9,7 +11,7 @@
 // specific language governing permissions and limitations under the License.
 //
 // Author: Angela Gonzalez, PlanV Technology
-// Date: 14/02/2024
+// Date: 26/02/2024
 //
 // Description: Memory Management Unit for CVA6, contains TLB and
 //              address translation unit. SV32 SV39 and SV39x4 as defined in RISC-V

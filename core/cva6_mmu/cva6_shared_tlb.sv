@@ -1,4 +1,6 @@
 // Copyright (c) 2023 Thales.
+// Copyright (c) 2024, PlanV Technology
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -9,16 +11,12 @@
 // specific language governing permissions and limitations under the License.
 //
 // Author: Angela Gonzalez PlanV Technology
-// Date: 24/11/2023
+// Date: 26/02/2024
 //
 // Description: N-way associative shared TLB, it allows to reduce the number
-//              of ITLB and DTLB entries.
-//
-// =========================================================================== //
-// Revisions  :
-// Date        Version  Author       Description
-// 2024-02-05  0.2      A.Gonzalez   Generic shared TLB for CVA6 with Hypervisor support
-// =========================================================================== //
+//              of ITLB and DTLB entries. This module is an update of the
+//              shared TLB sv32 developed by Sebastien Jacq (Thales Research & Technology)
+//              to be used with sv32, sv39 and sv39x4.
 
 /* verilator lint_off WIDTH */
 

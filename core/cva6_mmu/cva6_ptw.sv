@@ -1,4 +1,6 @@
 // Copyright (c) 2021 Thales.
+// Copyright (c) 2024, PlanV Technology
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -9,7 +11,7 @@
 // specific language governing permissions and limitations under the License.
 //
 // Author: Angela Gonzalez, PlanV Technology
-// Date: 02/02/2024
+// Date: 26/02/2024
 // Description: Hardware-PTW (Page-Table-Walker) for CVA6 supporting sv32, sv39 and sv39x4.
 //              This module is an merge of the PTW Sv39 developed by Florian Zaruba,
 //              the PTW Sv32 developed by Sebastien Jacq and the PTW Sv39x4 by Bruno Sá.  
