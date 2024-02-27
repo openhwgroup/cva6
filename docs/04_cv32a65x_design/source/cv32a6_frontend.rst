@@ -48,15 +48,18 @@ PC gen generates the next program counter. The next PC can originate from the fo
 * **Branch Predict:** Fetched instruction is predecoded thanks to instr_scan submodule.
   When instruction is a control flow, three cases need to be considered:
 
-  + 1) If instruction is a JALR which **does not** correspond to a function return and BTB (Branch Target Buffer) returns a valid address, next PC is predicted by BTB.
-       Else JALR is not considered as a control flow instruction, which will generate a mispredict.
-
-  + 2) If instruction is a branch and BTH (Branch History table) returns a valid address, next PC is predicted by BHT.
-       Else branch is not considered as an control flow instruction, which will generate a mispredict when branch is taken.
-
-  + 3) If instruction is a JALR which corresponds to a function return and related JALR instruction has already been consummed by instruction queue, next PC is predicted by RAS.
+  + 1) When instruction is a JALR which corresponds to a function return (rd = x1 or rd = x5).
+       If related JALR instruction has already been consummed by instruction queue, RSA predicts next PC.
        Else related JALR instruction is considered as a control flow instruction and next PC is not predicted.
        A mispredict will be generated.
+
+  + 2) When instruction is a JALR which **does not** correspond to a function return.
+       If BTB (Branch Target Buffer) returns a valid address, then BTB predicts next PC.
+       Else JALR is not considered as a control flow instruction, which will generate a mispredict.
+
+  + 3) When instruction is an unconditional branch.
+       If BTH (Branch History table) returns a valid address, then BHT predicts next PC.
+       Else branch is not considered as an control flow instruction, which will generate a mispredict when branch is taken.
 
   Then the PC gen informs the Fetch stage that it performed a prediction on the PC.
 
