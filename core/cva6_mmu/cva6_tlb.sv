@@ -1,4 +1,6 @@
 // Copyright (c) 2021 Thales.
+// Copyright (c) 2024, PlanV Technology
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -9,19 +11,14 @@
 // specific language governing permissions and limitations under the License.
 //
 // Author: Angela Gonzalez PlanV Technology
-// Date: 20/11/2023
+// Date: 26/02/2024
 //
 // Description: Translation Lookaside Buffer, parameterizable to Sv32 or Sv39 , 
 //              or sv39x4 fully set-associative
 //              This module is an merge of the Sv32 TLB developed by Sebastien
 //              Jacq (Thales Research & Technology), the Sv39 TLB developed
 //              by Florian Zaruba and David Schaffenrath and the Sv39x4 by Bruno Sá.
-//
-// =========================================================================== //
-// Revisions  :
-// Date        Version  Author       Description
-// 2024-01-25  0.2      A.Gonzalez   Generic TLB for CVA6 with Hypervisor support
-// =========================================================================== //
+
 module cva6_tlb
   import ariane_pkg::*;
 #(
