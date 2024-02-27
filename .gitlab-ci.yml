@@ -119,7 +119,8 @@ build_tools:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
 
 .simu_after_script: &simu_after_script
-  - for i in verif/sim/*/v*_sim/*.log.iss ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
+  - for i in $(find verif/sim/*/v*_sim -type f \( -name "*.csv" -o -name "*.iss" \)) ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
+  - head -10000 verif/sim/logfile.log > artifacts/logs/logfile.log.head
   - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
 
 smoke:
@@ -240,10 +241,12 @@ fpga-build:
   script:
     - source $VIVADO_SETUP
     - source ./verif/sim/setup-env.sh
-    - make fpga target=$TARGET
+    - mkdir -p artifacts/logs
+    - make fpga target=$TARGET 2>&1 | tee artifacts/logs/logfile.log
+    - tail -20 artifacts/logs/logfile.log > artifacts/logs/logfile.log.tail
     - mkdir -p artifacts/reports
     - mv corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
-    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt
+    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt artifacts/logs/logfile.tail
 
 .regress_test:
   stage: heavy tests
