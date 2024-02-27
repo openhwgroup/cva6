@@ -48,12 +48,10 @@ PC gen generates the next program counter. The next PC can originate from the fo
 * **Branch Predict:** Fetched instruction is predecoded thanks to instr_scan submodule.
   When instruction is a control flow, three cases need to be considered:
 
-  + 1) When instruction is a JALR which corresponds to a function return (rd = x1 or rd = x5).
-       If related JALR instruction has already been consummed by instruction queue, RSA predicts next PC.
-       Else related JALR instruction is considered as a control flow instruction and next PC is not predicted.
-       A mispredict will be generated.
+  + 1) When instruction is a JALR which corresponds to a return (rs1 = x1 or rs1 = x5).
+       RAS provides next PC as a prediction.
 
-  + 2) When instruction is a JALR which **does not** correspond to a function return.
+  + 2) When instruction is a JALR which **does not** correspond to a return.
        If BTB (Branch Target Buffer) returns a valid address, then BTB predicts next PC.
        Else JALR is not considered as a control flow instruction, which will generate a mispredict.
 
@@ -173,6 +171,8 @@ BHT (Branch History Table) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+BHT is implemented as a memory which is composed of **BHTDepth configuration parameter** entries. The lower address bits of the virtual address point to the memory entry.
+
 When a branch instruction is resolved by the EX_STAGE module, the relative information is stored in the Branch History Table.
 
 The information is stored in a **BHTDepth configuration parameter** entry table.
@@ -203,7 +203,9 @@ BTB (Branch Target Buffer) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-When an JALR instruction jump to a register is mispredicted by the EX_STAGE module, the JALR PC and the target address are stored into the BTB.
+BTB is implemented as a memory which is composed of **BTBDepth configuration parameter** entries. The lower address bits of the virtual address point to the memory entry.
+
+When an JALR instruction jumps to a register is mispredicted by the EX_STAGE module, the JALR PC and the target address are stored into the BTB.
 
 The information is stored in a **BTBDepth configuration parameter** entry table.
 
@@ -223,12 +225,12 @@ The BTB is never flushed.
 RAS (Return Address Stack) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RAS is implemented as a FIFO which is composed of **RASDepth configuration parameter** entries.
 
-A JAL instruction pushes the return address onto the RAS only when rd=x1 or rd=x5.
+RAS is implemented as a LIFO which is composed of **RASDepth configuration parameter** entries.
 
-JALR instruction pushes/pops a RAS as follows.
-In the below, *link* is true when the register is either x1 or x5.
+When a JAL instruction is confirmed to be not speculative by EX_STAGE submodule, the relative information is pushed into the RAS.
+
+When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) is confirmed to be not speculative by EX_STAGE submodule, the relative informaiton is pushed/popped as follow (in the below, *link* is true when the register is either x1 or x5):
 
 * when rd=!link and rs1=!link, none
 * when rd=!link and rs1=link, pop
@@ -236,11 +238,12 @@ In the below, *link* is true when the register is either x1 or x5.
 * when rd=link  and rs1=link and rd!=rs1, pop then push
 * when rd=link  and rs1=link and rd=rs1,  push
 
+Mispredicted JAL or JALR instructions must not alter the RAS content.
+RAS misprediction occurrence is rare because RAS push and pop are done by not speculative instructions, but it can happen.
+
 The RAS is never flushed.
 
-Mispredicted JAL or JALR instructions must not alter the RAS content.
-
-.. TODO: Specify the behaviour when RAS is saturated
+Note: the current implementation is not aligend on the description. Test should highlight the misfunctionality and help to fix implementation.
 
 .. include:: port_ras.rst
 
