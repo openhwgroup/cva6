@@ -1,5 +1,7 @@
+// Copyright (c) 2018 ETH Zurich and University of Bologna.
 // Copyright (c) 2021 Thales.
-// Copyright (c) 2024, PlanV Technology
+// Copyright (c) 2022 Bruno Sá and Zero-Day Labs.
+// Copyright (c) 2024 PlanV Technology
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
