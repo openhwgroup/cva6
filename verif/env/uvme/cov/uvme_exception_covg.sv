@@ -104,8 +104,18 @@ covergroup cg_exception(
     bins is_csr_instr = {uvma_isacov_pkg::CSR_GROUP};
   }
 
+  cp_is_write_csr: coverpoint instr.is_csr_write() {
+    bins is_csr_write = {1};
+  }
+
   cp_illegal_csr: coverpoint instr.csr {
     bins UNSUPPORTED_CSR[] = {[uvma_isacov_pkg::USTATUS:uvma_isacov_pkg::VLENB]} with (cfg_illegal_csr[item] == 1) iff(instr.trap);
+  }
+
+  cp_ro_csr: coverpoint instr.csr {
+    bins ONLY_READ_CSR[] = {[uvma_isacov_pkg::CYCLE:uvma_isacov_pkg::HPMCOUNTER31],
+                            [uvma_isacov_pkg::CYCLEH:uvma_isacov_pkg::HPMCOUNTER31H],
+                            [uvma_isacov_pkg::MVENDORID:uvma_isacov_pkg::MHARTID]}  with (cfg_illegal_csr[item] == 0) iff(instr.trap);
   }
 
   cp_misalign_load: coverpoint instr.group {
@@ -133,6 +143,10 @@ covergroup cg_exception(
   }
 
   cross_illegal_csr : cross cp_exception, cp_illegal_csr,  cp_is_csr {
+    ignore_bins IGN = !binsof(cp_exception) intersect{2};
+  }
+
+  cross_illegal_write_csr : cross cp_exception, cp_ro_csr,  cp_is_write_csr {
     ignore_bins IGN = !binsof(cp_exception) intersect{2};
   }
 
