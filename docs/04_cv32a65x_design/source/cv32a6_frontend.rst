@@ -45,7 +45,7 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
 * **Reset state:** At reset, the PC is assigned to the boot address.
 
-* **Branch Predict:** Fetched instruction is predecoded thanks to instr_scan submodule.
+* **Branch Prediction:** The fetched instruction is predecoded by the instr_scan submodule.
   When the instruction is a control flow, three cases are considered:
 
     1. When the instruction is a JALR which corresponds to a return (rs1 = x1 or rs1 = x5).
@@ -57,15 +57,14 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
     3. When the instruction is a conditional branch.
        If BHT (Branch History table) returns a valid address, then BHT predicts next PC.
-       Else branch is not considered as an control flow instruction, which will generate a mispredict when branch is taken.
+       Else the prediction depends on the PC relative jump offset sign: if sign is negative the prediction is taken, otherwise the prediction is not taken.
 
   Then the PC gen informs the Fetch stage that it performed a prediction on the PC.
 
-* **Default:** PC + 4 is fetched.
-  PC Gen always fetches on a word boundary (32-bit).
-  Compressed instructions are handled by fetch stage.
+* **Default:** The next 32-bit block is fetched.
+  PC Gen fetches word boundary 32-bits block from CACHES module. And the fetch stage identifies the instructions from the 32-bits blocks.
 
-* **Mispredict:** When the EX_STAGE module raises a misprediction.
+* **Mispredict:** Misprediction are feedbacked by EX_STAGE module.
   This can either be a 'real' mis-prediction or a branch which was not recognized as one.
   In any case we need to correct our action and start fetching from the correct address.
 
@@ -158,7 +157,7 @@ The instruction queue can be flushed by CONTROLLER.
 instr_scan submodule
 ~~~~~~~~~~~~~~~~~~~~
 
-When compressed extension is enabled, two instr_scan are instantiated to handle up to two instructions per cycle.
+As compressed extension is enabled, two instr_scan are instantiated to handle up to two instructions per cycle.
 
 Each instr_scan submodule pre-decodes the fetched instructions coming from the instr_realign module, instructions could be compressed or not.
 The instr_scan submodule is a flox controler which provides the intruction type: branch, jump, return, jalr, imm, call or others.
@@ -173,9 +172,7 @@ BHT (Branch History Table) submodule
 
 BHT is implemented as a memory which is composed of **BHTDepth configuration parameter** entries. The lower address bits of the virtual address point to the memory entry.
 
-When a branch instruction is resolved by the EX_STAGE module, the relative information is stored in the Branch History Table.
-
-The information is stored in a **BHTDepth configuration parameter** entry table.
+When a branch instruction is resolved by the EX_STAGE module, the branch PC and the taken (or not taken) status information is stored in the Branch History Table.
 
 .. TO_BE_COMPLETED: Specify the behaviour when BHT is saturated
 
@@ -208,8 +205,6 @@ The lower address bits of the virtual address point to the memory entry.
 
 When an JALR instruction is found mispredicted by the EX_STAGE module, the JALR PC and the target address are stored into the BTB.
 
-The information is stored in a **BTBDepth configuration parameter** entry table.
-
 .. TODO: Specify the behaviour when BTB is saturated
 
 .. TODO: when debug enabled, The BTB is not updated if processor is in debug mode.
@@ -229,9 +224,9 @@ RAS (Return Address Stack) submodule
 
 RAS is implemented as a LIFO which is composed of **RASDepth configuration parameter** entries.
 
-When a JAL instruction is confirmed to be not speculative by EX_STAGE submodule, the relative information is pushed into the RAS.
+When a JAL instruction is confirmed to be not speculative by EX_STAGE submodule (but an exception can always prevent its commit), the PC of the instruction following JAL instruction is pushed into the RAS.
 
-When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) is confirmed to be not speculative by EX_STAGE submodule, the relative informaiton is pushed/popped as follows (in the list below, *link* is true when the register is either x1 or x5):
+When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) is confirmed to be not speculative by EX_STAGE submodule (but an exception can always prevent its commit), the relative information is pushed/popped as follows (in the list below, *link* is true when the register is either x1 or x5):
 
 * when rd=!link and rs1=!link, none
 * when rd=!link and rs1=link, pop
@@ -240,7 +235,7 @@ When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) is 
 * when rd=link  and rs1=link and rd=rs1,  push
 
 Mispredicted JAL or JALR instructions must not alter the RAS content.
-RAS misprediction occurrence is rare because RAS push and pop are done by not speculative instructions, but it can happen.
+RAS misprediction occurrence is rare, but it can happen.
 
 The RAS is never flushed.
 
