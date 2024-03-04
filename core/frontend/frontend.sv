@@ -426,7 +426,7 @@ module frontend
     ) i_ras (
         .clk_i,
         .rst_ni,
-        .flush_i(flush_bp_i),
+        .flush_bp_i(flush_bp_i),
         .push_i (ras_push),
         .pop_i  (ras_pop),
         .data_i (ras_update),
@@ -448,7 +448,7 @@ module frontend
     ) i_btb (
         .clk_i,
         .rst_ni,
-        .flush_i         (flush_bp_i),
+        .flush_bp_i      (flush_bp_i),
         .debug_mode_i,
         .vpc_i           (vpc_btb),
         .btb_update_i    (btb_update),
@@ -465,7 +465,7 @@ module frontend
     ) i_bht (
         .clk_i,
         .rst_ni,
-        .flush_i         (flush_bp_i),
+        .flush_bp_i      (flush_bp_i),
         .debug_mode_i,
         .vpc_i           (icache_vaddr_q),
         .bht_update_i    (bht_update),
