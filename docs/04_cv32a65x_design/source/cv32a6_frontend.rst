@@ -65,7 +65,6 @@ PC gen generates the next program counter. The next PC can originate from the fo
   PC Gen fetches word boundary 32-bits block from CACHES module. And the fetch stage identifies the instructions from the 32-bits blocks.
 
 * **Mispredict:** Misprediction are feedbacked by EX_STAGE module.
-  This can either be a 'real' mis-prediction or a branch which was not recognized as one.
   In any case we need to correct our action and start fetching from the correct address.
 
 * **Replay instruction fetch:** When the instruction queue is full, the instr_queue submodule asks the fetch replay and provides the address to be replayed.
