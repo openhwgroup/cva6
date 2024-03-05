@@ -163,7 +163,7 @@ coremark:
     DASHBOARD_JOB_CATEGORY: "Performance"
   script:
     - bash verif/regress/coremark.sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/veri-testharness_sim/core_main.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/veri-testharness_sim/core_main.*.log
 
 hwconfig:
   extends:
@@ -264,7 +264,7 @@ dhrystone:
     DASHBOARD_JOB_CATEGORY: "Performance"
   script:
     - bash verif/regress/dhrystone.sh
-    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.*.log
 
 riscv_arch_test:
   extends:
