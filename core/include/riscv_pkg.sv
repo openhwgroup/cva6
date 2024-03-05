@@ -40,10 +40,6 @@ package riscv;
   localparam VLEN = (XLEN == 32) ? 32 : 64;  // virtual address length
   localparam PLEN = (XLEN == 32) ? 34 : 56;  // physical address length
 
-  localparam GPLEN = (XLEN == 32) ? 34 : 41;
-  localparam GPPNW = (XLEN == 32) ? 22 : 29;
-  localparam GPPN2 = (XLEN == 32) ? riscv::VLEN - 33 : 10;
-
   localparam IS_XLEN32 = (XLEN == 32) ? 1'b1 : 1'b0;
   localparam IS_XLEN64 = (XLEN == 32) ? 1'b0 : 1'b1;
   localparam ModeW = (XLEN == 32) ? 1 : 4;
@@ -338,15 +334,10 @@ package riscv;
   localparam logic [XLEN-1:0] ST_ACCESS_FAULT = 7;  // Illegal access as governed by PMPs and PMAs
   localparam logic [XLEN-1:0] ENV_CALL_UMODE = 8;  // environment call from user mode
   localparam logic [XLEN-1:0] ENV_CALL_SMODE = 9;  // environment call from supervisor mode
-  localparam logic [XLEN-1:0] ENV_CALL_VSMODE = 10; // environment call from virtual supervisor mode
   localparam logic [XLEN-1:0] ENV_CALL_MMODE = 11;  // environment call from machine mode
   localparam logic [XLEN-1:0] INSTR_PAGE_FAULT = 12;  // Instruction page fault
   localparam logic [XLEN-1:0] LOAD_PAGE_FAULT = 13;  // Load page fault
   localparam logic [XLEN-1:0] STORE_PAGE_FAULT = 15;  // Store page fault
-  localparam logic [XLEN-1:0] INSTR_GUEST_PAGE_FAULT = 20;  // Instruction guest-page fault
-  localparam logic [XLEN-1:0] LOAD_GUEST_PAGE_FAULT = 21;  // Load guest-page fault
-  localparam logic [XLEN-1:0] VIRTUAL_INSTRUCTION = 22;  // virtual instruction
-  localparam logic [XLEN-1:0] STORE_GUEST_PAGE_FAULT = 23;  // Store guest-page fault
   localparam logic [XLEN-1:0] DEBUG_REQUEST = 24;  // Debug request
 
   localparam int unsigned IRQ_S_SOFT = 1;
@@ -369,14 +360,6 @@ package riscv;
   localparam logic [XLEN-1:0] M_TIMER_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_TIMER);
   localparam logic [XLEN-1:0] S_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_EXT);
   localparam logic [XLEN-1:0] M_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_EXT);
-
-  // ----------------------
-  // PseudoInstructions Codes
-  // ----------------------
-  localparam logic [XLEN-1:0] READ_32_PSEUDOINSTRUCTION = 32'h00002000;
-  localparam logic [XLEN-1:0] WRITE_32_PSEUDOINSTRUCTION = 32'h00002020;
-  localparam logic [XLEN-1:0] READ_64_PSEUDOINSTRUCTION = 64'h00003000;
-  localparam logic [XLEN-1:0] WRITE_64_PSEUDOINSTRUCTION = 64'h00003020;
 
   // -----
   // CSRs
