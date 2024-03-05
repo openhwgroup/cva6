@@ -16,6 +16,17 @@ def define_blacklist(parameters):
     black_list["flush_bp_i"] = ["For any HW configuration", "0"]
     black_list["dtlb_hit_i"] = ["For any HW configuration", "1"]
 
+    black_list["hwpf_base_set_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_base_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_base_o"] = ["For any HW configuration", "0"]
+    black_list["hwpf_param_set_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_param_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_param_o"] = ["For any HW configuration", "0"]
+    black_list["hwpf_throttle_set_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_throttle_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_throttle_o"] = ["For any HW configuration", "0"]
+    black_list["hwpf_status_o"] = ["For any HW configuration", "0"]
+
     param = "IsRVFI"
     paramvalue = "0"
     if paramvalue == "0":

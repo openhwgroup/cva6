@@ -43,11 +43,10 @@ module cva6_hpdcache_subsystem
 //  Ports
 //  {{{
 (
-    input logic clk_i,
-    input logic rst_ni,
 
     //  I$
     //  {{{
+<<<<<<< HEAD
     input logic icache_en_i,  // enable icache (or bypass e.g: in debug mode)
     input logic icache_flush_i,  // flush the icache, flush and kill have to be asserted together
     output logic icache_miss_o,  // to performance counter
@@ -57,45 +56,86 @@ module cva6_hpdcache_subsystem
     // data requests
     input icache_dreq_t icache_dreq_i,  // to/from frontend
     output icache_drsp_t icache_dreq_o,
+=======
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+
+    // Instruction cache enable - TO_BE_COMPLETED
+    input logic icache_en_i,
+    // Flush the instruction cache - CONTROLLER
+    input logic icache_flush_i,
+    // instructino cache miss - PERF_COUNTERS
+    output logic icache_miss_o,
+    // Input address translation request - TO_BE_COMPLETED
+    input ariane_pkg::icache_areq_t icache_areq_i,
+    // Output address translation request - TO_BE_COMPLETED
+    output ariane_pkg::icache_arsp_t icache_areq_o,
+    // Input data translation request - TO_BE_COMPLETED
+    input ariane_pkg::icache_dreq_t icache_dreq_i,
+    // Output data translation request - TO_BE_COMPLETED
+    output ariane_pkg::icache_drsp_t icache_dreq_o,
+>>>>>>> 4713d054 (Add caches submodule)
     //   }}}
 
     //  D$
     //  {{{
     //    Cache management
-    input logic dcache_enable_i,  // from CSR
-    input logic dcache_flush_i,  // high until acknowledged
-    output logic                       dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
-    output logic dcache_miss_o,  // we missed on a ld/st
+    // Data cache enable - CSR_REGFILE
+    input logic dcache_enable_i,
+    // Data cache flush - CONTROLLER
+    input logic dcache_flush_i,
+    // Flush acknowledge - CONTROLLER
+    output logic                       dcache_flush_ack_o,
+    // Load or store miss - PERF_COUNTERS
+    output logic dcache_miss_o,
 
-    //  AMO interface
-    input  ariane_pkg::amo_req_t                 dcache_amo_req_i,    // from LSU
-    output ariane_pkg::amo_resp_t                dcache_amo_resp_o,   // to LSU
-    //  CMO interface
-    input  cmo_req_t                             dcache_cmo_req_i,    // from CMO FU
-    output cmo_rsp_t                             dcache_cmo_resp_o,   // to CMO FU
-    //  Request ports
-    input  dcache_req_i_t         [NumPorts-1:0] dcache_req_ports_i,  // from LSU
-    output dcache_req_o_t         [NumPorts-1:0] dcache_req_ports_o,  // to LSU
-    //  Write Buffer status
-    output logic                                 wbuffer_empty_o,
-    output logic                                 wbuffer_not_ni_o,
+    // AMO request - EX_STAGE
+    input  ariane_pkg::amo_req_t                     dcache_amo_req_i,
+    // AMO response - EX_STAGE
+    output ariane_pkg::amo_resp_t                    dcache_amo_resp_o,
+    // CMO interface request - TO_BE_COMPLETED
+    input  cmo_req_t                                 dcache_cmo_req_i,
+    // CMO interface response - TO_BE_COMPLETED
+    output cmo_rsp_t                                 dcache_cmo_resp_o,
+    // Data cache input request ports - EX_STAGE
+    input  ariane_pkg::dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,
+    // Data cache output request ports - EX_STAGE
+    output ariane_pkg::dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,
+    // Write buffer status to know if empty - TO_BE_COMPLETED
+    output logic                                     wbuffer_empty_o,
+    // Write buffer status to know if not non idempotent - TO_BE_COMPLETED
+    output logic                                     wbuffer_not_ni_o,
 
     //  Hardware memory prefetcher configuration
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0]       hwpf_base_set_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0][63:0] hwpf_base_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_base_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0]       hwpf_param_set_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0][63:0] hwpf_param_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_param_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0]       hwpf_throttle_set_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [               63:0]       hwpf_status_o,
     //  }}}
 
     //  AXI port to upstream memory/peripherals
     //  {{{
+    // noc request, can be AXI or OpenPiton - SUBSYSTEM
     output noc_req_t  noc_req_o,
+    // noc response, can be AXI or OpenPiton - SUBSYSTEM
     input  noc_resp_t noc_resp_i
     //  }}}
 );
