@@ -1,0 +1,25 @@
+# Copyright 2024 PULP Platform
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+
+name: integration
+on: [ pull_request, workflow_dispatch ]
+
+jobs:
+  cheshire-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    # Skip on forks due to missing secrets.
+    if: github.repository == 'pulp-platform/cva6' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    steps:
+      - name: Integrate into cheshire
+        uses: pulp-platform/pulp-actions/integrate@v2.5.1
+        with:
+          ip-name: cva6
+          org: pulp-platform
+          repo: cheshire
+          base-ref: 4098faa23b8686e7a53936634dfd9fee6e88ede9
+          token: ${{ secrets.CHESHIRE_TOKEN }}
+          lifetime: 14

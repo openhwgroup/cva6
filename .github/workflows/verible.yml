@@ -3,12 +3,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 name: Verible
-on:
-  pull_request:
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   format:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    # Only in this repository, and only for pull requests from its own branches.
+    if: github.repository == 'pulp-platform/cva6' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     steps:
       - uses: actions/checkout@v7
       - uses: chipsalliance/verible-formatter-action@main
@@ -17,6 +22,7 @@ jobs:
           verible_version: v0.0-4084-gf3e4d98b
           files: '$(find core -regex ".*\.\(v\|sv\)$" | grep -v "^core/include/.*_config_pkg\.sv$")'
           fail_on_formatting_suggestions: true
+          reviewdog_reporter: github-check
       - name: CVA6Cfg's XLEN attribute usage verificatory script
         if: always()
         run: |

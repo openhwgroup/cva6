@@ -78,6 +78,8 @@ jobs:
   setup-tools:
     name: Setup Tools
     runs-on: ubuntu-latest
+    # Upstream only; the other jobs need this one and are skipped with it.
+    if: github.repository == 'openhwgroup/cva6'
     steps:
       - uses: actions/checkout@v7
         with:

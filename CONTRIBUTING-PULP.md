@@ -18,7 +18,7 @@ We use the following flow for co-development:
    In the following, we refer to your development branch as `cva6/my-feature`.
 2. Branch off Cheshire's `main` branch. We will call this new branch `cheshire/my-feature`.
    Point to `cva6/my-feature` in Cheshire's `Bender.lock` and make your systemlevel modifications.
-3. In CVA6's `.gitlab-ci.yml`, point the Cheshire ref to `cheshire/my-feature`.
+3. In CVA6's `.github/workflows/integration.yml`, point the Cheshire `base-ref` to `cheshire/my-feature`.
 4. Mark your pulp-CVA6 PR ready for review. **The maintainers** will
    - review your modifications to CVA6 and Cheshire,
    - create a tag on `cheshire/my-feature`,
