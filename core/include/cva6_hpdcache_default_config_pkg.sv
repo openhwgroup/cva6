@@ -65,6 +65,11 @@ package hpdcache_params_pkg;
 
   //  HPDcache request source ID width (bits)
   localparam int unsigned PARAM_REQ_SRC_ID_WIDTH = 3;
+
+  //  HPDcache victim selection policy
+  //  0: (Pseudo) RANDOM
+  //  1: (Pseudo) LRU
+  localparam int unsigned PARAM_VICTIM_SEL = 0;
   //  }}}
 
   //  Definition of constants and types for HPDcache data memory
@@ -90,10 +95,10 @@ package hpdcache_params_pkg;
   //  Definition of constants and types for the Miss Status Holding Register (MSHR)
   //  {{{
   //  HPDcache MSHR number of sets
-  localparam int unsigned PARAM_MSHR_SETS = 2;
+  localparam int unsigned PARAM_MSHR_SETS = 1;
 
   //  HPDcache MSHR number of ways
-  localparam int unsigned PARAM_MSHR_WAYS = (CVA6ConfigNrLoadBufEntries > 4) ? 4 : 2;
+  localparam int unsigned PARAM_MSHR_WAYS = CVA6ConfigNrLoadBufEntries;
 
   //  HPDcache MSHR number of ways in the same SRAM word
   localparam int unsigned PARAM_MSHR_WAYS_PER_RAM_WORD = (PARAM_MSHR_WAYS > 1) ? 2 : 1;
