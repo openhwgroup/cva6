@@ -677,7 +677,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
           logging.debug(cmd)
 
 
-def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp, debug_cmd):
+def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_cmd):
   """Compare ISS simulation reult
 
   Args:
@@ -1281,7 +1281,7 @@ def main():
 
         # Compare ISS simulation result
         if args.steps == "all" or re.match(".*iss_cmp.*", args.steps):
-          iss_cmp(matched_list, args.iss, output_dir, args.stop_on_first_error,
+          iss_cmp(matched_list, args.iss, args.target, output_dir, args.stop_on_first_error,
                   args.exp, args.debug)
 
     sys.exit(RET_SUCCESS)
