@@ -563,7 +563,7 @@ module cva6_mmu
       hs_ld_st_inst_n      = hs_ld_st_inst_i;
       lsu_vaddr_n[HYP_EXT] = dtlb_gpaddr;
       csr_hs_ld_st_inst_o  = hs_ld_st_inst_i || hs_ld_st_inst_q;
-      daccess_err[HYP_EXT] = en_ld_st_translation_i[HYP_EXT] && !dtlb_pte_q[1].u;
+      daccess_err[HYP_EXT] = en_ld_st_translation_i[HYP_EXT] && !dtlb_pte_q[HYP_EXT].u;
     end
 
     lsu_paddr_o = (riscv::PLEN)'(lsu_vaddr_q[0]);
@@ -609,7 +609,7 @@ module cva6_mmu
             lsu_exception_o = {
               riscv::STORE_GUEST_PAGE_FAULT,
               {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, lsu_vaddr_q[0]},
-              lsu_vaddr_q[1][riscv::GPLEN-1:0],
+              lsu_vaddr_q[HYP_EXT][riscv::GPLEN-1:0],
               {riscv::XLEN{1'b0}},
               en_ld_st_translation_i[HYP_EXT*2],
               1'b1
@@ -657,7 +657,7 @@ module cva6_mmu
             lsu_exception_o = {
               riscv::LOAD_GUEST_PAGE_FAULT,
               {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, lsu_vaddr_q[0]},
-              lsu_vaddr_q[1][riscv::GPLEN-1:0],
+              lsu_vaddr_q[HYP_EXT][riscv::GPLEN-1:0],
               {riscv::XLEN{1'b0}},
               en_ld_st_translation_i[HYP_EXT*2],
               1'b1
