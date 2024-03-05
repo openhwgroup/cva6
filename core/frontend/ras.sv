@@ -63,7 +63,7 @@ module ras #(
       stack_d[0].valid = 1'b1;
     end
 
-    if (flush_i) begin
+    if (flush_bp_i) begin
       stack_d = '0;
     end
   end
