@@ -128,8 +128,8 @@ module cva6_tlb
 
         //identify if vpn matches at all PT levels for all TLB entries  
         assign vpn_match[i][x] = (HYP_EXT == 1 && x == (PT_LEVELS - 1) && ~v_st_enbl[0]) ?  //
-        lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x] && lu_vaddr_i[12+HYP_EXT*(VPN_LEN-1): 12+HYP_EXT*(VPN_LEN-(VPN_LEN%PT_LEVELS))] == tags_q[i].vpn[x+HYP_EXT][(VPN_LEN%PT_LEVELS)-HYP_EXT:0]: //
-        lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+            lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x] && lu_vaddr_i[12+HYP_EXT*(VPN_LEN-1): 12+HYP_EXT*(VPN_LEN-(VPN_LEN%PT_LEVELS))] == tags_q[i].vpn[x+HYP_EXT][(VPN_LEN%PT_LEVELS)-HYP_EXT:0]: //
+            lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
 
         //identify if there is a hit at each PT level for all TLB entries  
         assign level_match[i][x] = &vpn_match[i][PT_LEVELS-1:x] && page_match[i][x];
