@@ -157,7 +157,7 @@ module ariane_xilinx (
 // CVA6 config
 localparam bit IsRVFI = bit'(0);
 // CVA6 Xilinx configuration
-localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
+localparam config_pkg::cva6_user_cfg_t CVA6UserCfg = '{
   NrCommitPorts:         cva6_config_pkg::CVA6ConfigNrCommitPorts,
   AxiAddrWidth:          cva6_config_pkg::CVA6ConfigAxiAddrWidth,
   AxiDataWidth:          cva6_config_pkg::CVA6ConfigAxiDataWidth,
@@ -179,18 +179,6 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   XFVec:                 bit'(cva6_config_pkg::CVA6ConfigFVecEn),
   CvxifEn:               bit'(cva6_config_pkg::CVA6ConfigCvxifEn),
   ZiCondExtEn:           bit'(0),
-  RVF:                   bit'(0),
-  RVD:                   bit'(0),
-  FpPresent:             bit'(0),
-  NSX:                   bit'(0),
-  FLen:                  unsigned'(0),
-  RVFVec:                bit'(0),
-  XF16Vec:               bit'(0),
-  XF16ALTVec:            bit'(0),
-  XF8Vec:                bit'(0),
-  NrRgprPorts:           unsigned'(0),
-  NrWbPorts:             unsigned'(0),
-  EnableAccelerator:     bit'(0),
   RVS:                   bit'(1),
   RVU:                   bit'(1),
   HaltAddress:           dm::HaltAddress,
@@ -215,9 +203,9 @@ localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
   CachedRegionLength:    1024'({ariane_soc::DRAMLength}),
   MaxOutstandingStores:  unsigned'(7),
   DebugEn: bit'(1),
-  NonIdemPotenceEn: bit'(0),
   AxiBurstWriteEn: bit'(0)
 };
+localparam config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(CVA6UserCfg);
 
 localparam type rvfi_probes_t = struct packed { 
       logic csr;

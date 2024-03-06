@@ -153,43 +153,6 @@ covergroup cg_cva6_config(string name) with function sample();
    cp_RvfiTrace : coverpoint cva6_config_pkg::CVA6ConfigRvfiTrace {
       bins RvfiTrace ={1};
    }
-   // Extended
-   cp_RVF : coverpoint cva6_config_pkg::cva6_cfg.RVF {
-      bins RVF ={0};
-   }
-   cp_RVD : coverpoint cva6_config_pkg::cva6_cfg.RVD {
-      bins RVD ={0};
-   }
-   cp_FpPresent : coverpoint cva6_config_pkg::cva6_cfg.FpPresent {
-      bins FpPresent ={0};
-   }
-   cp_NSX : coverpoint cva6_config_pkg::cva6_cfg.NSX {
-      bins NSX ={0};
-   }
-   cp_FLen : coverpoint cva6_config_pkg::cva6_cfg.FLen {
-      bins FLen ={0};
-   }
-   cp_RVFVec : coverpoint cva6_config_pkg::cva6_cfg.RVFVec {
-      bins RVFVec ={0};
-   }
-   cp_XF16Vec : coverpoint cva6_config_pkg::cva6_cfg.XF16Vec {
-      bins XF16Vec ={0};
-   }
-   cp_XF16ALTVec : coverpoint cva6_config_pkg::cva6_cfg.XF16ALTVec {
-      bins XF16ALTVec ={0};
-   }
-   cp_XF8Vec : coverpoint cva6_config_pkg::cva6_cfg.XF8Vec {
-      bins XF8Vec ={0};
-   }
-   cp_NrRgprPorts : coverpoint cva6_config_pkg::cva6_cfg.NrRgprPorts {
-      bins NrRgprPorts ={0};
-   }
-   cp_NrWbPorts : coverpoint cva6_config_pkg::cva6_cfg.NrWbPorts {
-      bins NrWbPorts ={0};
-   }
-   cp_EnableAccelerator : coverpoint cva6_config_pkg::cva6_cfg.EnableAccelerator {
-      bins EnableAccelerator ={0};
-   }
    cp_HaltAddress : coverpoint cva6_config_pkg::cva6_cfg.HaltAddress {
       bins HaltAddress ={64'h800};
    }
