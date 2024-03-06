@@ -61,6 +61,16 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
      - Natural
      - ``>0 and multiple of 2``
 
+   * - ``SHARED_TLB_DEPTH``
+     - Size of shared TLB
+     - Natural
+     - ``>0 and multiple of 2``
+
+   * - ``USE_SHARED_TLB``
+     - Indicates if the shared TLB optimization is used (1) or not (0)
+     - Natural
+     - 1 or 0
+   
    * - ``HYP_EXT``
      - Indicates if Hypervisor extension is used (1) or not (0)
      - Natural
@@ -103,6 +113,16 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
      - 4
      - 4
 
+   * - ``SHARED TLB DEPTH``
+     - 64
+     - 64
+     - 64
+
+   * - ``USE_SHARED_TLB``
+     - 1
+     - 1
+     - 1 
+   
    * - ``HYP_EXT``
      - 0
      - 0
@@ -495,7 +515,7 @@ The IF stage initiates a request to retrieve memory content at a specific virtua
 If virtual memory translation is enabled for instruction fetches, the following operations are performed in the instruction interface:
 
 * Compatibility of requested virtual address with selected page based address translation scheme is checked.
-* For page translation, the module determines the fetch physical address by combining the physical page number (PPN) from ITLB content and the offset from the virtual address.
+* For page translation, the module determines the fetch physical address by combining the physical page number (PPN) from ITLB content and the offset from the virtual address. When hypervisor mode is enabled, the PPN from ITLB content is taken from the stage that is currently doing the translation.
 * Depending on the size of the identified page the PPN of the fetch physical address is updated with the corresponding bits of the VPN to ensure alignment for superpage translation.
 * If the Instruction TLB (ITLB) lookup hits, the fetch valid signal (which indicates a valid physical address) is activated in response to the input fetch request. Memory region accessibility is checked from the perspective of the fetch operation, potentially triggering a page fault exception in case of an access error or insufficient PMP permission.
 * In case of an ITLB miss, if the page table walker (PTW) is active (only active if there is a shared TLB miss) and handling instruction fetches, the fetch valid signal is determined based on PTW errors or access exceptions.
@@ -513,7 +533,7 @@ If the fetch physical address doesn't match any execute region, an Instruction A
 If address translation is enabled for load or store, and no misaligned exception has occurred, the following operations are performed in the data interface:
 
 * Initially, translation is assumed to be invalid, signified by the MMU to LSU.
-* The translated physical address is formed by combining the PPN from the Page Table Entry (PTE) and the offset from the virtual address requiring translation. This is sent one cycle later due to the additional bank of registers which delayed the MMU’s answer. The PPN from the PTE is also shared separately with LSU in the same cycle as the hit.
+* The translated physical address is formed by combining the PPN from the Page Table Entry (PTE) and the offset from the virtual address requiring translation. This is sent one cycle later due to the additional bank of registers which delayed the MMU’s answer. The PPN from the PTE is also shared separately with LSU in the same cycle as the hit. When hypervisor mode is enabled, the PPN from the PTE is taken from the stage that is currently doing the translation.
 * In the case of superpage translation, the PPN of the translated physical address and the separately shared PPN are updated with the VPN of the virtual address.
 
 If a Data TLB (DTLB) hit occurs, it indicates a valid translation, and various fault checks are performed depending on whether it's a load or store request.
