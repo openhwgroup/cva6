@@ -29,6 +29,8 @@ module cva6_mmu
     // parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig, //This is the required config param in the hypervisor version for now
     parameter int unsigned           INSTR_TLB_ENTRIES            = 4,
     parameter int unsigned           DATA_TLB_ENTRIES             = 4,
+    parameter int unsigned           SHARED_TLB_DEPTH             = 64,
+    parameter int unsigned           USE_SHARED_TLB               = 1,
     parameter logic                  HYP_EXT                      = 0,
     parameter int                    ASID_WIDTH       [HYP_EXT:0],
     parameter int unsigned           VPN_LEN                      = 1,
@@ -214,7 +216,8 @@ module cva6_mmu
 
 
   cva6_shared_tlb #(
-      .SHARED_TLB_DEPTH (64),
+      .SHARED_TLB_DEPTH (SHARED_TLB_DEPTH),
+      .USE_SHARED_TLB   (USE_SHARED_TLB),
       .SHARED_TLB_WAYS  (2),
       .HYP_EXT          (HYP_EXT),
       .ASID_WIDTH       (ASID_WIDTH),
