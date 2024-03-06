@@ -544,7 +544,7 @@ The input and output signals of the TLB are shown in the following figure.
    :align: center
    :width: 65%
    :alt: in_out_tlb
-
+ 
    **Figure 4:** Inputs and Outputs of CVA6 TLB
 
 .. raw:: html
@@ -1588,13 +1588,14 @@ In the IDLE state of the Page Table Walker (PTW) finite state machine, the syste
 
    a. The address of the desired Page Table Entry within the level 0  page table is calculated by multiplying the Physical Page Number (PPN) of the level 0 page table from the SATP register by the page size. This result is then added to the product of the Virtual Page Number, and the size of a page table entry. Depending on the translation indicated by enable_translation_i and en_ld_st_translation_i at the different levels [HYP_EXT * 2:0] the corresponding register (satp_ppn_i[HYP_EXT * 2:0]) and bits of the VPN are used.
 
-.. figure:: _static/ptw_idle.png
-   :name: **Figure 21:** Address of Desired PTE at level 0
+.. figure:: _static/ptw_nlvl.png
+   :name: **Figure 27:** Address of desired PTE at next level of Page Table
    :align: center
-   :width: 68%
-   :alt: ptw_idle
+   :width: 70%
+   :alt: ptw_nlvl
 
-   **Figure 21:** Address of Desired PTE at level 0
+   **Figure 21:** Address of desired PTE at next level of Page Table
+
 
 .. _example:
 
@@ -1680,26 +1681,17 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 
 7. If the PTE is valid but the page is neither readable nor executable, the PTW recognizes the PTE as a pointer to the next level of the page table, indicating that additional translation information can be found in the referenced page table at a lower level.
 8. If the current page table level is not the last level, the PTW proceeds to switch to the next level page table, updating the next level pointer and calculating the address for the next page table entry using the Physical Page Number from the PTE and the index from virtual address. Depending on the level and ptw_stage, the pptr is updated accordingly.
-
-.. figure:: _static/ptw_nlvl.png
-   :name: **Figure 27:** Address of desired PTE at next level of Page Table
-   :align: center
-   :width: 70%
-   :alt: ptw_nlvl
-
-   **Figure 27:** Address of desired PTE at next level of Page Table
-
 9. The state then transitions to the "WAIT_GRANT" state, indicating that the PTW is awaiting the grant signal to proceed with requesting the next level page table entry. If Hypervisor Extension is used and the page has already been accessed, is dirty or is accessible only in user mode, the state goes to PROPAGATE_ERROR.
 10. If the current level is already the last level, an error is flagged, and the state transitions to the "PROPAGATE_ERROR" state, signifying an unexpected situation where the PTW is already at the last level page table.
 11. If the translation access is found to be restricted by the Physical Memory Protection (PMP) settings (allow_access is false), the state updates the shared TLB update signal to indicate that the TLB entry should not be updated. Additionally, the saved address for the page table walk is restored to its previous value, and the state transitions to the "PROPAGATE_ACCESS_ERROR" state.
 12. Lastly, if the data request for the page table entry was granted, the state indicates to the cache subsystem that the tag associated with the data is now valid.
 
 .. figure:: _static/ptw_pte_flowchart.png
-   :name: **Figure 28:** Flow Chart of PTE LOOKUP State
+   :name: **27:** Flow Chart of PTE LOOKUP State
    :align: center
    :alt: ptw_pte_flowchart
 
-   **Figure 28:** Flow Chart of PTE LOOKUP State
+   **Figure 27:** Flow Chart of PTE LOOKUP State
 
 .. raw:: html
 
