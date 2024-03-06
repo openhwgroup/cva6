@@ -1,0 +1,190 @@
+# Total 336 occurrences in PDF
+
+#TOC (1 occurrence)
+
+#- Machine Implementation Register mimpid
+
+#Preface (6 occurrences)
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L37C1-L38C13
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L80C1-L81C12
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L87C1-L88C64
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L110C1-L112C25
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L115C1-L116C33
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L237C1-L239C6
+
+# Chapter 1: Introduction (15 occurrences)
+
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L39C24-L40C66
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L40C67-L43C37
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L47C1-L49C40
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L52C1-L52C83
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L62C8-L63C35
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L89C1-L91C43
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L144C49-L146C28
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L157C1-L159C14 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L177C1-L178C54
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L178C55-L180C63
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L184C1-L185C46
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L187C1-L188C66
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L204C1-L205C66
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L210C1-L211C37
+
+# Chapter 2: CSRs (13 occurrences)
+
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc?plain=1#L12C1-L15C13
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L39C1-L41C28
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L59C1-L60C52
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L79C1-L79C65
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L580
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L872C16-L873C52
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L899C1-L901C66 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L904C1-L906C39
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L906C40-L909C73
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L920C1-L921C26
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L921C27-L924C55
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-csrs.adoc?plain=1#L954C1-L954C60
+
+# Chapter 3: Machine-Level ISA, v1.12 (159 occurrences)
+
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L7C37-L9C10 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L9C11-L11C46
+
+# Section 3.1 Machine-Level CSRs
+
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L21C89-L21C325 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L27C27-L28C61
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L69C72-L71C56
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L75C1-L78C13
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L82C1-L84C65
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L84C66-L87C40
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L89C1-L91C29 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L91C30-L94C56
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L96C1-L101C67 # 3 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L101C68-L103C24 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L180C1-L180C28
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L182C1-L182C22 ### Occurrence 20 in Ch. 3
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L183C1-L183C33
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L223C1-L225C145
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L238C46-L241C16 # 3 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L275C32-L277C20 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L277C21-L279C13
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L305C1-L307C14
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L311C14-L311C28 ### Occurrence 30 in Ch. 3
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L313C1-L314C26
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L314C27-L316C26 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L316C27-L317C70
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L319C1-L319C47 ### Occurrence 35
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L327C1-L329C38
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L335C53-L336C35
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L349C1-L350C41
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L433C22-L436C70
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L444C1-L444C198 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L448C1-L449C47 ### Occurrence 42
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L469C1-L470C39
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L474C1-L475C54
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L477C1-L478C71 ### Occurrence 45
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L489C1-L490C72
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L571C1-L574C68
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L587C1-L588C13
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L588C14-L589C37
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L593C1-L594C39 ### Occurrence 50
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L594C40-L597C15
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L662C20-L665C34 # Virtualization START
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L665C35-L668C25
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L677C1-L679C45 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L691C1-L693C12 # Virtualization END
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L754C1-L755C6
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L757C1-L758C16
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L758C17-L759C34
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L763C1-L764C58 ### Occurrence 60
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L764C59-L767C40
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L770C1-L771C16
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L773C1-L774C16
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L774C17-L775C37
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L853C1-L855C26 ### Occurrence 65
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L855C27-L857C43
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L857C44-L860C23
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L869C1-L872C7
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L874C1-L876C63
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L876C64-L879C53 ### Occurrence 70
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1065C1-L1066C17
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1066C18-L1067C37
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1073C1-L1074C21
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1074C22-L1076C55
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1114C1-L1116C30 ### Occurrence 75
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1120C1-L1121C46
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1133C18-L1136C50
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1164C1-L1167C22
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1169C1-L1171C11
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1171C12-L1173C35 ### Occurrence 80
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1252C42-L1254C65
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1273C1-L1277C57
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1305C1-L1306C61
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1308C1-L1310C21
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1339C1-L1341C18 ### Occurrence 85
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1344C1-L1346C21
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1406C13-L1408C25 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1449C32-L1451C58 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1456C11-L1458C22
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1474C1-L1476C69
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1479C1-L1482C37
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1505C1-L1506C49 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1531C1-L1534C52
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1550C14-L1551C36
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1553C1-L1555C44
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1561C12-L1563C12
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1575C12-L1576C49 ### Occurrence 100
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1588C18-L1589C65
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1615C33-L1617C16
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1617C17-L1619C57
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1624C46-L1625C50
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1785C1-L1787C15 ### Occurrence 105
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1787C16-L1789C53
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1789C54-L1793C41
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1815C54-L1817C21
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1829C13-L1830C53
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1874C62-L1877C32 ### Occurrence 110
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1891C52-L1893C52
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1893C53-L1896C38
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1916C1-L1918C37
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1927C1-L1929C23 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1956C1-L1957C56
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1984C34-L1985C47 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1985C48-L1986C38
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L1986C39-L1988C25 ### Occurrence 120
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2072C1-L2074C21
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2185C1-L2187C22
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2208C1-L2209C42
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2209C44-L2210C47 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2214C1-L2217C37
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2221C1-L2227C39
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2221C1-L2227C39 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2252C1-L2255C13 ### Occurrence 130
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2279C42-L2281C18
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2281C19-L2282C8
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2285C15-L2286C53
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2286C54-L2287C67
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2290C1-L2292C52 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2292C53-L2294C21
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2311C1-L2314C13
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2319C1-L2319C69
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2321C15-L2323C61 ### Occurrence 140
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2342C9-L2343C34
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2564C1-L2566C58
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2582C1-L2583C7
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2618C1-L2621C18
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2675C40-L2680C16 # 2 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2701C1-L2703C26
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2737C66-L2741C15
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2741C16-L2745C9
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2747C1-L2749C50 ### Occurrence 150
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2794C24-L2795C68 # 3 occurrences in 1 sentence
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L2830C40-L2832C12
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L3026C64-L3028C31 ### Occurrence 155
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L3032C1-L3033C70
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L3044C1-L3046C49
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L3063C1-L3068C8
+#- spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L3076C1-L3077C60 ### Occurrence 159
+
+
+

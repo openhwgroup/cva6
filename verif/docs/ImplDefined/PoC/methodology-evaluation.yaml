@@ -1,0 +1,61 @@
+!impl_defined_db
+context:
+    spec:
+        repo:     https://github.com/riscv/riscv-isa-manual
+        rev:      2023-10-02
+    spike:
+        repo:     https://github.com/openhwgroup/core-v-verif
+        rev:      d46633081bfe67daed840d953e0d759241be6ff0
+    rtl:
+        repo:     https://github.com/openhwgroup/cva6.git
+        rev:      9267d14f2eb7d79b89814dc546156067e7c5c35f
+        config:   cv32a65x
+behaviors: !!omap
+- MISA_WritableStdExtensionBits: !impl_defined
+    tag:  MISA_WritableStdExtensionBits_git2023-10-02
+    spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L69C72-L71C56
+    normative: true
+    status:
+      rtl:
+        status: ....   # done/inprogress/unknown/modifiable/...
+        value:  ....   # none modifiable
+      docs:
+        status: ....   # done/inprogress/unknown/...
+        value:  ....   # TBD   
+      spike:
+        status:  controllable  # There's a way to change behavior
+        default: "MAFDQCHV"    # default behavior
+        value:   ""            # Steps to achieve value ""
+          params:
+          - # Disable writability of misa.extensions
+            name: "/top/cores/misa_we"
+            value: "false"
+          - # Enable the parameter that controls writability of misa.extensions
+            name : "/top/cores/misa_we_enable"
+            value: "true"
+          comment: "In the future Spike may need to specify any valid explicit combination of standard extensions."
+- MSTATUS_FS_ro_zero_if_no_F_ext_no_S_ext: !impl_defined
+    tag: MSTATUS_FS_ro_zero_if_no_F_ext_no_S_ext_2023-10-02
+    spec_path: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L757C1-L758C16
+    normative: true
+    status:
+      rtl:
+        status: ....   # done/inprogress/unknown/modifiable/...
+        value:  ....   # true or false
+      docs:
+        status: ....   # done/inprogress/unknown/...
+        value:  ....   # TBD   
+      spike:
+        status:  controllable  # There's a way to change behavior
+        default: false         # no way to "deimplement" F and S extensions
+        value:   true          # Steps to achieve value ""
+          params:
+           - # Disable writability of SSTATUS.FS altogether (but no setting of value!)
+             # FIXME TODO: Need a parameter that explicitly makes MSTATUS.FS R/O zero.
+             name: "/top/cores/status_fs_field_we"
+             value: "false"
+           - # Enable the parameter that controls writability of SSTATUS.FS.
+             # FIXME TODO: Need control over MSTATUS.FS, not SSTATUS.FS.
+             name: "/top/cores/status_fs_field_we_enable"
+             value: "true"
+        comment: "BUG: Spike only allows control of SSTATUS.FS, *not* MSTATUS.FS"
