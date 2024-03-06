@@ -29,7 +29,7 @@ import "DPI-C" context function void read_section_sv(input longint address, inou
 module ariane_tb;
 
     // cva6 configuration
-    localparam config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg;
+    localparam config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(cva6_config_pkg::cva6_cfg);
     localparam bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace);
 
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
