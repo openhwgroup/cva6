@@ -11,47 +11,99 @@ jobs:
     name: build-riscv-tests
     runs-on: ubuntu-latest
     env:
-      RISCV: /riscv
-      NUM_JOBS: 4
+      NUM_JOBS: 8
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
+
+    - name: Cache toolchain
+      id: cache-toolchain
+      uses: actions/cache@v3
+      env:
+          cache-name: cache-toolchain
+      with:
+          path: tools/riscv-toolchain/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ci/install-toolchain.sh') }}
+
+    - name: Cache verilator
+      id: cache-verilator
+      uses: actions/cache@v3
+      env:
+          cache-name: cache-verilator
+      with:
+          path: tools/verilator/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-verilator.sh') }}
+
+    - name: Cache Spike
+      id: cache-spike
+      uses: actions/cache@v3
+      env:
+          cache-name: cache-spike
+      with:
+          path: tools/spike/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh', 'verif/core-v-verif/vendor/riscv/riscv-isa-sim/') }}
+
     - name: Prepare
       run: |
           ci/setup.sh
-          tar -cf tools.tar tools
-          tar -cf tmp.tar tmp
-    - name: Archive production artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: compiled-tools
-        path: |
-          tools.tar
-          tmp.tar
+
+
   execute-riscv-tests:
     name: execute-riscv-tests
     runs-on: ubuntu-latest
+    env:
+      SPIKE_TANDEM: 1
     strategy:
       matrix:
-        testcase: [asm-tests, mul, amo, fp, benchmarks]
-        target: [cv64a6_imafdc_sv39, cv64a6_imafdc_sv39_wb, cv64a6_imafdc_sv39_hpdcache]
-    env:
-      RISCV: /riscv
+        testcase: [ dv-riscv-arch-test , smoke-tests ]
+        target:   [ veri-testharness ]
     needs:
       build-riscv-tests
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Download a single artifact
-      uses: actions/download-artifact@v3
+
+    - name: Cache toolchain
+      id: cache-toolchain
+      uses: actions/cache@v3
+      env:
+          cache-name: cache-toolchain
       with:
-        name: compiled-tools
+          path: tools/riscv-toolchain/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ci/install-toolchain.sh') }}
+
+    - name: Cache verilator
+      id: cache-verilator
+      uses: actions/cache@v3
+      env:
+          cache-name: cache-verilator
+      with:
+          path: tools/verilator/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-verilator.sh') }}
+
+    - name: Cache Spike
+      id: cache-spike
+      uses: actions/cache@v3
+      env:
+          cache-name: cache-spike
+      with:
+          path: tools/spike/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh', 'verif/core-v-verif/vendor/riscv/riscv-isa-sim/') }}
+
     - name: Run Tests
       run: |
           set -x
-          tar xf tools.tar
-          tar xf tmp.tar
+          export RISCV=$(pwd)/tools/riscv-toolchain/
+          source ci/install-prereq.sh
           source verif/sim/setup-env.sh
-          make run-${{ matrix.testcase}}-verilator target=${{ matrix.target }}
+          DV_SIMULATORS=${{matrix.target}} bash verif/regress/${{matrix.testcase}}.sh
+
+    - name: Upload Lint Report to Github
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{matrix.target}}.${{matrix.testcase}}
+        path: 'verif/sim/out*'
+        retention-days: 10
+        compression-level: 9

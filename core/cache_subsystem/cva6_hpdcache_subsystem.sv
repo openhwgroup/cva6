@@ -139,7 +139,7 @@ module cva6_hpdcache_subsystem
   //    NumPorts + 1: Hardware Memory Prefetcher (hwpf)
   localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
 
-  typedef logic [CVA6Cfg.AxiAddrWidth-1:0] hpdcache_mem_addr_t;
+  typedef logic [riscv::PLEN-1:0] hpdcache_mem_addr_t;
   typedef logic [ariane_pkg::MEM_TID_WIDTH-1:0] hpdcache_mem_id_t;
   typedef logic [CVA6Cfg.AxiDataWidth-1:0] hpdcache_mem_data_t;
   typedef logic [CVA6Cfg.AxiDataWidth/8-1:0] hpdcache_mem_be_t;
@@ -378,13 +378,10 @@ module cva6_hpdcache_subsystem
   );
 
   hpdcache #(
-      .NREQUESTERS          (HPDCACHE_NREQUESTERS),
-      .HPDcacheMemIdWidth   (ariane_pkg::MEM_TID_WIDTH),
-      .HPDcacheMemDataWidth (CVA6Cfg.AxiDataWidth),
-      .hpdcache_mem_req_t   (hpdcache_mem_req_t),
-      .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
-      .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
-      .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t)
+      .NREQUESTERS         (HPDCACHE_NREQUESTERS),
+      .HPDcacheMemAddrWidth(riscv::PLEN),
+      .HPDcacheMemIdWidth  (ariane_pkg::MEM_TID_WIDTH),
+      .HPDcacheMemDataWidth(CVA6Cfg.AxiDataWidth)
   ) i_hpdcache (
       .clk_i,
       .rst_ni,

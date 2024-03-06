@@ -29,7 +29,8 @@ The module is connected to:
 * CACHES module provides fethed instructions to FRONTEND.
 * DECODE module receives instructions from FRONTEND.
 * CONTROLLER module can flush FRONTEND PC gen stage
-* EXECUTE, CONTROLLER, CSR and COMMIT modules triggers PC jumping due to a branch mispredict, an exception, a return from exception, a debug entry or pipeline flush. They provides related PC next value.
+* EXECUTE, CONTROLLER, CSR and COMMIT modules trigger PC jumping due to a branch misprediction, an exception, a return from an exception, a debug entry or a pipeline flush.
+  They provides the PC next value.
 * CSR module states about debug mode.
 
 .. include:: port_frontend.rst
@@ -44,44 +45,50 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
 * **Reset state:** At reset, the PC is assigned to the boot address.
 
-* **Branch Predict:** Fetched instruction is predecoded thanks to instr_scan submodule. When instruction is a control flow, three cases need to be considered:
+* **Branch Prediction:** The fetched instruction is predecoded by the instr_scan submodule.
+  When the instruction is a control flow, three cases are considered:
 
-  + 1) If instruction is a JALR and BTB (Branch Target Buffer) returns a valid address, next PC is predicted by BTB.
-  Else JALR is not considered as a control flow instruction, which will generate a mispredict.
+    1. When the instruction is a JALR which corresponds to a return (rs1 = x1 or rs1 = x5).
+       RAS provides next PC as a prediction.
 
-  + 2) If instruction is a branch and BTH (Branch History table) returns a valid address, next PC is predicted by BHT. Else branch is not considered as an control flow instruction, which will generate a mispredict when branch is taken.
+    2. When the instruction is a JALR which **does not** correspond to a return.
+       If BTB (Branch Target Buffer) returns a valid address, then BTB predicts next PC.
+       Else JALR is not considered as a control flow instruction, which will generate a mispredict.
 
-  + 3) If instruction is a RET and RAS (Return Address Stack) returns a valid address and RET has already been consummed by instruction queue.
-  Else RET is considered as a control flow instruction but next PC is not predicted.
-  A mispredict wil be generated.
+    3. When the instruction is a conditional branch.
+       If BHT (Branch History table) returns a valid address, then BHT predicts next PC.
+       Else the prediction depends on the PC relative jump offset sign: if sign is negative the prediction is taken, otherwise the prediction is not taken.
 
-  Then the PC gen informs the Fetch stage that it performed a prediction on the PC. *In CV32A6 v0.1.0, Branch Prediction is simplified: no information is stored in BTB, BHT and RAS.
-  JALR, branch and RET instructions are not considered as control flow instruction and will generates mispredict.*
+  Then the PC gen informs the Fetch stage that it performed a prediction on the PC.
 
-* **Default:** PC + 4 is fetched. PC Gen always fetches on a word boundary (32-bit). Compressed instructions are handled by fetch stage.
+* **Default:** The next 32-bit block is fetched.
+  PC Gen fetches word boundary 32-bits block from CACHES module. And the fetch stage identifies the instructions from the 32-bits blocks.
 
-* **Mispredict:** When a branch prediction is mispredicted, the EXECUTE feedbacks a misprediction. This can either be a 'real' mis-prediction or a branch which was not recognized as one.
-In any case we need to correct our action and start fetching from the correct address.
+* **Mispredict:** Misprediction are feedbacked by EX_STAGE module.
+  In any case we need to correct our action and start fetching from the correct address.
 
 * **Replay instruction fetch:** When the instruction queue is full, the instr_queue submodule asks the fetch replay and provides the address to be replayed.
 
 * **Return from environment call:** When CSR asks a return from an environment call, the PC is assigned to the successive PC to the one stored in the CSR [m-s]epc register.
 
 * **Exception/Interrupt:** If an exception (or interrupt, which is in the context of RISC-V subsystems quite similar) is triggered by the COMMIT, the next PC Gen is assigned to the CSR trap vector base address.
-The trap vector base address can be different depending on whether the exception traps to S-Mode or M-Mode (user mode exceptions are currently not supported).
-It is the purpose of the CSR Unit to figure out where to trap to and present the correct address to PC Gen.
+  The trap vector base address can be different depending on whether the exception traps to S-Mode or M-Mode (user mode exceptions are currently not supported).
+  It is the purpose of the CSR Unit to figure out where to trap to and present the correct address to PC Gen.
 
 * **Pipeline Flush:** When a CSR with side-effects gets written the whole pipeline is flushed by CONTROLLER and FRONTEND starts fetching from the next instruction again in order to take the up-dated information into account (for example virtual memory base pointer changes).
-The PC related to the flush action is provided by the COMMIT.
-Moreover flush is also transmitted to the CACHES through the next fetch CACHES access and instruction queue is reset.
+  The PC related to the flush action is provided by the COMMIT.
+  Moreover flush is also transmitted to the CACHES through the next fetch CACHES access and instruction queue is reset.
 
-* **Debug:** Debug has the highest order of precedence as it can interrupt any control flow requests. It also the only source of control flow change which can actually happen simultaneously to any other of the forced control flow changes.
-The debug jump is requested by CSR.
-The address to be jumped into is HW coded.
-This debug feature is not supported by CV32A6 v0.1.0.
+.. Debug feature is not supported by CV32A65X
+   * **Debug:** Debug has the highest order of precedence as it can interrupt any control flow requests. It also the only source of control flow change which can actually happen simultaneously to any other of the forced control flow changes.
+     The debug jump is requested by CSR.
+     The address to be jumped into is HW coded.
+  
 
 All program counters are logical addressed.
-If the logical to physical mapping changes, a ``fence.vm`` instruction should be used to flush the pipeline *and TLBs (MMU is not enabled in CV32A6 v0.1.0)*.
+
+.. MMU is not supported in CV32A65X
+   If the logical to physical mapping changes, a ``fence.vm`` instruction should be used to flush the pipeline *and TLBs (MMU is not enabled in CV32A6 v0.1.0)*.
 
 
 
@@ -149,7 +156,7 @@ The instruction queue can be flushed by CONTROLLER.
 instr_scan submodule
 ~~~~~~~~~~~~~~~~~~~~
 
-When compressed extnsino is enabled, two instr_scan are instantiated to handle up to two instructions per cycle.
+As compressed extension is enabled, two instr_scan are instantiated to handle up to two instructions per cycle.
 
 Each instr_scan submodule pre-decodes the fetched instructions coming from the instr_realign module, instructions could be compressed or not.
 The instr_scan submodule is a flox controler which provides the intruction type: branch, jump, return, jalr, imm, call or others.
@@ -162,11 +169,9 @@ BHT (Branch History Table) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+BHT is implemented as a memory which is composed of **BHTDepth configuration parameter** entries. The lower address bits of the virtual address point to the memory entry.
 
-When a branch instruction is resolved by the EXECUTE, the relative
-information is stored in the Branch History Table.
-
-The information is stored in a *BHTDepth configuration parameter* entry table.
+When a branch instruction is resolved by the EX_STAGE module, the branch PC and the taken (or not taken) status information is stored in the Branch History Table.
 
 .. TO_BE_COMPLETED: Specify the behaviour when BHT is saturated
 
@@ -181,7 +186,7 @@ The two bit counter is updated by the successive execution of the instructions a
 
    BHT saturation
 
-.. TO_BE_COMPLETED if debug enable, The BHT is not updated if processor is in debug mode.
+.. TODO: if debug enable, The BHT is not updated if processor is in debug mode.
 
 When a branch instruction is pre-decoded by instr_scan submodule, the BHT valids whether the PC address is in the BHT and provides the taken or not prediction.
 
@@ -190,48 +195,50 @@ The BHT is never flushed.
 
 .. include:: port_bht.rst
 
-.. As BTB is unsed in cv32a65x, comment the chapter
-   BTB (Branch Target Buffer) submodule
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+BTB (Branch Target Buffer) submodule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-   When an JALR instruction jump to a register is mispredicted by the EXECUTE module, the JALR PC and the target address are stored into the BTB.
+BTB is implemented as an array which is composed of **BTBDepth configuration parameter** entries.
+The lower address bits of the virtual address point to the memory entry.
 
-   The information is stored in a *BTBDepth configuration parameter* entry table.
+When an JALR instruction is found mispredicted by the EX_STAGE module, the JALR PC and the target address are stored into the BTB.
 
-   .. TO_BE_COMPLETED: Specify the behaviour when BTB is saturated
+.. TODO: Specify the behaviour when BTB is saturated
 
-   .. TO_BE_COMPLETED when debug enabled, The BTB is not updated if processor is in debug mode.
+.. TODO: when debug enabled, The BTB is not updated if processor is in debug mode.
 
-   When a JALR instruction is pre-decoded by instr_scan submodule, the BTB informs whether the input PC address is in the BTB.
-   In this case, the BTB provides the predicted target address.
+When a JALR instruction is pre-decoded by instr_scan submodule, the BTB informs whether the input PC address is in the BTB.
+In this case, the BTB provides the predicted target address.
 
-   The BTB is never flushed.
+The BTB is never flushed.
 
 
-   .. include:: port_btb.rst
+.. include:: port_btb.rst
 
 
 RAS (Return Address Stack) submodule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-RAS is implemented as a FIFO which is composed of *RASDepth configuration parameter* entries.
 
-A JAL instruction pushes the return address onto the RAS only when rd=x1 or rd=x5.
+RAS is implemented as a LIFO which is composed of **RASDepth configuration parameter** entries.
 
-JALR instruction pushes/pops a RAS as follows.
-In the below, *link* is true when the register is either x1 or x5.
+When a JAL instruction is confirmed to be not speculative by EX_STAGE submodule (but an exception can always prevent its commit), the PC of the instruction following JAL instruction is pushed into the RAS.
+
+When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) is confirmed to be not speculative by EX_STAGE submodule (but an exception can always prevent its commit), the relative information is pushed/popped as follows (in the list below, *link* is true when the register is either x1 or x5):
+
 * when rd=!link and rs1=!link, none
 * when rd=!link and rs1=link, pop
 * when rd=link  and rs1=!link, push
 * when rd=link  and rs1=link and rd!=rs1, pop then push
 * when rd=link  and rs1=link and rd=rs1,  push
 
+Mispredicted JAL or JALR instructions must not alter the RAS content.
+RAS misprediction occurrence is rare, but it can happen.
+
 The RAS is never flushed.
 
-Mispredicted JAL or JALR instructions must not alter the RAS content.
-
-.. TO_BE_COMPLETED: Specify the behaviour when RAS is saturated
+Note: the current implementation is not aligned with this description. Tests should highlight the differences and help fixing the implementation.
 
 .. include:: port_ras.rst
 

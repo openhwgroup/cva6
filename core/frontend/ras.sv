@@ -22,8 +22,8 @@ module ras #(
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // Fetch flush request - CONTROLLER
-    input logic flush_i,
+    // Branch prediction flush request - zero
+    input logic flush_bp_i,
     // Push address in RAS - FRONTEND
     input logic push_i,
     // Pop address from RAS - FRONTEND
@@ -63,7 +63,7 @@ module ras #(
       stack_d[0].valid = 1'b1;
     end
 
-    if (flush_i) begin
+    if (flush_bp_i) begin
       stack_d = '0;
     end
   end

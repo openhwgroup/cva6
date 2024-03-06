@@ -30,12 +30,6 @@
      - SUBSYSTEM
      - logic
 
-   * - ``flush_i``
-     - in
-     - Fetch flush request
-     - CONTROLLER
-     - logic
-
    * - ``push_i``
      - in
      - Push address in RAS
@@ -60,4 +54,8 @@
      - FRONTEND
      - ariane_pkg::ras_t
 
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| For any HW configuration,
+|   ``flush_bp_i`` input is tied to 0
 
