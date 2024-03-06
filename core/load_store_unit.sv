@@ -187,6 +187,8 @@ module load_store_unit
         .CVA6Cfg          (CVA6Cfg),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
+        .SHARED_TLB_DEPTH (cva6_config_pkg::CVA6ConfigSharedTlbDepth),
+        .USE_SHARED_TLB   (cva6_config_pkg::CVA6ConfigUseSharedTlb),
         .HYP_EXT          (HYP_EXT),
         .ASID_WIDTH       (mmu_ASID_WIDTH),
         .VPN_LEN          (VPN_LEN),
