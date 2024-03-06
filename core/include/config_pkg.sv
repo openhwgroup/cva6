@@ -131,40 +131,40 @@ package config_pkg;
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
     /// instruction stalls a little longer.
-    int unsigned                 NrCommitPorts;
+    int unsigned NrCommitPorts;
     /// AXI parameters.
-    int unsigned                 AxiAddrWidth;
-    int unsigned                 AxiDataWidth;
-    int unsigned                 AxiIdWidth;
-    int unsigned                 AxiUserWidth;
-    int unsigned                 NrLoadBufEntries;
-    bit                          FpuEn;
-    bit                          XF16;
-    bit                          XF16ALT;
-    bit                          XF8;
-    bit                          RVA;
-    bit                          RVB;
-    bit                          RVV;
-    bit                          RVC;
-    bit                          RVZCB;
-    bit                          XFVec;
-    bit                          CvxifEn;
-    bit                          ZiCondExtEn;
+    int unsigned AxiAddrWidth;
+    int unsigned AxiDataWidth;
+    int unsigned AxiIdWidth;
+    int unsigned AxiUserWidth;
+    int unsigned NrLoadBufEntries;
+    bit          FpuEn;
+    bit          XF16;
+    bit          XF16ALT;
+    bit          XF8;
+    bit          RVA;
+    bit          RVB;
+    bit          RVV;
+    bit          RVC;
+    bit          RVZCB;
+    bit          XFVec;
+    bit          CvxifEn;
+    bit          ZiCondExtEn;
     // Calculated
-    bit                          RVF;
-    bit                          RVD;
-    bit                          FpPresent;
-    bit                          NSX;
-    int unsigned                 FLen;
-    bit                          RVFVec;
-    bit                          XF16Vec;
-    bit                          XF16ALTVec;
-    bit                          XF8Vec;
-    int unsigned                 NrRgprPorts;
-    int unsigned                 NrWbPorts;
-    bit                          EnableAccelerator;
-    bit                          RVS;    //Supervisor mode
-    bit                          RVU;    //User mode
+    bit          RVF;
+    bit          RVD;
+    bit          FpPresent;
+    bit          NSX;
+    int unsigned FLen;
+    bit          RVFVec;
+    bit          XF16Vec;
+    bit          XF16ALTVec;
+    bit          XF8Vec;
+    int unsigned NrRgprPorts;
+    int unsigned NrWbPorts;
+    bit          EnableAccelerator;
+    bit          RVS;                //Supervisor mode
+    bit          RVU;                //User mode
 
     logic [63:0]                 HaltAddress;
     logic [63:0]                 ExceptionAddress;
@@ -189,7 +189,7 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
     int unsigned                 MaxOutstandingStores;
     bit                          DebugEn;
-    bit                          NonIdemPotenceEn;  // Currently only used by V extension (Ara)
+    bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
     bit                          AxiBurstWriteEn;
   } cva6_cfg_t;
 
