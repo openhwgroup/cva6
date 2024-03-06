@@ -17,7 +17,9 @@ module cva6
   import ariane_pkg::*;
 #(
     // CVA6 config
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = cva6_config_pkg::cva6_cfg,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(
+        cva6_config_pkg::cva6_cfg
+    ),
 
     parameter type rvfi_probes_t = struct packed {
       logic csr;  //disabled 
@@ -124,105 +126,15 @@ module cva6
 );
 
   // ------------------------------------------
-  // CVA6 configuration
-  // ------------------------------------------
-  // Extended config
-  localparam bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & CVA6Cfg.FpuEn;
-  localparam bit RVD = (riscv::IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
-  localparam bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
-  localparam bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
-  localparam int unsigned FLen = RVD ? 64 :  // D ext.
-  RVF ? 32 :  // F ext.
-  CVA6Cfg.XF16 ? 16 :  // Xf16 ext.
-  CVA6Cfg.XF16ALT ? 16 :  // Xf16alt ext.
-  CVA6Cfg.XF8 ? 8 :  // Xf8 ext.
-  1;  // Unused in case of no FP
-
-  // Transprecision floating-point extensions configuration
-  localparam bit RVFVec     = RVF             & CVA6Cfg.XFVec & FLen>32; // FP32 vectors available if vectors and larger fmt enabled
-  localparam bit XF16Vec    = CVA6Cfg.XF16    & CVA6Cfg.XFVec & FLen>16; // FP16 vectors available if vectors and larger fmt enabled
-  localparam bit XF16ALTVec = CVA6Cfg.XF16ALT & CVA6Cfg.XFVec & FLen>16; // FP16ALT vectors available if vectors and larger fmt enabled
-  localparam bit XF8Vec     = CVA6Cfg.XF8     & CVA6Cfg.XFVec & FLen>8;  // FP8 vectors available if vectors and larger fmt enabled
-
-  localparam bit EnableAccelerator = CVA6Cfg.RVV;  // Currently only used by V extension (Ara)
-  localparam int unsigned NrWbPorts = (CVA6Cfg.CvxifEn || EnableAccelerator) ? 5 : 4;
-
-  localparam NrRgprPorts = 2;
-
-  localparam bit NonIdemPotenceEn = CVA6Cfg.NrNonIdempotentRules && CVA6Cfg.NonIdempotentLength;  // Currently only used by V extension (Ara)
-
-  localparam config_pkg::cva6_cfg_t CVA6ExtendCfg = {
-    CVA6Cfg.NrCommitPorts,
-    CVA6Cfg.AxiAddrWidth,
-    CVA6Cfg.AxiDataWidth,
-    CVA6Cfg.AxiIdWidth,
-    CVA6Cfg.AxiUserWidth,
-    CVA6Cfg.NrLoadBufEntries,
-    CVA6Cfg.FpuEn,
-    CVA6Cfg.XF16,
-    CVA6Cfg.XF16ALT,
-    CVA6Cfg.XF8,
-    CVA6Cfg.RVA,
-    CVA6Cfg.RVB,
-    CVA6Cfg.RVV,
-    CVA6Cfg.RVC,
-    CVA6Cfg.RVZCB,
-    CVA6Cfg.XFVec,
-    CVA6Cfg.CvxifEn,
-    CVA6Cfg.ZiCondExtEn,
-    // Extended
-    bit'(RVF),
-    bit'(RVD),
-    bit'(FpPresent),
-    bit'(NSX),
-    unsigned'(FLen),
-    bit'(RVFVec),
-    bit'(XF16Vec),
-    bit'(XF16ALTVec),
-    bit'(XF8Vec),
-    unsigned'(NrRgprPorts),
-    unsigned'(NrWbPorts),
-    bit'(EnableAccelerator),
-    CVA6Cfg.RVS,
-    CVA6Cfg.RVU,
-    CVA6Cfg.HaltAddress,
-    CVA6Cfg.ExceptionAddress,
-    CVA6Cfg.RASDepth,
-    CVA6Cfg.BTBEntries,
-    CVA6Cfg.BHTEntries,
-    CVA6Cfg.DmBaseAddress,
-    CVA6Cfg.TvalEn,
-    CVA6Cfg.NrPMPEntries,
-    CVA6Cfg.PMPCfgRstVal,
-    CVA6Cfg.PMPAddrRstVal,
-    CVA6Cfg.PMPEntryReadOnly,
-    CVA6Cfg.NOCType,
-    CVA6Cfg.NrNonIdempotentRules,
-    CVA6Cfg.NonIdempotentAddrBase,
-    CVA6Cfg.NonIdempotentLength,
-    CVA6Cfg.NrExecuteRegionRules,
-    CVA6Cfg.ExecuteRegionAddrBase,
-    CVA6Cfg.ExecuteRegionLength,
-    CVA6Cfg.NrCachedRegionRules,
-    CVA6Cfg.CachedRegionAddrBase,
-    CVA6Cfg.CachedRegionLength,
-    CVA6Cfg.MaxOutstandingStores,
-    CVA6Cfg.DebugEn,
-    NonIdemPotenceEn,
-    CVA6Cfg.AxiBurstWriteEn
-  };
-
-
-  // ------------------------------------------
   // Global Signals
   // Signals connecting more than one module
   // ------------------------------------------
-  riscv::priv_lvl_t                                   priv_lvl;
-  exception_t                                         ex_commit;  // exception from commit stage
-  bp_resolve_t                                        resolved_branch;
-  logic             [                riscv::VLEN-1:0] pc_commit;
-  logic                                               eret;
-  logic             [CVA6ExtendCfg.NrCommitPorts-1:0] commit_ack;
+  riscv::priv_lvl_t                             priv_lvl;
+  exception_t                                   ex_commit;  // exception from commit stage
+  bp_resolve_t                                  resolved_branch;
+  logic             [          riscv::VLEN-1:0] pc_commit;
+  logic                                         eret;
+  logic             [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
 
   localparam NumPorts = 4;
   cvxif_pkg::cvxif_req_t cvxif_req;
@@ -337,19 +249,19 @@ module cva6
   // --------------
   // ID <-> COMMIT
   // --------------
-  scoreboard_entry_t [CVA6ExtendCfg.NrCommitPorts-1:0] commit_instr_id_commit;
+  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_id_commit;
   // --------------
   // RVFI
   // --------------
   logic [TRANS_ID_BITS-1:0] rvfi_issue_pointer;
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] rvfi_commit_pointer;
+  logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] rvfi_commit_pointer;
   // --------------
   // COMMIT <-> ID
   // --------------
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0][4:0] waddr_commit_id;
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_commit_id;
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0] we_gpr_commit_id;
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0] we_fpr_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_commit_id;
   // --------------
   // CSR <-> *
   // --------------
@@ -453,7 +365,7 @@ module cva6
   // Frontend
   // --------------
   frontend #(
-      .CVA6Cfg(CVA6ExtendCfg)
+      .CVA6Cfg(CVA6Cfg)
   ) i_frontend (
       .flush_i            (flush_ctrl_if),                  // not entirely correct
       .flush_bp_i         (1'b0),
@@ -480,7 +392,7 @@ module cva6
   // ID
   // ---------
   id_stage #(
-      .CVA6Cfg(CVA6ExtendCfg)
+      .CVA6Cfg(CVA6Cfg)
   ) id_stage_i (
       .clk_i,
       .rst_ni,
@@ -511,12 +423,12 @@ module cva6
       .tsr_i       (tsr_csr_id)
   );
 
-  logic [NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
-  logic [NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_ex_id;
-  exception_t [NrWbPorts-1:0] ex_ex_ex_id;  // exception from execute, ex_stage to id_stage
-  logic [NrWbPorts-1:0] wt_valid_ex_id;
+  logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
+  logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_ex_id;
+  exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_ex_id;  // exception from execute, ex_stage to id_stage
+  logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_ex_id;
 
-  if (CVA6ExtendCfg.CvxifEn) begin
+  if (CVA6Cfg.CvxifEn) begin
     assign trans_id_ex_id = {
       x_trans_id_ex_id,
       flu_trans_id_ex_id,
@@ -537,7 +449,7 @@ module cva6
     assign wt_valid_ex_id = {
       x_valid_ex_id, flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id
     };
-  end else if (CVA6ExtendCfg.EnableAccelerator) begin
+  end else if (CVA6Cfg.EnableAccelerator) begin
     assign trans_id_ex_id = {
       flu_trans_id_ex_id,
       load_trans_id_ex_id,
@@ -571,7 +483,7 @@ module cva6
     assign wt_valid_ex_id = {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
   end
 
-  if (CVA6ExtendCfg.CvxifEn && CVA6ExtendCfg.EnableAccelerator) begin : gen_err_xif_and_acc
+  if (CVA6Cfg.CvxifEn && CVA6Cfg.EnableAccelerator) begin : gen_err_xif_and_acc
     $error("X-interface and accelerator port cannot be enabled at the same time.");
   end
 
@@ -579,7 +491,7 @@ module cva6
   // Issue
   // ---------
   issue_stage #(
-      .CVA6Cfg(CVA6ExtendCfg)
+      .CVA6Cfg(CVA6Cfg)
   ) issue_stage_i (
       .clk_i,
       .rst_ni,
@@ -652,7 +564,7 @@ module cva6
   // EX
   // ---------
   ex_stage #(
-      .CVA6Cfg   (CVA6ExtendCfg),
+      .CVA6Cfg   (CVA6Cfg),
       .ASID_WIDTH(ASID_WIDTH)
   ) ex_stage_i (
       .clk_i                (clk_i),
@@ -766,7 +678,7 @@ module cva6
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
   commit_stage #(
-      .CVA6Cfg(CVA6ExtendCfg)
+      .CVA6Cfg(CVA6Cfg)
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
@@ -805,7 +717,7 @@ module cva6
   // CSR
   // ---------
   csr_regfile #(
-      .CVA6Cfg       (CVA6ExtendCfg),
+      .CVA6Cfg       (CVA6Cfg),
       .AsidWidth     (ASID_WIDTH),
       .MHPMCounterNum(MHPMCounterNum)
   ) csr_regfile_i (
@@ -874,7 +786,7 @@ module cva6
   // ------------------------
   if (PERF_COUNTER_EN) begin : gen_perf_counter
     perf_counters #(
-        .CVA6Cfg (CVA6ExtendCfg),
+        .CVA6Cfg (CVA6Cfg),
         .NumPorts(NumPorts)
     ) perf_counters_i (
         .clk_i         (clk_i),
@@ -913,7 +825,7 @@ module cva6
   // Controller
   // ------------
   controller #(
-      .CVA6Cfg(CVA6ExtendCfg)
+      .CVA6Cfg(CVA6Cfg)
   ) controller_i (
       // flush ports
       .set_pc_commit_o       (set_pc_ctrl_pcgen),
@@ -977,7 +889,7 @@ module cva6
   if (DCACHE_TYPE == int'(config_pkg::WT)) begin : gen_cache_wt
     // this is a cache subsystem that is compatible with OpenPiton
     wt_cache_subsystem #(
-        .CVA6Cfg   (CVA6ExtendCfg),
+        .CVA6Cfg   (CVA6Cfg),
         .NumPorts  (NumPorts),
         .noc_req_t (noc_req_t),
         .noc_resp_t(noc_resp_t)
@@ -1017,7 +929,7 @@ module cva6
     );
   end else if (DCACHE_TYPE == int'(config_pkg::HPDCACHE)) begin : gen_cache_hpd
     cva6_hpdcache_subsystem #(
-        .CVA6Cfg   (CVA6ExtendCfg),
+        .CVA6Cfg   (CVA6Cfg),
         .NumPorts  (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),
@@ -1077,7 +989,7 @@ module cva6
         // note: this only works with one cacheable region
         // not as important since this cache subsystem is about to be
         // deprecated
-        .CVA6Cfg      (CVA6ExtendCfg),
+        .CVA6Cfg      (CVA6Cfg),
         .NumPorts     (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),
@@ -1122,9 +1034,9 @@ module cva6
   // Accelerator
   // ----------------
 
-  if (CVA6ExtendCfg.EnableAccelerator) begin : gen_accelerator
+  if (CVA6Cfg.EnableAccelerator) begin : gen_accelerator
     acc_dispatcher #(
-        .CVA6Cfg   (CVA6ExtendCfg),
+        .CVA6Cfg   (CVA6Cfg),
         .acc_cfg_t (acc_cfg_t),
         .AccCfg    (AccCfg),
         .acc_req_t (cvxif_req_t),
@@ -1212,12 +1124,12 @@ module cva6
 `ifdef PITON_ARIANE
   localparam PC_QUEUE_DEPTH = 16;
 
-  logic                                                    piton_pc_vld;
-  logic [                riscv::VLEN-1:0]                  piton_pc;
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0][riscv::VLEN-1:0] pc_data;
-  logic [CVA6ExtendCfg.NrCommitPorts-1:0] pc_pop, pc_empty;
+  logic                                              piton_pc_vld;
+  logic [          riscv::VLEN-1:0]                  piton_pc;
+  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] pc_data;
+  logic [CVA6Cfg.NrCommitPorts-1:0] pc_pop, pc_empty;
 
-  for (genvar i = 0; i < CVA6ExtendCfg.NrCommitPorts; i++) begin : gen_pc_fifo
+  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_pc_fifo
     fifo_v3 #(
         .DATA_WIDTH(64),
         .DEPTH(PC_QUEUE_DEPTH)
@@ -1237,7 +1149,7 @@ module cva6
   end
 
   rr_arb_tree #(
-      .NumIn(CVA6ExtendCfg.NrCommitPorts),
+      .NumIn(CVA6Cfg.NrCommitPorts),
       .DataWidth(64)
   ) i_rr_arb_tree (
       .clk_i  (clk_i),
@@ -1323,7 +1235,7 @@ module cva6
           default: ;  // Do nothing
         endcase
       end
-      for (int i = 0; i < CVA6ExtendCfg.NrCommitPorts; i++) begin
+      for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
         if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
           $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode,
                   commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
@@ -1358,7 +1270,7 @@ module cva6
   //RVFI INSTR
 
   cva6_rvfi_probes #(
-      .CVA6Cfg      (CVA6ExtendCfg),
+      .CVA6Cfg      (CVA6Cfg),
       .rvfi_probes_t(rvfi_probes_t)
   ) i_cva6_rvfi_probes (
 
