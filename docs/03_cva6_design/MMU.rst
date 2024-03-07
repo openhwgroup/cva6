@@ -555,7 +555,7 @@ Translation Lookaside Buffer
 
 Page tables are accessed for translating virtual memory addresses to physical memory addresses. This translation needs to be carried out for every load and store instruction and also for every instruction fetch. Since page tables are resident in physical memory, accessing these tables in all these situations has a significant impact on performance.  Page table accesses occur in patterns that are closely related in time. Furthermore, the spatial and temporal locality of data accesses or instruction fetches mean that the same page is referenced repeatedly. Taking advantage of these access patterns the processor keeps the information of recent address translations, to enable fast retrieval, in a small cache called the Translation Lookaside Buffer (TLB) or an address-translation cache. 
 
-The CVA6 TLB is structured as a fully associative cache, where the virtual address that needs to be translated is compared against all the individual TLB entries. Given a virtual address, the processor examines the TLB (TLB lookup) to determine if the virtual page number (VPN) of the page being accessed is in the TLB. When a TLB entry is found (TLB hit), the TLB returns the corresponding physical page number (PPN) which is used to calculate the target physical address. If no TLB entry is found (TLB miss) the processor has to read individual page table entries from memory (Table walk). In CVA6 table walking is supported by dedicated hardware. Once the processor finishes the table walk it has the Physical Page Number (PPN) corresponding to the Virtual Page Number (VPN) that needs to be translated. The processor adds an entry for this address translation to the TLB so future translations of that virtual address will happen quickly through the TLB.  During the table walk the processor may find out that the corresponding physical page is not resident in memory. At this stage a page table exception (Page Fault) is generated which gets handled by the operating system. The operating system places the appropriate page in memory, updates the appropriate page tables and returns execution to the instruction which generated the exception.  
+The CVA6 TLB is structured as a fully associative cache, where the virtual address that needs to be translated is compared against all the individual TLB entries. Given a virtual address, the processor examines the TLB (TLB lookup) to determine if the virtual page number (VPN) of the page being accessed is in the TLB. When a TLB entry is found (TLB hit), the TLB returns the corresponding physical page number (PPN) which is used to calculate the target physical address. If no TLB entry is found (TLB miss) the processor has to read individual page table entries from memory (Table walk). In CVA6 table walking is supported by dedicated hardware. Once the processor finishes the table walk, it has the Physical Page Number (PPN) corresponding to the Virtual Page Number (VPN) that needs to be translated. The processor adds an entry for this address translation to the TLB so future translations of that virtual address will happen quickly through the TLB.  During the table walk the processor may find out that the corresponding physical page is not resident in memory. At this stage a page table exception (Page Fault) is generated which gets handled by the operating system. The operating system places the appropriate page in memory, updates the appropriate page tables and returns execution to the instruction which generated the exception.  
 
 The input and output signals of the TLB are shown in the following figure. 
 
@@ -801,7 +801,7 @@ This function takes in the virtual address and certain other fields, examines th
 * **Validity Check:** For a TLB hit, the associated TLB entry must be valid .
 * **ASID and Global Flag Check:** The TLB entry's ASID must match the given ASID (ASID associated with the Virtual address). If the TLB entry’s Global bit (G) is set then this check is not done. This ensures that the translation is either specific to the provided ASID or it is globally applicable. When the hypervisor extension is enabled, either the ASID or the VMID (i.e. ASID[0] and ASID[1]) in the TLB entry must match ASID[0] and/or ASID[1] in the input, depending on which level of translation is enabled. For the VMID (ASID[1]) the check is always applicable, regardless of G bit in the TLB entry.
 * **Level VPN match:** CVA6 implements a multi-level page table. As such the virtual address is broken up into multiple parts which are the virtual page number used in the different levels. So the condition that is checked next is that the virtual page number of the virtual address matches the virtual page number of the TLB entry at each level. 
-* **Page match:** Without Hypervisor extension, there is a match at a certain level X if the is_page component of the tag is set to 1 at level PT_LEVELS-X. At level 0 page_match is always set to 1. For the Hypervisor extension ... **(MORE COMPLEX, THINK HOW TO EXPLAIN THIS)**
+* **Page match:** Without Hypervisor extension, there is a match at a certain level X if the is_page component of the tag is set to 1 at level PT_LEVELS-X. At level 0 page_match is always set to 1. When Hypervisor extension is enabled, the conditions to give a page match vary depending on the level we are at. At the highest level (PT_LEVELS -1), there is a page match at g and s stage (when enabled) if the corresponding is_page bit is set. If a stage is not enabled the is_page is considered a 1. At level 0, page_match is always 1 as in the case of no hypervisor extension. In the intermediate levels, the page_match is determined using the merged final translation size from both stages and their enable signals. 
   **Level match** The last condition to be checked at each page level, for a TLB hit, is that there is a vpn match for the current level and the higher ones, together with a page match at the current one. E.g. If PT_LEVELS=2, a match at level 2 will occur if there is a VPN match at level 2 and a page match at level 2. For level 1, there will be a match if there is a VPN match at levels 2 and 1, together with a page match at level 1.
 
 
@@ -861,7 +861,9 @@ The SFENCE.VMA instruction can be used with certain specific source register spe
 
    **Figure 10:** Invalidate TLB entry for matching ASIDs
 
-   **UPDATE WITH THE REST OF FLUSH CASES FOR HYPERVISOR. WHICH ARE THE INSTRUCTIONS IN EACH CASE? **
+The TLB fully implements the supervisor flush instructions, i.e., sfence, including filtering by ASID and virtual address. To
+support nested translation,it supports the two translation stages, including access permissions (rwx) and VMIDs. This is done analogously to the fence cases explained above.
+
 
 .. raw:: html
 
@@ -966,6 +968,8 @@ Shared Translation Lookaside Buffer
 -----------------------------------
 
 The CVA6 shared TLB is structured as a 2-way associative cache, where the virtual address requiring translation is compared with the set indicated by the virtual page number. The shared TLB is looked up in case of an Instruction TLB (ITLB) or data TLB (DTLB) miss, signaled by these TLBs. If the entry is found in the shared TLB set, the respective TLB, whose translation is being requested, is updated. If the entry is not found in the shared TLB, then the processor has to perform a page table walk. Once the processor obtains a PPN corresponding to the VPN, the shared TLB is updated with this information. If the physical page is not found in the page table, it results in a page fault, which is handled by the operating system. The operating system will then place the corresponding physical page in memory.
+
+The use of the shared TLB is optional in CVA6, via the ``CVA6ConfigUseSharedTlb`` parameter. When it is not used, the requests from ITLB and DTLB go directly to the PTW, and the update from the PTW goes directly to the ITLB and DTLB respectively.  
 
 The input and output signals of the shared TLB are shown in the following Figure. 
 
@@ -1161,7 +1165,7 @@ The input and output signals of the shared TLB are shown in the following Figure
 
    <span style="font-size:18px; font-weight:bold;">Shared TLB Entry Structure</span>
 
-Shared TLB is 2-way associative, with a depth of 64. A single entry in the set contains the valid bit, tag and the content. The Tag segment stores details such as the virtual page number, ASID, and page size. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page.
+Shared TLB is 2-way associative, with a depth of 64 by default, but can be selected via a user parameter. A single entry in the set contains the valid bit, tag and the content. The Tag segment stores details such as the virtual page number, ASID, and page size. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page.
 
 .. figure:: _static/shared_tlb.png
    :name: **Figure 15:** CVA6 Shared TLB Structure
@@ -1209,7 +1213,7 @@ In the case of a DTLB miss, the same logic is employed as described for an ITLB 
 
    <span style="font-size:18px; font-weight:bold;">Tag Comparison</span>
 
-Shared TLB lookup for a hit occurs under the same conditions as described for the TLB modules used as ITLB and DTLB. However, there are some distinctions. In both the ITLB and DTLB, the virtual address requiring translation is compared against all TLB entries. In contrast, the shared TLB only compares the tag and content of the set indicated by the provided virtual page number. The index of the set is extracted from the VPN of the requested virtual address. Given that the shared TLB is 2-way associative, each set contains two entries. Consequently, both of these entries are compared. Below figure illustrates how the set is opted for the lookup.
+Shared TLB lookup for a hit occurs under the same conditions as described for the TLB modules used as ITLB and DTLB. However, there are some distinctions. In both the ITLB and DTLB, the virtual address requiring translation is compared against all TLB entries. In contrast, the shared TLB only compares the tag and content of the set indicated by the provided virtual page number. The index of the set is extracted from the VPN of the requested virtual address. Given that the shared TLB is 2-way associative, each set contains two entries. Consequently, both of these entries are compared. Below figure illustrates how the set is opted for the lookup. In case that the shared TLB is not used, the hit and corresponding update information come directly from the PTW, bypassing the shared TLB block.
 
 .. figure:: _static/shared_tlb_set.png
    :name: **Figure 16:** Set opted for lookup in shared TLB
@@ -1229,7 +1233,7 @@ Differing from the ITLB and DTLB, a specific virtual address or addressing space
 
    <span style="font-size:18px; font-weight:bold;">Updating Shared TLB</span>
 
-When the Page Table Walker signals a valid update request, the shared TLB is updated by selecting an entry through the replacement policy and marking it as valid. This also triggers the writing of the new tag and content to the respective SRAM.
+When the Page Table Walker signals a valid update request, the shared TLB is updated by selecting an entry through the replacement policy and marking it as valid. This also triggers the writing of the new tag and content to the respective SRAM. As stated above, when the shared TLB is not used, the update from PTW goes directly to the ITLB and DTLB depending on which initiated the request, and the SRAM is not instantiated.
 
 .. raw:: html
 
@@ -1282,7 +1286,7 @@ If all ways are valid, a random replacement policy is employed for the replaceme
 Page Table Walker
 -----------------
 
-The "CVA6 Page Table Walker (PTW)" is a hardware module designed to facilitate the translation of virtual addresses into physical addresses, a crucial task in memory access management.
+The "CVA6 Page Table Walker (PTW)" is a hardware module designed to facilitate the translation of virtual addresses into physical addresses, a crucial task in memory access management. The Hypervisor extension specifies a new translation stage (G-stage) to translate guest-physical addresses into host-physical addresses.
 
 .. figure:: _static/ptw_in_out.png
    :name: **Figure 19:** Input and Outputs of Page Table Walker
@@ -1577,15 +1581,17 @@ In addition to its translation capabilities, the PTW module is equipped to detec
 
    <span style="font-size:18px; font-weight:bold;">PTW State Machine</span>
 
-Page Table Walker is implemented as a finite state machine. It listens to shared TLB for incoming translation requests. If there is a shared TLB miss, it saves the virtual address and starts the page table walk. Page table walker transition between 7 states in CVA6.
+Page Table Walker is implemented as a finite state machine. It listens to shared TLB for incoming translation requests. If there is a shared TLB miss, it saves the virtual address and starts the page table walk. Page table walker transitions between 7 states in CVA6.
 
-* **IDLE:** The initial state where the PTW is awaiting a trigger, often a Shared TLB miss, to initiate a memory access request. In the case of the Hypervisor extension, the stage to which the translation belongs is determined by the enable_translation_i and en_ld_st_translation_i signals. There are 3 possible stages: G_INTERMED_STAGE, G_FINAL_STAGE and S_STAGE. When Hypervisor is not enabled PTW is always in S_STAGE.
+* **IDLE:** The initial state where the PTW is awaiting a trigger, often a Shared TLB miss, to initiate a memory access request. In the case of the Hypervisor extension, the stage to which the translation belongs is determined by the enable_translation_i and en_ld_st_translation_i signals. There are 3 possible stages: (i) S-Stage - the PTW current state is translating a guest-virtual address into a guest-physical address; (ii) G-Stage Intermed - the PTW current state is translating memory access made from the VS-Stage during the walk to host-physical address; and (iii) G-Stage Final - the PTW current state is translating the final output address from VS-Stage into a host-physical address. When Hypervisor is not enabled PTW is always in S_STAGE.
 * **WAIT_GRANT:** Request memory access and wait for data grant
 * **PTE_LOOKUP:** Once granted access, the PTW examines the valid Page Table Entry (PTE), checking attributes to determine the appropriate course of action. Depending on the STAGE determined in the previous state, pptr and other atributes are updated accordingly.
 * **PROPAGATE_ERROR:** If the PTE is invalid, this state handles the propagation of an error, often leading to a page-fault exception due to non-compliance with access conditions.
 * **PROPAGATE_ACCESS_ERROR:** Propagate access fault if access is not allowed from a PMP perspective
 * **WAIT_RVALID:** After processing a PTE, the PTW waits for a valid data signal, indicating that relevant data is ready for further processing.
 * **LATENCY:** Introduces a delay to account for synchronization or timing requirements between states.
+
+The next figure shows the state diagram of the PTW FSM. The blue lines correspond to transitions that exist only when hypervisor extension is enabled.
 
 .. figure:: _static/ptw_state_diagram.png
    :name: **Figure 20:** State Machine Diagram of CVA6 PTW
