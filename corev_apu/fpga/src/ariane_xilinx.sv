@@ -154,8 +154,6 @@ module ariane_xilinx (
   output logic        tx
 );
 
-// CVA6 config
-localparam bit IsRVFI = bit'(0);
 // CVA6 Xilinx configuration
 localparam config_pkg::cva6_user_cfg_t CVA6UserCfg = '{
   NrCommitPorts:         cva6_config_pkg::CVA6ConfigNrCommitPorts,
