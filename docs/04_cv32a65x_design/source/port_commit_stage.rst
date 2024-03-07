@@ -87,7 +87,7 @@
    * - ``pc_o``
      - out
      - TO_BE_COMPLETED
-     - FRONTEND_CSR
+     - FRONTEND_CSR_REGFILE
      - logic[riscv::VLEN-1:0]
 
    * - ``csr_op_o``

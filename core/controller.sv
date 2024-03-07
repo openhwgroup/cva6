@@ -160,6 +160,9 @@ module controller
       flush_tlb_o            = 1'b1;
     end
 
+    // ---------------------------------
+    // CSR side effects and accelerate port
+    // ---------------------------------
     // Set PC to commit stage and flush pipeline
     if (flush_csr_i || flush_acc_i) begin
       set_pc_commit_o        = 1'b1;

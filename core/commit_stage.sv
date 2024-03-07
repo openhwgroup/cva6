@@ -48,7 +48,7 @@ module commit_stage
     output logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_o,
     // Result of AMO operation - CACHE
     input amo_resp_t amo_resp_i,
-    // TO_BE_COMPLETED - FRONTEND_CSR
+    // TO_BE_COMPLETED - FRONTEND_CSR_REGFILE
     output logic [riscv::VLEN-1:0] pc_o,
     // Decoded CSR operation - CSR_REGFILE
     output fu_op csr_op_o,
