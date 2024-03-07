@@ -846,10 +846,20 @@ package ariane_pkg;
     logic is_compressed;
     riscv::xlen_t rs1_forwarding;
     riscv::xlen_t rs2_forwarding;
-    scoreboard_entry_t [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0] commit_instr;
-    exception_t ex_commit;
+    logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_pc;
+    fu_op [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][TRANS_ID_BITS-1:0] commit_instr_op;
+    logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs1;
+    logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs2;
+    logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rd;
+    riscv::xlen_t [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0] commit_instr_result;
+    logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_valid;
+    riscv::xlen_t ex_commit_cause;
+    logic ex_commit_valid;
     riscv::priv_lvl_t priv_lvl;
-    lsu_ctrl_t lsu_ctrl;
+    logic [riscv::VLEN-1:0] lsu_ctrl_vaddr;
+    fu_t lsu_ctrl_fu;
+    logic [(riscv::XLEN/8)-1:0] lsu_ctrl_be;
+    logic [TRANS_ID_BITS-1:0] lsu_ctrl_trans_id;
     logic [((cva6_config_pkg::CVA6ConfigCvxifEn || cva6_config_pkg::CVA6ConfigVExtEn) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
     logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0] commit_ack;
     logic [riscv::PLEN-1:0] mem_paddr;
@@ -956,13 +966,9 @@ package ariane_pkg;
     rvfi_csr_elmt_t pmpcfg2;
     rvfi_csr_elmt_t pmpcfg3;
     rvfi_csr_elmt_t [15:0] pmpaddr;
-
   } rvfi_csr_t;
 
-
   localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
-
-
 
   // ----------------------
   // Arithmetic Functions

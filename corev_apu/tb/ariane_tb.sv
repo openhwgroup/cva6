@@ -30,7 +30,6 @@ module ariane_tb;
 
     // cva6 configuration
     localparam config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(cva6_config_pkg::cva6_cfg);
-    localparam bit IsRVFI = bit'(cva6_config_pkg::CVA6ConfigRvfiTrace);
 
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
@@ -52,7 +51,6 @@ module ariane_tb;
 
     ariane_testharness #(
         .CVA6Cfg ( CVA6Cfg ),
-        .IsRVFI ( IsRVFI ),
         //
         .NUM_WORDS         ( NUM_WORDS ),
         .InclSimDTM        ( 1'b1      ),

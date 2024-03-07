@@ -72,16 +72,32 @@ module cva6_rvfi_probes
     instr.rs1_forwarding = rs1_forwarding_i;
     instr.rs2_forwarding = rs2_forwarding_i;
 
-    instr.ex_commit = ex_commit_i;
+    instr.ex_commit_cause = ex_commit_i.cause;
+    instr.ex_commit_valid = ex_commit_i.valid;
+
     instr.priv_lvl = priv_lvl_i;
 
-    instr.lsu_ctrl = lsu_ctrl_i;
+    instr.lsu_ctrl_vaddr = lsu_ctrl_i.vaddr;
+    instr.lsu_ctrl_fu = lsu_ctrl_i.fu;
+    instr.lsu_ctrl_be = lsu_ctrl_i.be;
+    instr.lsu_ctrl_trans_id = lsu_ctrl_i.trans_id;
+
     instr.wbdata = wbdata_i;
     instr.mem_paddr = mem_paddr_i;
     instr.debug_mode = debug_mode_i;
 
     instr.commit_pointer = commit_pointer_i;
-    instr.commit_instr = commit_instr_i;
+
+    for (int i = 0; i < cva6_config_pkg::CVA6ConfigNrCommitPorts; i++) begin
+      instr.commit_instr_pc[i] = commit_instr_i[i].pc;
+      instr.commit_instr_op[i] = commit_instr_i[i].op;
+      instr.commit_instr_rs1[i] = commit_instr_i[i].rs1;
+      instr.commit_instr_rs2[i] = commit_instr_i[i].rs2;
+      instr.commit_instr_rd[i] = commit_instr_i[i].rd;
+      instr.commit_instr_result[i] = commit_instr_i[i].result;
+      instr.commit_instr_valid[i] = commit_instr_i[i].valid;
+    end
+
     instr.commit_ack = commit_ack_i;
     instr.wdata = wdata_i;
 
