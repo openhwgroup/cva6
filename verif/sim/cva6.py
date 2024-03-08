@@ -1042,16 +1042,22 @@ def check_gcc_version():
     incorrect_version_exit("GCC", gcc_version_string, f">={REQUIRED_GCC_VERSION}")
 
 def check_spike_version():
-  # Get Spike User version
-  user_spike_version = run_cmd("$SPIKE_PATH/spike -v").strip()
-  logging.info(f"Spike Version: {user_spike_version}")
-
   # Get Spike hash from core-v-verif submodule
   spike_hash = subprocess.run('git log -1 --pretty=tformat:%h -- $SPIKE_SRC_DIR/..', capture_output=True, text=True, shell=True, cwd=os.environ.get("SPIKE_SRC_DIR"))
   spike_version = "1.1.1-dev " + spike_hash.stdout.strip()
 
-  if user_spike_version != spike_version:
-    incorrect_version_exit("Spike", user_spike_version, spike_version)
+  # Get Spike User version
+  get_env_var("SPIKE_PATH")
+  user_spike_version = subprocess.run("$SPIKE_PATH/spike -v", capture_output=True, text=True, shell=True)
+  user_spike_version_string = user_spike_version.stderr.strip()
+  print(user_spike_version)
+  if user_spike_version.returncode != 0:
+    incorrect_version_exit("Spike", "- unknown -", spike_version)
+    
+  logging.info(f"Spike Version: {user_spike_version_string}")
+
+  if user_spike_version_string != spike_version:
+    incorrect_version_exit("Spike", user_spike_version_string, spike_version)
 
 def check_verilator_version():
   REQUIRED_VERILATOR_VERSION = "5.008"
