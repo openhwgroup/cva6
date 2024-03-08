@@ -84,6 +84,7 @@ endif
 ifneq ($(spike-tandem),)
     compile_flag += -define SPIKE_TANDEM
     CFLAGS += -I. -I$(SPIKE_INSTALL_DIR)/include/riscv
+    CFLAGS += -I. -I$(SPIKE_INSTALL_DIR)/include/disasm
     defines += +SPIKE_TANDEM=1
 endif
 
@@ -148,6 +149,8 @@ src :=  core/include/$(target)_config_pkg.sv                                    
         $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)                   \
         $(if $(spike-tandem),verif/tb/core/uvma_cva6pkg_utils_pkg.sv)                \
         $(if $(spike-tandem),verif/tb/core/uvma_rvfi_pkg.sv)                         \
+        $(if $(spike-tandem),verif/tb/core/uvmc_rvfi_reference_model_pkg.sv)         \
+        $(if $(spike-tandem),verif/tb/core/uvmc_rvfi_scoreboard_pkg.sv)              \
         $(if $(spike-tandem),corev_apu/tb/common/spike.sv)                           \
         corev_apu/src/ariane.sv                                                      \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
@@ -215,7 +218,7 @@ fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/b
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
-tbs := core/include/$(target)_config_pkg.sv corev_apu/tb/ariane_tb.sv corev_apu/tb/ariane_testharness.sv core/cva6_rvfi.sv
+tbs := corev_apu/tb/ariane_tb.sv corev_apu/tb/ariane_testharness.sv core/cva6_rvfi.sv
 
 tbs := $(addprefix $(root-dir), $(tbs))
 
@@ -239,15 +242,19 @@ incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REP
           $(CVA6_REPO_DIR)/corev_apu/register_interface/include/ $(CVA6_REPO_DIR)/corev_apu/tb/common/ \
           $(CVA6_REPO_DIR)/vendor/pulp-platform/axi/include/ \
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_rvfi/ \
+          $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_components/uvmc_rvfi_reference_model/ \
+          $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_components/uvmc_rvfi_scoreboard/ \
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_core_cntrl/ \
           $(CVA6_REPO_DIR)/verif/tb/core/ \
-          $(CVA6_REPO_DIR)/core/include/
+          $(CVA6_REPO_DIR)/core/include/ \
+          $(SPIKE_INSTALL_DIR)/include/disasm/
 
 # Compile and sim flags
-compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive -svinputport=compat +define+$(defines)
+compile_flag     += -incr -64 -nologo -quiet -suppress 13262 -suppress 8607 -permissive -svinputport=compat +define+$(defines) -suppress 8386
+vopt_flag +=  -incr -64 -nologo -quiet -suppress 13262 -permissive -svinputport=compat -t 1ns
 
-uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
-questa-flags     += -t 1ns -64 -coverage -classdebug $(gui-sim) $(QUESTASIM_FLAGS) +tohost_addr=$(tohost_addr)
+uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=UVM_LOW
+questa-flags     += -t 1ns -64 $(gui-sim) $(QUESTASIM_FLAGS) +tohost_addr=$(tohost_addr) +define+QUESTA
 compile_flag_vhd += -64 -nologo -quiet -2008
 
 # Iterate over all include directories and write them with +incdir+ prefixed
@@ -263,10 +270,12 @@ riscv-torture-bin    := java -jar sbt-launch.jar
 # if defined, calls the questa targets in batch mode
 ifdef batch-mode
 	questa-flags += -c
+        questa-cmd   += -do "run -all;"
+endif
+ifdef cov-mode
+        compile_flags += +cover=bcfst+/dut
+        questa-flags += -coverage
 	questa-cmd   := -do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
-	questa-cmd   += -do " log -r /*; run -all;"
-else
-	questa-cmd   := -do " log -r /*; run -all;"
 endif
 # we want to preload the memories
 ifdef preload
@@ -305,7 +314,7 @@ vcs: vcs_build
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
-	$(VOPT) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
+	$(VOPT) $(vopt_flags) -64 -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis -dpilib $(SPIKE_INSTALL_DIR)/lib/libriscv -dpilib $(SPIKE_INSTALL_DIR)/lib/lifesvr -suppress 2085 -suppress 7063
 
 # src files
 $(library)/.build-srcs: $(library)
@@ -345,8 +354,9 @@ generate-trace-vsim:
 
 sim: build
 	$(VSIM) +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(SPIKE_INSTALL_DIR)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
-	${top_level}_optimized +permissive-off ++$(elf_file) ++$(target-options) | tee sim.log
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) -sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
+	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm  \
+	${top_level}_optimized +permissive-off +elf_file=$(elf_file) ++$(elf_file) ++$(target-options)
 
 $(riscv-asm-tests): build
 	$(VSIM) +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
@@ -573,7 +583,7 @@ verilate_command := $(verilator) --no-timing verilator_config.vlt               
                     $(if $(DEBUG), --trace-structs,)                                                             \
                     $(if $(TRACE_COMPACT), --trace-fst $(VL_INC_DIR)/verilated_fst_c.cpp)                        \
                     $(if $(TRACE_FAST), --trace $(VL_INC_DIR)/verilated_vcd_c.cpp)                               \
-                    -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv $(if $(PROFILE), -g -pg,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
+                    -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv -ldisasm $(if $(PROFILE), -g -pg,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) -DVL_DEBUG -I$(SPIKE_INSTALL_DIR)"               \
                     $(if $(SPIKE_TANDEM), +define+SPIKE_TANDEM, )                                                \
                     --cc --vpi                                                                                   \

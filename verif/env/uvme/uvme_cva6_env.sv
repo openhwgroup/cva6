@@ -248,6 +248,7 @@ function void uvme_cva6_env_c::assign_cfg();
    uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
 
    if (cfg.scoreboard_enabled) begin
+      uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*rvfi_scoreboard", "cfg", cfg);
       uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "reference_model", "cfg", cfg);
    end
 

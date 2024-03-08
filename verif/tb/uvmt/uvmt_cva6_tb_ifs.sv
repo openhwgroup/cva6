@@ -27,8 +27,7 @@ interface uvmt_rvfi_if #(
                     parameter type rvfi_csr_t = logic
 ) (
                     output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
-                    output rvfi_csr_t rvfi_csr_o,
-                    output logic[31:0] tb_exit_o
+                    output rvfi_csr_t rvfi_csr_o
                                  );
 
   import uvm_pkg::*;
@@ -38,6 +37,15 @@ interface uvmt_rvfi_if #(
   end
 
 endinterface : uvmt_rvfi_if
+
+
+interface uvmt_tb_exit_if (
+  output logic[31:0] tb_exit_o
+    );
+
+  initial begin
+  end
+endinterface : uvmt_tb_exit_if
 
 
 `endif // __UVMT_CVA6_TB_IFS_SV__

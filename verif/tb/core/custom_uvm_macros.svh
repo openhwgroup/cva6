@@ -1,3 +1,7 @@
+`ifndef __CUSTOM_UVM_MACROS_SV__
+`define __CUSTOM_UVM_MACROS_SV__
+
+
 `ifdef UVM_REPORT_DISABLE_FILE
 `define uvm_file ""
 `else
@@ -39,6 +43,8 @@ typedef enum
         uvm_report_fatal(TOP, MSG, UVM_NONE, `uvm_file, `uvm_line); \
     end
 
+static longint sim_errors = 0;
+parameter max_errors = 10;
 
 function void uvm_report_info(string id,
                   string message,
@@ -64,6 +70,11 @@ function void uvm_report_error(string id,
                    string filename = "",
                    int line = 0);
     $display($sformatf("UVM_ERROR @ %t ns : %s %s", $time, id , message));
+    sim_errors += 1;
+    if (sim_errors >= max_errors) begin
+        $fatal();
+    end
+
 endfunction
 
 function void uvm_report_fatal(string id,
@@ -72,5 +83,7 @@ function void uvm_report_fatal(string id,
                    string filename = "",
                    int line = 0);
     $display($sformatf("UVM_FATAL @ %t ns : %s %s", $time, id , message));
-    $finish();
+    $fatal();
 endfunction
+
+`endif

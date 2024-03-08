@@ -11,7 +11,7 @@
 `define __UVME_CVXIF_VSEQ_SV__
 
 
-class uvme_cvxif_vseq_c extends uvme_cvxif_base_vseq_c#(uvma_cvxif_resp_item_c);
+class uvme_cvxif_vseq_c extends uvme_cvxif_base_vseq_c;
 
    `uvm_object_utils (uvme_cvxif_vseq_c)
    `uvm_declare_p_sequencer (uvma_cvxif_vsqr_c)
@@ -168,10 +168,10 @@ task uvme_cvxif_vseq_c::do_issue_resp();
           resp_item.issue_resp.writeback  = 0;
           resp_item.issue_resp.accept     = 1;
           resp_item.issue_resp.exc        = 1;
-        end 
+        end
    endcase
    `uvm_info(info_tag, $sformatf("instr =  %s", instr), UVM_LOW);
-   `uvm_info(info_tag, $sformatf("Response :  accept = %h	writeback = %h	dualwrite = %h	dualread = %h	exc = %h", 
+   `uvm_info(info_tag, $sformatf("Response :  accept = %h	writeback = %h	dualwrite = %h	dualread = %h	exc = %h",
 				resp_item.issue_resp.accept, resp_item.issue_resp.writeback, resp_item.issue_resp.dualwrite, resp_item.issue_resp.dualread, resp_item.issue_resp.exc), UVM_LOW);
 
 endtask

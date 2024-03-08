@@ -64,7 +64,6 @@ void handle_sigterm(int sig) {
 
 
 extern "C" void read_elf(const char* filename);
-extern "C" int64_t read_symbol(const char* symbol, uint64_t* address);
 extern "C" char get_section (long long* address, long long* len);
 extern "C" void read_section_void(long long address, void * buffer, uint64_t size = 0);
 

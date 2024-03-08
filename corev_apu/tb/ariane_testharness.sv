@@ -617,7 +617,7 @@ module ariane_testharness #(
   rvfi_probes_t rvfi_probes;
   rvfi_csr_t rvfi_csr;
   rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
-  
+
   ariane #(
     .CVA6Cfg              ( CVA6Cfg             ),
     .rvfi_probes_instr_t  ( rvfi_probes_instr_t ),
@@ -664,8 +664,8 @@ module ariane_testharness #(
     end
   end
 
-  
- 
+
+
   cva6_rvfi #(
       .CVA6Cfg   (CVA6Cfg),
       .rvfi_instr_t(rvfi_instr_t),
@@ -700,12 +700,14 @@ module ariane_testharness #(
 `ifdef SPIKE_TANDEM
     spike #(
         .CVA6Cfg ( CVA6Cfg ),
-        .rvfi_instr_t(rvfi_instr_t)
+        .rvfi_instr_t(rvfi_instr_t),
+        .rvfi_csr_t(rvfi_csr_t)
     ) i_spike (
         .clk_i,
         .rst_ni,
         .clint_tick_i   ( rtc_i    ),
-        .rvfi_i         ( rvfi_instr )
+        .rvfi_i         ( rvfi_instr ),
+        .rvfi_csr_i     ( rvfi_csr )
     );
     initial begin
         $display("Running binary in tandem mode");
