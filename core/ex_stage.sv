@@ -240,7 +240,7 @@ module ex_stage
   assign alu_data = (alu_valid_i | branch_valid_i) ? fu_data_i : '0;
 
   alu #(
-      .CVA6Cfg(CVA6Cfg),
+      .CVA6Cfg  (CVA6Cfg),
       .fu_data_t(fu_data_t)
   ) alu_i (
       .clk_i,
@@ -346,7 +346,7 @@ module ex_stage
       assign fpu_data = fpu_valid_i ? fu_data_i : '0;
 
       fpu_wrap #(
-          .CVA6Cfg  (CVA6Cfg),
+          .CVA6Cfg(CVA6Cfg),
           .exception_t(exception_t),
           .fu_data_t(fu_data_t)
       ) fpu_i (

@@ -53,7 +53,7 @@ module std_nbdcache
     logic                                     dirty;  // state array
   };
   localparam type cl_be_t = struct packed {
-    logic [(ariane_pkg::DCACHE_TAG_WIDTH+7)/8-1:0]  tag;  // byte enable into tag array
+    logic [(ariane_pkg::DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
     logic [(ariane_pkg::DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
     logic [ariane_pkg::DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
   };
@@ -152,8 +152,8 @@ module std_nbdcache
   // Miss Handling Unit
   // ------------------
   miss_handler #(
-      .CVA6Cfg  (CVA6Cfg),
-      .NR_PORTS (NumPorts),
+      .CVA6Cfg(CVA6Cfg),
+      .NR_PORTS(NumPorts),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t),
       .cache_line_t(cache_line_t),

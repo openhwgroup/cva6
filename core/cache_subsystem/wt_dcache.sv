@@ -128,10 +128,10 @@ module wt_dcache
   ///////////////////////////////////////////////////////
 
   wt_dcache_missunit #(
-      .CVA6Cfg (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
       .dcache_req_t(dcache_req_t),
       .dcache_rtrn_t(dcache_rtrn_t),
-      .AmoTxId (RdAmoTxId),
+      .AmoTxId(RdAmoTxId),
       .NumPorts(NumPorts)
   ) i_wt_dcache_missunit (
       .clk_i          (clk_i),
@@ -194,7 +194,7 @@ module wt_dcache
           .CVA6Cfg(CVA6Cfg),
           .dcache_req_i_t(dcache_req_i_t),
           .dcache_req_o_t(dcache_req_o_t),
-          .RdTxId (RdAmoTxId)
+          .RdTxId(RdAmoTxId)
       ) i_wt_dcache_ctrl (
           .clk_i          (clk_i),
           .rst_ni         (rst_ni),
@@ -317,9 +317,9 @@ module wt_dcache
   ///////////////////////////////////////////////////////
 
   wt_dcache_mem #(
-      .CVA6Cfg (CVA6Cfg),
+      .CVA6Cfg  (CVA6Cfg),
       .wbuffer_t(wbuffer_t),
-      .NumPorts(NumPorts)
+      .NumPorts (NumPorts)
   ) i_wt_dcache_mem (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),

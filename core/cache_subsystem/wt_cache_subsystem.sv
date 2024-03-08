@@ -23,18 +23,18 @@ module wt_cache_subsystem
   import ariane_pkg::*;
   import wt_cache_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
-    parameter type                   icache_areq_t = logic,
-    parameter type                   icache_arsp_t = logic,
-    parameter type                   icache_dreq_t = logic,
-    parameter type                   icache_drsp_t = logic,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
+    parameter type                   icache_areq_t  = logic,
+    parameter type                   icache_arsp_t  = logic,
+    parameter type                   icache_dreq_t  = logic,
+    parameter type                   icache_drsp_t  = logic,
     parameter type                   dcache_req_i_t = logic,
     parameter type                   dcache_req_o_t = logic,
     parameter type                   icache_req_t   = logic,
     parameter type                   icache_rtrn_t  = logic,
-    parameter int unsigned           NumPorts   = 4,
-    parameter type                   noc_req_t  = logic,
-    parameter type                   noc_resp_t = logic
+    parameter int unsigned           NumPorts       = 4,
+    parameter type                   noc_req_t      = logic,
+    parameter type                   noc_resp_t     = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -145,7 +145,7 @@ module wt_cache_subsystem
   // they have equal prio and are RR arbited
   // Port 2 is write only and goes into the merging write buffer
   wt_dcache #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
       .dcache_req_t(dcache_req_t),
@@ -205,7 +205,7 @@ module wt_cache_subsystem
   );
 `else
   wt_axi_adapter #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
       .axi_req_t(noc_req_t),
       .axi_rsp_t(noc_resp_t),
       .dcache_req_t(dcache_req_t),

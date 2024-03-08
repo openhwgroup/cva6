@@ -1205,21 +1205,21 @@ module cva6
         // note: this only works with one cacheable region
         // not as important since this cache subsystem is about to be
         // deprecated
-        .CVA6Cfg      (CVA6Cfg),
-        .icache_areq_t(icache_areq_t),
-        .icache_arsp_t(icache_arsp_t),
-        .icache_dreq_t(icache_dreq_t),
-        .icache_drsp_t(icache_drsp_t),
+        .CVA6Cfg       (CVA6Cfg),
+        .icache_areq_t (icache_areq_t),
+        .icache_arsp_t (icache_arsp_t),
+        .icache_dreq_t (icache_dreq_t),
+        .icache_drsp_t (icache_drsp_t),
         .icache_req_t  (icache_req_t),
         .icache_rtrn_t (icache_rtrn_t),
         .dcache_req_i_t(dcache_req_i_t),
         .dcache_req_o_t(dcache_req_o_t),
-        .NumPorts     (NumPorts),
-        .axi_ar_chan_t(axi_ar_chan_t),
-        .axi_aw_chan_t(axi_aw_chan_t),
-        .axi_w_chan_t (axi_w_chan_t),
-        .axi_req_t    (noc_req_t),
-        .axi_rsp_t    (noc_resp_t)
+        .NumPorts      (NumPorts),
+        .axi_ar_chan_t (axi_ar_chan_t),
+        .axi_aw_chan_t (axi_aw_chan_t),
+        .axi_w_chan_t  (axi_w_chan_t),
+        .axi_req_t     (noc_req_t),
+        .axi_rsp_t     (noc_resp_t)
     ) i_cache_subsystem (
         // to D$
         .clk_i             (clk_i),
@@ -1510,11 +1510,11 @@ module cva6
   //RVFI INSTR
 
   cva6_rvfi_probes #(
-      .CVA6Cfg      (CVA6Cfg),
-      .exception_t  (exception_t),
+      .CVA6Cfg           (CVA6Cfg),
+      .exception_t       (exception_t),
       .scoreboard_entry_t(scoreboard_entry_t),
-      .lsu_ctrl_t   (lsu_ctrl_t),
-      .rvfi_probes_t(rvfi_probes_t)
+      .lsu_ctrl_t        (lsu_ctrl_t),
+      .rvfi_probes_t     (rvfi_probes_t)
   ) i_cva6_rvfi_probes (
 
       .flush_i            (flush_ctrl_if),

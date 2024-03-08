@@ -76,7 +76,7 @@ module std_cache_subsystem
   axi_rsp_t axi_resp_data;
 
   cva6_icache_axi_wrapper #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
       .icache_areq_t(icache_areq_t),
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
@@ -106,10 +106,10 @@ module std_cache_subsystem
   // Port 2: Accelerator
   // Port 3: Store Unit
   std_nbdcache #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
-      .NumPorts (NumPorts),
+      .NumPorts(NumPorts),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t)
   ) i_nbdcache (

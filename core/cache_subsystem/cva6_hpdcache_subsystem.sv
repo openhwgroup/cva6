@@ -68,17 +68,17 @@ module cva6_hpdcache_subsystem
     output logic dcache_miss_o,  // we missed on a ld/st
 
     //  AMO interface
-    input  ariane_pkg::amo_req_t                     dcache_amo_req_i,    // from LSU
-    output ariane_pkg::amo_resp_t                    dcache_amo_resp_o,   // to LSU
+    input  ariane_pkg::amo_req_t                 dcache_amo_req_i,    // from LSU
+    output ariane_pkg::amo_resp_t                dcache_amo_resp_o,   // to LSU
     //  CMO interface
-    input  cmo_req_t                                 dcache_cmo_req_i,    // from CMO FU
-    output cmo_rsp_t                                 dcache_cmo_resp_o,   // to CMO FU
+    input  cmo_req_t                             dcache_cmo_req_i,    // from CMO FU
+    output cmo_rsp_t                             dcache_cmo_resp_o,   // to CMO FU
     //  Request ports
-    input  dcache_req_i_t             [NumPorts-1:0] dcache_req_ports_i,  // from LSU
-    output dcache_req_o_t             [NumPorts-1:0] dcache_req_ports_o,  // to LSU
+    input  dcache_req_i_t         [NumPorts-1:0] dcache_req_ports_i,  // from LSU
+    output dcache_req_o_t         [NumPorts-1:0] dcache_req_ports_o,  // to LSU
     //  Write Buffer status
-    output logic                                     wbuffer_empty_o,
-    output logic                                     wbuffer_not_ni_o,
+    output logic                                 wbuffer_empty_o,
+    output logic                                 wbuffer_not_ni_o,
 
     //  Hardware memory prefetcher configuration
     input  logic [NrHwPrefetchers-1:0]       hwpf_base_set_i,
@@ -119,7 +119,7 @@ module cva6_hpdcache_subsystem
       .icache_drsp_t(icache_drsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
-      .RdTxId (ICACHE_RDTXID)
+      .RdTxId(ICACHE_RDTXID)
   ) i_cva6_icache (
       .clk_i         (clk_i),
       .rst_ni        (rst_ni),
@@ -232,10 +232,10 @@ module cva6_hpdcache_subsystem
       assign dcache_req_ports[r] = dcache_req_ports_i[r];
 
       cva6_hpdcache_if_adapter #(
-          .CVA6Cfg     (CVA6Cfg),
+          .CVA6Cfg       (CVA6Cfg),
           .dcache_req_i_t(dcache_req_i_t),
           .dcache_req_o_t(dcache_req_o_t),
-          .is_load_port(1'b1)
+          .is_load_port  (1'b1)
       ) i_cva6_hpdcache_load_if_adapter (
           .clk_i,
           .rst_ni,
@@ -260,10 +260,10 @@ module cva6_hpdcache_subsystem
     end
 
     cva6_hpdcache_if_adapter #(
-        .CVA6Cfg     (CVA6Cfg),
+        .CVA6Cfg       (CVA6Cfg),
         .dcache_req_i_t(dcache_req_i_t),
         .dcache_req_o_t(dcache_req_o_t),
-        .is_load_port(1'b0)
+        .is_load_port  (1'b0)
     ) i_cva6_hpdcache_store_if_adapter (
         .clk_i,
         .rst_ni,

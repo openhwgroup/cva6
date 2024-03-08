@@ -20,7 +20,7 @@ module wt_dcache_ctrl
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
-    parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId    = 1
+    parameter logic [CACHE_ID_WIDTH-1:0] RdTxId = 1
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low

@@ -49,13 +49,13 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
     //  Interfaces from/to I$
     //  {{{
-    input  logic                      icache_miss_valid_i,
-    output logic                      icache_miss_ready_o,
-    input  icache_req_t               icache_miss_i,
-    input  hpdcache_mem_id_t          icache_miss_id_i,
+    input  logic             icache_miss_valid_i,
+    output logic             icache_miss_ready_o,
+    input  icache_req_t      icache_miss_i,
+    input  hpdcache_mem_id_t icache_miss_id_i,
 
-    output logic                       icache_miss_resp_valid_o,
-    output icache_rtrn_t               icache_miss_resp_o,
+    output logic         icache_miss_resp_valid_o,
+    output icache_rtrn_t icache_miss_resp_o,
     //  }}}
 
     //  Interfaces from/to D$
