@@ -75,7 +75,7 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
 * **Exception/Interrupt:** If an exception (or interrupt, which is in the context of RISC-V subsystems quite similar) is triggered by the CSR_REGISTER, the next PC Gen is assigned to the CSR trap vector base address.
 
-* **Pipeline starting fetching from COMMIT PC:** When the commit stage is halted by a WFI instruction or when the pipeline has been flushed due to CSR change, next PC Gen is assigned to the PC coming from the COMMIT submodule.
+* **Pipeline starting fetching from COMMIT PC:** When the commit stage is halted by WFI instruction or when the pipeline has been flushed due to CSR change, next PC Gen is assigned to the PC coming from the COMMIT submodule.
   As CSR instructions do not exist in a compressed form, PC is unconditionally incremented by 4.
 
 .. user and supervisor modes are not supported by CV32A65X
@@ -107,7 +107,7 @@ This submodule stores the instructions and sends them to the DECODE module.
 .. TO_BE_COMPLETED MMU also feedback an exception, but not present in 65X
 
 Memory can feedback potential exceptions which can be bus errors, invalid accesses or instruction page faults.
-The FRONTEND transmits the exception from CACHES to DECODE.
+The FRONTEND feedthroughs the exception from CACHES to DECODE.
 
 
 
@@ -124,8 +124,9 @@ Submodules
 .. figure:: ../images/ZoominFrontend.png
    :name: FRONTEND submodule Zoomin
    :align: center
+   :alt:
 
-   FRONTEND submodule Zoomin
+   FRONTEND submodule interconnections
 
 Instr_realign submodule
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -226,10 +227,10 @@ RAS (Return Address Stack) submodule
 
 RAS is implemented as a LIFO which is composed of **RASDepth configuration parameter** entries.
 
-The PC of the instruction following JAL instruction is pushed into the RAS.
+When a JAL instruction is pre-decoded by the instr_scan, the PC of the instruction following JAL instruction is pushed into the RAS when the JAL instruction is added to the instruction queue.
 
-When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) occurs, the relative information is popped from the RAS.
-If the popped information is wrong due to speculation or RAS depth limitation, a mis-prediction will be generated.
+When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) occurs is pre-decoded by the instr_scan, the relative information is popped from the RAS when the JALR instruction is added to the instruction queue.
+If the popped information is wrong due for instance to speculation or RAS depth limitation, a mis-repdiction will be generated.
 
 The RAS is never flushed.
 

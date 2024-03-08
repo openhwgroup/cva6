@@ -32,11 +32,11 @@ module frontend
     input logic [riscv::VLEN-1:0] boot_addr_i,
     // Flush branch prediction - zero
     input logic flush_bp_i,
-    // Fetch flush request when FENCE, mis-predict and exception - CONTROLLER
+    // Flush requested by FENCE, mis-predict and exception - CONTROLLER
     input logic flush_i,
-    // Halt when WFI and Accelerate port request - CONTROLLER
+    // Halt requested by WFI and Accelerate port - CONTROLLER
     input logic halt_i,
-    // Set COMMIT PC as next PC when FENCE, CSR side-effect and accelerate port - CONTROLLER
+    // Set COMMIT PC as next PC requested by FENCE, CSR side-effect and Accelerate port - CONTROLLER
     input logic set_pc_commit_i,
     // COMMIT PC - COMMIT
     input logic [riscv::VLEN-1:0] pc_commit_i,
