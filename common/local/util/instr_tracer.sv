@@ -17,8 +17,12 @@
 `include "ex_trace_item.svh"
 `include "instr_trace_item.svh"
 
-module instr_tracer (
-  instr_tracer_if   tracer_if,
+module instr_tracer #(
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+  parameter type bp_resolve_t = logic,
+  parameter type scoreboard_entry_t = logic
+)(
+  instr_tracer_if tracer_if,
   input logic[riscv::XLEN-1:0] hart_id_i
 );
 
@@ -27,10 +31,10 @@ module instr_tracer (
   // keep the issued instructions in a queue
   logic [31:0] issue_queue [$];
   // issue scoreboard entries
-  ariane_pkg::scoreboard_entry_t issue_sbe_queue [$];
-  ariane_pkg::scoreboard_entry_t issue_sbe;
+  scoreboard_entry_t issue_sbe_queue [$];
+  scoreboard_entry_t issue_sbe;
   // store resolved branches, get (mis-)predictions
-  ariane_pkg::bp_resolve_t bp [$];
+  bp_resolve_t bp [$];
   // shadow copy of the register files
   logic [63:0] gp_reg_file [32];
   logic [63:0] fp_reg_file [32];
@@ -55,13 +59,13 @@ module instr_tracer (
 
   task trace();
     automatic logic [31:0] decode_instruction, issue_instruction, issue_commit_instruction;
-    automatic ariane_pkg::scoreboard_entry_t commit_instruction;
+    automatic scoreboard_entry_t commit_instruction;
     // initialize register 0
     gp_reg_file  = '{default:0};
     fp_reg_file  = '{default:0};
 
     forever begin
-      automatic ariane_pkg::bp_resolve_t bp_instruction = '0;
+      automatic bp_resolve_t bp_instruction = '0;
       // new cycle, we are only interested if reset is de-asserted
       @(tracer_if.pck) if (tracer_if.pck.rstn !== 1'b1) begin
         flush();
@@ -88,7 +92,7 @@ module instr_tracer (
         issue_instruction = decode_queue.pop_front();
         issue_queue.push_back(issue_instruction);
         // also save the scoreboard entry to a separate issue queue
-        issue_sbe_queue.push_back(ariane_pkg::scoreboard_entry_t'(tracer_if.pck.issue_sbe));
+        issue_sbe_queue.push_back(scoreboard_entry_t'(tracer_if.pck.issue_sbe));
       end
 
       // --------------------
@@ -113,7 +117,7 @@ module instr_tracer (
       // we are committing an instruction
       for (int i = 0; i < 2; i++) begin
         if (tracer_if.pck.commit_ack[i]) begin
-          commit_instruction = ariane_pkg::scoreboard_entry_t'(tracer_if.pck.commit_instr[i]);
+          commit_instruction = scoreboard_entry_t'(tracer_if.pck.commit_instr[i]);
           issue_commit_instruction = issue_queue.pop_front();
           issue_sbe = issue_sbe_queue.pop_front();
           // check if the instruction retiring is a load or store, get the physical address accordingly
@@ -186,8 +190,12 @@ module instr_tracer (
     bp              = {};
   endfunction
 
-  function void printInstr(ariane_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
-    automatic instr_trace_item iti = new ($time, clk_ticks, sbe, instr, gp_reg_file, fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
+  function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
+    automatic instr_trace_item #(
+      .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
+      .scoreboard_entry_t(scoreboard_entry_t)
+    ) iti = new ($time, clk_ticks, sbe, instr, gp_reg_file, fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
     // print instruction to console
     automatic string print_instr = iti.printInstr();
     if (ariane_pkg::ENABLE_SPIKE_COMMIT_LOG && !debug_mode) begin
@@ -197,7 +205,9 @@ module instr_tracer (
   endfunction
 
   function void printException(logic [riscv::VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
-    automatic ex_trace_item eti = new (pc, cause, tval);
+    automatic ex_trace_item #(
+      .CVA6Cfg(CVA6Cfg)
+    ) eti = new (pc, cause, tval);
     automatic string print_ex = eti.printException();
     $fwrite(f, {print_ex, "\n"});
   endfunction

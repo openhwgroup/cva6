@@ -17,6 +17,15 @@ module load_store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type fu_data_t = logic,
+    parameter type icache_areq_t = logic,
+    parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
+    parameter type lsu_ctrl_t = logic,
     parameter int unsigned ASID_WIDTH = 1
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -118,6 +127,7 @@ module load_store_unit
     // RVFI information - RVFI
     output            [riscv::PLEN-1:0] rvfi_mem_paddr_o
 );
+
   // data is misaligned
   logic                               data_misaligned;
   // --------------------------------------
@@ -178,6 +188,13 @@ module load_store_unit
   if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
+        .exception_t      (exception_t),
+        .icache_areq_t    (icache_areq_t),
+        .icache_arsp_t    (icache_arsp_t),
+        .icache_dreq_t    (icache_dreq_t),
+        .icache_drsp_t    (icache_drsp_t),
+        .dcache_req_i_t   (dcache_req_i_t),
+        .dcache_req_o_t   (dcache_req_o_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
         .ASID_WIDTH       (ASID_WIDTH)
@@ -207,6 +224,13 @@ module load_store_unit
   end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
     cva6_mmu_sv32 #(
         .CVA6Cfg          (CVA6Cfg),
+        .exception_t      (exception_t),
+        .icache_areq_t    (icache_areq_t),
+        .icache_arsp_t    (icache_arsp_t),
+        .icache_dreq_t    (icache_dreq_t),
+        .icache_drsp_t    (icache_drsp_t),
+        .dcache_req_i_t   (dcache_req_i_t),
+        .dcache_req_o_t   (dcache_req_o_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
         .ASID_WIDTH       (ASID_WIDTH)
@@ -281,7 +305,11 @@ module load_store_unit
   // Store Unit
   // ------------------
   store_unit #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .exception_t(exception_t),
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) i_store_unit (
       .clk_i,
       .rst_ni,
@@ -323,7 +351,11 @@ module load_store_unit
   // Load Unit
   // ------------------
   load_unit #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .exception_t(exception_t),
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
       .valid_i   (ld_valid_i),
       .lsu_ctrl_i(lsu_ctrl),
@@ -517,7 +549,8 @@ module load_store_unit
   };
 
   lsu_bypass #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) lsu_bypass_i (
       .lsu_req_i      (lsu_req_i),
       .lsu_req_valid_i(lsu_valid_i),

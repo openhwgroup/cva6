@@ -22,7 +22,11 @@
 module decoder
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type branchpredict_sbe_t = logic,
+    parameter type exception_t = logic,
+    parameter type irq_ctrl_t = logic,
+    parameter type scoreboard_entry_t = logic
 ) (
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
@@ -103,7 +107,9 @@ module decoder
     // This module is responsible for a light-weight decoding of accelerator instructions,
     // identifying them, but also whether they read/write scalar registers.
     // Accelerators are supposed to define this module.
-    cva6_accel_first_pass_decoder i_accel_decoder (
+    cva6_accel_first_pass_decoder #(
+        .scoreboard_entry_t(scoreboard_entry_t)
+    ) i_accel_decoder (
         .instruction_i(instruction_i),
         .fs_i(fs_i),
         .vs_i(vs_i),

@@ -16,9 +16,12 @@
 module csr_regfile
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
-    parameter int                    AsidWidth      = 1,
-    parameter int unsigned           MHPMCounterNum = 6
+    parameter config_pkg::cva6_cfg_t CVA6Cfg            = config_pkg::cva6_cfg_empty,
+    parameter type                   exception_t        = logic,
+    parameter type                   irq_ctrl_t         = logic,
+    parameter type                   scoreboard_entry_t = logic,
+    parameter int                    AsidWidth          = 1,
+    parameter int unsigned           MHPMCounterNum     = 6
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -140,6 +143,12 @@ module csr_regfile
     output rvfi_probes_csr_t rvfi_csr_o
 );
 
+  typedef struct packed {
+    logic [riscv::ModeW-1:0] mode;
+    logic [riscv::ASIDW-1:0] asid;
+    logic [riscv::PPNW-1:0]  ppn;
+  } satp_t;
+
   // internal signal to keep track of access exceptions
   logic read_access_exception, update_access_exception, privilege_violation;
   logic csr_we, csr_read;
@@ -155,7 +164,7 @@ module csr_regfile
   logic dirty_fp_state_csr;
   riscv::mstatus_rv_t mstatus_q, mstatus_d;
   riscv::xlen_t mstatus_extended;
-  riscv::satp_t satp_q, satp_d;
+  satp_t satp_q, satp_d;
   riscv::dcsr_t dcsr_q, dcsr_d;
   riscv::csr_t csr_addr;
   // privilege level register
@@ -596,7 +605,7 @@ module csr_regfile
   // ---------------------------
   riscv::xlen_t mask;
   always_comb begin : csr_update
-    automatic riscv::satp_t satp;
+    automatic satp_t satp;
     automatic logic [63:0] instret;
 
 
@@ -817,7 +826,7 @@ module csr_regfile
             // intercept SATP writes if in S-Mode and TVM is enabled
             if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm) update_access_exception = 1'b1;
             else begin
-              satp      = riscv::satp_t'(csr_wdata);
+              satp      = satp_t'(csr_wdata);
               // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
               satp.asid = satp.asid & {{(riscv::ASIDW - AsidWidth) {1'b0}}, {AsidWidth{1'b1}}};
               // only update if we actually support this mode

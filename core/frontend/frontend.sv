@@ -18,7 +18,11 @@
 module frontend
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type fetch_entry_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -61,6 +65,29 @@ module frontend
     // Handshake's ready between fetch and decode - ID_STAGE
     input logic fetch_entry_ready_i
 );
+
+  localparam type bht_update_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] pc;     // update at PC
+    logic                   taken;
+  };
+
+  localparam type btb_prediction_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] target_address;
+  };
+
+  localparam type btb_update_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] pc;              // update at PC
+    logic [riscv::VLEN-1:0] target_address;
+  };
+
+  localparam type ras_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] ra;
+  };
+
   // Instruction Cache Registers, from I$
   logic                            [                FETCH_WIDTH-1:0] icache_data_q;
   logic                                                              icache_valid_q;
@@ -422,15 +449,16 @@ module frontend
   end else begin : ras_gen
     ras #(
         .CVA6Cfg(CVA6Cfg),
+        .ras_t  (ras_t),
         .DEPTH  (CVA6Cfg.RASDepth)
     ) i_ras (
         .clk_i,
         .rst_ni,
         .flush_bp_i(flush_bp_i),
-        .push_i (ras_push),
-        .pop_i  (ras_pop),
-        .data_i (ras_update),
-        .data_o (ras_predict)
+        .push_i(ras_push),
+        .pop_i(ras_pop),
+        .data_i(ras_update),
+        .data_o(ras_predict)
     );
   end
 
@@ -444,6 +472,8 @@ module frontend
   end else begin : btb_gen
     btb #(
         .CVA6Cfg   (CVA6Cfg),
+        .btb_update_t(btb_update_t),
+        .btb_prediction_t(btb_prediction_t),
         .NR_ENTRIES(CVA6Cfg.BTBEntries)
     ) i_btb (
         .clk_i,
@@ -461,6 +491,7 @@ module frontend
   end else begin : bht_gen
     bht #(
         .CVA6Cfg   (CVA6Cfg),
+        .bht_update_t(bht_update_t),
         .NR_ENTRIES(CVA6Cfg.BHTEntries)
     ) i_bht (
         .clk_i,
@@ -497,7 +528,8 @@ module frontend
   end
 
   instr_queue #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .fetch_entry_t(fetch_entry_t)
   ) i_instr_queue (
       .clk_i              (clk_i),
       .rst_ni             (rst_ni),

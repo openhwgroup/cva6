@@ -46,6 +46,8 @@ package config_pkg;
     int unsigned                 AxiIdWidth;
     // AXI User width
     int unsigned                 AxiUserWidth;
+    // TODO
+    int unsigned                 MemTidWidth;
     // Load buffer entry buffer
     int unsigned                 NrLoadBufEntries;
     // Floating Point
@@ -137,6 +139,7 @@ package config_pkg;
     int unsigned AxiDataWidth;
     int unsigned AxiIdWidth;
     int unsigned AxiUserWidth;
+    int unsigned MEM_TID_WIDTH;
     int unsigned NrLoadBufEntries;
     bit          FpuEn;
     bit          XF16;
@@ -191,6 +194,8 @@ package config_pkg;
     bit                          DebugEn;
     bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
     bit                          AxiBurstWriteEn;
+
+    int unsigned DCACHE_MAX_TX;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever

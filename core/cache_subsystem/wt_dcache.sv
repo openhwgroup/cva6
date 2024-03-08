@@ -18,6 +18,10 @@ module wt_dcache
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type dcache_req_t = logic,
+    parameter type dcache_rtrn_t = logic,
     parameter int unsigned NumPorts = 4,  // number of miss ports
     // ID to be used for read and AMO transactions.
     // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
@@ -50,6 +54,17 @@ module wt_dcache
     input  logic         mem_data_ack_i,
     output dcache_req_t  mem_data_o
 );
+
+  localparam type wbuffer_t = struct packed {
+    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
+    riscv::xlen_t data;
+    logic [ariane_pkg::DCACHE_USER_WIDTH-1:0] user;
+    logic [(riscv::XLEN/8)-1:0] dirty;  // byte is dirty
+    logic [(riscv::XLEN/8)-1:0] valid;  // byte is valid
+    logic [(riscv::XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
+    logic checked;  // if cache state of this word has been checked
+    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
+  };
 
   // miss unit <-> read controllers
   logic                                                               cache_en;
@@ -101,8 +116,8 @@ module wt_dcache
   logic         [      DCACHE_SET_ASSOC-1:0]                          rd_hit_oh;
 
   // miss unit <-> wbuffer
-  logic         [         DCACHE_MAX_TX-1:0][        riscv::PLEN-1:0] tx_paddr;
-  logic         [         DCACHE_MAX_TX-1:0]                          tx_vld;
+  logic         [ CVA6Cfg.DCACHE_MAX_TX-1:0][        riscv::PLEN-1:0] tx_paddr;
+  logic         [ CVA6Cfg.DCACHE_MAX_TX-1:0]                          tx_vld;
 
   // wbuffer <-> memory
   wbuffer_t     [     DCACHE_WBUF_DEPTH-1:0]                          wbuffer_data;
@@ -113,8 +128,10 @@ module wt_dcache
   ///////////////////////////////////////////////////////
 
   wt_dcache_missunit #(
-      .CVA6Cfg (CVA6Cfg),
-      .AmoTxId (RdAmoTxId),
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
+      .AmoTxId(RdAmoTxId),
       .NumPorts(NumPorts)
   ) i_wt_dcache_missunit (
       .clk_i          (clk_i),
@@ -175,7 +192,9 @@ module wt_dcache
       assign rd_prio[k] = 1'b1;
       wt_dcache_ctrl #(
           .CVA6Cfg(CVA6Cfg),
-          .RdTxId (RdAmoTxId)
+          .dcache_req_i_t(dcache_req_i_t),
+          .dcache_req_o_t(dcache_req_o_t),
+          .RdTxId(RdAmoTxId)
       ) i_wt_dcache_ctrl (
           .clk_i          (clk_i),
           .rst_ni         (rst_ni),
@@ -238,7 +257,10 @@ module wt_dcache
   assign rd_prio[NumPorts-1] = 1'b0;
 
   wt_dcache_wbuffer #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .wbuffer_t(wbuffer_t)
   ) i_wt_dcache_wbuffer (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),
@@ -295,8 +317,9 @@ module wt_dcache
   ///////////////////////////////////////////////////////
 
   wt_dcache_mem #(
-      .CVA6Cfg (CVA6Cfg),
-      .NumPorts(NumPorts)
+      .CVA6Cfg  (CVA6Cfg),
+      .wbuffer_t(wbuffer_t),
+      .NumPorts (NumPorts)
   ) i_wt_dcache_mem (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),

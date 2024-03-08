@@ -18,6 +18,17 @@ module ex_stage
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type branchpredict_sbe_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type fu_data_t = logic,
+    parameter type icache_areq_t = logic,
+    parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
+    parameter type lsu_ctrl_t = logic,
     parameter int unsigned ASID_WIDTH = 1
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -229,7 +240,8 @@ module ex_stage
   assign alu_data = (alu_valid_i | branch_valid_i) ? fu_data_i : '0;
 
   alu #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg  (CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) alu_i (
       .clk_i,
       .rst_ni,
@@ -242,7 +254,11 @@ module ex_stage
   // we don't silence the branch unit as this is already critical and we do
   // not want to add another layer of logic
   branch_unit #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
+      .exception_t(exception_t),
+      .fu_data_t(fu_data_t)
   ) branch_unit_i (
       .clk_i,
       .rst_ni,
@@ -263,7 +279,8 @@ module ex_stage
 
   // 3. CSR (sequential)
   csr_buffer #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg  (CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) csr_buffer_i (
       .clk_i,
       .rst_ni,
@@ -306,7 +323,8 @@ module ex_stage
   assign mult_data = mult_valid_i ? fu_data_i : '0;
 
   mult #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg  (CVA6Cfg),
+      .fu_data_t(fu_data_t)
   ) i_mult (
       .clk_i,
       .rst_ni,
@@ -328,7 +346,9 @@ module ex_stage
       assign fpu_data = fpu_valid_i ? fu_data_i : '0;
 
       fpu_wrap #(
-          .CVA6Cfg(CVA6Cfg)
+          .CVA6Cfg(CVA6Cfg),
+          .exception_t(exception_t),
+          .fu_data_t(fu_data_t)
       ) fpu_i (
           .clk_i,
           .rst_ni,
@@ -363,6 +383,15 @@ module ex_stage
 
   load_store_unit #(
       .CVA6Cfg   (CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .exception_t(exception_t),
+      .fu_data_t (fu_data_t),
+      .icache_areq_t(icache_areq_t),
+      .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t),
+      .lsu_ctrl_t(lsu_ctrl_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) lsu_i (
       .clk_i,
@@ -416,7 +445,9 @@ module ex_stage
     fu_data_t cvxif_data;
     assign cvxif_data = x_valid_i ? fu_data_i : '0;
     cvxif_fu #(
-        .CVA6Cfg(CVA6Cfg)
+        .CVA6Cfg(CVA6Cfg),
+        .exception_t(exception_t),
+        .fu_data_t(fu_data_t)
     ) cvxif_fu_i (
         .clk_i,
         .rst_ni,

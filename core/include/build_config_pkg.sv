@@ -28,6 +28,7 @@ package build_config_pkg;
     cfg.AxiDataWidth = CVA6Cfg.AxiDataWidth;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
     cfg.AxiUserWidth = CVA6Cfg.AxiUserWidth;
+    cfg.MEM_TID_WIDTH = CVA6Cfg.MemTidWidth;
     cfg.NrLoadBufEntries = CVA6Cfg.NrLoadBufEntries;
     cfg.FpuEn = CVA6Cfg.FpuEn;
     cfg.XF16 = CVA6Cfg.XF16;
@@ -82,6 +83,8 @@ package build_config_pkg;
     cfg.DebugEn = CVA6Cfg.DebugEn;
     cfg.NonIdemPotenceEn = CVA6Cfg.NrNonIdempotentRules && CVA6Cfg.NonIdempotentLength;
     cfg.AxiBurstWriteEn = CVA6Cfg.AxiBurstWriteEn;
+
+    cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
 
     return cfg;
   endfunction

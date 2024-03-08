@@ -161,6 +161,7 @@ localparam config_pkg::cva6_user_cfg_t CVA6UserCfg = '{
   AxiDataWidth:          cva6_config_pkg::CVA6ConfigAxiDataWidth,
   AxiIdWidth:            cva6_config_pkg::CVA6ConfigAxiIdWidth,
   AxiUserWidth:          cva6_config_pkg::CVA6ConfigDataUserWidth,
+  MemTidWidth:           cva6_config_pkg::CVA6ConfigMemTidWidth,
   NrLoadBufEntries:      cva6_config_pkg::CVA6ConfigNrLoadBufEntries,
   RASDepth:              cva6_config_pkg::CVA6ConfigRASDepth,
   BTBEntries:            cva6_config_pkg::CVA6ConfigBTBEntries,

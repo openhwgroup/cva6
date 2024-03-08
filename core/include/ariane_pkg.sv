@@ -167,15 +167,6 @@ package ariane_pkg;
   localparam int unsigned INSTR_PER_FETCH = RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
   localparam int unsigned LOG2_INSTR_PER_FETCH = RVC == 1'b1 ? $clog2(INSTR_PER_FETCH) : 1;
 
-  // Only use struct when signals have same direction
-  // exception
-  typedef struct packed {
-    riscv::xlen_t cause;  // cause of exception
-    riscv::xlen_t       tval;  // additional information of causing exception (e.g.: instruction causing it),
-    // address of LD/ST fault
-    logic valid;
-  } exception_t;
-
   typedef enum logic [2:0] {
     NoCF,    // No control flow prediction
     Branch,  // Branch
@@ -183,49 +174,6 @@ package ariane_pkg;
     JumpR,   // Jump to address from registers
     Return   // Return Address Prediction
   } cf_t;
-
-  // branch-predict
-  // this is the struct we get back from ex stage and we will use it to update
-  // all the necessary data structures
-  // bp_resolve_t
-  typedef struct packed {
-    logic                   valid;           // prediction with all its values is valid
-    logic [riscv::VLEN-1:0] pc;              // PC of predict or mis-predict
-    logic [riscv::VLEN-1:0] target_address;  // target address at which to jump, or not
-    logic                   is_mispredict;   // set if this was a mis-predict
-    logic                   is_taken;        // branch is taken
-    cf_t                    cf_type;         // Type of control flow change
-  } bp_resolve_t;
-
-  // branchpredict scoreboard entry
-  // this is the struct which we will inject into the pipeline to guide the various
-  // units towards the correct branch decision and resolve
-  typedef struct packed {
-    cf_t                    cf;               // type of control flow prediction
-    logic [riscv::VLEN-1:0] predict_address;  // target address at which to jump, or not
-  } branchpredict_sbe_t;
-
-  typedef struct packed {
-    logic                   valid;
-    logic [riscv::VLEN-1:0] pc;              // update at PC
-    logic [riscv::VLEN-1:0] target_address;
-  } btb_update_t;
-
-  typedef struct packed {
-    logic                   valid;
-    logic [riscv::VLEN-1:0] target_address;
-  } btb_prediction_t;
-
-  typedef struct packed {
-    logic                   valid;
-    logic [riscv::VLEN-1:0] ra;
-  } ras_t;
-
-  typedef struct packed {
-    logic                   valid;
-    logic [riscv::VLEN-1:0] pc;     // update at PC
-    logic                   taken;
-  } bht_update_t;
 
   typedef struct packed {
     logic valid;
@@ -255,16 +203,6 @@ package ariane_pkg;
 
   localparam SupervisorIrq = 1;
   localparam MachineIrq = 0;
-
-  // All information needed to determine whether we need to associate an interrupt
-  // with the corresponding instruction or not.
-  typedef struct packed {
-    riscv::xlen_t mie;
-    riscv::xlen_t mip;
-    riscv::xlen_t mideleg;
-    logic         sie;
-    logic         global_enable;
-  } irq_ctrl_t;
 
   // ---------------
   // Cache config
@@ -554,15 +492,6 @@ package ariane_pkg;
     CZERO_NEZ
   } fu_op;
 
-  typedef struct packed {
-    fu_t                      fu;
-    fu_op                     operation;
-    riscv::xlen_t             operand_a;
-    riscv::xlen_t             operand_b;
-    riscv::xlen_t             imm;
-    logic [TRANS_ID_BITS-1:0] trans_id;
-  } fu_data_t;
-
   function automatic logic op_is_branch(input fu_op op);
     unique case (op) inside
       EQ, NE, LTS, GES, LTU, GEU: return 1'b1;
@@ -647,56 +576,6 @@ package ariane_pkg;
     endcase
   endfunction
 
-  typedef struct packed {
-    logic                       valid;
-    logic [riscv::VLEN-1:0]     vaddr;
-    logic                       overflow;
-    riscv::xlen_t               data;
-    logic [(riscv::XLEN/8)-1:0] be;
-    fu_t                        fu;
-    fu_op                       operation;
-    logic [TRANS_ID_BITS-1:0]   trans_id;
-  } lsu_ctrl_t;
-
-  // ---------------
-  // IF/ID Stage
-  // ---------------
-  // store the decompressed instruction
-  typedef struct packed {
-    logic [riscv::VLEN-1:0] address;  // the address of the instructions from below
-    logic [31:0] instruction;  // instruction word
-    branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
-    exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
-  } fetch_entry_t;
-
-  // ---------------
-  // ID/EX/WB Stage
-  // ---------------
-
-  typedef struct packed {
-    logic [riscv::VLEN-1:0] pc;  // PC of instruction
-    logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
-                                             // with the transaction id in any case make the width more generic
-    fu_t fu;  // functional unit to use
-    fu_op op;  // operation to perform in each functional unit
-    logic [REG_ADDR_SIZE-1:0] rs1;  // register source address 1
-    logic [REG_ADDR_SIZE-1:0] rs2;  // register source address 2
-    logic [REG_ADDR_SIZE-1:0] rd;  // register destination address
-    riscv::xlen_t result;  // for unfinished instructions this field also holds the immediate,
-                           // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
-                           // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
-                           // this field holds the address of the third operand from the floating-point register file
-    logic valid;  // is the result valid
-    logic use_imm;  // should we use the immediate as operand b?
-    logic use_zimm;  // use zimm as operand a
-    logic use_pc;  // set if we need to use the PC as operand a, PC from exception
-    exception_t ex;  // exception has occurred
-    branchpredict_sbe_t bp;  // branch predict scoreboard data structure
-    logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
-                                             // we want jump accordingly e.g.: +4, +2
-    logic vfp;  // is this a vector floating-point instruction?
-  } scoreboard_entry_t;
-
   // ---------------
   // MMU instanciation
   // ---------------
@@ -731,15 +610,6 @@ package ariane_pkg;
     AMO_CAS2 = 4'b1101   // unused, not part of riscv spec, but provided in OpenPiton
   } amo_t;
 
-  typedef struct packed {
-    logic                  valid;    // valid flag
-    logic                  is_2M;    //
-    logic                  is_1G;    //
-    logic [27-1:0]         vpn;      // VPN (39bits) = 27bits + 12bits offset
-    logic [ASID_WIDTH-1:0] asid;
-    riscv::pte_t           content;
-  } tlb_update_t;
-
   // Bits required for representation of physical address space as 4K pages
   // (e.g. 27*4K == 39bit address space).
   localparam PPN4K_WIDTH = 38;
@@ -758,39 +628,6 @@ package ariane_pkg;
     FE_INSTR_PAGE_FAULT
   } frontend_exception_t;
 
-  // ----------------------
-  // cache request ports
-  // ----------------------
-  // I$ address translation requests
-  typedef struct packed {
-    logic                   fetch_valid;      // address translation valid
-    logic [riscv::PLEN-1:0] fetch_paddr;      // physical address in
-    exception_t             fetch_exception;  // exception occurred during fetch
-  } icache_areq_t;
-
-  typedef struct packed {
-    logic                   fetch_req;    // address translation request
-    logic [riscv::VLEN-1:0] fetch_vaddr;  // virtual address out
-  } icache_arsp_t;
-
-  // I$ data requests
-  typedef struct packed {
-    logic                   req;      // we request a new word
-    logic                   kill_s1;  // kill the current request
-    logic                   kill_s2;  // kill the last request
-    logic                   spec;     // request is speculative
-    logic [riscv::VLEN-1:0] vaddr;    // 1st cycle: 12 bit index is taken for lookup
-  } icache_dreq_t;
-
-  typedef struct packed {
-    logic                        ready;  // icache is ready
-    logic                        valid;  // signals a valid read
-    logic [FETCH_WIDTH-1:0]      data;   // 2+ cycle out: tag
-    logic [FETCH_USER_WIDTH-1:0] user;   // User bits
-    logic [riscv::VLEN-1:0]      vaddr;  // virtual address out
-    exception_t                  ex;     // we've encountered an exception
-  } icache_drsp_t;
-
   // AMO request going to cache. this request is unconditionally valid as soon
   // as request goes high.
   // Furthermore, those signals are kept stable until the response indicates
@@ -808,29 +645,6 @@ package ariane_pkg;
     logic        ack;     // response is valid
     logic [63:0] result;  // sign-extended, result
   } amo_resp_t;
-
-  // D$ data requests
-  typedef struct packed {
-    logic [DCACHE_INDEX_WIDTH-1:0] address_index;
-    logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
-    riscv::xlen_t                  data_wdata;
-    logic [DCACHE_USER_WIDTH-1:0]  data_wuser;
-    logic                          data_req;
-    logic                          data_we;
-    logic [(riscv::XLEN/8)-1:0]    data_be;
-    logic [1:0]                    data_size;
-    logic [DCACHE_TID_WIDTH-1:0]   data_id;
-    logic                          kill_req;
-    logic                          tag_valid;
-  } dcache_req_i_t;
-
-  typedef struct packed {
-    logic                         data_gnt;
-    logic                         data_rvalid;
-    logic [DCACHE_TID_WIDTH-1:0]  data_rid;
-    riscv::xlen_t                 data_rdata;
-    logic [DCACHE_USER_WIDTH-1:0] data_ruser;
-  } dcache_req_o_t;
 
   // RVFI instr 
   typedef struct packed {
@@ -890,7 +704,7 @@ package ariane_pkg;
     riscv::xlen_t sepc_q;
     riscv::xlen_t scause_q;
     riscv::xlen_t stval_q;
-    riscv::satp_t satp_q;
+    riscv::xlen_t satp_q;
     riscv::xlen_t mstatus_extended;
     riscv::xlen_t medeleg_q;
     riscv::xlen_t mideleg_q;

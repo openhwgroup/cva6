@@ -19,6 +19,8 @@ module wt_dcache_missunit
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_t = logic,
+    parameter type dcache_rtrn_t = logic,
     parameter logic [CACHE_ID_WIDTH-1:0] AmoTxId = 1,  // TX id to be used for AMOs
     parameter int unsigned NumPorts = 4  // number of miss ports
 ) (
@@ -52,8 +54,8 @@ module wt_dcache_missunit
     output logic [NumPorts-1:0] miss_rtrn_vld_o,
     output logic [CACHE_ID_WIDTH-1:0]                  miss_rtrn_id_o,     // only used for writes, set to zero fro reads
     // from writebuffer
-    input  logic [DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]  tx_paddr_i,         // used to check for address collisions with read operations
-    input  logic [DCACHE_MAX_TX-1:0]                   tx_vld_i,           // used to check for address collisions with read operations
+    input  logic [CVA6Cfg.DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]  tx_paddr_i,         // used to check for address collisions with read operations
+    input  logic [CVA6Cfg.DCACHE_MAX_TX-1:0]                   tx_vld_i,           // used to check for address collisions with read operations
     // write interface to cache memory
     output logic wr_cl_vld_o,  // writes a full cacheline
     output logic wr_cl_nc_o,  // writes a full cacheline
@@ -232,7 +234,7 @@ module wt_dcache_missunit
   // read collides with inflight TX
   always_comb begin : p_tx_coll
     tx_rdwr_collision = 1'b0;
-    for (int k = 0; k < DCACHE_MAX_TX; k++) begin
+    for (int k = 0; k < CVA6Cfg.DCACHE_MAX_TX; k++) begin
       tx_rdwr_collision |= (miss_paddr_i[miss_port_idx][riscv::PLEN-1:DCACHE_OFFSET_WIDTH] == tx_paddr_i[k][riscv::PLEN-1:DCACHE_OFFSET_WIDTH]) && tx_vld_i[k];
     end
   end
@@ -325,7 +327,7 @@ module wt_dcache_missunit
 
   // keep track of pending stores
   logic store_sent;
-  logic [$clog2(wt_cache_pkg::DCACHE_MAX_TX + 1)-1:0] stores_inflight_d, stores_inflight_q;
+  logic [$clog2(CVA6Cfg.DCACHE_MAX_TX + 1)-1:0] stores_inflight_d, stores_inflight_q;
   assign store_sent = mem_data_req_o & mem_data_ack_i & (mem_data_o.rtype == DCACHE_STORE_REQ);
 
   assign stores_inflight_d = (store_ack && store_sent) ? stores_inflight_q     :

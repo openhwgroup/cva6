@@ -17,11 +17,44 @@ module acc_dispatcher
   import ariane_pkg::*;
   import riscv::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
-    parameter type                   acc_req_t  = acc_pkg::accelerator_req_t,
-    parameter type                   acc_resp_t = acc_pkg::accelerator_resp_t,
-    parameter type                   acc_cfg_t  = logic,
-    parameter acc_cfg_t              AccCfg     = '0
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type fu_data_t = logic,
+    parameter type scoreboard_entry_t = logic,
+    localparam type accelerator_req_t = struct packed {
+      logic                                 req_valid;
+      logic                                 resp_ready;
+      riscv::instruction_t                  insn;
+      riscv::xlen_t                         rs1;
+      riscv::xlen_t                         rs2;
+      fpnew_pkg::roundmode_e                frm;
+      logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
+      logic                                 store_pending;
+      // Invalidation interface
+      logic                                 acc_cons_en;
+      logic                                 inval_ready;
+    },
+    parameter type acc_req_t = accelerator_req_t,
+    parameter type acc_resp_t = struct packed {
+      logic                                 req_ready;
+      logic                                 resp_valid;
+      riscv::xlen_t                         result;
+      logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
+      logic                                 error;
+      // Metadata
+      logic                                 store_pending;
+      logic                                 store_complete;
+      logic                                 load_complete;
+      logic [4:0]                           fflags;
+      logic                                 fflags_valid;
+      // Invalidation interface
+      logic                                 inval_valid;
+      logic [63:0]                          inval_addr;
+    },
+    parameter type acc_cfg_t = logic,
+    parameter acc_cfg_t AccCfg = '0
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -190,13 +223,13 @@ module acc_dispatcher
    *  Accelerator request  *
    *************************/
 
-  acc_pkg::accelerator_req_t acc_req;
-  logic                      acc_req_valid;
-  logic                      acc_req_ready;
+  accelerator_req_t acc_req;
+  logic             acc_req_valid;
+  logic             acc_req_ready;
 
-  acc_pkg::accelerator_req_t acc_req_int;
+  accelerator_req_t acc_req_int;
   fall_through_register #(
-      .T(acc_pkg::accelerator_req_t)
+      .T(accelerator_req_t)
   ) i_accelerator_req_register (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
