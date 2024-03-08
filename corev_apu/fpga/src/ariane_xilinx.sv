@@ -175,6 +175,7 @@ localparam config_pkg::cva6_user_cfg_t CVA6UserCfg = '{
   RVV:                   bit'(cva6_config_pkg::CVA6ConfigVExtEn),
   RVC:                   bit'(cva6_config_pkg::CVA6ConfigCExtEn),
   RVZCB:                 bit'(cva6_config_pkg::CVA6ConfigZcbExtEn),
+  RVZCMP:                 bit'(cva6_config_pkg::CVA6ConfigZcmpExtEn),
   XFVec:                 bit'(cva6_config_pkg::CVA6ConfigFVecEn),
   CvxifEn:               bit'(cva6_config_pkg::CVA6ConfigCvxifEn),
   ZiCondExtEn:           bit'(0),

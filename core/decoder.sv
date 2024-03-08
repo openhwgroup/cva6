@@ -41,11 +41,11 @@ module decoder
     // Instruction from fetch stage - FRONTEND
     input logic [31:0] instruction_i,
     // Is a zcmp instruction - zcmp_decoder
-    input logic is_zcmp_instr_i, 
+    input logic is_zcmp_instr_i,
     // Is a last zcmp instruction - zcmp_decoder
     input logic is_last_zcmp_instr_i,
     // Is mvsa01/mva01s zcmp instruction - zcmp_decoder
-    input logic is_mv_zcmp_instr_i,  
+    input logic is_mv_zcmp_instr_i,
     // Is a branch predict instruction - FRONTEND
     input branchpredict_sbe_t branch_predict_i,
     // If an exception occured in fetch stage - FRONTEND

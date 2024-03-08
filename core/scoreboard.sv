@@ -112,7 +112,7 @@ module scoreboard #(
   sb_mem_t [ariane_pkg::NR_SB_ENTRIES-1:0] mem_q, mem_n;
 
   logic [CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  prev_trans_id; // transaction ID for the first decoded mvsa01/mva01s instr
-  int unsigned prev_i; // WbPort number for the first decoded mvsa01/mva01s instr
+  int unsigned prev_i;  // WbPort number for the first decoded mvsa01/mva01s instr
   logic issue_full, issue_en;
   logic [ariane_pkg::TRANS_ID_BITS:0] issue_cnt_n, issue_cnt_q;
   logic [ariane_pkg::TRANS_ID_BITS-1:0] issue_pointer_n, issue_pointer_q;
@@ -189,7 +189,7 @@ module scoreboard #(
       if (wt_valid_i[i] && mem_q[trans_id_i[i]].issued) begin
         if (mem_q[trans_id_i[i]].sbe.is_mv_zcmp_instr && mem_q[trans_id_i[i]].sbe.is_zcmp_instr) begin
           if (mem_q[trans_id_i[i]].sbe.is_last_zcmp_instr) begin
-            mem_n[trans_id_i[i]].sbe.valid   = 1'b1;
+            mem_n[trans_id_i[i]].sbe.valid = 1'b1;
             mem_n[prev_trans_id[prev_i]].sbe.valid = 1'b1;
           end else begin
             mem_n[trans_id_i[i]].sbe.valid  = 1'b0;
