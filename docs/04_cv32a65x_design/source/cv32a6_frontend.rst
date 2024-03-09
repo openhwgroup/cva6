@@ -75,7 +75,7 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
 * **Exception/Interrupt:** If an exception (or interrupt, which is in the context of RISC-V subsystems quite similar) is triggered by the CSR_REGISTER, the next PC Gen is assigned to the CSR trap vector base address.
 
-* **Pipeline starting fetching from COMMIT PC:** When the commit stage is halted by WFI instruction or when the pipeline has been flushed due to CSR change, next PC Gen is assigned to the PC coming from the COMMIT submodule.
+* **Pipeline starting fetching from COMMIT PC:** When the commit stage is halted by a WFI instruction or when the pipeline has been flushed due to CSR change, next PC Gen is assigned to the PC coming from the COMMIT submodule.
   As CSR instructions do not exist in a compressed form, PC is unconditionally incremented by 4.
 
 .. user and supervisor modes are not supported by CV32A65X
@@ -107,7 +107,7 @@ This submodule stores the instructions and sends them to the DECODE module.
 .. TO_BE_COMPLETED MMU also feedback an exception, but not present in 65X
 
 Memory can feedback potential exceptions which can be bus errors, invalid accesses or instruction page faults.
-The FRONTEND feedthroughs the exception from CACHES to DECODE.
+The FRONTEND transmits the exception from CACHES to DECODE.
 
 
 
@@ -117,14 +117,12 @@ Submodules
 .. figure:: ../images/frontend_modules.png
    :name: FRONTEND submodules
    :align: center
-   :alt:
 
    FRONTEND submodules
 
 .. figure:: ../images/ZoominFrontend.png
    :name: FRONTEND submodule Zoomin
    :align: center
-   :alt:
 
    FRONTEND submodule interconnections
 
