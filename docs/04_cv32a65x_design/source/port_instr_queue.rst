@@ -106,7 +106,7 @@
      - out
      - Handshake’s data with ID_STAGE
      - ID_STAGE
-     - ariane_pkg::fetch_entry_t
+     - fetch_entry_t
 
    * - ``fetch_entry_valid_o``
      - out

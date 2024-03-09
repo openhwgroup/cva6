@@ -38,19 +38,19 @@
 
    * - ``flush_i``
      - in
-     - Fetch flush request when FENCE, mis-predict and exception
+     - Flush requested by FENCE, mis-predict and exception
      - CONTROLLER
      - logic
 
    * - ``halt_i``
      - in
-     - Halt when WFI and Accelerate port request
+     - Halt requested by WFI and Accelerate port
      - CONTROLLER
      - logic
 
    * - ``set_pc_commit_i``
      - in
-     - Set COMMIT PC as next PC when FENCE, CSR side-effect and accelerate port
+     - Set COMMIT PC as next PC requested by FENCE, CSR side-effect and Accelerate port
      - CONTROLLER
      - logic
 
