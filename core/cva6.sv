@@ -105,6 +105,9 @@ module cva6
       branchpredict_sbe_t bp;  // branch predict scoreboard data structure
       logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                // we want jump accordingly e.g.: +4, +2
+      logic is_zcmp_instr;  // instruction is of Zcmp Extension
+      logic is_last_zcmp_instr;  // is last decoded 32bit instruction of Zcmp Extension
+      logic is_mv_zcmp_instr;  // is double move decoded 32bit instruction of Zcmp Extension
       logic vfp;  // is this a vector floating-point instruction?
     },
 
