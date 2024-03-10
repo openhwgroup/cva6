@@ -40,7 +40,7 @@
      - in
      - Handshake's data between fetch and decode
      - FRONTEND
-     - ariane_pkg::fetch_entry_t
+     - fetch_entry_t
 
    * - ``fetch_entry_valid_i``
      - in
@@ -58,7 +58,7 @@
      - out
      - Handshake's data between decode and issue
      - ISSUE
-     - ariane_pkg::scoreboard_entry_t
+     - scoreboard_entry_t
 
    * - ``orig_instr_o``
      - out
@@ -94,7 +94,7 @@
      - in
      - Interrupt control status
      - CSR_REGFILE
-     - ariane_pkg::irq_ctrl_t
+     - irq_ctrl_t
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
