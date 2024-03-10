@@ -36,8 +36,8 @@ faults).
 
 The data fetched at this point can contain compressed instructions,
 in order to send valid instrctions to the Instruction Decode (ID) stage,
-we need to chech for compressed instructions and re-align them.
-This is the role of the Iistruction re-aligner.
+we need to check for compressed instructions and re-align them.
+This is the role of the Instruction re-aligner.
 
 #### Instruction Re-aligner
 
