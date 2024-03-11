@@ -99,10 +99,10 @@ module id_stage #(
     compressed_decoder #(
         .CVA6Cfg(CVA6Cfg)
     ) compressed_decoder_i (
-        .instr_i        (fetch_entry_i.instruction),
-        .instr_o        (compressed_instr),
-        .illegal_instr_o(is_illegal),
-        .is_compressed_o(is_compressed),
+        .instr_i         (fetch_entry_i.instruction),
+        .instr_o         (compressed_instr),
+        .illegal_instr_o (is_illegal),
+        .is_compressed_o (is_compressed),
         .is_macro_instr_o(is_macro_instr_i)
     );
     if (CVA6Cfg.RVZCMP) begin
@@ -110,17 +110,17 @@ module id_stage #(
       macro_decoder #(
           .CVA6Cfg(CVA6Cfg)
       ) macro_decoder_i (
-          .instr_i             (compressed_instr),
+          .instr_i              (compressed_instr),
           .is_macro_instr_i     (is_macro_instr_i),
-          .clk_i               (clk_i),
-          .rst_ni              (rst_ni),
-          .instr_o             (instruction),
-          .illegal_instr_i     (is_illegal),
-          .is_compressed_i     (is_compressed),
-          .issue_ack_i         (issue_instr_ack_i),
-          .illegal_instr_o     (is_illegal_cmp),
-          .is_compressed_o     (is_compressed_cmp),
-          .fetch_stall_o       (stall_instr_fetch),
+          .clk_i                (clk_i),
+          .rst_ni               (rst_ni),
+          .instr_o              (instruction),
+          .illegal_instr_i      (is_illegal),
+          .is_compressed_i      (is_compressed),
+          .issue_ack_i          (issue_instr_ack_i),
+          .illegal_instr_o      (is_illegal_cmp),
+          .is_compressed_o      (is_compressed_cmp),
+          .fetch_stall_o        (stall_instr_fetch),
           .is_last_macro_instr_o(is_last_macro_instr_o),
           .is_mv_macro_instr_o  (is_mv_macro_instr_o)
       );
@@ -156,9 +156,9 @@ module id_stage #(
       .irq_i,
       .pc_i                   (fetch_entry_i.address),
       .is_compressed_i        (is_compressed_cmp),
-      .is_macro_instr_i        (is_macro_instr_i),
-      .is_last_macro_instr_i   (is_last_macro_instr_o),
-      .is_mv_macro_instr_i     (is_mv_macro_instr_o),
+      .is_macro_instr_i       (is_macro_instr_i),
+      .is_last_macro_instr_i  (is_last_macro_instr_o),
+      .is_mv_macro_instr_i    (is_mv_macro_instr_o),
       .is_illegal_i           (is_illegal_cmp),
       .instruction_i          (instruction),
       .compressed_instr_i     (fetch_entry_i.instruction[15:0]),
@@ -218,4 +218,3 @@ module id_stage #(
     end
   end
 endmodule
-

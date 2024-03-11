@@ -18,16 +18,16 @@ module macro_decoder #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     input  logic [31:0] instr_i,
-    input  logic        clk_i,            // Clock
-    input  logic        rst_ni,           // Synchronous reset
-    input  logic        is_macro_instr_i,  // Intruction is of macro extension
-    input  logic        illegal_instr_i,  // From compressed decoder
+    input  logic        clk_i,                  // Clock
+    input  logic        rst_ni,                 // Synchronous reset
+    input  logic        is_macro_instr_i,       // Intruction is of macro extension
+    input  logic        illegal_instr_i,        // From compressed decoder
     input  logic        is_compressed_i,
-    input  logic        issue_ack_i,      // Check if the intruction is acknowledged
+    input  logic        issue_ack_i,            // Check if the intruction is acknowledged
     output logic [31:0] instr_o,
     output logic        illegal_instr_o,
     output logic        is_compressed_o,
-    output logic        fetch_stall_o,         //Wait while push/pop/move instructions expand
+    output logic        fetch_stall_o,          //Wait while push/pop/move instructions expand
     output logic        is_last_macro_instr_o,
     output logic        is_mv_macro_instr_o
 );
@@ -64,18 +64,18 @@ module macro_decoder #(
   riscv::itype_t itype_inst;
   assign instr_o = instr_o_reg;
   always_comb begin
-    illegal_instr_o      = 1'b0;
-    fetch_stall_o        = 1'b0;
+    illegal_instr_o       = 1'b0;
+    fetch_stall_o         = 1'b0;
     is_last_macro_instr_o = 1'b0;
-    is_mv_macro_instr_o = 1'b0;
-    is_compressed_o      = is_macro_instr_i ? 1'b1 : is_compressed_i;
-    reg_numbers          = '0;
-    stack_adj            = '0;
-    state_d              = state_q;
-    offset_d             = offset_q;
-    reg_numbers_d        = reg_numbers_q;
-    store_reg_d          = store_reg_q;
-    popretz_inst_d       = popretz_inst_q;
+    is_mv_macro_instr_o   = 1'b0;
+    is_compressed_o       = is_macro_instr_i ? 1'b1 : is_compressed_i;
+    reg_numbers           = '0;
+    stack_adj             = '0;
+    state_d               = state_q;
+    offset_d              = offset_q;
+    reg_numbers_d         = reg_numbers_q;
+    store_reg_d           = store_reg_q;
+    popretz_inst_d        = popretz_inst_q;
 
     if (is_macro_instr_i) begin
 
@@ -427,7 +427,16 @@ module macro_decoder #(
         if (issue_ack_i && is_macro_instr_i && macro_instr_type == PUSH) begin
           if (reg_numbers_q == 4'b0001) begin
             if (riscv::XLEN == 64) begin
-              instr_o_reg = {offset_d[11:5], 5'h1, 5'h2, 3'h3, offset_d[4:3], 1'b0, offset_d[1:0], riscv::OpcodeStore};
+              instr_o_reg = {
+                offset_d[11:5],
+                5'h1,
+                5'h2,
+                3'h3,
+                offset_d[4:3],
+                1'b0,
+                offset_d[1:0],
+                riscv::OpcodeStore
+              };
             end else begin
               instr_o_reg = {offset_d[11:5], 5'h1, 5'h2, 3'h2, offset_d[4:0], riscv::OpcodeStore};
             end
@@ -436,7 +445,16 @@ module macro_decoder #(
 
           if (reg_numbers_q == 4'b0010) begin
             if (riscv::XLEN == 64) begin
-              instr_o_reg = {offset_d[11:5], 5'h8, 5'h2, 3'h3, offset_d[4:3], 1'b0, offset_d[1:0], riscv::OpcodeStore};
+              instr_o_reg = {
+                offset_d[11:5],
+                5'h8,
+                5'h2,
+                3'h3,
+                offset_d[4:3],
+                1'b0,
+                offset_d[1:0],
+                riscv::OpcodeStore
+              };
             end else begin
               instr_o_reg = {offset_d[11:5], 5'h8, 5'h2, 3'h2, offset_d[4:0], riscv::OpcodeStore};
             end
@@ -446,7 +464,16 @@ module macro_decoder #(
 
           if (reg_numbers_q == 4'b0011) begin
             if (riscv::XLEN == 64) begin
-              instr_o_reg = {offset_d[11:5], 5'h9, 5'h2, 3'h3, offset_d[4:3], 1'b0, offset_d[1:0], riscv::OpcodeStore};
+              instr_o_reg = {
+                offset_d[11:5],
+                5'h9,
+                5'h2,
+                3'h3,
+                offset_d[4:3],
+                1'b0,
+                offset_d[1:0],
+                riscv::OpcodeStore
+              };
             end else begin
               instr_o_reg = {offset_d[11:5], 5'h9, 5'h2, 3'h2, offset_d[4:0], riscv::OpcodeStore};
             end
@@ -457,7 +484,14 @@ module macro_decoder #(
           if (reg_numbers_q >= 4 && reg_numbers_q <= 12) begin
             if (riscv::XLEN == 64) begin
               instr_o_reg = {
-                offset_d[11:5], store_reg_q, 5'h2, 3'h3, offset_d[4:3], 1'b0, offset_d[1:0], riscv::OpcodeStore
+                offset_d[11:5],
+                store_reg_q,
+                5'h2,
+                3'h3,
+                offset_d[4:3],
+                1'b0,
+                offset_d[1:0],
+                riscv::OpcodeStore
               };
             end else begin
               instr_o_reg = {
@@ -477,7 +511,9 @@ module macro_decoder #(
 
           if (reg_numbers_q == 1) begin
             if (riscv::XLEN == 64) begin
-              instr_o_reg = {offset_d[11:3], 1'b0, offset_d[1:0], 5'h2, 3'h3, 5'h1, riscv::OpcodeLoad};
+              instr_o_reg = {
+                offset_d[11:3], 1'b0, offset_d[1:0], 5'h2, 3'h3, 5'h1, riscv::OpcodeLoad
+              };
             end else begin
               instr_o_reg = {offset_d[11:0], 5'h2, 3'h2, 5'h1, riscv::OpcodeLoad};
             end
@@ -727,4 +763,3 @@ module macro_decoder #(
     end
   end
 endmodule
-

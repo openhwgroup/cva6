@@ -134,30 +134,30 @@ module decoder
 
   always_comb begin : decoder
 
-    imm_select                       = NOIMM;
-    is_control_flow_instr_o          = 1'b0;
-    illegal_instr                    = 1'b0;
-    illegal_instr_non_bm             = 1'b0;
-    illegal_instr_bm                 = 1'b0;
-    illegal_instr_zic                = 1'b0;
-    instruction_o.pc                 = pc_i;
-    instruction_o.trans_id           = '0;
-    instruction_o.fu                 = NONE;
-    instruction_o.op                 = ariane_pkg::ADD;
-    instruction_o.rs1                = '0;
-    instruction_o.rs2                = '0;
-    instruction_o.rd                 = '0;
-    instruction_o.use_pc             = 1'b0;
-    instruction_o.is_compressed      = is_compressed_i;
+    imm_select                        = NOIMM;
+    is_control_flow_instr_o           = 1'b0;
+    illegal_instr                     = 1'b0;
+    illegal_instr_non_bm              = 1'b0;
+    illegal_instr_bm                  = 1'b0;
+    illegal_instr_zic                 = 1'b0;
+    instruction_o.pc                  = pc_i;
+    instruction_o.trans_id            = '0;
+    instruction_o.fu                  = NONE;
+    instruction_o.op                  = ariane_pkg::ADD;
+    instruction_o.rs1                 = '0;
+    instruction_o.rs2                 = '0;
+    instruction_o.rd                  = '0;
+    instruction_o.use_pc              = 1'b0;
+    instruction_o.is_compressed       = is_compressed_i;
     instruction_o.is_macro_instr      = is_macro_instr_i;
     instruction_o.is_last_macro_instr = is_last_macro_instr_i;
     instruction_o.is_mv_macro_instr   = is_mv_macro_instr_i;
-    instruction_o.use_zimm           = 1'b0;
-    instruction_o.bp                 = branch_predict_i;
-    instruction_o.vfp                = 1'b0;
-    ecall                            = 1'b0;
-    ebreak                           = 1'b0;
-    check_fprm                       = 1'b0;
+    instruction_o.use_zimm            = 1'b0;
+    instruction_o.bp                  = branch_predict_i;
+    instruction_o.vfp                 = 1'b0;
+    ecall                             = 1'b0;
+    ebreak                            = 1'b0;
+    check_fprm                        = 1'b0;
 
     if (~ex_i.valid) begin
       case (instr.rtype.opcode)

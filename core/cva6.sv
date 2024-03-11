@@ -888,7 +888,7 @@ module cva6
       .single_step_i     (single_step_csr_commit || single_step_acc_commit),
       .commit_instr_i    (commit_instr_id_commit),
       .commit_ack_o      (commit_ack),
-      .commit_macro_ack_o (commit_macro_ack),
+      .commit_macro_ack_o(commit_macro_ack),
       .no_st_pending_i   (no_st_pending_commit),
       .waddr_o           (waddr_commit_id),
       .wdata_o           (wdata_commit_id),
