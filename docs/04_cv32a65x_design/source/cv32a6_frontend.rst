@@ -71,11 +71,11 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
 * **Replay instruction fetch:** When the instruction queue is full, the instr_queue submodule asks the fetch replay and provides the address to be replayed.
 
-* **Return from environment call:** When CSR asks a return from an environment call, the PC is assigned to the successive PC to the one stored in the CSR mepc register.
+* **Return from environment call:** When CSR requests a return from an environment call, next PC takes the value of the PC of the instruction after the one pointed to by the mepc CSR.
 
-* **Exception/Interrupt:** If an exception (or interrupt, which is in the context of RISC-V subsystems quite similar) is triggered by the CSR_REGISTER, the next PC Gen is assigned to the CSR trap vector base address.
+* **Exception/Interrupt:** If an exception is triggered by CSR_REGISTER, next PC takes the value of the trap vector base address CSR.
 
-* **Pipeline starting fetching from COMMIT PC:** When the commit stage is halted by a WFI instruction or when the pipeline has been flushed due to CSR change, next PC Gen is assigned to the PC coming from the COMMIT submodule.
+* **Pipeline starting fetching from COMMIT PC:** When the commit stage is halted by a WFI instruction or when the pipeline has been flushed due to CSR change, next PC takes the value of the PC coming from the COMMIT submodule.
   As CSR instructions do not exist in a compressed form, PC is unconditionally incremented by 4.
 
 .. user and supervisor modes are not supported by CV32A65X
