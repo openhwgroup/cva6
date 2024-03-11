@@ -87,10 +87,10 @@ module id_stage #(
   logic              [31:0] compressed_instr;
   logic                     is_compressed;
   logic                     is_compressed_cmp;
-  logic                     is_zcmp_instr_i;
+  logic                     is_macro_instr_i;
   logic                     stall_instr_fetch;
-  logic                     is_last_zcmp_instr_o;
-  logic                     is_mv_zcmp_instr_o;
+  logic                     is_last_macro_instr_o;
+  logic                     is_mv_macro_instr_o;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -103,15 +103,15 @@ module id_stage #(
         .instr_o        (compressed_instr),
         .illegal_instr_o(is_illegal),
         .is_compressed_o(is_compressed),
-        .is_zcmp_instr_o(is_zcmp_instr_i)
+        .is_macro_instr_o(is_macro_instr_i)
     );
     if (CVA6Cfg.RVZCMP) begin
       //sequencial decoder
-      zcmp_decoder #(
+      macro_decoder #(
           .CVA6Cfg(CVA6Cfg)
-      ) zcmp_decoder_i (
+      ) macro_decoder_i (
           .instr_i             (compressed_instr),
-          .is_zcmp_instr_i     (is_zcmp_instr_i),
+          .is_macro_instr_i     (is_macro_instr_i),
           .clk_i               (clk_i),
           .rst_ni              (rst_ni),
           .instr_o             (instruction),
@@ -121,23 +121,23 @@ module id_stage #(
           .illegal_instr_o     (is_illegal_cmp),
           .is_compressed_o     (is_compressed_cmp),
           .fetch_stall_o       (stall_instr_fetch),
-          .is_last_zcmp_instr_o(is_last_zcmp_instr_o),
-          .is_mv_zcmp_instr_o  (is_mv_zcmp_instr_o)
+          .is_last_macro_instr_o(is_last_macro_instr_o),
+          .is_mv_macro_instr_o  (is_mv_macro_instr_o)
       );
     end else begin
       assign instruction = compressed_instr;
       assign is_illegal_cmp = is_illegal;
       assign is_compressed_cmp = is_compressed;
-      assign is_last_zcmp_instr_o = '0;
-      assign is_mv_zcmp_instr_o = '0;
+      assign is_last_macro_instr_o = '0;
+      assign is_mv_macro_instr_o = '0;
     end
   end else begin
     assign instruction = fetch_entry_i.instruction;
     assign is_illegal_cmp = '0;
     assign is_compressed_cmp = '0;
-    assign is_zcmp_instr_i = '0;
-    assign is_last_zcmp_instr_o = '0;
-    assign is_mv_zcmp_instr_o = '0;
+    assign is_macro_instr_i = '0;
+    assign is_last_macro_instr_o = '0;
+    assign is_mv_macro_instr_o = '0;
   end
 
   assign rvfi_is_compressed_o = is_compressed_cmp;
@@ -156,9 +156,9 @@ module id_stage #(
       .irq_i,
       .pc_i                   (fetch_entry_i.address),
       .is_compressed_i        (is_compressed_cmp),
-      .is_zcmp_instr_i        (is_zcmp_instr_i),
-      .is_last_zcmp_instr_i   (is_last_zcmp_instr_o),
-      .is_mv_zcmp_instr_i     (is_mv_zcmp_instr_o),
+      .is_macro_instr_i        (is_macro_instr_i),
+      .is_last_macro_instr_i   (is_last_macro_instr_o),
+      .is_mv_macro_instr_i     (is_mv_macro_instr_o),
       .is_illegal_i           (is_illegal_cmp),
       .instruction_i          (instruction),
       .compressed_instr_i     (fetch_entry_i.instruction[15:0]),

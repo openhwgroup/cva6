@@ -40,12 +40,12 @@ module decoder
     input logic is_illegal_i,
     // Instruction from fetch stage - FRONTEND
     input logic [31:0] instruction_i,
-    // Is a zcmp instruction - zcmp_decoder
-    input logic is_zcmp_instr_i,
-    // Is a last zcmp instruction - zcmp_decoder
-    input logic is_last_zcmp_instr_i,
-    // Is mvsa01/mva01s zcmp instruction - zcmp_decoder
-    input logic is_mv_zcmp_instr_i,
+    // Is a macro instruction - macro_decoder
+    input logic is_macro_instr_i,
+    // Is a last macro instruction - macro_decoder
+    input logic is_last_macro_instr_i,
+    // Is mvsa01/mva01s macro instruction - macro_decoder
+    input logic is_mv_macro_instr_i,
     // Is a branch predict instruction - FRONTEND
     input branchpredict_sbe_t branch_predict_i,
     // If an exception occured in fetch stage - FRONTEND
@@ -149,9 +149,9 @@ module decoder
     instruction_o.rd                 = '0;
     instruction_o.use_pc             = 1'b0;
     instruction_o.is_compressed      = is_compressed_i;
-    instruction_o.is_zcmp_instr      = is_zcmp_instr_i;
-    instruction_o.is_last_zcmp_instr = is_last_zcmp_instr_i;
-    instruction_o.is_mv_zcmp_instr   = is_mv_zcmp_instr_i;
+    instruction_o.is_macro_instr      = is_macro_instr_i;
+    instruction_o.is_last_macro_instr = is_last_macro_instr_i;
+    instruction_o.is_mv_macro_instr   = is_mv_macro_instr_i;
     instruction_o.use_zimm           = 1'b0;
     instruction_o.bp                 = branch_predict_i;
     instruction_o.vfp                = 1'b0;

@@ -14,13 +14,13 @@
 //              cm.popretz, cm.mvsa01, and cm.mva01s instructions of the 
 //              Zcmp Extension
 
-module zcmp_decoder #(
+module macro_decoder #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     input  logic [31:0] instr_i,
     input  logic        clk_i,            // Clock
     input  logic        rst_ni,           // Synchronous reset
-    input  logic        is_zcmp_instr_i,  // Intruction is of zcmp extension
+    input  logic        is_macro_instr_i,  // Intruction is of macro extension
     input  logic        illegal_instr_i,  // From compressed decoder
     input  logic        is_compressed_i,
     input  logic        issue_ack_i,      // Check if the intruction is acknowledged
@@ -28,8 +28,8 @@ module zcmp_decoder #(
     output logic        illegal_instr_o,
     output logic        is_compressed_o,
     output logic        fetch_stall_o,         //Wait while push/pop/move instructions expand
-    output logic        is_last_zcmp_instr_o,
-    output logic        is_mv_zcmp_instr_o
+    output logic        is_last_macro_instr_o,
+    output logic        is_mv_macro_instr_o
 );
 
   // FSM States
@@ -51,7 +51,7 @@ module zcmp_decoder #(
     POPRET,
     MVA01S,
     MVSA01
-  } zcmp_instr_type;
+  } macro_instr_type;
 
   // Temporary registers
   logic [3:0] reg_numbers, reg_numbers_q, reg_numbers_d;
@@ -66,9 +66,9 @@ module zcmp_decoder #(
   always_comb begin
     illegal_instr_o      = 1'b0;
     fetch_stall_o        = 1'b0;
-    is_last_zcmp_instr_o = 1'b0;
-    is_mv_zcmp_instr_o = 1'b0;
-    is_compressed_o      = is_zcmp_instr_i ? 1'b1 : is_compressed_i;
+    is_last_macro_instr_o = 1'b0;
+    is_mv_macro_instr_o = 1'b0;
+    is_compressed_o      = is_macro_instr_i ? 1'b1 : is_compressed_i;
     reg_numbers          = '0;
     stack_adj            = '0;
     state_d              = state_q;
@@ -77,17 +77,17 @@ module zcmp_decoder #(
     store_reg_d          = store_reg_q;
     popretz_inst_d       = popretz_inst_q;
 
-    if (is_zcmp_instr_i) begin
+    if (is_macro_instr_i) begin
 
       unique case (instr_i[12:10])
         // push or pop
         3'b110: begin
           unique case (instr_i[9:8])
             2'b00: begin
-              zcmp_instr_type = PUSH;
+              macro_instr_type = PUSH;
             end
             2'b10: begin
-              zcmp_instr_type = POP;
+              macro_instr_type = POP;
             end
             default: begin
               illegal_instr_o = 1'b1;
@@ -99,10 +99,10 @@ module zcmp_decoder #(
         3'b111: begin
           unique case (instr_i[9:8])
             2'b00: begin
-              zcmp_instr_type = POPRETZ;
+              macro_instr_type = POPRETZ;
             end
             2'b10: begin
-              zcmp_instr_type = POPRET;
+              macro_instr_type = POPRET;
             end
             default: begin
               illegal_instr_o = 1'b1;
@@ -114,10 +114,10 @@ module zcmp_decoder #(
         3'b011: begin
           unique case (instr_i[6:5])
             2'b01: begin
-              zcmp_instr_type = MVSA01;
+              macro_instr_type = MVSA01;
             end
             2'b11: begin
-              zcmp_instr_type = MVA01S;
+              macro_instr_type = MVA01S;
             end
             default: begin
               illegal_instr_o = 1'b1;
@@ -132,7 +132,7 @@ module zcmp_decoder #(
       endcase
 
       // Calculate xreg1 & xreg2 for move instructions
-      if (zcmp_instr_type == MVSA01 || zcmp_instr_type == MVA01S) begin
+      if (macro_instr_type == MVSA01 || macro_instr_type == MVA01S) begin
         if (instr_i[9:7] != instr_i[4:2]) begin
           xreg1 = {instr_i[9:8] > 0, instr_i[9:8] == 0, instr_i[9:7]};
           xreg2 = {instr_i[4:3] > 0, instr_i[4:3] == 0, instr_i[4:2]};
@@ -260,7 +260,7 @@ module zcmp_decoder #(
       end
 
       //Take 2's compliment in case of PUSH instruction
-      if (zcmp_instr_type == PUSH) begin
+      if (macro_instr_type == PUSH) begin
         itype_inst.imm = ~stack_adj + 1'b1;
       end else begin
         itype_inst.imm = stack_adj - 3'b100;
@@ -272,17 +272,17 @@ module zcmp_decoder #(
 
     unique case (state_q)
       IDLE: begin
-        if (is_zcmp_instr_i && issue_ack_i) begin
+        if (is_macro_instr_i && issue_ack_i) begin
           reg_numbers_d = reg_numbers - 1'b1;
           state_d = INIT;
-          case (zcmp_instr_type)
+          case (macro_instr_type)
             PUSH: begin
               offset_d = 12'hFFC + 12'hFFC;
             end
             POP, POPRETZ, POPRET: begin
               offset_d   = itype_inst.imm + 12'hFFC;
               offset_reg = itype_inst.imm;
-              case (zcmp_instr_type)
+              case (macro_instr_type)
                 POPRETZ: begin
                   popretz_inst_d = 2'b11;
                 end
@@ -306,23 +306,23 @@ module zcmp_decoder #(
             store_reg   = 4'b1110 + reg_numbers;
           end
 
-          if (zcmp_instr_type == MVSA01) begin
+          if (macro_instr_type == MVSA01) begin
             fetch_stall_o = 1;
-            is_mv_zcmp_instr_o = 1;
+            is_mv_macro_instr_o = 1;
             // addi xreg1, a0, 0
             instr_o_reg = {12'h0, 5'hA, 3'h0, xreg1, riscv::OpcodeOpImm};
             state_d = MOVE;
           end
 
-          if (zcmp_instr_type == MVA01S) begin
+          if (macro_instr_type == MVA01S) begin
             fetch_stall_o = 1;
-            is_mv_zcmp_instr_o = 1;
+            is_mv_macro_instr_o = 1;
             // addi a0, xreg1, 0
             instr_o_reg = {12'h0, xreg1, 3'h0, 5'hA, riscv::OpcodeOpImm};
             state_d = MOVE;
           end
 
-          if (zcmp_instr_type == PUSH) begin
+          if (macro_instr_type == PUSH) begin
 
             fetch_stall_o = 1'b1;  // stall inst fetch
 
@@ -369,7 +369,7 @@ module zcmp_decoder #(
             end
           end
 
-          if ((zcmp_instr_type == POP || zcmp_instr_type == POPRETZ || zcmp_instr_type == POPRET)) begin
+          if ((macro_instr_type == POP || macro_instr_type == POPRETZ || macro_instr_type == POPRET)) begin
             fetch_stall_o = 1;  // stall inst fetch
             if (reg_numbers == 1) begin
               if (riscv::XLEN == 64) begin
@@ -381,7 +381,7 @@ module zcmp_decoder #(
                   offset_reg, 5'h2, 3'h2, 5'h1, riscv::OpcodeLoad
                 };  // lw store_reg, Imm(sp)
               end
-              unique case (zcmp_instr_type)
+              unique case (macro_instr_type)
                 PUSH, POP, POPRET: begin
                   state_d = PUSH_ADDI;
                 end
@@ -424,7 +424,7 @@ module zcmp_decoder #(
       end
       INIT: begin
         fetch_stall_o = 1'b1;  // stall inst fetch
-        if (issue_ack_i && is_zcmp_instr_i && zcmp_instr_type == PUSH) begin
+        if (issue_ack_i && is_macro_instr_i && macro_instr_type == PUSH) begin
           if (reg_numbers_q == 4'b0001) begin
             if (riscv::XLEN == 64) begin
               instr_o_reg = {offset_d[11:5], 5'h1, 5'h2, 3'h3, offset_d[4:3], 1'b0, offset_d[1:0], riscv::OpcodeStore};
@@ -473,7 +473,7 @@ module zcmp_decoder #(
           end
         end
 
-        if (issue_ack_i && is_zcmp_instr_i && (zcmp_instr_type == POP || zcmp_instr_type == POPRETZ || zcmp_instr_type == POPRET)) begin
+        if (issue_ack_i && is_macro_instr_i && (macro_instr_type == POP || macro_instr_type == POPRETZ || macro_instr_type == POPRET)) begin
 
           if (reg_numbers_q == 1) begin
             if (riscv::XLEN == 64) begin
@@ -481,7 +481,7 @@ module zcmp_decoder #(
             end else begin
               instr_o_reg = {offset_d[11:0], 5'h2, 3'h2, 5'h1, riscv::OpcodeLoad};
             end
-            unique case (zcmp_instr_type)
+            unique case (macro_instr_type)
               PUSH, POP, POPRET: begin
                 state_d = PUSH_ADDI;
               end
@@ -535,14 +535,14 @@ module zcmp_decoder #(
       end
 
       MOVE: begin
-        case (zcmp_instr_type)
+        case (macro_instr_type)
           MVSA01: begin
             if (issue_ack_i) begin
               // addi xreg2, a1, 0
               instr_o_reg = {12'h0, 5'hB, 3'h0, xreg2, riscv::OpcodeOpImm};
               fetch_stall_o = 0;
-              is_last_zcmp_instr_o = 1;
-              is_mv_zcmp_instr_o = 1;
+              is_last_macro_instr_o = 1;
+              is_mv_macro_instr_o = 1;
               state_d = IDLE;
             end
           end
@@ -551,8 +551,8 @@ module zcmp_decoder #(
               // addi a1, xreg2, 0
               instr_o_reg = {12'h0, xreg2, 3'h0, 5'hB, riscv::OpcodeOpImm};
               fetch_stall_o = 0;
-              is_last_zcmp_instr_o = 1;
-              is_mv_zcmp_instr_o = 1;
+              is_last_macro_instr_o = 1;
+              is_mv_macro_instr_o = 1;
               state_d = IDLE;
             end
           end
@@ -565,7 +565,7 @@ module zcmp_decoder #(
 
       PUSH_ADDI: begin
         if (riscv::XLEN == 64) begin
-          if (issue_ack_i && is_zcmp_instr_i && zcmp_instr_type == PUSH) begin
+          if (issue_ack_i && is_macro_instr_i && macro_instr_type == PUSH) begin
             // addi sp, sp, stack_adj
             instr_o_reg = {itype_inst.imm - 4, 5'h2, 3'h0, 5'h2, riscv::OpcodeOpImm};
           end else begin
@@ -573,20 +573,20 @@ module zcmp_decoder #(
               instr_o_reg = {stack_adj - 4, 5'h2, 3'h0, 5'h2, riscv::OpcodeOpImm};
             end
           end
-          if (issue_ack_i && is_zcmp_instr_i && (zcmp_instr_type == POPRETZ || zcmp_instr_type == POPRET)) begin
+          if (issue_ack_i && is_macro_instr_i && (macro_instr_type == POPRETZ || macro_instr_type == POPRET)) begin
             state_d = POPRETZ_1;
             fetch_stall_o = 1;
           end else begin
             if (issue_ack_i) begin
               state_d = IDLE;
               fetch_stall_o = 0;
-              is_last_zcmp_instr_o = 1;
+              is_last_macro_instr_o = 1;
             end else begin
               fetch_stall_o = 1;
             end
           end
         end else begin
-          if (issue_ack_i && is_zcmp_instr_i && zcmp_instr_type == PUSH) begin
+          if (issue_ack_i && is_macro_instr_i && macro_instr_type == PUSH) begin
             // addi sp, sp, stack_adj
             instr_o_reg = {itype_inst.imm, 5'h2, 3'h0, 5'h2, riscv::OpcodeOpImm};
           end else begin
@@ -594,14 +594,14 @@ module zcmp_decoder #(
               instr_o_reg = {stack_adj, 5'h2, 3'h0, 5'h2, riscv::OpcodeOpImm};
             end
           end
-          if (issue_ack_i && is_zcmp_instr_i && (zcmp_instr_type == POPRETZ || zcmp_instr_type == POPRET)) begin
+          if (issue_ack_i && is_macro_instr_i && (macro_instr_type == POPRETZ || macro_instr_type == POPRET)) begin
             state_d = POPRETZ_1;
             fetch_stall_o = 1;
           end else begin
             if (issue_ack_i) begin
               state_d = IDLE;
               fetch_stall_o = 0;
-              is_last_zcmp_instr_o = 1;
+              is_last_macro_instr_o = 1;
             end else begin
               fetch_stall_o = 1;
             end
@@ -611,7 +611,7 @@ module zcmp_decoder #(
 
       PUSH_POP_INSTR_2: begin
         if (riscv::XLEN == 64) begin
-          case (zcmp_instr_type)
+          case (macro_instr_type)
             PUSH: begin
               if (issue_ack_i) begin
                 instr_o_reg = {
@@ -645,7 +645,7 @@ module zcmp_decoder #(
             end
           endcase
         end else begin
-          case (zcmp_instr_type)
+          case (macro_instr_type)
             PUSH: begin
               if (issue_ack_i) begin
                 instr_o_reg = {
@@ -695,7 +695,7 @@ module zcmp_decoder #(
               instr_o_reg = {12'h0, 5'h1, 3'h0, 5'h0, riscv::OpcodeJalr};  //ret - jalr x0, x1, 0
               state_d = IDLE;
               fetch_stall_o = 0;
-              is_last_zcmp_instr_o = 1;
+              is_last_macro_instr_o = 1;
               popretz_inst_d = popretz_inst_q - 1;
             end
           end

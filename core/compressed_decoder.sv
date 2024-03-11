@@ -28,8 +28,8 @@ module compressed_decoder #(
     output logic [31:0] instr_o,
     // Input instruction is illegal - decoder
     output logic        illegal_instr_o,
-    // Output instruction is zcmp - decoder
-    output logic        is_zcmp_instr_o,
+    // Output instruction is macro - decoder
+    output logic        is_macro_instr_o,
     // Output instruction is compressed - decoder
     output logic        is_compressed_o
 );
@@ -42,7 +42,7 @@ module compressed_decoder #(
     instr_o         = '0;
     is_compressed_o = 1'b1;
     instr_o         = instr_i;
-    is_zcmp_instr_o = 0;
+    is_macro_instr_o = 0;
 
     // I: |    imm[11:0]    | rs1 | funct3 |    rd    | opcode |
     // S: | imm[11:5] | rs2 | rs1 | funct3 | imm[4:0] | opcode |
@@ -870,7 +870,7 @@ module compressed_decoder #(
               };
             end else if (CVA6Cfg.RVZCMP) begin
               if (instr_i[12:10] == 3'b110 || instr_i[12:10] == 3'b111 || instr_i[12:10] == 3'b011) begin //is a push/pop instruction
-                is_zcmp_instr_o = 1;
+                is_macro_instr_o = 1;
                 instr_o = instr_i;
               end else begin
                 illegal_instr_o = 1'b1;
