@@ -34,7 +34,7 @@
      - in
      - FU data needed to execute instruction
      - ISSUE_STAGE
-     - ariane_pkg::fu_data_t
+     - fu_data_t
 
    * - ``pc_i``
      - in
@@ -76,13 +76,13 @@
      - in
      - Information of branch prediction
      - ISSUE_STAGE
-     - ariane_pkg::branchpredict_sbe_t
+     - branchpredict_sbe_t
 
    * - ``resolved_branch_o``
      - out
      - Signaling that we resolved the branch
      - ISSUE_STAGE
-     - ariane_pkg::bp_resolve_t
+     - bp_resolve_t
 
    * - ``resolve_branch_o``
      - out
@@ -94,7 +94,7 @@
      - out
      - Branch exception out
      - TO_BE_COMPLETED
-     - ariane_pkg::exception_t
+     - exception_t
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 

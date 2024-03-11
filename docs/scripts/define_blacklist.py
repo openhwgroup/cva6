@@ -62,12 +62,12 @@ def define_blacklist(parameters):
         black_list["sfence_vma_i"] = [f"As {param} = {paramvalue}", "0"]
 
     param = "EnableAccelerator"
-    paramvalue = parameters[param].value
+    paramvalue = "0"
     if paramvalue == "0":
         black_list["ACC_DISPATCHER"] = [f"As {param} = {paramvalue}", "0"]
 
     param = "RVF"
-    paramvalue = parameters[param].value
+    paramvalue = "0"
     if paramvalue == "0":
         black_list["fs_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["fs_i"] = [f"As {param} = {paramvalue}", "0"]

@@ -40,7 +40,7 @@
      - in
      - Update bht with resolved address
      - EXECUTE
-     - ariane_pkg::bht_update_t
+     - bht_update_t
 
    * - ``bht_prediction_o``
      - out
