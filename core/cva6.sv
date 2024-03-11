@@ -107,7 +107,7 @@ module cva6
                                                // we want jump accordingly e.g.: +4, +2
       logic is_macro_instr;  // instruction is of Zcmp Extension
       logic is_last_macro_instr;  // is last decoded 32bit instruction of Zcmp Extension
-      logic is_mv_macro_instr;  // is double move decoded 32bit instruction of Zcmp Extension
+      logic is_double_rd_macro_instr;  // is double move decoded 32bit instruction of Zcmp Extension
       logic vfp;  // is this a vector floating-point instruction?
     },
 

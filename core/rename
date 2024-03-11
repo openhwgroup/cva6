@@ -1,3 +1,0 @@
-find /home/rohan/cva6/core/ -type f -exec sed -i.bak 's/macro/macro/g' {} \;
-
-

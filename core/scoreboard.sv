@@ -187,17 +187,17 @@ module scoreboard #(
       // check if this instruction was issued (e.g.: it could happen after a flush that there is still
       // something in the pipeline e.g. an incomplete memory operation)
       if (wt_valid_i[i] && mem_q[trans_id_i[i]].issued) begin
-        if (mem_q[trans_id_i[i]].sbe.is_mv_macro_instr && mem_q[trans_id_i[i]].sbe.is_macro_instr) begin
+        if (mem_q[trans_id_i[i]].sbe.is_double_rd_macro_instr && mem_q[trans_id_i[i]].sbe.is_macro_instr) begin
           if (mem_q[trans_id_i[i]].sbe.is_last_macro_instr) begin
             mem_n[trans_id_i[i]].sbe.valid = 1'b1;
             mem_n[prev_trans_id[prev_i]].sbe.valid = 1'b1;
           end else begin
-            mem_n[trans_id_i[i]].sbe.valid  = 1'b0;
+            mem_n[trans_id_i[i]].sbe.valid = 1'b0;
             prev_trans_id[i] = trans_id_i[i];
             prev_i = i;
           end
-        end else begin  
-          mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
+        end else begin
+          mem_n[trans_id_i[i]].sbe.valid = 1'b1;
         end
         mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
         // save the target address of a branch (needed for debug in commit stage)

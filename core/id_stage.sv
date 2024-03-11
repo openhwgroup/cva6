@@ -90,7 +90,7 @@ module id_stage #(
   logic                     is_macro_instr_i;
   logic                     stall_instr_fetch;
   logic                     is_last_macro_instr_o;
-  logic                     is_mv_macro_instr_o;
+  logic                     is_double_rd_macro_instr_o;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -110,26 +110,26 @@ module id_stage #(
       macro_decoder #(
           .CVA6Cfg(CVA6Cfg)
       ) macro_decoder_i (
-          .instr_i              (compressed_instr),
-          .is_macro_instr_i     (is_macro_instr_i),
-          .clk_i                (clk_i),
-          .rst_ni               (rst_ni),
-          .instr_o              (instruction),
-          .illegal_instr_i      (is_illegal),
-          .is_compressed_i      (is_compressed),
-          .issue_ack_i          (issue_instr_ack_i),
-          .illegal_instr_o      (is_illegal_cmp),
-          .is_compressed_o      (is_compressed_cmp),
-          .fetch_stall_o        (stall_instr_fetch),
-          .is_last_macro_instr_o(is_last_macro_instr_o),
-          .is_mv_macro_instr_o  (is_mv_macro_instr_o)
+          .instr_i                   (compressed_instr),
+          .is_macro_instr_i          (is_macro_instr_i),
+          .clk_i                     (clk_i),
+          .rst_ni                    (rst_ni),
+          .instr_o                   (instruction),
+          .illegal_instr_i           (is_illegal),
+          .is_compressed_i           (is_compressed),
+          .issue_ack_i               (issue_instr_ack_i),
+          .illegal_instr_o           (is_illegal_cmp),
+          .is_compressed_o           (is_compressed_cmp),
+          .fetch_stall_o             (stall_instr_fetch),
+          .is_last_macro_instr_o     (is_last_macro_instr_o),
+          .is_double_rd_macro_instr_o(is_double_rd_macro_instr_o)
       );
     end else begin
       assign instruction = compressed_instr;
       assign is_illegal_cmp = is_illegal;
       assign is_compressed_cmp = is_compressed;
       assign is_last_macro_instr_o = '0;
-      assign is_mv_macro_instr_o = '0;
+      assign is_double_rd_macro_instr_o = '0;
     end
   end else begin
     assign instruction = fetch_entry_i.instruction;
@@ -137,7 +137,7 @@ module id_stage #(
     assign is_compressed_cmp = '0;
     assign is_macro_instr_i = '0;
     assign is_last_macro_instr_o = '0;
-    assign is_mv_macro_instr_o = '0;
+    assign is_double_rd_macro_instr_o = '0;
   end
 
   assign rvfi_is_compressed_o = is_compressed_cmp;
@@ -154,27 +154,27 @@ module id_stage #(
       .debug_req_i,
       .irq_ctrl_i,
       .irq_i,
-      .pc_i                   (fetch_entry_i.address),
-      .is_compressed_i        (is_compressed_cmp),
-      .is_macro_instr_i       (is_macro_instr_i),
-      .is_last_macro_instr_i  (is_last_macro_instr_o),
-      .is_mv_macro_instr_i    (is_mv_macro_instr_o),
-      .is_illegal_i           (is_illegal_cmp),
-      .instruction_i          (instruction),
-      .compressed_instr_i     (fetch_entry_i.instruction[15:0]),
-      .branch_predict_i       (fetch_entry_i.branch_predict),
-      .ex_i                   (fetch_entry_i.ex),
-      .priv_lvl_i             (priv_lvl_i),
-      .debug_mode_i           (debug_mode_i),
+      .pc_i                      (fetch_entry_i.address),
+      .is_compressed_i           (is_compressed_cmp),
+      .is_macro_instr_i          (is_macro_instr_i),
+      .is_last_macro_instr_i     (is_last_macro_instr_o),
+      .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
+      .is_illegal_i              (is_illegal_cmp),
+      .instruction_i             (instruction),
+      .compressed_instr_i        (fetch_entry_i.instruction[15:0]),
+      .branch_predict_i          (fetch_entry_i.branch_predict),
+      .ex_i                      (fetch_entry_i.ex),
+      .priv_lvl_i                (priv_lvl_i),
+      .debug_mode_i              (debug_mode_i),
       .fs_i,
       .frm_i,
       .vs_i,
       .tvm_i,
       .tw_i,
       .tsr_i,
-      .instruction_o          (decoded_instruction),
-      .orig_instr_o           (orig_instr),
-      .is_control_flow_instr_o(is_control_flow_instr)
+      .instruction_o             (decoded_instruction),
+      .orig_instr_o              (orig_instr),
+      .is_control_flow_instr_o   (is_control_flow_instr)
   );
 
   // ------------------

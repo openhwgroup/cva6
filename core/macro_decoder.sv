@@ -18,18 +18,18 @@ module macro_decoder #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     input  logic [31:0] instr_i,
-    input  logic        clk_i,                  // Clock
-    input  logic        rst_ni,                 // Synchronous reset
-    input  logic        is_macro_instr_i,       // Intruction is of macro extension
-    input  logic        illegal_instr_i,        // From compressed decoder
+    input  logic        clk_i,                      // Clock
+    input  logic        rst_ni,                     // Synchronous reset
+    input  logic        is_macro_instr_i,           // Intruction is of macro extension
+    input  logic        illegal_instr_i,            // From compressed decoder
     input  logic        is_compressed_i,
-    input  logic        issue_ack_i,            // Check if the intruction is acknowledged
+    input  logic        issue_ack_i,                // Check if the intruction is acknowledged
     output logic [31:0] instr_o,
     output logic        illegal_instr_o,
     output logic        is_compressed_o,
-    output logic        fetch_stall_o,          //Wait while push/pop/move instructions expand
+    output logic        fetch_stall_o,              //Wait while push/pop/move instructions expand
     output logic        is_last_macro_instr_o,
-    output logic        is_mv_macro_instr_o
+    output logic        is_double_rd_macro_instr_o
 );
 
   // FSM States
@@ -64,18 +64,18 @@ module macro_decoder #(
   riscv::itype_t itype_inst;
   assign instr_o = instr_o_reg;
   always_comb begin
-    illegal_instr_o       = 1'b0;
-    fetch_stall_o         = 1'b0;
-    is_last_macro_instr_o = 1'b0;
-    is_mv_macro_instr_o   = 1'b0;
-    is_compressed_o       = is_macro_instr_i ? 1'b1 : is_compressed_i;
-    reg_numbers           = '0;
-    stack_adj             = '0;
-    state_d               = state_q;
-    offset_d              = offset_q;
-    reg_numbers_d         = reg_numbers_q;
-    store_reg_d           = store_reg_q;
-    popretz_inst_d        = popretz_inst_q;
+    illegal_instr_o            = 1'b0;
+    fetch_stall_o              = 1'b0;
+    is_last_macro_instr_o      = 1'b0;
+    is_double_rd_macro_instr_o = 1'b0;
+    is_compressed_o            = is_macro_instr_i ? 1'b1 : is_compressed_i;
+    reg_numbers                = '0;
+    stack_adj                  = '0;
+    state_d                    = state_q;
+    offset_d                   = offset_q;
+    reg_numbers_d              = reg_numbers_q;
+    store_reg_d                = store_reg_q;
+    popretz_inst_d             = popretz_inst_q;
 
     if (is_macro_instr_i) begin
 
@@ -308,7 +308,7 @@ module macro_decoder #(
 
           if (macro_instr_type == MVSA01) begin
             fetch_stall_o = 1;
-            is_mv_macro_instr_o = 1;
+            is_double_rd_macro_instr_o = 1;
             // addi xreg1, a0, 0
             instr_o_reg = {12'h0, 5'hA, 3'h0, xreg1, riscv::OpcodeOpImm};
             state_d = MOVE;
@@ -316,7 +316,7 @@ module macro_decoder #(
 
           if (macro_instr_type == MVA01S) begin
             fetch_stall_o = 1;
-            is_mv_macro_instr_o = 1;
+            is_double_rd_macro_instr_o = 1;
             // addi a0, xreg1, 0
             instr_o_reg = {12'h0, xreg1, 3'h0, 5'hA, riscv::OpcodeOpImm};
             state_d = MOVE;
@@ -578,7 +578,7 @@ module macro_decoder #(
               instr_o_reg = {12'h0, 5'hB, 3'h0, xreg2, riscv::OpcodeOpImm};
               fetch_stall_o = 0;
               is_last_macro_instr_o = 1;
-              is_mv_macro_instr_o = 1;
+              is_double_rd_macro_instr_o = 1;
               state_d = IDLE;
             end
           end
@@ -588,7 +588,7 @@ module macro_decoder #(
               instr_o_reg = {12'h0, xreg2, 3'h0, 5'hB, riscv::OpcodeOpImm};
               fetch_stall_o = 0;
               is_last_macro_instr_o = 1;
-              is_mv_macro_instr_o = 1;
+              is_double_rd_macro_instr_o = 1;
               state_d = IDLE;
             end
           end
