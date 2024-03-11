@@ -228,7 +228,7 @@ RAS is implemented as a LIFO which is composed of **RASDepth configuration param
 When a JAL instruction is pre-decoded by the instr_scan, the PC of the instruction following JAL instruction is pushed into the RAS when the JAL instruction is added to the instruction queue.
 
 When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) is pre-decoded by the instr_scan, the predicted return address is popped from the RAS when the JALR instruction is added to the instruction queue.
-If the popped information is wrong due for instance to speculation or RAS depth limitation, a mis-repdiction will be generated.
+If the predicted return address is wrong due for instance to speculation or RAS depth limitation, a mis-repdiction will be generated.
 
 The RAS is never flushed.
 
