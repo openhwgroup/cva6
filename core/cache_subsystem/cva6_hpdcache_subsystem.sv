@@ -66,13 +66,13 @@ module cva6_hpdcache_subsystem
     // instructino cache miss - PERF_COUNTERS
     output logic icache_miss_o,
     // Input address translation request - EX_STAGE
-    input ariane_pkg::icache_areq_t icache_areq_i,
+    input icache_areq_t icache_areq_i,
     // Output address translation request - EX_STAGE
-    output ariane_pkg::icache_arsp_t icache_areq_o,
+    output icache_arsp_t icache_areq_o,
     // Input data translation request - FRONTEND
-    input ariane_pkg::icache_dreq_t icache_dreq_i,
+    input icache_dreq_t icache_dreq_i,
     // Output data translation request - FRONTEND
-    output ariane_pkg::icache_drsp_t icache_dreq_o,
+    output icache_drsp_t icache_dreq_o,
     //   }}}
 
     //  D$
@@ -88,21 +88,21 @@ module cva6_hpdcache_subsystem
     output logic dcache_miss_o,
 
     // AMO request - EX_STAGE
-    input  ariane_pkg::amo_req_t                     dcache_amo_req_i,
+    input  ariane_pkg::amo_req_t                 dcache_amo_req_i,
     // AMO response - EX_STAGE
-    output ariane_pkg::amo_resp_t                    dcache_amo_resp_o,
+    output ariane_pkg::amo_resp_t                dcache_amo_resp_o,
     // CMO interface request - TO_BE_COMPLETED
-    input  cmo_req_t                                 dcache_cmo_req_i,
+    input  cmo_req_t                             dcache_cmo_req_i,
     // CMO interface response - TO_BE_COMPLETED
-    output cmo_rsp_t                                 dcache_cmo_resp_o,
+    output cmo_rsp_t                             dcache_cmo_resp_o,
     // Data cache input request ports - EX_STAGE
-    input  ariane_pkg::dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,
+    input  dcache_req_i_t         [NumPorts-1:0] dcache_req_ports_i,
     // Data cache output request ports - EX_STAGE
-    output ariane_pkg::dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,
+    output dcache_req_o_t         [NumPorts-1:0] dcache_req_ports_o,
     // Write buffer status to know if empty - EX_STAGE
-    output logic                                     wbuffer_empty_o,
+    output logic                                 wbuffer_empty_o,
     // Write buffer status to know if not non idempotent - EX_STAGE
-    output logic                                     wbuffer_not_ni_o,
+    output logic                                 wbuffer_not_ni_o,
 
     //  Hardware memory prefetcher configuration
     // TO_BE_COMPLETED - TO_BE_COMPLETED
