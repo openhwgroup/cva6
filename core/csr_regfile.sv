@@ -20,6 +20,7 @@ module csr_regfile
     parameter type                   exception_t        = logic,
     parameter type                   irq_ctrl_t         = logic,
     parameter type                   scoreboard_entry_t = logic,
+    parameter type                   rvfi_probes_csr_t  = logic,
     parameter int                    AsidWidth          = 1,
     parameter int unsigned           MHPMCounterNum     = 6
 ) (

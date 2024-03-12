@@ -206,10 +206,12 @@ localparam config_pkg::cva6_user_cfg_t CVA6UserCfg = '{
 };
 localparam config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(CVA6UserCfg);
 
-localparam type rvfi_probes_t = struct packed { 
-      logic csr;
-      logic instr;
-    };
+localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
+localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg);
+localparam type rvfi_probes_t = struct packed {
+  logic csr;
+  logic instr;
+};
 
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
@@ -755,6 +757,8 @@ ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
     .CVA6Cfg ( CVA6Cfg ),
+    .rvfi_probes_instr_t ( rvfi_probes_instr_t ),
+    .rvfi_probes_csr_t ( rvfi_probes_csr_t ),
     .rvfi_probes_t ( rvfi_probes_t )
 ) i_ariane (
     .clk_i        ( clk                 ),

@@ -12,6 +12,7 @@
 // Date: 19.03.2017
 // Description: CVA6 Top-level module
 
+`include "rvfi_types.svh"
 
 module cva6
   import ariane_pkg::*;
@@ -184,6 +185,8 @@ module cva6
       logic [DCACHE_USER_WIDTH-1:0] data_ruser;
     },
 
+    parameter type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
+    parameter type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
     parameter type rvfi_probes_t = struct packed {
       logic csr;  //disabled 
       rvfi_probes_instr_t instr;
@@ -911,6 +914,7 @@ module cva6
       .exception_t       (exception_t),
       .irq_ctrl_t        (irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
+      .rvfi_probes_csr_t (rvfi_probes_csr_t),
       .AsidWidth         (ASID_WIDTH),
       .MHPMCounterNum    (MHPMCounterNum)
   ) csr_regfile_i (
@@ -1514,6 +1518,8 @@ module cva6
       .exception_t       (exception_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .lsu_ctrl_t        (lsu_ctrl_t),
+      .rvfi_probes_instr_t(rvfi_probes_instr_t),
+      .rvfi_probes_csr_t (rvfi_probes_csr_t),
       .rvfi_probes_t     (rvfi_probes_t)
   ) i_cva6_rvfi_probes (
 

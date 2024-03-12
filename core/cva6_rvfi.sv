@@ -15,6 +15,8 @@ module cva6_rvfi
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type rvfi_instr_t = logic,
     parameter type rvfi_csr_t = logic,
+    parameter type rvfi_probes_instr_t = logic,
+    parameter type rvfi_probes_csr_t = logic,
     parameter type rvfi_probes_t = logic
 
 ) (
