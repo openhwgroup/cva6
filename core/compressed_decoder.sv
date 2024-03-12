@@ -38,10 +38,10 @@ module compressed_decoder #(
   // Compressed Decoder
   // -------------------
   always_comb begin
-    illegal_instr_o = 1'b0;
-    instr_o         = '0;
-    is_compressed_o = 1'b1;
-    instr_o         = instr_i;
+    illegal_instr_o  = 1'b0;
+    instr_o          = '0;
+    is_compressed_o  = 1'b1;
+    instr_o          = instr_i;
     is_macro_instr_o = 0;
 
     // I: |    imm[11:0]    | rs1 | funct3 |    rd    | opcode |

@@ -55,7 +55,7 @@ module macro_decoder #(
 
   // Temporary registers
   logic [3:0] reg_numbers, reg_numbers_q, reg_numbers_d;
-  logic [8:0] stack_adj;
+  logic [11:0] stack_adj;
   logic [4:0] xreg1, xreg2, store_reg, store_reg_q, store_reg_d;
   logic [1:0] popretz_inst_q, popretz_inst_d;
   logic [11:0] offset_reg, offset_q, offset_d;
@@ -374,7 +374,7 @@ module macro_decoder #(
             if (reg_numbers == 1) begin
               if (riscv::XLEN == 64) begin
                 instr_o_reg = {
-                  offset_reg - 4, 5'h2, 3'h3, 5'h1, riscv::OpcodeLoad
+                  offset_reg - 12'h4, 5'h2, 3'h3, 5'h1, riscv::OpcodeLoad
                 };  // ld store_reg, Imm(sp)
               end else begin
                 instr_o_reg = {
@@ -394,7 +394,7 @@ module macro_decoder #(
 
             if (reg_numbers == 2) begin
               if (riscv::XLEN == 64) begin
-                instr_o_reg = {offset_reg - 4, 5'h2, 3'h3, 5'h8, riscv::OpcodeLoad};
+                instr_o_reg = {offset_reg - 12'h4, 5'h2, 3'h3, 5'h8, riscv::OpcodeLoad};
               end else begin
                 instr_o_reg = {offset_reg, 5'h2, 3'h2, 5'h8, riscv::OpcodeLoad};
               end
@@ -402,7 +402,7 @@ module macro_decoder #(
 
             if (reg_numbers == 3) begin
               if (riscv::XLEN == 64) begin
-                instr_o_reg = {offset_reg - 4, 5'h2, 3'h3, 5'h9, riscv::OpcodeLoad};
+                instr_o_reg = {offset_reg - 12'h4, 5'h2, 3'h3, 5'h9, riscv::OpcodeLoad};
               end else begin
                 instr_o_reg = {offset_reg, 5'h2, 3'h2, 5'h9, riscv::OpcodeLoad};
               end
@@ -410,7 +410,7 @@ module macro_decoder #(
 
             if (reg_numbers >= 4 && reg_numbers <= 12) begin
               if (riscv::XLEN == 64) begin
-                instr_o_reg = {offset_reg - 4, 5'h2, 3'h3, store_reg, riscv::OpcodeLoad};
+                instr_o_reg = {offset_reg - 12'h4, 5'h2, 3'h3, store_reg, riscv::OpcodeLoad};
               end else begin
                 instr_o_reg = {offset_reg, 5'h2, 3'h2, store_reg, riscv::OpcodeLoad};
               end
@@ -603,10 +603,10 @@ module macro_decoder #(
         if (riscv::XLEN == 64) begin
           if (issue_ack_i && is_macro_instr_i && macro_instr_type == PUSH) begin
             // addi sp, sp, stack_adj
-            instr_o_reg = {itype_inst.imm - 4, 5'h2, 3'h0, 5'h2, riscv::OpcodeOpImm};
+            instr_o_reg = {itype_inst.imm - 12'h4, 5'h2, 3'h0, 5'h2, riscv::OpcodeOpImm};
           end else begin
             if (issue_ack_i) begin
-              instr_o_reg = {stack_adj - 4, 5'h2, 3'h0, 5'h2, riscv::OpcodeOpImm};
+              instr_o_reg = {stack_adj - 12'h4, 5'h2, 3'h0, 5'h2, riscv::OpcodeOpImm};
             end
           end
           if (issue_ack_i && is_macro_instr_i && (macro_instr_type == POPRETZ || macro_instr_type == POPRET)) begin
