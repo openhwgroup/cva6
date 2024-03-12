@@ -30,10 +30,22 @@
      - SUBSYSTEM
      - logic
 
+   * - ``noc_req_o``
+     - out
+     - noc request, can be AXI or OpenPiton
+     - SUBSYSTEM
+     - noc_req_t
+
+   * - ``noc_resp_i``
+     - in
+     - noc response, can be AXI or OpenPiton
+     - SUBSYSTEM
+     - noc_resp_t
+
    * - ``icache_en_i``
      - in
      - Instruction cache enable
-     - TO_BE_COMPLETED
+     - CSR_REGFILE
      - logic
 
    * - ``icache_flush_i``
@@ -45,25 +57,25 @@
    * - ``icache_areq_i``
      - in
      - Input address translation request
-     - TO_BE_COMPLETED
+     - EX_STAGE
      - ariane_pkg::icache_areq_t
 
    * - ``icache_areq_o``
      - out
      - Output address translation request
-     - TO_BE_COMPLETED
+     - EX_STAGE
      - ariane_pkg::icache_arsp_t
 
    * - ``icache_dreq_i``
      - in
      - Input data translation request
-     - TO_BE_COMPLETED
+     - FRONTEND
      - ariane_pkg::icache_dreq_t
 
    * - ``icache_dreq_o``
      - out
      - Output data translation request
-     - TO_BE_COMPLETED
+     - FRONTEND
      - ariane_pkg::icache_drsp_t
 
    * - ``dcache_enable_i``
@@ -96,18 +108,6 @@
      - EX_STAGE
      - ariane_pkg::amo_resp_t
 
-   * - ``dcache_cmo_req_i``
-     - in
-     - CMO interface request
-     - TO_BE_COMPLETED
-     - cmo_req_t
-
-   * - ``dcache_cmo_resp_o``
-     - out
-     - CMO interface response
-     - TO_BE_COMPLETED
-     - cmo_rsp_t
-
    * - ``dcache_req_ports_i``
      - in
      - Data cache input request ports
@@ -123,26 +123,14 @@
    * - ``wbuffer_empty_o``
      - out
      - Write buffer status to know if empty
-     - TO_BE_COMPLETED
+     - EX_STAGE
      - logic
 
    * - ``wbuffer_not_ni_o``
      - out
      - Write buffer status to know if not non idempotent
-     - TO_BE_COMPLETED
+     - EX_STAGE
      - logic
-
-   * - ``noc_req_o``
-     - out
-     - noc request, can be AXI or OpenPiton
-     - SUBSYSTEM
-     - noc_req_t
-
-   * - ``noc_resp_i``
-     - in
-     - noc response, can be AXI or OpenPiton
-     - SUBSYSTEM
-     - noc_resp_t
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
@@ -150,6 +138,8 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``icache_miss_o`` output is tied to 0
 |   ``dcache_miss_o`` output is tied to 0
 | For any HW configuration,
+|   ``dcache_cmo_req_i`` input is tied to 0
+|   ``dcache_cmo_resp_o`` output is tied to open
 |   ``hwpf_base_set_i`` input is tied to 0
 |   ``hwpf_base_i`` input is tied to 0
 |   ``hwpf_base_o`` output is tied to 0

@@ -46,37 +46,33 @@ module cva6_hpdcache_subsystem
 
     //  I$
     //  {{{
-<<<<<<< HEAD
-    input logic icache_en_i,  // enable icache (or bypass e.g: in debug mode)
-    input logic icache_flush_i,  // flush the icache, flush and kill have to be asserted together
-    output logic icache_miss_o,  // to performance counter
-    // address translation requests
-    input icache_areq_t icache_areq_i,  // to/from frontend
-    output icache_arsp_t icache_areq_o,
-    // data requests
-    input icache_dreq_t icache_dreq_i,  // to/from frontend
-    output icache_drsp_t icache_dreq_o,
-=======
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
 
-    // Instruction cache enable - TO_BE_COMPLETED
+    //  AXI port to upstream memory/peripherals
+    //  {{{
+    // noc request, can be AXI or OpenPiton - SUBSYSTEM
+    output noc_req_t  noc_req_o,
+    // noc response, can be AXI or OpenPiton - SUBSYSTEM
+    input  noc_resp_t noc_resp_i
+    //  }}}
+
+    // Instruction cache enable - CSR_REGFILE
     input logic icache_en_i,
     // Flush the instruction cache - CONTROLLER
     input logic icache_flush_i,
     // instructino cache miss - PERF_COUNTERS
     output logic icache_miss_o,
-    // Input address translation request - TO_BE_COMPLETED
+    // Input address translation request - EX_STAGE
     input ariane_pkg::icache_areq_t icache_areq_i,
-    // Output address translation request - TO_BE_COMPLETED
+    // Output address translation request - EX_STAGE
     output ariane_pkg::icache_arsp_t icache_areq_o,
-    // Input data translation request - TO_BE_COMPLETED
+    // Input data translation request - FRONTEND
     input ariane_pkg::icache_dreq_t icache_dreq_i,
-    // Output data translation request - TO_BE_COMPLETED
+    // Output data translation request - FRONTEND
     output ariane_pkg::icache_drsp_t icache_dreq_o,
->>>>>>> 4713d054 (Add caches submodule)
     //   }}}
 
     //  D$
@@ -103,9 +99,9 @@ module cva6_hpdcache_subsystem
     input  ariane_pkg::dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,
     // Data cache output request ports - EX_STAGE
     output ariane_pkg::dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,
-    // Write buffer status to know if empty - TO_BE_COMPLETED
+    // Write buffer status to know if empty - EX_STAGE
     output logic                                     wbuffer_empty_o,
-    // Write buffer status to know if not non idempotent - TO_BE_COMPLETED
+    // Write buffer status to know if not non idempotent - EX_STAGE
     output logic                                     wbuffer_not_ni_o,
 
     //  Hardware memory prefetcher configuration
@@ -129,14 +125,6 @@ module cva6_hpdcache_subsystem
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [               63:0]       hwpf_status_o,
-    //  }}}
-
-    //  AXI port to upstream memory/peripherals
-    //  {{{
-    // noc request, can be AXI or OpenPiton - SUBSYSTEM
-    output noc_req_t  noc_req_o,
-    // noc response, can be AXI or OpenPiton - SUBSYSTEM
-    input  noc_resp_t noc_resp_i
     //  }}}
 );
   //  }}}

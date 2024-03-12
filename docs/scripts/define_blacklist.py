@@ -26,6 +26,8 @@ def define_blacklist(parameters):
     black_list["hwpf_throttle_i"] = ["For any HW configuration", "0"]
     black_list["hwpf_throttle_o"] = ["For any HW configuration", "0"]
     black_list["hwpf_status_o"] = ["For any HW configuration", "0"]
+    black_list["dcache_cmo_req_i"] = ["For any HW configuration", "0"]
+    black_list["dcache_cmo_resp_o"] = ["For any HW configuration", "open"]
 
     param = "IsRVFI"
     paramvalue = "0"
