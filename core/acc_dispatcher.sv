@@ -93,6 +93,7 @@ module acc_dispatcher
     input logic flush_unissued_instr_i,
     input logic flush_ex_i,
     output logic flush_pipeline_o,
+    output logic single_step_o,
     // Interface with cache subsystem
     output dcache_req_i_t [1:0] acc_dcache_req_ports_o,
     input dcache_req_o_t [1:0] acc_dcache_req_ports_i,
@@ -451,6 +452,7 @@ module acc_dispatcher
 
   assign acc_stall_st_pending_o = 1'b0;
   assign flush_pipeline_o       = 1'b0;
+  assign single_step_o          = 1'b0;
   assign acc_dcache_req_ports_o = '0;
 
 endmodule : acc_dispatcher
