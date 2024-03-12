@@ -44,8 +44,6 @@ module cva6_hpdcache_subsystem
 //  {{{
 (
 
-    //  I$
-    //  {{{
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
@@ -56,9 +54,11 @@ module cva6_hpdcache_subsystem
     // noc request, can be AXI or OpenPiton - SUBSYSTEM
     output noc_req_t  noc_req_o,
     // noc response, can be AXI or OpenPiton - SUBSYSTEM
-    input  noc_resp_t noc_resp_i
+    input  noc_resp_t noc_resp_i,
     //  }}}
 
+    //  I$
+    //  {{{
     // Instruction cache enable - CSR_REGFILE
     input logic icache_en_i,
     // Flush the instruction cache - CONTROLLER
@@ -79,11 +79,11 @@ module cva6_hpdcache_subsystem
     //  {{{
     //    Cache management
     // Data cache enable - CSR_REGFILE
-    input logic dcache_enable_i,
+    input  logic dcache_enable_i,
     // Data cache flush - CONTROLLER
-    input logic dcache_flush_i,
+    input  logic dcache_flush_i,
     // Flush acknowledge - CONTROLLER
-    output logic                       dcache_flush_ack_o,
+    output logic dcache_flush_ack_o,
     // Load or store miss - PERF_COUNTERS
     output logic dcache_miss_o,
 
@@ -124,7 +124,7 @@ module cva6_hpdcache_subsystem
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic [               63:0]       hwpf_status_o,
+    output logic [               63:0]       hwpf_status_o
     //  }}}
 );
   //  }}}
