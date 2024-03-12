@@ -16,6 +16,8 @@ module cva6_rvfi_probes
     parameter type exception_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter type lsu_ctrl_t = logic,
+    parameter type rvfi_probes_instr_t = logic,
+    parameter type rvfi_probes_csr_t = logic,
     parameter type rvfi_probes_t = logic
 
 ) (

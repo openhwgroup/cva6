@@ -18,6 +18,7 @@ import ariane_pkg::*;
 import uvm_pkg::*;
 
 `include "uvm_macros.svh"
+`include "rvfi_types.svh"
 
 `define MAIN_MEM(P) dut.i_sram.gen_cut[0].i_tc_sram_wrapper.i_tc_sram.init_val[(``P``)]
 // `define USER_MEM(P) dut.i_sram.gen_cut[0].gen_mem.gen_mem_user.i_tc_sram_wrapper_user.i_tc_sram.init_val[(``P``)]
@@ -30,6 +31,19 @@ module ariane_tb;
 
     // cva6 configuration
     localparam config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(cva6_config_pkg::cva6_cfg);
+
+    // RVFI
+    localparam type rvfi_instr_t = `RVFI_INSTR_T(CVA6Cfg);
+    localparam type rvfi_csr_elmt_t = `RVFI_CSR_ELMT_T(CVA6Cfg);
+    localparam type rvfi_csr_t = `RVFI_CSR_T(CVA6Cfg, rvfi_csr_elmt_t);
+
+    // RVFI PROBES
+    localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
+    localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg);
+    localparam type rvfi_probes_t = struct packed {
+        rvfi_probes_csr_t csr;
+        rvfi_probes_instr_t instr;
+    };
 
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 

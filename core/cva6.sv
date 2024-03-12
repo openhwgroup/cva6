@@ -12,6 +12,7 @@
 // Date: 19.03.2017
 // Description: CVA6 Top-level module
 
+`include "rvfi_types.svh"
 
 module cva6
   import ariane_pkg::*;
@@ -21,15 +22,23 @@ module cva6
         cva6_config_pkg::cva6_cfg
     ),
 
+    // RVFI PROBES
+    parameter type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
+    parameter type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
+    parameter type rvfi_probes_t = struct packed {
+      logic csr;
+      rvfi_probes_instr_t instr;
+    },
+
     // branchpredict scoreboard entry
     // this is the struct which we will inject into the pipeline to guide the various
     // units towards the correct branch decision and resolve
-    parameter type branchpredict_sbe_t = struct packed {
+    localparam type branchpredict_sbe_t = struct packed {
       cf_t                    cf;               // type of control flow prediction
       logic [riscv::VLEN-1:0] predict_address;  // target address at which to jump, or not
     },
 
-    parameter type exception_t = struct packed {
+    localparam type exception_t = struct packed {
       logic [riscv::XLEN-1:0] cause;  // cause of exception
       logic [riscv::XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
       // address of LD/ST fault
@@ -38,25 +47,25 @@ module cva6
 
     // cache request ports
     // I$ address translation requests
-    parameter type icache_areq_t = struct packed {
+    localparam type icache_areq_t = struct packed {
       logic                   fetch_valid;      // address translation valid
       logic [riscv::PLEN-1:0] fetch_paddr;      // physical address in
       exception_t             fetch_exception;  // exception occurred during fetch
     },
-    parameter type icache_arsp_t = struct packed {
+    localparam type icache_arsp_t = struct packed {
       logic                   fetch_req;    // address translation request
       logic [riscv::VLEN-1:0] fetch_vaddr;  // virtual address out
     },
 
     // I$ data requests
-    parameter type icache_dreq_t = struct packed {
+    localparam type icache_dreq_t = struct packed {
       logic                   req;      // we request a new word
       logic                   kill_s1;  // kill the current request
       logic                   kill_s2;  // kill the last request
       logic                   spec;     // request is speculative
       logic [riscv::VLEN-1:0] vaddr;    // 1st cycle: 12 bit index is taken for lookup
     },
-    parameter type icache_drsp_t = struct packed {
+    localparam type icache_drsp_t = struct packed {
       logic                                    ready;  // icache is ready
       logic                                    valid;  // signals a valid read
       logic [ariane_pkg::FETCH_WIDTH-1:0]      data;   // 2+ cycle out: tag
@@ -67,7 +76,7 @@ module cva6
 
     // IF/ID Stage
     // store the decompressed instruction
-    parameter type fetch_entry_t = struct packed {
+    localparam type fetch_entry_t = struct packed {
       logic [riscv::VLEN-1:0] address;  // the address of the instructions from below
       logic [31:0] instruction;  // instruction word
       branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
@@ -75,7 +84,7 @@ module cva6
     },
 
     // ID/EX/WB Stage
-    parameter type scoreboard_entry_t = struct packed {
+    localparam type scoreboard_entry_t = struct packed {
       logic [riscv::VLEN-1:0] pc;  // PC of instruction
       logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
                                                // with the transaction id in any case make the width more generic
@@ -103,7 +112,7 @@ module cva6
     // this is the struct we get back from ex stage and we will use it to update
     // all the necessary data structures
     // bp_resolve_t
-    parameter type bp_resolve_t = struct packed {
+    localparam type bp_resolve_t = struct packed {
       logic                   valid;           // prediction with all its values is valid
       logic [riscv::VLEN-1:0] pc;              // PC of predict or mis-predict
       logic [riscv::VLEN-1:0] target_address;  // target address at which to jump, or not
@@ -114,7 +123,7 @@ module cva6
 
     // All information needed to determine whether we need to associate an interrupt
     // with the corresponding instruction or not.
-    parameter type irq_ctrl_t = struct packed {
+    localparam type irq_ctrl_t = struct packed {
       logic [riscv::XLEN-1:0] mie;
       logic [riscv::XLEN-1:0] mip;
       logic [riscv::XLEN-1:0] mideleg;
@@ -122,7 +131,7 @@ module cva6
       logic                   global_enable;
     },
 
-    parameter type lsu_ctrl_t = struct packed {
+    localparam type lsu_ctrl_t = struct packed {
       logic                                 valid;
       logic [riscv::VLEN-1:0]               vaddr;
       logic                                 overflow;
@@ -133,7 +142,7 @@ module cva6
       logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
     },
 
-    parameter type fu_data_t = struct packed {
+    localparam type fu_data_t = struct packed {
       fu_t                                  fu;
       fu_op                                 operation;
       logic [riscv::XLEN-1:0]               operand_a;
@@ -142,13 +151,13 @@ module cva6
       logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
     },
 
-    parameter type icache_req_t = struct packed {
+    localparam type icache_req_t = struct packed {
       logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] way;  // way to replace
       logic [riscv::PLEN-1:0] paddr;  // physical address
       logic nc;  // noncacheable
       logic [wt_cache_pkg::CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     },
-    parameter type icache_rtrn_t = struct packed {
+    localparam type icache_rtrn_t = struct packed {
       wt_cache_pkg::icache_in_t rtype;  // see definitions above
       logic [ariane_pkg::ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
       logic [ariane_pkg::ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
@@ -162,7 +171,7 @@ module cva6
     },
 
     // D$ data requests
-    parameter type dcache_req_i_t = struct packed {
+    localparam type dcache_req_i_t = struct packed {
       logic [DCACHE_INDEX_WIDTH-1:0] address_index;
       logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
       logic [riscv::XLEN-1:0]        data_wdata;
@@ -176,17 +185,12 @@ module cva6
       logic                          tag_valid;
     },
 
-    parameter type dcache_req_o_t = struct packed {
+    localparam type dcache_req_o_t = struct packed {
       logic                         data_gnt;
       logic                         data_rvalid;
       logic [DCACHE_TID_WIDTH-1:0]  data_rid;
       logic [riscv::XLEN-1:0]       data_rdata;
       logic [DCACHE_USER_WIDTH-1:0] data_ruser;
-    },
-
-    parameter type rvfi_probes_t = struct packed {
-      logic csr;  //disabled 
-      rvfi_probes_instr_t instr;
     },
 
     // AXI types
@@ -911,6 +915,7 @@ module cva6
       .exception_t       (exception_t),
       .irq_ctrl_t        (irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
+      .rvfi_probes_csr_t (rvfi_probes_csr_t),
       .AsidWidth         (ASID_WIDTH),
       .MHPMCounterNum    (MHPMCounterNum)
   ) csr_regfile_i (
@@ -1510,11 +1515,13 @@ module cva6
   //RVFI INSTR
 
   cva6_rvfi_probes #(
-      .CVA6Cfg           (CVA6Cfg),
-      .exception_t       (exception_t),
-      .scoreboard_entry_t(scoreboard_entry_t),
-      .lsu_ctrl_t        (lsu_ctrl_t),
-      .rvfi_probes_t     (rvfi_probes_t)
+      .CVA6Cfg            (CVA6Cfg),
+      .exception_t        (exception_t),
+      .scoreboard_entry_t (scoreboard_entry_t),
+      .lsu_ctrl_t         (lsu_ctrl_t),
+      .rvfi_probes_instr_t(rvfi_probes_instr_t),
+      .rvfi_probes_csr_t  (rvfi_probes_csr_t),
+      .rvfi_probes_t      (rvfi_probes_t)
   ) i_cva6_rvfi_probes (
 
       .flush_i            (flush_ctrl_if),
