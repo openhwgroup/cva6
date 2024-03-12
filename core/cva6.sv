@@ -1515,13 +1515,13 @@ module cva6
   //RVFI INSTR
 
   cva6_rvfi_probes #(
-      .CVA6Cfg           (CVA6Cfg),
-      .exception_t       (exception_t),
-      .scoreboard_entry_t(scoreboard_entry_t),
-      .lsu_ctrl_t        (lsu_ctrl_t),
+      .CVA6Cfg            (CVA6Cfg),
+      .exception_t        (exception_t),
+      .scoreboard_entry_t (scoreboard_entry_t),
+      .lsu_ctrl_t         (lsu_ctrl_t),
       .rvfi_probes_instr_t(rvfi_probes_instr_t),
-      .rvfi_probes_csr_t (rvfi_probes_csr_t),
-      .rvfi_probes_t     (rvfi_probes_t)
+      .rvfi_probes_csr_t  (rvfi_probes_csr_t),
+      .rvfi_probes_t      (rvfi_probes_t)
   ) i_cva6_rvfi_probes (
 
       .flush_i            (flush_ctrl_if),
