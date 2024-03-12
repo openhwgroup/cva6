@@ -315,6 +315,7 @@ module cva6
   logic halt_acc_ctrl;
   logic [4:0] acc_resp_fflags;
   logic acc_resp_fflags_valid;
+  logic single_step_acc_commit;
   // CSR
   logic csr_valid_id_ex;
   // CVXIF
@@ -781,7 +782,7 @@ module cva6
       .flush_dcache_i    (dcache_flush_ctrl_cache),
       .exception_o       (ex_commit),
       .dirty_fp_state_o  (dirty_fp_state),
-      .single_step_i     (single_step_csr_commit),
+      .single_step_i     (single_step_csr_commit || single_step_acc_commit),
       .commit_instr_i    (commit_instr_id_commit),
       .commit_ack_o      (commit_ack),
       .no_st_pending_i   (no_st_pending_commit),
@@ -1135,6 +1136,7 @@ module cva6
         .flush_unissued_instr_i(flush_unissued_instr_ctrl_id),
         .flush_ex_i            (flush_ctrl_ex),
         .flush_pipeline_o      (flush_acc),
+        .single_step_o         (single_step_acc_commit),
         .acc_cons_en_i         (acc_cons_en_csr),
         .acc_fflags_valid_o    (acc_resp_fflags_valid),
         .acc_fflags_o          (acc_resp_fflags),
