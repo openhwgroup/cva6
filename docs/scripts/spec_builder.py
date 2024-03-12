@@ -59,6 +59,7 @@ if __name__ == "__main__":
     file.append("../core/store_unit.sv")
     file.append("../core/lsu_bypass.sv")
     file.append("../core/cvxif_fu.sv")
+    file.append("../core/cache_subsystem/cva6_hpdcache_subsystem.sv")
 
     black_list = define_blacklist(parameters)
 
