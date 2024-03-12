@@ -22,6 +22,14 @@ module cva6
         cva6_config_pkg::cva6_cfg
     ),
 
+    // RVFI PROBES
+    parameter type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
+    parameter type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
+    parameter type rvfi_probes_t = struct packed {
+      logic csr;
+      rvfi_probes_instr_t instr;
+    },
+
     // branchpredict scoreboard entry
     // this is the struct which we will inject into the pipeline to guide the various
     // units towards the correct branch decision and resolve
@@ -183,13 +191,6 @@ module cva6
       logic [DCACHE_TID_WIDTH-1:0]  data_rid;
       logic [riscv::XLEN-1:0]       data_rdata;
       logic [DCACHE_USER_WIDTH-1:0] data_ruser;
-    },
-
-    parameter type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
-    parameter type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
-    parameter type rvfi_probes_t = struct packed {
-      logic csr;  //disabled 
-      rvfi_probes_instr_t instr;
     },
 
     // AXI types
