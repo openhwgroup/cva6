@@ -44,6 +44,7 @@ Some of them are optional and are enabled through parameters in the SystemVerilo
    "Zb* - Bit-Manipulation",                                            "Yes", "✔", "✔", "Note 1"
    "C - Compressed Instructions ",                                      "Yes", "✔", "✔", "Note 1"
    "Zcb - Code Size Reduction",                                         "Yes", "✔", "✔", "Note 1"
+   "Zcmp - Code Size Reduction",                                        "Yes", "✔", "✔", "Note 1"
    "D - Double precision floating-point",                               "Yes", "",  "✔", "Note 1"
    "F - Single precision floating-point",                               "Yes", "✔", "✔", "Note 1"
    "M - Integer Multiply/Divide",                                       "No",  "✔", "✔", "Note 1"
