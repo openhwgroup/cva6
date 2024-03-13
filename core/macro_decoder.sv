@@ -263,7 +263,7 @@ module macro_decoder #(
       if (macro_instr_type == PUSH) begin
         itype_inst.imm = ~stack_adj + 1'b1;
       end else begin
-        itype_inst.imm = stack_adj - 3'b100;
+        itype_inst.imm = stack_adj - 12'h4;
       end
     end else begin
       illegal_instr_o = illegal_instr_i;
