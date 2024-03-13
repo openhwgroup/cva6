@@ -36,12 +36,13 @@ In the next pages, the ISA (Instruction Set Architecture) for various CVA6 confi
 * RVZbc        - Standard Extension for Bit Manipulation: Carry-less multiplication (RV32 and RV64)
 * RVZbs        - Standard Extension for Bit Manipulation: Single-bit instructions (RV32 and RV64)
 * RV32Zcb      – Standard Extension for Code Size Reduction
+* RVZcmp       – Standard Extension for Code Size Reduction (RV32 and RV64)
 * RVZicsr      – Standard Extension for CSR Instructions
 * RVZifencei   – Standard Extension for Instruction-Fetch Fence
 * RVZicond     – Standard Extension for Integer Conditional Operations
 
 The base RISC-V ISA (RV32I or RV64I) has fixed-length 32-bit instructions or 16-bit instructions, so that must be naturally aligned on 2-byte boundary.
-If 16-bit instructions are not implemented (RVC, RVZcb), then instructions must be naturally aligned on 4-byte boundary.
+If 16-bit instructions are not implemented (RVC, RVZcb, RVZcmp), then instructions must be naturally aligned on 4-byte boundary.
 
 All CVA6 configurations support:
 
