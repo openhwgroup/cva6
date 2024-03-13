@@ -34,7 +34,7 @@ RVZcmp Code Size Reduction Instructions
 ---------------------------------------
 
 Zcmp belongs to group of extensions called RISC-V Code Size Reduction Extension (Zc*). Zc* has become the superset of Standard C extension adding more 16-bit instructions to the ISA.
-Zcmp includes 16-bit macro instructions, PUSH/POP and double move, which resue the encoding for c.fsdsp instruction.
+Zcmp includes 16-bit macro instructions, PUSH/POP and double move, which reuse the encoding for c.fsdsp instruction.
 All the Zcmp instructions require at least standard C extension support as pre-requisite, along with Zca extension.
 
 - **CM.PUSH**: Compressed Push
@@ -56,7 +56,7 @@ All the Zcmp instructions require at least standard C extension support as pre-r
                     }
                     sp-=stack_adj;
 
-    **Invalid values**: reg_list not in {ra, s0-s11} and stack_adj not in {16, 32, 48, 64, 80, 96, 112, 128, 144, 160}.
+    **Invalid values**: reg_list not in [ {ra}, {ra, s0}, {ra, s0-s1}, {ra, s0-s2}, ..., {ra, s0-s8}, {ra, s0-s9}, {ra, s0-s11} ], stack_adj not in [ 16, 32, 48, 64, 80, 96, 112 ] and [ 16, 32, 48, 64, 80, 96, 112, 128, 144, 160 ] for RV32 and RV64 respectively.
 
     **Exception raised**: NONE
 
@@ -79,7 +79,7 @@ All the Zcmp instructions require at least standard C extension support as pre-r
                     }
                     sp+=stack_adj;
 
-    **Invalid values**: reg_list not in {ra, s0-s11} and stack_adj not in {16, 32, 48, 64, 80, 96, 112, 128, 144, 160}.
+    **Invalid values**: reg_list not in [ {ra}, {ra, s0}, {ra, s0-s1}, {ra, s0-s2}, ..., {ra, s0-s8}, {ra, s0-s9}, {ra, s0-s11} ], stack_adj not in [ 16, 32, 48, 64, 80, 96, 112 ] and [ 16, 32, 48, 64, 80, 96, 112, 128, 144, 160 ] for RV32 and RV64 respectively.
 
     **Exception raised**: NONE
 
@@ -104,7 +104,7 @@ All the Zcmp instructions require at least standard C extension support as pre-r
                     sp+=stack_adj;
                     asm("ret");
 
-    **Invalid values**: reg_list not in {ra, s0-s11} and stack_adj not in {16, 32, 48, 64, 80, 96, 112, 128, 144, 160}.
+    **Invalid values**: reg_list not in [ {ra}, {ra, s0}, {ra, s0-s1}, {ra, s0-s2}, ..., {ra, s0-s8}, {ra, s0-s9}, {ra, s0-s11} ], stack_adj not in [ 16, 32, 48, 64, 80, 96, 112 ] and [ 16, 32, 48, 64, 80, 96, 112, 128, 144, 160 ] for RV32 and RV64 respectively.
 
     **Exception raised**: NONE
 
@@ -128,7 +128,7 @@ All the Zcmp instructions require at least standard C extension support as pre-r
                     sp+=stack_adj;
                     asm("ret");
 
-    **Invalid values**: reg_list not in {ra, s0-s11} and stack_adj not in {16, 32, 48, 64, 80, 96, 112, 128, 144, 160}.
+    **Invalid values**: reg_list not in [ {ra}, {ra, s0}, {ra, s0-s1}, {ra, s0-s2}, ..., {ra, s0-s8}, {ra, s0-s9}, {ra, s0-s11} ], stack_adj not in [ 16, 32, 48, 64, 80, 96, 112 ] and [ 16, 32, 48, 64, 80, 96, 112, 128, 144, 160 ] for RV32 and RV64 respectively.
 
     **Exception raised**: NONE
 
