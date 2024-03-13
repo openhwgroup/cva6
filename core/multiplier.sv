@@ -21,27 +21,27 @@ module multiplier
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input  logic                             clk_i,
+    input  logic                     clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input  logic                             rst_ni,
+    input  logic                     rst_ni,
     // Multiplier transaction ID - Mult
-    input  logic         [TRANS_ID_BITS-1:0] trans_id_i,
+    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     // Multiplier instruction is valid - Mult
-    input  logic                             mult_valid_i,
+    input  logic                     mult_valid_i,
     // Multiplier operation - Mult
-    input  fu_op                             operation_i,
+    input  fu_op                     operation_i,
     // A operand - Mult
-    input  logic [riscv::XLEN-1:0]                     operand_a_i,
+    input  logic [  riscv::XLEN-1:0] operand_a_i,
     // B operand - Mult
-    input  logic [riscv::XLEN-1:0]                     operand_b_i,
+    input  logic [  riscv::XLEN-1:0] operand_b_i,
     // Multiplier result - Mult
-    output logic [riscv::XLEN-1:0]                     result_o,
+    output logic [  riscv::XLEN-1:0] result_o,
     // Mutliplier result is valid - Mult
-    output logic                             mult_valid_o,
+    output logic                     mult_valid_o,
     // Multiplier FU is ready - Mult
-    output logic                             mult_ready_o,
+    output logic                     mult_ready_o,
     // Multiplier transaction ID - Mult
-    output logic         [TRANS_ID_BITS-1:0] mult_trans_id_o
+    output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
   // Carry-less multiplication
   logic [riscv::XLEN-1:0]

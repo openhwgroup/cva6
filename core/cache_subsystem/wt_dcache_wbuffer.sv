@@ -134,9 +134,9 @@ module wt_dcache_wbuffer
   endfunction : to_byte_enable4
 
   // openpiton requires the data to be replicated in case of smaller sizes than dwords
-  function automatic logic [riscv::XLEN-1:0] repData64(input logic [riscv::XLEN-1:0] data,
-                                             input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
-                                             input logic [1:0] size);
+  function automatic logic [riscv::XLEN-1:0] repData64(
+      input logic [riscv::XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+      input logic [1:0] size);
     logic [riscv::XLEN-1:0] out;
     unique case (size)
       2'b00:   for (int k = 0; k < 8; k++) out[k*8+:8] = data[offset*8+:8];  // byte
@@ -147,9 +147,9 @@ module wt_dcache_wbuffer
     return out;
   endfunction : repData64
 
-  function automatic logic [riscv::XLEN-1:0] repData32(input logic [riscv::XLEN-1:0] data,
-                                             input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
-                                             input logic [1:0] size);
+  function automatic logic [riscv::XLEN-1:0] repData32(
+      input logic [riscv::XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+      input logic [1:0] size);
     logic [riscv::XLEN-1:0] out;
     unique case (size)
       2'b00:   for (int k = 0; k < 4; k++) out[k*8+:8] = data[offset*8+:8];  // byte

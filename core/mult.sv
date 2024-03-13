@@ -7,23 +7,23 @@ module mult
     parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input  logic                             clk_i,
+    input  logic                         clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input  logic                             rst_ni,
+    input  logic                         rst_ni,
     // Flush - CONTROLLER
-    input  logic                             flush_i,
+    input  logic                         flush_i,
     // FU data needed to execute instruction - ISSUE_STAGE
-    input  fu_data_t                         fu_data_i,
+    input  fu_data_t                     fu_data_i,
     // Mult instruction is valid - ISSUE_STAGE
-    input  logic                             mult_valid_i,
+    input  logic                         mult_valid_i,
     // Mult result - ISSUE_STAGE
-    output logic [riscv::XLEN-1:0]                     result_o,
+    output logic     [  riscv::XLEN-1:0] result_o,
     // Mult result is valid - ISSUE_STAGE
-    output logic                             mult_valid_o,
+    output logic                         mult_valid_o,
     // Mutl is ready - ISSUE_STAGE
-    output logic                             mult_ready_o,
+    output logic                         mult_ready_o,
     // Mult transaction ID - ISSUE_STAGE
-    output logic         [TRANS_ID_BITS-1:0] mult_trans_id_o
+    output logic     [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
   logic mul_valid;
   logic div_valid;
@@ -79,8 +79,8 @@ module mult
       operand_a;  // input operands after input MUX (input silencing, word operations or full inputs)
   logic [riscv::XLEN-1:0] result;  // result before result mux
 
-  logic         div_signed;  // signed or unsigned division
-  logic         rem;  // is it a reminder (or not a reminder e.g.: a division)
+  logic                   div_signed;  // signed or unsigned division
+  logic                   rem;  // is it a reminder (or not a reminder e.g.: a division)
   logic word_op_d, word_op_q;  // save whether the operation was signed or not
 
   // is this a signed op?

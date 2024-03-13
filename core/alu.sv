@@ -36,13 +36,13 @@ module alu
     output logic alu_branch_res_o
 );
 
-  logic [riscv::XLEN-1:0]                   operand_a_rev;
-  logic         [           31:0] operand_a_rev32;
-  logic         [  riscv::XLEN:0] operand_b_neg;
-  logic         [riscv::XLEN+1:0] adder_result_ext_o;
-  logic                           less;  // handles both signed and unsigned forms
-  logic         [           31:0] rolw;  // Rotate Left Word
-  logic         [           31:0] rorw;  // Rotate Right Word
+  logic [riscv::XLEN-1:0] operand_a_rev;
+  logic [           31:0] operand_a_rev32;
+  logic [  riscv::XLEN:0] operand_b_neg;
+  logic [riscv::XLEN+1:0] adder_result_ext_o;
+  logic                   less;  // handles both signed and unsigned forms
+  logic [           31:0] rolw;  // Rotate Left Word
+  logic [           31:0] rorw;  // Rotate Right Word
   logic [31:0] orcbw, rev8w;
   logic [  $clog2(riscv::XLEN) : 0] cpop;  // Count Population
   logic [$clog2(riscv::XLEN)-1 : 0] lz_tz_count;  // Count Leading Zeros
@@ -132,21 +132,21 @@ module alu
   // ---------
 
   // TODO: this can probably optimized significantly
-  logic                         shift_left;  // should we shift left
-  logic                         shift_arithmetic;
+  logic                   shift_left;  // should we shift left
+  logic                   shift_arithmetic;
 
-  logic [riscv::XLEN-1:0]                 shift_amt;  // amount of shift, to the right
-  logic [riscv::XLEN-1:0]                 shift_op_a;  // input of the shifter
-  logic         [         31:0] shift_op_a32;  // input to the 32 bit shift operation
+  logic [riscv::XLEN-1:0] shift_amt;  // amount of shift, to the right
+  logic [riscv::XLEN-1:0] shift_op_a;  // input of the shifter
+  logic [           31:0] shift_op_a32;  // input to the 32 bit shift operation
 
-  logic [riscv::XLEN-1:0]                 shift_result;
-  logic         [         31:0] shift_result32;
+  logic [riscv::XLEN-1:0] shift_result;
+  logic [           31:0] shift_result32;
 
-  logic         [riscv::XLEN:0] shift_right_result;
-  logic         [         32:0] shift_right_result32;
+  logic [  riscv::XLEN:0] shift_right_result;
+  logic [           32:0] shift_right_result32;
 
-  logic [riscv::XLEN-1:0]                 shift_left_result;
-  logic         [         31:0] shift_left_result32;
+  logic [riscv::XLEN-1:0] shift_left_result;
+  logic [           31:0] shift_left_result32;
 
   assign shift_amt = fu_data_i.operand_b;
 

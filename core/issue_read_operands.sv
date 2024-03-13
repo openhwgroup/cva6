@@ -122,7 +122,8 @@ module issue_read_operands
       operand_c_fpr,
       operand_c_gpr;  // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
   // output flipflop (ID <-> EX)
-  logic [riscv::XLEN-1:0] operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
+  logic [riscv::XLEN-1:0]
+      operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
 
   logic        alu_valid_q;
   logic        mult_valid_q;

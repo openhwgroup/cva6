@@ -94,9 +94,9 @@ module cva6
       logic [REG_ADDR_SIZE-1:0] rs2;  // register source address 2
       logic [REG_ADDR_SIZE-1:0] rd;  // register destination address
       logic [riscv::XLEN-1:0] result;  // for unfinished instructions this field also holds the immediate,
-                             // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
-                             // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
-                             // this field holds the address of the third operand from the floating-point register file
+      // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
+      // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
+      // this field holds the address of the third operand from the floating-point register file
       logic valid;  // is the result valid
       logic use_imm;  // should we use the immediate as operand b?
       logic use_zimm;  // use zimm as operand a

@@ -129,25 +129,25 @@ module load_store_unit
 );
 
   // data is misaligned
-  logic                               data_misaligned;
+  logic                            data_misaligned;
   // --------------------------------------
   // 1st register stage - (stall registers)
   // --------------------------------------
   // those are the signals which are always correct
   // e.g.: they keep the value in the stall case
-  lsu_ctrl_t                          lsu_ctrl;
+  lsu_ctrl_t                       lsu_ctrl;
 
-  logic                               pop_st;
-  logic                               pop_ld;
+  logic                            pop_st;
+  logic                            pop_ld;
 
   // ------------------------------
   // Address Generation Unit (AGU)
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
-  logic         [    riscv::VLEN-1:0] vaddr_i;
-  logic [riscv::XLEN-1:0]                       vaddr_xlen;
-  logic                               overflow;
-  logic         [(riscv::XLEN/8)-1:0] be_i;
+  logic      [    riscv::VLEN-1:0] vaddr_i;
+  logic      [    riscv::XLEN-1:0] vaddr_xlen;
+  logic                            overflow;
+  logic      [(riscv::XLEN/8)-1:0] be_i;
 
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
   assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
@@ -164,23 +164,23 @@ module load_store_unit
   logic                   translation_valid;
   logic [riscv::VLEN-1:0] mmu_vaddr;
   logic [riscv::PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
-  exception_t                       mmu_exception;
-  logic                             dtlb_hit;
-  logic         [  riscv::PPNW-1:0] dtlb_ppn;
+  exception_t                     mmu_exception;
+  logic                           dtlb_hit;
+  logic       [  riscv::PPNW-1:0] dtlb_ppn;
 
-  logic                             ld_valid;
-  logic         [TRANS_ID_BITS-1:0] ld_trans_id;
-  logic [riscv::XLEN-1:0]                     ld_result;
-  logic                             st_valid;
-  logic         [TRANS_ID_BITS-1:0] st_trans_id;
-  logic [riscv::XLEN-1:0]                     st_result;
+  logic                           ld_valid;
+  logic       [TRANS_ID_BITS-1:0] ld_trans_id;
+  logic       [  riscv::XLEN-1:0] ld_result;
+  logic                           st_valid;
+  logic       [TRANS_ID_BITS-1:0] st_trans_id;
+  logic       [  riscv::XLEN-1:0] st_result;
 
-  logic         [             11:0] page_offset;
-  logic                             page_offset_matches;
+  logic       [             11:0] page_offset;
+  logic                           page_offset_matches;
 
-  exception_t                       misaligned_exception;
-  exception_t                       ld_ex;
-  exception_t                       st_ex;
+  exception_t                     misaligned_exception;
+  exception_t                     ld_ex;
+  exception_t                     st_ex;
 
   // -------------------
   // MMU e.g.: TLBs/PTW

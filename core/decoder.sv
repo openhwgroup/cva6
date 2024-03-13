@@ -92,22 +92,30 @@ module decoder
   // --------------------
   // Immediate select
   // --------------------
-  enum logic         [3:0] {NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3} imm_select;
+  enum logic [3:0] {
+    NOIMM,
+    IIMM,
+    SIMM,
+    SBIMM,
+    UIMM,
+    JIMM,
+    RS3
+  } imm_select;
 
-  logic [riscv::XLEN-1:0]                                                        imm_i_type;
-  logic [riscv::XLEN-1:0]                                                        imm_s_type;
-  logic [riscv::XLEN-1:0]                                                        imm_sb_type;
-  logic [riscv::XLEN-1:0]                                                        imm_u_type;
-  logic [riscv::XLEN-1:0]                                                        imm_uj_type;
-  logic [riscv::XLEN-1:0]                                                        imm_bi_type;
+  logic [riscv::XLEN-1:0] imm_i_type;
+  logic [riscv::XLEN-1:0] imm_s_type;
+  logic [riscv::XLEN-1:0] imm_sb_type;
+  logic [riscv::XLEN-1:0] imm_u_type;
+  logic [riscv::XLEN-1:0] imm_uj_type;
+  logic [riscv::XLEN-1:0] imm_bi_type;
 
   // ---------------------------------------
   // Accelerator instructions' first-pass decoder
   // ---------------------------------------
-  logic                                                                is_accel;
-  scoreboard_entry_t                                                   acc_instruction;
-  logic                                                                acc_illegal_instr;
-  logic                                                                acc_is_control_flow_instr;
+  logic is_accel;
+  scoreboard_entry_t acc_instruction;
+  logic acc_illegal_instr;
+  logic acc_is_control_flow_instr;
 
   if (CVA6Cfg.EnableAccelerator) begin : gen_accel_decoder
     // This module is responsible for a light-weight decoding of accelerator instructions,

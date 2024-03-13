@@ -121,7 +121,7 @@ module wt_dcache_missunit
     logic [riscv::PLEN-1:0]              paddr;
     logic [2:0]                          size;
     logic [DCACHE_SET_ASSOC-1:0]         vld_bits;
-    logic [CVA6Cfg.MEM_TID_WIDTH-1:0]           id;
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0]    id;
     logic                                nc;
     logic [$clog2(DCACHE_SET_ASSOC)-1:0] repl_way;
     logic [$clog2(NumPorts)-1:0]         miss_port_idx;
