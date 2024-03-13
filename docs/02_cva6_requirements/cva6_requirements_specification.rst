@@ -318,7 +318,7 @@ independent requirements.
 |                                   | extension version 1.0.            |
 +-----------------------------------+-----------------------------------+
 | ISA-150                           | CVA6 should support as an         |
-|                                   | **option** the **Zcmp**            |
+|                                   | **option** the **Zcmp**           |
 |                                   | extension version 1.0.            |
 +-----------------------------------+-----------------------------------+
 
