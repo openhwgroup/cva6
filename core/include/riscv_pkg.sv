@@ -21,7 +21,6 @@ package riscv;
   // Import cva6 config from cva6_config_pkg
   // ----------------------
   localparam XLEN = cva6_config_pkg::CVA6ConfigXlen;
-  localparam FPU_EN = cva6_config_pkg::CVA6ConfigFpuEn;
 
   // ----------------------
   // Data and Address length
@@ -49,8 +48,6 @@ package riscv;
   localparam SV = (MODE_SV == ModeSv32) ? 32 : 39;
   localparam VPN2 = (VLEN - 31 < 8) ? VLEN - 31 : 8;
   localparam XLEN_ALIGN_BYTES = $clog2(XLEN / 8);
-
-  typedef logic [XLEN-1:0] xlen_t;
 
   // --------------------
   // Privilege Spec

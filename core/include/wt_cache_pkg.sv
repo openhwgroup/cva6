@@ -40,7 +40,6 @@ package wt_cache_pkg;
   localparam L15_SET_ASSOC           = ariane_pkg::DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Ariane setup
   localparam L15_TLB_CSM_WIDTH = 33;
 `endif
-  localparam L15_TID_WIDTH = ariane_pkg::MEM_TID_WIDTH;
   localparam L15_WAY_WIDTH = $clog2(L15_SET_ASSOC);
   localparam L1I_WAY_WIDTH = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
   localparam L1D_WAY_WIDTH = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
@@ -51,20 +50,12 @@ package wt_cache_pkg;
 
 
   // Calculated parameter
-  localparam ICACHE_OFFSET_WIDTH = $clog2(ariane_pkg::ICACHE_LINE_WIDTH / 8);
-  localparam ICACHE_NUM_WORDS = 2 ** (ariane_pkg::ICACHE_INDEX_WIDTH - ICACHE_OFFSET_WIDTH);
-  localparam ICACHE_CL_IDX_WIDTH = $clog2(ICACHE_NUM_WORDS);  // excluding byte offset
-
   localparam DCACHE_OFFSET_WIDTH = $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8);
   localparam DCACHE_NUM_WORDS = 2 ** (ariane_pkg::DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
   localparam DCACHE_CL_IDX_WIDTH = $clog2(DCACHE_NUM_WORDS);  // excluding byte offset
 
-  localparam DCACHE_NUM_BANKS = ariane_pkg::DCACHE_LINE_WIDTH / riscv::XLEN;
-  localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
-
   // write buffer parameterization
   localparam DCACHE_WBUF_DEPTH = ariane_pkg::WT_DCACHE_WBUF_DEPTH;
-  localparam CACHE_ID_WIDTH = L15_TID_WIDTH;
 
   // TX status registers are indexed with the transaction ID
   // they basically store which bytes from which buffer entry are part
@@ -146,57 +137,6 @@ package wt_cache_pkg;
     end
     return cnt;
   endfunction : popcnt64
-
-  function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable8(
-      input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
-    logic [(riscv::XLEN/8)-1:0] be;
-    be = '0;
-    unique case (size)
-      2'b00:   be[offset] = '1;  // byte
-      2'b01:   be[offset+:2] = '1;  // hword
-      2'b10:   be[offset+:4] = '1;  // word
-      default: be = '1;  // dword
-    endcase  // size
-    return be;
-  endfunction : to_byte_enable8
-
-  function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable4(
-      input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
-    logic [3:0] be;
-    be = '0;
-    unique case (size)
-      2'b00:   be[offset] = '1;  // byte
-      2'b01:   be[offset+:2] = '1;  // hword
-      default: be = '1;  // word
-    endcase  // size
-    return be;
-  endfunction : to_byte_enable4
-
-  // openpiton requires the data to be replicated in case of smaller sizes than dwords
-  function automatic riscv::xlen_t repData64(input riscv::xlen_t data,
-                                             input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
-                                             input logic [1:0] size);
-    riscv::xlen_t out;
-    unique case (size)
-      2'b00:   for (int k = 0; k < 8; k++) out[k*8+:8] = data[offset*8+:8];  // byte
-      2'b01:   for (int k = 0; k < 4; k++) out[k*16+:16] = data[offset*8+:16];  // hword
-      2'b10:   for (int k = 0; k < 2; k++) out[k*32+:32] = data[offset*8+:32];  // word
-      default: out = data;  // dword
-    endcase  // size
-    return out;
-  endfunction : repData64
-
-  function automatic riscv::xlen_t repData32(input riscv::xlen_t data,
-                                             input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
-                                             input logic [1:0] size);
-    riscv::xlen_t out;
-    unique case (size)
-      2'b00:   for (int k = 0; k < 4; k++) out[k*8+:8] = data[offset*8+:8];  // byte
-      2'b01:   for (int k = 0; k < 2; k++) out[k*16+:16] = data[offset*8+:16];  // hword
-      default: out = data;  // word
-    endcase  // size
-    return out;
-  endfunction : repData32
 
   // note: this is openpiton specific. cannot transmit unaligned words.
   // hence we default to individual bytes in that case, and they have to be transmitted

@@ -42,13 +42,13 @@ module issue_read_operands
     // rs1 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs1_o,
     // rs1 operand - scoreboard
-    input riscv::xlen_t rs1_i,
+    input logic [riscv::XLEN-1:0] rs1_i,
     // rs1 operand is valid - scoreboard
     input logic rs1_valid_i,
     // rs2 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs2_o,
     // rs2 operand - scoreboard
-    input riscv::xlen_t rs2_i,
+    input logic [riscv::XLEN-1:0] rs2_i,
     // rs2 operand is valid - scoreboard
     input logic rs2_valid_i,
     // rs3 operand address - scoreboard
@@ -65,9 +65,9 @@ module issue_read_operands
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output fu_data_t fu_data_o,
     // Unregistered version of fu_data_o.operanda - TO_BE_COMPLETED
-    output riscv::xlen_t rs1_forwarding_o,
+    output logic [riscv::XLEN-1:0] rs1_forwarding_o,
     // Unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
-    output riscv::xlen_t rs2_forwarding_o,
+    output logic [riscv::XLEN-1:0] rs2_forwarding_o,
     // Instruction pc - TO_BE_COMPLETED
     output logic [riscv::VLEN-1:0] pc_o,
     // Is compressed instruction - TO_BE_COMPLETED
@@ -116,13 +116,14 @@ module issue_read_operands
 );
   logic stall;
   logic fu_busy;  // functional unit is busy
-  riscv::xlen_t operand_a_regfile, operand_b_regfile;  // operands coming from regfile
+  logic [riscv::XLEN-1:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
   rs3_len_t
       operand_c_regfile,
       operand_c_fpr,
       operand_c_gpr;  // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
   // output flipflop (ID <-> EX)
-  riscv::xlen_t operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
+  logic [riscv::XLEN-1:0]
+      operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
 
   logic        alu_valid_q;
   logic        mult_valid_q;

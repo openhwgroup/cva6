@@ -79,7 +79,7 @@ module cva6_ptw_sv32
 
   // input registers
   logic data_rvalid_q;
-  riscv::xlen_t data_rdata_q;
+  logic [riscv::XLEN-1:0] data_rdata_q;
 
   riscv::pte_sv32_t pte;
   assign pte = riscv::pte_sv32_t'(data_rdata_q);

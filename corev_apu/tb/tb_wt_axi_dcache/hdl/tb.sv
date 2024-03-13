@@ -115,7 +115,7 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
   } reservation_t;
 
   logic [63:0] act_paddr[1:0];
-  riscv::xlen_t exp_rdata[1:0];
+  logic [riscv::XLEN-1:0] exp_rdata[1:0];
   logic [63:0] exp_paddr[1:0];
   logic [63:0] amo_act_mem;
   logic [63:0] amo_shadow;

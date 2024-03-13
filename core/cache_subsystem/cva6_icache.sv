@@ -37,7 +37,7 @@ module cva6_icache
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
     /// ID to be used for read transactions
-    parameter logic [MEM_TID_WIDTH-1:0] RdTxId = 0
+    parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 0
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -61,6 +61,10 @@ module cva6_icache
     input  logic         mem_data_ack_i,
     output icache_req_t  mem_data_o
 );
+
+  localparam ICACHE_OFFSET_WIDTH = $clog2(ariane_pkg::ICACHE_LINE_WIDTH / 8);
+  localparam ICACHE_NUM_WORDS = 2 ** (ariane_pkg::ICACHE_INDEX_WIDTH - ICACHE_OFFSET_WIDTH);
+  localparam ICACHE_CL_IDX_WIDTH = $clog2(ICACHE_NUM_WORDS);  // excluding byte offset
 
   // functions
   function automatic logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh(
@@ -551,8 +555,8 @@ module cva6_icache
   else $fatal(1, "[l1 icache] cl_hit signal must be hot1");
 
   // this is only used for verification!
-  logic vld_mirror[wt_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
-  logic [ariane_pkg::ICACHE_TAG_WIDTH-1:0] tag_mirror[wt_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
+  logic vld_mirror[ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
+  logic [ariane_pkg::ICACHE_TAG_WIDTH-1:0] tag_mirror[ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
   logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror

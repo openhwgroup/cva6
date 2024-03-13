@@ -7,31 +7,31 @@ module mult
     parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input  logic                             clk_i,
+    input  logic                         clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input  logic                             rst_ni,
+    input  logic                         rst_ni,
     // Flush - CONTROLLER
-    input  logic                             flush_i,
+    input  logic                         flush_i,
     // FU data needed to execute instruction - ISSUE_STAGE
-    input  fu_data_t                         fu_data_i,
+    input  fu_data_t                     fu_data_i,
     // Mult instruction is valid - ISSUE_STAGE
-    input  logic                             mult_valid_i,
+    input  logic                         mult_valid_i,
     // Mult result - ISSUE_STAGE
-    output riscv::xlen_t                     result_o,
+    output logic     [  riscv::XLEN-1:0] result_o,
     // Mult result is valid - ISSUE_STAGE
-    output logic                             mult_valid_o,
+    output logic                         mult_valid_o,
     // Mutl is ready - ISSUE_STAGE
-    output logic                             mult_ready_o,
+    output logic                         mult_ready_o,
     // Mult transaction ID - ISSUE_STAGE
-    output logic         [TRANS_ID_BITS-1:0] mult_trans_id_o
+    output logic     [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
   logic mul_valid;
   logic div_valid;
   logic div_ready_i;  // receiver of division result is able to accept the result
   logic [TRANS_ID_BITS-1:0] mul_trans_id;
   logic [TRANS_ID_BITS-1:0] div_trans_id;
-  riscv::xlen_t mul_result;
-  riscv::xlen_t div_result;
+  logic [riscv::XLEN-1:0] mul_result;
+  logic [riscv::XLEN-1:0] div_result;
 
   logic div_valid_op;
   logic mul_valid_op;
@@ -74,13 +74,13 @@ module mult
   // ---------------------
   // Division
   // ---------------------
-  riscv::xlen_t
+  logic [riscv::XLEN-1:0]
       operand_b,
       operand_a;  // input operands after input MUX (input silencing, word operations or full inputs)
-  riscv::xlen_t result;  // result before result mux
+  logic [riscv::XLEN-1:0] result;  // result before result mux
 
-  logic         div_signed;  // signed or unsigned division
-  logic         rem;  // is it a reminder (or not a reminder e.g.: a division)
+  logic                   div_signed;  // signed or unsigned division
+  logic                   rem;  // is it a reminder (or not a reminder e.g.: a division)
   logic word_op_d, word_op_q;  // save whether the operation was signed or not
 
   // is this a signed op?
@@ -102,8 +102,8 @@ module mult
       if (riscv::IS_XLEN64 && (fu_data_i.operation == DIVW || fu_data_i.operation == DIVUW || fu_data_i.operation == REMW || fu_data_i.operation == REMUW)) begin
         // yes so check if we should sign extend this is only done for a signed operation
         if (div_signed) begin
-          operand_a = sext32(fu_data_i.operand_a[31:0]);
-          operand_b = sext32(fu_data_i.operand_b[31:0]);
+          operand_a = sext32(CVA6Cfg, fu_data_i.operand_a[31:0]);
+          operand_b = sext32(CVA6Cfg, fu_data_i.operand_b[31:0]);
         end else begin
           operand_a = fu_data_i.operand_a[31:0];
           operand_b = fu_data_i.operand_b[31:0];
@@ -144,7 +144,7 @@ module mult
 
   // Result multiplexer
   // if it was a signed word operation the bit will be set and the result will be sign extended accordingly
-  assign div_result = (riscv::IS_XLEN64 && word_op_q) ? sext32(result) : result;
+  assign div_result = (riscv::IS_XLEN64 && word_op_q) ? sext32(CVA6Cfg, result) : result;
 
   // ---------------------
   // Registers

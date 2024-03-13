@@ -20,7 +20,7 @@ module wt_dcache_ctrl
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
-    parameter logic [CACHE_ID_WIDTH-1:0] RdTxId = 1
+    parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 1
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -32,13 +32,13 @@ module wt_dcache_ctrl
     output logic miss_req_o,
     input logic miss_ack_i,
     output logic miss_we_o,  // unused (set to 0)
-    output riscv::xlen_t miss_wdata_o,  // unused (set to 0)
+    output logic [riscv::XLEN-1:0] miss_wdata_o,  // unused (set to 0)
     output logic [DCACHE_USER_WIDTH-1:0] miss_wuser_o,  // unused (set to 0)
     output logic [DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // valid bits at the missed index
     output logic [riscv::PLEN-1:0] miss_paddr_o,
     output logic miss_nc_o,  // request to I/O space
     output logic [2:0] miss_size_o,  // 00: 1byte, 01: 2byte, 10: 4byte, 11: 8byte, 111: cacheline
-    output logic [CACHE_ID_WIDTH-1:0] miss_id_o,  // set to constant ID
+    output logic [CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id_o,  // set to constant ID
     input logic miss_replay_i,  // request collided with pending miss - have to replay the request
     input  logic                            miss_rtrn_vld_i, // signals that the miss has been served, asserted in the same cycle as when the data returns from memory
     // used to detect readout mux collisions
@@ -50,7 +50,7 @@ module wt_dcache_ctrl
     output logic rd_req_o,  // read the word at offset off_i[:3] in all ways
     output logic rd_tag_only_o,  // set to zero here
     input logic rd_ack_i,
-    input riscv::xlen_t rd_data_i,
+    input logic [riscv::XLEN-1:0] rd_data_i,
     input logic [DCACHE_USER_WIDTH-1:0] rd_user_i,
     input logic [DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,
     input logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_i

@@ -36,7 +36,7 @@ module cvxif_fu
     // CVXIF exception - ISSUE_STAGE
     output exception_t                                 x_exception_o,
     // CVXIF FU result - ISSUE_STAGE
-    output riscv::xlen_t                               x_result_o,
+    output logic                   [  riscv::XLEN-1:0] x_result_o,
     // CVXIF result valid - ISSUE_STAGE
     output logic                                       x_valid_o,
     // CVXIF write enable - ISSUE_STAGE

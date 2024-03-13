@@ -55,9 +55,9 @@ module commit_stage
     // Decoded CSR operation - CSR_REGFILE
     output fu_op csr_op_o,
     // Data to write to CSR - CSR_REGFILE
-    output riscv::xlen_t csr_wdata_o,
+    output logic [riscv::XLEN-1:0] csr_wdata_o,
     // Data to read from CSR - CSR_REGFILE
-    input riscv::xlen_t csr_rdata_i,
+    input logic [riscv::XLEN-1:0] csr_rdata_i,
     // Exception or interrupt occurred in CSR stage (the same as commit) - CSR_REGFILE
     input exception_t csr_exception_i,
     // Write the fflags CSR - CSR_REGFILE

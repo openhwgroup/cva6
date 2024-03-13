@@ -71,6 +71,26 @@ module miss_handler
   // Three MSHR ports + AMO port
   parameter NR_BYPASS_PORTS = NR_PORTS + 1;
 
+  // convert one hot to bin for -> needed for cache replacement
+  function automatic logic [std_cache_pkg::DCACHE_SET_ASSOC_WIDTH-1:0] one_hot_to_bin(
+      input logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] in);
+    for (int unsigned i = 0; i < ariane_pkg::DCACHE_SET_ASSOC; i++) begin
+      if (in[i]) return i;
+    end
+  endfunction
+  // get the first bit set, returns one hot value
+  function automatic logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] get_victim_cl(
+      input logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] valid_dirty);
+    // one-hot return vector
+    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] oh = '0;
+    for (int unsigned i = 0; i < ariane_pkg::DCACHE_SET_ASSOC; i++) begin
+      if (valid_dirty[i]) begin
+        oh[i] = 1'b1;
+        return oh;
+      end
+    end
+  endfunction
+
   // FSM states
   enum logic [3:0] {
     IDLE,                // 0

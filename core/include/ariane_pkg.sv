@@ -65,8 +65,8 @@ package ariane_pkg;
   localparam int unsigned LAT_NONCOMP = 'd1;
   localparam int unsigned LAT_CONV = 'd2;
 
-  localparam riscv::xlen_t OPENHWGROUP_MVENDORID = {{riscv::XLEN - 32{1'b0}}, 32'h0602};
-  localparam riscv::xlen_t ARIANE_MARCHID = {{riscv::XLEN - 32{1'b0}}, 32'd3};
+  localparam logic [31:0] OPENHWGROUP_MVENDORID = 32'h0602;
+  localparam logic [31:0] ARIANE_MARCHID = 32'd3;
 
   // 32 registers
   localparam REG_ADDR_SIZE = 5;
@@ -274,8 +274,6 @@ package ariane_pkg;
   localparam int unsigned DCACHE_LINE_WIDTH = cva6_config_pkg::CVA6ConfigDcacheLineWidth;  // in bit
   localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigDcacheLineWidth; // in bit
   localparam int unsigned DCACHE_USER_WIDTH = DATA_USER_WIDTH;
-
-  localparam int unsigned MEM_TID_WIDTH = cva6_config_pkg::CVA6ConfigMemTidWidth;
 `endif
 
   localparam int unsigned DCACHE_TID_WIDTH = cva6_config_pkg::CVA6ConfigDcacheIdWidth;
@@ -651,62 +649,14 @@ package ariane_pkg;
   // ----------------------
   // Arithmetic Functions
   // ----------------------
-  function automatic riscv::xlen_t sext32(logic [31:0] operand);
+  function automatic logic [riscv::XLEN-1:0] sext32(config_pkg::cva6_cfg_t Cfg,
+                                                    logic [31:0] operand);
     return {{riscv::XLEN - 32{operand[31]}}, operand[31:0]};
-  endfunction
-
-  // ----------------------
-  // Immediate functions
-  // ----------------------
-  function automatic logic [riscv::VLEN-1:0] uj_imm(logic [31:0] instruction_i);
-    return {
-      {44 + riscv::VLEN - 64{instruction_i[31]}},
-      instruction_i[19:12],
-      instruction_i[20],
-      instruction_i[30:21],
-      1'b0
-    };
-  endfunction
-
-  function automatic logic [riscv::VLEN-1:0] i_imm(logic [31:0] instruction_i);
-    return {{52 + riscv::VLEN - 64{instruction_i[31]}}, instruction_i[31:20]};
-  endfunction
-
-  function automatic logic [riscv::VLEN-1:0] sb_imm(logic [31:0] instruction_i);
-    return {
-      {51 + riscv::VLEN - 64{instruction_i[31]}},
-      instruction_i[31],
-      instruction_i[7],
-      instruction_i[30:25],
-      instruction_i[11:8],
-      1'b0
-    };
   endfunction
 
   // ----------------------
   // LSU Functions
   // ----------------------
-  // align data to address e.g.: shift data to be naturally 64
-  function automatic riscv::xlen_t data_align(logic [2:0] addr, logic [63:0] data);
-    // Set addr[2] to 1'b0 when 32bits
-    logic [ 2:0] addr_tmp = {(addr[2] && riscv::IS_XLEN64), addr[1:0]};
-    logic [63:0] data_tmp = {64{1'b0}};
-    case (addr_tmp)
-      3'b000: data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-1:0]};
-      3'b001:
-      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-9:0], data[riscv::XLEN-1:riscv::XLEN-8]};
-      3'b010:
-      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-17:0], data[riscv::XLEN-1:riscv::XLEN-16]};
-      3'b011:
-      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-25:0], data[riscv::XLEN-1:riscv::XLEN-24]};
-      3'b100: data_tmp = {data[31:0], data[63:32]};
-      3'b101: data_tmp = {data[23:0], data[63:24]};
-      3'b110: data_tmp = {data[15:0], data[63:16]};
-      3'b111: data_tmp = {data[7:0], data[63:8]};
-    endcase
-    return data_tmp[riscv::XLEN-1:0];
-  endfunction
-
   // generate byte enable mask
   function automatic logic [7:0] be_gen(logic [2:0] addr, logic [1:0] size);
     case (size)

@@ -35,8 +35,8 @@ module cva6_rvfi_probes
     input logic decoded_instr_valid_i,
     input logic decoded_instr_ack_i,
 
-    input riscv::xlen_t rs1_forwarding_i,
-    input riscv::xlen_t rs2_forwarding_i,
+    input logic [riscv::XLEN-1:0] rs1_forwarding_i,
+    input logic [riscv::XLEN-1:0] rs2_forwarding_i,
 
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     input exception_t ex_commit_i,

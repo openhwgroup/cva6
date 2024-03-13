@@ -47,7 +47,7 @@ module wt_dcache_mem
     output logic [NumPorts-1:0] rd_ack_o,
     output logic [DCACHE_SET_ASSOC-1:0] rd_vld_bits_o,
     output logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_o,
-    output riscv::xlen_t rd_data_o,
+    output logic [riscv::XLEN-1:0] rd_data_o,
     output logic [DCACHE_USER_WIDTH-1:0] rd_user_o,
 
     // only available on port 0, uses address signals of port 0
@@ -67,13 +67,16 @@ module wt_dcache_mem
     output logic wr_ack_o,
     input logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx_i,
     input logic [DCACHE_OFFSET_WIDTH-1:0] wr_off_i,
-    input riscv::xlen_t wr_data_i,
+    input logic [riscv::XLEN-1:0] wr_data_i,
     input logic [DCACHE_USER_WIDTH-1:0] wr_user_i,
     input logic [(riscv::XLEN/8)-1:0] wr_data_be_i,
 
     // forwarded wbuffer
     input wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_i
 );
+
+  localparam DCACHE_NUM_BANKS = ariane_pkg::DCACHE_LINE_WIDTH / riscv::XLEN;
+  localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
 
   // functions
   function automatic logic [DCACHE_NUM_BANKS-1:0] dcache_cl_bin2oh(
@@ -117,7 +120,7 @@ module wt_dcache_mem
 
   logic [DCACHE_WBUF_DEPTH-1:0] wbuffer_hit_oh;
   logic [  (riscv::XLEN/8)-1:0] wbuffer_be;
-  riscv::xlen_t wbuffer_rdata, rdata;
+  logic [riscv::XLEN-1:0] wbuffer_rdata, rdata;
   logic [DCACHE_USER_WIDTH-1:0] wbuffer_ruser, ruser;
   logic [riscv::PLEN-1:0] wbuffer_cmp_addr;
 

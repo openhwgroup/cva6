@@ -88,10 +88,10 @@ module wt_cache_subsystem
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
     logic [L1D_WAY_WIDTH-1:0] way;  // way to replace
     logic [riscv::PLEN-1:0] paddr;  // physical address
-    riscv::xlen_t data;  // word width of processor (no block stores at the moment)
+    logic [riscv::XLEN-1:0] data;  // word width of processor (no block stores at the moment)
     logic [ariane_pkg::DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
     logic nc;  // noncacheable
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     ariane_pkg::amo_t amo_op;  // amo opcode
   };
 
@@ -100,7 +100,7 @@ module wt_cache_subsystem
     logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
     logic [ariane_pkg::DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
     dcache_inval_t inv;  // invalidation vector
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
   };
 
   logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
