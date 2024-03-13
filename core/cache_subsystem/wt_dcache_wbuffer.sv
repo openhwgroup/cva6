@@ -72,7 +72,7 @@ module wt_dcache_wbuffer
     output logic [riscv::PLEN-1:0] miss_paddr_o,
     output logic miss_req_o,
     output logic miss_we_o,  // always 1 here
-    output riscv::xlen_t miss_wdata_o,
+    output logic [riscv::XLEN-1:0] miss_wdata_o,
     output logic [DCACHE_USER_WIDTH-1:0] miss_wuser_o,
     output logic [DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // unused here (set to 0)
     output logic miss_nc_o,  // request to I/O space
@@ -88,7 +88,7 @@ module wt_dcache_wbuffer
     output logic rd_req_o,  // read the word at offset off_i[:3] in all ways
     output logic rd_tag_only_o,  // set to 1 here as we do not have to read the data arrays
     input logic rd_ack_i,
-    input riscv::xlen_t rd_data_i,  // unused
+    input logic [riscv::XLEN-1:0] rd_data_i,  // unused
     input logic [DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,  // unused
     input logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_i,
     // cacheline writes
@@ -99,7 +99,7 @@ module wt_dcache_wbuffer
     input logic wr_ack_i,
     output logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx_o,
     output logic [DCACHE_OFFSET_WIDTH-1:0] wr_off_o,
-    output riscv::xlen_t wr_data_o,
+    output logic [riscv::XLEN-1:0] wr_data_o,
     output logic [(riscv::XLEN/8)-1:0] wr_data_be_o,
     output logic [DCACHE_USER_WIDTH-1:0] wr_user_o,
     // to forwarding logic and miss unit
@@ -134,10 +134,10 @@ module wt_dcache_wbuffer
   endfunction : to_byte_enable4
 
   // openpiton requires the data to be replicated in case of smaller sizes than dwords
-  function automatic riscv::xlen_t repData64(input riscv::xlen_t data,
+  function automatic logic [riscv::XLEN-1:0] repData64(input logic [riscv::XLEN-1:0] data,
                                              input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
                                              input logic [1:0] size);
-    riscv::xlen_t out;
+    logic [riscv::XLEN-1:0] out;
     unique case (size)
       2'b00:   for (int k = 0; k < 8; k++) out[k*8+:8] = data[offset*8+:8];  // byte
       2'b01:   for (int k = 0; k < 4; k++) out[k*16+:16] = data[offset*8+:16];  // hword
@@ -147,10 +147,10 @@ module wt_dcache_wbuffer
     return out;
   endfunction : repData64
 
-  function automatic riscv::xlen_t repData32(input riscv::xlen_t data,
+  function automatic logic [riscv::XLEN-1:0] repData32(input logic [riscv::XLEN-1:0] data,
                                              input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
                                              input logic [1:0] size);
-    riscv::xlen_t out;
+    logic [riscv::XLEN-1:0] out;
     unique case (size)
       2'b00:   for (int k = 0; k < 4; k++) out[k*8+:8] = data[offset*8+:8];  // byte
       2'b01:   for (int k = 0; k < 2; k++) out[k*16+:16] = data[offset*8+:16];  // hword

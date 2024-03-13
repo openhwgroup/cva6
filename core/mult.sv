@@ -17,7 +17,7 @@ module mult
     // Mult instruction is valid - ISSUE_STAGE
     input  logic                             mult_valid_i,
     // Mult result - ISSUE_STAGE
-    output riscv::xlen_t                     result_o,
+    output logic [riscv::XLEN-1:0]                     result_o,
     // Mult result is valid - ISSUE_STAGE
     output logic                             mult_valid_o,
     // Mutl is ready - ISSUE_STAGE
@@ -30,8 +30,8 @@ module mult
   logic div_ready_i;  // receiver of division result is able to accept the result
   logic [TRANS_ID_BITS-1:0] mul_trans_id;
   logic [TRANS_ID_BITS-1:0] div_trans_id;
-  riscv::xlen_t mul_result;
-  riscv::xlen_t div_result;
+  logic [riscv::XLEN-1:0] mul_result;
+  logic [riscv::XLEN-1:0] div_result;
 
   logic div_valid_op;
   logic mul_valid_op;
@@ -74,10 +74,10 @@ module mult
   // ---------------------
   // Division
   // ---------------------
-  riscv::xlen_t
+  logic [riscv::XLEN-1:0]
       operand_b,
       operand_a;  // input operands after input MUX (input silencing, word operations or full inputs)
-  riscv::xlen_t result;  // result before result mux
+  logic [riscv::XLEN-1:0] result;  // result before result mux
 
   logic         div_signed;  // signed or unsigned division
   logic         rem;  // is it a reminder (or not a reminder e.g.: a division)

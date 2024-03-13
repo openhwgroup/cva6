@@ -44,7 +44,7 @@ module load_unit
     // Load transaction ID - TO_BE_COMPLETED
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
     // Load result - TO_BE_COMPLETED
-    output riscv::xlen_t result_o,
+    output logic [riscv::XLEN-1:0] result_o,
     // Load exception - TO_BE_COMPLETED
     output exception_t ex_o,
     // Request address translation - TO_BE_COMPLETED
@@ -453,7 +453,7 @@ module load_unit
   // ---------------
   // Sign Extend
   // ---------------
-  riscv::xlen_t shifted_data;
+  logic [riscv::XLEN-1:0] shifted_data;
 
   // realign as needed
   assign shifted_data = req_port_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};

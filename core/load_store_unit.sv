@@ -50,7 +50,7 @@ module load_store_unit
     // Load transaction ID - ISSUE_STAGE
     output logic [TRANS_ID_BITS-1:0] load_trans_id_o,
     // Load result - ISSUE_STAGE
-    output riscv::xlen_t load_result_o,
+    output logic [riscv::XLEN-1:0] load_result_o,
     // Load result is valid - ISSUE_STAGE
     output logic load_valid_o,
     // Load exception - ISSUE_STAGE
@@ -59,7 +59,7 @@ module load_store_unit
     // Store transaction ID - ISSUE_STAGE
     output logic [TRANS_ID_BITS-1:0] store_trans_id_o,
     // Store result - ISSUE_STAGE
-    output riscv::xlen_t store_result_o,
+    output logic [riscv::XLEN-1:0] store_result_o,
     // Store result is valid - ISSUE_STAGE
     output logic store_valid_o,
     // Store exception - ISSUE_STAGE
@@ -145,7 +145,7 @@ module load_store_unit
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
   logic         [    riscv::VLEN-1:0] vaddr_i;
-  riscv::xlen_t                       vaddr_xlen;
+  logic [riscv::XLEN-1:0]                       vaddr_xlen;
   logic                               overflow;
   logic         [(riscv::XLEN/8)-1:0] be_i;
 
@@ -170,10 +170,10 @@ module load_store_unit
 
   logic                             ld_valid;
   logic         [TRANS_ID_BITS-1:0] ld_trans_id;
-  riscv::xlen_t                     ld_result;
+  logic [riscv::XLEN-1:0]                     ld_result;
   logic                             st_valid;
   logic         [TRANS_ID_BITS-1:0] st_trans_id;
-  riscv::xlen_t                     st_result;
+  logic [riscv::XLEN-1:0]                     st_result;
 
   logic         [             11:0] page_offset;
   logic                             page_offset_matches;

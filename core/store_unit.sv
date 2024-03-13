@@ -51,7 +51,7 @@ module store_unit
     // Transaction ID - ISSUE_STAGE
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
     // Store result - ISSUE_STAGE
-    output riscv::xlen_t result_o,
+    output logic [riscv::XLEN-1:0] result_o,
     // Store exception output - TO_BE_COMPLETED
     output exception_t ex_o,
     // Address translation request - TO_BE_COMPLETED
@@ -119,7 +119,7 @@ module store_unit
   logic instr_is_amo;
   assign instr_is_amo = is_amo(lsu_ctrl_i.operation);
   // keep the data and the byte enable for the second cycle (after address translation)
-  riscv::xlen_t st_data_n, st_data_q;
+  logic [riscv::XLEN-1:0] st_data_n, st_data_q;
   logic [(riscv::XLEN/8)-1:0] st_be_n, st_be_q;
   logic [1:0] st_data_size_n, st_data_size_q;
   amo_t amo_op_d, amo_op_q;

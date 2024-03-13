@@ -31,11 +31,11 @@ module multiplier
     // Multiplier operation - Mult
     input  fu_op                             operation_i,
     // A operand - Mult
-    input  riscv::xlen_t                     operand_a_i,
+    input  logic [riscv::XLEN-1:0]                     operand_a_i,
     // B operand - Mult
-    input  riscv::xlen_t                     operand_b_i,
+    input  logic [riscv::XLEN-1:0]                     operand_b_i,
     // Multiplier result - Mult
-    output riscv::xlen_t                     result_o,
+    output logic [riscv::XLEN-1:0]                     result_o,
     // Mutliplier result is valid - Mult
     output logic                             mult_valid_o,
     // Multiplier FU is ready - Mult
