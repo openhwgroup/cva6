@@ -21,13 +21,16 @@ behaviors: !!omap
       url:        https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L69C72-L71C56
       value:      any_subset("A..Z")
       normative:  y
+      spec_text:  # Quote original text
     relevant:     y # y|n
     relevant_why: "Affects subsequent code execution if bits are writable."
     behavior:
+      rationale:   # Text to explain choice.
       docs:
         addressed: y   # tbd/y/n
         compliant: y   # y/n
         correct:   y   # y/n, if 'n': add comment
+        doc_text:  ""  # Could be constructed using references to various fields, cf. VariConf Python library
         value:     ""  #
       rtl:
         addressed: y   # tbd/y/n
