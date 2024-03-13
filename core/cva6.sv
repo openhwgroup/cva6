@@ -105,6 +105,9 @@ module cva6
       branchpredict_sbe_t bp;  // branch predict scoreboard data structure
       logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                // we want jump accordingly e.g.: +4, +2
+      logic is_macro_instr;  // is an instruction executed as predefined sequence of instructions called macro definition
+      logic is_last_macro_instr;  // is last decoded 32bit instruction of macro definition
+      logic is_double_rd_macro_instr;  // is double move decoded 32bit instruction of macro definition
       logic vfp;  // is this a vector floating-point instruction?
     },
 
@@ -302,6 +305,7 @@ module cva6
   logic             [          riscv::VLEN-1:0] pc_commit;
   logic                                         eret;
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
+  logic             [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
 
   localparam NumPorts = 4;
   cvxif_pkg::cvxif_req_t cvxif_req;
@@ -884,6 +888,7 @@ module cva6
       .single_step_i     (single_step_csr_commit || single_step_acc_commit),
       .commit_instr_i    (commit_instr_id_commit),
       .commit_ack_o      (commit_ack),
+      .commit_macro_ack_o(commit_macro_ack),
       .no_st_pending_i   (no_st_pending_commit),
       .waddr_o           (waddr_commit_id),
       .wdata_o           (wdata_commit_id),
@@ -923,7 +928,7 @@ module cva6
       .flush_o               (flush_csr_ctrl),
       .halt_csr_o            (halt_csr_ctrl),
       .commit_instr_i        (commit_instr_id_commit),
-      .commit_ack_i          (commit_ack),
+      .commit_ack_i          (commit_macro_ack),
       .boot_addr_i           (boot_addr_i[riscv::VLEN-1:0]),
       .hart_id_i             (hart_id_i[riscv::XLEN-1:0]),
       .ex_i                  (ex_commit),
@@ -1548,7 +1553,7 @@ module cva6
 
       .lsu_ctrl_i  (rvfi_lsu_ctrl),
       .wbdata_i    (wbdata_ex_id),
-      .commit_ack_i(commit_ack),
+      .commit_ack_i(commit_macro_ack),
       .mem_paddr_i (rvfi_mem_paddr),
       .debug_mode_i(debug_mode),
       .wdata_i     (wdata_commit_id),
