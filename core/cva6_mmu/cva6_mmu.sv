@@ -384,7 +384,7 @@ module cva6_mmu
 
       end else if (PT_LEVELS == 3 && itlb_is_page[PT_LEVELS-2]) begin
 
-        icache_areq_o.fetch_paddr[PPNWMin-(VPN_LEN/PT_LEVELS):12] = icache_areq_i.fetch_vaddr[PPNWMin-(VPN_LEN/PT_LEVELS):12];
+        icache_areq_o.fetch_paddr[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS] = icache_areq_i.fetch_vaddr[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS];
 
       end
       // ---------//
