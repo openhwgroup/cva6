@@ -39,7 +39,7 @@ module wt_dcache_mem
     input logic rst_ni,
 
     // ports
-    input logic [NumPorts-1:0][DCACHE_TAG_WIDTH-1:0] rd_tag_i,  // tag in - comes one cycle later
+    input logic [NumPorts-1:0][CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_i,  // tag in - comes one cycle later
     input logic [NumPorts-1:0][DCACHE_CL_IDX_WIDTH-1:0] rd_idx_i,
     input logic [NumPorts-1:0][DCACHE_OFFSET_WIDTH-1:0] rd_off_i,
     input logic [NumPorts-1:0] rd_req_i,  // read the word at offset off_i[:3] in all ways
@@ -55,7 +55,7 @@ module wt_dcache_mem
     input logic                              wr_cl_vld_i,
     input logic                              wr_cl_nc_i,       // noncacheable access
     input logic [      DCACHE_SET_ASSOC-1:0] wr_cl_we_i,       // writes a full cacheline
-    input logic [      DCACHE_TAG_WIDTH-1:0] wr_cl_tag_i,
+    input logic [      CVA6Cfg.DCACHE_TAG_WIDTH-1:0] wr_cl_tag_i,
     input logic [   DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_i,
     input logic [   DCACHE_OFFSET_WIDTH-1:0] wr_cl_off_i,
     input logic [     DCACHE_LINE_WIDTH-1:0] wr_cl_data_i,
@@ -110,11 +110,11 @@ module wt_dcache_mem
   logic [DCACHE_NUM_BANKS-1:0][DCACHE_SET_ASSOC-1:0][DCACHE_USER_WIDTH-1:0] bank_ruser;  //
   logic [DCACHE_SET_ASSOC-1:0][DCACHE_USER_WIDTH-1:0]                      ruser_cl;          // selected word from each cacheline
 
-  logic [DCACHE_TAG_WIDTH-1:0] rd_tag;
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag;
   logic [DCACHE_SET_ASSOC-1:0] vld_req;  // bit enable for valid regs
   logic vld_we;  // valid bits write enable
   logic [DCACHE_SET_ASSOC-1:0] vld_wdata;  // valid bits to write
-  logic [DCACHE_SET_ASSOC-1:0][DCACHE_TAG_WIDTH-1:0]            tag_rdata;                    // these are the tags coming from the tagmem
+  logic [DCACHE_SET_ASSOC-1:0][CVA6Cfg.DCACHE_TAG_WIDTH-1:0]            tag_rdata;                    // these are the tags coming from the tagmem
   logic [DCACHE_CL_IDX_WIDTH-1:0] vld_addr;  // valid bit
 
   logic [$clog2(NumPorts)-1:0] vld_sel_d, vld_sel_q;
@@ -298,7 +298,7 @@ module wt_dcache_mem
   // memory arrays and regs
   ///////////////////////////////////////////////////////
 
-  logic [DCACHE_TAG_WIDTH:0] vld_tag_rdata[DCACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH:0] vld_tag_rdata[DCACHE_SET_ASSOC-1:0];
 
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_data_banks
     // Data RAM
@@ -323,13 +323,13 @@ module wt_dcache_mem
 
   for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin : gen_tag_srams
 
-    assign tag_rdata[i]     = vld_tag_rdata[i][DCACHE_TAG_WIDTH-1:0];
-    assign rd_vld_bits_o[i] = vld_tag_rdata[i][DCACHE_TAG_WIDTH];
+    assign tag_rdata[i]     = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
+    assign rd_vld_bits_o[i] = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH];
 
     // Tag RAM
     sram #(
         // tag + valid bit
-        .DATA_WIDTH(ariane_pkg::DCACHE_TAG_WIDTH + 1),
+        .DATA_WIDTH(CVA6Cfg.DCACHE_TAG_WIDTH + 1),
         .NUM_WORDS (wt_cache_pkg::DCACHE_NUM_WORDS)
     ) i_tag_sram (
         .clk_i  (clk_i),
@@ -401,7 +401,7 @@ module wt_dcache_mem
 
   // this is only used for verification!
   logic vld_mirror[wt_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
-  logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] tag_mirror[wt_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_mirror[wt_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
   logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror

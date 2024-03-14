@@ -42,7 +42,7 @@ module cache_ctrl
     input logic gnt_i,
     output cache_line_t data_o,
     output cl_be_t be_o,
-    output logic [DCACHE_TAG_WIDTH-1:0] tag_o,  //valid one cycle later
+    output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_o,  //valid one cycle later
     input cache_line_t [DCACHE_SET_ASSOC-1:0] data_i,
     output logic we_o,
     input logic [DCACHE_SET_ASSOC-1:0] hit_way_i,
@@ -80,7 +80,7 @@ module cache_ctrl
 
   typedef struct packed {
     logic [DCACHE_INDEX_WIDTH-1:0] index;
-    logic [DCACHE_TAG_WIDTH-1:0]   tag;
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   tag;
     logic [DCACHE_TID_WIDTH-1:0]   id;
     logic [7:0]                    be;
     logic [1:0]                    size;

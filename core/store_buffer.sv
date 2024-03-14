@@ -143,7 +143,7 @@ module store_buffer
   // those signals can directly be output to the memory
   assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
   // if we got a new request we already saved the tag from the previous cycle
-  assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_TAG_WIDTH     +
+  assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_TAG_WIDTH     +
                                                                                     ariane_pkg::DCACHE_INDEX_WIDTH-1 :
                                                                                     ariane_pkg::DCACHE_INDEX_WIDTH];
   assign req_port_o.data_wdata = commit_queue_q[commit_read_pointer_q].data;

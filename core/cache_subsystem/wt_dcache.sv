@@ -58,7 +58,7 @@ module wt_dcache
   localparam DCACHE_CL_IDX_WIDTH = $clog2(wt_cache_pkg::DCACHE_NUM_WORDS);
 
   localparam type wbuffer_t = struct packed {
-    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
     logic [riscv::XLEN-1:0] data;
     logic [ariane_pkg::DCACHE_USER_WIDTH-1:0] user;
     logic [(riscv::XLEN/8)-1:0] dirty;  // byte is dirty
@@ -75,7 +75,7 @@ module wt_dcache
   logic                                                             wr_cl_vld;
   logic                                                             wr_cl_nc;
   logic     [      DCACHE_SET_ASSOC-1:0]                            wr_cl_we;
-  logic     [      DCACHE_TAG_WIDTH-1:0]                            wr_cl_tag;
+  logic     [      CVA6Cfg.DCACHE_TAG_WIDTH-1:0]                            wr_cl_tag;
   logic     [   DCACHE_CL_IDX_WIDTH-1:0]                            wr_cl_idx;
   logic     [   DCACHE_OFFSET_WIDTH-1:0]                            wr_cl_off;
   logic     [     DCACHE_LINE_WIDTH-1:0]                            wr_cl_data;
@@ -109,7 +109,7 @@ module wt_dcache
   logic     [              NumPorts-1:0]                            rd_tag_only;
   logic     [              NumPorts-1:0]                            rd_req;
   logic     [              NumPorts-1:0]                            rd_ack;
-  logic     [              NumPorts-1:0][     DCACHE_TAG_WIDTH-1:0] rd_tag;
+  logic     [              NumPorts-1:0][     CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag;
   logic     [              NumPorts-1:0][  DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
   logic     [              NumPorts-1:0][  DCACHE_OFFSET_WIDTH-1:0] rd_off;
   logic     [           riscv::XLEN-1:0]                            rd_data;
@@ -245,7 +245,7 @@ module wt_dcache
       assign miss_nc[k] = 1'b0;
       assign miss_size[k] = 3'b0;
       assign miss_id[k] = {{CVA6Cfg.MEM_TID_WIDTH} {1'b0}};
-      assign rd_tag[k] = {{DCACHE_TAG_WIDTH} {1'b0}};
+      assign rd_tag[k] = {{CVA6Cfg.DCACHE_TAG_WIDTH} {1'b0}};
       assign rd_idx[k] = {{DCACHE_CL_IDX_WIDTH} {1'b0}};
       assign rd_off[k] = {{DCACHE_OFFSET_WIDTH} {1'b0}};
       assign rd_req[k] = 1'b0;

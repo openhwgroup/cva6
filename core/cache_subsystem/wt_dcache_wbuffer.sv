@@ -83,7 +83,7 @@ module wt_dcache_wbuffer
     input logic miss_rtrn_vld_i,
     input logic [CVA6Cfg.MEM_TID_WIDTH-1:0] miss_rtrn_id_i,  // transaction ID to clear
     // cache read interface
-    output logic [DCACHE_TAG_WIDTH-1:0] rd_tag_o,  // tag in - comes one cycle later
+    output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_o,  // tag in - comes one cycle later
     output logic [DCACHE_CL_IDX_WIDTH-1:0] rd_idx_o,
     output logic [DCACHE_OFFSET_WIDTH-1:0] rd_off_o,
     output logic rd_req_o,  // read the word at offset off_i[:3] in all ways
@@ -182,7 +182,7 @@ module wt_dcache_wbuffer
   logic [riscv::XLEN_ALIGN_BYTES-1:0] bdirty_off;
   logic [(riscv::XLEN/8)-1:0] tx_be;
   logic [riscv::PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
-  logic [DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
   logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
   logic check_en_d, check_en_q, check_en_q1;
   logic full, dirty_rd_en, rdy;
@@ -201,14 +201,14 @@ module wt_dcache_wbuffer
   ///////////////////////////////////////////////////////
   // misc
   ///////////////////////////////////////////////////////
-  logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] miss_tag;
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] miss_tag;
   logic is_nc_miss;
   logic is_ni;
-  assign miss_tag = miss_paddr_o[ariane_pkg::DCACHE_INDEX_WIDTH+:ariane_pkg::DCACHE_TAG_WIDTH];
+  assign miss_tag = miss_paddr_o[ariane_pkg::DCACHE_INDEX_WIDTH+:CVA6Cfg.DCACHE_TAG_WIDTH];
   assign is_nc_miss = !config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
       {
-        {64 - DCACHE_TAG_WIDTH - DCACHE_INDEX_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}
+        {64 - CVA6Cfg.DCACHE_TAG_WIDTH - DCACHE_INDEX_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}
       }
   );
   assign miss_nc_o = !cache_en_i || is_nc_miss;
@@ -216,7 +216,7 @@ module wt_dcache_wbuffer
   assign is_ni = config_pkg::is_inside_nonidempotent_regions(
       CVA6Cfg,
       {
-        {64 - DCACHE_TAG_WIDTH - DCACHE_INDEX_WIDTH{1'b0}},
+        {64 - CVA6Cfg.DCACHE_TAG_WIDTH - DCACHE_INDEX_WIDTH{1'b0}},
         req_port_i.address_tag,
         {DCACHE_INDEX_WIDTH{1'b0}}
       }
@@ -371,7 +371,7 @@ module wt_dcache_wbuffer
   ///////////////////////////////////////////////////////
 
   assign extract_tag = rd_paddr >> DCACHE_INDEX_WIDTH;
-  assign rd_tag_d = extract_tag[DCACHE_TAG_WIDTH-1:0];
+  assign rd_tag_d = extract_tag[CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
 
   // trigger TAG readout in cache
   assign rd_tag_only_o = 1'b1;

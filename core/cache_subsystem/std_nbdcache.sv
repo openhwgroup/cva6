@@ -47,13 +47,13 @@ module std_nbdcache
   import std_cache_pkg::*;
 
   localparam type cache_line_t = struct packed {
-    logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
     logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;   // data array
     logic                                     valid;  // state array
     logic                                     dirty;  // state array
   };
   localparam type cl_be_t = struct packed {
-    logic [(ariane_pkg::DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
+    logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
     logic [(ariane_pkg::DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
     logic [ariane_pkg::DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
   };
@@ -70,7 +70,7 @@ module std_nbdcache
   logic        [            NumPorts:0][DCACHE_INDEX_WIDTH-1:0] addr;
   logic        [            NumPorts:0]                         gnt;
   cache_line_t [  DCACHE_SET_ASSOC-1:0]                         rdata;
-  logic        [            NumPorts:0][  DCACHE_TAG_WIDTH-1:0] tag;
+  logic        [            NumPorts:0][  CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag;
 
   cache_line_t [            NumPorts:0]                         wdata;
   logic        [            NumPorts:0]                         we;
@@ -211,7 +211,7 @@ module std_nbdcache
     );
 
     sram #(
-        .DATA_WIDTH(DCACHE_TAG_WIDTH),
+        .DATA_WIDTH(CVA6Cfg.DCACHE_TAG_WIDTH),
         .NUM_WORDS (DCACHE_NUM_WORDS)
     ) tag_sram (
         .req_i  (req_ram[i]),

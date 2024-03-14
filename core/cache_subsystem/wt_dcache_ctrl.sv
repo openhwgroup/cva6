@@ -45,7 +45,7 @@ module wt_dcache_ctrl
     // used to detect readout mux collisions
     input logic wr_cl_vld_i,
     // cache memory interface
-    output logic [DCACHE_TAG_WIDTH-1:0] rd_tag_o,  // tag in - comes one cycle later
+    output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_o,  // tag in - comes one cycle later
     output logic [DCACHE_CL_IDX_WIDTH-1:0] rd_idx_o,
     output logic [DCACHE_OFFSET_WIDTH-1:0] rd_off_o,
     output logic rd_req_o,  // read the word at offset off_i[:3] in all ways
@@ -70,7 +70,7 @@ module wt_dcache_ctrl
   } state_e;
   state_e state_d, state_q;
 
-  logic [DCACHE_TAG_WIDTH-1:0] address_tag_d, address_tag_q;
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] address_tag_d, address_tag_q;
   logic [DCACHE_CL_IDX_WIDTH-1:0] address_idx_d, address_idx_q;
   logic [DCACHE_OFFSET_WIDTH-1:0] address_off_d, address_off_q;
   logic [DCACHE_TID_WIDTH-1:0] id_d, id_q;
@@ -105,7 +105,7 @@ module wt_dcache_ctrl
   // noncacheable if request goes to I/O space, or if cache is disabled
   assign miss_nc_o = (~cache_en_i) | (~config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
-      {{{64-DCACHE_TAG_WIDTH-DCACHE_INDEX_WIDTH}{1'b0}}, address_tag_q, {DCACHE_INDEX_WIDTH{1'b0}}}
+      {{{64-CVA6Cfg.DCACHE_TAG_WIDTH-DCACHE_INDEX_WIDTH}{1'b0}}, address_tag_q, {DCACHE_INDEX_WIDTH{1'b0}}}
   ));
 
 

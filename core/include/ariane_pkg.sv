@@ -262,7 +262,6 @@ package ariane_pkg;
   localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(
       CONFIG_L1D_SIZE / DCACHE_SET_ASSOC
   );  // in bit, contains also offset width
-  localparam int unsigned DCACHE_TAG_WIDTH = riscv::PLEN - DCACHE_INDEX_WIDTH;  // in bit
   localparam int unsigned DCACHE_LINE_WIDTH = cva6_config_pkg::CVA6ConfigDcacheLineWidth;  // in bit
   localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigDcacheLineWidth; // in bit
   localparam int unsigned DCACHE_USER_WIDTH = DATA_USER_WIDTH;

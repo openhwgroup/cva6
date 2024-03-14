@@ -176,7 +176,7 @@ module cva6
     // D$ data requests
     localparam type dcache_req_i_t = struct packed {
       logic [DCACHE_INDEX_WIDTH-1:0] address_index;
-      logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
+      logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
       logic [riscv::XLEN-1:0]        data_wdata;
       logic [DCACHE_USER_WIDTH-1:0]  data_wuser;
       logic                          data_req;

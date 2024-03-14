@@ -91,6 +91,7 @@ package build_config_pkg;
     cfg.ICACHE_SET_ASSOC_WIDTH = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
     cfg.ICACHE_TAG_WIDTH = riscv::PLEN - ariane_pkg::ICACHE_INDEX_WIDTH;
     cfg.DCACHE_SET_ASSOC_WIDTH = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
+    cfg.DCACHE_TAG_WIDTH = riscv::PLEN - ariane_pkg::DCACHE_INDEX_WIDTH;
 
     cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
 

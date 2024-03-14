@@ -249,7 +249,7 @@ module miss_handler
             mshr_d.valid = 1'b1;
             mshr_d.we    = miss_req_we[i];
             mshr_d.id    = i;
-            mshr_d.addr  = miss_req_addr[i][DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:0];
+            mshr_d.addr  = miss_req_addr[i][CVA6Cfg.DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:0];
             mshr_d.wdata = miss_req_wdata[i];
             mshr_d.be    = miss_req_be[i];
             break;
@@ -313,7 +313,7 @@ module miss_handler
           we_o         = 1'b1;
           be_o         = '1;
           be_o.vldrty  = evict_way_q;
-          data_o.tag   = mshr_q.addr[DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
+          data_o.tag   = mshr_q.addr[CVA6Cfg.DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
           data_o.data  = data_miss_fsm;
           data_o.valid = 1'b1;
           data_o.dirty = 1'b0;

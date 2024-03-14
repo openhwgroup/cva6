@@ -64,8 +64,8 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
 
   logic [63:0] paddr;
   logic seq_end_req, seq_end_ack, prog_end;
-  logic [DCACHE_TAG_WIDTH-1:0] tag_q;
-  logic [DCACHE_TAG_WIDTH-1:0] tag_vld_q;
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_q;
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_vld_q;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
       if(cnt==0) begin
         if(tmp_vld) begin
           tmp_vld   = 0;
-          tag_q     <= tmp_paddr[DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
+          tag_q     <= tmp_paddr[CVA6Cfg.DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
           tag_vld_q <= 1'b1;
         end else begin
           tag_vld_q <= 1'b0;
