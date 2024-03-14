@@ -30,6 +30,8 @@ module cva6_ptw_sv32
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int ASID_WIDTH = 1
 ) (
     input  logic clk_i,                  // Clock
@@ -77,7 +79,7 @@ module cva6_ptw_sv32
 
   // input registers
   logic data_rvalid_q;
-  riscv::xlen_t data_rdata_q;
+  logic [riscv::XLEN-1:0] data_rdata_q;
 
   riscv::pte_sv32_t pte;
   assign pte = riscv::pte_sv32_t'(data_rdata_q);

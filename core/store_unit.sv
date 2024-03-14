@@ -16,42 +16,91 @@
 module store_unit
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type lsu_ctrl_t = logic
 ) (
-    input logic clk_i,  // Clock
-    input logic rst_ni,  // Asynchronous reset active low
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Flush - CONTROLLER
     input logic flush_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic stall_st_pending_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic no_st_pending_o,
+    // Store buffer is empty - TO_BE_COMPLETED
     output logic store_buffer_empty_o,
-    // store unit input port
+    // Store instruction is valid - ISSUE_STAGE
     input logic valid_i,
+    // Data input - ISSUE_STAGE
     input lsu_ctrl_t lsu_ctrl_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic pop_st_o,
+    // Instruction commit - TO_BE_COMPLETED
     input logic commit_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic commit_ready_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
-    // store unit output port
+    // Store result is valid - ISSUE_STAGE
     output logic valid_o,
+    // Transaction ID - ISSUE_STAGE
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
-    output riscv::xlen_t result_o,
+    // Store result - ISSUE_STAGE
+    output logic [riscv::XLEN-1:0] result_o,
+    // Store exception output - TO_BE_COMPLETED
     output exception_t ex_o,
-    // MMU -> Address Translation
-    output logic translation_req_o,  // request address translation
-    output logic [riscv::VLEN-1:0] vaddr_o,  // virtual address out
+    // Address translation request - TO_BE_COMPLETED
+    output logic translation_req_o,
+    // Virtual address - TO_BE_COMPLETED
+    output logic [riscv::VLEN-1:0] vaddr_o,
+    // RVFI information - RVFI
     output [riscv::PLEN-1:0] rvfi_mem_paddr_o,
-    input logic [riscv::PLEN-1:0] paddr_i,  // physical address in
+    // Physical address - TO_BE_COMPLETED
+    input logic [riscv::PLEN-1:0] paddr_i,
+    // Exception raised before store - TO_BE_COMPLETED
     input exception_t ex_i,
-    input  logic                     dtlb_hit_i,       // will be one in the same cycle translation_req was asserted if it hits
-    // address checker
+    // Data TLB hit - lsu
+    input logic dtlb_hit_i,
+    // Address to be checked - load_unit
     input logic [11:0] page_offset_i,
+    // Address check result - load_unit
     output logic page_offset_matches_o,
-    // D$ interface
+    // AMO request - CACHES
     output amo_req_t amo_req_o,
+    // AMO response - CACHES
     input amo_resp_t amo_resp_i,
+    // Data cache request - CACHES
     input dcache_req_o_t req_port_i,
+    // Data cache response - CACHES
     output dcache_req_i_t req_port_o
 );
+
+  // align data to address e.g.: shift data to be naturally 64
+  function automatic [riscv::XLEN-1:0] data_align(logic [2:0] addr, logic [63:0] data);
+    // Set addr[2] to 1'b0 when 32bits
+    logic [ 2:0] addr_tmp = {(addr[2] && riscv::IS_XLEN64), addr[1:0]};
+    logic [63:0] data_tmp = {64{1'b0}};
+    case (addr_tmp)
+      3'b000: data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-1:0]};
+      3'b001:
+      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-9:0], data[riscv::XLEN-1:riscv::XLEN-8]};
+      3'b010:
+      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-17:0], data[riscv::XLEN-1:riscv::XLEN-16]};
+      3'b011:
+      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-25:0], data[riscv::XLEN-1:riscv::XLEN-24]};
+      3'b100: data_tmp = {data[31:0], data[63:32]};
+      3'b101: data_tmp = {data[23:0], data[63:24]};
+      3'b110: data_tmp = {data[15:0], data[63:16]};
+      3'b111: data_tmp = {data[7:0], data[63:8]};
+    endcase
+    return data_tmp[riscv::XLEN-1:0];
+  endfunction
+
   // it doesn't matter what we are writing back as stores don't return anything
   assign result_o = lsu_ctrl_i.data;
 
@@ -70,7 +119,7 @@ module store_unit
   logic instr_is_amo;
   assign instr_is_amo = is_amo(lsu_ctrl_i.operation);
   // keep the data and the byte enable for the second cycle (after address translation)
-  riscv::xlen_t st_data_n, st_data_q;
+  logic [riscv::XLEN-1:0] st_data_n, st_data_q;
   logic [(riscv::XLEN/8)-1:0] st_be_n, st_be_q;
   logic [1:0] st_data_size_n, st_data_size_q;
   amo_t amo_op_d, amo_op_q;
@@ -224,7 +273,9 @@ module store_unit
   // Store Queue
   // ---------------
   store_buffer #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t)
   ) store_buffer_i (
       .clk_i,
       .rst_ni,

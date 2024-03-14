@@ -1,0 +1,199 @@
+!Feature
+next_elt_id: 3
+name: RV32Zbc Carry-less multiplication
+id: 20
+display_order: 20
+subfeatures: !!omap
+- 000_CLMUL: !Subfeature
+    name: 000_CLMUL
+    tag: VP_ISA_RV32_F020_S000
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F020_S000_I000
+        description: "clmul rd, rs1, rs2\nx[rd] = carry_less_product(rs1, rs2)\nThe
+          lower-half on the carry-less product of rs1 and rs2 is placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F020_S000_I001
+        description: "clmul rd, rs1, rs2\nx[rd] = carry_less_product(rs1, rs2)\nThe
+          lower-half on the carry-less product of rs1 and rs2 is placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F020_S000_I002
+        description: "clmul rd, rs1, rs2\nx[rd] = carry_less_product(rs1, rs2)\nThe
+          lower-half on the carry-less product of rs1 and rs2 is placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_CLMULH: !Subfeature
+    name: 001_CLMULH
+    tag: VP_ISA_RV32_F020_S001
+    next_elt_id: 3
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F020_S001_I000
+        description: "clmulh rd, rs1, rs2\nx[rd] = carry_less_product(rs1, rs2) >>
+          32\nThe upper-half on the carry-less product of rs1 and rs2 is placed in
+          rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F020_S001_I001
+        description: "clmulh rd, rs1, rs2\nx[rd] = carry_less_product(rs1, rs2) >>
+          32\nThe upper-half on the carry-less product of rs1 and rs2 is placed in
+          rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F020_S001_I002
+        description: "clmulh rd, rs1, rs2\nx[rd] = carry_less_product(rs1, rs2) >>
+          32\nThe upper-half on the carry-less product of rs1 and rs2 is placed in
+          rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_CLMULR: !Subfeature
+    name: 002_CLMULR
+    tag: VP_ISA_RV32_F020_S002
+    next_elt_id: 3
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F020_S002_I000
+        description: "clmulr rd, rs1, rs2\nx[rd] = carry_less_product(rs1, rs2) >>
+          32\nclmulr produces bits 2.XLEN-2:XLEN-1 of the 2.XLEN carry-less product."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F020_S002_I001
+        description: "clmulr rd, rs1, rs2\nx[rd] = carry_less_product(rs1, rs2) >>
+          32\nclmulr produces bits 2.XLEN-2:XLEN-1 of the 2.XLEN carry-less product."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F020_S002_I002
+        description: "clmulr rd, rs1, rs2\nx[rd] = carry_less_product(rs1, rs2) >>
+          32\nclmulr produces bits 2.XLEN-2:XLEN-1 of the 2.XLEN carry-less product."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

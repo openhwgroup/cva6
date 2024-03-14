@@ -16,7 +16,8 @@
 module controller
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -159,6 +160,9 @@ module controller
       flush_tlb_o            = 1'b1;
     end
 
+    // ---------------------------------
+    // CSR side effects and accelerate port
+    // ---------------------------------
     // Set PC to commit stage and flush pipeline
     if (flush_csr_i || flush_acc_i) begin
       set_pc_commit_o        = 1'b1;

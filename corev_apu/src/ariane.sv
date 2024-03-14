@@ -15,8 +15,12 @@
 
 module ariane import ariane_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter bit IsRVFI = bit'(0),
-  parameter type rvfi_probes_t = logic,
+  parameter type rvfi_probes_instr_t = logic,
+  parameter type rvfi_probes_csr_t = logic,
+  parameter type rvfi_probes_t = struct packed {
+    logic csr;
+    logic instr;
+  },
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
@@ -51,7 +55,8 @@ module ariane import ariane_pkg::*; #(
 
   cva6 #(
     .CVA6Cfg ( CVA6Cfg ),
-    .IsRVFI ( IsRVFI ),
+    .rvfi_probes_instr_t ( rvfi_probes_instr_t ),
+    .rvfi_probes_csr_t ( rvfi_probes_csr_t ),
     .rvfi_probes_t ( rvfi_probes_t ),
     .axi_ar_chan_t (axi_ar_chan_t),
     .axi_aw_chan_t (axi_aw_chan_t),

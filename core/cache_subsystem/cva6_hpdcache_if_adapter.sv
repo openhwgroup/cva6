@@ -15,8 +15,10 @@ module cva6_hpdcache_if_adapter
 //  Parameters
 //  {{{
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg      = config_pkg::cva6_cfg_empty,
-    parameter bit                    is_load_port = 1'b1
+    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
+    parameter type                   dcache_req_i_t = logic,
+    parameter type                   dcache_req_o_t = logic,
+    parameter bit                    is_load_port   = 1'b1
 )
 //  }}}
 
@@ -31,10 +33,10 @@ module cva6_hpdcache_if_adapter
     input hpdcache_pkg::hpdcache_req_sid_t hpdcache_req_sid_i,
 
     //  Request/response ports from/to the CVA6 core
-    input  ariane_pkg::dcache_req_i_t cva6_req_i,
-    output ariane_pkg::dcache_req_o_t cva6_req_o,
-    input  ariane_pkg::amo_req_t      cva6_amo_req_i,
-    output ariane_pkg::amo_resp_t     cva6_amo_resp_o,
+    input  dcache_req_i_t         cva6_req_i,
+    output dcache_req_o_t         cva6_req_o,
+    input  ariane_pkg::amo_req_t  cva6_amo_req_i,
+    output ariane_pkg::amo_resp_t cva6_amo_resp_o,
 
     //  Request port to the L1 Dcache
     output logic                        hpdcache_req_valid_o,

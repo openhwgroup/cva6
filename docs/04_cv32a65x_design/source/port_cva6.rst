@@ -9,7 +9,7 @@
 
 .. _CVA6_cva6_ports:
 
-.. list-table:: cva6 module IO ports
+.. list-table:: **cva6 module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -60,12 +60,6 @@
      - SUBSYSTEM
      - logic
 
-   * - ``rvfi_probes_o``
-     - out
-     - Probes to build RVFI, can be left open when not used
-     - SUBSYSTEM
-     - rvfi_probes_t
-
    * - ``cvxif_req_o``
      - out
      - CVXIF request
@@ -94,3 +88,6 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 
 | As DebugEn = 0,
 |   ``debug_req_i`` input is tied to 0
+| As IsRVFI = 0,
+|   ``rvfi_probes_o`` output is tied to 0
+

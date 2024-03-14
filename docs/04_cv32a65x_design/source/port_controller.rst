@@ -9,7 +9,7 @@
 
 .. _CVA6_controller_ports:
 
-.. list-table:: controller module IO ports
+.. list-table:: **controller module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -84,12 +84,6 @@
      - CACHE
      - logic
 
-   * - ``flush_tlb_o``
-     - out
-     - Flush TLBs
-     - EX_STAGE
-     - logic
-
    * - ``halt_csr_i``
      - in
      - Halt request from CSR (WFI instruction)
@@ -126,24 +120,6 @@
      - CSR_REGFILE
      - logic
 
-   * - ``fence_i_i``
-     - in
-     - fence.i in
-     - ACC_DISPATCH
-     - logic
-
-   * - ``fence_i``
-     - in
-     - fence in
-     - ACC_DISPATCH
-     - logic
-
-   * - ``sfence_vma_i``
-     - in
-     - We got an instruction to flush the TLBs and pipeline
-     - COMMIT_STAGE
-     - logic
-
    * - ``flush_commit_i``
      - in
      - Flush request from commit stage
@@ -152,8 +128,16 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
+| As MMUPresent = 0,
+|   ``flush_tlb_o`` output is tied to 0
 | As EnableAccelerator = 0,
 |   ``halt_acc_i`` input is tied to 0
 |   ``flush_acc_i`` input is tied to 0
 | As DebugEn = 0,
 |   ``set_debug_pc_i`` input is tied to 0
+| As FenceEn = 0,
+|   ``fence_i_i`` input is tied to 0
+|   ``fence_i`` input is tied to 0
+| As RVS = 0,
+|   ``sfence_vma_i`` input is tied to 0
+

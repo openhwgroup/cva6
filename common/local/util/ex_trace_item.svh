@@ -13,7 +13,10 @@
 // Description: Instruction tracer single exception item
 
 `ifndef VERILATOR
-class ex_trace_item;
+class ex_trace_item #(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+);
+
     // contains a human readable form of the cause value
     string                  cause_s;
     logic [63:0]            cause;

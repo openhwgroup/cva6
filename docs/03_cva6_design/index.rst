@@ -15,8 +15,8 @@
 
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
-CVA6 Design Document
-====================
+CVA6 Design Document (deprecated)
+=================================
 Editor: **Florian Zaruba**
 `florian@openhwgroup.org <mailto:florian@openhwgroup.org?subject=CVA6%20Design%20Document>`__
 

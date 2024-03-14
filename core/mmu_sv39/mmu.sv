@@ -19,6 +19,13 @@ module mmu
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
+    parameter type                   icache_areq_t     = logic,
+    parameter type                   icache_arsp_t     = logic,
+    parameter type                   icache_dreq_t     = logic,
+    parameter type                   icache_drsp_t     = logic,
+    parameter type                   dcache_req_i_t    = logic,
+    parameter type                   dcache_req_o_t    = logic,
+    parameter type                   exception_t       = logic,
     parameter int unsigned           INSTR_TLB_ENTRIES = 4,
     parameter int unsigned           DATA_TLB_ENTRIES  = 4,
     parameter int unsigned           ASID_WIDTH        = 1
@@ -68,6 +75,15 @@ module mmu
     input logic [15:0][riscv::PLEN-3:0] pmpaddr_i
 );
 
+  localparam type tlb_update_t = struct packed {
+    logic                  valid;    // valid flag
+    logic                  is_2M;    //
+    logic                  is_1G;    //
+    logic [27-1:0]         vpn;      // VPN (39bits) = 27bits + 12bits offset
+    logic [ASID_WIDTH-1:0] asid;
+    riscv::pte_t           content;
+  };
+
   logic                   iaccess_err;  // insufficient privilege to access this instruction page
   logic                   daccess_err;  // insufficient privilege to access this data page
   logic                   ptw_active;  // PTW is currently walking a page table
@@ -98,9 +114,10 @@ module mmu
 
 
   tlb #(
-      .CVA6Cfg    (CVA6Cfg),
-      .TLB_ENTRIES(INSTR_TLB_ENTRIES),
-      .ASID_WIDTH (ASID_WIDTH)
+      .CVA6Cfg     (CVA6Cfg),
+      .tlb_update_t(tlb_update_t),
+      .TLB_ENTRIES (INSTR_TLB_ENTRIES),
+      .ASID_WIDTH  (ASID_WIDTH)
   ) i_itlb (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
@@ -121,9 +138,10 @@ module mmu
   );
 
   tlb #(
-      .CVA6Cfg    (CVA6Cfg),
-      .TLB_ENTRIES(DATA_TLB_ENTRIES),
-      .ASID_WIDTH (ASID_WIDTH)
+      .CVA6Cfg     (CVA6Cfg),
+      .tlb_update_t(tlb_update_t),
+      .TLB_ENTRIES (DATA_TLB_ENTRIES),
+      .ASID_WIDTH  (ASID_WIDTH)
   ) i_dtlb (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
@@ -146,6 +164,9 @@ module mmu
 
   ptw #(
       .CVA6Cfg   (CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .tlb_update_t(tlb_update_t),
       .ASID_WIDTH(ASID_WIDTH)
   ) i_ptw (
       .clk_i                 (clk_i),

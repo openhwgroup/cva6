@@ -167,7 +167,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          clknrst_cfg.enabled   == 1;
          isacov_cfg.enabled    == 1;
          rvfi_cfg.enabled      == 1;
-         rvfi_cfg.csr_enabled  == 0;
+         rvfi_cfg.csr_enabled  == 1;
       }
 
       isacov_cfg.seq_instr_group_x2_enabled == 1;
@@ -271,6 +271,7 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
 
    // Remove unsupported CSRs for Embedded configuration
    unsupported_csr_mask[uvma_core_cntrl_pkg::MTVAL] = 1;
+   unsupported_csr_mask[uvma_core_cntrl_pkg::MCOUNTINHIBIT] = 1;
 
    // Add supported CSRs for Embedded configuration
    for (int i = 0; i < MAX_NUM_HPMCOUNTERS; i++) begin
@@ -284,9 +285,6 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
    unsupported_csr_mask[uvma_core_cntrl_pkg::INSTRET] = 0;
    unsupported_csr_mask[uvma_core_cntrl_pkg::CYCLEH] = 0;
    unsupported_csr_mask[uvma_core_cntrl_pkg::INSTRETH] = 0;
-
-   // Exist but only-read zero in embedded application
-   unsupported_csr_mask[uvma_core_cntrl_pkg::MCOUNTINHIBIT] = 0;
 
    // Remove unsupported pmp CSRs
    if (nr_pmp_entries == 0) begin

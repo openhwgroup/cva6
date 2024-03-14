@@ -46,7 +46,8 @@
 module instr_queue
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type fetch_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -77,7 +78,7 @@ module instr_queue
     // Address at which to replay the fetch - FRONTEND
     output logic [riscv::VLEN-1:0] replay_addr_o,
     // Handshake’s data with ID_STAGE - ID_STAGE
-    output ariane_pkg::fetch_entry_t fetch_entry_o,
+    output fetch_entry_t fetch_entry_o,
     // Handshake’s valid with ID_STAGE - ID_STAGE
     output logic fetch_entry_valid_o,
     // Handshake’s ready with ID_STAGE - ID_STAGE

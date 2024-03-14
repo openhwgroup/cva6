@@ -13,24 +13,37 @@
 module cvxif_fu
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type exception_t = logic,
+    parameter type fu_data_t = logic
 ) (
+    // Subsystem Clock - SUBSYSTEM
     input  logic                                       clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input  logic                                       rst_ni,
+    // FU data needed to execute instruction - ISSUE_STAGE
     input  fu_data_t                                   fu_data_i,
+    // Current privilege mode - CSR_REGFILE
     input  riscv::priv_lvl_t                           priv_lvl_i,
-    //from issue
+    // CVXIF instruction is valid - ISSUE_STAGE
     input  logic                                       x_valid_i,
+    // CVXIF is ready - ISSUE_STAGE
     output logic                                       x_ready_o,
+    // Offloaded instruction - ISSUE_STAGE
     input  logic                   [             31:0] x_off_instr_i,
-    //to writeback
+    // CVXIF transaction ID - ISSUE_STAGE
     output logic                   [TRANS_ID_BITS-1:0] x_trans_id_o,
+    // CVXIF exception - ISSUE_STAGE
     output exception_t                                 x_exception_o,
-    output riscv::xlen_t                               x_result_o,
+    // CVXIF FU result - ISSUE_STAGE
+    output logic                   [  riscv::XLEN-1:0] x_result_o,
+    // CVXIF result valid - ISSUE_STAGE
     output logic                                       x_valid_o,
+    // CVXIF write enable - ISSUE_STAGE
     output logic                                       x_we_o,
-    //to coprocessor
+    // CVXIF request - SUBSYSTEM
     output cvxif_pkg::cvxif_req_t                      cvxif_req_o,
+    // CVXIF response - SUBSYSTEM
     input  cvxif_pkg::cvxif_resp_t                     cvxif_resp_i
 );
   localparam X_NUM_RS = ariane_pkg::NR_RGPR_PORTS;

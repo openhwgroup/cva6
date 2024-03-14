@@ -10,6 +10,7 @@
 module rvfi_tracer #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
+  parameter type rvfi_csr_t = logic,
   //
   parameter logic [7:0] HART_ID      = '0,
   parameter int unsigned DEBUG_START = 0,
@@ -18,6 +19,7 @@ module rvfi_tracer #(
   input logic                           clk_i,
   input logic                           rst_ni,
   input rvfi_instr_t[CVA6Cfg.NrCommitPorts-1:0] rvfi_i,
+  input rvfi_csr_t                      rvfi_csr_i,
   output logic[31:0]                    end_of_test_o
 );
 

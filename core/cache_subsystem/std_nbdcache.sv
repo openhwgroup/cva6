@@ -18,6 +18,8 @@ module std_nbdcache
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned NumPorts = 4,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
@@ -43,6 +45,18 @@ module std_nbdcache
 );
 
   import std_cache_pkg::*;
+
+  localparam type cache_line_t = struct packed {
+    logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
+    logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;   // data array
+    logic                                     valid;  // state array
+    logic                                     dirty;  // state array
+  };
+  localparam type cl_be_t = struct packed {
+    logic [(ariane_pkg::DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
+    logic [(ariane_pkg::DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
+    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
+  };
 
   // -------------------------------
   // Controller <-> Arbiter
@@ -95,7 +109,11 @@ module std_nbdcache
   generate
     for (genvar i = 0; i < NumPorts; i++) begin : master_ports
       cache_ctrl #(
-          .CVA6Cfg(CVA6Cfg)
+          .CVA6Cfg(CVA6Cfg),
+          .cache_line_t(cache_line_t),
+          .cl_be_t(cl_be_t),
+          .dcache_req_i_t(dcache_req_i_t),
+          .dcache_req_o_t(dcache_req_o_t)
       ) i_cache_ctrl (
           .bypass_i  (~enable_i),
           .busy_o    (busy[i]),
@@ -134,10 +152,12 @@ module std_nbdcache
   // Miss Handling Unit
   // ------------------
   miss_handler #(
-      .CVA6Cfg  (CVA6Cfg),
-      .NR_PORTS (NumPorts),
+      .CVA6Cfg(CVA6Cfg),
+      .NR_PORTS(NumPorts),
       .axi_req_t(axi_req_t),
-      .axi_rsp_t(axi_rsp_t)
+      .axi_rsp_t(axi_rsp_t),
+      .cache_line_t(cache_line_t),
+      .cl_be_t(cl_be_t)
   ) i_miss_handler (
       .flush_i              (flush_i),
       .busy_i               (|busy),
@@ -248,6 +268,8 @@ module std_nbdcache
       .CVA6Cfg         (CVA6Cfg),
       .NR_PORTS        (NumPorts + 1),
       .ADDR_WIDTH      (DCACHE_INDEX_WIDTH),
+      .l_data_t        (cache_line_t),
+      .l_be_t          (cl_be_t),
       .DCACHE_SET_ASSOC(DCACHE_SET_ASSOC)
   ) i_tag_cmp (
       .req_i    (req),

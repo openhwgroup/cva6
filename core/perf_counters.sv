@@ -16,8 +16,14 @@
 module perf_counters
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg  = config_pkg::cva6_cfg_empty,
-    parameter int unsigned           NumPorts = 3                            // number of miss ports
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type scoreboard_entry_t = logic,
+    parameter int unsigned NumPorts = 3  // number of miss ports
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -25,8 +31,8 @@ module perf_counters
     // SRAM like interface
     input logic [11:0] addr_i,  // read/write address (up to 6 counters possible)
     input logic we_i,  // write enable
-    input riscv::xlen_t data_i,  // data to write
-    output riscv::xlen_t data_o,  // data to read
+    input logic [riscv::XLEN-1:0] data_i,  // data to write
+    output logic [riscv::XLEN-1:0] data_o,  // data to read
     // from commit stage
     input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,     // the instruction we want to commit
     input  logic [CVA6Cfg.NrCommitPorts-1:0]              commit_ack_i,       // acknowledge that we are indeed committing
@@ -174,6 +180,25 @@ module perf_counters
             riscv::CSR_MHPM_EVENT_7,
             riscv::CSR_MHPM_EVENT_8   :
       data_o = mhpmevent_q[addr_i-riscv::CSR_MHPM_EVENT_3+1];
+      riscv::CSR_HPM_COUNTER_3,
+            riscv::CSR_HPM_COUNTER_4,
+            riscv::CSR_HPM_COUNTER_5,
+            riscv::CSR_HPM_COUNTER_6,
+            riscv::CSR_HPM_COUNTER_7,
+            riscv::CSR_HPM_COUNTER_8  :begin
+        if (riscv::XLEN == 32) data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3+1][31:0];
+        else data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3+1];
+      end
+      riscv::CSR_HPM_COUNTER_3H,
+            riscv::CSR_HPM_COUNTER_4H,
+            riscv::CSR_HPM_COUNTER_5H,
+            riscv::CSR_HPM_COUNTER_6H,
+            riscv::CSR_HPM_COUNTER_7H,
+            riscv::CSR_HPM_COUNTER_8H :begin
+        if (riscv::XLEN == 32)
+          data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3H+1][63:32];
+        else read_access_exception = 1'b1;
+      end
       default: data_o = 'b0;
     endcase
 

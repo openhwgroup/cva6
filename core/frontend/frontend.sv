@@ -18,38 +18,42 @@
 module frontend
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type fetch_entry_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // Fetch flush request - CONTROLLER
-    input logic flush_i,
-    // flush branch prediction - zero
-    input logic flush_bp_i,
-    // halt commit stage - CONTROLLER
-    input logic halt_i,
-    // Debug mode state - CSR
-    input logic debug_mode_i,
     // Next PC when reset - SUBSYSTEM
     input logic [riscv::VLEN-1:0] boot_addr_i,
-    // mispredict event and next PC - EXECUTE
-    input bp_resolve_t resolved_branch_i,
-    // Set the PC coming from COMMIT as next PC - CONTROLLER
+    // Flush branch prediction - zero
+    input logic flush_bp_i,
+    // Flush requested by FENCE, mis-predict and exception - CONTROLLER
+    input logic flush_i,
+    // Halt requested by WFI and Accelerate port - CONTROLLER
+    input logic halt_i,
+    // Set COMMIT PC as next PC requested by FENCE, CSR side-effect and Accelerate port - CONTROLLER
     input logic set_pc_commit_i,
-    // Next PC when flushing pipeline - COMMIT
+    // COMMIT PC - COMMIT
     input logic [riscv::VLEN-1:0] pc_commit_i,
-    // Next PC when returning from exception - CSR
-    input logic [riscv::VLEN-1:0] epc_i,
-    // Return from exception event - CSR
-    input logic eret_i,
-    // Next PC when jumping into exception - CSR
-    input logic [riscv::VLEN-1:0] trap_vector_base_i,
     // Exception event - COMMIT
     input logic ex_valid_i,
+    // Mispredict event and next PC - EXECUTE
+    input bp_resolve_t resolved_branch_i,
+    // Return from exception event - CSR
+    input logic eret_i,
+    // Next PC when returning from exception - CSR
+    input logic [riscv::VLEN-1:0] epc_i,
+    // Next PC when jumping into exception - CSR
+    input logic [riscv::VLEN-1:0] trap_vector_base_i,
     // Debug event - CSR
     input logic set_debug_pc_i,
+    // Debug mode state - CSR
+    input logic debug_mode_i,
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
     output icache_dreq_t icache_dreq_o,
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
@@ -61,6 +65,29 @@ module frontend
     // Handshake's ready between fetch and decode - ID_STAGE
     input logic fetch_entry_ready_i
 );
+
+  localparam type bht_update_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] pc;     // update at PC
+    logic                   taken;
+  };
+
+  localparam type btb_prediction_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] target_address;
+  };
+
+  localparam type btb_update_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] pc;              // update at PC
+    logic [riscv::VLEN-1:0] target_address;
+  };
+
+  localparam type ras_t = struct packed {
+    logic                   valid;
+    logic [riscv::VLEN-1:0] ra;
+  };
+
   // Instruction Cache Registers, from I$
   logic                            [                FETCH_WIDTH-1:0] icache_data_q;
   logic                                                              icache_valid_q;
@@ -422,15 +449,16 @@ module frontend
   end else begin : ras_gen
     ras #(
         .CVA6Cfg(CVA6Cfg),
+        .ras_t  (ras_t),
         .DEPTH  (CVA6Cfg.RASDepth)
     ) i_ras (
         .clk_i,
         .rst_ni,
-        .flush_i(flush_bp_i),
-        .push_i (ras_push),
-        .pop_i  (ras_pop),
-        .data_i (ras_update),
-        .data_o (ras_predict)
+        .flush_bp_i(flush_bp_i),
+        .push_i(ras_push),
+        .pop_i(ras_pop),
+        .data_i(ras_update),
+        .data_o(ras_predict)
     );
   end
 
@@ -444,11 +472,13 @@ module frontend
   end else begin : btb_gen
     btb #(
         .CVA6Cfg   (CVA6Cfg),
+        .btb_update_t(btb_update_t),
+        .btb_prediction_t(btb_prediction_t),
         .NR_ENTRIES(CVA6Cfg.BTBEntries)
     ) i_btb (
         .clk_i,
         .rst_ni,
-        .flush_i         (flush_bp_i),
+        .flush_bp_i      (flush_bp_i),
         .debug_mode_i,
         .vpc_i           (vpc_btb),
         .btb_update_i    (btb_update),
@@ -461,11 +491,12 @@ module frontend
   end else begin : bht_gen
     bht #(
         .CVA6Cfg   (CVA6Cfg),
+        .bht_update_t(bht_update_t),
         .NR_ENTRIES(CVA6Cfg.BHTEntries)
     ) i_bht (
         .clk_i,
         .rst_ni,
-        .flush_i         (flush_bp_i),
+        .flush_bp_i      (flush_bp_i),
         .debug_mode_i,
         .vpc_i           (icache_vaddr_q),
         .bht_update_i    (bht_update),
@@ -497,7 +528,8 @@ module frontend
   end
 
   instr_queue #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .fetch_entry_t(fetch_entry_t)
   ) i_instr_queue (
       .clk_i              (clk_i),
       .rst_ni             (rst_ni),
