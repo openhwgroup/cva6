@@ -247,7 +247,7 @@ module cva6_tlb
           tags_q[i].is_page[0][0],
           tags_q[i].is_page[HYP_EXT][0],
           {
-            tags_q[i].vpn[3*HYP_EXT][(VPN_LEN%PT_LEVELS)-1:0],
+            tags_q[i].vpn[3*HYP_EXT][(VPN_LEN%PT_LEVELS)-HYP_EXT:0],
             tags_q[i].vpn[2*HYP_EXT],
             tags_q[i].vpn[HYP_EXT],
             tags_q[i].vpn[0]

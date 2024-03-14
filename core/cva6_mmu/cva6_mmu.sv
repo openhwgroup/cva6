@@ -598,8 +598,8 @@ module cva6_mmu
 
       end else if (PT_LEVELS == 3 && dtlb_is_page_q[PT_LEVELS-2]) begin
 
-        lsu_paddr_o[PPNWMin-(VPN_LEN/PT_LEVELS):12] = lsu_vaddr_q[0][PPNWMin-(VPN_LEN/PT_LEVELS):12];
-        lsu_dtlb_ppn_o[PPNWMin-(VPN_LEN/PT_LEVELS):12] = lsu_vaddr_n[0][PPNWMin-(VPN_LEN/PT_LEVELS):12];
+        lsu_paddr_o[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS] = lsu_vaddr_q[0][PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS];
+        lsu_dtlb_ppn_o[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS] = lsu_vaddr_n[0][PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS];
 
       end
 
