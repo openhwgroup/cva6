@@ -89,9 +89,9 @@ module cva6_icache
 
   // replacement strategy
   logic                                update_lfsr;  // shift the LFSR
-  logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] inv_way;  // first non-valid encountered
-  logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] rnd_way;  // random index for replacement
-  logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] repl_way;  // way to replace
+  logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] inv_way;  // first non-valid encountered
+  logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] rnd_way;  // random index for replacement
+  logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] repl_way;  // way to replace
   logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] repl_way_oh_d, repl_way_oh_q;  // way to replace (onehot)
   logic all_ways_valid;  // we need to switch repl strategy since all are valid
 
@@ -408,7 +408,7 @@ module cva6_icache
   // generate random cacheline index
   lfsr #(
       .LfsrWidth(8),
-      .OutWidth ($clog2(CVA6Cfg.ICACHE_SET_ASSOC))
+      .OutWidth (CVA6Cfg.ICACHE_SET_ASSOC_WIDTH)
   ) i_lfsr (
       .clk_i (clk_i),
       .rst_ni(rst_ni),
@@ -421,7 +421,7 @@ module cva6_icache
   // tag comparison, hit generation
   ///////////////////////////////////////////////////////
 
-  logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] hit_idx;
+  logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] hit_idx;
 
   for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_tag_cmpsel
     assign cl_hit[i]  = (cl_tag_rdata[i] == cl_tag_d) & vld_rdata[i];
