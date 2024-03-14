@@ -54,6 +54,7 @@ module wt_dcache_wbuffer
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter DCACHE_CL_IDX_WIDTH = 0,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter type wbuffer_t = logic

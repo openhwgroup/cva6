@@ -18,6 +18,7 @@ module wt_dcache_ctrl
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter DCACHE_CL_IDX_WIDTH = 0,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 1

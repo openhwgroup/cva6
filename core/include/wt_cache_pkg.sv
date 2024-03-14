@@ -48,7 +48,6 @@ package wt_cache_pkg;
   // Calculated parameter
   localparam DCACHE_OFFSET_WIDTH = $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8);
   localparam DCACHE_NUM_WORDS = 2 ** (ariane_pkg::DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
-  localparam DCACHE_CL_IDX_WIDTH = $clog2(DCACHE_NUM_WORDS);  // excluding byte offset
 
   // write buffer parameterization
   localparam DCACHE_WBUF_DEPTH = ariane_pkg::WT_DCACHE_WBUF_DEPTH;

@@ -55,6 +55,8 @@ module wt_dcache
     output dcache_req_t  mem_data_o
 );
 
+  localparam DCACHE_CL_IDX_WIDTH = $clog2(wt_cache_pkg::DCACHE_NUM_WORDS);
+
   localparam type wbuffer_t = struct packed {
     logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
     logic [riscv::XLEN-1:0] data;
@@ -129,6 +131,7 @@ module wt_dcache
 
   wt_dcache_missunit #(
       .CVA6Cfg(CVA6Cfg),
+      .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH),
       .dcache_req_t(dcache_req_t),
       .dcache_rtrn_t(dcache_rtrn_t),
       .AmoTxId(RdAmoTxId),
@@ -192,6 +195,7 @@ module wt_dcache
       assign rd_prio[k] = 1'b1;
       wt_dcache_ctrl #(
           .CVA6Cfg(CVA6Cfg),
+          .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH),
           .dcache_req_i_t(dcache_req_i_t),
           .dcache_req_o_t(dcache_req_o_t),
           .RdTxId(RdAmoTxId)
@@ -258,6 +262,7 @@ module wt_dcache
 
   wt_dcache_wbuffer #(
       .CVA6Cfg(CVA6Cfg),
+      .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
       .wbuffer_t(wbuffer_t)
@@ -318,6 +323,7 @@ module wt_dcache
 
   wt_dcache_mem #(
       .CVA6Cfg  (CVA6Cfg),
+      .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH),
       .wbuffer_t(wbuffer_t),
       .NumPorts (NumPorts)
   ) i_wt_dcache_mem (

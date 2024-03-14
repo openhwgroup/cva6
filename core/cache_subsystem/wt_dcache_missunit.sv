@@ -19,6 +19,7 @@ module wt_dcache_missunit
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter DCACHE_CL_IDX_WIDTH = 0,
     parameter type dcache_req_t = logic,
     parameter type dcache_rtrn_t = logic,
     parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] AmoTxId = 1,  // TX id to be used for AMOs
