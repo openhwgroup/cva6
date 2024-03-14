@@ -168,7 +168,7 @@ module cva6
         logic                                      vld;  // invalidate only affected way
         logic                                      all;  // invalidate all ways
         logic [ariane_pkg::ICACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
-        logic [wt_cache_pkg::L1I_WAY_WIDTH-1:0]    way;  // way to invalidate
+        logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0]    way;  // way to invalidate
       } inv;  // invalidation vector
       logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     },

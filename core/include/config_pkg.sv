@@ -206,6 +206,7 @@ package config_pkg;
     bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
     bit                          AxiBurstWriteEn;
 
+    int unsigned ICACHE_SET_ASSOC_WIDTH;
     int unsigned DCACHE_SET_ASSOC_WIDTH;
 
     int unsigned DCACHE_MAX_TX;
