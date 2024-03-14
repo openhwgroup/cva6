@@ -254,7 +254,6 @@ package ariane_pkg;
   localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(
       CONFIG_L1I_SIZE / ICACHE_SET_ASSOC
   );  // in bit, contains also offset width
-  localparam int unsigned ICACHE_TAG_WIDTH = riscv::PLEN - ICACHE_INDEX_WIDTH;  // in bit
   localparam int unsigned ICACHE_LINE_WIDTH = cva6_config_pkg::CVA6ConfigIcacheLineWidth;  // in bit
   localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigIcacheLineWidth; // in bit
   // D$

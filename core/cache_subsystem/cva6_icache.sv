@@ -106,8 +106,8 @@ module cva6_icache
   logic [   ICACHE_SET_ASSOC-1:0] cl_req;  // request to memory array
   logic [ICACHE_CL_IDX_WIDTH-1:0] cl_index;  // this is a cache-line index, to memory array
   logic [ICACHE_OFFSET_WIDTH-1:0] cl_offset_d, cl_offset_q;  // offset in cache line
-  logic [ICACHE_TAG_WIDTH-1:0] cl_tag_d, cl_tag_q;  // this is the cache tag
-  logic [ICACHE_TAG_WIDTH-1:0]          cl_tag_rdata [ICACHE_SET_ASSOC-1:0]; // these are the tags coming from the tagmem
+  logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] cl_tag_d, cl_tag_q;  // this is the cache tag
+  logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0]          cl_tag_rdata [ICACHE_SET_ASSOC-1:0]; // these are the tags coming from the tagmem
   logic [ICACHE_LINE_WIDTH-1:0]         cl_rdata     [ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the cache
   logic [ICACHE_USER_LINE_WIDTH-1:0]    cl_ruser[ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the user cache
   logic [ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0] cl_sel;  // selected word from each cacheline
@@ -134,7 +134,7 @@ module cva6_icache
   ///////////////////////////////////////////////////////
 
   // extract tag from physical address, check if NC
-  assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH] : cl_tag_q;
+  assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[CVA6Cfg.ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH] : cl_tag_q;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
   assign paddr_is_nc = (~cache_en_q) | (~config_pkg::is_inside_cacheable_regions(
@@ -453,13 +453,13 @@ module cva6_icache
   ///////////////////////////////////////////////////////
 
 
-  logic [ICACHE_TAG_WIDTH:0] cl_tag_valid_rdata[ICACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.ICACHE_TAG_WIDTH:0] cl_tag_valid_rdata[ICACHE_SET_ASSOC-1:0];
 
   for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : gen_sram
     // Tag RAM
     sram #(
         // tag + valid bit
-        .DATA_WIDTH(ICACHE_TAG_WIDTH + 1),
+        .DATA_WIDTH(CVA6Cfg.ICACHE_TAG_WIDTH + 1),
         .NUM_WORDS (ICACHE_NUM_WORDS)
     ) tag_sram (
         .clk_i  (clk_i),
@@ -476,8 +476,8 @@ module cva6_icache
         .rdata_o(cl_tag_valid_rdata[i])
     );
 
-    assign cl_tag_rdata[i] = cl_tag_valid_rdata[i][ICACHE_TAG_WIDTH-1:0];
-    assign vld_rdata[i]    = cl_tag_valid_rdata[i][ICACHE_TAG_WIDTH];
+    assign cl_tag_rdata[i] = cl_tag_valid_rdata[i][CVA6Cfg.ICACHE_TAG_WIDTH-1:0];
+    assign vld_rdata[i]    = cl_tag_valid_rdata[i][CVA6Cfg.ICACHE_TAG_WIDTH];
 
     // Data RAM
     sram #(
@@ -556,7 +556,7 @@ module cva6_icache
 
   // this is only used for verification!
   logic vld_mirror[ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
-  logic [ariane_pkg::ICACHE_TAG_WIDTH-1:0] tag_mirror[ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] tag_mirror[ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
   logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
