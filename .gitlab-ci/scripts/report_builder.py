@@ -74,6 +74,22 @@ class TableMetric(Metric):
 class TableStatusMetric(Metric):
     "Table with status label for each line"
 
+    class _TableStatusMetricColumn():
+        def __init__(self, title, col_type):
+            self.title = title
+            self.col_type = col_type
+
+        def to_doc(self):
+            return { "title": self.title, "col_type": self.col_type }
+
+    def __init__(self, name):
+        super().__init__(name)
+        self.columns = []
+
+    def add_column(self, title, col_type):
+        "Set the table columns titles"
+        self.columns.append(TableStatusMetric._TableStatusMetricColumn(title, col_type))
+
     def add_pass_label(self, label, *col):
         "Insert a 'pass' line with given label in the table"
         self._add_value('pass', label, *col)
@@ -90,6 +106,12 @@ class TableStatusMetric(Metric):
     def add_fail(self, *col):
         "Insert a 'fail' line in the table"
         self.add_fail_label("FAIL", *col)
+
+    def to_doc(self):
+        doc = super().to_doc()
+        if len(self.columns) > 0:
+            doc['columns'] = list(map(lambda col: col.to_doc(), self.columns))
+        return doc
 
     def _add_value(self, status, label, *col):
         self.values.append((status, label, list(col)))
