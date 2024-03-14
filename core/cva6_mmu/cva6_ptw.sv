@@ -25,6 +25,8 @@ module cva6_ptw
 #(
     parameter type pte_cva6_t = logic,
     parameter type tlb_update_cva6_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned HYP_EXT = 0,
     parameter int ASID_WIDTH[HYP_EXT:0],
     parameter int unsigned VPN_LEN = 1,
@@ -82,7 +84,7 @@ module cva6_ptw
 
   // input registers
   logic data_rvalid_q;
-  riscv::xlen_t data_rdata_q;
+  logic [riscv::XLEN-1:0] data_rdata_q;
 
   pte_cva6_t [HYP_EXT*2:0] pte;  //[gpte_d,gpte_q,pte]
   // register to perform context switch between stages

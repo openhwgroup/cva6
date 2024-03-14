@@ -27,6 +27,13 @@ module cva6_mmu
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg                      = config_pkg::cva6_cfg_empty,
     // parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig, //This is the required config param in the hypervisor version for now
+    parameter type                   exception_t       = logic,
+    parameter type                   icache_areq_t     = logic,
+    parameter type                   icache_arsp_t     = logic,
+    parameter type                   icache_dreq_t     = logic,
+    parameter type                   icache_drsp_t     = logic,
+    parameter type                   dcache_req_i_t    = logic,
+    parameter type                   dcache_req_o_t    = logic,
     parameter int unsigned           INSTR_TLB_ENTRIES            = 4,
     parameter int unsigned           DATA_TLB_ENTRIES             = 4,
     parameter int unsigned           SHARED_TLB_DEPTH             = 64,
@@ -54,7 +61,7 @@ module cva6_mmu
     input exception_t misaligned_ex_i,
     input logic lsu_req_i,  // request address translation
     input logic [riscv::VLEN-1:0] lsu_vaddr_i,  // virtual address in
-    input riscv::xlen_t lsu_tinst_i,  // transformed instruction in
+    input logic [riscv::XLEN-1:0] lsu_tinst_i,  // transformed instruction in
     input logic lsu_is_store_i,  // the translation is requested by a store
     output logic csr_hs_ld_st_inst_o,  // hyp load store instruction
     // if we need to walk the page table we can't grant in the same cycle
@@ -265,6 +272,8 @@ module cva6_mmu
       //   .ArianeCfg              ( ArianeCfg             ), // this is the configuration needed in the hypervisor extension for now
       .pte_cva6_t       (pte_cva6_t),
       .tlb_update_cva6_t(tlb_update_cva6_t),
+      .dcache_req_i_t   (dcache_req_i_t),
+      .dcache_req_o_t   (dcache_req_o_t),
       .HYP_EXT          (HYP_EXT),
       .ASID_WIDTH       (ASID_WIDTH),
       .VPN_LEN          (VPN_LEN),
