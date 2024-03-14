@@ -16,7 +16,9 @@
 module commit_stage
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type exception_t = logic,
+    parameter type scoreboard_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -36,6 +38,8 @@ module commit_stage
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     // Acknowledge that we are indeed committing - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_o,
+    // Acknowledge that we are indeed committing - CSR_REGFILE
+    output logic [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack_o,
     // Register file write address - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_o,
     // Register file write data - ISSUE_STAGE
@@ -46,14 +50,14 @@ module commit_stage
     output logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_o,
     // Result of AMO operation - CACHE
     input amo_resp_t amo_resp_i,
-    // TO_BE_COMPLETED - FRONTEND_CSR
+    // TO_BE_COMPLETED - FRONTEND_CSR_REGFILE
     output logic [riscv::VLEN-1:0] pc_o,
     // Decoded CSR operation - CSR_REGFILE
     output fu_op csr_op_o,
     // Data to write to CSR - CSR_REGFILE
-    output riscv::xlen_t csr_wdata_o,
+    output logic [riscv::XLEN-1:0] csr_wdata_o,
     // Data to read from CSR - CSR_REGFILE
-    input riscv::xlen_t csr_rdata_i,
+    input logic [riscv::XLEN-1:0] csr_rdata_i,
     // Exception or interrupt occurred in CSR stage (the same as commit) - CSR_REGFILE
     input exception_t csr_exception_i,
     // Write the fflags CSR - CSR_REGFILE
@@ -114,6 +118,7 @@ module commit_stage
   assign commit_tran_id_o = commit_instr_i[0].trans_id;
 
   logic instr_0_is_amo;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
   assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
   // -------------------
   // Commit Instruction
@@ -122,6 +127,7 @@ module commit_stage
   always_comb begin : commit
     // default assignments
     commit_ack_o[0] = 1'b0;
+    commit_macro_ack[0] = 1'b0;
 
     amo_valid_commit_o = 1'b0;
 
@@ -142,6 +148,9 @@ module commit_stage
     // we will not commit the instruction if we took an exception
     // and we do not commit the instruction if we requested a halt
     if (commit_instr_i[0].valid && !commit_instr_i[0].ex.valid && !halt_i) begin
+      if (commit_instr_i[0].is_macro_instr && commit_instr_i[0].is_last_macro_instr)
+        commit_macro_ack[0] = 1'b1;
+      else commit_macro_ack[0] = 1'b0;
       // we can definitely write the register file
       // if the instruction is not committing anything the destination
       commit_ack_o[0] = 1'b1;
@@ -262,6 +271,10 @@ module commit_stage
           if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[1].op)) we_fpr_o[1] = 1'b1;
           else we_gpr_o[1] = 1'b1;
 
+          if (commit_instr_i[1].is_macro_instr && commit_instr_i[1].is_last_macro_instr)
+            commit_macro_ack[1] = 1'b1;
+          else commit_macro_ack[1] = 1'b0;
+
           commit_ack_o[1] = 1'b1;
 
           // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
@@ -279,6 +292,7 @@ module commit_stage
         end
       end
     end
+    commit_macro_ack_o = (commit_instr_i[0].is_macro_instr || commit_instr_i[1].is_macro_instr) ? commit_macro_ack : commit_ack_o;
   end
 
   // -----------------------------

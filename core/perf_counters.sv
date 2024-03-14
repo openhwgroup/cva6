@@ -16,8 +16,14 @@
 module perf_counters
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg  = config_pkg::cva6_cfg_empty,
-    parameter int unsigned           NumPorts = 3                            // number of miss ports
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type scoreboard_entry_t = logic,
+    parameter int unsigned NumPorts = 3  // number of miss ports
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -25,8 +31,8 @@ module perf_counters
     // SRAM like interface
     input logic [11:0] addr_i,  // read/write address (up to 6 counters possible)
     input logic we_i,  // write enable
-    input riscv::xlen_t data_i,  // data to write
-    output riscv::xlen_t data_o,  // data to read
+    input logic [riscv::XLEN-1:0] data_i,  // data to write
+    output logic [riscv::XLEN-1:0] data_o,  // data to read
     // from commit stage
     input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,     // the instruction we want to commit
     input  logic [CVA6Cfg.NrCommitPorts-1:0]              commit_ack_i,       // acknowledge that we are indeed committing

@@ -50,7 +50,6 @@ upstream GCC toolchain (default: 13.1.0) for bare-metal 32-bit and 64-bit applic
     sh get-toolchain.sh
 
     # 3. Build and install the toolchain (requires write+create permissions for $INSTALL_DIR.)
-    You can set 
     sh build-toolchain.sh $INSTALL_DIR
 
 ## File and directory structure

@@ -26,8 +26,9 @@ def parameters_extractor(spec_number, target):
         for line in fin:
             if "typedef struct packed" in line:
                 print_enable = 1
-            if "cva6_cfg_t" in line:
+            if "cva6_user_cfg_t" in line:
                 print_enable = 0
+                break
             d = re.match(r"^ *(.*) ([\S]*);\n", line)
             h = re.match(r"^ *\/\/ (.*)\n", line)
             if h and print_enable:

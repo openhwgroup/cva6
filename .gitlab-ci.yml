@@ -110,6 +110,7 @@ build_tools:
   stage: light tests
   rules: *on_dev
   before_script:
+    - git -C verif/core-v-verif fetch --unshallow
     - mkdir -p tools
     - mv artifacts/tools/spike tools
     - rm -rf artifacts/
@@ -458,6 +459,7 @@ smoke-gate:
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
   script:
+    - git -C verif/core-v-verif fetch --unshallow
     - mkdir -p tools
     - mv artifacts/tools/spike tools
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC

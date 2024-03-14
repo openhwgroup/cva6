@@ -21,7 +21,11 @@
 module load_unit
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -40,7 +44,7 @@ module load_unit
     // Load transaction ID - TO_BE_COMPLETED
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
     // Load result - TO_BE_COMPLETED
-    output riscv::xlen_t result_o,
+    output logic [riscv::XLEN-1:0] result_o,
     // Load exception - TO_BE_COMPLETED
     output exception_t ex_o,
     // Request address translation - TO_BE_COMPLETED
@@ -449,7 +453,7 @@ module load_unit
   // ---------------
   // Sign Extend
   // ---------------
-  riscv::xlen_t shifted_data;
+  logic [riscv::XLEN-1:0] shifted_data;
 
   // realign as needed
   assign shifted_data = req_port_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};

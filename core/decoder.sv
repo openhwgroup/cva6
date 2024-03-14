@@ -22,7 +22,11 @@
 module decoder
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type branchpredict_sbe_t = logic,
+    parameter type exception_t = logic,
+    parameter type irq_ctrl_t = logic,
+    parameter type scoreboard_entry_t = logic
 ) (
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
@@ -36,6 +40,12 @@ module decoder
     input logic is_illegal_i,
     // Instruction from fetch stage - FRONTEND
     input logic [31:0] instruction_i,
+    // Is a macro instruction - macro_decoder
+    input logic is_macro_instr_i,
+    // Is a last macro instruction - macro_decoder
+    input logic is_last_macro_instr_i,
+    // Is mvsa01/mva01s macro instruction - macro_decoder
+    input logic is_double_rd_macro_instr_i,
     // Is a branch predict instruction - FRONTEND
     input branchpredict_sbe_t branch_predict_i,
     // If an exception occured in fetch stage - FRONTEND
@@ -82,28 +92,38 @@ module decoder
   // --------------------
   // Immediate select
   // --------------------
-  enum logic         [3:0] {NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3} imm_select;
+  enum logic [3:0] {
+    NOIMM,
+    IIMM,
+    SIMM,
+    SBIMM,
+    UIMM,
+    JIMM,
+    RS3
+  } imm_select;
 
-  riscv::xlen_t                                                        imm_i_type;
-  riscv::xlen_t                                                        imm_s_type;
-  riscv::xlen_t                                                        imm_sb_type;
-  riscv::xlen_t                                                        imm_u_type;
-  riscv::xlen_t                                                        imm_uj_type;
-  riscv::xlen_t                                                        imm_bi_type;
+  logic [riscv::XLEN-1:0] imm_i_type;
+  logic [riscv::XLEN-1:0] imm_s_type;
+  logic [riscv::XLEN-1:0] imm_sb_type;
+  logic [riscv::XLEN-1:0] imm_u_type;
+  logic [riscv::XLEN-1:0] imm_uj_type;
+  logic [riscv::XLEN-1:0] imm_bi_type;
 
   // ---------------------------------------
   // Accelerator instructions' first-pass decoder
   // ---------------------------------------
-  logic                                                                is_accel;
-  scoreboard_entry_t                                                   acc_instruction;
-  logic                                                                acc_illegal_instr;
-  logic                                                                acc_is_control_flow_instr;
+  logic is_accel;
+  scoreboard_entry_t acc_instruction;
+  logic acc_illegal_instr;
+  logic acc_is_control_flow_instr;
 
   if (CVA6Cfg.EnableAccelerator) begin : gen_accel_decoder
     // This module is responsible for a light-weight decoding of accelerator instructions,
     // identifying them, but also whether they read/write scalar registers.
     // Accelerators are supposed to define this module.
-    cva6_accel_first_pass_decoder i_accel_decoder (
+    cva6_accel_first_pass_decoder #(
+        .scoreboard_entry_t(scoreboard_entry_t)
+    ) i_accel_decoder (
         .instruction_i(instruction_i),
         .fs_i(fs_i),
         .vs_i(vs_i),
@@ -122,27 +142,30 @@ module decoder
 
   always_comb begin : decoder
 
-    imm_select                  = NOIMM;
-    is_control_flow_instr_o     = 1'b0;
-    illegal_instr               = 1'b0;
-    illegal_instr_non_bm        = 1'b0;
-    illegal_instr_bm            = 1'b0;
-    illegal_instr_zic           = 1'b0;
-    instruction_o.pc            = pc_i;
-    instruction_o.trans_id      = '0;
-    instruction_o.fu            = NONE;
-    instruction_o.op            = ariane_pkg::ADD;
-    instruction_o.rs1           = '0;
-    instruction_o.rs2           = '0;
-    instruction_o.rd            = '0;
-    instruction_o.use_pc        = 1'b0;
-    instruction_o.is_compressed = is_compressed_i;
-    instruction_o.use_zimm      = 1'b0;
-    instruction_o.bp            = branch_predict_i;
-    instruction_o.vfp           = 1'b0;
-    ecall                       = 1'b0;
-    ebreak                      = 1'b0;
-    check_fprm                  = 1'b0;
+    imm_select                             = NOIMM;
+    is_control_flow_instr_o                = 1'b0;
+    illegal_instr                          = 1'b0;
+    illegal_instr_non_bm                   = 1'b0;
+    illegal_instr_bm                       = 1'b0;
+    illegal_instr_zic                      = 1'b0;
+    instruction_o.pc                       = pc_i;
+    instruction_o.trans_id                 = '0;
+    instruction_o.fu                       = NONE;
+    instruction_o.op                       = ariane_pkg::ADD;
+    instruction_o.rs1                      = '0;
+    instruction_o.rs2                      = '0;
+    instruction_o.rd                       = '0;
+    instruction_o.use_pc                   = 1'b0;
+    instruction_o.is_compressed            = is_compressed_i;
+    instruction_o.is_macro_instr           = is_macro_instr_i;
+    instruction_o.is_last_macro_instr      = is_last_macro_instr_i;
+    instruction_o.is_double_rd_macro_instr = is_double_rd_macro_instr_i;
+    instruction_o.use_zimm                 = 1'b0;
+    instruction_o.bp                       = branch_predict_i;
+    instruction_o.vfp                      = 1'b0;
+    ecall                                  = 1'b0;
+    ebreak                                 = 1'b0;
+    check_fprm                             = 1'b0;
 
     if (~ex_i.valid) begin
       case (instr.rtype.opcode)
@@ -1320,7 +1343,7 @@ module decoder
   // ---------------------
   // Exception handling
   // ---------------------
-  riscv::xlen_t interrupt_cause;
+  logic [riscv::XLEN-1:0] interrupt_cause;
 
   // this instruction has already executed if the exception is valid
   assign instruction_o.valid = instruction_o.ex.valid;

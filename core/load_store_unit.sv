@@ -17,6 +17,15 @@ module load_store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type fu_data_t = logic,
+    parameter type icache_areq_t = logic,
+    parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
+    parameter type lsu_ctrl_t = logic,
     parameter int unsigned ASID_WIDTH = 1
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -41,7 +50,7 @@ module load_store_unit
     // Load transaction ID - ISSUE_STAGE
     output logic [TRANS_ID_BITS-1:0] load_trans_id_o,
     // Load result - ISSUE_STAGE
-    output riscv::xlen_t load_result_o,
+    output logic [riscv::XLEN-1:0] load_result_o,
     // Load result is valid - ISSUE_STAGE
     output logic load_valid_o,
     // Load exception - ISSUE_STAGE
@@ -50,7 +59,7 @@ module load_store_unit
     // Store transaction ID - ISSUE_STAGE
     output logic [TRANS_ID_BITS-1:0] store_trans_id_o,
     // Store result - ISSUE_STAGE
-    output riscv::xlen_t store_result_o,
+    output logic [riscv::XLEN-1:0] store_result_o,
     // Store result is valid - ISSUE_STAGE
     output logic store_valid_o,
     // Store exception - ISSUE_STAGE
@@ -118,26 +127,27 @@ module load_store_unit
     // RVFI information - RVFI
     output            [riscv::PLEN-1:0] rvfi_mem_paddr_o
 );
+
   // data is misaligned
-  logic                               data_misaligned;
+  logic                            data_misaligned;
   // --------------------------------------
   // 1st register stage - (stall registers)
   // --------------------------------------
   // those are the signals which are always correct
   // e.g.: they keep the value in the stall case
-  lsu_ctrl_t                          lsu_ctrl;
+  lsu_ctrl_t                       lsu_ctrl;
 
-  logic                               pop_st;
-  logic                               pop_ld;
+  logic                            pop_st;
+  logic                            pop_ld;
 
   // ------------------------------
   // Address Generation Unit (AGU)
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
-  logic         [    riscv::VLEN-1:0] vaddr_i;
-  riscv::xlen_t                       vaddr_xlen;
-  logic                               overflow;
-  logic         [(riscv::XLEN/8)-1:0] be_i;
+  logic      [    riscv::VLEN-1:0] vaddr_i;
+  logic      [    riscv::XLEN-1:0] vaddr_xlen;
+  logic                            overflow;
+  logic      [(riscv::XLEN/8)-1:0] be_i;
 
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
   assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
@@ -154,23 +164,23 @@ module load_store_unit
   logic                   translation_valid;
   logic [riscv::VLEN-1:0] mmu_vaddr;
   logic [riscv::PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
-  exception_t                       mmu_exception;
-  logic                             dtlb_hit;
-  logic         [  riscv::PPNW-1:0] dtlb_ppn;
+  exception_t                     mmu_exception;
+  logic                           dtlb_hit;
+  logic       [  riscv::PPNW-1:0] dtlb_ppn;
 
-  logic                             ld_valid;
-  logic         [TRANS_ID_BITS-1:0] ld_trans_id;
-  riscv::xlen_t                     ld_result;
-  logic                             st_valid;
-  logic         [TRANS_ID_BITS-1:0] st_trans_id;
-  riscv::xlen_t                     st_result;
+  logic                           ld_valid;
+  logic       [TRANS_ID_BITS-1:0] ld_trans_id;
+  logic       [  riscv::XLEN-1:0] ld_result;
+  logic                           st_valid;
+  logic       [TRANS_ID_BITS-1:0] st_trans_id;
+  logic       [  riscv::XLEN-1:0] st_result;
 
-  logic         [             11:0] page_offset;
-  logic                             page_offset_matches;
+  logic       [             11:0] page_offset;
+  logic                           page_offset_matches;
 
-  exception_t                       misaligned_exception;
-  exception_t                       ld_ex;
-  exception_t                       st_ex;
+  exception_t                     misaligned_exception;
+  exception_t                     ld_ex;
+  exception_t                     st_ex;
 
   // -------------------
   // MMU e.g.: TLBs/PTW
@@ -185,6 +195,13 @@ module load_store_unit
 
     cva6_mmu #(
         .CVA6Cfg          (CVA6Cfg),
+        .exception_t      (exception_t),
+        .icache_areq_t    (icache_areq_t),
+        .icache_arsp_t    (icache_arsp_t),
+        .icache_dreq_t    (icache_dreq_t),
+        .icache_drsp_t    (icache_drsp_t),
+        .dcache_req_i_t   (dcache_req_i_t),
+        .dcache_req_o_t   (dcache_req_o_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
         .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
         .SHARED_TLB_DEPTH (cva6_config_pkg::CVA6ConfigSharedTlbDepth),
@@ -285,7 +302,11 @@ module load_store_unit
   // Store Unit
   // ------------------
   store_unit #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .exception_t(exception_t),
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) i_store_unit (
       .clk_i,
       .rst_ni,
@@ -327,7 +348,11 @@ module load_store_unit
   // Load Unit
   // ------------------
   load_unit #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .exception_t(exception_t),
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
       .valid_i   (ld_valid_i),
       .lsu_ctrl_i(lsu_ctrl),
@@ -521,7 +546,8 @@ module load_store_unit
   };
 
   lsu_bypass #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) lsu_bypass_i (
       .lsu_req_i      (lsu_req_i),
       .lsu_req_valid_i(lsu_valid_i),

@@ -47,6 +47,28 @@ module instr_scan #(
     // Instruction compressed immediat - FRONTEND
     output logic [riscv::VLEN-1:0] rvc_imm_o
 );
+
+  function automatic logic [riscv::VLEN-1:0] uj_imm(logic [31:0] instruction_i);
+    return {
+      {44 + riscv::VLEN - 64{instruction_i[31]}},
+      instruction_i[19:12],
+      instruction_i[20],
+      instruction_i[30:21],
+      1'b0
+    };
+  endfunction
+
+  function automatic logic [riscv::VLEN-1:0] sb_imm(logic [31:0] instruction_i);
+    return {
+      {51 + riscv::VLEN - 64{instruction_i[31]}},
+      instruction_i[31],
+      instruction_i[7],
+      instruction_i[30:25],
+      instruction_i[11:8],
+      1'b0
+    };
+  endfunction
+
   logic is_rvc;
   assign is_rvc = (instr_i[1:0] != 2'b11);
 
@@ -62,11 +84,7 @@ module instr_scan #(
   // Opocde is JAL[R] and destination register is either x1 or x5
   assign rvi_call_o = (rvi_jalr_o | rvi_jump_o) & ((instr_i[11:7] == 5'd1) | instr_i[11:7] == 5'd5);
   // differentiates between JAL and BRANCH opcode, JALR comes from BHT
-  assign rvi_imm_o = is_xret ? '0 : (instr_i[3]) ? ariane_pkg::uj_imm(
-      instr_i
-  ) : ariane_pkg::sb_imm(
-      instr_i
-  );
+  assign rvi_imm_o = is_xret ? '0 : (instr_i[3]) ? uj_imm(instr_i) : sb_imm(instr_i);
   assign rvi_branch_o = (instr_i[6:0] == riscv::OpcodeBranch);
   assign rvi_jalr_o = (instr_i[6:0] == riscv::OpcodeJalr);
   assign rvi_jump_o = logic'(instr_i[6:0] == riscv::OpcodeJal) | is_xret;

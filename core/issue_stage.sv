@@ -17,7 +17,12 @@
 module issue_stage
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type branchpredict_sbe_t = logic,
+    parameter type exception_t = logic,
+    parameter type fu_data_t = logic,
+    parameter type scoreboard_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -127,11 +132,11 @@ module issue_stage
   fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;
 
   logic              [   REG_ADDR_SIZE-1:0] rs1_iro_sb;
-  riscv::xlen_t                             rs1_sb_iro;
+  logic              [     riscv::XLEN-1:0] rs1_sb_iro;
   logic                                     rs1_valid_sb_iro;
 
   logic              [   REG_ADDR_SIZE-1:0] rs2_iro_sb;
-  riscv::xlen_t                             rs2_sb_iro;
+  logic              [     riscv::XLEN-1:0] rs2_sb_iro;
   logic                                     rs2_valid_iro_sb;
 
   logic              [   REG_ADDR_SIZE-1:0] rs3_iro_sb;
@@ -143,8 +148,8 @@ module issue_stage
   logic                                     issue_instr_valid_sb_iro;
   logic                                     issue_ack_iro_sb;
 
-  riscv::xlen_t                             rs1_forwarding_xlen;
-  riscv::xlen_t                             rs2_forwarding_xlen;
+  logic              [     riscv::XLEN-1:0] rs1_forwarding_xlen;
+  logic              [     riscv::XLEN-1:0] rs2_forwarding_xlen;
 
   assign rs1_forwarding_o = rs1_forwarding_xlen[riscv::VLEN-1:0];
   assign rs2_forwarding_o = rs2_forwarding_xlen[riscv::VLEN-1:0];
@@ -157,8 +162,11 @@ module issue_stage
   // 2. Manage instructions in a scoreboard
   // ---------------------------------------------------------
   scoreboard #(
-      .CVA6Cfg  (CVA6Cfg),
-      .rs3_len_t(rs3_len_t)
+      .CVA6Cfg   (CVA6Cfg),
+      .rs3_len_t (rs3_len_t),
+      .bp_resolve_t(bp_resolve_t),
+      .exception_t(exception_t),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) i_scoreboard (
       .sb_full_o          (sb_full_o),
       .unresolved_branch_i(1'b0),
@@ -193,7 +201,10 @@ module issue_stage
   // 3. Issue instruction and read operand, also commit
   // ---------------------------------------------------------
   issue_read_operands #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
+      .fu_data_t(fu_data_t),
+      .scoreboard_entry_t(scoreboard_entry_t),
       .rs3_len_t(rs3_len_t)
   ) i_issue_read_operands (
       .flush_i            (flush_unissued_instr_i),

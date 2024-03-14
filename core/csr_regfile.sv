@@ -16,9 +16,13 @@
 module csr_regfile
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
-    parameter int                    AsidWidth      = 1,
-    parameter int unsigned           MHPMCounterNum = 6
+    parameter config_pkg::cva6_cfg_t CVA6Cfg            = config_pkg::cva6_cfg_empty,
+    parameter type                   exception_t        = logic,
+    parameter type                   irq_ctrl_t         = logic,
+    parameter type                   scoreboard_entry_t = logic,
+    parameter type                   rvfi_probes_csr_t  = logic,
+    parameter int                    AsidWidth          = 1,
+    parameter int unsigned           MHPMCounterNum     = 6
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -140,10 +144,16 @@ module csr_regfile
     output rvfi_probes_csr_t rvfi_csr_o
 );
 
+  typedef struct packed {
+    logic [riscv::ModeW-1:0] mode;
+    logic [riscv::ASIDW-1:0] asid;
+    logic [riscv::PPNW-1:0]  ppn;
+  } satp_t;
+
   // internal signal to keep track of access exceptions
   logic read_access_exception, update_access_exception, privilege_violation;
   logic csr_we, csr_read;
-  riscv::xlen_t csr_wdata, csr_rdata;
+  logic [riscv::XLEN-1:0] csr_wdata, csr_rdata;
   riscv::priv_lvl_t trap_to_priv_lvl;
   // register for enabling load store address translation, this is critical, hence the register
   logic en_ld_st_translation_d, en_ld_st_translation_q;
@@ -154,8 +164,8 @@ module csr_regfile
   // CSR write causes us to mark the FPU state as dirty
   logic dirty_fp_state_csr;
   riscv::mstatus_rv_t mstatus_q, mstatus_d;
-  riscv::xlen_t mstatus_extended;
-  riscv::satp_t satp_q, satp_d;
+  logic [riscv::XLEN-1:0] mstatus_extended;
+  satp_t satp_q, satp_d;
   riscv::dcsr_t dcsr_q, dcsr_d;
   riscv::csr_t csr_addr;
   // privilege level register
@@ -164,30 +174,30 @@ module csr_regfile
   logic debug_mode_q, debug_mode_d;
   logic mtvec_rst_load_q;  // used to determine whether we came out of reset
 
-  riscv::xlen_t dpc_q, dpc_d;
-  riscv::xlen_t dscratch0_q, dscratch0_d;
-  riscv::xlen_t dscratch1_q, dscratch1_d;
-  riscv::xlen_t mtvec_q, mtvec_d;
-  riscv::xlen_t medeleg_q, medeleg_d;
-  riscv::xlen_t mideleg_q, mideleg_d;
-  riscv::xlen_t mip_q, mip_d;
-  riscv::xlen_t mie_q, mie_d;
-  riscv::xlen_t mcounteren_q, mcounteren_d;
-  riscv::xlen_t mscratch_q, mscratch_d;
-  riscv::xlen_t mepc_q, mepc_d;
-  riscv::xlen_t mcause_q, mcause_d;
-  riscv::xlen_t mtval_q, mtval_d;
+  logic [riscv::XLEN-1:0] dpc_q, dpc_d;
+  logic [riscv::XLEN-1:0] dscratch0_q, dscratch0_d;
+  logic [riscv::XLEN-1:0] dscratch1_q, dscratch1_d;
+  logic [riscv::XLEN-1:0] mtvec_q, mtvec_d;
+  logic [riscv::XLEN-1:0] medeleg_q, medeleg_d;
+  logic [riscv::XLEN-1:0] mideleg_q, mideleg_d;
+  logic [riscv::XLEN-1:0] mip_q, mip_d;
+  logic [riscv::XLEN-1:0] mie_q, mie_d;
+  logic [riscv::XLEN-1:0] mcounteren_q, mcounteren_d;
+  logic [riscv::XLEN-1:0] mscratch_q, mscratch_d;
+  logic [riscv::XLEN-1:0] mepc_q, mepc_d;
+  logic [riscv::XLEN-1:0] mcause_q, mcause_d;
+  logic [riscv::XLEN-1:0] mtval_q, mtval_d;
   logic fiom_d, fiom_q;
 
-  riscv::xlen_t stvec_q, stvec_d;
-  riscv::xlen_t scounteren_q, scounteren_d;
-  riscv::xlen_t sscratch_q, sscratch_d;
-  riscv::xlen_t sepc_q, sepc_d;
-  riscv::xlen_t scause_q, scause_d;
-  riscv::xlen_t stval_q, stval_d;
-  riscv::xlen_t dcache_q, dcache_d;
-  riscv::xlen_t icache_q, icache_d;
-  riscv::xlen_t acc_cons_q, acc_cons_d;
+  logic [riscv::XLEN-1:0] stvec_q, stvec_d;
+  logic [riscv::XLEN-1:0] scounteren_q, scounteren_d;
+  logic [riscv::XLEN-1:0] sscratch_q, sscratch_d;
+  logic [riscv::XLEN-1:0] sepc_q, sepc_d;
+  logic [riscv::XLEN-1:0] scause_q, scause_d;
+  logic [riscv::XLEN-1:0] stval_q, stval_d;
+  logic [riscv::XLEN-1:0] dcache_q, dcache_d;
+  logic [riscv::XLEN-1:0] icache_q, icache_d;
+  logic [riscv::XLEN-1:0] acc_cons_q, acc_cons_d;
 
   logic wfi_d, wfi_q;
 
@@ -199,7 +209,7 @@ module csr_regfile
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
   logic [3:0] index;
 
-  localparam riscv::xlen_t IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
+  localparam logic [riscv::XLEN-1:0] IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (riscv::XLEN'(CVA6Cfg.RVB) << 1)  // C - Bitmanip extension
   | (riscv::XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
   | (riscv::XLEN'(CVA6Cfg.RVD) << 3)  // D - Double precision floating-point extension
@@ -356,8 +366,8 @@ module csr_regfile
           if (CVA6Cfg.RVU && riscv::XLEN == 32) csr_rdata = '0;
           else read_access_exception = 1'b1;
         end
-        riscv::CSR_MVENDORID: csr_rdata = OPENHWGROUP_MVENDORID;
-        riscv::CSR_MARCHID: csr_rdata = ARIANE_MARCHID;
+        riscv::CSR_MVENDORID: csr_rdata = {{riscv::XLEN - 32{1'b0}}, OPENHWGROUP_MVENDORID};
+        riscv::CSR_MARCHID: csr_rdata = {{riscv::XLEN - 32{1'b0}}, ARIANE_MARCHID};
         riscv::CSR_MIMPID: csr_rdata = '0;  // not implemented
         riscv::CSR_MHARTID: csr_rdata = hart_id_i;
         riscv::CSR_MCONFIGPTR: csr_rdata = '0;  // not implemented
@@ -594,9 +604,9 @@ module csr_regfile
   // ---------------------------
   // CSR Write and update logic
   // ---------------------------
-  riscv::xlen_t mask;
+  logic [riscv::XLEN-1:0] mask;
   always_comb begin : csr_update
-    automatic riscv::satp_t satp;
+    automatic satp_t satp;
     automatic logic [63:0] instret;
 
 
@@ -817,7 +827,7 @@ module csr_regfile
             // intercept SATP writes if in S-Mode and TVM is enabled
             if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm) update_access_exception = 1'b1;
             else begin
-              satp      = riscv::satp_t'(csr_wdata);
+              satp      = satp_t'(csr_wdata);
               // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
               satp.asid = satp.asid & {{(riscv::ASIDW - AsidWidth) {1'b0}}, {AsidWidth{1'b1}}};
               // only update if we actually support this mode

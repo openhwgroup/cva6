@@ -17,6 +17,14 @@ module cva6_hpdcache_subsystem
 //  {{{
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type icache_areq_t = logic,
+    parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
+    parameter type icache_req_t = logic,
+    parameter type icache_rtrn_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int NumPorts = 4,
     parameter int NrHwPrefetchers = 4,
     // AXI types
@@ -35,60 +43,88 @@ module cva6_hpdcache_subsystem
 //  Ports
 //  {{{
 (
+
+    // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
+
+    //  AXI port to upstream memory/peripherals
+    //  {{{
+    // noc request, can be AXI or OpenPiton - SUBSYSTEM
+    output noc_req_t  noc_req_o,
+    // noc response, can be AXI or OpenPiton - SUBSYSTEM
+    input  noc_resp_t noc_resp_i,
+    //  }}}
 
     //  I$
     //  {{{
-    input logic icache_en_i,  // enable icache (or bypass e.g: in debug mode)
-    input logic icache_flush_i,  // flush the icache, flush and kill have to be asserted together
-    output logic icache_miss_o,  // to performance counter
-    // address translation requests
-    input ariane_pkg::icache_areq_t icache_areq_i,  // to/from frontend
-    output ariane_pkg::icache_arsp_t icache_areq_o,
-    // data requests
-    input ariane_pkg::icache_dreq_t icache_dreq_i,  // to/from frontend
-    output ariane_pkg::icache_drsp_t icache_dreq_o,
+    // Instruction cache enable - CSR_REGFILE
+    input logic icache_en_i,
+    // Flush the instruction cache - CONTROLLER
+    input logic icache_flush_i,
+    // instructino cache miss - PERF_COUNTERS
+    output logic icache_miss_o,
+    // Input address translation request - EX_STAGE
+    input icache_areq_t icache_areq_i,
+    // Output address translation request - EX_STAGE
+    output icache_arsp_t icache_areq_o,
+    // Input data translation request - FRONTEND
+    input icache_dreq_t icache_dreq_i,
+    // Output data translation request - FRONTEND
+    output icache_drsp_t icache_dreq_o,
     //   }}}
 
     //  D$
     //  {{{
     //    Cache management
-    input logic dcache_enable_i,  // from CSR
-    input logic dcache_flush_i,  // high until acknowledged
-    output logic                       dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
-    output logic dcache_miss_o,  // we missed on a ld/st
+    // Data cache enable - CSR_REGFILE
+    input  logic dcache_enable_i,
+    // Data cache flush - CONTROLLER
+    input  logic dcache_flush_i,
+    // Flush acknowledge - CONTROLLER
+    output logic dcache_flush_ack_o,
+    // Load or store miss - PERF_COUNTERS
+    output logic dcache_miss_o,
 
-    //  AMO interface
-    input  ariane_pkg::amo_req_t                     dcache_amo_req_i,    // from LSU
-    output ariane_pkg::amo_resp_t                    dcache_amo_resp_o,   // to LSU
-    //  CMO interface
-    input  cmo_req_t                                 dcache_cmo_req_i,    // from CMO FU
-    output cmo_rsp_t                                 dcache_cmo_resp_o,   // to CMO FU
-    //  Request ports
-    input  ariane_pkg::dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,  // from LSU
-    output ariane_pkg::dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,  // to LSU
-    //  Write Buffer status
-    output logic                                     wbuffer_empty_o,
-    output logic                                     wbuffer_not_ni_o,
+    // AMO request - EX_STAGE
+    input  ariane_pkg::amo_req_t                 dcache_amo_req_i,
+    // AMO response - EX_STAGE
+    output ariane_pkg::amo_resp_t                dcache_amo_resp_o,
+    // CMO interface request - TO_BE_COMPLETED
+    input  cmo_req_t                             dcache_cmo_req_i,
+    // CMO interface response - TO_BE_COMPLETED
+    output cmo_rsp_t                             dcache_cmo_resp_o,
+    // Data cache input request ports - EX_STAGE
+    input  dcache_req_i_t         [NumPorts-1:0] dcache_req_ports_i,
+    // Data cache output request ports - EX_STAGE
+    output dcache_req_o_t         [NumPorts-1:0] dcache_req_ports_o,
+    // Write buffer status to know if empty - EX_STAGE
+    output logic                                 wbuffer_empty_o,
+    // Write buffer status to know if not non idempotent - EX_STAGE
+    output logic                                 wbuffer_not_ni_o,
 
     //  Hardware memory prefetcher configuration
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0]       hwpf_base_set_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0][63:0] hwpf_base_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_base_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0]       hwpf_param_set_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0][63:0] hwpf_param_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_param_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0]       hwpf_throttle_set_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_o,
-    output logic [               63:0]       hwpf_status_o,
-    //  }}}
-
-    //  AXI port to upstream memory/peripherals
-    //  {{{
-    output noc_req_t  noc_req_o,
-    input  noc_resp_t noc_resp_i
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    output logic [               63:0]       hwpf_status_o
     //  }}}
 );
   //  }}}
@@ -96,16 +132,22 @@ module cva6_hpdcache_subsystem
   //  I$ instantiation
   //  {{{
   logic icache_miss_valid, icache_miss_ready;
-  wt_cache_pkg::icache_req_t icache_miss;
+  icache_req_t icache_miss;
 
   logic icache_miss_resp_valid;
-  wt_cache_pkg::icache_rtrn_t icache_miss_resp;
+  icache_rtrn_t icache_miss_resp;
 
-  localparam int ICACHE_RDTXID = 1 << (ariane_pkg::MEM_TID_WIDTH - 1);
+  localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
 
   cva6_icache #(
       .CVA6Cfg(CVA6Cfg),
-      .RdTxId (ICACHE_RDTXID)
+      .icache_areq_t(icache_areq_t),
+      .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
+      .RdTxId(ICACHE_RDTXID)
   ) i_cva6_icache (
       .clk_i         (clk_i),
       .rst_ni        (rst_ni),
@@ -140,7 +182,7 @@ module cva6_hpdcache_subsystem
   localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
 
   typedef logic [riscv::PLEN-1:0] hpdcache_mem_addr_t;
-  typedef logic [ariane_pkg::MEM_TID_WIDTH-1:0] hpdcache_mem_id_t;
+  typedef logic [CVA6Cfg.MEM_TID_WIDTH-1:0] hpdcache_mem_id_t;
   typedef logic [CVA6Cfg.AxiDataWidth-1:0] hpdcache_mem_data_t;
   typedef logic [CVA6Cfg.AxiDataWidth/8-1:0] hpdcache_mem_be_t;
   `HPDCACHE_TYPEDEF_MEM_REQ_T(hpdcache_mem_req_t, hpdcache_mem_addr_t, hpdcache_mem_id_t);
@@ -212,14 +254,16 @@ module cva6_hpdcache_subsystem
   hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
 
   generate
-    ariane_pkg::dcache_req_i_t dcache_req_ports[HPDCACHE_NREQUESTERS-1:0];
+    dcache_req_i_t dcache_req_ports[HPDCACHE_NREQUESTERS-1:0];
 
     for (genvar r = 0; r < (NumPorts - 1); r++) begin : cva6_hpdcache_load_if_adapter_gen
       assign dcache_req_ports[r] = dcache_req_ports_i[r];
 
       cva6_hpdcache_if_adapter #(
-          .CVA6Cfg     (CVA6Cfg),
-          .is_load_port(1'b1)
+          .CVA6Cfg       (CVA6Cfg),
+          .dcache_req_i_t(dcache_req_i_t),
+          .dcache_req_o_t(dcache_req_o_t),
+          .is_load_port  (1'b1)
       ) i_cva6_hpdcache_load_if_adapter (
           .clk_i,
           .rst_ni,
@@ -244,8 +288,10 @@ module cva6_hpdcache_subsystem
     end
 
     cva6_hpdcache_if_adapter #(
-        .CVA6Cfg     (CVA6Cfg),
-        .is_load_port(1'b0)
+        .CVA6Cfg       (CVA6Cfg),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
+        .is_load_port  (1'b0)
     ) i_cva6_hpdcache_store_if_adapter (
         .clk_i,
         .rst_ni,
@@ -380,7 +426,7 @@ module cva6_hpdcache_subsystem
   hpdcache #(
       .NREQUESTERS         (HPDCACHE_NREQUESTERS),
       .HPDcacheMemAddrWidth(riscv::PLEN),
-      .HPDcacheMemIdWidth  (ariane_pkg::MEM_TID_WIDTH),
+      .HPDcacheMemIdWidth  (CVA6Cfg.MEM_TID_WIDTH),
       .HPDcacheMemDataWidth(CVA6Cfg.AxiDataWidth)
   ) i_hpdcache (
       .clk_i,
@@ -474,12 +520,14 @@ module cva6_hpdcache_subsystem
   //  AXI arbiter instantiation
   //  {{{
   cva6_hpdcache_subsystem_axi_arbiter #(
-      .HPDcacheMemIdWidth   (ariane_pkg::MEM_TID_WIDTH),
+      .HPDcacheMemIdWidth   (CVA6Cfg.MEM_TID_WIDTH),
       .HPDcacheMemDataWidth (CVA6Cfg.AxiDataWidth),
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
       .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
       .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
+      .icache_req_t         (icache_req_t),
+      .icache_rtrn_t        (icache_rtrn_t),
 
       .AxiAddrWidth (CVA6Cfg.AxiAddrWidth),
       .AxiDataWidth (CVA6Cfg.AxiDataWidth),

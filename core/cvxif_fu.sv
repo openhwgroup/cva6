@@ -13,7 +13,9 @@
 module cvxif_fu
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type exception_t = logic,
+    parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input  logic                                       clk_i,
@@ -34,7 +36,7 @@ module cvxif_fu
     // CVXIF exception - ISSUE_STAGE
     output exception_t                                 x_exception_o,
     // CVXIF FU result - ISSUE_STAGE
-    output riscv::xlen_t                               x_result_o,
+    output logic                   [  riscv::XLEN-1:0] x_result_o,
     // CVXIF result valid - ISSUE_STAGE
     output logic                                       x_valid_o,
     // CVXIF write enable - ISSUE_STAGE

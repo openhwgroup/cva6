@@ -30,58 +30,34 @@
      - SUBSYSTEM
      - logic
 
-   * - ``flush_i``
-     - in
-     - Fetch flush request
-     - CONTROLLER
-     - logic
-
-   * - ``halt_i``
-     - in
-     - halt commit stage
-     - CONTROLLER
-     - logic
-
    * - ``boot_addr_i``
      - in
      - Next PC when reset
      - SUBSYSTEM
      - logic[riscv::VLEN-1:0]
 
-   * - ``resolved_branch_i``
+   * - ``flush_i``
      - in
-     - mispredict event and next PC
-     - EXECUTE
-     - bp_resolve_t
+     - Flush requested by FENCE, mis-predict and exception
+     - CONTROLLER
+     - logic
+
+   * - ``halt_i``
+     - in
+     - Halt requested by WFI and Accelerate port
+     - CONTROLLER
+     - logic
 
    * - ``set_pc_commit_i``
      - in
-     - Set the PC coming from COMMIT as next PC
+     - Set COMMIT PC as next PC requested by FENCE, CSR side-effect and Accelerate port
      - CONTROLLER
      - logic
 
    * - ``pc_commit_i``
      - in
-     - Next PC when flushing pipeline
+     - COMMIT PC
      - COMMIT
-     - logic[riscv::VLEN-1:0]
-
-   * - ``epc_i``
-     - in
-     - Next PC when returning from exception
-     - CSR
-     - logic[riscv::VLEN-1:0]
-
-   * - ``eret_i``
-     - in
-     - Return from exception event
-     - CSR
-     - logic
-
-   * - ``trap_vector_base_i``
-     - in
-     - Next PC when jumping into exception
-     - CSR
      - logic[riscv::VLEN-1:0]
 
    * - ``ex_valid_i``
@@ -89,6 +65,30 @@
      - Exception event
      - COMMIT
      - logic
+
+   * - ``resolved_branch_i``
+     - in
+     - Mispredict event and next PC
+     - EXECUTE
+     - bp_resolve_t
+
+   * - ``eret_i``
+     - in
+     - Return from exception event
+     - CSR
+     - logic
+
+   * - ``epc_i``
+     - in
+     - Next PC when returning from exception
+     - CSR
+     - logic[riscv::VLEN-1:0]
+
+   * - ``trap_vector_base_i``
+     - in
+     - Next PC when jumping into exception
+     - CSR
+     - logic[riscv::VLEN-1:0]
 
    * - ``icache_dreq_o``
      - out
@@ -125,6 +125,6 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 | For any HW configuration,
 |   ``flush_bp_i`` input is tied to 0
 | As DebugEn = 0,
-|   ``debug_mode_i`` input is tied to 0
 |   ``set_debug_pc_i`` input is tied to 0
+|   ``debug_mode_i`` input is tied to 0
 

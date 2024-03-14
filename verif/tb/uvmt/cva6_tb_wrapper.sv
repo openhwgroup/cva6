@@ -37,7 +37,11 @@ import "DPI-C" context function void read_section_sv(input longint address, inou
 module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
+  parameter type rvfi_csr_elmt_t = logic,
   parameter type rvfi_csr_t = logic,
+  parameter type rvfi_probes_instr_t = logic,
+  parameter type rvfi_probes_csr_t = logic,
+  parameter type rvfi_probes_t = logic,
   //
   parameter int unsigned AXI_USER_EN       = 0,
   parameter int unsigned NUM_WORDS         = 2**25
@@ -55,11 +59,6 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   uvmt_default_inputs_intf             default_inputs_vif
 );
 
-  localparam type rvfi_probes_t = struct packed { 
-      ariane_pkg::rvfi_probes_csr_t csr;
-      ariane_pkg::rvfi_probes_instr_t instr;
-  };
-  
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
 
@@ -74,6 +73,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   
   cva6 #(
      .CVA6Cfg ( CVA6Cfg ),
+     .rvfi_probes_instr_t  ( rvfi_probes_instr_t ),
+     .rvfi_probes_csr_t    ( rvfi_probes_csr_t   ),
      .rvfi_probes_t        ( rvfi_probes_t       )
    ) i_cva6 (
     .clk_i                ( clk_i                     ),
@@ -99,6 +100,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
       .CVA6Cfg   (CVA6Cfg),
       .rvfi_instr_t(rvfi_instr_t),
       .rvfi_csr_t(rvfi_csr_t),
+      .rvfi_probes_instr_t(rvfi_probes_instr_t),
+      .rvfi_probes_csr_t(rvfi_probes_csr_t),
       .rvfi_probes_t(rvfi_probes_t)
   ) i_cva6_rvfi (
       .clk_i     (clk_i),

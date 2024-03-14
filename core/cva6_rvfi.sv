@@ -15,6 +15,8 @@ module cva6_rvfi
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type rvfi_instr_t = logic,
     parameter type rvfi_csr_t = logic,
+    parameter type rvfi_probes_instr_t = logic,
+    parameter type rvfi_probes_csr_t = logic,
     parameter type rvfi_probes_t = logic
 
 ) (
@@ -37,7 +39,7 @@ module cva6_rvfi
   localparam bit RVD = (riscv::IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
   localparam bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
 
-  localparam riscv::xlen_t IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
+  localparam logic [riscv::XLEN-1:0] IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (riscv::XLEN'(CVA6Cfg.RVB) << 1)  // C - Bitmanip extension
   | (riscv::XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
   | (riscv::XLEN'(CVA6Cfg.RVD) << 3)  // D - Double precision floating-point extension
@@ -51,7 +53,7 @@ module cva6_rvfi
   | (riscv::XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
   | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN - 2);  // MXL
 
-  localparam riscv::xlen_t hart_id_i = '0;
+  localparam logic [riscv::XLEN-1:0] hart_id_i = '0;
   logic flush;
   logic issue_instr_ack;
   logic fetch_entry_valid;
@@ -65,14 +67,27 @@ module cva6_rvfi
   logic decoded_instr_valid;
   logic decoded_instr_ack;
 
-  riscv::xlen_t rs1_forwarding;
-  riscv::xlen_t rs2_forwarding;
+  logic [riscv::XLEN-1:0] rs1_forwarding;
+  logic [riscv::XLEN-1:0] rs2_forwarding;
 
-  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr;
-  exception_t ex_commit;
+  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_pc;
+  fu_op [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] commit_instr_op;
+  logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs1;
+  logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs2;
+  logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rd;
+  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] commit_instr_result;
+  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_valid;
+
+  logic [riscv::XLEN-1:0] ex_commit_cause;
+  logic ex_commit_valid;
+
   riscv::priv_lvl_t priv_lvl;
 
-  lsu_ctrl_t lsu_ctrl;
+  logic [riscv::VLEN-1:0] lsu_ctrl_vaddr;
+  fu_t lsu_ctrl_fu;
+  logic [(riscv::XLEN/8)-1:0] lsu_ctrl_be;
+  logic [TRANS_ID_BITS-1:0] lsu_ctrl_trans_id;
+
   logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
   logic [riscv::PLEN-1:0] mem_paddr;
@@ -120,21 +135,29 @@ module cva6_rvfi
   assign rs1_forwarding = instr.rs1_forwarding;
   assign rs2_forwarding = instr.rs2_forwarding;
 
-  assign commit_instr = instr.commit_instr;
-  assign ex_commit = instr.ex_commit;
+  assign commit_instr_pc = instr.commit_instr_pc;
+  assign commit_instr_op = instr.commit_instr_op;
+  assign commit_instr_rs1 = instr.commit_instr_rs1;
+  assign commit_instr_rs2 = instr.commit_instr_rs2;
+  assign commit_instr_rd = instr.commit_instr_rd;
+  assign commit_instr_result = instr.commit_instr_result;
+  assign commit_instr_valid = instr.commit_instr_valid;
+
+  assign ex_commit_cause = instr.ex_commit_cause;
+  assign ex_commit_valid = instr.ex_commit_valid;
+
   assign priv_lvl = instr.priv_lvl;
 
-  assign lsu_ctrl = instr.lsu_ctrl;
   assign wbdata = instr.wbdata;
   assign commit_ack = instr.commit_ack;
   assign mem_paddr = instr.mem_paddr;
   assign debug_mode = instr.debug_mode;
   assign wdata = instr.wdata;
 
-  assign lsu_addr = lsu_ctrl.vaddr;
-  assign lsu_rmask = lsu_ctrl.fu == LOAD ? lsu_ctrl.be : '0;
-  assign lsu_wmask = lsu_ctrl.fu == STORE ? lsu_ctrl.be : '0;
-  assign lsu_addr_trans_id = lsu_ctrl.trans_id;
+  assign lsu_addr = instr.lsu_ctrl_vaddr;
+  assign lsu_rmask = instr.lsu_ctrl_fu == LOAD ? instr.lsu_ctrl_be : '0;
+  assign lsu_wmask = instr.lsu_ctrl_fu == STORE ? instr.lsu_ctrl_be : '0;
+  assign lsu_addr_trans_id = instr.lsu_ctrl_trans_id;
 
 
   //ID STAGE
@@ -170,12 +193,12 @@ module cva6_rvfi
 
   // this is the FIFO struct of the issue queue
   typedef struct packed {
-    riscv::xlen_t rs1_rdata;
-    riscv::xlen_t rs2_rdata;
+    logic [riscv::XLEN-1:0] rs1_rdata;
+    logic [riscv::XLEN-1:0] rs2_rdata;
     logic [riscv::VLEN-1:0] lsu_addr;
     logic [(riscv::XLEN/8)-1:0] lsu_rmask;
     logic [(riscv::XLEN/8)-1:0] lsu_wmask;
-    riscv::xlen_t lsu_wdata;
+    logic [riscv::XLEN-1:0] lsu_wdata;
     logic [31:0] instr;
   } sb_mem_t;
   sb_mem_t [NR_SB_ENTRIES-1:0] mem_q, mem_n;
@@ -220,30 +243,30 @@ module cva6_rvfi
   always_comb begin
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       logic exception;
-      exception = commit_instr[i].valid && ex_commit.valid;
-      rvfi_instr_o[i].valid    = (commit_ack[i] && !ex_commit.valid) ||
-        (exception && (ex_commit.cause == riscv::ENV_CALL_MMODE ||
-                  ex_commit.cause == riscv::ENV_CALL_SMODE ||
-                  ex_commit.cause == riscv::ENV_CALL_UMODE));
+      exception = commit_instr_valid[i] && ex_commit_valid;
+      rvfi_instr_o[i].valid    = (commit_ack[i] && !ex_commit_valid) ||
+        (exception && (ex_commit_cause == riscv::ENV_CALL_MMODE ||
+                  ex_commit_cause == riscv::ENV_CALL_SMODE ||
+                  ex_commit_cause == riscv::ENV_CALL_UMODE));
       rvfi_instr_o[i].insn = mem_q[commit_pointer[i]].instr;
       // when trap, the instruction is not executed
       rvfi_instr_o[i].trap = exception;
-      rvfi_instr_o[i].cause = ex_commit.cause;
+      rvfi_instr_o[i].cause = ex_commit_cause;
       rvfi_instr_o[i].mode = (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
       rvfi_instr_o[i].ixl = riscv::XLEN == 64 ? 2 : 1;
-      rvfi_instr_o[i].rs1_addr = commit_instr[i].rs1[4:0];
-      rvfi_instr_o[i].rs2_addr = commit_instr[i].rs2[4:0];
-      rvfi_instr_o[i].rd_addr = commit_instr[i].rd[4:0];
-      rvfi_instr_o[i].rd_wdata = (FpPresent && is_rd_fpr(commit_instr[i].op)) ?
-          commit_instr[i].result : wdata[i];
-      rvfi_instr_o[i].pc_rdata = commit_instr[i].pc;
+      rvfi_instr_o[i].rs1_addr = commit_instr_rs1[i][4:0];
+      rvfi_instr_o[i].rs2_addr = commit_instr_rs2[i][4:0];
+      rvfi_instr_o[i].rd_addr = commit_instr_rd[i][4:0];
+      rvfi_instr_o[i].rd_wdata = (FpPresent && is_rd_fpr(commit_instr_op[i])) ?
+          commit_instr_result[i] : wdata[i];
+      rvfi_instr_o[i].pc_rdata = commit_instr_pc[i];
       rvfi_instr_o[i].mem_addr = mem_q[commit_pointer[i]].lsu_addr;
       // So far, only write paddr is reported. TODO: read paddr
       rvfi_instr_o[i].mem_paddr = mem_paddr;
       rvfi_instr_o[i].mem_wmask = mem_q[commit_pointer[i]].lsu_wmask;
       rvfi_instr_o[i].mem_wdata = mem_q[commit_pointer[i]].lsu_wdata;
       rvfi_instr_o[i].mem_rmask = mem_q[commit_pointer[i]].lsu_rmask;
-      rvfi_instr_o[i].mem_rdata = commit_instr[i].result;
+      rvfi_instr_o[i].mem_rdata = commit_instr_result[i];
       rvfi_instr_o[i].rs1_rdata = mem_q[commit_pointer[i]].rs1_rdata;
       rvfi_instr_o[i].rs2_rdata = mem_q[commit_pointer[i]].rs2_rdata;
     end

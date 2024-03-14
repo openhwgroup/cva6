@@ -17,7 +17,11 @@
 module uvmt_cva6_dut_wrap # (
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter type rvfi_instr_t = logic,
+  parameter type rvfi_csr_elmt_t = logic,
   parameter type rvfi_csr_t = logic,
+  parameter type rvfi_probes_instr_t = logic,
+  parameter type rvfi_probes_csr_t = logic,
+  parameter type rvfi_probes_t = logic,
   //
   parameter int unsigned AXI_USER_EN       = 0,
   parameter int unsigned NUM_WORDS         = 2**25
@@ -40,7 +44,11 @@ module uvmt_cva6_dut_wrap # (
     cva6_tb_wrapper #(
      .CVA6Cfg ( CVA6Cfg ),
      .rvfi_instr_t      ( rvfi_instr_t      ),
+     .rvfi_csr_elmt_t   ( rvfi_csr_elmt_t   ),
      .rvfi_csr_t        ( rvfi_csr_t        ),
+     .rvfi_probes_instr_t(rvfi_probes_instr_t),
+     .rvfi_probes_csr_t ( rvfi_probes_csr_t ),
+     .rvfi_probes_t     ( rvfi_probes_t     ),
      //
      .AXI_USER_EN       (AXI_USER_EN),
      .NUM_WORDS         (NUM_WORDS)

@@ -124,7 +124,7 @@
      - out
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - ariane_pkg::scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
+     - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
 
    * - ``commit_ack_i``
      - in
@@ -136,7 +136,7 @@
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - ariane_pkg::scoreboard_entry_t
+     - scoreboard_entry_t
 
    * - ``orig_instr_i``
      - in
@@ -178,7 +178,7 @@
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - ariane_pkg::bp_resolve_t
+     - bp_resolve_t
 
    * - ``trans_id_i``
      - in
@@ -196,7 +196,7 @@
      - in
      - Exception from a functional unit (e.g.: ld/st exception)
      - TO_BE_COMPLETED
-     - ariane_pkg::exception_t[CVA6Cfg.NrWbPorts-1:0]
+     - exception_t[CVA6Cfg.NrWbPorts-1:0]
 
    * - ``wt_valid_i``
      - in

@@ -20,6 +20,7 @@
 
 module bht #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bht_update_t = logic,
     parameter int unsigned NR_ENTRIES = 1024
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -33,7 +34,7 @@ module bht #(
     // Virtual PC - CACHE
     input logic [riscv::VLEN-1:0] vpc_i,
     // Update bht with resolved address - EXECUTE
-    input ariane_pkg::bht_update_t bht_update_i,
+    input bht_update_t bht_update_i,
     // Prediction from bht - FRONTEND
     output ariane_pkg::bht_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] bht_prediction_o
 );

@@ -15,6 +15,7 @@
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
 // Description: File list for OpenPiton flow
++incdir+core/include/
 +incdir+vendor/pulp-platform/common_cells/include/
 +incdir+common/local/util/
 +incdir+corev_apu/register_interface/include/

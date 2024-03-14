@@ -17,7 +17,8 @@
 module csr_buffer
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -32,7 +33,7 @@ module csr_buffer
     // CSR instruction is valid - ISSUE_STAGE
     input logic csr_valid_i,
     // CSR buffer result - ISSUE_STAGE
-    output riscv::xlen_t csr_result_o,
+    output logic [riscv::XLEN-1:0] csr_result_o,
     // commit the pending CSR OP - TO_BE_COMPLETED
     input logic csr_commit_i,
     // CSR address to write - COMMIT_STAGE

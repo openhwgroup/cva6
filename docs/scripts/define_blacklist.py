@@ -16,6 +16,19 @@ def define_blacklist(parameters):
     black_list["flush_bp_i"] = ["For any HW configuration", "0"]
     black_list["dtlb_hit_i"] = ["For any HW configuration", "1"]
 
+    black_list["hwpf_base_set_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_base_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_base_o"] = ["For any HW configuration", "0"]
+    black_list["hwpf_param_set_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_param_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_param_o"] = ["For any HW configuration", "0"]
+    black_list["hwpf_throttle_set_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_throttle_i"] = ["For any HW configuration", "0"]
+    black_list["hwpf_throttle_o"] = ["For any HW configuration", "0"]
+    black_list["hwpf_status_o"] = ["For any HW configuration", "0"]
+    black_list["dcache_cmo_req_i"] = ["For any HW configuration", "0"]
+    black_list["dcache_cmo_resp_o"] = ["For any HW configuration", "open"]
+
     param = "IsRVFI"
     paramvalue = "0"
     if paramvalue == "0":
@@ -62,12 +75,12 @@ def define_blacklist(parameters):
         black_list["sfence_vma_i"] = [f"As {param} = {paramvalue}", "0"]
 
     param = "EnableAccelerator"
-    paramvalue = parameters[param].value
+    paramvalue = "0"
     if paramvalue == "0":
         black_list["ACC_DISPATCHER"] = [f"As {param} = {paramvalue}", "0"]
 
     param = "RVF"
-    paramvalue = parameters[param].value
+    paramvalue = "0"
     if paramvalue == "0":
         black_list["fs_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["fs_i"] = [f"As {param} = {paramvalue}", "0"]
