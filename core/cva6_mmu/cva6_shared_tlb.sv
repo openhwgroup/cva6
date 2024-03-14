@@ -254,28 +254,27 @@ module cva6_shared_tlb #(
     itlb_update_o = '0;
 
 
-    if(USE_SHARED_TLB==0) begin
-      if(shared_tlb_update_i.valid) begin
-          shared_tlb_hit_d = 1'b1;
-          if (itlb_req_q) begin
-              itlb_update_o.valid = 1'b1;
-              itlb_update_o.vpn = shared_tlb_update_i.vpn;
-              itlb_update_o.is_page = shared_tlb_update_i.is_page;
-              itlb_update_o.content = shared_tlb_update_i.content;
-              itlb_update_o.v_st_enbl =v_st_enbl_i[i_req_q];
-              itlb_update_o.asid = shared_tlb_update_i.asid;
+    if (USE_SHARED_TLB == 0) begin
+      if (shared_tlb_update_i.valid) begin
+        shared_tlb_hit_d = 1'b1;
+        if (itlb_req_q) begin
+          itlb_update_o.valid = 1'b1;
+          itlb_update_o.vpn = shared_tlb_update_i.vpn;
+          itlb_update_o.is_page = shared_tlb_update_i.is_page;
+          itlb_update_o.content = shared_tlb_update_i.content;
+          itlb_update_o.v_st_enbl = v_st_enbl_i[i_req_q];
+          itlb_update_o.asid = shared_tlb_update_i.asid;
 
-          end else if (dtlb_req_q) begin
-              dtlb_update_o.valid = 1'b1;
-              dtlb_update_o.vpn = shared_tlb_update_i.vpn;
-              dtlb_update_o.is_page = shared_tlb_update_i.is_page;
-              dtlb_update_o.content = shared_tlb_update_i.content;
-              dtlb_update_o.v_st_enbl = v_st_enbl_i[i_req_q];
-              dtlb_update_o.asid = shared_tlb_update_i.asid;
-          end
-      end 
-    end
-    else begin
+        end else if (dtlb_req_q) begin
+          dtlb_update_o.valid = 1'b1;
+          dtlb_update_o.vpn = shared_tlb_update_i.vpn;
+          dtlb_update_o.is_page = shared_tlb_update_i.is_page;
+          dtlb_update_o.content = shared_tlb_update_i.content;
+          dtlb_update_o.v_st_enbl = v_st_enbl_i[i_req_q];
+          dtlb_update_o.asid = shared_tlb_update_i.asid;
+        end
+      end
+    end else begin
 
       //number of ways
       for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
@@ -432,7 +431,7 @@ module cva6_shared_tlb #(
   assign pte_addr = pte_wr_en ? pte_wr_addr : pte_rd_addr;
 
   for (genvar i = 0; i < SHARED_TLB_WAYS; i++) begin : gen_sram
-    if(USE_SHARED_TLB == 1) begin
+    if (USE_SHARED_TLB == 1) begin
       // Tag RAM
       sram #(
           .DATA_WIDTH($bits(shared_tag_t)),
