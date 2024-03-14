@@ -168,7 +168,7 @@ module cva6_shared_tlb #(
 
         //identify if vpn matches at all PT levels for all TLB entries
         assign vpn_match[i][x]        = (HYP_EXT==1 && x==(PT_LEVELS-1) && ~v_st_enbl_i[i_req_q][0]) ? //
-            vpn_q[x] == shared_tag_rd[i].vpn[x] &&  vpn_q[x+HYP_EXT][(VPN_LEN%PT_LEVELS)-1:0] == shared_tag_rd[i].vpn[x+HYP_EXT][(VPN_LEN%PT_LEVELS)-HYP_EXT:0]: //
+            vpn_q[x] == shared_tag_rd[i].vpn[x] &&  vpn_q[x+HYP_EXT][(VPN_LEN%PT_LEVELS)-HYP_EXT:0] == shared_tag_rd[i].vpn[x+HYP_EXT][(VPN_LEN%PT_LEVELS)-HYP_EXT:0]: //
             vpn_q[x] == shared_tag_rd[i].vpn[x];
 
         //identify if there is a hit at each PT level for all TLB entries

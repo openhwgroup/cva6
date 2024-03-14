@@ -526,7 +526,7 @@ module cva6_ptw
               end
 
               // check if 63:41 are all zeros
-              if (HYP_EXT==1 && (((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte[0].ppn[riscv::PPNW-1:riscv::GPPNW]) == 1'b0))) begin
+              if (HYP_EXT==1 && (((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte[0].ppn[riscv::PPNW-HYP_EXT:riscv::GPPNW]) == 1'b0))) begin
                 state_d = PROPAGATE_ERROR;
                 ptw_stage_d = ptw_stage_q;
               end
