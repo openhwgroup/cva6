@@ -69,7 +69,7 @@ module cva6_hpdcache_if_adapter
           {
             {64 - CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}}
             , cva6_req_i.address_tag
-            , {ariane_pkg::DCACHE_INDEX_WIDTH{1'b0}}
+            , {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
           }
       );
 
@@ -142,7 +142,7 @@ module cva6_hpdcache_if_adapter
           {
             {64 - CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}}
             , hpdcache_req_o.addr_tag,
-            {ariane_pkg::DCACHE_INDEX_WIDTH{1'b0}}
+            {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
           }
       );
 

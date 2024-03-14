@@ -93,7 +93,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
       if(cnt==0) begin
         if(tmp_vld) begin
           tmp_vld   = 0;
-          tag_q     <= tmp_paddr[CVA6Cfg.DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
+          tag_q     <= tmp_paddr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
           tag_vld_q <= 1'b1;
         end else begin
           tag_vld_q <= 1'b0;
@@ -126,7 +126,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
 
   assign dut_req_port_o.address_tag   = tag_q;
   assign dut_req_port_o.tag_valid     = tag_vld_q;
-  assign dut_req_port_o.address_index = paddr[DCACHE_INDEX_WIDTH-1:0];
+  assign dut_req_port_o.address_index = paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   assign exp_paddr_o                  = paddr;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,11 +221,11 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
   // Generate a sequence of reads to the same set (constant index)
   task automatic genSetSeqRead();
     automatic logic [63:0] val, rnd;
-    paddr                        = CachedAddrBeg + 2 ** DCACHE_INDEX_WIDTH;
+    paddr                        = CachedAddrBeg + 2 ** CVA6Cfg.DCACHE_INDEX_WIDTH;
     dut_req_port_o.data_req      = '0;
     dut_req_port_o.data_size     = '0;
     dut_req_port_o.kill_req      = '0;
-    val                          = CachedAddrBeg + 2 ** DCACHE_INDEX_WIDTH;
+    val                          = CachedAddrBeg + 2 ** CVA6Cfg.DCACHE_INDEX_WIDTH;
     while(~seq_end_req) begin
       void'(randomize(rnd) with {rnd > 0; rnd <= 100;});
       if(rnd < req_rate_i) begin
@@ -235,7 +235,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
         // generate linear read
         `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
         // increment by set size
-        val = (val + 2 ** DCACHE_INDEX_WIDTH) % (MemWords<<3);
+        val = (val + 2 ** CVA6Cfg.DCACHE_INDEX_WIDTH) % (MemWords<<3);
       end
       `APPL_WAIT_CYC(clk_i,1)
       dut_req_port_o.data_req      = '0;

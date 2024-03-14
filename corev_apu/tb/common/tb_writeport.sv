@@ -49,8 +49,8 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
 
   logic [63:0] paddr;
 
-  assign dut_req_port_o.address_tag   = paddr[CVA6Cfg.DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
-  assign dut_req_port_o.address_index = paddr[DCACHE_INDEX_WIDTH-1:0];
+  assign dut_req_port_o.address_tag   = paddr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
+  assign dut_req_port_o.address_index = paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   assign dut_req_port_o.data_we       = dut_req_port_o.data_req;
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -411,10 +411,10 @@ module wt_dcache_missunit
   ) : '0;
 
   assign wr_cl_idx_o     = (flush_en) ? cnt_q                                                        :
-                           (inv_vld)  ? mem_rtrn_i.inv.idx[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH] :
-                                        mshr_q.paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
+                           (inv_vld)  ? mem_rtrn_i.inv.idx[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH] :
+                                        mshr_q.paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
 
-  assign wr_cl_tag_o = mshr_q.paddr[CVA6Cfg.DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
+  assign wr_cl_tag_o = mshr_q.paddr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
   assign wr_cl_off_o = mshr_q.paddr[DCACHE_OFFSET_WIDTH-1:0];
   assign wr_cl_data_o = mem_rtrn_i.data;
   assign wr_cl_user_o = mem_rtrn_i.user;

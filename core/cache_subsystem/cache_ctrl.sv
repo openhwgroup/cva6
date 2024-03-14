@@ -38,7 +38,7 @@ module cache_ctrl
     output dcache_req_o_t req_port_o,
     // SRAM interface
     output logic [DCACHE_SET_ASSOC-1:0] req_o,  // req is valid
-    output logic [DCACHE_INDEX_WIDTH-1:0] addr_o,  // address into cache array
+    output logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr_o,  // address into cache array
     input logic gnt_i,
     output cache_line_t data_o,
     output cl_be_t be_o,
@@ -79,7 +79,7 @@ module cache_ctrl
       state_d, state_q;
 
   typedef struct packed {
-    logic [DCACHE_INDEX_WIDTH-1:0] index;
+    logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] index;
     logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   tag;
     logic [DCACHE_TID_WIDTH-1:0]   id;
     logic [7:0]                    be;
@@ -256,7 +256,7 @@ module cache_ctrl
           // Check for cache-ability
           // -------------------------
           if (!config_pkg::is_inside_cacheable_regions(
-                  CVA6Cfg, {{{64 - riscv::PLEN} {1'b0}}, tag_o, {DCACHE_INDEX_WIDTH{1'b0}}}
+                  CVA6Cfg, {{{64 - riscv::PLEN} {1'b0}}, tag_o, {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}}
               )) begin
             mem_req_d.bypass = 1'b1;
             state_d = WAIT_REFILL_GNT;

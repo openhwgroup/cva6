@@ -204,11 +204,11 @@ module wt_dcache_wbuffer
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] miss_tag;
   logic is_nc_miss;
   logic is_ni;
-  assign miss_tag = miss_paddr_o[ariane_pkg::DCACHE_INDEX_WIDTH+:CVA6Cfg.DCACHE_TAG_WIDTH];
+  assign miss_tag = miss_paddr_o[CVA6Cfg.DCACHE_INDEX_WIDTH+:CVA6Cfg.DCACHE_TAG_WIDTH];
   assign is_nc_miss = !config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
       {
-        {64 - CVA6Cfg.DCACHE_TAG_WIDTH - DCACHE_INDEX_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}
+        {64 - CVA6Cfg.DCACHE_TAG_WIDTH - CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}, miss_tag, {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
       }
   );
   assign miss_nc_o = !cache_en_i || is_nc_miss;
@@ -216,9 +216,9 @@ module wt_dcache_wbuffer
   assign is_ni = config_pkg::is_inside_nonidempotent_regions(
       CVA6Cfg,
       {
-        {64 - CVA6Cfg.DCACHE_TAG_WIDTH - DCACHE_INDEX_WIDTH{1'b0}},
+        {64 - CVA6Cfg.DCACHE_TAG_WIDTH - CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}},
         req_port_i.address_tag,
-        {DCACHE_INDEX_WIDTH{1'b0}}
+        {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
       }
   );
 
@@ -370,7 +370,7 @@ module wt_dcache_wbuffer
   // cache readout & update
   ///////////////////////////////////////////////////////
 
-  assign extract_tag = rd_paddr >> DCACHE_INDEX_WIDTH;
+  assign extract_tag = rd_paddr >> CVA6Cfg.DCACHE_INDEX_WIDTH;
   assign rd_tag_d = extract_tag[CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
 
   // trigger TAG readout in cache
@@ -380,7 +380,7 @@ module wt_dcache_wbuffer
   };
   assign rd_req_o = |tocheck;
   assign rd_tag_o = rd_tag_q;  //delay by one cycle
-  assign rd_idx_o = rd_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
+  assign rd_idx_o = rd_paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
   assign rd_off_o = rd_paddr[DCACHE_OFFSET_WIDTH-1:0];
   assign check_en_d = rd_req_o & rd_ack_i;
 
@@ -392,7 +392,7 @@ module wt_dcache_wbuffer
   assign wr_paddr = {
     {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[rtrn_ptr].wtag << riscv::XLEN_ALIGN_BYTES
   };
-  assign wr_idx_o = wr_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
+  assign wr_idx_o = wr_paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
   assign wr_off_o = wr_paddr[DCACHE_OFFSET_WIDTH-1:0];
   assign wr_data_o = wbuffer_q[rtrn_ptr].data;
   assign wr_user_o = wbuffer_q[rtrn_ptr].user;
@@ -423,12 +423,12 @@ module wt_dcache_wbuffer
 
     assign dirty[k] = |bdirty[k];
     assign valid[k] = |wbuffer_q[k].valid;
-    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]});
+    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]});
 
     // checks if an invalidation/cache refill hits a particular word
     // note: an invalidation can hit multiple words!
     // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
-    assign wtag_comp[k] = wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES-1:DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES];
+    assign wtag_comp[k] = wbuffer_q[k].wtag[CVA6Cfg.DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES-1:DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES];
     assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wtag_comp[k] == wr_cl_idx_d)) |
                            (wr_cl_vld_q & valid[k] & (wtag_comp[k] == wr_cl_idx_q));
 
@@ -581,7 +581,7 @@ module wt_dcache_wbuffer
         wbuffer_d[wr_ptr].checked = 1'b0;
         wbuffer_d[wr_ptr].wtag = {
           req_port_i.address_tag,
-          req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]
+          req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]
         };
 
         // mark bytes as dirty

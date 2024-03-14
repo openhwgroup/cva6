@@ -67,7 +67,7 @@ module std_nbdcache
   // 4. Accelerator
   // 5. Store unit
   logic        [            NumPorts:0][  DCACHE_SET_ASSOC-1:0] req;
-  logic        [            NumPorts:0][DCACHE_INDEX_WIDTH-1:0] addr;
+  logic        [            NumPorts:0][CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr;
   logic        [            NumPorts:0]                         gnt;
   cache_line_t [  DCACHE_SET_ASSOC-1:0]                         rdata;
   logic        [            NumPorts:0][  CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag;
@@ -97,7 +97,7 @@ module std_nbdcache
   // Arbiter <-> Datram,
   // -------------------------------
   logic        [  DCACHE_SET_ASSOC-1:0]                         req_ram;
-  logic        [DCACHE_INDEX_WIDTH-1:0]                         addr_ram;
+  logic        [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]                         addr_ram;
   logic                                                         we_ram;
   cache_line_t                                                  wdata_ram;
   cache_line_t [  DCACHE_SET_ASSOC-1:0]                         rdata_ram;
@@ -201,7 +201,7 @@ module std_nbdcache
         .req_i  (req_ram[i]),
         .rst_ni (rst_ni),
         .we_i   (we_ram),
-        .addr_i (addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
+        .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
         .wuser_i('0),
         .wdata_i(wdata_ram.data),
         .be_i   (be_ram.data),
@@ -217,7 +217,7 @@ module std_nbdcache
         .req_i  (req_ram[i]),
         .rst_ni (rst_ni),
         .we_i   (we_ram),
-        .addr_i (addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
+        .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
         .wuser_i('0),
         .wdata_i(wdata_ram.tag),
         .be_i   (be_ram.tag),
@@ -253,7 +253,7 @@ module std_nbdcache
       .rst_ni (rst_ni),
       .req_i  (|req_ram),
       .we_i   (we_ram),
-      .addr_i (addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
+      .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
       .wuser_i('0),
       .wdata_i(dirty_wdata),
       .be_i   (be_ram.vldrty),
@@ -267,7 +267,7 @@ module std_nbdcache
   tag_cmp #(
       .CVA6Cfg         (CVA6Cfg),
       .NR_PORTS        (NumPorts + 1),
-      .ADDR_WIDTH      (DCACHE_INDEX_WIDTH),
+      .ADDR_WIDTH      (CVA6Cfg.DCACHE_INDEX_WIDTH),
       .l_data_t        (cache_line_t),
       .l_be_t          (cl_be_t),
       .DCACHE_SET_ASSOC(DCACHE_SET_ASSOC)

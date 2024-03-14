@@ -123,7 +123,8 @@ package cva6_config_pkg;
       MaxOutstandingStores: unsigned'(7),
       DebugEn: bit'(0),
       AxiBurstWriteEn: bit'(0),
-      IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc)
+      IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc),
+      DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc)
   };
 
 endpackage

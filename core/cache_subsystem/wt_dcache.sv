@@ -58,7 +58,7 @@ module wt_dcache
   localparam DCACHE_CL_IDX_WIDTH = $clog2(CVA6Cfg.DCACHE_NUM_WORDS);
 
   localparam type wbuffer_t = struct packed {
-    logic [CVA6Cfg.DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
     logic [riscv::XLEN-1:0] data;
     logic [ariane_pkg::DCACHE_USER_WIDTH-1:0] user;
     logic [(riscv::XLEN/8)-1:0] dirty;  // byte is dirty
@@ -380,7 +380,7 @@ module wt_dcache
 
   initial begin
     // assert wrong parameterizations
-    assert (DCACHE_INDEX_WIDTH <= 12)
+    assert (CVA6Cfg.DCACHE_INDEX_WIDTH <= 12)
     else $fatal(1, "[l1 dcache] cache index width can be maximum 12bit since VM uses 4kB pages");
   end
 `endif

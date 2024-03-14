@@ -85,7 +85,7 @@ module wt_dcache_ctrl
   // map address to tag/idx/offset and save
   assign vld_data_d = (rd_req_q) ? rd_vld_bits_i : vld_data_q;
   assign address_tag_d = (save_tag) ? req_port_i.address_tag : address_tag_q;
-  assign address_idx_d = (req_port_o.data_gnt) ? req_port_i.address_index[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH] : address_idx_q;
+  assign address_idx_d = (req_port_o.data_gnt) ? req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH] : address_idx_q;
   assign address_off_d = (req_port_o.data_gnt) ? req_port_i.address_index[DCACHE_OFFSET_WIDTH-1:0]                  : address_off_q;
   assign id_d = (req_port_o.data_gnt) ? req_port_i.data_id : id_q;
   assign data_size_d = (req_port_o.data_gnt) ? req_port_i.data_size : data_size_q;
@@ -105,7 +105,7 @@ module wt_dcache_ctrl
   // noncacheable if request goes to I/O space, or if cache is disabled
   assign miss_nc_o = (~cache_en_i) | (~config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
-      {{{64-CVA6Cfg.DCACHE_TAG_WIDTH-DCACHE_INDEX_WIDTH}{1'b0}}, address_tag_q, {DCACHE_INDEX_WIDTH{1'b0}}}
+      {{{64-CVA6Cfg.DCACHE_TAG_WIDTH-CVA6Cfg.DCACHE_INDEX_WIDTH}{1'b0}}, address_tag_q, {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}}
   ));
 
 
@@ -292,7 +292,7 @@ module wt_dcache_ctrl
 
   initial begin
     // assert wrong parameterizations
-    assert (DCACHE_INDEX_WIDTH <= 12)
+    assert (CVA6Cfg.DCACHE_INDEX_WIDTH <= 12)
     else
       $fatal(1, "[l1 dcache ctrl] cache index width can be maximum 12bit since VM uses 4kB pages");
   end
