@@ -88,6 +88,8 @@ package build_config_pkg;
     cfg.NonIdemPotenceEn = CVA6Cfg.NrNonIdempotentRules && CVA6Cfg.NonIdempotentLength;
     cfg.AxiBurstWriteEn = CVA6Cfg.AxiBurstWriteEn;
 
+    cfg.DCACHE_SET_ASSOC_WIDTH = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
+
     cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
 
     return cfg;

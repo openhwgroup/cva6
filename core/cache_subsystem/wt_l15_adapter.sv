@@ -94,7 +94,7 @@ module wt_l15_adapter
     logic l15_invalidate_cacheline;  // unused by Ariane as L1 has no ECC at the moment
     logic l15_blockstore;  // unused in openpiton
     logic l15_blockinitstore;  // unused in openpiton
-    logic [wt_cache_pkg::L15_WAY_WIDTH-1:0] l15_l1rplway;  // way to replace
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] l15_l1rplway;  // way to replace
     logic [39:0] l15_address;  // physical address
     logic [63:0] l15_data;  // word to write
     logic [63:0] l15_data_next_entry;  // unused in Ariane (only used for CAS atomic requests)
@@ -121,10 +121,10 @@ module wt_l15_adapter
     logic l15_inval_dcache_all_way;  // unused in openpiton
     logic [15:4] l15_inval_address_15_4;  // invalidate selected cacheline
     logic l15_cross_invalidate;  // unused in openpiton
-    logic [wt_cache_pkg::L15_WAY_WIDTH-1:0] l15_cross_invalidate_way;  // unused in openpiton
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] l15_cross_invalidate_way;  // unused in openpiton
     logic l15_inval_dcache_inval;  // invalidate selected cacheline and way
     logic l15_inval_icache_inval;  // unused in openpiton
-    logic [wt_cache_pkg::L15_WAY_WIDTH-1:0] l15_inval_way;  // way to invalidate
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] l15_inval_way;  // way to invalidate
     logic l15_blockinitstore;  // unused in openpiton
   };
 
@@ -153,7 +153,7 @@ module wt_l15_adapter
   // logic [2:0]                        l15_req_o.l15_size;                  // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
   // logic [CVA6Cfg.MEM_TID_WIDTH-1:0]          l15_req_o.l15_threadid;              // currently 0 or 1
   // logic                              l15_req_o.l15_invalidate_cacheline;  // unused by Ariane as L1 has no ECC at the moment
-  // logic [L15_WAY_WIDTH-1:0]          l15_req_o.l15_l1rplway;              // way to replace
+  // logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0]          l15_req_o.l15_l1rplway;              // way to replace
   // logic [39:0]                       l15_req_o.l15_address;               // physical address
   // logic [63:0]                       l15_req_o.l15_data;                  // word to write
   // logic [63:0]                       l15_req_o.l15_data_next_entry;       // unused in Ariane (only used for CAS atomic requests)

@@ -80,7 +80,7 @@ module wt_cache_subsystem
     logic                                      vld;  // invalidate only affected way
     logic                                      all;  // invalidate all ways
     logic [ariane_pkg::DCACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
-    logic [L15_WAY_WIDTH-1:0]                  way;  // way to invalidate
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0]                  way;  // way to invalidate
   };
 
   localparam type dcache_req_t = struct packed {
