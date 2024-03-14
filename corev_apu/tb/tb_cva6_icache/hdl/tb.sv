@@ -32,7 +32,7 @@ module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
   timeprecision 1ps;
 
   // number of 32bit words
-  parameter MemBytes                   = 2**ICACHE_INDEX_WIDTH * 4 * 32;
+  parameter MemBytes                   = 2**CVA6Cfg.ICACHE_INDEX_WIDTH * 4 * 32;
   parameter MemWords                   = MemBytes>>2;
   parameter logic [63:0] CachedAddrBeg = MemBytes/4;
   parameter logic [63:0] CachedAddrEnd = MemBytes;

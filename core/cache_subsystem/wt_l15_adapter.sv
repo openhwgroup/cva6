@@ -450,7 +450,7 @@ module wt_l15_adapter
           1, "[l15_adapter] number of dcache ways must be smaller or equal the number of L15 ways"
       );
     // invalidation address returned by L1.5 is 16 bit
-    assert (16 >= DCACHE_INDEX_WIDTH && 16 >= ICACHE_INDEX_WIDTH)
+    assert (16 >= DCACHE_INDEX_WIDTH && 16 >= CVA6Cfg.ICACHE_INDEX_WIDTH)
     else $fatal(1, "[l15_adapter] maximum number of index bits supported by L1.5 is 16");
   end
 `endif
