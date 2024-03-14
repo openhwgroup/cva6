@@ -44,6 +44,7 @@ set_property include_dirs { \
 	"../../vendor/pulp-platform/axi/include" \
 	"../../core/cache_subsystem/hpdcache/rtl/include" \
 	"../register_interface/include" \
+	"../../core/include" \
 } [current_fileset]
 
 source scripts/add_sources.tcl

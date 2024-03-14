@@ -17,7 +17,9 @@
 module store_buffer
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -40,7 +42,7 @@ module store_buffer
 
     input  logic [riscv::PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
     output [riscv::PLEN-1:0] rvfi_mem_paddr_o,
-    input riscv::xlen_t data_i,  // data which is placed in the queue
+    input logic [riscv::XLEN-1:0] data_i,  // data which is placed in the queue
     input logic [(riscv::XLEN/8)-1:0] be_i,  // byte enable in
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
 
@@ -54,7 +56,7 @@ module store_buffer
   // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
   struct packed {
     logic [riscv::PLEN-1:0] address;
-    riscv::xlen_t data;
+    logic [riscv::XLEN-1:0] data;
     logic [(riscv::XLEN/8)-1:0] be;
     logic [1:0] data_size;
     logic valid;  // this entry is valid, we need this for checking if the address offset matches

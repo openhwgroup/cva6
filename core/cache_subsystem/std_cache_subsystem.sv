@@ -20,6 +20,14 @@ module std_cache_subsystem
   import std_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type icache_areq_t = logic,
+    parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
+    parameter type icache_req_t = logic,
+    parameter type icache_rtrn_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned NumPorts = 4,
     parameter type axi_ar_chan_t = logic,
     parameter type axi_aw_chan_t = logic,
@@ -68,7 +76,13 @@ module std_cache_subsystem
   axi_rsp_t axi_resp_data;
 
   cva6_icache_axi_wrapper #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
+      .icache_areq_t(icache_areq_t),
+      .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t)
   ) i_cva6_icache_axi_wrapper (
@@ -92,8 +106,10 @@ module std_cache_subsystem
   // Port 2: Accelerator
   // Port 3: Store Unit
   std_nbdcache #(
-      .CVA6Cfg  (CVA6Cfg),
-      .NumPorts (NumPorts),
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .NumPorts(NumPorts),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t)
   ) i_nbdcache (

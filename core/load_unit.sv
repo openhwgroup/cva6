@@ -21,35 +21,57 @@
 module load_unit
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type lsu_ctrl_t = logic
 ) (
-    input logic clk_i,  // Clock
-    input logic rst_ni,  // Asynchronous reset active low
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic flush_i,
-    // load unit input port
+    // Load unit input port - TO_BE_COMPLETED
     input logic valid_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input lsu_ctrl_t lsu_ctrl_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic pop_ld_o,
-    // load unit output port
+    // Load unit result is valid - TO_BE_COMPLETED
     output logic valid_o,
+    // Load transaction ID - TO_BE_COMPLETED
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
-    output riscv::xlen_t result_o,
+    // Load result - TO_BE_COMPLETED
+    output logic [riscv::XLEN-1:0] result_o,
+    // Load exception - TO_BE_COMPLETED
     output exception_t ex_o,
-    // MMU -> Address Translation
-    output logic translation_req_o,  // request address translation
-    output logic [riscv::VLEN-1:0] vaddr_o,  // virtual address out
-    input logic [riscv::PLEN-1:0] paddr_i,  // physical address in
-    input  exception_t               ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
-    input logic dtlb_hit_i,  // hit on the dtlb, send in the same cycle as the request
-    input  logic [riscv::PPNW-1:0]   dtlb_ppn_i,          // ppn on the dtlb, send in the same cycle as the request
-    // address checker
+    // Request address translation - TO_BE_COMPLETED
+    output logic translation_req_o,
+    // Virtual address - TO_BE_COMPLETED
+    output logic [riscv::VLEN-1:0] vaddr_o,
+    // Physical address - TO_BE_COMPLETED
+    input logic [riscv::PLEN-1:0] paddr_i,
+    // Excepted which appears before load - TO_BE_COMPLETED
+    input exception_t ex_i,
+    // Data TLB hit - lsu
+    input logic dtlb_hit_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic [riscv::PPNW-1:0] dtlb_ppn_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [11:0] page_offset_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic page_offset_matches_i,
-    input logic store_buffer_empty_i,  // the entire store-buffer is empty
+    // Store buffer is empty - TO_BE_COMPLETED
+    input logic store_buffer_empty_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
-    // D$ interface
+    // Data cache request out - CACHES
     input dcache_req_o_t req_port_i,
+    // Data cache request in - CACHES
     output dcache_req_i_t req_port_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic dcache_wbuffer_not_ni_i
 );
   enum logic [3:0] {
@@ -431,7 +453,7 @@ module load_unit
   // ---------------
   // Sign Extend
   // ---------------
-  riscv::xlen_t shifted_data;
+  logic [riscv::XLEN-1:0] shifted_data;
 
   // realign as needed
   assign shifted_data = req_port_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};

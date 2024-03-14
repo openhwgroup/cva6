@@ -24,7 +24,7 @@ source ./verif/regress/install-spike.sh
 source ./verif/sim/setup-env.sh
 
 if ! [ -n "$DV_TARGET" ]; then
-  DV_TARGET=cv32a6_embedded
+  DV_TARGET=cv32a65x
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
@@ -137,6 +137,6 @@ done
 j=0
 elif [[ "$list_num" = 0 ]];then
    printf "==== Execute Directed tests to improve functional coverage of isa, by hitting corners !!! ====\n\n"
-   python3 cva6.py --testlist=$DIRECTED_TESTLIST --iss_yaml cva6.yaml --target $DV_TARGET --iss=vcs-uvm,spike --priv=m
+   python3 cva6.py --testlist=$DIRECTED_TESTLIST --iss_yaml cva6.yaml --isa_extension="zcb" --target $DV_TARGET --iss=vcs-uvm,spike --priv=m
 fi
 cd -

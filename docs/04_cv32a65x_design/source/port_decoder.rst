@@ -9,7 +9,7 @@
 
 .. _CVA6_decoder_ports:
 
-.. list-table:: decoder module IO ports
+.. list-table:: **decoder module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -72,24 +72,6 @@
      - CSR_REGFILE
      - irq_ctrl_t
 
-   * - ``tvm_i``
-     - in
-     - Trap virtual memory
-     - CSR_REGFILE
-     - logic
-
-   * - ``tw_i``
-     - in
-     - Timeout wait
-     - CSR_REGFILE
-     - logic
-
-   * - ``tsr_i``
-     - in
-     - Trap sret
-     - CSR_REGFILE
-     - logic
-
    * - ``instruction_o``
      - out
      - Instruction to be added to scoreboard entry
@@ -115,8 +97,12 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``debug_mode_i`` input is tied to 0
 | As PRIV = MachineOnly,
 |   ``priv_lvl_i`` input is tied to MachineMode
+|   ``tvm_i`` input is tied to 0
+|   ``tw_i`` input is tied to 0
+|   ``tsr_i`` input is tied to 0
 | As RVF = 0,
 |   ``fs_i`` input is tied to 0
 |   ``frm_i`` input is tied to 0
 | As RVV = 0,
 |   ``vs_i`` input is tied to 0
+

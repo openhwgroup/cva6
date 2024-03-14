@@ -14,58 +14,92 @@
 
 module scoreboard #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type exception_t = logic,
+    parameter type scoreboard_entry_t = logic,
     parameter type rs3_len_t = logic
 ) (
-    input logic clk_i,  // Clock
-    input logic rst_ni,  // Asynchronous reset active low
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic sb_full_o,
-    input logic flush_unissued_instr_i,  // flush only un-issued instructions
-    input logic flush_i,  // flush whole scoreboard
-    input logic unresolved_branch_i,  // we have an unresolved branch
-    // list of clobbered registers to issue stage
+    // Flush only un-issued instructions - TO_BE_COMPLETED
+    input logic flush_unissued_instr_i,
+    // Flush whole scoreboard - TO_BE_COMPLETED
+    input logic flush_i,
+    // We have an unresolved branch - TO_BE_COMPLETED
+    input logic unresolved_branch_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_gpr_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_fpr_o,
 
-    // regfile like interface to operand read stage
-    input  logic         [ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
-    output riscv::xlen_t                                 rs1_o,
-    output logic                                         rs1_valid_o,
+    // rs1 operand address - issue_read_operands
+    input  logic [ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
+    // rs1 operand - issue_read_operands
+    output logic [              riscv::XLEN-1:0] rs1_o,
+    // rs1 operand is valid - issue_read_operands
+    output logic                                 rs1_valid_o,
 
-    input  logic         [ariane_pkg::REG_ADDR_SIZE-1:0] rs2_i,
-    output riscv::xlen_t                                 rs2_o,
-    output logic                                         rs2_valid_o,
+    // rs2 operand address - issue_read_operands
+    input  logic [ariane_pkg::REG_ADDR_SIZE-1:0] rs2_i,
+    // rs2 operand - issue_read_operands
+    output logic [              riscv::XLEN-1:0] rs2_o,
+    // rs2 operand is valid - issue_read_operands
+    output logic                                 rs2_valid_o,
 
+    // rs3 operand address - issue_read_operands
     input  logic     [ariane_pkg::REG_ADDR_SIZE-1:0] rs3_i,
+    // rs3 operand - issue_read_operands
     output rs3_len_t                                 rs3_o,
+    // rs3 operand is valid - issue_read_operands
     output logic                                     rs3_valid_o,
 
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
-    output ariane_pkg::scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
-    input  logic                          [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    output scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input  logic              [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
 
     // instruction to put on top of scoreboard e.g.: top pointer
     // we can always put this instruction to the top unless we signal with asserted full_o
-    input  ariane_pkg::scoreboard_entry_t        decoded_instr_i,
-    input  logic                          [31:0] orig_instr_i,
-    input  logic                                 decoded_instr_valid_i,
-    output logic                                 decoded_instr_ack_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input  scoreboard_entry_t        decoded_instr_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input  logic              [31:0] orig_instr_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input  logic                     decoded_instr_valid_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    output logic                     decoded_instr_ack_o,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
-    output ariane_pkg::scoreboard_entry_t        issue_instr_o,
-    output logic                          [31:0] orig_instr_o,
-    output logic                                 issue_instr_valid_o,
-    input  logic                                 issue_ack_i,
+    // Issue scoreboard entry - ACC_DISPATCHER
+    output scoreboard_entry_t        issue_instr_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    output logic              [31:0] orig_instr_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    output logic                     issue_instr_valid_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input  logic                     issue_ack_i,
 
-    // write-back port
-    input ariane_pkg::bp_resolve_t resolved_branch_i,
-    input logic [CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
-    input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,  // write data in
-    input ariane_pkg::exception_t [CVA6Cfg.NrWbPorts-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
-    input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,  // data in is valid
-    input logic x_we_i,  // cvxif we for writeback
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input bp_resolve_t resolved_branch_i,
+    // Transaction ID at which to write the result back - TO_BE_COMPLETED
+    input logic [CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0] trans_id_i,
+    // Results to write back - TO_BE_COMPLETED
+    input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
+    // Exception from a functional unit (e.g.: ld/st exception) - TO_BE_COMPLETED
+    input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_i,
+    // Indicates valid results - TO_BE_COMPLETED
+    input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
+    // Cvxif we for writeback - TO_BE_COMPLETED
+    input logic x_we_i,
 
-    // RVFI
+    // TO_BE_COMPLETED - RVFI
     output logic [ariane_pkg::TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
+    // TO_BE_COMPLETED - RVFI
     output logic [CVA6Cfg.NrCommitPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
 );
 
@@ -73,7 +107,7 @@ module scoreboard #(
   typedef struct packed {
     logic issued;  // this bit indicates whether we issued this instruction e.g.: if it is valid
     logic is_rd_fpr_flag;  // redundant meta info, added for speed
-    ariane_pkg::scoreboard_entry_t sbe;  // this is the score board entry we will send to ex
+    scoreboard_entry_t sbe;  // this is the score board entry we will send to ex
   } sb_mem_t;
   sb_mem_t [ariane_pkg::NR_SB_ENTRIES-1:0] mem_q, mem_n;
 
@@ -90,7 +124,7 @@ module scoreboard #(
 
   assign sb_full_o  = issue_full;
 
-  ariane_pkg::scoreboard_entry_t decoded_instr;
+  scoreboard_entry_t decoded_instr;
   always_comb begin
     decoded_instr = decoded_instr_i;
   end
@@ -151,7 +185,16 @@ module scoreboard #(
       // check if this instruction was issued (e.g.: it could happen after a flush that there is still
       // something in the pipeline e.g. an incomplete memory operation)
       if (wt_valid_i[i] && mem_q[trans_id_i[i]].issued) begin
-        mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
+        if (mem_q[trans_id_i[i]].sbe.is_double_rd_macro_instr && mem_q[trans_id_i[i]].sbe.is_macro_instr) begin
+          if (mem_q[trans_id_i[i]].sbe.is_last_macro_instr) begin
+            mem_n[trans_id_i[i]].sbe.valid = 1'b1;
+            mem_n[8'(trans_id_i[i])-1].sbe.valid = 1'b1;
+          end else begin
+            mem_n[trans_id_i[i]].sbe.valid = 1'b0;
+          end
+        end else begin
+          mem_n[trans_id_i[i]].sbe.valid = 1'b1;
+        end
         mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
         // save the target address of a branch (needed for debug in commit stage)
         if (CVA6Cfg.DebugEn) begin
@@ -369,7 +412,7 @@ module scoreboard #(
       .idx_o  ()
   );
 
-  riscv::xlen_t rs3;
+  logic [riscv::XLEN-1:0] rs3;
 
   rr_arb_tree #(
       .NumIn(ariane_pkg::NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),

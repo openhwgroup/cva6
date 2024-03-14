@@ -46,15 +46,17 @@ package config_pkg;
     int unsigned                 AxiIdWidth;
     // AXI User width
     int unsigned                 AxiUserWidth;
-    // TO_BE_COMPLETED
+    // TODO
+    int unsigned                 MemTidWidth;
+    // Load buffer entry buffer
     int unsigned                 NrLoadBufEntries;
-    // FPU is enabled
+    // Floating Point
     bit                          FpuEn;
-    // TO_BE_COMPLETED
+    // Non standard 16bits Floating Point
     bit                          XF16;
-    // TO_BE_COMPLETED
+    // Non standard 16bits Floating Point Alt
     bit                          XF16ALT;
-    // TO_BE_COMPLETED
+    // Non standard 8bits Floating Point
     bit                          XF8;
     // Atomic RISC-V extension
     bit                          RVA;
@@ -66,36 +68,14 @@ package config_pkg;
     bit                          RVC;
     // Zcb RISC-V extension
     bit                          RVZCB;
-    // TO_BE_COMPLETED
+    // Zcmp RISC-V extension
+    bit                          RVZCMP;
+    // Non standard Vector Floating Point
     bit                          XFVec;
     // CV-X-IF coprocessor interface is supported
     bit                          CvxifEn;
-    // Zicond RISC-V extension is enabled
+    // Zicond RISC-V extension
     bit                          ZiCondExtEn;
-    // Single precision FP RISC-V extension
-    bit                          RVF;
-    // Double precision FP RISC-V extension
-    bit                          RVD;
-    // Floating point is present
-    bit                          FpPresent;
-    // TO_BE_COMPLETED
-    bit                          NSX;
-    // TO_BE_COMPLETED
-    int unsigned                 FLen;
-    // Vector floating point extension
-    bit                          RVFVec;
-    // 16 bits vector floating point extension
-    bit                          XF16Vec;
-    // TO_BE_COMPLETED
-    bit                          XF16ALTVec;
-    // 8 bits vector floating point extension
-    bit                          XF8Vec;
-    // TO_BE_COMPLETED
-    int unsigned                 NrRgprPorts;
-    // TO_BE_COMPLETED
-    int unsigned                 NrWbPorts;
-    // Accelerate Port coprocessor interface
-    bit                          EnableAccelerator;
     // Supervisor mode
     bit                          RVS;
     // User mode
@@ -144,19 +124,86 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
     // Maximum number of outstanding stores
     int unsigned                 MaxOutstandingStores;
-    // Debug mode
+    // Debug support
     bit                          DebugEn;
-    // Non idem potency
-    bit                          NonIdemPotenceEn;
     // AXI burst in write
     bit                          AxiBurstWriteEn;
-  } cva6_cfg_t;
+  } cva6_user_cfg_t;
 
+  typedef struct packed {
+    /// Number of commit ports, i.e., maximum number of instructions that the
+    /// core can retire per cycle. It can be beneficial to have more commit
+    /// ports than issue ports, for the scoreboard to empty out in case one
+    /// instruction stalls a little longer.
+    int unsigned NrCommitPorts;
+    /// AXI parameters.
+    int unsigned AxiAddrWidth;
+    int unsigned AxiDataWidth;
+    int unsigned AxiIdWidth;
+    int unsigned AxiUserWidth;
+    int unsigned MEM_TID_WIDTH;
+    int unsigned NrLoadBufEntries;
+    bit          FpuEn;
+    bit          XF16;
+    bit          XF16ALT;
+    bit          XF8;
+    bit          RVA;
+    bit          RVB;
+    bit          RVV;
+    bit          RVC;
+    bit          RVZCB;
+    bit          RVZCMP;
+    bit          XFVec;
+    bit          CvxifEn;
+    bit          ZiCondExtEn;
+    // Calculated
+    bit          RVF;
+    bit          RVD;
+    bit          FpPresent;
+    bit          NSX;
+    int unsigned FLen;
+    bit          RVFVec;
+    bit          XF16Vec;
+    bit          XF16ALTVec;
+    bit          XF8Vec;
+    int unsigned NrRgprPorts;
+    int unsigned NrWbPorts;
+    bit          EnableAccelerator;
+    bit          RVS;                //Supervisor mode
+    bit          RVU;                //User mode
+
+    logic [63:0]                 HaltAddress;
+    logic [63:0]                 ExceptionAddress;
+    int unsigned                 RASDepth;
+    int unsigned                 BTBEntries;
+    int unsigned                 BHTEntries;
+    logic [63:0]                 DmBaseAddress;
+    bit                          TvalEn;
+    int unsigned                 NrPMPEntries;
+    logic [15:0][63:0]           PMPCfgRstVal;
+    logic [15:0][63:0]           PMPAddrRstVal;
+    bit [15:0]                   PMPEntryReadOnly;
+    noc_type_e                   NOCType;
+    int unsigned                 NrNonIdempotentRules;
+    logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
+    logic [NrMaxRules-1:0][63:0] NonIdempotentLength;
+    int unsigned                 NrExecuteRegionRules;
+    logic [NrMaxRules-1:0][63:0] ExecuteRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] ExecuteRegionLength;
+    int unsigned                 NrCachedRegionRules;
+    logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] CachedRegionLength;
+    int unsigned                 MaxOutstandingStores;
+    bit                          DebugEn;
+    bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
+    bit                          AxiBurstWriteEn;
+
+    int unsigned DCACHE_MAX_TX;
+  } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
   /// you develop a module that resides within the core, assign this constant.
   localparam cva6_cfg_t cva6_cfg_empty = '0;
-
 
   /// Utility function being called to check parameters. Not all values make
   /// sense for all parameters, here is the place to sanity check them.

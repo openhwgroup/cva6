@@ -20,9 +20,14 @@ module wt_axi_adapter
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned ReqFifoDepth = 2,
-    parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
+    parameter int unsigned MetaFifoDepth = CVA6Cfg.DCACHE_MAX_TX,
     parameter type axi_req_t = logic,
-    parameter type axi_rsp_t = logic
+    parameter type axi_rsp_t = logic,
+    parameter type dcache_req_t = logic,
+    parameter type dcache_rtrn_t = logic,
+    parameter type dcache_inval_t = logic,
+    parameter type icache_req_t = logic,
+    parameter type icache_rtrn_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -92,9 +97,9 @@ module wt_axi_adapter
   // AMO generates r beat
   logic amo_gen_r_d, amo_gen_r_q;
 
-  logic [wt_cache_pkg::CACHE_ID_WIDTH-1:0] icache_rtrn_tid_d, icache_rtrn_tid_q;
-  logic [wt_cache_pkg::CACHE_ID_WIDTH-1:0] dcache_rtrn_tid_d, dcache_rtrn_tid_q;
-  logic [wt_cache_pkg::CACHE_ID_WIDTH-1:0] dcache_rtrn_rd_tid, dcache_rtrn_wr_tid;
+  logic [CVA6Cfg.MEM_TID_WIDTH-1:0] icache_rtrn_tid_d, icache_rtrn_tid_q;
+  logic [CVA6Cfg.MEM_TID_WIDTH-1:0] dcache_rtrn_tid_d, dcache_rtrn_tid_q;
+  logic [CVA6Cfg.MEM_TID_WIDTH-1:0] dcache_rtrn_rd_tid, dcache_rtrn_wr_tid;
   logic dcache_rd_pop, dcache_wr_pop;
   logic icache_rd_full, icache_rd_empty;
   logic dcache_rd_full, dcache_rd_empty;
@@ -347,7 +352,7 @@ module wt_axi_adapter
   logic icache_rtrn_vld_d, icache_rtrn_vld_q, dcache_rtrn_vld_d, dcache_rtrn_vld_q;
 
   fifo_v3 #(
-      .DATA_WIDTH(wt_cache_pkg::CACHE_ID_WIDTH),
+      .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
       .DEPTH     (MetaFifoDepth)
   ) i_rd_icache_id (
       .clk_i     (clk_i),
@@ -364,7 +369,7 @@ module wt_axi_adapter
   );
 
   fifo_v3 #(
-      .DATA_WIDTH(wt_cache_pkg::CACHE_ID_WIDTH),
+      .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
       .DEPTH     (MetaFifoDepth)
   ) i_rd_dcache_id (
       .clk_i     (clk_i),
@@ -381,7 +386,7 @@ module wt_axi_adapter
   );
 
   fifo_v3 #(
-      .DATA_WIDTH(wt_cache_pkg::CACHE_ID_WIDTH),
+      .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
       .DEPTH     (MetaFifoDepth)
   ) i_wr_dcache_id (
       .clk_i     (clk_i),
@@ -438,7 +443,7 @@ module wt_axi_adapter
   logic [DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       dcache_rd_shift_d, dcache_rd_shift_q;
   wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
-  wt_cache_pkg::dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
+  dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
   logic dcache_sc_rtrn, axi_rd_last;
 
   always_comb begin : p_axi_rtrn_shift

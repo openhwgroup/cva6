@@ -49,18 +49,26 @@ branch5:
   remu       t4, tp, a1
   c.andi     a5, -1
   lui        zero, 0
-# (example of) final self-check test
-  li a0, 0xCAFE;
-  li a1, 0xCAFE;
-  xor a2, a0, a1;
-  beqz a2, pass;
+  beq        zero, zero, branch_to
+branch_to:
+  bne        zero, zero, main
+  blt        zero, zero, main
+  sub        a5, zero, a0
+  bge        a5, zero, main
 
-fail:
-  # Failure post-processing (messages, ecall setup etc.)
-  li a0, 0x0;
-  jal exit;
+  #End of test
+  j test_pass
 
-pass:
-  # Success post-processing (messages, ecall setup etc.)
-  li a0, 0x0;
-  jal exit;
+test_pass:
+    li ra, 0
+    slli ra, ra, 1
+    addi ra, ra, 1
+    sw ra, tohost, t5
+    self_loop: j self_loop
+
+test_fail:
+    li ra, 1
+    slli ra, ra, 1
+    addi ra, ra, 1
+    sw ra, tohost, t5
+    self_loop_2: j self_loop_2

@@ -9,7 +9,7 @@
 
 .. _CVA6_compressed_decoder_ports:
 
-.. list-table:: compressed_decoder module IO ports
+.. list-table:: **compressed_decoder module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -42,6 +42,4 @@
      - decoder
      - logic
 
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-none

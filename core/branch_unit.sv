@@ -13,24 +13,40 @@
 // Description: Branch target calculation and comparison
 
 module branch_unit #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type branchpredict_sbe_t = logic,
+    parameter type exception_t = logic,
+    parameter type fu_data_t = logic
 ) (
+    // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
+    // Debug mode state - CSR_REGFILE
     input logic debug_mode_i,
-    input ariane_pkg::fu_data_t fu_data_i,
-    input logic [riscv::VLEN-1:0] pc_i,  // PC of instruction
+    // FU data needed to execute instruction - ISSUE_STAGE
+    input fu_data_t fu_data_i,
+    // Instruction PC - ISSUE_STAGE
+    input logic [riscv::VLEN-1:0] pc_i,
+    // Instruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
-    input  logic                      fu_valid_i,             // any functional unit is valid, check that there is no accidental mis-predict
+    // any functional unit is valid, check that there is no accidental mis-predict - TO_BE_COMPLETED
+    input logic fu_valid_i,
+    // Branch unit instruction is valid - ISSUE_STAGE
     input logic branch_valid_i,
-    input logic branch_comp_res_i,  // branch comparison result from ALU
+    // ALU branch compare result - ALU
+    input logic branch_comp_res_i,
+    // Brach unit result - ISSUE_STAGE
     output logic [riscv::VLEN-1:0] branch_result_o,
-
-    input ariane_pkg::branchpredict_sbe_t branch_predict_i,  // this is the address we predicted
-    output ariane_pkg::bp_resolve_t               resolved_branch_o,      // this is the actual address we are targeting
-    output logic resolve_branch_o,  // to ID to clear that we resolved the branch and we can
-                                    // accept new entries to the scoreboard
-    output ariane_pkg::exception_t branch_exception_o  // branch exception out
+    // Information of branch prediction - ISSUE_STAGE
+    input branchpredict_sbe_t branch_predict_i,
+    // Signaling that we resolved the branch - ISSUE_STAGE
+    output bp_resolve_t resolved_branch_o,
+    // Branch is resolved, new entries can be accepted by scoreboard - ID_STAGE
+    output logic resolve_branch_o,
+    // Branch exception out - TO_BE_COMPLETED
+    output exception_t branch_exception_o
 );
   logic [riscv::VLEN-1:0] target_address;
   logic [riscv::VLEN-1:0] next_pc;

@@ -1,0 +1,526 @@
+!Feature
+next_elt_id: 8
+name: RV32Zbs Single-bit instructions
+id: 22
+display_order: 22
+subfeatures: !!omap
+- 000_BCLR: !Subfeature
+    name: 000_BCLR
+    tag: VP_ISA_RV32_F022_S000
+    next_elt_id: 3
+    display_order: 0
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F022_S000_I000
+        description: "bclr rd, rs1, rs2\nx[rd] = x[rs1] & ~(0x1 << x[rs2[4:0]])\n
+          The bit position defined by the lower log2(XLEN) bits of rs2 is cleared
+          in rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F022_S000_I001
+        description: "bclr rd, rs1, rs2\nx[rd] = x[rs1] & ~(0x1 << x[rs2[4:0]])\n
+          The bit position defined by the lower log2(XLEN) bits of rs2 is cleared
+          in rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F022_S000_I002
+        description: "bclr rd, rs1, rs2\nx[rd] = x[rs1] & ~(0x1 << x[rs2[4:0]])\n
+          The bit position defined by the lower log2(XLEN) bits of rs2 is cleared
+          in rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 001_BCLRI: !Subfeature
+    name: 001_BCLRI
+    tag: VP_ISA_RV32_F022_S001
+    next_elt_id: 3
+    display_order: 1
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F022_S001_I000
+        description: "bclri rd, rs1, imm[4:0]\nx[rd] = x[rs1] & ~(0x1 << imm)\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is cleared
+          in rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F022_S001_I001
+        description: "bclri rd, rs1, imm[4:0]\nx[rd] = x[rs1] & ~(0x1 << imm)\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is cleared
+          in rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled\nAll bits of imm are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F022_S001_I002
+        description: "bclri rd, rs1, imm[4:0]\nx[rd] = x[rs1] & ~(0x1 << imm)\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is cleared
+          in rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 002_BEXT: !Subfeature
+    name: 002_BEXT
+    tag: VP_ISA_RV32_F022_S002
+    next_elt_id: 3
+    display_order: 2
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F022_S002_I000
+        description: "bext rd, rs1, rs2\nx[rd] = (x[rs1] >> x[rs2[4:0]]) & 0x1\nThe
+          bit position defined by the lower log2(XLEN) bits of rs2 is extract in rs1
+          and placed in LSB of rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F022_S002_I001
+        description: "bext rd, rs1, rs2\nx[rd] = (x[rs1] >> x[rs2[4:0]]) & 0x1\nThe
+          bit position defined by the lower log2(XLEN) bits of rs2 is extract in rs1
+          and placed in LSB of rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F022_S002_I002
+        description: "bext rd, rs1, rs2\nx[rd] = (x[rs1] >> x[rs2[4:0]]) & 0x1\nThe
+          bit position defined by the lower log2(XLEN) bits of rs2 is extract in rs1
+          and placed in LSB of rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 003_BEXTI: !Subfeature
+    name: 003_BEXTI
+    tag: VP_ISA_RV32_F022_S003
+    next_elt_id: 3
+    display_order: 3
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F022_S003_I000
+        description: "bexti rd, rs1, imm[4:0]\nx[rd] = (x[rs1] >> imm) & 0x1\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is extract
+          in rs1 and placed in LSB of rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F022_S003_I001
+        description: "bexti rd, rs1, imm[4:0]\nx[rd] = (x[rs1] >> imm) & 0x1\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is extract
+          in rs1 and placed in LSB of rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled\nAll bits of imm are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F022_S003_I002
+        description: "bexti rd, rs1, imm[4:0]\nx[rd] = (x[rs1] >> imm) & 0x1\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is extract
+          in rs1 and placed in LSB of rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 004_BINV: !Subfeature
+    name: 004_BINV
+    tag: VP_ISA_RV32_F022_S004
+    next_elt_id: 3
+    display_order: 4
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F022_S004_I000
+        description: "binv rd, rs1, rs2\nx[rd] = x[rs1] ^ (0x1 << x[rs2[4:0]])\nThe
+          bit position defined by the lower log2(XLEN) bits of rs2 is inverted in
+          rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F022_S004_I001
+        description: "binv rd, rs1, rs2\nx[rd] = x[rs1] ^ (0x1 << x[rs2[4:0]])\nThe
+          bit position defined by the lower log2(XLEN) bits of rs2 is inverted in
+          rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F022_S004_I002
+        description: "binv rd, rs1, rs2\nx[rd] = x[rs1] ^ (0x1 << x[rs2[4:0]])\nThe
+          bit position defined by the lower log2(XLEN) bits of rs2 is inverted in
+          rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 005_BINVI: !Subfeature
+    name: 005_BINVI
+    tag: VP_ISA_RV32_F022_S005
+    next_elt_id: 3
+    display_order: 5
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F022_S005_I000
+        description: "binvi rd, rs1, imm[4:0]\nx[rd] = x[rs1] ^ (0x1 << imm)\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is inverted
+          in rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F022_S005_I001
+        description: "binvi rd, rs1, imm[4:0]\nx[rd] = x[rs1] ^ (0x1 << imm)\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is inverted
+          in rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled\nAll bits of imm are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F022_S005_I002
+        description: "binvi rd, rs1, imm[4:0]\nx[rd] = x[rs1] ^ (0x1 << imm)\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is inverted
+          in rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 006_BSET: !Subfeature
+    name: 006_BSET
+    tag: VP_ISA_RV32_F022_S006
+    next_elt_id: 3
+    display_order: 6
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F022_S006_I000
+        description: "bset rd, rs1, rs2\nx[rd] = x[rs1] | (0x1 << x[rs2[4:0]])\nThe
+          bit position defined by the lower log2(XLEN) bits of rs2 is set in rs1 and
+          placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rs2 registers are used.\nAll possible rd registers are used.\n
+          All possible register combinations where rs1 == rd are used\nAll possible
+          register combinations where rs2 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F022_S006_I001
+        description: "bset rd, rs1, rs2\nx[rd] = x[rs1] | (0x1 << x[rs2[4:0]])\nThe
+          bit position defined by the lower log2(XLEN) bits of rs2 is set in rs1 and
+          placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nrs2 value
+          is No-zero and zero\nAll bits of rs1 are toggled\nAll bits of rs2 are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F022_S006_I002
+        description: "bset rd, rs1, rs2\nx[rd] = x[rs1] | (0x1 << x[rs2[4:0]])\nThe
+          bit position defined by the lower log2(XLEN) bits of rs2 is set in rs1 and
+          placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+- 007_BSETI: !Subfeature
+    name: 007_BSETI
+    tag: VP_ISA_RV32_F022_S007
+    next_elt_id: 3
+    display_order: 7
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_ISA_RV32_F022_S007_I000
+        description: "bseti rd, rs1, imm[4:0]\nx[rd] = x[rs1] | (0x1 << imm)\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is set in
+          rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Register operands:\n\nAll possible rs1 registers are used.\n
+          All possible rd registers are used.\nAll possible register combinations
+          where rs1 == rd are used"
+        pfc: 3
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_ISA_RV32_F022_S007_I001
+        description: "bseti rd, rs1, imm[4:0]\nx[rd] = x[rs1] | (0x1 << imm)\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is set in
+          rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Input operands:\n\nrs1 value is No-zero and zero\nAll bits of
+          rs1 are toggled\nAll bits of imm are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '002': !VerifItem
+        name: '002'
+        tag: VP_ISA_RV32_F022_S007_I002
+        description: "bseti rd, rs1, imm[4:0]\nx[rd] = x[rs1] | (0x1 << imm)\nThe
+          bit position defined by the lower log2(XLEN) bits of immediate is set in
+          rs1 and placed in rd."
+        reqt_doc: ./RISCV_Instructions.rst
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: "Output result:\n\nrd value is No-zero and zero\nAll bits of
+          rd are toggled"
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
+io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
+config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
+ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

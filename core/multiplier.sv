@@ -20,17 +20,28 @@ module multiplier
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
-    input  logic                             clk_i,
-    input  logic                             rst_ni,
-    input  logic         [TRANS_ID_BITS-1:0] trans_id_i,
-    input  logic                             mult_valid_i,
-    input  fu_op                             operation_i,
-    input  riscv::xlen_t                     operand_a_i,
-    input  riscv::xlen_t                     operand_b_i,
-    output riscv::xlen_t                     result_o,
-    output logic                             mult_valid_o,
-    output logic                             mult_ready_o,
-    output logic         [TRANS_ID_BITS-1:0] mult_trans_id_o
+    // Subsystem Clock - SUBSYSTEM
+    input  logic                     clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input  logic                     rst_ni,
+    // Multiplier transaction ID - Mult
+    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
+    // Multiplier instruction is valid - Mult
+    input  logic                     mult_valid_i,
+    // Multiplier operation - Mult
+    input  fu_op                     operation_i,
+    // A operand - Mult
+    input  logic [  riscv::XLEN-1:0] operand_a_i,
+    // B operand - Mult
+    input  logic [  riscv::XLEN-1:0] operand_b_i,
+    // Multiplier result - Mult
+    output logic [  riscv::XLEN-1:0] result_o,
+    // Mutliplier result is valid - Mult
+    output logic                     mult_valid_o,
+    // Multiplier FU is ready - Mult
+    output logic                     mult_ready_o,
+    // Multiplier transaction ID - Mult
+    output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
   // Carry-less multiplication
   logic [riscv::XLEN-1:0]
@@ -121,7 +132,7 @@ module multiplier
       CLMULR:              result_o = clmulr_q;
       // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
       default: begin
-        if (operator_q == MULW && riscv::IS_XLEN64) result_o = sext32(mult_result_q[31:0]);
+        if (operator_q == MULW && riscv::IS_XLEN64) result_o = sext32(CVA6Cfg, mult_result_q[31:0]);
         else result_o = mult_result_q[riscv::XLEN-1:0];  // including MUL
       end
     endcase

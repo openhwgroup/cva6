@@ -36,24 +36,28 @@
      - AXI User width
      - 32
 
+   * - MemTidWidth
+     - TODO
+     - 2
+
    * - NrLoadBufEntries
-     - TO_BE_COMPLETED
+     - Load buffer entry buffer
      - 1
 
    * - FpuEn
-     - FPU is enabled
+     - Floating Point
      - 0
 
    * - XF16
-     - TO_BE_COMPLETED
+     - Non standard 16bits Floating Point
      - 0
 
    * - XF16ALT
-     - TO_BE_COMPLETED
+     - Non standard 16bits Floating Point Alt
      - 0
 
    * - XF8
-     - TO_BE_COMPLETED
+     - Non standard 8bits Floating Point
      - 0
 
    * - RVA
@@ -77,7 +81,7 @@
      - 1
 
    * - XFVec
-     - TO_BE_COMPLETED
+     - Non standard Vector Floating Point
      - 0
 
    * - CvxifEn
@@ -85,55 +89,7 @@
      - 1
 
    * - ZiCondExtEn
-     - Zicond RISC-V extension is enabled
-     - 0
-
-   * - RVF
-     - Single precision FP RISC-V extension
-     - 0
-
-   * - RVD
-     - Double precision FP RISC-V extension
-     - 0
-
-   * - FpPresent
-     - Floating point is present
-     - 0
-
-   * - NSX
-     - TO_BE_COMPLETED
-     - 0
-
-   * - FLen
-     - TO_BE_COMPLETED
-     - 0
-
-   * - RVFVec
-     - Vector floating point extension
-     - 0
-
-   * - XF16Vec
-     - 16 bits vector floating point extension
-     - 0
-
-   * - XF16ALTVec
-     - TO_BE_COMPLETED
-     - 0
-
-   * - XF8Vec
-     - 8 bits vector floating point extension
-     - 0
-
-   * - NrRgprPorts
-     - TO_BE_COMPLETED
-     - 0
-
-   * - NrWbPorts
-     - TO_BE_COMPLETED
-     - 0
-
-   * - EnableAccelerator
-     - Accelerate Port coprocessor interface
+     - Zicond RISC-V extension
      - 0
 
    * - RVS
@@ -233,11 +189,7 @@
      - 7
 
    * - DebugEn
-     - Debug mode
-     - 0
-
-   * - NonIdemPotenceEn
-     - Non idem potency
+     - Debug support
      - 0
 
    * - AxiBurstWriteEn

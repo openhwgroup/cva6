@@ -110,6 +110,7 @@ build_tools:
   stage: light tests
   rules: *on_dev
   before_script:
+    - git -C verif/core-v-verif fetch --unshallow
     - mkdir -p tools
     - mv artifacts/tools/spike tools
     - rm -rf artifacts/
@@ -137,7 +138,7 @@ smoke:
         - "vcs-testharness,spike"
         - "vcs-uvm,spike"
   script:
-    - source verif/regress/smoke-tests.sh
+    - bash verif/regress/smoke-tests.sh
     - !reference [.simu_after_script]
 
 gen_smoke:
@@ -150,7 +151,7 @@ gen_smoke:
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "vcs-uvm,spike"
   script:
-    - source verif/regress/smoke-gen_tests.sh
+    - bash verif/regress/smoke-gen_tests.sh
     - !reference [.simu_after_script]
 
 coremark:
@@ -163,7 +164,7 @@ coremark:
     DASHBOARD_JOB_CATEGORY: "Performance"
   script:
     - bash verif/regress/coremark.sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/veri-testharness_sim/core_main.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/veri-testharness_sim/core_main.*.log
 
 hwconfig:
   extends:
@@ -264,7 +265,7 @@ dhrystone:
     DASHBOARD_JOB_CATEGORY: "Performance"
   script:
     - bash verif/regress/dhrystone.sh
-    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.*.log
 
 riscv_arch_test:
   extends:
@@ -458,6 +459,7 @@ smoke-gate:
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
   script:
+    - git -C verif/core-v-verif fetch --unshallow
     - mkdir -p tools
     - mv artifacts/tools/spike tools
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
