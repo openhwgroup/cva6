@@ -134,6 +134,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv):
     if entry['iss'] == iss:
       logging.info("Found matching ISS: %s" % entry['iss'])
       m = re.search(r"rv(?P<xlen>[0-9]+?)(?P<variant>[a-z]+(_[szx]\w+)*)$", isa)
+      logging.info("Target: " + target)
       if m: logging.info("ISA %0s" % isa)
       else: logging.error("Illegal ISA %0s" % isa)
 
@@ -285,7 +286,7 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_gen, csr_file,
                 (" +num_of_tests=%i " % test_cnt) + \
                 (" +start_idx=%d " % (i*batch_size)) + \
                 (" +asm_file_name=%s/asm_tests/%s " % (output_dir, test['test'])) + \
-                (" -l %s/sim_%s_%d%s.log " % (output_dir, test['test'], i, log_suffix))
+                (" -l %s/sim_%s_%d_%s.log " % (output_dir, test['test'], i, log_suffix))
           if verbose:
             cmd += "+UVM_VERBOSITY=UVM_HIGH "
           cmd = re.sub("<seed>", str(rand_seed), cmd)
@@ -664,7 +665,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
         for i in range(0, test['iterations']):
           prefix = ("%s/asm_tests/%s_%d" % (output_dir, test['test'], i))
           elf = prefix + ".o"
-          log = ("%s/%s.%d.%s.log" % (log_dir, test['test'], i, target))
+          log = ("%s/%s_%d.%s.log" % (log_dir, test['test'], i, target))
           cmd = get_iss_cmd(base_cmd, elf, target, log)
           if 'iss_opts' in test:
             cmd += ' '
@@ -702,7 +703,7 @@ def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_
       log_list = []
       run_cmd(("echo 'Test binary: %s' >> %s" % (elf, report)))
       for iss in iss_list:
-        log_list.append("%s/%s_sim/%s.%d.%s.log" % (output_dir, iss, test['test'], i, target))
+        log_list.append("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test['test'], i, target))
       compare_iss_log(iss_list, log_list, report, stop_on_first_error, exp)
   save_regr_report(report)
 
@@ -1050,7 +1051,7 @@ def check_spike_version():
   get_env_var("SPIKE_PATH")
   user_spike_version = subprocess.run("$SPIKE_PATH/spike -v", capture_output=True, text=True, shell=True)
   user_spike_version_string = user_spike_version.stderr.strip()
-  print(user_spike_version)
+
   if user_spike_version.returncode != 0:
     incorrect_version_exit("Spike", "- unknown -", spike_version)
     
@@ -1328,4 +1329,3 @@ if __name__ == "__main__":
   sys.path.append(os.getcwd()+"/../../util")
   from config_pkg_generator import *
   main()
-
