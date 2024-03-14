@@ -77,7 +77,7 @@ module wt_dcache_missunit
 
   // functions
   function automatic logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh(
-      input logic [L1D_WAY_WIDTH-1:0] in);
+      input logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] in);
     logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] out;
     out     = '0;
     out[in] = 1'b1;

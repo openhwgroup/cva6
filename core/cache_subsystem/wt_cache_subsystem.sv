@@ -86,7 +86,7 @@ module wt_cache_subsystem
   localparam type dcache_req_t = struct packed {
     wt_cache_pkg::dcache_out_t rtype;  // see definitions above
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
-    logic [L1D_WAY_WIDTH-1:0] way;  // way to replace
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
     logic [riscv::PLEN-1:0] paddr;  // physical address
     logic [riscv::XLEN-1:0] data;  // word width of processor (no block stores at the moment)
     logic [ariane_pkg::DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
