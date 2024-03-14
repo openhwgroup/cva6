@@ -250,7 +250,6 @@ package ariane_pkg;
 `else
   // I$
   localparam int unsigned CONFIG_L1I_SIZE = cva6_config_pkg::CVA6ConfigIcacheByteSize;  // in byte
-  localparam int unsigned ICACHE_SET_ASSOC   = cva6_config_pkg::CVA6ConfigIcacheSetAssoc; // number of ways
   localparam int unsigned ICACHE_LINE_WIDTH = cva6_config_pkg::CVA6ConfigIcacheLineWidth;  // in bit
   localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigIcacheLineWidth; // in bit
   // D$

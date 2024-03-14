@@ -67,9 +67,9 @@ module cva6_icache
   localparam ICACHE_CL_IDX_WIDTH = $clog2(ICACHE_NUM_WORDS);  // excluding byte offset
 
   // functions
-  function automatic logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh(
+  function automatic logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] icache_way_bin2oh(
       input logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] in);
-    logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] out;
+    logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] out;
     out     = '0;
     out[in] = 1'b1;
     return out;
@@ -79,7 +79,7 @@ module cva6_icache
   logic cache_en_d, cache_en_q;  // cache is enabled
   logic [riscv::VLEN-1:0] vaddr_d, vaddr_q;
   logic                        paddr_is_nc;  // asserted if physical address is non-cacheable
-  logic [ICACHE_SET_ASSOC-1:0] cl_hit;  // hit from tag compare
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_hit;  // hit from tag compare
   logic                        cache_rden;  // triggers cache lookup
   logic                        cache_wren;  // triggers write to cacheline
   logic
@@ -89,10 +89,10 @@ module cva6_icache
 
   // replacement strategy
   logic                                update_lfsr;  // shift the LFSR
-  logic [$clog2(ICACHE_SET_ASSOC)-1:0] inv_way;  // first non-valid encountered
-  logic [$clog2(ICACHE_SET_ASSOC)-1:0] rnd_way;  // random index for replacement
-  logic [$clog2(ICACHE_SET_ASSOC)-1:0] repl_way;  // way to replace
-  logic [ICACHE_SET_ASSOC-1:0] repl_way_oh_d, repl_way_oh_q;  // way to replace (onehot)
+  logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] inv_way;  // first non-valid encountered
+  logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] rnd_way;  // random index for replacement
+  logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] repl_way;  // way to replace
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] repl_way_oh_d, repl_way_oh_q;  // way to replace (onehot)
   logic all_ways_valid;  // we need to switch repl strategy since all are valid
 
   // invalidations / flushing
@@ -103,19 +103,19 @@ module cva6_icache
 
   // mem arrays
   logic                           cl_we;  // write enable to memory array
-  logic [   ICACHE_SET_ASSOC-1:0] cl_req;  // request to memory array
+  logic [   CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_req;  // request to memory array
   logic [ICACHE_CL_IDX_WIDTH-1:0] cl_index;  // this is a cache-line index, to memory array
   logic [ICACHE_OFFSET_WIDTH-1:0] cl_offset_d, cl_offset_q;  // offset in cache line
   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] cl_tag_d, cl_tag_q;  // this is the cache tag
-  logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0]          cl_tag_rdata [ICACHE_SET_ASSOC-1:0]; // these are the tags coming from the tagmem
-  logic [ICACHE_LINE_WIDTH-1:0]         cl_rdata     [ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the cache
-  logic [ICACHE_USER_LINE_WIDTH-1:0]    cl_ruser[ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the user cache
-  logic [ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0] cl_sel;  // selected word from each cacheline
-  logic [ICACHE_SET_ASSOC-1:0][FETCH_USER_WIDTH-1:0] cl_user;  // selected word from each cacheline
-  logic [ICACHE_SET_ASSOC-1:0] vld_req;  // bit enable for valid regs
+  logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0]          cl_tag_rdata [CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the tags coming from the tagmem
+  logic [ICACHE_LINE_WIDTH-1:0]         cl_rdata     [CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the cache
+  logic [ICACHE_USER_LINE_WIDTH-1:0]    cl_ruser[CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the user cache
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0] cl_sel;  // selected word from each cacheline
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0][FETCH_USER_WIDTH-1:0] cl_user;  // selected word from each cacheline
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] vld_req;  // bit enable for valid regs
   logic vld_we;  // valid bits write enable
-  logic [ICACHE_SET_ASSOC-1:0] vld_wdata;  // valid bits to write
-  logic [ICACHE_SET_ASSOC-1:0] vld_rdata;  // valid bits coming from valid regs
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] vld_wdata;  // valid bits to write
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] vld_rdata;  // valid bits coming from valid regs
   logic [ICACHE_CL_IDX_WIDTH-1:0] vld_addr;  // valid bit
 
   // cpmtroller FSM
@@ -398,7 +398,7 @@ module cva6_icache
 
   // find invalid cache line
   lzc #(
-      .WIDTH(ICACHE_SET_ASSOC)
+      .WIDTH(CVA6Cfg.ICACHE_SET_ASSOC)
   ) i_lzc (
       .in_i   (~vld_rdata),
       .cnt_o  (inv_way),
@@ -408,7 +408,7 @@ module cva6_icache
   // generate random cacheline index
   lfsr #(
       .LfsrWidth(8),
-      .OutWidth ($clog2(ariane_pkg::ICACHE_SET_ASSOC))
+      .OutWidth ($clog2(CVA6Cfg.ICACHE_SET_ASSOC))
   ) i_lfsr (
       .clk_i (clk_i),
       .rst_ni(rst_ni),
@@ -421,9 +421,9 @@ module cva6_icache
   // tag comparison, hit generation
   ///////////////////////////////////////////////////////
 
-  logic [$clog2(ICACHE_SET_ASSOC)-1:0] hit_idx;
+  logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] hit_idx;
 
-  for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : gen_tag_cmpsel
+  for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_tag_cmpsel
     assign cl_hit[i]  = (cl_tag_rdata[i] == cl_tag_d) & vld_rdata[i];
     assign cl_sel[i]  = cl_rdata[i][{cl_offset_q, 3'b0}+:FETCH_WIDTH];
     assign cl_user[i] = cl_ruser[i][{cl_offset_q, 3'b0}+:FETCH_USER_WIDTH];
@@ -431,7 +431,7 @@ module cva6_icache
 
 
   lzc #(
-      .WIDTH(ICACHE_SET_ASSOC)
+      .WIDTH(CVA6Cfg.ICACHE_SET_ASSOC)
   ) i_lzc_hit (
       .in_i   (cl_hit),
       .cnt_o  (hit_idx),
@@ -453,9 +453,9 @@ module cva6_icache
   ///////////////////////////////////////////////////////
 
 
-  logic [CVA6Cfg.ICACHE_TAG_WIDTH:0] cl_tag_valid_rdata[ICACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.ICACHE_TAG_WIDTH:0] cl_tag_valid_rdata[CVA6Cfg.ICACHE_SET_ASSOC-1:0];
 
-  for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : gen_sram
+  for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_sram
     // Tag RAM
     sram #(
         // tag + valid bit
@@ -555,16 +555,16 @@ module cva6_icache
   else $fatal(1, "[l1 icache] cl_hit signal must be hot1");
 
   // this is only used for verification!
-  logic vld_mirror[ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
-  logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] tag_mirror[ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
-  logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
+  logic vld_mirror[ICACHE_NUM_WORDS-1:0][CVA6Cfg.ICACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] tag_mirror[ICACHE_NUM_WORDS-1:0][CVA6Cfg.ICACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
     if (!rst_ni) begin
       vld_mirror <= '{default: '0};
       tag_mirror <= '{default: '0};
     end else begin
-      for (int i = 0; i < ICACHE_SET_ASSOC; i++) begin
+      for (int i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin
         if (vld_req[i] & vld_we) begin
           vld_mirror[vld_addr][i] <= vld_wdata[i];
           tag_mirror[vld_addr][i] <= cl_tag_q;
@@ -573,7 +573,7 @@ module cva6_icache
     end
   end
 
-  for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : gen_tag_dupl
+  for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_tag_dupl
     assign tag_write_duplicate_test[i] = (tag_mirror[vld_addr][i] == cl_tag_q) & vld_mirror[vld_addr][i] & (|vld_wdata);
   end
 

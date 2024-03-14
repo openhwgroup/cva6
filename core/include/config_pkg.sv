@@ -132,6 +132,8 @@ package config_pkg;
     bit                          DebugEn;
     // AXI burst in write
     bit                          AxiBurstWriteEn;
+    // Instruction cache associativity (number of ways)
+    int unsigned IcacheSetAssoc;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -206,6 +208,7 @@ package config_pkg;
     bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
     bit                          AxiBurstWriteEn;
 
+    int unsigned ICACHE_SET_ASSOC;
     int unsigned ICACHE_SET_ASSOC_WIDTH;
     int unsigned ICACHE_INDEX_WIDTH;
     int unsigned ICACHE_TAG_WIDTH;

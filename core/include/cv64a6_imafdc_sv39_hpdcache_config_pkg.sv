@@ -142,7 +142,8 @@ package cva6_config_pkg;
       CachedRegionLength: 1024'({64'h40000000}),
       MaxOutstandingStores: unsigned'(7),
       DebugEn: bit'(1),
-      AxiBurstWriteEn: bit'(0)
+      AxiBurstWriteEn: bit'(0),
+      IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc)
   };
 
 endpackage

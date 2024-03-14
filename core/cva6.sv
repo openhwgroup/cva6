@@ -155,7 +155,7 @@ module cva6
     },
 
     localparam type icache_req_t = struct packed {
-      logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] way;  // way to replace
+      logic [$clog2(CVA6Cfg.ICACHE_SET_ASSOC)-1:0] way;  // way to replace
       logic [riscv::PLEN-1:0] paddr;  // physical address
       logic nc;  // noncacheable
       logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)

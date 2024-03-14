@@ -21,7 +21,7 @@ package build_config_pkg;
     bit EnableAccelerator = CVA6Cfg.RVV;  // Currently only used by V extension (Ara)
     int unsigned NrWbPorts = (CVA6Cfg.CvxifEn || EnableAccelerator) ? 5 : 4;
 
-    int unsigned ICACHE_INDEX_WIDTH = $clog2(ariane_pkg::CONFIG_L1I_SIZE / ariane_pkg::ICACHE_SET_ASSOC);
+    int unsigned ICACHE_INDEX_WIDTH = $clog2(ariane_pkg::CONFIG_L1I_SIZE / CVA6Cfg.IcacheSetAssoc);
 
     config_pkg::cva6_cfg_t cfg;
 
@@ -90,7 +90,8 @@ package build_config_pkg;
     cfg.NonIdemPotenceEn = CVA6Cfg.NrNonIdempotentRules && CVA6Cfg.NonIdempotentLength;
     cfg.AxiBurstWriteEn = CVA6Cfg.AxiBurstWriteEn;
 
-    cfg.ICACHE_SET_ASSOC_WIDTH = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
+    cfg.ICACHE_SET_ASSOC = CVA6Cfg.IcacheSetAssoc;
+    cfg.ICACHE_SET_ASSOC_WIDTH = $clog2(CVA6Cfg.IcacheSetAssoc);
     cfg.ICACHE_INDEX_WIDTH = ICACHE_INDEX_WIDTH;
     cfg.ICACHE_TAG_WIDTH = riscv::PLEN - ICACHE_INDEX_WIDTH;
     cfg.DCACHE_SET_ASSOC_WIDTH = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
