@@ -38,7 +38,7 @@ module instr_realign
     // 32-bit block address - CACHE
     input logic [riscv::VLEN-1:0] address_i,
     // 32-bit block - CACHE
-    input logic [FETCH_WIDTH-1:0] data_i,
+    input logic [CVA6Cfg.FETCH_WIDTH-1:0] data_i,
     // instruction is valid - FRONTEND
     output logic [CVA6Cfg.INSTR_PER_FETCH-1:0] valid_o,
     // Instruction address - FRONTEND
@@ -64,7 +64,7 @@ module instr_realign
   assign serving_unaligned_o = unaligned_q;
 
   // Instruction re-alignment
-  if (FETCH_WIDTH == 32) begin : realign_bp_32
+  if (CVA6Cfg.FETCH_WIDTH == 32) begin : realign_bp_32
     always_comb begin : re_align
       unaligned_d = unaligned_q;
       unaligned_address_d = {address_i[riscv::VLEN-1:2], 2'b10};
@@ -113,8 +113,8 @@ module instr_realign
         end
       end
     end
-    // TODO(zarubaf): Fix 64 bit FETCH_WIDTH, maybe generalize to arbitrary fetch width
-  end else if (FETCH_WIDTH == 64) begin : realign_bp_64
+    // TODO(zarubaf): Fix 64 bit CVA6Cfg.FETCH_WIDTH, maybe generalize to arbitrary fetch width
+  end else if (CVA6Cfg.FETCH_WIDTH == 64) begin : realign_bp_64
     initial begin
       $error("Not propperly implemented");
     end

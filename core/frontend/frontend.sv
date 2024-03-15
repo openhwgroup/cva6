@@ -89,7 +89,7 @@ module frontend
   };
 
   // Instruction Cache Registers, from I$
-  logic                            [                FETCH_WIDTH-1:0] icache_data_q;
+  logic                            [                CVA6Cfg.FETCH_WIDTH-1:0] icache_data_q;
   logic                                                              icache_valid_q;
   ariane_pkg::frontend_exception_t                                   icache_ex_valid_q;
   logic                            [                riscv::VLEN-1:0] icache_vaddr_q;
@@ -406,7 +406,7 @@ module frontend
     icache_dreq_o.vaddr = fetch_address;
   end
 
-  logic [FETCH_WIDTH-1:0] icache_data;
+  logic [CVA6Cfg.FETCH_WIDTH-1:0] icache_data;
   // re-align the cache line
   assign icache_data = icache_dreq_i.data >> {shamt, 4'b0};
 
@@ -553,7 +553,7 @@ module frontend
   // pragma translate_off
 `ifndef VERILATOR
   initial begin
-    assert (FETCH_WIDTH == 32 || FETCH_WIDTH == 64)
+    assert (CVA6Cfg.FETCH_WIDTH == 32 || CVA6Cfg.FETCH_WIDTH == 64)
     else $fatal(1, "[frontend] fetch width != not supported");
   end
 `endif

@@ -243,6 +243,7 @@ package config_pkg;
     int unsigned FETCH_USER_WIDTH;
     int unsigned FETCH_USER_EN;
 
+    int unsigned FETCH_WIDTH;
     int unsigned INSTR_PER_FETCH;
     int unsigned LOG2_INSTR_PER_FETCH;
   } cva6_cfg_t;
