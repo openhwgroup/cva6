@@ -32,7 +32,6 @@ package riscv;
   localparam ModeW = (XLEN == 32) ? 1 : 4;
   localparam ASIDW = (XLEN == 32) ? 9 : 16;
   localparam PPNW = (XLEN == 32) ? 22 : 44;
-  localparam config_pkg::vm_mode_t MODE_SV = (XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
   localparam VPN2 = (VLEN - 31 < 8) ? VLEN - 31 : 8;
   localparam XLEN_ALIGN_BYTES = $clog2(XLEN / 8);
 
