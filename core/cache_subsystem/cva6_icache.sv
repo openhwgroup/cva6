@@ -483,7 +483,7 @@ module cva6_icache
     sram #(
         .USER_WIDTH(CVA6Cfg.ICACHE_USER_LINE_WIDTH),
         .DATA_WIDTH(CVA6Cfg.ICACHE_LINE_WIDTH),
-        .USER_EN   (ariane_pkg::FETCH_USER_EN),
+        .USER_EN   (CVA6Cfg.FETCH_USER_EN),
         .NUM_WORDS (ICACHE_NUM_WORDS)
     ) data_sram (
         .clk_i  (clk_i),

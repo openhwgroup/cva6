@@ -146,6 +146,8 @@ package config_pkg;
     int unsigned DcacheLineWidth;
     // TODO
     int unsigned FetchUserWidth;
+    // TODO
+    int unsigned FetchUserEn;
   } cva6_user_cfg_t;
 
   typedef struct packed {
