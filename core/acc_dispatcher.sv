@@ -24,34 +24,34 @@ module acc_dispatcher
     parameter type fu_data_t = logic,
     parameter type scoreboard_entry_t = logic,
     localparam type accelerator_req_t = struct packed {
-      logic                                 req_valid;
-      logic                                 resp_ready;
-      riscv::instruction_t                  insn;
-      logic [riscv::XLEN-1:0]               rs1;
-      logic [riscv::XLEN-1:0]               rs2;
-      fpnew_pkg::roundmode_e                frm;
-      logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
-      logic                                 store_pending;
+      logic                             req_valid;
+      logic                             resp_ready;
+      riscv::instruction_t              insn;
+      logic [riscv::XLEN-1:0]           rs1;
+      logic [riscv::XLEN-1:0]           rs2;
+      fpnew_pkg::roundmode_e            frm;
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
+      logic                             store_pending;
       // Invalidation interface
-      logic                                 acc_cons_en;
-      logic                                 inval_ready;
+      logic                             acc_cons_en;
+      logic                             inval_ready;
     },
     parameter type acc_req_t = accelerator_req_t,
     parameter type acc_resp_t = struct packed {
-      logic                                 req_ready;
-      logic                                 resp_valid;
-      logic [riscv::XLEN-1:0]               result;
-      logic [ariane_pkg::TRANS_ID_BITS-1:0] trans_id;
-      logic                                 error;
+      logic                             req_ready;
+      logic                             resp_valid;
+      logic [riscv::XLEN-1:0]           result;
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
+      logic                             error;
       // Metadata
-      logic                                 store_pending;
-      logic                                 store_complete;
-      logic                                 load_complete;
-      logic [4:0]                           fflags;
-      logic                                 fflags_valid;
+      logic                             store_pending;
+      logic                             store_complete;
+      logic                             load_complete;
+      logic [4:0]                       fflags;
+      logic                             fflags_valid;
       // Invalidation interface
-      logic                                 inval_valid;
-      logic [63:0]                          inval_addr;
+      logic                             inval_valid;
+      logic [63:0]                      inval_addr;
     },
     parameter type acc_cfg_t = logic,
     parameter acc_cfg_t AccCfg = '0
@@ -75,7 +75,7 @@ module acc_dispatcher
     output logic issue_stall_o,
     input fu_data_t fu_data_i,
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
-    output logic [TRANS_ID_BITS-1:0] acc_trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] acc_trans_id_o,
     output logic [riscv::XLEN-1:0] acc_result_o,
     output logic acc_valid_o,
     output exception_t acc_exception_o,
@@ -161,14 +161,15 @@ module acc_dispatcher
   logic                                            acc_insn_queue_empty;
   logic     [idx_width(InstructionQueueDepth)-1:0] acc_insn_queue_usage;
   logic                                            acc_commit;
-  logic     [                   TRANS_ID_BITS-1:0] acc_commit_trans_id;
+  logic     [           CVA6Cfg.TRANS_ID_BITS-1:0] acc_commit_trans_id;
 
   assign acc_data = acc_valid_ex_o ? fu_data_i : '0;
 
   fifo_v3 #(
       .DEPTH       (InstructionQueueDepth),
       .FALL_THROUGH(1'b1),
-      .dtype       (fu_data_t)
+      .dtype       (fu_data_t),
+      .FPGA_EN     (CVA6Cfg.FPGA_EN)
   ) i_acc_insn_queue (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -191,13 +192,13 @@ module acc_dispatcher
    **********************************/
 
   // Keep track of the instructions that were received by the dispatcher.
-  logic [NR_SB_ENTRIES-1:0] insn_pending_d, insn_pending_q;
+  logic [CVA6Cfg.NR_SB_ENTRIES-1:0] insn_pending_d, insn_pending_q;
   `FF(insn_pending_q, insn_pending_d, '0)
 
   // Only non-speculative instructions can be issued to the accelerators.
   // The following block keeps track of which transaction IDs reached the
   // top of the scoreboard, and are therefore no longer speculative.
-  logic [NR_SB_ENTRIES-1:0] insn_ready_d, insn_ready_q;
+  logic [CVA6Cfg.NR_SB_ENTRIES-1:0] insn_ready_d, insn_ready_q;
   `FF(insn_ready_q, insn_ready_d, '0)
 
   always_comb begin : p_non_speculative_ff

@@ -64,8 +64,8 @@ module cva6_ptw_sv32
     input logic itlb_req_i,
 
     // from CSR file
-    input logic [riscv::PPNW-1:0] satp_ppn_i,  // ppn from satp
-    input logic                   mxr_i,
+    input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,  // ppn from satp
+    input logic                    mxr_i,
 
     // Performance counters
     output logic shared_tlb_miss_o,
@@ -122,8 +122,8 @@ module cva6_ptw_sv32
   //assign walking_instr_o = is_instr_ptw_q;
   assign walking_instr_o = is_instr_ptw_q;
   // directly output the correct physical address
-  assign req_port_o.address_index = ptw_pptr_q[DCACHE_INDEX_WIDTH-1:0];
-  assign req_port_o.address_tag   = ptw_pptr_q[DCACHE_INDEX_WIDTH+DCACHE_TAG_WIDTH-1:DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_index = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_tag   = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH+CVA6Cfg.DCACHE_TAG_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
   // we are never going to kill this request
   assign req_port_o.kill_req = '0;
   // we are never going to write with the HPTW
@@ -134,7 +134,7 @@ module cva6_ptw_sv32
   // -----------
   // Shared TLB Update
   // -----------
-  assign shared_tlb_update_o.vpn = vaddr_q[riscv::SV-1:12];
+  assign shared_tlb_update_o.vpn = vaddr_q[CVA6Cfg.SV-1:12];
   // update the correct page table level
   assign shared_tlb_update_o.is_4M = (ptw_lvl_q == LVL1);
   // output the correct ASID
@@ -223,7 +223,7 @@ module cva6_ptw_sv32
         // if we got a Shared TLB miss
         if (shared_tlb_access_i & ~shared_tlb_hit_i) begin
           ptw_pptr_n = {
-            satp_ppn_i, shared_tlb_vaddr_i[riscv::SV-1:22], 2'b0
+            satp_ppn_i, shared_tlb_vaddr_i[CVA6Cfg.SV-1:22], 2'b0
           };  // SATP.PPN * PAGESIZE + VPN*PTESIZE = SATP.PPN * 2^(12) + VPN*4
           is_instr_ptw_n = itlb_req_i;
           tlb_update_asid_n = asid_i;

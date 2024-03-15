@@ -54,6 +54,7 @@ module wt_dcache_wbuffer
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter DCACHE_CL_IDX_WIDTH = 0,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter type wbuffer_t = logic
@@ -73,8 +74,8 @@ module wt_dcache_wbuffer
     output logic miss_req_o,
     output logic miss_we_o,  // always 1 here
     output logic [riscv::XLEN-1:0] miss_wdata_o,
-    output logic [DCACHE_USER_WIDTH-1:0] miss_wuser_o,
-    output logic [DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // unused here (set to 0)
+    output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] miss_wuser_o,
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // unused here (set to 0)
     output logic miss_nc_o,  // request to I/O space
     output logic [2:0] miss_size_o,  //
     output logic [CVA6Cfg.MEM_TID_WIDTH-1:0]          miss_id_o,       // ID of this transaction (wbuffer uses all IDs from 0 to DCACHE_MAX_TX-1)
@@ -82,26 +83,26 @@ module wt_dcache_wbuffer
     input logic miss_rtrn_vld_i,
     input logic [CVA6Cfg.MEM_TID_WIDTH-1:0] miss_rtrn_id_i,  // transaction ID to clear
     // cache read interface
-    output logic [DCACHE_TAG_WIDTH-1:0] rd_tag_o,  // tag in - comes one cycle later
+    output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_o,  // tag in - comes one cycle later
     output logic [DCACHE_CL_IDX_WIDTH-1:0] rd_idx_o,
-    output logic [DCACHE_OFFSET_WIDTH-1:0] rd_off_o,
+    output logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] rd_off_o,
     output logic rd_req_o,  // read the word at offset off_i[:3] in all ways
     output logic rd_tag_only_o,  // set to 1 here as we do not have to read the data arrays
     input logic rd_ack_i,
     input logic [riscv::XLEN-1:0] rd_data_i,  // unused
-    input logic [DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,  // unused
-    input logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_i,
+    input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,  // unused
+    input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_i,
     // cacheline writes
     input logic wr_cl_vld_i,
     input logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_i,
     // cache word write interface
-    output logic [DCACHE_SET_ASSOC-1:0] wr_req_o,
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] wr_req_o,
     input logic wr_ack_i,
     output logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx_o,
-    output logic [DCACHE_OFFSET_WIDTH-1:0] wr_off_o,
+    output logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_off_o,
     output logic [riscv::XLEN-1:0] wr_data_o,
     output logic [(riscv::XLEN/8)-1:0] wr_data_be_o,
-    output logic [DCACHE_USER_WIDTH-1:0] wr_user_o,
+    output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wr_user_o,
     // to forwarding logic and miss unit
     output wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_o,
     output logic [CVA6Cfg.DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
@@ -109,7 +110,7 @@ module wt_dcache_wbuffer
 );
 
   function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable8(
-      input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
+      input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
     logic [(riscv::XLEN/8)-1:0] be;
     be = '0;
     unique case (size)
@@ -122,7 +123,7 @@ module wt_dcache_wbuffer
   endfunction : to_byte_enable8
 
   function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable4(
-      input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
+      input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
     logic [3:0] be;
     be = '0;
     unique case (size)
@@ -135,7 +136,7 @@ module wt_dcache_wbuffer
 
   // openpiton requires the data to be replicated in case of smaller sizes than dwords
   function automatic logic [riscv::XLEN-1:0] repData64(
-      input logic [riscv::XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+      input logic [riscv::XLEN-1:0] data, input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset,
       input logic [1:0] size);
     logic [riscv::XLEN-1:0] out;
     unique case (size)
@@ -148,7 +149,7 @@ module wt_dcache_wbuffer
   endfunction : repData64
 
   function automatic logic [riscv::XLEN-1:0] repData32(
-      input logic [riscv::XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+      input logic [riscv::XLEN-1:0] data, input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset,
       input logic [1:0] size);
     logic [riscv::XLEN-1:0] out;
     unique case (size)
@@ -178,11 +179,11 @@ module wt_dcache_wbuffer
       next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
   logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tx_id, rtrn_id;
 
-  logic [riscv::XLEN_ALIGN_BYTES-1:0] bdirty_off;
+  logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] bdirty_off;
   logic [(riscv::XLEN/8)-1:0] tx_be;
   logic [riscv::PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
-  logic [DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
-  logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
   logic check_en_d, check_en_q, check_en_q1;
   logic full, dirty_rd_en, rdy;
   logic rtrn_empty, evict;
@@ -200,14 +201,16 @@ module wt_dcache_wbuffer
   ///////////////////////////////////////////////////////
   // misc
   ///////////////////////////////////////////////////////
-  logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] miss_tag;
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] miss_tag;
   logic is_nc_miss;
   logic is_ni;
-  assign miss_tag = miss_paddr_o[ariane_pkg::DCACHE_INDEX_WIDTH+:ariane_pkg::DCACHE_TAG_WIDTH];
+  assign miss_tag = miss_paddr_o[CVA6Cfg.DCACHE_INDEX_WIDTH+:CVA6Cfg.DCACHE_TAG_WIDTH];
   assign is_nc_miss = !config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
       {
-        {64 - DCACHE_TAG_WIDTH - DCACHE_INDEX_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}
+        {64 - CVA6Cfg.DCACHE_TAG_WIDTH - CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}},
+        miss_tag,
+        {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
       }
   );
   assign miss_nc_o = !cache_en_i || is_nc_miss;
@@ -215,9 +218,9 @@ module wt_dcache_wbuffer
   assign is_ni = config_pkg::is_inside_nonidempotent_regions(
       CVA6Cfg,
       {
-        {64 - DCACHE_TAG_WIDTH - DCACHE_INDEX_WIDTH{1'b0}},
+        {64 - CVA6Cfg.DCACHE_TAG_WIDTH - CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}},
         req_port_i.address_tag,
-        {DCACHE_INDEX_WIDTH{1'b0}}
+        {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
       }
   );
 
@@ -228,7 +231,7 @@ module wt_dcache_wbuffer
   for (genvar k = 0; k < CVA6Cfg.DCACHE_MAX_TX; k++) begin : gen_tx_vld
     assign tx_vld_o[k] = tx_stat_q[k].vld;
     assign tx_paddr_o[k] = {
-      {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[tx_stat_q[k].ptr].wtag << riscv::XLEN_ALIGN_BYTES
+      {CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[tx_stat_q[k].ptr].wtag << CVA6Cfg.XLEN_ALIGN_BYTES
     };
   end
 
@@ -275,7 +278,7 @@ module wt_dcache_wbuffer
   ) : repData32(
       wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]
   );
-  if (ariane_pkg::DATA_USER_EN) begin
+  if (CVA6Cfg.DATA_USER_EN) begin
     assign miss_wuser_o = riscv::IS_XLEN64 ? repData64(
         wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]
     ) : repData32(
@@ -299,7 +302,8 @@ module wt_dcache_wbuffer
   fifo_v3 #(
       .FALL_THROUGH(1'b0),
       .DATA_WIDTH  ($clog2(CVA6Cfg.DCACHE_MAX_TX)),
-      .DEPTH       (CVA6Cfg.DCACHE_MAX_TX)
+      .DEPTH       (CVA6Cfg.DCACHE_MAX_TX),
+      .FPGA_EN     (CVA6Cfg.FPGA_EN)
   ) i_rtrn_id_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -368,18 +372,18 @@ module wt_dcache_wbuffer
   // cache readout & update
   ///////////////////////////////////////////////////////
 
-  assign extract_tag = rd_paddr >> DCACHE_INDEX_WIDTH;
-  assign rd_tag_d = extract_tag[DCACHE_TAG_WIDTH-1:0];
+  assign extract_tag = rd_paddr >> CVA6Cfg.DCACHE_INDEX_WIDTH;
+  assign rd_tag_d = extract_tag[CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
 
   // trigger TAG readout in cache
   assign rd_tag_only_o = 1'b1;
   assign rd_paddr = {
-    {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_check_mux.wtag << riscv::XLEN_ALIGN_BYTES
+    {CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_check_mux.wtag << CVA6Cfg.XLEN_ALIGN_BYTES
   };
   assign rd_req_o = |tocheck;
   assign rd_tag_o = rd_tag_q;  //delay by one cycle
-  assign rd_idx_o = rd_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
-  assign rd_off_o = rd_paddr[DCACHE_OFFSET_WIDTH-1:0];
+  assign rd_idx_o = rd_paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH];
+  assign rd_off_o = rd_paddr[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0];
   assign check_en_d = rd_req_o & rd_ack_i;
 
   // cache update port
@@ -388,10 +392,10 @@ module wt_dcache_wbuffer
   // when the TX returns
   assign wr_data_be_o = tx_stat_q[rtrn_id].be & (~wbuffer_q[rtrn_ptr].dirty);
   assign wr_paddr = {
-    {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[rtrn_ptr].wtag << riscv::XLEN_ALIGN_BYTES
+    {CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[rtrn_ptr].wtag << CVA6Cfg.XLEN_ALIGN_BYTES
   };
-  assign wr_idx_o = wr_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
-  assign wr_off_o = wr_paddr[DCACHE_OFFSET_WIDTH-1:0];
+  assign wr_idx_o = wr_paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH];
+  assign wr_off_o = wr_paddr[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0];
   assign wr_data_o = wbuffer_q[rtrn_ptr].data;
   assign wr_user_o = wbuffer_q[rtrn_ptr].user;
 
@@ -409,7 +413,7 @@ module wt_dcache_wbuffer
     // only for debug, will be pruned
     if (CVA6Cfg.DebugEn) begin
       assign debug_paddr[k] = {
-        {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[k].wtag << riscv::XLEN_ALIGN_BYTES
+        {CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[k].wtag << CVA6Cfg.XLEN_ALIGN_BYTES
       };
     end
 
@@ -421,12 +425,12 @@ module wt_dcache_wbuffer
 
     assign dirty[k] = |bdirty[k];
     assign valid[k] = |wbuffer_q[k].valid;
-    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]});
+    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]});
 
     // checks if an invalidation/cache refill hits a particular word
     // note: an invalidation can hit multiple words!
     // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
-    assign wtag_comp[k] = wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES-1:DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES];
+    assign wtag_comp[k] = wbuffer_q[k].wtag[CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:CVA6Cfg.DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES];
     assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wtag_comp[k] == wr_cl_idx_d)) |
                            (wr_cl_vld_q & valid[k] & (wtag_comp[k] == wr_cl_idx_q));
 
@@ -579,7 +583,7 @@ module wt_dcache_wbuffer
         wbuffer_d[wr_ptr].checked = 1'b0;
         wbuffer_d[wr_ptr].wtag = {
           req_port_i.address_tag,
-          req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]
+          req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]
         };
 
         // mark bytes as dirty
@@ -588,7 +592,7 @@ module wt_dcache_wbuffer
             wbuffer_d[wr_ptr].valid[k]     = 1'b1;
             wbuffer_d[wr_ptr].dirty[k]     = 1'b1;
             wbuffer_d[wr_ptr].data[k*8+:8] = req_port_i.data_wdata[k*8+:8];
-            if (ariane_pkg::DATA_USER_EN) begin
+            if (CVA6Cfg.DATA_USER_EN) begin
               wbuffer_d[wr_ptr].user[k*8+:8] = req_port_i.data_wuser[k*8+:8];
             end else begin
               wbuffer_d[wr_ptr].user[k*8+:8] = '0;

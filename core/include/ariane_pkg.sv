@@ -29,11 +29,6 @@
 package ariane_pkg;
 
   // TODO: Slowly move those parameters to the new system.
-  localparam NR_SB_ENTRIES = cva6_config_pkg::CVA6ConfigNrScoreboardEntries; // number of scoreboard entries
-  localparam TRANS_ID_BITS = $clog2(
-      NR_SB_ENTRIES
-  );  // depending on the number of scoreboard entries we need that many bits
-      // to uniquely identify the entry in the scoreboard
   localparam ASID_WIDTH = (riscv::XLEN == 64) ? 16 : 1;
   localparam BITS_SATURATION_COUNTER = 2;
 
@@ -50,8 +45,6 @@ package ariane_pkg;
   // if DCACHE_TYPE = cva6_config_pkg::WB
   // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
   localparam logic [2:0] DEPTH_COMMIT = 'd4;
-
-  localparam bit FPGA_EN = cva6_config_pkg::CVA6ConfigFPGAEn;  // Is FPGA optimization of CV32A6
 
   localparam bit RVC = cva6_config_pkg::CVA6ConfigCExtEn;  // Is C extension configuration
 
@@ -120,19 +113,22 @@ package ariane_pkg;
 `else
   localparam bit ZERO_TVAL = 1'b0;
 `endif
+
   // read mask for SSTATUS over MMSTATUS
-  localparam logic [63:0] SMODE_STATUS_READ_MASK = riscv::SSTATUS_UIE
-                                                   | riscv::SSTATUS_SIE
-                                                   | riscv::SSTATUS_SPIE
-                                                   | riscv::SSTATUS_SPP
-                                                   | riscv::SSTATUS_FS
-                                                   | riscv::SSTATUS_XS
-                                                   | riscv::SSTATUS_SUM
-                                                   | riscv::SSTATUS_MXR
-                                                   | riscv::SSTATUS_UPIE
-                                                   | riscv::SSTATUS_SPIE
-                                                   | riscv::SSTATUS_UXL
-                                                   | riscv::SSTATUS_SD;
+  function automatic logic [63:0] smode_status_read_mask(config_pkg::cva6_cfg_t Cfg);
+    return riscv::SSTATUS_UIE
+    | riscv::SSTATUS_SIE
+    | riscv::SSTATUS_SPIE
+    | riscv::SSTATUS_SPP
+    | riscv::SSTATUS_FS
+    | riscv::SSTATUS_XS
+    | riscv::SSTATUS_SUM
+    | riscv::SSTATUS_MXR
+    | riscv::SSTATUS_UPIE
+    | riscv::SSTATUS_SPIE
+    | riscv::SSTATUS_UXL
+    | riscv::sstatus_sd(riscv::IS_XLEN64);
+  endfunction
 
   localparam logic [63:0] SMODE_STATUS_WRITE_MASK = riscv::SSTATUS_SIE
                                                     | riscv::SSTATUS_SPIE
@@ -144,12 +140,8 @@ package ariane_pkg;
   // AXI
   // ---------------
 
-  localparam FETCH_USER_WIDTH = cva6_config_pkg::CVA6ConfigFetchUserWidth;
-  localparam DATA_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
   localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
   localparam AXI_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
-  localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
-  localparam FETCH_USER_EN = cva6_config_pkg::CVA6ConfigFetchUserEn;
 
   typedef enum logic {
     SINGLE_REQ,
@@ -162,10 +154,6 @@ package ariane_pkg;
 
   // leave as is (fails with >8 entries and wider fetch width)
   localparam int unsigned FETCH_FIFO_DEPTH = 4;
-  localparam int unsigned FETCH_WIDTH = 32;
-  // maximum instructions we can fetch on one request (we support compressed instructions)
-  localparam int unsigned INSTR_PER_FETCH = RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
-  localparam int unsigned LOG2_INSTR_PER_FETCH = RVC == 1'b1 ? $clog2(INSTR_PER_FETCH) : 1;
 
   typedef enum logic [2:0] {
     NoCF,    // No control flow prediction
@@ -251,29 +239,9 @@ package ariane_pkg;
   localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
   localparam int unsigned DCACHE_TAG_WIDTH = riscv::PLEN - DCACHE_INDEX_WIDTH;
   localparam int unsigned DCACHE_USER_LINE_WIDTH = (AXI_USER_WIDTH == 1) ? 4 : 128;  // in bit
-  localparam int unsigned DCACHE_USER_WIDTH = DATA_USER_WIDTH;
+  localparam int unsigned DCACHE_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
 
   localparam int unsigned MEM_TID_WIDTH = `L15_THREADID_WIDTH;
-`else
-  // I$
-  localparam int unsigned CONFIG_L1I_SIZE = cva6_config_pkg::CVA6ConfigIcacheByteSize;  // in byte
-  localparam int unsigned ICACHE_SET_ASSOC   = cva6_config_pkg::CVA6ConfigIcacheSetAssoc; // number of ways
-  localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(
-      CONFIG_L1I_SIZE / ICACHE_SET_ASSOC
-  );  // in bit, contains also offset width
-  localparam int unsigned ICACHE_TAG_WIDTH = riscv::PLEN - ICACHE_INDEX_WIDTH;  // in bit
-  localparam int unsigned ICACHE_LINE_WIDTH = cva6_config_pkg::CVA6ConfigIcacheLineWidth;  // in bit
-  localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigIcacheLineWidth; // in bit
-  // D$
-  localparam int unsigned CONFIG_L1D_SIZE = cva6_config_pkg::CVA6ConfigDcacheByteSize;  // in byte
-  localparam int unsigned DCACHE_SET_ASSOC   = cva6_config_pkg::CVA6ConfigDcacheSetAssoc; // number of ways
-  localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(
-      CONFIG_L1D_SIZE / DCACHE_SET_ASSOC
-  );  // in bit, contains also offset width
-  localparam int unsigned DCACHE_TAG_WIDTH = riscv::PLEN - DCACHE_INDEX_WIDTH;  // in bit
-  localparam int unsigned DCACHE_LINE_WIDTH = cva6_config_pkg::CVA6ConfigDcacheLineWidth;  // in bit
-  localparam int unsigned DCACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigDcacheLineWidth; // in bit
-  localparam int unsigned DCACHE_USER_WIDTH = DATA_USER_WIDTH;
 `endif
 
   localparam int unsigned DCACHE_TID_WIDTH = cva6_config_pkg::CVA6ConfigDcacheIdWidth;

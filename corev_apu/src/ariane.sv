@@ -80,7 +80,9 @@ module ariane import ariane_pkg::*; #(
   );
 
   if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor
-    cvxif_example_coprocessor i_cvxif_coprocessor (
+    cvxif_example_coprocessor #(
+      .CVA6Cfg ( CVA6Cfg )
+    ) i_cvxif_coprocessor (
       .clk_i                ( clk_i                          ),
       .rst_ni               ( rst_ni                         ),
       .cvxif_req_i          ( cvxif_req                      ),

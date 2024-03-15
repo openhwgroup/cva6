@@ -136,7 +136,7 @@ module issue_read_operands
   logic        cvxif_valid_q;
   logic [31:0] cvxif_off_instr_q;
 
-  logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
   fu_op operator_n, operator_q;  // operation to perform
   fu_t fu_n, fu_q;  // functional unit to use
 
@@ -483,7 +483,7 @@ module issue_read_operands
     assign wdata_pack[i] = wdata_i[i];
     assign we_pack[i]    = we_gpr_i[i];
   end
-  if (ariane_pkg::FPGA_EN) begin : gen_fpga_regfile
+  if (CVA6Cfg.FPGA_EN) begin : gen_fpga_regfile
     ariane_regfile_fpga #(
         .CVA6Cfg      (CVA6Cfg),
         .DATA_WIDTH   (riscv::XLEN),
@@ -532,7 +532,7 @@ module issue_read_operands
       for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_fp_wdata_pack
         assign fp_wdata_pack[i] = {wdata_i[i][CVA6Cfg.FLen-1:0]};
       end
-      if (ariane_pkg::FPGA_EN) begin : gen_fpga_fp_regfile
+      if (CVA6Cfg.FPGA_EN) begin : gen_fpga_fp_regfile
         ariane_regfile_fpga #(
             .CVA6Cfg      (CVA6Cfg),
             .DATA_WIDTH   (CVA6Cfg.FLen),

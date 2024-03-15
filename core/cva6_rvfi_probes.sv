@@ -28,8 +28,8 @@ module cva6_rvfi_probes
     input logic [31:0] instruction_i,
     input logic        is_compressed_i,
 
-    input logic [TRANS_ID_BITS-1:0] issue_pointer_i,
-    input logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] commit_pointer_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer_i,
 
     input logic flush_unissued_instr_i,
     input logic decoded_instr_valid_i,

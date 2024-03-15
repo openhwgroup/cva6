@@ -12,7 +12,9 @@
 module cvxif_example_coprocessor
   import cvxif_pkg::*;
   import cvxif_instr_pkg::*;
-(
+#(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+) (
     input  logic        clk_i,        // Clock
     input  logic        rst_ni,       // Asynchronous reset active low
     input  cvxif_req_t  cvxif_req_i,
@@ -109,10 +111,11 @@ module cvxif_example_coprocessor
   end
 
   fifo_v3 #(
-      .FALL_THROUGH(1),         //data_o ready and pop in the same cycle
+      .FALL_THROUGH(1),               //data_o ready and pop in the same cycle
       .DATA_WIDTH  (64),
       .DEPTH       (8),
-      .dtype       (x_issue_t)
+      .dtype       (x_issue_t),
+      .FPGA_EN     (CVA6Cfg.FPGA_EN)
   ) fifo_commit_i (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
