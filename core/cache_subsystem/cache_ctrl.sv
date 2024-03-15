@@ -37,15 +37,15 @@ module cache_ctrl
     input dcache_req_i_t req_port_i,
     output dcache_req_o_t req_port_o,
     // SRAM interface
-    output logic [DCACHE_SET_ASSOC-1:0] req_o,  // req is valid
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] req_o,  // req is valid
     output logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr_o,  // address into cache array
     input logic gnt_i,
     output cache_line_t data_o,
     output cl_be_t be_o,
     output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_o,  //valid one cycle later
-    input cache_line_t [DCACHE_SET_ASSOC-1:0] data_i,
+    input cache_line_t [CVA6Cfg.DCACHE_SET_ASSOC-1:0] data_i,
     output logic we_o,
-    input logic [DCACHE_SET_ASSOC-1:0] hit_way_i,
+    input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_way_i,
     // Miss handling
     output miss_req_t miss_req_o,
     // return
@@ -90,7 +90,7 @@ module cache_ctrl
     logic                          killed;
   } mem_req_t;
 
-  logic [DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
 
   mem_req_t mem_req_d, mem_req_q;
 
@@ -101,7 +101,7 @@ module cache_ctrl
 
   always_comb begin : way_select
     cl_i = '0;
-    for (int unsigned i = 0; i < DCACHE_SET_ASSOC; i++) if (hit_way_i[i]) cl_i = data_i[i].data;
+    for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) if (hit_way_i[i]) cl_i = data_i[i].data;
 
     // cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
   end

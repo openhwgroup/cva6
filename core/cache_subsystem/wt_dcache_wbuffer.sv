@@ -75,7 +75,7 @@ module wt_dcache_wbuffer
     output logic miss_we_o,  // always 1 here
     output logic [riscv::XLEN-1:0] miss_wdata_o,
     output logic [DCACHE_USER_WIDTH-1:0] miss_wuser_o,
-    output logic [DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // unused here (set to 0)
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // unused here (set to 0)
     output logic miss_nc_o,  // request to I/O space
     output logic [2:0] miss_size_o,  //
     output logic [CVA6Cfg.MEM_TID_WIDTH-1:0]          miss_id_o,       // ID of this transaction (wbuffer uses all IDs from 0 to DCACHE_MAX_TX-1)
@@ -90,13 +90,13 @@ module wt_dcache_wbuffer
     output logic rd_tag_only_o,  // set to 1 here as we do not have to read the data arrays
     input logic rd_ack_i,
     input logic [riscv::XLEN-1:0] rd_data_i,  // unused
-    input logic [DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,  // unused
-    input logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_i,
+    input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,  // unused
+    input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_i,
     // cacheline writes
     input logic wr_cl_vld_i,
     input logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_i,
     // cache word write interface
-    output logic [DCACHE_SET_ASSOC-1:0] wr_req_o,
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] wr_req_o,
     input logic wr_ack_i,
     output logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx_o,
     output logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_off_o,
@@ -183,7 +183,7 @@ module wt_dcache_wbuffer
   logic [(riscv::XLEN/8)-1:0] tx_be;
   logic [riscv::PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
-  logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
   logic check_en_d, check_en_q, check_en_q1;
   logic full, dirty_rd_en, rdy;
   logic rtrn_empty, evict;

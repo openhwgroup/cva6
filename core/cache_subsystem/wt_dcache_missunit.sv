@@ -46,7 +46,7 @@ module wt_dcache_missunit
     input logic [NumPorts-1:0][riscv::XLEN-1:0] miss_wdata_i,
     input logic [NumPorts-1:0][DCACHE_USER_WIDTH-1:0] miss_wuser_i,
     input logic [NumPorts-1:0][riscv::PLEN-1:0] miss_paddr_i,
-    input logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits_i,
+    input logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_i,
     input logic [NumPorts-1:0][2:0] miss_size_i,
     input logic [NumPorts-1:0][CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id_i,  // used as transaction ID
     // signals that the request collided with a pending read
@@ -60,14 +60,14 @@ module wt_dcache_missunit
     // write interface to cache memory
     output logic wr_cl_vld_o,  // writes a full cacheline
     output logic wr_cl_nc_o,  // writes a full cacheline
-    output logic [DCACHE_SET_ASSOC-1:0] wr_cl_we_o,  // writes a full cacheline
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] wr_cl_we_o,  // writes a full cacheline
     output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] wr_cl_tag_o,
     output logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_o,
     output logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_cl_off_o,
     output logic [DCACHE_LINE_WIDTH-1:0] wr_cl_data_o,
     output logic [DCACHE_USER_LINE_WIDTH-1:0] wr_cl_user_o,
     output logic [DCACHE_LINE_WIDTH/8-1:0] wr_cl_data_be_o,
-    output logic [DCACHE_SET_ASSOC-1:0] wr_vld_bits_o,
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] wr_vld_bits_o,
     // memory interface
     input logic mem_rtrn_vld_i,
     input dcache_rtrn_t mem_rtrn_i,
@@ -77,9 +77,9 @@ module wt_dcache_missunit
 );
 
   // functions
-  function automatic logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh(
+  function automatic logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh(
       input logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] in);
-    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] out;
+    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] out;
     out     = '0;
     out[in] = 1'b1;
     return out;
@@ -121,15 +121,15 @@ module wt_dcache_missunit
   typedef struct packed {
     logic [riscv::PLEN-1:0]              paddr;
     logic [2:0]                          size;
-    logic [DCACHE_SET_ASSOC-1:0]         vld_bits;
+    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]         vld_bits;
     logic [CVA6Cfg.MEM_TID_WIDTH-1:0]    id;
     logic                                nc;
-    logic [$clog2(DCACHE_SET_ASSOC)-1:0] repl_way;
+    logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] repl_way;
     logic [$clog2(NumPorts)-1:0]         miss_port_idx;
   } mshr_t;
 
   mshr_t mshr_d, mshr_q;
-  logic [$clog2(DCACHE_SET_ASSOC)-1:0] repl_way, inv_way, rnd_way;
+  logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] repl_way, inv_way, rnd_way;
   logic mshr_vld_d, mshr_vld_q, mshr_vld_q1;
   logic mshr_allocate;
   logic update_lfsr, all_ways_valid;
@@ -189,7 +189,7 @@ module wt_dcache_missunit
 
   // find invalid cache line
   lzc #(
-      .WIDTH(ariane_pkg::DCACHE_SET_ASSOC)
+      .WIDTH(CVA6Cfg.DCACHE_SET_ASSOC)
   ) i_lzc_inv (
       .in_i   (~miss_vld_bits_i[miss_port_idx]),
       .cnt_o  (inv_way),
@@ -199,7 +199,7 @@ module wt_dcache_missunit
   // generate random cacheline index
   lfsr #(
       .LfsrWidth(8),
-      .OutWidth ($clog2(ariane_pkg::DCACHE_SET_ASSOC))
+      .OutWidth ($clog2(CVA6Cfg.DCACHE_SET_ASSOC))
   ) i_lfsr_inv (
       .clk_i (clk_i),
       .rst_ni(rst_ni),

@@ -35,7 +35,7 @@ module wt_dcache_ctrl
     output logic miss_we_o,  // unused (set to 0)
     output logic [riscv::XLEN-1:0] miss_wdata_o,  // unused (set to 0)
     output logic [DCACHE_USER_WIDTH-1:0] miss_wuser_o,  // unused (set to 0)
-    output logic [DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // valid bits at the missed index
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // valid bits at the missed index
     output logic [riscv::PLEN-1:0] miss_paddr_o,
     output logic miss_nc_o,  // request to I/O space
     output logic [2:0] miss_size_o,  // 00: 1byte, 01: 2byte, 10: 4byte, 11: 8byte, 111: cacheline
@@ -53,8 +53,8 @@ module wt_dcache_ctrl
     input logic rd_ack_i,
     input logic [riscv::XLEN-1:0] rd_data_i,
     input logic [DCACHE_USER_WIDTH-1:0] rd_user_i,
-    input logic [DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,
-    input logic [DCACHE_SET_ASSOC-1:0] rd_hit_oh_i
+    input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,
+    input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_i
 );
 
   // controller FSM
@@ -74,7 +74,7 @@ module wt_dcache_ctrl
   logic [DCACHE_CL_IDX_WIDTH-1:0] address_idx_d, address_idx_q;
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] address_off_d, address_off_q;
   logic [DCACHE_TID_WIDTH-1:0] id_d, id_q;
-  logic [DCACHE_SET_ASSOC-1:0] vld_data_d, vld_data_q;
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] vld_data_d, vld_data_q;
   logic save_tag, rd_req_d, rd_req_q, rd_ack_d, rd_ack_q;
   logic [1:0] data_size_d, data_size_q;
 

@@ -46,7 +46,7 @@ module wt_dcache
     input  dcache_req_i_t [NumPorts-1:0] req_ports_i,
     output dcache_req_o_t [NumPorts-1:0] req_ports_o,
 
-    output logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
+    output logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
 
     input  logic         mem_rtrn_vld_i,
     input  dcache_rtrn_t mem_rtrn_i,
@@ -65,7 +65,7 @@ module wt_dcache
     logic [(riscv::XLEN/8)-1:0] valid;  // byte is valid
     logic [(riscv::XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
     logic checked;  // if cache state of this word has been checked
-    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
+    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
   };
 
   // miss unit <-> read controllers
@@ -74,15 +74,15 @@ module wt_dcache
   // miss unit <-> memory
   logic                                                             wr_cl_vld;
   logic                                                             wr_cl_nc;
-  logic     [      DCACHE_SET_ASSOC-1:0]                            wr_cl_we;
+  logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                            wr_cl_we;
   logic     [      CVA6Cfg.DCACHE_TAG_WIDTH-1:0]                            wr_cl_tag;
   logic     [   DCACHE_CL_IDX_WIDTH-1:0]                            wr_cl_idx;
   logic     [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0]                            wr_cl_off;
   logic     [     DCACHE_LINE_WIDTH-1:0]                            wr_cl_data;
   logic     [DCACHE_USER_LINE_WIDTH-1:0]                            wr_cl_user;
   logic     [   DCACHE_LINE_WIDTH/8-1:0]                            wr_cl_data_be;
-  logic     [      DCACHE_SET_ASSOC-1:0]                            wr_vld_bits;
-  logic     [      DCACHE_SET_ASSOC-1:0]                            wr_req;
+  logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                            wr_vld_bits;
+  logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                            wr_req;
   logic                                                             wr_ack;
   logic     [   DCACHE_CL_IDX_WIDTH-1:0]                            wr_idx;
   logic     [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0]                            wr_off;
@@ -114,8 +114,8 @@ module wt_dcache
   logic     [              NumPorts-1:0][  CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] rd_off;
   logic     [           riscv::XLEN-1:0]                            rd_data;
   logic     [     DCACHE_USER_WIDTH-1:0]                            rd_user;
-  logic     [      DCACHE_SET_ASSOC-1:0]                            rd_vld_bits;
-  logic     [      DCACHE_SET_ASSOC-1:0]                            rd_hit_oh;
+  logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                            rd_vld_bits;
+  logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                            rd_hit_oh;
 
   // miss unit <-> wbuffer
   logic     [ CVA6Cfg.DCACHE_MAX_TX-1:0][          riscv::PLEN-1:0] tx_paddr;
@@ -240,7 +240,7 @@ module wt_dcache
       assign miss_we[k] = 1'b0;
       assign miss_wdata[k] = {{riscv::XLEN} {1'b0}};
       assign miss_wuser[k] = {{DCACHE_USER_WIDTH} {1'b0}};
-      assign miss_vld_bits_o[k] = {{DCACHE_SET_ASSOC} {1'b0}};
+      assign miss_vld_bits_o[k] = {{CVA6Cfg.DCACHE_SET_ASSOC} {1'b0}};
       assign miss_paddr[k] = {{riscv::PLEN} {1'b0}};
       assign miss_nc[k] = 1'b0;
       assign miss_size[k] = 3'b0;

@@ -46,7 +46,7 @@ module std_nbdcache
 
   import std_cache_pkg::*;
 
-  localparam DCACHE_DIRTY_WIDTH = ariane_pkg::DCACHE_SET_ASSOC * 2;
+  localparam DCACHE_DIRTY_WIDTH = CVA6Cfg.DCACHE_SET_ASSOC * 2;
 
   localparam type cache_line_t = struct packed {
     logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
@@ -57,7 +57,7 @@ module std_nbdcache
   localparam type cl_be_t = struct packed {
     logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
     logic [(ariane_pkg::DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
-    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
+    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
   };
 
   // -------------------------------
@@ -68,16 +68,16 @@ module std_nbdcache
   // 3. Load Unit
   // 4. Accelerator
   // 5. Store unit
-  logic        [            NumPorts:0][  DCACHE_SET_ASSOC-1:0] req;
+  logic        [            NumPorts:0][  CVA6Cfg.DCACHE_SET_ASSOC-1:0] req;
   logic        [            NumPorts:0][CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr;
   logic        [            NumPorts:0]                         gnt;
-  cache_line_t [  DCACHE_SET_ASSOC-1:0]                         rdata;
+  cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                         rdata;
   logic        [            NumPorts:0][  CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag;
 
   cache_line_t [            NumPorts:0]                         wdata;
   logic        [            NumPorts:0]                         we;
   cl_be_t      [            NumPorts:0]                         be;
-  logic        [  DCACHE_SET_ASSOC-1:0]                         hit_way;
+  logic        [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                         hit_way;
   // -------------------------------
   // Controller <-> Miss unit
   // -------------------------------
@@ -98,11 +98,11 @@ module std_nbdcache
   // -------------------------------
   // Arbiter <-> Datram,
   // -------------------------------
-  logic        [  DCACHE_SET_ASSOC-1:0]                         req_ram;
+  logic        [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                         req_ram;
   logic        [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]                         addr_ram;
   logic                                                         we_ram;
   cache_line_t                                                  wdata_ram;
-  cache_line_t [  DCACHE_SET_ASSOC-1:0]                         rdata_ram;
+  cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                         rdata_ram;
   cl_be_t                                                       be_ram;
 
   // ------------------
@@ -195,7 +195,7 @@ module std_nbdcache
   // --------------
   // Memory Arrays
   // --------------
-  for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin : sram_block
+  for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : sram_block
     sram #(
         .DATA_WIDTH(DCACHE_LINE_WIDTH),
         .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
@@ -239,7 +239,7 @@ module std_nbdcache
   // you can use it here to save the extra 4x overhead introduced by this workaround.
   logic [4*DCACHE_DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
 
-  for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
     assign dirty_wdata[8*i]   = wdata_ram.dirty;
     assign dirty_wdata[8*i+1] = wdata_ram.valid;
     assign rdata_ram[i].dirty = dirty_rdata[8*i];
@@ -271,8 +271,7 @@ module std_nbdcache
       .NR_PORTS        (NumPorts + 1),
       .ADDR_WIDTH      (CVA6Cfg.DCACHE_INDEX_WIDTH),
       .l_data_t        (cache_line_t),
-      .l_be_t          (cl_be_t),
-      .DCACHE_SET_ASSOC(DCACHE_SET_ASSOC)
+      .l_be_t          (cl_be_t)
   ) i_tag_cmp (
       .req_i    (req),
       .gnt_o    (gnt),

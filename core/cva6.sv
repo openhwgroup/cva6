@@ -479,7 +479,7 @@ module cva6
   logic                                                     dtlb_miss_ex_perf;
   logic                                                     dcache_miss_cache_perf;
   logic                                                     icache_miss_cache_perf;
-  logic             [   NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits;
+  logic             [   NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;
   logic                                                     stall_issue;
   // --------------
   // CTRL <-> *
