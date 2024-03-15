@@ -5,39 +5,39 @@ implementation_related_phrases:
   # Total 336 occurrences in PDF.  Analysis up to chapter 3.
   phrases:
     # TOC (1 occurrence)
-    - Machine_Implementation_Register_mimpid
-      relevant:     n # tbd/y/n
+    - Machine_Implementation_Register_mimpid:
+      relevant:     n
       relevant_why: generated text (table of contents).
     #Preface (6 occurrences)
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L37C1-L38C13
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L80C1-L81C12
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L87C1-L88C64
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L110C1-L112C25
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L115C1-L116C33
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-preface.adoc?plain=1#L237C1-L239C6
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: informative text only.
     #
     # Chapter 1: Introduction (15 occurrences)
@@ -45,73 +45,75 @@ implementation_related_phrases:
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L39C24-L40C66
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: software-related topic.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L40C67-L43C37
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: software-related topic.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L47C1-L49C40
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L52C1-L52C83
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: text in figure caption.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L62C8-L63C35
-      relevant:     n # tbd/y/n
-      relevant_why: text describes relation between software and supervisor extension.
+      relevant:     n
+      relevant_why: text describes relationship between software and supervisor extension.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L89C1-L91C43
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L144C49-L146C28
-      relevant:     n # tbd/y/n
+      relevant:     n
       relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L157C1-L159C14 # 2 occurrences in 1 sentence
-      relevant:     y # tbd/y/n
+      relevant:     y
       relevant_why: introduces an implementation-defined property (number of privilege levels).
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L177C1-L178C54
-      relevant:     y # tbd/y/n
-      relevant_why: defines a mandatory property of implementation.
+      relevant:     n
+      relevant_why: defines a mandatory property of implementations (no freedom allowed).
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L178C55-L180C63
-      relevant:     y # tbd/y/n
-      relevant_why: defines an optional property of implementation.
+      relevant:     y
+      relevant_why: defines an optional property of implementation (presence of modes other than M).
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L184C1-L185C46
-      relevant:     n # tbd/y/n
-      relevant_why: Yes: informative text only.
+        normative:  n
+      relevant:     n
+      relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L187C1-L188C66
-      relevant:     y # tbd/y/n
-      relevant_why: defines an optional property of imnplementation.
+      relevant:     n
+      relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L204C1-L205C66
-      relevant:     n # tbd/y/n
+        normative:  n
+      relevant:     n
       relevant_why: informative text only.
     -
       spec:
         url: https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/priv-intro.adoc?plain=1#L210C1-L211C37
-      relevant:     y # tbd/y/n
-      relevant_why: defines an optional property of implementation.
+      relevant:     y
+      relevant_why: defines an optional property of implementation (presence of D mode).
     #
     # Chapter 2: CSRs (13 occurrences)
     #
