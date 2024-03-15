@@ -22,7 +22,7 @@ package build_config_pkg;
     int unsigned NrWbPorts = (CVA6Cfg.CvxifEn || EnableAccelerator) ? 5 : 4;
 
     int unsigned ICACHE_INDEX_WIDTH = $clog2(CVA6Cfg.IcacheByteSize / CVA6Cfg.IcacheSetAssoc);
-    int unsigned DCACHE_INDEX_WIDTH = $clog2(ariane_pkg::CONFIG_L1D_SIZE / CVA6Cfg.DcacheSetAssoc);
+    int unsigned DCACHE_INDEX_WIDTH = $clog2(CVA6Cfg.DcacheByteSize / CVA6Cfg.DcacheSetAssoc);
     int unsigned DCACHE_OFFSET_WIDTH = $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8);
 
     config_pkg::cva6_cfg_t cfg;

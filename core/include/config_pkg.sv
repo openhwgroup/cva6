@@ -136,6 +136,8 @@ package config_pkg;
     int unsigned IcacheByteSize;
     // Instruction cache associativity (number of ways)
     int unsigned IcacheSetAssoc;
+    // Data cache size (in bytes)
+    int unsigned DcacheByteSize;
     // Data cache associativity (number of ways)
     int unsigned DcacheSetAssoc;
   } cva6_user_cfg_t;
