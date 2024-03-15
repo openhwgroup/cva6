@@ -242,11 +242,12 @@ fpga-build:
     - source $VIVADO_SETUP
     - source ./verif/sim/setup-env.sh
     - mkdir -p artifacts/logs
-    - make fpga target=$TARGET 2>&1 | tee artifacts/logs/logfile.log
+    - make fpga target=$TARGET &> artifacts/logs/logfile.log
     - tail -20 artifacts/logs/logfile.log > artifacts/logs/logfile.log.tail
+    - rm -f artifacts/logs/logfile.log
     - mkdir -p artifacts/reports
     - mv corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
-    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt artifacts/logs/logfile.tail
+    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt artifacts/logs/logfile.log.tail
 
 .regress_test:
   stage: heavy tests
