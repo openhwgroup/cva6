@@ -92,7 +92,7 @@ module instr_queue
     logic [riscv::VLEN-1:0]          ex_vaddr;  // lower VLEN bits of tval for exception
   } instr_data_t;
 
-  logic [ariane_pkg::LOG2_INSTR_PER_FETCH-1:0] branch_index;
+  logic [CVA6Cfg.LOG2_INSTR_PER_FETCH-1:0] branch_index;
   // instruction queues
   logic [ariane_pkg::INSTR_PER_FETCH-1:0][$clog2(
 ariane_pkg::FETCH_FIFO_DEPTH
@@ -112,7 +112,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   logic                                            empty_address;
   logic                                            address_overflow;
   // input stream counter
-  logic [ariane_pkg::LOG2_INSTR_PER_FETCH-1:0] idx_is_d, idx_is_q;
+  logic [CVA6Cfg.LOG2_INSTR_PER_FETCH-1:0] idx_is_d, idx_is_q;
   // Registers
   // output FIFO select, one-hot
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] idx_ds_d, idx_ds_q;
@@ -124,8 +124,8 @@ ariane_pkg::FETCH_FIFO_DEPTH
   logic branch_empty;
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken;
   // shift amount, e.g.: instructions we want to retire
-  logic [ariane_pkg::LOG2_INSTR_PER_FETCH:0] popcount;
-  logic [ariane_pkg::LOG2_INSTR_PER_FETCH-1:0] shamt;
+  logic [CVA6Cfg.LOG2_INSTR_PER_FETCH:0] popcount;
+  logic [CVA6Cfg.LOG2_INSTR_PER_FETCH-1:0] shamt;
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] valid;
   logic [ariane_pkg::INSTR_PER_FETCH*2-1:0] consumed_extended;
   // FIFO mask
