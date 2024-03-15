@@ -196,7 +196,7 @@ module std_nbdcache
   for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin : sram_block
     sram #(
         .DATA_WIDTH(DCACHE_LINE_WIDTH),
-        .NUM_WORDS (DCACHE_NUM_WORDS)
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) data_sram (
         .req_i  (req_ram[i]),
         .rst_ni (rst_ni),
@@ -212,7 +212,7 @@ module std_nbdcache
 
     sram #(
         .DATA_WIDTH(CVA6Cfg.DCACHE_TAG_WIDTH),
-        .NUM_WORDS (DCACHE_NUM_WORDS)
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) tag_sram (
         .req_i  (req_ram[i]),
         .rst_ni (rst_ni),
@@ -247,7 +247,7 @@ module std_nbdcache
   sram #(
       .USER_WIDTH(1),
       .DATA_WIDTH(4 * DCACHE_DIRTY_WIDTH),
-      .NUM_WORDS (DCACHE_NUM_WORDS)
+      .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
   ) valid_dirty_sram (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),

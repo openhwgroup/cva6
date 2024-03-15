@@ -214,6 +214,7 @@ package config_pkg;
     int unsigned ICACHE_TAG_WIDTH;
     int unsigned DCACHE_SET_ASSOC_WIDTH;
     int unsigned DCACHE_TAG_WIDTH;
+    int unsigned DCACHE_NUM_WORDS;
 
     int unsigned DCACHE_MAX_TX;
   } cva6_cfg_t;

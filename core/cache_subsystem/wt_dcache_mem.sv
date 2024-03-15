@@ -306,7 +306,7 @@ module wt_dcache_mem
         .USER_WIDTH(ariane_pkg::DCACHE_SET_ASSOC * DATA_USER_WIDTH),
         .DATA_WIDTH(ariane_pkg::DCACHE_SET_ASSOC * riscv::XLEN),
         .USER_EN   (ariane_pkg::DATA_USER_EN),
-        .NUM_WORDS (wt_cache_pkg::DCACHE_NUM_WORDS)
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) i_data_sram (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
@@ -330,7 +330,7 @@ module wt_dcache_mem
     sram #(
         // tag + valid bit
         .DATA_WIDTH(CVA6Cfg.DCACHE_TAG_WIDTH + 1),
-        .NUM_WORDS (wt_cache_pkg::DCACHE_NUM_WORDS)
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) i_tag_sram (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
@@ -400,8 +400,8 @@ module wt_dcache_mem
   else $fatal(1, "[l1 dcache] wbuffer_hit_oh signal must be hot1");
 
   // this is only used for verification!
-  logic vld_mirror[wt_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
-  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_mirror[wt_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
+  logic vld_mirror[CVA6Cfg.DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_mirror[CVA6Cfg.DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
   logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror

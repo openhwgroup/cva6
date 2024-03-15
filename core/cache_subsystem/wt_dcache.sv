@@ -55,7 +55,7 @@ module wt_dcache
     output dcache_req_t  mem_data_o
 );
 
-  localparam DCACHE_CL_IDX_WIDTH = $clog2(wt_cache_pkg::DCACHE_NUM_WORDS);
+  localparam DCACHE_CL_IDX_WIDTH = $clog2(CVA6Cfg.DCACHE_NUM_WORDS);
 
   localparam type wbuffer_t = struct packed {
     logic [CVA6Cfg.DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;

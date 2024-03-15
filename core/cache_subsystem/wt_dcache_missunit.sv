@@ -161,7 +161,7 @@ module wt_dcache_missunit
 
   assign cache_en_o = enable_q;
   assign cnt_d = (flush_en) ? cnt_q + 1 : '0;
-  assign flush_done = (cnt_q == wt_cache_pkg::DCACHE_NUM_WORDS - 1);
+  assign flush_done = (cnt_q == CVA6Cfg.DCACHE_NUM_WORDS - 1);
 
   assign miss_req_masked_d = (lock_reqs)  ? miss_req_masked_q      :
                              (mask_reads) ? miss_we_i & miss_req_i : miss_req_i;
