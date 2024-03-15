@@ -37,6 +37,7 @@ CVA6 User Manual
    RV32A <RISCV_Instructions_RV32A>
    RV32C <RISCV_Instructions_RV32C>
    RV32Zcb <RISCV_Instructions_RV32ZCb>
+   RVZcmp <RISCV_Instructions_RVZcmp>
    RVZba <RISCV_Instructions_RVZba>
    RVZbb <RISCV_Instructions_RVZbb>
    RVZbc <RISCV_Instructions_RVZbc>
