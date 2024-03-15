@@ -246,6 +246,8 @@ package config_pkg;
     int unsigned FETCH_WIDTH;
     int unsigned INSTR_PER_FETCH;
     int unsigned LOG2_INSTR_PER_FETCH;
+
+    int unsigned SV;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
