@@ -113,7 +113,8 @@ package build_config_pkg;
     cfg.FETCH_USER_WIDTH = CVA6Cfg.FetchUserWidth;
     cfg.FETCH_USER_EN = CVA6Cfg.FetchUserEn;
 
-    cfg.LOG2_INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? $clog2(ariane_pkg::INSTR_PER_FETCH) : 1;
+    cfg.INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? (ariane_pkg::FETCH_WIDTH / 16) : 1;
+    cfg.LOG2_INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
     return cfg;
   endfunction

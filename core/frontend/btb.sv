@@ -44,15 +44,15 @@ module btb #(
     // Update BTB with resolved address - EXECUTE
     input btb_update_t btb_update_i,
     // BTB Prediction - FRONTEND
-    output btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o
+    output btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0] btb_prediction_o
 );
   // the last bit is always zero, we don't need it for indexing
   localparam OFFSET = CVA6Cfg.RVC == 1'b1 ? 1 : 2;
   // re-shape the branch history table
-  localparam NR_ROWS = NR_ENTRIES / ariane_pkg::INSTR_PER_FETCH;
+  localparam NR_ROWS = NR_ENTRIES / CVA6Cfg.INSTR_PER_FETCH;
   // number of bits needed to index the row
-  localparam ROW_ADDR_BITS = $clog2(ariane_pkg::INSTR_PER_FETCH);
-  localparam ROW_INDEX_BITS = CVA6Cfg.RVC == 1'b1 ? $clog2(ariane_pkg::INSTR_PER_FETCH) : 1;
+  localparam ROW_ADDR_BITS = $clog2(CVA6Cfg.INSTR_PER_FETCH);
+  localparam ROW_INDEX_BITS = CVA6Cfg.RVC == 1'b1 ? $clog2(CVA6Cfg.INSTR_PER_FETCH) : 1;
   // number of bits we should use for prediction
   localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
   // prevent aliasing to degrade performance
@@ -75,19 +75,19 @@ module btb #(
   end
 
   if (CVA6Cfg.FPGA_EN) begin : gen_fpga_btb  //FPGA TARGETS
-    logic [                ariane_pkg::INSTR_PER_FETCH-1:0] btb_ram_csel_prediction;
-    logic [                ariane_pkg::INSTR_PER_FETCH-1:0] btb_ram_we_prediction;
-    logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] btb_ram_addr_prediction;
-    logic [ ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] btb_ram_wdata_prediction;
-    logic [ ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] btb_ram_rdata_prediction;
+    logic [                CVA6Cfg.INSTR_PER_FETCH-1:0] btb_ram_csel_prediction;
+    logic [                CVA6Cfg.INSTR_PER_FETCH-1:0] btb_ram_we_prediction;
+    logic [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] btb_ram_addr_prediction;
+    logic [ CVA6Cfg.INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] btb_ram_wdata_prediction;
+    logic [ CVA6Cfg.INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] btb_ram_rdata_prediction;
 
-    logic [                ariane_pkg::INSTR_PER_FETCH-1:0] btb_ram_csel_update;
-    logic [                ariane_pkg::INSTR_PER_FETCH-1:0] btb_ram_we_update;
-    logic [ariane_pkg::INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] btb_ram_addr_update;
-    logic [ ariane_pkg::INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] btb_ram_wdata_update;
+    logic [                CVA6Cfg.INSTR_PER_FETCH-1:0] btb_ram_csel_update;
+    logic [                CVA6Cfg.INSTR_PER_FETCH-1:0] btb_ram_we_update;
+    logic [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] btb_ram_addr_update;
+    logic [ CVA6Cfg.INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] btb_ram_wdata_update;
 
     // output matching prediction
-    for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_btb_output
+    for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_btb_output
       assign btb_ram_csel_prediction[i] = 1'b1;
       assign btb_ram_we_prediction[i] = 1'b0;
       assign btb_ram_wdata_prediction = '0;
@@ -106,7 +106,7 @@ module btb #(
       btb_ram_wdata_update = '0;
 
       if (btb_update_i.valid && !debug_mode_i) begin
-        for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
+        for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
           if (update_row_index == i) begin
             btb_ram_csel_update[i] = 1'b1;
             btb_ram_we_update[i] = 1'b1;
@@ -119,7 +119,7 @@ module btb #(
       end
     end
 
-    for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_btb_ram
+    for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_btb_ram
       SyncDpRam #(
           .ADDR_WIDTH($clog2(NR_ROWS)),
           .DATA_DEPTH(NR_ROWS),
@@ -149,11 +149,11 @@ module btb #(
     // typedef for all branch target entries
     // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
     btb_prediction_t
-        btb_d[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0],
-        btb_q[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0];
+        btb_d[NR_ROWS-1:0][CVA6Cfg.INSTR_PER_FETCH-1:0],
+        btb_q[NR_ROWS-1:0][CVA6Cfg.INSTR_PER_FETCH-1:0];
 
     // output matching prediction
-    for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_btb_output
+    for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_btb_output
       assign btb_prediction_o[i] = btb_q[index][i];  // workaround
     end
 
@@ -180,7 +180,7 @@ module btb #(
         // evict all entries
         if (flush_bp_i) begin
           for (int i = 0; i < NR_ROWS; i++) begin
-            for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
+            for (int j = 0; j < CVA6Cfg.INSTR_PER_FETCH; j++) begin
               btb_q[i][j].valid <= 1'b0;
             end
           end
