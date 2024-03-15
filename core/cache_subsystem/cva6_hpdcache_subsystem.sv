@@ -520,8 +520,7 @@ module cva6_hpdcache_subsystem
   //  AXI arbiter instantiation
   //  {{{
   cva6_hpdcache_subsystem_axi_arbiter #(
-      .HPDcacheMemIdWidth   (CVA6Cfg.MEM_TID_WIDTH),
-      .HPDcacheMemDataWidth (CVA6Cfg.AxiDataWidth),
+      .CVA6Cfg(CVA6Cfg),
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
       .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),

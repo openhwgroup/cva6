@@ -45,8 +45,8 @@ module cva6_icache_axi_wrapper
     input axi_rsp_t axi_resp_i
 );
 
-  localparam AxiNumWords = (ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ICACHE_LINE_WIDTH  > DCACHE_LINE_WIDTH)  +
-                           (DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ICACHE_LINE_WIDTH <= DCACHE_LINE_WIDTH) ;
+  localparam AxiNumWords = (ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ICACHE_LINE_WIDTH  > CVA6Cfg.DCACHE_LINE_WIDTH)  +
+                           (CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ICACHE_LINE_WIDTH <= CVA6Cfg.DCACHE_LINE_WIDTH) ;
 
   logic                                    icache_mem_rtrn_vld;
   icache_rtrn_t                            icache_mem_rtrn;

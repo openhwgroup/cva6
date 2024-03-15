@@ -97,7 +97,7 @@ module wt_cache_subsystem
 
   localparam type dcache_rtrn_t = struct packed {
     wt_cache_pkg::dcache_in_t rtype;  // see definitions above
-    logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
+    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
     logic [ariane_pkg::DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
     dcache_inval_t inv;  // invalidation vector
     logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)

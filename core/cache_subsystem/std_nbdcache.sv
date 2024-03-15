@@ -50,13 +50,13 @@ module std_nbdcache
 
   localparam type cache_line_t = struct packed {
     logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
-    logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;   // data array
+    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;   // data array
     logic                                     valid;  // state array
     logic                                     dirty;  // state array
   };
   localparam type cl_be_t = struct packed {
     logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
-    logic [(ariane_pkg::DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
+    logic [(CVA6Cfg.DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
     logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
   };
 
@@ -197,7 +197,7 @@ module std_nbdcache
   // --------------
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : sram_block
     sram #(
-        .DATA_WIDTH(DCACHE_LINE_WIDTH),
+        .DATA_WIDTH(CVA6Cfg.DCACHE_LINE_WIDTH),
         .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) data_sram (
         .req_i  (req_ram[i]),
@@ -295,7 +295,7 @@ module std_nbdcache
 
   //pragma translate_off
   initial begin
-    assert (DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth inside {2, 4, 8, 16})
+    assert (CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth inside {2, 4, 8, 16})
     else $fatal(1, "Cache line size needs to be a power of two multiple of AxiDataWidth");
   end
   //pragma translate_on

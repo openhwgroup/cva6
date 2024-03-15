@@ -142,15 +142,15 @@ module miss_handler
   // Cache Line Refill <-> AXI
   logic                                                       req_fsm_miss_valid;
   logic                [                          63:0]       req_fsm_miss_addr;
-  logic                [         DCACHE_LINE_WIDTH-1:0]       req_fsm_miss_wdata;
+  logic                [         CVA6Cfg.DCACHE_LINE_WIDTH-1:0]       req_fsm_miss_wdata;
   logic                                                       req_fsm_miss_we;
-  logic                [     (DCACHE_LINE_WIDTH/8)-1:0]       req_fsm_miss_be;
+  logic                [     (CVA6Cfg.DCACHE_LINE_WIDTH/8)-1:0]       req_fsm_miss_be;
   ariane_pkg::ad_req_t                                        req_fsm_miss_req;
   logic                [                           1:0]       req_fsm_miss_size;
 
   logic                                                       gnt_miss_fsm;
   logic                                                       valid_miss_fsm;
-  logic                [    (DCACHE_LINE_WIDTH/64)-1:0][63:0] data_miss_fsm;
+  logic                [    (CVA6Cfg.DCACHE_LINE_WIDTH/64)-1:0][63:0] data_miss_fsm;
 
   // Cache Management <-> LFSR
   logic                                                       lfsr_enable;
@@ -303,7 +303,7 @@ module miss_handler
       // ~> replace the cacheline
       SAVE_CACHELINE: begin
         // calculate cacheline offset
-        automatic logic [$clog2(DCACHE_LINE_WIDTH)-1:0] cl_offset;
+        automatic logic [$clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0] cl_offset;
         cl_offset = mshr_q.addr[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:3] << 6;
         // we've got a valid response from refill unit
         if (valid_miss_fsm) begin
@@ -631,7 +631,7 @@ module miss_handler
 
   axi_adapter #(
       .CVA6Cfg              (CVA6Cfg),
-      .DATA_WIDTH           (DCACHE_LINE_WIDTH),
+      .DATA_WIDTH           (CVA6Cfg.DCACHE_LINE_WIDTH),
       .CACHELINE_BYTE_OFFSET(CVA6Cfg.DCACHE_OFFSET_WIDTH),
       .axi_req_t            (axi_req_t),
       .axi_rsp_t            (axi_rsp_t)

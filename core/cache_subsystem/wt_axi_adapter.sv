@@ -59,11 +59,11 @@ module wt_axi_adapter
 );
 
   // support up to 512bit cache lines
-  localparam AxiNumWords = (ariane_pkg::ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH > ariane_pkg::DCACHE_LINE_WIDTH)  +
-                           (ariane_pkg::DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH <= ariane_pkg::DCACHE_LINE_WIDTH) ;
+  localparam AxiNumWords = (ariane_pkg::ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH > CVA6Cfg.DCACHE_LINE_WIDTH)  +
+                           (CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH <= CVA6Cfg.DCACHE_LINE_WIDTH) ;
   localparam MaxNumWords = $clog2(CVA6Cfg.AxiDataWidth / 8);
   localparam AxiRdBlenIcache = ariane_pkg::ICACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
-  localparam AxiRdBlenDcache = ariane_pkg::DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
+  localparam AxiRdBlenDcache = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
 
   ///////////////////////////////////////////////////////
   // request path
@@ -446,7 +446,7 @@ module wt_axi_adapter
       dcache_rd_shift_user_d, dcache_rd_shift_user_q;
   logic [ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       icache_rd_shift_d, icache_rd_shift_q;
-  logic [DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
+  logic [CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       dcache_rd_shift_d, dcache_rd_shift_q;
   wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
   dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
@@ -498,11 +498,11 @@ module wt_axi_adapter
 
     if (dcache_rtrn_rd_en) begin
       dcache_first_d = axi_rd_last;
-      if (DCACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
+      if (CVA6Cfg.DCACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         dcache_rd_shift_d[0] = axi_rd_data;
       end else begin
         dcache_rd_shift_d = {
-          axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
+          axi_rd_data, dcache_rd_shift_q[CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
         };
       end
       dcache_rd_shift_user_d = {

@@ -23,7 +23,7 @@ package build_config_pkg;
 
     int unsigned ICACHE_INDEX_WIDTH = $clog2(CVA6Cfg.IcacheByteSize / CVA6Cfg.IcacheSetAssoc);
     int unsigned DCACHE_INDEX_WIDTH = $clog2(CVA6Cfg.DcacheByteSize / CVA6Cfg.DcacheSetAssoc);
-    int unsigned DCACHE_OFFSET_WIDTH = $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8);
+    int unsigned DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DcacheLineWidth / 8);
 
     config_pkg::cva6_cfg_t cfg;
 
@@ -100,6 +100,7 @@ package build_config_pkg;
     cfg.DCACHE_SET_ASSOC_WIDTH = $clog2(CVA6Cfg.DcacheSetAssoc);
     cfg.DCACHE_INDEX_WIDTH = DCACHE_INDEX_WIDTH;
     cfg.DCACHE_TAG_WIDTH = riscv::PLEN - DCACHE_INDEX_WIDTH;
+    cfg.DCACHE_LINE_WIDTH = CVA6Cfg.DcacheLineWidth;
     cfg.DCACHE_OFFSET_WIDTH = DCACHE_OFFSET_WIDTH;
     cfg.DCACHE_NUM_WORDS = 2 ** (DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
 

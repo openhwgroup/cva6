@@ -97,7 +97,7 @@ module cache_ctrl
   assign busy_o = (state_q != IDLE);
   assign tag_o  = mem_req_d.tag;
 
-  logic [DCACHE_LINE_WIDTH-1:0] cl_i;
+  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] cl_i;
 
   always_comb begin : way_select
     cl_i = '0;
@@ -110,7 +110,7 @@ module cache_ctrl
   // Cache FSM
   // --------------
   always_comb begin : cache_ctrl_fsm
-    automatic logic [$clog2(DCACHE_LINE_WIDTH)-1:0] cl_offset;
+    automatic logic [$clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0] cl_offset;
     // incoming cache-line -> this is needed as synthesis is not supporting +: indexing in a multi-dimensional array
     // cache-line offset -> multiple of 64
     cl_offset = mem_req_q.index[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:3] << 6;  // shift by 6 to the left
@@ -460,7 +460,7 @@ module cache_ctrl
   //pragma translate_off
 `ifndef VERILATOR
   initial begin
-    assert (DCACHE_LINE_WIDTH == 128)
+    assert (CVA6Cfg.DCACHE_LINE_WIDTH == 128)
     else
       $error(
           "Cacheline width has to be 128 for the moment. But only small changes required in data select logic"

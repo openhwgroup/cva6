@@ -140,6 +140,8 @@ package config_pkg;
     int unsigned DcacheByteSize;
     // Data cache associativity (number of ways)
     int unsigned DcacheSetAssoc;
+    // Data line width
+    int unsigned DcacheLineWidth;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -222,6 +224,7 @@ package config_pkg;
     int unsigned DCACHE_SET_ASSOC_WIDTH;
     int unsigned DCACHE_INDEX_WIDTH;
     int unsigned DCACHE_TAG_WIDTH;
+    int unsigned DCACHE_LINE_WIDTH;
     int unsigned DCACHE_OFFSET_WIDTH;
     int unsigned DCACHE_NUM_WORDS;
 

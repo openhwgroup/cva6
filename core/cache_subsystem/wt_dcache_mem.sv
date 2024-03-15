@@ -58,9 +58,9 @@ module wt_dcache_mem
     input logic [      CVA6Cfg.DCACHE_TAG_WIDTH-1:0] wr_cl_tag_i,
     input logic [   DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_i,
     input logic [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_cl_off_i,
-    input logic [     DCACHE_LINE_WIDTH-1:0] wr_cl_data_i,
+    input logic [     CVA6Cfg.DCACHE_LINE_WIDTH-1:0] wr_cl_data_i,
     input logic [DCACHE_USER_LINE_WIDTH-1:0] wr_cl_user_i,
-    input logic [   DCACHE_LINE_WIDTH/8-1:0] wr_cl_data_be_i,
+    input logic [   CVA6Cfg.DCACHE_LINE_WIDTH/8-1:0] wr_cl_data_be_i,
     input logic [      CVA6Cfg.DCACHE_SET_ASSOC-1:0] wr_vld_bits_i,
 
     // separate port for single word write, no tag access
@@ -76,7 +76,7 @@ module wt_dcache_mem
     input wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_i
 );
 
-  localparam DCACHE_NUM_BANKS = ariane_pkg::DCACHE_LINE_WIDTH / riscv::XLEN;
+  localparam DCACHE_NUM_BANKS = CVA6Cfg.DCACHE_LINE_WIDTH / riscv::XLEN;
   localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
 
   // functions
@@ -367,7 +367,7 @@ module wt_dcache_mem
 `ifndef VERILATOR
   initial begin
     cach_line_width_axi :
-    assert (DCACHE_LINE_WIDTH >= CVA6Cfg.AxiDataWidth)
+    assert (CVA6Cfg.DCACHE_LINE_WIDTH >= CVA6Cfg.AxiDataWidth)
     else $fatal(1, "[l1 dcache] cache line size needs to be greater or equal AXI data width");
   end
 
@@ -379,7 +379,7 @@ module wt_dcache_mem
 
   initial begin
     cach_line_width_xlen :
-    assert (DCACHE_LINE_WIDTH > riscv::XLEN)
+    assert (CVA6Cfg.DCACHE_LINE_WIDTH > riscv::XLEN)
     else $fatal(1, "[l1 dcache] cache_line_size needs to be greater than XLEN");
   end
 
