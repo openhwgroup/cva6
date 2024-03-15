@@ -162,7 +162,7 @@ module cva6
     },
     localparam type icache_rtrn_t = struct packed {
       wt_cache_pkg::icache_in_t rtype;  // see definitions above
-      logic [ariane_pkg::ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
+      logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
       logic [ariane_pkg::ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
       struct packed {
         logic                                      vld;  // invalidate only affected way

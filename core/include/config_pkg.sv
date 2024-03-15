@@ -136,6 +136,8 @@ package config_pkg;
     int unsigned IcacheByteSize;
     // Instruction cache associativity (number of ways)
     int unsigned IcacheSetAssoc;
+    // Instruction line width
+    int unsigned IcacheLineWidth;
     // Data cache size (in bytes)
     int unsigned DcacheByteSize;
     // Data cache associativity (number of ways)
@@ -220,6 +222,7 @@ package config_pkg;
     int unsigned ICACHE_SET_ASSOC_WIDTH;
     int unsigned ICACHE_INDEX_WIDTH;
     int unsigned ICACHE_TAG_WIDTH;
+    int unsigned ICACHE_LINE_WIDTH;
     int unsigned DCACHE_SET_ASSOC;
     int unsigned DCACHE_SET_ASSOC_WIDTH;
     int unsigned DCACHE_INDEX_WIDTH;

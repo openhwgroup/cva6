@@ -62,7 +62,7 @@ module cva6_icache
     output icache_req_t  mem_data_o
 );
 
-  localparam ICACHE_OFFSET_WIDTH = $clog2(ariane_pkg::ICACHE_LINE_WIDTH / 8);
+  localparam ICACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8);
   localparam ICACHE_NUM_WORDS = 2 ** (CVA6Cfg.ICACHE_INDEX_WIDTH - ICACHE_OFFSET_WIDTH);
   localparam ICACHE_CL_IDX_WIDTH = $clog2(ICACHE_NUM_WORDS);  // excluding byte offset
 
@@ -108,7 +108,7 @@ module cva6_icache
   logic [ICACHE_OFFSET_WIDTH-1:0] cl_offset_d, cl_offset_q;  // offset in cache line
   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] cl_tag_d, cl_tag_q;  // this is the cache tag
   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0]          cl_tag_rdata [CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the tags coming from the tagmem
-  logic [ICACHE_LINE_WIDTH-1:0]         cl_rdata     [CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the cache
+  logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0]         cl_rdata     [CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the cache
   logic [ICACHE_USER_LINE_WIDTH-1:0]    cl_ruser[CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the user cache
   logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0] cl_sel;  // selected word from each cacheline
   logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0][FETCH_USER_WIDTH-1:0] cl_user;  // selected word from each cacheline
@@ -482,7 +482,7 @@ module cva6_icache
     // Data RAM
     sram #(
         .USER_WIDTH(ICACHE_USER_LINE_WIDTH),
-        .DATA_WIDTH(ICACHE_LINE_WIDTH),
+        .DATA_WIDTH(CVA6Cfg.ICACHE_LINE_WIDTH),
         .USER_EN   (ariane_pkg::FETCH_USER_EN),
         .NUM_WORDS (ICACHE_NUM_WORDS)
     ) data_sram (
