@@ -61,7 +61,7 @@ module cva6_mmu_sv32
     output logic [CVA6Cfg.PPNW-1:0] lsu_dtlb_ppn_o,  // ppn (send same cycle as hit)
     // Cycle 1
     output logic lsu_valid_o,  // translation is valid
-    output logic [riscv::PLEN-1:0] lsu_paddr_o,  // translated address
+    output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
     // General control signals
     input riscv::priv_lvl_t priv_lvl_i,
@@ -82,7 +82,7 @@ module cva6_mmu_sv32
     output dcache_req_i_t req_port_o,
     // PMP
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
-    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
 
   logic                   iaccess_err;  // insufficient privilege to access this instruction page
@@ -91,7 +91,7 @@ module cva6_mmu_sv32
   logic                   walking_instr;  // PTW is walking because of an ITLB miss
   logic                   ptw_error;  // PTW threw an exception
   logic                   ptw_access_exception;  // PTW threw an access exception (PMPs)
-  logic [riscv::PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
+  logic [CVA6Cfg.PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
 
   logic [CVA6Cfg.VLEN-1:0] update_vaddr;
   tlb_update_sv32_t update_itlb, update_dtlb, update_shared_tlb;
@@ -277,9 +277,9 @@ module cva6_mmu_sv32
   always_comb begin : instr_interface
     // MMU disabled: just pass through
     icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-    if (riscv::PLEN > CVA6Cfg.VLEN)
+    if (CVA6Cfg.PLEN > CVA6Cfg.VLEN)
       icache_areq_o.fetch_paddr = {
-        {riscv::PLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr
+        {CVA6Cfg.PLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr
       };  // play through in case we disabled address translation
     else
       icache_areq_o.fetch_paddr = {
@@ -357,7 +357,7 @@ module cva6_mmu_sv32
         else begin
           icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
-          if (CVA6Cfg.TvalEn) icache_areq_o.fetch_exception.tval = ptw_bad_paddr[riscv::PLEN-1:2];
+          if (CVA6Cfg.TvalEn) icache_areq_o.fetch_exception.tval = ptw_bad_paddr[CVA6Cfg.PLEN-1:2];
         end
       end
     end
@@ -367,20 +367,20 @@ module cva6_mmu_sv32
       icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
       icache_areq_o.fetch_exception.valid = 1'b1;
       if (CVA6Cfg.TvalEn)
-        icache_areq_o.fetch_exception.tval = icache_areq_o.fetch_paddr[riscv::PLEN-1:2];
+        icache_areq_o.fetch_exception.tval = icache_areq_o.fetch_paddr[CVA6Cfg.PLEN-1:2];
       //to check on wave --> not connected
     end
   end
 
   // check for execute flag on memory
   assign match_any_execute_region = config_pkg::is_inside_execute_regions(
-      CVA6Cfg, {{64 - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, icache_areq_o.fetch_paddr}
   );
 
   // Instruction fetch
   pmp #(
-      .PLEN      (riscv::PLEN),
-      .PMP_LEN   (riscv::PLEN - 2),
+      .PLEN      (CVA6Cfg.PLEN),
+      .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
   ) i_pmp_if (
       .addr_i       (icache_areq_o.fetch_paddr),
@@ -422,9 +422,9 @@ module cva6_mmu_sv32
     lsu_is_store_n  = lsu_is_store_i;
     dtlb_is_4M_n    = dtlb_is_4M;
 
-    if (riscv::PLEN > CVA6Cfg.VLEN) begin
-      lsu_paddr_o    = {{riscv::PLEN - CVA6Cfg.VLEN{1'b0}}, lsu_vaddr_q};
-      lsu_dtlb_ppn_o = {{riscv::PLEN - CVA6Cfg.VLEN{1'b0}}, lsu_vaddr_n[CVA6Cfg.VLEN-1:12]};
+    if (CVA6Cfg.PLEN > CVA6Cfg.VLEN) begin
+      lsu_paddr_o    = {{CVA6Cfg.PLEN - CVA6Cfg.VLEN{1'b0}}, lsu_vaddr_q};
+      lsu_dtlb_ppn_o = {{CVA6Cfg.PLEN - CVA6Cfg.VLEN{1'b0}}, lsu_vaddr_n[CVA6Cfg.VLEN-1:12]};
     end else begin
       lsu_paddr_o    = {2'b00, lsu_vaddr_q[CVA6Cfg.VLEN-1:0]};
       lsu_dtlb_ppn_o = lsu_vaddr_n[CVA6Cfg.PPNW-1:0];
@@ -477,7 +477,7 @@ module cva6_mmu_sv32
           end else if (!pmp_data_allow) begin
             lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
             lsu_exception_o.valid = 1'b1;
-            if (CVA6Cfg.TvalEn) lsu_exception_o.tval = lsu_paddr_o[riscv::PLEN-1:2];
+            if (CVA6Cfg.TvalEn) lsu_exception_o.tval = lsu_paddr_o[CVA6Cfg.PLEN-1:2];
             //only 32 bits on 34b of lsu_paddr_o are returned.
           end
 
@@ -495,7 +495,7 @@ module cva6_mmu_sv32
           end else if (!pmp_data_allow) begin
             lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
             lsu_exception_o.valid = 1'b1;
-            if (CVA6Cfg.TvalEn) lsu_exception_o.tval = lsu_paddr_o[riscv::PLEN-1:2];
+            if (CVA6Cfg.TvalEn) lsu_exception_o.tval = lsu_paddr_o[CVA6Cfg.PLEN-1:2];
           end
         end
       end else
@@ -533,7 +533,7 @@ module cva6_mmu_sv32
           // the page table walker can only throw page faults
           lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
           lsu_exception_o.valid = 1'b1;
-          if (CVA6Cfg.TvalEn) lsu_exception_o.tval = ptw_bad_paddr[riscv::PLEN-1:2];
+          if (CVA6Cfg.TvalEn) lsu_exception_o.tval = ptw_bad_paddr[CVA6Cfg.PLEN-1:2];
         end
       end
     end  // If translation is not enabled, check the paddr immediately against PMPs
@@ -541,19 +541,19 @@ module cva6_mmu_sv32
       if (lsu_is_store_q) begin
         lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
         lsu_exception_o.valid = 1'b1;
-        if (CVA6Cfg.TvalEn) lsu_exception_o.tval = lsu_paddr_o[riscv::PLEN-1:2];
+        if (CVA6Cfg.TvalEn) lsu_exception_o.tval = lsu_paddr_o[CVA6Cfg.PLEN-1:2];
       end else begin
         lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
         lsu_exception_o.valid = 1'b1;
-        if (CVA6Cfg.TvalEn) lsu_exception_o.tval = lsu_paddr_o[riscv::PLEN-1:2];
+        if (CVA6Cfg.TvalEn) lsu_exception_o.tval = lsu_paddr_o[CVA6Cfg.PLEN-1:2];
       end
     end
   end
 
   // Load/store PMP check
   pmp #(
-      .PLEN      (riscv::PLEN),
-      .PMP_LEN   (riscv::PLEN - 2),
+      .PLEN      (CVA6Cfg.PLEN),
+      .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
   ) i_pmp_data (
       .addr_i       (lsu_paddr_o),

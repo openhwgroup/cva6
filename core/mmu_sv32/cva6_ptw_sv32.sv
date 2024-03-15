@@ -71,8 +71,8 @@ module cva6_ptw_sv32
 
     // PMP
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
-    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
-    output logic [riscv::PLEN-1:0] bad_paddr_o
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    output logic [CVA6Cfg.PLEN-1:0] bad_paddr_o
 
 );
 
@@ -112,7 +112,7 @@ module cva6_ptw_sv32
   // register the VPN we need to walk, SV32 defines a 32 bit virtual address
   logic [CVA6Cfg.VLEN-1:0] vaddr_q, vaddr_n;
   // 4 byte aligned physical pointer
-  logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
+  logic [CVA6Cfg.PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 
   // Assignments
   assign update_vaddr_o = vaddr_q;
@@ -150,8 +150,8 @@ module cva6_ptw_sv32
 
   pmp #(
       .CVA6Cfg   (CVA6Cfg),
-      .PLEN      (riscv::PLEN),
-      .PMP_LEN   (riscv::PLEN - 2),
+      .PLEN      (CVA6Cfg.PLEN),
+      .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
   ) i_pmp_ptw (
       .addr_i       (ptw_pptr_q),

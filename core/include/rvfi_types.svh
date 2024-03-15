@@ -21,7 +21,7 @@
   logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata; \
   logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata; \
   logic [config_pkg::NRET*Cfg.VLEN-1:0]      mem_addr; \
-  logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr; \
+  logic [config_pkg::NRET*Cfg.PLEN-1:0]      mem_paddr; \
   logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask; \
   logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask; \
   logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata; \
@@ -121,7 +121,7 @@
   logic [Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id; \
   logic [((cva6_config_pkg::CVA6ConfigCvxifEn || cva6_config_pkg::CVA6ConfigVExtEn) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0] commit_ack; \
-  logic [riscv::PLEN-1:0] mem_paddr; \
+  logic [Cfg.PLEN-1:0] mem_paddr; \
   logic debug_mode; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][riscv::XLEN-1:0] wdata; \
 }
@@ -158,7 +158,7 @@
   logic [riscv::XLEN-1:0] icache_q; \
   logic [riscv::XLEN-1:0] acc_cons_q; \
   riscv::pmpcfg_t [15:0] pmpcfg_q; \
-  logic [15:0][riscv::PLEN-3:0] pmpaddr_q; \
+  logic [15:0][Cfg.PLEN-3:0] pmpaddr_q; \
 }
 
 `endif // RVFI_TYPES_SVH

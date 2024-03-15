@@ -93,7 +93,7 @@ module cva6_rvfi
 
   logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
-  logic [riscv::PLEN-1:0] mem_paddr;
+  logic [CVA6Cfg.PLEN-1:0] mem_paddr;
   logic debug_mode;
   logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata;
 
@@ -464,22 +464,22 @@ module cva6_rvfi
           rdata:
           csr.pmpcfg_q[i].addr_mode[1]
           == 1'b1 ?
-          {'0, csr.pmpaddr_q[i][riscv::PLEN-3:0]}
+          {'0, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
           : {
           '0
           ,
-          csr.pmpaddr_q[i][riscv::PLEN-3:1]
+          csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1]
           ,
           1'b0
           },
           wdata:
           csr.pmpcfg_q[i].addr_mode[1]
           == 1'b1 ?
-          {'0, csr.pmpaddr_q[i][riscv::PLEN-3:0]}
+          {'0, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
           : {
           '0
           ,
-          csr.pmpaddr_q[i][riscv::PLEN-3:1]
+          csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1]
           ,
           1'b0
           },

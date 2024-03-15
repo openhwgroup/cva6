@@ -52,7 +52,7 @@ module load_unit
     // Virtual address - TO_BE_COMPLETED
     output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
     // Physical address - TO_BE_COMPLETED
-    input logic [riscv::PLEN-1:0] paddr_i,
+    input logic [CVA6Cfg.PLEN-1:0] paddr_i,
     // Excepted which appears before load - TO_BE_COMPLETED
     input exception_t ex_i,
     // Data TLB hit - lsu

@@ -119,12 +119,12 @@ module load_store_unit
     // PMP configuration - CSR_REGFILE
     input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
     // PMP address - CSR_REGFILE
-    input  logic           [15:0][riscv::PLEN-3:0] pmpaddr_i,
+    input  logic           [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
 
     // RVFI inforamtion - RVFI
     output lsu_ctrl_t                   rvfi_lsu_ctrl_o,
     // RVFI information - RVFI
-    output            [riscv::PLEN-1:0] rvfi_mem_paddr_o
+    output            [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
 );
 
   // data is misaligned
@@ -162,7 +162,7 @@ module load_store_unit
   logic                   translation_req;
   logic                   translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
-  logic [riscv::PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
+  logic [CVA6Cfg.PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
   exception_t                             mmu_exception;
   logic                                   dtlb_hit;
   logic       [         CVA6Cfg.PPNW-1:0] dtlb_ppn;
@@ -256,12 +256,12 @@ module load_store_unit
     );
   end else begin : gen_no_mmu
 
-    if (CVA6Cfg.VLEN > riscv::PLEN) begin
-      assign mmu_vaddr_plen   = mmu_vaddr[riscv::PLEN-1:0];
-      assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0];
+    if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin
+      assign mmu_vaddr_plen   = mmu_vaddr[CVA6Cfg.PLEN-1:0];
+      assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin
-      assign mmu_vaddr_plen   = {{{riscv::PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
-      assign fetch_vaddr_plen = {{{riscv::PLEN - CVA6Cfg.VLEN} {1'b0}}, icache_areq_i.fetch_vaddr};
+      assign mmu_vaddr_plen   = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
+      assign fetch_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, icache_areq_i.fetch_vaddr};
     end
 
     assign icache_areq_o.fetch_valid           = icache_areq_i.fetch_req;
@@ -280,7 +280,7 @@ module load_store_unit
 
     assign itlb_miss_o                         = 1'b0;
     assign dtlb_miss_o                         = 1'b0;
-    assign dtlb_ppn                            = mmu_vaddr_plen[riscv::PLEN-1:12];
+    assign dtlb_ppn                            = mmu_vaddr_plen[CVA6Cfg.PLEN-1:12];
     assign dtlb_hit                            = 1'b1;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

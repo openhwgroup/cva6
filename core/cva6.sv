@@ -49,7 +49,7 @@ module cva6
     // I$ address translation requests
     localparam type icache_areq_t = struct packed {
       logic                   fetch_valid;      // address translation valid
-      logic [riscv::PLEN-1:0] fetch_paddr;      // physical address in
+      logic [CVA6Cfg.PLEN-1:0] fetch_paddr;      // physical address in
       exception_t             fetch_exception;  // exception occurred during fetch
     },
     localparam type icache_arsp_t = struct packed {
@@ -156,7 +156,7 @@ module cva6
 
     localparam type icache_req_t = struct packed {
       logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
-      logic [riscv::PLEN-1:0] paddr;  // physical address
+      logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
       logic nc;  // noncacheable
       logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     },
@@ -483,7 +483,7 @@ module cva6
   logic debug_mode;
   logic single_step_csr_commit;
   riscv::pmpcfg_t [15:0] pmpcfg;
-  logic [15:0][riscv::PLEN-3:0] pmpaddr;
+  logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr;
   logic [31:0] mcountinhibit_csr_perf;
   // ----------------------------
   // Performance Counters <-> *
@@ -542,7 +542,7 @@ module cva6
 
   //RVFI
   lsu_ctrl_t                                                        rvfi_lsu_ctrl;
-  logic             [riscv::PLEN-1:0]                               rvfi_mem_paddr;
+  logic             [CVA6Cfg.PLEN-1:0]                               rvfi_mem_paddr;
   logic                                                             rvfi_is_compressed;
   rvfi_probes_csr_t                                                 rvfi_csr;
 

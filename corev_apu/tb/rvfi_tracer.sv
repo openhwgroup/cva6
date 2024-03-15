@@ -23,7 +23,7 @@ module rvfi_tracer #(
   output logic[31:0]                    end_of_test_o
 );
 
-  logic[riscv::PLEN-1:0] TOHOST_ADDR;
+  logic[CVA6Cfg.PLEN-1:0] TOHOST_ADDR;
   int f;
   int unsigned SIM_FINISH;
   initial begin

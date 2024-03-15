@@ -59,9 +59,9 @@ module store_unit
     // Virtual address - TO_BE_COMPLETED
     output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
     // RVFI information - RVFI
-    output [riscv::PLEN-1:0] rvfi_mem_paddr_o,
+    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
     // Physical address - TO_BE_COMPLETED
-    input logic [riscv::PLEN-1:0] paddr_i,
+    input logic [CVA6Cfg.PLEN-1:0] paddr_i,
     // Exception raised before store - TO_BE_COMPLETED
     input exception_t ex_i,
     // Data TLB hit - lsu

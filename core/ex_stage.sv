@@ -191,11 +191,11 @@ module ex_stage
     // Report the PMP configuration - CSR_REGFILE
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
     // Report the PMP addresses - CSR_REGFILE
-    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     // Information dedicated to RVFI - RVFI
     output lsu_ctrl_t rvfi_lsu_ctrl_o,
     // Information dedicated to RVFI - RVFI
-    output [riscv::PLEN-1:0] rvfi_mem_paddr_o
+    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
 );
 
   // -------------------------

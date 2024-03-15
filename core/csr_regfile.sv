@@ -137,7 +137,7 @@ module csr_regfile
     // PMP configuration containing pmpcfg for max 16 PMPs - ACC_DISPATCHER
     output riscv::pmpcfg_t [15:0] pmpcfg_o,
     // PMP addresses - ACC_DISPATCHER
-    output logic [15:0][riscv::PLEN-3:0] pmpaddr_o,
+    output logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic [31:0] mcountinhibit_o,
     // RVFI
@@ -207,7 +207,7 @@ module csr_regfile
   logic [63:0] instret_q, instret_d;
 
   riscv::pmpcfg_t [15:0] pmpcfg_q, pmpcfg_d, pmpcfg_next;
-  logic [15:0][riscv::PLEN-3:0] pmpaddr_q, pmpaddr_d, pmpaddr_next;
+  logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_q, pmpaddr_d, pmpaddr_next;
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
   logic [3:0] index;
 
@@ -595,8 +595,8 @@ module csr_regfile
           // -> last bit of pmpaddr must be set 0/1 based on the mode:
           // NA4, NAPOT: 1
           // TOR, OFF:   0
-          if (pmpcfg_q[index].addr_mode[1] == 1'b1) csr_rdata = pmpaddr_q[index][riscv::PLEN-3:0];
-          else csr_rdata = {pmpaddr_q[index][riscv::PLEN-3:1], 1'b0};
+          if (pmpcfg_q[index].addr_mode[1] == 1'b1) csr_rdata = pmpaddr_q[index][CVA6Cfg.PLEN-3:0];
+          else csr_rdata = {pmpaddr_q[index][CVA6Cfg.PLEN-3:1], 1'b0};
         end
         default: read_access_exception = 1'b1;
       endcase
@@ -1089,7 +1089,7 @@ module csr_regfile
           automatic logic [3:0] index = csr_addr.csr_decode.address[3:0];
           // check if the entry or the entry above is locked
           if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index].addr_mode == riscv::TOR)) begin
-            pmpaddr_d[index] = csr_wdata[riscv::PLEN-3:0];
+            pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
           end
         end
         default: update_access_exception = 1'b1;
@@ -1633,7 +1633,7 @@ module csr_regfile
       for (int i = 0; i < 16; i++) begin
         if (i < CVA6Cfg.NrPMPEntries) begin
           pmpcfg_q[i]  <= riscv::pmpcfg_t'(CVA6Cfg.PMPCfgRstVal[i]);
-          pmpaddr_q[i] <= CVA6Cfg.PMPAddrRstVal[i][riscv::PLEN-3:0];
+          pmpaddr_q[i] <= CVA6Cfg.PMPAddrRstVal[i][CVA6Cfg.PLEN-3:0];
         end else begin
           pmpcfg_q[i]  <= '0;
           pmpaddr_q[i] <= '0;

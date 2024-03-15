@@ -66,7 +66,7 @@ module acc_dispatcher
     input priv_lvl_t ld_st_priv_lvl_i,
     input logic sum_i,
     input pmpcfg_t [15:0] pmpcfg_i,
-    input logic [15:0][PLEN-3:0] pmpaddr_i,
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     input logic [2:0] fcsr_frm_i,
     output logic dirty_v_state_o,
     // Interface with the issue stage

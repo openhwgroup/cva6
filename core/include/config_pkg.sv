@@ -164,6 +164,7 @@ package config_pkg;
 
   typedef struct packed {
     int unsigned VLEN;
+    int unsigned PLEN;
     bit IS_XLEN32;
     bit IS_XLEN64;
     int unsigned XLEN_ALIGN_BYTES;
