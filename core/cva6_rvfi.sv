@@ -54,6 +54,9 @@ module cva6_rvfi
   | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN - 2);  // MXL
 
   localparam logic [riscv::XLEN-1:0] hart_id_i = '0;
+
+  localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
+
   logic flush;
   logic issue_instr_ack;
   logic fetch_entry_valid;
@@ -311,8 +314,8 @@ module cva6_rvfi
     : '0;
     rvfi_csr_o.sstatus = CVA6Cfg.RVS ?
     '{
-        rdata: csr.mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
-        wdata: csr.mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
+        rdata: csr.mstatus_extended & SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
+        wdata: csr.mstatus_extended & SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
         rmask: '1,
         wmask: '1
     }

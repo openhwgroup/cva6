@@ -144,6 +144,8 @@ module csr_regfile
     output rvfi_probes_csr_t rvfi_csr_o
 );
 
+  localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
+
   typedef struct packed {
     logic [riscv::ModeW-1:0] mode;
     logic [riscv::ASIDW-1:0] asid;
@@ -299,7 +301,7 @@ module csr_regfile
         // supervisor registers
         riscv::CSR_SSTATUS: begin
           if (CVA6Cfg.RVS)
-            csr_rdata = mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
+            csr_rdata = mstatus_extended & SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
           else read_access_exception = 1'b1;
         end
         riscv::CSR_SIE:

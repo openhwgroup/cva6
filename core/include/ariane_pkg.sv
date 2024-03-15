@@ -113,19 +113,22 @@ package ariane_pkg;
 `else
   localparam bit ZERO_TVAL = 1'b0;
 `endif
+
   // read mask for SSTATUS over MMSTATUS
-  localparam logic [63:0] SMODE_STATUS_READ_MASK = riscv::SSTATUS_UIE
-                                                   | riscv::SSTATUS_SIE
-                                                   | riscv::SSTATUS_SPIE
-                                                   | riscv::SSTATUS_SPP
-                                                   | riscv::SSTATUS_FS
-                                                   | riscv::SSTATUS_XS
-                                                   | riscv::SSTATUS_SUM
-                                                   | riscv::SSTATUS_MXR
-                                                   | riscv::SSTATUS_UPIE
-                                                   | riscv::SSTATUS_SPIE
-                                                   | riscv::SSTATUS_UXL
-                                                   | riscv::SSTATUS_SD;
+  function automatic logic [63:0] smode_status_read_mask(config_pkg::cva6_cfg_t Cfg);
+    return riscv::SSTATUS_UIE
+    | riscv::SSTATUS_SIE
+    | riscv::SSTATUS_SPIE
+    | riscv::SSTATUS_SPP
+    | riscv::SSTATUS_FS
+    | riscv::SSTATUS_XS
+    | riscv::SSTATUS_SUM
+    | riscv::SSTATUS_MXR
+    | riscv::SSTATUS_UPIE
+    | riscv::SSTATUS_SPIE
+    | riscv::SSTATUS_UXL
+    | riscv::sstatus_sd(riscv::IS_XLEN64);
+  endfunction
 
   localparam logic [63:0] SMODE_STATUS_WRITE_MASK = riscv::SSTATUS_SIE
                                                     | riscv::SSTATUS_SPIE
