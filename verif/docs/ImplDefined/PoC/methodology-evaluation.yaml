@@ -18,38 +18,38 @@ behaviors: !!omap
 - MISA_WritableStdExtensionBits: !impl_defined
     tag:  MISA_WritableStdExtensionBits_git2023-10-02
     spec:
-      url:        https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L69C72-L71C56
-      value:      any_subset("A..Z")
-      normative:  y
-      spec_text:  # Quote original text
-    relevant:     y # y|n
-    relevant_why: "Affects subsequent code execution if bits are writable."
+      url:          https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L69C72-L71C56
+      value:        any_subset("A..Z")
+      normative:    y
+      spec_text:    # Quote original text
+    relevant:       y # y|n
+    relevant_why:   "Affects subsequent code execution if bits are writable."
     behavior:
-      rationale:   # Text to explain choice.
+      impl_choice:
+        value:      ""
+        compliant:  y
+        rationale:  "The set of implemented extensions is not modifiable at runtime to reduce implementation complexity and cost."
       docs:
-        addressed: y   # tbd/y/n
-        compliant: y   # y/n
-        correct:   y   # y/n, if 'n': add comment
-        doc_text:  ""  # Could be constructed using references to various fields, cf. VariConf Python library
-        value:     ""  #
+        addressed:  y   # tbd/y/n
+        correct:    y   # y/n, if 'n': add comment
+        doc_text:   ""  # Could be constructed using references to various fields, cf. VariConf Python library
+        value:      ""  #
       rtl:
-        addressed: y   # tbd/y/n
-        compliant: y   # y/n
-        correct:   y   # y/n
-        value:     ""  # no modifiable extension bits
+        addressed:  y   # tbd/y/n
+        correct:    y   # y/n
+        value:      ""  # no modifiable extension bits
       spike:
         addressed:  y          # y/n/unknown
-        compliant:  y          # y/n/unknown
         correct:    y          # y/n/unknown
-        parametric: y           # There's a way to change behavior
+        parametric: y          # There's a way to change behavior
         values:
           default:  "MAFDQCHV" # default behavior irrespective of currently 'implemented' extensions
           explicit:
           -
-            value:    ""       # Param settings needed to achieve value ""
+            value:  ""       # Param settings needed to achieve value ""
             params:
             - # Enable the parameter that controls writability of misa.extensions
-              name : "/top/cores/misa_we_enable"
+              name: "/top/cores/misa_we_enable"
               value: "true"
             - # Disable writability of misa.extensions altogether
               name: "/top/cores/misa_we"
@@ -58,29 +58,30 @@ behaviors: !!omap
 - MSTATUS_FS_may_be_ro_zero_if_no_F_ext_but_S_ext_present: !impl_defined
     tag: MSTATUS_FS_may_be_ro_zero_if_no_F_ext_but_S_ext_present_2023-10-02
     spec:
-      url:        https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L758C17-L759C34
-      value:      y
-      normative:  y
-    relevant:     y
-    relevant_why: "Implementation defines CSR content and behavior."
+      url:          https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L758C17-L759C34
+      value:        y
+      normative:    y
+    relevant:       y
+    relevant_why:   "Implementation defines CSR content and behavior."
     behavior:
+      impl_choice:
+        value:      y
+        compliant:  y
+        rationale: 
       docs:
-        addressed: y   # tbd/y/n
-        compliant: y   # y/n
-        correct:   y   # y/n, if 'n': add comment
-        value:     y  #
+        addressed:  y   # tbd/y/n
+        correct:    y   # y/n, if 'n': add comment
+        value:      y  #
       rtl:
-        addressed: y   # tbd/y/n
-        compliant: y   # y/n
-        correct:   y   # y/n, if 'n': add comment
-        value:     y   # y/n
+        addressed:  y   # tbd/y/n
+        correct:    y   # y/n, if 'n': add comment
+        value:      y   # y/n
       spike:
-        addressed: y   # tbd/y/n
-        compliant: y   # y/n
-        correct:   tbd # y/n/tbd, if 'n': add comment
+        addressed:  y   # tbd/y/n
+        correct:    tbd # y/n/tbd, if 'n': add comment
         parametric: y  # There's a way to change behavior
         values:
-          default: n   # no way to "deimplement" F and S extensions
+          default:  n   # no way to "deimplement" F and S extensions
           explicit:
           -
             value: y   # Param settings needed to achieve value 'y'
