@@ -161,6 +161,8 @@ package config_pkg;
   } cva6_user_cfg_t;
 
   typedef struct packed {
+    int unsigned XLEN_ALIGN_BYTES;
+
     bit FPGA_EN;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit

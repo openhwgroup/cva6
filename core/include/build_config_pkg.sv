@@ -27,6 +27,8 @@ package build_config_pkg;
 
     config_pkg::cva6_cfg_t cfg;
 
+    cfg.XLEN_ALIGN_BYTES = $clog2(riscv::XLEN / 8);
+
     cfg.FPGA_EN = CVA6Cfg.FPGA_EN;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
     cfg.AxiAddrWidth = CVA6Cfg.AxiAddrWidth;

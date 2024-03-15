@@ -58,7 +58,7 @@ module wt_dcache
   localparam DCACHE_CL_IDX_WIDTH = $clog2(CVA6Cfg.DCACHE_NUM_WORDS);
 
   localparam type wbuffer_t = struct packed {
-    logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] wtag;
     logic [riscv::XLEN-1:0] data;
     logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] user;
     logic [(riscv::XLEN/8)-1:0] dirty;  // byte is dirty

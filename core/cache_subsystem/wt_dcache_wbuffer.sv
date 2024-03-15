@@ -110,7 +110,7 @@ module wt_dcache_wbuffer
 );
 
   function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable8(
-      input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
+      input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
     logic [(riscv::XLEN/8)-1:0] be;
     be = '0;
     unique case (size)
@@ -123,7 +123,7 @@ module wt_dcache_wbuffer
   endfunction : to_byte_enable8
 
   function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable4(
-      input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
+      input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
     logic [3:0] be;
     be = '0;
     unique case (size)
@@ -136,7 +136,7 @@ module wt_dcache_wbuffer
 
   // openpiton requires the data to be replicated in case of smaller sizes than dwords
   function automatic logic [riscv::XLEN-1:0] repData64(
-      input logic [riscv::XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+      input logic [riscv::XLEN-1:0] data, input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset,
       input logic [1:0] size);
     logic [riscv::XLEN-1:0] out;
     unique case (size)
@@ -149,7 +149,7 @@ module wt_dcache_wbuffer
   endfunction : repData64
 
   function automatic logic [riscv::XLEN-1:0] repData32(
-      input logic [riscv::XLEN-1:0] data, input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
+      input logic [riscv::XLEN-1:0] data, input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset,
       input logic [1:0] size);
     logic [riscv::XLEN-1:0] out;
     unique case (size)
@@ -179,7 +179,7 @@ module wt_dcache_wbuffer
       next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
   logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tx_id, rtrn_id;
 
-  logic [riscv::XLEN_ALIGN_BYTES-1:0] bdirty_off;
+  logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] bdirty_off;
   logic [(riscv::XLEN/8)-1:0] tx_be;
   logic [riscv::PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
@@ -229,7 +229,7 @@ module wt_dcache_wbuffer
   for (genvar k = 0; k < CVA6Cfg.DCACHE_MAX_TX; k++) begin : gen_tx_vld
     assign tx_vld_o[k] = tx_stat_q[k].vld;
     assign tx_paddr_o[k] = {
-      {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[tx_stat_q[k].ptr].wtag << riscv::XLEN_ALIGN_BYTES
+      {CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[tx_stat_q[k].ptr].wtag << CVA6Cfg.XLEN_ALIGN_BYTES
     };
   end
 
@@ -376,7 +376,7 @@ module wt_dcache_wbuffer
   // trigger TAG readout in cache
   assign rd_tag_only_o = 1'b1;
   assign rd_paddr = {
-    {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_check_mux.wtag << riscv::XLEN_ALIGN_BYTES
+    {CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_check_mux.wtag << CVA6Cfg.XLEN_ALIGN_BYTES
   };
   assign rd_req_o = |tocheck;
   assign rd_tag_o = rd_tag_q;  //delay by one cycle
@@ -390,7 +390,7 @@ module wt_dcache_wbuffer
   // when the TX returns
   assign wr_data_be_o = tx_stat_q[rtrn_id].be & (~wbuffer_q[rtrn_ptr].dirty);
   assign wr_paddr = {
-    {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[rtrn_ptr].wtag << riscv::XLEN_ALIGN_BYTES
+    {CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[rtrn_ptr].wtag << CVA6Cfg.XLEN_ALIGN_BYTES
   };
   assign wr_idx_o = wr_paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH];
   assign wr_off_o = wr_paddr[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0];
@@ -411,7 +411,7 @@ module wt_dcache_wbuffer
     // only for debug, will be pruned
     if (CVA6Cfg.DebugEn) begin
       assign debug_paddr[k] = {
-        {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[k].wtag << riscv::XLEN_ALIGN_BYTES
+        {CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[k].wtag << CVA6Cfg.XLEN_ALIGN_BYTES
       };
     end
 
@@ -423,12 +423,12 @@ module wt_dcache_wbuffer
 
     assign dirty[k] = |bdirty[k];
     assign valid[k] = |wbuffer_q[k].valid;
-    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]});
+    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]});
 
     // checks if an invalidation/cache refill hits a particular word
     // note: an invalidation can hit multiple words!
     // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
-    assign wtag_comp[k] = wbuffer_q[k].wtag[CVA6Cfg.DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES-1:CVA6Cfg.DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES];
+    assign wtag_comp[k] = wbuffer_q[k].wtag[CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:CVA6Cfg.DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES];
     assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wtag_comp[k] == wr_cl_idx_d)) |
                            (wr_cl_vld_q & valid[k] & (wtag_comp[k] == wr_cl_idx_q));
 
@@ -581,7 +581,7 @@ module wt_dcache_wbuffer
         wbuffer_d[wr_ptr].checked = 1'b0;
         wbuffer_d[wr_ptr].wtag = {
           req_port_i.address_tag,
-          req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]
+          req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]
         };
 
         // mark bytes as dirty
