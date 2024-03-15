@@ -98,7 +98,7 @@ module csr_regfile
     // Make Executable Readable - EX_STAGE
     output logic mxr_o,
     // TO_BE_COMPLETED - EX_STAGE
-    output logic [riscv::PPNW-1:0] satp_ppn_o,
+    output logic [CVA6Cfg.PPNW-1:0] satp_ppn_o,
     // TO_BE_COMPLETED - EX_STAGE
     output logic [AsidWidth-1:0] asid_o,
     // external interrupt in - SUBSYSTEM
@@ -149,7 +149,7 @@ module csr_regfile
   typedef struct packed {
     logic [riscv::ModeW-1:0] mode;
     logic [riscv::ASIDW-1:0] asid;
-    logic [riscv::PPNW-1:0]  ppn;
+    logic [CVA6Cfg.PPNW-1:0]  ppn;
   } satp_t;
 
   // internal signal to keep track of access exceptions

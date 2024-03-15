@@ -58,7 +58,7 @@ module load_unit
     // Data TLB hit - lsu
     input logic dtlb_hit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [riscv::PPNW-1:0] dtlb_ppn_i,
+    input logic [CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [11:0] page_offset_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -209,7 +209,7 @@ module load_unit
   logic inflight_stores;
   logic stall_ni;
   assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{52 - riscv::PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
+      CVA6Cfg, {{52 - CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
   );
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);

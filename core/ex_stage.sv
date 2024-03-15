@@ -166,7 +166,7 @@ module ex_stage
     // Make executable readable - CSR_REGFILE
     input logic mxr_i,
     // TO_BE_COMPLETED - CSR_REGFILE
-    input logic [riscv::PPNW-1:0] satp_ppn_i,
+    input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [ASID_WIDTH-1:0] asid_i,
     // icache translation response - CACHE

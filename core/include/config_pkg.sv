@@ -257,6 +257,7 @@ package config_pkg;
     int unsigned INSTR_PER_FETCH;
     int unsigned LOG2_INSTR_PER_FETCH;
 
+    int unsigned PPNW;
     vm_mode_t MODE_SV;
     int unsigned SV;
   } cva6_cfg_t;
