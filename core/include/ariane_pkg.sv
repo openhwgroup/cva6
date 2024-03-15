@@ -126,7 +126,7 @@ package ariane_pkg;
     | riscv::SSTATUS_UPIE
     | riscv::SSTATUS_SPIE
     | riscv::SSTATUS_UXL
-    | riscv::sstatus_sd(riscv::IS_XLEN64);
+    | riscv::sstatus_sd(Cfg.IS_XLEN64);
   endfunction
 
   localparam logic [63:0] SMODE_STATUS_WRITE_MASK = riscv::SSTATUS_SIE
