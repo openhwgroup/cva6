@@ -49,7 +49,6 @@ module uvmt_cva6_tb;
       rvfi_probes_instr_t instr;
    };
 
-   localparam AXI_USER_EN       = ariane_pkg::AXI_USER_EN;
    localparam NUM_WORDS         = 2**24;
 
    // ENV (testbench) parameters
@@ -113,7 +112,7 @@ module uvmt_cva6_tb;
      .rvfi_probes_csr_t ( rvfi_probes_csr_t      ),
      .rvfi_probes_t     ( rvfi_probes_t          ),
      //
-     .AXI_USER_EN       (AXI_USER_EN),
+     .AXI_USER_EN       (CVA6Cfg.AXI_USER_EN),
      .NUM_WORDS         (NUM_WORDS)
    ) cva6_dut_wrap (
                     .clknrst_if(clknrst_if),

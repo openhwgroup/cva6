@@ -257,6 +257,7 @@ package config_pkg;
     int unsigned DATA_USER_EN;
     int unsigned FETCH_USER_WIDTH;
     int unsigned FETCH_USER_EN;
+    int unsigned AXI_USER_EN;
 
     int unsigned FETCH_WIDTH;
     int unsigned INSTR_PER_FETCH;
