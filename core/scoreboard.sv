@@ -114,8 +114,7 @@ module scoreboard #(
   logic issue_full, issue_en;
   logic [CVA6Cfg.TRANS_ID_BITS:0] issue_cnt_n, issue_cnt_q;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_n, issue_pointer_q;
-  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0]
-      commit_pointer_n, commit_pointer_q;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer_n, commit_pointer_q;
   logic [$clog2(CVA6Cfg.NrCommitPorts):0] num_commit;
 
   // the issue queue is full don't issue any new instructions
@@ -261,7 +260,7 @@ module scoreboard #(
   // rd_clobber output: output currently clobbered destination registers
   logic            [2**ariane_pkg::REG_ADDR_SIZE-1:0][CVA6Cfg.NR_SB_ENTRIES:0] gpr_clobber_vld;
   logic            [2**ariane_pkg::REG_ADDR_SIZE-1:0][CVA6Cfg.NR_SB_ENTRIES:0] fpr_clobber_vld;
-  ariane_pkg::fu_t [     CVA6Cfg.NR_SB_ENTRIES:0]                              clobber_fu;
+  ariane_pkg::fu_t [         CVA6Cfg.NR_SB_ENTRIES:0]                          clobber_fu;
 
   always_comb begin : clobber_assign
     gpr_clobber_vld = '0;

@@ -18,33 +18,33 @@ module cvxif_fu
     parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input  logic                                       clk_i,
+    input  logic                                               clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input  logic                                       rst_ni,
+    input  logic                                               rst_ni,
     // FU data needed to execute instruction - ISSUE_STAGE
-    input  fu_data_t                                   fu_data_i,
+    input  fu_data_t                                           fu_data_i,
     // Current privilege mode - CSR_REGFILE
-    input  riscv::priv_lvl_t                           priv_lvl_i,
+    input  riscv::priv_lvl_t                                   priv_lvl_i,
     // CVXIF instruction is valid - ISSUE_STAGE
-    input  logic                                       x_valid_i,
+    input  logic                                               x_valid_i,
     // CVXIF is ready - ISSUE_STAGE
-    output logic                                       x_ready_o,
+    output logic                                               x_ready_o,
     // Offloaded instruction - ISSUE_STAGE
-    input  logic                   [             31:0] x_off_instr_i,
+    input  logic                   [                     31:0] x_off_instr_i,
     // CVXIF transaction ID - ISSUE_STAGE
     output logic                   [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_o,
     // CVXIF exception - ISSUE_STAGE
-    output exception_t                                 x_exception_o,
+    output exception_t                                         x_exception_o,
     // CVXIF FU result - ISSUE_STAGE
-    output logic                   [  riscv::XLEN-1:0] x_result_o,
+    output logic                   [          riscv::XLEN-1:0] x_result_o,
     // CVXIF result valid - ISSUE_STAGE
-    output logic                                       x_valid_o,
+    output logic                                               x_valid_o,
     // CVXIF write enable - ISSUE_STAGE
-    output logic                                       x_we_o,
+    output logic                                               x_we_o,
     // CVXIF request - SUBSYSTEM
-    output cvxif_pkg::cvxif_req_t                      cvxif_req_o,
+    output cvxif_pkg::cvxif_req_t                              cvxif_req_o,
     // CVXIF response - SUBSYSTEM
-    input  cvxif_pkg::cvxif_resp_t                     cvxif_resp_i
+    input  cvxif_pkg::cvxif_resp_t                             cvxif_resp_i
 );
   localparam X_NUM_RS = ariane_pkg::NR_RGPR_PORTS;
 

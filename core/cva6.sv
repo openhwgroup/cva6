@@ -66,12 +66,12 @@ module cva6
       logic [riscv::VLEN-1:0] vaddr;    // 1st cycle: 12 bit index is taken for lookup
     },
     localparam type icache_drsp_t = struct packed {
-      logic                                    ready;  // icache is ready
-      logic                                    valid;  // signals a valid read
+      logic                                ready;  // icache is ready
+      logic                                valid;  // signals a valid read
       logic [CVA6Cfg.FETCH_WIDTH-1:0]      data;   // 2+ cycle out: tag
       logic [CVA6Cfg.FETCH_USER_WIDTH-1:0] user;   // User bits
-      logic [riscv::VLEN-1:0]                  vaddr;  // virtual address out
-      exception_t                              ex;     // we've encountered an exception
+      logic [riscv::VLEN-1:0]              vaddr;  // virtual address out
+      exception_t                          ex;     // we've encountered an exception
     },
 
     // IF/ID Stage
@@ -87,7 +87,7 @@ module cva6
     localparam type scoreboard_entry_t = struct packed {
       logic [riscv::VLEN-1:0] pc;  // PC of instruction
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
-                                               // with the transaction id in any case make the width more generic
+      // with the transaction id in any case make the width more generic
       fu_t fu;  // functional unit to use
       fu_op op;  // operation to perform in each functional unit
       logic [REG_ADDR_SIZE-1:0] rs1;  // register source address 1
@@ -135,22 +135,22 @@ module cva6
     },
 
     localparam type lsu_ctrl_t = struct packed {
-      logic                                 valid;
-      logic [riscv::VLEN-1:0]               vaddr;
-      logic                                 overflow;
-      logic [riscv::XLEN-1:0]               data;
-      logic [(riscv::XLEN/8)-1:0]           be;
-      fu_t                                  fu;
-      fu_op                                 operation;
+      logic                             valid;
+      logic [riscv::VLEN-1:0]           vaddr;
+      logic                             overflow;
+      logic [riscv::XLEN-1:0]           data;
+      logic [(riscv::XLEN/8)-1:0]       be;
+      fu_t                              fu;
+      fu_op                             operation;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     },
 
     localparam type fu_data_t = struct packed {
-      fu_t                                  fu;
-      fu_op                                 operation;
-      logic [riscv::XLEN-1:0]               operand_a;
-      logic [riscv::XLEN-1:0]               operand_b;
-      logic [riscv::XLEN-1:0]               imm;
+      fu_t                              fu;
+      fu_op                             operation;
+      logic [riscv::XLEN-1:0]           operand_a;
+      logic [riscv::XLEN-1:0]           operand_b;
+      logic [riscv::XLEN-1:0]           imm;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     },
 
@@ -167,8 +167,8 @@ module cva6
       struct packed {
         logic                                      vld;  // invalidate only affected way
         logic                                      all;  // invalidate all ways
-        logic [CVA6Cfg.ICACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
-        logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0]    way;  // way to invalidate
+        logic [CVA6Cfg.ICACHE_INDEX_WIDTH-1:0]     idx;  // physical address to invalidate
+        logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] way;  // way to invalidate
       } inv;  // invalidation vector
       logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     },
@@ -177,22 +177,22 @@ module cva6
     localparam type dcache_req_i_t = struct packed {
       logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
       logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
-      logic [riscv::XLEN-1:0]        data_wdata;
+      logic [riscv::XLEN-1:0]                data_wdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]  data_wuser;
-      logic                          data_req;
-      logic                          data_we;
-      logic [(riscv::XLEN/8)-1:0]    data_be;
-      logic [1:0]                    data_size;
-      logic [DCACHE_TID_WIDTH-1:0]   data_id;
-      logic                          kill_req;
-      logic                          tag_valid;
+      logic                                  data_req;
+      logic                                  data_we;
+      logic [(riscv::XLEN/8)-1:0]            data_be;
+      logic [1:0]                            data_size;
+      logic [DCACHE_TID_WIDTH-1:0]           data_id;
+      logic                                  kill_req;
+      logic                                  tag_valid;
     },
 
     localparam type dcache_req_o_t = struct packed {
-      logic                         data_gnt;
-      logic                         data_rvalid;
-      logic [DCACHE_TID_WIDTH-1:0]  data_rid;
-      logic [riscv::XLEN-1:0]       data_rdata;
+      logic                                 data_gnt;
+      logic                                 data_rvalid;
+      logic [DCACHE_TID_WIDTH-1:0]          data_rid;
+      logic [riscv::XLEN-1:0]               data_rdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
 
@@ -490,66 +490,66 @@ module cva6
   // ----------------------------
   logic [11:0] addr_csr_perf;
   logic [riscv::XLEN-1:0] data_csr_perf, data_perf_csr;
-  logic                                                     we_csr_perf;
+  logic                                                             we_csr_perf;
 
-  logic                                                     icache_flush_ctrl_cache;
-  logic                                                     itlb_miss_ex_perf;
-  logic                                                     dtlb_miss_ex_perf;
-  logic                                                     dcache_miss_cache_perf;
-  logic                                                     icache_miss_cache_perf;
+  logic                                                             icache_flush_ctrl_cache;
+  logic                                                             itlb_miss_ex_perf;
+  logic                                                             dtlb_miss_ex_perf;
+  logic                                                             dcache_miss_cache_perf;
+  logic                                                             icache_miss_cache_perf;
   logic             [   NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;
-  logic                                                     stall_issue;
+  logic                                                             stall_issue;
   // --------------
   // CTRL <-> *
   // --------------
-  logic                                                     set_pc_ctrl_pcgen;
-  logic                                                     flush_csr_ctrl;
-  logic                                                     flush_unissued_instr_ctrl_id;
-  logic                                                     flush_ctrl_if;
-  logic                                                     flush_ctrl_id;
-  logic                                                     flush_ctrl_ex;
-  logic                                                     flush_ctrl_bp;
-  logic                                                     flush_tlb_ctrl_ex;
-  logic                                                     fence_i_commit_controller;
-  logic                                                     fence_commit_controller;
-  logic                                                     sfence_vma_commit_controller;
-  logic                                                     halt_ctrl;
-  logic                                                     halt_csr_ctrl;
-  logic                                                     dcache_flush_ctrl_cache;
-  logic                                                     dcache_flush_ack_cache_ctrl;
-  logic                                                     set_debug_pc;
-  logic                                                     flush_commit;
-  logic                                                     flush_acc;
+  logic                                                             set_pc_ctrl_pcgen;
+  logic                                                             flush_csr_ctrl;
+  logic                                                             flush_unissued_instr_ctrl_id;
+  logic                                                             flush_ctrl_if;
+  logic                                                             flush_ctrl_id;
+  logic                                                             flush_ctrl_ex;
+  logic                                                             flush_ctrl_bp;
+  logic                                                             flush_tlb_ctrl_ex;
+  logic                                                             fence_i_commit_controller;
+  logic                                                             fence_commit_controller;
+  logic                                                             sfence_vma_commit_controller;
+  logic                                                             halt_ctrl;
+  logic                                                             halt_csr_ctrl;
+  logic                                                             dcache_flush_ctrl_cache;
+  logic                                                             dcache_flush_ack_cache_ctrl;
+  logic                                                             set_debug_pc;
+  logic                                                             flush_commit;
+  logic                                                             flush_acc;
 
-  icache_areq_t                                             icache_areq_ex_cache;
-  icache_arsp_t                                             icache_areq_cache_ex;
-  icache_dreq_t                                             icache_dreq_if_cache;
-  icache_drsp_t                                             icache_dreq_cache_if;
+  icache_areq_t                                                     icache_areq_ex_cache;
+  icache_arsp_t                                                     icache_areq_cache_ex;
+  icache_dreq_t                                                     icache_dreq_if_cache;
+  icache_drsp_t                                                     icache_dreq_cache_if;
 
-  amo_req_t                                                 amo_req;
-  amo_resp_t                                                amo_resp;
-  logic                                                     sb_full;
+  amo_req_t                                                         amo_req;
+  amo_resp_t                                                        amo_resp;
+  logic                                                             sb_full;
 
   // ----------------
   // DCache <-> *
   // ----------------
-  dcache_req_i_t    [            2:0]                       dcache_req_ports_ex_cache;
-  dcache_req_o_t    [            2:0]                       dcache_req_ports_cache_ex;
-  dcache_req_i_t    [            1:0]                       dcache_req_ports_acc_cache;
-  dcache_req_o_t    [            1:0]                       dcache_req_ports_cache_acc;
-  logic                                                     dcache_commit_wbuffer_empty;
-  logic                                                     dcache_commit_wbuffer_not_ni;
+  dcache_req_i_t    [            2:0]                               dcache_req_ports_ex_cache;
+  dcache_req_o_t    [            2:0]                               dcache_req_ports_cache_ex;
+  dcache_req_i_t    [            1:0]                               dcache_req_ports_acc_cache;
+  dcache_req_o_t    [            1:0]                               dcache_req_ports_cache_acc;
+  logic                                                             dcache_commit_wbuffer_empty;
+  logic                                                             dcache_commit_wbuffer_not_ni;
 
   //RVFI
-  lsu_ctrl_t                                                rvfi_lsu_ctrl;
-  logic             [riscv::PLEN-1:0]                       rvfi_mem_paddr;
-  logic                                                     rvfi_is_compressed;
-  rvfi_probes_csr_t                                         rvfi_csr;
+  lsu_ctrl_t                                                        rvfi_lsu_ctrl;
+  logic             [riscv::PLEN-1:0]                               rvfi_mem_paddr;
+  logic                                                             rvfi_is_compressed;
+  rvfi_probes_csr_t                                                 rvfi_csr;
 
   // Accelerator port
-  logic             [           63:0]                       inval_addr;
-  logic                                                     inval_valid;
-  logic                                                     inval_ready;
+  logic             [           63:0]                               inval_addr;
+  logic                                                             inval_valid;
+  logic                                                             inval_ready;
 
   // --------------
   // Frontend

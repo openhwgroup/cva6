@@ -16,11 +16,11 @@
 //              checks for hit or miss on cache
 //
 module tag_cmp #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg          = config_pkg::cva6_cfg_empty,
-    parameter int unsigned           NR_PORTS         = 3,
-    parameter int unsigned           ADDR_WIDTH       = 64,
-    parameter type                   l_data_t         = logic,
-    parameter type                   l_be_t           = logic
+    parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
+    parameter int unsigned           NR_PORTS   = 3,
+    parameter int unsigned           ADDR_WIDTH = 64,
+    parameter type                   l_data_t   = logic,
+    parameter type                   l_be_t     = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -37,10 +37,10 @@ module tag_cmp #(
 
 
     output logic    [CVA6Cfg.DCACHE_SET_ASSOC-1:0] req_o,
-    output logic    [      ADDR_WIDTH-1:0] addr_o,
-    output l_data_t                        wdata_o,
-    output logic                           we_o,
-    output l_be_t                          be_o,
+    output logic    [              ADDR_WIDTH-1:0] addr_o,
+    output l_data_t                                wdata_o,
+    output logic                                   we_o,
+    output l_be_t                                  be_o,
     input  l_data_t [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rdata_i
 );
 

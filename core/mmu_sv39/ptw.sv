@@ -55,15 +55,15 @@ module ptw
     input logic                   itlb_hit_i,
     input logic [riscv::VLEN-1:0] itlb_vaddr_i,
 
-    input  logic                   dtlb_access_i,
-    input  logic                   dtlb_hit_i,
-    input  logic [riscv::VLEN-1:0] dtlb_vaddr_i,
+    input  logic                    dtlb_access_i,
+    input  logic                    dtlb_hit_i,
+    input  logic [ riscv::VLEN-1:0] dtlb_vaddr_i,
     // from CSR file
     input  logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,     // ppn from satp
-    input  logic                   mxr_i,
+    input  logic                    mxr_i,
     // Performance counters
-    output logic                   itlb_miss_o,
-    output logic                   dtlb_miss_o,
+    output logic                    itlb_miss_o,
+    output logic                    dtlb_miss_o,
     // PMP
 
     input riscv::pmpcfg_t [15:0] pmpcfg_i,

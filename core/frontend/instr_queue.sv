@@ -99,9 +99,9 @@ ariane_pkg::FETCH_FIFO_DEPTH
 )-1:0] instr_queue_usage;
   instr_data_t [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_data_in, instr_data_out;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] push_instr, push_instr_fifo;
-  logic [         CVA6Cfg.INSTR_PER_FETCH-1:0] pop_instr;
-  logic [         CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_full;
-  logic [         CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_empty;
+  logic [             CVA6Cfg.INSTR_PER_FETCH-1:0] pop_instr;
+  logic [             CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_full;
+  logic [             CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_empty;
   logic                                            instr_overflow;
   // address queue
   logic [$clog2(ariane_pkg::FETCH_FIFO_DEPTH)-1:0] address_queue_usage;
@@ -147,7 +147,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
     // calculate a branch mask, e.g.: get the first taken branch
     lzc #(
         .WIDTH(CVA6Cfg.INSTR_PER_FETCH),
-        .MODE (0)                             // count trailing zeros
+        .MODE (0)                         // count trailing zeros
     ) i_lzc_branch_index (
         .in_i   (taken),         // we want to count trailing zeros
         .cnt_o  (branch_index),  // first branch on branch_index
@@ -306,9 +306,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
       end
       // rotate the pointer left
       if (fetch_entry_ready_i) begin
-        idx_ds_d = {
-          idx_ds_q[CVA6Cfg.INSTR_PER_FETCH-2:0], idx_ds_q[CVA6Cfg.INSTR_PER_FETCH-1]
-        };
+        idx_ds_d = {idx_ds_q[CVA6Cfg.INSTR_PER_FETCH-2:0], idx_ds_q[CVA6Cfg.INSTR_PER_FETCH-1]};
       end
     end
   end else begin : gen_downstream_itf_without_c

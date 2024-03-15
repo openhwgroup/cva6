@@ -90,9 +90,9 @@ module load_unit
   // in order to decouple the response interface from the request interface,
   // we need a a buffer which can hold all inflight memory load requests
   typedef struct packed {
-    logic [CVA6Cfg.TRANS_ID_BITS-1:0]           trans_id;        // scoreboard identifier
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0]    trans_id;        // scoreboard identifier
     logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
-    fu_op                               operation;       // type of load
+    fu_op                                operation;       // type of load
   } ldbuf_t;
 
 
@@ -473,7 +473,7 @@ module load_unit
     end  */
 
   // result mux fast
-  logic [        (riscv::XLEN/8)-1:0] rdata_sign_bits;
+  logic [         (riscv::XLEN/8)-1:0] rdata_sign_bits;
   logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] rdata_offset;
   logic rdata_sign_bit, rdata_is_signed, rdata_is_fp_signed;
 

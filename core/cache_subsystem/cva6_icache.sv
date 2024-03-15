@@ -78,17 +78,17 @@ module cva6_icache
   // signals
   logic cache_en_d, cache_en_q;  // cache is enabled
   logic [riscv::VLEN-1:0] vaddr_d, vaddr_q;
-  logic                        paddr_is_nc;  // asserted if physical address is non-cacheable
+  logic paddr_is_nc;  // asserted if physical address is non-cacheable
   logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_hit;  // hit from tag compare
-  logic                        cache_rden;  // triggers cache lookup
-  logic                        cache_wren;  // triggers write to cacheline
+  logic cache_rden;  // triggers cache lookup
+  logic cache_wren;  // triggers write to cacheline
   logic
       cmp_en_d,
       cmp_en_q;  // enable tag comparison in next cycle. used to cut long path due to NC signal.
   logic flush_d, flush_q;  // used to register and signal pending flushes
 
   // replacement strategy
-  logic                                update_lfsr;  // shift the LFSR
+  logic                                      update_lfsr;  // shift the LFSR
   logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] inv_way;  // first non-valid encountered
   logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] rnd_way;  // random index for replacement
   logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] repl_way;  // way to replace
@@ -102,9 +102,9 @@ module cva6_icache
   logic [ICACHE_CL_IDX_WIDTH-1:0] flush_cnt_d, flush_cnt_q;  // used to flush cache entries
 
   // mem arrays
-  logic                           cl_we;  // write enable to memory array
-  logic [   CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_req;  // request to memory array
-  logic [ICACHE_CL_IDX_WIDTH-1:0] cl_index;  // this is a cache-line index, to memory array
+  logic                                cl_we;  // write enable to memory array
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_req;  // request to memory array
+  logic [     ICACHE_CL_IDX_WIDTH-1:0] cl_index;  // this is a cache-line index, to memory array
   logic [ICACHE_OFFSET_WIDTH-1:0] cl_offset_d, cl_offset_q;  // offset in cache line
   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] cl_tag_d, cl_tag_q;  // this is the cache tag
   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0]          cl_tag_rdata [CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the tags coming from the tagmem

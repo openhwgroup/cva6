@@ -30,10 +30,10 @@ module wt_dcache_mem
   import ariane_pkg::*;
   import wt_cache_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg   = config_pkg::cva6_cfg_empty,
-    parameter DCACHE_CL_IDX_WIDTH = 0,
-    parameter type                   wbuffer_t = logic,
-    parameter int unsigned           NumPorts  = 3
+    parameter config_pkg::cva6_cfg_t CVA6Cfg             = config_pkg::cva6_cfg_empty,
+    parameter                        DCACHE_CL_IDX_WIDTH = 0,
+    parameter type                   wbuffer_t           = logic,
+    parameter int unsigned           NumPorts            = 3
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -52,11 +52,11 @@ module wt_dcache_mem
     output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] rd_user_o,
 
     // only available on port 0, uses address signals of port 0
-    input logic                              wr_cl_vld_i,
-    input logic                              wr_cl_nc_i,       // noncacheable access
+    input logic                                      wr_cl_vld_i,
+    input logic                                      wr_cl_nc_i,       // noncacheable access
     input logic [      CVA6Cfg.DCACHE_SET_ASSOC-1:0] wr_cl_we_i,       // writes a full cacheline
     input logic [      CVA6Cfg.DCACHE_TAG_WIDTH-1:0] wr_cl_tag_i,
-    input logic [   DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_i,
+    input logic [           DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_i,
     input logic [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_cl_off_i,
     input logic [     CVA6Cfg.DCACHE_LINE_WIDTH-1:0] wr_cl_data_i,
     input logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH-1:0] wr_cl_user_i,
@@ -96,10 +96,10 @@ module wt_dcache_mem
       CVA6Cfg.AxiDataWidth / 8
   );
 
-  logic [DCACHE_NUM_BANKS-1:0]                                               bank_req;
-  logic [DCACHE_NUM_BANKS-1:0]                                               bank_we;
-  logic [DCACHE_NUM_BANKS-1:0][   CVA6Cfg.DCACHE_SET_ASSOC-1:0][(riscv::XLEN/8)-1:0] bank_be;
-  logic [DCACHE_NUM_BANKS-1:0][DCACHE_CL_IDX_WIDTH-1:0]                      bank_idx;
+  logic [DCACHE_NUM_BANKS-1:0]                                                    bank_req;
+  logic [DCACHE_NUM_BANKS-1:0]                                                    bank_we;
+  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][(riscv::XLEN/8)-1:0] bank_be;
+  logic [DCACHE_NUM_BANKS-1:0][     DCACHE_CL_IDX_WIDTH-1:0]                      bank_idx;
   logic [DCACHE_CL_IDX_WIDTH-1:0] bank_idx_d, bank_idx_q;
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] bank_off_d, bank_off_q;
 
@@ -204,8 +204,8 @@ module wt_dcache_mem
     end else begin
       if (rd_acked) begin
         if (!rd_tag_only_i[vld_sel_d]) begin
-          bank_req =
-              dcache_cl_bin2oh(rd_off_i[vld_sel_d][CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]);
+          bank_req = dcache_cl_bin2oh(
+              rd_off_i[vld_sel_d][CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]);
           bank_idx[rd_off_i[vld_sel_d][CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]] = rd_idx_i[vld_sel_d];
         end
       end
@@ -213,8 +213,11 @@ module wt_dcache_mem
       if (|wr_req_i) begin
         if (rd_tag_only_i[vld_sel_d] || !(rd_ack_o[vld_sel_d] && bank_collision[vld_sel_d])) begin
           wr_ack_o = 1'b1;
-          bank_req |= dcache_cl_bin2oh(wr_off_i[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]);
-          bank_we = dcache_cl_bin2oh(wr_off_i[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]);
+          bank_req |= dcache_cl_bin2oh(
+              wr_off_i[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]
+          );
+          bank_we =
+              dcache_cl_bin2oh(wr_off_i[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]);
         end
       end
     end
@@ -226,8 +229,8 @@ module wt_dcache_mem
 
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:0] wr_cl_off;
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:0] wr_cl_nc_off;
-  logic [                  $clog2(DCACHE_WBUF_DEPTH)-1:0] wbuffer_hit_idx;
-  logic [                   $clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] rd_hit_idx;
+  logic [                           $clog2(DCACHE_WBUF_DEPTH)-1:0] wbuffer_hit_idx;
+  logic [                    $clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] rd_hit_idx;
 
   assign cmp_en_d = (|vld_req) & ~vld_we;
 

@@ -27,14 +27,14 @@ module fpu_wrap
     output logic     fpu_ready_o,
     input  fu_data_t fu_data_i,
 
-    input  logic       [              1:0] fpu_fmt_i,
-    input  logic       [              2:0] fpu_rm_i,
-    input  logic       [              2:0] fpu_frm_i,
-    input  logic       [              6:0] fpu_prec_i,
-    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id_o,
-    output logic       [ CVA6Cfg.FLen-1:0] result_o,
-    output logic                           fpu_valid_o,
-    output exception_t                     fpu_exception_o
+    input  logic       [                      1:0] fpu_fmt_i,
+    input  logic       [                      2:0] fpu_rm_i,
+    input  logic       [                      2:0] fpu_frm_i,
+    input  logic       [                      6:0] fpu_prec_i,
+    output logic       [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id_o,
+    output logic       [         CVA6Cfg.FLen-1:0] result_o,
+    output logic                                   fpu_valid_o,
+    output exception_t                             fpu_exception_o
 );
 
   // this is a workaround

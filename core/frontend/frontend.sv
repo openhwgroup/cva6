@@ -89,24 +89,24 @@ module frontend
   };
 
   // Instruction Cache Registers, from I$
-  logic                            [                CVA6Cfg.FETCH_WIDTH-1:0] icache_data_q;
-  logic                                                              icache_valid_q;
-  ariane_pkg::frontend_exception_t                                   icache_ex_valid_q;
-  logic                            [                riscv::VLEN-1:0] icache_vaddr_q;
-  logic                                                              instr_queue_ready;
+  logic                            [    CVA6Cfg.FETCH_WIDTH-1:0] icache_data_q;
+  logic                                                          icache_valid_q;
+  ariane_pkg::frontend_exception_t                               icache_ex_valid_q;
+  logic                            [            riscv::VLEN-1:0] icache_vaddr_q;
+  logic                                                          instr_queue_ready;
   logic                            [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_consumed;
   // upper-most branch-prediction from last cycle
-  btb_prediction_t                                                   btb_q;
-  bht_prediction_t                                                   bht_q;
+  btb_prediction_t                                               btb_q;
+  bht_prediction_t                                               bht_q;
   // instruction fetch is ready
-  logic                                                              if_ready;
+  logic                                                          if_ready;
   logic [riscv::VLEN-1:0] npc_d, npc_q;  // next PC
 
   // indicates whether we come out of reset (then we need to load boot_addr_i)
-  logic                                           npc_rst_load_q;
+  logic                                       npc_rst_load_q;
 
-  logic                                           replay;
-  logic [                        riscv::VLEN-1:0] replay_addr;
+  logic                                       replay;
+  logic [                    riscv::VLEN-1:0] replay_addr;
 
   // shift amount
   logic [$clog2(CVA6Cfg.INSTR_PER_FETCH)-1:0] shamt;
@@ -135,21 +135,21 @@ module frontend
   btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                  btb_prediction;
   bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                  bht_prediction_shifted;
   btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                  btb_prediction_shifted;
-  ras_t                                                   ras_predict;
-  logic            [    riscv::VLEN-1:0]                  vpc_btb;
+  ras_t                                                           ras_predict;
+  logic            [            riscv::VLEN-1:0]                  vpc_btb;
 
   // branch-predict update
-  logic                                                   is_mispredict;
+  logic                                                           is_mispredict;
   logic ras_push, ras_pop;
-  logic [                riscv::VLEN-1:0] ras_update;
+  logic [            riscv::VLEN-1:0] ras_update;
 
   // Instruction FIFO
-  logic [                riscv::VLEN-1:0] predict_address;
+  logic [            riscv::VLEN-1:0] predict_address;
   cf_t  [CVA6Cfg.INSTR_PER_FETCH-1:0] cf_type;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvi_cf;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvc_cf;
 
-  logic                                   serving_unaligned;
+  logic                               serving_unaligned;
   // Re-align instructions
   instr_realign #(
       .CVA6Cfg(CVA6Cfg)

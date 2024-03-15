@@ -51,8 +51,8 @@ module std_nbdcache
   localparam type cache_line_t = struct packed {
     logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
     logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;   // data array
-    logic                                     valid;  // state array
-    logic                                     dirty;  // state array
+    logic                                 valid;  // state array
+    logic                                 dirty;  // state array
   };
   localparam type cl_be_t = struct packed {
     logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
@@ -68,42 +68,42 @@ module std_nbdcache
   // 3. Load Unit
   // 4. Accelerator
   // 5. Store unit
-  logic        [            NumPorts:0][  CVA6Cfg.DCACHE_SET_ASSOC-1:0] req;
-  logic        [            NumPorts:0][CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr;
-  logic        [            NumPorts:0]                         gnt;
-  cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                         rdata;
-  logic        [            NumPorts:0][  CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag;
+  logic        [                    NumPorts:0][  CVA6Cfg.DCACHE_SET_ASSOC-1:0] req;
+  logic        [                    NumPorts:0][CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr;
+  logic        [                    NumPorts:0]                                 gnt;
+  cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 rdata;
+  logic        [                    NumPorts:0][  CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag;
 
-  cache_line_t [            NumPorts:0]                         wdata;
-  logic        [            NumPorts:0]                         we;
-  cl_be_t      [            NumPorts:0]                         be;
-  logic        [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                         hit_way;
+  cache_line_t [                    NumPorts:0]                                 wdata;
+  logic        [                    NumPorts:0]                                 we;
+  cl_be_t      [                    NumPorts:0]                                 be;
+  logic        [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 hit_way;
   // -------------------------------
   // Controller <-> Miss unit
   // -------------------------------
-  logic        [          NumPorts-1:0]                         busy;
-  logic        [          NumPorts-1:0][                  55:0] mshr_addr;
-  logic        [          NumPorts-1:0]                         mshr_addr_matches;
-  logic        [          NumPorts-1:0]                         mshr_index_matches;
-  logic        [                  63:0]                         critical_word;
-  logic                                                         critical_word_valid;
+  logic        [                  NumPorts-1:0]                                 busy;
+  logic        [                  NumPorts-1:0][                          55:0] mshr_addr;
+  logic        [                  NumPorts-1:0]                                 mshr_addr_matches;
+  logic        [                  NumPorts-1:0]                                 mshr_index_matches;
+  logic        [                          63:0]                                 critical_word;
+  logic                                                                         critical_word_valid;
 
-  logic        [          NumPorts-1:0][ $bits(miss_req_t)-1:0] miss_req;
-  logic        [          NumPorts-1:0]                         miss_gnt;
-  logic        [          NumPorts-1:0]                         active_serving;
+  logic        [                  NumPorts-1:0][         $bits(miss_req_t)-1:0] miss_req;
+  logic        [                  NumPorts-1:0]                                 miss_gnt;
+  logic        [                  NumPorts-1:0]                                 active_serving;
 
-  logic        [          NumPorts-1:0]                         bypass_gnt;
-  logic        [          NumPorts-1:0]                         bypass_valid;
-  logic        [          NumPorts-1:0][                  63:0] bypass_data;
+  logic        [                  NumPorts-1:0]                                 bypass_gnt;
+  logic        [                  NumPorts-1:0]                                 bypass_valid;
+  logic        [                  NumPorts-1:0][                          63:0] bypass_data;
   // -------------------------------
   // Arbiter <-> Datram,
   // -------------------------------
-  logic        [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                         req_ram;
-  logic        [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]                         addr_ram;
-  logic                                                         we_ram;
-  cache_line_t                                                  wdata_ram;
-  cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                         rdata_ram;
-  cl_be_t                                                       be_ram;
+  logic        [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 req_ram;
+  logic        [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]                                 addr_ram;
+  logic                                                                         we_ram;
+  cache_line_t                                                                  wdata_ram;
+  cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 rdata_ram;
+  cl_be_t                                                                       be_ram;
 
   // ------------------
   // Cache Controller
@@ -267,11 +267,11 @@ module std_nbdcache
   // Tag Comparison and memory arbitration
   // ------------------------------------------------
   tag_cmp #(
-      .CVA6Cfg         (CVA6Cfg),
-      .NR_PORTS        (NumPorts + 1),
-      .ADDR_WIDTH      (CVA6Cfg.DCACHE_INDEX_WIDTH),
-      .l_data_t        (cache_line_t),
-      .l_be_t          (cl_be_t)
+      .CVA6Cfg   (CVA6Cfg),
+      .NR_PORTS  (NumPorts + 1),
+      .ADDR_WIDTH(CVA6Cfg.DCACHE_INDEX_WIDTH),
+      .l_data_t  (cache_line_t),
+      .l_be_t    (cl_be_t)
   ) i_tag_cmp (
       .req_i    (req),
       .gnt_o    (gnt),

@@ -45,7 +45,7 @@ module tlb
   // SV39 defines three levels of page tables
   struct packed {
     logic [ASID_WIDTH-1:0] asid;
-    logic [VPN2:0]  vpn2;
+    logic [VPN2:0]         vpn2;
     logic [8:0]            vpn1;
     logic [8:0]            vpn0;
     logic                  is_2M;
@@ -56,7 +56,7 @@ module tlb
 
   riscv::pte_t [TLB_ENTRIES-1:0] content_q, content_n;
   logic [8:0] vpn0, vpn1;
-  logic [  VPN2:0] vpn2;
+  logic [VPN2:0] vpn2;
   logic [TLB_ENTRIES-1:0] lu_hit;  // to replacement logic
   logic [TLB_ENTRIES-1:0] replace_en;  // replace the following entry, set by replacement strategy
   //-------------

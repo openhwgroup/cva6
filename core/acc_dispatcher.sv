@@ -24,34 +24,34 @@ module acc_dispatcher
     parameter type fu_data_t = logic,
     parameter type scoreboard_entry_t = logic,
     localparam type accelerator_req_t = struct packed {
-      logic                                 req_valid;
-      logic                                 resp_ready;
-      riscv::instruction_t                  insn;
-      logic [riscv::XLEN-1:0]               rs1;
-      logic [riscv::XLEN-1:0]               rs2;
-      fpnew_pkg::roundmode_e                frm;
+      logic                             req_valid;
+      logic                             resp_ready;
+      riscv::instruction_t              insn;
+      logic [riscv::XLEN-1:0]           rs1;
+      logic [riscv::XLEN-1:0]           rs2;
+      fpnew_pkg::roundmode_e            frm;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
-      logic                                 store_pending;
+      logic                             store_pending;
       // Invalidation interface
-      logic                                 acc_cons_en;
-      logic                                 inval_ready;
+      logic                             acc_cons_en;
+      logic                             inval_ready;
     },
     parameter type acc_req_t = accelerator_req_t,
     parameter type acc_resp_t = struct packed {
-      logic                                 req_ready;
-      logic                                 resp_valid;
-      logic [riscv::XLEN-1:0]               result;
+      logic                             req_ready;
+      logic                             resp_valid;
+      logic [riscv::XLEN-1:0]           result;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
-      logic                                 error;
+      logic                             error;
       // Metadata
-      logic                                 store_pending;
-      logic                                 store_complete;
-      logic                                 load_complete;
-      logic [4:0]                           fflags;
-      logic                                 fflags_valid;
+      logic                             store_pending;
+      logic                             store_complete;
+      logic                             load_complete;
+      logic [4:0]                       fflags;
+      logic                             fflags_valid;
       // Invalidation interface
-      logic                                 inval_valid;
-      logic [63:0]                          inval_addr;
+      logic                             inval_valid;
+      logic [63:0]                      inval_addr;
     },
     parameter type acc_cfg_t = logic,
     parameter acc_cfg_t AccCfg = '0

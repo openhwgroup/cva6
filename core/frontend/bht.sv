@@ -127,7 +127,7 @@ module bht #(
 
     // number of bits par word in the bram
     localparam BRAM_WORD_BITS = $bits(ariane_pkg::bht_t);
-    logic             [                             ROW_INDEX_BITS-1:0] row_index;
+    logic             [                         ROW_INDEX_BITS-1:0] row_index;
     logic             [                CVA6Cfg.INSTR_PER_FETCH-1:0] bht_ram_we;
     logic             [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_read_address_0;
     logic             [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_read_address_1;

@@ -7,21 +7,21 @@ module mult
     parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input  logic                         clk_i,
+    input  logic                                 clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input  logic                         rst_ni,
+    input  logic                                 rst_ni,
     // Flush - CONTROLLER
-    input  logic                         flush_i,
+    input  logic                                 flush_i,
     // FU data needed to execute instruction - ISSUE_STAGE
-    input  fu_data_t                     fu_data_i,
+    input  fu_data_t                             fu_data_i,
     // Mult instruction is valid - ISSUE_STAGE
-    input  logic                         mult_valid_i,
+    input  logic                                 mult_valid_i,
     // Mult result - ISSUE_STAGE
-    output logic     [  riscv::XLEN-1:0] result_o,
+    output logic     [          riscv::XLEN-1:0] result_o,
     // Mult result is valid - ISSUE_STAGE
-    output logic                         mult_valid_o,
+    output logic                                 mult_valid_o,
     // Mutl is ready - ISSUE_STAGE
-    output logic                         mult_ready_o,
+    output logic                                 mult_ready_o,
     // Mult transaction ID - ISSUE_STAGE
     output logic     [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id_o
 );

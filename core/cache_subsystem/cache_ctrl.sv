@@ -81,13 +81,13 @@ module cache_ctrl
   typedef struct packed {
     logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] index;
     logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   tag;
-    logic [DCACHE_TID_WIDTH-1:0]   id;
-    logic [7:0]                    be;
-    logic [1:0]                    size;
-    logic                          we;
-    logic [63:0]                   wdata;
-    logic                          bypass;
-    logic                          killed;
+    logic [DCACHE_TID_WIDTH-1:0]           id;
+    logic [7:0]                            be;
+    logic [1:0]                            size;
+    logic                                  we;
+    logic [63:0]                           wdata;
+    logic                                  bypass;
+    logic                                  killed;
   } mem_req_t;
 
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
@@ -101,7 +101,8 @@ module cache_ctrl
 
   always_comb begin : way_select
     cl_i = '0;
-    for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) if (hit_way_i[i]) cl_i = data_i[i].data;
+    for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++)
+    if (hit_way_i[i]) cl_i = data_i[i].data;
 
     // cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
   end

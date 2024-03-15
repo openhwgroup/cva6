@@ -83,27 +83,27 @@ module load_store_unit
     output icache_areq_t icache_areq_o,
 
     // Current privilege mode - CSR_REGFILE
-    input  riscv::priv_lvl_t                   priv_lvl_i,
+    input  riscv::priv_lvl_t                    priv_lvl_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
-    input  riscv::priv_lvl_t                   ld_st_priv_lvl_i,
+    input  riscv::priv_lvl_t                    ld_st_priv_lvl_i,
     // Supervisor User Memory - CSR_REGFILE
-    input  logic                               sum_i,
+    input  logic                                sum_i,
     // Make Executable Readable - CSR_REGFILE
-    input  logic                               mxr_i,
+    input  logic                                mxr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [ ASID_WIDTH-1:0] asid_i,
+    input  logic             [  ASID_WIDTH-1:0] asid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [ ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input  logic             [  ASID_WIDTH-1:0] asid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+    input  logic             [ riscv::VLEN-1:0] vaddr_to_be_flushed_i,
     // TLB flush - CONTROLLER
-    input  logic                               flush_tlb_i,
+    input  logic                                flush_tlb_i,
     // Instruction TLB miss - PERF_COUNTERS
-    output logic                               itlb_miss_o,
+    output logic                                itlb_miss_o,
     // Data TLB miss - PERF_COUNTERS
-    output logic                               dtlb_miss_o,
+    output logic                                dtlb_miss_o,
 
     // Data cache request output - CACHES
     input  dcache_req_o_t  [ 2:0]                  dcache_req_ports_i,
@@ -164,23 +164,23 @@ module load_store_unit
   logic                   translation_valid;
   logic [riscv::VLEN-1:0] mmu_vaddr;
   logic [riscv::PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
-  exception_t                     mmu_exception;
-  logic                           dtlb_hit;
-  logic       [  CVA6Cfg.PPNW-1:0] dtlb_ppn;
+  exception_t                             mmu_exception;
+  logic                                   dtlb_hit;
+  logic       [         CVA6Cfg.PPNW-1:0] dtlb_ppn;
 
-  logic                           ld_valid;
+  logic                                   ld_valid;
   logic       [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
-  logic       [  riscv::XLEN-1:0] ld_result;
-  logic                           st_valid;
+  logic       [          riscv::XLEN-1:0] ld_result;
+  logic                                   st_valid;
   logic       [CVA6Cfg.TRANS_ID_BITS-1:0] st_trans_id;
-  logic       [  riscv::XLEN-1:0] st_result;
+  logic       [          riscv::XLEN-1:0] st_result;
 
-  logic       [             11:0] page_offset;
-  logic                           page_offset_matches;
+  logic       [                     11:0] page_offset;
+  logic                                   page_offset_matches;
 
-  exception_t                     misaligned_exception;
-  exception_t                     ld_ex;
-  exception_t                     st_ex;
+  exception_t                             misaligned_exception;
+  exception_t                             ld_ex;
+  exception_t                             st_ex;
 
   // -------------------
   // MMU e.g.: TLBs/PTW
