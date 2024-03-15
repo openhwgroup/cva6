@@ -442,7 +442,7 @@ module wt_axi_adapter
   logic icache_first_d, icache_first_q, dcache_first_d, dcache_first_q;
   logic [CVA6Cfg.ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
       icache_rd_shift_user_d, icache_rd_shift_user_q;
-  logic [DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
+  logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
       dcache_rd_shift_user_d, dcache_rd_shift_user_q;
   logic [CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       icache_rd_shift_d, icache_rd_shift_q;
@@ -506,7 +506,7 @@ module wt_axi_adapter
         };
       end
       dcache_rd_shift_user_d = {
-        axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
+        axi_rd_user, dcache_rd_shift_user_q[CVA6Cfg.DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
       };
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (dcache_first_q) begin

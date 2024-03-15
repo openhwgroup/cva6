@@ -65,7 +65,7 @@ module wt_dcache_missunit
     output logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_o,
     output logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_cl_off_o,
     output logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] wr_cl_data_o,
-    output logic [DCACHE_USER_LINE_WIDTH-1:0] wr_cl_user_o,
+    output logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH-1:0] wr_cl_user_o,
     output logic [CVA6Cfg.DCACHE_LINE_WIDTH/8-1:0] wr_cl_data_be_o,
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] wr_vld_bits_o,
     // memory interface
