@@ -69,7 +69,7 @@ module cva6
       logic                                    ready;  // icache is ready
       logic                                    valid;  // signals a valid read
       logic [ariane_pkg::FETCH_WIDTH-1:0]      data;   // 2+ cycle out: tag
-      logic [ariane_pkg::FETCH_USER_WIDTH-1:0] user;   // User bits
+      logic [CVA6Cfg.FETCH_USER_WIDTH-1:0] user;   // User bits
       logic [riscv::VLEN-1:0]                  vaddr;  // virtual address out
       exception_t                              ex;     // we've encountered an exception
     },

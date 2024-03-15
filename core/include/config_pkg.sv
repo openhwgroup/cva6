@@ -144,6 +144,8 @@ package config_pkg;
     int unsigned DcacheSetAssoc;
     // Data line width
     int unsigned DcacheLineWidth;
+    // TODO
+    int unsigned FetchUserWidth;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -235,6 +237,9 @@ package config_pkg;
     int unsigned DCACHE_NUM_WORDS;
 
     int unsigned DCACHE_MAX_TX;
+
+    int unsigned FETCH_USER_WIDTH;
+    int unsigned FETCH_USER_EN;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
