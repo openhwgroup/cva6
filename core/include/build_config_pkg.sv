@@ -1,7 +1,8 @@
 package build_config_pkg;
 
   function automatic config_pkg::cva6_cfg_t build_config(config_pkg::cva6_user_cfg_t CVA6Cfg);
-    bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & CVA6Cfg.FpuEn;
+    bit IS_XLEN32 = (riscv::XLEN == 32) ? 1'b1 : 1'b0;
+    bit RVF = (riscv::IS_XLEN64 | IS_XLEN32) & CVA6Cfg.FpuEn;
     bit RVD = (riscv::IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
     bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
     bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
@@ -27,6 +28,7 @@ package build_config_pkg;
 
     config_pkg::cva6_cfg_t cfg;
 
+    cfg.IS_XLEN32 = IS_XLEN32;
     cfg.XLEN_ALIGN_BYTES = $clog2(riscv::XLEN / 8);
     cfg.ASID_WIDTH = (riscv::XLEN == 64) ? 16 : 1;
 

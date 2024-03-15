@@ -163,6 +163,7 @@ package config_pkg;
   } cva6_user_cfg_t;
 
   typedef struct packed {
+    bit IS_XLEN32;
     int unsigned XLEN_ALIGN_BYTES;
     int unsigned ASID_WIDTH;
 

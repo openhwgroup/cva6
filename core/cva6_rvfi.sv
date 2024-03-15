@@ -35,7 +35,7 @@ module cva6_rvfi
   // CVA6 configuration
   // ------------------------------------------
   // Extended config
-  localparam bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & CVA6Cfg.FpuEn;
+  localparam bit RVF = (riscv::IS_XLEN64 | CVA6Cfg.IS_XLEN32) & CVA6Cfg.FpuEn;
   localparam bit RVD = (riscv::IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
   localparam bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
 
