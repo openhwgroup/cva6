@@ -22,18 +22,6 @@ package riscv;
   // ----------------------
   localparam XLEN = cva6_config_pkg::CVA6ConfigXlen;
 
-  // ----------------------
-  // Data and Address length
-  // ----------------------
-  typedef enum logic [3:0] {
-    ModeOff  = 0,
-    ModeSv32 = 1,
-    ModeSv39 = 8,
-    ModeSv48 = 9,
-    ModeSv57 = 10,
-    ModeSv64 = 11
-  } vm_mode_t;
-
   // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
   // Warning: VLEN must be superior or equal to PLEN
   localparam VLEN = (XLEN == 32) ? 32 : 64;  // virtual address length
@@ -44,7 +32,7 @@ package riscv;
   localparam ModeW = (XLEN == 32) ? 1 : 4;
   localparam ASIDW = (XLEN == 32) ? 9 : 16;
   localparam PPNW = (XLEN == 32) ? 22 : 44;
-  localparam vm_mode_t MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
+  localparam config_pkg::vm_mode_t MODE_SV = (XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
   localparam VPN2 = (VLEN - 31 < 8) ? VLEN - 31 : 8;
   localparam XLEN_ALIGN_BYTES = $clog2(XLEN / 8);
 

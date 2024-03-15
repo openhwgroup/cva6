@@ -33,6 +33,16 @@ package config_pkg;
     HPDCACHE = 2
   } cache_type_t;
 
+  /// Data and Address length
+  typedef enum logic [3:0] {
+    ModeOff  = 0,
+    ModeSv32 = 1,
+    ModeSv39 = 8,
+    ModeSv48 = 9,
+    ModeSv57 = 10,
+    ModeSv64 = 11
+  } vm_mode_t;
+
   localparam NrMaxRules = 16;
 
   typedef struct packed {
