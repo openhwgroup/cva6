@@ -89,7 +89,7 @@ module wt_cache_subsystem
     logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
     logic [riscv::PLEN-1:0] paddr;  // physical address
     logic [riscv::XLEN-1:0] data;  // word width of processor (no block stores at the moment)
-    logic [ariane_pkg::DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
+    logic [ariane_pkg::DCACHE_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
     logic nc;  // noncacheable
     logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     ariane_pkg::amo_t amo_op;  // amo opcode

@@ -138,7 +138,6 @@ package ariane_pkg;
   // ---------------
 
   localparam FETCH_USER_WIDTH = cva6_config_pkg::CVA6ConfigFetchUserWidth;
-  localparam DATA_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
   localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
   localparam AXI_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
   localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
@@ -244,12 +243,12 @@ package ariane_pkg;
   localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
   localparam int unsigned DCACHE_TAG_WIDTH = riscv::PLEN - DCACHE_INDEX_WIDTH;
   localparam int unsigned DCACHE_USER_LINE_WIDTH = (AXI_USER_WIDTH == 1) ? 4 : 128;  // in bit
-  localparam int unsigned DCACHE_USER_WIDTH = DATA_USER_WIDTH;
+  localparam int unsigned DCACHE_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
 
   localparam int unsigned MEM_TID_WIDTH = `L15_THREADID_WIDTH;
 `else
   // D$
-  localparam int unsigned DCACHE_USER_WIDTH = DATA_USER_WIDTH;
+  localparam int unsigned DCACHE_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
 `endif
 
   localparam int unsigned DCACHE_TID_WIDTH = cva6_config_pkg::CVA6ConfigDcacheIdWidth;

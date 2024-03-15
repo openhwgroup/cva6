@@ -303,7 +303,7 @@ module wt_dcache_mem
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_data_banks
     // Data RAM
     sram #(
-        .USER_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * DATA_USER_WIDTH),
+        .USER_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * ariane_pkg::DCACHE_USER_WIDTH),
         .DATA_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * riscv::XLEN),
         .USER_EN   (ariane_pkg::DATA_USER_EN),
         .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
