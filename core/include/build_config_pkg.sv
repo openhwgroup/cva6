@@ -29,6 +29,7 @@ package build_config_pkg;
 
     config_pkg::cva6_cfg_t cfg;
 
+    cfg.VLEN = (riscv::XLEN == 32) ? 32 : 64;
     cfg.IS_XLEN32 = IS_XLEN32;
     cfg.IS_XLEN64 = IS_XLEN64;
     cfg.XLEN_ALIGN_BYTES = $clog2(riscv::XLEN / 8);

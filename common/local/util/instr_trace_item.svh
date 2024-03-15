@@ -410,7 +410,7 @@ class instr_trace_item #(
             instr_tracer_pkg::FSW,
             instr_tracer_pkg::FSD,
             instr_tracer_pkg::FSQ: begin
-                logic [riscv::VLEN-1:0] vaddress = gp_reg_file[read_regs[1]] + this.imm;
+                logic [CVA6Cfg.VLEN-1:0] vaddress = gp_reg_file[read_regs[1]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
 
@@ -432,7 +432,7 @@ class instr_trace_item #(
             instr_tracer_pkg::FLW,
             instr_tracer_pkg::FLD,
             instr_tracer_pkg::FLQ: begin
-                logic [riscv::VLEN-1:0] vaddress = gp_reg_file[read_regs[0]] + this.imm;
+                logic [CVA6Cfg.VLEN-1:0] vaddress = gp_reg_file[read_regs[0]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
         endcase

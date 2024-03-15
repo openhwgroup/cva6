@@ -39,13 +39,13 @@ module ex_stage
     // Debug mode is enabled - CSR_REGFILE
     input logic debug_mode_i,
     // rs1 forwarding - ISSUE_STAGE
-    input logic [riscv::VLEN-1:0] rs1_forwarding_i,
+    input logic [CVA6Cfg.VLEN-1:0] rs1_forwarding_i,
     // rs2 forwarding - ISSUE_STAGE
-    input logic [riscv::VLEN-1:0] rs2_forwarding_i,
+    input logic [CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
     // FU data useful to execute instruction - ISSUE_STAGE
     input fu_data_t fu_data_i,
     // PC of the current instruction - ISSUE_STAGE
-    input logic [riscv::VLEN-1:0] pc_i,
+    input logic [CVA6Cfg.VLEN-1:0] pc_i,
     // Report whether isntruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
     // Fixed Latency Unit result - ISSUE_STAGE
@@ -223,12 +223,12 @@ module ex_stage
   // These two register store the rs1 and rs2 parameters in case of `SFENCE_VMA`
   // instruction to be used for TLB flush in the next clock cycle.
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed;
-  logic [riscv::VLEN-1:0] vaddr_to_be_flushed;
+  logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed;
 
   // from ALU to branch unit
   logic alu_branch_res;  // branch comparison result
   logic [riscv::XLEN-1:0] alu_result, csr_result, mult_result;
-  logic [riscv::VLEN-1:0] branch_result;
+  logic [CVA6Cfg.VLEN-1:0] branch_result;
   logic csr_ready, mult_ready;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
@@ -297,7 +297,7 @@ module ex_stage
   // result MUX
   always_comb begin
     // Branch result as default case
-    flu_result_o   = {{riscv::XLEN - riscv::VLEN{1'b0}}, branch_result};
+    flu_result_o   = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, branch_result};
     flu_trans_id_o = fu_data_i.trans_id;
     // ALU result
     if (alu_valid_i) begin

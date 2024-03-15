@@ -50,7 +50,7 @@ module load_unit
     // Request address translation - TO_BE_COMPLETED
     output logic translation_req_o,
     // Virtual address - TO_BE_COMPLETED
-    output logic [riscv::VLEN-1:0] vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
     // Physical address - TO_BE_COMPLETED
     input logic [riscv::PLEN-1:0] paddr_i,
     // Excepted which appears before load - TO_BE_COMPLETED

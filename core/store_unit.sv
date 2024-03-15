@@ -57,7 +57,7 @@ module store_unit
     // Address translation request - TO_BE_COMPLETED
     output logic translation_req_o,
     // Virtual address - TO_BE_COMPLETED
-    output logic [riscv::VLEN-1:0] vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
     // RVFI information - RVFI
     output [riscv::PLEN-1:0] rvfi_mem_paddr_o,
     // Physical address - TO_BE_COMPLETED

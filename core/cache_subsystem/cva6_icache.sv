@@ -77,7 +77,7 @@ module cva6_icache
 
   // signals
   logic cache_en_d, cache_en_q;  // cache is enabled
-  logic [riscv::VLEN-1:0] vaddr_d, vaddr_q;
+  logic [CVA6Cfg.VLEN-1:0] vaddr_d, vaddr_q;
   logic paddr_is_nc;  // asserted if physical address is non-cacheable
   logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_hit;  // hit from tag compare
   logic cache_rden;  // triggers cache lookup
@@ -147,7 +147,7 @@ module cva6_icache
   // latch this in case we have to stall later on
   // make sure this is 32bit aligned
   assign vaddr_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr : vaddr_q;
-  assign areq_o.fetch_vaddr = {vaddr_q[riscv::VLEN-1:2], 2'b0};
+  assign areq_o.fetch_vaddr = {vaddr_q[CVA6Cfg.VLEN-1:2], 2'b0};
 
   // split virtual address into index and offset to address cache arrays
   assign cl_index = vaddr_d[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH];

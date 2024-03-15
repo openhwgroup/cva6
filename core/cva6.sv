@@ -35,7 +35,7 @@ module cva6
     // units towards the correct branch decision and resolve
     localparam type branchpredict_sbe_t = struct packed {
       cf_t                    cf;               // type of control flow prediction
-      logic [riscv::VLEN-1:0] predict_address;  // target address at which to jump, or not
+      logic [CVA6Cfg.VLEN-1:0] predict_address;  // target address at which to jump, or not
     },
 
     localparam type exception_t = struct packed {
@@ -54,7 +54,7 @@ module cva6
     },
     localparam type icache_arsp_t = struct packed {
       logic                   fetch_req;    // address translation request
-      logic [riscv::VLEN-1:0] fetch_vaddr;  // virtual address out
+      logic [CVA6Cfg.VLEN-1:0] fetch_vaddr;  // virtual address out
     },
 
     // I$ data requests
@@ -63,21 +63,21 @@ module cva6
       logic                   kill_s1;  // kill the current request
       logic                   kill_s2;  // kill the last request
       logic                   spec;     // request is speculative
-      logic [riscv::VLEN-1:0] vaddr;    // 1st cycle: 12 bit index is taken for lookup
+      logic [CVA6Cfg.VLEN-1:0] vaddr;    // 1st cycle: 12 bit index is taken for lookup
     },
     localparam type icache_drsp_t = struct packed {
       logic                                ready;  // icache is ready
       logic                                valid;  // signals a valid read
       logic [CVA6Cfg.FETCH_WIDTH-1:0]      data;   // 2+ cycle out: tag
       logic [CVA6Cfg.FETCH_USER_WIDTH-1:0] user;   // User bits
-      logic [riscv::VLEN-1:0]              vaddr;  // virtual address out
+      logic [CVA6Cfg.VLEN-1:0]              vaddr;  // virtual address out
       exception_t                          ex;     // we've encountered an exception
     },
 
     // IF/ID Stage
     // store the decompressed instruction
     localparam type fetch_entry_t = struct packed {
-      logic [riscv::VLEN-1:0] address;  // the address of the instructions from below
+      logic [CVA6Cfg.VLEN-1:0] address;  // the address of the instructions from below
       logic [31:0] instruction;  // instruction word
       branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
       exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
@@ -85,7 +85,7 @@ module cva6
 
     // ID/EX/WB Stage
     localparam type scoreboard_entry_t = struct packed {
-      logic [riscv::VLEN-1:0] pc;  // PC of instruction
+      logic [CVA6Cfg.VLEN-1:0] pc;  // PC of instruction
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
       // with the transaction id in any case make the width more generic
       fu_t fu;  // functional unit to use
@@ -117,8 +117,8 @@ module cva6
     // bp_resolve_t
     localparam type bp_resolve_t = struct packed {
       logic                   valid;           // prediction with all its values is valid
-      logic [riscv::VLEN-1:0] pc;              // PC of predict or mis-predict
-      logic [riscv::VLEN-1:0] target_address;  // target address at which to jump, or not
+      logic [CVA6Cfg.VLEN-1:0] pc;              // PC of predict or mis-predict
+      logic [CVA6Cfg.VLEN-1:0] target_address;  // target address at which to jump, or not
       logic                   is_mispredict;   // set if this was a mis-predict
       logic                   is_taken;        // branch is taken
       cf_t                    cf_type;         // Type of control flow change
@@ -136,7 +136,7 @@ module cva6
 
     localparam type lsu_ctrl_t = struct packed {
       logic                             valid;
-      logic [riscv::VLEN-1:0]           vaddr;
+      logic [CVA6Cfg.VLEN-1:0]           vaddr;
       logic                             overflow;
       logic [riscv::XLEN-1:0]           data;
       logic [(riscv::XLEN/8)-1:0]       be;
@@ -272,7 +272,7 @@ module cva6
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
     // Reset boot address - SUBSYSTEM
-    input logic [riscv::VLEN-1:0] boot_addr_i,
+    input logic [CVA6Cfg.VLEN-1:0] boot_addr_i,
     // Hard ID reflected as CSR - SUBSYSTEM
     input logic [riscv::XLEN-1:0] hart_id_i,
     // Level sensitive (async) interrupts - SUBSYSTEM
@@ -320,7 +320,7 @@ module cva6
   riscv::priv_lvl_t                             priv_lvl;
   exception_t                                   ex_commit;  // exception from commit stage
   bp_resolve_t                                  resolved_branch;
-  logic             [          riscv::VLEN-1:0] pc_commit;
+  logic             [          CVA6Cfg.VLEN-1:0] pc_commit;
   logic                                         eret;
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
@@ -332,8 +332,8 @@ module cva6
   // --------------
   // PCGEN <-> CSR
   // --------------
-  logic [riscv::VLEN-1:0] trap_vector_base_commit_pcgen;
-  logic [riscv::VLEN-1:0] epc_commit_pcgen;
+  logic [CVA6Cfg.VLEN-1:0] trap_vector_base_commit_pcgen;
+  logic [CVA6Cfg.VLEN-1:0] epc_commit_pcgen;
   // --------------
   // IF <-> ID
   // --------------
@@ -353,11 +353,11 @@ module cva6
   // --------------
   // ISSUE <-> EX
   // --------------
-  logic [riscv::VLEN-1:0] rs1_forwarding_id_ex;  // unregistered version of fu_data_o.operanda
-  logic [riscv::VLEN-1:0] rs2_forwarding_id_ex;  // unregistered version of fu_data_o.operandb
+  logic [CVA6Cfg.VLEN-1:0] rs1_forwarding_id_ex;  // unregistered version of fu_data_o.operanda
+  logic [CVA6Cfg.VLEN-1:0] rs2_forwarding_id_ex;  // unregistered version of fu_data_o.operandb
 
   fu_data_t fu_data_id_ex;
-  logic [riscv::VLEN-1:0] pc_id_ex;
+  logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
   logic is_compressed_instr_id_ex;
   // fixed latency units
   logic flu_ready_ex_id;
@@ -565,7 +565,7 @@ module cva6
       .flush_bp_i         (1'b0),
       .halt_i             (halt_ctrl),
       .debug_mode_i       (debug_mode),
-      .boot_addr_i        (boot_addr_i[riscv::VLEN-1:0]),
+      .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
       .icache_dreq_i      (icache_dreq_cache_if),
       .icache_dreq_o      (icache_dreq_if_cache),
       .resolved_branch_i  (resolved_branch),
@@ -947,7 +947,7 @@ module cva6
       .halt_csr_o            (halt_csr_ctrl),
       .commit_instr_i        (commit_instr_id_commit),
       .commit_ack_i          (commit_macro_ack),
-      .boot_addr_i           (boot_addr_i[riscv::VLEN-1:0]),
+      .boot_addr_i           (boot_addr_i[CVA6Cfg.VLEN-1:0]),
       .hart_id_i             (hart_id_i[riscv::XLEN-1:0]),
       .ex_i                  (ex_commit),
       .csr_op_i              (csr_op_commit_csr),
@@ -1384,8 +1384,8 @@ module cva6
   localparam PC_QUEUE_DEPTH = 16;
 
   logic                                              piton_pc_vld;
-  logic [          riscv::VLEN-1:0]                  piton_pc;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] pc_data;
+  logic [          CVA6Cfg.VLEN-1:0]                  piton_pc;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] pc_data;
   logic [CVA6Cfg.NrCommitPorts-1:0] pc_pop, pc_empty;
 
   for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_pc_fifo

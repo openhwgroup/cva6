@@ -53,7 +53,7 @@ module cva6_mmu_sv32
     // in the LSU as we distinguish load and stores, what we do here is simple address translation
     input exception_t misaligned_ex_i,
     input logic lsu_req_i,  // request address translation
-    input logic [riscv::VLEN-1:0] lsu_vaddr_i,  // virtual address in
+    input logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_i,  // virtual address in
     input logic lsu_is_store_i,  // the translation is requested by a store
     // if we need to walk the page table we can't grant in the same cycle
     // Cycle 0
@@ -72,7 +72,7 @@ module cva6_mmu_sv32
     input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
-    input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     input logic flush_tlb_i,
     // Performance counters
     output logic itlb_miss_o,
@@ -93,7 +93,7 @@ module cva6_mmu_sv32
   logic                   ptw_access_exception;  // PTW threw an access exception (PMPs)
   logic [riscv::PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
 
-  logic [riscv::VLEN-1:0] update_vaddr;
+  logic [CVA6Cfg.VLEN-1:0] update_vaddr;
   tlb_update_sv32_t update_itlb, update_dtlb, update_shared_tlb;
 
   logic                               itlb_lu_access;
@@ -107,7 +107,7 @@ module cva6_mmu_sv32
   logic                               dtlb_lu_hit;
 
   logic                               shared_tlb_access;
-  logic             [riscv::VLEN-1:0] shared_tlb_vaddr;
+  logic             [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr;
   logic                               shared_tlb_hit;
 
   logic                               itlb_req;
@@ -277,13 +277,13 @@ module cva6_mmu_sv32
   always_comb begin : instr_interface
     // MMU disabled: just pass through
     icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-    if (riscv::PLEN > riscv::VLEN)
+    if (riscv::PLEN > CVA6Cfg.VLEN)
       icache_areq_o.fetch_paddr = {
-        {riscv::PLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr
+        {riscv::PLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr
       };  // play through in case we disabled address translation
     else
       icache_areq_o.fetch_paddr = {
-        2'b00, icache_areq_i.fetch_vaddr[riscv::VLEN-1:0]
+        2'b00, icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:0]
       };  // play through in case we disabled address translation
     // two potential exception sources:
     // 1. HPTW threw an exception -> signal with a page fault exception
@@ -298,13 +298,13 @@ module cva6_mmu_sv32
     // AXI decode error), or when PTW performs walk due to ITLB miss and raises
     // an error.
     if (enable_translation_i) begin
-      // we work with SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:CVA6Cfg.SV-1] are equal
-      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:CVA6Cfg.SV-1]) == 1'b0)) begin
+      // we work with SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal
+      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0)) begin
         icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
         icache_areq_o.fetch_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
           icache_areq_o.fetch_exception.tval = {
-            {riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr
+            {riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr
           };
       end
 
@@ -331,7 +331,7 @@ module cva6_mmu_sv32
           icache_areq_o.fetch_exception.valid = 1'b1;
           if (CVA6Cfg.TvalEn)
             icache_areq_o.fetch_exception.tval = {
-              {riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr
+              {riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr
             };
           //to check on wave --> not connected
         end else if (!pmp_instr_allow) begin
@@ -351,7 +351,7 @@ module cva6_mmu_sv32
           icache_areq_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
           if (CVA6Cfg.TvalEn)
-            icache_areq_o.fetch_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, update_vaddr};
+            icache_areq_o.fetch_exception.tval = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr};
         end  //to check on wave
         // TODO(moschn,zarubaf): What should the value of tval be in this case?
         else begin
@@ -396,7 +396,7 @@ module cva6_mmu_sv32
   //-----------------------
   // Data Interface
   //-----------------------
-  logic [riscv::VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
+  logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
   riscv::pte_sv32_t dtlb_pte_n, dtlb_pte_q;
   exception_t misaligned_ex_n, misaligned_ex_q;
   logic lsu_req_n, lsu_req_q;
@@ -422,11 +422,11 @@ module cva6_mmu_sv32
     lsu_is_store_n  = lsu_is_store_i;
     dtlb_is_4M_n    = dtlb_is_4M;
 
-    if (riscv::PLEN > riscv::VLEN) begin
-      lsu_paddr_o    = {{riscv::PLEN - riscv::VLEN{1'b0}}, lsu_vaddr_q};
-      lsu_dtlb_ppn_o = {{riscv::PLEN - riscv::VLEN{1'b0}}, lsu_vaddr_n[riscv::VLEN-1:12]};
+    if (riscv::PLEN > CVA6Cfg.VLEN) begin
+      lsu_paddr_o    = {{riscv::PLEN - CVA6Cfg.VLEN{1'b0}}, lsu_vaddr_q};
+      lsu_dtlb_ppn_o = {{riscv::PLEN - CVA6Cfg.VLEN{1'b0}}, lsu_vaddr_n[CVA6Cfg.VLEN-1:12]};
     end else begin
-      lsu_paddr_o    = {2'b00, lsu_vaddr_q[riscv::VLEN-1:0]};
+      lsu_paddr_o    = {2'b00, lsu_vaddr_q[CVA6Cfg.VLEN-1:0]};
       lsu_dtlb_ppn_o = lsu_vaddr_n[CVA6Cfg.PPNW-1:0];
     end
     lsu_valid_o = lsu_req_q;
@@ -470,7 +470,7 @@ module cva6_mmu_sv32
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
               lsu_exception_o.tval = {
-                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q
+                {riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
               };
             // to check on wave
             // Check if any PMPs are violated
@@ -489,7 +489,7 @@ module cva6_mmu_sv32
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
               lsu_exception_o.tval = {
-                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, lsu_vaddr_q
+                {riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
               };
             // Check if any PMPs are violated
           end else if (!pmp_data_allow) begin
@@ -515,14 +515,14 @@ module cva6_mmu_sv32
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
               lsu_exception_o.tval = {
-                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr
+                {riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, update_vaddr
               };
           end else begin
             lsu_exception_o.cause = riscv::LOAD_PAGE_FAULT;
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
               lsu_exception_o.tval = {
-                {riscv::XLEN - riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}}, update_vaddr
+                {riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, update_vaddr
               };
           end
         end

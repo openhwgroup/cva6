@@ -33,7 +33,7 @@ module decoder
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
     // PC from fetch stage - FRONTEND
-    input logic [riscv::VLEN-1:0] pc_i,
+    input logic [CVA6Cfg.VLEN-1:0] pc_i,
     // Is a compressed instruction - compressed_decoder
     input logic is_compressed_i,
     // Compressed form of instruction - FRONTEND

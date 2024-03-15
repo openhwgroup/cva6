@@ -30,16 +30,16 @@ module tlb
     // Lookup signals
     input  logic                          lu_access_i,
     input  logic        [ CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i,
-    input  logic        [riscv::VLEN-1:0] lu_vaddr_i,
+    input  logic        [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
     output riscv::pte_t                   lu_content_o,
     input  logic        [ CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
-    input  logic        [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+    input  logic        [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     output logic                          lu_is_2M_o,
     output logic                          lu_is_1G_o,
     output logic                          lu_hit_o
 );
 
-  localparam VPN2 = (riscv::VLEN - 31 < 8) ? riscv::VLEN - 31 : 8;
+  localparam VPN2 = (CVA6Cfg.VLEN - 31 < 8) ? CVA6Cfg.VLEN - 31 : 8;
 
   // SV39 defines three levels of page tables
   struct packed {

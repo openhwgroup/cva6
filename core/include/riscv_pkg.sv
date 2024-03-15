@@ -20,11 +20,10 @@ package riscv;
   // ----------------------
   // Import cva6 config from cva6_config_pkg
   // ----------------------
+  // FIXME stop using them from CoreV-Verif and HPDCache
+  // Then remove them from this package
   localparam XLEN = cva6_config_pkg::CVA6ConfigXlen;
-
-  // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
-  // Warning: VLEN must be superior or equal to PLEN
-  localparam VLEN = (XLEN == 32) ? 32 : 64;  // virtual address length
+  localparam VLEN = (XLEN == 32) ? 32 : 64;
   localparam PLEN = (XLEN == 32) ? 34 : 56;  // physical address length
 
   // --------------------

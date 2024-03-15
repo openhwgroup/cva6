@@ -47,13 +47,13 @@ module issue_stage
     // Handshake's acknowlege with decode stage - ID_STAGE
     output logic decoded_instr_ack_o,
     // rs1 forwarding - EX_STAGE
-    output [riscv::VLEN-1:0] rs1_forwarding_o,
+    output [CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
     // rs2 forwarding - EX_STAGE
-    output [riscv::VLEN-1:0] rs2_forwarding_o,
+    output [CVA6Cfg.VLEN-1:0] rs2_forwarding_o,
     // FU data useful to execute instruction - EX_STAGE
     output fu_data_t fu_data_o,
     // Program Counter - EX_STAGE
-    output logic [riscv::VLEN-1:0] pc_o,
+    output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
     // Fixed Latency Unit is ready - EX_STAGE
@@ -151,8 +151,8 @@ module issue_stage
   logic              [     riscv::XLEN-1:0] rs1_forwarding_xlen;
   logic              [     riscv::XLEN-1:0] rs2_forwarding_xlen;
 
-  assign rs1_forwarding_o = rs1_forwarding_xlen[riscv::VLEN-1:0];
-  assign rs2_forwarding_o = rs2_forwarding_xlen[riscv::VLEN-1:0];
+  assign rs1_forwarding_o = rs1_forwarding_xlen[CVA6Cfg.VLEN-1:0];
+  assign rs2_forwarding_o = rs2_forwarding_xlen[CVA6Cfg.VLEN-1:0];
 
   assign issue_instr_o    = issue_instr_sb_iro;
   assign issue_instr_hs_o = issue_instr_valid_sb_iro & issue_ack_iro_sb;

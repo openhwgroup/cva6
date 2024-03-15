@@ -45,18 +45,18 @@ module ptw
     output tlb_update_t itlb_update_o,
     output tlb_update_t dtlb_update_o,
 
-    output logic [riscv::VLEN-1:0] update_vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] update_vaddr_o,
 
     input logic [ CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // from TLBs
     // did we miss?
     input logic                   itlb_access_i,
     input logic                   itlb_hit_i,
-    input logic [riscv::VLEN-1:0] itlb_vaddr_i,
+    input logic [CVA6Cfg.VLEN-1:0] itlb_vaddr_i,
 
     input  logic                    dtlb_access_i,
     input  logic                    dtlb_hit_i,
-    input  logic [ riscv::VLEN-1:0] dtlb_vaddr_i,
+    input  logic [ CVA6Cfg.VLEN-1:0] dtlb_vaddr_i,
     // from CSR file
     input  logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,     // ppn from satp
     input  logic                    mxr_i,
@@ -104,7 +104,7 @@ module ptw
   // register the ASID
   logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VPN we need to walk, SV39 defines a 39 bit virtual address
-  logic [riscv::VLEN-1:0] vaddr_q, vaddr_n;
+  logic [CVA6Cfg.VLEN-1:0] vaddr_q, vaddr_n;
   // 4 byte aligned physical pointer
   logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 

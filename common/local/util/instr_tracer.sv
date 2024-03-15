@@ -206,7 +206,7 @@ module instr_tracer #(
     $fwrite(f, {print_instr, "\n"});
   endfunction
 
-  function void printException(logic [riscv::VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
+  function void printException(logic [CVA6Cfg.VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
     automatic ex_trace_item #(
       .CVA6Cfg(CVA6Cfg),
       .interrupts_t(interrupts_t),

@@ -96,7 +96,7 @@ module load_store_unit
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [ riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+    input  logic             [ CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     // TLB flush - CONTROLLER
     input  logic                                flush_tlb_i,
     // Instruction TLB miss - PERF_COUNTERS
@@ -143,13 +143,13 @@ module load_store_unit
   // Address Generation Unit (AGU)
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
-  logic      [    riscv::VLEN-1:0] vaddr_i;
+  logic      [    CVA6Cfg.VLEN-1:0] vaddr_i;
   logic      [    riscv::XLEN-1:0] vaddr_xlen;
   logic                            overflow;
   logic      [(riscv::XLEN/8)-1:0] be_i;
 
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
-  assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
+  assign vaddr_i = vaddr_xlen[CVA6Cfg.VLEN-1:0];
   // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
   assign overflow = (CVA6Cfg.IS_XLEN64 && (!((&vaddr_xlen[riscv::XLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|vaddr_xlen[riscv::XLEN-1:CVA6Cfg.SV-1]) == 1'b0)));
 
@@ -157,11 +157,11 @@ module load_store_unit
   logic                   ld_valid_i;
   logic                   ld_translation_req;
   logic                   st_translation_req;
-  logic [riscv::VLEN-1:0] ld_vaddr;
-  logic [riscv::VLEN-1:0] st_vaddr;
+  logic [CVA6Cfg.VLEN-1:0] ld_vaddr;
+  logic [CVA6Cfg.VLEN-1:0] st_vaddr;
   logic                   translation_req;
   logic                   translation_valid;
-  logic [riscv::VLEN-1:0] mmu_vaddr;
+  logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
   logic [riscv::PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
   exception_t                             mmu_exception;
   logic                                   dtlb_hit;
@@ -256,12 +256,12 @@ module load_store_unit
     );
   end else begin : gen_no_mmu
 
-    if (riscv::VLEN > riscv::PLEN) begin
+    if (CVA6Cfg.VLEN > riscv::PLEN) begin
       assign mmu_vaddr_plen   = mmu_vaddr[riscv::PLEN-1:0];
       assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0];
     end else begin
-      assign mmu_vaddr_plen   = {{{riscv::PLEN - riscv::VLEN} {1'b0}}, mmu_vaddr};
-      assign fetch_vaddr_plen = {{{riscv::PLEN - riscv::VLEN} {1'b0}}, icache_areq_i.fetch_vaddr};
+      assign mmu_vaddr_plen   = {{{riscv::PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
+      assign fetch_vaddr_plen = {{{riscv::PLEN - CVA6Cfg.VLEN} {1'b0}}, icache_areq_i.fetch_vaddr};
     end
 
     assign icache_areq_o.fetch_valid           = icache_areq_i.fetch_req;
@@ -415,7 +415,7 @@ module load_store_unit
     st_valid_i      = 1'b0;
 
     translation_req = 1'b0;
-    mmu_vaddr       = {riscv::VLEN{1'b0}};
+    mmu_vaddr       = {CVA6Cfg.VLEN{1'b0}};
 
     // check the operation to activate the right functional unit accordingly
     unique case (lsu_ctrl.fu)
@@ -501,13 +501,13 @@ module load_store_unit
         misaligned_exception.cause = riscv::LD_ADDR_MISALIGNED;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr};
+          misaligned_exception.tval = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
 
       end else if (lsu_ctrl.fu == STORE) begin
         misaligned_exception.cause = riscv::ST_ADDR_MISALIGNED;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr};
+          misaligned_exception.tval = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
       end
     end
 
@@ -517,13 +517,13 @@ module load_store_unit
         misaligned_exception.cause = riscv::LD_ACCESS_FAULT;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr};
+          misaligned_exception.tval = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
 
       end else if (lsu_ctrl.fu == STORE) begin
         misaligned_exception.cause = riscv::ST_ACCESS_FAULT;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{riscv::XLEN - riscv::VLEN{1'b0}}, lsu_ctrl.vaddr};
+          misaligned_exception.tval = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
       end
     end
   end

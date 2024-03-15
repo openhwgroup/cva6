@@ -69,7 +69,7 @@ module issue_read_operands
     // Unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
     output logic [riscv::XLEN-1:0] rs2_forwarding_o,
     // Instruction pc - TO_BE_COMPLETED
-    output logic [riscv::VLEN-1:0] pc_o,
+    output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - TO_BE_COMPLETED
     output logic is_compressed_instr_o,
     // Fixed Latency Unit ready to accept new request - TO_BE_COMPLETED
@@ -149,8 +149,8 @@ module issue_read_operands
 
   // ID <-> EX registers
 
-  assign rs1_forwarding_o    = operand_a_n[riscv::VLEN-1:0];  //forwarding or unregistered rs1 value
-  assign rs2_forwarding_o    = operand_b_n[riscv::VLEN-1:0];  //forwarding or unregistered rs2 value
+  assign rs1_forwarding_o    = operand_a_n[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
+  assign rs2_forwarding_o    = operand_b_n[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
 
   assign fu_data_o.operand_a = operand_a_q;
   assign fu_data_o.operand_b = operand_b_q;
@@ -299,7 +299,7 @@ module issue_read_operands
     // use the PC as operand a
     if (issue_instr_i.use_pc) begin
       operand_a_n = {
-        {riscv::XLEN - riscv::VLEN{issue_instr_i.pc[riscv::VLEN-1]}}, issue_instr_i.pc
+        {riscv::XLEN - CVA6Cfg.VLEN{issue_instr_i.pc[CVA6Cfg.VLEN-1]}}, issue_instr_i.pc
       };
     end
 
@@ -599,7 +599,7 @@ module issue_read_operands
       trans_id_q            <= '0;
       pc_o                  <= '0;
       is_compressed_instr_o <= 1'b0;
-      branch_predict_o      <= {cf_t'(0), {riscv::VLEN{1'b0}}};
+      branch_predict_o      <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
     end else begin
       operand_a_q           <= operand_a_n;
       operand_b_q           <= operand_b_n;

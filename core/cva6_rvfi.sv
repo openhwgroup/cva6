@@ -73,20 +73,20 @@ module cva6_rvfi
   logic [riscv::XLEN-1:0] rs1_forwarding;
   logic [riscv::XLEN-1:0] rs2_forwarding;
 
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_pc;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_pc;
   fu_op [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_instr_op;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs1;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs2;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rd;
   logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] commit_instr_result;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_valid;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_valid;
 
   logic [riscv::XLEN-1:0] ex_commit_cause;
   logic ex_commit_valid;
 
   riscv::priv_lvl_t priv_lvl;
 
-  logic [riscv::VLEN-1:0] lsu_ctrl_vaddr;
+  logic [CVA6Cfg.VLEN-1:0] lsu_ctrl_vaddr;
   fu_t lsu_ctrl_fu;
   logic [(riscv::XLEN/8)-1:0] lsu_ctrl_be;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id;
@@ -97,7 +97,7 @@ module cva6_rvfi
   logic debug_mode;
   logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata;
 
-  logic [riscv::VLEN-1:0] lsu_addr;
+  logic [CVA6Cfg.VLEN-1:0] lsu_addr;
   logic [(riscv::XLEN/8)-1:0] lsu_rmask;
   logic [(riscv::XLEN/8)-1:0] lsu_wmask;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_addr_trans_id;
@@ -198,7 +198,7 @@ module cva6_rvfi
   typedef struct packed {
     logic [riscv::XLEN-1:0] rs1_rdata;
     logic [riscv::XLEN-1:0] rs2_rdata;
-    logic [riscv::VLEN-1:0] lsu_addr;
+    logic [CVA6Cfg.VLEN-1:0] lsu_addr;
     logic [(riscv::XLEN/8)-1:0] lsu_rmask;
     logic [(riscv::XLEN/8)-1:0] lsu_wmask;
     logic [riscv::XLEN-1:0] lsu_wdata;
