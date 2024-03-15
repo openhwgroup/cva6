@@ -46,6 +46,8 @@ module std_nbdcache
 
   import std_cache_pkg::*;
 
+  localparam DCACHE_DIRTY_WIDTH = ariane_pkg::DCACHE_SET_ASSOC * 2;
+
   localparam type cache_line_t = struct packed {
     logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
     logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;   // data array

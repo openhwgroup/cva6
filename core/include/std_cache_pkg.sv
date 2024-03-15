@@ -18,7 +18,6 @@
 package std_cache_pkg;
 
   // Calculated parameter
-  localparam DCACHE_DIRTY_WIDTH = ariane_pkg::DCACHE_SET_ASSOC * 2;
   localparam DCACHE_SET_ASSOC_WIDTH = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
   // localparam DECISION_BIT = 30; // bit on which to decide whether the request is cache-able or not
 
