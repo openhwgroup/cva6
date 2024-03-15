@@ -147,7 +147,7 @@ module csr_regfile
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
 
   typedef struct packed {
-    logic [riscv::ModeW-1:0] mode;
+    logic [CVA6Cfg.ModeW-1:0] mode;
     logic [CVA6Cfg.ASIDW-1:0] asid;
     logic [CVA6Cfg.PPNW-1:0]  ppn;
   } satp_t;

@@ -117,6 +117,7 @@ package build_config_pkg;
     cfg.INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? (cfg.FETCH_WIDTH / 16) : 1;
     cfg.LOG2_INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
+    cfg.ModeW = (riscv::XLEN == 32) ? 1 : 4;
     cfg.ASIDW = (riscv::XLEN == 32) ? 9 : 16;
     cfg.PPNW = (riscv::XLEN == 32) ? 22 : 44;
     cfg.MODE_SV = (riscv::XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
