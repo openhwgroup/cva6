@@ -148,7 +148,7 @@ module csr_regfile
 
   typedef struct packed {
     logic [riscv::ModeW-1:0] mode;
-    logic [riscv::ASIDW-1:0] asid;
+    logic [CVA6Cfg.ASIDW-1:0] asid;
     logic [CVA6Cfg.PPNW-1:0]  ppn;
   } satp_t;
 
@@ -831,7 +831,7 @@ module csr_regfile
             else begin
               satp      = satp_t'(csr_wdata);
               // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-              satp.asid = satp.asid & {{(riscv::ASIDW - AsidWidth) {1'b0}}, {AsidWidth{1'b1}}};
+              satp.asid = satp.asid & {{(CVA6Cfg.ASIDW - AsidWidth) {1'b0}}, {AsidWidth{1'b1}}};
               // only update if we actually support this mode
               if (config_pkg::vm_mode_t'(satp.mode) == config_pkg::ModeOff ||
                                 config_pkg::vm_mode_t'(satp.mode) == CVA6Cfg.MODE_SV)

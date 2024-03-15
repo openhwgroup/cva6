@@ -30,7 +30,6 @@ package riscv;
   localparam IS_XLEN32 = (XLEN == 32) ? 1'b1 : 1'b0;
   localparam IS_XLEN64 = (XLEN == 32) ? 1'b0 : 1'b1;
   localparam ModeW = (XLEN == 32) ? 1 : 4;
-  localparam ASIDW = (XLEN == 32) ? 9 : 16;
   localparam XLEN_ALIGN_BYTES = $clog2(XLEN / 8);
 
   // --------------------
