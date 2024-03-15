@@ -142,7 +142,6 @@ package ariane_pkg;
 
   localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
   localparam AXI_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
-  localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
 
   typedef enum logic {
     SINGLE_REQ,

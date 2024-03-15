@@ -305,7 +305,7 @@ module wt_dcache_mem
     sram #(
         .USER_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * CVA6Cfg.DCACHE_USER_WIDTH),
         .DATA_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * riscv::XLEN),
-        .USER_EN   (ariane_pkg::DATA_USER_EN),
+        .USER_EN   (CVA6Cfg.DATA_USER_EN),
         .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) i_data_sram (
         .clk_i  (clk_i),

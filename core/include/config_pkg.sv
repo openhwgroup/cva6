@@ -155,6 +155,8 @@ package config_pkg;
     // Data line width
     int unsigned DcacheLineWidth;
     // TODO
+    int unsigned DataUserEn;
+    // TODO
     int unsigned FetchUserWidth;
     // TODO
     int unsigned FetchUserEn;
@@ -252,6 +254,7 @@ package config_pkg;
 
     int unsigned DCACHE_MAX_TX;
 
+    int unsigned DATA_USER_EN;
     int unsigned FETCH_USER_WIDTH;
     int unsigned FETCH_USER_EN;
 

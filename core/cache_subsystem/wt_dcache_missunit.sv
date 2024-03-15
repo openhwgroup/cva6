@@ -266,7 +266,7 @@ module wt_dcache_missunit
       end else begin
         amo_data = amo_data_a;
       end
-      if (ariane_pkg::DATA_USER_EN) begin
+      if (CVA6Cfg.DATA_USER_EN) begin
         amo_user = amo_data;
       end else begin
         amo_user = '0;
