@@ -21,8 +21,7 @@ module ptw
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
-    parameter type tlb_update_t = logic,
-    parameter int ASID_WIDTH = 1
+    parameter type tlb_update_t = logic
 ) (
     input  logic clk_i,                   // Clock
     input  logic rst_ni,                  // Asynchronous reset active low
@@ -48,7 +47,7 @@ module ptw
 
     output logic [riscv::VLEN-1:0] update_vaddr_o,
 
-    input logic [ ASID_WIDTH-1:0] asid_i,
+    input logic [ CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // from TLBs
     // did we miss?
     input logic                   itlb_access_i,
@@ -103,7 +102,7 @@ module ptw
   // latched tag signal
   logic tag_valid_n, tag_valid_q;
   // register the ASID
-  logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VPN we need to walk, SV39 defines a 39 bit virtual address
   logic [riscv::VLEN-1:0] vaddr_q, vaddr_n;
   // 4 byte aligned physical pointer

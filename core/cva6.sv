@@ -466,7 +466,7 @@ module cva6
   logic sum_csr_ex;
   logic mxr_csr_ex;
   logic [CVA6Cfg.PPNW-1:0] satp_ppn_csr_ex;
-  logic [ASID_WIDTH-1:0] asid_csr_ex;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] asid_csr_ex;
   logic [11:0] csr_addr_ex_csr;
   fu_op csr_op_commit_csr;
   logic [riscv::XLEN-1:0] csr_wdata_commit_csr;
@@ -781,8 +781,7 @@ module cva6
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
-      .lsu_ctrl_t(lsu_ctrl_t),
-      .ASID_WIDTH(ASID_WIDTH)
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) ex_stage_i (
       .clk_i                (clk_i),
       .rst_ni               (rst_ni),
@@ -942,7 +941,6 @@ module cva6
       .irq_ctrl_t        (irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .rvfi_probes_csr_t (rvfi_probes_csr_t),
-      .AsidWidth         (ASID_WIDTH),
       .MHPMCounterNum    (MHPMCounterNum)
   ) csr_regfile_i (
       .flush_o               (flush_csr_ctrl),

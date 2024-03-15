@@ -25,8 +25,7 @@ module load_store_unit
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
-    parameter type lsu_ctrl_t = logic,
-    parameter int unsigned ASID_WIDTH = 1
+    parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -93,9 +92,9 @@ module load_store_unit
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [  ASID_WIDTH-1:0] asid_i,
+    input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [  ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [ riscv::VLEN-1:0] vaddr_to_be_flushed_i,
     // TLB flush - CONTROLLER
@@ -196,8 +195,7 @@ module load_store_unit
         .dcache_req_i_t   (dcache_req_i_t),
         .dcache_req_o_t   (dcache_req_o_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (ASID_WIDTH)
+        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES)
     ) i_cva6_mmu (
         // misaligned bypass
         .misaligned_ex_i(misaligned_exception),
@@ -232,8 +230,7 @@ module load_store_unit
         .dcache_req_i_t   (dcache_req_i_t),
         .dcache_req_o_t   (dcache_req_o_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (ASID_WIDTH)
+        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES)
     ) i_cva6_mmu (
         // misaligned bypass
         .misaligned_ex_i(misaligned_exception),

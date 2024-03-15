@@ -27,8 +27,7 @@ module mmu
     parameter type                   dcache_req_o_t    = logic,
     parameter type                   exception_t       = logic,
     parameter int unsigned           INSTR_TLB_ENTRIES = 4,
-    parameter int unsigned           DATA_TLB_ENTRIES  = 4,
-    parameter int unsigned           ASID_WIDTH        = 1
+    parameter int unsigned           DATA_TLB_ENTRIES  = 4
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -60,8 +59,8 @@ module mmu
     input logic mxr_i,
     // input logic flag_mprv_i,
     input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
-    input logic [ASID_WIDTH-1:0] asid_i,
-    input logic [ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
     input logic flush_tlb_i,
     // Performance counters
@@ -80,7 +79,7 @@ module mmu
     logic                  is_2M;    //
     logic                  is_1G;    //
     logic [27-1:0]         vpn;      // VPN (39bits) = 27bits + 12bits offset
-    logic [ASID_WIDTH-1:0] asid;
+    logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
     riscv::pte_t           content;
   };
 
@@ -116,8 +115,7 @@ module mmu
   tlb #(
       .CVA6Cfg     (CVA6Cfg),
       .tlb_update_t(tlb_update_t),
-      .TLB_ENTRIES (INSTR_TLB_ENTRIES),
-      .ASID_WIDTH  (ASID_WIDTH)
+      .TLB_ENTRIES (INSTR_TLB_ENTRIES)
   ) i_itlb (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
@@ -140,8 +138,7 @@ module mmu
   tlb #(
       .CVA6Cfg     (CVA6Cfg),
       .tlb_update_t(tlb_update_t),
-      .TLB_ENTRIES (DATA_TLB_ENTRIES),
-      .ASID_WIDTH  (ASID_WIDTH)
+      .TLB_ENTRIES (DATA_TLB_ENTRIES)
   ) i_dtlb (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
@@ -166,8 +163,7 @@ module mmu
       .CVA6Cfg   (CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
-      .tlb_update_t(tlb_update_t),
-      .ASID_WIDTH(ASID_WIDTH)
+      .tlb_update_t(tlb_update_t)
   ) i_ptw (
       .clk_i                 (clk_i),
       .rst_ni                (rst_ni),

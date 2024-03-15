@@ -164,6 +164,7 @@ package config_pkg;
 
   typedef struct packed {
     int unsigned XLEN_ALIGN_BYTES;
+    int unsigned ASID_WIDTH;
 
     bit          FPGA_EN;
     /// Number of commit ports, i.e., maximum number of instructions that the
