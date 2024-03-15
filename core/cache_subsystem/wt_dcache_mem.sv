@@ -49,7 +49,7 @@ module wt_dcache_mem
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_vld_bits_o,
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_o,
     output logic [riscv::XLEN-1:0] rd_data_o,
-    output logic [DCACHE_USER_WIDTH-1:0] rd_user_o,
+    output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] rd_user_o,
 
     // only available on port 0, uses address signals of port 0
     input logic                              wr_cl_vld_i,
@@ -69,7 +69,7 @@ module wt_dcache_mem
     input logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx_i,
     input logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_off_i,
     input logic [riscv::XLEN-1:0] wr_data_i,
-    input logic [DCACHE_USER_WIDTH-1:0] wr_user_i,
+    input logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wr_user_i,
     input logic [(riscv::XLEN/8)-1:0] wr_data_be_i,
 
     // forwarded wbuffer
@@ -106,9 +106,9 @@ module wt_dcache_mem
   logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][riscv::XLEN-1:0] bank_wdata;  //
   logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][riscv::XLEN-1:0] bank_rdata;  //
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0][riscv::XLEN-1:0] rdata_cl;  // selected word from each cacheline
-  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][DCACHE_USER_WIDTH-1:0] bank_wuser;  //
-  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][DCACHE_USER_WIDTH-1:0] bank_ruser;  //
-  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0][DCACHE_USER_WIDTH-1:0]                      ruser_cl;          // selected word from each cacheline
+  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.DCACHE_USER_WIDTH-1:0] bank_wuser;  //
+  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.DCACHE_USER_WIDTH-1:0] bank_ruser;  //
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.DCACHE_USER_WIDTH-1:0]                      ruser_cl;          // selected word from each cacheline
 
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag;
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] vld_req;  // bit enable for valid regs
@@ -122,7 +122,7 @@ module wt_dcache_mem
   logic [DCACHE_WBUF_DEPTH-1:0] wbuffer_hit_oh;
   logic [  (riscv::XLEN/8)-1:0] wbuffer_be;
   logic [riscv::XLEN-1:0] wbuffer_rdata, rdata;
-  logic [DCACHE_USER_WIDTH-1:0] wbuffer_ruser, ruser;
+  logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wbuffer_ruser, ruser;
   logic [riscv::PLEN-1:0] wbuffer_cmp_addr;
 
   logic cmp_en_d, cmp_en_q;
@@ -148,7 +148,7 @@ module wt_dcache_mem
                                                                 '0;
       assign bank_wdata[k][j] = (wr_cl_we_i[j] & wr_cl_vld_i) ?  wr_cl_data_i[k*riscv::XLEN +: riscv::XLEN] :
                                                                  wr_data_i;
-      assign bank_wuser[k][j] = (wr_cl_we_i[j] & wr_cl_vld_i) ?  wr_cl_user_i[k*DCACHE_USER_WIDTH +: DCACHE_USER_WIDTH] :
+      assign bank_wuser[k][j] = (wr_cl_we_i[j] & wr_cl_vld_i) ?  wr_cl_user_i[k*CVA6Cfg.DCACHE_USER_WIDTH +: CVA6Cfg.DCACHE_USER_WIDTH] :
                                                                  wr_user_i;
     end
   end
@@ -279,7 +279,7 @@ module wt_dcache_mem
   always_comb begin
     if (wr_cl_vld_i) begin
       rdata = wr_cl_data_i[wr_cl_off*riscv::XLEN+:riscv::XLEN];
-      ruser = wr_cl_user_i[wr_cl_off*DCACHE_USER_WIDTH+:DCACHE_USER_WIDTH];
+      ruser = wr_cl_user_i[wr_cl_off*CVA6Cfg.DCACHE_USER_WIDTH+:CVA6Cfg.DCACHE_USER_WIDTH];
     end else begin
       rdata = rdata_cl[rd_hit_idx];
       ruser = ruser_cl[rd_hit_idx];
@@ -290,7 +290,7 @@ module wt_dcache_mem
   for (genvar k = 0; k < (riscv::XLEN / 8); k++) begin : gen_rd_data
     assign rd_data_o[8*k+:8] = (wbuffer_be[k]) ? wbuffer_rdata[8*k+:8] : rdata[8*k+:8];
   end
-  for (genvar k = 0; k < DCACHE_USER_WIDTH / 8; k++) begin : gen_rd_user
+  for (genvar k = 0; k < CVA6Cfg.DCACHE_USER_WIDTH / 8; k++) begin : gen_rd_user
     assign rd_user_o[8*k+:8] = (wbuffer_be[k]) ? wbuffer_ruser[8*k+:8] : ruser[8*k+:8];
   end
 
@@ -303,7 +303,7 @@ module wt_dcache_mem
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_data_banks
     // Data RAM
     sram #(
-        .USER_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * ariane_pkg::DCACHE_USER_WIDTH),
+        .USER_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * CVA6Cfg.DCACHE_USER_WIDTH),
         .DATA_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * riscv::XLEN),
         .USER_EN   (ariane_pkg::DATA_USER_EN),
         .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)

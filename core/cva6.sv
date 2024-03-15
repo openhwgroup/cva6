@@ -178,7 +178,7 @@ module cva6
       logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
       logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
       logic [riscv::XLEN-1:0]        data_wdata;
-      logic [DCACHE_USER_WIDTH-1:0]  data_wuser;
+      logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]  data_wuser;
       logic                          data_req;
       logic                          data_we;
       logic [(riscv::XLEN/8)-1:0]    data_be;
@@ -193,7 +193,7 @@ module cva6
       logic                         data_rvalid;
       logic [DCACHE_TID_WIDTH-1:0]  data_rid;
       logic [riscv::XLEN-1:0]       data_rdata;
-      logic [DCACHE_USER_WIDTH-1:0] data_ruser;
+      logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
 
     // AXI types

@@ -230,6 +230,7 @@ package config_pkg;
     int unsigned DCACHE_TAG_WIDTH;
     int unsigned DCACHE_LINE_WIDTH;
     int unsigned DCACHE_USER_LINE_WIDTH;
+    int unsigned DCACHE_USER_WIDTH;
     int unsigned DCACHE_OFFSET_WIDTH;
     int unsigned DCACHE_NUM_WORDS;
 

@@ -74,7 +74,7 @@ module wt_dcache_wbuffer
     output logic miss_req_o,
     output logic miss_we_o,  // always 1 here
     output logic [riscv::XLEN-1:0] miss_wdata_o,
-    output logic [DCACHE_USER_WIDTH-1:0] miss_wuser_o,
+    output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] miss_wuser_o,
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // unused here (set to 0)
     output logic miss_nc_o,  // request to I/O space
     output logic [2:0] miss_size_o,  //
@@ -102,7 +102,7 @@ module wt_dcache_wbuffer
     output logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_off_o,
     output logic [riscv::XLEN-1:0] wr_data_o,
     output logic [(riscv::XLEN/8)-1:0] wr_data_be_o,
-    output logic [DCACHE_USER_WIDTH-1:0] wr_user_o,
+    output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wr_user_o,
     // to forwarding logic and miss unit
     output wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_o,
     output logic [CVA6Cfg.DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations

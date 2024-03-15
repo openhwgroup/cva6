@@ -104,6 +104,7 @@ package build_config_pkg;
     cfg.DCACHE_TAG_WIDTH = riscv::PLEN - DCACHE_INDEX_WIDTH;
     cfg.DCACHE_LINE_WIDTH = CVA6Cfg.DcacheLineWidth;
     cfg.DCACHE_USER_LINE_WIDTH  = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.DcacheLineWidth;
+    cfg.DCACHE_USER_WIDTH = CVA6Cfg.AxiUserWidth;
     cfg.DCACHE_OFFSET_WIDTH = DCACHE_OFFSET_WIDTH;
     cfg.DCACHE_NUM_WORDS = 2 ** (DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
 
