@@ -109,7 +109,7 @@ module cva6_icache
   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] cl_tag_d, cl_tag_q;  // this is the cache tag
   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0]          cl_tag_rdata [CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the tags coming from the tagmem
   logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0]         cl_rdata     [CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the cache
-  logic [ICACHE_USER_LINE_WIDTH-1:0]    cl_ruser[CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the user cache
+  logic [CVA6Cfg.ICACHE_USER_LINE_WIDTH-1:0]    cl_ruser[CVA6Cfg.ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the user cache
   logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0] cl_sel;  // selected word from each cacheline
   logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0][FETCH_USER_WIDTH-1:0] cl_user;  // selected word from each cacheline
   logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] vld_req;  // bit enable for valid regs
@@ -481,7 +481,7 @@ module cva6_icache
 
     // Data RAM
     sram #(
-        .USER_WIDTH(ICACHE_USER_LINE_WIDTH),
+        .USER_WIDTH(CVA6Cfg.ICACHE_USER_LINE_WIDTH),
         .DATA_WIDTH(CVA6Cfg.ICACHE_LINE_WIDTH),
         .USER_EN   (ariane_pkg::FETCH_USER_EN),
         .NUM_WORDS (ICACHE_NUM_WORDS)
