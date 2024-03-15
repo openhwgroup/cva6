@@ -85,7 +85,7 @@ module wt_dcache_wbuffer
     // cache read interface
     output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_o,  // tag in - comes one cycle later
     output logic [DCACHE_CL_IDX_WIDTH-1:0] rd_idx_o,
-    output logic [DCACHE_OFFSET_WIDTH-1:0] rd_off_o,
+    output logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] rd_off_o,
     output logic rd_req_o,  // read the word at offset off_i[:3] in all ways
     output logic rd_tag_only_o,  // set to 1 here as we do not have to read the data arrays
     input logic rd_ack_i,
@@ -99,7 +99,7 @@ module wt_dcache_wbuffer
     output logic [DCACHE_SET_ASSOC-1:0] wr_req_o,
     input logic wr_ack_i,
     output logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx_o,
-    output logic [DCACHE_OFFSET_WIDTH-1:0] wr_off_o,
+    output logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_off_o,
     output logic [riscv::XLEN-1:0] wr_data_o,
     output logic [(riscv::XLEN/8)-1:0] wr_data_be_o,
     output logic [DCACHE_USER_WIDTH-1:0] wr_user_o,
@@ -380,8 +380,8 @@ module wt_dcache_wbuffer
   };
   assign rd_req_o = |tocheck;
   assign rd_tag_o = rd_tag_q;  //delay by one cycle
-  assign rd_idx_o = rd_paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
-  assign rd_off_o = rd_paddr[DCACHE_OFFSET_WIDTH-1:0];
+  assign rd_idx_o = rd_paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH];
+  assign rd_off_o = rd_paddr[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0];
   assign check_en_d = rd_req_o & rd_ack_i;
 
   // cache update port
@@ -392,8 +392,8 @@ module wt_dcache_wbuffer
   assign wr_paddr = {
     {riscv::XLEN_ALIGN_BYTES{1'b0}}, wbuffer_q[rtrn_ptr].wtag << riscv::XLEN_ALIGN_BYTES
   };
-  assign wr_idx_o = wr_paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
-  assign wr_off_o = wr_paddr[DCACHE_OFFSET_WIDTH-1:0];
+  assign wr_idx_o = wr_paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH];
+  assign wr_off_o = wr_paddr[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0];
   assign wr_data_o = wbuffer_q[rtrn_ptr].data;
   assign wr_user_o = wbuffer_q[rtrn_ptr].user;
 
@@ -428,7 +428,7 @@ module wt_dcache_wbuffer
     // checks if an invalidation/cache refill hits a particular word
     // note: an invalidation can hit multiple words!
     // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
-    assign wtag_comp[k] = wbuffer_q[k].wtag[CVA6Cfg.DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES-1:DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES];
+    assign wtag_comp[k] = wbuffer_q[k].wtag[CVA6Cfg.DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES-1:CVA6Cfg.DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES];
     assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wtag_comp[k] == wr_cl_idx_d)) |
                            (wr_cl_vld_q & valid[k] & (wtag_comp[k] == wr_cl_idx_q));
 

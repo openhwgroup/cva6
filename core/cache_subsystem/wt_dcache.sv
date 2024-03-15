@@ -77,7 +77,7 @@ module wt_dcache
   logic     [      DCACHE_SET_ASSOC-1:0]                            wr_cl_we;
   logic     [      CVA6Cfg.DCACHE_TAG_WIDTH-1:0]                            wr_cl_tag;
   logic     [   DCACHE_CL_IDX_WIDTH-1:0]                            wr_cl_idx;
-  logic     [   DCACHE_OFFSET_WIDTH-1:0]                            wr_cl_off;
+  logic     [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0]                            wr_cl_off;
   logic     [     DCACHE_LINE_WIDTH-1:0]                            wr_cl_data;
   logic     [DCACHE_USER_LINE_WIDTH-1:0]                            wr_cl_user;
   logic     [   DCACHE_LINE_WIDTH/8-1:0]                            wr_cl_data_be;
@@ -85,7 +85,7 @@ module wt_dcache
   logic     [      DCACHE_SET_ASSOC-1:0]                            wr_req;
   logic                                                             wr_ack;
   logic     [   DCACHE_CL_IDX_WIDTH-1:0]                            wr_idx;
-  logic     [   DCACHE_OFFSET_WIDTH-1:0]                            wr_off;
+  logic     [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0]                            wr_off;
   logic     [           riscv::XLEN-1:0]                            wr_data;
   logic     [       (riscv::XLEN/8)-1:0]                            wr_data_be;
   logic     [     DCACHE_USER_WIDTH-1:0]                            wr_user;
@@ -111,7 +111,7 @@ module wt_dcache
   logic     [              NumPorts-1:0]                            rd_ack;
   logic     [              NumPorts-1:0][     CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag;
   logic     [              NumPorts-1:0][  DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
-  logic     [              NumPorts-1:0][  DCACHE_OFFSET_WIDTH-1:0] rd_off;
+  logic     [              NumPorts-1:0][  CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] rd_off;
   logic     [           riscv::XLEN-1:0]                            rd_data;
   logic     [     DCACHE_USER_WIDTH-1:0]                            rd_user;
   logic     [      DCACHE_SET_ASSOC-1:0]                            rd_vld_bits;
@@ -247,7 +247,7 @@ module wt_dcache
       assign miss_id[k] = {{CVA6Cfg.MEM_TID_WIDTH} {1'b0}};
       assign rd_tag[k] = {{CVA6Cfg.DCACHE_TAG_WIDTH} {1'b0}};
       assign rd_idx[k] = {{DCACHE_CL_IDX_WIDTH} {1'b0}};
-      assign rd_off[k] = {{DCACHE_OFFSET_WIDTH} {1'b0}};
+      assign rd_off[k] = {{CVA6Cfg.DCACHE_OFFSET_WIDTH} {1'b0}};
       assign rd_req[k] = 1'b0;
       assign rd_tag_only[k] = 1'b0;
     end

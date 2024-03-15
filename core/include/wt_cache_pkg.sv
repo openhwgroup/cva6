@@ -45,9 +45,6 @@ package wt_cache_pkg;
   localparam ADAPTER_RTRN_FIFO_DEPTH = 2;
 
 
-  // Calculated parameter
-  localparam DCACHE_OFFSET_WIDTH = $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8);
-
   // write buffer parameterization
   localparam DCACHE_WBUF_DEPTH = ariane_pkg::WT_DCACHE_WBUF_DEPTH;
 

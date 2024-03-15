@@ -63,7 +63,7 @@ module wt_dcache_missunit
     output logic [DCACHE_SET_ASSOC-1:0] wr_cl_we_o,  // writes a full cacheline
     output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] wr_cl_tag_o,
     output logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_o,
-    output logic [DCACHE_OFFSET_WIDTH-1:0] wr_cl_off_o,
+    output logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_cl_off_o,
     output logic [DCACHE_LINE_WIDTH-1:0] wr_cl_data_o,
     output logic [DCACHE_USER_LINE_WIDTH-1:0] wr_cl_user_o,
     output logic [DCACHE_LINE_WIDTH/8-1:0] wr_cl_data_be_o,
@@ -99,7 +99,7 @@ module wt_dcache_missunit
       3'b001:  out[0:0] = '0;
       3'b010:  out[1:0] = '0;
       3'b011:  out[2:0] = '0;
-      3'b111:  out[DCACHE_OFFSET_WIDTH-1:0] = '0;
+      3'b111:  out[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] = '0;
       default: ;
     endcase
     return out;
@@ -224,19 +224,19 @@ module wt_dcache_missunit
 
 
   for (genvar k = 0; k < NumPorts; k++) begin : gen_rdrd_collision
-    assign mshr_rdrd_collision[k]   = (mshr_q.paddr[riscv::PLEN-1:DCACHE_OFFSET_WIDTH] == miss_paddr_i[k][riscv::PLEN-1:DCACHE_OFFSET_WIDTH]) && (mshr_vld_q | mshr_vld_q1);
+    assign mshr_rdrd_collision[k]   = (mshr_q.paddr[riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == miss_paddr_i[k][riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) && (mshr_vld_q | mshr_vld_q1);
     assign mshr_rdrd_collision_d[k] = (!miss_req_i[k]) ? 1'b0 : mshr_rdrd_collision_q[k] | mshr_rdrd_collision[k];
   end
 
   // read/write collision, stalls the corresponding request
   // write port[NumPorts-1] collides with MSHR_Q
-  assign mshr_rdwr_collision = (mshr_q.paddr[riscv::PLEN-1:DCACHE_OFFSET_WIDTH] == miss_paddr_i[NumPorts-1][riscv::PLEN-1:DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
+  assign mshr_rdwr_collision = (mshr_q.paddr[riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == miss_paddr_i[NumPorts-1][riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
 
   // read collides with inflight TX
   always_comb begin : p_tx_coll
     tx_rdwr_collision = 1'b0;
     for (int k = 0; k < CVA6Cfg.DCACHE_MAX_TX; k++) begin
-      tx_rdwr_collision |= (miss_paddr_i[miss_port_idx][riscv::PLEN-1:DCACHE_OFFSET_WIDTH] == tx_paddr_i[k][riscv::PLEN-1:DCACHE_OFFSET_WIDTH]) && tx_vld_i[k];
+      tx_rdwr_collision |= (miss_paddr_i[miss_port_idx][riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == tx_paddr_i[k][riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) && tx_vld_i[k];
     end
   end
 
@@ -285,7 +285,7 @@ module wt_dcache_missunit
         assign amo_rtrn_mux = mem_rtrn_i.data[0+:64];
       end
     end else begin : gen_piton_rtrn_mux
-      assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64+:64];
+      assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:3]*64+:64];
     end
 
     // always sign extend 32bit values
@@ -411,11 +411,11 @@ module wt_dcache_missunit
   ) : '0;
 
   assign wr_cl_idx_o     = (flush_en) ? cnt_q                                                        :
-                           (inv_vld)  ? mem_rtrn_i.inv.idx[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH] :
-                                        mshr_q.paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
+                           (inv_vld)  ? mem_rtrn_i.inv.idx[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] :
+                                        mshr_q.paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH];
 
   assign wr_cl_tag_o = mshr_q.paddr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
-  assign wr_cl_off_o = mshr_q.paddr[DCACHE_OFFSET_WIDTH-1:0];
+  assign wr_cl_off_o = mshr_q.paddr[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0];
   assign wr_cl_data_o = mem_rtrn_i.data;
   assign wr_cl_user_o = mem_rtrn_i.user;
   assign wr_cl_data_be_o = (cl_write_en) ? '1 : '0;// we only write complete cachelines into the memory
