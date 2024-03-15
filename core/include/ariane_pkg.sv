@@ -249,7 +249,6 @@ package ariane_pkg;
   localparam int unsigned MEM_TID_WIDTH = `L15_THREADID_WIDTH;
 `else
   // I$
-  localparam int unsigned CONFIG_L1I_SIZE = cva6_config_pkg::CVA6ConfigIcacheByteSize;  // in byte
   localparam int unsigned ICACHE_LINE_WIDTH = cva6_config_pkg::CVA6ConfigIcacheLineWidth;  // in bit
   localparam int unsigned ICACHE_USER_LINE_WIDTH  = (AXI_USER_WIDTH == 1) ? 4 : cva6_config_pkg::CVA6ConfigIcacheLineWidth; // in bit
   // D$

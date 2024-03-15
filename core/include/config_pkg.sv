@@ -132,6 +132,8 @@ package config_pkg;
     bit                          DebugEn;
     // AXI burst in write
     bit                          AxiBurstWriteEn;
+    // Instruction cache size (in bytes)
+    int unsigned IcacheByteSize;
     // Instruction cache associativity (number of ways)
     int unsigned IcacheSetAssoc;
     // Data cache associativity (number of ways)
