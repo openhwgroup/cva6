@@ -604,9 +604,15 @@ package riscv;
   localparam logic [63:0] MSTATUS_TVM = 'h00100000;
   localparam logic [63:0] MSTATUS_TW = 'h00200000;
   localparam logic [63:0] MSTATUS_TSR = 'h00400000;
-  localparam logic [63:0] MSTATUS_UXL = {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
-  localparam logic [63:0] MSTATUS_SXL = {28'h0000000, IS_XLEN64, IS_XLEN64, 34'h00000000};
-  localparam logic [63:0] MSTATUS_SD = {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
+  function automatic logic [63:0] mstatus_uxl(logic IS_XLEN64);
+    return {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
+  endfunction
+  function automatic logic [63:0] mstatus_sxl(logic IS_XLEN64);
+    return {28'h0000000, IS_XLEN64, IS_XLEN64, 34'h00000000};
+  endfunction
+  function automatic logic [63:0] mstatus_sd(logic IS_XLEN64);
+    return {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
+  endfunction
 
   typedef enum logic [2:0] {
     CSRRW  = 3'h1,
