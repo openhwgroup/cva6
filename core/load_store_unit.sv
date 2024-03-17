@@ -126,9 +126,9 @@ module load_store_unit
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
     // TLB flush - CONTROLLER
-    input  logic                               flush_tlb_i,
-    input  logic                               flush_tlb_vvma_i,
-    input  logic                               flush_tlb_gvma_i,
+    input  logic                                flush_tlb_i,
+    input  logic                                flush_tlb_vvma_i,
+    input  logic                                flush_tlb_gvma_i,
     // Instruction TLB miss - PERF_COUNTERS
     output logic                                      itlb_miss_o,
     // Data TLB miss - PERF_COUNTERS
@@ -183,7 +183,11 @@ module load_store_unit
   assign vaddr_i = vaddr_xlen[CVA6Cfg.VLEN-1:0];
   // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
   assign overflow = (CVA6Cfg.IS_XLEN64 && (!((&vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SV-1]) == 1'b0)));
-  assign g_overflow = (CVA6Cfg.RVH) ? !((|vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SVX]) == 1'b0) : 1'b0;
+  if (CVA6Cfg.RVH) begin : gen_g_overflow_hyp
+    assign g_overflow = (CVA6Cfg.IS_XLEN64 && (!((|vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SVX]) == 1'b0)));
+  end else begin : gen_g_overflow_no_hyp
+    assign g_overflow = 1'b0;
+  end
 
   logic                   st_valid_i;
   logic                   ld_valid_i;
@@ -222,8 +226,8 @@ module load_store_unit
   exception_t                             ld_ex;
   exception_t                             st_ex;
 
-  logic                             hs_ld_st_inst;
-  logic                             hlvx_inst;
+  logic                           hs_ld_st_inst;
+  logic                           hlvx_inst;
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
@@ -271,9 +275,15 @@ module load_store_unit
   end else if (MMU_PRESENT && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
+        .exception_t      (exception_t),
+        .icache_areq_t    (icache_areq_t),
+        .icache_arsp_t    (icache_arsp_t),
+        .icache_dreq_t    (icache_dreq_t),
+        .icache_drsp_t    (icache_drsp_t),
+        .dcache_req_i_t   (dcache_req_i_t),
+        .dcache_req_o_t   (dcache_req_o_t),
         .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-        .ASID_WIDTH       (ASID_WIDTH)
+        .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES)
     ) i_cva6_mmu (
         // misaligned bypass
         .misaligned_ex_i(misaligned_exception),
@@ -625,7 +635,7 @@ module load_store_unit
     if (data_misaligned) begin
 
       if (lsu_ctrl.fu == LOAD) begin
-        misaligned_exception.cause = CVA6Cfg.LD_ADDR_MISALIGNED;
+        misaligned_exception.cause = riscv::LD_ADDR_MISALIGNED;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
           misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
@@ -634,7 +644,7 @@ module load_store_unit
         misaligned_exception.gva   = ld_st_v_i;
 
       end else if (lsu_ctrl.fu == STORE) begin
-        misaligned_exception.cause = CVA6Cfg.ST_ADDR_MISALIGNED;
+        misaligned_exception.cause = riscv::ST_ADDR_MISALIGNED;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
           misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};

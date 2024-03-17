@@ -23,8 +23,9 @@ module cva6_ptw_sv39x4
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter int ASID_WIDTH = 1,
-    parameter int VMID_WIDTH = 1
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type tlb_update_t = logic
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -52,23 +53,23 @@ module cva6_ptw_sv39x4
 
 
     // to TLBs, update logic
-    output tlb_update_sv39x4_t itlb_update_o,
-    output tlb_update_sv39x4_t dtlb_update_o,
+    output tlb_update_t itlb_update_o,
+    output tlb_update_t dtlb_update_o,
 
-    output logic [CVA6Cfg.:VLEN-1:0] update_vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] update_vaddr_o,
 
-    input logic [ ASID_WIDTH-1:0] asid_i,
-    input logic [ ASID_WIDTH-1:0] vs_asid_i,
-    input logic [ VMID_WIDTH-1:0] vmid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] vs_asid_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
     // from TLBs
     // did we miss?
     input logic                   itlb_access_i,
     input logic                   itlb_hit_i,
-    input logic [CVA6Cfg.:VLEN-1:0] itlb_vaddr_i,
+    input logic [CVA6Cfg.VLEN-1:0] itlb_vaddr_i,
 
     input  logic                   dtlb_access_i,
     input  logic                   dtlb_hit_i,
-    input  logic [CVA6Cfg.:VLEN-1:0] dtlb_vaddr_i,
+    input  logic [CVA6Cfg.VLEN-1:0] dtlb_vaddr_i,
     // from CSR file
     input  logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,     // ppn from satp
     input  logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_i,    // ppn from satp
@@ -81,7 +82,7 @@ module cva6_ptw_sv39x4
     // PMP
 
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
-    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     output logic [CVA6Cfg.GPLEN-1:0] bad_gpaddr_o
 
 );
@@ -130,9 +131,9 @@ module cva6_ptw_sv39x4
   // latched tag signal
   logic tag_valid_n, tag_valid_q;
   // register the ASID
-  logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VMID
-  logic [VMID_WIDTH-1:0] tlb_update_vmid_q, tlb_update_vmid_n;
+  logic [CVA6Cfg.VMID_WIDTH-1:0] tlb_update_vmid_q, tlb_update_vmid_n;
   // register the VPN we need to walk, SV39 defines a 39 bit virtual address
   logic [CVA6Cfg.VLEN-1:0] vaddr_q, vaddr_n;
   // register the VPN we need to walk, SV39x4 defines a 41 bit virtual address for the G-Stage
@@ -147,8 +148,8 @@ module cva6_ptw_sv39x4
   assign ptw_active_o = (state_q != IDLE);
   assign walking_instr_o = is_instr_ptw_q;
   // directly output the correct physical address
-  assign req_port_o.address_index = ptw_pptr_q[DCACHE_INDEX_WIDTH-1:0];
-  assign req_port_o.address_tag   = ptw_pptr_q[DCACHE_INDEX_WIDTH+DCACHE_TAG_WIDTH-1:DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_index = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_tag   = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH+CVA6Cfg.DCACHE_TAG_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
   // we are never going to kill this request
   assign req_port_o.kill_req = '0;
   // we are never going to write with the HPTW
@@ -226,8 +227,8 @@ module cva6_ptw_sv39x4
 
   pmp #(
       .CVA6Cfg   (CVA6Cfg),
-      .PLEN      (riscv::PLEN),
-      .PMP_LEN   (riscv::PLEN - 2),
+      .PLEN      (CVA6Cfg.PLEN),
+      .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
   ) i_pmp_ptw (
       .addr_i       (ptw_pptr_q),
@@ -266,7 +267,7 @@ module cva6_ptw_sv39x4
   //        pa.ppn[i-1:0] = va.vpn[i-1:0].
   //      - pa.ppn[LEVELS-1:i] = pte.ppn[LEVELS-1:i].
   always_comb begin : ptw
-    automatic logic [ riscv::PLEN-1:0] pptr;
+    automatic logic [ CVA6Cfg.PLEN-1:0] pptr;
     automatic logic [CVA6Cfg.GPLEN-1:0] gpaddr;
     // default assignments
     // PTW memory interface
@@ -315,17 +316,17 @@ module cva6_ptw_sv39x4
         if ((enable_translation_i | enable_g_translation_i) & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
           if (enable_translation_i && enable_g_translation_i) begin
             ptw_stage_d = G_INTERMED_STAGE;
-            pptr = {vsatp_ppn_i, itlb_vaddr_i[CVA6Cfg.GPPNW-1:30], 3'b0};
+            pptr = {vsatp_ppn_i, itlb_vaddr_i[CVA6Cfg.SV-1:30], 3'b0};
             gptw_pptr_n = pptr;
-            ptw_pptr_n = {hgatp_ppn_i[CVA6Cfg.PPNW-1:2], pptr[CVA6Cfg.GPPNWX-1:30], 3'b0};
+            ptw_pptr_n = {hgatp_ppn_i[CVA6Cfg.PPNW-1:2], pptr[CVA6Cfg.SVX-1:30], 3'b0};
           end else if (!enable_translation_i && enable_g_translation_i) begin
             ptw_stage_d = G_FINAL_STAGE;
-            gpaddr_n = itlb_vaddr_i[CVA6Cfg.GPPNWX-1:0];
-            ptw_pptr_n = {hgatp_ppn_i[CVA6Cfg.PPNW-1:2], itlb_vaddr_i[CVA6Cfg.GPPNWX-1:30], 3'b0};
+            gpaddr_n = itlb_vaddr_i[CVA6Cfg.SVX-1:0];
+            ptw_pptr_n = {hgatp_ppn_i[CVA6Cfg.PPNW-1:2], itlb_vaddr_i[CVA6Cfg.SVX-1:30], 3'b0};
           end else begin
             ptw_stage_d = S_STAGE;
-            if (v_i) ptw_pptr_n = {vsatp_ppn_i, itlb_vaddr_i[CVA6Cfg.GPPNW-1:30], 3'b0};
-            else ptw_pptr_n = {satp_ppn_i, itlb_vaddr_i[CVA6Cfg.GPPNW-1:30], 3'b0};
+            if (v_i) ptw_pptr_n = {vsatp_ppn_i, itlb_vaddr_i[CVA6Cfg.SV-1:30], 3'b0};
+            else ptw_pptr_n = {satp_ppn_i, itlb_vaddr_i[CVA6Cfg.SV-1:30], 3'b0};
           end
           is_instr_ptw_n    = 1'b1;
           tlb_update_asid_n = v_i ? vs_asid_i : asid_i;
@@ -337,17 +338,17 @@ module cva6_ptw_sv39x4
         end else if ((en_ld_st_translation_i || en_ld_st_g_translation_i) & dtlb_access_i & ~dtlb_hit_i) begin
           if (en_ld_st_translation_i && en_ld_st_g_translation_i) begin
             ptw_stage_d = G_INTERMED_STAGE;
-            pptr = {vsatp_ppn_i, dtlb_vaddr_i[CVA6Cfg.GPPNW-1:30], 3'b0};
+            pptr = {vsatp_ppn_i, dtlb_vaddr_i[CVA6Cfg.SV-1:30], 3'b0};
             gptw_pptr_n = pptr;
-            ptw_pptr_n = {hgatp_ppn_i[CVA6Cfg.PPNW-1:2], pptr[CVA6Cfg.GPPNWX-1:30], 3'b0};
+            ptw_pptr_n = {hgatp_ppn_i[CVA6Cfg.PPNW-1:2], pptr[CVA6Cfg.SVX-1:30], 3'b0};
           end else if (!en_ld_st_translation_i && en_ld_st_g_translation_i) begin
             ptw_stage_d = G_FINAL_STAGE;
-            gpaddr_n = dtlb_vaddr_i[CVA6Cfg.GPPNWX-1:0];
-            ptw_pptr_n = {hgatp_ppn_i[CVA6Cfg.PPNW-1:2], dtlb_vaddr_i[CVA6Cfg.GPPNWX-1:30], 3'b0};
+            gpaddr_n = dtlb_vaddr_i[CVA6Cfg.SVX-1:0];
+            ptw_pptr_n = {hgatp_ppn_i[CVA6Cfg.PPNW-1:2], dtlb_vaddr_i[CVA6Cfg.SVX-1:30], 3'b0};
           end else begin
             ptw_stage_d = S_STAGE;
-            if (ld_st_v_i) ptw_pptr_n = {vsatp_ppn_i, dtlb_vaddr_i[CVA6Cfg.GPPNW-1:30], 3'b0};
-            else ptw_pptr_n = {satp_ppn_i, dtlb_vaddr_i[CVA6Cfg.GPPNW-1:30], 3'b0};
+            if (ld_st_v_i) ptw_pptr_n = {vsatp_ppn_i, dtlb_vaddr_i[CVA6Cfg.SV-1:30], 3'b0};
+            else ptw_pptr_n = {satp_ppn_i, dtlb_vaddr_i[CVA6Cfg.SV-1:30], 3'b0};
           end
           tlb_update_asid_n = ld_st_v_i ? vs_asid_i : asid_i;
           tlb_update_vmid_n = vmid_i;
@@ -589,7 +590,8 @@ module cva6_ptw_sv39x4
       // 1. in the PTE Lookup check whether we still need to wait for an rvalid
       // 2. waiting for a grant, if so: wait for it
       // if not, go back to idle
-      if ((state_q == PTE_LOOKUP && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
+      if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) ||
+                ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
         state_d = WAIT_RVALID;
       else state_d = IDLE;
     end

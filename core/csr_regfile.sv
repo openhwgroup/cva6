@@ -148,7 +148,6 @@ module csr_regfile
     output logic debug_mode_o,
     // we are in single-step mode - COMMIT_STAGE
     output logic single_step_o,
-    output logic hu_o,  // hypervisor user mode
     // L1 ICache Enable - CACHE
     output logic icache_en_o,
     // L1 DCache Enable - CACHE
@@ -184,7 +183,7 @@ module csr_regfile
 
   typedef struct packed {
     logic [CVA6Cfg.ModeW-1:0] mode;
-    logic [1:0]       warl0;
+    logic [1:0]               warl0;
     logic [CVA6Cfg.VMIDW-1:0] vmid;
     logic [CVA6Cfg.PPNW-1:0]  ppn;
   } hgatp_t;
@@ -252,6 +251,7 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] hcounteren_q, hcounteren_d;
   logic [CVA6Cfg.XLEN-1:0] hgeie_q, hgeie_d;
   logic [CVA6Cfg.XLEN-1:0] htinst_q, htinst_d;
+  logic [CVA6Cfg.XLEN-1:0] htval_q, htval_d;
 
   logic [CVA6Cfg.XLEN-1:0] vstvec_q, vstvec_d;
   logic [CVA6Cfg.XLEN-1:0] vsscratch_q, vsscratch_d;
@@ -307,8 +307,12 @@ module csr_regfile
   // ----------------
   assign mstatus_extended = CVA6Cfg.IS_XLEN64 ? mstatus_q[CVA6Cfg.XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
-  assign vsstatus_extended = riscv::IS_XLEN64 ? vsstatus_q[CVA6Cfg.XLEN-1:0] :
-                              {vsstatus_q.sd, vsstatus_q.wpri3[7:0], vsstatus_q[22:0]};
+  if (CVA6Cfg.RVH) begin
+    assign vsstatus_extended = CVA6Cfg.IS_XLEN64 ? vsstatus_q[CVA6Cfg.XLEN-1:0] :
+                                {vsstatus_q.sd, vsstatus_q.wpri3[7:0], vsstatus_q[22:0]};
+  end else begin
+    assign vsstatus_extended = '0;
+  end
 
   always_comb begin : csr_read_process
     // a read access exception can only occur if we attempt to read a CSR which does not exist
@@ -1006,12 +1010,12 @@ module csr_regfile
             if (priv_lvl_o == riscv::PRIV_LVL_S && hstatus_q.vtvm && v_q) begin
               virtual_update_access_exception = 1'b1;
             end else begin
-              vsatp      = riscv::satp_t'(csr_wdata);
+              vsatp      = satp_t'(csr_wdata);
               // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
               vsatp.asid = vsatp.asid & {{(CVA6Cfg.ASIDW - AsidWidth) {1'b0}}, {AsidWidth{1'b1}}};
               // only update if we actually support this mode
-              if (config_pkg::vm_mode_t'(vsatp.mode) == riscv::ModeOff ||
-                                config_pkg::vm_mode_t'(vsatp.mode) == riscv::MODE_SV)
+              if (config_pkg::vm_mode_t'(vsatp.mode) == config_pkg::ModeOff ||
+                                config_pkg::vm_mode_t'(vsatp.mode) == CVA6Cfg.MODE_SV)
                 vsatp_d = vsatp;
             end
             // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
@@ -1107,8 +1111,8 @@ module csr_regfile
         //hypervisor mode registers
         riscv::CSR_HSTATUS: begin
           if (CVA6Cfg.RVH) begin
-            mask = ariane_pkg::HSTATUS_WRITE_MASK[rCVA6CfgXLEN-1:0];
-            hstatus_d = (hstatus_q & ~{{64-CVA6CfgXLEN{1'b0}}, mask}) | {{64-CVA6Cfg.XLEN{1'b0}}, (csr_wdata & mask)};
+            mask = ariane_pkg::HSTATUS_WRITE_MASK[CVA6Cfg.XLEN-1:0];
+            hstatus_d = (hstatus_q & ~{{64-CVA6Cfg.XLEN{1'b0}}, mask}) | {{64-CVA6Cfg.XLEN{1'b0}}, (csr_wdata & mask)};
             // this instruction has side-effects
             flush_o = 1'b1;
           end else begin
@@ -1198,14 +1202,14 @@ module csr_regfile
             if (priv_lvl_o == riscv::PRIV_LVL_S && !v_q && mstatus_q.tvm)
               update_access_exception = 1'b1;
             else begin
-              hgatp      = riscv::hgatp_t'(csr_wdata);
+              hgatp      = hgatp_t'(csr_wdata);
               //hardwire PPN[1:0] to zero
               hgatp[1:0] = 2'b0;
               // only make VMID_LEN - 1 bit stick, that way software can figure out how many VMID bits are supported
-              hgatp.vmid = hgatp.vmid & {{(riscv::VMIDW - VmidWidth) {1'b0}}, {VmidWidth{1'b1}}};
+              hgatp.vmid = hgatp.vmid & {{(CVA6Cfg.VMIDW - VmidWidth) {1'b0}}, {VmidWidth{1'b1}}};
               // only update if we actually support this mode
-              if (riscv::vm_mode_t'(hgatp.mode) == riscv::ModeOff ||
-                            riscv::vm_mode_t'(hgatp.mode) == riscv::MODE_SV)
+              if (config_pkg::vm_mode_t'(hgatp.mode) == config_pkg::ModeOff ||
+                            config_pkg::vm_mode_t'(hgatp.mode) == CVA6Cfg.MODE_SV)
                 hgatp_d = hgatp;
             end
             // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
@@ -1499,15 +1503,15 @@ module csr_regfile
       endcase
     end
 
-    mstatus_d.sxl = CVA6Cfg.XLEN_64;
-    mstatus_d.uxl = CVA6Cfg.XLEN_64;
+    mstatus_d.sxl = riscv::XLEN_64;
+    mstatus_d.uxl = riscv::XLEN_64;
     if (!CVA6Cfg.RVU) begin
       mstatus_d.mpp = riscv::PRIV_LVL_M;
     end
 
     if (CVA6Cfg.RVH) begin
-      hstatus_d.vsxl = CVA6Cfg.XLEN_64;
-      vsstatus_d.uxl = CVA6Cfg.XLEN_64;
+      hstatus_d.vsxl = riscv::XLEN_64;
+      vsstatus_d.uxl = riscv::XLEN_64;
     end
     // mark the floating point extension register as dirty
     if (CVA6Cfg.FpPresent && (dirty_fp_state_csr || dirty_fp_state_i)) begin
@@ -1839,11 +1843,11 @@ module csr_regfile
 
       ld_st_v_o = ((mprv ? mstatus_q.mpv : v_q) || (csr_hs_ld_st_inst_i));
 
-      en_ld_st_translation_o = (en_ld_st_translation_q && !csr_hs_ld_st_inst_i) || (riscv::vm_mode_t'(vsatp_q.mode) == riscv::MODE_SV && csr_hs_ld_st_inst_i);
+      en_ld_st_translation_o = (en_ld_st_translation_q && !csr_hs_ld_st_inst_i) || (config_pkg::vm_mode_t'(vsatp_q.mode) == CVA6Cfg.MODE_SV && csr_hs_ld_st_inst_i);
 
-      en_ld_st_g_translation_o = (en_ld_st_g_translation_q && !csr_hs_ld_st_inst_i) || (csr_hs_ld_st_inst_i && riscv::vm_mode_t'(hgatp_q.mode) == riscv::MODE_SV && csr_hs_ld_st_inst_i);
+      en_ld_st_g_translation_o = (en_ld_st_g_translation_q && !csr_hs_ld_st_inst_i) || (csr_hs_ld_st_inst_i && config_pkg::vm_mode_t'(hgatp_q.mode) == CVA6Cfg.MODE_SV && csr_hs_ld_st_inst_i);
     end else begin
-      if (ariane_pkg::MMU_PRESENT && mprv && CVA6Cfg.RVS && riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
+      if (ariane_pkg::MMU_PRESENT && mprv && CVA6Cfg.RVS && config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
         en_ld_st_translation_d = 1'b1;
       else  // otherwise we go with the regular settings
         en_ld_st_translation_d = en_translation_o;
@@ -2201,7 +2205,7 @@ module csr_regfile
                               ? 1'b1
                               : 1'b0;
   end else begin
-    assign en_translation_o = (CVA6Cfg.RVS && riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV &&
+    assign en_translation_o = (CVA6Cfg.RVS && config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV &&
                               priv_lvl_o != riscv::PRIV_LVL_M)
                              ? 1'b1
                              : 1'b0;

@@ -146,11 +146,11 @@ package ariane_pkg;
                                                     | riscv::HSTATUS_VTSR;
 
   // hypervisor delegable interrupts
-  localparam logic [riscv::XLEN-1:0] HS_DELEG_INTERRUPTS = riscv::MIP_VSSIP
+  localparam logic [63:0] HS_DELEG_INTERRUPTS = riscv::MIP_VSSIP
                                                     | riscv::MIP_VSTIP
                                                     | riscv::MIP_VSEIP;
   // virtual supervisor delegable interrupts
-  localparam logic [riscv::XLEN-1:0] VS_DELEG_INTERRUPTS = riscv::MIP_VSSIP
+  localparam logic [63:0] VS_DELEG_INTERRUPTS = riscv::MIP_VSSIP
                                                     | riscv::MIP_VSTIP
                                                     | riscv::MIP_VSEIP;
 
@@ -775,29 +775,29 @@ package ariane_pkg;
   endfunction : is_trans_2M
 
   // computes the paddr based on the page size, ppn and offset
-  function automatic logic [(riscv::GPLEN-1):0] make_gpaddr(
+  function automatic logic [40:0] make_gpaddr(
       input logic s_st_enbl, input logic is_1G, input logic is_2M,
-      input logic [(riscv::VLEN-1):0] vaddr, input riscv::pte_t pte);
-    logic [(riscv::GPLEN-1):0] gpaddr;
+      input logic [63:0] vaddr, input riscv::pte_t pte);
+    logic [40:0] gpaddr;
     if (s_st_enbl) begin
-      gpaddr = {pte.ppn[(riscv::GPPNW-1):0], vaddr[11:0]};
+      gpaddr = {pte.ppn[28:0], vaddr[11:0]};
       // Giga page
       if (is_1G) gpaddr[29:12] = vaddr[29:12];
       // Mega page
       if (is_2M) gpaddr[20:12] = vaddr[20:12];
     end else begin
-      gpaddr = vaddr[(riscv::GPLEN-1):0];
+      gpaddr = vaddr[40:0];
     end
     return gpaddr;
   endfunction : make_gpaddr
 
   // computes the final gppn based on the guest physical address
-  function automatic logic [(riscv::GPPNW-1):0] make_gppn(input logic s_st_enbl, input logic is_1G,
+  function automatic logic [28:0] make_gppn (input logic s_st_enbl, input logic is_1G,
                                                           input logic is_2M, input logic [28:0] vpn,
                                                           input riscv::pte_t pte);
-    logic [(riscv::GPPNW-1):0] gppn;
+    logic [28:0] gppn;
     if (s_st_enbl) begin
-      gppn = pte.ppn[(riscv::GPPNW-1):0];
+      gppn = pte.ppn[28:0];
       if (is_2M) gppn[8:0] = vpn[8:0];
       if (is_1G) gppn[17:0] = vpn[17:0];
     end else begin

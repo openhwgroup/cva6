@@ -368,7 +368,7 @@ module cva6
   fu_data_t fu_data_id_ex;
   logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
   logic is_compressed_instr_id_ex;
-  riscv::xlen_t tinst_ex;
+  logic [riscv::XLEN-1:0] tinst_ex;
   // fixed latency units
   logic flu_ready_ex_id;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
@@ -538,7 +538,7 @@ module cva6
   logic                                                     fence_i_commit_controller;
   logic                                                     fence_commit_controller;
   logic                                                     sfence_vma_commit_controller;
-    logic                                                   hfence_vvma_commit_controller;
+  logic                                                     hfence_vvma_commit_controller;
   logic                                                     hfence_gvma_commit_controller;
   logic                                                     halt_ctrl;
   logic                                                     halt_csr_ctrl;
@@ -1029,35 +1029,35 @@ module cva6
       .en_g_translation_o    (enable_g_translation_csr_ex),
       .en_ld_st_translation_o(en_ld_st_translation_csr_ex),
       .en_ld_st_g_translation_o(en_ld_st_g_translation_csr_ex),
-      .sum_o                 (sum_csr_ex),
-      .vs_sum_o              (vs_sum_csr_ex),
-      .mxr_o                 (mxr_csr_ex),
-      .vmxr_o                (vmxr_csr_ex),
-      .satp_ppn_o            (satp_ppn_csr_ex),
-      .asid_o                (asid_csr_ex),
-      .vsatp_ppn_o           (vsatp_ppn_csr_ex),
-      .vs_asid_o             (vs_asid_csr_ex),
-      .hgatp_ppn_o           (hgatp_ppn_csr_ex),
-      .vmid_o                (vmid_csr_ex),
-      .tvm_o                 (tvm_csr_id),
-      .tw_o                  (tw_csr_id),
-      .vtw_o                 (vtw_csr_id),
-      .tsr_o                 (tsr_csr_id),
-      .hu_o                  (hu),
-      .debug_mode_o          (debug_mode),
-      .single_step_o         (single_step_csr_commit),
-      .dcache_en_o           (dcache_en_csr_nbdcache),
-      .icache_en_o           (icache_en_csr),
-      .acc_cons_en_o         (acc_cons_en_csr),
-      .perf_addr_o           (addr_csr_perf),
-      .perf_data_o           (data_csr_perf),
-      .perf_data_i           (data_perf_csr),
-      .perf_we_o             (we_csr_perf),
-      .pmpcfg_o              (pmpcfg),
-      .pmpaddr_o             (pmpaddr),
-      .mcountinhibit_o       (mcountinhibit_csr_perf),
+      .sum_o                   (sum_csr_ex),
+      .vs_sum_o                (vs_sum_csr_ex),
+      .mxr_o                   (mxr_csr_ex),
+      .vmxr_o                  (vmxr_csr_ex),
+      .satp_ppn_o              (satp_ppn_csr_ex),
+      .asid_o                  (asid_csr_ex),
+      .vsatp_ppn_o             (vsatp_ppn_csr_ex),
+      .vs_asid_o               (vs_asid_csr_ex),
+      .hgatp_ppn_o             (hgatp_ppn_csr_ex),
+      .vmid_o                  (vmid_csr_ex),
+      .tvm_o                   (tvm_csr_id),
+      .tw_o                    (tw_csr_id),
+      .vtw_o                   (vtw_csr_id),
+      .tsr_o                   (tsr_csr_id),
+      .hu_o                    (hu),
+      .debug_mode_o            (debug_mode),
+      .single_step_o           (single_step_csr_commit),
+      .dcache_en_o             (dcache_en_csr_nbdcache),
+      .icache_en_o             (icache_en_csr),
+      .acc_cons_en_o           (acc_cons_en_csr),
+      .perf_addr_o             (addr_csr_perf),
+      .perf_data_o             (data_csr_perf),
+      .perf_data_i             (data_perf_csr),
+      .perf_we_o               (we_csr_perf),
+      .pmpcfg_o                (pmpcfg),
+      .pmpaddr_o               (pmpaddr),
+      .mcountinhibit_o         (mcountinhibit_csr_perf),
       //RVFI
-      .rvfi_csr_o            (rvfi_csr),
+      .rvfi_csr_o              (rvfi_csr),
       .debug_req_i,
       .ipi_i,
       .irq_i,

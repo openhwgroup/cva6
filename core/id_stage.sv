@@ -74,7 +74,7 @@ module id_stage #(
     // Virtual timeout wait - CSR_REGFILE
     input logic vtw_i,
     // Trap sret - CSR_REGFILE
-    input logic tsr_i
+    input logic tsr_i,
     // Hypervisor user mode - CSR_REGFILE
     input logic hu_i
 );

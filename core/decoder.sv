@@ -101,7 +101,7 @@ module decoder
   riscv::instruction_t instr;
   assign instr = riscv::instruction_t'(instruction_i);
   // transformed instruction
-  riscv::xlen_t                                                        tinst;
+  logic [CVA6Cfg.XLEN-1:0] tinst;
   // --------------------
   // Immediate select
   // --------------------
@@ -161,6 +161,7 @@ module decoder
     illegal_instr_non_bm                   = 1'b0;
     illegal_instr_bm                       = 1'b0;
     illegal_instr_zic                      = 1'b0;
+    virtual_illegal_instr                  = 1'b0;
     instruction_o.pc                       = pc_i;
     instruction_o.trans_id                 = '0;
     instruction_o.fu                       = NONE;

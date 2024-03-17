@@ -21,9 +21,8 @@ module cva6_tlb_sv39x4
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter int unsigned TLB_ENTRIES = 4,
-    parameter int unsigned ASID_WIDTH = 1,
-    parameter int unsigned VMID_WIDTH = 1
+    parameter type tlb_update_t = logic,
+    parameter int unsigned TLB_ENTRIES = 4
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -34,30 +33,30 @@ module cva6_tlb_sv39x4
     input logic g_st_enbl_i,  // g-stage enabled
     input logic v_i,  // virtualization mode
     // Update TLB
-    input tlb_update_sv39x4_t update_i,
+    input tlb_update_t update_i,
     // Lookup signals
     input logic lu_access_i,
-    input logic [ASID_WIDTH-1:0] lu_asid_i,
-    input logic [VMID_WIDTH-1:0] lu_vmid_i,
-    input logic [riscv::VLEN-1:0] lu_vaddr_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] lu_vmid_i,
+    input logic [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
     output logic [CVA6Cfg.GPLEN-1:0] lu_gpaddr_o,
     output riscv::pte_t lu_content_o,
     output riscv::pte_t lu_g_content_o,
-    input logic [ASID_WIDTH-1:0] asid_to_be_flushed_i,
-    input logic [VMID_WIDTH-1:0] vmid_to_be_flushed_i,
-    input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_to_be_flushed_i,
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     input logic [CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
     output logic lu_is_2M_o,
     output logic lu_is_1G_o,
     output logic lu_hit_o
 );
   localparam VPN2 = (CVA6Cfg.VLEN - 31 < 8) ? CVA6Cfg.VLEN - 31 : 8;
-  localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.CVA6CfgVLEN - 33 : 10;
+  localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.VLEN - 33 : 10;
 
   // SV39 defines three levels of page tables
   struct packed {
-    logic [ASID_WIDTH-1:0] asid;
-    logic [VMID_WIDTH-1:0] vmid;
+    logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
+    logic [CVA6Cfg.VMID_WIDTH-1:0] vmid;
     logic [GPPN2:0] vpn2;
     logic [8:0]            vpn1;
     logic [8:0]            vpn0;
@@ -172,7 +171,7 @@ module cva6_tlb_sv39x4
   logic [TLB_ENTRIES-1:0] gpaddr_gppn0_match;
   logic [TLB_ENTRIES-1:0] gpaddr_gppn1_match;
   logic [TLB_ENTRIES-1:0] gpaddr_gppn2_match;
-  logic [TLB_ENTRIES-1:0][(riscv::GPPNW-1):0] gppn;
+  logic [TLB_ENTRIES-1:0][(CVA6Cfg.GPPNW-1):0] gppn;
 
 
   assign asid_to_be_flushed_is0   = ~(|asid_to_be_flushed_i);
@@ -383,7 +382,7 @@ module cva6_tlb_sv39x4
       $error("TLB size must be a multiple of 2 and greater than 1");
       $stop();
     end
-    assert (ASID_WIDTH >= 1)
+    assert (CVA6Cfg.ASID_WIDTH >= 1)
     else begin
       $error("ASID width must be at least 1");
       $stop();

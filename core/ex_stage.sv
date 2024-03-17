@@ -49,7 +49,7 @@ module ex_stage
     // Report whether isntruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
     // Report instruction encoding - ISSUE_STAGE
-    input logic [riscv::XLEN-1:0] tinst_i,
+    input logic [CVA6Cfg.XLEN-1:0] tinst_i,
     // Fixed Latency Unit result - ISSUE_STAGE
     output logic [CVA6Cfg.XLEN-1:0] flu_result_o,
     // ID of the scoreboard entry at which a=to write back - ISSUE_STAGE
@@ -167,21 +167,21 @@ module ex_stage
     // Privilege mode - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
     // Virtualization mode - CSR_REGFILE
-    input  logic v_i,
+    input logic v_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
     input riscv::priv_lvl_t ld_st_priv_lvl_i,
     // Virtualization mode at which load and stores should happen - CSR_REGFILE
-    input  logic ld_st_v_i,
+    input logic ld_st_v_i,
     // Instruction is hypervisor load/store - CSR_REGFILE
     output logic csr_hs_ld_st_inst_o,
     // Supervisor user memory - CSR_REGFILE
     input logic sum_i,
     // Virtual Supervisor user memory - CSR_REGFILE
-    input  logic vs_sum_i,
+    input logic vs_sum_i,
     // Make executable readable - CSR_REGFILE
     input logic mxr_i,
     // Make executable readable Virtual Supervisor - CSR_REGFILE
-    input  logic vmxr_i,
+    input logic vmxr_i,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - CSR_REGFILE
@@ -580,7 +580,7 @@ module ex_stage
           // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
         end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operation == SFENCE_VMA) && csr_valid_i))) begin
           vaddr_to_be_flushed <= rs1_forwarding_i;
-          asid_to_be_flushed  <= rs2_forwarding_i[ASID_WIDTH-1:0];
+          asid_to_be_flushed  <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
         end
       end
     end

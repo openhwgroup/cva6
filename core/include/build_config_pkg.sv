@@ -32,7 +32,7 @@ package build_config_pkg;
     cfg.XLEN = CVA6Cfg.XLEN;
     cfg.VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;
     cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
-    cfg.GPLEN = (XLEN == 32) ? 34 : 41;
+    cfg.GPLEN = (CVA6Cfg.XLEN == 32) ? 34 : 41;
     cfg.IS_XLEN32 = IS_XLEN32;
     cfg.IS_XLEN64 = IS_XLEN64;
     cfg.XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);

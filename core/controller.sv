@@ -23,6 +23,8 @@ module controller
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
+    // Virtualization mode - CSR_REGFILE
+    input logic v_i,
     // Set PC om PC Gen - FRONTEND
     output logic set_pc_commit_o,
     // Flush the IF stage - FRONTEND
