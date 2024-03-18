@@ -37,16 +37,16 @@ module alu
 );
 
   logic [CVA6Cfg.XLEN-1:0] operand_a_rev;
-  logic [           31:0] operand_a_rev32;
+  logic [            31:0] operand_a_rev32;
   logic [  CVA6Cfg.XLEN:0] operand_b_neg;
   logic [CVA6Cfg.XLEN+1:0] adder_result_ext_o;
-  logic                   less;  // handles both signed and unsigned forms
-  logic [           31:0] rolw;  // Rotate Left Word
-  logic [           31:0] rorw;  // Rotate Right Word
+  logic                    less;  // handles both signed and unsigned forms
+  logic [            31:0] rolw;  // Rotate Left Word
+  logic [            31:0] rorw;  // Rotate Right Word
   logic [31:0] orcbw, rev8w;
   logic [  $clog2(CVA6Cfg.XLEN) : 0] cpop;  // Count Population
   logic [$clog2(CVA6Cfg.XLEN)-1 : 0] lz_tz_count;  // Count Leading Zeros
-  logic [                      4:0] lz_tz_wcount;  // Count Leading Zeros Word
+  logic [                       4:0] lz_tz_wcount;  // Count Leading Zeros Word
   logic lz_tz_empty, lz_tz_wempty;
   logic [CVA6Cfg.XLEN-1:0] orcbw_result, rev8w_result;
 
@@ -132,21 +132,21 @@ module alu
   // ---------
 
   // TODO: this can probably optimized significantly
-  logic                   shift_left;  // should we shift left
-  logic                   shift_arithmetic;
+  logic                    shift_left;  // should we shift left
+  logic                    shift_arithmetic;
 
   logic [CVA6Cfg.XLEN-1:0] shift_amt;  // amount of shift, to the right
   logic [CVA6Cfg.XLEN-1:0] shift_op_a;  // input of the shifter
-  logic [           31:0] shift_op_a32;  // input to the 32 bit shift operation
+  logic [            31:0] shift_op_a32;  // input to the 32 bit shift operation
 
   logic [CVA6Cfg.XLEN-1:0] shift_result;
-  logic [           31:0] shift_result32;
+  logic [            31:0] shift_result32;
 
   logic [  CVA6Cfg.XLEN:0] shift_right_result;
-  logic [           32:0] shift_right_result32;
+  logic [            32:0] shift_right_result32;
 
   logic [CVA6Cfg.XLEN-1:0] shift_left_result;
-  logic [           31:0] shift_left_result32;
+  logic [            31:0] shift_left_result32;
 
   assign shift_amt = fu_data_i.operand_b;
 
@@ -278,7 +278,8 @@ module alu
         ADDW, SUBW: result_o = {{CVA6Cfg.XLEN - 32{adder_result[31]}}, adder_result[31:0]};
         SH1ADDUW, SH2ADDUW, SH3ADDUW: result_o = adder_result;
         // Shifts 32 bit
-        SLLW, SRLW, SRAW: result_o = {{CVA6Cfg.XLEN - 32{shift_result32[31]}}, shift_result32[31:0]};
+        SLLW, SRLW, SRAW:
+        result_o = {{CVA6Cfg.XLEN - 32{shift_result32[31]}}, shift_result32[31:0]};
         default: ;
       endcase
     end
@@ -326,8 +327,8 @@ module alu
 
         // Count Leading/Trailing Zeros
         CLZ, CTZ:
-        result_o = (lz_tz_empty) ? ({{CVA6Cfg.XLEN - $clog2(CVA6Cfg.XLEN) {1'b0}}, lz_tz_count} + 1) :
-            {{CVA6Cfg.XLEN - $clog2(CVA6Cfg.XLEN) {1'b0}}, lz_tz_count};
+        result_o = (lz_tz_empty) ? ({{CVA6Cfg.XLEN - $clog2(CVA6Cfg.XLEN) {1'b0}}, lz_tz_count} + 1)
+            : {{CVA6Cfg.XLEN - $clog2(CVA6Cfg.XLEN) {1'b0}}, lz_tz_count};
 
         // Count population
         CPOP, CPOPW: result_o = {{(CVA6Cfg.XLEN - ($clog2(CVA6Cfg.XLEN) + 1)) {1'b0}}, cpop};

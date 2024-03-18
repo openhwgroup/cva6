@@ -294,12 +294,16 @@ module mmu
           icache_areq_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
           if (CVA6Cfg.TvalEn)
-            icache_areq_o.fetch_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr};
+            icache_areq_o.fetch_exception.tval = {
+              {CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr
+            };
         end else begin
           icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
           if (CVA6Cfg.TvalEn)
-            icache_areq_o.fetch_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr};
+            icache_areq_o.fetch_exception.tval = {
+              {CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr
+            };
         end
       end
     end

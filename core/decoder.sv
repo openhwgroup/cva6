@@ -1279,7 +1279,9 @@ module decoder
   // --------------------------------
   always_comb begin : sign_extend
     imm_i_type = {{CVA6Cfg.XLEN - 12{instruction_i[31]}}, instruction_i[31:20]};
-    imm_s_type = {{CVA6Cfg.XLEN - 12{instruction_i[31]}}, instruction_i[31:25], instruction_i[11:7]};
+    imm_s_type = {
+      {CVA6Cfg.XLEN - 12{instruction_i[31]}}, instruction_i[31:25], instruction_i[11:7]
+    };
     imm_sb_type = {
       {CVA6Cfg.XLEN - 13{instruction_i[31]}},
       instruction_i[31],

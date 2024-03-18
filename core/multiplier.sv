@@ -31,11 +31,11 @@ module multiplier
     // Multiplier operation - Mult
     input  fu_op                             operation_i,
     // A operand - Mult
-    input  logic [          CVA6Cfg.XLEN-1:0] operand_a_i,
+    input  logic [         CVA6Cfg.XLEN-1:0] operand_a_i,
     // B operand - Mult
-    input  logic [          CVA6Cfg.XLEN-1:0] operand_b_i,
+    input  logic [         CVA6Cfg.XLEN-1:0] operand_b_i,
     // Multiplier result - Mult
-    output logic [          CVA6Cfg.XLEN-1:0] result_o,
+    output logic [         CVA6Cfg.XLEN-1:0] result_o,
     // Mutliplier result is valid - Mult
     output logic                             mult_valid_o,
     // Multiplier FU is ready - Mult
@@ -132,8 +132,7 @@ module multiplier
       CLMULR:              result_o = clmulr_q;
       // MUL performs an CVA6Cfg.XLEN-bit×CVA6Cfg.XLEN-bit multiplication and places the lower CVA6Cfg.XLEN bits in the destination register
       default: begin
-        if (operator_q == MULW && CVA6Cfg.IS_XLEN64)
-          result_o = sext32to64(mult_result_q[31:0]);
+        if (operator_q == MULW && CVA6Cfg.IS_XLEN64) result_o = sext32to64(mult_result_q[31:0]);
         else result_o = mult_result_q[CVA6Cfg.XLEN-1:0];  // including MUL
       end
     endcase

@@ -96,10 +96,10 @@ module wt_dcache_mem
       CVA6Cfg.AxiDataWidth / 8
   );
 
-  logic [DCACHE_NUM_BANKS-1:0]                                                    bank_req;
-  logic [DCACHE_NUM_BANKS-1:0]                                                    bank_we;
+  logic [DCACHE_NUM_BANKS-1:0]                                                     bank_req;
+  logic [DCACHE_NUM_BANKS-1:0]                                                     bank_we;
   logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][(CVA6Cfg.XLEN/8)-1:0] bank_be;
-  logic [DCACHE_NUM_BANKS-1:0][     DCACHE_CL_IDX_WIDTH-1:0]                      bank_idx;
+  logic [DCACHE_NUM_BANKS-1:0][     DCACHE_CL_IDX_WIDTH-1:0]                       bank_idx;
   logic [DCACHE_CL_IDX_WIDTH-1:0] bank_idx_d, bank_idx_q;
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] bank_off_d, bank_off_q;
 
@@ -120,7 +120,7 @@ module wt_dcache_mem
   logic [$clog2(NumPorts)-1:0] vld_sel_d, vld_sel_q;
 
   logic [DCACHE_WBUF_DEPTH-1:0] wbuffer_hit_oh;
-  logic [  (CVA6Cfg.XLEN/8)-1:0] wbuffer_be;
+  logic [ (CVA6Cfg.XLEN/8)-1:0] wbuffer_be;
   logic [CVA6Cfg.XLEN-1:0] wbuffer_rdata, rdata;
   logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wbuffer_ruser, ruser;
   logic [CVA6Cfg.PLEN-1:0] wbuffer_cmp_addr;

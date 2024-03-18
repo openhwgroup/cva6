@@ -39,14 +39,14 @@ module scoreboard #(
     // rs1 operand address - issue_read_operands
     input  logic [ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
     // rs1 operand - issue_read_operands
-    output logic [              CVA6Cfg.XLEN-1:0] rs1_o,
+    output logic [             CVA6Cfg.XLEN-1:0] rs1_o,
     // rs1 operand is valid - issue_read_operands
     output logic                                 rs1_valid_o,
 
     // rs2 operand address - issue_read_operands
     input  logic [ariane_pkg::REG_ADDR_SIZE-1:0] rs2_i,
     // rs2 operand - issue_read_operands
-    output logic [              CVA6Cfg.XLEN-1:0] rs2_o,
+    output logic [             CVA6Cfg.XLEN-1:0] rs2_o,
     // rs2 operand is valid - issue_read_operands
     output logic                                 rs2_valid_o,
 

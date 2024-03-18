@@ -473,7 +473,7 @@ module load_unit
     end  */
 
   // result mux fast
-  logic [         (CVA6Cfg.XLEN/8)-1:0] rdata_sign_bits;
+  logic [        (CVA6Cfg.XLEN/8)-1:0] rdata_sign_bits;
   logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] rdata_offset;
   logic rdata_sign_bit, rdata_is_signed, rdata_is_fp_signed;
 

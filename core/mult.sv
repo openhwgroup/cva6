@@ -17,7 +17,7 @@ module mult
     // Mult instruction is valid - ISSUE_STAGE
     input  logic                                 mult_valid_i,
     // Mult result - ISSUE_STAGE
-    output logic     [          CVA6Cfg.XLEN-1:0] result_o,
+    output logic     [         CVA6Cfg.XLEN-1:0] result_o,
     // Mult result is valid - ISSUE_STAGE
     output logic                                 mult_valid_o,
     // Mutl is ready - ISSUE_STAGE
@@ -79,8 +79,8 @@ module mult
       operand_a;  // input operands after input MUX (input silencing, word operations or full inputs)
   logic [CVA6Cfg.XLEN-1:0] result;  // result before result mux
 
-  logic                   div_signed;  // signed or unsigned division
-  logic                   rem;  // is it a reminder (or not a reminder e.g.: a division)
+  logic                    div_signed;  // signed or unsigned division
+  logic                    rem;  // is it a reminder (or not a reminder e.g.: a division)
   logic word_op_d, word_op_q;  // save whether the operation was signed or not
 
   // is this a signed op?

@@ -128,24 +128,24 @@ module load_store_unit
 );
 
   // data is misaligned
-  logic                            data_misaligned;
+  logic                             data_misaligned;
   // --------------------------------------
   // 1st register stage - (stall registers)
   // --------------------------------------
   // those are the signals which are always correct
   // e.g.: they keep the value in the stall case
-  lsu_ctrl_t                       lsu_ctrl;
+  lsu_ctrl_t                        lsu_ctrl;
 
-  logic                            pop_st;
-  logic                            pop_ld;
+  logic                             pop_st;
+  logic                             pop_ld;
 
   // ------------------------------
   // Address Generation Unit (AGU)
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
-  logic      [   CVA6Cfg.VLEN-1:0] vaddr_i;
+  logic      [    CVA6Cfg.VLEN-1:0] vaddr_i;
   logic      [    CVA6Cfg.XLEN-1:0] vaddr_xlen;
-  logic                            overflow;
+  logic                             overflow;
   logic      [(CVA6Cfg.XLEN/8)-1:0] be_i;
 
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
@@ -169,10 +169,10 @@ module load_store_unit
 
   logic                                   ld_valid;
   logic       [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
-  logic       [          CVA6Cfg.XLEN-1:0] ld_result;
+  logic       [         CVA6Cfg.XLEN-1:0] ld_result;
   logic                                   st_valid;
   logic       [CVA6Cfg.TRANS_ID_BITS-1:0] st_trans_id;
-  logic       [          CVA6Cfg.XLEN-1:0] st_result;
+  logic       [         CVA6Cfg.XLEN-1:0] st_result;
 
   logic       [                     11:0] page_offset;
   logic                                   page_offset_matches;

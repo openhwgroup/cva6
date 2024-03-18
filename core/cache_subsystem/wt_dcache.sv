@@ -86,8 +86,8 @@ module wt_dcache
   logic                                                                           wr_ack;
   logic     [           DCACHE_CL_IDX_WIDTH-1:0]                                  wr_idx;
   logic     [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0]                                  wr_off;
-  logic     [                   CVA6Cfg.XLEN-1:0]                                  wr_data;
-  logic     [               (CVA6Cfg.XLEN/8)-1:0]                                  wr_data_be;
+  logic     [                  CVA6Cfg.XLEN-1:0]                                  wr_data;
+  logic     [              (CVA6Cfg.XLEN/8)-1:0]                                  wr_data_be;
   logic     [     CVA6Cfg.DCACHE_USER_WIDTH-1:0]                                  wr_user;
 
   // miss unit <-> controllers/wbuffer
@@ -95,7 +95,7 @@ module wt_dcache
   logic     [                      NumPorts-1:0]                                  miss_ack;
   logic     [                      NumPorts-1:0]                                  miss_nc;
   logic     [                      NumPorts-1:0]                                  miss_we;
-  logic     [                      NumPorts-1:0][                CVA6Cfg.XLEN-1:0] miss_wdata;
+  logic     [                      NumPorts-1:0][               CVA6Cfg.XLEN-1:0] miss_wdata;
   logic     [                      NumPorts-1:0][  CVA6Cfg.DCACHE_USER_WIDTH-1:0] miss_wuser;
   logic     [                      NumPorts-1:0][               CVA6Cfg.PLEN-1:0] miss_paddr;
   logic     [                      NumPorts-1:0][                            2:0] miss_size;
@@ -112,7 +112,7 @@ module wt_dcache
   logic     [                      NumPorts-1:0][   CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag;
   logic     [                      NumPorts-1:0][        DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
   logic     [                      NumPorts-1:0][CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] rd_off;
-  logic     [                   CVA6Cfg.XLEN-1:0]                                  rd_data;
+  logic     [                  CVA6Cfg.XLEN-1:0]                                  rd_data;
   logic     [     CVA6Cfg.DCACHE_USER_WIDTH-1:0]                                  rd_user;
   logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                  rd_vld_bits;
   logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                  rd_hit_oh;

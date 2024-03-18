@@ -40,7 +40,7 @@ module amo_buffer #(
   typedef struct packed {
     ariane_pkg::amo_t        op;
     logic [CVA6Cfg.PLEN-1:0] paddr;
-    logic [CVA6Cfg.XLEN-1:0]  data;
+    logic [CVA6Cfg.XLEN-1:0] data;
     logic [1:0]              size;
   } amo_op_t;
 

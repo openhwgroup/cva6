@@ -351,7 +351,9 @@ module cva6_mmu_sv32
           icache_areq_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
           if (CVA6Cfg.TvalEn)
-            icache_areq_o.fetch_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr};
+            icache_areq_o.fetch_exception.tval = {
+              {CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr
+            };
         end  //to check on wave
         // TODO(moschn,zarubaf): What should the value of tval be in this case?
         else begin

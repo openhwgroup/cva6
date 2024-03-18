@@ -160,7 +160,8 @@ module perf_counters
             riscv::CSR_MHPM_COUNTER_6,
             riscv::CSR_MHPM_COUNTER_7,
             riscv::CSR_MHPM_COUNTER_8  :begin
-        if (CVA6Cfg.XLEN == 32) data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3+1][31:0];
+        if (CVA6Cfg.XLEN == 32)
+          data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3+1][31:0];
         else data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3+1];
       end
       riscv::CSR_MHPM_COUNTER_3H,

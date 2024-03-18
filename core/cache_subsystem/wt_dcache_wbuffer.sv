@@ -162,7 +162,7 @@ module wt_dcache_wbuffer
 
   typedef struct packed {
     logic                                 vld;
-    logic [(CVA6Cfg.XLEN/8)-1:0]           be;
+    logic [(CVA6Cfg.XLEN/8)-1:0]          be;
     logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
   } tx_stat_t;
 

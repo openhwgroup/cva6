@@ -465,12 +465,12 @@ module issue_read_operands
   // Integer Register File
   // ----------------------
   logic [  CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] rdata;
-  logic [  CVA6Cfg.NrRgprPorts-1:0][            4:0] raddr_pack;
+  logic [  CVA6Cfg.NrRgprPorts-1:0][             4:0] raddr_pack;
 
   // pack signals
-  logic [CVA6Cfg.NrCommitPorts-1:0][            4:0] waddr_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0][             4:0] waddr_pack;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_pack;
-  logic [CVA6Cfg.NrCommitPorts-1:0]                  we_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
 
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_rs3
     assign raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};

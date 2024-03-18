@@ -130,16 +130,16 @@ module cva6
       logic [CVA6Cfg.XLEN-1:0] mie;
       logic [CVA6Cfg.XLEN-1:0] mip;
       logic [CVA6Cfg.XLEN-1:0] mideleg;
-      logic                   sie;
-      logic                   global_enable;
+      logic                    sie;
+      logic                    global_enable;
     },
 
     localparam type lsu_ctrl_t = struct packed {
       logic                             valid;
       logic [CVA6Cfg.VLEN-1:0]          vaddr;
       logic                             overflow;
-      logic [CVA6Cfg.XLEN-1:0]           data;
-      logic [(CVA6Cfg.XLEN/8)-1:0]       be;
+      logic [CVA6Cfg.XLEN-1:0]          data;
+      logic [(CVA6Cfg.XLEN/8)-1:0]      be;
       fu_t                              fu;
       fu_op                             operation;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
@@ -148,9 +148,9 @@ module cva6
     localparam type fu_data_t = struct packed {
       fu_t                              fu;
       fu_op                             operation;
-      logic [CVA6Cfg.XLEN-1:0]           operand_a;
-      logic [CVA6Cfg.XLEN-1:0]           operand_b;
-      logic [CVA6Cfg.XLEN-1:0]           imm;
+      logic [CVA6Cfg.XLEN-1:0]          operand_a;
+      logic [CVA6Cfg.XLEN-1:0]          operand_b;
+      logic [CVA6Cfg.XLEN-1:0]          imm;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     },
 
@@ -177,11 +177,11 @@ module cva6
     localparam type dcache_req_i_t = struct packed {
       logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
       logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
-      logic [CVA6Cfg.XLEN-1:0]                data_wdata;
+      logic [CVA6Cfg.XLEN-1:0]               data_wdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]  data_wuser;
       logic                                  data_req;
       logic                                  data_we;
-      logic [(CVA6Cfg.XLEN/8)-1:0]            data_be;
+      logic [(CVA6Cfg.XLEN/8)-1:0]           data_be;
       logic [1:0]                            data_size;
       logic [DCACHE_TID_WIDTH-1:0]           data_id;
       logic                                  kill_req;
@@ -192,7 +192,7 @@ module cva6
       logic                                 data_gnt;
       logic                                 data_rvalid;
       logic [DCACHE_TID_WIDTH-1:0]          data_rid;
-      logic [CVA6Cfg.XLEN-1:0]               data_rdata;
+      logic [CVA6Cfg.XLEN-1:0]              data_rdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
 
