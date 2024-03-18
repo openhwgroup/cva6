@@ -82,47 +82,47 @@ module load_store_unit
     output icache_areq_t icache_areq_o,
 
     // Current privilege mode - CSR_REGFILE
-    input  riscv::priv_lvl_t                    priv_lvl_i,
+    input  riscv::priv_lvl_t                          priv_lvl_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
-    input  riscv::priv_lvl_t                    ld_st_priv_lvl_i,
+    input  riscv::priv_lvl_t                          ld_st_priv_lvl_i,
     // Supervisor User Memory - CSR_REGFILE
-    input  logic                                sum_i,
+    input  logic                                      sum_i,
     // Make Executable Readable - CSR_REGFILE
-    input  logic                                mxr_i,
+    input  logic                                      mxr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.PPNW-1:0] satp_ppn_i,
+    input  logic             [      CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_i,
+    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [ CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
+    input  logic             [      CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     // TLB flush - CONTROLLER
-    input  logic                                flush_tlb_i,
+    input  logic                                      flush_tlb_i,
     // Instruction TLB miss - PERF_COUNTERS
-    output logic                                itlb_miss_o,
+    output logic                                      itlb_miss_o,
     // Data TLB miss - PERF_COUNTERS
-    output logic                                dtlb_miss_o,
+    output logic                                      dtlb_miss_o,
 
     // Data cache request output - CACHES
-    input  dcache_req_o_t  [ 2:0]                  dcache_req_ports_i,
+    input  dcache_req_o_t  [ 2:0]                   dcache_req_ports_i,
     // Data cache request input - CACHES
-    output dcache_req_i_t  [ 2:0]                  dcache_req_ports_o,
+    output dcache_req_i_t  [ 2:0]                   dcache_req_ports_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                                   dcache_wbuffer_empty_i,
+    input  logic                                    dcache_wbuffer_empty_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                                   dcache_wbuffer_not_ni_i,
+    input  logic                                    dcache_wbuffer_not_ni_i,
     // AMO request - CACHE
-    output amo_req_t                               amo_req_o,
+    output amo_req_t                                amo_req_o,
     // AMO response - CACHE
-    input  amo_resp_t                              amo_resp_i,
+    input  amo_resp_t                               amo_resp_i,
     // PMP configuration - CSR_REGFILE
-    input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
+    input  riscv::pmpcfg_t [15:0]                   pmpcfg_i,
     // PMP address - CSR_REGFILE
     input  logic           [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
 
     // RVFI inforamtion - RVFI
-    output lsu_ctrl_t                   rvfi_lsu_ctrl_o,
+    output lsu_ctrl_t                    rvfi_lsu_ctrl_o,
     // RVFI information - RVFI
     output            [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
 );
@@ -143,7 +143,7 @@ module load_store_unit
   // Address Generation Unit (AGU)
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
-  logic      [    CVA6Cfg.VLEN-1:0] vaddr_i;
+  logic      [   CVA6Cfg.VLEN-1:0] vaddr_i;
   logic      [    riscv::XLEN-1:0] vaddr_xlen;
   logic                            overflow;
   logic      [(riscv::XLEN/8)-1:0] be_i;
@@ -153,14 +153,14 @@ module load_store_unit
   // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
   assign overflow = (CVA6Cfg.IS_XLEN64 && (!((&vaddr_xlen[riscv::XLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|vaddr_xlen[riscv::XLEN-1:CVA6Cfg.SV-1]) == 1'b0)));
 
-  logic                   st_valid_i;
-  logic                   ld_valid_i;
-  logic                   ld_translation_req;
-  logic                   st_translation_req;
+  logic                    st_valid_i;
+  logic                    ld_valid_i;
+  logic                    ld_translation_req;
+  logic                    st_translation_req;
   logic [CVA6Cfg.VLEN-1:0] ld_vaddr;
   logic [CVA6Cfg.VLEN-1:0] st_vaddr;
-  logic                   translation_req;
-  logic                   translation_valid;
+  logic                    translation_req;
+  logic                    translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
   exception_t                             mmu_exception;
@@ -260,7 +260,7 @@ module load_store_unit
       assign mmu_vaddr_plen   = mmu_vaddr[CVA6Cfg.PLEN-1:0];
       assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin
-      assign mmu_vaddr_plen   = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
+      assign mmu_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
       assign fetch_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, icache_areq_i.fetch_vaddr};
     end
 

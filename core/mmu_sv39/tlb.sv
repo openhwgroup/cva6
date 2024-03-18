@@ -22,21 +22,21 @@ module tlb
     parameter type tlb_update_t = logic,
     parameter int unsigned TLB_ENTRIES = 4
 ) (
-    input  logic                          clk_i,                  // Clock
-    input  logic                          rst_ni,                 // Asynchronous reset active low
-    input  logic                          flush_i,                // Flush signal
+    input logic clk_i,  // Clock
+    input logic rst_ni,  // Asynchronous reset active low
+    input logic flush_i,  // Flush signal
     // Update TLB
-    input  tlb_update_t                   update_i,
+    input tlb_update_t update_i,
     // Lookup signals
-    input  logic                          lu_access_i,
-    input  logic        [ CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i,
-    input  logic        [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
-    output riscv::pte_t                   lu_content_o,
-    input  logic        [ CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
-    input  logic        [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
-    output logic                          lu_is_2M_o,
-    output logic                          lu_is_1G_o,
-    output logic                          lu_hit_o
+    input logic lu_access_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i,
+    input logic [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
+    output riscv::pte_t lu_content_o,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
+    output logic lu_is_2M_o,
+    output logic lu_is_1G_o,
+    output logic lu_hit_o
 );
 
   localparam VPN2 = (CVA6Cfg.VLEN - 31 < 8) ? CVA6Cfg.VLEN - 31 : 8;
@@ -44,12 +44,12 @@ module tlb
   // SV39 defines three levels of page tables
   struct packed {
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
-    logic [VPN2:0]  vpn2;
-    logic [8:0]            vpn1;
-    logic [8:0]            vpn0;
-    logic                  is_2M;
-    logic                  is_1G;
-    logic                  valid;
+    logic [VPN2:0]                 vpn2;
+    logic [8:0]                    vpn1;
+    logic [8:0]                    vpn0;
+    logic                          is_2M;
+    logic                          is_1G;
+    logic                          valid;
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 

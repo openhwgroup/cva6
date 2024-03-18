@@ -89,7 +89,7 @@ module instr_queue
     logic [31:0]                     instr;     // instruction word
     ariane_pkg::cf_t                 cf;        // branch was taken
     ariane_pkg::frontend_exception_t ex;        // exception happened
-    logic [CVA6Cfg.VLEN-1:0]          ex_vaddr;  // lower CVA6Cfg.VLEN bits of tval for exception
+    logic [CVA6Cfg.VLEN-1:0]         ex_vaddr;  // lower CVA6Cfg.VLEN bits of tval for exception
   } instr_data_t;
 
   logic [CVA6Cfg.LOG2_INSTR_PER_FETCH-1:0] branch_index;
@@ -105,7 +105,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   logic                                            instr_overflow;
   // address queue
   logic [$clog2(ariane_pkg::FETCH_FIFO_DEPTH)-1:0] address_queue_usage;
-  logic [                         CVA6Cfg.VLEN-1:0] address_out;
+  logic [                        CVA6Cfg.VLEN-1:0] address_out;
   logic                                            pop_address;
   logic                                            push_address;
   logic                                            full_address;

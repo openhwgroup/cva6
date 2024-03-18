@@ -75,20 +75,20 @@ module mmu
 );
 
   localparam type tlb_update_t = struct packed {
-    logic                  valid;    // valid flag
-    logic                  is_2M;    //
-    logic                  is_1G;    //
-    logic [27-1:0]         vpn;      // VPN (39bits) = 27bits + 12bits offset
+    logic                          valid;    // valid flag
+    logic                          is_2M;    //
+    logic                          is_1G;    //
+    logic [27-1:0]                 vpn;      // VPN (39bits) = 27bits + 12bits offset
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
-    riscv::pte_t           content;
+    riscv::pte_t                   content;
   };
 
-  logic                   iaccess_err;  // insufficient privilege to access this instruction page
-  logic                   daccess_err;  // insufficient privilege to access this data page
-  logic                   ptw_active;  // PTW is currently walking a page table
-  logic                   walking_instr;  // PTW is walking because of an ITLB miss
-  logic                   ptw_error;  // PTW threw an exception
-  logic                   ptw_access_exception;  // PTW threw an access exception (PMPs)
+  logic                    iaccess_err;  // insufficient privilege to access this instruction page
+  logic                    daccess_err;  // insufficient privilege to access this data page
+  logic                    ptw_active;  // PTW is currently walking a page table
+  logic                    walking_instr;  // PTW is walking because of an ITLB miss
+  logic                    ptw_error;  // PTW threw an exception
+  logic                    ptw_access_exception;  // PTW threw an access exception (PMPs)
   logic [CVA6Cfg.PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
 
   logic [CVA6Cfg.VLEN-1:0] update_vaddr;
@@ -499,11 +499,13 @@ module mmu
       if (lsu_is_store_q) begin
         lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
         lsu_exception_o.valid = 1'b1;
-        if (CVA6Cfg.TvalEn) lsu_exception_o.tval = {{riscv::XLEN - CVA6Cfg.PLEN{1'b0}}, lsu_paddr_o};
+        if (CVA6Cfg.TvalEn)
+          lsu_exception_o.tval = {{riscv::XLEN - CVA6Cfg.PLEN{1'b0}}, lsu_paddr_o};
       end else begin
         lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
         lsu_exception_o.valid = 1'b1;
-        if (CVA6Cfg.TvalEn) lsu_exception_o.tval = {{riscv::XLEN - CVA6Cfg.PLEN{1'b0}}, lsu_paddr_o};
+        if (CVA6Cfg.TvalEn)
+          lsu_exception_o.tval = {{riscv::XLEN - CVA6Cfg.PLEN{1'b0}}, lsu_paddr_o};
       end
     end
   end

@@ -67,24 +67,24 @@ module frontend
 );
 
   localparam type bht_update_t = struct packed {
-    logic                   valid;
+    logic                    valid;
     logic [CVA6Cfg.VLEN-1:0] pc;     // update at PC
-    logic                   taken;
+    logic                    taken;
   };
 
   localparam type btb_prediction_t = struct packed {
-    logic                   valid;
+    logic                    valid;
     logic [CVA6Cfg.VLEN-1:0] target_address;
   };
 
   localparam type btb_update_t = struct packed {
-    logic                   valid;
+    logic                    valid;
     logic [CVA6Cfg.VLEN-1:0] pc;              // update at PC
     logic [CVA6Cfg.VLEN-1:0] target_address;
   };
 
   localparam type ras_t = struct packed {
-    logic                   valid;
+    logic                    valid;
     logic [CVA6Cfg.VLEN-1:0] ra;
   };
 
@@ -92,7 +92,7 @@ module frontend
   logic                            [    CVA6Cfg.FETCH_WIDTH-1:0] icache_data_q;
   logic                                                          icache_valid_q;
   ariane_pkg::frontend_exception_t                               icache_ex_valid_q;
-  logic                            [            CVA6Cfg.VLEN-1:0] icache_vaddr_q;
+  logic                            [           CVA6Cfg.VLEN-1:0] icache_vaddr_q;
   logic                                                          instr_queue_ready;
   logic                            [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_consumed;
   // upper-most branch-prediction from last cycle
@@ -106,7 +106,7 @@ module frontend
   logic                                       npc_rst_load_q;
 
   logic                                       replay;
-  logic [                    CVA6Cfg.VLEN-1:0] replay_addr;
+  logic [                   CVA6Cfg.VLEN-1:0] replay_addr;
 
   // shift amount
   logic [$clog2(CVA6Cfg.INSTR_PER_FETCH)-1:0] shamt;
@@ -127,24 +127,24 @@ module frontend
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] rvc_branch, rvc_jump, rvc_jr, rvc_return, rvc_jalr, rvc_call;
   logic            [CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] rvc_imm;
   // re-aligned instruction and address (coming from cache - combinationally)
-  logic            [CVA6Cfg.INSTR_PER_FETCH-1:0][           31:0] instr;
+  logic            [CVA6Cfg.INSTR_PER_FETCH-1:0][            31:0] instr;
   logic            [CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] addr;
-  logic            [CVA6Cfg.INSTR_PER_FETCH-1:0]                  instruction_valid;
+  logic            [CVA6Cfg.INSTR_PER_FETCH-1:0]                   instruction_valid;
   // BHT, BTB and RAS prediction
-  bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                  bht_prediction;
-  btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                  btb_prediction;
-  bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                  bht_prediction_shifted;
-  btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                  btb_prediction_shifted;
-  ras_t                                                           ras_predict;
-  logic            [            CVA6Cfg.VLEN-1:0]                  vpc_btb;
+  bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                   bht_prediction;
+  btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                   btb_prediction;
+  bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                   bht_prediction_shifted;
+  btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                   btb_prediction_shifted;
+  ras_t                                                            ras_predict;
+  logic            [           CVA6Cfg.VLEN-1:0]                   vpc_btb;
 
   // branch-predict update
-  logic                                                           is_mispredict;
+  logic                                                            is_mispredict;
   logic ras_push, ras_pop;
-  logic [            CVA6Cfg.VLEN-1:0] ras_update;
+  logic [           CVA6Cfg.VLEN-1:0] ras_update;
 
   // Instruction FIFO
-  logic [            CVA6Cfg.VLEN-1:0] predict_address;
+  logic [           CVA6Cfg.VLEN-1:0] predict_address;
   cf_t  [CVA6Cfg.INSTR_PER_FETCH-1:0] cf_type;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvi_cf;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvc_cf;

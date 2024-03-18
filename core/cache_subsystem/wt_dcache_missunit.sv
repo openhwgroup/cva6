@@ -92,7 +92,7 @@ module wt_dcache_missunit
   // 011: dword
   // 111: DCACHE line
   function automatic logic [CVA6Cfg.PLEN-1:0] paddrSizeAlign(input logic [CVA6Cfg.PLEN-1:0] paddr,
-                                                            input logic [2:0] size);
+                                                             input logic [2:0] size);
     logic [CVA6Cfg.PLEN-1:0] out;
     out = paddr;
     unique case (size)
@@ -119,7 +119,7 @@ module wt_dcache_missunit
 
   // MSHR for reads
   typedef struct packed {
-    logic [CVA6Cfg.PLEN-1:0]                      paddr;
+    logic [CVA6Cfg.PLEN-1:0]                     paddr;
     logic [2:0]                                  size;
     logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]         vld_bits;
     logic [CVA6Cfg.MEM_TID_WIDTH-1:0]            id;

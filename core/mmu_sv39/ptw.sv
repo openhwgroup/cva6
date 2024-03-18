@@ -47,16 +47,16 @@ module ptw
 
     output logic [CVA6Cfg.VLEN-1:0] update_vaddr_o,
 
-    input logic [ CVA6Cfg.ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // from TLBs
     // did we miss?
-    input logic                   itlb_access_i,
-    input logic                   itlb_hit_i,
-    input logic [CVA6Cfg.VLEN-1:0] itlb_vaddr_i,
+    input logic                          itlb_access_i,
+    input logic                          itlb_hit_i,
+    input logic [      CVA6Cfg.VLEN-1:0] itlb_vaddr_i,
 
     input  logic                    dtlb_access_i,
     input  logic                    dtlb_hit_i,
-    input  logic [ CVA6Cfg.VLEN-1:0] dtlb_vaddr_i,
+    input  logic [CVA6Cfg.VLEN-1:0] dtlb_vaddr_i,
     // from CSR file
     input  logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,     // ppn from satp
     input  logic                    mxr_i,

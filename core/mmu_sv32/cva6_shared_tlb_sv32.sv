@@ -35,12 +35,12 @@ module cva6_shared_tlb_sv32
 
     // from TLBs
     // did we miss?
-    input logic                   itlb_access_i,
-    input logic                   itlb_hit_i,
+    input logic                    itlb_access_i,
+    input logic                    itlb_hit_i,
     input logic [CVA6Cfg.VLEN-1:0] itlb_vaddr_i,
 
-    input logic                   dtlb_access_i,
-    input logic                   dtlb_hit_i,
+    input logic                    dtlb_access_i,
+    input logic                    dtlb_hit_i,
     input logic [CVA6Cfg.VLEN-1:0] dtlb_vaddr_i,
 
     // to TLBs, update logic
@@ -51,8 +51,8 @@ module cva6_shared_tlb_sv32
     output logic itlb_miss_o,
     output logic dtlb_miss_o,
 
-    output logic                   shared_tlb_access_o,
-    output logic                   shared_tlb_hit_o,
+    output logic                    shared_tlb_access_o,
+    output logic                    shared_tlb_hit_o,
     output logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_o,
 
     output logic itlb_req_o,

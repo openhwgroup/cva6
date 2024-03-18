@@ -85,32 +85,32 @@ module cva6_mmu_sv32
     input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
 
-  logic                   iaccess_err;  // insufficient privilege to access this instruction page
-  logic                   daccess_err;  // insufficient privilege to access this data page
-  logic                   ptw_active;  // PTW is currently walking a page table
-  logic                   walking_instr;  // PTW is walking because of an ITLB miss
-  logic                   ptw_error;  // PTW threw an exception
-  logic                   ptw_access_exception;  // PTW threw an access exception (PMPs)
+  logic                    iaccess_err;  // insufficient privilege to access this instruction page
+  logic                    daccess_err;  // insufficient privilege to access this data page
+  logic                    ptw_active;  // PTW is currently walking a page table
+  logic                    walking_instr;  // PTW is walking because of an ITLB miss
+  logic                    ptw_error;  // PTW threw an exception
+  logic                    ptw_access_exception;  // PTW threw an access exception (PMPs)
   logic [CVA6Cfg.PLEN-1:0] ptw_bad_paddr;  // PTW PMP exception bad physical addr
 
   logic [CVA6Cfg.VLEN-1:0] update_vaddr;
   tlb_update_sv32_t update_itlb, update_dtlb, update_shared_tlb;
 
-  logic                               itlb_lu_access;
-  riscv::pte_sv32_t                   itlb_content;
-  logic                               itlb_is_4M;
-  logic                               itlb_lu_hit;
+  logic                                itlb_lu_access;
+  riscv::pte_sv32_t                    itlb_content;
+  logic                                itlb_is_4M;
+  logic                                itlb_lu_hit;
 
-  logic                               dtlb_lu_access;
-  riscv::pte_sv32_t                   dtlb_content;
-  logic                               dtlb_is_4M;
-  logic                               dtlb_lu_hit;
+  logic                                dtlb_lu_access;
+  riscv::pte_sv32_t                    dtlb_content;
+  logic                                dtlb_is_4M;
+  logic                                dtlb_lu_hit;
 
-  logic                               shared_tlb_access;
+  logic                                shared_tlb_access;
   logic             [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr;
-  logic                               shared_tlb_hit;
+  logic                                shared_tlb_hit;
 
-  logic                               itlb_req;
+  logic                                itlb_req;
 
 
   // Assignments

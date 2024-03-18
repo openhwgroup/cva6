@@ -56,8 +56,8 @@ module cva6_ptw_sv32
     input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
 
     // from shared TLB
-    input logic                   shared_tlb_access_i,
-    input logic                   shared_tlb_hit_i,
+    input logic                    shared_tlb_access_i,
+    input logic                    shared_tlb_hit_i,
     input logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_i,
 
     input logic itlb_req_i,
