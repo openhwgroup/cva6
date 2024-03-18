@@ -133,7 +133,7 @@ module multiplier
       // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
       default: begin
         if (operator_q == MULW && CVA6Cfg.IS_XLEN64)
-          result_o = sext32(CVA6Cfg, mult_result_q[31:0]);
+          result_o = sext32to64(mult_result_q[31:0]);
         else result_o = mult_result_q[riscv::XLEN-1:0];  // including MUL
       end
     endcase

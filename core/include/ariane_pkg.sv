@@ -613,9 +613,8 @@ package ariane_pkg;
   // ----------------------
   // Arithmetic Functions
   // ----------------------
-  function automatic logic [riscv::XLEN-1:0] sext32(config_pkg::cva6_cfg_t Cfg,
-                                                    logic [31:0] operand);
-    return {{riscv::XLEN - 32{operand[31]}}, operand[31:0]};
+  function automatic logic [63:0] sext32to64(logic [31:0] operand);
+    return {{32{operand[31]}}, operand[31:0]};
   endfunction
 
   // ----------------------
