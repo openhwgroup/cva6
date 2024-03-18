@@ -85,6 +85,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigRvfiTrace = 1;
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
+      FPGA_EN: bit'(CVA6ConfigFPGAEn),
       NrCommitPorts: unsigned'(CVA6ConfigNrCommitPorts),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
@@ -105,6 +106,7 @@ package cva6_config_pkg;
       XFVec: bit'(CVA6ConfigFVecEn),
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       ZiCondExtEn: bit'(CVA6ConfigZiCondExtEn),
+      NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
       RVS: bit'(1),
       RVU: bit'(1),
       HaltAddress: 64'h800,
@@ -142,7 +144,16 @@ package cva6_config_pkg;
       CachedRegionLength: 1024'({64'h40000000}),
       MaxOutstandingStores: unsigned'(7),
       DebugEn: bit'(1),
-      AxiBurstWriteEn: bit'(0)
+      AxiBurstWriteEn: bit'(0),
+      IcacheByteSize: unsigned'(CVA6ConfigIcacheByteSize),
+      IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc),
+      IcacheLineWidth: unsigned'(CVA6ConfigIcacheLineWidth),
+      DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
+      DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
+      DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
+      DataUserEn: unsigned'(CVA6ConfigDataUserEn),
+      FetchUserWidth: unsigned'(CVA6ConfigFetchUserWidth),
+      FetchUserEn: unsigned'(CVA6ConfigFetchUserEn)
   };
 
 endpackage

@@ -19,7 +19,9 @@ module id_stage #(
     parameter type exception_t = logic,
     parameter type fetch_entry_t = logic,
     parameter type irq_ctrl_t = logic,
-    parameter type scoreboard_entry_t = logic
+    parameter type scoreboard_entry_t = logic,
+    parameter type interrupts_t = logic,
+    parameter interrupts_t INTERRUPTS = '0
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -149,7 +151,9 @@ module id_stage #(
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .exception_t(exception_t),
       .irq_ctrl_t(irq_ctrl_t),
-      .scoreboard_entry_t(scoreboard_entry_t)
+      .scoreboard_entry_t(scoreboard_entry_t),
+      .interrupts_t(interrupts_t),
+      .INTERRUPTS(INTERRUPTS)
   ) decoder_i (
       .debug_req_i,
       .irq_ctrl_i,

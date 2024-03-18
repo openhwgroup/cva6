@@ -33,9 +33,21 @@ package config_pkg;
     HPDCACHE = 2
   } cache_type_t;
 
+  /// Data and Address length
+  typedef enum logic [3:0] {
+    ModeOff  = 0,
+    ModeSv32 = 1,
+    ModeSv39 = 8,
+    ModeSv48 = 9,
+    ModeSv57 = 10,
+    ModeSv64 = 11
+  } vm_mode_t;
+
   localparam NrMaxRules = 16;
 
   typedef struct packed {
+    // Is FPGA optimization of CV32A6
+    bit                          FPGA_EN;
     // Number of commit ports
     int unsigned                 NrCommitPorts;
     // AXI address width
@@ -80,6 +92,8 @@ package config_pkg;
     bit                          RVS;
     // User mode
     bit                          RVU;
+    // Scoreboard length
+    int unsigned                 NrScoreboardEntries;
     // Address to jump when halt request
     logic [63:0]                 HaltAddress;
     // Address to jump when exception 
@@ -128,9 +142,30 @@ package config_pkg;
     bit                          DebugEn;
     // AXI burst in write
     bit                          AxiBurstWriteEn;
+    // Instruction cache size (in bytes)
+    int unsigned                 IcacheByteSize;
+    // Instruction cache associativity (number of ways)
+    int unsigned                 IcacheSetAssoc;
+    // Instruction line width
+    int unsigned                 IcacheLineWidth;
+    // Data cache size (in bytes)
+    int unsigned                 DcacheByteSize;
+    // Data cache associativity (number of ways)
+    int unsigned                 DcacheSetAssoc;
+    // Data line width
+    int unsigned                 DcacheLineWidth;
+    // TODO
+    int unsigned                 DataUserEn;
+    // TODO
+    int unsigned                 FetchUserWidth;
+    // TODO
+    int unsigned                 FetchUserEn;
   } cva6_user_cfg_t;
 
   typedef struct packed {
+    int unsigned XLEN_ALIGN_BYTES;
+
+    bit          FPGA_EN;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
@@ -156,7 +191,10 @@ package config_pkg;
     bit          XFVec;
     bit          CvxifEn;
     bit          ZiCondExtEn;
-    // Calculated
+
+    int unsigned NR_SB_ENTRIES;
+    int unsigned TRANS_ID_BITS;
+
     bit          RVF;
     bit          RVD;
     bit          FpPresent;
@@ -198,7 +236,37 @@ package config_pkg;
     bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
     bit                          AxiBurstWriteEn;
 
+    int unsigned ICACHE_SET_ASSOC;
+    int unsigned ICACHE_SET_ASSOC_WIDTH;
+    int unsigned ICACHE_INDEX_WIDTH;
+    int unsigned ICACHE_TAG_WIDTH;
+    int unsigned ICACHE_LINE_WIDTH;
+    int unsigned ICACHE_USER_LINE_WIDTH;
+    int unsigned DCACHE_SET_ASSOC;
+    int unsigned DCACHE_SET_ASSOC_WIDTH;
+    int unsigned DCACHE_INDEX_WIDTH;
+    int unsigned DCACHE_TAG_WIDTH;
+    int unsigned DCACHE_LINE_WIDTH;
+    int unsigned DCACHE_USER_LINE_WIDTH;
+    int unsigned DCACHE_USER_WIDTH;
+    int unsigned DCACHE_OFFSET_WIDTH;
+    int unsigned DCACHE_NUM_WORDS;
+
     int unsigned DCACHE_MAX_TX;
+
+    int unsigned DATA_USER_EN;
+    int unsigned FETCH_USER_WIDTH;
+    int unsigned FETCH_USER_EN;
+
+    int unsigned FETCH_WIDTH;
+    int unsigned INSTR_PER_FETCH;
+    int unsigned LOG2_INSTR_PER_FETCH;
+
+    int unsigned ModeW;
+    int unsigned ASIDW;
+    int unsigned PPNW;
+    vm_mode_t MODE_SV;
+    int unsigned SV;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever

@@ -42,7 +42,7 @@ module load_unit
     // Load unit result is valid - TO_BE_COMPLETED
     output logic valid_o,
     // Load transaction ID - TO_BE_COMPLETED
-    output logic [TRANS_ID_BITS-1:0] trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     // Load result - TO_BE_COMPLETED
     output logic [riscv::XLEN-1:0] result_o,
     // Load exception - TO_BE_COMPLETED
@@ -58,7 +58,7 @@ module load_unit
     // Data TLB hit - lsu
     input logic dtlb_hit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [riscv::PPNW-1:0] dtlb_ppn_i,
+    input logic [CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [11:0] page_offset_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -66,7 +66,7 @@ module load_unit
     // Store buffer is empty - TO_BE_COMPLETED
     input logic store_buffer_empty_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // Data cache request out - CACHES
     input dcache_req_o_t req_port_i,
     // Data cache request in - CACHES
@@ -90,9 +90,9 @@ module load_unit
   // in order to decouple the response interface from the request interface,
   // we need a a buffer which can hold all inflight memory load requests
   typedef struct packed {
-    logic [TRANS_ID_BITS-1:0]           trans_id;        // scoreboard identifier
-    logic [riscv::XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
-    fu_op                               operation;       // type of load
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0]    trans_id;        // scoreboard identifier
+    logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
+    fu_op                                operation;       // type of load
   } ldbuf_t;
 
 
@@ -188,15 +188,15 @@ module load_unit
   assign req_port_o.data_wdata = '0;
   // compose the load buffer write data, control is handled in the FSM
   assign ldbuf_wdata = {
-    lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[riscv::XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operation
+    lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operation
   };
   // output address
   // we can now output the lower 12 bit as the index to the cache
-  assign req_port_o.address_index = lsu_ctrl_i.vaddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_index = lsu_ctrl_i.vaddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   // translation from last cycle, again: control is handled in the FSM
-  assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
-                                              ariane_pkg::DCACHE_INDEX_WIDTH-1 :
-                                              ariane_pkg::DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_tag   = paddr_i[CVA6Cfg.DCACHE_TAG_WIDTH     +
+                                              CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
+                                              CVA6Cfg.DCACHE_INDEX_WIDTH];
   // request id = index of the load buffer's entry
   assign req_port_o.data_id = ldbuf_windex;
   // directly forward exception fields (valid bit is set below)
@@ -209,7 +209,7 @@ module load_unit
   logic inflight_stores;
   logic stall_ni;
   assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{52 - riscv::PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
+      CVA6Cfg, {{52 - CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
   );
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
@@ -473,8 +473,8 @@ module load_unit
     end  */
 
   // result mux fast
-  logic [        (riscv::XLEN/8)-1:0] rdata_sign_bits;
-  logic [riscv::XLEN_ALIGN_BYTES-1:0] rdata_offset;
+  logic [         (riscv::XLEN/8)-1:0] rdata_sign_bits;
+  logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] rdata_offset;
   logic rdata_sign_bit, rdata_is_signed, rdata_is_fp_signed;
 
 

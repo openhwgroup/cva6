@@ -67,7 +67,7 @@ module commit_stage
     // Commit buffer of LSU is ready - EX_STAGE
     input logic commit_lsu_ready_i,
     // Transaction id of first commit port - ID_STAGE
-    output logic [TRANS_ID_BITS-1:0] commit_tran_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_o,
     // Valid AMO in commit stage - EX_STAGE
     output logic amo_valid_commit_o,
     // no store is pending - EX_STAGE
@@ -148,7 +148,7 @@ module commit_stage
     // we will not commit the instruction if we took an exception
     // and we do not commit the instruction if we requested a halt
     if (commit_instr_i[0].valid && !commit_instr_i[0].ex.valid && !halt_i) begin
-      if (commit_instr_i[0].is_macro_instr && commit_instr_i[0].is_last_macro_instr)
+      if (CVA6Cfg.RVZCMP && commit_instr_i[0].is_macro_instr && commit_instr_i[0].is_last_macro_instr)
         commit_macro_ack[0] = 1'b1;
       else commit_macro_ack[0] = 1'b0;
       // we can definitely write the register file
@@ -292,7 +292,9 @@ module commit_stage
         end
       end
     end
-    commit_macro_ack_o = (commit_instr_i[0].is_macro_instr || commit_instr_i[1].is_macro_instr) ? commit_macro_ack : commit_ack_o;
+    if (CVA6Cfg.RVZCMP)
+      commit_macro_ack_o = (commit_instr_i[0].is_macro_instr || commit_instr_i[1].is_macro_instr) ? commit_macro_ack : commit_ack_o;
+    else commit_macro_ack_o = commit_ack_o;
   end
 
   // -----------------------------

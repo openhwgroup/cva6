@@ -27,14 +27,14 @@ module fpu_wrap
     output logic     fpu_ready_o,
     input  fu_data_t fu_data_i,
 
-    input  logic       [              1:0] fpu_fmt_i,
-    input  logic       [              2:0] fpu_rm_i,
-    input  logic       [              2:0] fpu_frm_i,
-    input  logic       [              6:0] fpu_prec_i,
-    output logic       [TRANS_ID_BITS-1:0] fpu_trans_id_o,
-    output logic       [ CVA6Cfg.FLen-1:0] result_o,
-    output logic                           fpu_valid_o,
-    output exception_t                     fpu_exception_o
+    input  logic       [                      1:0] fpu_fmt_i,
+    input  logic       [                      2:0] fpu_rm_i,
+    input  logic       [                      2:0] fpu_frm_i,
+    input  logic       [                      6:0] fpu_prec_i,
+    output logic       [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id_o,
+    output logic       [         CVA6Cfg.FLen-1:0] result_o,
+    output logic                                   fpu_valid_o,
+    output exception_t                             fpu_exception_o
 );
 
   // this is a workaround
@@ -110,7 +110,7 @@ module fpu_wrap
     logic [2:0] fpu_rm_d, fpu_rm_q, fpu_rm;
     logic fpu_vec_op_d, fpu_vec_op_q, fpu_vec_op;
 
-    logic [TRANS_ID_BITS-1:0] fpu_tag_d, fpu_tag_q, fpu_tag;
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_tag_d, fpu_tag_q, fpu_tag;
 
     logic fpu_in_ready, fpu_in_valid;
     logic fpu_out_ready, fpu_out_valid;
@@ -531,7 +531,7 @@ module fpu_wrap
     fpnew_top #(
         .Features      (FPU_FEATURES),
         .Implementation(FPU_IMPLEMENTATION),
-        .TagType       (logic [TRANS_ID_BITS-1:0])
+        .TagType       (logic [CVA6Cfg.TRANS_ID_BITS-1:0])
     ) i_fpnew_bulk (
         .clk_i,
         .rst_ni,

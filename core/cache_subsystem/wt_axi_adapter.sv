@@ -59,11 +59,11 @@ module wt_axi_adapter
 );
 
   // support up to 512bit cache lines
-  localparam AxiNumWords = (ariane_pkg::ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH > ariane_pkg::DCACHE_LINE_WIDTH)  +
-                           (ariane_pkg::DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ariane_pkg::ICACHE_LINE_WIDTH <= ariane_pkg::DCACHE_LINE_WIDTH) ;
+  localparam AxiNumWords = (CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (CVA6Cfg.ICACHE_LINE_WIDTH > CVA6Cfg.DCACHE_LINE_WIDTH)  +
+                           (CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (CVA6Cfg.ICACHE_LINE_WIDTH <= CVA6Cfg.DCACHE_LINE_WIDTH) ;
   localparam MaxNumWords = $clog2(CVA6Cfg.AxiDataWidth / 8);
-  localparam AxiRdBlenIcache = ariane_pkg::ICACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
-  localparam AxiRdBlenDcache = ariane_pkg::DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
+  localparam AxiRdBlenIcache = CVA6Cfg.ICACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
+  localparam AxiRdBlenDcache = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
 
   ///////////////////////////////////////////////////////
   // request path
@@ -311,8 +311,9 @@ module wt_axi_adapter
   end
 
   fifo_v3 #(
-      .dtype(icache_req_t),
-      .DEPTH(ReqFifoDepth)
+      .dtype  (icache_req_t),
+      .DEPTH  (ReqFifoDepth),
+      .FPGA_EN(CVA6Cfg.FPGA_EN)
   ) i_icache_data_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -328,8 +329,9 @@ module wt_axi_adapter
   );
 
   fifo_v3 #(
-      .dtype(dcache_req_t),
-      .DEPTH(ReqFifoDepth)
+      .dtype  (dcache_req_t),
+      .DEPTH  (ReqFifoDepth),
+      .FPGA_EN(CVA6Cfg.FPGA_EN)
   ) i_dcache_data_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -353,7 +355,8 @@ module wt_axi_adapter
 
   fifo_v3 #(
       .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
-      .DEPTH     (MetaFifoDepth)
+      .DEPTH     (MetaFifoDepth),
+      .FPGA_EN   (CVA6Cfg.FPGA_EN)
   ) i_rd_icache_id (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -370,7 +373,8 @@ module wt_axi_adapter
 
   fifo_v3 #(
       .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
-      .DEPTH     (MetaFifoDepth)
+      .DEPTH     (MetaFifoDepth),
+      .FPGA_EN   (CVA6Cfg.FPGA_EN)
   ) i_rd_dcache_id (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -387,7 +391,8 @@ module wt_axi_adapter
 
   fifo_v3 #(
       .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
-      .DEPTH     (MetaFifoDepth)
+      .DEPTH     (MetaFifoDepth),
+      .FPGA_EN   (CVA6Cfg.FPGA_EN)
   ) i_wr_dcache_id (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -417,7 +422,8 @@ module wt_axi_adapter
   fifo_v3 #(
       .DATA_WIDTH  (CVA6Cfg.AxiIdWidth + 1),
       .DEPTH       (MetaFifoDepth),
-      .FALL_THROUGH(1'b1)
+      .FALL_THROUGH(1'b1),
+      .FPGA_EN     (CVA6Cfg.FPGA_EN)
   ) i_b_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -434,13 +440,13 @@ module wt_axi_adapter
 
   // buffer read responses in shift regs
   logic icache_first_d, icache_first_q, dcache_first_d, dcache_first_q;
-  logic [ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
+  logic [CVA6Cfg.ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
       icache_rd_shift_user_d, icache_rd_shift_user_q;
-  logic [DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
+  logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:0][CVA6Cfg.AxiUserWidth-1:0]
       dcache_rd_shift_user_d, dcache_rd_shift_user_q;
-  logic [ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
+  logic [CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       icache_rd_shift_d, icache_rd_shift_q;
-  logic [DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
+  logic [CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       dcache_rd_shift_d, dcache_rd_shift_q;
   wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
   dcache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
@@ -473,15 +479,15 @@ module wt_axi_adapter
 
     if (icache_rtrn_rd_en) begin
       icache_first_d = axi_rd_last;
-      if (ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
+      if (CVA6Cfg.ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         icache_rd_shift_d[0] = axi_rd_data;
       end else begin
         icache_rd_shift_d = {
-          axi_rd_data, icache_rd_shift_q[ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
+          axi_rd_data, icache_rd_shift_q[CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
         };
       end
       icache_rd_shift_user_d = {
-        axi_rd_user, icache_rd_shift_user_q[ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
+        axi_rd_user, icache_rd_shift_user_q[CVA6Cfg.ICACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
       };
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (icache_first_q) begin
@@ -492,15 +498,15 @@ module wt_axi_adapter
 
     if (dcache_rtrn_rd_en) begin
       dcache_first_d = axi_rd_last;
-      if (DCACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
+      if (CVA6Cfg.DCACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         dcache_rd_shift_d[0] = axi_rd_data;
       end else begin
         dcache_rd_shift_d = {
-          axi_rd_data, dcache_rd_shift_q[DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
+          axi_rd_data, dcache_rd_shift_q[CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]
         };
       end
       dcache_rd_shift_user_d = {
-        axi_rd_user, dcache_rd_shift_user_q[DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
+        axi_rd_user, dcache_rd_shift_user_q[CVA6Cfg.DCACHE_USER_LINE_WIDTH/CVA6Cfg.AxiUserWidth-1:1]
       };
       // if this is a single word transaction, we need to make sure that word is placed at offset 0
       if (dcache_first_q) begin
@@ -549,7 +555,7 @@ module wt_axi_adapter
       dcache_rtrn_type_d    = wt_cache_pkg::DCACHE_INV_REQ;
       dcache_rtrn_vld_d     = 1'b1;
       dcache_rtrn_inv_d.all = 1'b1;
-      dcache_rtrn_inv_d.idx = inval_addr_i[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+      dcache_rtrn_inv_d.idx = inval_addr_i[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
       //////////////////////////////////////
       // dcache needs some special treatment
       // for arbitration and decoding of atomics
@@ -563,7 +569,7 @@ module wt_axi_adapter
       dcache_rtrn_vld_d = 1'b1;
 
       dcache_rtrn_inv_d.all = 1'b1;
-      dcache_rtrn_inv_d.idx = dcache_data.paddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+      dcache_rtrn_inv_d.idx = dcache_data.paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
       //////////////////////////////////////
       // read responses
       // note that in case of atomics, the dcache sequentializes requests and

@@ -54,14 +54,17 @@ module cva6_rvfi
   | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN - 2);  // MXL
 
   localparam logic [riscv::XLEN-1:0] hart_id_i = '0;
+
+  localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
+
   logic flush;
   logic issue_instr_ack;
   logic fetch_entry_valid;
   logic [31:0] instruction;
   logic is_compressed;
 
-  logic [TRANS_ID_BITS-1:0] issue_pointer;
-  logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] commit_pointer;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer;
 
   logic flush_unissued_instr;
   logic decoded_instr_valid;
@@ -71,7 +74,7 @@ module cva6_rvfi
   logic [riscv::XLEN-1:0] rs2_forwarding;
 
   logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_pc;
-  fu_op [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] commit_instr_op;
+  fu_op [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_instr_op;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs1;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs2;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rd;
@@ -86,7 +89,7 @@ module cva6_rvfi
   logic [riscv::VLEN-1:0] lsu_ctrl_vaddr;
   fu_t lsu_ctrl_fu;
   logic [(riscv::XLEN/8)-1:0] lsu_ctrl_be;
-  logic [TRANS_ID_BITS-1:0] lsu_ctrl_trans_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id;
 
   logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
@@ -97,7 +100,7 @@ module cva6_rvfi
   logic [riscv::VLEN-1:0] lsu_addr;
   logic [(riscv::XLEN/8)-1:0] lsu_rmask;
   logic [(riscv::XLEN/8)-1:0] lsu_wmask;
-  logic [TRANS_ID_BITS-1:0] lsu_addr_trans_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_addr_trans_id;
 
   riscv::pmpcfg_t [15:0] pmpcfg_q, pmpcfg_d;
 
@@ -201,7 +204,7 @@ module cva6_rvfi
     logic [riscv::XLEN-1:0] lsu_wdata;
     logic [31:0] instr;
   } sb_mem_t;
-  sb_mem_t [NR_SB_ENTRIES-1:0] mem_q, mem_n;
+  sb_mem_t [CVA6Cfg.NR_SB_ENTRIES-1:0] mem_q, mem_n;
 
   always_comb begin : issue_fifo
     mem_n = mem_q;
@@ -311,8 +314,8 @@ module cva6_rvfi
     : '0;
     rvfi_csr_o.sstatus = CVA6Cfg.RVS ?
     '{
-        rdata: csr.mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
-        wdata: csr.mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
+        rdata: csr.mstatus_extended & SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
+        wdata: csr.mstatus_extended & SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
         rmask: '1,
         wmask: '1
     }

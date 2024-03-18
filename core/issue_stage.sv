@@ -93,7 +93,7 @@ module issue_stage
     // TO_BE_COMPLETED - ACC_DISPATCHER
     output logic issue_instr_hs_o,
     // Transaction ID - EX_STAGE
-    input logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_i,
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_i,
     // The branch engine uses the write back from the ALU - EX_STAGE
     input bp_resolve_t resolved_branch_i,
     // TO_BE_COMPLETED - EX_STAGE
@@ -119,9 +119,9 @@ module issue_stage
     // Issue stall - PERF_COUNTERS
     output logic stall_issue_o,
     // Information dedicated to RVFI - RVFI
-    output logic [TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
     // Information dedicated to RVFI - RVFI
-    output logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
+    output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
 );
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)

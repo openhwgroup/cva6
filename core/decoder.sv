@@ -26,7 +26,9 @@ module decoder
     parameter type branchpredict_sbe_t = logic,
     parameter type exception_t = logic,
     parameter type irq_ctrl_t = logic,
-    parameter type scoreboard_entry_t = logic
+    parameter type scoreboard_entry_t = logic,
+    parameter type interrupts_t = logic,
+    parameter interrupts_t INTERRUPTS = '0
 ) (
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
@@ -1397,29 +1399,29 @@ module decoder
       // for two privilege levels: Supervisor and Machine Mode
       // Supervisor Timer Interrupt
       if (irq_ctrl_i.mie[riscv::IRQ_S_TIMER] && irq_ctrl_i.mip[riscv::IRQ_S_TIMER]) begin
-        interrupt_cause = riscv::S_TIMER_INTERRUPT;
+        interrupt_cause = INTERRUPTS.S_TIMER;
       end
       // Supervisor Software Interrupt
       if (irq_ctrl_i.mie[riscv::IRQ_S_SOFT] && irq_ctrl_i.mip[riscv::IRQ_S_SOFT]) begin
-        interrupt_cause = riscv::S_SW_INTERRUPT;
+        interrupt_cause = INTERRUPTS.S_SW;
       end
       // Supervisor External Interrupt
       // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
       // used to generate external interrupts to the supervisor
       if (irq_ctrl_i.mie[riscv::IRQ_S_EXT] && (irq_ctrl_i.mip[riscv::IRQ_S_EXT] | irq_i[ariane_pkg::SupervisorIrq])) begin
-        interrupt_cause = riscv::S_EXT_INTERRUPT;
+        interrupt_cause = INTERRUPTS.S_EXT;
       end
       // Machine Timer Interrupt
       if (irq_ctrl_i.mip[riscv::IRQ_M_TIMER] && irq_ctrl_i.mie[riscv::IRQ_M_TIMER]) begin
-        interrupt_cause = riscv::M_TIMER_INTERRUPT;
+        interrupt_cause = INTERRUPTS.M_TIMER;
       end
       // Machine Mode Software Interrupt
       if (irq_ctrl_i.mip[riscv::IRQ_M_SOFT] && irq_ctrl_i.mie[riscv::IRQ_M_SOFT]) begin
-        interrupt_cause = riscv::M_SW_INTERRUPT;
+        interrupt_cause = INTERRUPTS.M_SW;
       end
       // Machine Mode External Interrupt
       if (irq_ctrl_i.mip[riscv::IRQ_M_EXT] && irq_ctrl_i.mie[riscv::IRQ_M_EXT]) begin
-        interrupt_cause = riscv::M_EXT_INTERRUPT;
+        interrupt_cause = INTERRUPTS.M_EXT;
       end
 
       if (interrupt_cause[riscv::XLEN-1] && irq_ctrl_i.global_enable) begin
