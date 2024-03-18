@@ -55,7 +55,7 @@ module cva6_ptw
     // to TLBs, update logic
     output tlb_update_cva6_t shared_tlb_update_o,
 
-    output logic [riscv::VLEN-1:0] update_vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] update_vaddr_o,
 
     input logic [ASID_WIDTH[0]-1:0] asid_i[HYP_EXT*2:0],  //[vmid,vs_asid,asid]
 
@@ -63,7 +63,7 @@ module cva6_ptw
     // did we miss?
     input logic                   shared_tlb_access_i,
     input logic                   shared_tlb_hit_i,
-    input logic [riscv::VLEN-1:0] shared_tlb_vaddr_i,
+    input logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_i,
 
     input logic itlb_req_i,
 
@@ -77,8 +77,8 @@ module cva6_ptw
     // PMP
 
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
-    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
-    output logic [HYP_EXT:0][riscv::PLEN-1:0] bad_paddr_o
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    output logic [HYP_EXT:0][CVA6Cfg.PLEN-1:0] bad_paddr_o
 
 );
 
@@ -124,14 +124,14 @@ module cva6_ptw
   // register the ASIDs
   logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VPN we need to walk, SV39 defines a 39 bit virtual address
-  logic [riscv::VLEN-1:0] vaddr_q, vaddr_n;
+  logic [CVA6Cfg.VLEN-1:0] vaddr_q, vaddr_n;
   logic [HYP_EXT*2:0][PT_LEVELS-2:0][(VPN_LEN/PT_LEVELS)-1:0] vaddr_lvl;
   // register the VPN we need to walk, SV39x4 defines a 41 bit virtual address for the G-Stage
   logic [riscv::GPLEN-1:0] gpaddr_q, gpaddr_n, gpaddr_base;
   logic [PT_LEVELS-2:0][riscv::GPLEN-1:0] gpaddr;
   // 4 byte aligned physical pointer
-  logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
-  logic [riscv::PLEN-1:0] gptw_pptr_q, gptw_pptr_n;
+  logic [CVA6Cfg.PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
+  logic [CVA6Cfg.PLEN-1:0] gptw_pptr_q, gptw_pptr_n;
 
   // Assignments
   assign update_vaddr_o = vaddr_q;
@@ -215,8 +215,8 @@ module cva6_ptw
 
 
   pmp #(
-      .PLEN      (riscv::PLEN),
-      .PMP_LEN   (riscv::PLEN - 2),
+      .PLEN      (CVA6Cfg.PLEN),
+      .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
   ) i_pmp_ptw (
       .addr_i       (ptw_pptr_q),
@@ -264,7 +264,7 @@ module cva6_ptw
   //        pa.ppn[i-1:0] = va.vpn[i-1:0].
   //      - pa.ppn[LEVELS-1:i] = pte.ppn[LEVELS-1:i].
   always_comb begin : ptw
-    automatic logic [riscv::PLEN-1:0] pptr;
+    automatic logic [CVA6Cfg.PLEN-1:0] pptr;
     // automatic logic [riscv::GPLEN-1:0] gpaddr;
     // default assignments
     // PTW memory interface

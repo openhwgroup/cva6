@@ -60,7 +60,7 @@ module cva6_mmu
     // in the LSU as we distinguish load and stores, what we do here is simple address translation
     input exception_t misaligned_ex_i,
     input logic lsu_req_i,  // request address translation
-    input logic [riscv::VLEN-1:0] lsu_vaddr_i,  // virtual address in
+    input logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_i,  // virtual address in
     input logic [riscv::XLEN-1:0] lsu_tinst_i,  // transformed instruction in
     input logic lsu_is_store_i,  // the translation is requested by a store
     output logic csr_hs_ld_st_inst_o,  // hyp load store instruction
@@ -70,7 +70,7 @@ module cva6_mmu
     output logic [CVA6Cfg.PPNW-1:0] lsu_dtlb_ppn_o,  // ppn (send same cycle as hit)
     // Cycle 1
     output logic lsu_valid_o,  // translation is valid
-    output logic [riscv::PLEN-1:0] lsu_paddr_o,  // translated address
+    output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
     // General control signals
     input riscv::priv_lvl_t priv_lvl_i,
@@ -84,7 +84,7 @@ module cva6_mmu
 
     input logic [ASID_WIDTH[0]-1:0] asid_i               [HYP_EXT*2:0],  //[vmid,vs_asid,asid]
     input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i [  HYP_EXT:0],
-    input logic [  riscv::VLEN-1:0] vaddr_to_be_flushed_i[  HYP_EXT:0],
+    input logic [  CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i[  HYP_EXT:0],
 
     input logic [HYP_EXT*2:0] flush_tlb_i,
 
@@ -96,7 +96,7 @@ module cva6_mmu
     output dcache_req_i_t                          req_port_o,
     // PMP
     input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
-    input  logic           [15:0][riscv::PLEN-3:0] pmpaddr_i
+    input  logic           [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
   logic [ASID_WIDTH[0]-1:0] dtlb_mmu_asid_i[HYP_EXT:0];
   logic [ASID_WIDTH[0]-1:0] itlb_mmu_asid_i[HYP_EXT:0];
@@ -142,9 +142,9 @@ module cva6_mmu
   logic walking_instr;  // PTW is walking because of an ITLB miss
   logic [HYP_EXT*2:0] ptw_error;  // PTW threw an exception
   logic ptw_access_exception;  // PTW threw an access exception (PMPs)
-  logic [HYP_EXT:0][riscv::PLEN-1:0] ptw_bad_paddr;  // PTW guest page fault bad guest physical addr
+  logic [HYP_EXT:0][CVA6Cfg.PLEN-1:0] ptw_bad_paddr;  // PTW guest page fault bad guest physical addr
 
-  logic [riscv::VLEN-1:0] update_vaddr, shared_tlb_vaddr;
+  logic [CVA6Cfg.VLEN-1:0] update_vaddr, shared_tlb_vaddr;
 
   tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
@@ -172,6 +172,7 @@ module cva6_mmu
 
 
   cva6_tlb #(
+      .CVA6Cfg          (CVA6Cfg),
       .pte_cva6_t       (pte_cva6_t),
       .tlb_update_cva6_t(tlb_update_cva6_t),
       .TLB_ENTRIES      (INSTR_TLB_ENTRIES),
@@ -197,6 +198,7 @@ module cva6_mmu
   );
 
   cva6_tlb #(
+      .CVA6Cfg          (CVA6Cfg),
       .pte_cva6_t       (pte_cva6_t),
       .tlb_update_cva6_t(tlb_update_cva6_t),
       .TLB_ENTRIES      (DATA_TLB_ENTRIES),
@@ -339,7 +341,7 @@ module cva6_mmu
   always_comb begin : instr_interface
     // MMU disabled: just pass through
     icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-    icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1: riscv::PLEN -1 ):0];
+    icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):0];
     // two potential exception sources:
     // 1. HPTW threw an exception -> signal with a page fault exception
     // 2. We got an access error because of insufficient permissions -> throw an access exception
@@ -356,8 +358,8 @@ module cva6_mmu
     // AXI decode error), or when PTW performs walk due to ITLB miss and raises
     // an error.
     if ((|enable_translation_i[HYP_EXT:0])) begin
-      // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:CVA6Cfg.SV-1] are equal
-      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:CVA6Cfg.SV-1]) == 1'b0))
+      // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal
+      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0))
         if (HYP_EXT == 1)
           icache_areq_o.fetch_exception = {
             riscv::INSTR_ACCESS_FAULT,
@@ -418,7 +420,7 @@ module cva6_mmu
           else
             icache_areq_o.fetch_exception = {
               riscv::INSTR_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+              {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
               1'b1
             };
         else if (!pmp_instr_allow)
@@ -447,7 +449,7 @@ module cva6_mmu
               riscv::INSTR_GUEST_PAGE_FAULT,
               {riscv::XLEN'(update_vaddr)},
               ptw_bad_paddr[HYP_EXT][riscv::GPLEN-1:0],
-              (ptw_error[HYP_EXT*2] ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
+              (ptw_error[HYP_EXT*2] ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
               enable_translation_i[2*HYP_EXT],
               1'b1
             };
@@ -476,7 +478,7 @@ module cva6_mmu
         else
           icache_areq_o.fetch_exception = {
             riscv::INSTR_ACCESS_FAULT,
-            ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN>riscv::VLEN)?(riscv::PLEN-riscv::VLEN) : 0],
+            ptw_bad_paddr[0][CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN>CVA6Cfg.VLEN)?(CVA6Cfg.PLEN-CVA6Cfg.VLEN) : 0],
             1'b1
           };
       end
@@ -497,22 +499,22 @@ module cva6_mmu
       else
         icache_areq_o.fetch_exception = {
           riscv::INSTR_ACCESS_FAULT,
-          riscv::VLEN'(icache_areq_o.fetch_paddr[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0]),
+          CVA6Cfg.VLEN'(icache_areq_o.fetch_paddr[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? (CVA6Cfg.PLEN - CVA6Cfg.VLEN) : 0]),
           1'b1
         };
   end
 
   // check for execute flag on memory
   assign match_any_execute_region = config_pkg::is_inside_execute_regions(
-      CVA6Cfg, {{64 - riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, icache_areq_o.fetch_paddr}
   );
-  // assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}); // this is the package used in the hypervisor extension for now
+  // assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-CVA6Cfg.PLEN{1'b0}}, icache_areq_o.fetch_paddr}); // this is the package used in the hypervisor extension for now
 
   // Instruction fetch
   pmp #(
       .CVA6Cfg   (CVA6Cfg),              //comment for hypervisor extension
-      .PLEN      (riscv::PLEN),
-      .PMP_LEN   (riscv::PLEN - 2),
+      .PLEN      (CVA6Cfg.PLEN),
+      .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
       // .NR_ENTRIES ( ArianeCfg.NrPMPEntries ) // configuration used in hypervisor extension
   ) i_pmp_if (
@@ -529,7 +531,7 @@ module cva6_mmu
   //-----------------------
   // Data Interface
   //-----------------------
-  logic [HYP_EXT:0][riscv::VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
+  logic [HYP_EXT:0][CVA6Cfg.VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
   logic [riscv::XLEN-1:0] lsu_tinst_n, lsu_tinst_q;
   logic hs_ld_st_inst_n, hs_ld_st_inst_q;
   pte_cva6_t [HYP_EXT:0] dtlb_pte_n, dtlb_pte_q;
@@ -579,8 +581,8 @@ module cva6_mmu
       daccess_err[HYP_EXT] = en_ld_st_translation_i[HYP_EXT] && !dtlb_pte_q[HYP_EXT].u;
     end
 
-    lsu_paddr_o = (riscv::PLEN)'(lsu_vaddr_q[0]);
-    lsu_dtlb_ppn_o        = (CVA6Cfg.PPNW)'(lsu_vaddr_n[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1: riscv::PLEN -1 ):12]);
+    lsu_paddr_o = (CVA6Cfg.PLEN)'(lsu_vaddr_q[0]);
+    lsu_dtlb_ppn_o        = (CVA6Cfg.PPNW)'(lsu_vaddr_n[0][((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):12]);
 
     // translation is enabled and no misaligned exception occurred
     if ((|en_ld_st_translation_i[HYP_EXT:0]) && !misaligned_ex_q.valid) begin
@@ -621,7 +623,7 @@ module cva6_mmu
           if(HYP_EXT==1 && en_ld_st_translation_i[HYP_EXT] && (!dtlb_pte_q[HYP_EXT].w || daccess_err[HYP_EXT] || !dtlb_pte_q[HYP_EXT].d)) begin
             lsu_exception_o = {
               riscv::STORE_GUEST_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, lsu_vaddr_q[0]},
+              {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
               lsu_vaddr_q[HYP_EXT][riscv::GPLEN-1:0],
               {riscv::XLEN{1'b0}},
               en_ld_st_translation_i[HYP_EXT*2],
@@ -631,7 +633,7 @@ module cva6_mmu
             if (HYP_EXT == 1) begin
               lsu_exception_o = {
                 riscv::STORE_PAGE_FAULT,
-                {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, lsu_vaddr_q[0]},
+                {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
                 {riscv::GPLEN{1'b0}},
                 lsu_tinst_q,
                 en_ld_st_translation_i[HYP_EXT*2],
@@ -640,7 +642,7 @@ module cva6_mmu
             end else begin
               lsu_exception_o = {
                 riscv::STORE_PAGE_FAULT,
-                {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, lsu_vaddr_q[0]},
+                {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
                 1'b1
               };
             end
@@ -658,7 +660,7 @@ module cva6_mmu
             end else begin
               lsu_exception_o = {
                 riscv::ST_ACCESS_FAULT,
-                riscv::XLEN'(lsu_paddr_o[riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0]),
+                riscv::XLEN'(lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? (CVA6Cfg.PLEN - CVA6Cfg.VLEN) : 0]),
                 1'b1
               };
             end
@@ -669,7 +671,7 @@ module cva6_mmu
           if (HYP_EXT == 1 && daccess_err[HYP_EXT]) begin
             lsu_exception_o = {
               riscv::LOAD_GUEST_PAGE_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, lsu_vaddr_q[0]},
+              {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
               lsu_vaddr_q[HYP_EXT][riscv::GPLEN-1:0],
               {riscv::XLEN{1'b0}},
               en_ld_st_translation_i[HYP_EXT*2],
@@ -680,7 +682,7 @@ module cva6_mmu
             if (HYP_EXT == 1) begin
               lsu_exception_o = {
                 riscv::LOAD_PAGE_FAULT,
-                {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, lsu_vaddr_q[0]},
+                {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
                 {riscv::GPLEN{1'b0}},
                 lsu_tinst_q,
                 en_ld_st_translation_i[HYP_EXT*2],
@@ -689,7 +691,7 @@ module cva6_mmu
             end else begin
               lsu_exception_o = {
                 riscv::LOAD_PAGE_FAULT,
-                {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, lsu_vaddr_q[0]},
+                {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
                 1'b1
               };
             end
@@ -698,7 +700,7 @@ module cva6_mmu
             if (HYP_EXT == 1) begin
               lsu_exception_o = {
                 riscv::LD_ACCESS_FAULT,
-                {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, lsu_vaddr_q[0]},
+                {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
                 {riscv::GPLEN{1'b0}},
                 lsu_tinst_q,
                 en_ld_st_translation_i[HYP_EXT*2],
@@ -707,7 +709,7 @@ module cva6_mmu
             end else begin
               lsu_exception_o = {
                 riscv::LD_ACCESS_FAULT,
-                lsu_paddr_o[riscv::PLEN-1:(riscv::PLEN>riscv::VLEN)?(riscv::PLEN-riscv::VLEN) : 0],
+                lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN>CVA6Cfg.VLEN)?(CVA6Cfg.PLEN-CVA6Cfg.VLEN) : 0],
                 1'b1
               };
             end
@@ -729,9 +731,9 @@ module cva6_mmu
             if (HYP_EXT == 1 && ptw_error[HYP_EXT]) begin
               lsu_exception_o = {
                 riscv::STORE_GUEST_PAGE_FAULT,
-                {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, update_vaddr},
+                {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr},
                 ptw_bad_paddr[HYP_EXT][riscv::GPLEN-1:0],
-                (ptw_error[HYP_EXT*2] ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
+                (ptw_error[HYP_EXT*2] ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
                 en_ld_st_translation_i[HYP_EXT*2],
                 1'b1
               };
@@ -739,7 +741,7 @@ module cva6_mmu
               if (HYP_EXT == 1) begin
                 lsu_exception_o = {
                   riscv::STORE_PAGE_FAULT,
-                  {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, update_vaddr},
+                  {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr},
                   {riscv::GPLEN{1'b0}},
                   lsu_tinst_q,
                   en_ld_st_translation_i[HYP_EXT*2],
@@ -748,7 +750,7 @@ module cva6_mmu
               end else begin
                 lsu_exception_o = {
                   riscv::STORE_PAGE_FAULT,
-                  {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, update_vaddr},
+                  {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr},
                   1'b1
                 };
               end
@@ -757,9 +759,9 @@ module cva6_mmu
             if (HYP_EXT == 1 && ptw_error[HYP_EXT]) begin
               lsu_exception_o = {
                 riscv::LOAD_GUEST_PAGE_FAULT,
-                {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, update_vaddr},
+                {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr},
                 ptw_bad_paddr[HYP_EXT][riscv::GPLEN-1:0],
-                (ptw_error[HYP_EXT*2] ? (riscv::IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
+                (ptw_error[HYP_EXT*2] ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {riscv::XLEN{1'b0}}),
                 en_ld_st_translation_i[HYP_EXT*2],
                 1'b1
               };
@@ -767,7 +769,7 @@ module cva6_mmu
               if (HYP_EXT == 1) begin
                 lsu_exception_o = {
                   riscv::LOAD_PAGE_FAULT,
-                  {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, update_vaddr},
+                  {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr},
                   {riscv::GPLEN{1'b0}},
                   lsu_tinst_q,
                   en_ld_st_translation_i[HYP_EXT*2],
@@ -776,7 +778,7 @@ module cva6_mmu
               end else begin
                 lsu_exception_o = {
                   riscv::LOAD_PAGE_FAULT,
-                  {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, update_vaddr},
+                  {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr},
                   1'b1
                 };
               end
@@ -791,7 +793,7 @@ module cva6_mmu
           if (HYP_EXT == 1) begin
             lsu_exception_o = {
               riscv::LD_ACCESS_FAULT,
-              {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, update_vaddr},
+              {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr},
               {riscv::GPLEN{1'b0}},
               lsu_tinst_q,
               en_ld_st_translation_i[HYP_EXT*2],
@@ -800,7 +802,7 @@ module cva6_mmu
           end else begin
             lsu_exception_o = {
               riscv::LD_ACCESS_FAULT,
-              ptw_bad_paddr[0][riscv::PLEN-1:(riscv::PLEN > riscv::VLEN) ? (riscv::PLEN - riscv::VLEN) : 0],
+              ptw_bad_paddr[0][CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? (CVA6Cfg.PLEN - CVA6Cfg.VLEN) : 0],
               1'b1
             };
           end
@@ -812,7 +814,7 @@ else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
         if (HYP_EXT == 1) begin
           lsu_exception_o = {
             riscv::ST_ACCESS_FAULT,
-            {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, update_vaddr},
+            {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr},
             {riscv::GPLEN{1'b0}},
             lsu_tinst_q,
             en_ld_st_translation_i[HYP_EXT*2],
@@ -821,14 +823,14 @@ else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
         end else
           lsu_exception_o = {
             riscv::ST_ACCESS_FAULT,
-            lsu_paddr_o[riscv::PLEN-1:(riscv::PLEN>riscv::VLEN)?(riscv::PLEN-riscv::VLEN) : 0],
+            lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN>CVA6Cfg.VLEN)?(CVA6Cfg.PLEN-CVA6Cfg.VLEN) : 0],
             1'b1
           };
       end else begin
         if (HYP_EXT == 1) begin
           lsu_exception_o = {
             riscv::LD_ACCESS_FAULT,
-            {{riscv::XLEN - riscv::VLEN{lsu_vaddr_q[0][riscv::VLEN-1]}}, update_vaddr},
+            {{riscv::XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr},
             {riscv::GPLEN{1'b0}},
             lsu_tinst_q,
             en_ld_st_translation_i[HYP_EXT*2],
@@ -837,7 +839,7 @@ else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
         end else begin
           lsu_exception_o = {
             riscv::LD_ACCESS_FAULT,
-            lsu_paddr_o[riscv::PLEN-1:(riscv::PLEN>riscv::VLEN)?(riscv::PLEN-riscv::VLEN) : 0],
+            lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN>CVA6Cfg.VLEN)?(CVA6Cfg.PLEN-CVA6Cfg.VLEN) : 0],
             1'b1
           };
         end
@@ -848,8 +850,8 @@ else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
   // Load/store PMP check
   pmp #(
       .CVA6Cfg   (CVA6Cfg),              // COMMENT IN HYPERVISOR EXTENSION
-      .PLEN      (riscv::PLEN),
-      .PMP_LEN   (riscv::PLEN - 2),
+      .PLEN      (CVA6Cfg.PLEN),
+      .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
       // .NR_ENTRIES ( ArianeCfg.NrPMPEntries ) // CONFIGURATION USED IN HYPERVISOR EXTENSION
   ) i_pmp_data (

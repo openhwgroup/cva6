@@ -24,6 +24,7 @@
 module cva6_tlb
   import ariane_pkg::*;
 #(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type pte_cva6_t = logic,
     parameter type tlb_update_cva6_t = logic,
     parameter int unsigned TLB_ENTRIES = 4,
@@ -41,11 +42,11 @@ module cva6_tlb
     // Lookup signals
     input logic lu_access_i,
     input logic [ASID_WIDTH[0]-1:0] lu_asid_i[HYP_EXT:0],  //[lu_vmid,lu_asid]
-    input logic [riscv::VLEN-1:0] lu_vaddr_i,
+    input logic [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
     output logic [riscv::GPLEN-1:0] lu_gpaddr_o,
     output pte_cva6_t [HYP_EXT:0] lu_content_o,
     input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i[HYP_EXT:0],  //[vmid,asid]
-    input logic [riscv::VLEN-1:0] vaddr_to_be_flushed_i[HYP_EXT:0],  // [gpaddr,vaddr]
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i[HYP_EXT:0],  // [gpaddr,vaddr]
     output logic [PT_LEVELS-2:0] lu_is_page_o,
     output logic lu_hit_o
 );
@@ -53,7 +54,7 @@ module cva6_tlb
   // computes the paddr based on the page size, ppn and offset
   function automatic logic [(riscv::GPLEN-1):0] make_gpaddr(
       input logic s_st_enbl, input logic is_1G, input logic is_2M,
-      input logic [(riscv::VLEN-1):0] vaddr, input riscv::pte_t pte);
+      input logic [(CVA6Cfg.VLEN-1):0] vaddr, input riscv::pte_t pte);
     logic [(riscv::GPLEN-1):0] gpaddr;
     if (s_st_enbl) begin
       gpaddr = {pte.ppn[(riscv::GPPNW-1):0], vaddr[11:0]};
@@ -221,7 +222,7 @@ module cva6_tlb
   logic [HYP_EXT:0]asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2)is 0, active high
   logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
 
-  localparam int VADDR_WIDTH[1:0] = {riscv::GPLEN, riscv::VLEN};
+  localparam int VADDR_WIDTH[1:0] = {riscv::GPLEN, CVA6Cfg.VLEN};
 
   genvar a;
   generate
