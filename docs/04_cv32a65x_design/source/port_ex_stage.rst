@@ -40,13 +40,13 @@
      - in
      - rs1 forwarding
      - ISSUE_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``rs2_forwarding_i``
      - in
      - rs2 forwarding
      - ISSUE_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``fu_data_i``
      - in
@@ -58,7 +58,7 @@
      - in
      - PC of the current instruction
      - ISSUE_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``is_compressed_instr_i``
      - in
@@ -70,13 +70,13 @@
      - out
      - Fixed Latency Unit result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``flu_trans_id_o``
      - out
      - ID of the scoreboard entry at which a=to write back
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``flu_exception_o``
      - out
@@ -172,13 +172,13 @@
      - out
      - Load result valid
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``load_trans_id_o``
      - out
      - Load instruction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``load_exception_o``
      - out
@@ -196,13 +196,13 @@
      - out
      - Store result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``store_trans_id_o``
      - out
      - Store instruction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``store_exception_o``
      - out
@@ -226,7 +226,7 @@
      - in
      - Commit transaction ID
      - COMMIT_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``no_st_pending_o``
      - out
@@ -256,7 +256,7 @@
      - out
      - CVXIF transaction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``x_exception_o``
      - out
@@ -268,7 +268,7 @@
      - out
      - CVXIF result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``x_valid_o``
      - out
@@ -340,7 +340,7 @@
      - in
      - Report the PMP addresses
      - CSR_REGFILE
-     - logic[15:0][riscv::PLEN-3:0]
+     - logic[15:0][CVA6Cfg.PLEN-3:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 

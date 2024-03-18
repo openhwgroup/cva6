@@ -58,7 +58,7 @@
      - out
      - CSR buffer result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``csr_commit_i``
      - in

@@ -40,7 +40,7 @@
      - in
      - Instruction PC
      - ISSUE_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``is_compressed_instr_i``
      - in
@@ -70,7 +70,7 @@
      - out
      - Brach unit result
      - ISSUE_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``branch_predict_i``
      - in

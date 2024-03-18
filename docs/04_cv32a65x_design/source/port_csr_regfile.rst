@@ -64,13 +64,13 @@
      - in
      - Address from which to start booting, mtvec is set to the same address
      - SUBSYSTEM
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``hart_id_i``
      - in
      - Hart id in a multicore environment (reflected in a CSR)
      - SUBSYSTEM
-     - logic[riscv::XLEN-1:0]
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``ex_i``
      - in
@@ -94,19 +94,19 @@
      - in
      - Write data in
      - COMMIT_STAGE
-     - logic[riscv::XLEN-1:0]
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``csr_rdata_o``
      - out
      - Read data out
      - COMMIT_STAGE
-     - logic[riscv::XLEN-1:0]
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``pc_i``
      - in
      - PC of instruction accessing the CSR
      - COMMIT_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``csr_exception_o``
      - out
@@ -118,7 +118,7 @@
      - out
      - Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``eret_o``
      - out
@@ -130,7 +130,7 @@
      - out
      - Output base of exception vector, correct CSR is output (mtvec, stvec)
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``irq_ctrl_o``
      - out

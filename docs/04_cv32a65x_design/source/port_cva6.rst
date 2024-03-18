@@ -34,13 +34,13 @@
      - in
      - Reset boot address
      - SUBSYSTEM
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``hart_id_i``
      - in
      - Hard ID reflected as CSR
      - SUBSYSTEM
-     - logic[riscv::XLEN-1:0]
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``irq_i``
      - in

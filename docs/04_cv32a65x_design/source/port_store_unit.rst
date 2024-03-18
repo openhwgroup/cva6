@@ -94,13 +94,13 @@
      - out
      - Transaction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``result_o``
      - out
      - Store result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``ex_o``
      - out
@@ -118,13 +118,13 @@
      - out
      - Virtual address
      - TO_BE_COMPLETED
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``paddr_i``
      - in
      - Physical address
      - TO_BE_COMPLETED
-     - logic[riscv::PLEN-1:0]
+     - logic[CVA6Cfg.PLEN-1:0]
 
    * - ``ex_i``
      - in

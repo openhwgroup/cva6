@@ -34,7 +34,7 @@
      - in
      - Next PC when reset
      - SUBSYSTEM
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``flush_i``
      - in
@@ -58,7 +58,7 @@
      - in
      - COMMIT PC
      - COMMIT
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``ex_valid_i``
      - in
@@ -82,13 +82,13 @@
      - in
      - Next PC when returning from exception
      - CSR
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``trap_vector_base_i``
      - in
      - Next PC when jumping into exception
      - CSR
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``icache_dreq_o``
      - out

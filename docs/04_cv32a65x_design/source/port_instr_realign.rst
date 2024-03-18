@@ -52,30 +52,30 @@
      - in
      - 32-bit block address
      - CACHE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``data_i``
      - in
      - 32-bit block
      - CACHE
-     - logic[FETCH_WIDTH-1:0]
+     - logic[CVA6Cfg.FETCH_WIDTH-1:0]
 
    * - ``valid_o``
      - out
      - instruction is valid
      - FRONTEND
-     - logic[INSTR_PER_FETCH-1:0]
+     - logic[CVA6Cfg.INSTR_PER_FETCH-1:0]
 
    * - ``addr_o``
      - out
      - Instruction address
      - FRONTEND
-     - logic[INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
+     - logic[CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0]
 
    * - ``instr_o``
      - out
      - Instruction
      - instr_scan&instr_queue
-     - logic[INSTR_PER_FETCH-1:0][31:0]
+     - logic[CVA6Cfg.INSTR_PER_FETCH-1:0][31:0]
 
 
