@@ -67,7 +67,7 @@ module cva6_mmu
     // if we need to walk the page table we can't grant in the same cycle
     // Cycle 0
     output logic lsu_dtlb_hit_o,  // sent in same cycle as the request if translation hits in DTLB
-    output logic [riscv::PPNW-1:0] lsu_dtlb_ppn_o,  // ppn (send same cycle as hit)
+    output logic [CVA6Cfg.PPNW-1:0] lsu_dtlb_ppn_o,  // ppn (send same cycle as hit)
     // Cycle 1
     output logic lsu_valid_o,  // translation is valid
     output logic [riscv::PLEN-1:0] lsu_paddr_o,  // translated address
@@ -80,7 +80,7 @@ module cva6_mmu
     input logic hlvx_inst_i,
     input logic hs_ld_st_inst_i,
     // input logic flag_mprv_i,
-    input logic [riscv::PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
+    input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
 
     input logic [ASID_WIDTH[0]-1:0] asid_i               [HYP_EXT*2:0],  //[vmid,vs_asid,asid]
     input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i [  HYP_EXT:0],
@@ -115,7 +115,7 @@ module cva6_mmu
 
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
-    logic [riscv::PPNW-1:0] ppn;  // PPN length for
+    logic [CVA6Cfg.PPNW-1:0] ppn;  // PPN length for
     logic [1:0] rsw;
     logic d;
     logic a;
@@ -223,6 +223,7 @@ module cva6_mmu
 
 
   cva6_shared_tlb #(
+      .CVA6Cfg          (CVA6Cfg),
       .SHARED_TLB_DEPTH (SHARED_TLB_DEPTH),
       .USE_SHARED_TLB   (USE_SHARED_TLB),
       .SHARED_TLB_WAYS  (2),
@@ -332,7 +333,7 @@ module cva6_mmu
   //-----------------------
   logic match_any_execute_region;
   logic pmp_instr_allow;
-  localparam int PPNWMin = (riscv::PPNW - 1 > 29) ? 29 : riscv::PPNW - 1;
+  localparam int PPNWMin = (CVA6Cfg.PPNW - 1 > 29) ? 29 : CVA6Cfg.PPNW - 1;
 
   // The instruction interface is a simple request response interface
   always_comb begin : instr_interface
@@ -355,8 +356,8 @@ module cva6_mmu
     // AXI decode error), or when PTW performs walk due to ITLB miss and raises
     // an error.
     if ((|enable_translation_i[HYP_EXT:0])) begin
-      // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
-      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0))
+      // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:CVA6Cfg.SV-1] are equal
+      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:CVA6Cfg.SV-1]) == 1'b0))
         if (HYP_EXT == 1)
           icache_areq_o.fetch_exception = {
             riscv::INSTR_ACCESS_FAULT,
@@ -579,7 +580,7 @@ module cva6_mmu
     end
 
     lsu_paddr_o = (riscv::PLEN)'(lsu_vaddr_q[0]);
-    lsu_dtlb_ppn_o        = (riscv::PPNW)'(lsu_vaddr_n[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1: riscv::PLEN -1 ):12]);
+    lsu_dtlb_ppn_o        = (CVA6Cfg.PPNW)'(lsu_vaddr_n[0][((riscv::PLEN > riscv::VLEN) ? riscv::VLEN -1: riscv::PLEN -1 ):12]);
 
     // translation is enabled and no misaligned exception occurred
     if ((|en_ld_st_translation_i[HYP_EXT:0]) && !misaligned_ex_q.valid) begin

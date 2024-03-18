@@ -68,7 +68,7 @@ module cva6_ptw
     input logic itlb_req_i,
 
     // from CSR file
-    input logic [riscv::PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
+    input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
     input logic [      HYP_EXT:0] mxr_i,
 
     // Performance counters
@@ -89,7 +89,7 @@ module cva6_ptw
   pte_cva6_t [HYP_EXT*2:0] pte;  //[gpte_d,gpte_q,pte]
   // register to perform context switch between stages
   // pte_cva6_t gpte_q, gpte_d;
-  assign pte[0] = pte_cva6_t'(data_rdata_q[riscv::PPNW+9:0]);
+  assign pte[0] = pte_cva6_t'(data_rdata_q[CVA6Cfg.PPNW+9:0]);
 
   enum logic [2:0] {
     IDLE,
@@ -139,8 +139,8 @@ module cva6_ptw
   assign ptw_active_o = (state_q != IDLE);
   assign walking_instr_o = is_instr_ptw_q;
   // directly output the correct physical address
-  assign req_port_o.address_index = ptw_pptr_q[DCACHE_INDEX_WIDTH-1:0];
-  assign req_port_o.address_tag   = ptw_pptr_q[DCACHE_INDEX_WIDTH+DCACHE_TAG_WIDTH-1:DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_index = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_tag   = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH+CVA6Cfg.DCACHE_TAG_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
   // we are never going to kill this request
   assign req_port_o.kill_req = '0;
   // we are never going to write with the HPTW
@@ -237,7 +237,7 @@ module cva6_ptw
       req_port_o.address_index[2:0], req_port_o.data_size
   );
 
-  assign shared_tlb_update_o.vpn = VPN_LEN'(vaddr_q[riscv::SV+HYP_EXT*2-1:12]);
+  assign shared_tlb_update_o.vpn = VPN_LEN'(vaddr_q[CVA6Cfg.SV+HYP_EXT*2-1:12]);
 
   //-------------------
   // Page table walker
@@ -316,21 +316,21 @@ module cva6_ptw
             ptw_stage_d = G_INTERMED_STAGE;
             pptr = {
               satp_ppn_i[HYP_EXT],
-              shared_tlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)],
+              shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
               (PT_LEVELS)'(0)
             };
             gptw_pptr_n = pptr;
             ptw_pptr_n = {
-              satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2],
-              pptr[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)],
+              satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
+              pptr[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
               (PT_LEVELS)'(0)
             };
           end else if (((|enable_translation_i[HYP_EXT:0] && !enable_translation_i[0]) || (|en_ld_st_translation_i[HYP_EXT:0] && !en_ld_st_translation_i[0])) && HYP_EXT==1) begin
             ptw_stage_d = G_FINAL_STAGE;
-            gpaddr_n = shared_tlb_vaddr_i[riscv::SV+HYP_EXT*2-1:0];
+            gpaddr_n = shared_tlb_vaddr_i[CVA6Cfg.SV+HYP_EXT*2-1:0];
             ptw_pptr_n = {
-              satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2],
-              shared_tlb_vaddr_i[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)],
+              satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
+              shared_tlb_vaddr_i[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
               (PT_LEVELS)'(0)
             };
           end else begin
@@ -338,13 +338,13 @@ module cva6_ptw
             if((enable_translation_i[HYP_EXT*2] || en_ld_st_translation_i[HYP_EXT*2]) && HYP_EXT==1)
               ptw_pptr_n = {
                 satp_ppn_i[HYP_EXT],
-                shared_tlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)],
+                shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
                 (PT_LEVELS)'(0)
               };
             else
               ptw_pptr_n = {
                 satp_ppn_i[0],
-                shared_tlb_vaddr_i[riscv::SV-1:riscv::SV-(VPN_LEN/PT_LEVELS)],
+                shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
                 (PT_LEVELS)'(0)
               };
           end
@@ -402,8 +402,8 @@ module cva6_ptw
                       ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0];
                       gpaddr_n = gpaddr[ptw_lvl_q[0]];
                       ptw_pptr_n = {
-                        satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2],
-                        gpaddr[ptw_lvl_q[0]][riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)],
+                        satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
+                        gpaddr[ptw_lvl_q[0]][CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
                         (PT_LEVELS)'(0)
                       };
                       ptw_lvl_n[0] = '0;
@@ -469,7 +469,7 @@ module cva6_ptw
               end
 
               // check if 63:41 are all zeros
-              if (HYP_EXT==1 && ((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte[0].ppn[riscv::PPNW-HYP_EXT:riscv::GPPNW]) == 1'b0)) begin
+              if (HYP_EXT==1 && ((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte[0].ppn[CVA6Cfg.PPNW-HYP_EXT:riscv::GPPNW]) == 1'b0)) begin
                 state_d = PROPAGATE_ERROR;
                 ptw_stage_d = G_FINAL_STAGE;
               end
@@ -498,8 +498,8 @@ module cva6_ptw
                         pptr = {pte[0].ppn, vaddr_lvl[0][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
                         gptw_pptr_n = pptr;
                         ptw_pptr_n = {
-                          satp_ppn_i[HYP_EXT*2][riscv::PPNW-1:2],
-                          pptr[riscv::SV+HYP_EXT*2-1:riscv::SV-(VPN_LEN/PT_LEVELS)],
+                          satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
+                          pptr[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
                           (PT_LEVELS)'(0)
                         };
                         ptw_lvl_n[0] = '0;
@@ -526,7 +526,7 @@ module cva6_ptw
               end
 
               // check if 63:41 are all zeros
-              if (HYP_EXT==1 && (((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte[0].ppn[riscv::PPNW-HYP_EXT:riscv::GPPNW]) == 1'b0))) begin
+              if (HYP_EXT==1 && (((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte[0].ppn[CVA6Cfg.PPNW-HYP_EXT:riscv::GPPNW]) == 1'b0))) begin
                 state_d = PROPAGATE_ERROR;
                 ptw_stage_d = ptw_stage_q;
               end

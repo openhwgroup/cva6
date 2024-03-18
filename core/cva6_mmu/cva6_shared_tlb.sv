@@ -21,6 +21,7 @@
 /* verilator lint_off WIDTH */
 
 module cva6_shared_tlb #(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg                      = config_pkg::cva6_cfg_empty,
     parameter type pte_cva6_t = logic,
     parameter type tlb_update_cva6_t = logic,
     parameter int unsigned SHARED_TLB_DEPTH = 64,
@@ -332,8 +333,8 @@ module cva6_shared_tlb #(
       i_req_q <= 0;
       shared_tag_valid <= '0;
     end else begin
-      itlb_vpn_q <= itlb_vaddr_i[riscv::SV-1:12];
-      dtlb_vpn_q <= dtlb_vaddr_i[riscv::SV-1:12];
+      itlb_vpn_q <= itlb_vaddr_i[CVA6Cfg.SV-1:12];
+      dtlb_vpn_q <= dtlb_vaddr_i[CVA6Cfg.SV-1:12];
       tlb_update_asid_q <= tlb_update_asid_d;
       shared_tlb_access_q <= shared_tlb_access_d;
       shared_tlb_vaddr_q <= shared_tlb_vaddr_d;
