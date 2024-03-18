@@ -17,20 +17,27 @@
 module csr_buffer
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type fu_data_t = logic
 ) (
-    input logic clk_i,   // Clock
-    input logic rst_ni,  // Asynchronous reset active low
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // Flush CSR - CONTROLLER
     input logic flush_i,
-
+    // FU data needed to execute instruction - ISSUE_STAGE
     input fu_data_t fu_data_i,
-
-    output logic                csr_ready_o,   // FU is ready e.g. not busy
-    input  logic                csr_valid_i,   // Input is valid
-    output riscv::xlen_t        csr_result_o,
-    input  logic                csr_commit_i,  // commit the pending CSR OP
-    // to CSR file
-    output logic         [11:0] csr_addr_o     // CSR address to commit stage
+    // CSR FU is ready - ISSUE_STAGE
+    output logic csr_ready_o,
+    // CSR instruction is valid - ISSUE_STAGE
+    input logic csr_valid_i,
+    // CSR buffer result - ISSUE_STAGE
+    output logic [CVA6Cfg.XLEN-1:0] csr_result_o,
+    // commit the pending CSR OP - TO_BE_COMPLETED
+    input logic csr_commit_i,
+    // CSR address to write - COMMIT_STAGE
+    output logic [11:0] csr_addr_o
 );
   // this is a single entry store buffer for the address of the CSR
   // which we are going to need in the commit stage

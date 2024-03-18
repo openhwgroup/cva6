@@ -20,37 +20,11 @@ package riscv;
   // ----------------------
   // Import cva6 config from cva6_config_pkg
   // ----------------------
+  // FIXME stop using them from CoreV-Verif and HPDCache
+  // Then remove them from this package
   localparam XLEN = cva6_config_pkg::CVA6ConfigXlen;
-  localparam FPU_EN = cva6_config_pkg::CVA6ConfigFpuEn;
-
-  // ----------------------
-  // Data and Address length
-  // ----------------------
-  typedef enum logic [3:0] {
-    ModeOff  = 0,
-    ModeSv32 = 1,
-    ModeSv39 = 8,
-    ModeSv48 = 9,
-    ModeSv57 = 10,
-    ModeSv64 = 11
-  } vm_mode_t;
-
-  // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
-  // Warning: VLEN must be superior or equal to PLEN
-  localparam VLEN = (XLEN == 32) ? 32 : 64;  // virtual address length
-  localparam PLEN = (XLEN == 32) ? 34 : 56;  // physical address length
-
-  localparam IS_XLEN32 = (XLEN == 32) ? 1'b1 : 1'b0;
-  localparam IS_XLEN64 = (XLEN == 32) ? 1'b0 : 1'b1;
-  localparam ModeW = (XLEN == 32) ? 1 : 4;
-  localparam ASIDW = (XLEN == 32) ? 9 : 16;
-  localparam PPNW = (XLEN == 32) ? 22 : 44;
-  localparam vm_mode_t MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
-  localparam SV = (MODE_SV == ModeSv32) ? 32 : 39;
-  localparam VPN2 = (VLEN - 31 < 8) ? VLEN - 31 : 8;
-  localparam XLEN_ALIGN_BYTES = $clog2(XLEN / 8);
-
-  typedef logic [XLEN-1:0] xlen_t;
+  localparam VLEN = (XLEN == 32) ? 32 : 64;
+  localparam PLEN = (XLEN == 32) ? 34 : 56;
 
   // --------------------
   // Privilege Spec
@@ -122,12 +96,6 @@ package riscv;
     logic sie;  // supervisor interrupts enable
     logic wpri0;  // writes preserved reads ignored
   } mstatus_rv_t;
-
-  typedef struct packed {
-    logic [ModeW-1:0] mode;
-    logic [ASIDW-1:0] asid;
-    logic [PPNW-1:0]  ppn;
-  } satp_t;
 
   // --------------------
   // Instruction Types
@@ -347,19 +315,12 @@ package riscv;
   localparam int unsigned IRQ_S_EXT = 9;
   localparam int unsigned IRQ_M_EXT = 11;
 
-  localparam logic [XLEN-1:0] MIP_SSIP = 1 << IRQ_S_SOFT;
-  localparam logic [XLEN-1:0] MIP_MSIP = 1 << IRQ_M_SOFT;
-  localparam logic [XLEN-1:0] MIP_STIP = 1 << IRQ_S_TIMER;
-  localparam logic [XLEN-1:0] MIP_MTIP = 1 << IRQ_M_TIMER;
-  localparam logic [XLEN-1:0] MIP_SEIP = 1 << IRQ_S_EXT;
-  localparam logic [XLEN-1:0] MIP_MEIP = 1 << IRQ_M_EXT;
-
-  localparam logic [XLEN-1:0] S_SW_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_SOFT);
-  localparam logic [XLEN-1:0] M_SW_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_SOFT);
-  localparam logic [XLEN-1:0] S_TIMER_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_TIMER);
-  localparam logic [XLEN-1:0] M_TIMER_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_TIMER);
-  localparam logic [XLEN-1:0] S_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_EXT);
-  localparam logic [XLEN-1:0] M_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_EXT);
+  localparam logic [31:0] MIP_SSIP = 1 << IRQ_S_SOFT;
+  localparam logic [31:0] MIP_MSIP = 1 << IRQ_M_SOFT;
+  localparam logic [31:0] MIP_STIP = 1 << IRQ_S_TIMER;
+  localparam logic [31:0] MIP_MTIP = 1 << IRQ_M_TIMER;
+  localparam logic [31:0] MIP_SEIP = 1 << IRQ_S_EXT;
+  localparam logic [31:0] MIP_MEIP = 1 << IRQ_M_EXT;
 
   // -----
   // CSRs
@@ -617,7 +578,9 @@ package riscv;
   localparam logic [63:0] SSTATUS_MXR = 'h00080000;
   localparam logic [63:0] SSTATUS_UPIE = 'h00000010;
   localparam logic [63:0] SSTATUS_UXL = 64'h0000000300000000;
-  localparam logic [63:0] SSTATUS_SD = {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
+  function automatic logic [63:0] sstatus_sd(logic IS_XLEN64);
+    return {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
+  endfunction
 
   localparam logic [63:0] MSTATUS_UIE = 'h00000001;
   localparam logic [63:0] MSTATUS_SIE = 'h00000002;
@@ -638,9 +601,15 @@ package riscv;
   localparam logic [63:0] MSTATUS_TVM = 'h00100000;
   localparam logic [63:0] MSTATUS_TW = 'h00200000;
   localparam logic [63:0] MSTATUS_TSR = 'h00400000;
-  localparam logic [63:0] MSTATUS_UXL = {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
-  localparam logic [63:0] MSTATUS_SXL = {28'h0000000, IS_XLEN64, IS_XLEN64, 34'h00000000};
-  localparam logic [63:0] MSTATUS_SD = {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
+  function automatic logic [63:0] mstatus_uxl(logic IS_XLEN64);
+    return {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
+  endfunction
+  function automatic logic [63:0] mstatus_sxl(logic IS_XLEN64);
+    return {28'h0000000, IS_XLEN64, IS_XLEN64, 34'h00000000};
+  endfunction
+  function automatic logic [63:0] mstatus_sd(logic IS_XLEN64);
+    return {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
+  endfunction
 
   typedef enum logic [2:0] {
     CSRRW  = 3'h1,

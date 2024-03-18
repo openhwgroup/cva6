@@ -18,6 +18,12 @@ module cva6_icache_axi_wrapper
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type icache_areq_t = logic,
+    parameter type icache_arsp_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic,
+    parameter type icache_req_t = logic,
+    parameter type icache_rtrn_t = logic,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
 ) (
@@ -39,8 +45,8 @@ module cva6_icache_axi_wrapper
     input axi_rsp_t axi_resp_i
 );
 
-  localparam AxiNumWords = (ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ICACHE_LINE_WIDTH  > DCACHE_LINE_WIDTH)  +
-                           (DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (ICACHE_LINE_WIDTH <= DCACHE_LINE_WIDTH) ;
+  localparam AxiNumWords = (CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (CVA6Cfg.ICACHE_LINE_WIDTH  > CVA6Cfg.DCACHE_LINE_WIDTH)  +
+                           (CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (CVA6Cfg.ICACHE_LINE_WIDTH <= CVA6Cfg.DCACHE_LINE_WIDTH) ;
 
   logic                                    icache_mem_rtrn_vld;
   icache_rtrn_t                            icache_mem_rtrn;
@@ -65,7 +71,7 @@ module cva6_icache_axi_wrapper
   logic req_valid_d, req_valid_q;
   icache_req_t req_data_d, req_data_q;
   logic first_d, first_q;
-  logic [ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
+  logic [CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       rd_shift_d, rd_shift_q;
 
   // Keep read request asserted until we have an AXI grant. This is not guaranteed by icache (but
@@ -80,7 +86,7 @@ module cva6_icache_axi_wrapper
   assign axi_rd_addr           = CVA6Cfg.AxiAddrWidth'(req_data_d.paddr);
 
   // Fetch a full cache line on a cache miss, or a single word on a bypassed access
-  assign axi_rd_blen           = (req_data_d.nc) ? '0 : ariane_pkg::ICACHE_LINE_WIDTH / 64 - 1;
+  assign axi_rd_blen           = (req_data_d.nc) ? '0 : CVA6Cfg.ICACHE_LINE_WIDTH / 64 - 1;
   assign axi_rd_size           = $clog2(CVA6Cfg.AxiDataWidth / 8);  // Maximum
   assign axi_rd_id_in          = req_data_d.tid;
   assign axi_rd_rdy            = 1'b1;
@@ -102,7 +108,13 @@ module cva6_icache_axi_wrapper
   cva6_icache #(
       // use ID 0 for icache reads
       .CVA6Cfg(CVA6Cfg),
-      .RdTxId (0)
+      .icache_areq_t(icache_areq_t),
+      .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
+      .RdTxId(0)
   ) i_cva6_icache (
       .clk_i         (clk_i),
       .rst_ni        (rst_ni),
@@ -171,10 +183,10 @@ module cva6_icache_axi_wrapper
 
     if (axi_rd_valid) begin
       first_d = axi_rd_last;
-      if (ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
+      if (CVA6Cfg.ICACHE_LINE_WIDTH == CVA6Cfg.AxiDataWidth) begin
         rd_shift_d = axi_rd_data;
       end else begin
-        rd_shift_d = {axi_rd_data, rd_shift_q[ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]};
+        rd_shift_d = {axi_rd_data, rd_shift_q[CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:1]};
       end
 
       // If this is a single word transaction, we need to make sure that word is placed at offset 0

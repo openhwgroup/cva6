@@ -24,7 +24,7 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
   timeprecision 1ps;
 
   // memory configuration (64bit words)
-  parameter MemBytes          = 2**DCACHE_INDEX_WIDTH * 4 * 32;
+  parameter MemBytes          = 2**CVA6Cfg.DCACHE_INDEX_WIDTH * 4 * 32;
   parameter MemWords          = MemBytes>>3;
 
   // noncacheable portion
@@ -115,7 +115,7 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
   } reservation_t;
 
   logic [63:0] act_paddr[1:0];
-  riscv::xlen_t exp_rdata[1:0];
+  logic [riscv::XLEN-1:0] exp_rdata[1:0];
   logic [63:0] exp_paddr[1:0];
   logic [63:0] amo_act_mem;
   logic [63:0] amo_shadow;
@@ -809,9 +809,9 @@ axi_riscv_atomics_wrap #(
     seq_type     = '{IDLE_SEQ, IDLE_SEQ, LINEAR_SEQ};
     req_rate     = '{default:100};
 
-    runSeq((CachedAddrBeg>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC);
+    runSeq((CachedAddrBeg>>3)+(2**(CVA6Cfg.DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC);
     seq_type     = '{LINEAR_SEQ, IDLE_SEQ, IDLE_SEQ};
-    runSeq(0,(CachedAddrBeg>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC);
+    runSeq(0,(CachedAddrBeg>>3)+(2**(CVA6Cfg.DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC);
     flushCache();
     tb_mem_port_t::check_mem();
 

@@ -154,73 +154,25 @@ module ariane_xilinx (
   output logic        tx
 );
 
-// CVA6 config
-localparam bit IsRVFI = bit'(0);
 // CVA6 Xilinx configuration
-localparam config_pkg::cva6_cfg_t CVA6Cfg = '{
-  NrCommitPorts:         cva6_config_pkg::CVA6ConfigNrCommitPorts,
-  AxiAddrWidth:          cva6_config_pkg::CVA6ConfigAxiAddrWidth,
-  AxiDataWidth:          cva6_config_pkg::CVA6ConfigAxiDataWidth,
-  AxiIdWidth:            cva6_config_pkg::CVA6ConfigAxiIdWidth,
-  AxiUserWidth:          cva6_config_pkg::CVA6ConfigDataUserWidth,
-  NrLoadBufEntries:      cva6_config_pkg::CVA6ConfigNrLoadBufEntries,
-  RASDepth:              cva6_config_pkg::CVA6ConfigRASDepth,
-  BTBEntries:            cva6_config_pkg::CVA6ConfigBTBEntries,
-  BHTEntries:            cva6_config_pkg::CVA6ConfigBHTEntries,
-  FpuEn:                 bit'(cva6_config_pkg::CVA6ConfigFpuEn),
-  XF16:                  bit'(cva6_config_pkg::CVA6ConfigF16En),
-  XF16ALT:               bit'(cva6_config_pkg::CVA6ConfigF16AltEn),
-  XF8:                   bit'(cva6_config_pkg::CVA6ConfigF8En),
-  RVA:                   bit'(cva6_config_pkg::CVA6ConfigAExtEn),
-  RVB:                   bit'(cva6_config_pkg::CVA6ConfigAExtEn),
-  RVV:                   bit'(cva6_config_pkg::CVA6ConfigVExtEn),
-  RVC:                   bit'(cva6_config_pkg::CVA6ConfigCExtEn),
-  RVZCB:                 bit'(cva6_config_pkg::CVA6ConfigZcbExtEn),
-  XFVec:                 bit'(cva6_config_pkg::CVA6ConfigFVecEn),
-  CvxifEn:               bit'(cva6_config_pkg::CVA6ConfigCvxifEn),
-  ZiCondExtEn:           bit'(0),
-  RVF:                   bit'(0),
-  RVD:                   bit'(0),
-  FpPresent:             bit'(0),
-  NSX:                   bit'(0),
-  FLen:                  unsigned'(0),
-  RVFVec:                bit'(0),
-  XF16Vec:               bit'(0),
-  XF16ALTVec:            bit'(0),
-  XF8Vec:                bit'(0),
-  NrRgprPorts:           unsigned'(0),
-  NrWbPorts:             unsigned'(0),
-  EnableAccelerator:     bit'(0),
-  RVS:                   bit'(1),
-  RVU:                   bit'(1),
-  HaltAddress:           dm::HaltAddress,
-  ExceptionAddress:      dm::ExceptionAddress,
-  DmBaseAddress:         ariane_soc::DebugBase,
-  TvalEn:                bit'(cva6_config_pkg::CVA6ConfigTvalEn),
-  NrPMPEntries:          unsigned'(cva6_config_pkg::CVA6ConfigNrPMPEntries),
-  PMPCfgRstVal:          {16{64'h0}},
-  PMPAddrRstVal:         {16{64'h0}},
-  PMPEntryReadOnly:      16'd0,
-  NOCType:               config_pkg::NOC_TYPE_AXI4_ATOP,
-  // idempotent region
-  NrNonIdempotentRules:  unsigned'(1),
-  NonIdempotentAddrBase: 1024'({64'b0}),
-  NonIdempotentLength:   1024'({ariane_soc::DRAMBase}),
-  NrExecuteRegionRules:  unsigned'(3),
-  ExecuteRegionAddrBase: 1024'({ariane_soc::DRAMBase,   ariane_soc::ROMBase,   ariane_soc::DebugBase}),
-  ExecuteRegionLength:   1024'({ariane_soc::DRAMLength, ariane_soc::ROMLength, ariane_soc::DebugLength}),
-  // cached region
-  NrCachedRegionRules:   unsigned'(1),
-  CachedRegionAddrBase:  1024'({ariane_soc::DRAMBase}),
-  CachedRegionLength:    1024'({ariane_soc::DRAMLength}),
-  MaxOutstandingStores:  unsigned'(7),
-  DebugEn: bit'(1),
-  NonIdemPotenceEn: bit'(0),
-  AxiBurstWriteEn: bit'(0)
+function automatic config_pkg::cva6_cfg_t build_fpga_config(config_pkg::cva6_user_cfg_t CVA6UserCfg);
+  config_pkg::cva6_user_cfg_t cfg = CVA6UserCfg;
+  cfg.ZiCondExtEn = bit'(0);
+  cfg.NrNonIdempotentRules = unsigned'(1);
+  cfg.NonIdempotentAddrBase = 1024'({64'b0});
+  cfg.NonIdempotentLength = 1024'({ariane_soc::DRAMBase});
+  return build_config_pkg::build_config(cfg);
+endfunction
+
+// CVA6 Xilinx configuration
+localparam config_pkg::cva6_cfg_t CVA6Cfg = build_fpga_config(cva6_config_pkg::cva6_cfg);
+
+localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
+localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg);
+localparam type rvfi_probes_t = struct packed {
+  logic csr;
+  logic instr;
 };
-
-localparam type rvfi_probes_t = logic;
-
 
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
@@ -229,7 +181,7 @@ localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 4;
 localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NBSlave); // 5
-localparam AxiUserWidth = ariane_pkg::AXI_USER_WIDTH;
+localparam AxiUserWidth = CVA6Cfg.AxiUserWidth;
 
 `AXI_TYPEDEF_ALL(axi_slave,
                  logic [    AxiAddrWidth-1:0],
@@ -253,8 +205,8 @@ AXI_BUS #(
 ) master[ariane_soc::NB_PERIPHERALS-1:0]();
 
 AXI_BUS #(
-    .AXI_ADDR_WIDTH ( riscv::XLEN      ),
-    .AXI_DATA_WIDTH ( riscv::XLEN      ),
+    .AXI_ADDR_WIDTH ( CVA6Cfg.XLEN      ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.XLEN      ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) master_to_dm[0:0]();
@@ -404,24 +356,24 @@ ariane_axi::resp_t   dm_axi_m_resp;
 
 logic                      dm_slave_req;
 logic                      dm_slave_we;
-logic [riscv::XLEN-1:0]    dm_slave_addr;
-logic [riscv::XLEN/8-1:0]  dm_slave_be;
-logic [riscv::XLEN-1:0]    dm_slave_wdata;
-logic [riscv::XLEN-1:0]    dm_slave_rdata;
+logic [CVA6Cfg.XLEN-1:0]    dm_slave_addr;
+logic [CVA6Cfg.XLEN/8-1:0]  dm_slave_be;
+logic [CVA6Cfg.XLEN-1:0]    dm_slave_wdata;
+logic [CVA6Cfg.XLEN-1:0]    dm_slave_rdata;
 
 logic                      dm_master_req;
-logic [riscv::XLEN-1:0]    dm_master_add;
+logic [CVA6Cfg.XLEN-1:0]    dm_master_add;
 logic                      dm_master_we;
-logic [riscv::XLEN-1:0]    dm_master_wdata;
-logic [riscv::XLEN/8-1:0]  dm_master_be;
+logic [CVA6Cfg.XLEN-1:0]    dm_master_wdata;
+logic [CVA6Cfg.XLEN/8-1:0]  dm_master_be;
 logic                      dm_master_gnt;
 logic                      dm_master_r_valid;
-logic [riscv::XLEN-1:0]    dm_master_r_rdata;
+logic [CVA6Cfg.XLEN-1:0]    dm_master_r_rdata;
 
 // debug module
 dm_top #(
     .NrHarts          ( 1                 ),
-    .BusWidth         ( riscv::XLEN      ),
+    .BusWidth         ( CVA6Cfg.XLEN      ),
     .SelectableHarts  ( 1'b1              )
 ) i_dm_top (
     .clk_i            ( clk               ),
@@ -457,8 +409,8 @@ dm_top #(
 
 axi2mem #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves    ),
-    .AXI_ADDR_WIDTH ( riscv::XLEN        ),
-    .AXI_DATA_WIDTH ( riscv::XLEN        ),
+    .AXI_ADDR_WIDTH ( CVA6Cfg.XLEN        ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.XLEN        ),
     .AXI_USER_WIDTH ( AxiUserWidth        )
 ) i_dm_axi2mem (
     .clk_i      ( clk                       ),
@@ -472,7 +424,7 @@ axi2mem #(
     .data_i     ( dm_slave_rdata            )
 );
 
-if (riscv::XLEN==32 ) begin
+if (CVA6Cfg.XLEN==32 ) begin
 
     assign master_to_dm[0].aw_user = '0;
     assign master_to_dm[0].w_user = '0;
@@ -626,11 +578,11 @@ end
 
 logic [1:0]    axi_adapter_size;
 
-assign axi_adapter_size = (riscv::XLEN == 64) ? 2'b11 : 2'b10;
+assign axi_adapter_size = (CVA6Cfg.XLEN == 64) ? 2'b11 : 2'b10;
 
 axi_adapter #(
     .CVA6Cfg               ( CVA6Cfg                  ),
-    .DATA_WIDTH            ( riscv::XLEN              ),
+    .DATA_WIDTH            ( CVA6Cfg.XLEN              ),
     .axi_req_t             ( ariane_axi::req_t        ),
     .axi_rsp_t             ( ariane_axi::resp_t       )
 ) i_dm_axi_master (
@@ -655,7 +607,7 @@ axi_adapter #(
     .axi_resp_i            ( dm_axi_m_resp             )
 );
 
-if (riscv::XLEN==32 ) begin
+if (CVA6Cfg.XLEN==32 ) begin
     logic [31 : 0] dm_master_m_awaddr;
     logic [31 : 0] dm_master_m_araddr;
 
@@ -766,7 +718,8 @@ ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
     .CVA6Cfg ( CVA6Cfg ),
-    .IsRVFI ( IsRVFI ),
+    .rvfi_probes_instr_t ( rvfi_probes_instr_t ),
+    .rvfi_probes_csr_t ( rvfi_probes_csr_t ),
     .rvfi_probes_t ( rvfi_probes_t )
 ) i_ariane (
     .clk_i        ( clk                 ),
@@ -801,6 +754,7 @@ axi_slave_req_t  axi_clint_req;
 axi_slave_resp_t axi_clint_resp;
 
 clint #(
+    .CVA6Cfg        ( CVA6Cfg          ),
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
@@ -841,7 +795,7 @@ axi2mem #(
     .data_i ( rom_rdata               )
 );
 
-if (riscv::XLEN==32 ) begin
+if (CVA6Cfg.XLEN==32 ) begin
     bootrom_32 i_bootrom (
         .clk_i   ( clk       ),
         .req_i   ( rom_req   ),

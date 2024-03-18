@@ -23,7 +23,7 @@ source ./verif/sim/setup-env.sh
 export cov=1 #enable the Code Coverage
 
 if ! [ -n "$DV_TARGET" ]; then
-  DV_TARGET=cv32a6_embedded
+  DV_TARGET=cv32a65x
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then

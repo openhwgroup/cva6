@@ -22,11 +22,15 @@ function string printPCexpr(input logic [63:0] imm);
   end
 endfunction
 
-class instr_trace_item;
+class instr_trace_item #(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type scoreboard_entry_t = logic
+);
     // keep a couple of general purpose information inside this instruction item
     time               simtime;
     longint unsigned   cycle;
-    ariane_pkg::scoreboard_entry_t sbe;
+    scoreboard_entry_t sbe;
     logic [31:0]       pc;
     logic [31:0]       instr;
     logic [63:0]       gp_reg_file [32];
@@ -37,15 +41,15 @@ class instr_trace_item;
     logic              result_fpr [$];
     logic [63:0]       imm;
     logic [63:0]       result;
-    logic [riscv::PLEN-1:0]       paddr;
+    logic [CVA6Cfg.PLEN-1:0]       paddr;
     string             priv_lvl;
-    ariane_pkg::bp_resolve_t       bp;
+    bp_resolve_t       bp;
 
     logic [4:0] rs1, rs2, rs3, rd;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, ariane_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] gp_reg_file [32],
-                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] gp_reg_file [32],
+                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [CVA6Cfg.PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -406,7 +410,7 @@ class instr_trace_item;
             instr_tracer_pkg::FSW,
             instr_tracer_pkg::FSD,
             instr_tracer_pkg::FSQ: begin
-                logic [riscv::VLEN-1:0] vaddress = gp_reg_file[read_regs[1]] + this.imm;
+                logic [CVA6Cfg.VLEN-1:0] vaddress = gp_reg_file[read_regs[1]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
 
@@ -428,7 +432,7 @@ class instr_trace_item;
             instr_tracer_pkg::FLW,
             instr_tracer_pkg::FLD,
             instr_tracer_pkg::FLQ: begin
-                logic [riscv::VLEN-1:0] vaddress = gp_reg_file[read_regs[0]] + this.imm;
+                logic [CVA6Cfg.VLEN-1:0] vaddress = gp_reg_file[read_regs[0]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
         endcase

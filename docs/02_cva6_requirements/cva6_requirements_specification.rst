@@ -317,6 +317,10 @@ independent requirements.
 |                                   | **option** the **Zcb**            |
 |                                   | extension version 1.0.            |
 +-----------------------------------+-----------------------------------+
+| ISA-150                           | CVA6 should support as an         |
+|                                   | **option** the **Zcmp**           |
+|                                   | extension version 1.0.            |
++-----------------------------------+-----------------------------------+
 
 
 Note to ISA-60 and ISA-70: CV64A6 cannot support the D extension with

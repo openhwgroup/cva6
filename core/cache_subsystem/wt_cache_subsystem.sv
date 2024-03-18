@@ -23,10 +23,18 @@ module wt_cache_subsystem
   import ariane_pkg::*;
   import wt_cache_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
-    parameter int unsigned           NumPorts   = 4,
-    parameter type                   noc_req_t  = logic,
-    parameter type                   noc_resp_t = logic
+    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
+    parameter type                   icache_areq_t  = logic,
+    parameter type                   icache_arsp_t  = logic,
+    parameter type                   icache_dreq_t  = logic,
+    parameter type                   icache_drsp_t  = logic,
+    parameter type                   dcache_req_i_t = logic,
+    parameter type                   dcache_req_o_t = logic,
+    parameter type                   icache_req_t   = logic,
+    parameter type                   icache_rtrn_t  = logic,
+    parameter int unsigned           NumPorts       = 4,
+    parameter type                   noc_req_t      = logic,
+    parameter type                   noc_resp_t     = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -47,7 +55,7 @@ module wt_cache_subsystem
     output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
     output logic dcache_miss_o,  // we missed on a ld/st
     // For Performance Counter
-    output logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
+    output logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
     // AMO interface
     input amo_req_t dcache_amo_req_i,
     output amo_resp_t dcache_amo_resp_o,
@@ -67,19 +75,53 @@ module wt_cache_subsystem
     // TODO: interrupt interface
 );
 
+  // dcache interface
+  localparam type dcache_inval_t = struct packed {
+    logic                                      vld;  // invalidate only affected way
+    logic                                      all;  // invalidate all ways
+    logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]     idx;  // physical address to invalidate
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to invalidate
+  };
+
+  localparam type dcache_req_t = struct packed {
+    wt_cache_pkg::dcache_out_t rtype;  // see definitions above
+    logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
+    logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
+    logic [CVA6Cfg.XLEN-1:0] data;  // word width of processor (no block stores at the moment)
+    logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
+    logic nc;  // noncacheable
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+    ariane_pkg::amo_t amo_op;  // amo opcode
+  };
+
+  localparam type dcache_rtrn_t = struct packed {
+    wt_cache_pkg::dcache_in_t rtype;  // see definitions above
+    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
+    logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
+    dcache_inval_t inv;  // invalidation vector
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+  };
+
   logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
-  wt_cache_pkg::icache_req_t  icache_adapter;
-  wt_cache_pkg::icache_rtrn_t adapter_icache;
+  icache_req_t  icache_adapter;
+  icache_rtrn_t adapter_icache;
 
 
   logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
-  wt_cache_pkg::dcache_req_t  dcache_adapter;
-  wt_cache_pkg::dcache_rtrn_t adapter_dcache;
+  dcache_req_t  dcache_adapter;
+  dcache_rtrn_t adapter_dcache;
 
   cva6_icache #(
       // use ID 0 for icache reads
       .CVA6Cfg(CVA6Cfg),
-      .RdTxId (0)
+      .icache_areq_t(icache_areq_t),
+      .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
+      .RdTxId(0)
   ) i_cva6_icache (
       .clk_i         (clk_i),
       .rst_ni        (rst_ni),
@@ -103,7 +145,11 @@ module wt_cache_subsystem
   // they have equal prio and are RR arbited
   // Port 2 is write only and goes into the merging write buffer
   wt_dcache #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
       // use ID 1 for dcache reads and amos. note that the writebuffer
       // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
       .RdAmoTxId(1)
@@ -137,6 +183,10 @@ module wt_cache_subsystem
 `ifdef PITON_ARIANE
   wt_l15_adapter #(
       .CVA6Cfg(CVA6Cfg),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t)
   ) i_adapter (
       .clk_i            (clk_i),
       .rst_ni           (rst_ni),
@@ -155,9 +205,14 @@ module wt_cache_subsystem
   );
 `else
   wt_axi_adapter #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
       .axi_req_t(noc_req_t),
-      .axi_rsp_t(noc_resp_t)
+      .axi_rsp_t(noc_resp_t),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
+      .dcache_inval_t(dcache_inval_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t)
   ) i_adapter (
       .clk_i            (clk_i),
       .rst_ni           (rst_ni),
@@ -196,7 +251,7 @@ module wt_cache_subsystem
         icache_dreq_o.data
     );
 
-  for (genvar j = 0; j < riscv::XLEN / 8; j++) begin : gen_invalid_write_assertion
+  for (genvar j = 0; j < CVA6Cfg.XLEN / 8; j++) begin : gen_invalid_write_assertion
     a_invalid_write_data :
     assert property (
       @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[NumPorts-1].data_req |-> dcache_req_ports_i[NumPorts-1].data_be[j] |-> (|dcache_req_ports_i[NumPorts-1].data_wdata[j*8+:8] !== 1'hX))

@@ -15,8 +15,10 @@ module cva6_hpdcache_if_adapter
 //  Parameters
 //  {{{
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg      = config_pkg::cva6_cfg_empty,
-    parameter bit                    is_load_port = 1'b1
+    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
+    parameter type                   dcache_req_i_t = logic,
+    parameter type                   dcache_req_o_t = logic,
+    parameter bit                    is_load_port   = 1'b1
 )
 //  }}}
 
@@ -31,10 +33,10 @@ module cva6_hpdcache_if_adapter
     input hpdcache_pkg::hpdcache_req_sid_t hpdcache_req_sid_i,
 
     //  Request/response ports from/to the CVA6 core
-    input  ariane_pkg::dcache_req_i_t cva6_req_i,
-    output ariane_pkg::dcache_req_o_t cva6_req_o,
-    input  ariane_pkg::amo_req_t      cva6_amo_req_i,
-    output ariane_pkg::amo_resp_t     cva6_amo_resp_o,
+    input  dcache_req_i_t         cva6_req_i,
+    output dcache_req_o_t         cva6_req_o,
+    input  ariane_pkg::amo_req_t  cva6_amo_req_i,
+    output ariane_pkg::amo_resp_t cva6_amo_resp_o,
 
     //  Request port to the L1 Dcache
     output logic                        hpdcache_req_valid_o,
@@ -65,9 +67,9 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req_is_uncacheable = !config_pkg::is_inside_cacheable_regions(
           CVA6Cfg,
           {
-            {64 - ariane_pkg::DCACHE_TAG_WIDTH{1'b0}}
+            {64 - CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}}
             , cva6_req_i.address_tag
-            , {ariane_pkg::DCACHE_INDEX_WIDTH{1'b0}}
+            , {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
           }
       );
 
@@ -138,15 +140,15 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req_is_uncacheable = !config_pkg::is_inside_cacheable_regions(
           CVA6Cfg,
           {
-            {64 - ariane_pkg::DCACHE_TAG_WIDTH{1'b0}}
+            {64 - CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}}
             , hpdcache_req_o.addr_tag,
-            {ariane_pkg::DCACHE_INDEX_WIDTH{1'b0}}
+            {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
           }
       );
 
       assign amo_is_word = (cva6_amo_req_i.size == 2'b10);
       assign amo_is_word_hi = cva6_amo_req_i.operand_a[2];
-      if (riscv::XLEN == 64) begin : amo_data_64_gen
+      if (CVA6Cfg.XLEN == 64) begin : amo_data_64_gen
         assign amo_data    = amo_is_word ? {2{cva6_amo_req_i.operand_b[0+:32]}} : cva6_amo_req_i.operand_b;
         assign amo_data_be = amo_is_word_hi ? 8'hf0 : amo_is_word ? 8'h0f : 8'hff;
       end else begin : amo_data_32_gen
@@ -177,7 +179,7 @@ module cva6_hpdcache_if_adapter
 
       //  Response forwarding
       //  {{{
-      if (riscv::XLEN == 64) begin : amo_resp_64_gen
+      if (CVA6Cfg.XLEN == 64) begin : amo_resp_64_gen
         assign amo_resp_word = amo_is_word_hi
                              ? hpdcache_rsp_i.rdata[0][32 +: 32]
                              : hpdcache_rsp_i.rdata[0][0  +: 32];

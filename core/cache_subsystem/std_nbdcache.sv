@@ -18,6 +18,8 @@ module std_nbdcache
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
     parameter int unsigned NumPorts = 4,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
@@ -44,6 +46,20 @@ module std_nbdcache
 
   import std_cache_pkg::*;
 
+  localparam DCACHE_DIRTY_WIDTH = CVA6Cfg.DCACHE_SET_ASSOC * 2;
+
+  localparam type cache_line_t = struct packed {
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
+    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;   // data array
+    logic                                 valid;  // state array
+    logic                                 dirty;  // state array
+  };
+  localparam type cl_be_t = struct packed {
+    logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
+    logic [(CVA6Cfg.DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
+    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
+  };
+
   // -------------------------------
   // Controller <-> Arbiter
   // -------------------------------
@@ -52,42 +68,42 @@ module std_nbdcache
   // 3. Load Unit
   // 4. Accelerator
   // 5. Store unit
-  logic        [            NumPorts:0][  DCACHE_SET_ASSOC-1:0] req;
-  logic        [            NumPorts:0][DCACHE_INDEX_WIDTH-1:0] addr;
-  logic        [            NumPorts:0]                         gnt;
-  cache_line_t [  DCACHE_SET_ASSOC-1:0]                         rdata;
-  logic        [            NumPorts:0][  DCACHE_TAG_WIDTH-1:0] tag;
+  logic        [                    NumPorts:0][  CVA6Cfg.DCACHE_SET_ASSOC-1:0] req;
+  logic        [                    NumPorts:0][CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr;
+  logic        [                    NumPorts:0]                                 gnt;
+  cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 rdata;
+  logic        [                    NumPorts:0][  CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag;
 
-  cache_line_t [            NumPorts:0]                         wdata;
-  logic        [            NumPorts:0]                         we;
-  cl_be_t      [            NumPorts:0]                         be;
-  logic        [  DCACHE_SET_ASSOC-1:0]                         hit_way;
+  cache_line_t [                    NumPorts:0]                                 wdata;
+  logic        [                    NumPorts:0]                                 we;
+  cl_be_t      [                    NumPorts:0]                                 be;
+  logic        [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 hit_way;
   // -------------------------------
   // Controller <-> Miss unit
   // -------------------------------
-  logic        [          NumPorts-1:0]                         busy;
-  logic        [          NumPorts-1:0][                  55:0] mshr_addr;
-  logic        [          NumPorts-1:0]                         mshr_addr_matches;
-  logic        [          NumPorts-1:0]                         mshr_index_matches;
-  logic        [                  63:0]                         critical_word;
-  logic                                                         critical_word_valid;
+  logic        [                  NumPorts-1:0]                                 busy;
+  logic        [                  NumPorts-1:0][                          55:0] mshr_addr;
+  logic        [                  NumPorts-1:0]                                 mshr_addr_matches;
+  logic        [                  NumPorts-1:0]                                 mshr_index_matches;
+  logic        [                          63:0]                                 critical_word;
+  logic                                                                         critical_word_valid;
 
-  logic        [          NumPorts-1:0][ $bits(miss_req_t)-1:0] miss_req;
-  logic        [          NumPorts-1:0]                         miss_gnt;
-  logic        [          NumPorts-1:0]                         active_serving;
+  logic        [                  NumPorts-1:0][         $bits(miss_req_t)-1:0] miss_req;
+  logic        [                  NumPorts-1:0]                                 miss_gnt;
+  logic        [                  NumPorts-1:0]                                 active_serving;
 
-  logic        [          NumPorts-1:0]                         bypass_gnt;
-  logic        [          NumPorts-1:0]                         bypass_valid;
-  logic        [          NumPorts-1:0][                  63:0] bypass_data;
+  logic        [                  NumPorts-1:0]                                 bypass_gnt;
+  logic        [                  NumPorts-1:0]                                 bypass_valid;
+  logic        [                  NumPorts-1:0][                          63:0] bypass_data;
   // -------------------------------
   // Arbiter <-> Datram,
   // -------------------------------
-  logic        [  DCACHE_SET_ASSOC-1:0]                         req_ram;
-  logic        [DCACHE_INDEX_WIDTH-1:0]                         addr_ram;
-  logic                                                         we_ram;
-  cache_line_t                                                  wdata_ram;
-  cache_line_t [  DCACHE_SET_ASSOC-1:0]                         rdata_ram;
-  cl_be_t                                                       be_ram;
+  logic        [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 req_ram;
+  logic        [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]                                 addr_ram;
+  logic                                                                         we_ram;
+  cache_line_t                                                                  wdata_ram;
+  cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 rdata_ram;
+  cl_be_t                                                                       be_ram;
 
   // ------------------
   // Cache Controller
@@ -95,7 +111,11 @@ module std_nbdcache
   generate
     for (genvar i = 0; i < NumPorts; i++) begin : master_ports
       cache_ctrl #(
-          .CVA6Cfg(CVA6Cfg)
+          .CVA6Cfg(CVA6Cfg),
+          .cache_line_t(cache_line_t),
+          .cl_be_t(cl_be_t),
+          .dcache_req_i_t(dcache_req_i_t),
+          .dcache_req_o_t(dcache_req_o_t)
       ) i_cache_ctrl (
           .bypass_i  (~enable_i),
           .busy_o    (busy[i]),
@@ -134,10 +154,12 @@ module std_nbdcache
   // Miss Handling Unit
   // ------------------
   miss_handler #(
-      .CVA6Cfg  (CVA6Cfg),
-      .NR_PORTS (NumPorts),
+      .CVA6Cfg(CVA6Cfg),
+      .NR_PORTS(NumPorts),
       .axi_req_t(axi_req_t),
-      .axi_rsp_t(axi_rsp_t)
+      .axi_rsp_t(axi_rsp_t),
+      .cache_line_t(cache_line_t),
+      .cl_be_t(cl_be_t)
   ) i_miss_handler (
       .flush_i              (flush_i),
       .busy_i               (|busy),
@@ -173,15 +195,15 @@ module std_nbdcache
   // --------------
   // Memory Arrays
   // --------------
-  for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin : sram_block
+  for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : sram_block
     sram #(
-        .DATA_WIDTH(DCACHE_LINE_WIDTH),
-        .NUM_WORDS (DCACHE_NUM_WORDS)
+        .DATA_WIDTH(CVA6Cfg.DCACHE_LINE_WIDTH),
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) data_sram (
         .req_i  (req_ram[i]),
         .rst_ni (rst_ni),
         .we_i   (we_ram),
-        .addr_i (addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
+        .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
         .wuser_i('0),
         .wdata_i(wdata_ram.data),
         .be_i   (be_ram.data),
@@ -191,13 +213,13 @@ module std_nbdcache
     );
 
     sram #(
-        .DATA_WIDTH(DCACHE_TAG_WIDTH),
-        .NUM_WORDS (DCACHE_NUM_WORDS)
+        .DATA_WIDTH(CVA6Cfg.DCACHE_TAG_WIDTH),
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) tag_sram (
         .req_i  (req_ram[i]),
         .rst_ni (rst_ni),
         .we_i   (we_ram),
-        .addr_i (addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
+        .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
         .wuser_i('0),
         .wdata_i(wdata_ram.tag),
         .be_i   (be_ram.tag),
@@ -217,7 +239,7 @@ module std_nbdcache
   // you can use it here to save the extra 4x overhead introduced by this workaround.
   logic [4*DCACHE_DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
 
-  for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
     assign dirty_wdata[8*i]   = wdata_ram.dirty;
     assign dirty_wdata[8*i+1] = wdata_ram.valid;
     assign rdata_ram[i].dirty = dirty_rdata[8*i];
@@ -227,13 +249,13 @@ module std_nbdcache
   sram #(
       .USER_WIDTH(1),
       .DATA_WIDTH(4 * DCACHE_DIRTY_WIDTH),
-      .NUM_WORDS (DCACHE_NUM_WORDS)
+      .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
   ) valid_dirty_sram (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
       .req_i  (|req_ram),
       .we_i   (we_ram),
-      .addr_i (addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]),
+      .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
       .wuser_i('0),
       .wdata_i(dirty_wdata),
       .be_i   (be_ram.vldrty),
@@ -245,10 +267,11 @@ module std_nbdcache
   // Tag Comparison and memory arbitration
   // ------------------------------------------------
   tag_cmp #(
-      .CVA6Cfg         (CVA6Cfg),
-      .NR_PORTS        (NumPorts + 1),
-      .ADDR_WIDTH      (DCACHE_INDEX_WIDTH),
-      .DCACHE_SET_ASSOC(DCACHE_SET_ASSOC)
+      .CVA6Cfg   (CVA6Cfg),
+      .NR_PORTS  (NumPorts + 1),
+      .ADDR_WIDTH(CVA6Cfg.DCACHE_INDEX_WIDTH),
+      .l_data_t  (cache_line_t),
+      .l_be_t    (cl_be_t)
   ) i_tag_cmp (
       .req_i    (req),
       .gnt_o    (gnt),
@@ -272,7 +295,7 @@ module std_nbdcache
 
   //pragma translate_off
   initial begin
-    assert (DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth inside {2, 4, 8, 16})
+    assert (CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth inside {2, 4, 8, 16})
     else $fatal(1, "Cache line size needs to be a power of two multiple of AxiDataWidth");
   end
   //pragma translate_on

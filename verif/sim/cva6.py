@@ -22,7 +22,7 @@ import random
 import re
 import sys
 import logging
-import time
+import subprocess
 import datetime
 
 from dv.scripts.lib import *
@@ -83,7 +83,7 @@ def get_generator_cmd(simulator, simulator_yaml, cov, exp, debug_cmd):
     compile_cmd    : RTL simulator command to compile the instruction generator
     sim_cmd        : RTL simulator command to run the instruction generator
   """
-  logging.info("Processing simulator setup file : %s" % simulator_yaml)
+  logging.info("Processing simulator setup file: %s" % simulator_yaml)
   yaml_data = read_yaml(simulator_yaml)
   # Search for matched simulator
   for entry in yaml_data:
@@ -127,13 +127,14 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv):
   Returns:
     cmd         : ISS run command
   """
-  logging.info("Processing ISS setup file : %s" % iss_yaml)
+  logging.info("Processing ISS setup file: %s" % iss_yaml)
   yaml_data = read_yaml(iss_yaml)
   # Search for matched ISS
   for entry in yaml_data:
     if entry['iss'] == iss:
       logging.info("Found matching ISS: %s" % entry['iss'])
       m = re.search(r"rv(?P<xlen>[0-9]+?)(?P<variant>[a-z]+(_[szx]\w+)*)$", isa)
+      logging.info("Target: " + target)
       if m: logging.info("ISA %0s" % isa)
       else: logging.error("Illegal ISA %0s" % isa)
 
@@ -285,7 +286,7 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_gen, csr_file,
                 (" +num_of_tests=%i " % test_cnt) + \
                 (" +start_idx=%d " % (i*batch_size)) + \
                 (" +asm_file_name=%s/asm_tests/%s " % (output_dir, test['test'])) + \
-                (" -l %s/sim_%s_%d%s.log " % (output_dir, test['test'], i, log_suffix))
+                (" -l %s/sim_%s_%d_%s.log " % (output_dir, test['test'], i, log_suffix))
           if verbose:
             cmd += "+UVM_VERBOSITY=UVM_HIGH "
           cmd = re.sub("<seed>", str(rand_seed), cmd)
@@ -404,7 +405,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
         cmd += (" -march=%s" % isa_ext)
       if not re.search('mabi', cmd):
         cmd += (" -mabi=%s" % mabi)
-      logging.info("Compiling test : %s" % asm)
+      logging.info("Compiling test: %s" % asm)
       run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
       elf2bin(elf, binary, debug_cmd)
 
@@ -440,7 +441,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   binary = prefix + ".bin"
   iss_list = iss_opts.split(",")
   run_cmd("mkdir -p %s/directed_asm_tests" % output_dir)
-  logging.info("Compiling assembly test : %s" % asm_test)
+  logging.info("Compiling assembly test: %s" % asm_test)
 
   # gcc compilation
   cmd = ("%s %s \
@@ -457,14 +458,14 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     if log_format == 1:
-      log = ("%s/%s_sim/%s_%d.log" % (output_dir, iss, asm, test_iteration))
+      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, asm, test_iteration, target))
     else:
-      log = ("%s/%s_sim/%s.log" % (output_dir, iss, asm))
+      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, asm, target))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
-    run_cmd(cmd, 300, debug_cmd = debug_cmd)
+    run_cmd(cmd, 500, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -528,14 +529,14 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   binary = prefix + ".bin"
   iss_list = iss_opts.split(",")
   run_cmd("mkdir -p %s/directed_elf_tests" % output_dir, 600, debug_cmd=debug_cmd)
-  logging.info("Copy elf test : %s" % c_test)
+  logging.info("Copy elf test: %s" % c_test)
   run_cmd("cp %s %s/directed_elf_tests" % (c_test, output_dir))
   elf2bin(elf, binary, debug_cmd)
   log_list = []
   # ISS simulation
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
-    log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
+    log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, c, target))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
@@ -577,7 +578,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   binary = prefix + ".bin"
   iss_list = iss_opts.split(",")
   run_cmd("mkdir -p %s/directed_c_tests" % output_dir)
-  logging.info("Compiling c test : %s" % c_test)
+  logging.info("Compiling c test: %s" % c_test)
 
   # gcc compilation
   cmd = ("%s %s \
@@ -594,9 +595,9 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     if log_format == 1:
-      log = ("%s/%s_sim/%s_%d.log" % (output_dir, iss, c, test_iteration))
+      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, c, test_iteration, target))
     else:
-      log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
+      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, c, target))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
@@ -664,7 +665,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
         for i in range(0, test['iterations']):
           prefix = ("%s/asm_tests/%s_%d" % (output_dir, test['test'], i))
           elf = prefix + ".o"
-          log = ("%s/%s.%d.log" % (log_dir, test['test'], i))
+          log = ("%s/%s_%d.%s.log" % (log_dir, test['test'], i, target))
           cmd = get_iss_cmd(base_cmd, elf, target, log)
           if 'iss_opts' in test:
             cmd += ' '
@@ -677,7 +678,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
           logging.debug(cmd)
 
 
-def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp, debug_cmd):
+def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_cmd):
   """Compare ISS simulation reult
 
   Args:
@@ -697,18 +698,18 @@ def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp, debug_cmd):
   for test in test_list:
     for i in range(0, test['iterations']):
       elf = ("%s/asm_tests/%s_%d.o" % (output_dir, test['test'], i))
-      logging.info("Comparing ISS sim result %s/%s : %s" %
+      logging.info("Comparing ISS sim result %s/%s: %s" %
                   (iss_list[0], iss_list[1], elf))
       log_list = []
       run_cmd(("echo 'Test binary: %s' >> %s" % (elf, report)))
       for iss in iss_list:
-        log_list.append("%s/%s_sim/%s.%d.log" % (output_dir, iss, test['test'], i))
+        log_list.append("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test['test'], i, target))
       compare_iss_log(iss_list, log_list, report, stop_on_first_error, exp)
   save_regr_report(report)
 
 
 def compare_iss_log(iss_list, log_list, report, stop_on_first_error=0, exp=False):
-  if (len(iss_list) != 2 or len(log_list) != 2) :
+  if (len(iss_list) != 2 or len(log_list) != 2):
     logging.error("Only support comparing two ISS logs")
     logging.info("len(iss_list) = %s len(log_list) = %s" % (len(iss_list), len(log_list)))
   else:
@@ -1025,7 +1026,54 @@ def load_config(args, cwd):
     if not args.testlist:
       args.testlist = args.custom_target + "/testlist.yaml"
 
+def incorrect_version_exit(tool, tool_version, required_version):
+  logging.error(f"You are currently using version {tool_version} of {tool}, should be: {required_version}. Please install or reinstall it with the installation script." )
+  sys.exit(RET_FAIL)
 
+def check_gcc_version():
+  REQUIRED_GCC_VERSION = 11
+
+  gcc_path = get_env_var("RISCV_GCC")
+  gcc_version = run_cmd(f"{gcc_path} --version")
+  gcc_version_string = re.match(".*\s(\d+\.\d+\.\d+).*", gcc_version).group(1)
+  gcc_version_number = gcc_version_string.split('.')
+  logging.info(f"GCC Version: {gcc_version_string}")
+
+  if int(gcc_version_number[0]) < REQUIRED_GCC_VERSION:
+    incorrect_version_exit("GCC", gcc_version_string, f">={REQUIRED_GCC_VERSION}")
+
+def check_spike_version():
+  # Get Spike hash from core-v-verif submodule
+  spike_hash = subprocess.run('git log -1 --pretty=tformat:%h -- $SPIKE_SRC_DIR/..', capture_output=True, text=True, shell=True, cwd=os.environ.get("SPIKE_SRC_DIR"))
+  spike_version = "1.1.1-dev " + spike_hash.stdout.strip()
+
+  # Get Spike User version
+  get_env_var("SPIKE_PATH")
+  user_spike_version = subprocess.run("$SPIKE_PATH/spike -v", capture_output=True, text=True, shell=True)
+  user_spike_version_string = user_spike_version.stderr.strip()
+
+  if user_spike_version.returncode != 0:
+    incorrect_version_exit("Spike", "- unknown -", spike_version)
+    
+  logging.info(f"Spike Version: {user_spike_version_string}")
+
+  if user_spike_version_string != spike_version:
+    incorrect_version_exit("Spike", user_spike_version_string, spike_version)
+
+def check_verilator_version():
+  REQUIRED_VERILATOR_VERSION = "5.008"
+
+  verilator_version_string = run_cmd("verilator --version")
+  logging.info(f"Verilator Version: {verilator_version_string.strip()}")
+  verilator_version = verilator_version_string.split(" ")[1]
+
+  if REQUIRED_VERILATOR_VERSION != verilator_version:
+    incorrect_version_exit("Verilator", verilator_version, REQUIRED_VERILATOR_VERSION)
+
+def check_tools_version():
+  check_gcc_version()
+  check_spike_version()
+  check_verilator_version()
 
 def main():
   """This is the main entry point."""
@@ -1063,21 +1111,9 @@ def main():
     isscomp_opts = "\""+args.isscomp_opts+"\""
     setup_logging(args.verbose)
     logg = logging.getLogger()
-    #Check gcc version
-    gcc_path=get_env_var("RISCV_GCC")
-    version=run_cmd("%s --version" % gcc_path)
-    gcc_version=re.match(".*\s(\d+\.\d+\.\d+).*", version)
-    gcc_version=gcc_version.group(1)
-    version_number=gcc_version.split('.')
-    if int(version_number[0])<11 :
-      logging.error('Your are currently using version %s of gcc, please update your version to version 11.1.0 or more to use all features of this script' % gcc_version)
-      sys.exit(RET_FAIL)
-    #print environment softwares
-    logging.info("GCC Version : %s" % (gcc_version))
-    spike_version=get_env_var("SPIKE_INSTALL_DIR")
-    logging.info("Spike Version : %s" % (spike_version))
-    verilator_version=run_cmd("verilator --version")
-    logging.info("Verilator Version : %s" % (verilator_version))
+
+    check_tools_version()
+
     # create file handler which logs even debug messages13.1.1
     fh = logging.FileHandler('logfile.log')
     fh.setLevel(logging.DEBUG)
@@ -1104,7 +1140,7 @@ def main():
       test_executed = 0
       test_iteration = i
       print("")
-      logging.info("Execution numero : %s" % (i+1))
+      logging.info("Iteration number: %s" % (i+1))
       # Run any handcoded/directed assembly tests specified by args.asm_tests
       if args.asm_tests != "":
         asm_test = args.asm_tests.split(',')
@@ -1281,7 +1317,7 @@ def main():
 
         # Compare ISS simulation result
         if args.steps == "all" or re.match(".*iss_cmp.*", args.steps):
-          iss_cmp(matched_list, args.iss, output_dir, args.stop_on_first_error,
+          iss_cmp(matched_list, args.iss, args.target, output_dir, args.stop_on_first_error,
                   args.exp, args.debug)
 
     sys.exit(RET_SUCCESS)
@@ -1293,4 +1329,3 @@ if __name__ == "__main__":
   sys.path.append(os.getcwd()+"/../../util")
   from config_pkg_generator import *
   main()
-

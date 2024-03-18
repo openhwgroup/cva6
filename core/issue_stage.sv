@@ -17,7 +17,12 @@
 module issue_stage
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type branchpredict_sbe_t = logic,
+    parameter type exception_t = logic,
+    parameter type fu_data_t = logic,
+    parameter type scoreboard_entry_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -42,20 +47,20 @@ module issue_stage
     // Handshake's acknowlege with decode stage - ID_STAGE
     output logic decoded_instr_ack_o,
     // rs1 forwarding - EX_STAGE
-    output [riscv::VLEN-1:0] rs1_forwarding_o,
+    output [CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
     // rs2 forwarding - EX_STAGE
-    output [riscv::VLEN-1:0] rs2_forwarding_o,
+    output [CVA6Cfg.VLEN-1:0] rs2_forwarding_o,
     // FU data useful to execute instruction - EX_STAGE
     output fu_data_t fu_data_o,
-    // TO_BE_COMPLETED - EX_STAGE
-    output logic [riscv::VLEN-1:0] pc_o,
+    // Program Counter - EX_STAGE
+    output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Fixed Latency Unit is ready - EX_STAGE
     input logic flu_ready_i,
     // ALU FU is valid - EX_STAGE
     output logic alu_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Signaling that we resolved the branch - EX_STAGE
     input logic resolve_branch_i,
     // Load store unit FU is ready - EX_STAGE
     input logic lsu_ready_i,
@@ -87,51 +92,51 @@ module issue_stage
     output scoreboard_entry_t issue_instr_o,
     // TO_BE_COMPLETED - ACC_DISPATCHER
     output logic issue_instr_hs_o,
-    // TO_BE_COMPLETED - EX_STAGE
-    input logic [CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0] trans_id_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Transaction ID - EX_STAGE
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_i,
+    // The branch engine uses the write back from the ALU - EX_STAGE
     input bp_resolve_t resolved_branch_i,
     // TO_BE_COMPLETED - EX_STAGE
-    input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,
     // exception from execute stage or CVXIF - EX_STAGE
     input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF write enable - EX_STAGE
     input logic x_we_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
     // TO_BE_COMPLETED - EX_STAGE
-    input logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
+    // GPR write enable - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // FPR write enable - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
-    // TO_BE_COMPLETED - COMMIT_STAGE
+    // Instructions to commit - COMMIT_STAGE
     output scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
-    // TO_BE_COMPLETED - COMMIT_STAGE
+    // Commit acknowledge - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     // Issue stall - PERF_COUNTERS
     output logic stall_issue_o,
     // Information dedicated to RVFI - RVFI
-    output logic [TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
     // Information dedicated to RVFI - RVFI
-    output logic [CVA6Cfg.NrCommitPorts-1:0][TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
+    output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
 );
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)
   // ---------------------------------------------------
-  typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? riscv::XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
+  typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? CVA6Cfg.XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
 
   fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_sb_iro;
   fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;
 
   logic              [   REG_ADDR_SIZE-1:0] rs1_iro_sb;
-  riscv::xlen_t                             rs1_sb_iro;
+  logic              [    CVA6Cfg.XLEN-1:0] rs1_sb_iro;
   logic                                     rs1_valid_sb_iro;
 
   logic              [   REG_ADDR_SIZE-1:0] rs2_iro_sb;
-  riscv::xlen_t                             rs2_sb_iro;
+  logic              [    CVA6Cfg.XLEN-1:0] rs2_sb_iro;
   logic                                     rs2_valid_iro_sb;
 
   logic              [   REG_ADDR_SIZE-1:0] rs3_iro_sb;
@@ -143,11 +148,11 @@ module issue_stage
   logic                                     issue_instr_valid_sb_iro;
   logic                                     issue_ack_iro_sb;
 
-  riscv::xlen_t                             rs1_forwarding_xlen;
-  riscv::xlen_t                             rs2_forwarding_xlen;
+  logic              [    CVA6Cfg.XLEN-1:0] rs1_forwarding_xlen;
+  logic              [    CVA6Cfg.XLEN-1:0] rs2_forwarding_xlen;
 
-  assign rs1_forwarding_o = rs1_forwarding_xlen[riscv::VLEN-1:0];
-  assign rs2_forwarding_o = rs2_forwarding_xlen[riscv::VLEN-1:0];
+  assign rs1_forwarding_o = rs1_forwarding_xlen[CVA6Cfg.VLEN-1:0];
+  assign rs2_forwarding_o = rs2_forwarding_xlen[CVA6Cfg.VLEN-1:0];
 
   assign issue_instr_o    = issue_instr_sb_iro;
   assign issue_instr_hs_o = issue_instr_valid_sb_iro & issue_ack_iro_sb;
@@ -157,8 +162,11 @@ module issue_stage
   // 2. Manage instructions in a scoreboard
   // ---------------------------------------------------------
   scoreboard #(
-      .CVA6Cfg  (CVA6Cfg),
-      .rs3_len_t(rs3_len_t)
+      .CVA6Cfg   (CVA6Cfg),
+      .rs3_len_t (rs3_len_t),
+      .bp_resolve_t(bp_resolve_t),
+      .exception_t(exception_t),
+      .scoreboard_entry_t(scoreboard_entry_t)
   ) i_scoreboard (
       .sb_full_o          (sb_full_o),
       .unresolved_branch_i(1'b0),
@@ -193,7 +201,10 @@ module issue_stage
   // 3. Issue instruction and read operand, also commit
   // ---------------------------------------------------------
   issue_read_operands #(
-      .CVA6Cfg  (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
+      .fu_data_t(fu_data_t),
+      .scoreboard_entry_t(scoreboard_entry_t),
       .rs3_len_t(rs3_len_t)
   ) i_issue_read_operands (
       .flush_i            (flush_unissued_instr_i),

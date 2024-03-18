@@ -24,8 +24,8 @@ module amo_buffer #(
     input logic valid_i,  // AMO is valid
     output logic ready_o,  // AMO unit is ready
     input ariane_pkg::amo_t amo_op_i,  // AMO Operation
-    input  logic [riscv::PLEN-1:0]      paddr_i,            // physical address of store which needs to be placed in the queue
-    input riscv::xlen_t data_i,  // data which is placed in the queue
+    input  logic [CVA6Cfg.PLEN-1:0]      paddr_i,            // physical address of store which needs to be placed in the queue
+    input logic [CVA6Cfg.XLEN-1:0] data_i,  // data which is placed in the queue
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
     // D$
     output ariane_pkg::amo_req_t amo_req_o,  // request to cache subsytem
@@ -38,10 +38,10 @@ module amo_buffer #(
   logic amo_valid;
 
   typedef struct packed {
-    ariane_pkg::amo_t       op;
-    logic [riscv::PLEN-1:0] paddr;
-    riscv::xlen_t           data;
-    logic [1:0]             size;
+    ariane_pkg::amo_t        op;
+    logic [CVA6Cfg.PLEN-1:0] paddr;
+    logic [CVA6Cfg.XLEN-1:0] data;
+    logic [1:0]              size;
   } amo_op_t;
 
   amo_op_t amo_data_in, amo_data_out;
@@ -50,8 +50,8 @@ module amo_buffer #(
   assign amo_req_o.req = no_st_pending_i & amo_valid_commit_i & amo_valid;
   assign amo_req_o.amo_op = amo_data_out.op;
   assign amo_req_o.size = amo_data_out.size;
-  assign amo_req_o.operand_a = {{64 - riscv::PLEN{1'b0}}, amo_data_out.paddr};
-  assign amo_req_o.operand_b = {{64 - riscv::XLEN{1'b0}}, amo_data_out.data};
+  assign amo_req_o.operand_a = {{64 - CVA6Cfg.PLEN{1'b0}}, amo_data_out.paddr};
+  assign amo_req_o.operand_b = {{64 - CVA6Cfg.XLEN{1'b0}}, amo_data_out.data};
 
   assign amo_data_in.op = amo_op_i;
   assign amo_data_in.data = data_i;
@@ -63,8 +63,9 @@ module amo_buffer #(
   assign flush_amo_buffer = flush_i & !amo_valid_commit_i;
 
   fifo_v3 #(
-      .DEPTH(1),
-      .dtype(amo_op_t)
+      .DEPTH  (1),
+      .dtype  (amo_op_t),
+      .FPGA_EN(CVA6Cfg.FPGA_EN)
   ) i_amo_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

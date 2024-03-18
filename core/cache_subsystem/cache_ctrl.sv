@@ -22,7 +22,11 @@ module cache_ctrl
   import ariane_pkg::*;
   import std_cache_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type cache_line_t = logic,
+    parameter type cl_be_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -33,15 +37,15 @@ module cache_ctrl
     input dcache_req_i_t req_port_i,
     output dcache_req_o_t req_port_o,
     // SRAM interface
-    output logic [DCACHE_SET_ASSOC-1:0] req_o,  // req is valid
-    output logic [DCACHE_INDEX_WIDTH-1:0] addr_o,  // address into cache array
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] req_o,  // req is valid
+    output logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr_o,  // address into cache array
     input logic gnt_i,
     output cache_line_t data_o,
     output cl_be_t be_o,
-    output logic [DCACHE_TAG_WIDTH-1:0] tag_o,  //valid one cycle later
-    input cache_line_t [DCACHE_SET_ASSOC-1:0] data_i,
+    output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_o,  //valid one cycle later
+    input cache_line_t [CVA6Cfg.DCACHE_SET_ASSOC-1:0] data_i,
     output logic we_o,
-    input logic [DCACHE_SET_ASSOC-1:0] hit_way_i,
+    input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_way_i,
     // Miss handling
     output miss_req_t miss_req_o,
     // return
@@ -75,29 +79,30 @@ module cache_ctrl
       state_d, state_q;
 
   typedef struct packed {
-    logic [DCACHE_INDEX_WIDTH-1:0] index;
-    logic [DCACHE_TAG_WIDTH-1:0]   tag;
-    logic [DCACHE_TID_WIDTH-1:0]   id;
-    logic [7:0]                    be;
-    logic [1:0]                    size;
-    logic                          we;
-    logic [63:0]                   wdata;
-    logic                          bypass;
-    logic                          killed;
+    logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] index;
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   tag;
+    logic [DCACHE_TID_WIDTH-1:0]           id;
+    logic [7:0]                            be;
+    logic [1:0]                            size;
+    logic                                  we;
+    logic [63:0]                           wdata;
+    logic                                  bypass;
+    logic                                  killed;
   } mem_req_t;
 
-  logic [DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
 
   mem_req_t mem_req_d, mem_req_q;
 
   assign busy_o = (state_q != IDLE);
   assign tag_o  = mem_req_d.tag;
 
-  logic [DCACHE_LINE_WIDTH-1:0] cl_i;
+  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] cl_i;
 
   always_comb begin : way_select
     cl_i = '0;
-    for (int unsigned i = 0; i < DCACHE_SET_ASSOC; i++) if (hit_way_i[i]) cl_i = data_i[i].data;
+    for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++)
+    if (hit_way_i[i]) cl_i = data_i[i].data;
 
     // cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
   end
@@ -106,10 +111,10 @@ module cache_ctrl
   // Cache FSM
   // --------------
   always_comb begin : cache_ctrl_fsm
-    automatic logic [$clog2(DCACHE_LINE_WIDTH)-1:0] cl_offset;
+    automatic logic [$clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0] cl_offset;
     // incoming cache-line -> this is needed as synthesis is not supporting +: indexing in a multi-dimensional array
     // cache-line offset -> multiple of 64
-    cl_offset = mem_req_q.index[DCACHE_BYTE_OFFSET-1:3] << 6;  // shift by 6 to the left
+    cl_offset = mem_req_q.index[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:3] << 6;  // shift by 6 to the left
     // default assignments
     state_d = state_q;
     mem_req_d = mem_req_q;
@@ -252,7 +257,7 @@ module cache_ctrl
           // Check for cache-ability
           // -------------------------
           if (!config_pkg::is_inside_cacheable_regions(
-                  CVA6Cfg, {{{64 - riscv::PLEN} {1'b0}}, tag_o, {DCACHE_INDEX_WIDTH{1'b0}}}
+                  CVA6Cfg, {{{64 - CVA6Cfg.PLEN} {1'b0}}, tag_o, {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}}
               )) begin
             mem_req_d.bypass = 1'b1;
             state_d = WAIT_REFILL_GNT;
@@ -456,7 +461,7 @@ module cache_ctrl
   //pragma translate_off
 `ifndef VERILATOR
   initial begin
-    assert (DCACHE_LINE_WIDTH == 128)
+    assert (CVA6Cfg.DCACHE_LINE_WIDTH == 128)
     else
       $error(
           "Cacheline width has to be 128 for the moment. But only small changes required in data select logic"

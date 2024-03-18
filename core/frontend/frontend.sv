@@ -18,38 +18,42 @@
 module frontend
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
+    parameter type fetch_entry_t = logic,
+    parameter type icache_dreq_t = logic,
+    parameter type icache_drsp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // Fetch flush request - CONTROLLER
-    input logic flush_i,
-    // flush branch prediction - zero
-    input logic flush_bp_i,
-    // halt commit stage - CONTROLLER
-    input logic halt_i,
-    // Debug mode state - CSR
-    input logic debug_mode_i,
     // Next PC when reset - SUBSYSTEM
-    input logic [riscv::VLEN-1:0] boot_addr_i,
-    // mispredict event and next PC - EXECUTE
-    input bp_resolve_t resolved_branch_i,
-    // Set the PC coming from COMMIT as next PC - CONTROLLER
+    input logic [CVA6Cfg.VLEN-1:0] boot_addr_i,
+    // Flush branch prediction - zero
+    input logic flush_bp_i,
+    // Flush requested by FENCE, mis-predict and exception - CONTROLLER
+    input logic flush_i,
+    // Halt requested by WFI and Accelerate port - CONTROLLER
+    input logic halt_i,
+    // Set COMMIT PC as next PC requested by FENCE, CSR side-effect and Accelerate port - CONTROLLER
     input logic set_pc_commit_i,
-    // Next PC when flushing pipeline - COMMIT
-    input logic [riscv::VLEN-1:0] pc_commit_i,
-    // Next PC when returning from exception - CSR
-    input logic [riscv::VLEN-1:0] epc_i,
-    // Return from exception event - CSR
-    input logic eret_i,
-    // Next PC when jumping into exception - CSR
-    input logic [riscv::VLEN-1:0] trap_vector_base_i,
+    // COMMIT PC - COMMIT
+    input logic [CVA6Cfg.VLEN-1:0] pc_commit_i,
     // Exception event - COMMIT
     input logic ex_valid_i,
+    // Mispredict event and next PC - EXECUTE
+    input bp_resolve_t resolved_branch_i,
+    // Return from exception event - CSR
+    input logic eret_i,
+    // Next PC when returning from exception - CSR
+    input logic [CVA6Cfg.VLEN-1:0] epc_i,
+    // Next PC when jumping into exception - CSR
+    input logic [CVA6Cfg.VLEN-1:0] trap_vector_base_i,
     // Debug event - CSR
     input logic set_debug_pc_i,
+    // Debug mode state - CSR
+    input logic debug_mode_i,
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
     output icache_dreq_t icache_dreq_o,
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
@@ -61,31 +65,54 @@ module frontend
     // Handshake's ready between fetch and decode - ID_STAGE
     input logic fetch_entry_ready_i
 );
+
+  localparam type bht_update_t = struct packed {
+    logic                    valid;
+    logic [CVA6Cfg.VLEN-1:0] pc;     // update at PC
+    logic                    taken;
+  };
+
+  localparam type btb_prediction_t = struct packed {
+    logic                    valid;
+    logic [CVA6Cfg.VLEN-1:0] target_address;
+  };
+
+  localparam type btb_update_t = struct packed {
+    logic                    valid;
+    logic [CVA6Cfg.VLEN-1:0] pc;              // update at PC
+    logic [CVA6Cfg.VLEN-1:0] target_address;
+  };
+
+  localparam type ras_t = struct packed {
+    logic                    valid;
+    logic [CVA6Cfg.VLEN-1:0] ra;
+  };
+
   // Instruction Cache Registers, from I$
-  logic                            [                FETCH_WIDTH-1:0] icache_data_q;
-  logic                                                              icache_valid_q;
-  ariane_pkg::frontend_exception_t                                   icache_ex_valid_q;
-  logic                            [                riscv::VLEN-1:0] icache_vaddr_q;
-  logic                                                              instr_queue_ready;
-  logic                            [ariane_pkg::INSTR_PER_FETCH-1:0] instr_queue_consumed;
+  logic                            [    CVA6Cfg.FETCH_WIDTH-1:0] icache_data_q;
+  logic                                                          icache_valid_q;
+  ariane_pkg::frontend_exception_t                               icache_ex_valid_q;
+  logic                            [           CVA6Cfg.VLEN-1:0] icache_vaddr_q;
+  logic                                                          instr_queue_ready;
+  logic                            [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_consumed;
   // upper-most branch-prediction from last cycle
-  btb_prediction_t                                                   btb_q;
-  bht_prediction_t                                                   bht_q;
+  btb_prediction_t                                               btb_q;
+  bht_prediction_t                                               bht_q;
   // instruction fetch is ready
-  logic                                                              if_ready;
-  logic [riscv::VLEN-1:0] npc_d, npc_q;  // next PC
+  logic                                                          if_ready;
+  logic [CVA6Cfg.VLEN-1:0] npc_d, npc_q;  // next PC
 
   // indicates whether we come out of reset (then we need to load boot_addr_i)
-  logic                                           npc_rst_load_q;
+  logic                                       npc_rst_load_q;
 
-  logic                                           replay;
-  logic [                        riscv::VLEN-1:0] replay_addr;
+  logic                                       replay;
+  logic [                   CVA6Cfg.VLEN-1:0] replay_addr;
 
   // shift amount
-  logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
+  logic [$clog2(CVA6Cfg.INSTR_PER_FETCH)-1:0] shamt;
   // address will always be 16 bit aligned, make this explicit here
   if (CVA6Cfg.RVC) begin : gen_shamt
-    assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
+    assign shamt = icache_dreq_i.vaddr[$clog2(CVA6Cfg.INSTR_PER_FETCH):1];
   end else begin
     assign shamt = 1'b0;
   end
@@ -94,35 +121,35 @@ module frontend
   // Ctrl Flow Speculation
   // -----------------------
   // RVI ctrl flow prediction
-  logic [INSTR_PER_FETCH-1:0] rvi_return, rvi_call, rvi_branch, rvi_jalr, rvi_jump;
-  logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] rvi_imm;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] rvi_return, rvi_call, rvi_branch, rvi_jalr, rvi_jump;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] rvi_imm;
   // RVC branching
-  logic [INSTR_PER_FETCH-1:0] rvc_branch, rvc_jump, rvc_jr, rvc_return, rvc_jalr, rvc_call;
-  logic            [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] rvc_imm;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] rvc_branch, rvc_jump, rvc_jr, rvc_return, rvc_jalr, rvc_call;
+  logic            [CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] rvc_imm;
   // re-aligned instruction and address (coming from cache - combinationally)
-  logic            [INSTR_PER_FETCH-1:0][           31:0] instr;
-  logic            [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr;
-  logic            [INSTR_PER_FETCH-1:0]                  instruction_valid;
+  logic            [CVA6Cfg.INSTR_PER_FETCH-1:0][            31:0] instr;
+  logic            [CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] addr;
+  logic            [CVA6Cfg.INSTR_PER_FETCH-1:0]                   instruction_valid;
   // BHT, BTB and RAS prediction
-  bht_prediction_t [INSTR_PER_FETCH-1:0]                  bht_prediction;
-  btb_prediction_t [INSTR_PER_FETCH-1:0]                  btb_prediction;
-  bht_prediction_t [INSTR_PER_FETCH-1:0]                  bht_prediction_shifted;
-  btb_prediction_t [INSTR_PER_FETCH-1:0]                  btb_prediction_shifted;
-  ras_t                                                   ras_predict;
-  logic            [    riscv::VLEN-1:0]                  vpc_btb;
+  bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                   bht_prediction;
+  btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                   btb_prediction;
+  bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                   bht_prediction_shifted;
+  btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                   btb_prediction_shifted;
+  ras_t                                                            ras_predict;
+  logic            [           CVA6Cfg.VLEN-1:0]                   vpc_btb;
 
   // branch-predict update
-  logic                                                   is_mispredict;
+  logic                                                            is_mispredict;
   logic ras_push, ras_pop;
-  logic [                riscv::VLEN-1:0] ras_update;
+  logic [           CVA6Cfg.VLEN-1:0] ras_update;
 
   // Instruction FIFO
-  logic [                riscv::VLEN-1:0] predict_address;
-  cf_t  [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type;
-  logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvi_cf;
-  logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvc_cf;
+  logic [           CVA6Cfg.VLEN-1:0] predict_address;
+  cf_t  [CVA6Cfg.INSTR_PER_FETCH-1:0] cf_type;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvi_cf;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvc_cf;
 
-  logic                                   serving_unaligned;
+  logic                               serving_unaligned;
   // Re-align instructions
   instr_realign #(
       .CVA6Cfg(CVA6Cfg)
@@ -147,17 +174,17 @@ module frontend
   // the prediction we saved from the previous fetch
   if (CVA6Cfg.RVC) begin : gen_btb_prediction_shifted
     assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][$clog2(
-        INSTR_PER_FETCH
+        CVA6Cfg.INSTR_PER_FETCH
     ):1]];
     assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][$clog2(
-        INSTR_PER_FETCH
+        CVA6Cfg.INSTR_PER_FETCH
     ):1]];
 
     // for all other predictions we can use the generated address to index
     // into the branch prediction data structures
-    for (genvar i = 1; i < INSTR_PER_FETCH; i++) begin : gen_prediction_address
-      assign bht_prediction_shifted[i] = bht_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
-      assign btb_prediction_shifted[i] = btb_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
+    for (genvar i = 1; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_prediction_address
+      assign bht_prediction_shifted[i] = bht_prediction[addr[i][$clog2(CVA6Cfg.INSTR_PER_FETCH):1]];
+      assign btb_prediction_shifted[i] = btb_prediction[addr[i][$clog2(CVA6Cfg.INSTR_PER_FETCH):1]];
     end
   end else begin
     assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][1]];
@@ -169,13 +196,13 @@ module frontend
   // address of the call/return already
   logic bp_valid;
 
-  logic [INSTR_PER_FETCH-1:0] is_branch;
-  logic [INSTR_PER_FETCH-1:0] is_call;
-  logic [INSTR_PER_FETCH-1:0] is_jump;
-  logic [INSTR_PER_FETCH-1:0] is_return;
-  logic [INSTR_PER_FETCH-1:0] is_jalr;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_branch;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_call;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_jump;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_return;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_jalr;
 
-  for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
     // branch history table -> BHT
     assign is_branch[i] = instruction_valid[i] & (rvi_branch[i] | rvc_branch[i]);
     // function calls -> RAS
@@ -194,14 +221,14 @@ module frontend
     taken_rvc_cf = '0;
     predict_address = '0;
 
-    for (int i = 0; i < INSTR_PER_FETCH; i++) cf_type[i] = ariane_pkg::NoCF;
+    for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) cf_type[i] = ariane_pkg::NoCF;
 
     ras_push = 1'b0;
     ras_pop = 1'b0;
     ras_update = '0;
 
     // lower most prediction gets precedence
-    for (int i = INSTR_PER_FETCH - 1; i >= 0; i--) begin
+    for (int i = CVA6Cfg.INSTR_PER_FETCH - 1; i >= 0; i--) begin
       unique case ({
         is_branch[i], is_return[i], is_jump[i], is_jalr[i]
       })
@@ -242,8 +269,8 @@ module frontend
             // otherwise default to static prediction
           end else begin
             // set if immediate is negative - static prediction
-            taken_rvi_cf[i] = rvi_branch[i] & rvi_imm[i][riscv::VLEN-1];
-            taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][riscv::VLEN-1];
+            taken_rvi_cf[i] = rvi_branch[i] & rvi_imm[i][CVA6Cfg.VLEN-1];
+            taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][CVA6Cfg.VLEN-1];
           end
           if (taken_rvi_cf[i] || taken_rvc_cf[i]) begin
             cf_type[i] = ariane_pkg::Branch;
@@ -270,7 +297,7 @@ module frontend
     // BP cannot be valid if we have a return instruction and the RAS is not giving a valid address
     // Check that we encountered a control flow and that for a return the RAS
     // contains a valid prediction.
-    for (int i = 0; i < INSTR_PER_FETCH; i++)
+    for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++)
     bp_valid |= ((cf_type[i] != NoCF & cf_type[i] != Return) | ((cf_type[i] == Return) & ras_predict.valid));
   end
   assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
@@ -320,7 +347,7 @@ module frontend
   // Mis-predict handling is a little bit different
   // select PC a.k.a PC Gen
   always_comb begin : npc_select
-    automatic logic [riscv::VLEN-1:0] fetch_address;
+    automatic logic [CVA6Cfg.VLEN-1:0] fetch_address;
     // check whether we come out of reset
     // this is a workaround. some tools have issues
     // having boot_addr_i in the asynchronous
@@ -342,7 +369,7 @@ module frontend
     end
     // 1. Default assignment
     if (if_ready) begin
-      npc_d = {fetch_address[riscv::VLEN-1:2], 2'b0} + 'h4;
+      npc_d = {fetch_address[CVA6Cfg.VLEN-1:2], 2'b0} + 'h4;
     end
     // 2. Replay instruction fetch
     if (replay) begin
@@ -370,16 +397,16 @@ module frontend
     // instruction in the commit stage
     // TODO(zarubaf) This adder can at least be merged with the one in the csr_regfile stage
     if (set_pc_commit_i) begin
-      npc_d = pc_commit_i + (halt_i ? '0 : {{riscv::VLEN - 3{1'b0}}, 3'b100});
+      npc_d = pc_commit_i + (halt_i ? '0 : {{CVA6Cfg.VLEN - 3{1'b0}}, 3'b100});
     end
     // 7. Debug
     // enter debug on a hard-coded base-address
     if (CVA6Cfg.DebugEn && set_debug_pc_i)
-      npc_d = CVA6Cfg.DmBaseAddress[riscv::VLEN-1:0] + CVA6Cfg.HaltAddress[riscv::VLEN-1:0];
+      npc_d = CVA6Cfg.DmBaseAddress[CVA6Cfg.VLEN-1:0] + CVA6Cfg.HaltAddress[CVA6Cfg.VLEN-1:0];
     icache_dreq_o.vaddr = fetch_address;
   end
 
-  logic [FETCH_WIDTH-1:0] icache_data;
+  logic [CVA6Cfg.FETCH_WIDTH-1:0] icache_data;
   // re-align the cache line
   assign icache_data = icache_dreq_i.data >> {shamt, 4'b0};
 
@@ -411,8 +438,8 @@ module frontend
           icache_ex_valid_q <= ariane_pkg::FE_NONE;
         end
         // save the uppermost prediction
-        btb_q <= btb_prediction[INSTR_PER_FETCH-1];
-        bht_q <= bht_prediction[INSTR_PER_FETCH-1];
+        btb_q <= btb_prediction[CVA6Cfg.INSTR_PER_FETCH-1];
+        bht_q <= bht_prediction[CVA6Cfg.INSTR_PER_FETCH-1];
       end
     end
   end
@@ -422,33 +449,36 @@ module frontend
   end else begin : ras_gen
     ras #(
         .CVA6Cfg(CVA6Cfg),
+        .ras_t  (ras_t),
         .DEPTH  (CVA6Cfg.RASDepth)
     ) i_ras (
         .clk_i,
         .rst_ni,
-        .flush_i(flush_bp_i),
-        .push_i (ras_push),
-        .pop_i  (ras_pop),
-        .data_i (ras_update),
-        .data_o (ras_predict)
+        .flush_bp_i(flush_bp_i),
+        .push_i(ras_push),
+        .pop_i(ras_pop),
+        .data_i(ras_update),
+        .data_o(ras_predict)
     );
   end
 
   //For FPGA, BTB is implemented in read synchronous BRAM
   //while for ASIC, BTB is implemented in D flip-flop
   //and can be read at the same cycle.
-  assign vpc_btb = (ariane_pkg::FPGA_EN) ? icache_dreq_i.vaddr : icache_vaddr_q;
+  assign vpc_btb = (CVA6Cfg.FPGA_EN) ? icache_dreq_i.vaddr : icache_vaddr_q;
 
   if (CVA6Cfg.BTBEntries == 0) begin
     assign btb_prediction = '0;
   end else begin : btb_gen
     btb #(
         .CVA6Cfg   (CVA6Cfg),
+        .btb_update_t(btb_update_t),
+        .btb_prediction_t(btb_prediction_t),
         .NR_ENTRIES(CVA6Cfg.BTBEntries)
     ) i_btb (
         .clk_i,
         .rst_ni,
-        .flush_i         (flush_bp_i),
+        .flush_bp_i      (flush_bp_i),
         .debug_mode_i,
         .vpc_i           (vpc_btb),
         .btb_update_i    (btb_update),
@@ -461,11 +491,12 @@ module frontend
   end else begin : bht_gen
     bht #(
         .CVA6Cfg   (CVA6Cfg),
+        .bht_update_t(bht_update_t),
         .NR_ENTRIES(CVA6Cfg.BHTEntries)
     ) i_bht (
         .clk_i,
         .rst_ni,
-        .flush_i         (flush_bp_i),
+        .flush_bp_i      (flush_bp_i),
         .debug_mode_i,
         .vpc_i           (icache_vaddr_q),
         .bht_update_i    (bht_update),
@@ -473,9 +504,9 @@ module frontend
     );
   end
 
-  // we need to inspect up to INSTR_PER_FETCH instructions for branches
+  // we need to inspect up to CVA6Cfg.INSTR_PER_FETCH instructions for branches
   // and jumps
-  for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin : gen_instr_scan
+  for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_instr_scan
     instr_scan #(
         .CVA6Cfg(CVA6Cfg)
     ) i_instr_scan (
@@ -497,7 +528,8 @@ module frontend
   end
 
   instr_queue #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .fetch_entry_t(fetch_entry_t)
   ) i_instr_queue (
       .clk_i              (clk_i),
       .rst_ni             (rst_ni),
@@ -521,7 +553,7 @@ module frontend
   // pragma translate_off
 `ifndef VERILATOR
   initial begin
-    assert (FETCH_WIDTH == 32 || FETCH_WIDTH == 64)
+    assert (CVA6Cfg.FETCH_WIDTH == 32 || CVA6Cfg.FETCH_WIDTH == 64)
     else $fatal(1, "[frontend] fetch width != not supported");
   end
 `endif

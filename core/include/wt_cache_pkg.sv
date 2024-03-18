@@ -37,57 +37,20 @@ package wt_cache_pkg;
   localparam L15_SET_ASSOC = `CONFIG_L15_ASSOCIATIVITY;
   localparam L15_TLB_CSM_WIDTH = `TLB_CSM_WIDTH;
 `else
-  localparam L15_SET_ASSOC           = ariane_pkg::DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Ariane setup
   localparam L15_TLB_CSM_WIDTH = 33;
 `endif
-  localparam L15_TID_WIDTH = ariane_pkg::MEM_TID_WIDTH;
-  localparam L15_WAY_WIDTH = $clog2(L15_SET_ASSOC);
-  localparam L1I_WAY_WIDTH = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
-  localparam L1D_WAY_WIDTH = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
 
   // FIFO depths of L15 adapter
   localparam ADAPTER_REQ_FIFO_DEPTH = 2;
   localparam ADAPTER_RTRN_FIFO_DEPTH = 2;
 
 
-  // Calculated parameter
-  localparam ICACHE_OFFSET_WIDTH = $clog2(ariane_pkg::ICACHE_LINE_WIDTH / 8);
-  localparam ICACHE_NUM_WORDS = 2 ** (ariane_pkg::ICACHE_INDEX_WIDTH - ICACHE_OFFSET_WIDTH);
-  localparam ICACHE_CL_IDX_WIDTH = $clog2(ICACHE_NUM_WORDS);  // excluding byte offset
-
-  localparam DCACHE_OFFSET_WIDTH = $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8);
-  localparam DCACHE_NUM_WORDS = 2 ** (ariane_pkg::DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
-  localparam DCACHE_CL_IDX_WIDTH = $clog2(DCACHE_NUM_WORDS);  // excluding byte offset
-
-  localparam DCACHE_NUM_BANKS = ariane_pkg::DCACHE_LINE_WIDTH / riscv::XLEN;
-  localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
-
   // write buffer parameterization
   localparam DCACHE_WBUF_DEPTH = ariane_pkg::WT_DCACHE_WBUF_DEPTH;
-  localparam DCACHE_MAX_TX = 2 ** L15_TID_WIDTH;
-  localparam CACHE_ID_WIDTH = L15_TID_WIDTH;
-
-
-  typedef struct packed {
-    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
-    riscv::xlen_t data;
-    logic [ariane_pkg::DCACHE_USER_WIDTH-1:0] user;
-    logic [(riscv::XLEN/8)-1:0] dirty;  // byte is dirty
-    logic [(riscv::XLEN/8)-1:0] valid;  // byte is valid
-    logic [(riscv::XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
-    logic checked;  // if cache state of this word has been checked
-    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
-  } wbuffer_t;
 
   // TX status registers are indexed with the transaction ID
   // they basically store which bytes from which buffer entry are part
   // of that transaction
-
-  typedef struct packed {
-    logic                                 vld;
-    logic [(riscv::XLEN/8)-1:0]           be;
-    logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
-  } tx_stat_t;
 
   // local interfaces between caches and L15 adapter
   typedef enum logic [1:0] {
@@ -109,58 +72,6 @@ package wt_cache_pkg;
     ICACHE_INV_REQ,   // no ack from the core required
     ICACHE_IFILL_ACK
   } icache_in_t;
-
-  // icache interface
-  typedef struct packed {
-    logic                                      vld;  // invalidate only affected way
-    logic                                      all;  // invalidate all ways
-    logic [ariane_pkg::ICACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
-    logic [L1I_WAY_WIDTH-1:0]                  way;  // way to invalidate
-  } icache_inval_t;
-
-  typedef struct packed {
-    logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] way;  // way to replace
-    logic [riscv::PLEN-1:0] paddr;  // physical address
-    logic nc;  // noncacheable
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
-  } icache_req_t;
-
-  typedef struct packed {
-    icache_in_t rtype;  // see definitions above
-    logic [ariane_pkg::ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
-    logic [ariane_pkg::ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
-    icache_inval_t inv;  // invalidation vector
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
-  } icache_rtrn_t;
-
-  // dcache interface
-  typedef struct packed {
-    logic                                      vld;  // invalidate only affected way
-    logic                                      all;  // invalidate all ways
-    logic [ariane_pkg::DCACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
-    logic [L15_WAY_WIDTH-1:0]                  way;  // way to invalidate
-  } dcache_inval_t;
-
-  typedef struct packed {
-    dcache_out_t rtype;  // see definitions above
-    logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
-    logic [L1D_WAY_WIDTH-1:0] way;  // way to replace
-    logic [riscv::PLEN-1:0] paddr;  // physical address
-    riscv::xlen_t data;  // word width of processor (no block stores at the moment)
-    logic [ariane_pkg::DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
-    logic nc;  // noncacheable
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
-    ariane_pkg::amo_t amo_op;  // amo opcode
-  } dcache_req_t;
-
-  typedef struct packed {
-    dcache_in_t rtype;  // see definitions above
-    logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
-    logic [ariane_pkg::DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
-    dcache_inval_t inv;  // invalidation vector
-    logic [CACHE_ID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
-  } dcache_rtrn_t;
-
 
   // taken from iop.h in openpiton
   // to l1.5 (only marked subset is used)
@@ -201,53 +112,6 @@ package wt_cache_pkg;
     L15_CPX_RESTYPE_ATOMIC_RES = 4'b1110   // custom type for atomic responses
   } l15_rtrntypes_t;
 
-
-  typedef struct packed {
-    logic l15_val;  // valid signal, asserted with request
-    logic l15_req_ack;  // ack for response
-    l15_reqtypes_t l15_rqtype;  // see below for encoding
-    logic l15_nc;  // non-cacheable bit
-    logic [2:0]                        l15_size;                  // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
-    logic [L15_TID_WIDTH-1:0] l15_threadid;  // currently 0 or 1
-    logic l15_prefetch;  // unused in openpiton
-    logic l15_invalidate_cacheline;  // unused by Ariane as L1 has no ECC at the moment
-    logic l15_blockstore;  // unused in openpiton
-    logic l15_blockinitstore;  // unused in openpiton
-    logic [L15_WAY_WIDTH-1:0] l15_l1rplway;  // way to replace
-    logic [39:0] l15_address;  // physical address
-    logic [63:0] l15_data;  // word to write
-    logic [63:0] l15_data_next_entry;  // unused in Ariane (only used for CAS atomic requests)
-    logic [L15_TLB_CSM_WIDTH-1:0] l15_csm_data;  // unused in Ariane
-    logic [3:0] l15_amo_op;  // atomic operation type
-  } l15_req_t;
-
-  typedef struct packed {
-    logic l15_ack;  // ack for request struct
-    logic l15_header_ack;  // ack for request struct
-    logic l15_val;  // valid signal for return struct
-    l15_rtrntypes_t l15_returntype;  // see below for encoding
-    logic l15_l2miss;  // unused in Ariane
-    logic [1:0] l15_error;  // unused in openpiton
-    logic l15_noncacheable;  // non-cacheable bit
-    logic l15_atomic;  // asserted in load return and store ack packets of atomic tx
-    logic [L15_TID_WIDTH-1:0] l15_threadid;  // used as transaction ID
-    logic l15_prefetch;  // unused in openpiton
-    logic l15_f4b;  // 4byte instruction fill from I/O space (nc).
-    logic [63:0] l15_data_0;  // used for both caches
-    logic [63:0] l15_data_1;  // used for both caches
-    logic [63:0] l15_data_2;  // currently only used for I$
-    logic [63:0] l15_data_3;  // currently only used for I$
-    logic l15_inval_icache_all_way;  // invalidate all ways
-    logic l15_inval_dcache_all_way;  // unused in openpiton
-    logic [15:4] l15_inval_address_15_4;  // invalidate selected cacheline
-    logic l15_cross_invalidate;  // unused in openpiton
-    logic [L15_WAY_WIDTH-1:0] l15_cross_invalidate_way;  // unused in openpiton
-    logic l15_inval_dcache_inval;  // invalidate selected cacheline and way
-    logic l15_inval_icache_inval;  // unused in openpiton
-    logic [L15_WAY_WIDTH-1:0] l15_inval_way;  // way to invalidate
-    logic l15_blockinitstore;  // unused in openpiton
-  } l15_rtrn_t;
-
   // swap endianess in a 64bit word
   function automatic logic [63:0] swendian64(input logic [63:0] in);
     automatic logic [63:0] out;
@@ -264,57 +128,6 @@ package wt_cache_pkg;
     end
     return cnt;
   endfunction : popcnt64
-
-  function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable8(
-      input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
-    logic [(riscv::XLEN/8)-1:0] be;
-    be = '0;
-    unique case (size)
-      2'b00:   be[offset] = '1;  // byte
-      2'b01:   be[offset+:2] = '1;  // hword
-      2'b10:   be[offset+:4] = '1;  // word
-      default: be = '1;  // dword
-    endcase  // size
-    return be;
-  endfunction : to_byte_enable8
-
-  function automatic logic [(riscv::XLEN/8)-1:0] to_byte_enable4(
-      input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
-    logic [3:0] be;
-    be = '0;
-    unique case (size)
-      2'b00:   be[offset] = '1;  // byte
-      2'b01:   be[offset+:2] = '1;  // hword
-      default: be = '1;  // word
-    endcase  // size
-    return be;
-  endfunction : to_byte_enable4
-
-  // openpiton requires the data to be replicated in case of smaller sizes than dwords
-  function automatic riscv::xlen_t repData64(input riscv::xlen_t data,
-                                             input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
-                                             input logic [1:0] size);
-    riscv::xlen_t out;
-    unique case (size)
-      2'b00:   for (int k = 0; k < 8; k++) out[k*8+:8] = data[offset*8+:8];  // byte
-      2'b01:   for (int k = 0; k < 4; k++) out[k*16+:16] = data[offset*8+:16];  // hword
-      2'b10:   for (int k = 0; k < 2; k++) out[k*32+:32] = data[offset*8+:32];  // word
-      default: out = data;  // dword
-    endcase  // size
-    return out;
-  endfunction : repData64
-
-  function automatic riscv::xlen_t repData32(input riscv::xlen_t data,
-                                             input logic [riscv::XLEN_ALIGN_BYTES-1:0] offset,
-                                             input logic [1:0] size);
-    riscv::xlen_t out;
-    unique case (size)
-      2'b00:   for (int k = 0; k < 4; k++) out[k*8+:8] = data[offset*8+:8];  // byte
-      2'b01:   for (int k = 0; k < 2; k++) out[k*16+:16] = data[offset*8+:16];  // hword
-      default: out = data;  // word
-    endcase  // size
-    return out;
-  endfunction : repData32
 
   // note: this is openpiton specific. cannot transmit unaligned words.
   // hence we default to individual bytes in that case, and they have to be transmitted

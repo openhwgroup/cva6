@@ -145,8 +145,8 @@ veri-testharness:
 	  +elf_file=$(elf) +tohost_addr=$(shell $$RISCV/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.
-	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.$(target).fst
-	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.$(target).vcd
+	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.fst
+	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.vcd
 	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
@@ -260,9 +260,9 @@ vcs-uvm:
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.
 	[ ! -f $(VCS_WORK_DIR)/novas.vpd  ] || \
-	  mv $(VCS_WORK_DIR)/novas.vpd  `dirname $(log)`/`basename $(log) .log`.$(target).vpd
+	  mv $(VCS_WORK_DIR)/novas.vpd  `dirname $(log)`/`basename $(log) .log`.vpd
 	[ ! -f $(VCS_WORK_DIR)/novas.fsdb ] || \
-	  mv $(VCS_WORK_DIR)/novas.fsdb `dirname $(log)`/`basename $(log) .log`.$(target).fsdb
+	  mv $(VCS_WORK_DIR)/novas.fsdb `dirname $(log)`/`basename $(log) .log`.fsdb
 	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./vcs_results/default/vcs.d/trace_rvfi_hart_00.dasm > $(log)
 

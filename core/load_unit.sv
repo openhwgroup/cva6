@@ -21,35 +21,57 @@
 module load_unit
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter type exception_t = logic,
+    parameter type lsu_ctrl_t = logic
 ) (
-    input logic clk_i,  // Clock
-    input logic rst_ni,  // Asynchronous reset active low
+    // Subsystem Clock - SUBSYSTEM
+    input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
+    input logic rst_ni,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic flush_i,
-    // load unit input port
+    // Load unit input port - TO_BE_COMPLETED
     input logic valid_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input lsu_ctrl_t lsu_ctrl_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic pop_ld_o,
-    // load unit output port
+    // Load unit result is valid - TO_BE_COMPLETED
     output logic valid_o,
-    output logic [TRANS_ID_BITS-1:0] trans_id_o,
-    output riscv::xlen_t result_o,
+    // Load transaction ID - TO_BE_COMPLETED
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
+    // Load result - TO_BE_COMPLETED
+    output logic [CVA6Cfg.XLEN-1:0] result_o,
+    // Load exception - TO_BE_COMPLETED
     output exception_t ex_o,
-    // MMU -> Address Translation
-    output logic translation_req_o,  // request address translation
-    output logic [riscv::VLEN-1:0] vaddr_o,  // virtual address out
-    input logic [riscv::PLEN-1:0] paddr_i,  // physical address in
-    input  exception_t               ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
-    input logic dtlb_hit_i,  // hit on the dtlb, send in the same cycle as the request
-    input  logic [riscv::PPNW-1:0]   dtlb_ppn_i,          // ppn on the dtlb, send in the same cycle as the request
-    // address checker
+    // Request address translation - TO_BE_COMPLETED
+    output logic translation_req_o,
+    // Virtual address - TO_BE_COMPLETED
+    output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
+    // Physical address - TO_BE_COMPLETED
+    input logic [CVA6Cfg.PLEN-1:0] paddr_i,
+    // Excepted which appears before load - TO_BE_COMPLETED
+    input exception_t ex_i,
+    // Data TLB hit - lsu
+    input logic dtlb_hit_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic [CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [11:0] page_offset_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic page_offset_matches_i,
-    input logic store_buffer_empty_i,  // the entire store-buffer is empty
-    input logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
-    // D$ interface
+    // Store buffer is empty - TO_BE_COMPLETED
+    input logic store_buffer_empty_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // Data cache request out - CACHES
     input dcache_req_o_t req_port_i,
+    // Data cache request in - CACHES
     output dcache_req_i_t req_port_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic dcache_wbuffer_not_ni_i
 );
   enum logic [3:0] {
@@ -68,9 +90,9 @@ module load_unit
   // in order to decouple the response interface from the request interface,
   // we need a a buffer which can hold all inflight memory load requests
   typedef struct packed {
-    logic [TRANS_ID_BITS-1:0]           trans_id;        // scoreboard identifier
-    logic [riscv::XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
-    fu_op                               operation;       // type of load
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0]    trans_id;        // scoreboard identifier
+    logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
+    fu_op                                operation;       // type of load
   } ldbuf_t;
 
 
@@ -166,15 +188,15 @@ module load_unit
   assign req_port_o.data_wdata = '0;
   // compose the load buffer write data, control is handled in the FSM
   assign ldbuf_wdata = {
-    lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[riscv::XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operation
+    lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operation
   };
   // output address
   // we can now output the lower 12 bit as the index to the cache
-  assign req_port_o.address_index = lsu_ctrl_i.vaddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_index = lsu_ctrl_i.vaddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   // translation from last cycle, again: control is handled in the FSM
-  assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
-                                              ariane_pkg::DCACHE_INDEX_WIDTH-1 :
-                                              ariane_pkg::DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_tag   = paddr_i[CVA6Cfg.DCACHE_TAG_WIDTH     +
+                                              CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
+                                              CVA6Cfg.DCACHE_INDEX_WIDTH];
   // request id = index of the load buffer's entry
   assign req_port_o.data_id = ldbuf_windex;
   // directly forward exception fields (valid bit is set below)
@@ -187,7 +209,7 @@ module load_unit
   logic inflight_stores;
   logic stall_ni;
   assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{52 - riscv::PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
+      CVA6Cfg, {{52 - CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
   );
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
@@ -431,7 +453,7 @@ module load_unit
   // ---------------
   // Sign Extend
   // ---------------
-  riscv::xlen_t shifted_data;
+  logic [CVA6Cfg.XLEN-1:0] shifted_data;
 
   // realign as needed
   assign shifted_data = req_port_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};
@@ -451,19 +473,19 @@ module load_unit
     end  */
 
   // result mux fast
-  logic [        (riscv::XLEN/8)-1:0] rdata_sign_bits;
-  logic [riscv::XLEN_ALIGN_BYTES-1:0] rdata_offset;
+  logic [        (CVA6Cfg.XLEN/8)-1:0] rdata_sign_bits;
+  logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] rdata_offset;
   logic rdata_sign_bit, rdata_is_signed, rdata_is_fp_signed;
 
 
   // prepare these signals for faster selection in the next cycle
   assign rdata_is_signed    =   ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
   assign rdata_is_fp_signed =   ldbuf_rdata.operation inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW}) & riscv::IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
+  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW}) & CVA6Cfg.IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
                                 ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH})                     ? ldbuf_rdata.address_offset + 1 :
                                                                                                                          ldbuf_rdata.address_offset;
 
-  for (genvar i = 0; i < (riscv::XLEN / 8); i++) begin : gen_sign_bits
+  for (genvar i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : gen_sign_bits
     assign rdata_sign_bits[i] = req_port_i.data_rdata[(i+1)*8-1];
   end
 
@@ -476,30 +498,30 @@ module load_unit
   always_comb begin
     unique case (ldbuf_rdata.operation)
       ariane_pkg::LW, ariane_pkg::LWU:
-      result_o = {{riscv::XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
+      result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
       ariane_pkg::LH, ariane_pkg::LHU:
-      result_o = {{riscv::XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
+      result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
       ariane_pkg::LB, ariane_pkg::LBU:
-      result_o = {{riscv::XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
+      result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
       default: begin
         // FLW, FLH and FLB have been defined here in default case to improve Code Coverage
         if (CVA6Cfg.FpPresent) begin
           unique case (ldbuf_rdata.operation)
             ariane_pkg::FLW: begin
-              result_o = {{riscv::XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
+              result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
             end
             ariane_pkg::FLH: begin
-              result_o = {{riscv::XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
+              result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
             end
             ariane_pkg::FLB: begin
-              result_o = {{riscv::XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
+              result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
             end
             default: begin
-              result_o = shifted_data[riscv::XLEN-1:0];
+              result_o = shifted_data[CVA6Cfg.XLEN-1:0];
             end
           endcase
         end else begin
-          result_o = shifted_data[riscv::XLEN-1:0];
+          result_o = shifted_data[CVA6Cfg.XLEN-1:0];
         end
       end
     endcase

@@ -9,7 +9,7 @@
 
 .. _CVA6_bht_ports:
 
-.. list-table:: bht module IO ports
+.. list-table:: **bht module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -30,12 +30,6 @@
      - SUBSYSTEM
      - logic
 
-   * - ``flush_i``
-     - in
-     - Fetch flush request
-     - CONTROLLER
-     - logic
-
    * - ``vpc_i``
      - in
      - Virtual PC
@@ -46,7 +40,7 @@
      - in
      - Update bht with resolved address
      - EXECUTE
-     - ariane_pkg::bht_update_t
+     - bht_update_t
 
    * - ``bht_prediction_o``
      - out
@@ -56,5 +50,8 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
+| For any HW configuration,
+|   ``flush_bp_i`` input is tied to 0
 | As DebugEn = 0,
 |   ``debug_mode_i`` input is tied to 0
+

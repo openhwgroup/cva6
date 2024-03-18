@@ -110,6 +110,7 @@ build_tools:
   stage: light tests
   rules: *on_dev
   before_script:
+    - git -C verif/core-v-verif fetch --unshallow
     - mkdir -p tools
     - mv artifacts/tools/spike tools
     - rm -rf artifacts/
@@ -118,7 +119,8 @@ build_tools:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
 
 .simu_after_script: &simu_after_script
-  - for i in verif/sim/*/v*_sim/*.log.iss ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
+  - for i in $(find verif/sim/*/v*_sim -type f \( -name "*.csv" -o -name "*.iss" \)) ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
+  - head -10000 verif/sim/logfile.log > artifacts/logs/logfile.log.head
   - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
 
 smoke:
@@ -137,7 +139,7 @@ smoke:
         - "vcs-testharness,spike"
         - "vcs-uvm,spike"
   script:
-    - source verif/regress/smoke-tests.sh
+    - bash verif/regress/smoke-tests.sh
     - !reference [.simu_after_script]
 
 gen_smoke:
@@ -150,7 +152,7 @@ gen_smoke:
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "vcs-uvm,spike"
   script:
-    - source verif/regress/smoke-gen_tests.sh
+    - bash verif/regress/smoke-gen_tests.sh
     - !reference [.simu_after_script]
 
 coremark:
@@ -163,7 +165,7 @@ coremark:
     DASHBOARD_JOB_CATEGORY: "Performance"
   script:
     - bash verif/regress/coremark.sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/veri-testharness_sim/core_main.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/veri-testharness_sim/core_main.*.log
 
 hwconfig:
   extends:
@@ -239,10 +241,13 @@ fpga-build:
   script:
     - source $VIVADO_SETUP
     - source ./verif/sim/setup-env.sh
-    - make fpga target=$TARGET
+    - mkdir -p artifacts/logs
+    - make fpga target=$TARGET &> artifacts/logs/logfile.log
+    - tail -20 artifacts/logs/logfile.log > artifacts/logs/logfile.log.tail
+    - rm -f artifacts/logs/logfile.log
     - mkdir -p artifacts/reports
     - mv corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
-    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt
+    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt artifacts/logs/logfile.log.tail
 
 .regress_test:
   stage: heavy tests
@@ -264,7 +269,7 @@ dhrystone:
     DASHBOARD_JOB_CATEGORY: "Performance"
   script:
     - bash verif/regress/dhrystone.sh
-    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.*.log
 
 riscv_arch_test:
   extends:
@@ -458,6 +463,7 @@ smoke-gate:
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
   script:
+    - git -C verif/core-v-verif fetch --unshallow
     - mkdir -p tools
     - mv artifacts/tools/spike tools
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC

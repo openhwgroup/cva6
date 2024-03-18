@@ -14,7 +14,14 @@
 //              issue and read operands.
 
 module id_stage #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type branchpredict_sbe_t = logic,
+    parameter type exception_t = logic,
+    parameter type fetch_entry_t = logic,
+    parameter type irq_ctrl_t = logic,
+    parameter type scoreboard_entry_t = logic,
+    parameter type interrupts_t = logic,
+    parameter interrupts_t INTERRUPTS = '0
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -25,13 +32,13 @@ module id_stage #(
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
     // Handshake's data between fetch and decode - FRONTEND
-    input ariane_pkg::fetch_entry_t fetch_entry_i,
+    input fetch_entry_t fetch_entry_i,
     // Handshake's valid between fetch and decode - FRONTEND
     input logic fetch_entry_valid_i,
     // Handshake's ready between fetch and decode - FRONTEND
     output logic fetch_entry_ready_o,
     // Handshake's data between decode and issue - ISSUE
-    output ariane_pkg::scoreboard_entry_t issue_entry_o,
+    output scoreboard_entry_t issue_entry_o,
     // Instruction value - ISSUE
     output logic [31:0] orig_instr_o,
     // Handshake's valid between decode and issue - ISSUE
@@ -53,7 +60,7 @@ module id_stage #(
     // Level sensitive (async) interrupts - SUBSYSTEM
     input logic [1:0] irq_i,
     // Interrupt control status - CSR_REGFILE
-    input ariane_pkg::irq_ctrl_t irq_ctrl_i,
+    input irq_ctrl_t irq_ctrl_i,
     // Is current mode debug ? - CSR_REGFILE
     input logic debug_mode_i,
     // Trap virtual memory - CSR_REGFILE
@@ -65,20 +72,27 @@ module id_stage #(
 );
   // ID/ISSUE register stage
   typedef struct packed {
-    logic                          valid;
-    ariane_pkg::scoreboard_entry_t sbe;
-    logic [31:0]                   orig_instr;
-    logic                          is_ctrl_flow;
+    logic              valid;
+    scoreboard_entry_t sbe;
+    logic [31:0]       orig_instr;
+    logic              is_ctrl_flow;
   } issue_struct_t;
   issue_struct_t issue_n, issue_q;
 
-  logic                                 is_control_flow_instr;
-  ariane_pkg::scoreboard_entry_t        decoded_instruction;
-  logic                          [31:0] orig_instr;
+  logic                     is_control_flow_instr;
+  scoreboard_entry_t        decoded_instruction;
+  logic              [31:0] orig_instr;
 
-  logic                                 is_illegal;
-  logic                          [31:0] instruction;
-  logic                                 is_compressed;
+  logic                     is_illegal;
+  logic                     is_illegal_cmp;
+  logic              [31:0] instruction;
+  logic              [31:0] compressed_instr;
+  logic                     is_compressed;
+  logic                     is_compressed_cmp;
+  logic                     is_macro_instr_i;
+  logic                     stall_instr_fetch;
+  logic                     is_last_macro_instr_o;
+  logic                     is_double_rd_macro_instr_o;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -87,45 +101,84 @@ module id_stage #(
     compressed_decoder #(
         .CVA6Cfg(CVA6Cfg)
     ) compressed_decoder_i (
-        .instr_i        (fetch_entry_i.instruction),
-        .instr_o        (instruction),
-        .illegal_instr_o(is_illegal),
-        .is_compressed_o(is_compressed)
+        .instr_i         (fetch_entry_i.instruction),
+        .instr_o         (compressed_instr),
+        .illegal_instr_o (is_illegal),
+        .is_compressed_o (is_compressed),
+        .is_macro_instr_o(is_macro_instr_i)
     );
+    if (CVA6Cfg.RVZCMP) begin
+      //sequencial decoder
+      macro_decoder #(
+          .CVA6Cfg(CVA6Cfg)
+      ) macro_decoder_i (
+          .instr_i                   (compressed_instr),
+          .is_macro_instr_i          (is_macro_instr_i),
+          .clk_i                     (clk_i),
+          .rst_ni                    (rst_ni),
+          .instr_o                   (instruction),
+          .illegal_instr_i           (is_illegal),
+          .is_compressed_i           (is_compressed),
+          .issue_ack_i               (issue_instr_ack_i),
+          .illegal_instr_o           (is_illegal_cmp),
+          .is_compressed_o           (is_compressed_cmp),
+          .fetch_stall_o             (stall_instr_fetch),
+          .is_last_macro_instr_o     (is_last_macro_instr_o),
+          .is_double_rd_macro_instr_o(is_double_rd_macro_instr_o)
+      );
+    end else begin
+      assign instruction = compressed_instr;
+      assign is_illegal_cmp = is_illegal;
+      assign is_compressed_cmp = is_compressed;
+      assign is_last_macro_instr_o = '0;
+      assign is_double_rd_macro_instr_o = '0;
+    end
   end else begin
     assign instruction = fetch_entry_i.instruction;
-    assign is_illegal = '0;
-    assign is_compressed = '0;
+    assign is_illegal_cmp = '0;
+    assign is_compressed_cmp = '0;
+    assign is_macro_instr_i = '0;
+    assign is_last_macro_instr_o = '0;
+    assign is_double_rd_macro_instr_o = '0;
   end
 
-  assign rvfi_is_compressed_o = is_compressed;
+  assign rvfi_is_compressed_o = is_compressed_cmp;
   // ---------------------------------------------------------
   // 2. Decode and emit instruction to issue stage
   // ---------------------------------------------------------
   decoder #(
-      .CVA6Cfg(CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg),
+      .branchpredict_sbe_t(branchpredict_sbe_t),
+      .exception_t(exception_t),
+      .irq_ctrl_t(irq_ctrl_t),
+      .scoreboard_entry_t(scoreboard_entry_t),
+      .interrupts_t(interrupts_t),
+      .INTERRUPTS(INTERRUPTS)
   ) decoder_i (
       .debug_req_i,
       .irq_ctrl_i,
       .irq_i,
-      .pc_i                   (fetch_entry_i.address),
-      .is_compressed_i        (is_compressed),
-      .is_illegal_i           (is_illegal),
-      .instruction_i          (instruction),
-      .compressed_instr_i     (fetch_entry_i.instruction[15:0]),
-      .branch_predict_i       (fetch_entry_i.branch_predict),
-      .ex_i                   (fetch_entry_i.ex),
-      .priv_lvl_i             (priv_lvl_i),
-      .debug_mode_i           (debug_mode_i),
+      .pc_i                      (fetch_entry_i.address),
+      .is_compressed_i           (is_compressed_cmp),
+      .is_macro_instr_i          (is_macro_instr_i),
+      .is_last_macro_instr_i     (is_last_macro_instr_o),
+      .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
+      .is_illegal_i              (is_illegal_cmp),
+      .instruction_i             (instruction),
+      .compressed_instr_i        (fetch_entry_i.instruction[15:0]),
+      .branch_predict_i          (fetch_entry_i.branch_predict),
+      .ex_i                      (fetch_entry_i.ex),
+      .priv_lvl_i                (priv_lvl_i),
+      .debug_mode_i              (debug_mode_i),
       .fs_i,
       .frm_i,
       .vs_i,
       .tvm_i,
       .tw_i,
       .tsr_i,
-      .instruction_o          (decoded_instruction),
-      .orig_instr_o           (orig_instr),
-      .is_control_flow_instr_o(is_control_flow_instr)
+      .instruction_o             (decoded_instruction),
+      .orig_instr_o              (orig_instr),
+      .is_control_flow_instr_o   (is_control_flow_instr)
   );
 
   // ------------------
@@ -147,7 +200,11 @@ module id_stage #(
     // or the issue stage is currently acknowledging an instruction, which means that we will have space
     // for a new instruction
     if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i) begin
-      fetch_entry_ready_o = 1'b1;
+      if (stall_instr_fetch) begin
+        fetch_entry_ready_o = 1'b0;
+      end else begin
+        fetch_entry_ready_o = 1'b1;
+      end
       issue_n = '{1'b1, decoded_instruction, orig_instr, is_control_flow_instr};
     end
 

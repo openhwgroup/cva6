@@ -20,20 +20,31 @@ module multiplier
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
+    // Subsystem Clock - SUBSYSTEM
     input  logic                             clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input  logic                             rst_ni,
-    input  logic         [TRANS_ID_BITS-1:0] trans_id_i,
+    // Multiplier transaction ID - Mult
+    input  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_i,
+    // Multiplier instruction is valid - Mult
     input  logic                             mult_valid_i,
+    // Multiplier operation - Mult
     input  fu_op                             operation_i,
-    input  riscv::xlen_t                     operand_a_i,
-    input  riscv::xlen_t                     operand_b_i,
-    output riscv::xlen_t                     result_o,
+    // A operand - Mult
+    input  logic [         CVA6Cfg.XLEN-1:0] operand_a_i,
+    // B operand - Mult
+    input  logic [         CVA6Cfg.XLEN-1:0] operand_b_i,
+    // Multiplier result - Mult
+    output logic [         CVA6Cfg.XLEN-1:0] result_o,
+    // Mutliplier result is valid - Mult
     output logic                             mult_valid_o,
+    // Multiplier FU is ready - Mult
     output logic                             mult_ready_o,
-    output logic         [TRANS_ID_BITS-1:0] mult_trans_id_o
+    // Multiplier transaction ID - Mult
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id_o
 );
   // Carry-less multiplication
-  logic [riscv::XLEN-1:0]
+  logic [CVA6Cfg.XLEN-1:0]
       clmul_q, clmul_d, clmulr_q, clmulr_d, operand_a, operand_b, operand_a_rev, operand_b_rev;
   logic clmul_rmode, clmul_hmode;
 
@@ -43,9 +54,9 @@ module multiplier
     assign clmul_hmode = (operation_i == CLMULH);
 
     // operand_a and b reverse generator
-    for (genvar i = 0; i < riscv::XLEN; i++) begin
-      assign operand_a_rev[i] = operand_a_i[(riscv::XLEN-1)-i];
-      assign operand_b_rev[i] = operand_b_i[(riscv::XLEN-1)-i];
+    for (genvar i = 0; i < CVA6Cfg.XLEN; i++) begin
+      assign operand_a_rev[i] = operand_a_i[(CVA6Cfg.XLEN-1)-i];
+      assign operand_b_rev[i] = operand_b_i[(CVA6Cfg.XLEN-1)-i];
     end
 
     // operand_a and operand_b selection
@@ -55,22 +66,22 @@ module multiplier
     // implementation
     always_comb begin
       clmul_d = '0;
-      for (int i = 0; i <= riscv::XLEN; i++) begin
+      for (int i = 0; i <= CVA6Cfg.XLEN; i++) begin
         clmul_d = (|((operand_b >> i) & 1)) ? clmul_d ^ (operand_a << i) : clmul_d;
       end
     end
 
     // clmulr + clmulh result generator
-    for (genvar i = 0; i < riscv::XLEN; i++) begin
-      assign clmulr_d[i] = clmul_d[(riscv::XLEN-1)-i];
+    for (genvar i = 0; i < CVA6Cfg.XLEN; i++) begin
+      assign clmulr_d[i] = clmul_d[(CVA6Cfg.XLEN-1)-i];
     end
   end
 
   // Pipeline register
-  logic [TRANS_ID_BITS-1:0] trans_id_q;
-  logic                     mult_valid_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_q;
+  logic                             mult_valid_q;
   fu_op operator_d, operator_q;
-  logic [riscv::XLEN*2-1:0] mult_result_d, mult_result_q;
+  logic [CVA6Cfg.XLEN*2-1:0] mult_result_d, mult_result_q;
 
   // control registers
   logic sign_a, sign_b;
@@ -105,9 +116,9 @@ module multiplier
 
   // single stage version
   assign mult_result_d = $signed(
-      {operand_a_i[riscv::XLEN-1] & sign_a, operand_a_i}
+      {operand_a_i[CVA6Cfg.XLEN-1] & sign_a, operand_a_i}
   ) * $signed(
-      {operand_b_i[riscv::XLEN-1] & sign_b, operand_b_i}
+      {operand_b_i[CVA6Cfg.XLEN-1] & sign_b, operand_b_i}
   );
 
 
@@ -115,14 +126,14 @@ module multiplier
 
   always_comb begin : p_selmux
     unique case (operator_q)
-      MULH, MULHU, MULHSU: result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
+      MULH, MULHU, MULHSU: result_o = mult_result_q[CVA6Cfg.XLEN*2-1:CVA6Cfg.XLEN];
       CLMUL:               result_o = clmul_q;
       CLMULH:              result_o = clmulr_q >> 1;
       CLMULR:              result_o = clmulr_q;
-      // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
+      // MUL performs an CVA6Cfg.XLEN-bit×CVA6Cfg.XLEN-bit multiplication and places the lower CVA6Cfg.XLEN bits in the destination register
       default: begin
-        if (operator_q == MULW && riscv::IS_XLEN64) result_o = sext32(mult_result_q[31:0]);
-        else result_o = mult_result_q[riscv::XLEN-1:0];  // including MUL
+        if (operator_q == MULW && CVA6Cfg.IS_XLEN64) result_o = sext32to64(mult_result_q[31:0]);
+        else result_o = mult_result_q[CVA6Cfg.XLEN-1:0];  // including MUL
       end
     endcase
   end

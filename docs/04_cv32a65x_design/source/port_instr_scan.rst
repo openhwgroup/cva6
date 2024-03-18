@@ -9,7 +9,7 @@
 
 .. _CVA6_instr_scan_ports:
 
-.. list-table:: instr_scan module IO ports
+.. list-table:: **instr_scan module** IO ports
    :header-rows: 1
 
    * - Signal
@@ -102,6 +102,4 @@
      - FRONTEND
      - logic[riscv::VLEN-1:0]
 
-Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-none

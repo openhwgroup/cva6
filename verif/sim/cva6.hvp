@@ -1439,11 +1439,39 @@ plan "CVA6 Verification Master Plan";
             endmeasure
         endfeature
         feature AXI;
-            description = "AXI4 features.\nSpecification: Done, Dvplan: Done, Verification execution: No.";
+            description = "AXI5 features.\nSpecification: Done, Dvplan: Done, Verification execution: Done.";
             feature Features;
-                weight = 0;
-                measure Group Features;
-                endmeasure
+                weight = 1;
+                feature ar_channel;
+                    measure Group ar_channel;
+                        source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.ar_axi_cg";
+                    endmeasure
+                endfeature
+                feature b_channel;
+                    measure Group b_channel;
+                        source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.b_axi_cg";
+                    endmeasure
+                endfeature
+                feature r_channel;
+                    measure Group r_channel;
+                        source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.r_axi_cg";
+                    endmeasure
+                endfeature
+                feature w_channel;
+                    measure Group w_channel;
+                        source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.w_axi_cg";
+                    endmeasure
+                endfeature
+                feature ar_order;
+                    measure Group ar_order;
+                        source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.ar_axi_order_cg";
+                    endmeasure
+                endfeature
+                feature aw_order;
+                    measure Group aw_order;
+                        source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.aw_axi_order_cg";
+                    endmeasure
+                endfeature
             endfeature
             feature "Code Coverage";
                 measure Line, Cond, Toggle, Assert, SnpsAvg AXI;

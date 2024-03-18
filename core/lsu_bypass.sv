@@ -26,18 +26,28 @@
 module lsu_bypass
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type lsu_ctrl_t = logic
 ) (
+    // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
+    // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic flush_i,
 
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input lsu_ctrl_t lsu_req_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic      lsu_req_valid_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic      pop_ld_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic      pop_st_i,
 
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output lsu_ctrl_t lsu_ctrl_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic      ready_o
 );
 

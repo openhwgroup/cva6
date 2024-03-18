@@ -208,7 +208,7 @@ module tb_mem import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*;#(
             // we allways invalidate all ways of the aliased index.
             // this is not entirely correct and will produce
             // too many invalidations
-            infifo_data.inv.idx = rand_addr_q[DCACHE_INDEX_WIDTH-1:0];
+            infifo_data.inv.idx = rand_addr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
             infifo_data.inv.all = '1;
             infifo_push         = 1'b1;
 
