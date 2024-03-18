@@ -61,8 +61,8 @@ module cva6_ptw
 
     // from TLBs
     // did we miss?
-    input logic                   shared_tlb_access_i,
-    input logic                   shared_tlb_hit_i,
+    input logic                    shared_tlb_access_i,
+    input logic                    shared_tlb_hit_i,
     input logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_i,
 
     input logic itlb_req_i,

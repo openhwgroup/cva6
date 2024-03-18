@@ -84,18 +84,18 @@ module cva6_mmu
 
     input logic [ASID_WIDTH[0]-1:0] asid_i               [HYP_EXT*2:0],  //[vmid,vs_asid,asid]
     input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i [  HYP_EXT:0],
-    input logic [  CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i[  HYP_EXT:0],
+    input logic [ CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i[  HYP_EXT:0],
 
     input logic [HYP_EXT*2:0] flush_tlb_i,
 
     // Performance counters
-    output logic                                   itlb_miss_o,
-    output logic                                   dtlb_miss_o,
+    output logic                                    itlb_miss_o,
+    output logic                                    dtlb_miss_o,
     // PTW memory interface
-    input  dcache_req_o_t                          req_port_i,
-    output dcache_req_i_t                          req_port_o,
+    input  dcache_req_o_t                           req_port_i,
+    output dcache_req_i_t                           req_port_o,
     // PMP
-    input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
+    input  riscv::pmpcfg_t [15:0]                   pmpcfg_i,
     input  logic           [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
   logic [ASID_WIDTH[0]-1:0] dtlb_mmu_asid_i[HYP_EXT:0];
