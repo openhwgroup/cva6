@@ -1,0 +1,94 @@
+#!impl_specific_db
+context:
+    config:       cv32a65x
+    spec:
+        repo:     https://github.com/riscv/riscv-isa-manual
+        rev:      '2023-10-02'
+    docs:
+        repo:     https://github.com/openhwgroup/cva6.git
+        rev:      9267d14f2eb7d79b89814dc546156067e7c5c35f
+    rtl:
+        repo:     https://github.com/openhwgroup/cva6.git
+        rev:      9267d14f2eb7d79b89814dc546156067e7c5c35f
+    spike:
+        repo:     https://github.com/openhwgroup/core-v-verif
+        rev:      d46633081bfe67daed840d953e0d759241be6ff0
+behaviors: #!!omap
+  - #MISA_WritableStdExtensionBits: !impl_defined
+    tag:  MISA_WritableStdExtensionBits_git2023-10-02
+    spec:
+      url:          https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L69C72-L71C56
+      value_range:  any_subset("A..Z")
+      normative:    y
+      spec_text:    # Quote original text
+    relevant:       y # y|n
+    relevant_why:   "Affects subsequent code execution if bits are writable."
+    impl_choice:
+      value:      ""
+      compliant:  y
+      rationale:  "The set of implemented extensions is not modifiable at runtime to reduce implementation complexity and cost."
+    doc:
+      addressed:  y   # tbd/y/n
+      correct:    y   # y/n, if 'n': add comment
+      spec_text:   ""  # Could be constructed using references to various fields, cf. VariConf Python library
+      value:      ""  #
+    rtl:
+      addressed:  y   # tbd/y/n
+      correct:    y   # y/n
+      value:      ""  # no modifiable extension bits
+    spike:
+      addressed:  y          # y/n/unknown
+      correct:    y          # y/n/unknown
+      parametric: y          # There's a way to change behavior
+      values:
+        default:  "MAFDQCHV" # default behavior irrespective of currently 'implemented' extensions
+        explicit:
+        -
+          value:  ""       # Param settings needed to achieve value ""
+          param_config:
+          - # Enable the parameter that controls writability of misa.extensions
+            name: "/top/cores/misa_we_enable"
+            value: "true"
+          - # Disable writability of misa.extensions altogether
+            name: "/top/cores/misa_we"
+            value: "false"
+      comment: "In the future Spike may need to specify any valid explicit combination of standard extensions."
+  - # MSTATUS_FS_may_be_ro_zero_if_no_F_ext_but_S_ext_present: #!impl_defined
+    tag: MSTATUS_FS_may_be_ro_zero_if_no_F_ext_but_S_ext_present_2023-10-02
+    spec:
+      url:          https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L758C17-L759C34
+      value_range:  bool
+      normative:    y
+    relevant:       y
+    relevant_why:   "Implementation defines CSR content and behavior depending on presence of S extension, S extension is not implemented in RTL but its CSRs are present in Spike even after disabling S and U privilege levels."
+    impl_choice:
+      value:      y
+      compliant:  y
+      rationale:  ""
+    doc:
+      addressed:  y   # tbd/y/n
+      correct:    y   # y/n, if 'n': add comment
+      value:      y   #
+    rtl:
+      addressed:  y   # tbd/y/n
+      correct:    y   # y/n, if 'n': add comment
+      value:      y   # y/n
+    spike:
+      addressed:  y   # tbd/y/n
+      correct:    n   # y/n/tbd, if 'n': add comment
+      parametric: y   # There's a way to change behavior
+      values:
+        default:  n   # no way to "deimplement" F and S extensionsfor pure M-mode architecture. 
+        explicit:
+        -
+          value: y   # Param settings needed to achieve value 'y'
+          param_config:
+          - # Disable writability of SSTATUS.FS altogether (default value to be determined)
+            # FIXME TODO: Need a parameter that explicitly makes MSTATUS.FS R/O zero.
+            name: "/top/cores/status_fs_field_we"
+            value: "false"
+          - # Enable the parameter that controls writability of SSTATUS.FS.
+           # FIXME TODO: Need control over MSTATUS.FS, not SSTATUS.FS.
+           name: "/top/cores/status_fs_field_we_enable"
+           value: "true"
+      comment: "BUG: Spike only allows control of SSTATUS.FS, *not* MSTATUS.FS"
