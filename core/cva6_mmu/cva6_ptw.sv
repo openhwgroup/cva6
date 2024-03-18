@@ -84,7 +84,7 @@ module cva6_ptw
 
   // input registers
   logic data_rvalid_q;
-  logic [riscv::XLEN-1:0] data_rdata_q;
+  logic [CVA6Cfg.XLEN-1:0] data_rdata_q;
 
   pte_cva6_t [HYP_EXT*2:0] pte;  //[gpte_d,gpte_q,pte]
   // register to perform context switch between stages
@@ -231,7 +231,7 @@ module cva6_ptw
   );
 
 
-  assign req_port_o.data_be = riscv::XLEN == 32 ? be_gen_32(
+  assign req_port_o.data_be = CVA6Cfg.XLEN == 32 ? be_gen_32(
       req_port_o.address_index[1:0], req_port_o.data_size
   ) : be_gen(
       req_port_o.address_index[2:0], req_port_o.data_size
