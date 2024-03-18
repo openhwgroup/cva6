@@ -27,8 +27,8 @@ module acc_dispatcher
       logic                             req_valid;
       logic                             resp_ready;
       riscv::instruction_t              insn;
-      logic [riscv::XLEN-1:0]           rs1;
-      logic [riscv::XLEN-1:0]           rs2;
+      logic [CVA6Cfg.XLEN-1:0]          rs1;
+      logic [CVA6Cfg.XLEN-1:0]          rs2;
       fpnew_pkg::roundmode_e            frm;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
       logic                             store_pending;
@@ -40,7 +40,7 @@ module acc_dispatcher
     parameter type acc_resp_t = struct packed {
       logic                             req_ready;
       logic                             resp_valid;
-      logic [riscv::XLEN-1:0]           result;
+      logic [CVA6Cfg.XLEN-1:0]          result;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
       logic                             error;
       // Metadata
@@ -76,7 +76,7 @@ module acc_dispatcher
     input fu_data_t fu_data_i,
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] acc_trans_id_o,
-    output logic [riscv::XLEN-1:0] acc_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] acc_result_o,
     output logic acc_valid_o,
     output exception_t acc_exception_o,
     // Interface with the execute stage

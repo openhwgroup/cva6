@@ -25,7 +25,7 @@ module instr_tracer #(
   parameter interrupts_t INTERRUPTS = '0
 )(
   instr_tracer_if tracer_if,
-  input logic[riscv::XLEN-1:0] hart_id_i
+  input logic[CVA6Cfg.XLEN-1:0] hart_id_i
 );
 
   // keep the decoded instructions in a queue

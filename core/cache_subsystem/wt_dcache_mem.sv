@@ -48,7 +48,7 @@ module wt_dcache_mem
     output logic [NumPorts-1:0] rd_ack_o,
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_vld_bits_o,
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_o,
-    output logic [riscv::XLEN-1:0] rd_data_o,
+    output logic [CVA6Cfg.XLEN-1:0] rd_data_o,
     output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] rd_user_o,
 
     // only available on port 0, uses address signals of port 0
@@ -68,15 +68,15 @@ module wt_dcache_mem
     output logic wr_ack_o,
     input logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx_i,
     input logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] wr_off_i,
-    input logic [riscv::XLEN-1:0] wr_data_i,
+    input logic [CVA6Cfg.XLEN-1:0] wr_data_i,
     input logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wr_user_i,
-    input logic [(riscv::XLEN/8)-1:0] wr_data_be_i,
+    input logic [(CVA6Cfg.XLEN/8)-1:0] wr_data_be_i,
 
     // forwarded wbuffer
     input wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_i
 );
 
-  localparam DCACHE_NUM_BANKS = CVA6Cfg.DCACHE_LINE_WIDTH / riscv::XLEN;
+  localparam DCACHE_NUM_BANKS = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
   localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
 
   // functions
@@ -88,24 +88,24 @@ module wt_dcache_mem
     return out;
   endfunction
 
-  // number of bits needed to address AXI data. If AxiDataWidth equals XLEN this parameter
+  // number of bits needed to address AXI data. If AxiDataWidth equals CVA6Cfg.XLEN this parameter
   // is not needed. Therefore, increment it by one to avoid reverse range select during elaboration.
-  localparam AXI_OFFSET_WIDTH = CVA6Cfg.AxiDataWidth == riscv::XLEN ? $clog2(
+  localparam AXI_OFFSET_WIDTH = CVA6Cfg.AxiDataWidth == CVA6Cfg.XLEN ? $clog2(
       CVA6Cfg.AxiDataWidth / 8
   ) + 1 : $clog2(
       CVA6Cfg.AxiDataWidth / 8
   );
 
-  logic [DCACHE_NUM_BANKS-1:0]                                                    bank_req;
-  logic [DCACHE_NUM_BANKS-1:0]                                                    bank_we;
-  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][(riscv::XLEN/8)-1:0] bank_be;
-  logic [DCACHE_NUM_BANKS-1:0][     DCACHE_CL_IDX_WIDTH-1:0]                      bank_idx;
+  logic [DCACHE_NUM_BANKS-1:0]                                                     bank_req;
+  logic [DCACHE_NUM_BANKS-1:0]                                                     bank_we;
+  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][(CVA6Cfg.XLEN/8)-1:0] bank_be;
+  logic [DCACHE_NUM_BANKS-1:0][     DCACHE_CL_IDX_WIDTH-1:0]                       bank_idx;
   logic [DCACHE_CL_IDX_WIDTH-1:0] bank_idx_d, bank_idx_q;
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] bank_off_d, bank_off_q;
 
-  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][riscv::XLEN-1:0] bank_wdata;  //
-  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][riscv::XLEN-1:0] bank_rdata;  //
-  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0][riscv::XLEN-1:0] rdata_cl;  // selected word from each cacheline
+  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.XLEN-1:0] bank_wdata;  //
+  logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.XLEN-1:0] bank_rdata;  //
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.XLEN-1:0] rdata_cl;  // selected word from each cacheline
   logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.DCACHE_USER_WIDTH-1:0] bank_wuser;  //
   logic [DCACHE_NUM_BANKS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.DCACHE_USER_WIDTH-1:0] bank_ruser;  //
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.DCACHE_USER_WIDTH-1:0]                      ruser_cl;          // selected word from each cacheline
@@ -120,8 +120,8 @@ module wt_dcache_mem
   logic [$clog2(NumPorts)-1:0] vld_sel_d, vld_sel_q;
 
   logic [DCACHE_WBUF_DEPTH-1:0] wbuffer_hit_oh;
-  logic [  (riscv::XLEN/8)-1:0] wbuffer_be;
-  logic [riscv::XLEN-1:0] wbuffer_rdata, rdata;
+  logic [ (CVA6Cfg.XLEN/8)-1:0] wbuffer_be;
+  logic [CVA6Cfg.XLEN-1:0] wbuffer_rdata, rdata;
   logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wbuffer_ruser, ruser;
   logic [CVA6Cfg.PLEN-1:0] wbuffer_cmp_addr;
 
@@ -143,10 +143,10 @@ module wt_dcache_mem
   // byte enable mapping
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_bank
     for (genvar j = 0; j < CVA6Cfg.DCACHE_SET_ASSOC; j++) begin : gen_bank_way
-      assign bank_be[k][j]   = (wr_cl_we_i[j] & wr_cl_vld_i)  ? wr_cl_data_be_i[k*(riscv::XLEN/8) +: (riscv::XLEN/8)] :
+      assign bank_be[k][j]   = (wr_cl_we_i[j] & wr_cl_vld_i)  ? wr_cl_data_be_i[k*(CVA6Cfg.XLEN/8) +: (CVA6Cfg.XLEN/8)] :
                                (wr_req_i[j]   & wr_ack_o)     ? wr_data_be_i              :
                                                                 '0;
-      assign bank_wdata[k][j] = (wr_cl_we_i[j] & wr_cl_vld_i) ?  wr_cl_data_i[k*riscv::XLEN +: riscv::XLEN] :
+      assign bank_wdata[k][j] = (wr_cl_we_i[j] & wr_cl_vld_i) ?  wr_cl_data_i[k*CVA6Cfg.XLEN +: CVA6Cfg.XLEN] :
                                                                  wr_data_i;
       assign bank_wuser[k][j] = (wr_cl_we_i[j] & wr_cl_vld_i) ?  wr_cl_user_i[k*CVA6Cfg.DCACHE_USER_WIDTH +: CVA6Cfg.DCACHE_USER_WIDTH] :
                                                                  wr_user_i;
@@ -271,8 +271,8 @@ module wt_dcache_mem
   assign wbuffer_be    = (|wbuffer_hit_oh) ? wbuffer_data_i[wbuffer_hit_idx].valid : '0;
 
   if (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_AXI4_ATOP) begin : gen_axi_offset
-    // In case of an uncached read, return the desired XLEN-bit segment of the most recent AXI read
-    assign wr_cl_off     = (wr_cl_nc_i) ? (CVA6Cfg.AxiDataWidth == riscv::XLEN) ? '0 :
+    // In case of an uncached read, return the desired CVA6Cfg.XLEN-bit segment of the most recent AXI read
+    assign wr_cl_off     = (wr_cl_nc_i) ? (CVA6Cfg.AxiDataWidth == CVA6Cfg.XLEN) ? '0 :
                               {{CVA6Cfg.DCACHE_OFFSET_WIDTH-AXI_OFFSET_WIDTH{1'b0}}, wr_cl_off_i[AXI_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]} :
                               wr_cl_off_i[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES];
   end else begin : gen_piton_offset
@@ -281,7 +281,7 @@ module wt_dcache_mem
 
   always_comb begin
     if (wr_cl_vld_i) begin
-      rdata = wr_cl_data_i[wr_cl_off*riscv::XLEN+:riscv::XLEN];
+      rdata = wr_cl_data_i[wr_cl_off*CVA6Cfg.XLEN+:CVA6Cfg.XLEN];
       ruser = wr_cl_user_i[wr_cl_off*CVA6Cfg.DCACHE_USER_WIDTH+:CVA6Cfg.DCACHE_USER_WIDTH];
     end else begin
       rdata = rdata_cl[rd_hit_idx];
@@ -290,7 +290,7 @@ module wt_dcache_mem
   end
 
   // overlay bytes that hit in the write buffer
-  for (genvar k = 0; k < (riscv::XLEN / 8); k++) begin : gen_rd_data
+  for (genvar k = 0; k < (CVA6Cfg.XLEN / 8); k++) begin : gen_rd_data
     assign rd_data_o[8*k+:8] = (wbuffer_be[k]) ? wbuffer_rdata[8*k+:8] : rdata[8*k+:8];
   end
   for (genvar k = 0; k < CVA6Cfg.DCACHE_USER_WIDTH / 8; k++) begin : gen_rd_user
@@ -307,7 +307,7 @@ module wt_dcache_mem
     // Data RAM
     sram #(
         .USER_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * CVA6Cfg.DCACHE_USER_WIDTH),
-        .DATA_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * riscv::XLEN),
+        .DATA_WIDTH(CVA6Cfg.DCACHE_SET_ASSOC * CVA6Cfg.XLEN),
         .USER_EN   (CVA6Cfg.DATA_USER_EN),
         .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) i_data_sram (
@@ -376,14 +376,14 @@ module wt_dcache_mem
 
   initial begin
     axi_xlen :
-    assert (CVA6Cfg.AxiDataWidth >= riscv::XLEN)
-    else $fatal(1, "[l1 dcache] AXI data width needs to be greater or equal XLEN");
+    assert (CVA6Cfg.AxiDataWidth >= CVA6Cfg.XLEN)
+    else $fatal(1, "[l1 dcache] AXI data width needs to be greater or equal CVA6Cfg.XLEN");
   end
 
   initial begin
     cach_line_width_xlen :
-    assert (CVA6Cfg.DCACHE_LINE_WIDTH > riscv::XLEN)
-    else $fatal(1, "[l1 dcache] cache_line_size needs to be greater than XLEN");
+    assert (CVA6Cfg.DCACHE_LINE_WIDTH > CVA6Cfg.XLEN)
+    else $fatal(1, "[l1 dcache] cache_line_size needs to be greater than CVA6Cfg.XLEN");
   end
 
   hit_hot1 :

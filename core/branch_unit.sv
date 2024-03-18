@@ -113,7 +113,7 @@ module branch_unit #(
     branch_exception_o.cause = riscv::INSTR_ADDR_MISALIGNED;
     branch_exception_o.valid = 1'b0;
     if (CVA6Cfg.TvalEn)
-      branch_exception_o.tval = {{riscv::XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
+      branch_exception_o.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
     else branch_exception_o.tval = '0;
     // Only throw instruction address misaligned exception if this is indeed a `taken` conditional branch or
     // an unconditional jump

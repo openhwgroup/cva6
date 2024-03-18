@@ -39,21 +39,21 @@ module cva6_rvfi
   localparam bit RVD = (CVA6Cfg.IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
   localparam bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
 
-  localparam logic [riscv::XLEN-1:0] IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
-  | (riscv::XLEN'(CVA6Cfg.RVB) << 1)  // C - Bitmanip extension
-  | (riscv::XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
-  | (riscv::XLEN'(CVA6Cfg.RVD) << 3)  // D - Double precision floating-point extension
-  | (riscv::XLEN'(CVA6Cfg.RVF) << 5)  // F - Single precision floating-point extension
-  | (riscv::XLEN'(1) << 8)  // I - RV32I/64I/128I base ISA
-  | (riscv::XLEN'(1) << 12)  // M - Integer Multiply/Divide extension
-  | (riscv::XLEN'(0) << 13)  // N - User level interrupts supported
-  | (riscv::XLEN'(CVA6Cfg.RVS) << 18)  // S - Supervisor mode implemented
-  | (riscv::XLEN'(CVA6Cfg.RVU) << 20)  // U - User mode implemented
-  | (riscv::XLEN'(CVA6Cfg.RVV) << 21)  // V - Vector extension
-  | (riscv::XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
-  | ((riscv::XLEN == 64 ? 2 : 1) << riscv::XLEN - 2);  // MXL
+  localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
+  | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // C - Bitmanip extension
+  | (CVA6Cfg.XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
+  | (CVA6Cfg.XLEN'(CVA6Cfg.RVD) << 3)  // D - Double precision floating-point extension
+  | (CVA6Cfg.XLEN'(CVA6Cfg.RVF) << 5)  // F - Single precision floating-point extension
+  | (CVA6Cfg.XLEN'(1) << 8)  // I - RV32I/64I/128I base ISA
+  | (CVA6Cfg.XLEN'(1) << 12)  // M - Integer Multiply/Divide extension
+  | (CVA6Cfg.XLEN'(0) << 13)  // N - User level interrupts supported
+  | (CVA6Cfg.XLEN'(CVA6Cfg.RVS) << 18)  // S - Supervisor mode implemented
+  | (CVA6Cfg.XLEN'(CVA6Cfg.RVU) << 20)  // U - User mode implemented
+  | (CVA6Cfg.XLEN'(CVA6Cfg.RVV) << 21)  // V - Vector extension
+  | (CVA6Cfg.XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
+  | ((CVA6Cfg.XLEN == 64 ? 2 : 1) << CVA6Cfg.XLEN - 2);  // MXL
 
-  localparam logic [riscv::XLEN-1:0] hart_id_i = '0;
+  localparam logic [CVA6Cfg.XLEN-1:0] hart_id_i = '0;
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
 
@@ -70,36 +70,36 @@ module cva6_rvfi
   logic decoded_instr_valid;
   logic decoded_instr_ack;
 
-  logic [riscv::XLEN-1:0] rs1_forwarding;
-  logic [riscv::XLEN-1:0] rs2_forwarding;
+  logic [CVA6Cfg.XLEN-1:0] rs1_forwarding;
+  logic [CVA6Cfg.XLEN-1:0] rs2_forwarding;
 
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_pc;
   fu_op [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_instr_op;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs1;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs2;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rd;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] commit_instr_result;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] commit_instr_result;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_valid;
 
-  logic [riscv::XLEN-1:0] ex_commit_cause;
+  logic [CVA6Cfg.XLEN-1:0] ex_commit_cause;
   logic ex_commit_valid;
 
   riscv::priv_lvl_t priv_lvl;
 
   logic [CVA6Cfg.VLEN-1:0] lsu_ctrl_vaddr;
   fu_t lsu_ctrl_fu;
-  logic [(riscv::XLEN/8)-1:0] lsu_ctrl_be;
+  logic [(CVA6Cfg.XLEN/8)-1:0] lsu_ctrl_be;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id;
 
-  logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
+  logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][CVA6Cfg.XLEN-1:0] wbdata;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
   logic [CVA6Cfg.PLEN-1:0] mem_paddr;
   logic debug_mode;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata;
 
   logic [CVA6Cfg.VLEN-1:0] lsu_addr;
-  logic [(riscv::XLEN/8)-1:0] lsu_rmask;
-  logic [(riscv::XLEN/8)-1:0] lsu_wmask;
+  logic [(CVA6Cfg.XLEN/8)-1:0] lsu_rmask;
+  logic [(CVA6Cfg.XLEN/8)-1:0] lsu_wmask;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_addr_trans_id;
 
   riscv::pmpcfg_t [15:0] pmpcfg_q, pmpcfg_d;
@@ -196,12 +196,12 @@ module cva6_rvfi
 
   // this is the FIFO struct of the issue queue
   typedef struct packed {
-    logic [riscv::XLEN-1:0] rs1_rdata;
-    logic [riscv::XLEN-1:0] rs2_rdata;
+    logic [CVA6Cfg.XLEN-1:0] rs1_rdata;
+    logic [CVA6Cfg.XLEN-1:0] rs2_rdata;
     logic [CVA6Cfg.VLEN-1:0] lsu_addr;
-    logic [(riscv::XLEN/8)-1:0] lsu_rmask;
-    logic [(riscv::XLEN/8)-1:0] lsu_wmask;
-    logic [riscv::XLEN-1:0] lsu_wdata;
+    logic [(CVA6Cfg.XLEN/8)-1:0] lsu_rmask;
+    logic [(CVA6Cfg.XLEN/8)-1:0] lsu_wmask;
+    logic [CVA6Cfg.XLEN-1:0] lsu_wdata;
     logic [31:0] instr;
   } sb_mem_t;
   sb_mem_t [CVA6Cfg.NR_SB_ENTRIES-1:0] mem_q, mem_n;
@@ -256,7 +256,7 @@ module cva6_rvfi
       rvfi_instr_o[i].trap = exception;
       rvfi_instr_o[i].cause = ex_commit_cause;
       rvfi_instr_o[i].mode = (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
-      rvfi_instr_o[i].ixl = riscv::XLEN == 64 ? 2 : 1;
+      rvfi_instr_o[i].ixl = CVA6Cfg.XLEN == 64 ? 2 : 1;
       rvfi_instr_o[i].rs1_addr = commit_instr_rs1[i][4:0];
       rvfi_instr_o[i].rs2_addr = commit_instr_rs2[i][4:0];
       rvfi_instr_o[i].rd_addr = commit_instr_rd[i][4:0];
@@ -314,8 +314,8 @@ module cva6_rvfi
     : '0;
     rvfi_csr_o.sstatus = CVA6Cfg.RVS ?
     '{
-        rdata: csr.mstatus_extended & SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
-        wdata: csr.mstatus_extended & SMODE_STATUS_READ_MASK[riscv::XLEN-1:0],
+        rdata: csr.mstatus_extended & SMODE_STATUS_READ_MASK[CVA6Cfg.XLEN-1:0],
+        wdata: csr.mstatus_extended & SMODE_STATUS_READ_MASK[CVA6Cfg.XLEN-1:0],
         rmask: '1,
         wmask: '1
     }
@@ -353,7 +353,7 @@ module cva6_rvfi
         rmask: '1,
         wmask: '1
     };
-    rvfi_csr_o.mstatush = riscv::XLEN == 32 ?
+    rvfi_csr_o.mstatush = CVA6Cfg.XLEN == 32 ?
     '{rdata: '0, wdata: '0, rmask: '1, wmask: '1}
     : '0;
     rvfi_csr_o.misa = '{rdata: IsaCode, wdata: IsaCode, rmask: '1, wmask: '1};
@@ -382,7 +382,7 @@ module cva6_rvfi
         rmask: '1,
         wmask: '1
     };
-    rvfi_csr_o.menvcfgh = riscv::XLEN == 32 ?
+    rvfi_csr_o.menvcfgh = CVA6Cfg.XLEN == 32 ?
     '{rdata: '0, wdata: '0, rmask: '1, wmask: '1}
     : '0;
     rvfi_csr_o.mvendorid = '{
@@ -400,39 +400,39 @@ module cva6_rvfi
         wmask: '1
     };
     rvfi_csr_o.mcycle = '{
-        rdata: csr.cycle_q[riscv::XLEN-1:0],
-        wdata: csr.cycle_q[riscv::XLEN-1:0],
+        rdata: csr.cycle_q[CVA6Cfg.XLEN-1:0],
+        wdata: csr.cycle_q[CVA6Cfg.XLEN-1:0],
         rmask: '1,
         wmask: '1
     };
-    rvfi_csr_o.mcycleh = riscv::XLEN == 32 ?
+    rvfi_csr_o.mcycleh = CVA6Cfg.XLEN == 32 ?
     '{rdata: csr.cycle_q[63:32], wdata: csr.cycle_q[63:32], rmask: '1, wmask: '1}
     : '0;
     rvfi_csr_o.minstret = '{
-        rdata: csr.instret_q[riscv::XLEN-1:0],
-        wdata: csr.instret_q[riscv::XLEN-1:0],
+        rdata: csr.instret_q[CVA6Cfg.XLEN-1:0],
+        wdata: csr.instret_q[CVA6Cfg.XLEN-1:0],
         rmask: '1,
         wmask: '1
     };
-    rvfi_csr_o.minstreth = riscv::XLEN == 32 ?
+    rvfi_csr_o.minstreth = CVA6Cfg.XLEN == 32 ?
     '{rdata: csr.instret_q[63:32], wdata: csr.instret_q[63:32], rmask: '1, wmask: '1}
     : '0;
     rvfi_csr_o.cycle = '{
-        rdata: csr.cycle_q[riscv::XLEN-1:0],
-        wdata: csr.cycle_q[riscv::XLEN-1:0],
+        rdata: csr.cycle_q[CVA6Cfg.XLEN-1:0],
+        wdata: csr.cycle_q[CVA6Cfg.XLEN-1:0],
         rmask: '1,
         wmask: '1
     };
-    rvfi_csr_o.cycleh = riscv::XLEN == 32 ?
+    rvfi_csr_o.cycleh = CVA6Cfg.XLEN == 32 ?
     '{rdata: csr.cycle_q[63:32], wdata: csr.cycle_q[63:32], rmask: '1, wmask: '1}
     : '0;
     rvfi_csr_o.instret = '{
-        rdata: csr.instret_q[riscv::XLEN-1:0],
-        wdata: csr.instret_q[riscv::XLEN-1:0],
+        rdata: csr.instret_q[CVA6Cfg.XLEN-1:0],
+        wdata: csr.instret_q[CVA6Cfg.XLEN-1:0],
         rmask: '1,
         wmask: '1
     };
-    rvfi_csr_o.instreth = riscv::XLEN == 32 ?
+    rvfi_csr_o.instreth = CVA6Cfg.XLEN == 32 ?
     '{rdata: csr.instret_q[63:32], wdata: csr.instret_q[63:32], rmask: '1, wmask: '1}
     : '0;
     rvfi_csr_o.dcache = '{rdata: csr.dcache_q, wdata: csr.dcache_q, rmask: '1, wmask: '1};
@@ -441,21 +441,21 @@ module cva6_rvfi
     '{rdata: csr.acc_cons_q, wdata: csr.acc_cons_q, rmask: '1, wmask: '1}
     : '0;
     rvfi_csr_o.pmpcfg0 = '{
-        rdata: csr.pmpcfg_q[riscv::XLEN/8-1:0],
-        wdata: csr.pmpcfg_q[riscv::XLEN/8-1:0],
+        rdata: csr.pmpcfg_q[CVA6Cfg.XLEN/8-1:0],
+        wdata: csr.pmpcfg_q[CVA6Cfg.XLEN/8-1:0],
         rmask: '1,
         wmask: '1
     };
-    rvfi_csr_o.pmpcfg1 = riscv::XLEN == 32 ?
+    rvfi_csr_o.pmpcfg1 = CVA6Cfg.XLEN == 32 ?
     '{rdata: csr.pmpcfg_q[7:4], wdata: csr.pmpcfg_q[7:4], rmask: '1, wmask: '1}
     : '0;
     rvfi_csr_o.pmpcfg2 = '{
-        rdata: csr.pmpcfg_q[8+:riscv::XLEN/8],
-        wdata: csr.pmpcfg_q[8+:riscv::XLEN/8],
+        rdata: csr.pmpcfg_q[8+:CVA6Cfg.XLEN/8],
+        wdata: csr.pmpcfg_q[8+:CVA6Cfg.XLEN/8],
         rmask: '1,
         wmask: '1
     };
-    rvfi_csr_o.pmpcfg3 = riscv::XLEN == 32 ?
+    rvfi_csr_o.pmpcfg3 = CVA6Cfg.XLEN == 32 ?
     '{rdata: csr.pmpcfg_q[15:12], wdata: csr.pmpcfg_q[15:12], rmask: '1, wmask: '1}
     : '0;
 

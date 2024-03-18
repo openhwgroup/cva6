@@ -48,7 +48,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
-  input  logic [XLEN-1:0]              boot_addr_i,
+  input  logic [CVA6Cfg.XLEN-1:0]              boot_addr_i,
   output logic [31:0]                  tb_exit_o,
   output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
   output rvfi_csr_t                    rvfi_csr_o,

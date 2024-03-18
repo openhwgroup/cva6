@@ -39,8 +39,8 @@ module cva6
     },
 
     localparam type exception_t = struct packed {
-      logic [riscv::XLEN-1:0] cause;  // cause of exception
-      logic [riscv::XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
+      logic [CVA6Cfg.XLEN-1:0] cause;  // cause of exception
+      logic [CVA6Cfg.XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
       // address of LD/ST fault
       logic valid;
     },
@@ -93,7 +93,7 @@ module cva6
       logic [REG_ADDR_SIZE-1:0] rs1;  // register source address 1
       logic [REG_ADDR_SIZE-1:0] rs2;  // register source address 2
       logic [REG_ADDR_SIZE-1:0] rd;  // register destination address
-      logic [riscv::XLEN-1:0] result;  // for unfinished instructions this field also holds the immediate,
+      logic [CVA6Cfg.XLEN-1:0] result;  // for unfinished instructions this field also holds the immediate,
       // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
       // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
       // this field holds the address of the third operand from the floating-point register file
@@ -127,19 +127,19 @@ module cva6
     // All information needed to determine whether we need to associate an interrupt
     // with the corresponding instruction or not.
     localparam type irq_ctrl_t = struct packed {
-      logic [riscv::XLEN-1:0] mie;
-      logic [riscv::XLEN-1:0] mip;
-      logic [riscv::XLEN-1:0] mideleg;
-      logic                   sie;
-      logic                   global_enable;
+      logic [CVA6Cfg.XLEN-1:0] mie;
+      logic [CVA6Cfg.XLEN-1:0] mip;
+      logic [CVA6Cfg.XLEN-1:0] mideleg;
+      logic                    sie;
+      logic                    global_enable;
     },
 
     localparam type lsu_ctrl_t = struct packed {
       logic                             valid;
       logic [CVA6Cfg.VLEN-1:0]          vaddr;
       logic                             overflow;
-      logic [riscv::XLEN-1:0]           data;
-      logic [(riscv::XLEN/8)-1:0]       be;
+      logic [CVA6Cfg.XLEN-1:0]          data;
+      logic [(CVA6Cfg.XLEN/8)-1:0]      be;
       fu_t                              fu;
       fu_op                             operation;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
@@ -148,9 +148,9 @@ module cva6
     localparam type fu_data_t = struct packed {
       fu_t                              fu;
       fu_op                             operation;
-      logic [riscv::XLEN-1:0]           operand_a;
-      logic [riscv::XLEN-1:0]           operand_b;
-      logic [riscv::XLEN-1:0]           imm;
+      logic [CVA6Cfg.XLEN-1:0]          operand_a;
+      logic [CVA6Cfg.XLEN-1:0]          operand_b;
+      logic [CVA6Cfg.XLEN-1:0]          imm;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     },
 
@@ -177,11 +177,11 @@ module cva6
     localparam type dcache_req_i_t = struct packed {
       logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
       logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
-      logic [riscv::XLEN-1:0]                data_wdata;
+      logic [CVA6Cfg.XLEN-1:0]               data_wdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]  data_wuser;
       logic                                  data_req;
       logic                                  data_we;
-      logic [(riscv::XLEN/8)-1:0]            data_be;
+      logic [(CVA6Cfg.XLEN/8)-1:0]           data_be;
       logic [1:0]                            data_size;
       logic [DCACHE_TID_WIDTH-1:0]           data_id;
       logic                                  kill_req;
@@ -192,7 +192,7 @@ module cva6
       logic                                 data_gnt;
       logic                                 data_rvalid;
       logic [DCACHE_TID_WIDTH-1:0]          data_rid;
-      logic [riscv::XLEN-1:0]               data_rdata;
+      logic [CVA6Cfg.XLEN-1:0]              data_rdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
 
@@ -274,7 +274,7 @@ module cva6
     // Reset boot address - SUBSYSTEM
     input logic [CVA6Cfg.VLEN-1:0] boot_addr_i,
     // Hard ID reflected as CSR - SUBSYSTEM
-    input logic [riscv::XLEN-1:0] hart_id_i,
+    input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
     // Level sensitive (async) interrupts - SUBSYSTEM
     input logic [1:0] irq_i,
     // Inter-processor (async) interrupt - SUBSYSTEM
@@ -296,21 +296,21 @@ module cva6
 );
 
   localparam type interrupts_t = struct packed {
-    logic [riscv::XLEN-1:0] S_SW;
-    logic [riscv::XLEN-1:0] M_SW;
-    logic [riscv::XLEN-1:0] S_TIMER;
-    logic [riscv::XLEN-1:0] M_TIMER;
-    logic [riscv::XLEN-1:0] S_EXT;
-    logic [riscv::XLEN-1:0] M_EXT;
+    logic [CVA6Cfg.XLEN-1:0] S_SW;
+    logic [CVA6Cfg.XLEN-1:0] M_SW;
+    logic [CVA6Cfg.XLEN-1:0] S_TIMER;
+    logic [CVA6Cfg.XLEN-1:0] M_TIMER;
+    logic [CVA6Cfg.XLEN-1:0] S_EXT;
+    logic [CVA6Cfg.XLEN-1:0] M_EXT;
   };
 
   localparam interrupts_t INTERRUPTS = '{
-      S_SW: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_S_SOFT),
-      M_SW: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_M_SOFT),
-      S_TIMER: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_S_TIMER),
-      M_TIMER: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_M_TIMER),
-      S_EXT: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_S_EXT),
-      M_EXT: (1 << (riscv::XLEN - 1)) | riscv::XLEN'(riscv::IRQ_M_EXT)
+      S_SW: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_SOFT),
+      M_SW: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_SOFT),
+      S_TIMER: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_TIMER),
+      M_TIMER: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_TIMER),
+      S_EXT: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_EXT),
+      M_EXT: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_EXT)
   };
 
   // ------------------------------------------
@@ -363,7 +363,7 @@ module cva6
   logic flu_ready_ex_id;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
   logic flu_valid_ex_id;
-  logic [riscv::XLEN-1:0] flu_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] flu_result_ex_id;
   exception_t flu_exception_ex_id;
   // ALU
   logic alu_valid_id_ex;
@@ -377,11 +377,11 @@ module cva6
   logic lsu_ready_ex_id;
 
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_ex_id;
-  logic [riscv::XLEN-1:0] load_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] load_result_ex_id;
   logic load_valid_ex_id;
   exception_t load_exception_ex_id;
 
-  logic [riscv::XLEN-1:0] store_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] store_result_ex_id;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] store_trans_id_ex_id;
   logic store_valid_ex_id;
   exception_t store_exception_ex_id;
@@ -393,7 +393,7 @@ module cva6
   logic [1:0] fpu_fmt_id_ex;
   logic [2:0] fpu_rm_id_ex;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
-  logic [riscv::XLEN-1:0] fpu_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] fpu_result_ex_id;
   logic fpu_valid_ex_id;
   exception_t fpu_exception_ex_id;
   // Accelerator
@@ -401,7 +401,7 @@ module cva6
   scoreboard_entry_t issue_instr_id_acc;
   logic issue_instr_hs_id_acc;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] acc_trans_id_ex_id;
-  logic [riscv::XLEN-1:0] acc_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] acc_result_ex_id;
   logic acc_valid_ex_id;
   exception_t acc_exception_ex_id;
   logic halt_acc_ctrl;
@@ -412,7 +412,7 @@ module cva6
   logic csr_valid_id_ex;
   // CVXIF
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_ex_id;
-  logic [riscv::XLEN-1:0] x_result_ex_id;
+  logic [CVA6Cfg.XLEN-1:0] x_result_ex_id;
   logic x_valid_ex_id;
   exception_t x_exception_ex_id;
   logic x_we_ex_id;
@@ -449,7 +449,7 @@ module cva6
   // COMMIT <-> ID
   // --------------
   logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_commit_id;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_commit_id;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_commit_id;
   logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_commit_id;
   logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_commit_id;
   // --------------
@@ -469,8 +469,8 @@ module cva6
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid_csr_ex;
   logic [11:0] csr_addr_ex_csr;
   fu_op csr_op_commit_csr;
-  logic [riscv::XLEN-1:0] csr_wdata_commit_csr;
-  logic [riscv::XLEN-1:0] csr_rdata_csr_commit;
+  logic [CVA6Cfg.XLEN-1:0] csr_wdata_commit_csr;
+  logic [CVA6Cfg.XLEN-1:0] csr_rdata_csr_commit;
   exception_t csr_exception_csr_commit;
   logic tvm_csr_id;
   logic tw_csr_id;
@@ -489,7 +489,7 @@ module cva6
   // Performance Counters <-> *
   // ----------------------------
   logic [11:0] addr_csr_perf;
-  logic [riscv::XLEN-1:0] data_csr_perf, data_perf_csr;
+  logic [CVA6Cfg.XLEN-1:0] data_csr_perf, data_perf_csr;
   logic                                                              we_csr_perf;
 
   logic                                                              icache_flush_ctrl_cache;
@@ -625,7 +625,7 @@ module cva6
   );
 
   logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
-  logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_ex_id;
+  logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_ex_id;
   exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_ex_id;  // exception from execute, ex_stage to id_stage
   logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_ex_id;
 
@@ -948,7 +948,7 @@ module cva6
       .commit_instr_i        (commit_instr_id_commit),
       .commit_ack_i          (commit_macro_ack),
       .boot_addr_i           (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .hart_id_i             (hart_id_i[riscv::XLEN-1:0]),
+      .hart_id_i             (hart_id_i[CVA6Cfg.XLEN-1:0]),
       .ex_i                  (ex_commit),
       .csr_op_i              (csr_op_commit_csr),
       .csr_write_fflags_i    (csr_write_fflags_commit_cs),

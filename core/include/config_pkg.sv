@@ -46,6 +46,8 @@ package config_pkg;
   localparam NrMaxRules = 16;
 
   typedef struct packed {
+    // General Purpose Register Size (in bits)
+    int unsigned                 XLEN;
     // Is FPGA optimization of CV32A6
     bit                          FPGA_EN;
     // Number of commit ports
@@ -163,6 +165,7 @@ package config_pkg;
   } cva6_user_cfg_t;
 
   typedef struct packed {
+    int unsigned XLEN;
     int unsigned VLEN;
     int unsigned PLEN;
     bit IS_XLEN32;

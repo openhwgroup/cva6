@@ -104,12 +104,12 @@ module decoder
     RS3
   } imm_select;
 
-  logic [riscv::XLEN-1:0] imm_i_type;
-  logic [riscv::XLEN-1:0] imm_s_type;
-  logic [riscv::XLEN-1:0] imm_sb_type;
-  logic [riscv::XLEN-1:0] imm_u_type;
-  logic [riscv::XLEN-1:0] imm_uj_type;
-  logic [riscv::XLEN-1:0] imm_bi_type;
+  logic [CVA6Cfg.XLEN-1:0] imm_i_type;
+  logic [CVA6Cfg.XLEN-1:0] imm_s_type;
+  logic [CVA6Cfg.XLEN-1:0] imm_sb_type;
+  logic [CVA6Cfg.XLEN-1:0] imm_u_type;
+  logic [CVA6Cfg.XLEN-1:0] imm_uj_type;
+  logic [CVA6Cfg.XLEN-1:0] imm_bi_type;
 
   // ---------------------------------------
   // Accelerator instructions' first-pass decoder
@@ -741,7 +741,7 @@ module decoder
             3'b001: begin
               instruction_o.op = ariane_pkg::SLL;  // Shift Left Logical by Immediate
               if (instr.instr[31:26] != 6'b0) illegal_instr_non_bm = 1'b1;
-              if (instr.instr[25] != 1'b0 && riscv::XLEN == 32) illegal_instr_non_bm = 1'b1;
+              if (instr.instr[25] != 1'b0 && CVA6Cfg.XLEN == 32) illegal_instr_non_bm = 1'b1;
             end
 
             3'b101: begin
@@ -750,7 +750,7 @@ module decoder
               else if (instr.instr[31:26] == 6'b010_000)
                 instruction_o.op = ariane_pkg::SRA;  // Shift Right Arithmetically by Immediate
               else illegal_instr_non_bm = 1'b1;
-              if (instr.instr[25] != 1'b0 && riscv::XLEN == 32) illegal_instr_non_bm = 1'b1;
+              if (instr.instr[25] != 1'b0 && CVA6Cfg.XLEN == 32) illegal_instr_non_bm = 1'b1;
             end
           endcase
           if (CVA6Cfg.RVB) begin
@@ -848,7 +848,7 @@ module decoder
             3'b001: instruction_o.op = ariane_pkg::SH;
             3'b010: instruction_o.op = ariane_pkg::SW;
             3'b011:
-            if (riscv::XLEN == 64) instruction_o.op = ariane_pkg::SD;
+            if (CVA6Cfg.XLEN == 64) instruction_o.op = ariane_pkg::SD;
             else illegal_instr = 1'b1;
             default: illegal_instr = 1'b1;
           endcase
@@ -867,10 +867,10 @@ module decoder
             3'b100: instruction_o.op = ariane_pkg::LBU;
             3'b101: instruction_o.op = ariane_pkg::LHU;
             3'b110:
-            if (riscv::XLEN == 64) instruction_o.op = ariane_pkg::LWU;
+            if (CVA6Cfg.XLEN == 64) instruction_o.op = ariane_pkg::LWU;
             else illegal_instr = 1'b1;
             3'b011:
-            if (riscv::XLEN == 64) instruction_o.op = ariane_pkg::LD;
+            if (CVA6Cfg.XLEN == 64) instruction_o.op = ariane_pkg::LD;
             else illegal_instr = 1'b1;
             default: illegal_instr = 1'b1;
           endcase
@@ -1278,10 +1278,12 @@ module decoder
   // Sign extend immediate
   // --------------------------------
   always_comb begin : sign_extend
-    imm_i_type = {{riscv::XLEN - 12{instruction_i[31]}}, instruction_i[31:20]};
-    imm_s_type = {{riscv::XLEN - 12{instruction_i[31]}}, instruction_i[31:25], instruction_i[11:7]};
+    imm_i_type = {{CVA6Cfg.XLEN - 12{instruction_i[31]}}, instruction_i[31:20]};
+    imm_s_type = {
+      {CVA6Cfg.XLEN - 12{instruction_i[31]}}, instruction_i[31:25], instruction_i[11:7]
+    };
     imm_sb_type = {
-      {riscv::XLEN - 13{instruction_i[31]}},
+      {CVA6Cfg.XLEN - 13{instruction_i[31]}},
       instruction_i[31],
       instruction_i[7],
       instruction_i[30:25],
@@ -1289,16 +1291,16 @@ module decoder
       1'b0
     };
     imm_u_type = {
-      {riscv::XLEN - 32{instruction_i[31]}}, instruction_i[31:12], 12'b0
+      {CVA6Cfg.XLEN - 32{instruction_i[31]}}, instruction_i[31:12], 12'b0
     };  // JAL, AUIPC, sign extended to 64 bit
     imm_uj_type = {
-      {riscv::XLEN - 20{instruction_i[31]}},
+      {CVA6Cfg.XLEN - 20{instruction_i[31]}},
       instruction_i[19:12],
       instruction_i[20],
       instruction_i[30:21],
       1'b0
     };
-    imm_bi_type = {{riscv::XLEN - 5{instruction_i[24]}}, instruction_i[24:20]};
+    imm_bi_type = {{CVA6Cfg.XLEN - 5{instruction_i[24]}}, instruction_i[24:20]};
 
     // NOIMM, IIMM, SIMM, BIMM, UIMM, JIMM, RS3
     // select immediate
@@ -1325,11 +1327,11 @@ module decoder
       end
       RS3: begin
         // result holds address of fp operand rs3
-        instruction_o.result  = {{riscv::XLEN - 5{1'b0}}, instr.r4type.rs3};
+        instruction_o.result  = {{CVA6Cfg.XLEN - 5{1'b0}}, instr.r4type.rs3};
         instruction_o.use_imm = 1'b0;
       end
       default: begin
-        instruction_o.result  = {riscv::XLEN{1'b0}};
+        instruction_o.result  = {CVA6Cfg.XLEN{1'b0}};
         instruction_o.use_imm = 1'b0;
       end
     endcase
@@ -1345,7 +1347,7 @@ module decoder
   // ---------------------
   // Exception handling
   // ---------------------
-  logic [riscv::XLEN-1:0] interrupt_cause;
+  logic [CVA6Cfg.XLEN-1:0] interrupt_cause;
 
   // this instruction has already executed if the exception is valid
   assign instruction_o.valid = instruction_o.ex.valid;
@@ -1360,9 +1362,9 @@ module decoder
       // if we didn't already get an exception save the instruction here as we may need it
       // in the commit stage if we got a access exception to one of the CSR registers
       if (CVA6Cfg.CvxifEn || CVA6Cfg.FpuEn)
-        orig_instr_o = (is_compressed_i) ? {{riscv::XLEN-16{1'b0}}, compressed_instr_i} : {{riscv::XLEN-32{1'b0}}, instruction_i};
+        orig_instr_o = (is_compressed_i) ? {{CVA6Cfg.XLEN-16{1'b0}}, compressed_instr_i} : {{CVA6Cfg.XLEN-32{1'b0}}, instruction_i};
       if (CVA6Cfg.TvalEn)
-        instruction_o.ex.tval  = (is_compressed_i) ? {{riscv::XLEN-16{1'b0}}, compressed_instr_i} : {{riscv::XLEN-32{1'b0}}, instruction_i};
+        instruction_o.ex.tval  = (is_compressed_i) ? {{CVA6Cfg.XLEN-16{1'b0}}, compressed_instr_i} : {{CVA6Cfg.XLEN-32{1'b0}}, instruction_i};
       else instruction_o.ex.tval = '0;
       // instructions which will throw an exception are marked as valid
       // e.g.: they can be committed anytime and do not need to wait for any functional unit
@@ -1424,11 +1426,11 @@ module decoder
         interrupt_cause = INTERRUPTS.M_EXT;
       end
 
-      if (interrupt_cause[riscv::XLEN-1] && irq_ctrl_i.global_enable) begin
+      if (interrupt_cause[CVA6Cfg.XLEN-1] && irq_ctrl_i.global_enable) begin
         // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
         // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
         // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
-        if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(riscv::XLEN)-1:0]]) begin
+        if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(CVA6Cfg.XLEN)-1:0]]) begin
           if ((CVA6Cfg.RVS && irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || (CVA6Cfg.RVU && priv_lvl_i == riscv::PRIV_LVL_U)) begin
             instruction_o.ex.valid = 1'b1;
             instruction_o.ex.cause = interrupt_cause;

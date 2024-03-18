@@ -59,11 +59,11 @@ module wt_dcache
 
   localparam type wbuffer_t = struct packed {
     logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] wtag;
-    logic [riscv::XLEN-1:0] data;
+    logic [CVA6Cfg.XLEN-1:0] data;
     logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] user;
-    logic [(riscv::XLEN/8)-1:0] dirty;  // byte is dirty
-    logic [(riscv::XLEN/8)-1:0] valid;  // byte is valid
-    logic [(riscv::XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
+    logic [(CVA6Cfg.XLEN/8)-1:0] dirty;  // byte is dirty
+    logic [(CVA6Cfg.XLEN/8)-1:0] valid;  // byte is valid
+    logic [(CVA6Cfg.XLEN/8)-1:0] txblock;  // byte is part of transaction in-flight
     logic checked;  // if cache state of this word has been checked
     logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_oh;  // valid way in the cache
   };
@@ -86,8 +86,8 @@ module wt_dcache
   logic                                                                           wr_ack;
   logic     [           DCACHE_CL_IDX_WIDTH-1:0]                                  wr_idx;
   logic     [   CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0]                                  wr_off;
-  logic     [                   riscv::XLEN-1:0]                                  wr_data;
-  logic     [               (riscv::XLEN/8)-1:0]                                  wr_data_be;
+  logic     [                  CVA6Cfg.XLEN-1:0]                                  wr_data;
+  logic     [              (CVA6Cfg.XLEN/8)-1:0]                                  wr_data_be;
   logic     [     CVA6Cfg.DCACHE_USER_WIDTH-1:0]                                  wr_user;
 
   // miss unit <-> controllers/wbuffer
@@ -95,7 +95,7 @@ module wt_dcache
   logic     [                      NumPorts-1:0]                                  miss_ack;
   logic     [                      NumPorts-1:0]                                  miss_nc;
   logic     [                      NumPorts-1:0]                                  miss_we;
-  logic     [                      NumPorts-1:0][                riscv::XLEN-1:0] miss_wdata;
+  logic     [                      NumPorts-1:0][               CVA6Cfg.XLEN-1:0] miss_wdata;
   logic     [                      NumPorts-1:0][  CVA6Cfg.DCACHE_USER_WIDTH-1:0] miss_wuser;
   logic     [                      NumPorts-1:0][               CVA6Cfg.PLEN-1:0] miss_paddr;
   logic     [                      NumPorts-1:0][                            2:0] miss_size;
@@ -112,7 +112,7 @@ module wt_dcache
   logic     [                      NumPorts-1:0][   CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag;
   logic     [                      NumPorts-1:0][        DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
   logic     [                      NumPorts-1:0][CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] rd_off;
-  logic     [                   riscv::XLEN-1:0]                                  rd_data;
+  logic     [                  CVA6Cfg.XLEN-1:0]                                  rd_data;
   logic     [     CVA6Cfg.DCACHE_USER_WIDTH-1:0]                                  rd_user;
   logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                  rd_vld_bits;
   logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                  rd_hit_oh;
@@ -238,7 +238,7 @@ module wt_dcache
       assign req_ports_o[k] = '0;
       assign miss_req[k] = 1'b0;
       assign miss_we[k] = 1'b0;
-      assign miss_wdata[k] = {{riscv::XLEN} {1'b0}};
+      assign miss_wdata[k] = {{CVA6Cfg.XLEN} {1'b0}};
       assign miss_wuser[k] = {{CVA6Cfg.DCACHE_USER_WIDTH} {1'b0}};
       assign miss_vld_bits_o[k] = {{CVA6Cfg.DCACHE_SET_ASSOC} {1'b0}};
       assign miss_paddr[k] = {{CVA6Cfg.PLEN} {1'b0}};
