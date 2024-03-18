@@ -51,7 +51,7 @@ module commit_stage
     // Result of AMO operation - CACHE
     input amo_resp_t amo_resp_i,
     // TO_BE_COMPLETED - FRONTEND_CSR_REGFILE
-    output logic [riscv::VLEN-1:0] pc_o,
+    output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Decoded CSR operation - CSR_REGFILE
     output fu_op csr_op_o,
     // Data to write to CSR - CSR_REGFILE

@@ -69,7 +69,7 @@ module issue_read_operands
     // Unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
     output logic [riscv::XLEN-1:0] rs2_forwarding_o,
     // Instruction pc - TO_BE_COMPLETED
-    output logic [riscv::VLEN-1:0] pc_o,
+    output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - TO_BE_COMPLETED
     output logic is_compressed_instr_o,
     // Fixed Latency Unit ready to accept new request - TO_BE_COMPLETED
@@ -145,30 +145,30 @@ module issue_read_operands
 
   // original instruction
   riscv::instruction_t orig_instr;
-  assign orig_instr          = riscv::instruction_t'(orig_instr_i);
+  assign orig_instr = riscv::instruction_t'(orig_instr_i);
 
   // ID <-> EX registers
 
-  assign rs1_forwarding_o    = operand_a_n[riscv::VLEN-1:0];  //forwarding or unregistered rs1 value
-  assign rs2_forwarding_o    = operand_b_n[riscv::VLEN-1:0];  //forwarding or unregistered rs2 value
+  assign rs1_forwarding_o = operand_a_n[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
+  assign rs2_forwarding_o = operand_b_n[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
 
   assign fu_data_o.operand_a = operand_a_q;
   assign fu_data_o.operand_b = operand_b_q;
-  assign fu_data_o.fu        = fu_q;
+  assign fu_data_o.fu = fu_q;
   assign fu_data_o.operation = operator_q;
-  assign fu_data_o.trans_id  = trans_id_q;
-  assign fu_data_o.imm       = imm_q;
-  assign alu_valid_o         = alu_valid_q;
-  assign branch_valid_o      = branch_valid_q;
-  assign lsu_valid_o         = lsu_valid_q;
-  assign csr_valid_o         = csr_valid_q;
-  assign mult_valid_o        = mult_valid_q;
-  assign fpu_valid_o         = fpu_valid_q;
-  assign fpu_fmt_o           = fpu_fmt_q;
-  assign fpu_rm_o            = fpu_rm_q;
-  assign cvxif_valid_o       = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
-  assign cvxif_off_instr_o   = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
-  assign stall_issue_o       = stall;
+  assign fu_data_o.trans_id = trans_id_q;
+  assign fu_data_o.imm = imm_q;
+  assign alu_valid_o = alu_valid_q;
+  assign branch_valid_o = branch_valid_q;
+  assign lsu_valid_o = lsu_valid_q;
+  assign csr_valid_o = csr_valid_q;
+  assign mult_valid_o = mult_valid_q;
+  assign fpu_valid_o = fpu_valid_q;
+  assign fpu_fmt_o = fpu_fmt_q;
+  assign fpu_rm_o = fpu_rm_q;
+  assign cvxif_valid_o = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
+  assign cvxif_off_instr_o = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
+  assign stall_issue_o = stall;
   // ---------------
   // Issue Stage
   // ---------------
@@ -299,7 +299,7 @@ module issue_read_operands
     // use the PC as operand a
     if (issue_instr_i.use_pc) begin
       operand_a_n = {
-        {riscv::XLEN - riscv::VLEN{issue_instr_i.pc[riscv::VLEN-1]}}, issue_instr_i.pc
+        {riscv::XLEN - CVA6Cfg.VLEN{issue_instr_i.pc[CVA6Cfg.VLEN-1]}}, issue_instr_i.pc
       };
     end
 
@@ -599,7 +599,7 @@ module issue_read_operands
       trans_id_q            <= '0;
       pc_o                  <= '0;
       is_compressed_instr_o <= 1'b0;
-      branch_predict_o      <= {cf_t'(0), {riscv::VLEN{1'b0}}};
+      branch_predict_o      <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
     end else begin
       operand_a_q           <= operand_a_n;
       operand_b_q           <= operand_b_n;

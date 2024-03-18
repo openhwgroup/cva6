@@ -1,8 +1,10 @@
 package build_config_pkg;
 
   function automatic config_pkg::cva6_cfg_t build_config(config_pkg::cva6_user_cfg_t CVA6Cfg);
-    bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & CVA6Cfg.FpuEn;
-    bit RVD = (riscv::IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
+    bit IS_XLEN32 = (riscv::XLEN == 32) ? 1'b1 : 1'b0;
+    bit IS_XLEN64 = (riscv::XLEN == 32) ? 1'b0 : 1'b1;
+    bit RVF = (IS_XLEN64 | IS_XLEN32) & CVA6Cfg.FpuEn;
+    bit RVD = (IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
     bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
     bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
     int unsigned FLen = RVD ? 64 :  // D ext.
@@ -27,7 +29,12 @@ package build_config_pkg;
 
     config_pkg::cva6_cfg_t cfg;
 
+    cfg.VLEN = (riscv::XLEN == 32) ? 32 : 64;
+    cfg.PLEN = (riscv::XLEN == 32) ? 34 : 56;
+    cfg.IS_XLEN32 = IS_XLEN32;
+    cfg.IS_XLEN64 = IS_XLEN64;
     cfg.XLEN_ALIGN_BYTES = $clog2(riscv::XLEN / 8);
+    cfg.ASID_WIDTH = (riscv::XLEN == 64) ? 16 : 1;
 
     cfg.FPGA_EN = CVA6Cfg.FPGA_EN;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
@@ -97,13 +104,13 @@ package build_config_pkg;
     cfg.ICACHE_SET_ASSOC = CVA6Cfg.IcacheSetAssoc;
     cfg.ICACHE_SET_ASSOC_WIDTH = $clog2(CVA6Cfg.IcacheSetAssoc);
     cfg.ICACHE_INDEX_WIDTH = ICACHE_INDEX_WIDTH;
-    cfg.ICACHE_TAG_WIDTH = riscv::PLEN - ICACHE_INDEX_WIDTH;
+    cfg.ICACHE_TAG_WIDTH = cfg.PLEN - ICACHE_INDEX_WIDTH;
     cfg.ICACHE_LINE_WIDTH = CVA6Cfg.IcacheLineWidth;
     cfg.ICACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.IcacheLineWidth;
     cfg.DCACHE_SET_ASSOC = CVA6Cfg.DcacheSetAssoc;
     cfg.DCACHE_SET_ASSOC_WIDTH = $clog2(CVA6Cfg.DcacheSetAssoc);
     cfg.DCACHE_INDEX_WIDTH = DCACHE_INDEX_WIDTH;
-    cfg.DCACHE_TAG_WIDTH = riscv::PLEN - DCACHE_INDEX_WIDTH;
+    cfg.DCACHE_TAG_WIDTH = cfg.PLEN - DCACHE_INDEX_WIDTH;
     cfg.DCACHE_LINE_WIDTH = CVA6Cfg.DcacheLineWidth;
     cfg.DCACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.DcacheLineWidth;
     cfg.DCACHE_USER_WIDTH = CVA6Cfg.AxiUserWidth;
@@ -115,6 +122,7 @@ package build_config_pkg;
     cfg.DATA_USER_EN = CVA6Cfg.DataUserEn;
     cfg.FETCH_USER_WIDTH = CVA6Cfg.FetchUserWidth;
     cfg.FETCH_USER_EN = CVA6Cfg.FetchUserEn;
+    cfg.AXI_USER_EN = CVA6Cfg.DataUserEn | CVA6Cfg.FetchUserEn;
 
     cfg.FETCH_WIDTH = 32;
     cfg.INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? (cfg.FETCH_WIDTH / 16) : 1;

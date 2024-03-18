@@ -45,7 +45,7 @@ module cva6_rvfi_probes
     input lsu_ctrl_t                                              lsu_ctrl_i,
     input logic      [    CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
     input logic      [CVA6Cfg.NrCommitPorts-1:0]                  commit_ack_i,
-    input logic      [          riscv::PLEN-1:0]                  mem_paddr_i,
+    input logic      [         CVA6Cfg.PLEN-1:0]                  mem_paddr_i,
     input logic                                                   debug_mode_i,
     input logic      [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_i,
 

@@ -28,8 +28,7 @@ module ex_stage
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
-    parameter type lsu_ctrl_t = logic,
-    parameter int unsigned ASID_WIDTH = 1
+    parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -40,13 +39,13 @@ module ex_stage
     // Debug mode is enabled - CSR_REGFILE
     input logic debug_mode_i,
     // rs1 forwarding - ISSUE_STAGE
-    input logic [riscv::VLEN-1:0] rs1_forwarding_i,
+    input logic [CVA6Cfg.VLEN-1:0] rs1_forwarding_i,
     // rs2 forwarding - ISSUE_STAGE
-    input logic [riscv::VLEN-1:0] rs2_forwarding_i,
+    input logic [CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
     // FU data useful to execute instruction - ISSUE_STAGE
     input fu_data_t fu_data_i,
     // PC of the current instruction - ISSUE_STAGE
-    input logic [riscv::VLEN-1:0] pc_i,
+    input logic [CVA6Cfg.VLEN-1:0] pc_i,
     // Report whether isntruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
     // Fixed Latency Unit result - ISSUE_STAGE
@@ -168,7 +167,7 @@ module ex_stage
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - CSR_REGFILE
-    input logic [ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // icache translation response - CACHE
     input icache_arsp_t icache_areq_i,
     // icache translation request - CACHE
@@ -192,11 +191,11 @@ module ex_stage
     // Report the PMP configuration - CSR_REGFILE
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
     // Report the PMP addresses - CSR_REGFILE
-    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     // Information dedicated to RVFI - RVFI
     output lsu_ctrl_t rvfi_lsu_ctrl_o,
     // Information dedicated to RVFI - RVFI
-    output [riscv::PLEN-1:0] rvfi_mem_paddr_o
+    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
 );
 
   // -------------------------
@@ -223,13 +222,13 @@ module ex_stage
   logic current_instruction_is_sfence_vma;
   // These two register store the rs1 and rs2 parameters in case of `SFENCE_VMA`
   // instruction to be used for TLB flush in the next clock cycle.
-  logic [ASID_WIDTH-1:0] asid_to_be_flushed;
-  logic [riscv::VLEN-1:0] vaddr_to_be_flushed;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed;
+  logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed;
 
   // from ALU to branch unit
   logic alu_branch_res;  // branch comparison result
   logic [riscv::XLEN-1:0] alu_result, csr_result, mult_result;
-  logic [riscv::VLEN-1:0] branch_result;
+  logic [CVA6Cfg.VLEN-1:0] branch_result;
   logic csr_ready, mult_ready;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
@@ -298,7 +297,7 @@ module ex_stage
   // result MUX
   always_comb begin
     // Branch result as default case
-    flu_result_o   = {{riscv::XLEN - riscv::VLEN{1'b0}}, branch_result};
+    flu_result_o   = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, branch_result};
     flu_trans_id_o = fu_data_i.trans_id;
     // ALU result
     if (alu_valid_i) begin
@@ -391,8 +390,7 @@ module ex_stage
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
-      .lsu_ctrl_t(lsu_ctrl_t),
-      .ASID_WIDTH(ASID_WIDTH)
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) lsu_i (
       .clk_i,
       .rst_ni,
@@ -493,7 +491,7 @@ module ex_stage
         // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
       end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operation == SFENCE_VMA) && csr_valid_i))) begin
         vaddr_to_be_flushed <= rs1_forwarding_i;
-        asid_to_be_flushed  <= rs2_forwarding_i[ASID_WIDTH-1:0];
+        asid_to_be_flushed  <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
       end
     end
   end else begin

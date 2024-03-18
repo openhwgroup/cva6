@@ -181,7 +181,7 @@ localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 4;
 localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NBSlave); // 5
-localparam AxiUserWidth = ariane_pkg::AXI_USER_WIDTH;
+localparam AxiUserWidth = CVA6Cfg.AxiUserWidth;
 
 `AXI_TYPEDEF_ALL(axi_slave,
                  logic [    AxiAddrWidth-1:0],

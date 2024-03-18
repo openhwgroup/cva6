@@ -45,7 +45,7 @@ module wt_dcache_missunit
     input logic [NumPorts-1:0] miss_we_i,
     input logic [NumPorts-1:0][riscv::XLEN-1:0] miss_wdata_i,
     input logic [NumPorts-1:0][CVA6Cfg.DCACHE_USER_WIDTH-1:0] miss_wuser_i,
-    input logic [NumPorts-1:0][riscv::PLEN-1:0] miss_paddr_i,
+    input logic [NumPorts-1:0][CVA6Cfg.PLEN-1:0] miss_paddr_i,
     input logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_i,
     input logic [NumPorts-1:0][2:0] miss_size_i,
     input logic [NumPorts-1:0][CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id_i,  // used as transaction ID
@@ -55,7 +55,7 @@ module wt_dcache_missunit
     output logic [NumPorts-1:0] miss_rtrn_vld_o,
     output logic [CVA6Cfg.MEM_TID_WIDTH-1:0]                  miss_rtrn_id_o,     // only used for writes, set to zero fro reads
     // from writebuffer
-    input  logic [CVA6Cfg.DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]  tx_paddr_i,         // used to check for address collisions with read operations
+    input  logic [CVA6Cfg.DCACHE_MAX_TX-1:0][CVA6Cfg.PLEN-1:0]  tx_paddr_i,         // used to check for address collisions with read operations
     input  logic [CVA6Cfg.DCACHE_MAX_TX-1:0]                   tx_vld_i,           // used to check for address collisions with read operations
     // write interface to cache memory
     output logic wr_cl_vld_o,  // writes a full cacheline
@@ -91,9 +91,9 @@ module wt_dcache_missunit
   // 010: word
   // 011: dword
   // 111: DCACHE line
-  function automatic logic [riscv::PLEN-1:0] paddrSizeAlign(input logic [riscv::PLEN-1:0] paddr,
-                                                            input logic [2:0] size);
-    logic [riscv::PLEN-1:0] out;
+  function automatic logic [CVA6Cfg.PLEN-1:0] paddrSizeAlign(input logic [CVA6Cfg.PLEN-1:0] paddr,
+                                                             input logic [2:0] size);
+    logic [CVA6Cfg.PLEN-1:0] out;
     out = paddr;
     unique case (size)
       3'b001:  out[0:0] = '0;
@@ -119,7 +119,7 @@ module wt_dcache_missunit
 
   // MSHR for reads
   typedef struct packed {
-    logic [riscv::PLEN-1:0]                      paddr;
+    logic [CVA6Cfg.PLEN-1:0]                     paddr;
     logic [2:0]                                  size;
     logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]         vld_bits;
     logic [CVA6Cfg.MEM_TID_WIDTH-1:0]            id;
@@ -143,7 +143,7 @@ module wt_dcache_missunit
   logic [63:0] amo_rtrn_mux;
   logic [riscv::XLEN-1:0] amo_data, amo_data_a, amo_data_b;
   logic [riscv::XLEN-1:0] amo_user;  //DCACHE USER ? CVA6Cfg.DCACHE_USER_WIDTH
-  logic [riscv::PLEN-1:0] tmp_paddr;
+  logic [CVA6Cfg.PLEN-1:0] tmp_paddr;
   logic [$clog2(NumPorts)-1:0] miss_port_idx;
   logic [DCACHE_CL_IDX_WIDTH-1:0] cnt_d, cnt_q;
   logic [NumPorts-1:0] miss_req_masked_d, miss_req_masked_q;
@@ -224,19 +224,19 @@ module wt_dcache_missunit
 
 
   for (genvar k = 0; k < NumPorts; k++) begin : gen_rdrd_collision
-    assign mshr_rdrd_collision[k]   = (mshr_q.paddr[riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == miss_paddr_i[k][riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) && (mshr_vld_q | mshr_vld_q1);
+    assign mshr_rdrd_collision[k]   = (mshr_q.paddr[CVA6Cfg.PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == miss_paddr_i[k][CVA6Cfg.PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) && (mshr_vld_q | mshr_vld_q1);
     assign mshr_rdrd_collision_d[k] = (!miss_req_i[k]) ? 1'b0 : mshr_rdrd_collision_q[k] | mshr_rdrd_collision[k];
   end
 
   // read/write collision, stalls the corresponding request
   // write port[NumPorts-1] collides with MSHR_Q
-  assign mshr_rdwr_collision = (mshr_q.paddr[riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == miss_paddr_i[NumPorts-1][riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
+  assign mshr_rdwr_collision = (mshr_q.paddr[CVA6Cfg.PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == miss_paddr_i[NumPorts-1][CVA6Cfg.PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
 
   // read collides with inflight TX
   always_comb begin : p_tx_coll
     tx_rdwr_collision = 1'b0;
     for (int k = 0; k < CVA6Cfg.DCACHE_MAX_TX; k++) begin
-      tx_rdwr_collision |= (miss_paddr_i[miss_port_idx][riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == tx_paddr_i[k][riscv::PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) && tx_vld_i[k];
+      tx_rdwr_collision |= (miss_paddr_i[miss_port_idx][CVA6Cfg.PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == tx_paddr_i[k][CVA6Cfg.PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) && tx_vld_i[k];
     end
   end
 
@@ -247,7 +247,7 @@ module wt_dcache_missunit
   // if size = 32bit word, select appropriate offset, replicate for openpiton...
 
   if (CVA6Cfg.RVA) begin
-    if (riscv::IS_XLEN64) begin : gen_amo_64b_data
+    if (CVA6Cfg.IS_XLEN64) begin : gen_amo_64b_data
       assign amo_data_a = {amo_req_i.operand_b[0+:32], amo_req_i.operand_b[0+:32]};
       assign amo_data_b = amo_req_i.operand_b;
     end else begin : gen_amo_32b_data
@@ -257,7 +257,7 @@ module wt_dcache_missunit
 
   always_comb begin
     if (CVA6Cfg.RVA) begin
-      if (riscv::IS_XLEN64) begin
+      if (CVA6Cfg.IS_XLEN64) begin
         if (amo_req_i.size == 2'b10) begin
           amo_data = amo_data_a;
         end else begin
@@ -303,7 +303,7 @@ module wt_dcache_missunit
   assign mem_data_o.size   = (CVA6Cfg.RVA && amo_sel) ? {1'b0, amo_req_i.size} : miss_size_i [miss_port_idx];
   assign mem_data_o.amo_op = (CVA6Cfg.RVA && amo_sel) ? amo_req_i.amo_op : AMO_NONE;
 
-  assign tmp_paddr         = (CVA6Cfg.RVA && amo_sel) ? amo_req_i.operand_a[riscv::PLEN-1:0] : miss_paddr_i[miss_port_idx];
+  assign tmp_paddr         = (CVA6Cfg.RVA && amo_sel) ? amo_req_i.operand_a[CVA6Cfg.PLEN-1:0] : miss_paddr_i[miss_port_idx];
   assign mem_data_o.paddr = paddrSizeAlign(tmp_paddr, mem_data_o.size);
 
   ///////////////////////////////////////////////////////

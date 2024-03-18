@@ -22,8 +22,7 @@ module cva6_shared_tlb_sv32
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int SHARED_TLB_DEPTH = 64,
-    parameter int SHARED_TLB_WAYS = 2,
-    parameter int ASID_WIDTH = 1
+    parameter int SHARED_TLB_WAYS = 2
 ) (
     input logic clk_i,   // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -32,17 +31,17 @@ module cva6_shared_tlb_sv32
     input logic enable_translation_i,   // CSRs indicate to enable SV32
     input logic en_ld_st_translation_i, // enable virtual memory translation for load/stores
 
-    input logic [ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
 
     // from TLBs
     // did we miss?
-    input logic                   itlb_access_i,
-    input logic                   itlb_hit_i,
-    input logic [riscv::VLEN-1:0] itlb_vaddr_i,
+    input logic                    itlb_access_i,
+    input logic                    itlb_hit_i,
+    input logic [CVA6Cfg.VLEN-1:0] itlb_vaddr_i,
 
-    input logic                   dtlb_access_i,
-    input logic                   dtlb_hit_i,
-    input logic [riscv::VLEN-1:0] dtlb_vaddr_i,
+    input logic                    dtlb_access_i,
+    input logic                    dtlb_hit_i,
+    input logic [CVA6Cfg.VLEN-1:0] dtlb_vaddr_i,
 
     // to TLBs, update logic
     output tlb_update_sv32_t itlb_update_o,
@@ -52,9 +51,9 @@ module cva6_shared_tlb_sv32
     output logic itlb_miss_o,
     output logic dtlb_miss_o,
 
-    output logic                   shared_tlb_access_o,
-    output logic                   shared_tlb_hit_o,
-    output logic [riscv::VLEN-1:0] shared_tlb_vaddr_o,
+    output logic                    shared_tlb_access_o,
+    output logic                    shared_tlb_hit_o,
+    output logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_o,
 
     output logic itlb_req_o,
 
@@ -113,14 +112,14 @@ module cva6_shared_tlb_sv32
 
   riscv::pte_sv32_t [SHARED_TLB_WAYS-1:0] pte;
 
-  logic [riscv::VLEN-1-12:0] itlb_vpn_q;
-  logic [riscv::VLEN-1-12:0] dtlb_vpn_q;
+  logic [CVA6Cfg.VLEN-1-12:0] itlb_vpn_q;
+  logic [CVA6Cfg.VLEN-1-12:0] dtlb_vpn_q;
 
-  logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_d;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_d;
 
   logic shared_tlb_access_q, shared_tlb_access_d;
   logic shared_tlb_hit_d;
-  logic [riscv::VLEN-1:0] shared_tlb_vaddr_q, shared_tlb_vaddr_d;
+  logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_q, shared_tlb_vaddr_d;
 
   logic itlb_req_d, itlb_req_q;
   logic dtlb_req_d, dtlb_req_q;

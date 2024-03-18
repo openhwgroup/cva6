@@ -40,7 +40,7 @@ module btb #(
     // Debug mode state - CSR
     input logic debug_mode_i,
     // Virtual PC - CACHE
-    input logic [riscv::VLEN-1:0] vpc_i,
+    input logic [CVA6Cfg.VLEN-1:0] vpc_i,
     // Update BTB with resolved address - EXECUTE
     input btb_update_t btb_update_i,
     // BTB Prediction - FRONTEND

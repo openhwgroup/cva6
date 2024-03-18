@@ -20,8 +20,8 @@
   logic [config_pkg::NRET*riscv::XLEN-1:0]      rd_wdata; \
   logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_rdata; \
   logic [config_pkg::NRET*riscv::XLEN-1:0]      pc_wdata; \
-  logic [config_pkg::NRET*riscv::VLEN-1:0]      mem_addr; \
-  logic [config_pkg::NRET*riscv::PLEN-1:0]      mem_paddr; \
+  logic [config_pkg::NRET*Cfg.VLEN-1:0]      mem_addr; \
+  logic [config_pkg::NRET*Cfg.PLEN-1:0]      mem_paddr; \
   logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_rmask; \
   logic [config_pkg::NRET*(riscv::XLEN/8)-1:0]  mem_wmask; \
   logic [config_pkg::NRET*riscv::XLEN-1:0]      mem_rdata; \
@@ -105,23 +105,23 @@
   logic is_compressed; \
   logic [riscv::XLEN-1:0] rs1_forwarding; \
   logic [riscv::XLEN-1:0] rs2_forwarding; \
-  logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_pc; \
+  logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][Cfg.VLEN-1:0] commit_instr_pc; \
   ariane_pkg::fu_op [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][Cfg.TRANS_ID_BITS-1:0] commit_instr_op; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] commit_instr_rs1; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] commit_instr_rs2; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] commit_instr_rd; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][riscv::XLEN-1:0] commit_instr_result; \
-  logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_valid; \
+  logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][Cfg.VLEN-1:0] commit_instr_valid; \
   logic [riscv::XLEN-1:0] ex_commit_cause; \
   logic ex_commit_valid; \
   riscv::priv_lvl_t priv_lvl; \
-  logic [riscv::VLEN-1:0] lsu_ctrl_vaddr; \
+  logic [Cfg.VLEN-1:0] lsu_ctrl_vaddr; \
   ariane_pkg::fu_t lsu_ctrl_fu; \
   logic [(riscv::XLEN/8)-1:0] lsu_ctrl_be; \
   logic [Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id; \
   logic [((cva6_config_pkg::CVA6ConfigCvxifEn || cva6_config_pkg::CVA6ConfigVExtEn) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0] commit_ack; \
-  logic [riscv::PLEN-1:0] mem_paddr; \
+  logic [Cfg.PLEN-1:0] mem_paddr; \
   logic debug_mode; \
   logic [cva6_config_pkg::CVA6ConfigNrCommitPorts-1:0][riscv::XLEN-1:0] wdata; \
 }
@@ -158,7 +158,7 @@
   logic [riscv::XLEN-1:0] icache_q; \
   logic [riscv::XLEN-1:0] acc_cons_q; \
   riscv::pmpcfg_t [15:0] pmpcfg_q; \
-  logic [15:0][riscv::PLEN-3:0] pmpaddr_q; \
+  logic [15:0][Cfg.PLEN-3:0] pmpaddr_q; \
 }
 
 `endif // RVFI_TYPES_SVH

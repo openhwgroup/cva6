@@ -141,7 +141,7 @@ module wt_axi_adapter
     axi_wr_data[0]  = {(CVA6Cfg.AxiDataWidth/riscv::XLEN){dcache_data.data}};
     axi_wr_user[0]  = dcache_data.user;
     // Cast to AXI address width
-    axi_wr_addr  = {{CVA6Cfg.AxiAddrWidth-riscv::PLEN{1'b0}}, dcache_data.paddr};
+    axi_wr_addr  = {{CVA6Cfg.AxiAddrWidth-CVA6Cfg.PLEN{1'b0}}, dcache_data.paddr};
     axi_wr_size  = dcache_data.size;
     axi_wr_req   = 1'b0;
     axi_wr_blen  = '0;// single word writes
@@ -166,7 +166,7 @@ module wt_axi_adapter
     // arbiter mux
     if (arb_idx) begin
       // Cast to AXI address width
-      axi_rd_addr = {{CVA6Cfg.AxiAddrWidth - riscv::PLEN{1'b0}}, dcache_data.paddr};
+      axi_rd_addr = {{CVA6Cfg.AxiAddrWidth - CVA6Cfg.PLEN{1'b0}}, dcache_data.paddr};
       // If dcache_data.size MSB is set, we want to read as much as possible
       axi_rd_size = dcache_data.size[2] ? MaxNumWords[2:0] : dcache_data.size;
       if (dcache_data.size[2]) begin
@@ -174,7 +174,7 @@ module wt_axi_adapter
       end
     end else begin
       // Cast to AXI address width
-      axi_rd_addr = {{CVA6Cfg.AxiAddrWidth - riscv::PLEN{1'b0}}, icache_data.paddr};
+      axi_rd_addr = {{CVA6Cfg.AxiAddrWidth - CVA6Cfg.PLEN{1'b0}}, icache_data.paddr};
       axi_rd_size = MaxNumWords[2:0];  // always request max number of words in case of ifill
       if (!icache_data.nc) begin
         axi_rd_blen = AxiRdBlenIcache[$clog2(AxiNumWords)-1:0];
@@ -210,7 +210,7 @@ module wt_axi_adapter
               2'b10:
               axi_wr_be[0][dcache_data.paddr[$clog2(CVA6Cfg.AxiDataWidth/8)-1:0]+:4] = '1;  // word
               default:
-              if (riscv::IS_XLEN64)
+              if (CVA6Cfg.IS_XLEN64)
                 axi_wr_be[0][dcache_data.paddr[$clog2(
                     CVA6Cfg.AxiDataWidth/8
                 )-1:0]+:8] = '1;  // dword
