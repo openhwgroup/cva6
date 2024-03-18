@@ -31,7 +31,7 @@ module axi_adapter #(
     input ariane_pkg::ad_req_t type_i,
     input ariane_pkg::amo_t amo_i,
     output logic gnt_o,
-    input logic [riscv::XLEN-1:0] addr_i,
+    input logic [CVA6Cfg.XLEN-1:0] addr_i,
     input logic we_i,
     input logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][CVA6Cfg.AxiDataWidth-1:0] wdata_i,
     input logic [(DATA_WIDTH/CVA6Cfg.AxiDataWidth)-1:0][(CVA6Cfg.AxiDataWidth/8)-1:0] be_i,

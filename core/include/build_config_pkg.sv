@@ -1,8 +1,8 @@
 package build_config_pkg;
 
   function automatic config_pkg::cva6_cfg_t build_config(config_pkg::cva6_user_cfg_t CVA6Cfg);
-    bit IS_XLEN32 = (riscv::XLEN == 32) ? 1'b1 : 1'b0;
-    bit IS_XLEN64 = (riscv::XLEN == 32) ? 1'b0 : 1'b1;
+    bit IS_XLEN32 = (CVA6Cfg.XLEN == 32) ? 1'b1 : 1'b0;
+    bit IS_XLEN64 = (CVA6Cfg.XLEN == 32) ? 1'b0 : 1'b1;
     bit RVF = (IS_XLEN64 | IS_XLEN32) & CVA6Cfg.FpuEn;
     bit RVD = (IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
     bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
@@ -29,12 +29,13 @@ package build_config_pkg;
 
     config_pkg::cva6_cfg_t cfg;
 
-    cfg.VLEN = (riscv::XLEN == 32) ? 32 : 64;
-    cfg.PLEN = (riscv::XLEN == 32) ? 34 : 56;
+    cfg.XLEN = CVA6Cfg.XLEN;
+    cfg.VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;
+    cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
     cfg.IS_XLEN32 = IS_XLEN32;
     cfg.IS_XLEN64 = IS_XLEN64;
-    cfg.XLEN_ALIGN_BYTES = $clog2(riscv::XLEN / 8);
-    cfg.ASID_WIDTH = (riscv::XLEN == 64) ? 16 : 1;
+    cfg.XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
+    cfg.ASID_WIDTH = (CVA6Cfg.XLEN == 64) ? 16 : 1;
 
     cfg.FPGA_EN = CVA6Cfg.FPGA_EN;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
@@ -128,10 +129,10 @@ package build_config_pkg;
     cfg.INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? (cfg.FETCH_WIDTH / 16) : 1;
     cfg.LOG2_INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
-    cfg.ModeW = (riscv::XLEN == 32) ? 1 : 4;
-    cfg.ASIDW = (riscv::XLEN == 32) ? 9 : 16;
-    cfg.PPNW = (riscv::XLEN == 32) ? 22 : 44;
-    cfg.MODE_SV = (riscv::XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
+    cfg.ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
+    cfg.ASIDW = (CVA6Cfg.XLEN == 32) ? 9 : 16;
+    cfg.PPNW = (CVA6Cfg.XLEN == 32) ? 22 : 44;
+    cfg.MODE_SV = (CVA6Cfg.XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
     cfg.SV = (cfg.MODE_SV == config_pkg::ModeSv32) ? 32 : 39;
 
     return cfg;

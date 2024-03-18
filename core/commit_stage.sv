@@ -43,7 +43,7 @@ module commit_stage
     // Register file write address - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_o,
     // Register file write data - ISSUE_STAGE
-    output logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_o,
+    output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_o,
     // Register file write enable - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_o,
     // Floating point register enable - ISSUE_STAGE
@@ -55,9 +55,9 @@ module commit_stage
     // Decoded CSR operation - CSR_REGFILE
     output fu_op csr_op_o,
     // Data to write to CSR - CSR_REGFILE
-    output logic [riscv::XLEN-1:0] csr_wdata_o,
+    output logic [CVA6Cfg.XLEN-1:0] csr_wdata_o,
     // Data to read from CSR - CSR_REGFILE
-    input logic [riscv::XLEN-1:0] csr_rdata_i,
+    input logic [CVA6Cfg.XLEN-1:0] csr_rdata_i,
     // Exception or interrupt occurred in CSR stage (the same as commit) - CSR_REGFILE
     input exception_t csr_exception_i,
     // Write the fflags CSR - CSR_REGFILE
@@ -136,9 +136,9 @@ module commit_stage
     commit_lsu_o = 1'b0;
     commit_csr_o = 1'b0;
     // amos will commit on port 0
-    wdata_o[0] = (CVA6Cfg.RVA && amo_resp_i.ack) ? amo_resp_i.result[riscv::XLEN-1:0] : commit_instr_i[0].result;
+    wdata_o[0] = (CVA6Cfg.RVA && amo_resp_i.ack) ? amo_resp_i.result[CVA6Cfg.XLEN-1:0] : commit_instr_i[0].result;
     csr_op_o = ADD;  // this corresponds to a CSR NOP
-    csr_wdata_o = {riscv::XLEN{1'b0}};
+    csr_wdata_o = {CVA6Cfg.XLEN{1'b0}};
     fence_i_o = 1'b0;
     fence_o = 1'b0;
     sfence_vma_o = 1'b0;
@@ -176,7 +176,7 @@ module commit_stage
       if (CVA6Cfg.FpPresent) begin
         if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
           // write the CSR with potential exception flags from retiring floating point instruction
-          csr_wdata_o = {{riscv::XLEN - 5{1'b0}}, commit_instr_i[0].ex.cause[4:0]};
+          csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[0].ex.cause[4:0]};
           csr_write_fflags_o = 1'b1;
           commit_ack_o[0] = 1'b1;
         end
@@ -282,10 +282,10 @@ module commit_stage
           if (CVA6Cfg.FpPresent && commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
             if (csr_write_fflags_o)
               csr_wdata_o = {
-                {riscv::XLEN - 5{1'b0}},
+                {CVA6Cfg.XLEN - 5{1'b0}},
                 (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])
               };
-            else csr_wdata_o = {{riscv::XLEN - 5{1'b0}}, commit_instr_i[1].ex.cause[4:0]};
+            else csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[1].ex.cause[4:0]};
 
             csr_write_fflags_o = 1'b1;
           end
