@@ -69,7 +69,7 @@ module cva6_ptw
 
     // from CSR file
     input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
-    input logic [      HYP_EXT:0] mxr_i,
+    input logic [       HYP_EXT:0] mxr_i,
 
     // Performance counters
     output logic shared_tlb_miss_o,

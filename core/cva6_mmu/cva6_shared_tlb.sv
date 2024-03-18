@@ -21,7 +21,7 @@
 /* verilator lint_off WIDTH */
 
 module cva6_shared_tlb #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg                      = config_pkg::cva6_cfg_empty,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type pte_cva6_t = logic,
     parameter type tlb_update_cva6_t = logic,
     parameter int unsigned SHARED_TLB_DEPTH = 64,
