@@ -97,7 +97,7 @@ module wt_dcache
   logic     [                      NumPorts-1:0]                                  miss_we;
   logic     [                      NumPorts-1:0][                riscv::XLEN-1:0] miss_wdata;
   logic     [                      NumPorts-1:0][  CVA6Cfg.DCACHE_USER_WIDTH-1:0] miss_wuser;
-  logic     [                      NumPorts-1:0][                riscv::PLEN-1:0] miss_paddr;
+  logic     [                      NumPorts-1:0][               CVA6Cfg.PLEN-1:0] miss_paddr;
   logic     [                      NumPorts-1:0][                            2:0] miss_size;
   logic     [                      NumPorts-1:0][      CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id;
   logic     [                      NumPorts-1:0]                                  miss_replay;
@@ -118,7 +118,7 @@ module wt_dcache
   logic     [      CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                  rd_hit_oh;
 
   // miss unit <-> wbuffer
-  logic     [         CVA6Cfg.DCACHE_MAX_TX-1:0][                riscv::PLEN-1:0] tx_paddr;
+  logic     [         CVA6Cfg.DCACHE_MAX_TX-1:0][               CVA6Cfg.PLEN-1:0] tx_paddr;
   logic     [         CVA6Cfg.DCACHE_MAX_TX-1:0]                                  tx_vld;
 
   // wbuffer <-> memory
@@ -241,7 +241,7 @@ module wt_dcache
       assign miss_wdata[k] = {{riscv::XLEN} {1'b0}};
       assign miss_wuser[k] = {{CVA6Cfg.DCACHE_USER_WIDTH} {1'b0}};
       assign miss_vld_bits_o[k] = {{CVA6Cfg.DCACHE_SET_ASSOC} {1'b0}};
-      assign miss_paddr[k] = {{riscv::PLEN} {1'b0}};
+      assign miss_paddr[k] = {{CVA6Cfg.PLEN} {1'b0}};
       assign miss_nc[k] = 1'b0;
       assign miss_size[k] = 3'b0;
       assign miss_id[k] = {{CVA6Cfg.MEM_TID_WIDTH} {1'b0}};

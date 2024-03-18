@@ -70,7 +70,7 @@ module wt_dcache_wbuffer
     output dcache_req_o_t req_port_o,
     // interface to miss handler
     input logic miss_ack_i,
-    output logic [riscv::PLEN-1:0] miss_paddr_o,
+    output logic [CVA6Cfg.PLEN-1:0] miss_paddr_o,
     output logic miss_req_o,
     output logic miss_we_o,  // always 1 here
     output logic [riscv::XLEN-1:0] miss_wdata_o,
@@ -105,7 +105,7 @@ module wt_dcache_wbuffer
     output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wr_user_o,
     // to forwarding logic and miss unit
     output wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_o,
-    output logic [CVA6Cfg.DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
+    output logic [CVA6Cfg.DCACHE_MAX_TX-1:0][CVA6Cfg.PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
     output logic [CVA6Cfg.DCACHE_MAX_TX-1:0] tx_vld_o
 );
 
@@ -181,7 +181,7 @@ module wt_dcache_wbuffer
 
   logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] bdirty_off;
   logic [(riscv::XLEN/8)-1:0] tx_be;
-  logic [riscv::PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
+  logic [CVA6Cfg.PLEN-1:0] wr_paddr, rd_paddr, extract_tag;
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_d, rd_hit_oh_q;
   logic check_en_d, check_en_q, check_en_q1;
@@ -194,7 +194,7 @@ module wt_dcache_wbuffer
   logic wr_cl_vld_q, wr_cl_vld_d;
   logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_q, wr_cl_idx_d;
 
-  logic [riscv::PLEN-1:0] debug_paddr[DCACHE_WBUF_DEPTH-1:0];
+  logic [CVA6Cfg.PLEN-1:0] debug_paddr[DCACHE_WBUF_DEPTH-1:0];
 
   wbuffer_t wbuffer_check_mux, wbuffer_dirty_mux;
 
@@ -266,20 +266,20 @@ module wt_dcache_wbuffer
   // note: openpiton can only handle aligned offsets + size, and hence
   // we have to split unaligned data into multiple transfers (see toSize64)
   // e.g. if we have the following valid bytes: 0011_1001 -> TX0: 0000_0001, TX1: 0000_1000, TX2: 0011_0000
-  if (riscv::IS_XLEN64) begin : gen_size_64b
+  if (CVA6Cfg.IS_XLEN64) begin : gen_size_64b
     assign miss_size_o = {1'b0, toSize64(bdirty[dirty_ptr])};
   end else begin : gen_size_32b
     assign miss_size_o = {1'b0, toSize32(bdirty[dirty_ptr])};
   end
 
   // replicate transfers shorter than a dword
-  assign miss_wdata_o = riscv::IS_XLEN64 ? repData64(
+  assign miss_wdata_o = CVA6Cfg.IS_XLEN64 ? repData64(
       wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]
   ) : repData32(
       wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]
   );
   if (CVA6Cfg.DATA_USER_EN) begin
-    assign miss_wuser_o = riscv::IS_XLEN64 ? repData64(
+    assign miss_wuser_o = CVA6Cfg.IS_XLEN64 ? repData64(
         wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]
     ) : repData32(
         wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]
@@ -288,7 +288,7 @@ module wt_dcache_wbuffer
     assign miss_wuser_o = '0;
   end
 
-  assign tx_be = riscv::IS_XLEN64 ? to_byte_enable8(
+  assign tx_be = CVA6Cfg.IS_XLEN64 ? to_byte_enable8(
       bdirty_off, miss_size_o[1:0]
   ) : to_byte_enable4(
       bdirty_off, miss_size_o[1:0]

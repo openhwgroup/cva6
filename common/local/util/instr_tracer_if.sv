@@ -45,11 +45,11 @@ interface instr_tracer_if #(
     // address translation
     // stores
     logic                         st_valid;
-    logic [riscv::PLEN-1:0]       st_paddr;
+    logic [CVA6Cfg.PLEN-1:0]       st_paddr;
     // loads
     logic                         ld_valid;
     logic                         ld_kill;
-    logic [riscv::PLEN-1:0]       ld_paddr;
+    logic [CVA6Cfg.PLEN-1:0]       ld_paddr;
     // misprediction
     bp_resolve_t resolve_branch;
     // exceptions

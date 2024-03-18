@@ -35,8 +35,8 @@ module cva6_rvfi
   // CVA6 configuration
   // ------------------------------------------
   // Extended config
-  localparam bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & CVA6Cfg.FpuEn;
-  localparam bit RVD = (riscv::IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
+  localparam bit RVF = (CVA6Cfg.IS_XLEN64 | CVA6Cfg.IS_XLEN32) & CVA6Cfg.FpuEn;
+  localparam bit RVD = (CVA6Cfg.IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
   localparam bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
 
   localparam logic [riscv::XLEN-1:0] IsaCode = (riscv::XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
@@ -73,31 +73,31 @@ module cva6_rvfi
   logic [riscv::XLEN-1:0] rs1_forwarding;
   logic [riscv::XLEN-1:0] rs2_forwarding;
 
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_pc;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_pc;
   fu_op [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_instr_op;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs1;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs2;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rd;
   logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] commit_instr_result;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::VLEN-1:0] commit_instr_valid;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_valid;
 
   logic [riscv::XLEN-1:0] ex_commit_cause;
   logic ex_commit_valid;
 
   riscv::priv_lvl_t priv_lvl;
 
-  logic [riscv::VLEN-1:0] lsu_ctrl_vaddr;
+  logic [CVA6Cfg.VLEN-1:0] lsu_ctrl_vaddr;
   fu_t lsu_ctrl_fu;
   logic [(riscv::XLEN/8)-1:0] lsu_ctrl_be;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id;
 
   logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][riscv::XLEN-1:0] wbdata;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
-  logic [riscv::PLEN-1:0] mem_paddr;
+  logic [CVA6Cfg.PLEN-1:0] mem_paddr;
   logic debug_mode;
   logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata;
 
-  logic [riscv::VLEN-1:0] lsu_addr;
+  logic [CVA6Cfg.VLEN-1:0] lsu_addr;
   logic [(riscv::XLEN/8)-1:0] lsu_rmask;
   logic [(riscv::XLEN/8)-1:0] lsu_wmask;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_addr_trans_id;
@@ -198,7 +198,7 @@ module cva6_rvfi
   typedef struct packed {
     logic [riscv::XLEN-1:0] rs1_rdata;
     logic [riscv::XLEN-1:0] rs2_rdata;
-    logic [riscv::VLEN-1:0] lsu_addr;
+    logic [CVA6Cfg.VLEN-1:0] lsu_addr;
     logic [(riscv::XLEN/8)-1:0] lsu_rmask;
     logic [(riscv::XLEN/8)-1:0] lsu_wmask;
     logic [riscv::XLEN-1:0] lsu_wdata;
@@ -464,22 +464,22 @@ module cva6_rvfi
           rdata:
           csr.pmpcfg_q[i].addr_mode[1]
           == 1'b1 ?
-          {'0, csr.pmpaddr_q[i][riscv::PLEN-3:0]}
+          {'0, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
           : {
           '0
           ,
-          csr.pmpaddr_q[i][riscv::PLEN-3:1]
+          csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1]
           ,
           1'b0
           },
           wdata:
           csr.pmpcfg_q[i].addr_mode[1]
           == 1'b1 ?
-          {'0, csr.pmpaddr_q[i][riscv::PLEN-3:0]}
+          {'0, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
           : {
           '0
           ,
-          csr.pmpaddr_q[i][riscv::PLEN-3:1]
+          csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1]
           ,
           1'b0
           },

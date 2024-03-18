@@ -32,7 +32,7 @@ module bht #(
     // Debug mode state - CSR
     input logic debug_mode_i,
     // Virtual PC - CACHE
-    input logic [riscv::VLEN-1:0] vpc_i,
+    input logic [CVA6Cfg.VLEN-1:0] vpc_i,
     // Update bht with resolved address - EXECUTE
     input bht_update_t bht_update_i,
     // Prediction from bht - FRONTEND

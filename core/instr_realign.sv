@@ -36,13 +36,13 @@ module instr_realign
     // Instruction is unaligned - FRONTEND
     output logic serving_unaligned_o,
     // 32-bit block address - CACHE
-    input logic [riscv::VLEN-1:0] address_i,
+    input logic [CVA6Cfg.VLEN-1:0] address_i,
     // 32-bit block - CACHE
     input logic [CVA6Cfg.FETCH_WIDTH-1:0] data_i,
     // instruction is valid - FRONTEND
     output logic [CVA6Cfg.INSTR_PER_FETCH-1:0] valid_o,
     // Instruction address - FRONTEND
-    output logic [CVA6Cfg.INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr_o,
+    output logic [CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] addr_o,
     // Instruction - instr_scan&instr_queue
     output logic [CVA6Cfg.INSTR_PER_FETCH-1:0][31:0] instr_o
 );
@@ -59,7 +59,7 @@ module instr_realign
   // the last instruction was unaligned
   logic unaligned_d, unaligned_q;
   // register to save the unaligned address
-  logic [riscv::VLEN-1:0] unaligned_address_d, unaligned_address_q;
+  logic [CVA6Cfg.VLEN-1:0] unaligned_address_d, unaligned_address_q;
   // we have an unaligned instruction
   assign serving_unaligned_o = unaligned_q;
 
@@ -67,7 +67,7 @@ module instr_realign
   if (CVA6Cfg.FETCH_WIDTH == 32) begin : realign_bp_32
     always_comb begin : re_align
       unaligned_d = unaligned_q;
-      unaligned_address_d = {address_i[riscv::VLEN-1:2], 2'b10};
+      unaligned_address_d = {address_i[CVA6Cfg.VLEN-1:2], 2'b10};
       unaligned_instr_d = data_i[31:16];
 
       valid_o[0] = valid_i;
@@ -76,7 +76,7 @@ module instr_realign
 
       valid_o[1] = 1'b0;
       instr_o[1] = '0;
-      addr_o[1] = {address_i[riscv::VLEN-1:2], 2'b10};
+      addr_o[1] = {address_i[CVA6Cfg.VLEN-1:2], 2'b10};
 
       // this instruction is compressed or the last instruction was unaligned
       if (instr_is_compressed[0] || unaligned_q) begin
@@ -94,7 +94,7 @@ module instr_realign
           // save the upper bits for next cycle
           unaligned_d = 1'b1;
           unaligned_instr_d = data_i[31:16];
-          unaligned_address_d = {address_i[riscv::VLEN-1:2], 2'b10};
+          unaligned_address_d = {address_i[CVA6Cfg.VLEN-1:2], 2'b10};
         end
       end  // else -> normal fetch
 
@@ -105,7 +105,7 @@ module instr_realign
         if (!instr_is_compressed[0]) begin
           valid_o = '0;
           unaligned_d = 1'b1;
-          unaligned_address_d = {address_i[riscv::VLEN-1:2], 2'b10};
+          unaligned_address_d = {address_i[CVA6Cfg.VLEN-1:2], 2'b10};
           unaligned_instr_d = data_i[15:0];
           // the instruction isn't compressed but only the lower is ready
         end else begin
@@ -130,13 +130,13 @@ module instr_realign
       addr_o[0]  = address_i;
 
       instr_o[1] = '0;
-      addr_o[1]  = {address_i[riscv::VLEN-1:3], 3'b010};
+      addr_o[1]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b010};
 
       instr_o[2] = {16'b0, data_i[47:32]};
-      addr_o[2]  = {address_i[riscv::VLEN-1:3], 3'b100};
+      addr_o[2]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b100};
 
       instr_o[3] = {16'b0, data_i[63:48]};
-      addr_o[3]  = {address_i[riscv::VLEN-1:3], 3'b110};
+      addr_o[3]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b110};
 
       // last instruction was unaligned
       if (unaligned_q) begin
@@ -172,7 +172,7 @@ module instr_realign
         end else begin
           instr_o[1] = data_i[47:16];
           valid_o[1] = valid_i;
-          addr_o[2]  = {address_i[riscv::VLEN-1:3], 3'b110};
+          addr_o[2]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b110};
           if (instr_is_compressed[2]) begin
             unaligned_d = 1'b0;
             instr_o[2]  = {16'b0, data_i[63:48]};
@@ -211,7 +211,7 @@ module instr_realign
         end else begin
           instr_o[1] = data_i[47:16];
           valid_o[1] = valid_i;
-          addr_o[2]  = {address_i[riscv::VLEN-1:3], 3'b110};
+          addr_o[2]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b110};
           if (instr_is_compressed[3]) begin
             instr_o[2] = data_i[63:48];
             valid_o[2] = valid_i;
@@ -229,12 +229,12 @@ module instr_realign
         // | * | C | C |   I   |
         // | * |   I   |   I   |
       end else begin
-        addr_o[1] = {address_i[riscv::VLEN-1:3], 3'b100};
+        addr_o[1] = {address_i[CVA6Cfg.VLEN-1:3], 3'b100};
 
         if (instr_is_compressed[2]) begin
           instr_o[1] = {16'b0, data_i[47:32]};
           valid_o[1] = valid_i;
-          addr_o[2]  = {address_i[riscv::VLEN-1:3], 3'b110};
+          addr_o[2]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b110};
           if (instr_is_compressed[3]) begin
             // | * | C | C |   I   |
             valid_o[2] = valid_i;
@@ -267,7 +267,7 @@ module instr_realign
           // | * |   I   | C | x  -> aligned
           // |   I   | C | C | x  -> again unaligned
           // | * | C | C | C | x  -> aligned
-          addr_o[0] = {address_i[riscv::VLEN-1:3], 3'b010};
+          addr_o[0] = {address_i[CVA6Cfg.VLEN-1:3], 3'b010};
 
           if (instr_is_compressed[1]) begin
             instr_o[0] = {16'b0, data_i[31:16]};
@@ -276,10 +276,10 @@ module instr_realign
             if (instr_is_compressed[2]) begin
               valid_o[1] = valid_i;
               instr_o[1] = {16'b0, data_i[47:32]};
-              addr_o[1]  = {address_i[riscv::VLEN-1:3], 3'b100};
+              addr_o[1]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b100};
               if (instr_is_compressed[3]) begin
                 instr_o[2] = {16'b0, data_i[63:48]};
-                addr_o[2]  = {address_i[riscv::VLEN-1:3], 3'b110};
+                addr_o[2]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b110};
                 valid_o[2] = valid_i;
               end else begin
                 // this instruction is unaligned
@@ -289,14 +289,14 @@ module instr_realign
               end
             end else begin
               instr_o[1] = data_i[63:32];
-              addr_o[1]  = {address_i[riscv::VLEN-1:3], 3'b100};
+              addr_o[1]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b100};
               valid_o[1] = valid_i;
             end
             // instruction 1 is not compressed -> check slot 3
           end else begin
             instr_o[0] = data_i[47:16];
             valid_o[0] = valid_i;
-            addr_o[1]  = {address_i[riscv::VLEN-1:3], 3'b110};
+            addr_o[1]  = {address_i[CVA6Cfg.VLEN-1:3], 3'b110};
             if (instr_is_compressed[3]) begin
               instr_o[1] = data_i[63:48];
               valid_o[1] = valid_i;
@@ -324,7 +324,7 @@ module instr_realign
               // regular instruction -> unaligned
             end else begin
               unaligned_d = 1'b1;
-              unaligned_address_d = {address_i[riscv::VLEN-1:3], 3'b110};
+              unaligned_address_d = {address_i[CVA6Cfg.VLEN-1:3], 3'b110};
               unaligned_instr_d = data_i[63:48];
             end
             // instruction is a regular instruction
@@ -340,7 +340,7 @@ module instr_realign
           valid_o = '0;
           if (!instr_is_compressed[3]) begin
             unaligned_d = 1'b1;
-            unaligned_address_d = {address_i[riscv::VLEN-1:3], 3'b110};
+            unaligned_address_d = {address_i[CVA6Cfg.VLEN-1:3], 3'b110};
             unaligned_instr_d = data_i[63:48];
           end else begin
             valid_o[3] = valid_i;

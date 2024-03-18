@@ -163,7 +163,12 @@ package config_pkg;
   } cva6_user_cfg_t;
 
   typedef struct packed {
+    int unsigned VLEN;
+    int unsigned PLEN;
+    bit IS_XLEN32;
+    bit IS_XLEN64;
     int unsigned XLEN_ALIGN_BYTES;
+    int unsigned ASID_WIDTH;
 
     bit          FPGA_EN;
     /// Number of commit ports, i.e., maximum number of instructions that the
@@ -257,6 +262,7 @@ package config_pkg;
     int unsigned DATA_USER_EN;
     int unsigned FETCH_USER_WIDTH;
     int unsigned FETCH_USER_EN;
+    int unsigned AXI_USER_EN;
 
     int unsigned FETCH_WIDTH;
     int unsigned INSTR_PER_FETCH;

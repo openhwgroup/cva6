@@ -123,7 +123,7 @@ module wt_dcache_mem
   logic [  (riscv::XLEN/8)-1:0] wbuffer_be;
   logic [riscv::XLEN-1:0] wbuffer_rdata, rdata;
   logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wbuffer_ruser, ruser;
-  logic [riscv::PLEN-1:0] wbuffer_cmp_addr;
+  logic [CVA6Cfg.PLEN-1:0] wbuffer_cmp_addr;
 
   logic cmp_en_d, cmp_en_q;
   logic rd_acked;

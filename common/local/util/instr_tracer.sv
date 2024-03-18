@@ -192,7 +192,7 @@ module instr_tracer #(
     bp              = {};
   endfunction
 
-  function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
+  function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [CVA6Cfg.PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
     automatic instr_trace_item #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
@@ -206,7 +206,7 @@ module instr_tracer #(
     $fwrite(f, {print_instr, "\n"});
   endfunction
 
-  function void printException(logic [riscv::VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
+  function void printException(logic [CVA6Cfg.VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
     automatic ex_trace_item #(
       .CVA6Cfg(CVA6Cfg),
       .interrupts_t(interrupts_t),

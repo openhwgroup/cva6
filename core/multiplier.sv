@@ -132,7 +132,8 @@ module multiplier
       CLMULR:              result_o = clmulr_q;
       // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
       default: begin
-        if (operator_q == MULW && riscv::IS_XLEN64) result_o = sext32(CVA6Cfg, mult_result_q[31:0]);
+        if (operator_q == MULW && CVA6Cfg.IS_XLEN64)
+          result_o = sext32(CVA6Cfg, mult_result_q[31:0]);
         else result_o = mult_result_q[riscv::XLEN-1:0];  // including MUL
       end
     endcase

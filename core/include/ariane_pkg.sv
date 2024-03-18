@@ -29,7 +29,6 @@
 package ariane_pkg;
 
   // TODO: Slowly move those parameters to the new system.
-  localparam ASID_WIDTH = (riscv::XLEN == 64) ? 16 : 1;
   localparam BITS_SATURATION_COUNTER = 2;
 
   localparam ISSUE_WIDTH = 1;
@@ -127,7 +126,7 @@ package ariane_pkg;
     | riscv::SSTATUS_UPIE
     | riscv::SSTATUS_SPIE
     | riscv::SSTATUS_UXL
-    | riscv::sstatus_sd(riscv::IS_XLEN64);
+    | riscv::sstatus_sd(Cfg.IS_XLEN64);
   endfunction
 
   localparam logic [63:0] SMODE_STATUS_WRITE_MASK = riscv::SSTATUS_SIE
@@ -139,9 +138,6 @@ package ariane_pkg;
   // ---------------
   // AXI
   // ---------------
-
-  localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
-  localparam AXI_USER_WIDTH = cva6_config_pkg::CVA6ConfigDataUserWidth;
 
   typedef enum logic {
     SINGLE_REQ,

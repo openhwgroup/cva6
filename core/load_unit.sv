@@ -50,9 +50,9 @@ module load_unit
     // Request address translation - TO_BE_COMPLETED
     output logic translation_req_o,
     // Virtual address - TO_BE_COMPLETED
-    output logic [riscv::VLEN-1:0] vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
     // Physical address - TO_BE_COMPLETED
-    input logic [riscv::PLEN-1:0] paddr_i,
+    input logic [CVA6Cfg.PLEN-1:0] paddr_i,
     // Excepted which appears before load - TO_BE_COMPLETED
     input exception_t ex_i,
     // Data TLB hit - lsu
@@ -481,7 +481,7 @@ module load_unit
   // prepare these signals for faster selection in the next cycle
   assign rdata_is_signed    =   ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
   assign rdata_is_fp_signed =   ldbuf_rdata.operation inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW}) & riscv::IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
+  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW}) & CVA6Cfg.IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
                                 ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH})                     ? ldbuf_rdata.address_offset + 1 :
                                                                                                                          ldbuf_rdata.address_offset;
 
