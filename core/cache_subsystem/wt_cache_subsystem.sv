@@ -88,7 +88,7 @@ module wt_cache_subsystem
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
     logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
     logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
-    logic [riscv::XLEN-1:0] data;  // word width of processor (no block stores at the moment)
+    logic [CVA6Cfg.XLEN-1:0] data;  // word width of processor (no block stores at the moment)
     logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
     logic nc;  // noncacheable
     logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
@@ -251,7 +251,7 @@ module wt_cache_subsystem
         icache_dreq_o.data
     );
 
-  for (genvar j = 0; j < riscv::XLEN / 8; j++) begin : gen_invalid_write_assertion
+  for (genvar j = 0; j < CVA6Cfg.XLEN / 8; j++) begin : gen_invalid_write_assertion
     a_invalid_write_data :
     assert property (
       @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[NumPorts-1].data_req |-> dcache_req_ports_i[NumPorts-1].data_be[j] |-> (|dcache_req_ports_i[NumPorts-1].data_wdata[j*8+:8] !== 1'hX))

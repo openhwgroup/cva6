@@ -39,14 +39,14 @@ module scoreboard #(
     // rs1 operand address - issue_read_operands
     input  logic [ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
     // rs1 operand - issue_read_operands
-    output logic [              riscv::XLEN-1:0] rs1_o,
+    output logic [             CVA6Cfg.XLEN-1:0] rs1_o,
     // rs1 operand is valid - issue_read_operands
     output logic                                 rs1_valid_o,
 
     // rs2 operand address - issue_read_operands
     input  logic [ariane_pkg::REG_ADDR_SIZE-1:0] rs2_i,
     // rs2 operand - issue_read_operands
-    output logic [              riscv::XLEN-1:0] rs2_o,
+    output logic [             CVA6Cfg.XLEN-1:0] rs2_o,
     // rs2 operand is valid - issue_read_operands
     output logic                                 rs2_valid_o,
 
@@ -89,7 +89,7 @@ module scoreboard #(
     // Transaction ID at which to write the result back - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_i,
     // Results to write back - TO_BE_COMPLETED
-    input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,
     // Exception from a functional unit (e.g.: ld/st exception) - TO_BE_COMPLETED
     input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_i,
     // Indicates valid results - TO_BE_COMPLETED
@@ -331,7 +331,7 @@ module scoreboard #(
   // ----------------------------------
   // read operand interface: same logic as register file
   logic [CVA6Cfg.NR_SB_ENTRIES+CVA6Cfg.NrWbPorts-1:0] rs1_fwd_req, rs2_fwd_req, rs3_fwd_req;
-  logic [CVA6Cfg.NR_SB_ENTRIES+CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] rs_data;
+  logic [CVA6Cfg.NR_SB_ENTRIES+CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] rs_data;
   logic rs1_valid, rs2_valid, rs3_valid;
 
   // WB ports have higher prio than entries
@@ -375,7 +375,7 @@ module scoreboard #(
   // this implicitly gives higher prio to WB ports
   rr_arb_tree #(
       .NumIn(CVA6Cfg.NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),
-      .DataWidth(riscv::XLEN),
+      .DataWidth(CVA6Cfg.XLEN),
       .ExtPrio(1'b1),
       .AxiVldRdy(1'b1)
   ) i_sel_rs1 (
@@ -394,7 +394,7 @@ module scoreboard #(
 
   rr_arb_tree #(
       .NumIn(CVA6Cfg.NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),
-      .DataWidth(riscv::XLEN),
+      .DataWidth(CVA6Cfg.XLEN),
       .ExtPrio(1'b1),
       .AxiVldRdy(1'b1)
   ) i_sel_rs2 (
@@ -411,11 +411,11 @@ module scoreboard #(
       .idx_o  ()
   );
 
-  logic [riscv::XLEN-1:0] rs3;
+  logic [CVA6Cfg.XLEN-1:0] rs3;
 
   rr_arb_tree #(
       .NumIn(CVA6Cfg.NR_SB_ENTRIES + CVA6Cfg.NrWbPorts),
-      .DataWidth(riscv::XLEN),
+      .DataWidth(CVA6Cfg.XLEN),
       .ExtPrio(1'b1),
       .AxiVldRdy(1'b1)
   ) i_sel_rs3 (
@@ -433,7 +433,7 @@ module scoreboard #(
   );
 
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_three_port
-    assign rs3_o = rs3[riscv::XLEN-1:0];
+    assign rs3_o = rs3[CVA6Cfg.XLEN-1:0];
   end else begin : gen_fp_three_port
     assign rs3_o = rs3[CVA6Cfg.FLen-1:0];
   end

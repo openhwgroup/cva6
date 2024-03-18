@@ -97,7 +97,7 @@ module issue_stage
     // The branch engine uses the write back from the ALU - EX_STAGE
     input bp_resolve_t resolved_branch_i,
     // TO_BE_COMPLETED - EX_STAGE
-    input logic [CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0] wbdata_i,
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,
     // exception from execute stage or CVXIF - EX_STAGE
     input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_i,
     // TO_BE_COMPLETED - EX_STAGE
@@ -107,7 +107,7 @@ module issue_stage
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
     // TO_BE_COMPLETED - EX_STAGE
-    input logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
     // GPR write enable - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
     // FPR write enable - EX_STAGE
@@ -126,17 +126,17 @@ module issue_stage
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)
   // ---------------------------------------------------
-  typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? riscv::XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
+  typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? CVA6Cfg.XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
 
   fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_sb_iro;
   fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;
 
   logic              [   REG_ADDR_SIZE-1:0] rs1_iro_sb;
-  logic              [     riscv::XLEN-1:0] rs1_sb_iro;
+  logic              [    CVA6Cfg.XLEN-1:0] rs1_sb_iro;
   logic                                     rs1_valid_sb_iro;
 
   logic              [   REG_ADDR_SIZE-1:0] rs2_iro_sb;
-  logic              [     riscv::XLEN-1:0] rs2_sb_iro;
+  logic              [    CVA6Cfg.XLEN-1:0] rs2_sb_iro;
   logic                                     rs2_valid_iro_sb;
 
   logic              [   REG_ADDR_SIZE-1:0] rs3_iro_sb;
@@ -148,8 +148,8 @@ module issue_stage
   logic                                     issue_instr_valid_sb_iro;
   logic                                     issue_ack_iro_sb;
 
-  logic              [     riscv::XLEN-1:0] rs1_forwarding_xlen;
-  logic              [     riscv::XLEN-1:0] rs2_forwarding_xlen;
+  logic              [    CVA6Cfg.XLEN-1:0] rs1_forwarding_xlen;
+  logic              [    CVA6Cfg.XLEN-1:0] rs2_forwarding_xlen;
 
   assign rs1_forwarding_o = rs1_forwarding_xlen[CVA6Cfg.VLEN-1:0];
   assign rs2_forwarding_o = rs2_forwarding_xlen[CVA6Cfg.VLEN-1:0];

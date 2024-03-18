@@ -49,7 +49,7 @@ module load_store_unit
     // Load transaction ID - ISSUE_STAGE
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_o,
     // Load result - ISSUE_STAGE
-    output logic [riscv::XLEN-1:0] load_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] load_result_o,
     // Load result is valid - ISSUE_STAGE
     output logic load_valid_o,
     // Load exception - ISSUE_STAGE
@@ -58,7 +58,7 @@ module load_store_unit
     // Store transaction ID - ISSUE_STAGE
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] store_trans_id_o,
     // Store result - ISSUE_STAGE
-    output logic [riscv::XLEN-1:0] store_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] store_result_o,
     // Store result is valid - ISSUE_STAGE
     output logic store_valid_o,
     // Store exception - ISSUE_STAGE
@@ -128,30 +128,30 @@ module load_store_unit
 );
 
   // data is misaligned
-  logic                            data_misaligned;
+  logic                             data_misaligned;
   // --------------------------------------
   // 1st register stage - (stall registers)
   // --------------------------------------
   // those are the signals which are always correct
   // e.g.: they keep the value in the stall case
-  lsu_ctrl_t                       lsu_ctrl;
+  lsu_ctrl_t                        lsu_ctrl;
 
-  logic                            pop_st;
-  logic                            pop_ld;
+  logic                             pop_st;
+  logic                             pop_ld;
 
   // ------------------------------
   // Address Generation Unit (AGU)
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
-  logic      [   CVA6Cfg.VLEN-1:0] vaddr_i;
-  logic      [    riscv::XLEN-1:0] vaddr_xlen;
-  logic                            overflow;
-  logic      [(riscv::XLEN/8)-1:0] be_i;
+  logic      [    CVA6Cfg.VLEN-1:0] vaddr_i;
+  logic      [    CVA6Cfg.XLEN-1:0] vaddr_xlen;
+  logic                             overflow;
+  logic      [(CVA6Cfg.XLEN/8)-1:0] be_i;
 
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
   assign vaddr_i = vaddr_xlen[CVA6Cfg.VLEN-1:0];
-  // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
-  assign overflow = (CVA6Cfg.IS_XLEN64 && (!((&vaddr_xlen[riscv::XLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|vaddr_xlen[riscv::XLEN-1:CVA6Cfg.SV-1]) == 1'b0)));
+  // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.XLEN-1:38] or [CVA6Cfg.XLEN-1:31] are equal
+  assign overflow = (CVA6Cfg.IS_XLEN64 && (!((&vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|vaddr_xlen[CVA6Cfg.XLEN-1:CVA6Cfg.SV-1]) == 1'b0)));
 
   logic                    st_valid_i;
   logic                    ld_valid_i;
@@ -169,10 +169,10 @@ module load_store_unit
 
   logic                                   ld_valid;
   logic       [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
-  logic       [          riscv::XLEN-1:0] ld_result;
+  logic       [         CVA6Cfg.XLEN-1:0] ld_result;
   logic                                   st_valid;
   logic       [CVA6Cfg.TRANS_ID_BITS-1:0] st_trans_id;
-  logic       [          riscv::XLEN-1:0] st_result;
+  logic       [         CVA6Cfg.XLEN-1:0] st_result;
 
   logic       [                     11:0] page_offset;
   logic                                   page_offset_matches;
@@ -184,7 +184,7 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
-  if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
+  if (MMU_PRESENT && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .exception_t      (exception_t),
@@ -219,7 +219,7 @@ module load_store_unit
         .pmpaddr_i,
         .*
     );
-  end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
+  end else if (MMU_PRESENT && (CVA6Cfg.XLEN == 32)) begin : gen_mmu_sv32
     cva6_mmu_sv32 #(
         .CVA6Cfg          (CVA6Cfg),
         .exception_t      (exception_t),
@@ -458,7 +458,7 @@ module load_store_unit
   // can augment the exception if other memory related exceptions like a page fault or access errors
   always_comb begin : data_misaligned_detection
 
-    misaligned_exception = {{riscv::XLEN{1'b0}}, {riscv::XLEN{1'b0}}, 1'b0};
+    misaligned_exception = {{CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, 1'b0};
 
     data_misaligned = 1'b0;
 
@@ -501,13 +501,13 @@ module load_store_unit
         misaligned_exception.cause = riscv::LD_ADDR_MISALIGNED;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
 
       end else if (lsu_ctrl.fu == STORE) begin
         misaligned_exception.cause = riscv::ST_ADDR_MISALIGNED;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
       end
     end
 
@@ -517,13 +517,13 @@ module load_store_unit
         misaligned_exception.cause = riscv::LD_ACCESS_FAULT;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
 
       end else if (lsu_ctrl.fu == STORE) begin
         misaligned_exception.cause = riscv::ST_ACCESS_FAULT;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{riscv::XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
       end
     end
   end

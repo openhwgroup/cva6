@@ -17,7 +17,7 @@ module mult
     // Mult instruction is valid - ISSUE_STAGE
     input  logic                                 mult_valid_i,
     // Mult result - ISSUE_STAGE
-    output logic     [          riscv::XLEN-1:0] result_o,
+    output logic     [         CVA6Cfg.XLEN-1:0] result_o,
     // Mult result is valid - ISSUE_STAGE
     output logic                                 mult_valid_o,
     // Mutl is ready - ISSUE_STAGE
@@ -30,8 +30,8 @@ module mult
   logic div_ready_i;  // receiver of division result is able to accept the result
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mul_trans_id;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] div_trans_id;
-  logic [riscv::XLEN-1:0] mul_result;
-  logic [riscv::XLEN-1:0] div_result;
+  logic [CVA6Cfg.XLEN-1:0] mul_result;
+  logic [CVA6Cfg.XLEN-1:0] div_result;
 
   logic div_valid_op;
   logic mul_valid_op;
@@ -74,13 +74,13 @@ module mult
   // ---------------------
   // Division
   // ---------------------
-  logic [riscv::XLEN-1:0]
+  logic [CVA6Cfg.XLEN-1:0]
       operand_b,
       operand_a;  // input operands after input MUX (input silencing, word operations or full inputs)
-  logic [riscv::XLEN-1:0] result;  // result before result mux
+  logic [CVA6Cfg.XLEN-1:0] result;  // result before result mux
 
-  logic                   div_signed;  // signed or unsigned division
-  logic                   rem;  // is it a reminder (or not a reminder e.g.: a division)
+  logic                    div_signed;  // signed or unsigned division
+  logic                    rem;  // is it a reminder (or not a reminder e.g.: a division)
   logic word_op_d, word_op_q;  // save whether the operation was signed or not
 
   // is this a signed op?
@@ -102,8 +102,8 @@ module mult
       if (CVA6Cfg.IS_XLEN64 && (fu_data_i.operation == DIVW || fu_data_i.operation == DIVUW || fu_data_i.operation == REMW || fu_data_i.operation == REMUW)) begin
         // yes so check if we should sign extend this is only done for a signed operation
         if (div_signed) begin
-          operand_a = sext32(CVA6Cfg, fu_data_i.operand_a[31:0]);
-          operand_b = sext32(CVA6Cfg, fu_data_i.operand_b[31:0]);
+          operand_a = sext32to64(fu_data_i.operand_a[31:0]);
+          operand_b = sext32to64(fu_data_i.operand_b[31:0]);
         end else begin
           operand_a = fu_data_i.operand_a[31:0];
           operand_b = fu_data_i.operand_b[31:0];
@@ -125,7 +125,7 @@ module mult
   // ---------------------
   serdiv #(
       .CVA6Cfg(CVA6Cfg),
-      .WIDTH  (riscv::XLEN)
+      .WIDTH  (CVA6Cfg.XLEN)
   ) i_div (
       .clk_i    (clk_i),
       .rst_ni   (rst_ni),
@@ -144,7 +144,7 @@ module mult
 
   // Result multiplexer
   // if it was a signed word operation the bit will be set and the result will be sign extended accordingly
-  assign div_result = (CVA6Cfg.IS_XLEN64 && word_op_q) ? sext32(CVA6Cfg, result) : result;
+  assign div_result = (CVA6Cfg.IS_XLEN64 && word_op_q) ? sext32to64(result) : result;
 
   // ---------------------
   // Registers

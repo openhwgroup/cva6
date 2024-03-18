@@ -42,8 +42,8 @@ module store_buffer
 
     input  logic [CVA6Cfg.PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
     output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
-    input logic [riscv::XLEN-1:0] data_i,  // data which is placed in the queue
-    input logic [(riscv::XLEN/8)-1:0] be_i,  // byte enable in
+    input logic [CVA6Cfg.XLEN-1:0] data_i,  // data which is placed in the queue
+    input logic [(CVA6Cfg.XLEN/8)-1:0] be_i,  // byte enable in
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
@@ -56,8 +56,8 @@ module store_buffer
   // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
   struct packed {
     logic [CVA6Cfg.PLEN-1:0] address;
-    logic [riscv::XLEN-1:0] data;
-    logic [(riscv::XLEN/8)-1:0] be;
+    logic [CVA6Cfg.XLEN-1:0] data;
+    logic [(CVA6Cfg.XLEN/8)-1:0] be;
     logic [1:0] data_size;
     logic valid;  // this entry is valid, we need this for checking if the address offset matches
   }
