@@ -1,0 +1,28 @@
+# RISC-V Instruction Set Manual
+
+[![RISC-V ISA Build](https://github.com/riscv/riscv-isa-manual/actions/workflows/isa-build.yml/badge.svg)](https://github.com/riscv/riscv-isa-manual/actions/workflows/isa-build.yml)
+
+This repository contains the source files for the RISC-V Instruction Set Manual, which is comprised of the Privileged RISC-V Instruction Set Manual (LaTeX) and the Unprivileged RISC-V Instruction Set Manual (AsciiDoc). The preface of each document indicates the version of each standard that has been formally ratified by RISC-V International.
+
+This work is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). See the [LICENSE](LICENSE) file for details.
+
+The RISC-V Instruction Set Manual is organized into the following volumes:
+
+- Volume I: User-Level ISA
+- Volume II: Privileged Architecture
+
+## Official and Draft Versions
+
+- **Official versions** of the specifications are available at the [RISC-V International website](https://riscv.org/specifications/).
+- **Compiled versions of the most recent drafts** of the specifications can be found on the [GitHub releases page](https://github.com/riscv/riscv-isa-manual/releases/latest).
+- **Older official versions** of the specifications are archived at the [GitHub releases archive](https://github.com/riscv/riscv-isa-manual/releases/tag/archive).
+
+The canonical list of **open-source RISC-V implementations' marchid CSR values** is available in the [marchid.md file](https://github.com/riscv/riscv-isa-manual/blob/main/marchid.md).
+
+## Contributing
+
+If you would like to contribute to this documentation, please refer to the [Documentation Developer's Guide](https://github.com/riscv/docs-dev-guide).
+
+The recommended method for building the PDF files is to use the Docker Image, as described in the [RISC-V Docs Base Container Image repository](https://github.com/riscv/riscv-docs-base-container-image).
+
+Alternative build methods, such as local builds and GitHub Action builds, are also available and described in the Documentation Developer's Guide.
