@@ -1,0 +1,11 @@
+Expressions to check
+
+- implement*: vol2 02 Oct 2023: 336
+- reserved
+- unspecified
+- support: vol2 02 Oct 2023: 134
+- supported: vol2 02 Oct 2023: 67 (used as "optionally implemented")
+- may/might
+- can/could
+- platform* !!!
+- 
