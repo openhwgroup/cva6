@@ -70,7 +70,7 @@
      - in
      - rs1 operand
      - scoreboard
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``rs1_valid_i``
      - in
@@ -88,7 +88,7 @@
      - in
      - rs2 operand
      - scoreboard
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``rs2_valid_i``
      - in
@@ -136,19 +136,19 @@
      - out
      - Unregistered version of fu_data_o.operanda
      - TO_BE_COMPLETED
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``rs2_forwarding_o``
      - out
      - Unregistered version of fu_data_o.operandb
      - TO_BE_COMPLETED
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``pc_o``
      - out
      - Instruction pc
      - TO_BE_COMPLETED
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``is_compressed_instr_o``
      - out
@@ -232,7 +232,7 @@
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``we_gpr_i``
      - in

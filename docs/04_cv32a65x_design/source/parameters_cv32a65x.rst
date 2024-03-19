@@ -16,6 +16,14 @@
      - description
      - Value
 
+   * - XLEN
+     - General Purpose Register Size (in bits)
+     - 32
+
+   * - FPGA_EN
+     - Is FPGA optimization of CV32A6
+     - 0
+
    * - NrCommitPorts
      - Number of commit ports
      - 1
@@ -80,6 +88,10 @@
      - Zcb RISC-V extension
      - 1
 
+   * - RVZCMP
+     - Zcmp RISC-V extension
+     - 0
+
    * - XFVec
      - Non standard Vector Floating Point
      - 0
@@ -99,6 +111,10 @@
    * - RVU
      - User mode
      - 0
+
+   * - NrScoreboardEntries
+     - Scoreboard length
+     - 4
 
    * - HaltAddress
      - Address to jump when halt request
@@ -194,4 +210,40 @@
 
    * - AxiBurstWriteEn
      - AXI burst in write
+     - 0
+
+   * - IcacheByteSize
+     - Instruction cache size (in bytes)
+     - 2048
+
+   * - IcacheSetAssoc
+     - Instruction cache associativity (number of ways)
+     - 2
+
+   * - IcacheLineWidth
+     - Instruction line width
+     - 128
+
+   * - DcacheByteSize
+     - Data cache size (in bytes)
+     - 32768
+
+   * - DcacheSetAssoc
+     - Data cache associativity (number of ways)
+     - 8
+
+   * - DcacheLineWidth
+     - Data line width
+     - 128
+
+   * - DataUserEn
+     - TODO
+     - 0
+
+   * - FetchUserWidth
+     - TODO
+     - 32
+
+   * - FetchUserEn
+     - TODO
      - 0
