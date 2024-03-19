@@ -38,7 +38,7 @@ module cva6_mmu
     parameter int unsigned           DATA_TLB_ENTRIES             = 4,
     parameter int unsigned           SHARED_TLB_DEPTH             = 64,
     parameter int unsigned           USE_SHARED_TLB               = 1,
-    parameter logic                  HYP_EXT                      = 0,
+    parameter int unsigned           HYP_EXT                      = 0,
     parameter int                    ASID_WIDTH       [HYP_EXT:0],
     parameter int unsigned           VPN_LEN                      = 1,
     parameter int unsigned           PT_LEVELS                    = 1
@@ -341,7 +341,7 @@ module cva6_mmu
   always_comb begin : instr_interface
     // MMU disabled: just pass through
     icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-    icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):0];
+    icache_areq_o.fetch_paddr  = CVA6Cfg.PLEN'(icache_areq_i.fetch_vaddr[((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):0]);
     // two potential exception sources:
     // 1. HPTW threw an exception -> signal with a page fault exception
     // 2. We got an access error because of insufficient permissions -> throw an access exception
@@ -576,7 +576,7 @@ module cva6_mmu
     if (HYP_EXT == 1) begin
       lsu_tinst_n          = lsu_tinst_i;
       hs_ld_st_inst_n      = hs_ld_st_inst_i;
-      lsu_vaddr_n[HYP_EXT] = dtlb_gpaddr;
+      lsu_vaddr_n[HYP_EXT][(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0] = dtlb_gpaddr[(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0];
       csr_hs_ld_st_inst_o  = hs_ld_st_inst_i || hs_ld_st_inst_q;
       daccess_err[HYP_EXT] = en_ld_st_translation_i[HYP_EXT] && !dtlb_pte_q[HYP_EXT].u;
     end
@@ -624,7 +624,7 @@ module cva6_mmu
             lsu_exception_o = {
               riscv::STORE_GUEST_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
-              lsu_vaddr_q[HYP_EXT][riscv::GPLEN-1:0],
+              lsu_vaddr_q[HYP_EXT][(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0],
               {CVA6Cfg.XLEN{1'b0}},
               en_ld_st_translation_i[HYP_EXT*2],
               1'b1
@@ -672,7 +672,7 @@ module cva6_mmu
             lsu_exception_o = {
               riscv::LOAD_GUEST_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
-              lsu_vaddr_q[HYP_EXT][riscv::GPLEN-1:0],
+              lsu_vaddr_q[HYP_EXT][(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0],
               {CVA6Cfg.XLEN{1'b0}},
               en_ld_st_translation_i[HYP_EXT*2],
               1'b1

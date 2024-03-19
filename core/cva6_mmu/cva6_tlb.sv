@@ -51,38 +51,6 @@ module cva6_tlb
     output logic lu_hit_o
 );
 
-  // computes the paddr based on the page size, ppn and offset
-  function automatic logic [(riscv::GPLEN-1):0] make_gpaddr(
-      input logic s_st_enbl, input logic is_1G, input logic is_2M,
-      input logic [(CVA6Cfg.VLEN-1):0] vaddr, input riscv::pte_t pte);
-    logic [(riscv::GPLEN-1):0] gpaddr;
-    if (s_st_enbl) begin
-      gpaddr = {pte.ppn[(riscv::GPPNW-1):0], vaddr[11:0]};
-      // Giga page
-      if (is_1G) gpaddr[29:12] = vaddr[29:12];
-      // Mega page
-      if (is_2M) gpaddr[20:12] = vaddr[20:12];
-    end else begin
-      gpaddr = vaddr[(riscv::GPLEN-1):0];
-    end
-    return gpaddr;
-  endfunction : make_gpaddr
-
-  // computes the final gppn based on the guest physical address
-  function automatic logic [(riscv::GPPNW-1):0] make_gppn(input logic s_st_enbl, input logic is_1G,
-                                                          input logic is_2M, input logic [28:0] vpn,
-                                                          input riscv::pte_t pte);
-    logic [(riscv::GPPNW-1):0] gppn;
-    if (s_st_enbl) begin
-      gppn = pte.ppn[(riscv::GPPNW-1):0];
-      if (is_2M) gppn[8:0] = vpn[8:0];
-      if (is_1G) gppn[17:0] = vpn[17:0];
-    end else begin
-      gppn = vpn;
-    end
-    return gppn;
-  endfunction : make_gppn
-
   // SV39 defines three levels of page tables
   struct packed {
     logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;
@@ -174,7 +142,6 @@ module cva6_tlb
     g_content    = '{default: 0};
     lu_gpaddr_o  = '{default: 0};
 
-
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // first level match, this may be a giga page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
@@ -189,14 +156,17 @@ module cva6_tlb
 
       if (tags_q[i].valid && &match_asid[i] && match_stage[i]) begin
 
-        if (HYP_EXT == 1 && vpn_match[i][HYP_EXT*2])
-          lu_gpaddr_o = make_gpaddr(
-            v_st_enbl[0],
-            tags_q[i].is_page[0][0],
-            tags_q[i].is_page[1][0],
-            lu_vaddr_i,
-            content_q[i][0]
-          );
+        if (HYP_EXT == 1 && vpn_match[i][HYP_EXT*2]) begin
+          if (v_st_enbl[0]) begin
+            lu_gpaddr_o = {content_q[i][0].ppn[(riscv::GPPNW-1):0], lu_vaddr_i[11:0]};
+            // Giga page
+            if (tags_q[i].is_page[0][0]) lu_gpaddr_o[12+2*VPN_LEN/PT_LEVELS -1:12] = lu_vaddr_i[12+2*VPN_LEN/PT_LEVELS -1:12];
+            // Mega page
+            if (tags_q[i].is_page[HYP_EXT][0]) lu_gpaddr_o[12+VPN_LEN/PT_LEVELS -1:12] = lu_vaddr_i[12+VPN_LEN/PT_LEVELS -1:12];
+          end else begin
+            lu_gpaddr_o =riscv::GPLEN'(lu_vaddr_i[(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0]);
+          end
+        end
 
         if (|level_match[i]) begin
           lu_is_page_o = is_page_o[i];
@@ -216,8 +186,6 @@ module cva6_tlb
       end
     end
   end
-
-
 
   logic [HYP_EXT:0]asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2)is 0, active high
   logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
@@ -243,18 +211,14 @@ module cva6_tlb
 
 
       if (HYP_EXT == 1) begin
-        gppn[i] = make_gppn(
-          tags_q[i].v_st_enbl[0],
-          tags_q[i].is_page[0][0],
-          tags_q[i].is_page[HYP_EXT][0],
-          {
-            tags_q[i].vpn[3*HYP_EXT][(VPN_LEN%PT_LEVELS)-HYP_EXT:0],
-            tags_q[i].vpn[2*HYP_EXT],
-            tags_q[i].vpn[HYP_EXT],
-            tags_q[i].vpn[0]
-          },
-          content_q[i][0]
-        );
+
+        if (tags_q[i].v_st_enbl[0]) begin
+          gppn[i] = content_q[i][0].ppn[(riscv::GPPNW-1):0];
+          if (tags_q[i].is_page[HYP_EXT][0]) gppn[i][VPN_LEN/PT_LEVELS -1:0] = tags_q[i].vpn[0];
+          if (tags_q[i].is_page[0][0]) gppn[i][2*(VPN_LEN/PT_LEVELS)-1:0] = {tags_q[i].vpn[HYP_EXT],tags_q[i].vpn[0]};
+        end else begin
+          gppn[i][VPN_LEN-1:0] = VPN_LEN'(tags_q[i].vpn);
+        end
       end
 
 
