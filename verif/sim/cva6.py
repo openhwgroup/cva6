@@ -411,7 +411,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
 
 
 def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-                 setting_dir, debug_cmd, linker, priv, spike_params):
+                 setting_dir, debug_cmd, linker, priv, spike_params, test_name = None):
   """Run a directed assembly test with ISS
 
   Args:
@@ -455,12 +455,13 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   elf2bin(elf, binary, debug_cmd)
   log_list = []
   # ISS simulation
+  test_log_name = test_name or asm
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     if log_format == 1:
-      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, asm, test_iteration, target))
+      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test_log_name, test_iteration, target))
     else:
-      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, asm, target))
+      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, test_log_name, target))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
@@ -550,7 +551,7 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
 
 def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-          setting_dir, debug_cmd, linker, priv, spike_params):
+          setting_dir, debug_cmd, linker, priv, spike_params, test_name = None):
   """Run a directed c test with ISS
 
   Args:
@@ -592,12 +593,13 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   elf2bin(elf, binary, debug_cmd)
   log_list = []
   # ISS simulation
+  test_log_name = test_name or c
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     if log_format == 1:
-      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, c, test_iteration, target))
+      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test_log_name, test_iteration, target))
     else:
-      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, c, target))
+      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, test_log_name, target))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
@@ -1284,7 +1286,7 @@ def main():
               elif os.path.isfile(path_asm_test):
                 run_assembly(path_asm_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
                              args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
-                             args.priv, args.spike_params)
+                             args.priv, args.spike_params, test_entry['test'])
               else:
                 if not args.debug:
                   logging.error('%s does not exist' % path_asm_test)
@@ -1314,7 +1316,7 @@ def main():
               elif os.path.isfile(path_c_test):
                 run_c(path_c_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
                       args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
-                      args.priv, args.spike_params)
+                      args.priv, args.spike_params, test_entry['test'])
               else:
                 if not args.debug:
                   logging.error('%s does not exist' % path_c_test)
