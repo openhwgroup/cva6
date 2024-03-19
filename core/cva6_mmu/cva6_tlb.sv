@@ -160,9 +160,11 @@ module cva6_tlb
           if (v_st_enbl[0]) begin
             lu_gpaddr_o = {content_q[i][0].ppn[(riscv::GPPNW-1):0], lu_vaddr_i[11:0]};
             // Giga page
-            if (tags_q[i].is_page[0][0]) lu_gpaddr_o[12+2*VPN_LEN/PT_LEVELS -1:12] = lu_vaddr_i[12+2*VPN_LEN/PT_LEVELS -1:12];
+            if (tags_q[i].is_page[0][0])
+              lu_gpaddr_o[12+2*VPN_LEN/PT_LEVELS-1:12] = lu_vaddr_i[12+2*VPN_LEN/PT_LEVELS-1:12];
             // Mega page
-            if (tags_q[i].is_page[HYP_EXT][0]) lu_gpaddr_o[12+VPN_LEN/PT_LEVELS -1:12] = lu_vaddr_i[12+VPN_LEN/PT_LEVELS -1:12];
+            if (tags_q[i].is_page[HYP_EXT][0])
+              lu_gpaddr_o[12+VPN_LEN/PT_LEVELS-1:12] = lu_vaddr_i[12+VPN_LEN/PT_LEVELS-1:12];
           end else begin
             lu_gpaddr_o =riscv::GPLEN'(lu_vaddr_i[(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0]);
           end
@@ -214,8 +216,9 @@ module cva6_tlb
 
         if (tags_q[i].v_st_enbl[0]) begin
           gppn[i] = content_q[i][0].ppn[(riscv::GPPNW-1):0];
-          if (tags_q[i].is_page[HYP_EXT][0]) gppn[i][VPN_LEN/PT_LEVELS -1:0] = tags_q[i].vpn[0];
-          if (tags_q[i].is_page[0][0]) gppn[i][2*(VPN_LEN/PT_LEVELS)-1:0] = {tags_q[i].vpn[HYP_EXT],tags_q[i].vpn[0]};
+          if (tags_q[i].is_page[HYP_EXT][0]) gppn[i][VPN_LEN/PT_LEVELS-1:0] = tags_q[i].vpn[0];
+          if (tags_q[i].is_page[0][0])
+            gppn[i][2*(VPN_LEN/PT_LEVELS)-1:0] = {tags_q[i].vpn[HYP_EXT], tags_q[i].vpn[0]};
         end else begin
           gppn[i][VPN_LEN-1:0] = VPN_LEN'(tags_q[i].vpn);
         end

@@ -307,7 +307,7 @@ module cva6_ptw
 
         if (HYP_EXT == 1) begin
           gpte[HYP_EXT] = '0;
-          gpaddr_n       = '0;
+          gpaddr_n      = '0;
         end
 
 
@@ -512,9 +512,7 @@ module cva6_ptw
                       ptw_pptr_n = {pte.ppn, vaddr_lvl[HYP_EXT][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
                     end
                     G_FINAL_STAGE: begin
-                      ptw_pptr_n = {
-                        pte.ppn, vaddr_lvl[HYP_EXT*2][ptw_lvl_q[0]], (PT_LEVELS)'(0)
-                      };
+                      ptw_pptr_n = {pte.ppn, vaddr_lvl[HYP_EXT*2][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
                     end
                   endcase
                 end else ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
@@ -599,10 +597,10 @@ module cva6_ptw
       data_rdata_q      <= '0;
       data_rvalid_q     <= 1'b0;
       if (HYP_EXT == 1) begin
-        gpaddr_q     <= '0;
-        gptw_pptr_q  <= '0;
-        ptw_stage_q  <= S_STAGE;
-        gpte[0] <= '0;
+        gpaddr_q    <= '0;
+        gptw_pptr_q <= '0;
+        ptw_stage_q <= S_STAGE;
+        gpte[0]     <= '0;
       end
     end else begin
       state_q           <= state_d;
@@ -617,10 +615,10 @@ module cva6_ptw
       data_rvalid_q     <= req_port_i.data_rvalid;
 
       if (HYP_EXT == 1) begin
-        gpaddr_q     <= gpaddr_n;
-        gptw_pptr_q  <= gptw_pptr_n;
-        ptw_stage_q  <= ptw_stage_d;
-        gpte[0] <= gpte[HYP_EXT];
+        gpaddr_q    <= gpaddr_n;
+        gptw_pptr_q <= gptw_pptr_n;
+        ptw_stage_q <= ptw_stage_d;
+        gpte[0]     <= gpte[HYP_EXT];
       end
     end
   end
