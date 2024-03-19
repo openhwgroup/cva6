@@ -110,25 +110,25 @@ module load_store_unit
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [ CVA6Cfg.PPNW-1:0] vsatp_ppn_i,
+    input  logic             [      CVA6Cfg.PPNW-1:0] vsatp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [  CVA6Cfg.ASID_WIDTH-1:0] vs_asid_i,
+    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] vs_asid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [ CVA6Cfg.PPNW-1:0] hgatp_ppn_i,
+    input  logic             [      CVA6Cfg.PPNW-1:0] hgatp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [  CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
+    input  logic             [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [ CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [  CVA6Cfg.VMID_WIDTH-1:0] vmid_to_be_flushed_i,
+    input  logic             [CVA6Cfg.VMID_WIDTH-1:0] vmid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
+    input  logic             [      CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
+    input  logic             [     CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
     // TLB flush - CONTROLLER
-    input  logic                                flush_tlb_i,
-    input  logic                                flush_tlb_vvma_i,
-    input  logic                                flush_tlb_gvma_i,
+    input  logic                                      flush_tlb_i,
+    input  logic                                      flush_tlb_vvma_i,
+    input  logic                                      flush_tlb_gvma_i,
     // Instruction TLB miss - PERF_COUNTERS
     output logic                                      itlb_miss_o,
     // Data TLB miss - PERF_COUNTERS
@@ -175,8 +175,8 @@ module load_store_unit
   // virtual address as calculated by the AGU in the first cycle
   logic      [    CVA6Cfg.VLEN-1:0] vaddr_i;
   logic      [    CVA6Cfg.XLEN-1:0] vaddr_xlen;
-  logic                            overflow;
-  logic                            g_overflow;
+  logic                             overflow;
+  logic                             g_overflow;
   logic      [(CVA6Cfg.XLEN/8)-1:0] be_i;
 
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
@@ -189,28 +189,28 @@ module load_store_unit
     assign g_overflow = 1'b0;
   end
 
-  logic                   st_valid_i;
-  logic                   ld_valid_i;
-  logic                   ld_translation_req;
-  logic                   st_translation_req;
+  logic                    st_valid_i;
+  logic                    ld_valid_i;
+  logic                    ld_translation_req;
+  logic                    st_translation_req;
   logic [CVA6Cfg.VLEN-1:0] ld_vaddr;
   logic [CVA6Cfg.XLEN-1:0] ld_tinst;
-  logic                   ld_hs_ld_st_inst;
-  logic                   ld_hlvx_inst;
+  logic                    ld_hs_ld_st_inst;
+  logic                    ld_hlvx_inst;
   logic [CVA6Cfg.VLEN-1:0] st_vaddr;
   logic [CVA6Cfg.XLEN-1:0] st_tinst;
-  logic                   st_hs_ld_st_inst;
-  logic                   st_hlvx_inst;
-  logic                   translation_req;
-  logic                   translation_valid;
+  logic                    st_hs_ld_st_inst;
+  logic                    st_hlvx_inst;
+  logic                    translation_req;
+  logic                    translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
-  logic         [  CVA6Cfg.XLEN-1:0] mmu_tinst;
-  logic                             mmu_hs_ld_st_inst;
-  logic                             mmu_hlvx_inst;
-  exception_t                       mmu_exception;
-  logic                             dtlb_hit;
-  logic         [  CVA6Cfg.PPNW-1:0] dtlb_ppn;
+  logic       [         CVA6Cfg.XLEN-1:0] mmu_tinst;
+  logic                                   mmu_hs_ld_st_inst;
+  logic                                   mmu_hlvx_inst;
+  exception_t                             mmu_exception;
+  logic                                   dtlb_hit;
+  logic       [         CVA6Cfg.PPNW-1:0] dtlb_ppn;
 
   logic                                   ld_valid;
   logic       [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
@@ -226,8 +226,8 @@ module load_store_unit
   exception_t                             ld_ex;
   exception_t                             st_ex;
 
-  logic                           hs_ld_st_inst;
-  logic                           hlvx_inst;
+  logic                                   hs_ld_st_inst;
+  logic                                   hlvx_inst;
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------

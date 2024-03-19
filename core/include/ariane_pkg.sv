@@ -775,9 +775,9 @@ package ariane_pkg;
   endfunction : is_trans_2M
 
   // computes the paddr based on the page size, ppn and offset
-  function automatic logic [40:0] make_gpaddr(
-      input logic s_st_enbl, input logic is_1G, input logic is_2M,
-      input logic [63:0] vaddr, input riscv::pte_t pte);
+  function automatic logic [40:0] make_gpaddr(input logic s_st_enbl, input logic is_1G,
+                                              input logic is_2M, input logic [63:0] vaddr,
+                                              input riscv::pte_t pte);
     logic [40:0] gpaddr;
     if (s_st_enbl) begin
       gpaddr = {pte.ppn[28:0], vaddr[11:0]};
@@ -792,9 +792,9 @@ package ariane_pkg;
   endfunction : make_gpaddr
 
   // computes the final gppn based on the guest physical address
-  function automatic logic [28:0] make_gppn (input logic s_st_enbl, input logic is_1G,
-                                                          input logic is_2M, input logic [28:0] vpn,
-                                                          input riscv::pte_t pte);
+  function automatic logic [28:0] make_gppn(input logic s_st_enbl, input logic is_1G,
+                                            input logic is_2M, input logic [28:0] vpn,
+                                            input riscv::pte_t pte);
     logic [28:0] gppn;
     if (s_st_enbl) begin
       gppn = pte.ppn[28:0];

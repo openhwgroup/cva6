@@ -57,17 +57,17 @@ module cva6_tlb_sv39x4
   struct packed {
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
     logic [CVA6Cfg.VMID_WIDTH-1:0] vmid;
-    logic [GPPN2:0] vpn2;
-    logic [8:0]            vpn1;
-    logic [8:0]            vpn0;
-    logic                  is_s_2M;
-    logic                  is_s_1G;
-    logic                  is_g_2M;
-    logic                  is_g_1G;
-    logic                  s_st_enbl;  // s-stage translation
-    logic                  g_st_enbl;  // g-stage translation
-    logic                  v;          // virtualization mode
-    logic                  valid;
+    logic [GPPN2:0]                vpn2;
+    logic [8:0]                    vpn1;
+    logic [8:0]                    vpn0;
+    logic                          is_s_2M;
+    logic                          is_s_1G;
+    logic                          is_g_2M;
+    logic                          is_g_1G;
+    logic                          s_st_enbl;  // s-stage translation
+    logic                          g_st_enbl;  // g-stage translation
+    logic                          v;          // virtualization mode
+    logic                          valid;
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 

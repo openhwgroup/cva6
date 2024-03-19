@@ -63,22 +63,22 @@ module cva6_ptw_sv39x4
     input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
     // from TLBs
     // did we miss?
-    input logic                   itlb_access_i,
-    input logic                   itlb_hit_i,
-    input logic [CVA6Cfg.VLEN-1:0] itlb_vaddr_i,
+    input logic                          itlb_access_i,
+    input logic                          itlb_hit_i,
+    input logic [      CVA6Cfg.VLEN-1:0] itlb_vaddr_i,
 
-    input  logic                   dtlb_access_i,
-    input  logic                   dtlb_hit_i,
+    input  logic                    dtlb_access_i,
+    input  logic                    dtlb_hit_i,
     input  logic [CVA6Cfg.VLEN-1:0] dtlb_vaddr_i,
     // from CSR file
     input  logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,     // ppn from satp
     input  logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_i,    // ppn from satp
     input  logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,    // ppn from hgatp
-    input  logic                   mxr_i,
-    input  logic                   vmxr_i,
+    input  logic                    mxr_i,
+    input  logic                    vmxr_i,
     // Performance counters
-    output logic                   itlb_miss_o,
-    output logic                   dtlb_miss_o,
+    output logic                    itlb_miss_o,
+    output logic                    dtlb_miss_o,
     // PMP
 
     input riscv::pmpcfg_t [15:0] pmpcfg_i,

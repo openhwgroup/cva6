@@ -134,8 +134,8 @@ module cva6
       logic [CVA6Cfg.XLEN-1:0] mip;
       logic [CVA6Cfg.XLEN-1:0] mideleg;
       logic [CVA6Cfg.XLEN-1:0] hideleg;
-      logic                   sie;
-      logic                   global_enable;
+      logic                    sie;
+      logic                    global_enable;
     },
 
     localparam type lsu_ctrl_t = struct packed {
@@ -525,28 +525,28 @@ module cva6
   // --------------
   // CTRL <-> *
   // --------------
-  logic                                                     set_pc_ctrl_pcgen;
-  logic                                                     flush_csr_ctrl;
-  logic                                                     flush_unissued_instr_ctrl_id;
-  logic                                                     flush_ctrl_if;
-  logic                                                     flush_ctrl_id;
-  logic                                                     flush_ctrl_ex;
-  logic                                                     flush_ctrl_bp;
-  logic                                                     flush_tlb_ctrl_ex;
-  logic                                                     flush_tlb_vvma_ctrl_ex;
-  logic                                                     flush_tlb_gvma_ctrl_ex;
-  logic                                                     fence_i_commit_controller;
-  logic                                                     fence_commit_controller;
-  logic                                                     sfence_vma_commit_controller;
-  logic                                                     hfence_vvma_commit_controller;
-  logic                                                     hfence_gvma_commit_controller;
-  logic                                                     halt_ctrl;
-  logic                                                     halt_csr_ctrl;
-  logic                                                     dcache_flush_ctrl_cache;
-  logic                                                     dcache_flush_ack_cache_ctrl;
-  logic                                                     set_debug_pc;
-  logic                                                     flush_commit;
-  logic                                                     flush_acc;
+  logic                                                              set_pc_ctrl_pcgen;
+  logic                                                              flush_csr_ctrl;
+  logic                                                              flush_unissued_instr_ctrl_id;
+  logic                                                              flush_ctrl_if;
+  logic                                                              flush_ctrl_id;
+  logic                                                              flush_ctrl_ex;
+  logic                                                              flush_ctrl_bp;
+  logic                                                              flush_tlb_ctrl_ex;
+  logic                                                              flush_tlb_vvma_ctrl_ex;
+  logic                                                              flush_tlb_gvma_ctrl_ex;
+  logic                                                              fence_i_commit_controller;
+  logic                                                              fence_commit_controller;
+  logic                                                              sfence_vma_commit_controller;
+  logic                                                              hfence_vvma_commit_controller;
+  logic                                                              hfence_gvma_commit_controller;
+  logic                                                              halt_ctrl;
+  logic                                                              halt_csr_ctrl;
+  logic                                                              dcache_flush_ctrl_cache;
+  logic                                                              dcache_flush_ack_cache_ctrl;
+  logic                                                              set_debug_pc;
+  logic                                                              flush_commit;
+  logic                                                              flush_acc;
 
   icache_areq_t                                                      icache_areq_ex_cache;
   icache_arsp_t                                                      icache_areq_cache_ex;
@@ -991,43 +991,43 @@ module cva6
       .rvfi_probes_csr_t (rvfi_probes_csr_t),
       .MHPMCounterNum    (MHPMCounterNum)
   ) csr_regfile_i (
-      .flush_o               (flush_csr_ctrl),
-      .halt_csr_o            (halt_csr_ctrl),
-      .commit_instr_i        (commit_instr_id_commit),
-      .commit_ack_i          (commit_macro_ack),
-      .boot_addr_i           (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .hart_id_i             (hart_id_i[CVA6Cfg.XLEN-1:0]),
-      .ex_i                  (ex_commit),
-      .csr_op_i              (csr_op_commit_csr),
-      .csr_write_fflags_i    (csr_write_fflags_commit_cs),
-      .dirty_fp_state_i      (dirty_fp_state),
-      .dirty_v_state_i       (dirty_v_state),
-      .csr_addr_i            (csr_addr_ex_csr),
-      .csr_wdata_i           (csr_wdata_commit_csr),
-      .csr_rdata_o           (csr_rdata_csr_commit),
-      .pc_i                  (pc_commit),
-      .csr_exception_o       (csr_exception_csr_commit),
-      .epc_o                 (epc_commit_pcgen),
-      .eret_o                (eret),
-      .set_debug_pc_o        (set_debug_pc),
-      .trap_vector_base_o    (trap_vector_base_commit_pcgen),
-      .priv_lvl_o            (priv_lvl),
-      .v_o                   (v),
-      .acc_fflags_ex_i       (acc_resp_fflags),
-      .acc_fflags_ex_valid_i (acc_resp_fflags_valid),
-      .fs_o                  (fs),
-      .vfs_o                 (vfs),
-      .fflags_o              (fflags_csr_commit),
-      .frm_o                 (frm_csr_id_issue_ex),
-      .fprec_o               (fprec_csr_ex),
-      .vs_o                  (vs),
-      .irq_ctrl_o            (irq_ctrl_csr_id),
-      .ld_st_priv_lvl_o      (ld_st_priv_lvl_csr_ex),
-      .ld_st_v_o             (ld_st_v_csr_ex),
-      .csr_hs_ld_st_inst_i   (csr_hs_ld_st_inst_ex),
-      .en_translation_o      (enable_translation_csr_ex),
-      .en_g_translation_o    (enable_g_translation_csr_ex),
-      .en_ld_st_translation_o(en_ld_st_translation_csr_ex),
+      .flush_o                 (flush_csr_ctrl),
+      .halt_csr_o              (halt_csr_ctrl),
+      .commit_instr_i          (commit_instr_id_commit),
+      .commit_ack_i            (commit_macro_ack),
+      .boot_addr_i             (boot_addr_i[CVA6Cfg.VLEN-1:0]),
+      .hart_id_i               (hart_id_i[CVA6Cfg.XLEN-1:0]),
+      .ex_i                    (ex_commit),
+      .csr_op_i                (csr_op_commit_csr),
+      .csr_write_fflags_i      (csr_write_fflags_commit_cs),
+      .dirty_fp_state_i        (dirty_fp_state),
+      .dirty_v_state_i         (dirty_v_state),
+      .csr_addr_i              (csr_addr_ex_csr),
+      .csr_wdata_i             (csr_wdata_commit_csr),
+      .csr_rdata_o             (csr_rdata_csr_commit),
+      .pc_i                    (pc_commit),
+      .csr_exception_o         (csr_exception_csr_commit),
+      .epc_o                   (epc_commit_pcgen),
+      .eret_o                  (eret),
+      .set_debug_pc_o          (set_debug_pc),
+      .trap_vector_base_o      (trap_vector_base_commit_pcgen),
+      .priv_lvl_o              (priv_lvl),
+      .v_o                     (v),
+      .acc_fflags_ex_i         (acc_resp_fflags),
+      .acc_fflags_ex_valid_i   (acc_resp_fflags_valid),
+      .fs_o                    (fs),
+      .vfs_o                   (vfs),
+      .fflags_o                (fflags_csr_commit),
+      .frm_o                   (frm_csr_id_issue_ex),
+      .fprec_o                 (fprec_csr_ex),
+      .vs_o                    (vs),
+      .irq_ctrl_o              (irq_ctrl_csr_id),
+      .ld_st_priv_lvl_o        (ld_st_priv_lvl_csr_ex),
+      .ld_st_v_o               (ld_st_v_csr_ex),
+      .csr_hs_ld_st_inst_i     (csr_hs_ld_st_inst_ex),
+      .en_translation_o        (enable_translation_csr_ex),
+      .en_g_translation_o      (enable_g_translation_csr_ex),
+      .en_ld_st_translation_o  (en_ld_st_translation_csr_ex),
       .en_ld_st_g_translation_o(en_ld_st_g_translation_csr_ex),
       .sum_o                   (sum_csr_ex),
       .vs_sum_o                (vs_sum_csr_ex),

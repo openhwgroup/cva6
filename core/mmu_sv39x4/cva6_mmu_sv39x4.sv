@@ -96,16 +96,16 @@ module cva6_mmu_sv39x4
     input logic [15:0][riscv::PLEN-3:0] pmpaddr_i
 );
   localparam type tlb_update_t = struct packed {
-    logic                  valid;      // valid flag
-    logic                  is_s_2M;
-    logic                  is_s_1G;
-    logic                  is_g_2M;
-    logic                  is_g_1G;
-    logic [28:0]           vpn;
+    logic                          valid;      // valid flag
+    logic                          is_s_2M;
+    logic                          is_s_1G;
+    logic                          is_g_2M;
+    logic                          is_g_1G;
+    logic [28:0]                   vpn;
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
     logic [CVA6Cfg.VMID_WIDTH-1:0] vmid;
-    riscv::pte_t           content;
-    riscv::pte_t           g_content;
+    riscv::pte_t                   content;
+    riscv::pte_t                   g_content;
   };
 
   logic iaccess_err;  // insufficient privilege to access this instruction page
@@ -123,25 +123,25 @@ module cva6_mmu_sv39x4
   logic [CVA6Cfg.VLEN-1:0] update_vaddr;
   tlb_update_t update_ptw_itlb, update_ptw_dtlb;
 
-  logic                           itlb_lu_access;
-  riscv::pte_t                    itlb_content;
-  logic                           itlb_is_2M;
-  logic                           itlb_is_1G;
+  logic                                 itlb_lu_access;
+  riscv::pte_t                          itlb_content;
+  logic                                 itlb_is_2M;
+  logic                                 itlb_is_1G;
   // data from G-stage translation
-  riscv::pte_t                    itlb_g_content;
-  logic                           itlb_lu_hit;
-  logic        [CVA6Cfg.GPLEN-1:0] itlb_gpaddr;
-  logic        [  CVA6Cfg.ASID_WIDTH-1:0] itlb_lu_asid;
+  riscv::pte_t                          itlb_g_content;
+  logic                                 itlb_lu_hit;
+  logic        [     CVA6Cfg.GPLEN-1:0] itlb_gpaddr;
+  logic        [CVA6Cfg.ASID_WIDTH-1:0] itlb_lu_asid;
 
-  logic                           dtlb_lu_access;
-  riscv::pte_t                    dtlb_content;
-  logic                           dtlb_is_2M;
-  logic                           dtlb_is_1G;
-  logic        [  CVA6Cfg.ASID_WIDTH-1:0] dtlb_lu_asid;
+  logic                                 dtlb_lu_access;
+  riscv::pte_t                          dtlb_content;
+  logic                                 dtlb_is_2M;
+  logic                                 dtlb_is_1G;
+  logic        [CVA6Cfg.ASID_WIDTH-1:0] dtlb_lu_asid;
   // data from G-stage translation
-  riscv::pte_t                    dtlb_g_content;
-  logic                           dtlb_lu_hit;
-  logic        [CVA6Cfg.GPLEN-1:0] dtlb_gpaddr;
+  riscv::pte_t                          dtlb_g_content;
+  logic                                 dtlb_lu_hit;
+  logic        [     CVA6Cfg.GPLEN-1:0] dtlb_gpaddr;
 
 
   // Assignments
@@ -154,7 +154,7 @@ module cva6_mmu_sv39x4
   cva6_tlb_sv39x4 #(
       .CVA6Cfg     (CVA6Cfg),
       .tlb_update_t(tlb_update_t),
-      .TLB_ENTRIES(INSTR_TLB_ENTRIES)
+      .TLB_ENTRIES (INSTR_TLB_ENTRIES)
   ) i_itlb (
       .clk_i       (clk_i),
       .rst_ni      (rst_ni),
@@ -187,7 +187,7 @@ module cva6_mmu_sv39x4
   cva6_tlb_sv39x4 #(
       .CVA6Cfg     (CVA6Cfg),
       .tlb_update_t(tlb_update_t),
-      .TLB_ENTRIES(DATA_TLB_ENTRIES)
+      .TLB_ENTRIES (DATA_TLB_ENTRIES)
   ) i_dtlb (
       .clk_i       (clk_i),
       .rst_ni      (rst_ni),

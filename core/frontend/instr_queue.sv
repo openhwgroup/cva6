@@ -92,9 +92,9 @@ module instr_queue
     logic [31:0]                     instr;      // instruction word
     ariane_pkg::cf_t                 cf;         // branch was taken
     ariane_pkg::frontend_exception_t ex;         // exception happened
-    logic [CVA6Cfg.VLEN-1:0]          ex_vaddr;   // lower VLEN bits of tval for exception
-    logic [CVA6Cfg.GPLEN-1:0]         ex_gpaddr;  // lower GPLEN bits of tval2 for exception
-    logic [CVA6Cfg.XLEN-1:0]          ex_tinst;   // tinst of exception
+    logic [CVA6Cfg.VLEN-1:0]         ex_vaddr;   // lower VLEN bits of tval for exception
+    logic [CVA6Cfg.GPLEN-1:0]        ex_gpaddr;  // lower GPLEN bits of tval2 for exception
+    logic [CVA6Cfg.XLEN-1:0]         ex_tinst;   // tinst of exception
     logic                            ex_gva;
   } instr_data_t;
 

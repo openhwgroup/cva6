@@ -89,14 +89,14 @@ module frontend
   };
 
   // Instruction Cache Registers, from I$
-  logic                            [                CVA6Cfg.FETCH_WIDTH-1:0] icache_data_q;
-  logic                                                              icache_valid_q;
-  ariane_pkg::frontend_exception_t                                   icache_ex_valid_q;
-  logic                            [                CVA6Cfg.VLEN-1:0] icache_vaddr_q;
-  logic                            [               CVA6Cfg.GPLEN-1:0] icache_gpaddr_q;
-  logic                            [                CVA6Cfg.XLEN-1:0] icache_tinst_q;
-  logic                                                              icache_gva_q;
-  logic                                                              instr_queue_ready;
+  logic                            [    CVA6Cfg.FETCH_WIDTH-1:0] icache_data_q;
+  logic                                                          icache_valid_q;
+  ariane_pkg::frontend_exception_t                               icache_ex_valid_q;
+  logic                            [           CVA6Cfg.VLEN-1:0] icache_vaddr_q;
+  logic                            [          CVA6Cfg.GPLEN-1:0] icache_gpaddr_q;
+  logic                            [           CVA6Cfg.XLEN-1:0] icache_tinst_q;
+  logic                                                          icache_gva_q;
+  logic                                                          instr_queue_ready;
   logic                            [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_consumed;
   // upper-most branch-prediction from last cycle
   btb_prediction_t                                               btb_q;
