@@ -213,7 +213,6 @@ COMMON_RUN_UVM_FLAGS = \
 	++$(elf) \
 	+elf_file=$(elf) \
 	+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
-	+UVM_VERBOSITY=UVM_MEDIUM \
 	+signature=$(elf).signature_output  +UVM_TESTNAME=uvmt_cva6_firmware_test_c
 
 ALL_UVM_FLAGS   = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
@@ -287,7 +286,6 @@ questa_uvm_comp:
 	  -timescale "1ns / 1ns" +acc=+rb \
 	   -incr -64 -nologo -quiet -permissive -svinputport=compat -pedanticerror \
 	   -compat \
-	  $(issrun_opts) \
 	  +jtag_rbb_enable=0 \
 	  -work $(VSIM_WORK_DIR) \
 	  -f $(FLIST_CORE) -f $(FLIST_TB) \
@@ -311,7 +309,8 @@ questa_uvm_run:
 	  -suppress 3829 -suppress vsim-8386\
 	  +permissive \
 	  -sv_seed 0 \
-	  $(cov-comp-opt) +define+UNSUPPORTED_WITH+ $(isscomp_opts)\
+	  $(cov-run-opt) $(issrun_opts) \
+	  +define+UNSUPPORTED_WITH+ \
 	  uvmt_cva6_tb_opt
 
 	# TODO: Add support for waveform collection.
