@@ -1,0 +1,14 @@
+.CVA6 implementations
+[%collapsible]
+====
+[[toto_anchort]]
+.Implementation description with related parameters
+[%autowidth,float="center",align="center",cols="<,<,<,<",options="header",]
+|===
+|CVA6 Config |Option description |RTL Parameters |Spike Parameters
+|CV32A65X
+|F and S-mode are not implemented, FS is read-only zero.
+|FPUen = 0; RVS = 0
+|TODO
+|===
+====
