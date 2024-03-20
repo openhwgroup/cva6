@@ -1517,7 +1517,8 @@ module decoder
       if (CVA6Cfg.TvalEn)
         instruction_o.ex.tval  = (is_compressed_i) ? {{CVA6Cfg.XLEN-16{1'b0}}, compressed_instr_i} : {{CVA6Cfg.XLEN-32{1'b0}}, instruction_i};
       else instruction_o.ex.tval = '0;
-      instruction_o.ex.tinst = CVA6Cfg.RVH ? tinst : '0;
+      if (CVA6Cfg.RVH) instruction_o.ex.tinst = tinst;
+      else instruction_o.ex.tinst = '0;
       // instructions which will throw an exception are marked as valid
       // e.g.: they can be committed anytime and do not need to wait for any functional unit
       // check here if we decoded an invalid instruction or if the compressed decoder already decoded
@@ -1548,7 +1549,8 @@ module decoder
         // set breakpoint cause
         instruction_o.ex.cause = riscv::BREAKPOINT;
         // set gva bit
-        instruction_o.ex.gva   = v_i;
+        if (CVA6Cfg.RVH) instruction_o.ex.gva = v_i;
+        else instruction_o.ex.gva = 1'b0;
       end
       // -----------------
       // Interrupt Control

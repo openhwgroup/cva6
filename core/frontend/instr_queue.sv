@@ -213,9 +213,15 @@ ariane_pkg::FETCH_FIFO_DEPTH
       assign instr_data_in[i].cf = cf[i+idx_is_q];
       assign instr_data_in[i].ex = exception_i;  // exceptions hold for the whole fetch packet
       assign instr_data_in[i].ex_vaddr = exception_addr_i;
-      assign instr_data_in[i].ex_gpaddr = exception_gpaddr_i;
-      assign instr_data_in[i].ex_tinst = exception_tinst_i;
-      assign instr_data_in[i].ex_gva = exception_gva_i;
+      if (CVA6Cfg.RVH) begin : gen_hyp_ex_with_C
+        assign instr_data_in[i].ex_gpaddr = exception_gpaddr_i;
+        assign instr_data_in[i].ex_tinst = exception_tinst_i;
+        assign instr_data_in[i].ex_gva = exception_gva_i;
+      end else begin : gen_no_hyp_ex_with_C
+        assign instr_data_in[i].ex_gpaddr = '0;
+        assign instr_data_in[i].ex_tinst = '0;
+        assign instr_data_in[i].ex_gva = 1'b0;
+      end
       /* verilator lint_on WIDTH */
     end
   end else begin : gen_multiple_instr_per_fetch_without_C
@@ -245,9 +251,15 @@ ariane_pkg::FETCH_FIFO_DEPTH
     assign instr_data_in[0].cf = cf_type_i[0];
     assign instr_data_in[0].ex = exception_i;  // exceptions hold for the whole fetch packet
     assign instr_data_in[0].ex_vaddr = exception_addr_i;
-    assign instr_data_in[0].ex_gpaddr = exception_gpaddr_i;
-    assign instr_data_in[0].ex_tinst = exception_tinst_i;
-    assign instr_data_in[0].ex_gva = exception_gva_i;
+    if (CVA6Cfg.RVH) begin : gen_hyp_ex_without_C
+      assign instr_data_in[0].ex_gpaddr = exception_gpaddr_i;
+      assign instr_data_in[0].ex_tinst = exception_tinst_i;
+      assign instr_data_in[0].ex_gva = exception_gva_i;
+    end else begin : gen_no_hyp_ex_without_C
+      assign instr_data_in[0].ex_gpaddr = '0;
+      assign instr_data_in[0].ex_tinst = '0;
+      assign instr_data_in[0].ex_gva = 1'b0;
+    end
     /* verilator lint_on WIDTH */
   end
 
@@ -306,7 +318,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
         if (idx_ds_q[i]) begin
           if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
             fetch_entry_o.ex.cause = riscv::INSTR_ACCESS_FAULT;
-          end else if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT) begin
+          end else if (CVA6Cfg.RVH && instr_data_out[i].ex == ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT) begin
             fetch_entry_o.ex.cause = riscv::INSTR_GUEST_PAGE_FAULT;
           end else begin
             fetch_entry_o.ex.cause = riscv::INSTR_PAGE_FAULT;
@@ -337,9 +349,6 @@ ariane_pkg::FETCH_FIFO_DEPTH
       idx_is_d = '0;
       fetch_entry_o.instruction = instr_data_out[0].instr;
       fetch_entry_o.address = pc_q;
-      fetch_entry_o.ex.tval2 = '0;
-      fetch_entry_o.ex.tinst = '0;
-      fetch_entry_o.ex.gva = 1'b0;
 
       fetch_entry_o.ex.valid = instr_data_out[0].ex != ariane_pkg::FE_NONE;
       if (instr_data_out[0].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
@@ -354,6 +363,10 @@ ariane_pkg::FETCH_FIFO_DEPTH
         fetch_entry_o.ex.tval2 = instr_data_out[0].ex_gpaddr;
         fetch_entry_o.ex.tinst = instr_data_out[0].ex_tinst;
         fetch_entry_o.ex.gva   = instr_data_out[0].ex_gva;
+      end else begin
+        fetch_entry_o.ex.tval2 = '0;
+        fetch_entry_o.ex.tinst = '0;
+        fetch_entry_o.ex.gva   = 1'b0;
       end
 
       fetch_entry_o.branch_predict.predict_address = address_out;
