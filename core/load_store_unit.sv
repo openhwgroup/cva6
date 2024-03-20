@@ -40,7 +40,7 @@ module load_store_unit
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [CVA6Cfg.XLEN-1:0] tinst_i,
+    input logic [31:0] tinst_i,
     // FU data needed to execute instruction - ISSUE_STAGE
     input fu_data_t fu_data_i,
     // Load Store Unit is ready - ISSUE_STAGE
@@ -194,18 +194,18 @@ module load_store_unit
   logic                    ld_translation_req;
   logic                    st_translation_req;
   logic [CVA6Cfg.VLEN-1:0] ld_vaddr;
-  logic [CVA6Cfg.XLEN-1:0] ld_tinst;
+  logic [            31:0] ld_tinst;
   logic                    ld_hs_ld_st_inst;
   logic                    ld_hlvx_inst;
   logic [CVA6Cfg.VLEN-1:0] st_vaddr;
-  logic [CVA6Cfg.XLEN-1:0] st_tinst;
+  logic [            31:0] st_tinst;
   logic                    st_hs_ld_st_inst;
   logic                    st_hlvx_inst;
   logic                    translation_req;
   logic                    translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
-  logic       [         CVA6Cfg.XLEN-1:0] mmu_tinst;
+  logic       [                     31:0] mmu_tinst;
   logic                                   mmu_hs_ld_st_inst;
   logic                                   mmu_hlvx_inst;
   exception_t                             mmu_exception;
@@ -510,7 +510,7 @@ module load_store_unit
 
     translation_req   = 1'b0;
     mmu_vaddr         = {CVA6Cfg.VLEN{1'b0}};
-    mmu_tinst         = {CVA6Cfg.XLEN{1'b0}};
+    mmu_tinst         = {32{1'b0}};
     mmu_hs_ld_st_inst = 1'b0;
     mmu_hlvx_inst     = 1'b0;
 
@@ -590,12 +590,7 @@ module load_store_unit
   // can augment the exception if other memory related exceptions like a page fault or access errors
   always_comb begin : data_misaligned_detection
     misaligned_exception = {
-      {CVA6Cfg.XLEN{1'b0}},
-      {CVA6Cfg.XLEN{1'b0}},
-      {CVA6Cfg.GPLEN{1'b0}},
-      {CVA6Cfg.XLEN{1'b0}},
-      1'b0,
-      1'b0
+      {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.GPLEN{1'b0}}, {32{1'b0}}, 1'b0, 1'b0
     };
     data_misaligned = 1'b0;
 

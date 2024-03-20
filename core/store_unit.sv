@@ -61,7 +61,7 @@ module store_unit
     // RVFI information - RVFI
     output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
     // Transformed trap instruction out - TO_BE_COMPLETED
-    output logic [CVA6Cfg.VLEN-1:0] tinst_o,
+    output logic [31:0] tinst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic hs_ld_st_inst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED

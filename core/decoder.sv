@@ -101,7 +101,7 @@ module decoder
   riscv::instruction_t instr;
   assign instr = riscv::instruction_t'(instruction_i);
   // transformed instruction
-  logic [CVA6Cfg.XLEN-1:0] tinst;
+  logic [31:0] tinst;
   // --------------------
   // Immediate select
   // --------------------
@@ -1560,19 +1560,19 @@ module decoder
       // Virtual Supervisor Timer Interrupt
       if (CVA6Cfg.RVH) begin
         if (irq_ctrl_i.mie[riscv::IRQ_VS_TIMER] && irq_ctrl_i.mip[riscv::IRQ_VS_TIMER]) begin
-          interrupt_cause = riscv::VS_TIMER_INTERRUPT;
+          interrupt_cause = INTERRUPTS.VS_TIMER;
         end
         // Virtual Supervisor Software Interrupt
         if (irq_ctrl_i.mie[riscv::IRQ_VS_SOFT] && irq_ctrl_i.mip[riscv::IRQ_VS_SOFT]) begin
-          interrupt_cause = riscv::VS_SW_INTERRUPT;
+          interrupt_cause = INTERRUPTS.VS_SW;
         end
         // Virtual Supervisor External Interrupt
         if (irq_ctrl_i.mie[riscv::IRQ_VS_EXT] && (irq_ctrl_i.mip[riscv::IRQ_VS_EXT])) begin
-          interrupt_cause = riscv::VS_EXT_INTERRUPT;
+          interrupt_cause = INTERRUPTS.VS_EXT;
         end
         // Hypervisor Guest External Interrupts
         if (irq_ctrl_i.mie[riscv::IRQ_HS_EXT] && irq_ctrl_i.mip[riscv::IRQ_HS_EXT]) begin
-          interrupt_cause = riscv::HS_EXT_INTERRUPT;
+          interrupt_cause = INTERRUPTS.HS_EXT;
         end
       end
       // Supervisor Timer Interrupt

@@ -70,7 +70,7 @@ module instr_queue
     // Exception address - CACHE
     input logic [CVA6Cfg.VLEN-1:0] exception_addr_i,
     input logic [CVA6Cfg.GPLEN-1:0] exception_gpaddr_i,
-    input logic [CVA6Cfg.XLEN-1:0] exception_tinst_i,
+    input logic [31:0] exception_tinst_i,
     input logic exception_gva_i,
     // Branch predict - FRONTEND
     input logic [CVA6Cfg.VLEN-1:0] predict_address_i,
@@ -94,7 +94,7 @@ module instr_queue
     ariane_pkg::frontend_exception_t ex;         // exception happened
     logic [CVA6Cfg.VLEN-1:0]         ex_vaddr;   // lower VLEN bits of tval for exception
     logic [CVA6Cfg.GPLEN-1:0]        ex_gpaddr;  // lower GPLEN bits of tval2 for exception
-    logic [CVA6Cfg.XLEN-1:0]         ex_tinst;   // tinst of exception
+    logic [31:0]                     ex_tinst;   // tinst of exception
     logic                            ex_gva;
   } instr_data_t;
 

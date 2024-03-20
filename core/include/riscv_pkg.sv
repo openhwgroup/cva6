@@ -359,35 +359,24 @@ package riscv;
   localparam int unsigned IRQ_M_EXT = 11;
   localparam int unsigned IRQ_HS_EXT = 12;
 
-  localparam logic [XLEN:0] MIP_SSIP = 1 << IRQ_S_SOFT;
-  localparam logic [XLEN:0] MIP_VSSIP = 1 << IRQ_VS_SOFT;
-  localparam logic [XLEN:0] MIP_MSIP = 1 << IRQ_M_SOFT;
-  localparam logic [XLEN:0] MIP_STIP = 1 << IRQ_S_TIMER;
-  localparam logic [XLEN:0] MIP_VSTIP = 1 << IRQ_VS_TIMER;
-  localparam logic [XLEN:0] MIP_MTIP = 1 << IRQ_M_TIMER;
-  localparam logic [XLEN:0] MIP_SEIP = 1 << IRQ_S_EXT;
-  localparam logic [XLEN:0] MIP_VSEIP = 1 << IRQ_VS_EXT;
-  localparam logic [XLEN:0] MIP_MEIP = 1 << IRQ_M_EXT;
-  localparam logic [XLEN:0] MIP_SGEIP = 1 << IRQ_HS_EXT;
-
-  localparam logic [XLEN:0] S_SW_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_SOFT);
-  localparam logic [XLEN:0] VS_SW_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_VS_SOFT);
-  localparam logic [XLEN:0] M_SW_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_SOFT);
-  localparam logic [XLEN:0] S_TIMER_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_TIMER);
-  localparam logic [XLEN:0] VS_TIMER_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_VS_TIMER);
-  localparam logic [XLEN:0] M_TIMER_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_TIMER);
-  localparam logic [XLEN:0] S_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_S_EXT);
-  localparam logic [XLEN:0] VS_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_VS_EXT);
-  localparam logic [XLEN:0] M_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_M_EXT);
-  localparam logic [XLEN:0] HS_EXT_INTERRUPT = (1 << (XLEN - 1)) | XLEN'(IRQ_HS_EXT);
+  localparam logic [31:0] MIP_SSIP = 1 << IRQ_S_SOFT;
+  localparam logic [31:0] MIP_VSSIP = 1 << IRQ_VS_SOFT;
+  localparam logic [31:0] MIP_MSIP = 1 << IRQ_M_SOFT;
+  localparam logic [31:0] MIP_STIP = 1 << IRQ_S_TIMER;
+  localparam logic [31:0] MIP_VSTIP = 1 << IRQ_VS_TIMER;
+  localparam logic [31:0] MIP_MTIP = 1 << IRQ_M_TIMER;
+  localparam logic [31:0] MIP_SEIP = 1 << IRQ_S_EXT;
+  localparam logic [31:0] MIP_VSEIP = 1 << IRQ_VS_EXT;
+  localparam logic [31:0] MIP_MEIP = 1 << IRQ_M_EXT;
+  localparam logic [31:0] MIP_SGEIP = 1 << IRQ_HS_EXT;
 
   // ----------------------
   // PseudoInstructions Codes
   // ----------------------
-  localparam logic [XLEN-1:0] READ_32_PSEUDOINSTRUCTION = 32'h00002000;
-  localparam logic [XLEN-1:0] WRITE_32_PSEUDOINSTRUCTION = 32'h00002020;
-  localparam logic [XLEN-1:0] READ_64_PSEUDOINSTRUCTION = 64'h00003000;
-  localparam logic [XLEN-1:0] WRITE_64_PSEUDOINSTRUCTION = 64'h00003020;
+  localparam logic [31:0] READ_32_PSEUDOINSTRUCTION = 32'h00002000;
+  localparam logic [31:0] WRITE_32_PSEUDOINSTRUCTION = 32'h00002020;
+  localparam logic [31:0] READ_64_PSEUDOINSTRUCTION = 32'h00003000;
+  localparam logic [31:0] WRITE_64_PSEUDOINSTRUCTION = 32'h00003020;
 
   // -----
   // CSRs

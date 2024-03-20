@@ -146,13 +146,14 @@ package ariane_pkg;
                                                     | riscv::HSTATUS_VTSR;
 
   // hypervisor delegable interrupts
-  localparam logic [63:0] HS_DELEG_INTERRUPTS = riscv::MIP_VSSIP
-                                                    | riscv::MIP_VSTIP
-                                                    | riscv::MIP_VSEIP;
+  function automatic logic [31:0] hs_deleg_interrupts(config_pkg::cva6_cfg_t Cfg);
+    return riscv::MIP_VSSIP | riscv::MIP_VSTIP | riscv::MIP_VSEIP;
+  endfunction
+
   // virtual supervisor delegable interrupts
-  localparam logic [63:0] VS_DELEG_INTERRUPTS = riscv::MIP_VSSIP
-                                                    | riscv::MIP_VSTIP
-                                                    | riscv::MIP_VSEIP;
+  function automatic logic [31:0] vs_deleg_interrupts(config_pkg::cva6_cfg_t Cfg);
+    return riscv::MIP_VSSIP | riscv::MIP_VSTIP | riscv::MIP_VSEIP;
+  endfunction
 
   // ---------------
   // AXI

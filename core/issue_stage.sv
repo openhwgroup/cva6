@@ -57,7 +57,7 @@ module issue_stage
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
     // Transformed trap instruction - EX_STAGE
-    output logic [CVA6Cfg.XLEN-1:0] tinst_o,
+    output logic [31:0] tinst_o,
     // Fixed Latency Unit is ready - EX_STAGE
     input logic flu_ready_i,
     // ALU FU is valid - EX_STAGE

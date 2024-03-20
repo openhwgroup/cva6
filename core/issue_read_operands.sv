@@ -79,7 +79,7 @@ module issue_read_operands
     // Branch instruction is valid - TO_BE_COMPLETED
     output logic branch_valid_o,
     // Transformed instruction - TO_BE_COMPLETED
-    output logic [CVA6Cfg.XLEN-1:0] tinst_o,
+    output logic [31:0] tinst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output branchpredict_sbe_t branch_predict_o,
     // Load Store Unit is ready - TO_BE_COMPLETED
@@ -141,7 +141,7 @@ module issue_read_operands
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
   fu_op operator_n, operator_q;  // operation to perform
   fu_t fu_n, fu_q;  // functional unit to use
-  logic [CVA6Cfg.XLEN-1:0] tinst_n, tinst_q;  // transformed instruction
+  logic [31:0] tinst_n, tinst_q;  // transformed instruction
 
   // forwarding signals
   logic forward_rs1, forward_rs2, forward_rs3;

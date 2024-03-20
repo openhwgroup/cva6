@@ -94,7 +94,7 @@ module frontend
   ariane_pkg::frontend_exception_t                               icache_ex_valid_q;
   logic                            [           CVA6Cfg.VLEN-1:0] icache_vaddr_q;
   logic                            [          CVA6Cfg.GPLEN-1:0] icache_gpaddr_q;
-  logic                            [           CVA6Cfg.XLEN-1:0] icache_tinst_q;
+  logic                            [                       31:0] icache_tinst_q;
   logic                                                          icache_gva_q;
   logic                                                          instr_queue_ready;
   logic                            [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_consumed;

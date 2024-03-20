@@ -499,6 +499,7 @@ module cva6_ptw_sv39x4
                   G_FINAL_STAGE: begin
                     ptw_pptr_n = {pte.ppn, gpaddr_q[29:21], 3'b0};
                   end
+                  default: ;
                 endcase
               end
 

@@ -49,7 +49,7 @@ module cva6_mmu_sv39x4
     input exception_t misaligned_ex_i,
     input logic lsu_req_i,  // request address translation
     input logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_i,  // virtual address in
-    input logic [CVA6Cfg.XLEN-1:0] lsu_tinst_i,  // transformed instruction in
+    input logic [31:0] lsu_tinst_i,  // transformed instruction in
     input logic lsu_is_store_i,  // the translation is requested by a store
     output logic csr_hs_ld_st_inst_o,  // hyp load store instruction
     // if we need to walk the page table we can't grant in the same cycle
@@ -305,7 +305,7 @@ module cva6_mmu_sv39x4
           riscv::INSTR_ACCESS_FAULT,
           {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
           {CVA6Cfg.GPLEN{1'b0}},
-          {{CVA6Cfg.XLEN{1'b0}}},
+          {{32{1'b0}}},
           v_i,
           1'b1
         };
@@ -337,7 +337,7 @@ module cva6_mmu_sv39x4
             riscv::INSTR_GUEST_PAGE_FAULT,
             {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
             itlb_gpaddr[CVA6Cfg.GPLEN-1:0],
-            {CVA6Cfg.XLEN{1'b0}},
+            {{32{1'b0}}},
             v_i,
             1'b1
           };
@@ -348,7 +348,7 @@ module cva6_mmu_sv39x4
             riscv::INSTR_PAGE_FAULT,
             {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
             {CVA6Cfg.GPLEN{1'b0}},
-            {CVA6Cfg.XLEN{1'b0}},
+            {{32{1'b0}}},
             v_i,
             1'b1
           };
@@ -357,7 +357,7 @@ module cva6_mmu_sv39x4
             riscv::INSTR_ACCESS_FAULT,
             {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
             {CVA6Cfg.GPLEN{1'b0}},
-            {CVA6Cfg.XLEN{1'b0}},
+            {{32{1'b0}}},
             v_i,
             1'b1
           };
@@ -375,7 +375,7 @@ module cva6_mmu_sv39x4
               riscv::INSTR_GUEST_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr},
               ptw_bad_gpaddr,
-              (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {CVA6Cfg.XLEN{1'b0}}),
+              (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {{32{1'b0}}}),
               v_i,
               1'b1
             };
@@ -384,7 +384,7 @@ module cva6_mmu_sv39x4
               riscv::INSTR_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr},
               {CVA6Cfg.GPLEN{1'b0}},
-              {CVA6Cfg.XLEN{1'b0}},
+              {{32{1'b0}}},
               v_i,
               1'b1
             };
@@ -395,7 +395,7 @@ module cva6_mmu_sv39x4
             riscv::INSTR_ACCESS_FAULT,
             {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr},
             {CVA6Cfg.GPLEN{1'b0}},
-            {CVA6Cfg.XLEN{1'b0}},
+            {32{1'b0}},
             v_i,
             1'b1
           };
@@ -408,7 +408,7 @@ module cva6_mmu_sv39x4
         riscv::INSTR_ACCESS_FAULT,
         {{CVA6Cfg.XLEN - CVA6Cfg.PLEN{1'b0}}, icache_areq_o.fetch_paddr},
         {CVA6Cfg.GPLEN{1'b0}},
-        {CVA6Cfg.XLEN{1'b0}},
+        {{32{1'b0}}},
         v_i,
         1'b1
       };
@@ -442,7 +442,7 @@ module cva6_mmu_sv39x4
   //-----------------------
   logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
   logic [CVA6Cfg.GPLEN-1:0] lsu_gpaddr_n, lsu_gpaddr_q;
-  logic [CVA6Cfg.XLEN-1:0] lsu_tinst_n, lsu_tinst_q;
+  logic [31:0] lsu_tinst_n, lsu_tinst_q;
   logic hs_ld_st_inst_n, hs_ld_st_inst_q;
   riscv::pte_t dtlb_pte_n, dtlb_pte_q;
   riscv::pte_t dtlb_gpte_n, dtlb_gpte_q;
@@ -529,7 +529,7 @@ module cva6_mmu_sv39x4
               riscv::STORE_GUEST_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q},
               lsu_gpaddr_q,
-              {CVA6Cfg.XLEN{1'b0}},
+              {32{1'b0}},
               ld_st_v_i,
               1'b1
             };
@@ -561,7 +561,7 @@ module cva6_mmu_sv39x4
               riscv::LOAD_GUEST_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q},
               lsu_gpaddr_q,
-              {CVA6Cfg.XLEN{1'b0}},
+              {{32{1'b0}}},
               ld_st_v_i,
               1'b1
             };
@@ -605,7 +605,7 @@ module cva6_mmu_sv39x4
                 riscv::STORE_GUEST_PAGE_FAULT,
                 {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, update_vaddr},
                 ptw_bad_gpaddr,
-                (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {CVA6Cfg.XLEN{1'b0}}),
+                (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {{32{1'b0}}}),
                 ld_st_v_i,
                 1'b1
               };
@@ -625,7 +625,7 @@ module cva6_mmu_sv39x4
                 riscv::LOAD_GUEST_PAGE_FAULT,
                 {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, update_vaddr},
                 ptw_bad_gpaddr,
-                (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {CVA6Cfg.XLEN{1'b0}}),
+                (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : {{32{1'b0}}}),
                 ld_st_v_i,
                 1'b1
               };

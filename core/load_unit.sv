@@ -52,7 +52,7 @@ module load_unit
     // Virtual address - TO_BE_COMPLETED
     output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
     // Transformed trap instruction out - TO_BE_COMPLETED
-    output logic [CVA6Cfg.XLEN-1:0] tinst_o,
+    output logic [31:0] tinst_o,
     // Instruction is a hyp load store instruction - TO_BE_COMPLETED
     output logic hs_ld_st_inst_o,
     // Hyp load store with execute permissions - TO_BE_COMPLETED
