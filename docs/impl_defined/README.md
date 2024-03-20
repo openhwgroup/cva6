@@ -1,6 +1,6 @@
 ***NOTE:** This is a working document and may undergo major incompatible changes...*
 
-= Intro =
+# Intro
 
 This directory contains experimental data and code related to central configuration management for CVA6 SystemVerilog code, its reference models (Spike) and all associated documentation:
 
@@ -11,7 +11,7 @@ This directory contains experimental data and code related to central configurat
 - code snippets for IP-XACT specifications
 - ... and probably more.
 
-= Background and requirements =
+# Background and requirements
 
 When verifyng hardware implementations supposed conforming to an external specification against a reference model, it is necessary to ensure consistency between the three elements at play:
 
@@ -37,7 +37,7 @@ Hence, a complete specification of a hardware configuration (and of its referenc
 
 The resulting information needs to be translated in an unequivocal way into the behaviors of the hardware implementation and the reference model, and expressed in the associated human-readable documents.  Therefore, the complete specification document should associate each implementation choice and each parameter occurring in the platform specification with the necessary parameters for the hardware implementation and the necessary human-readable documentation fragments. 
 
-= Prerequisites =
+# Prerequisites
 
 The Yaml schemas use several Python features and libraries available as packages:
 
@@ -48,7 +48,7 @@ The Yaml schemas use several Python features and libraries available as packages
 
 Packages `dataclasses` and `typing` are part of standard Python distributions, whereas `variconf` and `omegaconf` are available from the PyPi servers.
 
-= Directory structure =
+# Directory structure
 
 The current directory (as of this writing: `<CVA6_HOME>/docs/impl_defined`) is laid out as follows:
 
@@ -59,7 +59,7 @@ The current directory (as of this writing: `<CVA6_HOME>/docs/impl_defined`) is l
 - `spec_inventory`: Yaml descriptions of implementation freedom points in the official RISC-V specs;
 - `templates`: directory containing fragments of documentation that can serve as templates for doc generation.
 
-= Getting started with Yaml configurations =
+# Getting started with Yaml configurations
 
 1. Make sure you installed the prerequisites: packages `omegaconf` and `variconf`.
 1. Go to the directory `<CVA6_HOME>/docs/impl_defined`.
