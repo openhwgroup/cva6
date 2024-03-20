@@ -574,10 +574,10 @@ module cva6_mmu
     (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q[0].u));
 
     if (HYP_EXT == 1) begin
-      lsu_tinst_n          = lsu_tinst_i;
-      hs_ld_st_inst_n      = hs_ld_st_inst_i;
+      lsu_tinst_n = lsu_tinst_i;
+      hs_ld_st_inst_n = hs_ld_st_inst_i;
       lsu_vaddr_n[HYP_EXT][(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0] = dtlb_gpaddr[(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0];
-      csr_hs_ld_st_inst_o  = hs_ld_st_inst_i || hs_ld_st_inst_q;
+      csr_hs_ld_st_inst_o = hs_ld_st_inst_i || hs_ld_st_inst_q;
       daccess_err[HYP_EXT] = en_ld_st_translation_i[HYP_EXT] && !dtlb_pte_q[HYP_EXT].u;
     end
 
@@ -624,7 +624,7 @@ module cva6_mmu
             lsu_exception_o = exception_t'({
               riscv::STORE_GUEST_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
-              lsu_vaddr_q[HYP_EXT][(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0],
+              lsu_vaddr_q[HYP_EXT][(CVA6Cfg.XLEN==32?CVA6Cfg.VLEN : riscv::GPLEN)-1:0],
               {CVA6Cfg.XLEN{1'b0}},
               en_ld_st_translation_i[HYP_EXT*2],
               1'b1
@@ -672,7 +672,7 @@ module cva6_mmu
             lsu_exception_o = exception_t'({
               riscv::LOAD_GUEST_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, lsu_vaddr_q[0]},
-              lsu_vaddr_q[HYP_EXT][(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: riscv::GPLEN)-1:0],
+              lsu_vaddr_q[HYP_EXT][(CVA6Cfg.XLEN==32?CVA6Cfg.VLEN : riscv::GPLEN)-1:0],
               {CVA6Cfg.XLEN{1'b0}},
               en_ld_st_translation_i[HYP_EXT*2],
               1'b1

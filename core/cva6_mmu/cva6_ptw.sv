@@ -511,9 +511,7 @@ module cva6_ptw
                       ptw_pptr_n = {pte.ppn, vaddr_lvl[HYP_EXT][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
                     end
                     G_FINAL_STAGE: begin
-                      ptw_pptr_n = {
-                        pte.ppn, vaddr_lvl[HYP_EXT*2][ptw_lvl_q[0]], (PT_LEVELS)'(0)
-                      };
+                      ptw_pptr_n = {pte.ppn, vaddr_lvl[HYP_EXT*2][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
                     end
                   endcase
                 end else ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
