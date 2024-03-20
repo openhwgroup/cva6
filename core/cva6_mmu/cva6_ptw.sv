@@ -86,10 +86,9 @@ module cva6_ptw
   logic data_rvalid_q;
   logic [CVA6Cfg.XLEN-1:0] data_rdata_q;
 
-  pte_cva6_t pte;  //[gpte_d,gpte_q,pte]
-  pte_cva6_t [HYP_EXT:0] gpte;
+  pte_cva6_t pte;  
   // register to perform context switch between stages
-  // pte_cva6_t gpte_q, gpte_d;
+  pte_cva6_t gpte_q, gpte_d;
   assign pte = pte_cva6_t'(data_rdata_q[CVA6Cfg.PPNW+9:0]);
 
   enum logic [2:0] {
@@ -196,7 +195,7 @@ module cva6_ptw
 
       // set the global mapping bit
       if ((enable_translation_i[HYP_EXT] || en_ld_st_translation_i[HYP_EXT]) && HYP_EXT == 1) begin
-        shared_tlb_update_o.content[y] = y == 0 ? gpte[0] | (global_mapping_q << 5) : pte;
+        shared_tlb_update_o.content[y] = y == 0 ? gpte_q | (global_mapping_q << 5) : pte;
       end else begin
         shared_tlb_update_o.content[y] = y == 0 ? (pte | (global_mapping_q << 5)) : '0;
       end
@@ -290,11 +289,11 @@ module cva6_ptw
     if (HYP_EXT == 1) begin
       gpaddr_n    = gpaddr_q;
       gptw_pptr_n = gptw_pptr_q;
+      gpte_d = gpte_q;
     end
 
     shared_tlb_miss_o = 1'b0;
 
-    if (HYP_EXT == 1) gpte[HYP_EXT] = gpte[0];
 
     case (state_q)
 
@@ -306,7 +305,7 @@ module cva6_ptw
 
 
         if (HYP_EXT == 1) begin
-          gpte[HYP_EXT] = '0;
+          gpte_d = '0;
           gpaddr_n       = '0;
         end
 
@@ -399,7 +398,7 @@ module cva6_ptw
                     if ((is_instr_ptw_q && enable_translation_i[HYP_EXT]) || (!is_instr_ptw_q && en_ld_st_translation_i[HYP_EXT])) begin
                       state_d = WAIT_GRANT;
                       ptw_stage_d = G_FINAL_STAGE;
-                      if (HYP_EXT == 1) gpte[HYP_EXT] = pte;
+                      if (HYP_EXT == 1) gpte_d = pte;
                       ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0];
                       gpaddr_n = gpaddr[ptw_lvl_q[0]];
                       ptw_pptr_n = {
@@ -494,7 +493,7 @@ module cva6_ptw
                     S_STAGE: begin
                       if (HYP_EXT==1 && ((is_instr_ptw_q && enable_translation_i[HYP_EXT]) || (!is_instr_ptw_q && en_ld_st_translation_i[HYP_EXT]))) begin
                         ptw_stage_d = G_INTERMED_STAGE;
-                        if (HYP_EXT == 1) gpte[HYP_EXT] = pte;
+                        if (HYP_EXT == 1) gpte_d = pte;
                         ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0] + 1;
                         pptr = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
                         gptw_pptr_n = pptr;
@@ -602,7 +601,7 @@ module cva6_ptw
         gpaddr_q     <= '0;
         gptw_pptr_q  <= '0;
         ptw_stage_q  <= S_STAGE;
-        gpte[0] <= '0;
+        gpte_q <= '0;
       end
     end else begin
       state_q           <= state_d;
@@ -620,7 +619,7 @@ module cva6_ptw
         gpaddr_q     <= gpaddr_n;
         gptw_pptr_q  <= gptw_pptr_n;
         ptw_stage_q  <= ptw_stage_d;
-        gpte[0] <= gpte[HYP_EXT];
+        gpte_q <= gpte_d;
       end
     end
   end
