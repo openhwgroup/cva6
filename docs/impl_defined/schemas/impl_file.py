@@ -1,8 +1,8 @@
 # Schema of an Implementation-Defined Behaviors file
 
-from dataclasses import dataclass
-import variconf
+from dataclasses import dataclass, field
 from typing import List, Union, Optional
+import variconf
 
 # Version control: repository location + revision
 # Revision ('rev') must be a quoted string in Yaml file
@@ -30,8 +30,8 @@ class ImplConfig:
 @dataclass
 class SpecPoint:
     url: str
-    normative: bool
-    value_range: str
+    normative: Optional[bool] = None
+    value_range: Optional[str] = None
     spec_text: Optional[str] = None
 
 # Choice made by the current implementation
@@ -93,7 +93,6 @@ class SpikeSupport:
 # A single implementation-defined behavior allowed by the spec
 @dataclass
 class Behavior:
-    tag: str
     spec: SpecPoint
     relevant: bool
     relevant_why: str
@@ -102,6 +101,7 @@ class Behavior:
     rtl: Optional[RtlSupport] = None
     spike: Optional[SpikeSupport] = None
     comment: Optional[str] = None
+    tag: Optional[str] = None
 
 # List of implementation-defined/-dependent behaviors according
 # to the specification.
