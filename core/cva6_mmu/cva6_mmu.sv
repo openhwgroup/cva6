@@ -649,7 +649,7 @@ module cva6_mmu
             // Check if any PMPs are violated
           end else if (!pmp_data_allow) begin
             if (HYP_EXT == 1) begin
-              lsu_exception_o =exception_t'({
+              lsu_exception_o = exception_t'({
                 riscv::ST_ACCESS_FAULT,
                 {CVA6Cfg.XLEN'(lsu_paddr_o)},
                 {riscv::GPLEN{1'b0}},
