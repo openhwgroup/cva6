@@ -57,7 +57,6 @@ int string_to_verbosity_level [string] = '{
     "UVM_DEBUG" : 500 };
 
 function void uvm_set_verbosity_level(string verbosity);
-    $display("New verbosity Level: %h", string_to_verbosity_level[verbosity]);
     $cast(current_verbosity_level,string_to_verbosity_level[verbosity]);
 
 endfunction
