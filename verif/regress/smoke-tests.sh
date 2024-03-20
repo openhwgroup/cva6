@@ -30,9 +30,13 @@ echo "$SPIKE_INSTALL_DIR$"
 
 if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=vcs-testharness,spike
-  fi
+fi
 
-export DV_OPTS="$DV_OPTS --issrun_opts=\"+UVM_VERBOSITY=UVM_NONE\""
+if ! [ -n "$UVM_VERBOSITY_LEVEL" ]; then
+    UVM_VERBOSITY_LEVEL=UVM_NONE
+fi
+
+export DV_OPTS="$DV_OPTS --issrun_opts=\"+UVM_VERBOSITY=$UVM_VERBOSITY_LEVEL\""
 
 cd verif/sim/
 python3 cva6.py --testlist=../tests/testlist_riscv-compliance-cv64a6_imafdc_sv39.yaml --test rv32i-I-ADD-01 --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS $DV_OPTS

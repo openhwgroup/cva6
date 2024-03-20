@@ -714,6 +714,15 @@ module ariane_testharness #(
     end
 `endif
 
+`ifdef VERILATOR
+    initial begin
+        int verbosity = 0;
+        if ($value$plusargs("+UVM_VERBOSITY=%s",verbosity)) begin
+            uvm_set_verbosity_level(verbosity);
+        end
+    end
+`endif
+
 
 `ifdef AXI_SVA
   // AXI 4 Assertion IP integration - You will need to get your own copy of this IP if you want

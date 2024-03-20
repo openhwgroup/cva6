@@ -44,14 +44,31 @@ typedef enum
     end
 
 static longint sim_errors = 0;
-parameter max_errors = 10;
+parameter max_errors = 5;
+
+static uvm_verbosity current_verbosity_level = UVM_LOW;
+
+int string_to_verbosity_level [string] = '{
+    "UVM_NONE" : 0,
+    "UVM_LOW"  : 100,
+    "UVM_MEDIUM" : 200,
+    "UVM_HIGH" : 300,
+    "UVM_FULL" : 400,
+    "UVM_DEBUG" : 500 };
+
+function void uvm_set_verbosity_level(string verbosity);
+    $display("New verbosity Level: %h", string_to_verbosity_level[verbosity]);
+    $cast(current_verbosity_level,string_to_verbosity_level[verbosity]);
+
+endfunction
 
 function void uvm_report_info(string id,
                   string message,
                   int verbosity = UVM_MEDIUM,
                   string filename = "",
                   int line = 0);
-        $display($sformatf("UVM_INFO @ %t ns : %s %s", $time, id, message));
+        if (verbosity <= current_verbosity_level)
+            $display($sformatf("UVM_INFO @ %t ns : %s %s", $time, id, message));
 endfunction
 
 
