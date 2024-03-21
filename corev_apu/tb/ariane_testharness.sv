@@ -16,6 +16,12 @@
 `include "axi/assign.svh"
 `include "rvfi_types.svh"
 
+`ifdef VERILATOR
+`include "custom_uvm_macros.svh"
+`else
+`include "uvm_macros.svh"
+`endif
+
 module ariane_testharness #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(cva6_config_pkg::cva6_cfg),
   //

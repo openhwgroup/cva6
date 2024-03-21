@@ -30,6 +30,12 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness
 fi
 
+if ! [ -n "$UVM_VERBOSITY_LEVEL" ]; then
+    UVM_VERBOSITY_LEVEL=UVM_NONE
+fi
+
+export DV_OPTS="$DV_OPTS --issrun_opts=\"+UVM_VERBOSITY=$UVM_VERBOSITY_LEVEL\""
+
 make clean
 make -C verif/sim clean_all
 
@@ -85,4 +91,5 @@ python3 cva6.py \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
-        --linker ../tests/custom/common/test.ld
+        --linker ../tests/custom/common/test.ld \
+        $DV_OPTS
