@@ -288,7 +288,7 @@ package config_pkg;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
   /// you develop a module that resides within the core, assign this constant.
-  localparam cva6_cfg_t cva6_cfg_empty = '0;
+  localparam cva6_cfg_t cva6_cfg_empty = cva6_cfg_t'(0);
 
   /// Utility function being called to check parameters. Not all values make
   /// sense for all parameters, here is the place to sanity check them.
