@@ -60,7 +60,7 @@ module perf_counters
     input logic [31:0] mcountinhibit_i
 );
 
-  typedef logic[11:0] csr_addr_t;
+  typedef logic [11:0] csr_addr_t;
 
   logic [63:0] generic_counter_d[MHPMCounterNum:1];
   logic [63:0] generic_counter_q[MHPMCounterNum:1];
@@ -156,50 +156,50 @@ module perf_counters
 
     //Read
     if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3)) && (addr_i < ( csr_addr_t'(riscv::CSR_MHPM_COUNTER_3) + MHPMCounterNum)) ) begin
-       if (riscv::XLEN == 32) begin
-          data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3 + 1][31:0];
-       end else begin
-          data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3 + 1];
-       end
+      if (riscv::XLEN == 32) begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3+1][31:0];
+      end else begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3+1];
+      end
     end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H)) && (addr_i < ( csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H) + MHPMCounterNum)) ) begin
-       if (riscv::XLEN == 32) begin
-          data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3H + 1][63:32];
-       end else begin
-          read_access_exception = 1'b1;
-       end
+      if (riscv::XLEN == 32) begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3H+1][63:32];
+      end else begin
+        read_access_exception = 1'b1;
+      end
     end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_EVENT_3)) && (addr_i < (csr_addr_t'(riscv::CSR_MHPM_EVENT_3) + MHPMCounterNum)) ) begin
-        data_o = mhpmevent_q[addr_i-riscv::CSR_MHPM_EVENT_3 + 1] ;
+      data_o = mhpmevent_q[addr_i-riscv::CSR_MHPM_EVENT_3+1];
     end else if( (addr_i >= csr_addr_t'(riscv::CSR_HPM_COUNTER_3)) && (addr_i < (csr_addr_t'(riscv::CSR_HPM_COUNTER_3) + MHPMCounterNum)) ) begin
-       if(riscv::XLEN == 32) begin
-          data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3 + 1][31:0];
-       end else begin
-          data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3 + 1];
-       end
+      if (riscv::XLEN == 32) begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3+1][31:0];
+      end else begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3+1];
+      end
     end else if( (addr_i > csr_addr_t'(riscv::CSR_HPM_COUNTER_3H)) && (addr_i < (csr_addr_t'(riscv::CSR_HPM_COUNTER_3H) + MHPMCounterNum)) ) begin
-       if(riscv::XLEN == 32) begin
-          data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3H + 1][63:32];
-       end else begin
-          read_access_exception = 1'b1;
-       end
+      if (riscv::XLEN == 32) begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3H+1][63:32];
+      end else begin
+        read_access_exception = 1'b1;
+      end
     end
 
     //Write
-    if(we_i) begin
-       if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3)) && (addr_i < (csr_addr_t'(riscv::CSR_MHPM_COUNTER_3) + MHPMCounterNum)) ) begin
-          if (riscv::XLEN == 32) begin
-             generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3 + 1][31:0] = data_i;
-          end else begin
-             generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3 + 1] = data_i;
-          end
-       end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H)) && (addr_i < (csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H) + MHPMCounterNum)) ) begin
-          if (riscv::XLEN == 32) begin
-             generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3H + 1][63:32] = data_i;
-          end else begin
-             update_access_exception = 1'b1;
-          end
-       end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_EVENT_3)) && (addr_i < csr_addr_t'(riscv::CSR_MHPM_EVENT_3) + MHPMCounterNum) ) begin
-           mhpmevent_d[addr_i-riscv::CSR_MHPM_EVENT_3 + 1] = data_i;
-       end
+    if (we_i) begin
+      if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3)) && (addr_i < (csr_addr_t'(riscv::CSR_MHPM_COUNTER_3) + MHPMCounterNum)) ) begin
+        if (riscv::XLEN == 32) begin
+          generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3+1][31:0] = data_i;
+        end else begin
+          generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3+1] = data_i;
+        end
+      end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H)) && (addr_i < (csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H) + MHPMCounterNum)) ) begin
+        if (riscv::XLEN == 32) begin
+          generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3H+1][63:32] = data_i;
+        end else begin
+          update_access_exception = 1'b1;
+        end
+      end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_EVENT_3)) && (addr_i < csr_addr_t'(riscv::CSR_MHPM_EVENT_3) + MHPMCounterNum) ) begin
+        mhpmevent_d[addr_i-riscv::CSR_MHPM_EVENT_3+1] = data_i;
+      end
     end
   end
 
