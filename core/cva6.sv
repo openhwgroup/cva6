@@ -1407,6 +1407,7 @@ module cva6
         .acc_no_st_pending_i   (no_st_pending_commit),
         .dcache_req_ports_i    (dcache_req_ports_ex_cache),
         .ctrl_halt_o           (halt_acc_ctrl),
+        .csr_addr_i            (csr_addr_ex_csr),
         .acc_dcache_req_ports_o(dcache_req_ports_acc_cache),
         .acc_dcache_req_ports_i(dcache_req_ports_cache_acc),
         .inval_ready_i         (inval_ready),
