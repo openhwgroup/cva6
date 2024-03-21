@@ -9,6 +9,8 @@
 
 // *************************** AXI features supported by CVA6  ************************** //
 
+`include "uvm_macros.svh"
+
 module  uvmt_cva6_axi_assert (uvma_axi_intf axi_assert_if);
 
    import uvm_pkg::*;

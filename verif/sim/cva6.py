@@ -1054,7 +1054,7 @@ def check_spike_version():
 
   if user_spike_version.returncode != 0:
     incorrect_version_exit("Spike", "- unknown -", spike_version)
-    
+
   logging.info(f"Spike Version: {user_spike_version_string}")
 
   if user_spike_version_string != spike_version:

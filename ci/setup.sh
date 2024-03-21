@@ -20,6 +20,13 @@ if [ -d ${VERILATOR_BUILD_DIR} ]; then
     make -C ${VERILATOR_BUILD_DIR} clean
 fi
 
+if [ -f ${SPIKE_PATH}/spike ]; then
+    spike_version="$(git -C ${SPIKE_SRC_DIR} log -1 --pretty=tformat:%h -- ${SPIKE_SRC_DIR}/..)"
+    spike_installed_version="$(${SPIKE_PATH}/spike -v |& cut -d ' ' -f 2)"
+    if [ "$spike_installed_version" != "$spike_version" ]; then
+        rm -rf ${SPIKE_INSTALL_DIR}
+    fi
+fi
 source verif/regress/install-spike.sh
 if [ -d ${SPIKE_SRC_DIR}/build/ ]; then
     make -C ${SPIKE_SRC_DIR}/build clean

@@ -100,7 +100,7 @@ package config_pkg;
     int unsigned                 NrScoreboardEntries;
     // Address to jump when halt request
     logic [63:0]                 HaltAddress;
-    // Address to jump when exception 
+    // Address to jump when exception
     logic [63:0]                 ExceptionAddress;
     // Return address stack depth
     int unsigned                 RASDepth;
@@ -296,8 +296,8 @@ package config_pkg;
     // pragma translate_off
 `ifndef VERILATOR
     assert (Cfg.RASDepth > 0);
-    assert (2 ** $clog2(Cfg.BTBEntries) == Cfg.BTBEntries);
-    assert (2 ** $clog2(Cfg.BHTEntries) == Cfg.BHTEntries);
+    assert (Cfg.BTBEntries == 0 || (2 ** $clog2(Cfg.BTBEntries) == Cfg.BTBEntries));
+    assert (Cfg.BHTEntries == 0 || (2 ** $clog2(Cfg.BHTEntries) == Cfg.BHTEntries));
     assert (Cfg.NrNonIdempotentRules <= NrMaxRules);
     assert (Cfg.NrExecuteRegionRules <= NrMaxRules);
     assert (Cfg.NrCachedRegionRules <= NrMaxRules);

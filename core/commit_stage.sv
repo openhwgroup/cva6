@@ -320,9 +320,12 @@ module commit_stage
         end
       end
     end
-    if (CVA6Cfg.RVZCMP)
-      commit_macro_ack_o = (commit_instr_i[0].is_macro_instr || commit_instr_i[1].is_macro_instr) ? commit_macro_ack : commit_ack_o;
-    else commit_macro_ack_o = commit_ack_o;
+    if (CVA6Cfg.RVZCMP) begin
+      if (CVA6Cfg.NrCommitPorts > 1)
+        commit_macro_ack_o = (commit_instr_i[0].is_macro_instr || commit_instr_i[1].is_macro_instr) ? commit_macro_ack : commit_ack_o;
+      else
+        commit_macro_ack_o = (commit_instr_i[0].is_macro_instr) ? commit_macro_ack : commit_ack_o;
+    end else commit_macro_ack_o = commit_ack_o;
   end
 
   // -----------------------------

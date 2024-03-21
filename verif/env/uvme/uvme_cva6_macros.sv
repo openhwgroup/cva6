@@ -23,5 +23,10 @@
 
 `define per_instance_fcov `ifndef DSIM option.per_instance = 1; `endif
 
+`ifdef UNSUPPORTED_WITH //TODO - Remove ifdef when the issue in VCS simulator is fixed
+  `define WITH iff
+`else
+   `define WITH with
+`endif
 
 `endif // __UVME_CVA6_MACROS_SV__
