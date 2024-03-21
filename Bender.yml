@@ -50,6 +50,26 @@ sources:
           - core/mmu_sv39/ptw.sv
           - core/cva6_accel_first_pass_decoder_stub.sv
 
+      - target: cv64a6_imafdch_sv39
+        files:
+          - core/include/cv64a6_imafdch_sv39_config_pkg.sv
+          - core/include/riscv_pkg.sv
+          - core/include/ariane_pkg.sv
+          - core/mmu_sv39x4/cva6_tlb_sv39x4.sv
+          - core/mmu_sv39x4/cva6_mmu_sv39x4.sv
+          - core/mmu_sv39x4/cva6_ptw_sv39x4.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
+
+      - target: cv64a6_imafdch_sv39_wb
+        files:
+          - core/include/cv64a6_imafdch_sv39_wb_config_pkg.sv
+          - core/include/riscv_pkg.sv
+          - core/include/ariane_pkg.sv
+          - core/mmu_sv39x4/cva6_tlb_sv39x4.sv
+          - core/mmu_sv39x4/cva6_mmu_sv39x4.sv
+          - core/mmu_sv39x4/cva6_ptw_sv39x4.sv
+          - core/cva6_accel_first_pass_decoder_stub.sv
+
       - target: cv32a6_imac_sv0
         files:
           - core/include/cv32a6_imac_sv0_config_pkg.sv

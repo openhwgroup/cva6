@@ -84,11 +84,13 @@ core/load_unit.sv
 core/load_store_unit.sv
 core/lsu_bypass.sv
 core/mmu_sv39/mmu.sv
+core/mmu_sv39x4/cva6_mmu_sv39x4.sv
 core/mult.sv
 core/multiplier.sv
 core/serdiv.sv
 core/perf_counters.sv
 core/mmu_sv39/ptw.sv
+core/mmu_sv39x4/ptw_sv39x4.sv
 core/ariane_regfile_ff.sv
 core/re_name.sv
 core/scoreboard.sv
@@ -96,6 +98,7 @@ core/store_buffer.sv
 core/amo_buffer.sv
 core/store_unit.sv
 core/mmu_sv39/tlb.sv
+core/mmu_sv39x4/tlb_sv39x4.sv
 core/commit_stage.sv
 core/cache_subsystem/wt_dcache_ctrl.sv
 core/cache_subsystem/wt_dcache_mem.sv

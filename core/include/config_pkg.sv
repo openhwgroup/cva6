@@ -80,6 +80,8 @@ package config_pkg;
     bit                          RVV;
     // Compress RISC-V extension
     bit                          RVC;
+    // Hypervisor RISC-V extension
+    bit                          RVH;
     // Zcb RISC-V extension
     bit                          RVZCB;
     // Zcmp RISC-V extension
@@ -168,10 +170,12 @@ package config_pkg;
     int unsigned XLEN;
     int unsigned VLEN;
     int unsigned PLEN;
+    int unsigned GPLEN;
     bit IS_XLEN32;
     bit IS_XLEN64;
     int unsigned XLEN_ALIGN_BYTES;
     int unsigned ASID_WIDTH;
+    int unsigned VMID_WIDTH;
 
     bit          FPGA_EN;
     /// Number of commit ports, i.e., maximum number of instructions that the
@@ -194,6 +198,7 @@ package config_pkg;
     bit          RVB;
     bit          RVV;
     bit          RVC;
+    bit          RVH;
     bit          RVZCB;
     bit          RVZCMP;
     bit          XFVec;
@@ -273,9 +278,12 @@ package config_pkg;
 
     int unsigned ModeW;
     int unsigned ASIDW;
+    int unsigned VMIDW;
     int unsigned PPNW;
+    int unsigned GPPNW;
     vm_mode_t MODE_SV;
     int unsigned SV;
+    int unsigned SVX;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
