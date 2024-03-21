@@ -90,6 +90,7 @@ module acc_dispatcher
     input dcache_req_i_t [2:0] dcache_req_ports_i,
     // Interface with the controller
     output logic ctrl_halt_o,
+    input  logic [11:0] csr_addr_i,
     input logic flush_unissued_instr_i,
     input logic flush_ex_i,
     output logic flush_pipeline_o,
