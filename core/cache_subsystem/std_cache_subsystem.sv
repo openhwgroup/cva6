@@ -179,7 +179,7 @@ module std_cache_subsystem
   end
 
   // W Channel
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .DATA_WIDTH  (2),
       // we can have a maximum of 4 oustanding transactions as each port is blocking
       .DEPTH       (4),

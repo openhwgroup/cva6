@@ -17,9 +17,11 @@ dependencies:
 frozen: true
 
 sources:
-  - files:
+  - include_dirs:
+      - core/include
+    files:
       - core/include/config_pkg.sv
-
+      - core/include/build_config_pkg.sv
       - target: cv64a6_imafdcv_sv39
         files:
           - core/include/cv64a6_imafdcv_sv39_config_pkg.sv
@@ -107,7 +109,6 @@ sources:
       # Packages
       - core/include/wt_cache_pkg.sv
       - core/include/std_cache_pkg.sv
-      - core/include/acc_pkg.sv
 
       # for all the below files use Flist.cva6 as baseline and also look at Makefile pd/synth
       # CVXIF
@@ -118,11 +119,11 @@ sources:
       - core/cvxif_example/cvxif_example_coprocessor.sv
       - core/cvxif_example/instr_decoder.sv
 
+      - core/cva6_fifo_v3.sv
       # vendored deps
       # - include_dirs: [vendor/pulp-platform/common_cells/include/, vendor/pulp-platform/common_cells/src/]
       #   files:
       #     - vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
-      #     - vendor/pulp-platform/common_cells/src/fifo_v3.sv
       #     - vendor/pulp-platform/common_cells/src/lfsr.sv
       #     - vendor/pulp-platform/common_cells/src/lzc.sv
       #     - vendor/pulp-platform/common_cells/src/rr_arb_tree.sv

@@ -299,7 +299,7 @@ module wt_dcache_wbuffer
   ///////////////////////////////////////////////////////
 
   // TODO: todo: make this fall through if timing permits it
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .FALL_THROUGH(1'b0),
       .DATA_WIDTH  ($clog2(CVA6Cfg.DCACHE_MAX_TX)),
       .DEPTH       (CVA6Cfg.DCACHE_MAX_TX),
