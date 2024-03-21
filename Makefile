@@ -314,7 +314,7 @@ vcs: vcs_build
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
-	$(VOPT) $(vopt_flags) -64 -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis -dpilib $(SPIKE_INSTALL_DIR)/lib/libriscv -dpilib $(SPIKE_INSTALL_DIR)/lib/lifesvr -suppress 2085 -suppress 7063
+	$(VOPT) -64 -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis -dpilib $(SPIKE_INSTALL_DIR)/lib/libriscv -dpilib $(SPIKE_INSTALL_DIR)/lib/lifesvr -suppress 2085 -suppress 7063
 
 # src files
 $(library)/.build-srcs: $(library)

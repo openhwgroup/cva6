@@ -139,8 +139,6 @@ smoke:
         - "vcs-testharness,spike"
         - "vcs-uvm,spike"
   script:
-    - source /opt/questa/questa_sim-2022.4_2/questasim/setup/bashrc
-    - PATH=$PATH:/opt/questa/questa_sim-2022.4_2/questasim/bin
     - bash verif/regress/smoke-tests.sh
     - !reference [.simu_after_script]
 

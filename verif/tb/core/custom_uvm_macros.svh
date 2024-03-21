@@ -49,12 +49,12 @@ parameter max_errors = 5;
 static uvm_verbosity current_verbosity_level = UVM_LOW;
 
 int string_to_verbosity_level [string] = '{
-    "UVM_NONE" : 0,
-    "UVM_LOW"  : 100,
+    "UVM_NONE"   : 0,
+    "UVM_LOW"    : 100,
     "UVM_MEDIUM" : 200,
-    "UVM_HIGH" : 300,
-    "UVM_FULL" : 400,
-    "UVM_DEBUG" : 500 };
+    "UVM_HIGH"   : 300,
+    "UVM_FULL"   : 400,
+    "UVM_DEBUG"  : 500 };
 
 function void uvm_set_verbosity_level(string verbosity);
     $cast(current_verbosity_level,string_to_verbosity_level[verbosity]);

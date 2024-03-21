@@ -30,11 +30,11 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness
 fi
 
-if ! [ -n "$UVM_VERBOSITY_LEVEL" ]; then
-    UVM_VERBOSITY_LEVEL=UVM_NONE
+if ! [ -n "$UVM_VERBOSITY" ]; then
+    UVM_VERBOSITY=UVM_NONE
 fi
 
-export DV_OPTS="$DV_OPTS --issrun_opts=\"+UVM_VERBOSITY=$UVM_VERBOSITY_LEVEL\""
+export DV_OPTS="$DV_OPTS --issrun_opts=\"+UVM_VERBOSITY=$UVM_VERBOSITY\""
 
 make clean
 make -C verif/sim clean_all

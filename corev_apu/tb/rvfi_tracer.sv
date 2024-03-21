@@ -109,11 +109,6 @@ module rvfi_tracer #(
           if (rvfi_i[i].mem_wmask != 0) begin
             $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
             if (TOHOST_ADDR != '0 &&
-                rvfi_i[i].mem_paddr == TOHOST_ADDR) begin
-                $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
-            end
-
-            if (TOHOST_ADDR != '0 &&
                 rvfi_i[i].mem_paddr == TOHOST_ADDR &&
                 rvfi_i[i].mem_wdata[0] == 1'b1) begin
               end_of_test_q = rvfi_i[i].mem_wdata[31:0];

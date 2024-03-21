@@ -20,7 +20,6 @@
 `ifndef __UVMT_CVA6_TB_IFS_SV__
 `define __UVMT_CVA6_TB_IFS_SV__
 
-
 interface uvmt_rvfi_if #(
                     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
                     parameter type rvfi_instr_t = logic,
@@ -38,7 +37,6 @@ interface uvmt_rvfi_if #(
 
 endinterface : uvmt_rvfi_if
 
-
 interface uvmt_tb_exit_if (
   output logic[31:0] tb_exit_o
     );
@@ -46,6 +44,5 @@ interface uvmt_tb_exit_if (
   initial begin
   end
 endinterface : uvmt_tb_exit_if
-
 
 `endif // __UVMT_CVA6_TB_IFS_SV__
