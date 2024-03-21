@@ -119,6 +119,7 @@ sources:
       - core/cvxif_example/cvxif_example_coprocessor.sv
       - core/cvxif_example/instr_decoder.sv
 
+      - core/cva6_rvfi_probes.sv
       - core/cva6_fifo_v3.sv
       # vendored deps
       # - include_dirs: [vendor/pulp-platform/common_cells/include/, vendor/pulp-platform/common_cells/src/]
