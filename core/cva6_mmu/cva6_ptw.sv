@@ -86,7 +86,7 @@ module cva6_ptw
   logic data_rvalid_q;
   logic [CVA6Cfg.XLEN-1:0] data_rdata_q;
 
-  pte_cva6_t pte;  
+  pte_cva6_t pte;
   // register to perform context switch between stages
   pte_cva6_t gpte_q, gpte_d;
   assign pte = pte_cva6_t'(data_rdata_q[CVA6Cfg.PPNW+9:0]);
@@ -305,8 +305,8 @@ module cva6_ptw
 
 
         if (HYP_EXT == 1) begin
-          gpte_d = '0;
-          gpaddr_n       = '0;
+          gpte_d   = '0;
+          gpaddr_n = '0;
         end
 
 
@@ -596,10 +596,10 @@ module cva6_ptw
       data_rdata_q      <= '0;
       data_rvalid_q     <= 1'b0;
       if (HYP_EXT == 1) begin
-        gpaddr_q     <= '0;
-        gptw_pptr_q  <= '0;
-        ptw_stage_q  <= S_STAGE;
-        gpte_q <= '0;
+        gpaddr_q    <= '0;
+        gptw_pptr_q <= '0;
+        ptw_stage_q <= S_STAGE;
+        gpte_q      <= '0;
       end
     end else begin
       state_q           <= state_d;
@@ -614,10 +614,10 @@ module cva6_ptw
       data_rvalid_q     <= req_port_i.data_rvalid;
 
       if (HYP_EXT == 1) begin
-        gpaddr_q     <= gpaddr_n;
-        gptw_pptr_q  <= gptw_pptr_n;
-        ptw_stage_q  <= ptw_stage_d;
-        gpte_q <= gpte_d;
+        gpaddr_q    <= gpaddr_n;
+        gptw_pptr_q <= gptw_pptr_n;
+        ptw_stage_q <= ptw_stage_d;
+        gpte_q      <= gpte_d;
       end
     end
   end
