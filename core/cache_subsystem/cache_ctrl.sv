@@ -433,6 +433,9 @@ module cache_ctrl
           state_d = IDLE;
         end
       end
+
+      default:;
+
     endcase
 
     if (req_port_i.kill_req) begin
