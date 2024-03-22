@@ -66,6 +66,8 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigInstrTlbEntries = 16;
   localparam CVA6ConfigDataTlbEntries = 16;
+  localparam CVA6ConfigUseSharedTlb = 0;
+  localparam CVA6ConfigSharedTlbDepth = 64;
 
   localparam CVA6ConfigRASDepth = 2;
   localparam CVA6ConfigBTBEntries = 32;
