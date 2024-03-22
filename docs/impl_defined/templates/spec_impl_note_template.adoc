@@ -1,7 +1,28 @@
+////
+Copyright 2024 Thales DIS France SAS
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Original Author: Jean-Roch COULON - Thales
+
+Example of content to insert into CVA6-annotated versions of RISC-V
+spcification source files
+////
+
 .CVA6 implementations
 [%collapsible]
 ====
-[[toto_anchort]]
+[[FS_choices_anchor]]
 .Implementation description with related parameters
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header",]
 |===
