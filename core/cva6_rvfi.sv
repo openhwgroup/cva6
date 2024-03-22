@@ -375,37 +375,35 @@ module cva6_rvfi
     `CONNECT_RVFI_FULL( 1'b1, pmpcfg2, csr.pmpcfg_q[8+:CVA6Cfg.XLEN/8])
     `CONNECT_RVFI_FULL( CVA6Cfg.XLEN == 32, pmpcfg3, csr.pmpcfg_q[15:12])
 
-    always_comb begin
-    for (int i = 0; i < 16; i++) begin
-      rvfi_csr_o.pmpaddr[i] = '{
-          rdata:
-          csr.pmpcfg_q[i].addr_mode[1]
-          == 1'b1 ?
-          {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
-          : {
-          {CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}
-          ,
-          csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1]
-          ,
-          1'b0
-          },
-          wdata:
-          csr.pmpcfg_q[i].addr_mode[1]
-          == 1'b1 ?
-          {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
-          : {
-          {CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}
-          ,
-          csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1]
-          ,
-          1'b0
-          },
-          rmask: '1,
-          wmask: '1
-      };
+    bit [CVA6Cfg.XLEN-1:0] pmpaddr_q;
+    genvar i;
+    generate
+    for (i = 0; i < 16; i++) begin
+      always_ff @(posedge clk_i) begin
+        pmpaddr_q[i] = (csr.pmpcfg_q[i].addr_mode[1] == 1'b1) ?
+            {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
+            : {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}} , csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1] , 1'b0 };
+      end
+      always_comb begin
+        rvfi_csr_o.pmpaddr[i] = '{
+            rdata: { '0, pmpaddr_q[i] },
+            wdata:
+            csr.pmpcfg_q[i].addr_mode[1]
+            == 1'b1 ?
+            {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
+            : {
+            {CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}
+            ,
+            csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1]
+            ,
+            1'b0
+            },
+            rmask: '1,
+            wmask: '1
+        };
+      end
     end
+    endgenerate
     ;
-  end
-
 
 endmodule
