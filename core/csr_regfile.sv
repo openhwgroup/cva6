@@ -21,7 +21,6 @@ module csr_regfile
     parameter type                   irq_ctrl_t         = logic,
     parameter type                   scoreboard_entry_t = logic,
     parameter type                   rvfi_probes_csr_t  = logic,
-    parameter int                    AsidWidth          = 1,
     parameter int                    VmidWidth          = 1,
     parameter int unsigned           MHPMCounterNum     = 6
 ) (
@@ -117,7 +116,7 @@ module csr_regfile
     // TO_BE_COMPLETED - EX_STAGE
     output logic [CVA6Cfg.PPNW-1:0] satp_ppn_o,
     // TO_BE_COMPLETED - EX_STAGE
-    output logic [AsidWidth-1:0] asid_o,
+    output logic [CVA6Cfg.ASID_WIDTH-1:0] asid_o,
     // TO_BE_COMPLETED - EX_STAGE
     output logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_o,
     // TO_BE_COMPLETED - EX_STAGE
@@ -1104,7 +1103,7 @@ module csr_regfile
             else begin
               satp      = satp_t'(csr_wdata);
               // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-              satp.asid = satp.asid & {{(CVA6Cfg.ASIDW - AsidWidth) {1'b0}}, {AsidWidth{1'b1}}};
+              satp.asid = satp.asid & {{(CVA6Cfg.ASIDW - CVA6Cfg.ASID_WIDTH) {1'b0}}, {CVA6Cfg.ASID_WIDTH{1'b1}}};
               // only update if we actually support this mode
               if (config_pkg::vm_mode_t'(satp.mode) == config_pkg::ModeOff ||
                                 config_pkg::vm_mode_t'(satp.mode) == CVA6Cfg.MODE_SV)
@@ -2215,7 +2214,7 @@ module csr_regfile
   assign satp_ppn_o = satp_q.ppn;
   assign vsatp_ppn_o = CVA6Cfg.RVH ? vsatp_q.ppn : '0;
   assign hgatp_ppn_o = CVA6Cfg.RVH ? hgatp_q.ppn : '0;
-  assign asid_o = satp_q.asid[AsidWidth-1:0];
+  assign asid_o = satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0];
   assign vs_asid_o = CVA6Cfg.RVH ? vsatp_q.asid[CVA6Cfg.ASID_WIDTH-1:0] : '0;
   assign vmid_o = CVA6Cfg.RVH ? hgatp_q.vmid[CVA6Cfg.VMID_WIDTH-1:0] : '0;
   assign sum_o = mstatus_q.sum;
