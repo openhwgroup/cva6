@@ -1,4 +1,24 @@
-#!impl_specific_db
+# Copyright 2024 Thales DIS France SAS
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Original Author: Zbigniew CHAMSKI - Thales
+
+# Example of Implementation-Defined Behaviors file
+#
+# You can load this file using the 'variconf' package and manipulate
+# it using 'omegaconf', see '../example.py' for an illustration.
+
 context:
     config:       cv32a65x
     spec:
@@ -13,9 +33,8 @@ context:
     spike:
         repo:     https://github.com/openhwgroup/core-v-verif
         rev:      d46633081bfe67daed840d953e0d759241be6ff0
-behaviors: #!!omap
-  - #MISA_WritableStdExtensionBits: !impl_defined
-    tag:  MISA_WritableStdExtensionBits_git2023-10-02
+behaviors:
+  - tag:  MISA_WritableStdExtensionBits_git2023-10-02
     spec:
       url:          https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L69C72-L71C56
       value_range:  any_subset("A..Z")
@@ -55,8 +74,7 @@ behaviors: #!!omap
             name: "/top/cores/misa_we"
             value: "false"
       comment: "In the future Spike may need to specify any valid explicit combination of standard extensions."
-  - # MSTATUS_FS_may_be_ro_zero_if_no_F_ext_but_S_ext_present: #!impl_defined
-    tag: MSTATUS_FS_may_be_ro_zero_if_no_F_ext_but_S_ext_present_2023-10-02
+  - tag: MSTATUS_FS_may_be_ro_zero_if_no_F_ext_but_S_ext_present_2023-10-02
     spec:
       url:          https://github.com/riscv/riscv-isa-manual/blob/2023-10-02/src/machine.adoc?plain=1#L758C17-L759C34
       value_range:  bool
