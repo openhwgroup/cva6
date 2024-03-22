@@ -1,0 +1,29 @@
+bootrom : y
+bootrom_base : 0x10000
+bootrom_size : 0x10000
+dram :  y
+dram_base :    0x80000000
+dram_size :    0x40000000
+generic_core_config: 1
+default_core_config:
+  #core_id :    0                  # Maybe move out of CoreConfig
+  boot_addr :   0x10000            # DEDUCTED from config_pkg, not an explicit field.
+  extensions:   'cvxif,cv32a65x'   # COMPUTED from config_pkg
+  isa:          'rv32imc_zba_zbb_zbc_zbs_zcb_zicsr' # COMPUTED from config_pkg contents, needs assert wrt. impl_def info
+  #marchid:     '<tbd>'            # 0x3, need to fix it programmatically (RISC-V Int'l. constant)
+  #mhartid:     '<tbd>'            # 0, need to fix it programmatically
+  #misa_we:        n               # SPIKE INTERNAL, comes from impl_def Yaml file, fixed in HW
+  #misa_we_enable: n               # SPIKE INTERNAL, comes from impl_def Yaml file, fixed in HW
+  #misaligned_memaccess: '<tbd>'   # n, need to fix it programmatically (impl. constant, no info in config_pkg)
+  #mmu_mode:    '<tbd>'            # IS sv39, should be BARE since MMU is disabled in CV32A65X, see config_pkg
+  #mvendorid:   '<tbd>'            # 0x00000602UL, need to fix it programmatically (RISC-V Int'l. constant)
+  pmpaddr0:     0x0                # DEDUCTED from config_pkg, not an explicit field.
+  pmpcfg0:      0x0                # DEDUCTED from config_pkg, not an explicit field.
+  pmpregions:   8                  # EXPLICIT in config_pkg
+  priv:        'm'                 # COMPUTED from config_pkg
+  #status_fs_field_we: n           # SPIKE INTERNAL, comes from impl_def Yaml file, fixed in HW
+  #status_fs_field_we_enable: n    # SPIKE INTERNAL, comes from impl_def Yaml file, fixed in HW
+  #status_vs_field_we: n           # SPIKE INTERNAL, comes from impl_def Yaml file, fixed in HW
+  #status_vs_field_we_enable: n    # SPIKE INTERNAL, comes from impl_def Yaml file, fixed in HW
+per_core_configs:
+
