@@ -39,8 +39,9 @@ module uvmt_cva6_dut_wrap # (
                             output rvfi_csr_t                   rvfi_csr_o
                            );
 
+    bit [CVA6Cfg.VLEN-1:0] boot_addr;
 
-
+    assign boot_addr[31:0] = core_cntrl_if.boot_addr;
     cva6_tb_wrapper #(
      .CVA6Cfg ( CVA6Cfg ),
      .rvfi_instr_t      ( rvfi_instr_t      ),
@@ -56,7 +57,7 @@ module uvmt_cva6_dut_wrap # (
     cva6_tb_wrapper_i        (
          .clk_i                  ( clknrst_if.clk                 ),
          .rst_ni                 ( clknrst_if.reset_n             ),
-         .boot_addr_i            ( core_cntrl_if.boot_addr        ),
+         .boot_addr_i            ( boot_addr                      ),
          .cvxif_resp             ( cvxif_if.cvxif_resp_o          ),
          .cvxif_req              ( cvxif_if.cvxif_req_i           ),
          .axi_slave              ( axi_if                         ),

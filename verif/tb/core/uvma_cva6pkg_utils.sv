@@ -37,6 +37,11 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg base);
     base.pmp_regions = CVA6Cfg.NrPMPEntries;
     base.debug_supported = CVA6Cfg.DebugEn;
 
+    base.disable_all_csr_checks = 0;
+
+    base.unsupported_csr_mask['h643] = 1; // HTVAL
+    base.unsupported_csr_mask['h64A] = 1; // HTINST
+
     return base;
 
 endfunction : cva6pkg_to_core_cntrl_cfg

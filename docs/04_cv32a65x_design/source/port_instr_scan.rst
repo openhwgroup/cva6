@@ -58,7 +58,7 @@
      - out
      - Instruction immediat
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``rvc_branch_o``
      - out
@@ -100,6 +100,6 @@
      - out
      - Instruction compressed immediat
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
 

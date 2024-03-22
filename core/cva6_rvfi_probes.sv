@@ -127,7 +127,3 @@ module cva6_rvfi_probes
 
 endmodule
 
-
-
-
-

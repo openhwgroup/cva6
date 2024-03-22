@@ -60,6 +60,12 @@
      - ISSUE_STAGE
      - logic[CVA6Cfg.NrCommitPorts-1:0]
 
+   * - ``commit_macro_ack_o``
+     - out
+     - Acknowledge that we are indeed committing
+     - CSR_REGFILE
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
+
    * - ``waddr_o``
      - out
      - Register file write address
@@ -70,7 +76,7 @@
      - out
      - Register file write data
      - ISSUE_STAGE
-     - logic[CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``we_gpr_o``
      - out
@@ -88,7 +94,7 @@
      - out
      - TO_BE_COMPLETED
      - FRONTEND_CSR_REGFILE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``csr_op_o``
      - out
@@ -100,13 +106,13 @@
      - out
      - Data to write to CSR
      - CSR_REGFILE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``csr_rdata_i``
      - in
      - Data to read from CSR
      - CSR_REGFILE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``csr_exception_i``
      - in
@@ -130,7 +136,7 @@
      - out
      - Transaction id of first commit port
      - ID_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``no_st_pending_i``
      - in

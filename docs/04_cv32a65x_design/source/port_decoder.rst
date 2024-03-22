@@ -22,7 +22,7 @@
      - in
      - PC from fetch stage
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``is_compressed_i``
      - in
@@ -47,6 +47,24 @@
      - Instruction from fetch stage
      - FRONTEND
      - logic[31:0]
+
+   * - ``is_macro_instr_i``
+     - in
+     - Is a macro instruction
+     - macro_decoder
+     - logic
+
+   * - ``is_last_macro_instr_i``
+     - in
+     - Is a last macro instruction
+     - macro_decoder
+     - logic
+
+   * - ``is_double_rd_macro_instr_i``
+     - in
+     - Is mvsa01/mva01s macro instruction
+     - macro_decoder
+     - logic
 
    * - ``branch_predict_i``
      - in

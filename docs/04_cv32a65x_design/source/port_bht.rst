@@ -34,7 +34,7 @@
      - in
      - Virtual PC
      - CACHE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``bht_update_i``
      - in
@@ -46,7 +46,7 @@
      - out
      - Prediction from bht
      - FRONTEND
-     - ariane_pkg::bht_prediction_t[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - ariane_pkg::bht_prediction_t[CVA6Cfg.INSTR_PER_FETCH-1:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 

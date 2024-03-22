@@ -34,7 +34,7 @@
      - in
      - Multiplier transaction ID
      - Mult
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``mult_valid_i``
      - in
@@ -52,19 +52,19 @@
      - in
      - A operand
      - Mult
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``operand_b_i``
      - in
      - B operand
      - Mult
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``result_o``
      - out
      - Multiplier result
      - Mult
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``mult_valid_o``
      - out
@@ -82,6 +82,6 @@
      - out
      - Multiplier transaction ID
      - Mult
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
 

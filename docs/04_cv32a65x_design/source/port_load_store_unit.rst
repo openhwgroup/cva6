@@ -70,13 +70,13 @@
      - out
      - Load transaction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``load_result_o``
      - out
      - Load result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``load_valid_o``
      - out
@@ -94,13 +94,13 @@
      - out
      - Store transaction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``store_result_o``
      - out
      - Store result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``store_valid_o``
      - out
@@ -130,7 +130,7 @@
      - in
      - Commit transaction ID
      - TO_BE_COMPLETED
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``icache_areq_i``
      - in
@@ -178,7 +178,7 @@
      - in
      - PMP address
      - CSR_REGFILE
-     - logic[15:0][riscv::PLEN-3:0]
+     - logic[15:0][CVA6Cfg.PLEN-3:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 

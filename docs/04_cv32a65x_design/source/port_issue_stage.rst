@@ -76,13 +76,13 @@
      - out
      - rs1 forwarding
      - EX_STAGE
-     - [riscv::VLEN-1:0]
+     - [CVA6Cfg.VLEN-1:0]
 
    * - ``rs2_forwarding_o``
      - out
      - rs2 forwarding
      - EX_STAGE
-     - [riscv::VLEN-1:0]
+     - [CVA6Cfg.VLEN-1:0]
 
    * - ``fu_data_o``
      - out
@@ -94,7 +94,7 @@
      - out
      - Program Counter
      - EX_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``is_compressed_instr_o``
      - out
@@ -178,7 +178,7 @@
      - in
      - Transaction ID
      - EX_STAGE
-     - logic[CVA6Cfg.NrWbPorts-1:0][TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``resolved_branch_i``
      - in
@@ -190,7 +190,7 @@
      - in
      - TO_BE_COMPLETED
      - EX_STAGE
-     - logic[CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]
+     - logic[CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``ex_ex_i``
      - in
@@ -220,7 +220,7 @@
      - in
      - TO_BE_COMPLETED
      - EX_STAGE
-     - logic[CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0]
+     - logic[CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``we_gpr_i``
      - in
