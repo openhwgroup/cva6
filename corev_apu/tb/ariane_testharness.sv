@@ -722,9 +722,10 @@ module ariane_testharness #(
 
 `ifdef VERILATOR
     initial begin
-        int verbosity = 0;
+        string verbosity = 0;
         if ($value$plusargs("UVM_VERBOSITY=%s",verbosity)) begin
-            uvm_set_verbosity_level(verbosity);
+          uvm_set_verbosity_level(verbosity);
+          `uvm_info("ariane_testharness", $sformatf("Set UVM_VERBOSITY to %s", verbosity), UVM_NONE)
         end
     end
 `endif
