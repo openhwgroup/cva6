@@ -21,7 +21,6 @@ module csr_regfile
     parameter type                   irq_ctrl_t         = logic,
     parameter type                   scoreboard_entry_t = logic,
     parameter type                   rvfi_probes_csr_t  = logic,
-    parameter int                    AsidWidth          = 1,
     parameter int unsigned           MHPMCounterNum     = 6
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -100,7 +99,7 @@ module csr_regfile
     // TO_BE_COMPLETED - EX_STAGE
     output logic [CVA6Cfg.PPNW-1:0] satp_ppn_o,
     // TO_BE_COMPLETED - EX_STAGE
-    output logic [AsidWidth-1:0] asid_o,
+    output logic [CVA6Cfg.ASID_WIDTH-1:0] asid_o,
     // external interrupt in - SUBSYSTEM
     input logic [1:0] irq_i,
     // inter processor interrupt -> connected to machine mode sw - SUBSYSTEM
@@ -828,9 +827,9 @@ module csr_regfile
             // intercept SATP writes if in S-Mode and TVM is enabled
             if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm) update_access_exception = 1'b1;
             else begin
-              satp      = satp_t'(csr_wdata);
+              satp = satp_t'(csr_wdata);
               // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-              satp.asid = satp.asid & {{(CVA6Cfg.ASIDW - AsidWidth) {1'b0}}, {AsidWidth{1'b1}}};
+              satp.asid = satp.asid & {{(CVA6Cfg.ASIDW - CVA6Cfg.ASID_WIDTH) {1'b0}}, {CVA6Cfg.ASID_WIDTH{1'b1}}};
               // only update if we actually support this mode
               if (config_pkg::vm_mode_t'(satp.mode) == config_pkg::ModeOff ||
                                 config_pkg::vm_mode_t'(satp.mode) == CVA6Cfg.MODE_SV)
@@ -1551,7 +1550,7 @@ module csr_regfile
   assign fprec_o = fcsr_q.fprec;
   // MMU outputs
   assign satp_ppn_o = satp_q.ppn;
-  assign asid_o = satp_q.asid[AsidWidth-1:0];
+  assign asid_o = satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0];
   assign sum_o = mstatus_q.sum;
   // we support bare memory addressing and SV39
   assign en_translation_o = ((CVA6Cfg.RVS && config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV) &&
