@@ -827,7 +827,7 @@ module csr_regfile
             // intercept SATP writes if in S-Mode and TVM is enabled
             if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm) update_access_exception = 1'b1;
             else begin
-              satp      = satp_t'(csr_wdata);
+              satp = satp_t'(csr_wdata);
               // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
               satp.asid = satp.asid & {{(CVA6Cfg.ASIDW - CVA6Cfg.ASID_WIDTH) {1'b0}}, {CVA6Cfg.ASID_WIDTH{1'b1}}};
               // only update if we actually support this mode
