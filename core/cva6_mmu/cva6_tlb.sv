@@ -50,7 +50,7 @@ module cva6_tlb
     output logic [PT_LEVELS-2:0] lu_is_page_o,
     output logic lu_hit_o
 );
-
+localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.VLEN - 33 : 10;
   // SV39 defines three levels of page tables
   struct packed {
     logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;
@@ -120,7 +120,7 @@ module cva6_tlb
         //identify if GPADDR matches the GPPN
         assign vaddr_vpn_match[i][HYP_EXT][0] = (vaddr_to_be_flushed_i[HYP_EXT][20:12] == gppn[i][8:0]);
         assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT] = (vaddr_to_be_flushed_i[HYP_EXT][29:21] == gppn[i][17:9]);
-        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT*2] = (vaddr_to_be_flushed_i[HYP_EXT][30+CVA6Cfg.GPPN2:30] == gppn[i][18+CVA6Cfg.GPPN2:18]);
+        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT*2] = (vaddr_to_be_flushed_i[HYP_EXT][30+GPPN2:30] == gppn[i][18+GPPN2:18]);
 
       end
 
@@ -273,7 +273,8 @@ module cva6_tlb
             tags_n[i].valid = 1'b0;
         end
         // normal replacement
-      end else if (update_i.valid & replace_en[i] && !lu_hit_o) begin
+      end else if (update_i.valid & replace_en[i]) begin
+      // end else if (update_i.valid & replace_en[i] && !lu_hit_o) begin //to add this fix
         //update tag
         tags_n[i] = {
           update_i.asid,
