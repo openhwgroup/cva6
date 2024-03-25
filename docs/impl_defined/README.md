@@ -81,6 +81,6 @@ The current directory (as of this writing: `<CVA6_HOME>/docs/impl_defined`) is l
 
 1. Make sure you installed the prerequisites: packages `omegaconf` and `variconf`.
 1. Go to the directory `<CVA6_HOME>/docs/impl_defined`.
-1. Run the command `python3 example.py`.
+1. Run the command `python3 example.py` to see several distinct views of the information present in file `spec_inventory/vol2priv/implement.yaml`.
 1. To look around with the Python data structures still in place, run the previous command in interactive mode with `-i` option: `python3 -i example.py`
 1. Type `quit()` to exit the interactive Python section.
