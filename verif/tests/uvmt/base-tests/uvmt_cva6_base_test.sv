@@ -365,9 +365,6 @@ function void uvmt_cva6_base_test_c::pkg_to_cfg();
     st_core_cntrl_cfg st = env_cfg.to_struct();
     st = cva6pkg_to_core_cntrl_cfg(st);
 
-    // TODO Remove when the functionality works
-    st.disable_all_csr_checks = 1;
-
     env_cfg.from_struct(st);
 
     env_cfg.post_randomize();
