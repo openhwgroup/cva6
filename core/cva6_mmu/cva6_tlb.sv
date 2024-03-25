@@ -50,7 +50,7 @@ module cva6_tlb
     output logic [PT_LEVELS-2:0] lu_is_page_o,
     output logic lu_hit_o
 );
-localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.VLEN - 33 : 10;
+  localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.VLEN - 33 : 10;
   // SV39 defines three levels of page tables
   struct packed {
     logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;
@@ -274,7 +274,7 @@ localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.VLEN - 33 : 10;
         end
         // normal replacement
       end else if (update_i.valid & replace_en[i]) begin
-      // end else if (update_i.valid & replace_en[i] && !lu_hit_o) begin //to add this fix
+        // end else if (update_i.valid & replace_en[i] && !lu_hit_o) begin //to add this fix
         //update tag
         tags_n[i] = {
           update_i.asid,

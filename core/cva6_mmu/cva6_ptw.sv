@@ -239,7 +239,7 @@ module cva6_ptw
       req_port_o.address_index[2:0], req_port_o.data_size
   );
 
-  
+
 
   //-------------------
   // Page table walker

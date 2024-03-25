@@ -376,7 +376,7 @@ module cva6_mmu
         (enable_translation_i[HYP_EXT] && HYP_EXT == 1)? itlb_content[HYP_EXT].ppn : itlb_content[0].ppn,
         icache_areq_i.fetch_vaddr[11:0]
       };
-      
+
       if (PT_LEVELS == 3 && itlb_is_page[PT_LEVELS-2]) begin
 
         icache_areq_o.fetch_paddr[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS] = icache_areq_i.fetch_vaddr[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS];
@@ -467,7 +467,7 @@ module cva6_mmu
           icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
           if (CVA6Cfg.TvalEn)  //To confirm this is the right TVAL 
-            icache_areq_o.fetch_exception.tval  = CVA6Cfg.XLEN'(update_vaddr);
+            icache_areq_o.fetch_exception.tval = CVA6Cfg.XLEN'(update_vaddr);
           if (CVA6Cfg.RVH) begin
             icache_areq_o.fetch_exception.tval2 = '0;
             icache_areq_o.fetch_exception.tinst = '0;
@@ -597,7 +597,7 @@ module cva6_mmu
         (en_ld_st_translation_i[HYP_EXT] && HYP_EXT == 1)? dtlb_pte_q[HYP_EXT].ppn : dtlb_pte_q[0].ppn,
         lsu_vaddr_q[0][11:0]
       };
-      
+
       if (PT_LEVELS == 3 && dtlb_is_page_q[PT_LEVELS-2]) begin
         lsu_paddr_o[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS] = lsu_vaddr_q[0][PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS];
         lsu_dtlb_ppn_o[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS] = lsu_vaddr_n[0][PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS];
@@ -606,9 +606,9 @@ module cva6_mmu
       if (dtlb_is_page_q[0]) begin
         lsu_dtlb_ppn_o[PPNWMin:12] = lsu_vaddr_n[0][PPNWMin:12];
         lsu_paddr_o[PPNWMin:12] = lsu_vaddr_q[0][PPNWMin:12];
-      end 
-      
-      
+      end
+
+
 
       // ---------
       // DTLB Hit
@@ -660,7 +660,7 @@ module cva6_mmu
               lsu_exception_o.tval=CVA6Cfg.XLEN'(lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? (CVA6Cfg.PLEN - CVA6Cfg.VLEN) : 0]);
               lsu_exception_o.tval2 = '0;
               lsu_exception_o.tinst = lsu_tinst_q;
-              lsu_exception_o.gva   = enable_translation_i[HYP_EXT*2];
+              lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
             end
           end
           // this is a load
