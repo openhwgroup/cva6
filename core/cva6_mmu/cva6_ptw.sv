@@ -583,7 +583,7 @@ module cva6_ptw
       // if not, go back to idle
       if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
         state_d = WAIT_RVALID;
-      else // state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
+      else  // state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
         state_d = LATENCY;
     end
   end
