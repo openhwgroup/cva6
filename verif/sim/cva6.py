@@ -139,23 +139,23 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv):
       else: logging.error("Illegal ISA %0s" % isa)
 
       cmd = entry['cmd'].rstrip()
-      cmd = re.sub("\<path_var\>", get_env_var(entry['path_var'], debug_cmd = debug_cmd), cmd)
-      cmd = re.sub("\<tool_path\>", get_env_var(entry['tool_path'], debug_cmd = debug_cmd), cmd)
-      cmd = re.sub("\<tb_path\>", get_env_var(entry['tb_path'], debug_cmd = debug_cmd), cmd)
-      cmd = re.sub("\<isscomp_opts\>", isscomp_opts, cmd)
-      cmd = re.sub("\<issrun_opts\>", issrun_opts, cmd)
-      cmd = re.sub("\<isspostrun_opts\>", isspostrun_opts, cmd)
-      if m: cmd = re.sub("\<xlen\>", m.group('xlen'), cmd)
+      cmd = re.sub(r"\<path_var\>", get_env_var(entry['path_var'], debug_cmd = debug_cmd), cmd)
+      cmd = re.sub(r"\<tool_path\>", get_env_var(entry['tool_path'], debug_cmd = debug_cmd), cmd)
+      cmd = re.sub(r"\<tb_path\>", get_env_var(entry['tb_path'], debug_cmd = debug_cmd), cmd)
+      cmd = re.sub(r"\<isscomp_opts\>", isscomp_opts, cmd)
+      cmd = re.sub(r"\<issrun_opts\>", issrun_opts, cmd)
+      cmd = re.sub(r"\<isspostrun_opts\>", isspostrun_opts, cmd)
+      if m: cmd = re.sub(r"\<xlen\>", m.group('xlen'), cmd)
       if iss == "ovpsim":
-        cmd = re.sub("\<cfg_path\>", setting_dir, cmd)
+        cmd = re.sub(r"\<cfg_path\>", setting_dir, cmd)
       elif iss == "whisper":
         if m:
           # TODO: Support u/s mode
           variant = re.sub('g', 'imafd',  m.group('variant'))
-          cmd = re.sub("\<variant\>", variant, cmd)
+          cmd = re.sub(r"\<variant\>", variant, cmd)
       else:
-        cmd = re.sub("\<variant\>", isa, cmd)
-        cmd = re.sub("\<priv\>", priv, cmd)
+        cmd = re.sub(r"\<variant\>", isa, cmd)
+        cmd = re.sub(r"\<priv\>", priv, cmd)
 
       return cmd
   logging.error("Cannot find ISS %0s" % iss)
@@ -173,9 +173,9 @@ def get_iss_cmd(base_cmd, elf, target, log):
   Returns:
     cmd      : Command for ISS simulation
   """
-  cmd = re.sub("\<elf\>", elf, base_cmd)
-  cmd = re.sub("\<target\>", target, cmd)
-  cmd = re.sub("\<log\>", log, cmd)
+  cmd = re.sub(r"\<elf\>", elf, base_cmd)
+  cmd = re.sub(r"\<target\>", target, cmd)
+  cmd = re.sub(r"\<log\>", log, cmd)
   cmd += (" &> %s.iss" % log)
   return cmd
 
@@ -737,13 +737,13 @@ def compare_iss_log(iss_list, log_list, report, stop_on_first_error=0, exp=False
 
 
 def save_regr_report(report):
-  passed_cnt = run_cmd("grep '\[PASSED\]' %s | wc -l" % report).strip()
-  failed_cnt = run_cmd("grep '\[FAILED\]' %s | wc -l" % report).strip()
+  passed_cnt = run_cmd(r"grep '\[PASSED\]' %s | wc -l" % report).strip()
+  failed_cnt = run_cmd(r"grep '\[FAILED\]' %s | wc -l" % report).strip()
   summary = ("%s PASSED, %s FAILED" % (passed_cnt, failed_cnt))
   logging.info(summary)
   run_cmd(("echo %s >> %s" % (summary, report)))
   if failed_cnt != "0":
-    failed_details = run_cmd("sed -e 's,.*_sim/,,' %s | grep '\(csv\|matched\)' | uniq | sed -e 'N;s/\\n/ /g' | grep '\[FAILED\]'" % report).strip()
+    failed_details = run_cmd(r"sed -e 's,.*_sim/,,' %s | grep '\(csv\|matched\)' | uniq | sed -e 'N;s/\\n/ /g' | grep '\[FAILED\]'" % report).strip()
     logging.info(failed_details)
     run_cmd(("echo %s >> %s" % (failed_details, report)))
     #sys.exit(RET_FAIL) #Do not return error code in case of test fail.
@@ -1035,7 +1035,7 @@ def check_gcc_version():
 
   gcc_path = get_env_var("RISCV_GCC")
   gcc_version = run_cmd(f"{gcc_path} --version")
-  gcc_version_string = re.match(".*\s(\d+\.\d+\.\d+).*", gcc_version).group(1)
+  gcc_version_string = re.match(r".*\s(\d+\.\d+\.\d+).*", gcc_version).group(1)
   gcc_version_number = gcc_version_string.split('.')
   logging.info(f"GCC Version: {gcc_version_string}")
 
@@ -1218,7 +1218,7 @@ def main():
                   break
           for t in list(matched_list):
             try:
-              t['gcc_opts'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['gcc_opts'])
+              t['gcc_opts'] = re.sub(r"\<path_var\>", get_env_var(t['path_var']), t['gcc_opts'])
             except KeyError:
               continue
 
@@ -1228,7 +1228,7 @@ def main():
                 logging.error('asm_tests must not be defined in the testlist '
                               'together with the gen_test or c_tests field')
                 sys.exit(RET_FATAL)
-              t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
+              t['asm_tests'] = re.sub(r"\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
               asm_directed_list.append(t)
               matched_list.remove(t)
 
@@ -1237,7 +1237,7 @@ def main():
                 logging.error('c_tests must not be defined in the testlist '
                               'together with the gen_test or asm_tests field')
                 sys.exit(RET_FATAL)
-              t['c_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['c_tests'])
+              t['c_tests'] = re.sub(r"\<path_var\>", get_env_var(t['path_var']), t['c_tests'])
               c_directed_list.append(t)
               matched_list.remove(t)
 
