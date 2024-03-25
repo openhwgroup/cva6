@@ -291,8 +291,7 @@ module decoder
                       if (CVA6Cfg.RVH && v_i) virtual_illegal_instr = 1'b1;
                       else illegal_instr = 1'b1;
                     end
-                  end
-                  if (CVA6Cfg.RVH) begin
+                  end else if (CVA6Cfg.RVH) begin
                     if (instr.instr[31:25] == 7'b10001) begin
                       // check privilege level, HFENCE.VVMA can only be executed in M/S mode
                       // otherwise decode an illegal instruction or virtual illegal instruction
@@ -302,8 +301,7 @@ module decoder
                         illegal_instr    = (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) ? 1'b0 : 1'b1;
                       end
                       instruction_o.op = ariane_pkg::HFENCE_VVMA;
-                    end
-                    if (instr.instr[31:25] == 7'b110001) begin
+                    end else if (instr.instr[31:25] == 7'b110001) begin
                       // check privilege level, HFENCE.GVMA can only be executed in M/S mode
                       // otherwise decode an illegal instruction or virtual illegal instruction
                       if (v_i) begin
@@ -314,25 +312,31 @@ module decoder
                       instruction_o.op = ariane_pkg::HFENCE_GVMA;
                       // check TVM flag and intercept HFENCE.GVMA call if necessary
                       if (priv_lvl_i == riscv::PRIV_LVL_S && !v_i && tvm_i) illegal_instr = 1'b1;
+                    end else begin
+                      illegal_instr = 1'b1;
                     end
+                  end else begin
+                    illegal_instr = 1'b1;
                   end
                 end
               endcase
             end
             3'b100: begin
-              if (instr.instr[25] != 1'b0) begin
-                instruction_o.fu = STORE;
-                imm_select = NOIMM;
-                instruction_o.rs1[4:0] = instr.stype.rs1;
-                instruction_o.rs2[4:0] = instr.stype.rs2;
-              end else begin
-                instruction_o.fu = LOAD;
-                imm_select = NOIMM;
-                instruction_o.rs1[4:0] = instr.itype.rs1;
-                instruction_o.rd[4:0] = instr.itype.rd;
-              end
-              // Hypervisor load/store instructions when V=1 cause virtual instruction
+              // Hypervisor load/store instructions
               if (CVA6Cfg.RVH) begin
+                if (instr.instr[25] != 1'b0) begin
+                  instruction_o.fu = STORE;
+                  imm_select = NOIMM;
+                  instruction_o.rs1[4:0] = instr.stype.rs1;
+                  instruction_o.rs2[4:0] = instr.stype.rs2;
+                end else begin
+                  instruction_o.fu = LOAD;
+                  imm_select = NOIMM;
+                  instruction_o.rs1[4:0] = instr.itype.rs1;
+                  instruction_o.rd[4:0] = instr.itype.rd;
+                end
+
+                // Hypervisor load/store instructions when V=1 cause virtual instruction
                 if (v_i) virtual_illegal_instr = 1'b1;
                 // Hypervisor load/store instructions in U-mode when hstatus.HU=0 cause an illegal instruction trap.
                 else if (!hu_i && priv_lvl_i == riscv::PRIV_LVL_U) illegal_instr = 1'b1;
@@ -372,6 +376,7 @@ module decoder
                   7'b011_0101: instruction_o.op = ariane_pkg::HSV_W;
                   7'b011_0110: instruction_o.op = ariane_pkg::HLV_D;
                   7'b011_0111: instruction_o.op = ariane_pkg::HSV_D;
+                  default: illegal_instr = 1'b1;
 
                 endcase
                 tinst = {
@@ -382,6 +387,8 @@ module decoder
                   instr.rtype.rd,
                   instr.rtype.opcode
                 };
+              end else begin
+                illegal_instr = 1'b1;
               end
             end
             // atomically swaps values in the CSR and integer register
