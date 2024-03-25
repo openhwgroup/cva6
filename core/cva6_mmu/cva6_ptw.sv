@@ -30,6 +30,7 @@ module cva6_ptw
     parameter int unsigned HYP_EXT = 0,
     parameter int ASID_WIDTH[HYP_EXT:0],
     parameter int unsigned VPN_LEN = 1,
+    parameter int unsigned USE_SHARED_TLB = 1,
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter int unsigned PT_LEVELS = 1
 ) (
@@ -153,6 +154,7 @@ module cva6_ptw
   // -----------
 
   assign gpaddr_base = {pte.ppn[CVA6Cfg.GPPNW-1:0], vaddr_q[11:0]};
+  assign shared_tlb_update_o.vpn = VPN_LEN'(vaddr_q[CVA6Cfg.SV+HYP_EXT*2-1:12]);
 
   genvar z, w;
   generate
@@ -237,7 +239,7 @@ module cva6_ptw
       req_port_o.address_index[2:0], req_port_o.data_size
   );
 
-  assign shared_tlb_update_o.vpn = VPN_LEN'(vaddr_q[CVA6Cfg.SV+HYP_EXT*2-1:12]);
+  
 
   //-------------------
   // Page table walker
@@ -388,7 +390,7 @@ module cva6_ptw
           // Valid PTE
           // -----------
           else begin
-            state_d = LATENCY;
+            state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
             // it is a valid PTE
             // if pte.r = 1 or pte.x = 1 it is a valid PTE
             if (pte.r || pte.x) begin
@@ -544,7 +546,7 @@ module cva6_ptw
       end
       // Propagate error to MMU/LSU
       PROPAGATE_ERROR: begin
-        state_d        = LATENCY;
+        state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
         ptw_error_o[0] = 1'b1;
         if (HYP_EXT == 1) begin
           ptw_error_o[HYP_EXT]   = (ptw_stage_q != S_STAGE) ? 1'b1 : 1'b0;
@@ -552,7 +554,7 @@ module cva6_ptw
         end
       end
       PROPAGATE_ACCESS_ERROR: begin
-        state_d                = LATENCY;
+        state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
         ptw_access_exception_o = 1'b1;
       end
       // wait for the rvalid before going back to IDLE
@@ -578,7 +580,7 @@ module cva6_ptw
       // if not, go back to idle
       if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
         state_d = WAIT_RVALID;
-      else state_d = LATENCY;
+      else state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
     end
   end
 
