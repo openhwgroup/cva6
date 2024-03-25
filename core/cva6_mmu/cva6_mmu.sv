@@ -634,7 +634,7 @@ module cva6_mmu
             if (CVA6Cfg.RVH) begin
               lsu_exception_o.tval2= CVA6Cfg.GPLEN'(lsu_vaddr_q[HYP_EXT][(CVA6Cfg.XLEN==32?CVA6Cfg.VLEN : CVA6Cfg.GPLEN)-1:0]);
               lsu_exception_o.tinst = '0;
-              lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
+              lsu_exception_o.gva = en_ld_st_translation_i[HYP_EXT*2];
             end
           end else if ((en_ld_st_translation_i[0] || HYP_EXT==0) && (!dtlb_pte_q[0].w || daccess_err[0] || !dtlb_pte_q[0].d)) begin
             lsu_exception_o.cause = riscv::STORE_PAGE_FAULT;
@@ -646,7 +646,7 @@ module cva6_mmu
             if (CVA6Cfg.RVH) begin
               lsu_exception_o.tval2 = '0;
               lsu_exception_o.tinst = lsu_tinst_q;
-              lsu_exception_o.gva   = enable_translation_i[HYP_EXT*2];
+              lsu_exception_o.gva   = en_ld_st_translation_i[HYP_EXT*2];
             end
             // Check if any PMPs are violated
           end else if (!pmp_data_allow) begin
@@ -660,7 +660,7 @@ module cva6_mmu
               lsu_exception_o.tval=CVA6Cfg.XLEN'(lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? (CVA6Cfg.PLEN - CVA6Cfg.VLEN) : 0]);
               lsu_exception_o.tval2 = '0;
               lsu_exception_o.tinst = lsu_tinst_q;
-              lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
+              lsu_exception_o.gva = en_ld_st_translation_i[HYP_EXT*2];
             end
           end
           // this is a load
@@ -675,7 +675,7 @@ module cva6_mmu
             if (CVA6Cfg.RVH) begin
               lsu_exception_o.tval2= CVA6Cfg.GPLEN'(lsu_vaddr_q[HYP_EXT][(CVA6Cfg.XLEN==32?CVA6Cfg.VLEN : CVA6Cfg.GPLEN)-1:0]);
               lsu_exception_o.tinst = '0;
-              lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
+              lsu_exception_o.gva = en_ld_st_translation_i[HYP_EXT*2];
             end
             // check for sufficient access privileges - throw a page fault if necessary
           end else if (daccess_err[0]) begin
@@ -688,7 +688,7 @@ module cva6_mmu
             if (CVA6Cfg.RVH) begin
               lsu_exception_o.tval2 = '0;
               lsu_exception_o.tinst = lsu_tinst_q;
-              lsu_exception_o.gva   = enable_translation_i[HYP_EXT*2];
+              lsu_exception_o.gva   = en_ld_st_translation_i[HYP_EXT*2];
             end
             // Check if any PMPs are violated
           end else if (!pmp_data_allow) begin
@@ -702,7 +702,7 @@ module cva6_mmu
               lsu_exception_o.tval= CVA6Cfg.XLEN'(lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN>CVA6Cfg.VLEN)?(CVA6Cfg.PLEN-CVA6Cfg.VLEN) : 0]);
               lsu_exception_o.tval2 = '0;
               lsu_exception_o.tinst = lsu_tinst_q;
-              lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
+              lsu_exception_o.gva = en_ld_st_translation_i[HYP_EXT*2];
             end
             // if (HYP_EXT == 1) begin
             //   lsu_exception_o = exception_t'({
@@ -745,7 +745,7 @@ module cva6_mmu
               if (CVA6Cfg.RVH) begin
                 lsu_exception_o.tval2 = ptw_bad_paddr[HYP_EXT][CVA6Cfg.GPLEN-1:0];
                 lsu_exception_o.tinst= (ptw_error[HYP_EXT*2] ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
-                lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
+                lsu_exception_o.gva = en_ld_st_translation_i[HYP_EXT*2];
               end
             end else begin
               lsu_exception_o.cause = riscv::STORE_PAGE_FAULT;
@@ -757,7 +757,7 @@ module cva6_mmu
               if (CVA6Cfg.RVH) begin
                 lsu_exception_o.tval2 = '0;
                 lsu_exception_o.tinst = lsu_tinst_q;
-                lsu_exception_o.gva   = enable_translation_i[HYP_EXT*2];
+                lsu_exception_o.gva   = en_ld_st_translation_i[HYP_EXT*2];
               end
             end
           end else begin
@@ -771,7 +771,7 @@ module cva6_mmu
               if (CVA6Cfg.RVH) begin
                 lsu_exception_o.tval2 = ptw_bad_paddr[HYP_EXT][CVA6Cfg.GPLEN-1:0];
                 lsu_exception_o.tinst= (ptw_error[HYP_EXT*2] ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
-                lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
+                lsu_exception_o.gva = en_ld_st_translation_i[HYP_EXT*2];
               end
             end else begin
               lsu_exception_o.cause = riscv::LOAD_PAGE_FAULT;
@@ -783,7 +783,7 @@ module cva6_mmu
               if (CVA6Cfg.RVH) begin
                 lsu_exception_o.tval2 = '0;
                 lsu_exception_o.tinst = lsu_tinst_q;
-                lsu_exception_o.gva   = enable_translation_i[HYP_EXT*2];
+                lsu_exception_o.gva   = en_ld_st_translation_i[HYP_EXT*2];
               end
             end
           end
@@ -809,7 +809,7 @@ module cva6_mmu
               };
               lsu_exception_o.tval2 = '0;
               lsu_exception_o.tinst = lsu_tinst_q;
-              lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
+              lsu_exception_o.gva = en_ld_st_translation_i[HYP_EXT*2];
             end
           end
           // if (HYP_EXT == 1) begin
@@ -843,7 +843,7 @@ module cva6_mmu
           };
           lsu_exception_o.tval2 = '0;
           lsu_exception_o.tinst = lsu_tinst_q;
-          lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
+          lsu_exception_o.gva = en_ld_st_translation_i[HYP_EXT*2];
         end
         // if (HYP_EXT == 1) begin
         //   lsu_exception_o = exception_t'({
@@ -872,7 +872,7 @@ module cva6_mmu
           };
           lsu_exception_o.tval2 = '0;
           lsu_exception_o.tinst = lsu_tinst_q;
-          lsu_exception_o.gva = enable_translation_i[HYP_EXT*2];
+          lsu_exception_o.gva = en_ld_st_translation_i[HYP_EXT*2];
         end
         // if (HYP_EXT == 1) begin
         //   lsu_exception_o = exception_t'({
