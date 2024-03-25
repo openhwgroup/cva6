@@ -218,13 +218,6 @@ Table 2.3 shows the AXI write data channel signals. Unless the description indic
      - **Src**
      - **Support**
      - **Description**
-   * - **WID**
-     - M
-     - | Yes
-       | (optional)
-     - | The ID tag of the write data transfer.
-       | CVA6 gives the id depending on the type of transaction.
-       | See :ref:`transaction_identifiers_label`.
    * - **WDATA**
      - M
      - Yes
@@ -485,7 +478,8 @@ The maximum number of bytes to transfer in each data transfer, or beat, in a bur
 * ``ARSIZE[2:0]``, for read transfers
 * ``AWSIZE[2:0]``, for write transfers
 
-*The maximum value can be taking by AXSIZE is log2(AXI DATA WIDTH/8) (8 bytes by transfer).*
+*The maximum value can be taking by AxSIZE is log2(AXI DATA WIDTH/8) (8 bytes by transfer).*
+*If(RV32) AWSIZE < 3 (The maximum store size is 4 bytes)*
 
 **Burst type**
 
@@ -500,7 +494,7 @@ The burst type is specified by:
 * ``ARBURST[1:0]``, for read transfers
 * ``AWBURST[1:0]``, for write transfers
 
-*All transactions performed by CVA6 are of burst type INCR. (AXBURST = 0b01)*
+*All transactions performed by CVA6 are of burst type INCR. (AxBURST = 0b01)*
 
 
 .. _data_read_and_write_structure_label:
@@ -514,8 +508,10 @@ for each 8 bits of the write data bus, therefore ``WSTRB[n]`` corresponds to ``W
 
 *Write Strobe width is equal to (AXI_DATA_WIDTH/8)  (n = (AXI_DATA_WIDTH/8)-1).*
 
-*The size of all transactions performed by cva6 is equal to the number of byte lanes of the data bus containing valid information.*
+*The size of transactions performed by cva6 is equal to the number of data byte lanes containing valid information.*
 *This means 1, 2, 4, ... or (AXI_DATA_WIDTH/8) byte lanes containing valid information.*
+*CVA6 doesn't perform unaligned memory acces, therefore the WSTRB take only combination of aligned access*
+*If(RV32) WSTRB < 255 (Since AWSIZE lower than 3, so the data bus cannot have more than 4 valid byte lanes)*
 
 
 **Unaligned transfers**
@@ -544,7 +540,7 @@ Transaction Attributes: Memory types (Section A4)
 
 This section describes the attributes that determine how a transaction should be treated by the AXI subordinate that is connected to the CVA6.
 
-``AXCACHE`` always takeq 0b0010. The subordinate should be a Normal Non-cacheable Non-bufferable.
+``AxCACHE`` always takeq 0b0010. The subordinate should be a Normal Non-cacheable Non-bufferable.
 
 The required behavior for Normal Non-cacheable Non-bufferable memory is:
 
@@ -563,9 +559,10 @@ The AXI protocol includes AXI ID transaction identifiers. A Manager can use thes
 
 The CVA6 identify each type of transaction with a specific ID:
 
-* For read transaction id can be 0 or 1.
-* For write transaction id = 1.
-* For Atomic operation id = 3. This ID must be sent in the write channels and also in the read channel if the transaction performed requires response data.
+* For read transaction, id can be 0 or 1. (0 for instruction fetch and 1 for data)
+* For write transaction, id = 1.
+* For Atomic operation, id = 3. This ID must be sent in the write channels and also in the read channel if the transaction performed requires response data.
+* For Exclusive transaction, id = 3.
 
 AXI Ordering Model (Section A6)
 -------------------------------
@@ -645,8 +642,20 @@ Atomic transactions (Section E1.1)
 
 AMBA 5 introduces Atomic transactions, which perform more than just a single access and have an operation that is associated with the transaction. Atomic transactions enable sending the operation to the data, permitting the operation to be performed closer to where the data is located. Atomic transactions are suited to situations where the data is located a significant distance from the agent that must perform the operation.
 
-CVA6 supports just the AtomicLoad and AtomicSwap transaction. So ``AWATOP[5:4]`` can be 00, 10 or 11.
+*If(RVA) AWATOP = 0 (If AMO instructions are not supported, CVA6 cannot perform Atomic transaction)*
 
-CVA6 performs only little-endian operation. So ``AWATOP[3]`` = 0.
+*CVA6 supports just the AtomicLoad and AtomicSwap transaction. So ``AWATOP[5:4]`` can be 00, 10 or 11.*
 
-For AtomicLoad, CVA6 supports all arithmetic operations encoded on the lower-order ``AWATOP[2:0]`` signals.
+*CVA6 performs only little-endian operation. So ``AWATOP[3]`` = 0.*
+
+*For AtomicLoad, CVA6 supports all arithmetic operations encoded on the lower-order ``AWATOP[2:0]`` signals.*
+
+CVA6 Constraints
+----------------
+
+This section describes cross-cases between several features that are not supported by CVA6.
+
+* ARID = 0 && ARSIZE = log(AXI_DATA_WIDTH/8), CVA6 always requests max number of words in case of read transaction with ID 0 (instruction fetch)
+* if(RV32) ARSIZE != 3 && ARLEN = 0 && ARID = 1, the maximum load instruction size is 4 bytes
+* if(!RVA) AxLOCK = 0, if AMO instructions are not supported, CVA6 cannot perform exclusive transaction
+* if(RVA) AxLOCK = 1 => AxSIZE > 1, CVA6 doesn't perform exclusive transaction with size lower than 4 bytes
