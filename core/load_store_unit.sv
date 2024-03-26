@@ -237,6 +237,7 @@ module load_store_unit
     localparam PT_LEVELS = (CVA6Cfg.XLEN == 64) ? 3 : 2;
 
     if (CVA6Cfg.RVH) begin
+      localparam int mmu_ASID_WIDTH_H[1:0] = {CVA6Cfg.VMID_WIDTH,CVA6Cfg.ASID_WIDTH};
       cva6_mmu #(
           .CVA6Cfg          (CVA6Cfg),
           .exception_t      (exception_t),
@@ -251,7 +252,7 @@ module load_store_unit
           .SHARED_TLB_DEPTH (cva6_config_pkg::CVA6ConfigSharedTlbDepth),
           .USE_SHARED_TLB   (cva6_config_pkg::CVA6ConfigUseSharedTlb),
           .HYP_EXT          (HYP_EXT),
-          .ASID_WIDTH       ({CVA6Cfg.VMID_WIDTH, CVA6Cfg.ASID_WIDTH}),
+          .ASID_WIDTH       (mmu_ASID_WIDTH_H),
           .VPN_LEN          (VPN_LEN),
           .PT_LEVELS        (PT_LEVELS)
       ) i_cva6_mmu (
