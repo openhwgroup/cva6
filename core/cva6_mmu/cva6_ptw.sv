@@ -390,7 +390,7 @@ module cva6_ptw
           // Valid PTE
           // -----------
           else begin
-            state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
+            state_d = (USE_SHARED_TLB == 1 || HYP_EXT == 1) ? LATENCY : IDLE;
             // state_d = LATENCY;
             // it is a valid PTE
             // if pte.r = 1 or pte.x = 1 it is a valid PTE
@@ -547,7 +547,7 @@ module cva6_ptw
       end
       // Propagate error to MMU/LSU
       PROPAGATE_ERROR: begin
-        state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
+        state_d = (USE_SHARED_TLB == 1 || HYP_EXT == 1) ? LATENCY : IDLE;
         // state_d = LATENCY;
         ptw_error_o[0] = 1'b1;
         if (HYP_EXT == 1) begin
@@ -556,7 +556,7 @@ module cva6_ptw
         end
       end
       PROPAGATE_ACCESS_ERROR: begin
-        state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
+        state_d = (USE_SHARED_TLB == 1 || HYP_EXT == 1) ? LATENCY : IDLE;
         // state_d = LATENCY;
         ptw_access_exception_o = 1'b1;
       end
@@ -583,7 +583,7 @@ module cva6_ptw
       // if not, go back to idle
       if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
         state_d = WAIT_RVALID;
-      else state_d = USE_SHARED_TLB == 1 ? LATENCY : IDLE;
+      else state_d = (USE_SHARED_TLB == 1 || HYP_EXT == 1) ? LATENCY : IDLE;
       // state_d = LATENCY;
     end
   end

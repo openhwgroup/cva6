@@ -150,11 +150,11 @@ module cva6_shared_tlb #(
   logic [SHARED_TLB_WAYS-1:0] repl_way_oh_d;  // way to replace (onehot)
   logic all_ways_valid;  // we need to switch repl strategy since all are valid
 
-  assign shared_tlb_access_o = USE_SHARED_TLB == 1 ? shared_tlb_access_q : shared_tlb_access_d;
+  assign shared_tlb_access_o = (USE_SHARED_TLB == 1 || HYP_EXT == 1) ? shared_tlb_access_q : shared_tlb_access_d;
   assign shared_tlb_hit_o = shared_tlb_hit_d;
-  assign shared_tlb_vaddr_o = USE_SHARED_TLB == 1 ? shared_tlb_vaddr_q : shared_tlb_vaddr_d;
+  assign shared_tlb_vaddr_o = (USE_SHARED_TLB == 1 || HYP_EXT == 1) ? shared_tlb_vaddr_q : shared_tlb_vaddr_d;
 
-  assign itlb_req_o = USE_SHARED_TLB == 1 ? itlb_req_q : itlb_req_d;
+  assign itlb_req_o = (USE_SHARED_TLB == 1 || HYP_EXT == 1) ? itlb_req_q : itlb_req_d;
 
   genvar i, x;
   generate
