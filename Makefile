@@ -38,8 +38,6 @@ torture-logs   :=
 elf_file        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
 # board name for bitstream generation. Currently supported: kc705, genesys2, nexys_video
 BOARD          ?= genesys2
-# XLEN of cpu
-XLEN ?= 64
 
 # root path
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
@@ -98,6 +96,11 @@ endif
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga
 # Changing the default target to cv32a60x for Step1 verification
 target     ?= cv64a6_imafdc_sv39
+ifeq ($(target), cv64a6_imafdc_sv39)
+	XLEN ?= 64
+else
+	XLEN ?= 32
+endif
 ifndef TARGET_CFG
 	export TARGET_CFG = $(target)
 endif
