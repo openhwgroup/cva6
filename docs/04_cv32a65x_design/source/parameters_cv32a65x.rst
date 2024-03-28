@@ -20,54 +20,6 @@
      - General Purpose Register Size (in bits)
      - 32
 
-   * - FPGA_EN
-     - Is FPGA optimization of CV32A6
-     - 0
-
-   * - NrCommitPorts
-     - Number of commit ports
-     - 1
-
-   * - AxiAddrWidth
-     - AXI address width
-     - 64
-
-   * - AxiDataWidth
-     - AXI data width
-     - 64
-
-   * - AxiIdWidth
-     - AXI ID width
-     - 4
-
-   * - AxiUserWidth
-     - AXI User width
-     - 32
-
-   * - MemTidWidth
-     - TODO
-     - 2
-
-   * - NrLoadBufEntries
-     - Load buffer entry buffer
-     - 1
-
-   * - FpuEn
-     - Floating Point
-     - 0
-
-   * - XF16
-     - Non standard 16bits Floating Point
-     - 0
-
-   * - XF16ALT
-     - Non standard 16bits Floating Point Alt
-     - 0
-
-   * - XF8
-     - Non standard 8bits Floating Point
-     - 0
-
    * - RVA
      - Atomic RISC-V extension
      - 0
@@ -96,16 +48,28 @@
      - Zcmp RISC-V extension
      - 0
 
-   * - XFVec
-     - Non standard Vector Floating Point
-     - 0
-
-   * - CvxifEn
-     - CV-X-IF coprocessor interface is supported
-     - 1
-
    * - ZiCondExtEn
      - Zicond RISC-V extension
+     - 0
+
+   * - FpuEn
+     - Floating Point
+     - 0
+
+   * - XF16
+     - Non standard 16bits Floating Point extension
+     - 0
+
+   * - XF16ALT
+     - Non standard 16bits Floating Point Alt extension
+     - 0
+
+   * - XF8
+     - Non standard 8bits Floating Point extension
+     - 0
+
+   * - XFVec
+     - Non standard Vector Floating Point extension
      - 0
 
    * - RVS
@@ -116,9 +80,13 @@
      - User mode
      - 0
 
-   * - NrScoreboardEntries
-     - Scoreboard length
-     - 4
+   * - DebugEn
+     - Debug support
+     - 0
+
+   * - DmBaseAddress
+     - Base address of the debug module
+     - 64'h0
 
    * - HaltAddress
      - Address to jump when halt request
@@ -128,28 +96,12 @@
      - Address to jump when exception
      - 64'h808
 
-   * - RASDepth
-     - Return address stack depth
-     - 2
-
-   * - BTBEntries
-     - Branch target buffer entries
-     - 0
-
-   * - BHTEntries
-     - Branch history entries
-     - 32
-
-   * - DmBaseAddress
-     - Base address of the debug module
-     - 64'h0
-
    * - TvalEn
      - Tval Support Enable
      - 0
 
    * - NrPMPEntries
-     - Number of PMP entries
+     - PMP entries number
      - 8
 
    * - PMPCfgRstVal
@@ -164,12 +116,8 @@
      - PMP CSR read-only bits
      - 16'd0
 
-   * - NOCType
-     - NOC bus type
-     - config_pkg::NOC_TYPE_AXI4_ATOP
-
    * - NrNonIdempotentRules
-     - Number of PMA non idempotent rules
+     - PMA non idempotent rules number
      - 2
 
    * - NonIdempotentAddrBase
@@ -181,7 +129,7 @@
      - {64'b0 64'b0}
 
    * - NrExecuteRegionRules
-     - Number of PMA regions with execute rules
+     - PMA regions with execute rules number
      - 3
 
    * - ExecuteRegionAddrBase
@@ -193,7 +141,7 @@
      - {64'h40000000 64'h10000 64'h1000}
 
    * - NrCachedRegionRules
-     - Number of PMA regions with cache rules
+     - PMA regions with cache rules number
      - 1
 
    * - CachedRegionAddrBase
@@ -204,17 +152,37 @@
      - PMA cache region rules
      - {64'h40000000}
 
-   * - MaxOutstandingStores
-     - Maximum number of outstanding stores
-     - 7
+   * - CvxifEn
+     - CV-X-IF coprocessor interface enable
+     - 1
 
-   * - DebugEn
-     - Debug support
-     - 0
+   * - NOCType
+     - NOC bus type
+     - config_pkg::NOC_TYPE_AXI4_ATOP
+
+   * - AxiAddrWidth
+     - AXI address width
+     - 64
+
+   * - AxiDataWidth
+     - AXI data width
+     - 64
+
+   * - AxiIdWidth
+     - AXI ID width
+     - 4
+
+   * - AxiUserWidth
+     - AXI User width
+     - 32
 
    * - AxiBurstWriteEn
      - AXI burst in write
      - 0
+
+   * - MemTidWidth
+     - TODO
+     - 2
 
    * - IcacheByteSize
      - Instruction cache size (in bytes)
@@ -225,7 +193,7 @@
      - 2
 
    * - IcacheLineWidth
-     - Instruction line width
+     - Instruction cache line width
      - 128
 
    * - DcacheByteSize
@@ -237,17 +205,49 @@
      - 8
 
    * - DcacheLineWidth
-     - Data line width
+     - Data cache line width
      - 128
 
    * - DataUserEn
-     - TODO
+     - User field on data bus enable
+     - 0
+
+   * - FetchUserEn
+     - User field on fetch bus enable
      - 0
 
    * - FetchUserWidth
-     - TODO
+     - Width of fetch user field
      - 32
 
-   * - FetchUserEn
-     - TODO
+   * - FPGA_EN
+     - Is FPGA optimization of CV32A6
      - 0
+
+   * - NrCommitPorts
+     - Number of commit ports
+     - 1
+
+   * - NrScoreboardEntries
+     - Scoreboard length
+     - 4
+
+   * - NrLoadBufEntries
+     - Load buffer entry buffer
+     - 1
+
+   * - MaxOutstandingStores
+     - Maximum number of outstanding stores
+     - 7
+
+   * - RASDepth
+     - Return address stack depth
+     - 2
+
+   * - BTBEntries
+     - Branch target buffer entries
+     - 0
+
+   * - BHTEntries
+     - Branch history entries
+     - 32
