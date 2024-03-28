@@ -17,7 +17,8 @@ UART_BITRATE ?= 115200
 HAS_ETHERNET ?= 1
 endif
 
-CC = ${CROSSCOMPILE}gcc
+CC = $(RISCV)/bin/${CROSSCOMPILE}gcc
+OBJCOPY = $(RISCV)/bin/$(CROSSCOMPILE)objcopy
 SED = sed
 PLATFORM_DEFINES = -DCLOCK_FREQUENCY=$(CLOCK_FREQUENCY) -DUART_BITRATE=$(UART_BITRATE)
 
@@ -60,7 +61,7 @@ $(MAIN): $(DTB) $(OBJS_C) $(OBJS_S) linker.lds
 	dd if=$< of=$@ bs=128
 
 %.bin: %.elf
-	$(CROSSCOMPILE)objcopy -O binary $< $@
+	$(OBJCOPY) -O binary $< $@
 
 %.o: %.c
 	@$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
