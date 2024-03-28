@@ -237,7 +237,7 @@ module load_store_unit
     localparam PT_LEVELS = (CVA6Cfg.XLEN == 64) ? 3 : 2;
 
     if (CVA6Cfg.RVH) begin
-      localparam int mmu_ASID_WIDTH_H[1:0] = {CVA6Cfg.VMID_WIDTH,CVA6Cfg.ASID_WIDTH};
+      localparam int mmu_ASID_WIDTH_H[1:0] = {CVA6Cfg.VMID_WIDTH, CVA6Cfg.ASID_WIDTH};
       cva6_mmu #(
           .CVA6Cfg          (CVA6Cfg),
           .exception_t      (exception_t),
