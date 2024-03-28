@@ -176,6 +176,9 @@ localparam type rvfi_probes_t = struct packed {
 
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
+  
+// WARNING: If NBSlave is modified, Xilinx's IPs under fpga/xilinx need to be updated with the new AXI id width and regenerated.
+// Otherwise reads and writes to DRAM may be returned to the wrong master and the crossbar will freeze. See issue #568.
 localparam NBSlave = 2; // debug, ariane
 localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
