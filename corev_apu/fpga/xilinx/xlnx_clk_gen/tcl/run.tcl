@@ -8,6 +8,22 @@ set_property board_part $boardName [current_project]
 
 create_ip -name clk_wiz -vendor xilinx.com -library ip -module_name $ipName
 
+if {$::env(BOARD) eq "nexys_video"} {
+    set_property -dict [list CONFIG.PRIM_IN_FREQ {100.000} \
+                        CONFIG.NUM_OUT_CLKS {5} \
+                        CONFIG.CLKOUT2_USED {true} \
+                        CONFIG.CLKOUT3_USED {true} \
+                        CONFIG.CLKOUT4_USED {true} \
+                        CONFIG.CLKOUT5_USED {true} \
+                        CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {25} \
+                        CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {125} \
+                        CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {125} \
+                        CONFIG.CLKOUT3_REQUESTED_PHASE {90.000} \
+                        CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {50} \
+                        CONFIG.CLKOUT5_REQUESTED_OUT_FREQ {200} \
+                        CONFIG.CLKIN1_JITTER_PS {50.0} \
+                       ] [get_ips $ipName]
+} else {
 set_property -dict [list CONFIG.PRIM_IN_FREQ {200.000} \
                         CONFIG.NUM_OUT_CLKS {4} \
                         CONFIG.CLKOUT2_USED {true} \
@@ -20,6 +36,7 @@ set_property -dict [list CONFIG.PRIM_IN_FREQ {200.000} \
                         CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {50} \
                         CONFIG.CLKIN1_JITTER_PS {50.0} \
                        ] [get_ips $ipName]
+}
 
 generate_target {instantiation_template} [get_files ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]
 generate_target all [get_files  ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]
