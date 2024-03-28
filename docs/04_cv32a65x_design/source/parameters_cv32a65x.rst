@@ -84,6 +84,10 @@
      - Compress RISC-V extension
      - 1
 
+   * - RVH
+     - Hypervisor RISC-V extension
+     - 0
+
    * - RVZCB
      - Zcb RISC-V extension
      - 1
@@ -121,7 +125,7 @@
      - 64'h800
 
    * - ExceptionAddress
-     - Address to jump when exception 
+     - Address to jump when exception
      - 64'h808
 
    * - RASDepth

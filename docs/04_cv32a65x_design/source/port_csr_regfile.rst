@@ -190,6 +190,21 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``tvm_o`` output is tied to 0
 |   ``tw_o`` output is tied to 0
 |   ``tsr_o`` output is tied to 0
+| As RVH = 0,
+|   ``v_o`` output is tied to 0
+|   ``vfs_o`` output is tied to 0
+|   ``en_g_translation_o`` output is tied to 0
+|   ``en_ld_st_g_translation_o`` output is tied to 0
+|   ``ld_st_v_o`` output is tied to 0
+|   ``csr_hs_ld_st_inst_i`` input is tied to 0
+|   ``vs_sum_o`` output is tied to 0
+|   ``vmxr_o`` output is tied to 0
+|   ``vsatp_ppn_o`` output is tied to 0
+|   ``vs_asid_o`` output is tied to 0
+|   ``hgatp_ppn_o`` output is tied to 0
+|   ``vmid_o`` output is tied to 0
+|   ``vtw_o`` output is tied to 0
+|   ``hu_o`` output is tied to 0
 | As RVV = 0,
 |   ``vs_o`` output is tied to 0
 | As RVS = 0,

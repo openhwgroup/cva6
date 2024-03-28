@@ -108,6 +108,11 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``tvm_i`` input is tied to 0
 |   ``tw_i`` input is tied to 0
 |   ``tsr_i`` input is tied to 0
+| As RVH = 0,
+|   ``v_i`` input is tied to 0
+|   ``vfs_i`` input is tied to 0
+|   ``vtw_i`` input is tied to 0
+|   ``hu_i`` input is tied to 0
 | As RVF = 0,
 |   ``fs_i`` input is tied to 0
 |   ``frm_i`` input is tied to 0
