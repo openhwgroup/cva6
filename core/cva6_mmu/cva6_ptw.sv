@@ -129,7 +129,7 @@ module cva6_ptw
   logic [HYP_EXT*2:0][PT_LEVELS-2:0][(VPN_LEN/PT_LEVELS)-1:0] vaddr_lvl;
   // register the VPN we need to walk, SV39x4 defines a 41 bit virtual address for the G-Stage
   logic [CVA6Cfg.GPLEN-1:0] gpaddr_q, gpaddr_n, gpaddr_base;
-  logic [PT_LEVELS-2:0][CVA6Cfg.GPLEN-1:0] gpaddr;
+  logic [PT_LEVELS-1:0][CVA6Cfg.GPLEN-1:0] gpaddr;
   // 4 byte aligned physical pointer
   logic [CVA6Cfg.PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
   logic [CVA6Cfg.PLEN-1:0] gptw_pptr_q, gptw_pptr_n;
@@ -154,6 +154,7 @@ module cva6_ptw
   // -----------
 
   assign gpaddr_base = {pte.ppn[CVA6Cfg.GPPNW-1:0], vaddr_q[11:0]};
+  assign gpaddr[PT_LEVELS-1] = gpaddr_base;
   assign shared_tlb_update_o.vpn = VPN_LEN'(vaddr_q[CVA6Cfg.SV+HYP_EXT*2-1:12]);
 
   genvar z, w;
