@@ -33,20 +33,17 @@ filesets:
       - src/lsu_arbiter.sv
       - src/lsu.sv
       - src/miss_handler.sv
-      - src/mmu_sv39/mmu.sv
-      - src/mmu_sv32/cva6_mmu_sv32.sv
+      - src/cva6_mmu/cva6_mmu.sv
       - src/mult.sv
       - src/nbdcache.sv
       - src/pcgen_stage.sv
       - src/perf_counters.sv
-      - src/mmu_sv39/ptw.sv
-      - src/mmu_sv32/cva6_ptw_sv32.sv
+      - src/cva6_mmu/cva6_ptw.sv
       - src/regfile_ff.sv
       - src/scoreboard.sv
       - src/store_buffer.sv
       - src/store_unit.sv
-      - src/mmu_sv39/tlb.sv
-      - src/mmu_sv32/cva6_tlb_sv32.sv
+      - src/cva6_mmu/cva6_tlb.sv
     file_type : systemVerilogSource
     depend :
       - pulp-platform.org::axi_mem_if
