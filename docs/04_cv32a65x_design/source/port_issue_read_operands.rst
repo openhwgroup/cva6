@@ -250,6 +250,8 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 
 | As EnableAccelerator = 0,
 |   ``stall_i`` input is tied to 0
+| As RVH = 0,
+|   ``tinst_o`` output is tied to 0
 | As RVF = 0,
 |   ``fpu_ready_i`` input is tied to 0
 |   ``fpu_valid_o`` output is tied to 0

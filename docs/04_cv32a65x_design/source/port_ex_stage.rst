@@ -346,6 +346,21 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 
 | As DebugEn = 0,
 |   ``debug_mode_i`` input is tied to 0
+| As RVH = 0,
+|   ``tinst_i`` input is tied to 0
+|   ``enable_g_translation_i`` input is tied to 0
+|   ``en_ld_st_g_translation_i`` input is tied to 0
+|   ``flush_tlb_vvma_i`` input is tied to 0
+|   ``flush_tlb_gvma_i`` input is tied to 0
+|   ``v_i`` input is tied to 0
+|   ``ld_st_v_i`` input is tied to 0
+|   ``csr_hs_ld_st_inst_o`` output is tied to 0
+|   ``vs_sum_i`` input is tied to 0
+|   ``vmxr_i`` input is tied to 0
+|   ``vsatp_ppn_i`` input is tied to 0
+|   ``vs_asid_i`` input is tied to 0
+|   ``hgatp_ppn_i`` input is tied to 0
+|   ``vmid_i`` input is tied to 0
 | As EnableAccelerator = 0,
 |   ``stall_st_pending_i`` input is tied to 0
 |   ``acc_valid_i`` input is tied to 0

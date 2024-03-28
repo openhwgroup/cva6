@@ -164,6 +164,10 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``amo_resp_i`` input is tied to 0
 | As IsRVFI = 0,
 |   ``rvfi_mem_paddr_o`` output is tied to 0
+| As RVH = 0,
+|   ``tinst_o`` output is tied to 0
+|   ``hs_ld_st_inst_o`` output is tied to 0
+|   ``hlvx_inst_o`` output is tied to 0
 | For any HW configuration,
 |   ``dtlb_hit_i`` input is tied to 1
 
