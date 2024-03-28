@@ -356,9 +356,16 @@ module cva6_ptw
           state_d           = WAIT_GRANT;
           shared_tlb_miss_o = 1'b1;
 
-          for (int unsigned b = 0; b < HYP_EXT + 1; b++) begin
-            tlb_update_asid_n[b] = b==0 ? ((enable_translation_i[2*HYP_EXT] || en_ld_st_translation_i[2*HYP_EXT]) ? asid_i[HYP_EXT] : asid_i[0]) : asid_i[HYP_EXT*2];
-          end
+          if(itlb_req_i) 
+            tlb_update_asid_n[0] = enable_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0];
+          else
+            tlb_update_asid_n[0] = en_ld_st_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0];
+          
+          if(HYP_EXT == 1)
+            tlb_update_asid_n[HYP_EXT] = asid_i[HYP_EXT*2];
+          // for (int unsigned b = 0; b < HYP_EXT + 1; b++) begin
+          //   tlb_update_asid_n[b] = b==0 ? ((enable_translation_i[2*HYP_EXT] || en_ld_st_translation_i[2*HYP_EXT]) ? asid_i[HYP_EXT] : asid_i[0]) : asid_i[HYP_EXT*2];
+          // end
         end
       end
 
