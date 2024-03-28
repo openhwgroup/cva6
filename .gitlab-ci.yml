@@ -46,7 +46,7 @@ workflow:
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   DASHBOARD: cva6
-  DV_TARGET: cv32a6_embedded
+  DV_TARGET: cv32a65x
 
 default:
   tags: [$TAGS_RUNNER]
@@ -428,23 +428,6 @@ csr_embedded_tests:
     - mv verif/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
     - python3 .gitlab-ci/scripts/report_pass.py
 
-directed_xif-tests:
-  extends:
-    - .verif_test
-  variables:
-    DASHBOARD_SORT_INDEX: 16
-    DASHBOARD_JOB_CATEGORY: "Functional Coverage"
-  parallel:
-    matrix:
-      - list_num: 0
-        DASHBOARD_JOB_TITLE: "Directed tests"
-        DASHBOARD_JOB_DESCRIPTION: "Execute directed tests to improve functional coverage of cvxif"
-  script:
-    - mkdir -p artifacts/coverage
-    - source verif/regress/dv-generated-xif-tests.sh
-    - mv verif/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
-    - python3 .gitlab-ci/scripts/report_pass.py
-
 .backend_test:
   stage: backend tests
   before_script:
@@ -508,7 +491,6 @@ code_coverage-report:
     - generated_tests
     - directed_isacov-tests
     - generated_xif_tests
-    - directed_xif-tests
     - csr_embedded_tests
   variables:
     DASHBOARD_JOB_TITLE: "Report merge coverage"
