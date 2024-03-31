@@ -353,7 +353,7 @@ module alu
           result_o = {{CVA6Cfg.XLEN-32{1'b0}}, fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[5:0];  // Left Shift 32 bit unsigned
       endcase
     end
-    if (CVA6Cfg.ZiCondExtEn) begin
+    if (CVA6Cfg.RVZiCond) begin
       unique case (fu_data_i.operation)
         CZERO_EQZ:
         result_o = (|fu_data_i.operand_b) ? fu_data_i.operand_a : '0;  // move zero to rd if rs2 is equal to zero else rs1

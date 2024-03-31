@@ -63,7 +63,7 @@ package config_pkg;
     // Zcmp RISC-V extension
     bit                          RVZCMP;
     // Zicond RISC-V extension
-    bit                          ZiCondExtEn;
+    bit                          RVZiCond;
     // Floating Point
     bit                          FpuEn;
     // Non standard 16bits Floating Point extension
@@ -203,7 +203,7 @@ package config_pkg;
     bit          RVZCMP;
     bit          XFVec;
     bit          CvxifEn;
-    bit          ZiCondExtEn;
+    bit          RVZiCond;
 
     int unsigned NR_SB_ENTRIES;
     int unsigned TRANS_ID_BITS;

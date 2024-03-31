@@ -48,7 +48,7 @@
      - Zcmp RISC-V extension
      - 0
 
-   * - ZiCondExtEn
+   * - RVZiCond
      - Zicond RISC-V extension
      - 0
 
