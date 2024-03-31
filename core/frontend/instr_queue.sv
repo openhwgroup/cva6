@@ -414,7 +414,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
     fifo_v3 #(
         .DEPTH  (ariane_pkg::FETCH_FIFO_DEPTH),
         .dtype  (instr_data_t),
-        .FPGA_EN(CVA6Cfg.FPGA_EN)
+        .FPGAEn(CVA6Cfg.FPGAEn)
     ) i_fifo_instr_data (
         .clk_i     (clk_i),
         .rst_ni    (rst_ni),
@@ -442,7 +442,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   fifo_v3 #(
       .DEPTH     (ariane_pkg::FETCH_FIFO_DEPTH),  // TODO(zarubaf): Fork out to separate param
       .DATA_WIDTH(CVA6Cfg.VLEN),
-      .FPGA_EN   (CVA6Cfg.FPGA_EN)
+      .FPGAEn   (CVA6Cfg.FPGAEn)
   ) i_fifo_address (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

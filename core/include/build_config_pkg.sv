@@ -39,7 +39,7 @@ package build_config_pkg;
     cfg.ASID_WIDTH = (CVA6Cfg.XLEN == 64) ? 16 : 1;
     cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 1;
 
-    cfg.FPGA_EN = CVA6Cfg.FPGA_EN;
+    cfg.FPGAEn = CVA6Cfg.FPGAEn;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
     cfg.AxiAddrWidth = CVA6Cfg.AxiAddrWidth;
     cfg.AxiDataWidth = CVA6Cfg.AxiDataWidth;
