@@ -121,7 +121,7 @@ endif
 ###############################################################################
 spike:
 	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
-		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) -l $(elf)
+		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params) -l $(elf)
 	cp $(log).iss $(log)
 
 ###############################################################################
