@@ -48,7 +48,7 @@
      - Zcmp RISC-V extension
      - 0
 
-   * - ZiCondExtEn
+   * - RVZiCond
      - Zicond RISC-V extension
      - 0
 
@@ -220,7 +220,7 @@
      - Width of fetch user field
      - 32
 
-   * - FPGA_EN
+   * - FpgaEn
      - Is FPGA optimization of CV32A6
      - 0
 

@@ -783,7 +783,7 @@ module decoder
                 end
               endcase
             end
-            if (CVA6Cfg.ZiCondExtEn) begin
+            if (CVA6Cfg.RVZiCond) begin
               unique case ({
                 instr.rtype.funct7, instr.rtype.funct3
               })
@@ -797,7 +797,7 @@ module decoder
             end
             //VCS coverage on
             unique case ({
-              CVA6Cfg.RVB, CVA6Cfg.ZiCondExtEn
+              CVA6Cfg.RVB, CVA6Cfg.RVZiCond
             })
               2'b00: illegal_instr = illegal_instr_non_bm;
               2'b01: illegal_instr = illegal_instr_non_bm & illegal_instr_zic;

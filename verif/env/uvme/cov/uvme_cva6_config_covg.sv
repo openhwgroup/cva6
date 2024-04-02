@@ -54,8 +54,8 @@ covergroup cg_cva6_config(string name) with function sample();
    cp_VExtEn : coverpoint cva6_config_pkg::CVA6ConfigVExtEn {
       bins VExtEn ={0};
    }
-   cp_ZiCondExtEn : coverpoint cva6_config_pkg::CVA6ConfigZiCondExtEn {
-      bins ZiCondExtEn ={0};
+   cp_RVZiCond : coverpoint cva6_config_pkg::CVA6ConfigRVZiCond {
+      bins RVZiCond ={0};
    }
    cp_AxiIdWidth : coverpoint cva6_config_pkg::CVA6ConfigAxiIdWidth {
       bins AxiIdWidth ={4};
@@ -111,8 +111,8 @@ covergroup cg_cva6_config(string name) with function sample();
    cp_NrScoreboardEntries : coverpoint cva6_config_pkg::CVA6ConfigNrScoreboardEntries {
       bins NrScoreboardEntries ={4};
    }
-   cp_FPGAEn : coverpoint cva6_config_pkg::CVA6ConfigFPGAEn {
-      bins FPGAEn ={0};
+   cp_FpgaEn : coverpoint cva6_config_pkg::CVA6ConfigFpgaEn {
+      bins FpgaEn ={0};
    }
    cp_NrLoadPipeRegs : coverpoint cva6_config_pkg::CVA6ConfigNrLoadPipeRegs {
       bins NrLoadPipeRegs ={0};

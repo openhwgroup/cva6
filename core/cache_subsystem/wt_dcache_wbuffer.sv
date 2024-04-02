@@ -303,7 +303,7 @@ module wt_dcache_wbuffer
       .FALL_THROUGH(1'b0),
       .DATA_WIDTH  ($clog2(CVA6Cfg.DCACHE_MAX_TX)),
       .DEPTH       (CVA6Cfg.DCACHE_MAX_TX),
-      .FPGA_EN     (CVA6Cfg.FPGA_EN)
+      .FPGA_EN     (CVA6Cfg.FpgaEn)
   ) i_rtrn_id_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

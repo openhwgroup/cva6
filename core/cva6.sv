@@ -1468,7 +1468,7 @@ module cva6
     fifo_v3 #(
         .DATA_WIDTH(64),
         .DEPTH(PC_QUEUE_DEPTH),
-        .FPGA_EN(CVA6Cfg.FPGA_EN)
+        .FPGA_EN(CVA6Cfg.FpgaEn)
     ) i_pc_fifo (
         .clk_i     (clk_i),
         .rst_ni    (rst_ni),

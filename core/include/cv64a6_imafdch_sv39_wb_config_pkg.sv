@@ -26,7 +26,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigBExtEn = 1;
   localparam CVA6ConfigVExtEn = 0;
   localparam CVA6ConfigHExtEn = 1;
-  localparam CVA6ConfigZiCondExtEn = 1;
+  localparam CVA6ConfigRVZiCond = 1;
 
   localparam CVA6ConfigAxiIdWidth = 4;
   localparam CVA6ConfigAxiAddrWidth = 64;
@@ -51,7 +51,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigNrCommitPorts = 2;
   localparam CVA6ConfigNrScoreboardEntries = 8;
 
-  localparam CVA6ConfigFPGAEn = 0;
+  localparam CVA6ConfigFpgaEn = 0;
 
   localparam CVA6ConfigNrLoadPipeRegs = 1;
   localparam CVA6ConfigNrStorePipeRegs = 0;
@@ -97,7 +97,7 @@ package cva6_config_pkg;
       RVZCMP: bit'(CVA6ConfigZcmpExtEn),
       XFVec: bit'(CVA6ConfigFVecEn),
       CvxifEn: bit'(CVA6ConfigCvxifEn),
-      ZiCondExtEn: bit'(CVA6ConfigZiCondExtEn),
+      RVZiCond: bit'(CVA6ConfigRVZiCond),
       RVS: bit'(1),
       RVU: bit'(1),
       HaltAddress: 64'h800,
