@@ -149,7 +149,7 @@ package config_pkg;
     // Width of fetch user field
     int unsigned                 FetchUserWidth;
     // Is FPGA optimization of CV32A6
-    bit                          FPGAEn;
+    bit                          FpgaEn;
     // Number of commit ports
     int unsigned                 NrCommitPorts;
     // Scoreboard length
@@ -177,7 +177,7 @@ package config_pkg;
     int unsigned ASID_WIDTH;
     int unsigned VMID_WIDTH;
 
-    bit          FPGAEn;
+    bit          FpgaEn;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one

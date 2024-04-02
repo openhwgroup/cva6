@@ -220,7 +220,7 @@
      - Width of fetch user field
      - 32
 
-   * - FPGAEn
+   * - FpgaEn
      - Is FPGA optimization of CV32A6
      - 0
 

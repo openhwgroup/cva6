@@ -111,8 +111,8 @@ covergroup cg_cva6_config(string name) with function sample();
    cp_NrScoreboardEntries : coverpoint cva6_config_pkg::CVA6ConfigNrScoreboardEntries {
       bins NrScoreboardEntries ={4};
    }
-   cp_FPGAEn : coverpoint cva6_config_pkg::CVA6ConfigFPGAEn {
-      bins FPGAEn ={0};
+   cp_FpgaEn : coverpoint cva6_config_pkg::CVA6ConfigFpgaEn {
+      bins FpgaEn ={0};
    }
    cp_NrLoadPipeRegs : coverpoint cva6_config_pkg::CVA6ConfigNrLoadPipeRegs {
       bins NrLoadPipeRegs ={0};

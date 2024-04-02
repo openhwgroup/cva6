@@ -79,7 +79,7 @@ def setup_parser_config_generator():
                       help="Number of commit ports")
   parser.add_argument("--NrScoreboardEntries", type=int, default=None,
                       help="Number of scoreboard entries")
-  parser.add_argument("--FPGAEn", type=int, default=None, choices=[0,1],
+  parser.add_argument("--FpgaEn", type=int, default=None, choices=[0,1],
                       help="Use FPGA-specific hardware")
   parser.add_argument("--NrLoadPipeRegs", type=int, default=None,
                       help="Load latency")
@@ -148,7 +148,7 @@ MapArgsToParameter={
   "WtDcacheWbufDepth": "CVA6ConfigWtDcacheWbufDepth",
   "NrCommitPorts" : "CVA6ConfigNrCommitPorts",
   "NrScoreboardEntries" : "CVA6ConfigNrScoreboardEntries",
-  "FPGAEn" : "CVA6ConfigFPGAEn",
+  "FpgaEn" : "CVA6ConfigFpgaEn",
   "NrLoadPipeRegs" : "CVA6ConfigNrLoadPipeRegs",
   "NrStorePipeRegs" : "CVA6ConfigNrStorePipeRegs",
   "NrLoadBufEntries" : "CVA6ConfigNrLoadBufEntries",

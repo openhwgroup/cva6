@@ -51,7 +51,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigNrCommitPorts = 1;
   localparam CVA6ConfigNrScoreboardEntries = 4;
 
-  localparam CVA6ConfigFPGAEn = 0;
+  localparam CVA6ConfigFpgaEn = 0;
 
   localparam CVA6ConfigNrLoadPipeRegs = 1;
   localparam CVA6ConfigNrStorePipeRegs = 0;
@@ -78,7 +78,7 @@ package cva6_config_pkg;
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
-      FPGAEn: bit'(CVA6ConfigFPGAEn),
+      FpgaEn: bit'(CVA6ConfigFpgaEn),
       NrCommitPorts: unsigned'(CVA6ConfigNrCommitPorts),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),

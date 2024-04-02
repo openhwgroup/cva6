@@ -169,7 +169,7 @@ module acc_dispatcher
       .DEPTH       (InstructionQueueDepth),
       .FALL_THROUGH(1'b1),
       .dtype       (fu_data_t),
-      .FPGAEn     (CVA6Cfg.FPGAEn)
+      .FpgaEn      (CVA6Cfg.FpgaEn)
   ) i_acc_insn_queue (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
