@@ -441,6 +441,7 @@ smoke-gate:
     - build_tools
     - asic-synthesis
   variables:
+    DV_TARGET: cv32a6_embedded
     DASHBOARD_JOB_TITLE: "Smoke Gate $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
     DASHBOARD_SORT_INDEX: 6
