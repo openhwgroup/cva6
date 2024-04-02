@@ -115,7 +115,7 @@ module cvxif_example_coprocessor
       .DATA_WIDTH  (64),
       .DEPTH       (8),
       .dtype       (x_issue_t),
-      .FpgaEn      (CVA6Cfg.FpgaEn)
+      .FPGA_EN     (CVA6Cfg.FpgaEn)
   ) fifo_commit_i (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

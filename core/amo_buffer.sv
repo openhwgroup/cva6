@@ -63,9 +63,9 @@ module amo_buffer #(
   assign flush_amo_buffer = flush_i & !amo_valid_commit_i;
 
   fifo_v3 #(
-      .DEPTH (1),
-      .dtype (amo_op_t),
-      .FpgaEn(CVA6Cfg.FpgaEn)
+      .DEPTH  (1),
+      .dtype  (amo_op_t),
+      .FPGA_EN(CVA6Cfg.FpgaEn)
   ) i_amo_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

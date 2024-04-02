@@ -311,9 +311,9 @@ module wt_axi_adapter
   end
 
   fifo_v3 #(
-      .dtype (icache_req_t),
-      .DEPTH (ReqFifoDepth),
-      .FpgaEn(CVA6Cfg.FpgaEn)
+      .dtype  (icache_req_t),
+      .DEPTH  (ReqFifoDepth),
+      .FPGA_EN(CVA6Cfg.FpgaEn)
   ) i_icache_data_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -329,9 +329,9 @@ module wt_axi_adapter
   );
 
   fifo_v3 #(
-      .dtype (dcache_req_t),
-      .DEPTH (ReqFifoDepth),
-      .FpgaEn(CVA6Cfg.FpgaEn)
+      .dtype  (dcache_req_t),
+      .DEPTH  (ReqFifoDepth),
+      .FPGA_EN(CVA6Cfg.FpgaEn)
   ) i_dcache_data_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -356,7 +356,7 @@ module wt_axi_adapter
   fifo_v3 #(
       .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
       .DEPTH     (MetaFifoDepth),
-      .FpgaEn    (CVA6Cfg.FpgaEn)
+      .FPGA_EN   (CVA6Cfg.FpgaEn)
   ) i_rd_icache_id (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -374,7 +374,7 @@ module wt_axi_adapter
   fifo_v3 #(
       .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
       .DEPTH     (MetaFifoDepth),
-      .FpgaEn    (CVA6Cfg.FpgaEn)
+      .FPGA_EN   (CVA6Cfg.FpgaEn)
   ) i_rd_dcache_id (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -392,7 +392,7 @@ module wt_axi_adapter
   fifo_v3 #(
       .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
       .DEPTH     (MetaFifoDepth),
-      .FpgaEn    (CVA6Cfg.FpgaEn)
+      .FPGA_EN   (CVA6Cfg.FpgaEn)
   ) i_wr_dcache_id (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -423,7 +423,7 @@ module wt_axi_adapter
       .DATA_WIDTH  (CVA6Cfg.AxiIdWidth + 1),
       .DEPTH       (MetaFifoDepth),
       .FALL_THROUGH(1'b1),
-      .FpgaEn      (CVA6Cfg.FpgaEn)
+      .FPGA_EN     (CVA6Cfg.FpgaEn)
   ) i_b_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

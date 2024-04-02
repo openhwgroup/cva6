@@ -412,9 +412,9 @@ ariane_pkg::FETCH_FIFO_DEPTH
     // Make sure we don't save any instructions if we couldn't save the address
     assign push_instr_fifo[i] = push_instr[i] & ~address_overflow;
     fifo_v3 #(
-        .DEPTH (ariane_pkg::FETCH_FIFO_DEPTH),
-        .dtype (instr_data_t),
-        .FpgaEn(CVA6Cfg.FpgaEn)
+        .DEPTH  (ariane_pkg::FETCH_FIFO_DEPTH),
+        .dtype  (instr_data_t),
+        .FPGA_EN(CVA6Cfg.FpgaEn)
     ) i_fifo_instr_data (
         .clk_i     (clk_i),
         .rst_ni    (rst_ni),
@@ -442,7 +442,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   fifo_v3 #(
       .DEPTH     (ariane_pkg::FETCH_FIFO_DEPTH),  // TODO(zarubaf): Fork out to separate param
       .DATA_WIDTH(CVA6Cfg.VLEN),
-      .FpgaEn    (CVA6Cfg.FpgaEn)
+      .FPGA_EN   (CVA6Cfg.FpgaEn)
   ) i_fifo_address (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
