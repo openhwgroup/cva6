@@ -223,16 +223,10 @@ ALL_SIMV_UVM_FLAGS      = +vcs+lic+wait -licwait 20  \
 ALL_XRUN_UVM_FLAGS      = -elaborate -messages -sv +incdir+$(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src/ \
 	  $(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_LOW -uvm -uvmhome CDNS-1.2 \
 	  -64 +incdir+$(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src \
-	  +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/cva6/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/cva6/tb/uvmt \
+	  +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/tb/uvmt \
 	  -xmerror CUNOTB -nowarn CUDEFB -nowarn CUSRCH -warn_multiple_driver -relax_svbtis -timescale 1ns/1ps -status -access +rwc -log   $(XRUN_WORK_DIR)/tb_compile.log
 
-##	  +incdir+$(CVA6_UVME_PATH) +incdir+$(CVA6_UVMT_PATH) 
-##-relax_svbtis
-##ALL_XRUN_SIMV_UVM_FLAGS      = -licwait 20 $(issrun_opts) 
 ALL_XRUN_SIMV_UVM_FLAGS      =  +sv_lib=$(CVA6_REPO_DIR)/tools/spike/lib/libdisasm +signature=I-ADD-01.signature_output
-##		+UVM_TESTNAME=uvmt_cva6_firmware_test_c
-
-##XRUN_RUN_FLAGS := -R -64bit -disable_sem2009 -uvmhome CDNS-1.2  +UVM_VERBOSITY=UVM_LOW -svseed 1 -access +rwc -sv -timescale 1ns/1ps		
 		          
 XRUN_RUN_FLAGS := -R -messages -status -64bit -licqueue -noupdate -log xrun.log -uvmhome CDNS-1.2  +UVM_VERBOSITY=UVM_LOW -svseed 1 		
 		          
@@ -361,9 +355,6 @@ xrun_uvm_comp:
           -f $(CVA6_UVMT_PATH)/uvmt_cva6.flist \
           $(cov-comp-opt) $(isscomp_opts)\
 	  -top uvmt_cva6_tb
-
-##          -f $(FLIST_TB) \
-##          -f $(CVA6_UVMT_PATH)/uvmt_cva6.flist \
 
 xrun_uvm_run:
 	@echo "[XRUN] Running"
