@@ -441,7 +441,7 @@ smoke-gate:
     - build_tools
     - asic-synthesis
   variables:
-    DASHBOARD_JOB_TITLE: "Smoke Gate $DV_TARGET"
+    DASHBOARD_JOB_TITLE: "Smoke Gate cv32a6_embedded"
     DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
@@ -456,10 +456,10 @@ smoke-gate:
     - echo $TECH_NAME
     - source ./verif/sim/setup-env.sh
     - source verif/regress/install-riscv-tests.sh
-    - mv artifacts/cva6_${DV_TARGET}_synth_modified.v pd/synth/cva6_${DV_TARGET}_synth_modified.v
+    - mv artifacts/cva6_cv32a6_embedded_synth_modified.v pd/synth/cva6_cv32a6_embedded_synth_modified.v
     - cd verif/sim
     - make vcs_clean_all
-    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target $DV_TARGET --iss=spike,vcs-gate $DV_OPTS
+    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target cv32a6_embedded --iss=spike,vcs-gate $DV_OPTS
   after_script: *simu_after_script
 
 fpga-boot:
