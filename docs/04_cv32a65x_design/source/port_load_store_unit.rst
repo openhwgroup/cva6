@@ -182,11 +182,11 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As RVA = 0,
+| As RVA = False,
 |   ``amo_valid_commit_i`` input is tied to 0
 |   ``amo_req_o`` output is tied to 0
 |   ``amo_resp_i`` input is tied to 0
-| As RVH = 0,
+| As RVH = False,
 |   ``tinst_i`` input is tied to 0
 |   ``enable_g_translation_i`` input is tied to 0
 |   ``en_ld_st_g_translation_i`` input is tied to 0
@@ -203,7 +203,7 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``gpaddr_to_be_flushed_i`` input is tied to 0
 |   ``flush_tlb_vvma_i`` input is tied to 0
 |   ``flush_tlb_gvma_i`` input is tied to 0
-| As RVS = 0,
+| As RVS = False,
 |   ``enable_translation_i`` input is tied to 0
 |   ``en_ld_st_translation_i`` input is tied to 0
 |   ``sum_i`` input is tied to 0

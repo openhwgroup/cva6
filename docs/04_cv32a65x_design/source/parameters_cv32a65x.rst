@@ -22,83 +22,83 @@
 
    * - RVA
      - Atomic RISC-V extension
-     - 0
+     - False
 
    * - RVB
      - Bit manipulation RISC-V extension
-     - 1
+     - True
 
    * - RVV
      - Vector RISC-V extension
-     - 0
+     - False
 
    * - RVC
      - Compress RISC-V extension
-     - 1
+     - True
 
    * - RVH
      - Hypervisor RISC-V extension
-     - 0
+     - False
 
    * - RVZCB
      - Zcb RISC-V extension
-     - 1
+     - True
 
    * - RVZCMP
      - Zcmp RISC-V extension
-     - 0
+     - False
 
    * - RVZiCond
      - Zicond RISC-V extension
-     - 0
+     - False
 
    * - FpuEn
      - Floating Point
-     - 0
+     - False
 
    * - XF16
      - Non standard 16bits Floating Point extension
-     - 0
+     - False
 
    * - XF16ALT
      - Non standard 16bits Floating Point Alt extension
-     - 0
+     - False
 
    * - XF8
      - Non standard 8bits Floating Point extension
-     - 0
+     - False
 
    * - XFVec
      - Non standard Vector Floating Point extension
-     - 0
+     - False
 
    * - RVS
      - Supervisor mode
-     - 0
+     - False
 
    * - RVU
      - User mode
-     - 0
+     - False
 
    * - DebugEn
      - Debug support
-     - 0
+     - False
 
    * - DmBaseAddress
      - Base address of the debug module
-     - 64'h0
+     - 0x0
 
    * - HaltAddress
      - Address to jump when halt request
-     - 64'h800
+     - 0x800
 
    * - ExceptionAddress
      - Address to jump when exception
-     - 64'h808
+     - 0x808
 
    * - TvalEn
      - Tval Support Enable
-     - 0
+     - False
 
    * - NrPMPEntries
      - PMP entries number
@@ -106,15 +106,15 @@
 
    * - PMPCfgRstVal
      - PMP CSR configuration reset values
-     - {16{64'h0}}
+     - [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0]
 
    * - PMPAddrRstVal
      - PMP CSR address reset values
-     - {16{64'h0}}
+     - [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0]
 
    * - PMPEntryReadOnly
      - PMP CSR read-only bits
-     - 16'd0
+     - 0
 
    * - NrNonIdempotentRules
      - PMA non idempotent rules number
@@ -122,11 +122,11 @@
 
    * - NonIdempotentAddrBase
      - PMA NonIdempotent region base address
-     - {64'b0 64'b0}
+     - [0b0, 0b0]
 
    * - NonIdempotentLength
      - PMA NonIdempotent region length
-     - {64'b0 64'b0}
+     - [0b0, 0b0]
 
    * - NrExecuteRegionRules
      - PMA regions with execute rules number
@@ -134,11 +134,11 @@
 
    * - ExecuteRegionAddrBase
      - PMA Execute region base address
-     - {64'h8000_0000 64'h1_0000 64'h0}
+     - [0x80000000, 0x10000, 0x0]
 
    * - ExecuteRegionLength
      - PMA Execute region address base
-     - {64'h40000000 64'h10000 64'h1000}
+     - [0x40000000, 0x10000, 0x1000]
 
    * - NrCachedRegionRules
      - PMA regions with cache rules number
@@ -146,15 +146,15 @@
 
    * - CachedRegionAddrBase
      - PMA cache region base address
-     - {64'h8000_0000}
+     - [0x80000000]
 
    * - CachedRegionLength
      - PMA cache region rules
-     - {64'h40000000}
+     - [0x40000000]
 
    * - CvxifEn
      - CV-X-IF coprocessor interface enable
-     - 1
+     - True
 
    * - NOCType
      - NOC bus type
@@ -178,7 +178,7 @@
 
    * - AxiBurstWriteEn
      - AXI burst in write
-     - 0
+     - False
 
    * - MemTidWidth
      - TODO
@@ -222,7 +222,7 @@
 
    * - FpgaEn
      - Is FPGA optimization of CV32A6
-     - 0
+     - False
 
    * - NrCommitPorts
      - Number of commit ports

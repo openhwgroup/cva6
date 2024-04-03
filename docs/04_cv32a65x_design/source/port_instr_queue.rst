@@ -122,7 +122,7 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As RVH = 0,
+| As RVH = False,
 |   ``exception_gpaddr_i`` input is tied to 0
 |   ``exception_tinst_i`` input is tied to 0
 |   ``exception_gva_i`` input is tied to 0

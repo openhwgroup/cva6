@@ -161,17 +161,17 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 | As RVF = 0,
 |   ``dirty_fp_state_o`` output is tied to 0
 |   ``csr_write_fflags_o`` output is tied to 0
-| As DebugEn = 0,
+| As DebugEn = False,
 |   ``single_step_i`` input is tied to 0
-| As RVA = 0,
+| As RVA = False,
 |   ``amo_resp_i`` input is tied to 0
 |   ``amo_valid_commit_o`` output is tied to 0
 | As FenceEn = 0,
 |   ``fence_i_o`` output is tied to 0
 |   ``fence_o`` output is tied to 0
-| As RVS = 0,
+| As RVS = False,
 |   ``sfence_vma_o`` output is tied to 0
-| As RVH = 0,
+| As RVH = False,
 |   ``hfence_vvma_o`` output is tied to 0
 |   ``hfence_gvma_o`` output is tied to 0
 

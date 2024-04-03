@@ -344,9 +344,9 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As DebugEn = 0,
+| As DebugEn = False,
 |   ``debug_mode_i`` input is tied to 0
-| As RVH = 0,
+| As RVH = False,
 |   ``tinst_i`` input is tied to 0
 |   ``enable_g_translation_i`` input is tied to 0
 |   ``en_ld_st_g_translation_i`` input is tied to 0
@@ -364,7 +364,7 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 | As EnableAccelerator = 0,
 |   ``stall_st_pending_i`` input is tied to 0
 |   ``acc_valid_i`` input is tied to 0
-| As RVA = 0,
+| As RVA = False,
 |   ``amo_valid_commit_i`` input is tied to 0
 |   ``amo_req_o`` output is tied to 0
 |   ``amo_resp_i`` input is tied to 0
@@ -379,7 +379,7 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``fpu_result_o`` output is tied to 0
 |   ``fpu_valid_o`` output is tied to 0
 |   ``fpu_exception_o`` output is tied to 0
-| As RVS = 0,
+| As RVS = False,
 |   ``enable_translation_i`` input is tied to 0
 |   ``en_ld_st_translation_i`` input is tied to 0
 |   ``sum_i`` input is tied to 0

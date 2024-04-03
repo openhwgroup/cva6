@@ -128,7 +128,7 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As RVH = 0,
+| As RVH = False,
 |   ``v_i`` input is tied to 0
 |   ``flush_tlb_vvma_o`` output is tied to 0
 |   ``flush_tlb_gvma_o`` output is tied to 0
@@ -139,11 +139,11 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 | As EnableAccelerator = 0,
 |   ``halt_acc_i`` input is tied to 0
 |   ``flush_acc_i`` input is tied to 0
-| As DebugEn = 0,
+| As DebugEn = False,
 |   ``set_debug_pc_i`` input is tied to 0
 | As FenceEn = 0,
 |   ``fence_i_i`` input is tied to 0
 |   ``fence_i`` input is tied to 0
-| As RVS = 0,
+| As RVS = False,
 |   ``sfence_vma_i`` input is tied to 0
 
