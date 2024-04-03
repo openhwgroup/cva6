@@ -9,10 +9,10 @@ instructions. The privileged architecture requires the Zicsr extension;
 which other privileged instructions are required depends on the
 privileged-architecture feature set.
 
-In addition to the unprivileged state described in Volume I of this
+[#spec_vol2_0210]#In addition to the unprivileged state described in Volume I of this
 manual, an implementation may contain additional CSRs, accessible by
 some subset of the privilege levels using the CSR instructions described
-in Volume I. In this chapter, we map out the CSR address space. The
+in Volume I.# In this chapter, we map out the CSR address space. The
 following chapters describe the function of each of the CSRs according
 to privilege level, as well as the other privileged instructions which
 are generally closely associated with a particular privilege level. Note
@@ -36,9 +36,9 @@ encode default access privileges. This simplifies error checking in the
 hardware and provides a larger CSR space, but does constrain the mapping
 of CSRs into the address space.
 
-Implementations might allow a more-privileged level to trap otherwise
+[#spec_vol2_0220]#Implementations might allow a more-privileged level to trap otherwise
 permitted CSR accesses by a less-privileged level to allow these
-accesses to be intercepted. This change should be transparent to the
+accesses to be intercepted.# This change should be transparent to the
 less-privileged software.
 ====
 
@@ -56,8 +56,8 @@ standard extensions.
 Machine-mode standard read-write CSRs `0x7A0`-`0x7BF` are reserved for
 use by the debug system. Of these CSRs, `0x7A0`-`0x7AF` are accessible
 to machine mode, whereas `0x7B0`-`0x7BF` are only visible to debug mode.
-Implementations should raise illegal-instruction exceptions on
-machine-mode access to the latter set of registers.
+[#spec_vol2_0230]#Implementations should raise illegal-instruction exceptions on
+machine-mode access to the latter set of registers.#
 
 [NOTE]
 ====
@@ -76,7 +76,7 @@ illegal accesses. Currently, the counters are the only shadowed CSRs.
 have currently been allocated CSR addresses. The timers, counters, and
 floating-point CSRs are standard unprivileged CSRs. The other registers
 are used by privileged code, as described in the following chapters.
-Note that not all registers are required on all implementations.
+[#spec_vol2_0240]#Note that not all registers are required on all implementations.#
 
 [[csrrwpriv]]
 .Allocation of RISC-V CSR address ranges.
@@ -577,8 +577,8 @@ MRO
 `mconfigptr`
 |Vendor ID. +
 Architecture ID. +
-Implementation ID. +
-Hardware thread ID. +
+[#spec_vol2_0250]#Implementation ID. +
+#Hardware thread ID. +
 Pointer to configuration data structure.
 
 4+^|Machine Trap Setup
@@ -869,8 +869,8 @@ behavior of fields within the CSRs.
 Some whole read/write fields are reserved for future use. Software
 should ignore the values read from these fields, and should preserve the
 values held in these fields when writing values to other fields of the
-same register. For forward compatibility, implementations that do not
-furnish these fields must make them read-only zero. These fields are
+same register. [#spec_vol2_0260]#For forward compatibility, implementations that do not
+furnish these fields must make them read-only zero.# These fields are
 labeled *WPRI* in the register descriptions.
 
 [NOTE]
@@ -896,17 +896,17 @@ are labeled *WLRL* in the register descriptions.
 
 [NOTE]
 ====
-Hardware implementations need only implement enough state bits to
+[#spec_vol2_0270]#Hardware implementations need only implement enough state bits to
 differentiate between the supported values, but must always return the
-complete specified bit-encoding of any supported value when read.
+complete specified bit-encoding of any supported value when read.#
 ====
 
-Implementations are permitted but not required to raise an
+[#spec_vol2_0280]#Implementations are permitted but not required to raise an
 illegal-instruction exception if an instruction attempts to write a
-non-supported value to a *WLRL* field. Implementations can return arbitrary
+non-supported value to a *WLRL* field.# [#spec_vol2_0290]#Implementations can return arbitrary
 bit patterns on the read of a *WLRL* field when the last write was of an
 illegal value, but the value returned should deterministically depend on
-the illegal written value and the value of the field prior to the write.
+the illegal written value and the value of the field prior to the write.#
 
 ==== Write Any Values, Reads Legal Values (WARL)
 
@@ -917,11 +917,11 @@ other side effects, the range of supported values can be determined by
 attempting to write a desired setting then reading to see if the value
 was retained. These fields are labeled *WARL* in the register descriptions.
 
-Implementations will not raise an exception on writes of unsupported
-values to a *WARL* field. Implementations can return any legal value on the
+[#spec_vol2_0300]#Implementations will not raise an exception on writes of unsupported
+values to a *WARL* field.# [#spec_vol2_0310]#Implementations can return any legal value on the
 read of a *WARL* field when the last write was of an illegal value, but the
 legal value returned should deterministically depend on the illegal
-written value and the architectural state of the hart.
+written value and the architectural state of the hart.#
 
 === CSR Field Modulation
 
@@ -951,7 +951,7 @@ that CSR.
 
 === Implicit Reads of CSRs
 
-Implementations sometimes perform _implicit_ reads of CSRs. (For
+[#spec_vol2_0320]#Implementations sometimes perform _implicit_ reads of CSRs.# (For
 example, all S-mode instruction fetches implicitly read the `satp` CSR.)
 Unless otherwise specified, the value returned by an implicit read of a
 CSR is the same value that would have been returned by an explicit read

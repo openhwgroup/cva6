@@ -36,20 +36,20 @@ shows a simple system that supports only a single application running on
 an application execution environment (AEE). The application is coded to
 run with a particular application binary interface (ABI). The ABI
 includes the supported user-level ISA plus a set of ABI calls to
-interact with the AEE. The ABI hides details of the AEE from the
-application to allow greater flexibility in implementing the AEE. The
+interact with the AEE. [#spec_vol2_0070]#The ABI hides details of the AEE from the
+application to allow greater flexibility in implementing the AEE.# [#spec_vol2_0080]#The
 same ABI could be implemented natively on multiple different host OSs,
 or could be supported by a user-mode emulation environment running on a
-machine with a different native ISA.
+machine with a different native ISA.#
 
 [NOTE]
 ====
-Our graphical convention represents abstract interfaces using black
+[#spec_vol2_0090]#Our graphical convention represents abstract interfaces using black
 boxes with white text, to separate them from concrete instances of
-components implementing the interfaces.
+components implementing the interfaces.#
 ====
 [[privimps]]
-.Different implementation stacks supporting various forms of privileged execution.
+[#spec_vol2_0100]#.Different implementation stacks supporting various forms of privileged execution.#
 image::png/privimps.png[]
 
 The middle configuration shows a conventional operating system (OS) that
@@ -59,8 +59,8 @@ AEE. Just as applications interface with an AEE via an ABI, RISC-V
 operating systems interface with a supervisor execution environment
 (SEE) via a supervisor binary interface (SBI). An SBI comprises the
 user-level and supervisor-level ISA together with a set of SBI function
-calls. Using a single SBI across all SEE implementations allows a single
-OS binary image to run on any SEE. The SEE can be a simple boot loader
+calls. [#spec_vol2_0110]#Using a single SBI across all SEE implementations allows a single
+OS binary image to run on any SEE.# The SEE can be a simple boot loader
 and BIOS-style IO system in a low-end hardware platform, or a
 hypervisor-provided virtual machine in a high-end server, or a thin
 translation layer over a host operating system in an architecture
@@ -86,9 +86,9 @@ prioritizing support for Type-2 hypervisors where the SBI is provided
 recursively by an S-mode OS.
 ====
 
-Hardware implementations of the RISC-V ISA will generally require
+[#spec_vol2_0120]#Hardware implementations of the RISC-V ISA will generally require
 additional features beyond the privileged ISA to support the various
-execution environments (AEE, SEE, or HEE).
+execution environments (AEE, SEE, or HEE).#
 
 === Privilege Levels
 
@@ -141,9 +141,9 @@ OS in user mode, all supervisor-level actions will be trapped and
 emulated by the SEE running in the higher-privilege level.
 ====
 The machine level has the highest privileges and is the only mandatory
-privilege level for a RISC-V hardware platform. Code run in machine-mode
+privilege level for a RISC-V hardware platform. [#spec_vol2_0130]#Code run in machine-mode
 (M-mode) is usually inherently trusted, as it has low-level access to
-the machine implementation. M-mode can be used to manage secure
+the machine implementation.# M-mode can be used to manage secure
 execution environments on RISC-V. User-mode (U-mode) and supervisor-mode
 (S-mode) are intended for conventional application and operating system
 usage respectively.
@@ -154,9 +154,9 @@ optional standard extension for memory protection. Also, supervisor mode
 can be extended to support Type-2 hypervisor execution as described in
 <<hypervisor>>.
 
-Implementations might provide anywhere from 1 to 3 privilege modes
+[#spec_vol2_0140]#Implementations might provide anywhere from 1 to 3 privilege modes
 trading off reduced isolation for lower implementation cost, as shown in
-<<privcombs>>.
+<<privcombs>>#.
 
 [[privcombs]]
 .Supported combination of privilege modes.
@@ -174,18 +174,18 @@ Secure embedded systems +
 Systems running Unix-like operating systems
 |===
 
-All hardware implementations must provide M-mode, as this is the only
-mode that has unfettered access to the whole machine. The simplest
+[#spec_vol2_0150]#All hardware implementations must provide M-mode, as this is the only
+mode that has unfettered access to the whole machine.# [#spec_vol2_0160]#The simplest
 RISC-V implementations may provide only M-mode, though this will provide
-no protection against incorrect or malicious application code.
+no protection against incorrect or malicious application code.#
 
 [NOTE]
 ====
-The lock feature of the optional PMP facility can provide some limited
-protection even with only M-mode implemented.
+[#spec_vol2_0170]#The lock feature of the optional PMP facility can provide some limited
+protection even with only M-mode implemented.#
 ====
-Many RISC-V implementations will also support at least user mode
-(U-mode) to protect the rest of the system from application code.
+[#spec_vol2_0180]#Many RISC-V implementations will also support at least user mode
+(U-mode) to protect the rest of the system from application code.#
 Supervisor mode (S-mode) can be added to provide isolation between a
 supervisor-level operating system and the SEE.
 
@@ -201,14 +201,14 @@ layers.
 
 [NOTE]
 ====
-Horizontal traps can be implemented as vertical traps that return
-control to a horizontal trap handler in the less-privileged mode.
+[#spec_vol2_0190]#Horizontal traps can be implemented as vertical traps that return
+control to a horizontal trap handler in the less-privileged mode.#
 ====
 
 === Debug Mode
 
-Implementations may also include a debug mode to support off-chip
-debugging and/or manufacturing test. Debug mode (D-mode) can be
+[#spec_vol2_0200]#Implementations may also include a debug mode to support off-chip
+debugging and/or manufacturing test.# Debug mode (D-mode) can be
 considered an additional privilege mode, with even more access than
 M-mode. The separate debug specification proposal describes operation of
 a RISC-V hart in debug mode. Debug mode reserves a few CSR addresses

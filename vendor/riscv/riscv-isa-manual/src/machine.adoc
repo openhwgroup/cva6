@@ -4,11 +4,11 @@
 This chapter describes the machine-level operations available in
 machine-mode (M-mode), which is the highest privilege mode in a RISC-V
 system. M-mode is used for low-level access to a hardware platform and
-is the first mode entered at reset. M-mode can also be used to implement
+is the first mode entered at reset. [#spec_vol2_0330]#M-mode can also be used to implement
 features that are too difficult or expensive to implement in hardware
-directly. The RISC-V machine-level ISA contains a common core that is
+directly.# [#spec_vol2_0340]#The RISC-V machine-level ISA contains a common core that is
 extended depending on which other privilege levels are supported and
-other details of the hardware implementation.
+other details of the hardware implementation.#
 
 === Machine-Level CSRs
 
@@ -18,14 +18,14 @@ code can access all CSRs at lower privilege levels.
 [[misa]]
 ==== Machine ISA Register `misa`
 
-The `misa` CSR is a *WARL* read-write register reporting the ISA supported by the hart. This register must be readable in any implementation, but a value of zero can be returned to indicate the `misa` register has not been implemented, requiring that CPU capabilities be determined through a separate non-standard mechanism.
+The `misa` CSR is a *WARL* read-write register reporting the ISA supported by the hart. [#spec_vol2_0350]#This register must be readable in any implementation, but a value of zero can be returned to indicate the `misa` register has not been implemented, requiring that CPU capabilities be determined through a separate non-standard mechanism.#
 
 .Machine ISA register (misa)
 include::images/bytefield/misareg.edn[]
 
 The MXL (Machine XLEN) field encodes the native base integer ISA width
-as shown in <<misabase>>. The MXL field may be
-writable in implementations that support multiple base ISAs. The
+as shown in <<misabase>>. [#spec_vol2_0360]#The MXL field may be
+writable in implementations that support multiple base ISAs.# The
 effective XLEN in M-mode, _MXLEN_, is given by the setting of MXL, or
 has a fixed value if `misa` is zero. The MXL field is always set to the
 widest supported ISA variant at reset.
@@ -66,41 +66,41 @@ The Extensions field encodes the presence of the standard extensions,
 with a single bit per letter of the alphabet (bit 0 encodes presence of
 extension "A" , bit 1 encodes presence of extension "B", through to
 bit 25 which encodes "Z"). The "I" bit will be set for RV32I, RV64I,
-and RV128I base ISAs, and the "E" bit will be set for RV32E and RV64E. The
+and RV128I base ISAs, and the "E" bit will be set for RV32E and RV64E. [#spec_vol2_0370]#The
 Extensions field is a *WARL* field that can contain writable bits where the
-implementation allows the supported ISA to be modified. At reset, the
+implementation allows the supported ISA to be modified.# At reset, the
 Extensions field shall contain the maximal set of supported extensions,
 and "I" shall be selected over "E" if both are available.
 
-When a standard extension is disabled by clearing its bit in `misa`, the
+[#spec_vol2_0380]#When a standard extension is disabled by clearing its bit in `misa`, the
 instructions and CSRs defined or modified by the extension revert to
 their defined or reserved behaviors as if the extension is not
-implemented.
+implemented.#
 
 [NOTE]
 ====
-For a given RISC-V execution environment, an instruction, extension, or
+[#spec_vol2_0390]#For a given RISC-V execution environment, an instruction, extension, or
 other feature of the RISC-V ISA is ordinarily judged to be _implemented_
-or not by the observable execution behavior in that environment. For
+or not by the observable execution behavior in that environment.# [#spec_vol2_0400]#For
 example, the F extension is said to be implemented for an execution
 environment if and only if the instructions that the RISC-V Unprivileged
-ISA defines for F execute as specified.
+ISA defines for F execute as specified.#
 
-With this definition of _implemented_, disabling an extension by
+[#spec_vol2_0410]#With this definition of _implemented_, disabling an extension by
 clearing its bit in `misa` results in the extension being considered
-_not implemented_ in M-mode. For example, setting `misa`.F=0 results in
+_not implemented_ in M-mode.# [#spec_vol2_0420]#For example, setting `misa`.F=0 results in
 the F extension being not implemented for M-mode, because the F
 extension's instructions will not act as the Unprivileged ISA requires
-but may instead raise an illegal-instruction exception.
+but may instead raise an illegal-instruction exception.#
 
-Defining the term _implemented_ based strictly on the observable
+[#spec_vol2_0430]#Defining the term _implemented_ based strictly on the observable
 behavior might conflict with other common understandings of the same
 word. In particular, although common usage may allow for the combination
 "implemented but disabled," in this document it is considered a
 contradiction of terms, because _disabled_ implies execution will not
-behave as required for the feature to be considered _implemented_. In
+behave as required for the feature to be considered _implemented_.# [#spec_vol2_0440]#In
 the same vein, "implemented and enabled" is redundant here;
-"implemented" suffices.
+"implemented" suffices.#
 ====
 
 .Encoding of Extensions field in `misa`.  All bits that are reserved for future use must return zero when read.
@@ -177,10 +177,10 @@ _Reserved_ +
 _Tentatively reserved for Packed-SIMD extension_ +
 Quad-precision floating-point extension +
 _Reserved_ +
-Supervisor mode implemented +
+[#spec_vol2_0450]#Supervisor mode implemented# +
 _Reserved_ +
-User mode implemented +
-"V" Vector extension implemented +
+[#spec_vol2_0460]#User mode implemented# +
+[#spec_vol2_0470]#"V" Vector extension implemented# +
 _Reserved_ +
 Non-standard extensions present +
 _Reserved_ +
@@ -220,9 +220,9 @@ enable feature _x_ but disable feature _y_ results in both features
 being disabled. For example, setting "F"=0 and "D"=1 results in both
 "F" and "D" being cleared.
 
-An implementation may impose additional constraints on the collective
+[#spec_vol2_0480]#An implementation may impose additional constraints on the collective
 setting of two or more `misa` fields, in which case they function
-collectively as a single *WARL* field. An attempt to write an unsupported combination causes those bits to be set to some supported combination.
+collectively as a single *WARL* field. An attempt to write an unsupported combination causes those bits to be set to some supported combination.#
 
 Writing `misa` may increase IALIGN, e.g., by disabling the "C"
 extension. If an instruction that would write `misa` increases IALIGN,
@@ -235,10 +235,10 @@ all state uniquely associated with that extension is UNSPECIFIED, unless otherwi
 ==== Machine Vendor ID Register `mvendorid`
 
 The `mvendorid` CSR is a 32-bit read-only register providing the JEDEC
-manufacturer ID of the provider of the core. This register must be
+manufacturer ID of the provider of the core. [#spec_vol2_0490]#This register must be
 readable in any implementation, but a value of 0 can be returned to
 indicate the field is not implemented or that this is a non-commercial
-implementation.
+implementation.#
 
 //.Vendor ID register (`mvendorid`)
 //image::png/mvendorid.png[align="center"]
@@ -272,11 +272,11 @@ ID with JEDEC has a one-time cost of $500.
 ==== Machine Architecture ID Register `marchid`
 
 The `marchid` CSR is an MXLEN-bit read-only register encoding the base
-microarchitecture of the hart. This register must be readable in any
+microarchitecture of the hart. [#spec_vol2_0500]#This register must be readable in any
 implementation, but a value of 0 can be returned to indicate the field
-is not implemented. The combination of `mvendorid` and `marchid` should
+is not implemented.#[#spec_vol2_0510]# The combination of `mvendorid` and `marchid` should
 uniquely identify the type of hart microarchitecture that is
-implemented.
+implemented.#
 
 .Machine Architecture ID register (`marchid`)
 include::images/bytefield/marchid.adoc[]
@@ -302,21 +302,21 @@ but are required to have IDs disjoint from the open-source architecture
 IDs (MSB set) to prevent collisions if a vendor wishes to use both
 closed-source and open-source microarchitectures.
 
-The convention adopted within the following Implementation field can be
+[#spec_vol2_0520]#The convention adopted within the following Implementation field can be
 used to segregate branches of the same architecture design, including by
-organization. The `misa` register also helps distinguish different
+organization.# The `misa` register also helps distinguish different
 variants of a design.
 ====
 
-==== Machine Implementation ID Register `mimpid`
+==== Machine [#spec_vol2_0530]#Implementation# ID Register `mimpid`
 
-The `mimpid` CSR provides a unique encoding of the version of the
-processor implementation. This register must be readable in any
+[#spec_vol2_0540]#The `mimpid` CSR provides a unique encoding of the version of the
+processor implementation.# [#spec_vol2_0550]#This register must be readable in any
 implementation, but a value of 0 can be returned to indicate that the
-field is not implemented. The Implementation value should reflect the
-design of the RISC-V processor itself and not any surrounding system.
+field is not implemented.# [#spec_vol2_0560]#The Implementation value should reflect the
+design of the RISC-V processor itself and not any surrounding system.#
 
-.Machine Implementation ID register (`mimpid`)
+[#spec_vol2_0570]#.Machine Implementation ID register (`mimpid`)#
 include::images/bytefield/mimpid.adoc[]
 
 [NOTE]
@@ -324,16 +324,16 @@ include::images/bytefield/mimpid.adoc[]
 The format of this field is left to the provider of the architecture
 source code, but will often be printed by standard tools as a
 hexadecimal string without any leading or trailing zeros, so the
-Implementation value can be left-justified (i.e., filled in from
+[#spec_vol2_0580]#Implementation value can be left-justified (i.e., filled in from
 most-significant nibble down) with subfields aligned on nibble
-boundaries to ease human readability.
+boundaries to ease human readability.#
 ====
 
 ==== Hart ID Register `mhartid`
 
 The `mhartid` CSR is an MXLEN-bit read-only register containing the
-integer ID of the hardware thread running the code. This register must
-be readable in any implementation. Hart IDs might not necessarily be
+integer ID of the hardware thread running the code. [#spec_vol2_0590]#This register must
+be readable in any implementation.# Hart IDs might not necessarily be
 numbered contiguously in a multiprocessor system, but at least one hart
 must have a hart ID of zero. Hart IDs must be unique within the
 execution environment.
@@ -346,8 +346,8 @@ include::images/bytefield/mhartid.adoc[]
 In certain cases, we must ensure exactly one hart runs some code (e.g.,
 at reset), and so require one hart to have a known hart ID of zero.
 
-For efficiency, system implementers should aim to reduce the magnitude
-of the largest hart ID used in a system.
+[#spec_vol2_0600]#For efficiency, system implementers should aim to reduce the magnitude
+of the largest hart ID used in a system.#
 ====
 
 ==== Machine Status Registers (`mstatus` and `mstatush`)
@@ -430,10 +430,10 @@ re-enabling interrupts, so only one entry per stack is required.
 ====
 
 An MRET or SRET instruction is used to return from a trap in M-mode or
-S-mode respectively. When executing an __x__RET instruction, supposing
+S-mode respectively. [#spec_vol2_0610]#When executing an __x__RET instruction, supposing
 __x__PP holds the value _y_, __x__IE is set to __x__PIE; the privilege mode is
 changed to _y_; __x__PIE is set to 1; and __x__PP is set to the
-least-privileged supported mode (U if U-mode is implemented, else M). If
+least-privileged supported mode (U if U-mode is implemented, else M).# If
 __y__&#8800;M, __x__RET also sets MPRV=0.
 
 [NOTE]
@@ -441,12 +441,12 @@ __y__&#8800;M, __x__RET also sets MPRV=0.
 Setting __x__PP to the least-privileged supported mode on an __x__RET helps identify software bugs in the management of the two-level privilege-mode stack.
 ====
 
-__x__PP fields are *WARL* fields that can hold only privilege mode _x_ and any implemented privilege mode lower than _x_. If privilege mode _x_ is not implemented, then __x__PP must be read-only 0.
+[#spec_vol2_0620]#__x__PP fields are *WARL* fields that can hold only privilege mode _x_ and any implemented privilege mode lower than _x_. If privilege mode _x_ is not implemented, then __x__PP must be read-only 0.#
 
 [NOTE]
 ====
-M-mode software can determine whether a privilege mode is implemented by
-writing that mode to MPP then reading it back.
+[#spec_vol2_0630]#M-mode software can determine whether a privilege mode is implemented by
+writing that mode to MPP then reading it back.#
 
 If the machine provides only U and M modes, then only a single hardware
 storage bit is required to represent either 00 or 11 in MPP.
@@ -466,16 +466,16 @@ UXLEN=32.
 
 When MXLEN=64, if S-mode is not supported, then SXL is read-only
 zero. Otherwise, it is a *WARL* field that encodes the current value of SXLEN.
-In particular, an implementation may make SXL be a read-only field whose
-value always ensures that SXLEN=MXLEN.
+[#spec_vol2_0640]#In particular, an implementation may make SXL be a read-only field whose
+value always ensures that SXLEN=MXLEN.#
 
 When MXLEN=64, if U-mode is not supported, then UXL is read-only
 zero. Otherwise, it is a *WARL* field that encodes the current value of UXLEN.
-In particular, an implementation may make UXL be a read-only field whose
-value always ensures that UXLEN=MXLEN or UXLEN=SXLEN.
+[#spec_vol2_0650]#In particular, an implementation may make UXL be a read-only field whose
+value always ensures that UXLEN=MXLEN or UXLEN=SXLEN.#
 
-If S-mode is implemented, the set of legal values that the UXL field may
-assume excludes those that would cause UXLEN to be greater than SXLEN.
+[#spec_vol2_0660]#If S-mode is implemented, the set of legal values that the UXL field may
+assume excludes those that would cause UXLEN to be greater than SXLEN.#
 
 Whenever XLEN in any mode is set to a value less than the widest
 supported XLEN, all operations must ignore source operand register bits
@@ -486,8 +486,8 @@ sign-extended to fill the widest supported XLEN.
 
 [NOTE]
 ====
-We require that operations always fill the entire underlying hardware
-registers with defined values to avoid implementation-defined behavior.
+[#spec_vol2_0670]#We require that operations always fill the entire underlying hardware
+registers with defined values to avoid implementation-defined behavior.#
 
 To reduce hardware complexity, the architecture imposes no checks that
 lower-privilege modes have XLEN settings less than or equal to the
@@ -568,10 +568,10 @@ little-endian (UBE=0) or big-endian (UBE=1).
 
 For _implicit_ accesses to supervisor-level memory management data
 structures, such as page tables, endianness is always controlled by SBE.
-Since changing SBE alters the implementation’s interpretation of these
+[#spec_vol2_0680]#Since changing SBE alters the implementation’s interpretation of these
 data structures, if any such data structures remain in use across a
 change to SBE, M-mode software must follow such a change to SBE by
-executing an SFENCE.VMA instruction with _rs1_=`x0` and _rs2_=`x0`.
+executing an SFENCE.VMA instruction with _rs1_=`x0` and _rs2_=`x0`.#
 
 [NOTE]
 ====
@@ -584,17 +584,17 @@ SFENCE.VMA is necessary, beyond what would ordinarily be required for a
 world switch.
 ====
 
-If S-mode is supported, an implementation may make SBE be a read-only
-copy of MBE. If U-mode is supported, an implementation may make UBE be a
-read-only copy of either MBE or SBE.
+[#spec_vol2_0690]#If S-mode is supported, an implementation may make SBE be a read-only
+copy of MBE.# [#spec_vol2_0700]#If U-mode is supported, an implementation may make UBE be a
+read-only copy of either MBE or SBE.#
 
 [NOTE]
 ====
-An implementation supports only little-endian memory accesses if fields
-MBE, SBE, and UBE are all read-only 0. An implementation supports only
+[#spec_vol2_0710]#An implementation supports only little-endian memory accesses if fields
+MBE, SBE, and UBE are all read-only 0.# [#spec_vol2_0720]#An implementation supports only
 big-endian memory accesses (aside from instruction fetches) if MBE is
 read-only 1 and SBE and UBE are each read-only 1 when S-mode and U-mode
-are supported.
+are supported.#
 
 '''
 
@@ -659,13 +659,13 @@ provides the hooks necessary to lazily populate shadow page tables.
 The TW (Timeout Wait) bit is a *WARL* field that supports intercepting the WFI
 instruction (see <<wfi>>). When TW=0, the WFI
 instruction may execute in lower privilege modes when not prevented for
-some other reason. When TW=1, then if WFI is executed in any
+some other reason. [#spec_vol2_0730]#When TW=1, then if WFI is executed in any
 less-privileged mode, and it does not complete within an
 implementation-specific, bounded time limit, the WFI instruction causes
-an illegal-instruction exception. An implementation may have WFI always
+an illegal-instruction exception.# [#spec_vol2_0740]#An implementation may have WFI always
 raise an illegal-instruction exception in less-privileged modes when
 TW=1, even if there are pending globally-disabled interrupts when the
-instruction is executed. TW is read-only 0 when there are no modes less
+instruction is executed.# TW is read-only 0 when there are no modes less
 privileged than M.
 
 [NOTE]
@@ -674,9 +674,9 @@ Trapping the WFI instruction can trigger a world switch to another guest
 OS, rather than wastefully idling in the current guest.
 ====
 
-When S-mode is implemented, then executing WFI in U-mode causes an
+[#spec_vol2_0750]#When S-mode is implemented, then executing WFI in U-mode causes an
 illegal-instruction exception, unless it completes within an
-implementation-specific, bounded time limit. A future revision of this
+implementation-specific, bounded time limit.# A future revision of this
 specification might add a feature that allows S-mode to selectively
 permit WFI in U-mode. Such a feature would only be active when TW=0.
 
@@ -688,9 +688,9 @@ read-only 0 when S-mode is not supported.
 
 [NOTE]
 ====
-Trapping SRET is necessary to emulate the hypervisor extension (see
+[#spec_vol2_0760]#Trapping SRET is necessary to emulate the hypervisor extension (see
 <<hypervisor>>) on implementations that do not
-provide it.
+provide it.#
 ====
 
 ===== Extension Context Status in `mstatus` Register
@@ -751,28 +751,28 @@ None dirty, some clean +
 Some dirty
 |===
 
-If the F extension is implemented, the FS field shall not be read-only
-zero.
+[#spec_vol2_0770]#If the F extension is implemented, the FS field shall not be read-only
+zero.#
 
-If neither the F extension nor S-mode is implemented, then FS is
-read-only zero. If S-mode is implemented but the F extension is not, FS
-may optionally be read-only zero.
+[#spec_vol2_0780]#If neither the F extension nor S-mode is implemented, then FS is
+read-only zero.# [#spec_vol2_0790]#If S-mode is implemented but the F extension is not, FS
+may optionally be read-only zero.#
 
 [NOTE]
 ====
-Implementations with S-mode but without the F extension are permitted,
-but not required, to make the FS field be read-only zero. Some such
+[#spec_vol2_0800]#Implementations with S-mode but without the F extension are permitted,
+but not required, to make the FS field be read-only zero.# [#spec_vol2_0810]#Some such
 implementations will choose _not_ to have the FS field be read-only
 zero, so as to enable emulation of the F extension for both S-mode and
-U-mode via invisible traps into M-mode.
+U-mode via invisible traps into M-mode.#
 ====
 
-If the `v` registers are implemented, the VS field shall not be
-read-only zero.
+[#spec_vol2_0820]#If the `v` registers are implemented, the VS field shall not be
+read-only zero.#
 
-If neither the `v` registers nor S-mode is implemented, then VS is
-read-only zero. If S-mode is implemented but the `v` registers are not,
-VS may optionally be read-only zero.
+[#spec_vol2_0830]#If neither the `v` registers nor S-mode is implemented, then VS is
+read-only zero.# [#spec_vol2_0840]#If S-mode is implemented but the `v` registers are not,
+VS may optionally be read-only zero.#
 
 In systems without additional user extensions requiring new state, the
 XS field is read-only zero. Every additional extension with state
@@ -850,14 +850,14 @@ Similarly, the setting of VS has no effect on the contents of the vector
 register state. Other extensions, however, might not preserve state when
 set to Off.
 
-Implementations may choose to track the dirtiness of the floating-point
+[#spec_vol2_0850]#Implementations may choose to track the dirtiness of the floating-point
 register state imprecisely by reporting the state to be dirty even when
-it has not been modified. On some implementations, some instructions
+it has not been modified.# [#spec_vol2_0860]#On some implementations, some instructions
 that do not mutate the floating-point state may cause the state to
-transition from Initial or Clean to Dirty. On other implementations,
+transition from Initial or Clean to Dirty.# [#spec_vol2_0870]#On other implementations,
 dirtiness might not be tracked at all, in which case the valid FS states
 are Off and Dirty, and an attempt to set FS to Initial or Clean causes
-it to be set to Dirty.
+it to be set to Dirty.#
 
 [NOTE]
 ====
@@ -866,17 +866,17 @@ of errant speculation. Some platforms may choose to disallow
 speculatively writing FS to close a potential side channel.
 ====
 
-If an instruction explicitly or implicitly writes a floating-point
+[#spec_vol2_0880]#If an instruction explicitly or implicitly writes a floating-point
 register or the `fcsr` but does not alter its contents, and FS=Initial
 or FS=Clean, it is implementation-defined whether FS transitions to
-Dirty.
+Dirty.#
 
-Implementations may choose to track the dirtiness of the vector register
+[#spec_vol2_0890]#Implementations may choose to track the dirtiness of the vector register
 state in an analogous imprecise fashion, including possibly setting VS
-to Dirty when software attempts to set VS=Initial or VS=Clean. When
+to Dirty when software attempts to set VS=Initial or VS=Clean.# [#spec_vol2_0900]#When
 VS=Initial or VS=Clean, it is implementation-defined whether an
 instruction that writes a vector register or vector CSR but does not
-alter its contents causes VS to transition to Dirty.
+alter its contents causes VS to transition to Dirty.#
 
 <<fsxsstates>> shows all the possible state
 transitions for the FS, VS, or XS status bits. Note that the standard
@@ -1062,18 +1062,18 @@ and a vector mode (MODE).
 .Encoding of mtvec MODE field.
 include::images/bytefield/mtvec.adoc[]
 
-The `mtvec` register must always be implemented, but can contain a
-read-only value. If `mtvec` is writable, the set of values the register
-may hold can vary by implementation. The value in the BASE field must
+[#spec_vol2_0910]#The `mtvec` register must always be implemented, but can contain a
+read-only value.# [#spec_vol2_0920]#If `mtvec` is writable, the set of values the register
+may hold can vary by implementation.# The value in the BASE field must
 always be aligned on a 4-byte boundary, and the MODE setting may impose
 additional alignment constraints on the value in the BASE field.
 
 [NOTE]
 ====
-We allow for considerable flexibility in implementation of the trap
-vector base address. On the one hand, we do not wish to burden low-end
+[#spec_vol2_0930]#We allow for considerable flexibility in implementation of the trap
+vector base address.# [#spec_vol2_0940]#On the one hand, we do not wish to burden low-end
 implementations with a large number of state bits, but on the other
-hand, we wish to allow flexibility for larger systems.
+hand, we wish to allow flexibility for larger systems.#
 ====
 
 [[mtvec-mode]]
@@ -1111,14 +1111,14 @@ practice, since user-mode software interrupts are either disabled or
 delegated to user mode.
 ====
 
-An implementation may have different alignment constraints for different
+[#spec_vol2_0950]#An implementation may have different alignment constraints for different
 modes. In particular, MODE=Vectored may have stricter alignment
-constraints than MODE=Direct.
+constraints than MODE=Direct.#
 
 [NOTE]
 ====
-Allowing coarser alignments in Vectored mode enables vectoring to be
-implemented without a hardware adder circuit.
+[#spec_vol2_0960]#Allowing coarser alignments in Vectored mode enables vectoring to be
+implemented without a hardware adder circuit.#
 
 ***
 
@@ -1130,10 +1130,10 @@ Reset and NMI vector locations are given in a platform specification.
 By default, all traps at any privilege level are handled in machine
 mode, though a machine-mode handler can redirect traps back to the
 appropriate level with the MRET instruction
-(<<otherpriv>>). To increase performance,
+(<<otherpriv>>). [#spec_vol2_0970]#To increase performance,
 implementations can provide individual read/write bits within `medeleg`
 and `mideleg` to indicate that certain exceptions and interrupts should
-be processed directly by a lower privilege level. The machine exception
+be processed directly by a lower privilege level.# The machine exception
 delegation register (`medeleg`) and machine interrupt delegation
 register (`mideleg`) are MXLEN-bit read/write registers.
 
@@ -1161,16 +1161,16 @@ time of the trap; and the SIE field of `mstatus` is cleared. The
 `mcause`, `mepc`, and `mtval` registers and the MPP and MPIE fields of
 `mstatus` are not written.
 
-An implementation can choose to subset the delegatable traps, with the
+[#spec_vol2_0980]#An implementation can choose to subset the delegatable traps, with the
 supported delegatable bits found by writing one to every bit location,
 then reading back the value in `medeleg` or `mideleg` to see which bit
-positions hold a one.
+positions hold a one.#
 
-An implementation shall not have any bits of `medeleg` be read-only one,
+[#spec_vol2_0990]#An implementation shall not have any bits of `medeleg` be read-only one,
 i.e., any synchronous trap that can be delegated must support not being
-delegated. Similarly, an implementation shall not fix as read-only one
+delegated.# [#spec_vol2_1000]#Similarly, an implementation shall not fix as read-only one
 any bits of `mideleg` corresponding to machine-level interrupts (but may
-do so for lower-level interrupts).
+do so for lower-level interrupts).#
 
 [NOTE]
 ====
@@ -1249,9 +1249,9 @@ privilege modes.
 
 Each individual bit in register `mip` may be writable or may be
 read-only. When bit _i_ in `mip` is writable, a pending interrupt _i_
-can be cleared by writing 0 to this bit. If interrupt _i_ can become
+can be cleared by writing 0 to this bit. [#spec_vol2_1010]#If interrupt _i_ can become
 pending but bit _i_ in `mip` is read-only, the implementation must
-provide some other mechanism for clearing the pending interrupt.
+provide some other mechanism for clearing the pending interrupt.#
 
 A bit in `mie` must be writable if the corresponding interrupt can ever
 become pending. Bits of `mie` that are not writable must be read-only
@@ -1270,11 +1270,11 @@ include::images/bytefield/miereg-standard.adoc[]
 
 [NOTE]
 ====
-The machine-level interrupt registers handle a few root interrupt
+[#spec_vol2_1020]#The machine-level interrupt registers handle a few root interrupt
 sources which are assigned a fixed service priority for simplicity,
 while separate external interrupt controllers can implement a more
 complex prioritization scheme over a much larger set of interrupts that
-are then muxed into the machine-level interrupt sources.
+are then muxed into the machine-level interrupt sources.#
 
 '''
 
@@ -1302,12 +1302,12 @@ if a platform standard supports the delivery of machine-level
 interprocessor interrupts through external interrupts (MEI) instead,
 then `mip`.MSIP and `mie`.MSIE may both be read-only zeros.
 
-If supervisor mode is not implemented, bits SEIP, STIP, and SSIP of
-`mip` and SEIE, STIE, and SSIE of `mie` are read-only zeros.
+[#spec_vol2_1030]#If supervisor mode is not implemented, bits SEIP, STIP, and SSIP of
+`mip` and SEIE, STIE, and SSIE of `mie` are read-only zeros.#
 
-If supervisor mode is implemented, bits `mip`.SEIP and `mie`.SEIE are
+[#spec_vol2_1040]#If supervisor mode is implemented, bits `mip`.SEIP and `mie`.SEIE are
 the interrupt-pending and interrupt-enable bits for supervisor-level
-external interrupts. SEIP is writable in `mip`, and may be written by
+external interrupts.# SEIP is writable in `mip`, and may be written by
 M-mode software to indicate to S-mode that an external interrupt is
 pending. Additionally, the platform-level interrupt controller may
 generate supervisor-level external interrupts. Supervisor-level external
@@ -1336,14 +1336,14 @@ interrupts. The behavior of the CSR instructions is slightly modified
 from regular CSR accesses as a result.
 ====
 
-If supervisor mode is implemented, bits `mip`.STIP and `mie`.STIE are
+[#spec_vol2_1050]#If supervisor mode is implemented, bits `mip`.STIP and `mie`.STIE are
 the interrupt-pending and interrupt-enable bits for supervisor-level
-timer interrupts. STIP is writable in `mip`, and may be written by
+timer interrupts.# STIP is writable in `mip`, and may be written by
 M-mode software to deliver timer interrupts to S-mode.
 
-If supervisor mode is implemented, bits `mip`.SSIP and `mie`.SSIE are
+[#spec_vol2_1060]#If supervisor mode is implemented, bits `mip`.SSIP and `mie`.SSIE are
 the interrupt-pending and interrupt-enable bits for supervisor-level
-software interrupts. SSIP is writable in `mip` and may also be set to 1
+software interrupts.# SSIP is writable in `mip` and may also be set to 1
 by a platform-specific interrupt controller.
 
 Multiple simultaneous interrupts destined for M-mode are handled in the
@@ -1403,9 +1403,9 @@ counters, `mhpmcounter3`-`mhpmcounter31`. The event selector CSRs,
 `mhpmevent3`-`mhpmevent31`, are MXLEN-bit *WARL* registers that control which
 event causes the corresponding counter to increment. The meaning of
 these events is defined by the platform, but event 0 is defined to mean
-"no event." All counters should be implemented, but a legal
+"no event." [#spec_vol2_1070]#All counters should be implemented, but a legal
 implementation is to make both the counter and its corresponding event
-selector be read-only 0.
+selector be read-only 0.#
 
 .Hardware performance monitor counters.
 include::images/bytefield/hpmevents.adoc[]
@@ -1446,16 +1446,16 @@ counters, which continue to increment even when not accessible.
 When the CY, TM, IR, or HPM__n__ bit in the `mcounteren` register is
 clear, attempts to read the `cycle`, `time`, `instret`, or
 `hpmcountern` register while executing in S-mode or U-mode will cause an
-illegal-instruction exception. When one of these bits is set, access to
+illegal-instruction exception. [#spec_vol2_1080]#When one of these bits is set, access to
 the corresponding register is permitted in the next implemented
-privilege mode (S-mode if implemented, otherwise U-mode).
+privilege mode (S-mode if implemented, otherwise U-mode).#
 
 [NOTE]
 ====
 The counter-enable bits support two common use cases with minimal
-hardware. For systems that do not need high-performance timers and
+hardware. [#spec_vol2_1090]#For systems that do not need high-performance timers and
 counters, machine-mode software can trap accesses and implement all
-features in software. For systems that need high-performance timers and
+features in software.# For systems that need high-performance timers and
 counters but are not concerned with obfuscating the underlying hardware
 counters, the counters can be directly exposed to lower privilege modes.
 ====
@@ -1471,15 +1471,15 @@ shadows only the lower 32 bits of `mtime`.
 
 [NOTE]
 ====
-Implementations can convert reads of the `time` and `timeh` CSRs into
+[#spec_vol2_1100]#Implementations can convert reads of the `time` and `timeh` CSRs into
 loads to the memory-mapped `mtime` register, or emulate this
-functionality on behalf of less-privileged modes in M-mode software.
+functionality on behalf of less-privileged modes in M-mode software.#
 ====
 
-In systems with U-mode, the `mcounteren` must be implemented, but all
+[#spec_vol2_1110]#In systems with U-mode, the `mcounteren` must be implemented, but all
 fields are *WARL* and may be read-only zero, indicating reads to the
 corresponding counter will cause an illegal-instruction exception when
-executing in a less-privileged mode. In systems without U-mode, the
+executing in a less-privileged mode.# In systems without U-mode, the
 `mcounteren` register should not exist.
 
 ==== Machine Counter-Inhibit CSR (`mcountinhibit`)
@@ -1502,8 +1502,8 @@ The `mcycle` CSR may be shared between harts on the same core, in which
 case the `mcountinhibit.CY` field is also shared between those harts,
 and so writes to `mcountinhibit.CY` will be visible to those harts.
 
-If the `mcountinhibit` register is not implemented, the implementation
-behaves as though the register were set to zero.
+[#spec_vol2_1120]#If the `mcountinhibit` register is not implemented, the implementation
+behaves as though the register were set to zero.#
 
 [NOTE]
 ====
@@ -1528,10 +1528,10 @@ include::images/bytefield/mscratch.adoc[]
 
 [NOTE]
 ====
-The MIPS ISA allocated two user registers (`k0`/`k1`) for use by the
+[#spec_vol2_1130]#The MIPS ISA allocated two user registers (`k0`/`k1`) for use by the
 operating system. Although the MIPS scheme provides a fast and simple
 implementation, it also reduces available user registers, and does not
-scale to further privilege levels, or nested traps. It can also require
+scale to further privilege levels, or nested traps.# It can also require
 both registers are cleared before returning to user level to avoid a
 potential security hole and to provide deterministic debugging behavior.
 
@@ -1547,21 +1547,21 @@ while the user context is running.
 
 `mepc` is an MXLEN-bit read/write register formatted as shown in
 <<mepcreg>>. The low bit of `mepc` (`mepc[0]`) is
-always zero. On implementations that support only IALIGN=32, the two low
-bits (`mepc[1:0]`) are always zero.
+always zero. [#spec_vol2_1140]#On implementations that support only IALIGN=32, the two low
+bits (`mepc[1:0]`) are always zero.#
 
-If an implementation allows IALIGN to be either 16 or 32 (by changing
+[#spec_vol2_1150]#If an implementation allows IALIGN to be either 16 or 32 (by changing
 CSR `misa`, for example), then, whenever IALIGN=32, bit `mepc[1]` is
-masked on reads so that it appears to be 0. This masking occurs also for
+masked on reads so that it appears to be 0.# This masking occurs also for
 the implicit read by the MRET instruction. Though masked, `mepc[1]`
 remains writable when IALIGN=32.
 
 `mepc` is a *WARL* register that must be able to hold all valid virtual
 addresses. It need not be capable of holding all possible invalid
-addresses. Prior to writing `mepc`, implementations may convert an
+addresses. [#spec_vol2_1160]#Prior to writing `mepc`, implementations may convert an
 invalid address into some other invalid address that `mepc` is capable
 of holding.
-
+#
 [NOTE]
 ====
 When address translation is not in effect, virtual addresses and
@@ -1572,8 +1572,8 @@ used as a valid `pc` or effective address.
 
 When a trap is taken into M-mode, `mepc` is written with the virtual
 address of the instruction that was interrupted or that encountered the
-exception. Otherwise, `mepc` is never written by the implementation,
-though it may be explicitly written by software.
+exception. [#spec_vol2_1170]#Otherwise, `mepc` is never written by the implementation,
+though it may be explicitly written by software.#
 
 [[mepcreg]]
 .Machine exception program counter register.
@@ -1585,8 +1585,8 @@ include::images/bytefield/mepcreg.adoc[]
 The `mcause` register is an MXLEN-bit read-write register formatted as
 shown in <<mcausereg>>. When a trap is taken into
 M-mode, `mcause` is written with a code indicating the event that
-caused the trap. Otherwise, `mcause` is never written by the
-implementation, though it may be explicitly written by software.
+caused the trap. [#spec_vol2_1180]#Otherwise, `mcause` is never written by the
+implementation, though it may be explicitly written by software.#
 
 The Interrupt bit in the `mcause` register is set if the trap was caused
 by an interrupt. The Exception Code field contains a code identifying
@@ -1612,17 +1612,17 @@ table.
 ***
 
 We do not distinguish privileged instruction exceptions from
-illegal-instruction exceptions. This simplifies the architecture and also hides
+illegal-instruction exceptions. [#spec_vol2_1190]#This simplifies the architecture and also hides
 details of which higher-privilege instructions are supported by an
-implementation. The privilege level servicing the trap can implement a
+implementation.# [#spec_vol2_1200]#The privilege level servicing the trap can implement a
 policy on whether these need to be distinguished, and if so, whether a
-given opcode should be treated as illegal or privileged.
+given opcode should be treated as illegal or privileged.#
 ====
 If an instruction may raise multiple synchronous exceptions, the
 decreasing priority order of
 <<exception-priority>> indicates which
-exception is taken and reported in `mcause`. The priority of any custom
-synchronous exceptions is implementation-defined.
+exception is taken and reported in `mcause`. [#spec_vol2_1210]#The priority of any custom
+synchronous exceptions is implementation-defined.#
 
 <<<
 
@@ -1782,15 +1782,15 @@ exceptions.
 
 [NOTE]
 ====
-The relative priority of load/store/AMO address-misaligned and
+[#spec_vol2_1220]#The relative priority of load/store/AMO address-misaligned and
 page-fault exceptions is implementation-defined to flexibly cater to two
-design points. Implementations that never support misaligned accesses
+design points.# [#spec_vol2_1230]#Implementations that never support misaligned accesses
 can unconditionally raise the misaligned-address exception without
-performing address translation or protection checks. Implementations
+performing address translation or protection checks.# [#spec_vol2_1240]#Implementations
 that support misaligned accesses only to some physical addresses must
 translate and check the address before determining whether the
 misaligned access may proceed, in which case raising the page-fault
-exception or access is more appropriate.
+exception or access is more appropriate.#
 
 ***
 
@@ -1812,9 +1812,9 @@ other instruction address exceptions.
 The `mtval` register is an MXLEN-bit read-write register formatted as
 shown in <<mtvalreg>>. When a trap is taken into
 M-mode, `mtval` is either set to zero or written with exception-specific
-information to assist software in handling the trap. Otherwise, `mtval`
+information to assist software in handling the trap. [#spec_vol2_1250]#Otherwise, `mtval`
 is never written by the implementation, though it may be explicitly
-written by software. The hardware platform will specify which exceptions
+written by software.# The hardware platform will specify which exceptions
 must set `mtval` informatively and which may unconditionally set it to
 zero. If the hardware platform specifies that no exceptions set `mtval`
 to a nonzero value, then `mtval` is read-only zero.
@@ -1826,8 +1826,8 @@ faulting virtual address.
 
 When page-based virtual memory is enabled, `mtval` is written with the
 faulting virtual address, even for physical-memory access-fault
-exceptions. This design reduces datapath cost for most implementations,
-particularly those with hardware page-table walkers.
+exceptions. [#spec_vol2_1260]#This design reduces datapath cost for most implementations,
+particularly those with hardware page-table walkers.#
 
 [[mtvalreg]]
 .Machine Trap Value register.
@@ -1871,10 +1871,10 @@ is manipulating the instruction memory, as might occur in a dynamic
 translation system.
 
 A requirement is that the entire instruction (or at least the first
-MXLEN bits) are fetched into `mtval` before taking the trap. This should
+MXLEN bits) are fetched into `mtval` before taking the trap. [#spec_vol2_1270]#This should
 not constrain implementations, which would typically fetch the entire
 instruction before attempting to decode the instruction, and avoids
-complicating software handlers.
+complicating software handlers.#
 
 A value of zero in `mtval` signifies either that the feature is not
 supported, or an illegal zero instruction was fetched. A load from the
@@ -1888,12 +1888,12 @@ redefine `mtval`’s setting for other traps.
 
 If `mtval` is not read-only zero, it is a *WARL* register that must be able to
 hold all valid virtual addresses and the value zero. It need not be
-capable of holding all possible invalid addresses. Prior to writing
+capable of holding all possible invalid addresses. [#spec_vol2_1280]#Prior to writing
 `mtval`, implementations may convert an invalid address into some other
-invalid address that `mtval` is capable of holding. If the feature to
+invalid address that `mtval` is capable of holding. [#spec_vol2_1290]#If the feature t#o
 return the faulting instruction bits is implemented, `mtval` must also
 be able to hold all values less than 2^__N__^, where
-_N_ is the smaller of MXLEN and ILEN.
+_N_ is the smaller of MXLEN and ILEN.#
 
 ==== Machine Configuration Pointer Register (`mconfigptr`)
 
@@ -1913,9 +1913,9 @@ supported MXLEN: i.e., if the greatest supported MXLEN is
 latexmath:[$8\times n$], then `mconfigptr`[latexmath:[$\log_2n$]-1:0]
 must be zero.
 
-`mconfigptr` must be implemented, but it may be zero to indicate the
+[#spec_vol2_1300]#`mconfigptr` must be implemented, but it may be zero to indicate the
 configuration data structure does not exist or that an alternative
-mechanism must be used to locate it.
+mechanism must be used to locate it.#
 
 [NOTE]
 ====
@@ -1924,9 +1924,9 @@ standardized.
 
 ***
 
-While `mconfigptr` will simply be hardwired in some implementations,
+[#spec_vol2_1310]#While `mconfigptr` will simply be hardwired in some implementations,
 other implementations may provide a means to configure the value
-returned on CSR reads. For example, `mconfigptr` might present the value
+returned on CSR reads.# For example, `mconfigptr` might present the value
 of a memory-mapped register that is programmed by the platform or by
 M-mode software towards the beginning of the boot process.
 ====
@@ -1953,8 +1953,8 @@ instruction that accesses a region ordered as device I/O has its _aq_
 and/or _rl_ bit set, then that instruction is ordered as though it
 accesses both device I/O and memory.
 
-If S-mode is not supported, or if `satp`.MODE is read-only zero (always
-Bare), the implementation may make FIOM read-only zero.
+[#spec_vol2_1320]#If S-mode is not supported, or if `satp`.MODE is read-only zero (always
+Bare), the implementation may make FIOM read-only zero.#
 
 [[menvcfg-FIOM]]
 .Modified interpretation of FENCE predecessor and successor sets for modes less privileged than M when FIOM=1.
@@ -1981,11 +1981,11 @@ equivalent FIOM bit in the hypervisor CSR `henvcfg`.
 The PBMTE bit controls whether the Svpbmt extension is available for use
 in S-mode and G-stage address translation (i.e., for page tables pointed
 to by `satp` or `hgatp`). When PBMTE=1, Svpbmt is available for S-mode
-and G-stage address translation. When PBMTE=0, the implementation
-behaves as though Svpbmt were not implemented. If Svpbmt is not
-implemented, PBMTE is read-only zero. Furthermore, for implementations
+and G-stage address translation. [#spec_vol2_1330]#When PBMTE=0, the implementation
+behaves as though Svpbmt were not implemented.# [#spec_vol2_1340]#If Svpbmt is not
+implemented, PBMTE is read-only zero.# [#spec_vol2_1350]#Furthermore, for implementations
 with the hypervisor extension, `henvcfg`.PBMTE is read-only zero if
-`menvcfg`.PBMTE is zero.
+`menvcfg`.PBMTE is zero.#
 
 The definition of the STCE field will be furnished by the forthcoming
 Sstc extension. Its allocation within `menvcfg` may change prior to the
@@ -2069,9 +2069,9 @@ voltage-level-shifter and clock-domain crossing. It is thus more natural
 to expose `mtime` as a memory-mapped register than as a CSR.
 
 Lower privilege levels do not have their own `timecmp` registers.
-Instead, machine-mode software can implement any number of virtual
+[#spec_vol2_1360]#Instead, machine-mode software can implement any number of virtual
 timers on a hart by multiplexing the next timer interrupt into the
-`mtimecmp` register.
+`mtimecmp` register.#
 
 Simple fixed-frequency systems can use a single clock for both cycle
 counting and wall-clock time.
@@ -2182,9 +2182,9 @@ impossible to single-step through LR/SC sequences using a debugger.
 [[wfi]]
 ==== Wait for Interrupt
 
-The Wait for Interrupt instruction (WFI) informs the
+[#spec_vol2_1370]#The Wait for Interrupt instruction (WFI) informs the
 implementation that the current hart can be stalled until an interrupt
-might need servicing. Execution of the WFI instruction can also be used
+might need servicing.# Execution of the WFI instruction can also be used
 to inform the hardware platform that suitable interrupts should
 preferentially be routed to this hart. WFI is available in all
 privileged modes, and optionally available to U-mode. This instruction
@@ -2205,26 +2205,26 @@ return from the trap handler will execute code after the WFI
 instruction.
 ====
 
-Implementations are permitted to resume execution for any reason, even if an
-enabled interrupt has not become pending.  Hence, a legal implementation is to
-simply implement the WFI instruction as a NOP.
+[#spec_vol2_1380]#Implementations are permitted to resume execution for any reason, even if an
+enabled interrupt has not become pending.#  [#spec_vol2_1390]#Hence, a legal implementation is to
+simply implement the WFI instruction as a NOP.#
 
 [NOTE]
 ====
-If the implementation does not stall the hart on execution of the
+[#spec_vol2_1400]#If the implementation does not stall the hart on execution of the
 instruction, then the interrupt will be taken on some instruction in the
 idle loop containing the WFI, and on a simple return from the handler,
-the idle loop will resume execution.
+the idle loop will resume execution.#
 ====
 
 The WFI instruction can also be executed when interrupts are disabled.
-The operation of WFI must be unaffected by the global interrupt bits in
+[#spec_vol2_1420]#[#spec_vol2_1410]#The operation of WFI must be unaffected by the global interrupt bits in
 `mstatus` (MIE and SIE) and the delegation register `mideleg` (i.e.,
 the hart must resume if a locally enabled interrupt becomes pending,
 even if it has been delegated to a less-privileged mode), but should
 honor the individual interrupt enables (e.g, MTIE) (i.e.,
 implementations should avoid resuming the hart if the interrupt is
-pending but not individually enabled). WFI is also required to resume
+pending but not individually enabled).## WFI is also required to resume
 execution for locally enabled interrupts pending at any privilege level,
 regardless of the global interrupt enable at each privilege level.
 
@@ -2249,10 +2249,10 @@ respectively.
 
 The operation of WFI is unaffected by the delegation register settings.
 
-WFI is defined so that an implementation can trap into a higher
+[#spec_vol2_1430]#WFI is defined so that an implementation can trap into a higher
 privilege mode, either immediately on encountering the WFI or after some
 interval to initiate a machine-mode transition to a lower power state,
-for example.
+for example.#
 
 ***
 
@@ -2276,22 +2276,22 @@ Upon reset, a hart’s privilege mode is set to M. The `mstatus` fields
 MIE and MPRV are reset to 0. If little-endian memory accesses are
 supported, the `mstatus`/`mstatush` field MBE is reset to 0. The `misa`
 register is reset to enable the maximal set of supported extensions and
-widest MXLEN, as described in <<misa>>.  For
+widest MXLEN, as described in <<misa>>.  [#spec_vol2_1440]#For
 implementations with the "A" standard extension, there is no valid
-load reservation. The `pc` is set to an implementation-defined reset
-vector. The `mcause` register is set to a value indicating the cause of
+load reservation.# [#spec_vol2_1450]#The `pc` is set to an implementation-defined reset
+vector.# The `mcause` register is set to a value indicating the cause of
 the reset. Writable PMP registers’ A and L fields are set to 0, unless
 the platform mandates a different reset value for some PMP registers’ A
-and L fields. If the hypervisor extension is implemented, the
-`hgatp`.MODE and `vsatp`.MODE fields are reset to 0. If the Smrnmi
-extension is implemented, the `mnstatus`.NMIE field is reset to 0. No
+and L fields. [#spec_vol2_1460]#If the hypervisor extension is implemented, the
+`hgatp`.MODE and `vsatp`.MODE fields are reset to 0.# [#spec_vol2_1470]#If the Smrnmi
+extension is implemented, the `mnstatus`.NMIE field is reset to 0.# No
  *WARL* field contains an illegal value. All other hart state is UNSPECIFIED.
 
-The `mcause` values after reset have implementation-specific
+[#spec_vol2_1480]#The `mcause` values after reset have implementation-specific
 interpretation, but the value 0 should be returned on implementations
-that do not distinguish different reset conditions. Implementations that
+that do not distinguish different reset conditions.# [#spec_vol2_1490]#Implementations that
 distinguish different reset conditions should only use 0 to indicate the
-most complete reset.
+most complete reset.#
 
 [NOTE]
 ====
@@ -2308,19 +2308,19 @@ the `pc` is typically set to a different value than on other traps.
 [[nmi]]
 === Non-Maskable Interrupts
 
-Non-maskable interrupts (NMIs) are only used for hardware error
+[#spec_vol2_1500]#Non-maskable interrupts (NMIs) are only used for hardware error
 conditions, and cause an immediate jump to an implementation-defined NMI
 vector running in M-mode regardless of the state of a hart’s interrupt
-enable bits. The `mepc` register is written with the virtual address of
+enable bits.# The `mepc` register is written with the virtual address of
 the instruction that was interrupted, and `mcause` is set to a value
 indicating the source of the NMI. The NMI can thus overwrite state in an
 active machine-mode interrupt handler.
 
-The values written to `mcause` on an NMI are implementation-defined. The
+[#spec_vol2_1510]#The values written to `mcause` on an NMI are implementation-defined.# The
 high Interrupt bit of `mcause` should be set to indicate that this was
-an interrupt. An Exception Code of 0 is reserved to mean "unknown
+an interrupt. [#spec_vol2_1520]#An Exception Code of 0 is reserved to mean "unknown
 cause" and implementations that do not distinguish sources of NMIs via
-the `mcause` register should return 0 in the Exception Code.
+the `mcause` register should return 0 in the Exception Code.#
 
 Unlike resets, NMIs do not reset processor state, enabling diagnosis,
 reporting, and possible containment of the hardware error.
@@ -2339,8 +2339,8 @@ in their supported access widths, support for atomic operations, and
 whether read and write accesses have associated side effects. In RISC-V
 systems, these properties and capabilities of each region of the
 machine's physical address space are termed _physical memory attributes_
-(PMAs). This section describes RISC-V PMA terminology and how RISC-V
-systems implement and check PMAs.
+(PMAs). [#spec_vol2_1530]#This section describes RISC-V PMA terminology and how RISC-V
+systems implement and check PMAs.#
 
 PMAs are inherent properties of the underlying hardware and rarely
 change during system operation. Unlike physical memory protection values
@@ -2561,9 +2561,9 @@ misaligned loads and stores uses the same mutex, all accesses to a given
 address that use the same word size will be mutually atomic.
 ====
 
-Implementations may raise access-fault exceptions instead of
+[#spec_vol2_1540]#Implementations may raise access-fault exceptions instead of
 address-misaligned exceptions for some misaligned accesses, indicating
-the instruction should not be emulated by a trap handler. If, for a
+the instruction should not be emulated by a trap handler.# If, for a
 given address and access width, all misaligned LRs/SCs and AMOs generate
 access-fault exceptions, then regular misaligned loads and stores using
 the same address and access width are not required to execute
@@ -2579,8 +2579,8 @@ Accesses by one hart to main memory regions are observable not only by
 other harts but also by other devices with the capability to initiate
 requests in the main memory system (e.g., DMA engines). Coherent main
 memory regions always have either the RVWMO or RVTSO memory model.
-Incoherent main memory regions have an implementation-defined memory
-model.
+[#spec_vol2_1550]#Incoherent main memory regions have an implementation-defined memory
+model.#
 
 Accesses by one hart to an I/O region are observable not only by other
 harts and bus mastering devices but also by the targeted I/O devices,
@@ -2615,10 +2615,10 @@ each memory region.
 
 [NOTE]
 ====
-Strong ordering can be used to improve compatibility with legacy device
+[#spec_vol2_1560]#Strong ordering can be used to improve compatibility with legacy device
 driver code, or to enable increased performance compared to insertion of
 explicit ordering instructions when the implementation is known to not
-reorder accesses.
+reorder accesses.#
 
 Local strong ordering (channel 0) is the default form of strong ordering
 as it is often straightforward to provide if there is only a single
@@ -2672,12 +2672,12 @@ should not access the region.
 
 If an agent can cache a read-write region that is accessible by other
 agents, whether caching or non-caching, a cache-coherence scheme is
-required to avoid use of stale values. In regions lacking hardware cache
+required to avoid use of stale values. [#spec_vol2_1570]#In regions lacking hardware cache
 coherence (hardware-incoherent regions), cache coherence can be
 implemented entirely in software, but software coherence schemes are
 notoriously difficult to implement correctly and often have severe
 performance impacts due to the need for conservative software-directed
-cache-flushing. Hardware cache-coherence schemes require more complex
+cache-flushing.# Hardware cache-coherence schemes require more complex
 hardware and can impact performance due to the cache-coherence probes,
 but are otherwise invisible to software.
 
@@ -2698,9 +2698,9 @@ be satisfied by the memory itself, not by any caches.
 
 [NOTE]
 ====
-For implementations with a cacheability-control mechanism, the situation
+[#spec_vol2_1580]#For implementations with a cacheability-control mechanism, the situation
 may arise that a program uncacheably accesses a memory location that is
-currently cache-resident. In this situation, the cached copy must be
+currently cache-resident.# In this situation, the cached copy must be
 ignored. This constraint is necessary to prevent more-privileged modes’
 speculative cache refills from affecting the behavior of less-privileged
 modes’ uncacheable accesses.
@@ -2734,19 +2734,19 @@ could cause unexpected side effects.
 ====
 
 For non-idempotent regions, implicit reads and writes must not be
-performed early or speculatively, with the following exceptions. When a
+performed early or speculatively, with the following exceptions. [#spec_vol2_1590]#When a
 non-speculative implicit read is performed, an implementation is
 permitted to additionally read any of the bytes within a naturally
 aligned power-of-2 region containing the address of the non-speculative
-implicit read. Furthermore, when a non-speculative instruction fetch is
+implicit read.# [#spec_vol2_1600]#Furthermore, when a non-speculative instruction fetch is
 performed, an implementation is permitted to additionally read any of
 the bytes within the _next_ naturally aligned power-of-2 region of the
 same size (with the address of the region taken modulo
-2^XLEN^. The results of these additional reads
+2^XLEN^.# The results of these additional reads
 may be used to satisfy subsequent early or speculative implicit reads.
-The size of these naturally aligned power-of-2 regions is
+[#spec_vol2_1610]#The size of these naturally aligned power-of-2 regions is
 implementation-defined, but, for systems with page-based virtual memory,
-must not exceed the smallest supported page size.
+must not exceed the smallest supported page size.#
 
 [[pmp]]
 === Physical Memory Protection
@@ -2791,8 +2791,8 @@ PMP violations are always trapped precisely at the processor.
 PMP entries are described by an 8-bit configuration register and one
 MXLEN-bit address register. Some PMP settings additionally use the
 address register associated with the preceding PMP entry. Up to 64 PMP
-entries are supported. Implementations may implement zero, 16, or 64 PMP
-entries; the lowest-numbered PMP entries must be implemented first. All
+entries are supported. [#spec_vol2_1620]#Implementations may implement zero, 16, or 64 PMP
+entries; the lowest-numbered PMP entries must be implemented first.# All
 PMP CSR fields are *WARL* and may be read-only zero. PMP CSRs are only
 accessible to M-mode.
 
@@ -2827,9 +2827,9 @@ The PMP address registers are CSRs named `pmpaddr0`-`pmpaddr63`. Each
 PMP address register encodes bits 33-2 of a 34-bit physical address for
 RV32, as shown in <<pmpaddr-rv32>>. For RV64,
 each PMP address register encodes bits 55-2 of a 56-bit physical
-address, as shown in <<pmpaddr-rv64>>. Not all
+address, as shown in <<pmpaddr-rv64>>. [#spec_vol2_1630]#Not all
 physical address bits may be implemented, and so the `pmpaddr` registers
-are *WARL*.
+are *WARL*.#
 
 [NOTE]
 ====
@@ -3023,14 +3023,14 @@ Otherwise, if the L bit is set or the privilege mode of the access is S
 or U, then the access succeeds only if the R, W, or X bit corresponding
 to the access type is set.
 
-If no PMP entry matches an M-mode access, the access succeeds. If no PMP
+If no PMP entry matches an M-mode access, the access succeeds. [#spec_vol2_1640]#If no PMP
 entry matches an S-mode or U-mode access, but at least one PMP entry is
-implemented, the access fails.
+implemented, the access fails.#
 
 [NOTE]
 ====
-If at least one PMP entry is implemented, but all PMP entries’ A fields
-are set to OFF, then all S-mode and U-mode memory accesses will fail.
+[#spec_vol2_1650]#If at least one PMP entry is implemented, but all PMP entries’ A fields
+are set to OFF, then all S-mode and U-mode memory accesses will fail.#
 ====
 
 Failed accesses generate an instruction, load, or store access-fault
@@ -3041,9 +3041,9 @@ though other accesses generated by that instruction may succeed with
 visible side effects. Notably, instructions that reference virtual
 memory are decomposed into multiple accesses.
 
-On some implementations, misaligned loads, stores, and instruction
+[#spec_vol2_1660]#On some implementations, misaligned loads, stores, and instruction
 fetches may also be decomposed into multiple accesses, some of which may
-succeed before an access-fault exception occurs. In particular, a
+succeed before an access-fault exception occurs.# In particular, a
 portion of a misaligned store that passes the PMP check may become
 visible, even if another portion fails the PMP check. The same behavior
 may manifest for stores wider than XLEN bits (e.g., the FSD instruction
@@ -3060,12 +3060,12 @@ physical-memory accesses, including implicit references to the page
 tables. The PMP checks apply to all of these accesses. The effective
 privilege mode for implicit page-table accesses is S.
 
-Implementations with virtual memory are permitted to perform address
+[#spec_vol2_1670]#Implementations with virtual memory are permitted to perform address
 translations speculatively and earlier than required by an explicit
 memory access, and are permitted to cache them in address translation
 cache structures—including possibly caching the identity mappings from
 effective address to physical address used in Bare translation modes and
-M-mode. The PMP settings for the resulting physical address may be
+M-mode.# The PMP settings for the resulting physical address may be
 checked (and possibly cached) at any point between the address
 translation and the explicit memory access. Hence, when the PMP settings
 are modified, M-mode software must synchronize the PMP settings with the
@@ -3073,5 +3073,5 @@ virtual memory system and any PMP or address-translation caches. This is
 accomplished by executing an SFENCE.VMA instruction with _rs1_=`x0` and
 _rs2_=`x0`, after the PMP CSRs are written.
 
-If page-based virtual memory is not implemented, memory accesses check
-the PMP settings synchronously, so no SFENCE.VMA is needed.
+[#spec_vol2_1680]#If page-based virtual memory is not implemented, memory accesses check
+the PMP settings synchronously, so no SFENCE.VMA is needed.#
