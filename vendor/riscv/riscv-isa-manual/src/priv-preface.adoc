@@ -34,8 +34,8 @@ _Draft_ +
 The following compatible changes have been made to the Machine ISA since
 version 1.12:
 
-* Defined the `misa`.V field to reflect that the V extension has been
-implemented.
+[#spec_vol2_0010]#* Defined the `misa`.V field to reflect that the V extension has been
+implemented.#
 * Clarified semantics of explicit accesses to CSRs wider than XLEN bits.
 * Clarified that MXLEN&#8805;SXLEN, and added the constraint that
 SXLEN&#8805;UXLEN.
@@ -77,15 +77,15 @@ portability problems in practice:
 
 * Changed MRET and SRET to clear `mstatus`.MPRV when leaving M-mode.
 * Reserved additional `satp` patterns for future use.
-* Stated that the `scause` Exception Code field must implement bits 4–0
-at minimum.
+[#spec_vol2_0020]#* Stated that the `scause` Exception Code field must implement bits 4–0
+at minimum.#
 * Relaxed I/O regions have been specified to follow RVWMO. The previous
 specification implied that PPO rules other than fences and
 acquire/release annotations did not apply.
 * Constrained the LR/SC reservation set size and shape when using
 page-based virtual memory.
-* PMP changes require an SFENCE.VMA on any hart that implements
-page-based virtual memory, even if VM is not currently enabled.
+[#spec_vol2_0030]#* PMP changes require an SFENCE.VMA on any hart that implements
+page-based virtual memory, even if VM is not currently enabled.#
 * Allowed for speculative updates of page table entry A bits.
 * Clarify that if the address-translation algorithm non-speculatively
 reaches a PTE in which a bit reserved for future standard use is set, a
@@ -107,13 +107,13 @@ of the execution environment.
 * Designated part of SYSTEM major opcode for custom use.
 * Permitted the unconditional delegation of less-privileged interrupts.
 * Added optional big-endian and bi-endian support.
-* Made priority of load/store/AMO address-misaligned exceptions
+[#spec_vol2_0040]#* Made priority of load/store/AMO address-misaligned exceptions
 implementation-defined relative to load/store/AMO page-fault and
-access-fault exceptions.
+access-fault exceptions.#
 * PMP reset values are now platform-defined.
 * An additional 48 optional PMP registers have been defined.
-* Slightly relaxed the atomicity requirement for A and D bit updates
-performed by the implementation.
+[#spec_vol2_0050]#* Slightly relaxed the atomicity requirement for A and D bit updates
+performed by the implementation.#
 * Clarify the architectural behavior of address-translation caches
 * Added Sv57 and Sv57x4 address translation modes.
 * Software breakpoint exceptions are permitted to write either 0 or the
@@ -234,9 +234,9 @@ SFENCE.VMA instruction.
 * The `mstatus` bit MXR has been exposed to S-mode via `sstatus`.
 * The polarity of the PUM bit in `sstatus` has been inverted to shorten
 code sequences involving MXR. The bit has been renamed to SUM.
-* Hardware management of page-table entry Accessed and Dirty bits has
+[#spec_vol2_0060]#* Hardware management of page-table entry Accessed and Dirty bits has
 been made optional; simpler implementations may trap to software to set
-them.
+them.#
 * The counter-enable scheme has changed, so that S-mode can control
 availability of counters to U-mode.
 * H-mode has been removed, as we are focusing on recursive
