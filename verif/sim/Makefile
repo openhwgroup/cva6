@@ -223,7 +223,7 @@ ALL_SIMV_UVM_FLAGS      = +vcs+lic+wait -licwait 20  \
 ALL_XRUN_UVM_FLAGS      = -elaborate -messages -sv +incdir+$(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src/ \
 	  $(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_LOW -uvm -uvmhome CDNS-1.2 \
 	  -64 +incdir+$(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src \
-	  +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/core-v-verif/$(CV_CORE_LC)/tb/uvmt \
+	  +incdir+$(CVA6_REPO_DIR)/verif/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/tb/uvmt \
 	  -xmerror CUNOTB -nowarn CUDEFB -nowarn CUSRCH -warn_multiple_driver -relax_svbtis -timescale 1ns/1ps -status -access +rwc -log   $(XRUN_WORK_DIR)/tb_compile.log
 
 ALL_XRUN_SIMV_UVM_FLAGS      =  +sv_lib=$(CVA6_REPO_DIR)/tools/spike/lib/libdisasm +signature=I-ADD-01.signature_output
@@ -271,6 +271,7 @@ ALL_SIMV_UVM_FLAGS += +scoreboard_enabled=0
 ALL_XRUN_SIMV_UVM_FLAGS += +scoreboard_enabled=0
 endif
 
+### VCS UVM rules
 vcs_uvm_comp:
 	@echo "[VCS] Building Model"
 	mkdir -p $(VCS_WORK_DIR)
@@ -299,6 +300,40 @@ vcs-uvm: vcs_uvm_comp vcs_uvm_run
 	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./vcs_results/default/vcs.d/trace_rvfi_hart_00.dasm > $(log)
 
+
+### XRUN UVM rules
+xrun_uvm_comp: 
+	@echo "[XRUN] Building Model"
+	mkdir -p $(XRUN_WORK_DIR)
+	cd $(XRUN_WORK_DIR) && \
+          xrun $(ALL_XRUN_UVM_FLAGS) \
+          -f $(FLIST_CORE) \
+          -f $(FLIST_TB) \
+          -f $(CVA6_UVMT_PATH)/uvmt_cva6.flist \
+          $(cov-comp-opt) $(isscomp_opts)\
+	  -top uvmt_cva6_tb
+
+xrun_uvm_run:
+	@echo "[XRUN] Running"
+	cd $(XRUN_WORK_DIR) && 	\
+	  xrun 			\
+	  $(XRUN_RUN)			\
+	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libriscv \
+	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libfesvr \
+	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libdisasm \
+	  ++$(elf) \
+	  +elf_file=$(elf) \
+          +define+UVM_NO_DEPRECATED  \
+	  +UVM_TESTNAME=uvmt_cva6_firmware_test_c	\
+	  +tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)          \
+	  $(cov-comp-opt) $(issrun_opts)
+	  			
+
+xrun-uvm: xrun_uvm_comp xrun_uvm_run
+	$(tool_path)/spike-dasm --isa=$(variant) < ./xrun_results/trace_rvfi_hart_00.dasm > $(log)
+
+
+### QUESTA UVM rules
 questa_uvm_comp:
 	@echo "[QUESTA] Building Model"
 	mkdir -p $(VSIM_WORK_DIR)
@@ -324,7 +359,7 @@ questa_uvm_comp:
 questa_uvm_run:
 	@echo "[QUESTA] Running Model"
 	vsim -64  \
-	  $(COMMON_RUN_ARGS) \
+	  $(COMMON_RUN_UVM_FLAGS) \
 	  -sv_lib $(QUESTASIM_HOME)/uvm-1.2/linux_x86_64/uvm_dpi \
 	  -c -do "run -all; " \
 	  -work $(VSIM_WORK_DIR) -t 1ns \
@@ -345,35 +380,6 @@ questa-uvm:
 	make questa_uvm_run
 
 
-xrun_uvm_comp: 
-	@echo "[XRUN] Building Model"
-	mkdir -p $(XRUN_WORK_DIR)
-	cd $(XRUN_WORK_DIR) && \
-          xrun $(ALL_XRUN_UVM_FLAGS) \
-          -f $(FLIST_CORE) \
-          -f $(FLIST_TB) \
-          -f $(CVA6_UVMT_PATH)/uvmt_cva6.flist \
-          $(cov-comp-opt) $(isscomp_opts)\
-	  -top uvmt_cva6_tb
-
-xrun_uvm_run:
-	@echo "[XRUN] Running"
-	cd $(XRUN_WORK_DIR) && 	\
-	  xrun 			\
-	  $(XRUN_RUN)			\
-	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libriscv \
-	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libfesvr \
-	  ++$(elf) \
-	  +elf_file=$(elf) \
-          +define+UVM_NO_DEPRECATED  \
-	  +UVM_TESTNAME=uvmt_cva6_firmware_test_c	\
-	  +tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)          \
-	  $(cov-comp-opt) $(issrun_opts)
-	  			
-
-xrun-uvm: xrun_uvm_comp xrun_uvm_run
-	$(tool_path)/spike-dasm --isa=$(variant) < ./xrun_results/trace_rvfi_hart_00.dasm > $(log)
-
 generate_cov_dash:
 	urg -warn none -hvp_proj cva6_embedded -format both -group instcov_for_score -hvp_attributes weight+description+Comment -dir vcs_results/default/vcs.d/simv.vdb -plan cva6.hvp -tgl portsonly
 
@@ -384,23 +390,6 @@ vcs_clean_all:
 xrun_clean_all:
 	@echo "[XRUN] Cleanup (entire xrun_work dir)"
 	rm -rf $(CVA6_REPO_DIR)/verif/sim/xrun_results/
-
-
-xrun-testharness:
-	@echo "[XRUN-TESTHARNESS] Running"
-	@echo "[XRUN-TESTHARNESS] $(path_var)"
-	@echo "[XRUN-TESTHARNESS] $(XRUN_WORK_DIR)"
-	@echo "[XRUN-TESTHARNESS] $(elf)"
-
-	mkdir -p $(XRUN_WORK_DIR)
-
-	make -C $(path_var) work-dpi/xrun_ariane_dpi.so
-	@echo "[XRUN-TESTHARNESS] $(elf)"
-
-	make -C $(path_var) xrun_sim target=$(target) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
-	@echo "[XRUN-TESTHARNESS1] $(elf)"
-
-	$(CVA6_REPO_DIR)/tools/spike/spike-dasm --isa=$(variant) < ./xrun_results/xcelium.d/trace_rvfi_hart_00.dasm > $(log)
 
 
 ###############################################################################
@@ -431,6 +420,18 @@ veri-testharness:
 	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+
+xrun-testharness:
+	@echo "[XRUN-TESTHARNESS] Running"
+	@echo "[XRUN-TESTHARNESS] $(path_var)"
+	@echo "[XRUN-TESTHARNESS] $(XRUN_WORK_DIR)"
+	@echo "[XRUN-TESTHARNESS] $(elf)"
+	mkdir -p $(XRUN_WORK_DIR)
+	make -C $(path_var) work-dpi/xrun_ariane_dpi.so
+	@echo "[XRUN-TESTHARNESS] $(elf)"
+	make -C $(path_var) xrun_sim target=$(target) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
+	@echo "[XRUN-TESTHARNESS1] $(elf)"
+	$(CVA6_REPO_DIR)/tools/spike/spike-dasm --isa=$(variant) < ./xrun_results/xcelium.d/trace_rvfi_hart_00.dasm > $(log)
 
 questa-testharness:
 	mkdir -p $(path_var)/tmp
