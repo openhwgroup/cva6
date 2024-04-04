@@ -36,8 +36,9 @@ test-location  ?= output/test
 torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
 elf_file        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
-# board name for bitstream generation. Currently supported: kc705, genesys2
+# board name for bitstream generation. Currently supported: kc705, genesys2, nexys_video
 BOARD          ?= genesys2
+
 # root path
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
@@ -76,6 +77,10 @@ else ifeq ($(BOARD), vc707)
 	XILINX_PART              := xc7vx485tffg1761-2
 	XILINX_BOARD             := xilinx.com:vc707:part0:1.3
 	CLK_PERIOD_NS            := 20
+else ifeq ($(BOARD), nexys_video)
+	XILINX_PART              := xc7a200tsbg484-1
+	XILINX_BOARD             := digilentinc.com:nexys_video:part0:1.1
+	CLK_PERIOD_NS            := 40
 else
 $(error Unknown board - please specify a supported FPGA board)
 endif
@@ -92,6 +97,11 @@ endif
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga
 # Changing the default target to cv32a60x for Step1 verification
 target     ?= cv64a6_imafdc_sv39
+ifeq ($(target), cv64a6_imafdc_sv39)
+	XLEN ?= 64
+else
+	XLEN ?= 32
+endif
 ifndef TARGET_CFG
 	export TARGET_CFG = $(target)
 endif
@@ -214,8 +224,8 @@ copro_src := $(addprefix $(root-dir), $(copro_src))
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
 
-fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/bootrom/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv
-fpga_src := $(addprefix $(root-dir), $(fpga_src))
+fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv
+fpga_src := $(addprefix $(root-dir), $(fpga_src)) src/bootrom/bootrom_$(XLEN).sv
 
 # look for testbenches
 tbs := corev_apu/tb/ariane_tb.sv corev_apu/tb/ariane_testharness.sv core/cva6_rvfi.sv
@@ -694,6 +704,9 @@ fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer.sv)
 fpga_filter += $(addprefix $(root-dir), vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/tc_sram_wrapper.sv)
 
+src/bootrom/bootrom_$(XLEN).sv:
+	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) bootrom_$(XLEN).sv
+
 fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist)
 	@echo "[FPGA] Generate sources"
 	@echo read_vhdl        {$(uart_src)}    > corev_apu/fpga/scripts/add_sources.tcl
@@ -702,7 +715,7 @@ fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist)
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
-	cd corev_apu/fpga && make BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
+	$(MAKE) -C corev_apu/fpga BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
 
 .PHONY: fpga
 
@@ -713,7 +726,8 @@ clean:
 	rm -rf $(riscv-torture-dir)/output/test*
 	rm -rf $(library)/ $(dpi-library)/ $(ver-library)/ $(vcs-library)/
 	rm -f tmp/*.ucdb tmp/*.log *.wlf *vstf wlft* *.ucdb
-	cd corev_apu/fpga && make clean && cd ../..
+	$(MAKE) -C corev_apu/fpga clean
+	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) clean
 
 .PHONY:
 	build sim sim-verilate clean                                              \

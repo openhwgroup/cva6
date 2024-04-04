@@ -3,3 +3,7 @@ venv
 *.o
 *.img
 *.bin
+*.dts
+*.dtb
+bootrom*.h
+bootrom*.sv
