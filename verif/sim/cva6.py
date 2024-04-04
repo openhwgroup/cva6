@@ -863,7 +863,7 @@ def parse_args(cwd):
   parser.add_argument("-d", "--debug", type=str, default="",
                       help="Generate debug command log file")
   parser.add_argument("--hwconfig_opts", type=str, default="",
-                      help="custom configuration options, to be passed in config_pkg_generator.py in cva6")
+                      help="custom configuration options for util/user_config.py")
   parser.add_argument("-l", "--linker", type=str, default="",
                       help="Path for the link.ld")
   parser.add_argument("--axi_active", type=str, default="",
@@ -1017,10 +1017,12 @@ def load_config(args, cwd):
       args.mabi = "lp64"
       args.isa  = "rv64imc"
     elif args.target == "hwconfig":
-      current_path = os.getcwd()
-      os.chdir(os.getcwd()+"/../../")
-      [args.isa,args.mabi, args.target, args.hwconfig_opts] = generate_config(args.hwconfig_opts.split())
-      os.chdir(current_path)
+      base, changes = user_config.parse_derive_args(args.hwconfig_opts.split())
+      input_file = f"../../core/include/{base}_config_pkg.sv"
+      output_file = "../../core/include/hwconfig_config_pkg.sv"
+      user_config.derive_config(input_file, output_file, changes)
+      args.hwconfig_opts = user_config.get_config(output_file)
+      args.mabi = 'ilp32' if args.hwconfig_opts['XLEN'] == 32 else 'lp64'
     else:
       sys.exit("Unsupported pre-defined target: %0s" % args.target)
     args.core_setting_dir = cwd + "/dv" + "/target/"+ args.isa
@@ -1349,5 +1351,5 @@ def main():
 
 if __name__ == "__main__":
   sys.path.append(os.getcwd()+"/../../util")
-  from config_pkg_generator import *
+  import user_config
   main()

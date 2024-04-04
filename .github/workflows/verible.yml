@@ -20,4 +20,4 @@ jobs:
       - uses: chipsalliance/verible-formatter-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          files: 'core/**/*.{v,sv}'
+          files: '$(find core -regex ".*\.\(v\|sv\)$" | grep -v "^core/include/.*_config_pkg.sv$")'

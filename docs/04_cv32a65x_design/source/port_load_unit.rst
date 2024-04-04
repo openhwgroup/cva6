@@ -146,7 +146,7 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As RVH = 0,
+| As RVH = False,
 |   ``tinst_o`` output is tied to 0
 |   ``hs_ld_st_inst_o`` output is tied to 0
 |   ``hlvx_inst_o`` output is tied to 0

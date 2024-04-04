@@ -86,7 +86,7 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As DebugEn = 0,
+| As DebugEn = False,
 |   ``debug_req_i`` input is tied to 0
 | As IsRVFI = 0,
 |   ``rvfi_probes_o`` output is tied to 0

@@ -36,7 +36,7 @@ def define_blacklist(parameters):
 
     param = "DebugEn"
     paramvalue = parameters[param].value
-    if paramvalue == "0":
+    if paramvalue == False:
         black_list["set_debug_pc_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["set_debug_pc_i"] = [f"As {param} = {paramvalue}", "0"]
         black_list["debug_mode_o"] = [f"As {param} = {paramvalue}", "0"]
@@ -47,7 +47,7 @@ def define_blacklist(parameters):
 
     param = "RVH"
     paramvalue = parameters[param].value
-    if paramvalue == "0":
+    if paramvalue == False:
         black_list["v_i"] = [f"As {param} = {paramvalue}", "0"]
         black_list["v_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["vfs_o"] = [f"As {param} = {paramvalue}", "0"]
@@ -98,13 +98,13 @@ def define_blacklist(parameters):
 
     param = "RVV"
     paramvalue = parameters[param].value
-    if paramvalue == "0":
+    if paramvalue == False:
         black_list["vs_i"] = [f"As {param} = {paramvalue}", "0"]
         black_list["vs_o"] = [f"As {param} = {paramvalue}", "0"]
 
     param = "RVS"
     paramvalue = parameters[param].value
-    if paramvalue == "0":
+    if paramvalue == False:
         black_list["en_translation_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["enable_translation_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["enable_translation_i"] = [f"As {param} = {paramvalue}", "0"]
@@ -160,7 +160,7 @@ def define_blacklist(parameters):
 
     param = "RVA"
     paramvalue = parameters[param].value
-    if paramvalue == "0":
+    if paramvalue == False:
         black_list["amo_req_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["amo_resp_i"] = [f"As {param} = {paramvalue}", "0"]
         black_list["amo_valid_commit_o"] = [f"As {param} = {paramvalue}", "0"]
