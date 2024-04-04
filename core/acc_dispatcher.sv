@@ -166,7 +166,7 @@ module acc_dispatcher
 
   assign acc_data = acc_valid_ex_o ? fu_data_i : '0;
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .DEPTH       (InstructionQueueDepth),
       .FALL_THROUGH(1'b1),
       .dtype       (fu_data_t),

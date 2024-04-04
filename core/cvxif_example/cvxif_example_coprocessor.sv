@@ -110,7 +110,7 @@ module cvxif_example_coprocessor
     end
   end
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .FALL_THROUGH(1),              //data_o ready and pop in the same cycle
       .DATA_WIDTH  (64),
       .DEPTH       (8),
