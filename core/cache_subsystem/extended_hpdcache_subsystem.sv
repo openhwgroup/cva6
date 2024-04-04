@@ -519,7 +519,7 @@ module extended_hpdcache_subsystem
 
   //  AXI arbiter instantiation
   //  {{{
-  cva6_hpdcache_subsystem_axi_arbiter #(
+  extended_hpdcache_subsystem_axi_arbiter #(
       .CVA6Cfg              (CVA6Cfg),
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
@@ -543,17 +543,28 @@ module extended_hpdcache_subsystem
       .clk_i,
       .rst_ni,
 
-      .icache_miss_valid_i(icache_miss_valid),
       .icache_miss_ready_o(icache_miss_ready),
+      .icache_miss_valid_i(icache_miss_valid),
       .icache_miss_i      (icache_miss),
-      .icache_miss_id_i   (hpdcache_mem_id_t'(ICACHE_RDTXID)),
+      .icache_miss_id_i   ('1),                 // TODO
 
+      .icache_miss_resp_ready_i(icache_miss_resp_ready),
       .icache_miss_resp_valid_o(icache_miss_resp_valid),
       .icache_miss_resp_o      (icache_miss_resp),
+
+      .icache_uc_read_ready_o(icache_uc_read_ready),
+      .icache_uc_read_valid_i(icache_uc_read_valid),
+      .icache_uc_read_i      (icache_uc_read),
+      .icache_uc_read_id_i   ('1),                    // TODO
+
+      .icache_uc_read_resp_ready_i(icache_uc_read_resp_ready),
+      .icache_uc_read_resp_valid_o(icache_uc_read_resp_valid),
+      .icache_uc_read_resp_o      (icache_uc_read_resp),
 
       .dcache_miss_ready_o(dcache_miss_ready),
       .dcache_miss_valid_i(dcache_miss_valid),
       .dcache_miss_i      (dcache_miss),
+      .dcache_miss_id_i   ('1),                 // TODO
 
       .dcache_miss_resp_ready_i(dcache_miss_resp_ready),
       .dcache_miss_resp_valid_o(dcache_miss_resp_valid),
@@ -571,11 +582,10 @@ module extended_hpdcache_subsystem
       .dcache_wbuf_resp_valid_o(dcache_wbuf_resp_valid),
       .dcache_wbuf_resp_o      (dcache_wbuf_resp),
 
-      .dcache_uc_read_ready_o(dcache_uc_read_ready),
-      .dcache_uc_read_valid_i(dcache_uc_read_valid),
-      .dcache_uc_read_i      (dcache_uc_read),
-      .dcache_uc_read_id_i   ('1),
-
+      .dcache_uc_read_ready_o     (dcache_uc_read_ready),
+      .dcache_uc_read_valid_i     (dcache_uc_read_valid),
+      .dcache_uc_read_i           (dcache_uc_read),
+      .dcache_uc_read_id_i        ('1),                         // TODO
       .dcache_uc_read_resp_ready_i(dcache_uc_read_resp_ready),
       .dcache_uc_read_resp_valid_o(dcache_uc_read_resp_valid),
       .dcache_uc_read_resp_o      (dcache_uc_read_resp),
