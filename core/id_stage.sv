@@ -196,10 +196,12 @@ module id_stage #(
   // ------------------
   // Pipeline Register
   // ------------------
-  assign issue_entry_o = issue_q.sbe;
-  assign issue_entry_valid_o = issue_q.valid;
-  assign is_ctrl_flow_o = issue_q.is_ctrl_flow;
-  assign orig_instr_o = issue_q.orig_instr;
+  always_comb begin
+    issue_entry_o = issue_q.sbe;
+    issue_entry_valid_o = issue_q.valid;
+    is_ctrl_flow_o = issue_q.is_ctrl_flow;
+    orig_instr_o = issue_q.orig_instr;
+  end
 
   always_comb begin
     issue_n             = issue_q;

@@ -246,7 +246,6 @@ sources:
           # Tracer (behavioral code, not RTL)
           - core/include/instr_tracer_pkg.sv
           - common/local/util/instr_tracer.sv
-          - common/local/util/instr_tracer_if.sv
 
     # TODO target define FPGA target + verification etc
     #   - target: test
