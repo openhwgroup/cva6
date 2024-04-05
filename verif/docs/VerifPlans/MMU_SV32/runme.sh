@@ -31,4 +31,4 @@ export MARKDOWN_OUTPUT_DIR=`readlink -f "$ROOTDIR/../source"`
 # FIXME: Introduce a suitably named shell variable that points to the root
 # directory of the tool set (TOOL_TOP etc.)
 # FORNOW use a hardcoded relative path.
-python3 $ROOTDIR/../../../../tools/vptool/vptool/vp.py $*
+sh $ROOTDIR/../../../../verif/core-v-verif/tools/vptool/vptool.sh $*
