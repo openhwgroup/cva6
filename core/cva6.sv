@@ -1407,6 +1407,7 @@ module cva6
         .acc_no_st_pending_i   (no_st_pending_commit),
         .dcache_req_ports_i    (dcache_req_ports_ex_cache),
         .ctrl_halt_o           (halt_acc_ctrl),
+        .csr_addr_i            (csr_addr_ex_csr),
         .acc_dcache_req_ports_o(dcache_req_ports_acc_cache),
         .acc_dcache_req_ports_i(dcache_req_ports_cache_acc),
         .inval_ready_i         (inval_ready),
@@ -1503,59 +1504,40 @@ module cva6
 `endif  // PITON_ARIANE
 
 `ifndef VERILATOR
-  instr_tracer_if #(
-      .CVA6Cfg(CVA6Cfg),
-      .bp_resolve_t(bp_resolve_t),
-      .exception_t(exception_t),
-      .scoreboard_entry_t(scoreboard_entry_t)
-  ) tracer_if (
-      clk_i
-  );
-  // assign instruction tracer interface
-  // control signals
-  assign tracer_if.rstn           = rst_ni;
-  assign tracer_if.flush_unissued = flush_unissued_instr_ctrl_id;
-  assign tracer_if.flush          = flush_ctrl_ex;
-  // fetch
-  assign tracer_if.instruction    = id_stage_i.fetch_entry_i.instruction;
-  assign tracer_if.fetch_valid    = id_stage_i.fetch_entry_valid_i;
-  assign tracer_if.fetch_ack      = id_stage_i.fetch_entry_ready_o;
-  // Issue
-  assign tracer_if.issue_ack      = issue_stage_i.i_scoreboard.issue_ack_i;
-  assign tracer_if.issue_sbe      = issue_stage_i.i_scoreboard.issue_instr_o;
-  // write-back
-  assign tracer_if.waddr          = waddr_commit_id;
-  assign tracer_if.wdata          = wdata_commit_id;
-  assign tracer_if.we_gpr         = we_gpr_commit_id;
-  assign tracer_if.we_fpr         = we_fpr_commit_id;
-  // commit
-  assign tracer_if.commit_instr   = commit_instr_id_commit;
-  assign tracer_if.commit_ack     = commit_ack;
-  // branch predict
-  assign tracer_if.resolve_branch = resolved_branch;
-  // address translation
-  // stores
-  assign tracer_if.st_valid       = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
-  assign tracer_if.st_paddr       = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
-  // loads
-  assign tracer_if.ld_valid       = ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid;
-  assign tracer_if.ld_kill        = ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req;
-  assign tracer_if.ld_paddr       = ex_stage_i.lsu_i.i_load_unit.paddr_i;
-  // exceptions
-  assign tracer_if.exception      = commit_stage_i.exception_o;
-  // assign current privilege level
-  assign tracer_if.priv_lvl       = priv_lvl;
-  assign tracer_if.debug_mode     = debug_mode;
-
   instr_tracer #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .interrupts_t(interrupts_t),
+      .exception_t(exception_t),
       .INTERRUPTS(INTERRUPTS)
   ) instr_tracer_i (
-      .tracer_if(tracer_if),
-      .hart_id_i
+      // .tracer_if(tracer_if),
+      .pck (clk_i),
+      .rstn (rst_ni),
+      .flush_unissued (flush_unissued_instr_ctrl_id),
+      .flush_all (flush_ctrl_ex),
+      .instruction (id_stage_i.fetch_entry_i.instruction),
+      .fetch_valid (id_stage_i.fetch_entry_valid_i),
+      .fetch_ack (id_stage_i.fetch_entry_ready_o),
+      .issue_ack (issue_stage_i.i_scoreboard.issue_ack_i),
+      .issue_sbe (issue_stage_i.i_scoreboard.issue_instr_o),
+      .waddr (waddr_commit_id),
+      .wdata (wdata_commit_id),
+      .we_gpr (we_gpr_commit_id),
+      .we_fpr (we_fpr_commit_id),
+      .commit_instr (commit_instr_id_commit),
+      .commit_ack (commit_ack),
+      .st_valid (ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i),
+      .st_paddr (ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i),
+      .ld_valid (ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid),
+      .ld_kill (ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req),
+      .ld_paddr (ex_stage_i.lsu_i.i_load_unit.paddr_i),
+      .resolve_branch (resolved_branch),
+      .commit_exception (commit_stage_i.exception_o),
+      .priv_lvl (priv_lvl),
+      .debug_mode (debug_mode),
+      .hart_id_i (hart_id_i)
   );
 
   // mock tracer for Verilator, to be used with spike-dasm

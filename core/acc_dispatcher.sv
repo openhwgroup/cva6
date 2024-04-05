@@ -90,6 +90,7 @@ module acc_dispatcher
     input dcache_req_i_t [2:0] dcache_req_ports_i,
     // Interface with the controller
     output logic ctrl_halt_o,
+    input logic [11:0] csr_addr_i,
     input logic flush_unissued_instr_i,
     input logic flush_ex_i,
     output logic flush_pipeline_o,
@@ -165,7 +166,7 @@ module acc_dispatcher
 
   assign acc_data = acc_valid_ex_o ? fu_data_i : '0;
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .DEPTH       (InstructionQueueDepth),
       .FALL_THROUGH(1'b1),
       .dtype       (fu_data_t),

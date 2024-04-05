@@ -102,7 +102,7 @@ package build_config_pkg;
     cfg.CachedRegionLength = CVA6Cfg.CachedRegionLength;
     cfg.MaxOutstandingStores = CVA6Cfg.MaxOutstandingStores;
     cfg.DebugEn = CVA6Cfg.DebugEn;
-    cfg.NonIdemPotenceEn = CVA6Cfg.NrNonIdempotentRules && CVA6Cfg.NonIdempotentLength;
+    cfg.NonIdemPotenceEn = (CVA6Cfg.NrNonIdempotentRules > 0) && (CVA6Cfg.NonIdempotentLength > 0);
     cfg.AxiBurstWriteEn = CVA6Cfg.AxiBurstWriteEn;
 
     cfg.ICACHE_SET_ASSOC = CVA6Cfg.IcacheSetAssoc;

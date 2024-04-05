@@ -62,7 +62,7 @@ module amo_buffer #(
   // e.g.: it is not speculative anymore
   assign flush_amo_buffer = flush_i & !amo_valid_commit_i;
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .DEPTH  (1),
       .dtype  (amo_op_t),
       .FPGA_EN(CVA6Cfg.FpgaEn)
