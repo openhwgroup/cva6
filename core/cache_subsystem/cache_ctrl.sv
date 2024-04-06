@@ -434,7 +434,7 @@ module cache_ctrl
         end
       end
 
-      default:;
+      default: ;
 
     endcase
 
