@@ -1033,7 +1033,7 @@ def load_config(args, cwd):
     if not args.testlist:
       args.testlist = args.custom_target + "/testlist.yaml"
 
-  args.spike_params = get_full_spike_param_args(args.spike_params)
+  args.spike_params = get_full_spike_param_args(args.spike_params) if args.spike_params else ""
 
 
 def incorrect_version_exit(tool, tool_version, required_version):
