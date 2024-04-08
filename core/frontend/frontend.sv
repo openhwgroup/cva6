@@ -371,7 +371,9 @@ module frontend
     end
     // 1. Default assignment
     if (if_ready) begin
-      npc_d = {fetch_address[CVA6Cfg.VLEN-1:CVA6Cfg.FETCH_ALIGN_BITS] + 1, {CVA6Cfg.FETCH_ALIGN_BITS{1'b0}}};
+      npc_d = {
+        fetch_address[CVA6Cfg.VLEN-1:CVA6Cfg.FETCH_ALIGN_BITS] + 1, {CVA6Cfg.FETCH_ALIGN_BITS{1'b0}}
+      };
     end
     // 2. Replay instruction fetch
     if (replay) begin
