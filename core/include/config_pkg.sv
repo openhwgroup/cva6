@@ -273,6 +273,7 @@ package config_pkg;
     bit          AXI_USER_EN;
 
     int unsigned FETCH_WIDTH;
+    int unsigned FETCH_ALIGN_BITS;
     int unsigned INSTR_PER_FETCH;
     int unsigned LOG2_INSTR_PER_FETCH;
 
