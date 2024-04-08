@@ -1306,12 +1306,18 @@ module csr_regfile
                     | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
           end else begin
-            mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_STIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_MSIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
+            if (CVA6Cfg.RVS) begin
+              mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_STIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MSIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
+            end else begin
+              mask = CVA6Cfg.XLEN'(riscv::MIP_MSIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
+            end
           end
           mie_d = (mie_q & ~mask) | (csr_wdata & mask); // we only support supervisor and M-mode interrupts
         end
@@ -1346,10 +1352,12 @@ module csr_regfile
                     | CVA6Cfg.XLEN'(riscv::MIP_STIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_VSSIP);
-          end else begin
+          end else if (CVA6Cfg.RVS) begin
             mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_STIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_SEIP);
+          end else begin
+            mask = '0;
           end
           mip_d = (mip_q & ~mask) | (csr_wdata & mask);
         end
