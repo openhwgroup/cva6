@@ -354,9 +354,9 @@ module cva6
   // --------------
   // IF <-> ID
   // --------------
-  fetch_entry_t fetch_entry_if_id;
-  logic fetch_valid_if_id;
-  logic fetch_ready_id_if;
+  fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_if_id;
+  logic [ariane_pkg::SUPERSCALAR:0] fetch_valid_if_id;
+  logic [ariane_pkg::SUPERSCALAR:0] fetch_ready_id_if;
 
   // --------------
   // ID <-> ISSUE
@@ -1102,7 +1102,9 @@ module cva6
         .itlb_miss_i        (itlb_miss_ex_perf),
         .dtlb_miss_i        (dtlb_miss_ex_perf),
         .sb_full_i          (sb_full),
-        .if_empty_i         (~fetch_valid_if_id),
+        // TODO this is more complex that that
+        // If superscalar then we additionally have to check [1] when transaction 0 succeeded
+        .if_empty_i         (~fetch_valid_if_id[0]),
         .ex_i               (ex_commit),
         .eret_i             (eret),
         .resolved_branch_i  (resolved_branch),
@@ -1517,9 +1519,9 @@ module cva6
       .rstn(rst_ni),
       .flush_unissued(flush_unissued_instr_ctrl_id),
       .flush_all(flush_ctrl_ex),
-      .instruction(id_stage_i.fetch_entry_i.instruction),
-      .fetch_valid(id_stage_i.fetch_entry_valid_i),
-      .fetch_ack(id_stage_i.fetch_entry_ready_o),
+      .instruction(id_stage_i.fetch_entry_i[0].instruction),
+      .fetch_valid(id_stage_i.fetch_entry_valid_i[0]),
+      .fetch_ack(id_stage_i.fetch_entry_ready_o[0]),
       .issue_ack(issue_stage_i.i_scoreboard.issue_ack_i),
       .issue_sbe(issue_stage_i.i_scoreboard.issue_instr_o),
       .waddr(waddr_commit_id),
@@ -1612,8 +1614,8 @@ module cva6
 
       .flush_i            (flush_ctrl_if),
       .issue_instr_ack_i  (issue_instr_issue_id),
-      .fetch_entry_valid_i(fetch_valid_if_id),
-      .instruction_i      (fetch_entry_if_id.instruction),
+      .fetch_entry_valid_i(fetch_valid_if_id[0]),
+      .instruction_i      (fetch_entry_if_id[0].instruction),
       .is_compressed_i    (rvfi_is_compressed),
 
       .issue_pointer_i (rvfi_issue_pointer),

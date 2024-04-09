@@ -59,11 +59,11 @@ module frontend
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
     input icache_drsp_t icache_dreq_i,
     // Handshake's data between fetch and decode - ID_STAGE
-    output fetch_entry_t fetch_entry_o,
+    output fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_o,
     // Handshake's valid between fetch and decode - ID_STAGE
-    output logic fetch_entry_valid_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid_o,
     // Handshake's ready between fetch and decode - ID_STAGE
-    input logic fetch_entry_ready_i
+    input logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_ready_i
 );
 
   localparam type bht_update_t = struct packed {

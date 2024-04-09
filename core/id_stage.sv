@@ -32,11 +32,11 @@ module id_stage #(
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
     // Handshake's data between fetch and decode - FRONTEND
-    input fetch_entry_t fetch_entry_i,
+    input fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_i,
     // Handshake's valid between fetch and decode - FRONTEND
-    input logic fetch_entry_valid_i,
+    input logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid_i,
     // Handshake's ready between fetch and decode - FRONTEND
-    output logic fetch_entry_ready_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_ready_o,
     // Handshake's data between decode and issue - ISSUE
     output scoreboard_entry_t issue_entry_o,
     // Instruction value - ISSUE
@@ -109,7 +109,7 @@ module id_stage #(
     compressed_decoder #(
         .CVA6Cfg(CVA6Cfg)
     ) compressed_decoder_i (
-        .instr_i         (fetch_entry_i.instruction),
+        .instr_i         (fetch_entry_i[0].instruction),
         .instr_o         (compressed_instr),
         .illegal_instr_o (is_illegal),
         .is_compressed_o (is_compressed),
@@ -142,7 +142,7 @@ module id_stage #(
       assign is_double_rd_macro_instr_o = '0;
     end
   end else begin
-    assign instruction = fetch_entry_i.instruction;
+    assign instruction = fetch_entry_i[0].instruction;
     assign is_illegal_cmp = '0;
     assign is_compressed_cmp = '0;
     assign is_macro_instr_i = '0;
@@ -166,16 +166,16 @@ module id_stage #(
       .debug_req_i,
       .irq_ctrl_i,
       .irq_i,
-      .pc_i                      (fetch_entry_i.address),
+      .pc_i                      (fetch_entry_i[0].address),
       .is_compressed_i           (is_compressed_cmp),
       .is_macro_instr_i          (is_macro_instr_i),
       .is_last_macro_instr_i     (is_last_macro_instr_o),
       .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
       .is_illegal_i              (is_illegal_cmp),
       .instruction_i             (instruction),
-      .compressed_instr_i        (fetch_entry_i.instruction[15:0]),
-      .branch_predict_i          (fetch_entry_i.branch_predict),
-      .ex_i                      (fetch_entry_i.ex),
+      .compressed_instr_i        (fetch_entry_i[0].instruction[15:0]),
+      .branch_predict_i          (fetch_entry_i[0].branch_predict),
+      .ex_i                      (fetch_entry_i[0].ex),
       .priv_lvl_i                (priv_lvl_i),
       .v_i                       (v_i),
       .debug_mode_i              (debug_mode_i),
@@ -205,7 +205,7 @@ module id_stage #(
 
   always_comb begin
     issue_n             = issue_q;
-    fetch_entry_ready_o = 1'b0;
+    fetch_entry_ready_o = '0;
 
     // Clear the valid flag if issue has acknowledged the instruction
     if (issue_instr_ack_i) issue_n.valid = 1'b0;
@@ -213,11 +213,11 @@ module id_stage #(
     // if we have a space in the register and the fetch is valid, go get it
     // or the issue stage is currently acknowledging an instruction, which means that we will have space
     // for a new instruction
-    if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i) begin
+    if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i[0]) begin
       if (stall_instr_fetch) begin
-        fetch_entry_ready_o = 1'b0;
+        fetch_entry_ready_o[0] = 1'b0;
       end else begin
-        fetch_entry_ready_o = 1'b1;
+        fetch_entry_ready_o[0] = 1'b1;
       end
       issue_n = '{1'b1, decoded_instruction, orig_instr, is_control_flow_instr};
     end
