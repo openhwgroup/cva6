@@ -71,8 +71,6 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigPerfCounterEn = 1;
 
-  localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::WT;
-
   localparam CVA6ConfigMmuPresent = 1;
 
   localparam CVA6ConfigRvfiTrace = 1;
@@ -136,6 +134,7 @@ package cva6_config_pkg;
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
       DataUserEn: unsigned'(CVA6ConfigDataUserEn),
       FetchUserWidth: unsigned'(CVA6ConfigFetchUserWidth),
-      FetchUserEn: unsigned'(CVA6ConfigFetchUserEn)
+      FetchUserEn: unsigned'(CVA6ConfigFetchUserEn),
+      DCacheType: config_pkg::WT
   };
 endpackage

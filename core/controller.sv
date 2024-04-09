@@ -120,7 +120,7 @@ module controller
       flush_ex_o             = 1'b1;
       // this is not needed in the case since we
       // have a write-through cache in this case
-      if (DCACHE_TYPE == int'(config_pkg::WB)) begin
+      if (CVA6Cfg.DCacheType == config_pkg::WB) begin
         flush_dcache   = 1'b1;
         fence_active_d = 1'b1;
       end
@@ -138,7 +138,7 @@ module controller
       flush_icache_o         = 1'b1;
       // this is not needed in the case since we
       // have a write-through cache in this case
-      if (DCACHE_TYPE == int'(config_pkg::WB)) begin
+      if (CVA6Cfg.DCacheType == config_pkg::WB) begin
         flush_dcache   = 1'b1;
         fence_active_d = 1'b1;
       end
@@ -146,7 +146,7 @@ module controller
 
     // this is not needed in the case since we
     // have a write-through cache in this case
-    if (DCACHE_TYPE == int'(config_pkg::WB)) begin
+    if (CVA6Cfg.DCacheType == config_pkg::WB) begin
       // wait for the acknowledge here
       if (flush_dcache_ack_i && fence_active_q) begin
         fence_active_d = 1'b0;
@@ -238,7 +238,7 @@ module controller
   // ----------------------
   always_comb begin
     // halt the core if the fence is active
-    halt_o = halt_csr_i || halt_acc_i || (DCACHE_TYPE == int'(config_pkg::WB) && fence_active_q);
+    halt_o = halt_csr_i || halt_acc_i || (CVA6Cfg.DCacheType == config_pkg::WB && fence_active_q);
   end
 
   // ----------------------
