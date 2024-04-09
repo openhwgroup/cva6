@@ -6,6 +6,7 @@ package uvma_core_cntrl_pkg;
    // Constants / Structs / Enums
    `include "uvma_core_cntrl_constants.sv"
    `include "uvma_core_cntrl_tdefs.sv"
+   `include "uvma_core_cntrl_utils.sv"
 
 endpackage : uvma_core_cntrl_pkg
 

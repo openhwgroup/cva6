@@ -41,12 +41,14 @@ module spike #(
     input logic                                     rst_ni,
     input logic                                     clint_tick_i,
     input rvfi_instr_t[CVA6Cfg.NrCommitPorts-1:0]   rvfi_i,
-    input rvfi_csr_t                                rvfi_csr_i
+    input rvfi_csr_t                                rvfi_csr_i,
+    output logic[31:0]                              end_of_test_o
 );
     string binary = "";
     string rtl_isa = "";
 
     st_core_cntrl_cfg st;
+    bit sim_finished;
 
     initial begin
         string core_name = "cva6";
@@ -73,13 +75,13 @@ module spike #(
     st_rvfi s_core [CVA6Cfg.NrCommitPorts-1:0];
     bit core_valid [CVA6Cfg.NrCommitPorts-1:0];
 
-    `define GET_RVFI_CSR(CSR_ADDR, CSR_NAME, CSR_INDEX) \
-        s_core[i].csr_valid[CSR_INDEX] <= 1; \
-        s_core[i].csr_addr [CSR_INDEX] <= CSR_ADDR;\
-        s_core[i].csr_rdata[CSR_INDEX] <= rvfi_csr_i.``CSR_NAME``.rdata;\
-        s_core[i].csr_rmask[CSR_INDEX] <= rvfi_csr_i.``CSR_NAME``.rmask;\
-        s_core[i].csr_wdata[CSR_INDEX] <= rvfi_csr_i.``CSR_NAME``.wdata;\
-        s_core[i].csr_wmask[CSR_INDEX] <= rvfi_csr_i.``CSR_NAME``.wmask;\
+    `define GET_RVFI_CSR(CSR_ADDR, CSR_NAME) \
+        s_core[i].csr_valid[CSR_ADDR] <= 1; \
+        s_core[i].csr_addr [CSR_ADDR] <= CSR_ADDR;\
+        s_core[i].csr_rdata[CSR_ADDR] <= rvfi_csr_i.``CSR_NAME``.rdata;\
+        s_core[i].csr_rmask[CSR_ADDR] <= rvfi_csr_i.``CSR_NAME``.rmask;\
+        s_core[i].csr_wdata[CSR_ADDR] <= rvfi_csr_i.``CSR_NAME``.wdata;\
+        s_core[i].csr_wmask[CSR_ADDR] <= rvfi_csr_i.``CSR_NAME``.wmask;
 
     always_ff @(posedge clk_i) begin
         if (rst_ni) begin
@@ -111,40 +113,48 @@ module spike #(
                     s_core[i].mem_wdata  <= rvfi_i[i].mem_wdata;
 
 
-                    `GET_RVFI_CSR (CSR_MSTATUS      , mstatus     ,  0)
-                    `GET_RVFI_CSR (CSR_MCAUSE       , mcause      ,  1)
-                    `GET_RVFI_CSR (CSR_MEPC         , mepc        ,  2)
-                    `GET_RVFI_CSR (CSR_MTVEC        , mtvec       ,  3)
-                    `GET_RVFI_CSR (CSR_MISA         , misa        ,  4)
-                    `GET_RVFI_CSR (CSR_MTVAL        , mtval       ,  5)
-                    `GET_RVFI_CSR (CSR_MIDELEG      , mideleg     ,  6)
-                    `GET_RVFI_CSR (CSR_MEDELEG      , medeleg     ,  7)
-                    `GET_RVFI_CSR (CSR_SATP         , satp        ,  8)
-                    `GET_RVFI_CSR (CSR_MIE          , mie         ,  9)
-                    `GET_RVFI_CSR (CSR_STVEC        , stvec       , 10)
-                    `GET_RVFI_CSR (CSR_SSCRATCH     , sscratch    , 11)
-                    `GET_RVFI_CSR (CSR_SEPC         , sepc        , 12)
-                    `GET_RVFI_CSR (CSR_MSCRATCH     , mscratch    , 13)
-                    `GET_RVFI_CSR (CSR_STVAL        , stval       , 14)
-                    `GET_RVFI_CSR (CSR_SCAUSE       , scause      , 15)
-                    `GET_RVFI_CSR (CSR_PMPCFG0      , pmpcfg0     , 16)
-                    `GET_RVFI_CSR (CSR_PMPCFG1      , pmpcfg1     , 17)
-                    `GET_RVFI_CSR (CSR_PMPCFG2      , pmpcfg2     , 18)
-                    `GET_RVFI_CSR (CSR_PMPCFG3      , pmpcfg3     , 19)
+                    `GET_RVFI_CSR (CSR_MSTATUS      , mstatus     )
+                    `GET_RVFI_CSR (CSR_MCAUSE       , mcause      )
+                    `GET_RVFI_CSR (CSR_MEPC         , mepc        )
+                    `GET_RVFI_CSR (CSR_MTVEC        , mtvec       )
+                    `GET_RVFI_CSR (CSR_MISA         , misa        )
+                    `GET_RVFI_CSR (CSR_MTVAL        , mtval       )
+                    `GET_RVFI_CSR (CSR_MIDELEG      , mideleg     )
+                    `GET_RVFI_CSR (CSR_MEDELEG      , medeleg     )
+                    `GET_RVFI_CSR (CSR_SATP         , satp        )
+                    `GET_RVFI_CSR (CSR_MIE          , mie         )
+                    `GET_RVFI_CSR (CSR_STVEC        , stvec       )
+                    `GET_RVFI_CSR (CSR_SSCRATCH     , sscratch    )
+                    `GET_RVFI_CSR (CSR_SEPC         , sepc        )
+                    `GET_RVFI_CSR (CSR_MSCRATCH     , mscratch    )
+                    `GET_RVFI_CSR (CSR_STVAL        , stval       )
+                    `GET_RVFI_CSR (CSR_SCAUSE       , scause      )
+                    `GET_RVFI_CSR (CSR_PMPCFG0      , pmpcfg0     )
+                    `GET_RVFI_CSR (CSR_PMPCFG1      , pmpcfg1     )
+                    `GET_RVFI_CSR (CSR_PMPCFG2      , pmpcfg2     )
+                    `GET_RVFI_CSR (CSR_PMPCFG3      , pmpcfg3     )
                     for (int j = 0; j < 16; j++) begin
-                    `GET_RVFI_CSR (CSR_PMPADDR0 + j  , pmpaddr[j]  , 20 + j)
+                        `GET_RVFI_CSR (CSR_PMPADDR0 + j  , pmpaddr[j])
                     end
-                    `GET_RVFI_CSR (CSR_MINSTRET     , instret     , 37)
+                    `GET_RVFI_CSR (CSR_MINSTRET     , instret     )
+                    `GET_RVFI_CSR (CSR_MINSTRETH    , instreth    )
+                    `GET_RVFI_CSR (CSR_MSTATUSH     , mstatush    )
+                    `GET_RVFI_CSR (CSR_MIP          , mip         )
+                    `GET_RVFI_CSR (CSR_MCYCLE       , mcycle      )
                 end
                 else begin
                     core_valid[i] <= 0;
                 end
 
-                if (core_valid[i]) begin
+                if (core_valid[i] && !sim_finished) begin
                     st_rvfi core, reference_model;
                     core = s_core[i];
+
                     rvfi_spike_step(core, reference_model);
                     rvfi_compare(core, reference_model);
+
+                    end_of_test_o = reference_model.halt;
+                    sim_finished = reference_model.halt[0];
                 end
             end
         end

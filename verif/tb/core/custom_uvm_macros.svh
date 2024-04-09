@@ -67,7 +67,7 @@ function void uvm_report_info(string id,
                   string filename = "",
                   int line = 0);
         if (verbosity <= current_verbosity_level)
-            $display($sformatf("UVM_INFO @ %t ns : %s %s", $time, id, message));
+            $display($sformatf("UVM_INFO  @ %t ns : %s %s", $time, id, message));
 endfunction
 
 

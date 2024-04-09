@@ -254,11 +254,11 @@ incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REP
           $(SPIKE_INSTALL_DIR)/include/disasm/
 
 # Compile and sim flags
-compile_flag     += -incr -64 -nologo -quiet -suppress 13262 -suppress 8607 -permissive -svinputport=compat +define+$(defines) -suppress 8386
-vopt_flag +=  -incr -64 -nologo -quiet -suppress 13262 -permissive -svinputport=compat -t 1ns
+compile_flag     += -incr -64 -nologo -quiet -suppress 13262 -suppress 8607 -permissive -svinputport=compat +define+$(defines) -suppress 8386 -suppress vlog-2577
+vopt_flag += -suppress 2085 -suppress 7063 -suppress 2698 -suppress 13262
 
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=UVM_LOW
-questa-flags     += -t 1ns -64 $(gui-sim) $(QUESTASIM_FLAGS) +tohost_addr=$(tohost_addr) +define+QUESTA
+questa-flags     += -t 1ns -64 $(gui-sim) $(QUESTASIM_FLAGS) +tohost_addr=$(tohost_addr) +define+QUESTA -suppress 3356
 compile_flag_vhd += -64 -nologo -quiet -2008
 
 # Iterate over all include directories and write them with +incdir+ prefixed
@@ -318,7 +318,7 @@ vcs: vcs_build
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
-	$(VOPT) -64 -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis -dpilib $(SPIKE_INSTALL_DIR)/lib/libriscv -dpilib $(SPIKE_INSTALL_DIR)/lib/lifesvr -suppress 2085 -suppress 7063
+	$(VOPT) -64 -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis -dpilib $(SPIKE_INSTALL_DIR)/lib/libriscv -dpilib $(SPIKE_INSTALL_DIR)/lib/lifesvr  $(vopt_flag)
 
 # src files
 $(library)/.build-srcs: $(library)

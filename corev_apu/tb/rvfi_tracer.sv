@@ -70,8 +70,9 @@ module rvfi_tracer #(
   logic[31:0] end_of_test_d;
 
   assign end_of_test_o = end_of_test_d;
+
   always_ff @(posedge clk_i) begin
-    end_of_test_q = (rst_ni && (end_of_test_d[0] == 1'b1)) ? end_of_test_d : 0;
+    end_of_test_q <= (rst_ni && (end_of_test_d[0] == 1'b1)) ? end_of_test_d : 0;
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       pc64 = {{CVA6Cfg.XLEN-CVA6Cfg.VLEN{rvfi_i[i].pc_rdata[CVA6Cfg.VLEN-1]}}, rvfi_i[i].pc_rdata};
       // print the instruction information if the instruction is valid or a trap is taken
@@ -111,7 +112,7 @@ module rvfi_tracer #(
             if (TOHOST_ADDR != '0 &&
                 rvfi_i[i].mem_paddr == TOHOST_ADDR &&
                 rvfi_i[i].mem_wdata[0] == 1'b1) begin
-              end_of_test_q = rvfi_i[i].mem_wdata[31:0];
+              end_of_test_q <= rvfi_i[i].mem_wdata[31:0];
             end
           end
         end
@@ -138,7 +139,7 @@ module rvfi_tracer #(
     else
       cycles <= cycles+1;
     if (cycles > SIM_FINISH)
-      end_of_test_q = 32'hffff_ffff;
+      end_of_test_q <= 32'hffff_ffff;
 
     end_of_test_d <= end_of_test_q;
   end
