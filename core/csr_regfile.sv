@@ -2431,9 +2431,17 @@ module csr_regfile
   always_comb begin : write
     for (int i = 0; i < 16; i++) begin
       if (i < CVA6Cfg.NrPMPEntries) begin
-        // We only support >=8-byte granularity, NA4 is disabled
-        if(!CVA6Cfg.PMPEntryReadOnly[i] && pmpcfg_d[i].addr_mode != riscv::NA4 && !(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1)) begin
+        if(!CVA6Cfg.PMPEntryReadOnly[i]) begin
+          // PMP locked logic is handled in the CSR write process above
           pmpcfg_next[i] = pmpcfg_d[i];
+          // We only support >=8-byte granularity, NA4 is disabled
+          if(pmpcfg_d[i].addr_mode == riscv::NA4) begin
+            pmpcfg_next[i].addr_mode = pmpcfg_q[i].addr_mode;
+          end
+          // Follow collective WARL spec for RWX fields
+          if(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1) begin
+            pmpcfg_next[i].access_type = pmpcfg_q[i].access_type;
+          end
         end else begin
           pmpcfg_next[i] = pmpcfg_q[i];
         end
