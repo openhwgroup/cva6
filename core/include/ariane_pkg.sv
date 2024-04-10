@@ -36,12 +36,11 @@ package ariane_pkg;
   // depth of store-buffers, this needs to be a power of two
   localparam logic [2:0] DEPTH_SPEC = 'd4;
 
-  localparam int unsigned DCACHE_TYPE = int'(cva6_config_pkg::CVA6ConfigDcacheType);
-  // if DCACHE_TYPE = cva6_config_pkg::WT
+  // if CVA6Cfg.DCacheType = cva6_config_pkg::WT
   // we can use a small commit queue since we have a write buffer in the dcache
   // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
   // to longer paths into the commit stage
-  // if DCACHE_TYPE = cva6_config_pkg::WB
+  // if CVA6Cfg.DCacheType = cva6_config_pkg::WB
   // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
   localparam logic [2:0] DEPTH_COMMIT = 'd4;
 
@@ -772,7 +771,7 @@ package ariane_pkg;
   function automatic logic is_trans_2M(input logic s_st_enbl, input logic g_st_enbl,
                                        input logic is_s_1G, input logic is_s_2M,
                                        input logic is_g_1G, input logic is_g_2M);
-    return  (s_st_enbl && g_st_enbl) ? 
+    return  (s_st_enbl && g_st_enbl) ?
                 ((is_s_2M && (is_g_1G || is_g_2M)) || (is_g_2M && (is_s_1G || is_s_2M))) :
                 ((is_s_2M && s_st_enbl) || (is_g_2M && g_st_enbl));
   endfunction : is_trans_2M
