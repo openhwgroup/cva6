@@ -93,7 +93,7 @@ module cva6_rvfi_probes
 
     instr.commit_pointer = commit_pointer_i;
 
-    for (int i = 0; i < cva6_config_pkg::CVA6ConfigNrCommitPorts; i++) begin
+    for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       instr.commit_instr_pc[i] = commit_instr_i[i].pc;
       instr.commit_instr_op[i] = commit_instr_i[i].op;
       instr.commit_instr_rs1[i] = commit_instr_i[i].rs1;
