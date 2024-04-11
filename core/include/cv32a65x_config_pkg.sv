@@ -38,7 +38,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigInstrTlbEntries = 2;
   localparam CVA6ConfigDataTlbEntries = 2;
 
-  localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::WT;
+  localparam CVA6ConfigInstrTlbEntries = 2;       // new param
 
   localparam CVA6ConfigRvfiTrace = 1;
 
@@ -51,7 +51,7 @@ package cva6_config_pkg;
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),
       AxiUserWidth: unsigned'(CVA6ConfigDataUserWidth),
       MemTidWidth: unsigned'(2),
-      NrLoadBufEntries: unsigned'(1),
+      NrLoadBufEntries: unsigned'(CVA6ConfigNrLoadBufEntries),
       FpuEn: bit'(0),
       XF16: bit'(0),
       XF16ALT: bit'(0),
@@ -98,7 +98,7 @@ package cva6_config_pkg;
       IcacheByteSize: unsigned'(2048),
       IcacheSetAssoc: unsigned'(2),
       IcacheLineWidth: unsigned'(128),
-      DCacheType: CVA6ConfigDcacheType,
+      DCacheType: config_pkg::WT,
       DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
       DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
