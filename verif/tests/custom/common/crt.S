@@ -245,8 +245,7 @@ exit:
   // Minimal low-level exit function.
   .global  _exit
 _exit:
-  sll  a0, a0, 1      # Set up exit code: shift a0 left by 1
-  add  a0, a0, 1      # and set bit 0.
+  li   a0, 0x1        # and set bit 0.
   sw   a0, tohost, t5 # Store bits [31:0] of a0 into variable tohost
   nop                 # Leave one cycle of slack before entering endless loop
 1:
