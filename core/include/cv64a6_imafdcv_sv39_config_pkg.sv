@@ -139,6 +139,11 @@ package cva6_config_pkg;
       DataUserEn: unsigned'(CVA6ConfigDataUserEn),
       FetchUserWidth: unsigned'(CVA6ConfigFetchUserWidth),
       FetchUserEn: unsigned'(CVA6ConfigFetchUserEn),
-      DCacheType: CVA6ConfigDcacheType
+      DCacheType: CVA6ConfigDcacheType,
+      InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
+      DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
+      NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
+      NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
+      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
   };
 endpackage

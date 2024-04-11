@@ -144,6 +144,11 @@ package build_config_pkg;
     cfg.MODE_SV = (CVA6Cfg.XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
     cfg.SV = (cfg.MODE_SV == config_pkg::ModeSv32) ? 32 : 39;
     cfg.SVX = (cfg.MODE_SV == config_pkg::ModeSv32) ? 34 : 41;
+    cfg.InstrTlbEntries = CVA6Cfg.InstrTlbEntries;
+    cfg.DataTlbEntries = CVA6Cfg.DataTlbEntries;
+    cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
+    cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;
+    cfg.DcacheIdWidth = CVA6Cfg.DcacheIdWidth;
 
     return cfg;
   endfunction

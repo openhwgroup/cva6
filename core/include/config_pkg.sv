@@ -142,6 +142,8 @@ package config_pkg;
     int unsigned                 IcacheLineWidth;
     // Cache Type
     cache_type_t                 DCacheType;
+    // Data cache ID
+    int unsigned                 DcacheIdWidth;
     // Data cache size (in bytes)
     int unsigned                 DcacheByteSize;
     // Data cache associativity (number of ways)
@@ -158,6 +160,10 @@ package config_pkg;
     bit                          FpgaEn;
     // Number of commit ports
     int unsigned                 NrCommitPorts;
+    // Load cycle latency number
+    int unsigned                 NrLoadPipeRegs;
+    // Store cycle latency number
+    int unsigned                 NrStorePipeRegs;
     // Scoreboard length
     int unsigned                 NrScoreboardEntries;
     // Load buffer entry buffer
@@ -170,6 +176,10 @@ package config_pkg;
     int unsigned                 BTBEntries;
     // Branch history entries
     int unsigned                 BHTEntries;
+    // MMU instruction TLB entries
+    int unsigned                 InstrTlbEntries;
+    // MMU data TLB entries
+    int unsigned                 DataTlbEntries;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -189,6 +199,8 @@ package config_pkg;
     /// ports than issue ports, for the scoreboard to empty out in case one
     /// instruction stalls a little longer.
     int unsigned NrCommitPorts;
+    int unsigned NrLoadPipeRegs;
+    int unsigned NrStorePipeRegs;
     /// AXI parameters.
     int unsigned AxiAddrWidth;
     int unsigned AxiDataWidth;
@@ -231,11 +243,14 @@ package config_pkg;
     bit          RVS;                //Supervisor mode
     bit          RVU;                //User mode
 
-    logic [63:0]                 HaltAddress;
-    logic [63:0]                 ExceptionAddress;
-    int unsigned                 RASDepth;
-    int unsigned                 BTBEntries;
-    int unsigned                 BHTEntries;
+    logic [63:0] HaltAddress;
+    logic [63:0] ExceptionAddress;
+    int unsigned RASDepth;
+    int unsigned BTBEntries;
+    int unsigned BHTEntries;
+    int unsigned InstrTlbEntries;
+    int unsigned DataTlbEntries;
+
     logic [63:0]                 DmBaseAddress;
     bit                          TvalEn;
     int unsigned                 NrPMPEntries;
@@ -264,6 +279,7 @@ package config_pkg;
     int unsigned ICACHE_LINE_WIDTH;
     int unsigned ICACHE_USER_LINE_WIDTH;
     cache_type_t DCacheType;
+    int unsigned DcacheIdWidth;
     int unsigned DCACHE_SET_ASSOC;
     int unsigned DCACHE_SET_ASSOC_WIDTH;
     int unsigned DCACHE_INDEX_WIDTH;

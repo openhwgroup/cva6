@@ -484,7 +484,7 @@ module load_store_unit
 
   shift_reg #(
       .dtype(logic [$bits(ld_valid) + $bits(ld_trans_id) + $bits(ld_result) + $bits(ld_ex) - 1:0]),
-      .Depth(cva6_config_pkg::CVA6ConfigNrLoadPipeRegs)
+      .Depth(CVA6Cfg.NrLoadPipeRegs)
   ) i_pipe_reg_load (
       .clk_i,
       .rst_ni,
@@ -494,7 +494,7 @@ module load_store_unit
 
   shift_reg #(
       .dtype(logic [$bits(st_valid) + $bits(st_trans_id) + $bits(st_result) + $bits(st_ex) - 1:0]),
-      .Depth(cva6_config_pkg::CVA6ConfigNrStorePipeRegs)
+      .Depth(CVA6Cfg.NrStorePipeRegs)
   ) i_pipe_reg_store (
       .clk_i,
       .rst_ni,

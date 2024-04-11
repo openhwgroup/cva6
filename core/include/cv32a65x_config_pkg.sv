@@ -11,34 +11,30 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigXlen = 32;
 
-  localparam CVA6ConfigCvxifEn = 1;
-  localparam CVA6ConfigBExtEn = 1;
-  localparam CVA6ConfigVExtEn = 0;
+  localparam CVA6ConfigCvxifEn = 1;  // RVFI.svh
+  localparam CVA6ConfigBExtEn = 1;  // UVM
+  localparam CVA6ConfigVExtEn = 0;  // RVFI.svh
 
   localparam CVA6ConfigAxiIdWidth = 4;
   localparam CVA6ConfigAxiAddrWidth = 64;
   localparam CVA6ConfigAxiDataWidth = 64;
   localparam CVA6ConfigDataUserWidth = 32;
 
-  localparam CVA6ConfigDcacheIdWidth = 1;
+  localparam CVA6ConfigDcacheIdWidth = 1;  // hpdcache
   localparam CVA6ConfigDcacheByteSize = 32768;
   localparam CVA6ConfigDcacheSetAssoc = 8;
   localparam CVA6ConfigDcacheLineWidth = 128;
 
-  localparam CVA6ConfigWtDcacheWbufDepth = 2;
+  localparam CVA6ConfigWtDcacheWbufDepth = 2;  // new param ?
 
-  localparam CVA6ConfigSuperscalarEn = 0;
-  localparam CVA6ConfigNrCommitPorts = 1;
-  localparam CVA6ConfigNrScoreboardEntries = 4;
+  localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
+  localparam CVA6ConfigNrCommitPorts = 1;  // RVFI.svh and UVM
+  localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
 
-  localparam CVA6ConfigNrLoadPipeRegs = 0;
-  localparam CVA6ConfigNrStorePipeRegs = 0;
-  localparam CVA6ConfigNrLoadBufEntries = 1;
+  localparam CVA6ConfigNrLoadBufEntries = 1;  // hpdcache
 
-  localparam CVA6ConfigInstrTlbEntries = 2;
-  localparam CVA6ConfigDataTlbEntries = 2;
-
-  localparam CVA6ConfigInstrTlbEntries = 2;       // new param
+  localparam CVA6ConfigInstrTlbEntries = 2;  // MMU
+  localparam CVA6ConfigDataTlbEntries = 2;  // MMU
 
   localparam CVA6ConfigRvfiTrace = 1;
 
@@ -104,7 +100,12 @@ package cva6_config_pkg;
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
       DataUserEn: unsigned'(0),
       FetchUserWidth: unsigned'(32),
-      FetchUserEn: unsigned'(0)
+      FetchUserEn: unsigned'(0),
+      InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
+      DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
+      NrLoadPipeRegs: int'(0),
+      NrStorePipeRegs: int'(0),
+      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
   };
 
 endpackage

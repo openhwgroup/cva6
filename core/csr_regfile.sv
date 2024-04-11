@@ -811,7 +811,8 @@ module csr_regfile
       end
       instret_d = instret;
       // increment the cycle count
-      if (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[0])) cycle_d = cycle_q + 1'b1;
+      if (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[0]))
+        cycle_d = cycle_q + 1'b1;
       else cycle_d = cycle_q;
     end
 
@@ -1366,7 +1367,8 @@ module csr_regfile
           if (!CVA6Cfg.RVU || CVA6Cfg.XLEN != 32) update_access_exception = 1'b1;
         end
         riscv::CSR_MCOUNTINHIBIT:
-        if (CVA6Cfg.PerfCounterEn) mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
+        if (CVA6Cfg.PerfCounterEn)
+          mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
         else update_access_exception = 1'b1;
         // performance counters
         riscv::CSR_MCYCLE: cycle_d[CVA6Cfg.XLEN-1:0] = csr_wdata;

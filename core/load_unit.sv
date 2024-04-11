@@ -548,7 +548,7 @@ module load_unit
   //pragma translate_off
 `ifndef VERILATOR
   initial
-    assert (ariane_pkg::DCACHE_TID_WIDTH >= REQ_ID_BITS)
+    assert (CVA6Cfg.DcacheIdWidth >= REQ_ID_BITS)
     else $fatal(1, "DcacheIdWidth parameter is not wide enough to encode pending loads");
   // check invalid offsets, but only issue a warning as these conditions actually trigger a load address misaligned exception
   addr_offset0 :
