@@ -447,9 +447,9 @@ module frontend
         end
 
         // Map the only three exceptions which can occur in the frontend to a two bit enum
-        if (ariane_pkg::MMU_PRESENT && icache_dreq_i.ex.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
+        if (CVA6Cfg.MmuPresent && icache_dreq_i.ex.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT;
-        end else if (ariane_pkg::MMU_PRESENT && icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
+        end else if (CVA6Cfg.MmuPresent && icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
         end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;

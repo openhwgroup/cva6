@@ -551,7 +551,7 @@ module csr_regfile
         riscv::CSR_MHARTID: csr_rdata = hart_id_i;
         riscv::CSR_MCONFIGPTR: csr_rdata = '0;  // not implemented
         riscv::CSR_MCOUNTINHIBIT:
-        if (PERF_COUNTER_EN)
+        if (CVA6Cfg.PerfCounterEn)
           csr_rdata = {{(CVA6Cfg.XLEN - (MHPMCounterNum + 3)) {1'b0}}, mcountinhibit_q};
         else read_access_exception = 1'b1;
         // Counters and Timers
@@ -806,12 +806,12 @@ module csr_regfile
     if (!debug_mode_q) begin
       // increase instruction retired counter
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-        if (commit_ack_i[i] && !ex_i.valid && (!PERF_COUNTER_EN || (PERF_COUNTER_EN && !mcountinhibit_q[2])))
+        if (commit_ack_i[i] && !ex_i.valid && (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[2])))
           instret++;
       end
       instret_d = instret;
       // increment the cycle count
-      if (!PERF_COUNTER_EN || (PERF_COUNTER_EN && !mcountinhibit_q[0])) cycle_d = cycle_q + 1'b1;
+      if (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[0])) cycle_d = cycle_q + 1'b1;
       else cycle_d = cycle_q;
     end
 
@@ -1366,7 +1366,7 @@ module csr_regfile
           if (!CVA6Cfg.RVU || CVA6Cfg.XLEN != 32) update_access_exception = 1'b1;
         end
         riscv::CSR_MCOUNTINHIBIT:
-        if (PERF_COUNTER_EN) mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
+        if (CVA6Cfg.PerfCounterEn) mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
         else update_access_exception = 1'b1;
         // performance counters
         riscv::CSR_MCYCLE: cycle_d[CVA6Cfg.XLEN-1:0] = csr_wdata;
@@ -1884,7 +1884,7 @@ module csr_regfile
 
       en_ld_st_g_translation_o = (en_ld_st_g_translation_q && !csr_hs_ld_st_inst_i) || (csr_hs_ld_st_inst_i && config_pkg::vm_mode_t'(hgatp_q.mode) == CVA6Cfg.MODE_SV && csr_hs_ld_st_inst_i);
     end else begin
-      if (ariane_pkg::MMU_PRESENT && mprv && CVA6Cfg.RVS && config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
+      if (CVA6Cfg.MmuPresent && mprv && CVA6Cfg.RVS && config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
         en_ld_st_translation_d = 1'b1;
       else  // otherwise we go with the regular settings
         en_ld_st_translation_d = en_translation_o;

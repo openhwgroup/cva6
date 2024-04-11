@@ -109,6 +109,8 @@ package cva6_config_pkg;
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       RVZiCond: bit'(CVA6ConfigRVZiCond),
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
+      PerfCounterEn: bit'(CVA6ConfigPerfCounterEn),
+      MmuPresent: bit'(CVA6ConfigMmuPresent),
       RVS: bit'(1),
       RVU: bit'(1),
       HaltAddress: 64'h800,

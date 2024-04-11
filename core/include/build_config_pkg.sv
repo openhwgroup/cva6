@@ -76,6 +76,8 @@ package build_config_pkg;
     cfg.NrRgprPorts = unsigned'(2);
     cfg.NrWbPorts = unsigned'(NrWbPorts);
     cfg.EnableAccelerator = bit'(EnableAccelerator);
+    cfg.PerfCounterEn = CVA6Cfg.PerfCounterEn;
+    cfg.MmuPresent = CVA6Cfg.MmuPresent;
     cfg.RVS = CVA6Cfg.RVS;
     cfg.RVU = CVA6Cfg.RVU;
 

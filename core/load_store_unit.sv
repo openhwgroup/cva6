@@ -231,7 +231,7 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
-  if (MMU_PRESENT && CVA6Cfg.RVH && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39x4
+  if (CVA6Cfg.MmuPresent && CVA6Cfg.RVH && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39x4
     cva6_mmu_sv39x4 #(
         .CVA6Cfg          (CVA6Cfg),
         .exception_t      (exception_t),
@@ -272,7 +272,7 @@ module load_store_unit
         .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
         .*
     );
-  end else if (MMU_PRESENT && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39
+  end else if (CVA6Cfg.MmuPresent && (CVA6Cfg.XLEN == 64)) begin : gen_mmu_sv39
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .exception_t      (exception_t),
@@ -307,7 +307,7 @@ module load_store_unit
         .pmpaddr_i,
         .*
     );
-  end else if (MMU_PRESENT && (CVA6Cfg.XLEN == 32)) begin : gen_mmu_sv32
+  end else if (CVA6Cfg.MmuPresent && (CVA6Cfg.XLEN == 32)) begin : gen_mmu_sv32
     cva6_mmu_sv32 #(
         .CVA6Cfg          (CVA6Cfg),
         .exception_t      (exception_t),
@@ -653,7 +653,7 @@ module load_store_unit
       end
     end
 
-    if (ariane_pkg::MMU_PRESENT && en_ld_st_translation_i && lsu_ctrl.overflow) begin
+    if (CVA6Cfg.MmuPresent && en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception.cause = riscv::LD_ACCESS_FAULT;
@@ -679,7 +679,7 @@ module load_store_unit
       end
     end
 
-    if (ariane_pkg::MMU_PRESENT && CVA6Cfg.RVH && en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
+    if (CVA6Cfg.MmuPresent && CVA6Cfg.RVH && en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception.cause = riscv::LOAD_GUEST_PAGE_FAULT;

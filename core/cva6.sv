@@ -1076,7 +1076,7 @@ module cva6
   // ------------------------
   // Performance Counters
   // ------------------------
-  if (PERF_COUNTER_EN) begin : gen_perf_counter
+  if (CVA6Cfg.PerfCounterEn) begin : gen_perf_counter
     perf_counters #(
         .CVA6Cfg(CVA6Cfg),
         .bp_resolve_t(bp_resolve_t),
