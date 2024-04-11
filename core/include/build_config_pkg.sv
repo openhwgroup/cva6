@@ -41,6 +41,8 @@ package build_config_pkg;
 
     cfg.FpgaEn = CVA6Cfg.FpgaEn;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
+    cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
+    cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;
     cfg.AxiAddrWidth = CVA6Cfg.AxiAddrWidth;
     cfg.AxiDataWidth = CVA6Cfg.AxiDataWidth;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
@@ -114,6 +116,7 @@ package build_config_pkg;
     cfg.ICACHE_LINE_WIDTH = CVA6Cfg.IcacheLineWidth;
     cfg.ICACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.IcacheLineWidth;
     cfg.DCacheType = CVA6Cfg.DCacheType;
+    cfg.DcacheIdWidth = CVA6Cfg.DcacheIdWidth;
     cfg.DCACHE_SET_ASSOC = CVA6Cfg.DcacheSetAssoc;
     cfg.DCACHE_SET_ASSOC_WIDTH = $clog2(CVA6Cfg.DcacheSetAssoc);
     cfg.DCACHE_INDEX_WIDTH = DCACHE_INDEX_WIDTH;
@@ -146,9 +149,6 @@ package build_config_pkg;
     cfg.SVX = (cfg.MODE_SV == config_pkg::ModeSv32) ? 34 : 41;
     cfg.InstrTlbEntries = CVA6Cfg.InstrTlbEntries;
     cfg.DataTlbEntries = CVA6Cfg.DataTlbEntries;
-    cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
-    cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;
-    cfg.DcacheIdWidth = CVA6Cfg.DcacheIdWidth;
 
     return cfg;
   endfunction

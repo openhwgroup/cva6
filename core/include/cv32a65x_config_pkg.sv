@@ -15,6 +15,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigBExtEn = 1;  // UVM
   localparam CVA6ConfigVExtEn = 0;  // RVFI.svh
   localparam CVA6ConfigNrCommitPorts = 1;  // RVFI.svh and UVM
+  localparam CVA6ConfigRvfiTrace = 1;
 
   localparam CVA6ConfigAxiIdWidth = 4;  // axi_pkg.sv
   localparam CVA6ConfigAxiAddrWidth = 64;  // axi_pkg.sv
@@ -27,7 +28,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigDcacheLineWidth = 128;  // hpdcache
   localparam CVA6ConfigNrLoadBufEntries = 1;  // hpdcache
 
-  localparam CVA6ConfigWtDcacheWbufDepth = 2;  // new param ?
+  localparam CVA6ConfigWtDcacheWbufDepth = 2;  // new param
 
   localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
 
@@ -35,8 +36,6 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigInstrTlbEntries = 2;  // MMU
   localparam CVA6ConfigDataTlbEntries = 2;  // MMU
-
-  localparam CVA6ConfigRvfiTrace = 1;
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
