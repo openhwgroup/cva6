@@ -44,8 +44,6 @@ package ariane_pkg;
   // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
   localparam logic [2:0] DEPTH_COMMIT = 'd4;
 
-  localparam bit RVC = cva6_config_pkg::CVA6ConfigCExtEn;  // Is C extension configuration
-
   // Transprecision float unit
   localparam int unsigned LAT_COMP_FP32 = 'd2;
   localparam int unsigned LAT_COMP_FP64 = 'd3;
