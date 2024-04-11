@@ -14,24 +14,24 @@ package cva6_config_pkg;
   localparam CVA6ConfigCvxifEn = 1;  // RVFI.svh
   localparam CVA6ConfigBExtEn = 1;  // UVM
   localparam CVA6ConfigVExtEn = 0;  // RVFI.svh
+  localparam CVA6ConfigNrCommitPorts = 1;  // RVFI.svh and UVM
 
-  localparam CVA6ConfigAxiIdWidth = 4;
-  localparam CVA6ConfigAxiAddrWidth = 64;
-  localparam CVA6ConfigAxiDataWidth = 64;
-  localparam CVA6ConfigDataUserWidth = 32;
+  localparam CVA6ConfigAxiIdWidth = 4;  // axi_pkg.sv
+  localparam CVA6ConfigAxiAddrWidth = 64;  // axi_pkg.sv
+  localparam CVA6ConfigAxiDataWidth = 64;  // axi_pkg.sv
+  localparam CVA6ConfigDataUserWidth = 32;  // axi_pkg.sv
 
   localparam CVA6ConfigDcacheIdWidth = 1;  // hpdcache
-  localparam CVA6ConfigDcacheByteSize = 32768;
-  localparam CVA6ConfigDcacheSetAssoc = 8;
-  localparam CVA6ConfigDcacheLineWidth = 128;
+  localparam CVA6ConfigDcacheByteSize = 32768;  // hpdcache
+  localparam CVA6ConfigDcacheSetAssoc = 8;  // hpdcache
+  localparam CVA6ConfigDcacheLineWidth = 128;  // hpdcache
+  localparam CVA6ConfigNrLoadBufEntries = 1;  // hpdcache
 
   localparam CVA6ConfigWtDcacheWbufDepth = 2;  // new param ?
 
   localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
-  localparam CVA6ConfigNrCommitPorts = 1;  // RVFI.svh and UVM
-  localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
 
-  localparam CVA6ConfigNrLoadBufEntries = 1;  // hpdcache
+  localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
 
   localparam CVA6ConfigInstrTlbEntries = 2;  // MMU
   localparam CVA6ConfigDataTlbEntries = 2;  // MMU
