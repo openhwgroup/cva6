@@ -81,7 +81,7 @@ module cache_ctrl
   typedef struct packed {
     logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] index;
     logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   tag;
-    logic [DCACHE_TID_WIDTH-1:0]           id;
+    logic [CVA6Cfg.DcacheIdWidth-1:0]      id;
     logic [7:0]                            be;
     logic [1:0]                            size;
     logic                                  we;

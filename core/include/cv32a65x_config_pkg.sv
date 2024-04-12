@@ -11,41 +11,31 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigXlen = 32;
 
-  localparam CVA6ConfigCvxifEn = 1;
-  localparam CVA6ConfigCExtEn = 1;
-  localparam CVA6ConfigBExtEn = 1;
-  localparam CVA6ConfigVExtEn = 0;
-
-  localparam CVA6ConfigAxiIdWidth = 4;
-  localparam CVA6ConfigAxiAddrWidth = 64;
-  localparam CVA6ConfigAxiDataWidth = 64;
-  localparam CVA6ConfigDataUserWidth = 32;
-
-  localparam CVA6ConfigDcacheIdWidth = 1;
-  localparam CVA6ConfigDcacheByteSize = 32768;
-  localparam CVA6ConfigDcacheSetAssoc = 8;
-  localparam CVA6ConfigDcacheLineWidth = 128;
-
-  localparam CVA6ConfigWtDcacheWbufDepth = 2;
-
-  localparam CVA6ConfigSuperscalarEn = 0;
-  localparam CVA6ConfigNrCommitPorts = 1;
-  localparam CVA6ConfigNrScoreboardEntries = 4;
-
-  localparam CVA6ConfigNrLoadPipeRegs = 0;
-  localparam CVA6ConfigNrStorePipeRegs = 0;
-  localparam CVA6ConfigNrLoadBufEntries = 1;
-
-  localparam CVA6ConfigInstrTlbEntries = 2;
-  localparam CVA6ConfigDataTlbEntries = 2;
-
-  localparam CVA6ConfigPerfCounterEn = 0;
-
-  localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::WT;
-
-  localparam CVA6ConfigMmuPresent = 0;
-
+  localparam CVA6ConfigCvxifEn = 1;  // RVFI.svh
+  localparam CVA6ConfigBExtEn = 1;  // UVM
+  localparam CVA6ConfigVExtEn = 0;  // RVFI.svh
+  localparam CVA6ConfigNrCommitPorts = 1;  // RVFI.svh and UVM
   localparam CVA6ConfigRvfiTrace = 1;
+
+  localparam CVA6ConfigAxiIdWidth = 4;  // axi_pkg.sv
+  localparam CVA6ConfigAxiAddrWidth = 64;  // axi_pkg.sv
+  localparam CVA6ConfigAxiDataWidth = 64;  // axi_pkg.sv
+  localparam CVA6ConfigDataUserWidth = 32;  // axi_pkg.sv
+
+  localparam CVA6ConfigDcacheIdWidth = 1;  // hpdcache
+  localparam CVA6ConfigDcacheByteSize = 32768;  // hpdcache
+  localparam CVA6ConfigDcacheSetAssoc = 8;  // hpdcache
+  localparam CVA6ConfigDcacheLineWidth = 128;  // hpdcache
+  localparam CVA6ConfigNrLoadBufEntries = 1;  // hpdcache
+
+  localparam CVA6ConfigWtDcacheWbufDepth = 2;  // new param
+
+  localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
+
+  localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
+
+  localparam CVA6ConfigInstrTlbEntries = 2;  // MMU
+  localparam CVA6ConfigDataTlbEntries = 2;  // MMU
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
@@ -56,7 +46,7 @@ package cva6_config_pkg;
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),
       AxiUserWidth: unsigned'(CVA6ConfigDataUserWidth),
       MemTidWidth: unsigned'(2),
-      NrLoadBufEntries: unsigned'(1),
+      NrLoadBufEntries: unsigned'(CVA6ConfigNrLoadBufEntries),
       FpuEn: bit'(0),
       XF16: bit'(0),
       XF16ALT: bit'(0),
@@ -64,7 +54,7 @@ package cva6_config_pkg;
       RVA: bit'(0),
       RVB: bit'(CVA6ConfigBExtEn),
       RVV: bit'(CVA6ConfigVExtEn),
-      RVC: bit'(CVA6ConfigCExtEn),
+      RVC: bit'(1),
       RVH: bit'(0),
       RVZCB: bit'(1),
       RVZCMP: bit'(0),
@@ -72,6 +62,8 @@ package cva6_config_pkg;
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       RVZiCond: bit'(0),
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
+      PerfCounterEn: bit'(0),
+      MmuPresent: bit'(0),
       RVS: bit'(0),
       RVU: bit'(0),
       HaltAddress: 64'h800,
@@ -101,13 +93,18 @@ package cva6_config_pkg;
       IcacheByteSize: unsigned'(2048),
       IcacheSetAssoc: unsigned'(2),
       IcacheLineWidth: unsigned'(128),
-      DCacheType: CVA6ConfigDcacheType,
+      DCacheType: config_pkg::WT,
       DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
       DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
       DataUserEn: unsigned'(0),
       FetchUserWidth: unsigned'(32),
-      FetchUserEn: unsigned'(0)
+      FetchUserEn: unsigned'(0),
+      InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
+      DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
+      NrLoadPipeRegs: int'(0),
+      NrStorePipeRegs: int'(0),
+      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
   };
 
 endpackage

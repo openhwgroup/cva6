@@ -73,7 +73,7 @@ module wt_dcache_ctrl
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] address_tag_d, address_tag_q;
   logic [DCACHE_CL_IDX_WIDTH-1:0] address_idx_d, address_idx_q;
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] address_off_d, address_off_q;
-  logic [DCACHE_TID_WIDTH-1:0] id_d, id_q;
+  logic [CVA6Cfg.DcacheIdWidth-1:0] id_d, id_q;
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] vld_data_d, vld_data_q;
   logic save_tag, rd_req_d, rd_req_q, rd_ack_d, rd_ack_q;
   logic [1:0] data_size_d, data_size_q;

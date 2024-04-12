@@ -191,7 +191,7 @@ module cva6
       logic                                  data_we;
       logic [(CVA6Cfg.XLEN/8)-1:0]           data_be;
       logic [1:0]                            data_size;
-      logic [DCACHE_TID_WIDTH-1:0]           data_id;
+      logic [CVA6Cfg.DcacheIdWidth-1:0]      data_id;
       logic                                  kill_req;
       logic                                  tag_valid;
     },
@@ -199,7 +199,7 @@ module cva6
     localparam type dcache_req_o_t = struct packed {
       logic                                 data_gnt;
       logic                                 data_rvalid;
-      logic [DCACHE_TID_WIDTH-1:0]          data_rid;
+      logic [CVA6Cfg.DcacheIdWidth-1:0]     data_rid;
       logic [CVA6Cfg.XLEN-1:0]              data_rdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
@@ -1076,7 +1076,7 @@ module cva6
   // ------------------------
   // Performance Counters
   // ------------------------
-  if (PERF_COUNTER_EN) begin : gen_perf_counter
+  if (CVA6Cfg.PerfCounterEn) begin : gen_perf_counter
     perf_counters #(
         .CVA6Cfg(CVA6Cfg),
         .bp_resolve_t(bp_resolve_t),

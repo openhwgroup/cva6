@@ -44,8 +44,6 @@ package ariane_pkg;
   // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
   localparam logic [2:0] DEPTH_COMMIT = 'd4;
 
-  localparam bit RVC = cva6_config_pkg::CVA6ConfigCExtEn;  // Is C extension configuration
-
   // Transprecision float unit
   localparam int unsigned LAT_COMP_FP32 = 'd2;
   localparam int unsigned LAT_COMP_FP64 = 'd3;
@@ -260,8 +258,6 @@ package ariane_pkg;
 
   localparam int unsigned MEM_TID_WIDTH = `L15_THREADID_WIDTH;
 `endif
-
-  localparam int unsigned DCACHE_TID_WIDTH = cva6_config_pkg::CVA6ConfigDcacheIdWidth;
 
   localparam int unsigned WT_DCACHE_WBUF_DEPTH = cva6_config_pkg::CVA6ConfigWtDcacheWbufDepth;
 
@@ -578,15 +574,12 @@ package ariane_pkg;
   // ---------------
   // MMU instanciation
   // ---------------
-  localparam bit MMU_PRESENT = cva6_config_pkg::CVA6ConfigMmuPresent;
-
   localparam int unsigned INSTR_TLB_ENTRIES = cva6_config_pkg::CVA6ConfigInstrTlbEntries;
   localparam int unsigned DATA_TLB_ENTRIES = cva6_config_pkg::CVA6ConfigDataTlbEntries;
 
   // -------------------
   // Performance counter
   // -------------------
-  localparam bit PERF_COUNTER_EN = cva6_config_pkg::CVA6ConfigPerfCounterEn;
   localparam int unsigned MHPMCounterNum = 6;
 
   // --------------------

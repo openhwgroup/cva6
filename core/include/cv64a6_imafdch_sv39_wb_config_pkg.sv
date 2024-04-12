@@ -99,6 +99,8 @@ package cva6_config_pkg;
       XFVec: bit'(CVA6ConfigFVecEn),
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       RVZiCond: bit'(CVA6ConfigRVZiCond),
+      PerfCounterEn: bit'(CVA6ConfigPerfCounterEn),
+      MmuPresent: bit'(CVA6ConfigMmuPresent),
       RVS: bit'(1),
       RVU: bit'(1),
       HaltAddress: 64'h800,
@@ -125,7 +127,12 @@ package cva6_config_pkg;
       MaxOutstandingStores: unsigned'(7),
       DebugEn: bit'(1),
       AxiBurstWriteEn: bit'(0),
-      DCacheType: CVA6ConfigDcacheType
+      DCacheType: CVA6ConfigDcacheType,
+      InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
+      DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
+      NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
+      NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
+      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
   };
 
 endpackage

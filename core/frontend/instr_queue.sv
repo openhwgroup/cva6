@@ -151,7 +151,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
 
   assign ready_o = ~(|instr_queue_full) & ~full_address;
 
-  if (ariane_pkg::RVC) begin : gen_multiple_instr_per_fetch_with_C
+  if (CVA6Cfg.RVC) begin : gen_multiple_instr_per_fetch_with_C
 
     for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_unpack_taken
       assign taken[i] = cf_type_i[i] != ariane_pkg::NoCF;
@@ -278,7 +278,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   // (e.g.: we pushed and it was full)
   // 2. The address/branch predict FIFO was full
   // if one of the FIFOs was full we need to replay the faulting instruction
-  if (ariane_pkg::RVC == 1'b1) begin : gen_instr_overflow_fifo_with_C
+  if (CVA6Cfg.RVC == 1'b1) begin : gen_instr_overflow_fifo_with_C
     assign instr_overflow_fifo = instr_queue_full & fifo_pos;
   end else begin : gen_instr_overflow_fifo_without_C
     assign instr_overflow_fifo = instr_queue_full & valid_i;
@@ -287,7 +287,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   assign address_overflow = full_address & push_address;
   assign replay_o = instr_overflow | address_overflow;
 
-  if (ariane_pkg::RVC) begin : gen_replay_addr_o_with_c
+  if (CVA6Cfg.RVC) begin : gen_replay_addr_o_with_c
     // select the address, in the case of an address fifo overflow just
     // use the base of this package
     // if we successfully pushed some instructions we can output the next instruction
@@ -318,7 +318,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
     end
   end
 
-  if (ariane_pkg::RVC) begin : gen_downstream_itf_with_c
+  if (CVA6Cfg.RVC) begin : gen_downstream_itf_with_c
     always_comb begin
       idx_ds_d  = idx_ds_q;
 
@@ -516,7 +516,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   unread i_unread_fifo_pos (.d_i(|fifo_pos_extended));  // we don't care about the lower signals
   unread i_unread_instr_fifo (.d_i(|instr_queue_usage));
 
-  if (ariane_pkg::RVC) begin : gen_pc_q_with_c
+  if (CVA6Cfg.RVC) begin : gen_pc_q_with_c
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         idx_ds_q        <= 'b1;
