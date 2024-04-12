@@ -138,6 +138,7 @@ package cva6_config_pkg;
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
       DCacheType: CVA6ConfigDcacheType,
       DataUserEn: unsigned'(CVA6ConfigDataUserEn),
+      WtDcacheWbufDepth: int'(CVA6ConfigWtDcacheWbufDepth),
       FetchUserWidth: unsigned'(CVA6ConfigFetchUserWidth),
       FetchUserEn: unsigned'(CVA6ConfigFetchUserEn),
       InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),

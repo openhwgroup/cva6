@@ -152,6 +152,8 @@ package config_pkg;
     int unsigned                 DcacheLineWidth;
     // User field on data bus enable
     int unsigned                 DataUserEn;
+    // Write-through data cache write buffer depth
+    int unsigned                 WtDcacheWbufDepth;
     // User field on fetch bus enable
     int unsigned                 FetchUserEn;
     // Width of fetch user field
@@ -293,6 +295,7 @@ package config_pkg;
     int unsigned DCACHE_MAX_TX;
 
     int unsigned DATA_USER_EN;
+    int unsigned WtDcacheWbufDepth;
     int unsigned FETCH_USER_WIDTH;
     int unsigned FETCH_USER_EN;
     bit          AXI_USER_EN;
