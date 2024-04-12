@@ -1049,6 +1049,12 @@ module csr_regfile
             if (!CVA6Cfg.RVV) begin
               mstatus_d.vs = riscv::Off;
             end
+            // If h-extension is not enabled, priv level HS is reserved
+            if (!CVA6Cfg.RVH) begin
+              if (mstatus_d.mpp == PRIV_LVL_HS) begin
+                mstatus_d.mpp = PRIV_LVL_U;
+              end
+            end
             // this instruction has side-effects
             flush_o = 1'b1;
           end else begin
@@ -1241,6 +1247,12 @@ module csr_regfile
           end
           if (!CVA6Cfg.RVV) begin
             mstatus_d.vs = riscv::Off;
+          end
+          // If h-extension is not enabled, priv level HS is reserved
+          if (!CVA6Cfg.RVH) begin
+            if (mstatus_d.mpp == PRIV_LVL_HS) begin
+              mstatus_d.mpp = PRIV_LVL_U;
+            end
           end
           mstatus_d.wpri3 = 9'b0;
           mstatus_d.wpri1 = 1'b0;
