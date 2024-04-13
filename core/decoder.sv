@@ -20,7 +20,9 @@
 //
 
 module decoder import ariane_pkg::*; #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+    parameter type x_issue_req_t = core_v_xif_pkg::x_issue_req_t,
+    parameter type x_issue_resp_t = core_v_xif_pkg::x_issue_resp_t
 ) (
     input  logic               debug_req_i,             // external debug request
     input  logic [riscv::VLEN-1:0] pc_i,                // PC from IF
@@ -42,7 +44,12 @@ module decoder import ariane_pkg::*; #(
     input  logic               tw_i,                    // timeout wait
     input  logic               tsr_i,                   // trap sret
     output scoreboard_entry_t  instruction_o,           // scoreboard entry to scoreboard
-    output logic               is_control_flow_instr_o  // this instruction will change the control flow
+    output logic               is_control_flow_instr_o,  // this instruction will change the control flow
+    // XIF issue interface
+    output logic               core_v_xif_issue_valid_o, // XIF issue handshake valid
+    output x_issue_req_t       core_v_xif_issue_req_o,  // XIF issue interface request to coprocessor
+    input  logic               core_v_xif_issue_ready_i, // XIF issue handshake ready
+    input  x_issue_resp_t      core_v_xif_issue_resp_i  // XIF issue interface response from coprocessor
 );
     logic illegal_instr;
     logic illegal_instr_bm;
@@ -77,19 +84,80 @@ module decoder import ariane_pkg::*; #(
     logic              acc_illegal_instr;
     logic              acc_is_control_flow_instr;
 
+    // logic              is_accel_test;
+    // scoreboard_entry_t acc_instruction_test;
+    // logic              acc_illegal_instr_test;
+    // logic              acc_is_control_flow_instr_test;
+
     if (ENABLE_ACCELERATOR) begin: gen_accel_decoder
         // This module is responsible for a light-weight decoding of accelerator instructions,
         // identifying them, but also whether they read/write scalar registers.
         // Accelerators are supposed to define this module.
-        cva6_accel_first_pass_decoder i_accel_decoder (
-            .instruction_i(instruction_i),
-            .fs_i(fs_i),
-            .vs_i(vs_i),
-            .is_accel_o(is_accel),
-            .instruction_o(acc_instruction),
-            .illegal_instr_o(acc_illegal_instr),
-            .is_control_flow_instr_o(acc_is_control_flow_instr)
-        );
+        // cva6_accel_first_pass_decoder i_accel_decoder (
+        //     .instruction_i(instruction_i),
+        //     .fs_i(fs_i),
+        //     .vs_i(vs_i),
+        //     .is_accel_o(is_accel),
+        //     .instruction_o(acc_instruction),
+        //     .illegal_instr_o(acc_illegal_instr),
+        //     .is_control_flow_instr_o(acc_is_control_flow_instr)
+        // );
+
+        assign core_v_xif_issue_req_o.instr = instruction_i;
+        // TODO: add hartid and instruction id and
+
+
+        // Add logic to recreate the siganlas
+        logic is_load;
+        logic is_store;
+
+        // Cast instruction into the `rvv_instruction_t` struct
+        rvv_pkg::rvv_instruction_t instr;
+        assign instr = rvv_pkg::rvv_instruction_t'(instruction_i);
+
+        // Cast instruction into scalar `instruction_t` struct
+        riscv::instruction_t instr_scalar;
+        assign instr_scalar = riscv::instruction_t'(instruction_i);
+
+        // Vector instructions never change control flow
+        assign acc_is_control_flow_instr = 1'b0;
+
+        always_comb begin
+            is_load  = instr.i_type.opcode == riscv::OpcodeLoadFp;
+            is_store = instr.i_type.opcode == riscv::OpcodeStoreFp;
+            acc_instruction   = '0;
+            acc_illegal_instr = 1'b1;
+
+            if (core_v_xif_issue_resp_i.accept && vs_i != riscv::Off) begin // trigger illegal instruction if the vector extension is turned off
+              // TODO: Instruction going to other accelerators might need to distinguish whether the value of vs_i is needed or not.
+              // Send accelerator instructions to the coprocessor
+              acc_instruction.fu  = ACCEL;
+              acc_instruction.vfp = core_v_xif_issue_resp_i.is_vfp;
+              acc_instruction.rs1 = core_v_xif_issue_resp_i.register_read[0] ? instr_scalar.rtype.rs1 : {REG_ADDR_SIZE{1'b0}};
+              acc_instruction.rs2 = core_v_xif_issue_resp_i.register_read[0] ? instr_scalar.rtype.rs2 : {REG_ADDR_SIZE{1'b0}};
+              acc_instruction.rd  = core_v_xif_issue_resp_i.writeback ? instr_scalar.rtype.rd : {REG_ADDR_SIZE{1'b0}};
+
+              // Decode the vector operation
+              unique case ({is_store, is_load, core_v_xif_issue_resp_i.is_fs1, core_v_xif_issue_resp_i.is_fs2, core_v_xif_issue_resp_i.is_fd})
+                5'b10000: acc_instruction.op = ACCEL_OP_STORE;
+                5'b01000: acc_instruction.op = ACCEL_OP_LOAD;
+                5'b00100: acc_instruction.op = ACCEL_OP_FS1;
+                5'b00001: acc_instruction.op = ACCEL_OP_FD;
+                5'b00000: acc_instruction.op = ACCEL_OP;
+              endcase
+
+              // Check that mstatus.FS is not OFF if we have a FP instruction for the accelerator
+              acc_illegal_instr = (core_v_xif_issue_resp_i.is_vfp && (fs_i == riscv::Off)) ? 1'b1 : 1'b0;
+
+              // result holds the undecoded instruction
+              acc_instruction.result = { {riscv::XLEN-32{1'b0}}, instruction_i[31:0] };
+              acc_instruction.use_imm = 1'b0;
+            end
+          end
+
+        assign is_accel = core_v_xif_issue_resp_i.accept;
+
+
     end: gen_accel_decoder else begin
         assign is_accel                  = 1'b0;
         assign acc_instruction           = '0;

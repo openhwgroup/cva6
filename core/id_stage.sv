@@ -14,7 +14,9 @@
 //              issue and read operands.
 
 module id_stage #(
-    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty
+    parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
+    parameter type x_issue_req_t = core_v_xif_pkg::x_issue_req_t,
+    parameter type x_issue_resp_t = core_v_xif_pkg::x_issue_resp_t
 ) (
     input  logic                          clk_i,
     input  logic                          rst_ni,
@@ -40,7 +42,12 @@ module id_stage #(
     input  logic                          debug_mode_i,        // we are in debug mode
     input  logic                          tvm_i,
     input  logic                          tw_i,
-    input  logic                          tsr_i
+    input  logic                          tsr_i,
+    // XIF issue interface
+    output logic               core_v_xif_issue_valid_o, // XIF issue handshake valid
+    output x_issue_req_t       core_v_xif_issue_req_o,  // XIF issue interface request to coprocessor
+    input  logic               core_v_xif_issue_ready_i, // XIF issue handshake ready
+    input  x_issue_resp_t      core_v_xif_issue_resp_i  // XIF issue interface response from coprocessor
 );
     // ID/ISSUE register stage
     typedef struct packed {
@@ -78,7 +85,9 @@ module id_stage #(
     // 2. Decode and emit instruction to issue stage
     // ---------------------------------------------------------
     decoder #(
-        .cva6_cfg   ( cva6_cfg   )
+        .cva6_cfg   ( cva6_cfg   ),
+        .x_issue_req_t (x_issue_req_t),
+        .x_issue_resp_t (x_issue_resp_t)
     ) decoder_i (
         .debug_req_i,
         .irq_ctrl_i,
@@ -99,7 +108,11 @@ module id_stage #(
         .tw_i,
         .tsr_i,
         .instruction_o           ( decoded_instruction          ),
-        .is_control_flow_instr_o ( is_control_flow_instr        )
+        .is_control_flow_instr_o ( is_control_flow_instr        ),
+        .core_v_xif_issue_valid_o ( core_v_xif_issue_valid_o    ),
+        .core_v_xif_issue_req_o  ( core_v_xif_issue_req_o       ),
+        .core_v_xif_issue_ready_i ( core_v_xif_issue_ready_i    ),
+        .core_v_xif_issue_resp_i ( core_v_xif_issue_resp_i      )
     );
 
     // ------------------

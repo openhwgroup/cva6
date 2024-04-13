@@ -17,7 +17,9 @@
 module ex_stage import ariane_pkg::*; #(
     parameter ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty,
     parameter int unsigned ASID_WIDTH = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig,
+    parameter type x_req_t = core_v_xif_pkg::x_req_t,
+    parameter type x_resp_t = core_v_xif_pkg::x_resp_t
 ) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -88,9 +90,9 @@ module ex_stage import ariane_pkg::*; #(
     output riscv::xlen_t                           x_result_o,
     output logic                                   x_valid_o,
     output logic                                   x_we_o,
-    output cvxif_pkg::cvxif_req_t                  cvxif_req_o,
-    input  cvxif_pkg::cvxif_resp_t                 cvxif_resp_i,
-    input logic                                    acc_valid_i,      // Output is valid
+    output x_req_t                 core_v_xif_req_o,
+    input  x_resp_t                core_v_xif_resp_i,
+    input  logic                                   acc_valid_i,      // Output is valid
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
@@ -370,11 +372,23 @@ module ex_stage import ariane_pkg::*; #(
             .x_result_o,
             .x_valid_o,
             .x_we_o,
-            .cvxif_req_o,
-            .cvxif_resp_i
+            .core_v_xif_req_o,
+            .core_v_xif_resp_i
         );
     end else begin : gen_no_cvxif
-        assign cvxif_req_o   = '0;
+        assign core_v_xif_req_o.issue_valid = '0;
+        assign core_v_xif_req_o.issue_req = '0;
+        assign core_v_xif_req_o.register_valid = '0;
+        assign core_v_xif_req_o.register.hartid = '0;
+        assign core_v_xif_req_o.register.id = '0;
+        assign core_v_xif_req_o.register.rs[0] = '0;
+        assign core_v_xif_req_o.register.rs[1] = '0;
+        assign core_v_xif_req_o.register.rs_valid = '0;
+        assign core_v_xif_req_o.commit_valid = '0;
+        assign core_v_xif_req_o.commit = '0;
+        assign core_v_xif_req_o.result_ready = '0;
+        assign core_v_xif_req_o.acc_req = '0;
+
         assign x_trans_id_o  = '0;
         assign x_exception_o = '0;
         assign x_result_o    = '0;

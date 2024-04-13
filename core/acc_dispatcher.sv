@@ -13,7 +13,10 @@
 // Date: 20.11.2020
 // Description: Functional unit that dispatches CVA6 instructions to accelerators.
 
-module acc_dispatcher import ariane_pkg::*; import riscv::*; (
+module acc_dispatcher import ariane_pkg::*; import riscv::*; #(
+    parameter type x_req_t = core_v_xif_pkg::x_req_t,
+    parameter type x_resp_t = core_v_xif_pkg::x_resp_t
+  ) (
     input  logic                                  clk_i,
     input  logic                                  rst_ni,
     // Interface with the CSR regfile
@@ -43,8 +46,8 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     input  logic                                  flush_unissued_instr_i,
     input  logic                                  flush_ex_i,
     // Accelerator interface
-    output acc_pkg::accelerator_req_t             acc_req_o,
-    input  acc_pkg::accelerator_resp_t            acc_resp_i
+    output x_req_t                core_v_xif_req_o,
+    input  x_resp_t               core_v_xif_resp_i
   );
 
   `include "common_cells/registers.svh"
@@ -162,8 +165,8 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     end
 
     // An accelerator instruction was issued.
-    if (acc_req_o.req_valid)
-      insn_ready_d[acc_req_o.trans_id] = 1'b0;
+    if (core_v_xif_req_o.register_valid)
+      insn_ready_d[core_v_xif_req_o.register.id] = 1'b0;
   end: p_non_speculative_ff
 
   /*************************
@@ -186,19 +189,19 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
     .valid_i   (acc_req_valid  ),
     .ready_o   (acc_req_ready  ),
     .data_o    (acc_req_int    ),
-    .valid_o   (acc_req_o.req_valid),
-    .ready_i   (acc_resp_i.req_ready)
+    .valid_o   (core_v_xif_req_o.register_valid),
+    .ready_i   (core_v_xif_resp_i.register_ready)
   );
 
-  assign acc_req_o.insn          = acc_req_int.insn;
-  assign acc_req_o.rs1           = acc_req_int.rs1;
-  assign acc_req_o.rs2           = acc_req_int.rs2;
-  assign acc_req_o.frm           = acc_req_int.frm;
-  assign acc_req_o.trans_id      = acc_req_int.trans_id;
-  assign acc_req_o.store_pending = !acc_no_st_pending_i && acc_cons_en_i;
-  assign acc_req_o.acc_cons_en   = acc_cons_en_i;
+  assign core_v_xif_req_o.acc_req.instr          = acc_req_int.insn;
+  assign core_v_xif_req_o.register.rs[0]           = acc_req_int.rs1;
+  assign core_v_xif_req_o.register.rs[1]           = acc_req_int.rs2;
+  assign core_v_xif_req_o.acc_req.frm              = acc_req_int.frm;
+  assign core_v_xif_req_o.register.id              = acc_req_int.trans_id;
+  assign core_v_xif_req_o.acc_req.store_pending    = !acc_no_st_pending_i && acc_cons_en_i;
+  assign core_v_xif_req_o.acc_req.acc_cons_en      = acc_cons_en_i;
   // Will be overwritten by dcache
-  assign acc_req_o.inval_ready   = '0;
+  assign core_v_xif_req_o.acc_req.inval_ready      = '0;
 
   always_comb begin: accelerator_req_dispatcher
     // Do not fetch from the instruction queue
@@ -238,16 +241,16 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   logic acc_st_disp;
 
   // Unpack the accelerator response
-  assign acc_trans_id_o  = acc_resp_i.trans_id;
-  assign acc_result_o    = acc_resp_i.result;
-  assign acc_valid_o     = acc_resp_i.resp_valid;
+  assign acc_trans_id_o  = core_v_xif_resp_i.result.id;
+  assign acc_result_o    = core_v_xif_resp_i.result.data;
+  assign acc_valid_o     = core_v_xif_resp_i.result_valid;
   assign acc_exception_o = '{
       cause: riscv::ILLEGAL_INSTR,
       tval : '0,
-      valid: acc_resp_i.error
+      valid: core_v_xif_resp_i.acc_resp.error
     };
   // Always ready to receive responses
-  assign acc_req_o.resp_ready = 1'b1;
+  assign core_v_xif_req_o.result_ready = 1'b1;
 
   // Signal dispatched load/store to issue stage
   assign acc_ld_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
@@ -291,7 +294,7 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
   `FF(wait_acc_store_q, wait_acc_store_d, '0)
 
   // Set on store barrier. Clear when no store is pending.
-  assign wait_acc_store_d = (wait_acc_store_q | commit_st_barrier_i) & acc_resp_i.store_pending;
+  assign wait_acc_store_d = (wait_acc_store_q | commit_st_barrier_i) & core_v_xif_resp_i.acc_resp.store_pending;
   assign ctrl_halt_o      = wait_acc_store_q;
 
   /**************************
@@ -330,9 +333,9 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
       .clk_i           (clk_i                   ),
       .rst_ni          (rst_ni                  ),
       .clear_i         (1'b0                    ),
-      .en_i            (acc_ld_disp ^ acc_resp_i.load_complete),
+      .en_i            (acc_ld_disp ^ core_v_xif_resp_i.acc_resp.load_complete),
       .load_i          (1'b0                    ),
-      .down_i          (acc_resp_i.load_complete),
+      .down_i          (core_v_xif_resp_i.acc_resp.load_complete),
       .d_i             ('0                      ),
       .q_o             (acc_disp_loads_pending  ),
       .overflow_o      (acc_disp_loads_overflow )
@@ -374,9 +377,9 @@ module acc_dispatcher import ariane_pkg::*; import riscv::*; (
       .clk_i           (clk_i                    ),
       .rst_ni          (rst_ni                   ),
       .clear_i         (1'b0                     ),
-      .en_i            (acc_st_disp ^ acc_resp_i.store_complete),
+      .en_i            (acc_st_disp ^ core_v_xif_resp_i.acc_resp.store_complete),
       .load_i          (1'b0                     ),
-      .down_i          (acc_resp_i.store_complete),
+      .down_i          (core_v_xif_resp_i.acc_resp.store_complete),
       .d_i             ('0                       ),
       .q_o             (acc_disp_stores_pending  ),
       .overflow_o      (acc_disp_stores_overflow )

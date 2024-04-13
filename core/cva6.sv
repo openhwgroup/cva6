@@ -24,7 +24,11 @@ module cva6 import ariane_pkg::*; #(
   parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
   parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
   parameter type axi_req_t = ariane_axi::req_t,
-  parameter type axi_rsp_t = ariane_axi::resp_t
+  parameter type axi_rsp_t = ariane_axi::resp_t,
+  parameter type x_req_t = core_v_xif_pkg::x_req_t,
+  parameter type x_resp_t = core_v_xif_pkg::x_resp_t,
+  parameter type x_issue_req_t = core_v_xif_pkg::x_issue_req_t,
+  parameter type x_issue_resp_t = core_v_xif_pkg::x_issue_resp_t
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -41,15 +45,21 @@ module cva6 import ariane_pkg::*; #(
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output ariane_pkg::rvfi_port_t       rvfi_o,
-  output cvxif_req_t                   cvxif_req_o,
-  input  cvxif_resp_t                  cvxif_resp_i,
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
   input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i,
   // memory side, AXI Master
   output axi_req_t                     axi_req_o,
-  input  axi_rsp_t                     axi_resp_i
+  input  axi_rsp_t                     axi_resp_i,
+  // XIF
+  output x_req_t                       core_v_xif_req_o,
+  input  x_resp_t                      core_v_xif_resp_i
 );
+
+  // x_issue_req_t test;
+  // assign test.test = 1'b1;
+
+
 
   localparam ariane_pkg::cva6_cfg_t cva6_cfg = ariane_pkg::cva6_cfg_empty;
 
@@ -65,8 +75,8 @@ module cva6 import ariane_pkg::*; #(
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
   localparam NumPorts = 3;
-  cvxif_pkg::cvxif_req_t      cvxif_req;
-  cvxif_pkg::cvxif_resp_t     cvxif_resp;
+  x_req_t                     core_v_xif_req;
+  x_resp_t                    core_v_xif_resp;
 
   // --------------
   // PCGEN <-> CSR
@@ -309,8 +319,12 @@ module cva6 import ariane_pkg::*; #(
   // ---------
   // ID
   // ---------
+  logic           core_v_xif_issue_valid;
+  x_issue_req_t   core_v_xif_issue_req;
   id_stage #(
-    .cva6_cfg   ( cva6_cfg   )
+    .cva6_cfg   ( cva6_cfg   ),
+    .x_issue_req_t (x_issue_req_t),
+    .x_issue_resp_t (x_issue_resp_t)
   ) id_stage_i (
     .clk_i,
     .rst_ni,
@@ -335,7 +349,11 @@ module cva6 import ariane_pkg::*; #(
     .debug_mode_i               ( debug_mode                 ),
     .tvm_i                      ( tvm_csr_id                 ),
     .tw_i                       ( tw_csr_id                  ),
-    .tsr_i                      ( tsr_csr_id                 )
+    .tsr_i                      ( tsr_csr_id                 ),
+    .core_v_xif_issue_valid_o   ( core_v_xif_issue_valid     ),
+    .core_v_xif_issue_req_o     ( core_v_xif_issue_req       ),
+    .core_v_xif_issue_ready_i   ( core_v_xif_resp_i.issue_ready ),
+    .core_v_xif_issue_resp_i    ( core_v_xif_resp_i.issue_resp)
   );
 
   logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_ex_id;
@@ -447,7 +465,9 @@ module cva6 import ariane_pkg::*; #(
   ex_stage #(
     .cva6_cfg   ( cva6_cfg   ),
     .ASID_WIDTH ( ASID_WIDTH ),
-    .ArianeCfg  ( ArianeCfg  )
+    .ArianeCfg  ( ArianeCfg  ),
+    .x_req_t (x_req_t),
+    .x_resp_t (x_resp_t)
   ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
@@ -484,8 +504,8 @@ module cva6 import ariane_pkg::*; #(
     .load_result_o          ( load_result_ex_id           ),
     .load_trans_id_o        ( load_trans_id_ex_id         ),
     .load_valid_o           ( load_valid_ex_id            ),
-    .load_exception_o       ( load_exception_ex_id        ),
-
+    
+.load_exception_o       ( load_exception_ex_id        ),
     .store_result_o         ( store_result_ex_id          ),
     .store_trans_id_o       ( store_trans_id_ex_id        ),
     .store_valid_o          ( store_valid_ex_id           ),
@@ -518,8 +538,8 @@ module cva6 import ariane_pkg::*; #(
     .x_result_o             ( x_result_ex_id              ),
     .x_valid_o              ( x_valid_ex_id               ),
     .x_we_o                 ( x_we_ex_id                  ),
-    .cvxif_req_o            ( cvxif_req                   ),
-    .cvxif_resp_i           ( cvxif_resp                  ),
+    .core_v_xif_req_o       ( core_v_xif_req              ),
+    .core_v_xif_resp_i      ( core_v_xif_resp             ),
     // Accelerator
     .acc_valid_i            ( acc_valid_acc_ex            ),
     // Performance counters
@@ -848,9 +868,12 @@ module cva6 import ariane_pkg::*; #(
   // ----------------
 
   if (ENABLE_ACCELERATOR) begin: gen_accelerator
-    acc_pkg::accelerator_req_t acc_req;
+    x_req_t core_v_xif_req_unpacked;
 
-    acc_dispatcher i_acc_dispatcher (
+    acc_dispatcher #(
+      .x_req_t (x_req_t),
+      .x_resp_t (x_resp_t)
+    ) i_acc_dispatcher (
       .clk_i                  ( clk_i                        ),
       .rst_ni                 ( rst_ni                       ),
       .flush_unissued_instr_i ( flush_unissued_instr_ctrl_id ),
@@ -872,23 +895,30 @@ module cva6 import ariane_pkg::*; #(
       .commit_ack_i           ( commit_ack                   ),
       .acc_no_st_pending_i    ( no_st_pending_commit         ),
       .ctrl_halt_o            ( halt_acc_ctrl                ),
-      .acc_req_o              ( acc_req                      ),
-      .acc_resp_i             ( cvxif_resp_i                 )
+      .core_v_xif_req_o       ( core_v_xif_req_unpacked      ),
+      .core_v_xif_resp_i      ( core_v_xif_resp_i            )
     );
 
-    assign acc_resp_fflags = cvxif_resp_i.fflags;
-    assign acc_resp_fflags_valid = cvxif_resp_i.fflags_valid;
+    // Add floating point flags
+    assign acc_resp_fflags       = core_v_xif_resp_i.acc_resp.fflags;
+    assign acc_resp_fflags_valid = core_v_xif_resp_i.acc_resp.fflags_valid;
 
-    // Pack invalidation interface into accelerator interface
     always_comb begin : pack_inval
-      inval_valid             = cvxif_resp_i.inval_valid;
-      inval_addr              = cvxif_resp_i.inval_addr;
-      cvxif_req_o             = acc_req;
-      cvxif_req_o.inval_ready = inval_ready;
+      inval_valid                          = core_v_xif_resp_i.acc_resp.inval_valid;
+      inval_addr                           = core_v_xif_resp_i.acc_resp.inval_addr;
+      core_v_xif_req_o                     = core_v_xif_req_unpacked;
+      core_v_xif_req_o.issue_req           = core_v_xif_issue_req;
+      core_v_xif_req_o.acc_req.inval_ready = inval_ready;
     end
 
     // Tie off cvxif
-    assign cvxif_resp = '0;
+    assign core_v_xif_resp.issue_ready    = '0;
+    assign core_v_xif_resp.issue_resp     = '0;
+    assign core_v_xif_resp.register_ready = '0;
+    assign core_v_xif_resp.result_valid   = '0;
+    assign core_v_xif_resp.result         = '0;
+    assign core_v_xif_resp.acc_resp       = '0;
+
   end : gen_accelerator else begin: gen_no_accelerator
     assign acc_trans_id_ex_id    = '0;
     assign acc_result_ex_id      = '0;
@@ -906,8 +936,8 @@ module cva6 import ariane_pkg::*; #(
     assign inval_addr  = '0;
 
     // Feed through cvxif
-    assign cvxif_req_o = cvxif_req;
-    assign cvxif_resp  = cvxif_resp_i;
+    assign core_v_xif_req_o = core_v_xif_req;
+    assign core_v_xif_resp  = core_v_xif_resp_i;
   end : gen_no_accelerator
 
   // -------------------
@@ -1107,5 +1137,4 @@ module cva6 import ariane_pkg::*; #(
       end
     end
   end
-
 endmodule // ariane
