@@ -104,6 +104,12 @@ module decoder import ariane_pkg::*; #(
         // );
 
         assign core_v_xif_issue_req_o.instr = instruction_i;
+        always_comb begin
+            core_v_xif_issue_valid_o = 1'b0;
+            if (instruction_i != 32'b0) begin 
+                core_v_xif_issue_valid_o = 1'b1;
+            end
+        end
         // TODO: add hartid and instruction id and
 
 

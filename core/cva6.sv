@@ -908,6 +908,7 @@ module cva6 import ariane_pkg::*; #(
       inval_addr                           = core_v_xif_resp_i.acc_resp.inval_addr;
       core_v_xif_req_o                     = core_v_xif_req_unpacked;
       core_v_xif_req_o.issue_req           = core_v_xif_issue_req;
+      core_v_xif_req_o.issue_valid         = core_v_xif_issue_valid;
       core_v_xif_req_o.acc_req.inval_ready = inval_ready;
     end
 
