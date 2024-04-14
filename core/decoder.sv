@@ -84,6 +84,8 @@ module decoder import ariane_pkg::*; #(
     logic              acc_illegal_instr;
     logic              acc_is_control_flow_instr;
 
+    logic              core_v_xif_issue_ready;
+
     // logic              is_accel_test;
     // scoreboard_entry_t acc_instruction_test;
     // logic              acc_illegal_instr_test;
@@ -102,14 +104,10 @@ module decoder import ariane_pkg::*; #(
         //     .illegal_instr_o(acc_illegal_instr),
         //     .is_control_flow_instr_o(acc_is_control_flow_instr)
         // );
-
+        assign core_v_xif_issue_ready = core_v_xif_issue_ready_i;
         assign core_v_xif_issue_req_o.instr = instruction_i;
-        always_comb begin
-            core_v_xif_issue_valid_o = 1'b0;
-            if (instruction_i != 32'b0) begin 
-                core_v_xif_issue_valid_o = 1'b1;
-            end
-        end
+        assign core_v_xif_issue_valid_o = 1'b1;
+
         // TODO: add hartid and instruction id and
 
 
@@ -177,6 +175,8 @@ module decoder import ariane_pkg::*; #(
         assign acc_instruction           = '0;
         assign acc_illegal_instr         = 1'b1; // this should never propagate
         assign acc_is_control_flow_instr = 1'b0;
+        assign core_v_xif_issue_ready    = 1'b1;
+        assign core_v_xif_issue_valid_o  = 1'b1;
     end
 
     always_comb begin : decoder
