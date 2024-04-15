@@ -1,0 +1,17 @@
+nmi:
+    label: nmi_vector
+reset:
+    label: reset_vector
+mtime:
+    implemented: true
+    address: 0x20000
+mtimecmp:
+    implemented: false
+mtval_condition_writes:
+    implemented: false
+scause_non_standard:
+    implemented: false
+stval_condition_writes:
+    implemented: false
+zicbo_cache_block_sz:
+    implemented: false
