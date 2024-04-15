@@ -276,16 +276,13 @@ module cva6_rvfi
 
 
   `define CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME, CSR_SOURCE_NAME) \
-      bit [CVA6Cfg.XLEN-1:0] ``CSR_NAME``_d; \
       always_ff @(posedge clk_i) begin \
-        ``CSR_NAME``_d <= {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}; \
+        rvfi_csr_o.``CSR_NAME``.rdata  = CSR_ENABLE_COND ? {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME} : 0; \
       end \
       always_comb begin \
-        rvfi_csr_o.``CSR_NAME = CSR_ENABLE_COND ? \
-        '{ rdata: ``CSR_NAME``_d , \
-          wdata: { {{CVA6Cfg.XLEN-$bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME} }, \
-          rmask: '1, wmask: '1} \
-          : '0; \
+        rvfi_csr_o.``CSR_NAME``.wdata = CSR_ENABLE_COND ? { {{CVA6Cfg.XLEN-$bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME} } : 0; \
+        rvfi_csr_o.``CSR_NAME``.rmask = CSR_ENABLE_COND ? 1 : 0; \
+        rvfi_csr_o.``CSR_NAME``.wmask = CSR_ENABLE_COND ? (rvfi_csr_o.``CSR_NAME``.rdata != {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}) : 0; \
       end
 
   `define COMMA ,
@@ -380,29 +377,7 @@ module cva6_rvfi
   genvar i;
   generate
     for (i = 0; i < 16; i++) begin
-      always_ff @(posedge clk_i) begin
-        pmpaddr_q[i] = (csr.pmpcfg_q[i].addr_mode[1] == 1'b1) ?
-            {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
-            : {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}} , csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1] , 1'b0 };
-      end
-      always_comb begin
-        rvfi_csr_o.pmpaddr[i] = '{
-            rdata: {'0, pmpaddr_q[i]},
-            wdata:
-            csr.pmpcfg_q[i].addr_mode[1]
-            == 1'b1 ?
-            {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
-            : {
-            {CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}
-            ,
-            csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1]
-            ,
-            1'b0
-            },
-            rmask: '1,
-            wmask: '1
-        };
-      end
+      `CONNECT_RVFI_FULL(1'b1, pmpaddr[i], csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0])
     end
   endgenerate
   ;

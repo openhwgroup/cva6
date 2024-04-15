@@ -46,12 +46,17 @@ module spike #(
     st_core_cntrl_cfg st;
 
     initial begin
+        string core_name = "cva6";
         st = cva6pkg_to_core_cntrl_cfg(st);
         st.boot_addr_valid = 1'b1;
         st.boot_addr = 64'h0x10000;
 
+        if ($test$plusargs("core_name")) begin
+          $value$plusargs("core_name=%s", core_name);
+        end
+
         rvfi_initialize(st);
-        rvfi_initialize_spike("cva6", st);
+        rvfi_initialize_spike(core_name, st);
 
     end
 
@@ -101,24 +106,30 @@ module spike #(
                         s_core.csr_wdata[CSR_INDEX] = rvfi_csr_i.``CSR_NAME``.wdata;\
                         s_core.csr_wmask[CSR_INDEX] = rvfi_csr_i.``CSR_NAME``.wmask;
 
-                    `GET_RVFI_CSR (CSR_MSTATUS  , mstatus     ,  0)
-                    `GET_RVFI_CSR (CSR_MCAUSE   , mcause      ,  1)
-                    `GET_RVFI_CSR (CSR_MEPC     , mepc        ,  2)
-                    `GET_RVFI_CSR (CSR_MTVEC    , mtvec       ,  3)
-                    `GET_RVFI_CSR (CSR_MISA     , misa        ,  4)
-                    `GET_RVFI_CSR (CSR_MTVAL    , mtval       ,  5)
-                    `GET_RVFI_CSR (CSR_MIDELEG  , mideleg     ,  6)
-                    `GET_RVFI_CSR (CSR_MEDELEG  , medeleg     ,  7)
-                    `GET_RVFI_CSR (CSR_SATP     , satp        ,  8)
-                    `GET_RVFI_CSR (CSR_MIE      , mie         ,  9)
-                    `GET_RVFI_CSR (CSR_STVEC    , stvec       , 10)
-                    `GET_RVFI_CSR (CSR_SSCRATCH , sscratch    , 11)
-                    `GET_RVFI_CSR (CSR_SEPC     , sepc        , 12)
-                    `GET_RVFI_CSR (CSR_MSCRATCH , mscratch    , 13)
-                    `GET_RVFI_CSR (CSR_STVAL    , stval       , 14)
-                    `GET_RVFI_CSR (CSR_SCAUSE   , scause      , 15)
-                    `GET_RVFI_CSR (CSR_PMPADDR0 , pmpaddr[0]  , 16)
-                    `GET_RVFI_CSR (CSR_PMPCFG0  , pmpcfg0     , 17)
+                    `GET_RVFI_CSR (CSR_MSTATUS      , mstatus     ,  0)
+                    `GET_RVFI_CSR (CSR_MCAUSE       , mcause      ,  1)
+                    `GET_RVFI_CSR (CSR_MEPC         , mepc        ,  2)
+                    `GET_RVFI_CSR (CSR_MTVEC        , mtvec       ,  3)
+                    `GET_RVFI_CSR (CSR_MISA         , misa        ,  4)
+                    `GET_RVFI_CSR (CSR_MTVAL        , mtval       ,  5)
+                    `GET_RVFI_CSR (CSR_MIDELEG      , mideleg     ,  6)
+                    `GET_RVFI_CSR (CSR_MEDELEG      , medeleg     ,  7)
+                    `GET_RVFI_CSR (CSR_SATP         , satp        ,  8)
+                    `GET_RVFI_CSR (CSR_MIE          , mie         ,  9)
+                    `GET_RVFI_CSR (CSR_STVEC        , stvec       , 10)
+                    `GET_RVFI_CSR (CSR_SSCRATCH     , sscratch    , 11)
+                    `GET_RVFI_CSR (CSR_SEPC         , sepc        , 12)
+                    `GET_RVFI_CSR (CSR_MSCRATCH     , mscratch    , 13)
+                    `GET_RVFI_CSR (CSR_STVAL        , stval       , 14)
+                    `GET_RVFI_CSR (CSR_SCAUSE       , scause      , 15)
+                    `GET_RVFI_CSR (CSR_PMPCFG0      , pmpcfg0     , 16)
+                    `GET_RVFI_CSR (CSR_PMPCFG1      , pmpcfg1     , 17)
+                    `GET_RVFI_CSR (CSR_PMPCFG2      , pmpcfg2     , 18)
+                    `GET_RVFI_CSR (CSR_PMPCFG3      , pmpcfg3     , 19)
+                    for (int i = 0; i < 16; i++) begin
+                      `GET_RVFI_CSR (CSR_PMPADDR0 + i  , pmpaddr[i]  , 20 + i)
+                    end
+                    `GET_RVFI_CSR (CSR_MINSTRET     , instret     , 37)
 
                     rvfi_spike_step(s_core, s_reference_model);
                     rvfi_compare(s_core, s_reference_model);
