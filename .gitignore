@@ -46,3 +46,6 @@ Bender.lock
 /tools/
 /util/gcc-toolchain-builder/src/
 /util/gcc-toolchain-builder/build/
+# Both following lines are needed to list contents of ISA manual build dir.
+!/vendor/riscv/riscv-isa-manual/build/
+!/vendor/riscv/riscv-isa-manual/build/*
