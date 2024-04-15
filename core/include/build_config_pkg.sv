@@ -130,6 +130,7 @@ package build_config_pkg;
     cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
 
     cfg.DATA_USER_EN = CVA6Cfg.DataUserEn;
+    cfg.WtDcacheWbufDepth = CVA6Cfg.WtDcacheWbufDepth;
     cfg.FETCH_USER_WIDTH = CVA6Cfg.FetchUserWidth;
     cfg.FETCH_USER_EN = CVA6Cfg.FetchUserEn;
     cfg.AXI_USER_EN = CVA6Cfg.DataUserEn | CVA6Cfg.FetchUserEn;

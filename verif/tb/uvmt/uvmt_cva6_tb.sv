@@ -33,10 +33,9 @@ module uvmt_cva6_tb;
    import uvmt_cva6_pkg::*;
    import uvme_cva6_pkg::*;
 
-   localparam RVFI_NRET = cva6_config_pkg::CVA6ConfigNrCommitPorts;
-
    // CVA6 config
    localparam config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(cva6_config_pkg::cva6_cfg);
+   localparam RVFI_NRET = CVA6Cfg.NrCommitPorts;
 
    // RVFI
    localparam type rvfi_instr_t = `RVFI_INSTR_T(CVA6Cfg);
