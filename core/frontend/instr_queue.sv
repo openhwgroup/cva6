@@ -343,7 +343,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
 
       // output mux select
       for (int unsigned i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
-        // TODO handle fetch_entry_o[NID] if superscalar
+        // TODO handle fetch_entry_o[1] if superscalar
         if (idx_ds[0][i]) begin
           if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
             fetch_entry_o[0].ex.cause = riscv::INSTR_ACCESS_FAULT;
