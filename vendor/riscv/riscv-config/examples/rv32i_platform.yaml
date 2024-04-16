@@ -1,0 +1,7 @@
+nmi:
+  label: nmi_vector
+reset:
+  label: reset_vector
+mtime:
+  implemented: True
+  address: 0x20000

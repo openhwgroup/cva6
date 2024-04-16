@@ -1,0 +1,15 @@
+docs/build
+docs/source/schema_isa.rst
+docs/source/schema_platform.rst
+docs/source/schema_debug.rst
+
+run.log
+
+__pycache__/*
+
+*.pyc
+
+riscv_config_work/*
+.python-version
+
+riscv_config.egg-info/
