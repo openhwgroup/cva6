@@ -135,6 +135,7 @@ module decoder
     // identifying them, but also whether they read/write scalar registers.
     // Accelerators are supposed to define this module.
     cva6_accel_first_pass_decoder #(
+        .CVA6Cfg(CVA6Cfg),
         .scoreboard_entry_t(scoreboard_entry_t)
     ) i_accel_decoder (
         .instruction_i(instruction_i),

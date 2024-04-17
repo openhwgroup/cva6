@@ -88,6 +88,9 @@ module instr_queue
     input logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_ready_i
 );
 
+  // Calculate next index based on whether superscalar is enabled or not.
+  localparam NID = ariane_pkg::SUPERSCALAR > 0 ? 1 : 0;
+
   typedef struct packed {
     logic [31:0]                     instr;      // instruction word
     ariane_pkg::cf_t                 cf;         // branch was taken
@@ -302,9 +305,9 @@ ariane_pkg::FETCH_FIFO_DEPTH
   // ----------------------
   // as long as there is at least one queue which can take the value we have a valid instruction
   assign fetch_entry_valid_o[0] = ~(&instr_queue_empty);
-  if (ariane_pkg::SUPERSCALAR) begin : gen_fetch_entry_valid_1
+  if (ariane_pkg::SUPERSCALAR > 0) begin : gen_fetch_entry_valid_1
     // TODO Maybe this additional fetch_entry_is_cf check is useless as issue-stage already performs it?
-    assign fetch_entry_valid_o[1] = ~|(instr_queue_empty & idx_ds[1]) & ~(&fetch_entry_is_cf);
+    assign fetch_entry_valid_o[NID] = ~|(instr_queue_empty & idx_ds[1]) & ~(&fetch_entry_is_cf);
   end
 
   assign idx_ds[0] = idx_ds_q;
@@ -364,26 +367,26 @@ ariane_pkg::FETCH_FIFO_DEPTH
           pop_instr[i] = fetch_entry_fire[0];
         end
 
-        if (ariane_pkg::SUPERSCALAR) begin
+        if (ariane_pkg::SUPERSCALAR > 0) begin
           if (idx_ds[1][i]) begin
             if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
-              fetch_entry_o[1].ex.cause = riscv::INSTR_ACCESS_FAULT;
+              fetch_entry_o[NID].ex.cause = riscv::INSTR_ACCESS_FAULT;
             end else begin
-              fetch_entry_o[1].ex.cause = riscv::INSTR_PAGE_FAULT;
+              fetch_entry_o[NID].ex.cause = riscv::INSTR_PAGE_FAULT;
             end
-            fetch_entry_o[1].instruction = instr_data_out[i].instr;
-            fetch_entry_o[1].ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
-            fetch_entry_o[1].ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[i].ex_vaddr};
-            fetch_entry_o[1].branch_predict.cf = instr_data_out[i].cf;
+            fetch_entry_o[NID].instruction = instr_data_out[i].instr;
+            fetch_entry_o[NID].ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
+            fetch_entry_o[NID].ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[i].ex_vaddr};
+            fetch_entry_o[NID].branch_predict.cf = instr_data_out[i].cf;
             // Cannot output two CF the same cycle.
-            pop_instr[i] = fetch_entry_fire[1];
+            pop_instr[i] = fetch_entry_fire[NID];
           end
         end
       end
       // rotate the pointer left
       if (fetch_entry_fire[0]) begin
-        if (ariane_pkg::SUPERSCALAR) begin
-          idx_ds_d = fetch_entry_fire[1] ? idx_ds[2] : idx_ds[1];
+        if (ariane_pkg::SUPERSCALAR > 0) begin
+          idx_ds_d = fetch_entry_fire[NID] ? idx_ds[2] : idx_ds[1];
         end else begin
           idx_ds_d = idx_ds[1];
         end
@@ -445,8 +448,8 @@ ariane_pkg::FETCH_FIFO_DEPTH
 
     if (fetch_entry_fire[0]) begin
       pc_d = pc_j[1];
-      if (ariane_pkg::SUPERSCALAR) begin
-        if (fetch_entry_fire[1]) begin
+      if (ariane_pkg::SUPERSCALAR > 0) begin
+        if (fetch_entry_fire[NID]) begin
           pc_d = pc_j[2];
         end
       end
