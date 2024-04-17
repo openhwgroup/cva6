@@ -1,4 +1,0 @@
-[bibliography]
-== Bibliography
-
-bibliography::[]
