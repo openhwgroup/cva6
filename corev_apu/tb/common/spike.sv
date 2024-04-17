@@ -20,6 +20,9 @@
 `endif
 
 import ariane_pkg::*;
+`ifndef VERILATOR
+import uvm_pkg::*;
+`endif
 import riscv::*;
 import uvma_rvfi_pkg::*;
 import uvma_core_cntrl_pkg::*;
@@ -62,49 +65,51 @@ module spike #(
 
     // There is a need of delayed rvfi as the 'csr'_q signal does not have the
     // written value
-    st_rvfi s_core, s_reference_model;
     logic [63:0] pc64;
     logic [31:0] rtl_instr;
     logic [31:0] spike_instr;
     string       cause;
     string instr;
+    st_rvfi s_core [CVA6Cfg.NrCommitPorts-1:0];
+    bit core_valid [CVA6Cfg.NrCommitPorts-1:0];
+
+    `define GET_RVFI_CSR(CSR_ADDR, CSR_NAME, CSR_INDEX) \
+        s_core[i].csr_valid[CSR_INDEX] <= 1; \
+        s_core[i].csr_addr [CSR_INDEX] <= CSR_ADDR;\
+        s_core[i].csr_rdata[CSR_INDEX] <= rvfi_csr_i.``CSR_NAME``.rdata;\
+        s_core[i].csr_rmask[CSR_INDEX] <= rvfi_csr_i.``CSR_NAME``.rmask;\
+        s_core[i].csr_wdata[CSR_INDEX] <= rvfi_csr_i.``CSR_NAME``.wdata;\
+        s_core[i].csr_wmask[CSR_INDEX] <= rvfi_csr_i.``CSR_NAME``.wmask;\
 
     always_ff @(posedge clk_i) begin
         if (rst_ni) begin
 
             for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-                longint unsigned index = 0;
 
                 if (rvfi_i[i].valid || rvfi_i[i].trap) begin
-                    s_core.order = rvfi_i[i].order;
-                    s_core.insn  = rvfi_i[i].insn;
-                    s_core.trap  = rvfi_i[i].trap;
-                    s_core.trap  |= (rvfi_i[i].cause << 1);
-                    s_core.halt  = rvfi_i[i].halt;
-                    s_core.intr  = rvfi_i[i].intr;
-                    s_core.mode  = rvfi_i[i].mode;
-                    s_core.ixl   = rvfi_i[i].ixl;
-                    s_core.rs1_addr   = rvfi_i[i].rs1_addr;
-                    s_core.rs2_addr   = rvfi_i[i].rs2_addr;
-                    s_core.rs1_rdata  = rvfi_i[i].rs1_rdata;
-                    s_core.rs2_rdata  = rvfi_i[i].rs2_rdata;
-                    s_core.rd1_addr   = rvfi_i[i].rd_addr;
-                    s_core.rd1_wdata  = rvfi_i[i].rd_wdata;
-                    s_core.pc_rdata   = rvfi_i[i].pc_rdata;
-                    s_core.pc_wdata   = rvfi_i[i].pc_wdata;
-                    s_core.mem_addr   = rvfi_i[i].mem_addr;
-                    s_core.mem_rmask  = rvfi_i[i].mem_rmask;
-                    s_core.mem_wmask  = rvfi_i[i].mem_wmask;
-                    s_core.mem_rdata  = rvfi_i[i].mem_rdata;
-                    s_core.mem_wdata  = rvfi_i[i].mem_wdata;
+                    core_valid[i] <= 1;
+                    s_core[i].order <= rvfi_i[i].order;
+                    s_core[i].insn  <= rvfi_i[i].insn;
+                    s_core[i].trap  <= rvfi_i[i].trap;
+                    s_core[i].trap <= (rvfi_i[i].cause << 1) | rvfi_i[i].trap[0];
+                    s_core[i].halt  <= rvfi_i[i].halt;
+                    s_core[i].intr  <= rvfi_i[i].intr;
+                    s_core[i].mode  <= rvfi_i[i].mode;
+                    s_core[i].ixl   <= rvfi_i[i].ixl;
+                    s_core[i].rs1_addr   <= rvfi_i[i].rs1_addr;
+                    s_core[i].rs2_addr   <= rvfi_i[i].rs2_addr;
+                    s_core[i].rs1_rdata  <= rvfi_i[i].rs1_rdata;
+                    s_core[i].rs2_rdata  <= rvfi_i[i].rs2_rdata;
+                    s_core[i].rd1_addr   <= rvfi_i[i].rd_addr;
+                    s_core[i].rd1_wdata  <= rvfi_i[i].rd_wdata;
+                    s_core[i].pc_rdata   <= rvfi_i[i].pc_rdata;
+                    s_core[i].pc_wdata   <= rvfi_i[i].pc_wdata;
+                    s_core[i].mem_addr   <= rvfi_i[i].mem_addr;
+                    s_core[i].mem_rmask  <= rvfi_i[i].mem_rmask;
+                    s_core[i].mem_wmask  <= rvfi_i[i].mem_wmask;
+                    s_core[i].mem_rdata  <= rvfi_i[i].mem_rdata;
+                    s_core[i].mem_wdata  <= rvfi_i[i].mem_wdata;
 
-                    `define GET_RVFI_CSR(CSR_ADDR, CSR_NAME, CSR_INDEX) \
-                        s_core.csr_valid[CSR_INDEX] = 1; \
-                        s_core.csr_addr [CSR_INDEX] = CSR_ADDR;\
-                        s_core.csr_rdata[CSR_INDEX] = rvfi_csr_i.``CSR_NAME``.rdata;\
-                        s_core.csr_rmask[CSR_INDEX] = rvfi_csr_i.``CSR_NAME``.rmask;\
-                        s_core.csr_wdata[CSR_INDEX] = rvfi_csr_i.``CSR_NAME``.wdata;\
-                        s_core.csr_wmask[CSR_INDEX] = rvfi_csr_i.``CSR_NAME``.wmask;
 
                     `GET_RVFI_CSR (CSR_MSTATUS      , mstatus     ,  0)
                     `GET_RVFI_CSR (CSR_MCAUSE       , mcause      ,  1)
@@ -126,13 +131,20 @@ module spike #(
                     `GET_RVFI_CSR (CSR_PMPCFG1      , pmpcfg1     , 17)
                     `GET_RVFI_CSR (CSR_PMPCFG2      , pmpcfg2     , 18)
                     `GET_RVFI_CSR (CSR_PMPCFG3      , pmpcfg3     , 19)
-                    for (int i = 0; i < 16; i++) begin
-                      `GET_RVFI_CSR (CSR_PMPADDR0 + i  , pmpaddr[i]  , 20 + i)
+                    for (int j = 0; j < 16; j++) begin
+                    `GET_RVFI_CSR (CSR_PMPADDR0 + j  , pmpaddr[j]  , 20 + j)
                     end
                     `GET_RVFI_CSR (CSR_MINSTRET     , instret     , 37)
+                end
+                else begin
+                    core_valid[i] <= 0;
+                end
 
-                    rvfi_spike_step(s_core, s_reference_model);
-                    rvfi_compare(s_core, s_reference_model);
+                if (core_valid[i]) begin
+                    st_rvfi core, reference_model;
+                    core = s_core[i];
+                    rvfi_spike_step(core, reference_model);
+                    rvfi_compare(core, reference_model);
                 end
             end
         end
