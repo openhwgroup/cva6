@@ -246,15 +246,16 @@ module cva6_rvfi
                   ex_commit_cause == riscv::ENV_CALL_UMODE));
       rvfi_instr_o[i].insn <= mem_q[commit_pointer[i]].instr;
       // when trap, the instruction is not executed
-      rvfi_instr_o[i].trap  <= exception;
+      rvfi_instr_o[i].trap <= exception;
       rvfi_instr_o[i].cause <= ex_commit_cause;
-      rvfi_instr_o[i].mode  <= (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
-      rvfi_instr_o[i].ixl   <= CVA6Cfg.XLEN == 64 ? 2 : 1;
+      rvfi_instr_o[i].mode <= (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
+      rvfi_instr_o[i].ixl <= CVA6Cfg.XLEN == 64 ? 2 : 1;
       rvfi_instr_o[i].rs1_addr <= commit_instr_rs1[i][4:0];
       rvfi_instr_o[i].rs2_addr <= commit_instr_rs2[i][4:0];
-      rvfi_instr_o[i].rd_addr  <= commit_instr_rd[i][4:0];
-      rvfi_instr_o[i].rd_wdata <= (CVA6Cfg.FpPresent && is_rd_fpr(commit_instr_op[i])) ?
-          commit_instr_result[i] : wdata[i];
+      rvfi_instr_o[i].rd_addr <= commit_instr_rd[i][4:0];
+      rvfi_instr_o[i].rd_wdata <= (CVA6Cfg.FpPresent && is_rd_fpr(
+          commit_instr_op[i]
+      )) ? commit_instr_result[i] : wdata[i];
       rvfi_instr_o[i].pc_rdata <= commit_instr_pc[i];
       rvfi_instr_o[i].mem_addr <= mem_q[commit_pointer[i]].lsu_addr;
       // So far, only write paddr is reported. TODO: read paddr
@@ -273,7 +274,8 @@ module cva6_rvfi
   // CSR
   //----------------------------------------------------------------------------------------------------------
 
-`define CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME, CSR_SOURCE_NAME) \
+  `define CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME,
+                            CSR_SOURCE_NAME) \
     always_ff @(posedge clk_i) begin \
         if (CSR_ENABLE_COND) begin \
             rvfi_csr_o.``CSR_NAME``.rdata <= {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}; \
