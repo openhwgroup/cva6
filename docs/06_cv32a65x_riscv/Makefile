@@ -6,12 +6,12 @@
 #
 #   Original Author: Jean-Roch COULON - Thales
 
+all: priv unpriv
+
 setup:
 	mkdir -p build
 	cp -r ../../vendor/riscv/riscv-isa-manual/ build
 	cp src/machine.adoc build/riscv-isa-manual/src/
-
-all: priv unpriv
 
 priv: setup
 	cd build/riscv-isa-manual/build; make priv
