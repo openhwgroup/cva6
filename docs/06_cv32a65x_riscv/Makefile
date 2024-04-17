@@ -9,9 +9,9 @@
 all: priv unpriv
 
 setup:
-	mkdir -p build
-	cp -r riscv-isa-manual build
-	cp src/machine.adoc build/riscv-isa-manual/src/
+	mkdir -p build/riscv-isa-manual
+	cp -r riscv-isa-manual/* build/riscv-isa-manual
+	cp -r src build/riscv-isa-manual
 
 priv: setup
 	cd build/riscv-isa-manual/build; make priv
