@@ -1056,7 +1056,7 @@ def check_gcc_version():
 
 def check_spike_version():
   # Get Spike hash from core-v-verif submodule
-  spike_hash = subprocess.run('git log -1 --pretty=tformat:%h -- $SPIKE_SRC_DIR/..', capture_output=True, text=True, shell=True, cwd=os.environ.get("SPIKE_SRC_DIR"))
+  spike_hash = subprocess.run('git log -1 --pretty=tformat:%h -- $SPIKE_SRC_DIR/', capture_output=True, text=True, shell=True, cwd=os.environ.get("SPIKE_SRC_DIR"))
   spike_version = "1.1.1-dev " + spike_hash.stdout.strip()
 
   # Get Spike User version
