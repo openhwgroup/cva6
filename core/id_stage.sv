@@ -87,9 +87,9 @@ module id_stage #(
   } issue_struct_t;
   issue_struct_t issue_n, issue_q;
 
-  logic                                                is_control_flow_instr;
-  scoreboard_entry_t                                   decoded_instruction;
-  logic              [                     31:0]       orig_instr;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_control_flow_instr;
+  scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_instruction;
+  logic              [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr;
 
   logic              [ariane_pkg::SUPERSCALAR:0]       is_illegal;
   logic              [ariane_pkg::SUPERSCALAR:0]       is_illegal_cmp;
@@ -163,44 +163,46 @@ module id_stage #(
   // ---------------------------------------------------------
   // 2. Decode and emit instruction to issue stage
   // ---------------------------------------------------------
-  decoder #(
-      .CVA6Cfg(CVA6Cfg),
-      .branchpredict_sbe_t(branchpredict_sbe_t),
-      .exception_t(exception_t),
-      .irq_ctrl_t(irq_ctrl_t),
-      .scoreboard_entry_t(scoreboard_entry_t),
-      .interrupts_t(interrupts_t),
-      .INTERRUPTS(INTERRUPTS)
-  ) decoder_i (
-      .debug_req_i,
-      .irq_ctrl_i,
-      .irq_i,
-      .pc_i                      (fetch_entry_i[0].address),
-      .is_compressed_i           (is_compressed_cmp[0]),
-      .is_macro_instr_i          (is_macro_instr_i[0]),
-      .is_last_macro_instr_i     (is_last_macro_instr_o),
-      .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
-      .is_illegal_i              (is_illegal_cmp[0]),
-      .instruction_i             (instruction[0]),
-      .compressed_instr_i        (fetch_entry_i[0].instruction[15:0]),
-      .branch_predict_i          (fetch_entry_i[0].branch_predict),
-      .ex_i                      (fetch_entry_i[0].ex),
-      .priv_lvl_i                (priv_lvl_i),
-      .v_i                       (v_i),
-      .debug_mode_i              (debug_mode_i),
-      .fs_i,
-      .vfs_i,
-      .frm_i,
-      .vs_i,
-      .tvm_i,
-      .tw_i,
-      .vtw_i,
-      .tsr_i,
-      .hu_i,
-      .instruction_o             (decoded_instruction),
-      .orig_instr_o              (orig_instr),
-      .is_control_flow_instr_o   (is_control_flow_instr)
-  );
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    decoder #(
+        .CVA6Cfg(CVA6Cfg),
+        .branchpredict_sbe_t(branchpredict_sbe_t),
+        .exception_t(exception_t),
+        .irq_ctrl_t(irq_ctrl_t),
+        .scoreboard_entry_t(scoreboard_entry_t),
+        .interrupts_t(interrupts_t),
+        .INTERRUPTS(INTERRUPTS)
+    ) decoder_i (
+        .debug_req_i,
+        .irq_ctrl_i,
+        .irq_i,
+        .pc_i                      (fetch_entry_i[i].address),
+        .is_compressed_i           (is_compressed_cmp[i]),
+        .is_macro_instr_i          (is_macro_instr_i[i]),
+        .is_last_macro_instr_i     (is_last_macro_instr_o),
+        .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
+        .is_illegal_i              (is_illegal_cmp[i]),
+        .instruction_i             (instruction[i]),
+        .compressed_instr_i        (fetch_entry_i[i].instruction[15:0]),
+        .branch_predict_i          (fetch_entry_i[i].branch_predict),
+        .ex_i                      (fetch_entry_i[i].ex),
+        .priv_lvl_i                (priv_lvl_i),
+        .v_i                       (v_i),
+        .debug_mode_i              (debug_mode_i),
+        .fs_i,
+        .vfs_i,
+        .frm_i,
+        .vs_i,
+        .tvm_i,
+        .tw_i,
+        .vtw_i,
+        .tsr_i,
+        .hu_i,
+        .instruction_o             (decoded_instruction[i]),
+        .orig_instr_o              (orig_instr[i]),
+        .is_control_flow_instr_o   (is_control_flow_instr[i])
+    );
+  end
 
   // ------------------
   // Pipeline Register
@@ -228,7 +230,7 @@ module id_stage #(
       end else begin
         fetch_entry_ready_o[0] = 1'b1;
       end
-      issue_n = '{1'b1, decoded_instruction, orig_instr, is_control_flow_instr};
+      issue_n = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
     end
 
     // invalidate the pipeline register on a flush
