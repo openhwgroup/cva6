@@ -240,31 +240,32 @@ module cva6_rvfi
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       logic exception;
       exception = commit_instr_valid[i][0] && ex_commit_valid;
-      rvfi_instr_o[i].valid    = (commit_ack[i] && !ex_commit_valid) ||
+      rvfi_instr_o[i].valid    <= (commit_ack[i] && !ex_commit_valid) ||
         (exception && (ex_commit_cause == riscv::ENV_CALL_MMODE ||
                   ex_commit_cause == riscv::ENV_CALL_SMODE ||
                   ex_commit_cause == riscv::ENV_CALL_UMODE));
-      rvfi_instr_o[i].insn = mem_q[commit_pointer[i]].instr;
+      rvfi_instr_o[i].insn <= mem_q[commit_pointer[i]].instr;
       // when trap, the instruction is not executed
-      rvfi_instr_o[i].trap = exception;
-      rvfi_instr_o[i].cause = ex_commit_cause;
-      rvfi_instr_o[i].mode = (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
-      rvfi_instr_o[i].ixl = CVA6Cfg.XLEN == 64 ? 2 : 1;
-      rvfi_instr_o[i].rs1_addr = commit_instr_rs1[i][4:0];
-      rvfi_instr_o[i].rs2_addr = commit_instr_rs2[i][4:0];
-      rvfi_instr_o[i].rd_addr = commit_instr_rd[i][4:0];
-      rvfi_instr_o[i].rd_wdata = (CVA6Cfg.FpPresent && is_rd_fpr(commit_instr_op[i])) ?
-          commit_instr_result[i] : wdata[i];
-      rvfi_instr_o[i].pc_rdata = commit_instr_pc[i];
-      rvfi_instr_o[i].mem_addr = mem_q[commit_pointer[i]].lsu_addr;
+      rvfi_instr_o[i].trap <= exception;
+      rvfi_instr_o[i].cause <= ex_commit_cause;
+      rvfi_instr_o[i].mode <= (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
+      rvfi_instr_o[i].ixl <= CVA6Cfg.XLEN == 64 ? 2 : 1;
+      rvfi_instr_o[i].rs1_addr <= commit_instr_rs1[i][4:0];
+      rvfi_instr_o[i].rs2_addr <= commit_instr_rs2[i][4:0];
+      rvfi_instr_o[i].rd_addr <= commit_instr_rd[i][4:0];
+      rvfi_instr_o[i].rd_wdata <= (CVA6Cfg.FpPresent && is_rd_fpr(
+          commit_instr_op[i]
+      )) ? commit_instr_result[i] : wdata[i];
+      rvfi_instr_o[i].pc_rdata <= commit_instr_pc[i];
+      rvfi_instr_o[i].mem_addr <= mem_q[commit_pointer[i]].lsu_addr;
       // So far, only write paddr is reported. TODO: read paddr
-      rvfi_instr_o[i].mem_paddr = mem_paddr;
-      rvfi_instr_o[i].mem_wmask = mem_q[commit_pointer[i]].lsu_wmask;
-      rvfi_instr_o[i].mem_wdata = mem_q[commit_pointer[i]].lsu_wdata;
-      rvfi_instr_o[i].mem_rmask = mem_q[commit_pointer[i]].lsu_rmask;
-      rvfi_instr_o[i].mem_rdata = commit_instr_result[i];
-      rvfi_instr_o[i].rs1_rdata = mem_q[commit_pointer[i]].rs1_rdata;
-      rvfi_instr_o[i].rs2_rdata = mem_q[commit_pointer[i]].rs2_rdata;
+      rvfi_instr_o[i].mem_paddr <= mem_paddr;
+      rvfi_instr_o[i].mem_wmask <= mem_q[commit_pointer[i]].lsu_wmask;
+      rvfi_instr_o[i].mem_wdata <= mem_q[commit_pointer[i]].lsu_wdata;
+      rvfi_instr_o[i].mem_rmask <= mem_q[commit_pointer[i]].lsu_rmask;
+      rvfi_instr_o[i].mem_rdata <= commit_instr_result[i];
+      rvfi_instr_o[i].rs1_rdata <= mem_q[commit_pointer[i]].rs1_rdata;
+      rvfi_instr_o[i].rs2_rdata <= mem_q[commit_pointer[i]].rs2_rdata;
     end
   end
 
@@ -273,17 +274,16 @@ module cva6_rvfi
   // CSR
   //----------------------------------------------------------------------------------------------------------
 
-
-
-  `define CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME, CSR_SOURCE_NAME) \
-      always_ff @(posedge clk_i) begin \
-        rvfi_csr_o.``CSR_NAME``.rdata  = CSR_ENABLE_COND ? {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME} : 0; \
-      end \
-      always_comb begin \
-        rvfi_csr_o.``CSR_NAME``.wdata = CSR_ENABLE_COND ? { {{CVA6Cfg.XLEN-$bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME} } : 0; \
-        rvfi_csr_o.``CSR_NAME``.rmask = CSR_ENABLE_COND ? 1 : 0; \
-        rvfi_csr_o.``CSR_NAME``.wmask = CSR_ENABLE_COND ? (rvfi_csr_o.``CSR_NAME``.rdata != {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}) : 0; \
-      end
+  `define CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME,
+                            CSR_SOURCE_NAME) \
+    always_ff @(posedge clk_i) begin \
+        if (CSR_ENABLE_COND) begin \
+            rvfi_csr_o.``CSR_NAME``.rdata <= {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}; \
+        end \
+    end \
+    assign rvfi_csr_o.``CSR_NAME``.wdata = CSR_ENABLE_COND ? { {{CVA6Cfg.XLEN-$bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME} } : 0; \
+    assign rvfi_csr_o.``CSR_NAME``.rmask = CSR_ENABLE_COND ? 1 : 0; \
+    assign rvfi_csr_o.``CSR_NAME``.wmask = (rvfi_csr_o.``CSR_NAME``.rdata != {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}) && CSR_ENABLE_COND;
 
   `define COMMA ,
 
