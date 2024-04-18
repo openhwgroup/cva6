@@ -1,7 +1,11 @@
 :ohg-config: CV32A65X
+:XLEN: 32
+:RVA: false
+:RVC: true
 :RVS: false
 :RVU: false
 :RVH: false
+:SV: SV0
 :RVZsmstateen: false
 :RVZsmcsrind-RVZsscsrind: false
 :RVZsmepmp: false
@@ -10,3 +14,8 @@
 :RVZsmcdeleg: false
 :RVZsstc: false
 :RVZsscofpmf: false
+:RVZsmmpm: false
+:DCacheEn: false
+:MTvalEn: false
+:MTvecDirectEn: true
+:note: false
