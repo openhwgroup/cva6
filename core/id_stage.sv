@@ -48,7 +48,7 @@ module id_stage #(
     // Handshake's acknowlege between decode and issue - ISSUE
     input logic issue_instr_ack_i,
     // Information dedicated to RVFI - RVFI
-    output logic rvfi_is_compressed_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
     // Current virtualization mode - CSR_REGFILE
@@ -87,53 +87,60 @@ module id_stage #(
   } issue_struct_t;
   issue_struct_t issue_n, issue_q;
 
-  logic                     is_control_flow_instr;
-  scoreboard_entry_t        decoded_instruction;
-  logic              [31:0] orig_instr;
+  logic                                                is_control_flow_instr;
+  scoreboard_entry_t                                   decoded_instruction;
+  logic              [                     31:0]       orig_instr;
 
-  logic                     is_illegal;
-  logic                     is_illegal_cmp;
-  logic              [31:0] instruction;
-  logic              [31:0] compressed_instr;
-  logic                     is_compressed;
-  logic                     is_compressed_cmp;
-  logic                     is_macro_instr_i;
-  logic                     stall_instr_fetch;
-  logic                     is_last_macro_instr_o;
-  logic                     is_double_rd_macro_instr_o;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_illegal;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_illegal_cmp;
+  logic              [ariane_pkg::SUPERSCALAR:0][31:0] instruction;
+  logic              [ariane_pkg::SUPERSCALAR:0][31:0] compressed_instr;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_compressed;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_compressed_cmp;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_macro_instr_i;
+  logic                                                stall_instr_fetch;
+  logic                                                is_last_macro_instr_o;
+  logic                                                is_double_rd_macro_instr_o;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
     // 1. Check if they are compressed and expand in case they are
     // ---------------------------------------------------------
-    compressed_decoder #(
-        .CVA6Cfg(CVA6Cfg)
-    ) compressed_decoder_i (
-        .instr_i         (fetch_entry_i[0].instruction),
-        .instr_o         (compressed_instr),
-        .illegal_instr_o (is_illegal),
-        .is_compressed_o (is_compressed),
-        .is_macro_instr_o(is_macro_instr_i)
-    );
+    for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+      compressed_decoder #(
+          .CVA6Cfg(CVA6Cfg)
+      ) compressed_decoder_i (
+          .instr_i         (fetch_entry_i[i].instruction),
+          .instr_o         (compressed_instr[i]),
+          .illegal_instr_o (is_illegal[i]),
+          .is_compressed_o (is_compressed[i]),
+          .is_macro_instr_o(is_macro_instr_i[i])
+      );
+    end
     if (CVA6Cfg.RVZCMP) begin
       //sequencial decoder
       macro_decoder #(
           .CVA6Cfg(CVA6Cfg)
       ) macro_decoder_i (
-          .instr_i                   (compressed_instr),
-          .is_macro_instr_i          (is_macro_instr_i),
+          .instr_i                   (compressed_instr[0]),
+          .is_macro_instr_i          (is_macro_instr_i[0]),
           .clk_i                     (clk_i),
           .rst_ni                    (rst_ni),
-          .instr_o                   (instruction),
-          .illegal_instr_i           (is_illegal),
-          .is_compressed_i           (is_compressed),
+          .instr_o                   (instruction[0]),
+          .illegal_instr_i           (is_illegal[0]),
+          .is_compressed_i           (is_compressed[0]),
           .issue_ack_i               (issue_instr_ack_i),
-          .illegal_instr_o           (is_illegal_cmp),
-          .is_compressed_o           (is_compressed_cmp),
+          .illegal_instr_o           (is_illegal_cmp[0]),
+          .is_compressed_o           (is_compressed_cmp[0]),
           .fetch_stall_o             (stall_instr_fetch),
           .is_last_macro_instr_o     (is_last_macro_instr_o),
           .is_double_rd_macro_instr_o(is_double_rd_macro_instr_o)
       );
+      if (ariane_pkg::SUPERSCALAR > 0) begin
+        assign instruction[ariane_pkg::SUPERSCALAR] = '0;
+        assign is_illegal_cmp[ariane_pkg::SUPERSCALAR] = '0;
+        assign is_compressed_cmp[ariane_pkg::SUPERSCALAR] = '0;
+      end
     end else begin
       assign instruction = compressed_instr;
       assign is_illegal_cmp = is_illegal;
@@ -142,7 +149,9 @@ module id_stage #(
       assign is_double_rd_macro_instr_o = '0;
     end
   end else begin
-    assign instruction = fetch_entry_i[0].instruction;
+    for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+      assign instruction[i] = fetch_entry_i[i].instruction;
+    end
     assign is_illegal_cmp = '0;
     assign is_compressed_cmp = '0;
     assign is_macro_instr_i = '0;
@@ -167,12 +176,12 @@ module id_stage #(
       .irq_ctrl_i,
       .irq_i,
       .pc_i                      (fetch_entry_i[0].address),
-      .is_compressed_i           (is_compressed_cmp),
-      .is_macro_instr_i          (is_macro_instr_i),
+      .is_compressed_i           (is_compressed_cmp[0]),
+      .is_macro_instr_i          (is_macro_instr_i[0]),
       .is_last_macro_instr_i     (is_last_macro_instr_o),
       .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
-      .is_illegal_i              (is_illegal_cmp),
-      .instruction_i             (instruction),
+      .is_illegal_i              (is_illegal_cmp[0]),
+      .instruction_i             (instruction[0]),
       .compressed_instr_i        (fetch_entry_i[0].instruction[15:0]),
       .branch_predict_i          (fetch_entry_i[0].branch_predict),
       .ex_i                      (fetch_entry_i[0].ex),
