@@ -133,6 +133,7 @@ package cva6_config_pkg;
       IcacheByteSize: unsigned'(CVA6ConfigIcacheByteSize),
       IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc),
       IcacheLineWidth: unsigned'(CVA6ConfigIcacheLineWidth),
+      IcacheECCEnable: 1'b0,
       DCacheType: CVA6ConfigDcacheType,
       DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
       DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
@@ -145,7 +146,8 @@ package cva6_config_pkg;
       DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
       NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
-      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
+      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth),
+      DcacheECCEnable: 1'b0
   };
 
 endpackage

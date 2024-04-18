@@ -140,6 +140,8 @@ package config_pkg;
     int unsigned                 IcacheSetAssoc;
     // Instruction cache line width
     int unsigned                 IcacheLineWidth;
+    // Enable ECC on instruction cache
+    bit                          IcacheECCEnable;
     // Cache Type
     cache_type_t                 DCacheType;
     // Data cache ID
@@ -150,6 +152,8 @@ package config_pkg;
     int unsigned                 DcacheSetAssoc;
     // Data cache line width
     int unsigned                 DcacheLineWidth;
+    // Enable ECC on data cache
+    bit                          DcacheECCEnable;
     // User field on data bus enable
     int unsigned                 DataUserEn;
     // Write-through data cache write buffer depth
@@ -280,6 +284,7 @@ package config_pkg;
     int unsigned ICACHE_TAG_WIDTH;
     int unsigned ICACHE_LINE_WIDTH;
     int unsigned ICACHE_USER_LINE_WIDTH;
+    bit IcacheECCEnable;
     cache_type_t DCacheType;
     int unsigned DcacheIdWidth;
     int unsigned DCACHE_SET_ASSOC;
@@ -291,6 +296,7 @@ package config_pkg;
     int unsigned DCACHE_USER_WIDTH;
     int unsigned DCACHE_OFFSET_WIDTH;
     int unsigned DCACHE_NUM_WORDS;
+    bit DcacheECCEnable;
 
     int unsigned DCACHE_MAX_TX;
 

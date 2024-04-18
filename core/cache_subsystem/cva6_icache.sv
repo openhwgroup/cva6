@@ -392,8 +392,8 @@ module cva6_icache
   assign repl_way_oh_d = (cmp_en_q) ? icache_way_bin2oh(repl_way) : repl_way_oh_q;
 
   // enable signals for memory arrays
-  assign cl_req = (cache_rden) ? '1 : (cache_wren) ? repl_way_oh_q : '0;
-  assign cl_we = cache_wren;
+  assign cl_req = (flush_en || cache_rden) ? '1 : (cache_wren) ? repl_way_oh_q : '0;
+  assign cl_we = (cache_wren | flush_en);
 
 
   // find invalid cache line
@@ -457,10 +457,11 @@ module cva6_icache
 
   for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_sram
     // Tag RAM
-    sram #(
+    cva6_sram_ecc #(
         // tag + valid bit
         .DATA_WIDTH(CVA6Cfg.ICACHE_TAG_WIDTH + 1),
-        .NUM_WORDS (ICACHE_NUM_WORDS)
+        .NUM_WORDS (ICACHE_NUM_WORDS),
+        .ECC_EN (CVA6Cfg.IcacheECCEnable)
     ) tag_sram (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
@@ -471,20 +472,24 @@ module cva6_icache
         // couple of cycle until we write to the cache upon a miss
         .wuser_i('0),
         .wdata_i({vld_wdata[i], cl_tag_q}),
-        .be_i   ('1),
         .ruser_o(),
-        .rdata_o(cl_tag_valid_rdata[i])
+        .rdata_o(cl_tag_valid_rdata[i]),
+        .syndrome_o (),
+        .single_error_o (),
+        .parity_error_o (),
+        .double_error_o ()
     );
 
     assign cl_tag_rdata[i] = cl_tag_valid_rdata[i][CVA6Cfg.ICACHE_TAG_WIDTH-1:0];
     assign vld_rdata[i]    = cl_tag_valid_rdata[i][CVA6Cfg.ICACHE_TAG_WIDTH];
 
     // Data RAM
-    sram #(
+    cva6_sram_ecc #(
         .USER_WIDTH(CVA6Cfg.ICACHE_USER_LINE_WIDTH),
         .DATA_WIDTH(CVA6Cfg.ICACHE_LINE_WIDTH),
         .USER_EN   (CVA6Cfg.FETCH_USER_EN),
-        .NUM_WORDS (ICACHE_NUM_WORDS)
+        .NUM_WORDS (ICACHE_NUM_WORDS),
+        .ECC_EN (CVA6Cfg.IcacheECCEnable)
     ) data_sram (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
@@ -493,9 +498,12 @@ module cva6_icache
         .addr_i (cl_index),
         .wuser_i(mem_rtrn_i.user),
         .wdata_i(mem_rtrn_i.data),
-        .be_i   ('1),
         .ruser_o(cl_ruser[i]),
-        .rdata_o(cl_rdata[i])
+        .rdata_o(cl_rdata[i]),
+        .syndrome_o (),
+        .single_error_o (),
+        .parity_error_o (),
+        .double_error_o ()
     );
   end
 
