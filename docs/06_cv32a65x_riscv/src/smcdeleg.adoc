@@ -1,0 +1,6 @@
+[[smcdeleg]]
+== "Smcdeleg" Counter Delegation Extension, Version 1.0.0
+
+ifeval::[{RVZsmcdeleg} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

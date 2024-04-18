@@ -1,0 +1,6 @@
+[[supervisor]]
+== Supervisor-Level ISA, Version 1.13
+
+ifeval::[{RVS} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

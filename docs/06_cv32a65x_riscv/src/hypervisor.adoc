@@ -1,0 +1,6 @@
+[[hypervisor]]
+== "H" Extension for Hypervisor Support, Version 1.0
+
+ifeval::[{RVH} == false]
+{ohg-config}: This extension is not supported.
+endif::[]
