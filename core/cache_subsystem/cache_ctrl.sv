@@ -91,18 +91,19 @@ module cache_ctrl
   } mem_req_t;
 
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
+  cache_line_t cache_line_d, cache_line_q;
 
   mem_req_t mem_req_d, mem_req_q;
 
   assign busy_o = (state_q != IDLE);
   assign tag_o  = mem_req_d.tag;
 
-  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] cl_i;
+  cache_line_t cl_i;
 
   always_comb begin : way_select
     cl_i = '0;
     for (int unsigned i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++)
-    if (hit_way_i[i]) cl_i = data_i[i].data;
+    if (hit_way_i[i]) cl_i = data_i[i];
 
     // cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
   end
@@ -119,6 +120,8 @@ module cache_ctrl
     state_d = state_q;
     mem_req_d = mem_req_q;
     hit_way_d = hit_way_q;
+    cache_line_d = cache_line_q;
+
     // output assignments
     req_port_o.data_gnt = 1'b0;
     req_port_o.data_rvalid = 1'b0;
@@ -130,8 +133,13 @@ module cache_ctrl
     req_o = '0;
     addr_o = req_port_i.address_index;
     data_o = '0;
-    be_o = '0;
-    we_o = '0;
+    data_o.data = cache_line_q.data;
+    data_o.tag = cache_line_q.tag;
+    be_o.tag = '1;
+    be_o.vldrty = '1;
+    be_o.data = '1;
+
+    we_o = 1'b0;
 
     mem_req_d.killed |= req_port_i.kill_req;
 
@@ -211,7 +219,7 @@ module cache_ctrl
             end
 
             // this is timing critical
-            req_port_o.data_rdata = cl_i[cl_offset+:64];
+            req_port_o.data_rdata = cl_i.data[cl_offset+:64];
 
             // report data for a read
             if (!mem_req_q.we) begin
@@ -219,6 +227,7 @@ module cache_ctrl
               // else this was a store so we need an extra step to handle it
             end else begin
               state_d   = STORE_REQ;
+              cache_line_d = cl_i;
               hit_way_d = hit_way_i;
             end
             // ------------
@@ -307,11 +316,10 @@ module cache_ctrl
           addr_o                     = mem_req_q.index;
           we_o                       = 1'b1;
 
-          be_o.vldrty                = hit_way_q;
-
           // set the correct byte enable
-          be_o.data[cl_offset>>3+:8] = mem_req_q.be;
-          data_o.data[cl_offset+:64] = mem_req_q.wdata;
+          for (int i = 0; i < 8; i++) begin
+            if (mem_req_q.be[i]) data_o.data[cl_offset+8*i+:8] = mem_req_q.wdata[i*8+:8];
+          end
           // ~> change the state
           data_o.dirty               = 1'b1;
           data_o.valid               = 1'b1;
@@ -324,7 +332,7 @@ module cache_ctrl
         end else begin
           state_d = WAIT_MSHR;
         end
-      end  // case: STORE_REQ
+      end
 
       // we've got a match on MSHR ~> miss unit is currently serving a request
       WAIT_MSHR: begin
@@ -454,10 +462,12 @@ module cache_ctrl
       state_q   <= IDLE;
       mem_req_q <= '0;
       hit_way_q <= '0;
+      cache_line_q <= '0;
     end else begin
       state_q   <= state_d;
       mem_req_q <= mem_req_d;
       hit_way_q <= hit_way_d;
+      cache_line_q <= cache_line_d;
     end
   end
 
