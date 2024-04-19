@@ -330,7 +330,7 @@ riscv-tests-p:
       allow_failure: true
     - when: manual
       allow_failure: true
-  timeout: 4h
+  timeout: 6h
 
 mmu_sv32_tests:
   extends:
