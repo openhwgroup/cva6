@@ -54,11 +54,6 @@ module std_nbdcache
     logic                                 valid;  // state array
     logic                                 dirty;  // state array
   };
-  localparam type cl_be_t = struct packed {
-    logic [(CVA6Cfg.DCACHE_TAG_WIDTH+7)/8-1:0] tag;  // byte enable into tag array
-    logic [(CVA6Cfg.DCACHE_LINE_WIDTH+7)/8-1:0] data;  // byte enable into data array
-    logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]        vldrty; // bit enable into state array (valid for a pair of dirty/valid bits)
-  };
 
   // -------------------------------
   // Controller <-> Arbiter
@@ -76,7 +71,6 @@ module std_nbdcache
 
   cache_line_t [                    NumPorts:0]                                 wdata;
   logic        [                    NumPorts:0]                                 we;
-  cl_be_t      [                    NumPorts:0]                                 be;
   logic        [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 hit_way;
   // -------------------------------
   // Controller <-> Miss unit
@@ -103,7 +97,6 @@ module std_nbdcache
   logic                                                                         we_ram;
   cache_line_t                                                                  wdata_ram;
   cache_line_t [  CVA6Cfg.DCACHE_SET_ASSOC-1:0]                                 rdata_ram;
-  cl_be_t                                                                       be_ram;
 
   // ------------------
   // Cache Controller
@@ -113,7 +106,6 @@ module std_nbdcache
       cache_ctrl #(
           .CVA6Cfg(CVA6Cfg),
           .cache_line_t(cache_line_t),
-          .cl_be_t(cl_be_t),
           .dcache_req_i_t(dcache_req_i_t),
           .dcache_req_o_t(dcache_req_o_t)
       ) i_cache_ctrl (
@@ -130,7 +122,6 @@ module std_nbdcache
           .tag_o     (tag[i+1]),
           .data_o    (wdata[i+1]),
           .we_o      (we[i+1]),
-          .be_o      (be[i+1]),
           .hit_way_i (hit_way),
 
           .miss_req_o           (miss_req[i]),
@@ -158,8 +149,7 @@ module std_nbdcache
       .NR_PORTS(NumPorts),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t),
-      .cache_line_t(cache_line_t),
-      .cl_be_t(cl_be_t)
+      .cache_line_t(cache_line_t)
   ) i_miss_handler (
       .flush_i              (flush_i),
       .busy_i               (|busy),
@@ -180,7 +170,6 @@ module std_nbdcache
       .req_o                (req[0]),
       .addr_o               (addr[0]),
       .data_i               (rdata),
-      .be_o                 (be[0]),
       .data_o               (wdata[0]),
       .we_o                 (we[0]),
       .axi_bypass_o,
@@ -196,9 +185,10 @@ module std_nbdcache
   // Memory Arrays
   // --------------
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : sram_block
-    sram #(
+    cva6_sram_ecc #(
         .DATA_WIDTH(CVA6Cfg.DCACHE_LINE_WIDTH),
-        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS),
+        .ECC_EN (CVA6Cfg.DcacheECCEnable)
     ) data_sram (
         .clk_i,
         .rst_ni,
@@ -207,19 +197,20 @@ module std_nbdcache
         .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
         .wuser_i('0),
         .wdata_i(wdata_ram.data),
-        .be_i   (be_ram.data),
         .ruser_o(),
-        .rdata_o(rdata_ram[i].data)
+        .rdata_o(rdata_ram[i].data),
+        .syndrome_o (),
+        .single_error_o (),
+        .parity_error_o (),
+        .double_error_o ()
     );
 
-    localparam int unsigned PADDED_TAG_WIDTH = ((CVA6Cfg.DCACHE_TAG_WIDTH+7)/8)*8;
-    localparam int unsigned TAG_PADDING = PADDED_TAG_WIDTH - CVA6Cfg.DCACHE_TAG_WIDTH;
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH+2-1:0] tag_rdata;
 
-    logic [PADDED_TAG_WIDTH+8-1:0] tag_rdata;
-
-    sram #(
-        .DATA_WIDTH(PADDED_TAG_WIDTH + 8),
-        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
+    cva6_sram_ecc #(
+        .DATA_WIDTH(CVA6Cfg.DCACHE_TAG_WIDTH + 2),
+        .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS),
+        .ECC_EN (CVA6Cfg.DcacheECCEnable)
     ) tag_sram (
         .clk_i,
         .rst_ni,
@@ -227,15 +218,18 @@ module std_nbdcache
         .we_i   (we_ram),
         .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
         .wuser_i('0),
-        .wdata_i({6'b0, wdata_ram.valid, wdata_ram.dirty, {{TAG_PADDING}{1'b0}}, wdata_ram.tag}),
-        .be_i   ({be_ram.vldrty[i], be_ram.tag}),
+        .wdata_i({wdata_ram.valid, wdata_ram.dirty, wdata_ram.tag}),
         .ruser_o(),
-        .rdata_o(tag_rdata)
+        .rdata_o(tag_rdata),
+        .syndrome_o (),
+        .single_error_o (),
+        .parity_error_o (),
+        .double_error_o ()
     );
 
     assign rdata_ram[i].tag = tag_rdata[CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
-    assign rdata_ram[i].dirty = tag_rdata[PADDED_TAG_WIDTH];
-    assign rdata_ram[i].valid = tag_rdata[PADDED_TAG_WIDTH+1];
+    assign rdata_ram[i].dirty = tag_rdata[CVA6Cfg.DCACHE_TAG_WIDTH];
+    assign rdata_ram[i].valid = tag_rdata[CVA6Cfg.DCACHE_TAG_WIDTH+1];
 
   end
 
@@ -246,15 +240,13 @@ module std_nbdcache
       .CVA6Cfg   (CVA6Cfg),
       .NR_PORTS  (NumPorts + 1),
       .ADDR_WIDTH(CVA6Cfg.DCACHE_INDEX_WIDTH),
-      .l_data_t  (cache_line_t),
-      .l_be_t    (cl_be_t)
+      .l_data_t  (cache_line_t)
   ) i_tag_cmp (
       .req_i    (req),
       .gnt_o    (gnt),
       .addr_i   (addr),
       .wdata_i  (wdata),
       .we_i     (we),
-      .be_i     (be),
       .rdata_o  (rdata),
       .tag_i    (tag),
       .hit_way_o(hit_way),
@@ -263,7 +255,6 @@ module std_nbdcache
       .addr_o (addr_ram),
       .wdata_o(wdata_ram),
       .we_o   (we_ram),
-      .be_o   (be_ram),
       .rdata_i(rdata_ram),
       .*
   );

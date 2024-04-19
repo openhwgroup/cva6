@@ -19,8 +19,7 @@ module tag_cmp #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
     parameter int unsigned           NR_PORTS   = 3,
     parameter int unsigned           ADDR_WIDTH = 64,
-    parameter type                   l_data_t   = logic,
-    parameter type                   l_be_t     = logic
+    parameter type                   l_data_t   = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -30,7 +29,6 @@ module tag_cmp #(
     input logic [NR_PORTS-1:0][ADDR_WIDTH-1:0] addr_i,
     input l_data_t [NR_PORTS-1:0] wdata_i,
     input logic [NR_PORTS-1:0] we_i,
-    input l_be_t [NR_PORTS-1:0] be_i,
     output l_data_t [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rdata_o,
     input  logic    [NR_PORTS-1:0][CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_i, // tag in - comes one cycle later
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] hit_way_o,  // we've got a hit on the corresponding way
@@ -40,7 +38,6 @@ module tag_cmp #(
     output logic    [              ADDR_WIDTH-1:0] addr_o,
     output l_data_t                                wdata_o,
     output logic                                   we_o,
-    output l_be_t                                  be_o,
     input  l_data_t [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rdata_i
 );
 
@@ -65,7 +62,6 @@ module tag_cmp #(
     wdata_o = '0;
     req_o   = '0;
     addr_o  = '0;
-    be_o    = '0;
     we_o    = '0;
     // Request Side
     // priority select
@@ -74,7 +70,6 @@ module tag_cmp #(
       id_d     = (1'b1 << i);
       gnt_o[i] = 1'b1;
       addr_o   = addr_i[i];
-      be_o     = be_i[i];
       we_o     = we_i[i];
       wdata_o  = wdata_i[i];
 

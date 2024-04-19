@@ -24,8 +24,7 @@ module miss_handler
     parameter int unsigned           NR_PORTS     = 4,
     parameter type                   axi_req_t    = logic,
     parameter type                   axi_rsp_t    = logic,
-    parameter type                   cache_line_t = logic,
-    parameter type                   cl_be_t      = logic
+    parameter type                   cache_line_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -63,7 +62,6 @@ module miss_handler
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] req_o,
     output logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr_o,  // address into cache array
     output cache_line_t data_o,
-    output cl_be_t be_o,
     input cache_line_t [CVA6Cfg.DCACHE_SET_ASSOC-1:0] data_i,
     output logic we_o
 );
@@ -181,7 +179,6 @@ module miss_handler
     req_o                       = '0;
     addr_o                      = '0;
     data_o                      = '0;
-    be_o                        = '1;
     we_o                        = '0;
     // Cache controller
     miss_gnt_o                  = '0;

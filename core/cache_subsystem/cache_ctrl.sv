@@ -24,7 +24,6 @@ module cache_ctrl
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type cache_line_t = logic,
-    parameter type cl_be_t = logic,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic
 ) (
@@ -41,7 +40,6 @@ module cache_ctrl
     output logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] addr_o,  // address into cache array
     input logic gnt_i,
     output cache_line_t data_o,
-    output cl_be_t be_o,
     output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_o,  //valid one cycle later
     input cache_line_t [CVA6Cfg.DCACHE_SET_ASSOC-1:0] data_i,
     output logic we_o,
@@ -135,9 +133,6 @@ module cache_ctrl
     data_o = '0;
     data_o.data = cache_line_q.data;
     data_o.tag = cache_line_q.tag;
-    be_o.tag = '1;
-    be_o.vldrty = '1;
-    be_o.data = '1;
 
     we_o = 1'b0;
 
