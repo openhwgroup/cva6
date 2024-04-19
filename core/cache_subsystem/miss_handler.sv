@@ -361,7 +361,7 @@ module miss_handler
         if (gnt_miss_fsm) begin
           // write status array
           addr_o       = cnt_q;
-          req_o        = 1'b1;
+          req_o        = evict_way_q;
           we_o         = 1'b1;
           data_o.valid = INVALIDATE_ON_FLUSH ? 1'b0 : 1'b1;
           // invalidate
@@ -395,7 +395,7 @@ module miss_handler
           cnt_d       = cnt_q + (1'b1 << CVA6Cfg.DCACHE_OFFSET_WIDTH);
           state_d     = FLUSH_REQ_STATUS;
           addr_o      = cnt_q;
-          req_o       = 1'b1;
+          req_o       = '1;
           be_o.vldrty = INVALIDATE_ON_FLUSH ? '1 : '0;
           we_o        = 1'b1;
           // finished with flushing operation, go back to idle
@@ -417,7 +417,7 @@ module miss_handler
       INIT: begin
         // initialize status array
         addr_o      = cnt_q;
-        req_o       = 1'b1;
+        req_o       = '1;
         we_o        = 1'b1;
         // only write the dirty array
         be_o.vldrty = '1;

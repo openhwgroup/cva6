@@ -200,68 +200,44 @@ module std_nbdcache
         .DATA_WIDTH(CVA6Cfg.DCACHE_LINE_WIDTH),
         .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) data_sram (
+        .clk_i,
+        .rst_ni,
         .req_i  (req_ram[i]),
-        .rst_ni (rst_ni),
         .we_i   (we_ram),
         .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
         .wuser_i('0),
         .wdata_i(wdata_ram.data),
         .be_i   (be_ram.data),
         .ruser_o(),
-        .rdata_o(rdata_ram[i].data),
-        .*
+        .rdata_o(rdata_ram[i].data)
     );
 
+    localparam int unsigned PADDED_TAG_WIDTH = ((CVA6Cfg.DCACHE_TAG_WIDTH+7)/8)*8;
+    localparam int unsigned TAG_PADDING = PADDED_TAG_WIDTH - CVA6Cfg.DCACHE_TAG_WIDTH;
+
+    logic [PADDED_TAG_WIDTH+8-1:0] tag_rdata;
+
     sram #(
-        .DATA_WIDTH(CVA6Cfg.DCACHE_TAG_WIDTH),
+        .DATA_WIDTH(PADDED_TAG_WIDTH + 8),
         .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
     ) tag_sram (
+        .clk_i,
+        .rst_ni,
         .req_i  (req_ram[i]),
-        .rst_ni (rst_ni),
         .we_i   (we_ram),
         .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
         .wuser_i('0),
-        .wdata_i(wdata_ram.tag),
-        .be_i   (be_ram.tag),
+        .wdata_i({6'b0, wdata_ram.valid, wdata_ram.dirty, {{TAG_PADDING}{1'b0}}, wdata_ram.tag}),
+        .be_i   ({be_ram.vldrty[i], be_ram.tag}),
         .ruser_o(),
-        .rdata_o(rdata_ram[i].tag),
-        .*
+        .rdata_o(tag_rdata)
     );
 
+    assign rdata_ram[i].tag = tag_rdata[CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
+    assign rdata_ram[i].dirty = tag_rdata[PADDED_TAG_WIDTH];
+    assign rdata_ram[i].valid = tag_rdata[PADDED_TAG_WIDTH+1];
+
   end
-
-  // ----------------
-  // Valid/Dirty Regs
-  // ----------------
-
-  // align each valid/dirty bit pair to a byte boundary in order to leverage byte enable signals.
-  // note: if you have an SRAM that supports flat bit enables for your target technology,
-  // you can use it here to save the extra 4x overhead introduced by this workaround.
-  logic [4*DCACHE_DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
-
-  for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
-    assign dirty_wdata[8*i]   = wdata_ram.dirty;
-    assign dirty_wdata[8*i+1] = wdata_ram.valid;
-    assign rdata_ram[i].dirty = dirty_rdata[8*i];
-    assign rdata_ram[i].valid = dirty_rdata[8*i+1];
-  end
-
-  sram #(
-      .USER_WIDTH(1),
-      .DATA_WIDTH(4 * DCACHE_DIRTY_WIDTH),
-      .NUM_WORDS (CVA6Cfg.DCACHE_NUM_WORDS)
-  ) valid_dirty_sram (
-      .clk_i  (clk_i),
-      .rst_ni (rst_ni),
-      .req_i  (|req_ram),
-      .we_i   (we_ram),
-      .addr_i (addr_ram[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]),
-      .wuser_i('0),
-      .wdata_i(dirty_wdata),
-      .be_i   (be_ram.vldrty),
-      .ruser_o(),
-      .rdata_o(dirty_rdata)
-  );
 
   // ------------------------------------------------
   // Tag Comparison and memory arbitration
