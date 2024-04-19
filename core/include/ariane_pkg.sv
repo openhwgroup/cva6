@@ -96,12 +96,6 @@ package ariane_pkg;
   // enables a commit log which matches spikes commit log format for easier trace comparison
   localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
 
-  // ------------- Dangerous -------------
-  // if set to zero a flush will not invalidate the cache-lines, in a single core environment
-  // where coherence is not necessary this can improve performance. This needs to be switched on
-  // when more than one core is in a system
-  localparam logic INVALIDATE_ON_FLUSH = 1'b1;
-
 `ifdef SPIKE_TANDEM
   // Spike still places 0 in TVAL for ENV_CALL_* exceptions.
   // This may eventually go away when Spike starts to handle TVAL for *all* exceptions.

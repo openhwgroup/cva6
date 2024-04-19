@@ -181,7 +181,7 @@ module miss_handler
     req_o                       = '0;
     addr_o                      = '0;
     data_o                      = '0;
-    be_o                        = '0;
+    be_o                        = '1;
     we_o                        = '0;
     // Cache controller
     miss_gnt_o                  = '0;
@@ -317,8 +317,6 @@ module miss_handler
           addr_o = mshr_q.addr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
           req_o = evict_way_q;
           we_o = 1'b1;
-          be_o = '1;
-          be_o.vldrty = evict_way_q;
           data_o.tag   = mshr_q.addr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
           data_o.data = data_miss_fsm;
           data_o.valid = 1'b1;
@@ -363,9 +361,7 @@ module miss_handler
           addr_o       = cnt_q;
           req_o        = evict_way_q;
           we_o         = 1'b1;
-          data_o.valid = INVALIDATE_ON_FLUSH ? 1'b0 : 1'b1;
-          // invalidate
-          be_o.vldrty  = evict_way_q;
+          data_o.valid = 1'b0;
           // go back to handling the miss or flushing, depending on where we came from
           state_d      = (state_q == WB_CACHELINE_MISS) ? MISS : FLUSH_REQ_STATUS;
         end
@@ -396,7 +392,6 @@ module miss_handler
           state_d     = FLUSH_REQ_STATUS;
           addr_o      = cnt_q;
           req_o       = '1;
-          be_o.vldrty = INVALIDATE_ON_FLUSH ? '1 : '0;
           we_o        = 1'b1;
           // finished with flushing operation, go back to idle
           if (cnt_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == CVA6Cfg.DCACHE_NUM_WORDS - 1) begin
@@ -419,8 +414,6 @@ module miss_handler
         addr_o      = cnt_q;
         req_o       = '1;
         we_o        = 1'b1;
-        // only write the dirty array
-        be_o.vldrty = '1;
         cnt_d       = cnt_q + (1'b1 << CVA6Cfg.DCACHE_OFFSET_WIDTH);
         // finished initialization
         if (cnt_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] == CVA6Cfg.DCACHE_NUM_WORDS - 1)
