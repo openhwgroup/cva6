@@ -129,6 +129,14 @@ module cva6_hpdcache_subsystem
 );
   //  }}}
 
+  function int unsigned __minu(int unsigned x, int unsigned y);
+    return x < y ? x : y;
+  endfunction
+
+  function int unsigned __maxu(int unsigned x, int unsigned y);
+    return y < x ? x : y;
+  endfunction
+
   //  I$ instantiation
   //  {{{
   logic icache_miss_valid, icache_miss_ready;
@@ -181,31 +189,78 @@ module cva6_hpdcache_subsystem
   //    NumPorts + 1: Hardware Memory Prefetcher (hwpf)
   localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
 
-  typedef logic [CVA6Cfg.PLEN-1:0] hpdcache_mem_addr_t;
-  typedef logic [CVA6Cfg.MEM_TID_WIDTH-1:0] hpdcache_mem_id_t;
-  typedef logic [CVA6Cfg.AxiDataWidth-1:0] hpdcache_mem_data_t;
-  typedef logic [CVA6Cfg.AxiDataWidth/8-1:0] hpdcache_mem_be_t;
+  localparam hpdcache_pkg::hpdcache_user_cfg_t hpdcacheUserCfg = '{
+      nRequesters: HPDCACHE_NREQUESTERS,
+      paWidth: CVA6Cfg.PLEN,
+      wordWidth: CVA6Cfg.XLEN,
+      sets: CVA6Cfg.DCACHE_NUM_WORDS,
+      ways: CVA6Cfg.DCACHE_SET_ASSOC,
+      clWords: CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN,
+      reqWords: 1,
+      reqTransIdWidth: CVA6Cfg.DcacheIdWidth,
+      reqSrcIdWidth: 3,  // Up to 8 requesters
+      victimSel: hpdcache_pkg::HPDCACHE_VICTIM_RANDOM,
+      dataWaysPerRamWord: __minu(CVA6Cfg.DCACHE_SET_ASSOC, 128 / CVA6Cfg.XLEN),
+      dataSetsPerRam: CVA6Cfg.DCACHE_NUM_WORDS,
+      dataRamByteEnable: 1'b1,
+      accessWords: __maxu(CVA6Cfg.DCACHE_LINE_WIDTH / (2 * CVA6Cfg.XLEN), 1),
+      mshrSets: CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2,
+      mshrWays: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
+      mshrWaysPerRamWord: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
+      mshrSetsPerRam: CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2,
+      mshrRamByteEnable: 1'b1,
+      mshrUseRegbank: (CVA6Cfg.NrLoadBufEntries < 16),
+      refillCoreRspFeedthrough: 1'b1,
+      refillFifoDepth: 2,
+      wbufDirEntries: CVA6Cfg.WtDcacheWbufDepth,
+      wbufDataEntries: CVA6Cfg.WtDcacheWbufDepth,
+      wbufWords: 1,
+      wbufTimecntWidth: 3,
+      wbufSendFeedThrough: 1'b0,
+      rtabEntries: 4,
+      memAddrWidth: CVA6Cfg.AxiAddrWidth,
+      memIdWidth: CVA6Cfg.MEM_TID_WIDTH,
+      memDataWidth: CVA6Cfg.AxiDataWidth
+  };
+
+  localparam hpdcache_pkg::hpdcache_cfg_t hpdcacheCfg = hpdcache_pkg::hpdcacheBuildConfig(
+      hpdcacheUserCfg
+  );
+
+  `HPDCACHE_TYPEDEF_MEM_ATTR_T(hpdcache_mem_addr_t, hpdcache_mem_id_t, hpdcache_mem_data_t,
+                               hpdcache_mem_be_t, hpdcacheCfg);
   `HPDCACHE_TYPEDEF_MEM_REQ_T(hpdcache_mem_req_t, hpdcache_mem_addr_t, hpdcache_mem_id_t);
   `HPDCACHE_TYPEDEF_MEM_RESP_R_T(hpdcache_mem_resp_r_t, hpdcache_mem_id_t, hpdcache_mem_data_t);
   `HPDCACHE_TYPEDEF_MEM_REQ_W_T(hpdcache_mem_req_w_t, hpdcache_mem_data_t, hpdcache_mem_be_t);
   `HPDCACHE_TYPEDEF_MEM_RESP_W_T(hpdcache_mem_resp_w_t, hpdcache_mem_id_t);
 
+  `HPDCACHE_TYPEDEF_REQ_ATTR_T(hpdcache_req_offset_t, hpdcache_data_word_t, hpdcache_data_be_t,
+                               hpdcache_req_data_t, hpdcache_req_be_t, hpdcache_req_sid_t,
+                               hpdcache_req_tid_t, hpdcache_tag_t, hpdcacheCfg);
+  `HPDCACHE_TYPEDEF_REQ_T(hpdcache_req_t, hpdcache_req_offset_t, hpdcache_req_data_t,
+                          hpdcache_req_be_t, hpdcache_req_sid_t, hpdcache_req_tid_t,
+                          hpdcache_tag_t);
+  `HPDCACHE_TYPEDEF_RSP_T(hpdcache_rsp_t, hpdcache_req_data_t, hpdcache_req_sid_t,
+                          hpdcache_req_tid_t);
+
+  typedef logic [hpdcacheCfg.u.wbufTimecntWidth-1:0] hpdcache_wbuf_timecnt_t;
+
   typedef logic [63:0] hwpf_stride_param_t;
 
   logic                        dcache_req_valid[HPDCACHE_NREQUESTERS-1:0];
   logic                        dcache_req_ready[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_pkg::hpdcache_req_t dcache_req      [HPDCACHE_NREQUESTERS-1:0];
+  hpdcache_req_t               dcache_req      [HPDCACHE_NREQUESTERS-1:0];
   logic                        dcache_req_abort[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_pkg::hpdcache_tag_t dcache_req_tag  [HPDCACHE_NREQUESTERS-1:0];
+  hpdcache_tag_t               dcache_req_tag  [HPDCACHE_NREQUESTERS-1:0];
   hpdcache_pkg::hpdcache_pma_t dcache_req_pma  [HPDCACHE_NREQUESTERS-1:0];
   logic                        dcache_rsp_valid[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_pkg::hpdcache_rsp_t dcache_rsp      [HPDCACHE_NREQUESTERS-1:0];
+  hpdcache_rsp_t               dcache_rsp      [HPDCACHE_NREQUESTERS-1:0];
   logic dcache_read_miss, dcache_write_miss;
 
   logic                                   [                2:0] snoop_valid;
   logic                                   [                2:0] snoop_abort;
-  hpdcache_pkg::hpdcache_req_offset_t     [                2:0] snoop_addr_offset;
-  hpdcache_pkg::hpdcache_tag_t            [                2:0] snoop_addr_tag;
+  hpdcache_req_offset_t                   [                2:0] snoop_addr_offset;
+  hpdcache_tag_t                          [                2:0] snoop_addr_tag;
   logic                                   [                2:0] snoop_phys_indexed;
 
   logic                                                         dcache_cmo_req_is_prefetch;
@@ -256,19 +311,25 @@ module cva6_hpdcache_subsystem
   generate
     dcache_req_i_t dcache_req_ports[HPDCACHE_NREQUESTERS-1:0];
 
-    for (genvar r = 0; r < (NumPorts - 1); r++) begin : cva6_hpdcache_load_if_adapter_gen
+    for (genvar r = 0; r < (NumPorts - 1); r++) begin : gen_cva6_hpdcache_load_if_adapter
       assign dcache_req_ports[r] = dcache_req_ports_i[r];
 
       cva6_hpdcache_if_adapter #(
-          .CVA6Cfg       (CVA6Cfg),
-          .dcache_req_i_t(dcache_req_i_t),
-          .dcache_req_o_t(dcache_req_o_t),
-          .is_load_port  (1'b1)
+          .CVA6Cfg              (CVA6Cfg),
+          .hpdcacheCfg          (hpdcacheCfg),
+          .hpdcache_tag_t       (hpdcache_tag_t),
+          .hpdcache_req_offset_t(hpdcache_req_offset_t),
+          .hpdcache_req_sid_t   (hpdcache_req_sid_t),
+          .hpdcache_req_t       (hpdcache_req_t),
+          .hpdcache_rsp_t       (hpdcache_rsp_t),
+          .dcache_req_i_t       (dcache_req_i_t),
+          .dcache_req_o_t       (dcache_req_o_t),
+          .is_load_port         (1'b1)
       ) i_cva6_hpdcache_load_if_adapter (
           .clk_i,
           .rst_ni,
 
-          .hpdcache_req_sid_i(hpdcache_pkg::hpdcache_req_sid_t'(r)),
+          .hpdcache_req_sid_i(hpdcache_req_sid_t'(r)),
 
           .cva6_req_i     (dcache_req_ports[r]),
           .cva6_req_o     (dcache_req_ports_o[r]),
@@ -288,15 +349,21 @@ module cva6_hpdcache_subsystem
     end
 
     cva6_hpdcache_if_adapter #(
-        .CVA6Cfg       (CVA6Cfg),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
-        .is_load_port  (1'b0)
+        .CVA6Cfg              (CVA6Cfg),
+        .hpdcacheCfg          (hpdcacheCfg),
+        .hpdcache_tag_t       (hpdcache_tag_t),
+        .hpdcache_req_offset_t(hpdcache_req_offset_t),
+        .hpdcache_req_sid_t   (hpdcache_req_sid_t),
+        .hpdcache_req_t       (hpdcache_req_t),
+        .hpdcache_rsp_t       (hpdcache_rsp_t),
+        .dcache_req_i_t       (dcache_req_i_t),
+        .dcache_req_o_t       (dcache_req_o_t),
+        .is_load_port         (1'b0)
     ) i_cva6_hpdcache_store_if_adapter (
         .clk_i,
         .rst_ni,
 
-        .hpdcache_req_sid_i(hpdcache_pkg::hpdcache_req_sid_t'(NumPorts - 1)),
+        .hpdcache_req_sid_i(hpdcache_req_sid_t'(NumPorts - 1)),
 
         .cva6_req_i     (dcache_req_ports_i[NumPorts-1]),
         .cva6_req_o     (dcache_req_ports_o[NumPorts-1]),
@@ -322,7 +389,7 @@ module cva6_hpdcache_subsystem
         .clk_i,
         .rst_ni,
 
-        .dcache_req_sid_i(hpdcache_pkg::hpdcache_req_sid_t'(NumPorts)),
+        .dcache_req_sid_i(hpdcache_req_sid_t'(NumPorts)),
 
         .cva6_cmo_req_i (dcache_cmo_req_i),
         .cva6_cmo_resp_o(dcache_cmo_resp_o),
@@ -381,15 +448,24 @@ module cva6_hpdcache_subsystem
 `endif
 
   generate
-    for (genvar h = 0; h < NrHwPrefetchers; h++) begin : hwpf_throttle_gen
+    for (genvar h = 0; h < NrHwPrefetchers; h++) begin : gen_hwpf_throttle
       assign hwpf_throttle_in[h] = hwpf_stride_pkg::hwpf_stride_throttle_t'(hwpf_throttle_i[h]),
           hwpf_throttle_o[h] = hwpf_stride_pkg::hwpf_stride_param_t'(hwpf_throttle_out[h]);
     end
   endgenerate
 
   hwpf_stride_wrapper #(
-      .NUM_HW_PREFETCH(NrHwPrefetchers),
-      .NUM_SNOOP_PORTS(3)
+      .hpdcacheCfg          (hpdcacheCfg),
+      .NUM_HW_PREFETCH      (NrHwPrefetchers),
+      .NUM_SNOOP_PORTS      (3),
+      .hpdcache_tag_t       (hpdcache_tag_t),
+      .hpdcache_req_offset_t(hpdcache_req_offset_t),
+      .hpdcache_req_data_t  (hpdcache_req_data_t),
+      .hpdcache_req_be_t    (hpdcache_req_be_t),
+      .hpdcache_req_sid_t   (hpdcache_req_sid_t),
+      .hpdcache_req_tid_t   (hpdcache_req_tid_t),
+      .hpdcache_req_t       (hpdcache_req_t),
+      .hpdcache_rsp_t       (hpdcache_rsp_t)
   ) i_hwpf_stride_wrapper (
       .clk_i,
       .rst_ni,
@@ -411,7 +487,7 @@ module cva6_hpdcache_subsystem
       .snoop_addr_tag_i    (snoop_addr_tag),
       .snoop_phys_indexed_i(snoop_phys_indexed),
 
-      .hpdcache_req_sid_i(hpdcache_pkg::hpdcache_req_sid_t'(NumPorts + 1)),
+      .hpdcache_req_sid_i(hpdcache_req_sid_t'(NumPorts + 1)),
 
       .hpdcache_req_valid_o(dcache_req_valid[NumPorts+1]),
       .hpdcache_req_ready_i(dcache_req_ready[NumPorts+1]),
@@ -424,10 +500,26 @@ module cva6_hpdcache_subsystem
   );
 
   hpdcache #(
-      .NREQUESTERS         (HPDCACHE_NREQUESTERS),
-      .HPDcacheMemAddrWidth(CVA6Cfg.PLEN),
-      .HPDcacheMemIdWidth  (CVA6Cfg.MEM_TID_WIDTH),
-      .HPDcacheMemDataWidth(CVA6Cfg.AxiDataWidth)
+      .hpdcacheCfg          (hpdcacheCfg),
+      .wbuf_timecnt_t       (hpdcache_wbuf_timecnt_t),
+      .hpdcache_tag_t       (hpdcache_tag_t),
+      .hpdcache_data_word_t (hpdcache_data_word_t),
+      .hpdcache_data_be_t   (hpdcache_data_be_t),
+      .hpdcache_req_offset_t(hpdcache_req_offset_t),
+      .hpdcache_req_data_t  (hpdcache_req_data_t),
+      .hpdcache_req_be_t    (hpdcache_req_be_t),
+      .hpdcache_req_sid_t   (hpdcache_req_sid_t),
+      .hpdcache_req_tid_t   (hpdcache_req_tid_t),
+      .hpdcache_req_t       (hpdcache_req_t),
+      .hpdcache_rsp_t       (hpdcache_rsp_t),
+      .hpdcache_mem_addr_t  (hpdcache_mem_addr_t),
+      .hpdcache_mem_id_t    (hpdcache_mem_id_t),
+      .hpdcache_mem_data_t  (hpdcache_mem_data_t),
+      .hpdcache_mem_be_t    (hpdcache_mem_be_t),
+      .hpdcache_mem_req_t   (hpdcache_mem_req_t),
+      .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
+      .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
+      .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t)
   ) i_hpdcache (
       .clk_i,
       .rst_ni,
@@ -499,7 +591,7 @@ module cva6_hpdcache_subsystem
       .wbuf_empty_o(wbuffer_empty_o),
 
       .cfg_enable_i                       (dcache_enable_i),
-      .cfg_wbuf_threshold_i               (4'd2),
+      .cfg_wbuf_threshold_i               (3'd2),
       .cfg_wbuf_reset_timecnt_on_write_i  (1'b1),
       .cfg_wbuf_sequential_waw_i          (1'b0),
       .cfg_wbuf_inhibit_write_coalescing_i(1'b0),
@@ -521,6 +613,7 @@ module cva6_hpdcache_subsystem
   //  {{{
   cva6_hpdcache_subsystem_axi_arbiter #(
       .CVA6Cfg              (CVA6Cfg),
+      .hpdcache_mem_id_t    (hpdcache_mem_id_t),
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
       .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
@@ -601,9 +694,16 @@ module cva6_hpdcache_subsystem
   //  Assertions
   //  {{{
   //  pragma translate_off
-  initial
-    assert (hpdcache_pkg::HPDCACHE_REQ_SRC_ID_WIDTH >= $clog2(HPDCACHE_NREQUESTERS))
+  initial begin : initial_assertions
+    assert (hpdcacheCfg.u.reqSrcIdWidth >= $clog2(HPDCACHE_NREQUESTERS))
     else $fatal(1, "HPDCACHE_REQ_SRC_ID_WIDTH is not wide enough");
+    assert (CVA6Cfg.MEM_TID_WIDTH <= CVA6Cfg.AxiIdWidth)
+    else $fatal(1, "MEM_TID_WIDTH shall be less or equal to the AxiIdWidth");
+    assert (CVA6Cfg.MEM_TID_WIDTH >= ($clog2(hpdcacheCfg.u.mshrSets * hpdcacheCfg.u.mshrWays) + 1))
+    else $fatal(1, "MEM_TID_WIDTH shall allow to uniquely identify all D$ and I$ miss requests ");
+    assert (CVA6Cfg.MEM_TID_WIDTH >= ($clog2(hpdcacheCfg.u.wbufDirEntries) + 1))
+    else $fatal(1, "MEM_TID_WIDTH shall allow to uniquely identify all D$ write requests ");
+  end
 
   a_invalid_instruction_fetch :
   assert property (

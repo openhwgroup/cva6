@@ -17,6 +17,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
 //  {{{
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type hpdcache_mem_id_t = logic,
     parameter type hpdcache_mem_req_t = logic,
     parameter type hpdcache_mem_req_w_t = logic,
     parameter type hpdcache_mem_resp_r_t = logic,
@@ -34,9 +35,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
     parameter type axi_b_chan_t = logic,
     parameter type axi_r_chan_t = logic,
     parameter type axi_req_t = logic,
-    parameter type axi_rsp_t = logic,
-
-    localparam type hpdcache_mem_id_t = logic [CVA6Cfg.MEM_TID_WIDTH-1:0]
+    parameter type axi_rsp_t = logic
 )
 //  }}}
 
@@ -548,18 +547,6 @@ module cva6_hpdcache_subsystem_axi_arbiter
   initial
     assert (CVA6Cfg.MEM_TID_WIDTH <= AxiIdWidth)
     else $fatal("MEM_TID_WIDTH shall be less or equal to AxiIdWidth");
-  initial
-    assert (CVA6Cfg.MEM_TID_WIDTH >= (hpdcache_pkg::HPDCACHE_MSHR_SET_WIDTH + hpdcache_pkg::HPDCACHE_MSHR_WAY_WIDTH + 1))
-    else
-      $fatal(
-          "MEM_TID_WIDTH shall be wide enough to identify all pending HPDcache misses and Icache misses"
-      );
-  initial
-    assert (CVA6Cfg.MEM_TID_WIDTH >= (hpdcache_pkg::HPDCACHE_WBUF_DIR_PTR_WIDTH + 1))
-    else
-      $fatal(
-          "MEM_TID_WIDTH shall be wide enough to identify all pending HPDcache cacheable writes and uncacheable writes"
-      );
   initial
     assert (CVA6Cfg.AxiDataWidth <= CVA6Cfg.ICACHE_LINE_WIDTH)
     else $fatal("AxiDataWidth shall be less or equal to the width of a Icache line");
