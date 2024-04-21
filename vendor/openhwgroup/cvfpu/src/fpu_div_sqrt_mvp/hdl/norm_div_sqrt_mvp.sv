@@ -150,25 +150,39 @@ module norm_div_sqrt_mvp
               Sign_res_D=1'b0;
               NV_OP_S = 1'b1;
             end
-          else if (Sqrt_enable_SI && Sign_in_DI) begin // catch sqrt(-inf)
-            Div_Zero_S=1'b0;
-            Exp_OF_S=1'b0;
-            Exp_UF_S=1'b0;
-            Mant_res_norm_D={1'b0,C_MANT_NAN_FP64};
-            Exp_res_norm_D='1;
-            Mant_forround_D='0;
-            Sign_res_D=1'b0;
-            NV_OP_S = 1'b1;
-          end else begin
-            Div_Zero_S=1'b0;
-            Exp_OF_S=1'b1;
-            Exp_UF_S=1'b0;
-            Mant_res_norm_D= '0;
-            Exp_res_norm_D='1;
-            Mant_forround_D='0;
-            Sign_res_D=Sign_in_DI;
-            NV_OP_S = 1'b0;
-          end
+          else if (Sqrt_enable_SI && Sign_in_DI)          // catch sqrt(-inf)
+            begin 
+              Div_Zero_S=1'b0;
+              Exp_OF_S=1'b0;
+              Exp_UF_S=1'b0;
+              Mant_res_norm_D={1'b0,C_MANT_NAN_FP64};
+              Exp_res_norm_D='1;
+              Mant_forround_D='0;
+              Sign_res_D=1'b0;
+              NV_OP_S = 1'b1;
+            end 
+          else if (Sqrt_enable_SI && !Sign_in_DI)       // catch sqrt(+inf)
+            begin
+              Div_Zero_S=1'b0;
+              Exp_OF_S=1'b0;                            // should not set the OF bit.
+              Exp_UF_S=1'b0;
+              Mant_res_norm_D= '0;
+              Exp_res_norm_D='1;
+              Mant_forround_D='0;
+              Sign_res_D=Sign_in_DI;
+              NV_OP_S = 1'b0;
+            end 
+          else 
+            begin
+              Div_Zero_S=1'b0;
+              Exp_OF_S=1'b1;
+              Exp_UF_S=1'b0;
+              Mant_res_norm_D= '0;
+              Exp_res_norm_D='1;
+              Mant_forround_D='0;
+              Sign_res_D=Sign_in_DI;
+              NV_OP_S = 1'b0;
+            end
         end
 
       else if(Div_enable_SI&&Inf_b_SI)
