@@ -185,7 +185,7 @@ module norm_div_sqrt_mvp
 
      else if(Zero_a_SI)
        begin
-         if(Div_enable_SI&&Zero_b_SI)
+        if(Div_enable_SI && !Zero_b_SI)              // x/0, x != 0
            begin
               Div_Zero_S=1'b1;
               Exp_OF_S=1'b0;
@@ -196,6 +196,17 @@ module norm_div_sqrt_mvp
               Sign_res_D=1'b0;
               NV_OP_S = 1'b1;
            end
+        else if(Div_enable_SI && Zero_b_SI)           
+          begin
+              Div_Zero_S=1'b0;                     // 0/0 should not trigger DZ, but NV.
+              Exp_OF_S=1'b0;
+              Exp_UF_S=1'b0;
+              Mant_res_norm_D={1'b0,C_MANT_NAN_FP64};
+              Exp_res_norm_D='1;
+              Mant_forround_D='0;
+              Sign_res_D=1'b0;
+              NV_OP_S = 1'b1;
+          end
          else
            begin
              Div_Zero_S=1'b0;
