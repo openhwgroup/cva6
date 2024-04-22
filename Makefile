@@ -110,12 +110,6 @@ endif
 HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
 export HPDCACHE_DIR
 
-# Target HPDcache configuration package.
-#   The HPDCACHE_TARGET_CFG variable contains the path (relative or absolute)
-#   to your target configuration package
-HPDCACHE_TARGET_CFG ?= ${CVA6_REPO_DIR}/core/include/cva6_hpdcache_default_config_pkg.sv
-export HPDCACHE_TARGET_CFG
-
 # Sources
 # Package files -> compile first
 ariane_pkg := \
@@ -692,7 +686,6 @@ check-torture:
 src_flist = $(shell \
 	    CVA6_REPO_DIR=$(CVA6_REPO_DIR) \
 	    TARGET_CFG=$(TARGET_CFG) \
-	    HPDCACHE_TARGET_CFG=$(HPDCACHE_TARGET_CFG) \
 	    HPDCACHE_DIR=$(HPDCACHE_DIR) \
 	    python3 util/flist_flattener.py core/Flist.cva6)
 fpga_filter := $(addprefix $(root-dir), corev_apu/bootrom/bootrom.sv)
