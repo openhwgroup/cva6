@@ -39,7 +39,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - When the contribution is disabled: the line and condition code coverage shall not be impacted.
         - When the contribution is enabled: in relevant cases.
         - You can issue a "do not merge" pull request to test your contribution.
-        - RTL code located in `core` directory is formatted with `verible-verilog-format`. See Verible command to be executed below.
+        - RTL code located in `core` directory is formatted with `verible-verilog-format`. See [Verible command to be executed](#verible_command).
     * Your contribution shall come with its own regression test to integrate in the CI flow.
         - So that we can detect quickly if future updates break your contribution.
         - To avoid impacting those users who use your contribution in their project.
@@ -86,10 +86,12 @@ If you use `vi` for your commit message, consider to put the following snippet i
 autocmd Filetype gitcommit setlocal spell textwidth=72s
 ```
 
+<a name="verible_command">
 ## Verible
+</a>
 
-For fixing the RTL format, the following command need to be executed:
+To format RTL files checked by GitHub , use the following command:
 
 ```
-verible-verilog-format --inplace $(git ls-tree -r HEAD --name-only core |grep '\.sv$' |grep -v '^core/include/std_cache_pkg.sv$' |grep -v cvfpu
+verible-verilog-format --inplace $(git ls-tree -r HEAD --name-only core |grep '\.sv$' |grep -v '^core/include/std_cache_pkg.sv$' |grep -v cvfpu)
 ```
