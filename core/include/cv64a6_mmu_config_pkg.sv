@@ -9,7 +9,7 @@
 
 package cva6_config_pkg;
 
-  localparam CVA6ConfigXlen = 32;
+  localparam CVA6ConfigXlen = 64;
 
   localparam CVA6ConfigFpuEn = 0;
   localparam CVA6ConfigF16En = 0;
@@ -31,9 +31,9 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiAddrWidth = 64;
   localparam CVA6ConfigAxiDataWidth = 64;
   localparam CVA6ConfigFetchUserEn = 0;
-  localparam CVA6ConfigFetchUserWidth = 32;
+  localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
   localparam CVA6ConfigDataUserEn = 0;
-  localparam CVA6ConfigDataUserWidth = 32;
+  localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
   localparam CVA6ConfigIcacheByteSize = 2048;
   localparam CVA6ConfigIcacheSetAssoc = 2;
@@ -66,7 +66,7 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigTvalEn = 0;
 
-  localparam CVA6ConfigNrPMPEntries = 8;
+  localparam CVA6ConfigNrPMPEntries = 64;
 
   localparam CVA6ConfigPerfCounterEn = 0;
 
@@ -101,8 +101,8 @@ package cva6_config_pkg;
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       RVZiCond: bit'(CVA6ConfigRVZiCond),
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
-      RVS: bit'(0),
-      RVU: bit'(0),
+      RVS: bit'(1),
+      RVU: bit'(1),
       HaltAddress: 64'h800,
       ExceptionAddress: 64'h808,
       RASDepth: unsigned'(CVA6ConfigRASDepth),
@@ -125,7 +125,7 @@ package cva6_config_pkg;
       CachedRegionAddrBase: 1024'({64'h8000_0000}),
       CachedRegionLength: 1024'({64'h40000000}),
       MaxOutstandingStores: unsigned'(7),
-      DebugEn: bit'(0),
+      DebugEn: bit'(1),
       AxiBurstWriteEn: bit'(0),
       IcacheByteSize: unsigned'(CVA6ConfigIcacheByteSize),
       IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc),
