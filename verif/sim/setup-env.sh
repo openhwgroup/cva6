@@ -53,3 +53,14 @@ export SPIKE_PATH="$SPIKE_INSTALL_DIR"/bin
 
 # Update the PATH to add all the tools
 export PATH="$VERILATOR_INSTALL_DIR/bin:$RISCV/bin:$PATH"
+
+
+# Apply patch to RISCV-DV's scripts/lib.py to utilize YAML anchor/alias for testlist.
+if [ -d $ROOT_PROJECT/verif/sim/dv/ ]; then
+  cd $ROOT_PROJECT/verif/sim/dv;
+  if git apply --check $ROOT_PROJECT/verif/regress/riscv-dv-scripts-lib.patch &> /dev/null; then
+    git apply $ROOT_PROJECT/verif/regress/riscv-dv-scripts-lib.patch
+  fi
+  cd -
+fi
+
