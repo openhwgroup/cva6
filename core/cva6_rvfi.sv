@@ -52,9 +52,10 @@ module cva6_rvfi
 
   logic flush;
   logic issue_instr_ack;
-  logic fetch_entry_valid;
-  logic [31:0] instruction;
-  logic is_compressed;
+  logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid;
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] instruction;
+  logic [ariane_pkg::SUPERSCALAR:0] is_compressed;
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] truncated;
 
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer;
@@ -158,23 +159,49 @@ module cva6_rvfi
 
   //ID STAGE
 
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign truncated[i] = (is_compressed[i]) ? {16'b0, instruction[i][15:0]} : instruction[i];
+  end
+
   typedef struct packed {
     logic        valid;
     logic [31:0] instr;
   } issue_struct_t;
-  issue_struct_t issue_n, issue_q;
+  issue_struct_t [ariane_pkg::SUPERSCALAR:0] issue_n, issue_q;
+  logic took0;
 
   always_comb begin
     issue_n = issue_q;
+    took0   = 1'b0;
 
-    if (issue_instr_ack) issue_n.valid = 1'b0;
+    if (issue_instr_ack) issue_n[0].valid = 1'b0;
 
-    if ((!issue_q.valid || issue_instr_ack) && fetch_entry_valid) begin
-      issue_n.valid = 1'b1;
-      issue_n.instr = (is_compressed) ? {{16{1'b0}}, instruction[15:0]} : instruction;
+    if (!issue_n[ariane_pkg::SUPERSCALAR].valid) begin
+      issue_n[ariane_pkg::SUPERSCALAR].valid = fetch_entry_valid[0];
+      issue_n[ariane_pkg::SUPERSCALAR].instr = truncated[0];
+      took0 = 1'b1;
     end
 
-    if (flush) issue_n.valid = 1'b0;
+    if (!issue_n[0].valid) begin
+      issue_n[0] = issue_n[ariane_pkg::SUPERSCALAR];
+      issue_n[ariane_pkg::SUPERSCALAR].valid = 1'b0;
+    end
+
+    if (!issue_n[ariane_pkg::SUPERSCALAR].valid) begin
+      if (took0) begin
+        issue_n[ariane_pkg::SUPERSCALAR].valid = fetch_entry_valid[ariane_pkg::SUPERSCALAR];
+        issue_n[ariane_pkg::SUPERSCALAR].instr = truncated[ariane_pkg::SUPERSCALAR];
+      end else begin
+        issue_n[ariane_pkg::SUPERSCALAR].valid = fetch_entry_valid[0];
+        issue_n[ariane_pkg::SUPERSCALAR].instr = truncated[0];
+      end
+    end
+
+    if (flush) begin
+      for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+        issue_n[i].valid = 1'b0;
+      end
+    end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -210,7 +237,7 @@ module cva6_rvfi
           lsu_rmask: '0,
           lsu_wmask: '0,
           lsu_wdata: '0,
-          instr: issue_q.instr
+          instr: issue_q[0].instr
       };
     end
 

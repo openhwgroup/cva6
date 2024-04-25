@@ -100,9 +100,9 @@
   logic decoded_instr_ack; \
   logic flush; \
   logic issue_instr_ack; \
-  logic fetch_entry_valid; \
-  logic [31:0] instruction; \
-  logic is_compressed; \
+  logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid; \
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] instruction; \
+  logic [ariane_pkg::SUPERSCALAR:0] is_compressed; \
   logic [Cfg.XLEN-1:0] rs1_forwarding; \
   logic [Cfg.XLEN-1:0] rs2_forwarding; \
   logic [Cfg.NrCommitPorts-1:0][Cfg.VLEN-1:0] commit_instr_pc; \

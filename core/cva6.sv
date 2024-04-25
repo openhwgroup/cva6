@@ -1601,6 +1601,10 @@ module cva6
 
 
   //RVFI INSTR
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] rvfi_fetch_instr;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign rvfi_fetch_instr[i] = fetch_entry_if_id[i].instruction;
+  end
 
   cva6_rvfi_probes #(
       .CVA6Cfg            (CVA6Cfg),
@@ -1614,16 +1618,16 @@ module cva6
 
       .flush_i            (flush_ctrl_if),
       .issue_instr_ack_i  (issue_instr_issue_id),
-      .fetch_entry_valid_i(fetch_valid_if_id[0]),
-      .instruction_i      (fetch_entry_if_id[0].instruction),
-      .is_compressed_i    (rvfi_is_compressed[0]),
+      .fetch_entry_valid_i(fetch_valid_if_id),
+      .instruction_i      (rvfi_fetch_instr),
+      .is_compressed_i    (rvfi_is_compressed),
 
       .issue_pointer_i (rvfi_issue_pointer),
       .commit_pointer_i(rvfi_commit_pointer),
 
       .flush_unissued_instr_i(flush_unissued_instr_ctrl_id),
-      .decoded_instr_valid_i (issue_entry_valid_id_issue),
-      .decoded_instr_ack_i   (issue_instr_issue_id),
+      .decoded_instr_valid_i (issue_entry_valid_id_issue[0]),
+      .decoded_instr_ack_i   (issue_instr_issue_id[0]),
 
       .rs1_forwarding_i(rs1_forwarding_id_ex),
       .rs2_forwarding_i(rs2_forwarding_id_ex),
