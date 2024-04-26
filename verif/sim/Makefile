@@ -132,6 +132,7 @@ vcs-testharness:
 	make -C $(path_var) vcs_build target=$(target) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
 	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/util/init_testharness.do,) +permissive \
 	  +tohost_addr=$(shell $$RISCV/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
+	  +config_file= $(CVA6_REPO_DIR)/verif/spike_configs/cv32a65x.yaml\
 	  +elf_file=$(elf) +permissive-off ++$(elf) $(issrun_opts)  \
 	  $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm) \
 	  $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv) \
@@ -214,6 +215,7 @@ COMMON_COMP_UVM_FLAGS = \
 COMMON_PLUS_ARGS = \
 	++$(elf) \
 	+elf_file=$(elf) \
+	+config_file=$(CVA6_REPO_DIR)/verif/spike_configs/cv32a65x.yaml\
 	+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	+signature=$(elf).signature_output  +UVM_TESTNAME=uvmt_cva6_firmware_test_c
 
