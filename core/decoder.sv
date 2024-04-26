@@ -1599,19 +1599,21 @@ module decoder
           interrupt_cause = INTERRUPTS.HS_EXT;
         end
       end
-      // Supervisor Timer Interrupt
-      if (irq_ctrl_i.mie[riscv::IRQ_S_TIMER] && irq_ctrl_i.mip[riscv::IRQ_S_TIMER]) begin
-        interrupt_cause = INTERRUPTS.S_TIMER;
-      end
-      // Supervisor Software Interrupt
-      if (irq_ctrl_i.mie[riscv::IRQ_S_SOFT] && irq_ctrl_i.mip[riscv::IRQ_S_SOFT]) begin
-        interrupt_cause = INTERRUPTS.S_SW;
-      end
-      // Supervisor External Interrupt
-      // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
-      // used to generate external interrupts to the supervisor
-      if (irq_ctrl_i.mie[riscv::IRQ_S_EXT] && (irq_ctrl_i.mip[riscv::IRQ_S_EXT] | irq_i[ariane_pkg::SupervisorIrq])) begin
-        interrupt_cause = INTERRUPTS.S_EXT;
+      if (CVA6Cfg.RVS) begin
+        // Supervisor Timer Interrupt
+        if (irq_ctrl_i.mie[riscv::IRQ_S_TIMER] && irq_ctrl_i.mip[riscv::IRQ_S_TIMER]) begin
+          interrupt_cause = INTERRUPTS.S_TIMER;
+        end
+        // Supervisor Software Interrupt
+        if (irq_ctrl_i.mie[riscv::IRQ_S_SOFT] && irq_ctrl_i.mip[riscv::IRQ_S_SOFT]) begin
+          interrupt_cause = INTERRUPTS.S_SW;
+        end
+        // Supervisor External Interrupt
+        // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
+        // used to generate external interrupts to the supervisor
+        if (irq_ctrl_i.mie[riscv::IRQ_S_EXT] && (irq_ctrl_i.mip[riscv::IRQ_S_EXT] | irq_i[ariane_pkg::SupervisorIrq])) begin
+          interrupt_cause = INTERRUPTS.S_EXT;
+        end
       end
       // Machine Timer Interrupt
       if (irq_ctrl_i.mip[riscv::IRQ_M_TIMER] && irq_ctrl_i.mie[riscv::IRQ_M_TIMER]) begin
