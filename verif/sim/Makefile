@@ -136,7 +136,12 @@ vcs-testharness:
 	  $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm) \
 	  $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv) \
 	  -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr
-	# TODO: Add support for waveform collection.
+	# If present, move default waveform files to log directory.
+	# Keep track of target in waveform file name.
+	[ ! -f novas.vpd  ] || \
+	  mv novas.vpd  `dirname $(log)`/`basename $(log) .log`.vpd
+	[ ! -f novas.fsdb ] || \
+	  mv novas.fsdb `dirname $(log)`/`basename $(log) .log`.fsdb
 	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
