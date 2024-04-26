@@ -19,6 +19,7 @@ build/*
 /Bender.local
 build/
 *.vcd
+*.fsdb
 *.log
 *.out
 *.jou

@@ -18,11 +18,17 @@ puts "RM-Info: Running script [info script]\n"
 #################################################################################
 
 set INPUTS_DIR ${DESIGN_NAME}_${TARGET}/inputs/
-set REPORTS_DIR ${DESIGN_NAME}_${TARGET}/reports/${PERIOD}/
-set OUTPUTS_DIR ${DESIGN_NAME}_${TARGET}/outputs/${PERIOD}/
+set REPORTS_DIR ${DESIGN_NAME}_${TARGET}/${PERIOD}/reports/
+set OUTPUTS_DIR ${DESIGN_NAME}_${TARGET}/${PERIOD}/outputs/
+set RESULTS_DIR  ${DESIGN_NAME}_${TARGET}/${PERIOD}/netlist/
+
+set SCENARIO mode_norm_ws0_wc_125
+
 file mkdir ${INPUTS_DIR}
 file mkdir ${REPORTS_DIR}
 file mkdir ${OUTPUTS_DIR}
+file mkdir ${RESULTS_DIR}
+
 
 ###############
 # Input Files #
@@ -55,15 +61,16 @@ set DCRM_FINAL_POWER_REPORT                             ${REPORTS_DIR}/${DESIGN_
 # Output Files #
 ################
 
-set DCRM_AUTOREAD_RTL_SCRIPT                            ${OUTPUTS_DIR}/${DESIGN_NAME}_${TECH}.autoread_rtl.tcl
-set DCRM_ELABORATED_DESIGN_DDC_OUTPUT_FILE              ${OUTPUTS_DIR}/${DESIGN_NAME}_${TECH}.elab.ddc
-set DCRM_COMPILE_ULTRA_DDC_OUTPUT_FILE                  ${OUTPUTS_DIR}/${DESIGN_NAME}_${TECH}.compile_ultra.ddc
-set DCRM_FINAL_DDC_OUTPUT_FILE                          ${OUTPUTS_DIR}/${DESIGN_NAME}_${TECH}_synth.ddc
-set DCRM_FINAL_VERILOG_OUTPUT_FILE                      ${OUTPUTS_DIR}/${DESIGN_NAME}_${TECH}_synth.v
-set DCRM_FINAL_SDC_OUTPUT_FILE                          ${OUTPUTS_DIR}/${DESIGN_NAME}_${TECH}_synth.sdc
-set DCRM_FINAL_SPEF_OUTPUT_FILE                         ${OUTPUTS_DIR}/${DESIGN_NAME}_${TECH}_synth.spef
-set DCRM_FINAL_FSDB_OUTPUT_FILE                         ${OUTPUTS_DIR}/${DESIGN_NAME}_${TECH}_synth.fsdb
-set DCRM_FINAL_VCD_OUTPUT_FILE                          ${OUTPUTS_DIR}/${DESIGN_NAME}_${TECH}_synth.vcd
+set DCRM_AUTOREAD_RTL_SCRIPT                            ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}.autoread_rtl.tcl
+set DCRM_ELABORATED_DESIGN_DDC_OUTPUT_FILE              ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}.elab.ddc
+set DCRM_COMPILE_ULTRA_DDC_OUTPUT_FILE                  ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}.compile_ultra.ddc
+set DCRM_FINAL_DDC_OUTPUT_FILE                          ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.ddc
+set DCRM_FINAL_VERILOG_OUTPUT_FILE                      ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.v
+set DCRM_FINAL_SDC_OUTPUT_FILE                          ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.${SCENARIO}.sdc
+set DCRM_FINAL_SPEF_OUTPUT_FILE                         ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.${SCENARIO}.spef
+set DCRM_FINAL_FSDB_OUTPUT_FILE                         ${OUTPUTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.fsdb
+set DCRM_FINAL_VCD_OUTPUT_FILE                          ${OUTPUTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.vcd
+set DCRM_FINAL_SDF_OUTPUT_FILE                          ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.${SCENARIO}.sdf
 
 
 puts "RM-Info: Completed script [info script]\n"

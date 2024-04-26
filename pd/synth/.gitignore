@@ -5,4 +5,7 @@ alib-52
 command.tcl
 command_read.tcl
 default.svf
-ariane
+cva6_*
+Flist.*
+pes.bat
+simv*
