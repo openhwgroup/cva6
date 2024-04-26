@@ -32,8 +32,9 @@ FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
 # target takes one of the following cva6 hardware configuration:
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32
 target     ?= cv64a6_imafdc_sv39
-FLIST_CORE := $(if $(gate), $(CVA6_REPO_DIR)/core/Flist.cva6_gate,$(CVA6_REPO_DIR)/core/Flist.cva6)
-
+FLIST_CORE = $(if $(gate),$(CVA6_REPO_DIR)/core/Flist.cva6_gate,$(CVA6_REPO_DIR)/core/Flist.cva6)
+th_top_level      := $(if $(gate),ariane_gate_tb,ariane_tb)
+do_file           := $(if $(gate),init_gate,init_testharness)
 TRACE_FAST      ?=
 TRACE_COMPACT   ?=
 VERDI           ?=
@@ -326,8 +327,8 @@ vcs_clean_all:
 # testharness specific commands, variables
 ###############################################################################
 vcs-testharness:
-	make -C $(path_var) vcs_build target=$(target) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
-	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/util/init_testharness.do,) +permissive \
+	make -C $(path_var) vcs_build target=$(target) gate=$(gate) top_level=$(th_top_level) flist=$(FLIST_CORE) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
+	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/util/$(do_file).do,) +permissive \
 	    +permissive-off $(COMMON_RUN_ARGS)
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.

@@ -32,6 +32,8 @@ ${CVA6_REPO_DIR}/core/cvxif_example/include/cvxif_instr_pkg.sv
 ${CVA6_REPO_DIR}/core/cvxif_fu.sv
 ${CVA6_REPO_DIR}/core/cvxif_example/cvxif_example_coprocessor.sv
 ${CVA6_REPO_DIR}/core/cvxif_example/instr_decoder.sv
+${CVA6_REPO_DIR}/core/cva6_fifo_v3.sv
+
 
 // Common Cells
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
