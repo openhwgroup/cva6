@@ -66,13 +66,13 @@ module scoreboard #(
     // instruction to put on top of scoreboard e.g.: top pointer
     // we can always put this instruction to the top unless we signal with asserted full_o
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  scoreboard_entry_t        decoded_instr_i,
+    input  scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_instr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic              [31:0] orig_instr_i,
+    input  logic              [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                     decoded_instr_valid_i,
+    input  logic              [ariane_pkg::SUPERSCALAR:0]       decoded_instr_valid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic                     decoded_instr_ack_o,
+    output logic              [ariane_pkg::SUPERSCALAR:0]       decoded_instr_ack_o,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
     // Issue scoreboard entry - ACC_DISPATCHER
@@ -125,7 +125,7 @@ module scoreboard #(
 
   scoreboard_entry_t decoded_instr;
   always_comb begin
-    decoded_instr = decoded_instr_i;
+    decoded_instr = decoded_instr_i[0];
   end
 
   // output commit instruction directly
@@ -138,14 +138,15 @@ module scoreboard #(
 
   // an instruction is ready for issue if we have place in the issue FIFO and it the decoder says it is valid
   always_comb begin
-    issue_instr_o          = decoded_instr_i;
-    orig_instr_o           = orig_instr_i;
+    decoded_instr_ack_o    = '0;
+    issue_instr_o          = decoded_instr_i[0];
+    orig_instr_o           = orig_instr_i[0];
     // make sure we assign the correct trans ID
     issue_instr_o.trans_id = issue_pointer_q;
     // we are ready if we are not full and don't have any unresolved branches, but it can be
     // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
-    issue_instr_valid_o    = decoded_instr_valid_i & ~unresolved_branch_i & ~issue_full;
-    decoded_instr_ack_o    = issue_ack_i & ~issue_full;
+    issue_instr_valid_o    = decoded_instr_valid_i[0] & ~unresolved_branch_i & ~issue_full;
+    decoded_instr_ack_o[0] = issue_ack_i & ~issue_full;
   end
 
   // maintain a FIFO with issued instructions
@@ -156,14 +157,14 @@ module scoreboard #(
     issue_en = 1'b0;
 
     // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
-    if (decoded_instr_valid_i && decoded_instr_ack_o && !flush_unissued_instr_i) begin
+    if (decoded_instr_valid_i[0] && decoded_instr_ack_o[0] && !flush_unissued_instr_i) begin
       // the decoded instruction we put in there is valid (1st bit)
       // increase the issue counter and advance issue pointer
       issue_en = 1'b1;
       mem_n[issue_pointer_q] = {
         1'b1,  // valid bit
         (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
-          decoded_instr_i.op
+          decoded_instr_i[0].op
         )),  // whether rd goes to the fpr
         decoded_instr  // decoded instruction record
       };

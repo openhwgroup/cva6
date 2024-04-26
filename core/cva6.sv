@@ -361,11 +361,11 @@ module cva6
   // --------------
   // ID <-> ISSUE
   // --------------
-  scoreboard_entry_t issue_entry_id_issue;
-  logic [31:0] orig_instr_id_issue;
-  logic issue_entry_valid_id_issue;
-  logic is_ctrl_fow_id_issue;
-  logic issue_instr_issue_id;
+  scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0] issue_entry_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0] issue_entry_valid_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0] is_ctrl_fow_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0] issue_instr_issue_id;
 
   // --------------
   // ISSUE <-> EX
@@ -521,70 +521,70 @@ module cva6
   // ----------------------------
   logic [11:0] addr_csr_perf;
   logic [CVA6Cfg.XLEN-1:0] data_csr_perf, data_perf_csr;
-  logic                                                              we_csr_perf;
+  logic we_csr_perf;
 
-  logic                                                              icache_flush_ctrl_cache;
-  logic                                                              itlb_miss_ex_perf;
-  logic                                                              dtlb_miss_ex_perf;
-  logic                                                              dcache_miss_cache_perf;
-  logic                                                              icache_miss_cache_perf;
-  logic             [    NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;
-  logic                                                              stall_issue;
+  logic icache_flush_ctrl_cache;
+  logic itlb_miss_ex_perf;
+  logic dtlb_miss_ex_perf;
+  logic dcache_miss_cache_perf;
+  logic icache_miss_cache_perf;
+  logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;
+  logic stall_issue;
   // --------------
   // CTRL <-> *
   // --------------
-  logic                                                              set_pc_ctrl_pcgen;
-  logic                                                              flush_csr_ctrl;
-  logic                                                              flush_unissued_instr_ctrl_id;
-  logic                                                              flush_ctrl_if;
-  logic                                                              flush_ctrl_id;
-  logic                                                              flush_ctrl_ex;
-  logic                                                              flush_ctrl_bp;
-  logic                                                              flush_tlb_ctrl_ex;
-  logic                                                              flush_tlb_vvma_ctrl_ex;
-  logic                                                              flush_tlb_gvma_ctrl_ex;
-  logic                                                              fence_i_commit_controller;
-  logic                                                              fence_commit_controller;
-  logic                                                              sfence_vma_commit_controller;
-  logic                                                              hfence_vvma_commit_controller;
-  logic                                                              hfence_gvma_commit_controller;
-  logic                                                              halt_ctrl;
-  logic                                                              halt_csr_ctrl;
-  logic                                                              dcache_flush_ctrl_cache;
-  logic                                                              dcache_flush_ack_cache_ctrl;
-  logic                                                              set_debug_pc;
-  logic                                                              flush_commit;
-  logic                                                              flush_acc;
+  logic set_pc_ctrl_pcgen;
+  logic flush_csr_ctrl;
+  logic flush_unissued_instr_ctrl_id;
+  logic flush_ctrl_if;
+  logic flush_ctrl_id;
+  logic flush_ctrl_ex;
+  logic flush_ctrl_bp;
+  logic flush_tlb_ctrl_ex;
+  logic flush_tlb_vvma_ctrl_ex;
+  logic flush_tlb_gvma_ctrl_ex;
+  logic fence_i_commit_controller;
+  logic fence_commit_controller;
+  logic sfence_vma_commit_controller;
+  logic hfence_vvma_commit_controller;
+  logic hfence_gvma_commit_controller;
+  logic halt_ctrl;
+  logic halt_csr_ctrl;
+  logic dcache_flush_ctrl_cache;
+  logic dcache_flush_ack_cache_ctrl;
+  logic set_debug_pc;
+  logic flush_commit;
+  logic flush_acc;
 
-  icache_areq_t                                                      icache_areq_ex_cache;
-  icache_arsp_t                                                      icache_areq_cache_ex;
-  icache_dreq_t                                                      icache_dreq_if_cache;
-  icache_drsp_t                                                      icache_dreq_cache_if;
+  icache_areq_t icache_areq_ex_cache;
+  icache_arsp_t icache_areq_cache_ex;
+  icache_dreq_t icache_dreq_if_cache;
+  icache_drsp_t icache_dreq_cache_if;
 
-  amo_req_t                                                          amo_req;
-  amo_resp_t                                                         amo_resp;
-  logic                                                              sb_full;
+  amo_req_t amo_req;
+  amo_resp_t amo_resp;
+  logic sb_full;
 
   // ----------------
   // DCache <-> *
   // ----------------
-  dcache_req_i_t    [             2:0]                               dcache_req_ports_ex_cache;
-  dcache_req_o_t    [             2:0]                               dcache_req_ports_cache_ex;
-  dcache_req_i_t    [             1:0]                               dcache_req_ports_acc_cache;
-  dcache_req_o_t    [             1:0]                               dcache_req_ports_cache_acc;
-  logic                                                              dcache_commit_wbuffer_empty;
-  logic                                                              dcache_commit_wbuffer_not_ni;
+  dcache_req_i_t [2:0] dcache_req_ports_ex_cache;
+  dcache_req_o_t [2:0] dcache_req_ports_cache_ex;
+  dcache_req_i_t [1:0] dcache_req_ports_acc_cache;
+  dcache_req_o_t [1:0] dcache_req_ports_cache_acc;
+  logic dcache_commit_wbuffer_empty;
+  logic dcache_commit_wbuffer_not_ni;
 
   //RVFI
-  lsu_ctrl_t                                                         rvfi_lsu_ctrl;
-  logic             [CVA6Cfg.PLEN-1:0]                               rvfi_mem_paddr;
-  logic                                                              rvfi_is_compressed;
-  rvfi_probes_csr_t                                                  rvfi_csr;
+  lsu_ctrl_t rvfi_lsu_ctrl;
+  logic [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr;
+  logic [ariane_pkg::SUPERSCALAR:0] rvfi_is_compressed;
+  rvfi_probes_csr_t rvfi_csr;
 
   // Accelerator port
-  logic             [            63:0]                               inval_addr;
-  logic                                                              inval_valid;
-  logic                                                              inval_ready;
+  logic [63:0] inval_addr;
+  logic inval_valid;
+  logic inval_ready;
 
   // --------------
   // Frontend
@@ -1601,6 +1601,10 @@ module cva6
 
 
   //RVFI INSTR
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] rvfi_fetch_instr;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign rvfi_fetch_instr[i] = fetch_entry_if_id[i].instruction;
+  end
 
   cva6_rvfi_probes #(
       .CVA6Cfg            (CVA6Cfg),
@@ -1614,16 +1618,16 @@ module cva6
 
       .flush_i            (flush_ctrl_if),
       .issue_instr_ack_i  (issue_instr_issue_id),
-      .fetch_entry_valid_i(fetch_valid_if_id[0]),
-      .instruction_i      (fetch_entry_if_id[0].instruction),
+      .fetch_entry_valid_i(fetch_valid_if_id),
+      .instruction_i      (rvfi_fetch_instr),
       .is_compressed_i    (rvfi_is_compressed),
 
       .issue_pointer_i (rvfi_issue_pointer),
       .commit_pointer_i(rvfi_commit_pointer),
 
       .flush_unissued_instr_i(flush_unissued_instr_ctrl_id),
-      .decoded_instr_valid_i (issue_entry_valid_id_issue),
-      .decoded_instr_ack_i   (issue_instr_issue_id),
+      .decoded_instr_valid_i (issue_entry_valid_id_issue[0]),
+      .decoded_instr_ack_i   (issue_instr_issue_id[0]),
 
       .rs1_forwarding_i(rs1_forwarding_id_ex),
       .rs2_forwarding_i(rs2_forwarding_id_ex),

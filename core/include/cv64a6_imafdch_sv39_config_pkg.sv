@@ -127,7 +127,7 @@ package cva6_config_pkg;
       MaxOutstandingStores: unsigned'(7),
       DebugEn: bit'(1),
       AxiBurstWriteEn: bit'(0),
-      DCacheType: CVA6ConfigDcacheType,s
+      DCacheType: CVA6ConfigDcacheType,
       InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
       DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
       NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),

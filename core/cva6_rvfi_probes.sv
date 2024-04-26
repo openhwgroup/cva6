@@ -22,11 +22,11 @@ module cva6_rvfi_probes
 
 ) (
 
-    input logic        flush_i,
-    input logic        issue_instr_ack_i,
-    input logic        fetch_entry_valid_i,
-    input logic [31:0] instruction_i,
-    input logic        is_compressed_i,
+    input logic                       flush_i,
+    input logic [SUPERSCALAR:0]       issue_instr_ack_i,
+    input logic [SUPERSCALAR:0]       fetch_entry_valid_i,
+    input logic [SUPERSCALAR:0][31:0] instruction_i,
+    input logic [SUPERSCALAR:0]       is_compressed_i,
 
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_i,
     input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer_i,
@@ -63,7 +63,7 @@ module cva6_rvfi_probes
     instr = '0;
 
     instr.flush = flush_i;
-    instr.issue_instr_ack = issue_instr_ack_i;
+    instr.issue_instr_ack = issue_instr_ack_i[0];
     instr.fetch_entry_valid = fetch_entry_valid_i;
     instr.instruction = instruction_i;
     instr.is_compressed = is_compressed_i;
