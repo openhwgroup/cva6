@@ -41,8 +41,12 @@ if ! [ -f "$SPIKE_INSTALL_DIR/bin/spike" ]; then
   # Build and install Spike (including extensions).
   mkdir -p build
   cd build
+  WITH_BOOST=""
+  if [[ ! -z "$BOOST_INSTALL_DIR" ]]; then
+      WITH_BOOST="--with-boost=${BOOST_INSTALL_DIR}"
+  fi
   if [[ ! -f config.log ]]; then
-      ../configure --prefix="$SPIKE_INSTALL_DIR"
+      ../configure --prefix="$SPIKE_INSTALL_DIR" ${WITH_BOOST}
   fi
   make -j${NUM_JOBS}
   echo "Installing Spike in '$SPIKE_INSTALL_DIR'..."
