@@ -250,6 +250,7 @@ vcs_uvm_comp:
 	  -f $(FLIST_CORE) -f $(FLIST_TB) \
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
 	  $(cov-comp-opt) +define+UNSUPPORTED_WITH+ $(isscomp_opts)\
+	  -ignore initializer_driver_checks \
 	  -top uvmt_cva6_tb
 
 vcs_uvm_run: vcs_uvm_comp

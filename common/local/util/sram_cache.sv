@@ -40,18 +40,18 @@ module sram_cache #(
    output logic [DATA_WIDTH-1:0]         rdata_o
 );
   localparam DATA_AND_USER_WIDTH = USER_EN ? DATA_WIDTH + USER_WIDTH : DATA_WIDTH;
-  if (USER_EN > 0) begin
-    logic [DATA_WIDTH + USER_WIDTH-1:0] wdata_user;
-    logic [DATA_WIDTH + USER_WIDTH-1:0] rdata_user;
-    logic [(DATA_WIDTH+7)/8+(DATA_WIDTH+7)/8-1:0] be;
+  if (TECHNO_CUT) begin : gen_techno_cut
+    if (USER_EN > 0) begin
+      logic [DATA_WIDTH + USER_WIDTH-1:0] wdata_user;
+      logic [DATA_WIDTH + USER_WIDTH-1:0] rdata_user;
+      logic [(DATA_WIDTH+7)/8+(DATA_WIDTH+7)/8-1:0] be;
 
-    always_comb begin
-      wdata_user = {wdata_i, wuser_i};
-      be         = {be_i, be_i};
-      rdata_o    = rdata_user[DATA_AND_USER_WIDTH-1:DATA_WIDTH];
-      ruser_o    = rdata_user[USER_WIDTH-1:0];
-    end
-    if (TECHNO_CUT) begin
+      always_comb begin
+        wdata_user = {wdata_i, wuser_i};
+        be         = {be_i, be_i};
+        rdata_o    = rdata_user[DATA_AND_USER_WIDTH-1:DATA_WIDTH];
+        ruser_o    = rdata_user[USER_WIDTH-1:0];
+      end
       tc_sram_wrapper_cache_techno #(
         .NumWords(NUM_WORDS),           // Number of Words in data array
         .DataWidth(DATA_AND_USER_WIDTH),// Data signal width
@@ -72,7 +72,17 @@ module sram_cache #(
         .rdata_o  ( rdata_user                )
       );
     end else begin
-      tc_sram_wrapper_cache #(
+      logic [DATA_WIDTH-1:0] wdata_user;
+      logic [DATA_WIDTH-1:0] rdata_user;
+      logic [(DATA_WIDTH+7)/8-1:0] be;
+
+      always_comb begin
+        wdata_user = wdata_i;
+        be         = be_i;
+        rdata_o    = rdata_user;
+        ruser_o    = '0;
+      end
+      tc_sram_wrapper_cache_techno #(
         .NumWords(NUM_WORDS),           // Number of Words in data array
         .DataWidth(DATA_AND_USER_WIDTH),// Data signal width
         .ByteWidth(32'd8),              // Width of a data byte
@@ -93,58 +103,23 @@ module sram_cache #(
       );
     end
   end else begin
-    logic [DATA_WIDTH-1:0] wdata_user;
-    logic [DATA_WIDTH-1:0] rdata_user;
-    logic [(DATA_WIDTH+7)/8-1:0] be;
-
-    always_comb begin
-      wdata_user = wdata_i;
-      be         = be_i;
-      rdata_o    = rdata_user;
-      ruser_o    = '0;
-    end
-
-    if (TECHNO_CUT) begin
-      tc_sram_wrapper_cache_techno #(
-        .NumWords(NUM_WORDS),           // Number of Words in data array
-        .DataWidth(DATA_AND_USER_WIDTH),// Data signal width
-        .ByteWidth(32'd8),              // Width of a data byte
-        .NumPorts(32'd1),               // Number of read and write ports
-        .Latency(32'd1),                // Latency when the read data is available
-        .SimInit(SIM_INIT),             // Simulation initialization
-        .BYTE_ACCESS(BYTE_ACCESS),      // ACCESS byte or full word
-        .PrintSimCfg(1'b0)              // Print configuration
-      ) i_tc_sram_wrapper (
-        .clk_i    ( clk_i                     ),
-        .rst_ni   ( rst_ni                    ),
-        .req_i    ( req_i                     ),
-        .we_i     ( we_i                      ),
-        .be_i     ( be                        ),
-        .wdata_i  ( wdata_user                ),
-        .addr_i   ( addr_i                    ),
-        .rdata_o  ( rdata_user                )
+    sram #(
+          .USER_WIDTH (USER_WIDTH),
+          .DATA_WIDTH (DATA_WIDTH),
+          .USER_EN    (USER_EN),
+          .NUM_WORDS  (NUM_WORDS)
+      ) data_sram (
+          .clk_i  (clk_i),
+          .rst_ni (rst_ni),
+          .req_i  (req_i),
+          .we_i   (we_i),
+          .addr_i (addr_i),
+          .wuser_i(wuser_i),
+          .wdata_i(wdata_i),
+          .be_i   (be_i),
+          .ruser_o(ruser_o),
+          .rdata_o(rdata_o)
       );
-    end else begin
-      tc_sram_wrapper_cache #(
-        .NumWords(NUM_WORDS),           // Number of Words in data array
-        .DataWidth(DATA_AND_USER_WIDTH),// Data signal width
-        .ByteWidth(32'd8),              // Width of a data byte
-        .NumPorts(32'd1),               // Number of read and write ports
-        .Latency(32'd1),                // Latency when the read data is available
-        .SimInit(SIM_INIT),             // Simulation initialization
-        .BYTE_ACCESS(BYTE_ACCESS),      // ACCESS byte or full word
-        .PrintSimCfg(1'b0)              // Print configuration
-      ) i_tc_sram_wrapper (
-        .clk_i    ( clk_i                     ),
-        .rst_ni   ( rst_ni                    ),
-        .req_i    ( req_i                     ),
-        .we_i     ( we_i                      ),
-        .be_i     ( be                        ),
-        .wdata_i  ( wdata_user                ),
-        .addr_i   ( addr_i                    ),
-        .rdata_o  ( rdata_user                )
-      );
-    end
   end
 
 
