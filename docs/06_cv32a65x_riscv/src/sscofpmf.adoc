@@ -1,0 +1,6 @@
+[[Sscofpmf]]
+== "Sscofpmf" Extension for Count Overflow and Mode-Based Filtering, Version 1.0.0
+
+ifeval::[{RVZsscofpmf} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

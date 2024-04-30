@@ -18,6 +18,7 @@
 :imagesdir: images
 :title-logo-image: image:risc-v_logo.png[pdfwidth=3.25in,align=center]
 :page-background-image: image:draft.png[opacity=20%]
+:title-page-background-image: image:ohg_logo.png[fit=none,pdfwidth=3.25in,position=top]
 //:title-page-background-image: none
 //:back-cover-image: image:backpage.png[opacity=25%]
 // Settings:
@@ -56,6 +57,13 @@ endif::[]
 :approx: &#8776;
 :inf: &#8734;
 
+include::config.adoc[]
+
+This document describes the RISC-V privileged architecture tailored for
+OpenHW Group {ohg-config}.
+Not relevant parts (e.g. unsupported extensions) of the original
+specification are replaced by placeholders.
+
 _Contributors to all versions of the spec in alphabetical order (please contact
 editors to suggest corrections): Krste Asanović, Peter Ashenden, Rimas
 Avižienis, Jacob Bachmeyer, Allen J. Baum, Jonathan Behrens, Paolo Bonzini, Ruslan Bukin,
@@ -75,6 +83,9 @@ _This document is a derivative of the RISC-V
 privileged specification version 1.9.1 released under following license: ©2010-2017 Andrew Waterman, Yunsup Lee, Rimas
 Avižienis,
 David Patterson, Krste Asanović. Creative Commons Attribution 4.0 International License._
+
+_Contributors to {ohg-config} versions of the spec in alphabetical order:
+Jean-Roch Coulon, André Sintzoff._
 
 include::priv-preface.adoc[]
 include::priv-intro.adoc[]

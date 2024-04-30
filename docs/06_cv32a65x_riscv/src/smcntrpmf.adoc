@@ -1,0 +1,6 @@
+[[smcntrpmf]]
+== "Smcntrpmf" Cycle and Instret Privilege Mode Filtering, Version 1.0.0
+
+ifeval::[{RVZsmcntrpmf} == false]
+{ohg-config}: This extension is not supported.
+endif::[]
