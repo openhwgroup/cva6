@@ -168,7 +168,7 @@ module frontend
   ) i_instr_realign (
       .clk_i              (clk_i),
       .rst_ni             (rst_ni),
-      .flush_i            (icache_dreq_o.kill_s2),
+      .flush_i            (icache_dreq_o.kill_req),
       .valid_i            (icache_valid_q),
       .serving_unaligned_o(serving_unaligned),
       .address_i          (icache_vaddr_q),
@@ -320,12 +320,10 @@ module frontend
   // 1. We mispredicted
   // 2. Want to flush the whole processor front-end
   // 3. Need to replay an instruction because the fetch-fifo was full
-  assign icache_dreq_o.kill_s1 = is_mispredict | flush_i | replay;
+  assign icache_dreq_o.kill_s1 = is_mispredict | flush_i | replay | arsp_i.fetch_exception.valid;
   // if we have a valid branch-prediction we need to only kill the last cache request
   // also if we killed the first stage we also need to kill the second stage (inclusive flush)
-  assign icache_dreq_o.kill_s2 = icache_dreq_o.kill_s1 | bp_valid;
-  // Kill when address translation expection occurs
-  assign icache_dreq_o.kill_req = arsp_i.fetch_exception.valid;
+  assign icache_dreq_o.kill_req = icache_dreq_o.kill_s1 | bp_valid;
 
   // MMU interface
   assign areq_o.fetch_vaddr = (vaddr_q >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
@@ -360,7 +358,7 @@ module frontend
           if (!icache_dreq_o.req || icache_dreq_o.kill_s1) begin
             state_d = IDLE;
           end
-        end else if (icache_dreq_o.kill_s2) begin
+        end else if (icache_dreq_o.kill_req) begin
           state_d = KILL_ATRANS;
         end
       end

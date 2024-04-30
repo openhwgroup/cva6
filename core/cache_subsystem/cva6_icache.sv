@@ -260,8 +260,8 @@ module cva6_icache
           if (flush_d) begin
             state_d = IDLE;
             // we have a hit or an exception output valid result
-          end else if (((|cl_hit && cache_en_q) || dreq_i.kill_req) && !inv_q) begin
-            dreq_o.valid = ~dreq_i.kill_s2;  // just don't output in this case
+          end else if ((|cl_hit && cache_en_q) && !inv_q) begin
+            dreq_o.valid = ~dreq_i.kill_req;  // just don't output in this case
             state_d      = IDLE;
 
             // we can accept another request
@@ -279,7 +279,7 @@ module cva6_icache
               state_d = IDLE;
             end
             // we have a miss / NC transaction
-          end else if (dreq_i.kill_s2) begin
+          end else if (dreq_i.kill_req) begin
             state_d = IDLE;
           end else if (!inv_q) begin
             cmp_en_d = 1'b0;
@@ -293,7 +293,7 @@ module cva6_icache
             end
           end
           // bail out if this request is being killed (and we missed on the TLB)
-        end else if (dreq_i.kill_s2 || flush_d) begin
+        end else if (dreq_i.kill_req || flush_d) begin
           state_d = KILL_ATRANS;
         end
       end
@@ -307,13 +307,13 @@ module cva6_icache
         if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
           state_d = IDLE;
           // only return data if request is not being killed
-          if (!(dreq_i.kill_s2 || flush_d)) begin
+          if (!(dreq_i.kill_req || flush_d)) begin
             dreq_o.valid = 1'b1;
             // only write to cache if this address is cacheable
             cache_wren   = ~paddr_is_nc;
           end
           // bail out if this request is being killed
-        end else if (dreq_i.kill_s2 || flush_d) begin
+        end else if (dreq_i.kill_req || flush_d) begin
           state_d = KILL_MISS;
         end
       end

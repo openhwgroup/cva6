@@ -64,7 +64,6 @@ module cva6
     localparam type icache_dreq_t = struct packed {
       logic                    req;                // we request a new word
       logic                    kill_s1;            // kill the current request
-      logic                    kill_s2;            // kill the last request
       logic                    kill_req;           // kill the last request
       logic                    spec;               // request is speculative
       logic [CVA6Cfg.VLEN-1:0] vaddr;              // 1st cycle: 12 bit index is taken for lookup
