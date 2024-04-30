@@ -24,8 +24,6 @@ module wt_cache_subsystem
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
-    parameter type                   icache_areq_t  = logic,
-    parameter type                   icache_arsp_t  = logic,
     parameter type                   icache_dreq_t  = logic,
     parameter type                   icache_drsp_t  = logic,
     parameter type                   dcache_req_i_t = logic,
@@ -42,9 +40,6 @@ module wt_cache_subsystem
     input logic icache_en_i,  // enable icache (or bypass e.g: in debug mode)
     input logic icache_flush_i,  // flush the icache, flush and kill have to be asserted together
     output logic icache_miss_o,  // to performance counter
-    // address translation requests
-    input icache_areq_t icache_areq_i,  // to/from frontend
-    output icache_arsp_t icache_areq_o,
     // data requests
     input icache_dreq_t icache_dreq_i,  // to/from frontend
     output icache_drsp_t icache_dreq_o,
@@ -115,8 +110,6 @@ module wt_cache_subsystem
   cva6_icache #(
       // use ID 0 for icache reads
       .CVA6Cfg(CVA6Cfg),
-      .icache_areq_t(icache_areq_t),
-      .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
       .icache_req_t(icache_req_t),
@@ -128,8 +121,6 @@ module wt_cache_subsystem
       .flush_i       (icache_flush_i),
       .en_i          (icache_en_i),
       .miss_o        (icache_miss_o),
-      .areq_i        (icache_areq_i),
-      .areq_o        (icache_areq_o),
       .dreq_i        (icache_dreq_i),
       .dreq_o        (icache_dreq_o),
       .mem_rtrn_vld_i(adapter_icache_rtrn_vld),
@@ -247,7 +238,7 @@ module wt_cache_subsystem
     $warning(
         1,
         "[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
-        icache_dreq_o.vaddr,
+        icache_dreq_i.vaddr,
         icache_dreq_o.data
     );
 

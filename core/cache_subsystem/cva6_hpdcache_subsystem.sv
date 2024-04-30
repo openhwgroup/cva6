@@ -17,8 +17,6 @@ module cva6_hpdcache_subsystem
 //  {{{
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
     parameter type icache_req_t = logic,
@@ -65,13 +63,9 @@ module cva6_hpdcache_subsystem
     input logic icache_flush_i,
     // instructino cache miss - PERF_COUNTERS
     output logic icache_miss_o,
-    // Input address translation request - EX_STAGE
-    input icache_areq_t icache_areq_i,
-    // Output address translation request - EX_STAGE
-    output icache_arsp_t icache_areq_o,
-    // Input data translation request - FRONTEND
+    // Access request - FRONTEND
     input icache_dreq_t icache_dreq_i,
-    // Output data translation request - FRONTEND
+    // Output Access request - FRONTEND
     output icache_drsp_t icache_dreq_o,
     //   }}}
 
@@ -141,8 +135,6 @@ module cva6_hpdcache_subsystem
 
   cva6_icache #(
       .CVA6Cfg(CVA6Cfg),
-      .icache_areq_t(icache_areq_t),
-      .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
       .icache_req_t(icache_req_t),
@@ -154,8 +146,6 @@ module cva6_hpdcache_subsystem
       .flush_i       (icache_flush_i),
       .en_i          (icache_en_i),
       .miss_o        (icache_miss_o),
-      .areq_i        (icache_areq_i),
-      .areq_o        (icache_areq_o),
       .dreq_i        (icache_dreq_i),
       .dreq_o        (icache_dreq_o),
       .mem_rtrn_vld_i(icache_miss_resp_valid),
@@ -612,7 +602,7 @@ module cva6_hpdcache_subsystem
     $warning(
         1,
         "[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
-        icache_dreq_o.vaddr,
+        icache_dreq_i.vaddr,
         icache_dreq_o.data
     );
 

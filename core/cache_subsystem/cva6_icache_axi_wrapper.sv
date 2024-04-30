@@ -18,8 +18,6 @@ module cva6_icache_axi_wrapper
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
     parameter type icache_req_t = logic,
@@ -34,9 +32,6 @@ module cva6_icache_axi_wrapper
     input logic flush_i,  // flush the icache, flush and kill have to be asserted together
     input logic en_i,  // enable icache
     output logic miss_o,  // to performance counter
-    // address translation requests
-    input icache_areq_t areq_i,
-    output icache_arsp_t areq_o,
     // data requests
     input icache_dreq_t dreq_i,
     output icache_drsp_t dreq_o,
@@ -108,8 +103,6 @@ module cva6_icache_axi_wrapper
   cva6_icache #(
       // use ID 0 for icache reads
       .CVA6Cfg(CVA6Cfg),
-      .icache_areq_t(icache_areq_t),
-      .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
       .icache_req_t(icache_req_t),
@@ -121,8 +114,6 @@ module cva6_icache_axi_wrapper
       .flush_i       (flush_i),
       .en_i          (en_i),
       .miss_o        (miss_o),
-      .areq_i        (areq_i),
-      .areq_o        (areq_o),
       .dreq_i        (dreq_i),
       .dreq_o        (dreq_o),
       .mem_rtrn_vld_i(icache_mem_rtrn_vld),

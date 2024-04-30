@@ -23,8 +23,8 @@ module cva6_mmu_sv39x4
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
-    parameter type                   icache_areq_t     = logic,
-    parameter type                   icache_arsp_t     = logic,
+    parameter type                   fetch_arsp_t      = logic,
+    parameter type                   fetch_areq_t      = logic,
     parameter type                   icache_dreq_t     = logic,
     parameter type                   icache_drsp_t     = logic,
     parameter type                   dcache_req_i_t    = logic,
@@ -41,8 +41,8 @@ module cva6_mmu_sv39x4
     input logic en_ld_st_translation_i,  // enable virtual memory translation for load/stores
     input logic en_ld_st_g_translation_i,  // enable G-Stage translation for load/stores
     // IF interface
-    input icache_arsp_t icache_areq_i,
-    output icache_areq_t icache_areq_o,
+    input fetch_areq_t fetch_areq_i,
+    output fetch_arsp_t fetch_arsp_o,
     // LSU interface
     // this is a more minimalistic interface because the actual addressing logic is handled
     // in the LSU as we distinguish load and stores, what we do here is simple address translation
@@ -145,7 +145,7 @@ module cva6_mmu_sv39x4
 
 
   // Assignments
-  assign itlb_lu_access = icache_areq_i.fetch_req;
+  assign itlb_lu_access = fetch_areq_i.fetch_req;
   assign dtlb_lu_access = lsu_req_i;
   assign itlb_lu_asid   = v_i ? vs_asid_i : asid_i;
   assign dtlb_lu_asid   = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
@@ -174,7 +174,7 @@ module cva6_mmu_sv39x4
       .vmid_to_be_flushed_i  (vmid_to_be_flushed_i),
       .vaddr_to_be_flushed_i (vaddr_to_be_flushed_i),
       .gpaddr_to_be_flushed_i(gpaddr_to_be_flushed_i),
-      .lu_vaddr_i            (icache_areq_i.fetch_vaddr),
+      .lu_vaddr_i            (fetch_areq_i.fetch_vaddr),
       .lu_content_o          (itlb_content),
       .lu_g_content_o        (itlb_g_content),
       .lu_gpaddr_o           (itlb_gpaddr),
@@ -241,7 +241,7 @@ module cva6_mmu_sv39x4
 
       .itlb_access_i(itlb_lu_access),
       .itlb_hit_i   (itlb_lu_hit),
-      .itlb_vaddr_i (icache_areq_i.fetch_vaddr),
+      .itlb_vaddr_i (fetch_areq_i.fetch_vaddr),
 
       .dtlb_access_i(dtlb_lu_access),
       .dtlb_hit_i   (dtlb_lu_hit),
@@ -271,7 +271,7 @@ module cva6_mmu_sv39x4
   //     .probe10(lsu_vaddr_i), // input wire [0:0]  probe10
   //     .probe11(dtlb_lu_hit), // input wire [0:0]  probe11
   //     .probe12(itlb_lu_access), // input wire [0:0]  probe12
-  //     .probe13(icache_areq_i.fetch_vaddr), // input wire [0:0]  probe13
+  //     .probe13(fetch_areq_i.fetch_vaddr), // input wire [0:0]  probe13
   //     .probe14(itlb_lu_hit) // input wire [0:0]  probe13
   // );
 
@@ -283,27 +283,27 @@ module cva6_mmu_sv39x4
   // The instruction interface is a simple request response interface
   always_comb begin : instr_interface
     // MMU disabled: just pass through
-    icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-    icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0]; // play through in case we disabled address translation
+    fetch_arsp_o.fetch_valid = fetch_areq_i.fetch_req;
+    fetch_arsp_o.fetch_paddr  = fetch_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0]; // play through in case we disabled address translation
     // two potential exception sources:
     // 1. HPTW threw an exception -> signal with a page fault exception
     // 2. We got an access error because of insufficient permissions -> throw an access exception
-    icache_areq_o.fetch_exception = '0;
+    fetch_arsp_o.fetch_exception = '0;
     // Check whether we are allowed to access this memory region from a fetch perspective
-    iaccess_err   = icache_areq_i.fetch_req && enable_translation_i && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
+    iaccess_err   = fetch_areq_i.fetch_req && enable_translation_i && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
                                                     || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
-    i_g_st_access_err = icache_areq_i.fetch_req && enable_g_translation_i && !itlb_g_content.u;
+    i_g_st_access_err = fetch_areq_i.fetch_req && enable_g_translation_i && !itlb_g_content.u;
     // MMU enabled: address from TLB, request delayed until hit. Error when TLB
     // hit and no access right or TLB hit and translated address not valid (e.g.
     // AXI decode error), or when PTW performs walk due to ITLB miss and raises
     // an error.
     if ((enable_translation_i || enable_g_translation_i)) begin
       // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal
-      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0)) begin
-        icache_areq_o.fetch_exception = {
+      if (fetch_areq_i.fetch_req && !((&fetch_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|fetch_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0)) begin
+        fetch_arsp_o.fetch_exception = {
           riscv::INSTR_ACCESS_FAULT,
-          {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+          {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, fetch_areq_i.fetch_vaddr},
           {CVA6Cfg.GPLEN{1'b0}},
           {{32{1'b0}}},
           v_i,
@@ -311,31 +311,31 @@ module cva6_mmu_sv39x4
         };
       end
 
-      icache_areq_o.fetch_valid = 1'b0;
+      fetch_arsp_o.fetch_valid = 1'b0;
 
       // 4K page
-      icache_areq_o.fetch_paddr = {
+      fetch_arsp_o.fetch_paddr = {
         enable_g_translation_i ? itlb_g_content.ppn : itlb_content.ppn,
-        icache_areq_i.fetch_vaddr[11:0]
+        fetch_areq_i.fetch_vaddr[11:0]
       };
       // Mega page
       if (itlb_is_2M) begin
-        icache_areq_o.fetch_paddr[20:12] = icache_areq_i.fetch_vaddr[20:12];
+        fetch_arsp_o.fetch_paddr[20:12] = fetch_areq_i.fetch_vaddr[20:12];
       end
       // Giga page
       if (itlb_is_1G) begin
-        icache_areq_o.fetch_paddr[29:12] = icache_areq_i.fetch_vaddr[29:12];
+        fetch_arsp_o.fetch_paddr[29:12] = fetch_areq_i.fetch_vaddr[29:12];
       end
       // ---------
       // ITLB Hit
       // --------
       // if we hit the ITLB output the request signal immediately
       if (itlb_lu_hit) begin
-        icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
+        fetch_arsp_o.fetch_valid = fetch_areq_i.fetch_req;
         if (i_g_st_access_err) begin
-          icache_areq_o.fetch_exception = {
+          fetch_arsp_o.fetch_exception = {
             riscv::INSTR_GUEST_PAGE_FAULT,
-            {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+            {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, fetch_areq_i.fetch_vaddr},
             itlb_gpaddr[CVA6Cfg.GPLEN-1:0],
             {{32{1'b0}}},
             v_i,
@@ -344,18 +344,18 @@ module cva6_mmu_sv39x4
           // we got an access error
         end else if (iaccess_err) begin
           // throw a page fault
-          icache_areq_o.fetch_exception = {
+          fetch_arsp_o.fetch_exception = {
             riscv::INSTR_PAGE_FAULT,
-            {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+            {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, fetch_areq_i.fetch_vaddr},
             {CVA6Cfg.GPLEN{1'b0}},
             {{32{1'b0}}},
             v_i,
             1'b1
           };
         end else if (!pmp_instr_allow) begin
-          icache_areq_o.fetch_exception = {
+          fetch_arsp_o.fetch_exception = {
             riscv::INSTR_ACCESS_FAULT,
-            {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+            {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, fetch_areq_i.fetch_vaddr},
             {CVA6Cfg.GPLEN{1'b0}},
             {{32{1'b0}}},
             v_i,
@@ -368,10 +368,10 @@ module cva6_mmu_sv39x4
       // ---------
       // watch out for exceptions happening during walking the page table
       if (ptw_active && walking_instr) begin
-        icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
+        fetch_arsp_o.fetch_valid = ptw_error | ptw_access_exception;
         if (ptw_error) begin
           if (ptw_error_at_g_st) begin
-            icache_areq_o.fetch_exception = {
+            fetch_arsp_o.fetch_exception = {
               riscv::INSTR_GUEST_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr},
               ptw_bad_gpaddr,
@@ -380,7 +380,7 @@ module cva6_mmu_sv39x4
               1'b1
             };
           end else begin
-            icache_areq_o.fetch_exception = {
+            fetch_arsp_o.fetch_exception = {
               riscv::INSTR_PAGE_FAULT,
               {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr},
               {CVA6Cfg.GPLEN{1'b0}},
@@ -391,7 +391,7 @@ module cva6_mmu_sv39x4
           end
         end  // TODO(moschn,zarubaf): What should the value of tval be in this case?
         else
-          icache_areq_o.fetch_exception = {
+          fetch_arsp_o.fetch_exception = {
             riscv::INSTR_ACCESS_FAULT,
             {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, update_vaddr},
             {CVA6Cfg.GPLEN{1'b0}},
@@ -404,9 +404,9 @@ module cva6_mmu_sv39x4
     // if it didn't match any execute region throw an `Instruction Access Fault`
     // or: if we are not translating, check PMPs immediately on the paddr
     if ((!match_any_execute_region && !ptw_error) || (!(enable_translation_i || enable_g_translation_i) && !pmp_instr_allow)) begin
-      icache_areq_o.fetch_exception = {
+      fetch_arsp_o.fetch_exception = {
         riscv::INSTR_ACCESS_FAULT,
-        {{CVA6Cfg.XLEN - CVA6Cfg.PLEN{1'b0}}, icache_areq_o.fetch_paddr},
+        {{CVA6Cfg.XLEN - CVA6Cfg.PLEN{1'b0}}, fetch_arsp_o.fetch_paddr},
         {CVA6Cfg.GPLEN{1'b0}},
         {{32{1'b0}}},
         v_i,
@@ -417,7 +417,7 @@ module cva6_mmu_sv39x4
 
   // check for execute flag on memory
   assign match_any_execute_region = config_pkg::is_inside_execute_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, icache_areq_o.fetch_paddr}
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, fetch_arsp_o.fetch_paddr}
   );
 
   // Instruction fetch
@@ -427,7 +427,7 @@ module cva6_mmu_sv39x4
       .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
   ) i_pmp_if (
-      .addr_i       (icache_areq_o.fetch_paddr),
+      .addr_i       (fetch_arsp_o.fetch_paddr),
       .priv_lvl_i,
       // we will always execute on the instruction fetch port
       .access_type_i(riscv::ACCESS_EXEC),

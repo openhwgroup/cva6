@@ -30,8 +30,6 @@ module cva6_icache
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
     parameter type icache_req_t = logic,
@@ -48,9 +46,6 @@ module cva6_icache
     input  logic         en_i,
     /// to performance counter
     output logic         miss_o,
-    // address translation requests
-    input  icache_areq_t areq_i,
-    output icache_arsp_t areq_o,
     // data requests
     input  icache_dreq_t dreq_i,
     output icache_drsp_t dreq_o,
@@ -134,20 +129,16 @@ module cva6_icache
   ///////////////////////////////////////////////////////
 
   // extract tag from physical address, check if NC
-  assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
+  assign cl_tag_d  = (dreq_i.translation_valid) ? dreq_i.paddr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
   assign paddr_is_nc = (~cache_en_q) | (~config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, cl_tag_d, {CVA6Cfg.ICACHE_INDEX_WIDTH{1'b0}}}
   ));
 
-  // pass exception through
-  assign dreq_o.ex = areq_i.fetch_exception;
-
   // latch this in case we have to stall later on
   // make sure this is 32bit aligned
   assign vaddr_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr : vaddr_q;
-  assign areq_o.fetch_vaddr = (vaddr_q >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
 
   // split virtual address into index and offset to address cache arrays
   assign cl_index = vaddr_d[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH];
@@ -177,7 +168,6 @@ module cva6_icache
   assign mem_data_o.nc  = paddr_is_nc;
   // way that is being replaced
   assign mem_data_o.way = repl_way;
-  assign dreq_o.vaddr   = vaddr_q;
 
   // invalidations take two cycles
   assign inv_d          = inv_en;
@@ -187,7 +177,7 @@ module cva6_icache
   ///////////////////////////////////////////////////////
   logic addr_ni;
   assign addr_ni = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, areq_i.fetch_paddr}
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, dreq_i.paddr}
   );
   always_comb begin : p_fsm
     // default assignment
@@ -202,7 +192,6 @@ module cva6_icache
 
     // interfaces
     dreq_o.ready = 1'b0;
-    areq_o.fetch_req = 1'b0;
     dreq_o.valid = 1'b0;
     mem_data_req_o = 1'b0;
     // performance counter
@@ -261,18 +250,17 @@ module cva6_icache
       // reuse the miss mechanism to handle
       // the request
       READ: begin
-        areq_o.fetch_req = '1;
         // only enable tag comparison if cache is enabled
-        cmp_en_d    = cache_en_q;
+        cmp_en_d   = cache_en_q;
         // readout speculatively
-        cache_rden  = cache_en_q;
+        cache_rden = cache_en_q;
 
-        if (areq_i.fetch_valid && (!dreq_i.spec || ((CVA6Cfg.NonIdemPotenceEn && !addr_ni) || (!CVA6Cfg.NonIdemPotenceEn)))) begin
+        if (dreq_i.translation_valid && (!dreq_i.spec || ((CVA6Cfg.NonIdemPotenceEn && !addr_ni) || (!CVA6Cfg.NonIdemPotenceEn)))) begin
           // check if we have to flush
           if (flush_d) begin
             state_d = IDLE;
             // we have a hit or an exception output valid result
-          end else if (((|cl_hit && cache_en_q) || areq_i.fetch_exception.valid) && !inv_q) begin
+          end else if (((|cl_hit && cache_en_q) || dreq_i.kill_req) && !inv_q) begin
             dreq_o.valid = ~dreq_i.kill_s2;  // just don't output in this case
             state_d      = IDLE;
 
@@ -334,8 +322,7 @@ module cva6_icache
       // wait until paddr is valid, and go
       // back to idle
       KILL_ATRANS: begin
-        areq_o.fetch_req = '1;
-        if (areq_i.fetch_valid) begin
+        if (dreq_i.translation_valid) begin
           state_d = IDLE;
         end
       end

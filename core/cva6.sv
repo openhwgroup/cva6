@@ -50,31 +50,32 @@ module cva6
 
     // cache request ports
     // I$ address translation requests
-    localparam type icache_areq_t = struct packed {
-      logic                    fetch_valid;      // address translation valid
-      logic [CVA6Cfg.PLEN-1:0] fetch_paddr;      // physical address in
-      exception_t              fetch_exception;  // exception occurred during fetch
-    },
-    localparam type icache_arsp_t = struct packed {
+    localparam type fetch_areq_t = struct packed {
       logic                    fetch_req;    // address translation request
       logic [CVA6Cfg.VLEN-1:0] fetch_vaddr;  // virtual address out
+    },
+    localparam type fetch_arsp_t = struct packed {
+      exception_t              fetch_exception;  // exception occurred during fetch
+      logic                    fetch_valid;      // address translation valid
+      logic [CVA6Cfg.PLEN-1:0] fetch_paddr;      // physical address in
     },
 
     // I$ data requests
     localparam type icache_dreq_t = struct packed {
-      logic                    req;      // we request a new word
-      logic                    kill_s1;  // kill the current request
-      logic                    kill_s2;  // kill the last request
-      logic                    spec;     // request is speculative
-      logic [CVA6Cfg.VLEN-1:0] vaddr;    // 1st cycle: 12 bit index is taken for lookup
+      logic                    req;                // we request a new word
+      logic                    kill_s1;            // kill the current request
+      logic                    kill_s2;            // kill the last request
+      logic                    kill_req;           // kill the last request
+      logic                    spec;               // request is speculative
+      logic [CVA6Cfg.VLEN-1:0] vaddr;              // 1st cycle: 12 bit index is taken for lookup
+      logic                    translation_valid;  // address translation valid
+      logic [CVA6Cfg.PLEN-1:0] paddr;              // 1st cycle: 12 bit index is taken for lookup
     },
     localparam type icache_drsp_t = struct packed {
       logic                                ready;  // icache is ready
       logic                                valid;  // signals a valid read
       logic [CVA6Cfg.FETCH_WIDTH-1:0]      data;   // 2+ cycle out: tag
       logic [CVA6Cfg.FETCH_USER_WIDTH-1:0] user;   // User bits
-      logic [CVA6Cfg.VLEN-1:0]             vaddr;  // virtual address out
-      exception_t                          ex;     // we've encountered an exception
     },
 
     // IF/ID Stage
@@ -556,8 +557,8 @@ module cva6
   logic flush_commit;
   logic flush_acc;
 
-  icache_areq_t icache_areq_ex_cache;
-  icache_arsp_t icache_areq_cache_ex;
+  fetch_arsp_t fetch_arsp_ex_frontend;
+  fetch_areq_t fetch_areq_frontend_ex;
   icache_dreq_t icache_dreq_if_cache;
   icache_drsp_t icache_dreq_cache_if;
 
@@ -593,6 +594,8 @@ module cva6
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .fetch_entry_t(fetch_entry_t),
+      .fetch_areq_t(fetch_areq_t),
+      .fetch_arsp_t(fetch_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t)
   ) i_frontend (
@@ -601,6 +604,8 @@ module cva6
       .halt_i             (halt_ctrl),
       .debug_mode_i       (debug_mode),
       .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
+      .arsp_i             (fetch_arsp_ex_frontend),
+      .areq_o             (fetch_areq_frontend_ex),
       .icache_dreq_i      (icache_dreq_cache_if),
       .icache_dreq_o      (icache_dreq_if_cache),
       .resolved_branch_i  (resolved_branch),
@@ -817,8 +822,8 @@ module cva6
       .dcache_req_o_t(dcache_req_o_t),
       .exception_t(exception_t),
       .fu_data_t(fu_data_t),
-      .icache_areq_t(icache_areq_t),
-      .icache_arsp_t(icache_arsp_t),
+      .fetch_areq_t(fetch_areq_t),
+      .fetch_arsp_t(fetch_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
       .lsu_ctrl_t(lsu_ctrl_t)
@@ -924,8 +929,8 @@ module cva6
       .vs_asid_i               (vs_asid_csr_ex),                 // from CSR
       .hgatp_ppn_i             (hgatp_ppn_csr_ex),               // from CSR
       .vmid_i                  (vmid_csr_ex),                    // from CSR
-      .icache_areq_i           (icache_areq_cache_ex),
-      .icache_areq_o           (icache_areq_ex_cache),
+      .fetch_areq_i            (fetch_areq_frontend_ex),
+      .fetch_arsp_o            (fetch_arsp_ex_frontend),
       // DCACHE interfaces
       .dcache_req_ports_i      (dcache_req_ports_cache_ex),
       .dcache_req_ports_o      (dcache_req_ports_ex_cache),
@@ -1197,8 +1202,6 @@ module cva6
     // this is a cache subsystem that is compatible with OpenPiton
     wt_cache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
-        .icache_areq_t(icache_areq_t),
-        .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
         .icache_req_t(icache_req_t),
@@ -1216,8 +1219,6 @@ module cva6
         .icache_en_i       (icache_en_csr),
         .icache_flush_i    (icache_flush_ctrl_cache),
         .icache_miss_o     (icache_miss_cache_perf),
-        .icache_areq_i     (icache_areq_ex_cache),
-        .icache_areq_o     (icache_areq_cache_ex),
         .icache_dreq_i     (icache_dreq_if_cache),
         .icache_dreq_o     (icache_dreq_cache_if),
         // D$
@@ -1245,8 +1246,6 @@ module cva6
   end else if (CVA6Cfg.DCacheType == config_pkg::HPDCACHE) begin : gen_cache_hpd
     cva6_hpdcache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
-        .icache_areq_t(icache_areq_t),
-        .icache_arsp_t(icache_arsp_t),
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
         .icache_req_t(icache_req_t),
@@ -1270,8 +1269,6 @@ module cva6
         .icache_en_i   (icache_en_csr),
         .icache_flush_i(icache_flush_ctrl_cache),
         .icache_miss_o (icache_miss_cache_perf),
-        .icache_areq_i (icache_areq_ex_cache),
-        .icache_areq_o (icache_areq_cache_ex),
         .icache_dreq_i (icache_dreq_if_cache),
         .icache_dreq_o (icache_dreq_cache_if),
 
@@ -1313,8 +1310,6 @@ module cva6
         // not as important since this cache subsystem is about to be
         // deprecated
         .CVA6Cfg       (CVA6Cfg),
-        .icache_areq_t (icache_areq_t),
-        .icache_arsp_t (icache_arsp_t),
         .icache_dreq_t (icache_dreq_t),
         .icache_drsp_t (icache_drsp_t),
         .icache_req_t  (icache_req_t),
@@ -1336,8 +1331,6 @@ module cva6
         .icache_en_i       (icache_en_csr),
         .icache_flush_i    (icache_flush_ctrl_cache),
         .icache_miss_o     (icache_miss_cache_perf),
-        .icache_areq_i     (icache_areq_ex_cache),
-        .icache_areq_o     (icache_areq_cache_ex),
         .icache_dreq_i     (icache_dreq_if_cache),
         .icache_dreq_o     (icache_dreq_cache_if),
         // D$

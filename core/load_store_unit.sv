@@ -21,8 +21,8 @@ module load_store_unit
     parameter type dcache_req_o_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
+    parameter type fetch_areq_t = logic,
+    parameter type fetch_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
     parameter type lsu_ctrl_t = logic
@@ -82,10 +82,10 @@ module load_store_unit
     // Enable G-Stage memory translation for load/stores - TO_BE_COMPLETED
     input logic en_ld_st_g_translation_i,
 
-    // Instruction cache input request - CACHES
-    input  icache_arsp_t icache_areq_i,
-    // Instruction cache output request - CACHES
-    output icache_areq_t icache_areq_o,
+    // Instruction cache input request - FETCH
+    input  fetch_areq_t fetch_areq_i,
+    // Instruction cache output response - FETCH
+    output fetch_arsp_t fetch_arsp_o,
 
     // Current privilege mode - CSR_REGFILE
     input  riscv::priv_lvl_t                          priv_lvl_i,
@@ -235,8 +235,8 @@ module load_store_unit
     cva6_mmu_sv39x4 #(
         .CVA6Cfg          (CVA6Cfg),
         .exception_t      (exception_t),
-        .icache_areq_t    (icache_areq_t),
-        .icache_arsp_t    (icache_arsp_t),
+        .fetch_areq_t     (fetch_areq_t),
+        .fetch_arsp_t     (fetch_arsp_t),
         .icache_dreq_t    (icache_dreq_t),
         .icache_drsp_t    (icache_drsp_t),
         .dcache_req_i_t   (dcache_req_i_t),
@@ -258,13 +258,13 @@ module load_store_unit
         // connecting PTW to D$ IF
         .req_port_i     (dcache_req_ports_i[0]),
         .req_port_o     (dcache_req_ports_o[0]),
-        // icache address translation requests
-        .icache_areq_i  (icache_areq_i),
+        // fetch address translation requests
+        .fetch_areq_i   (fetch_areq_i),
         .asid_to_be_flushed_i,
         .vmid_to_be_flushed_i,
         .vaddr_to_be_flushed_i,
         .gpaddr_to_be_flushed_i,
-        .icache_areq_o  (icache_areq_o),
+        .fetch_arsp_o   (fetch_arsp_o),
         .pmpcfg_i,
         .pmpaddr_i,
         // Hypervisor load/store signals
@@ -276,8 +276,8 @@ module load_store_unit
     mmu #(
         .CVA6Cfg          (CVA6Cfg),
         .exception_t      (exception_t),
-        .icache_areq_t    (icache_areq_t),
-        .icache_arsp_t    (icache_arsp_t),
+        .fetch_areq_t     (fetch_areq_t),
+        .fetch_arsp_t     (fetch_arsp_t),
         .icache_dreq_t    (icache_dreq_t),
         .icache_drsp_t    (icache_drsp_t),
         .dcache_req_i_t   (dcache_req_i_t),
@@ -299,10 +299,10 @@ module load_store_unit
         .req_port_i     (dcache_req_ports_i[0]),
         .req_port_o     (dcache_req_ports_o[0]),
         // icache address translation requests
-        .icache_areq_i  (icache_areq_i),
+        .fetch_areq_i   (fetch_areq_i),
         .asid_to_be_flushed_i,
         .vaddr_to_be_flushed_i,
-        .icache_areq_o  (icache_areq_o),
+        .fetch_arsp_o   (fetch_arsp_o),
         .pmpcfg_i,
         .pmpaddr_i,
         .*
@@ -311,8 +311,8 @@ module load_store_unit
     cva6_mmu_sv32 #(
         .CVA6Cfg          (CVA6Cfg),
         .exception_t      (exception_t),
-        .icache_areq_t    (icache_areq_t),
-        .icache_arsp_t    (icache_arsp_t),
+        .fetch_areq_t     (fetch_areq_t),
+        .fetch_arsp_t     (fetch_arsp_t),
         .icache_dreq_t    (icache_dreq_t),
         .icache_drsp_t    (icache_drsp_t),
         .dcache_req_i_t   (dcache_req_i_t),
@@ -334,10 +334,10 @@ module load_store_unit
         .req_port_i     (dcache_req_ports_i[0]),
         .req_port_o     (dcache_req_ports_o[0]),
         // icache address translation requests
-        .icache_areq_i  (icache_areq_i),
+        .fetch_areq_i   (fetch_areq_i),
         .asid_to_be_flushed_i,
         .vaddr_to_be_flushed_i,
-        .icache_areq_o  (icache_areq_o),
+        .fetch_arsp_o   (fetch_arsp_o),
         .pmpcfg_i,
         .pmpaddr_i,
         .*
@@ -346,15 +346,15 @@ module load_store_unit
 
     if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin
       assign mmu_vaddr_plen   = mmu_vaddr[CVA6Cfg.PLEN-1:0];
-      assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
+      assign fetch_vaddr_plen = fetch_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin
-      assign mmu_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
-      assign fetch_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, icache_areq_i.fetch_vaddr};
+      assign mmu_vaddr_plen   = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
+      assign fetch_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, fetch_areq_i.fetch_vaddr};
     end
 
-    assign icache_areq_o.fetch_valid           = icache_areq_i.fetch_req;
-    assign icache_areq_o.fetch_paddr           = fetch_vaddr_plen;
-    assign icache_areq_o.fetch_exception       = '0;
+    assign fetch_arsp_o.fetch_valid            = fetch_areq_i.fetch_req;
+    assign fetch_arsp_o.fetch_paddr            = fetch_vaddr_plen;
+    assign fetch_arsp_o.fetch_exception        = '0;
 
     assign dcache_req_ports_o[0].address_index = '0;
     assign dcache_req_ports_o[0].address_tag   = '0;
