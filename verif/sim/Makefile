@@ -246,7 +246,7 @@ COMMON_RUN_UVM_FLAGS = \
 	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm \
 	++$(elf) \
 	+elf_file=$(elf) \
-	+config_file=$(CVA6_REPO_DIR)/verif/spike_configs/cv32a65x.yaml\
+	+config_file=$(CVA6_REPO_DIR)/verif/spike_configs/$(target).yaml\
 	+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	+signature=$(elf).signature_output  +UVM_TESTNAME=uvmt_cva6_firmware_test_c
 
