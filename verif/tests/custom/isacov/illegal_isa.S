@@ -24,6 +24,8 @@ main:
 
   #Cover Illegal funct7 corner case
   .4byte 0x5ad8f33
+  #Cover zext.h with instr[24:20] != 0 in RV32 corner case
+  .4byte 0x08824ab3
   #End of test
   j test_pass
 
