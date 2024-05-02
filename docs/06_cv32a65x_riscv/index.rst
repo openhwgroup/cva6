@@ -1,5 +1,5 @@
 ..
-   Copyright (c) 2022 Thales
+   Copyright (c) 2024 Thales
    Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
@@ -7,17 +7,8 @@
 
    Original Author: Jean-Roch COULON - Thales
 
+Privilege RISC-V ISA for CV32A65X
+=================================
 
-Design Document for CV32A65X
-============================
-Editor: **Jean Roch Coulon**
-
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
-   intro
-   subsystem
-   functionality
-   architecture
-   cv32a6_glossary
+.. raw:: html
+   :file: priv-isa-cv32a65x.html

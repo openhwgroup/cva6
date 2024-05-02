@@ -6,7 +6,7 @@
 #
 #   Original Author: Jean-Roch COULON - Thales
 
-all: priv unpriv
+all: priv unpriv priv-html
 
 setup:
 	mkdir -p build/riscv-isa-manual
@@ -15,6 +15,11 @@ setup:
 
 priv: setup
 	cd build/riscv-isa-manual/build; make priv
+	cp ./build/riscv-isa-manual/build/priv-isa-asciidoc.pdf priv-isa-cv32a65x.pdf
+
+priv-html: setup
+	cd build/riscv-isa-manual/build; make priv-html
+	cp ./build/riscv-isa-manual/build/priv-isa-asciidoc.html priv-isa-cv32a65x.html
 
 unpriv: setup
 	cd build/riscv-isa-manual/build; make unpriv
