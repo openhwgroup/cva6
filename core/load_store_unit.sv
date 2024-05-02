@@ -231,7 +231,7 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
-  if (MMU_PRESENT) begin : gen_mmu
+  if (CVA6Cfg.MmuPresent) begin : gen_mmu
     localparam HYP_EXT = CVA6Cfg.RVH ? 1 : 0;
     localparam VPN_LEN = (CVA6Cfg.XLEN == 64) ? (HYP_EXT ? 29 : 27) : 20;
     localparam PT_LEVELS = (CVA6Cfg.XLEN == 64) ? 3 : 2;

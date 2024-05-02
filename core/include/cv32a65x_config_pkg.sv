@@ -33,6 +33,8 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigInstrTlbEntries = 2;  // MMU
   localparam CVA6ConfigDataTlbEntries = 2;  // MMU
+  localparam CVA6ConfigUseSharedTlb = 1; // MMU
+  localparam CVA6ConfigSharedTlbDepth = 64; // MMU
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
