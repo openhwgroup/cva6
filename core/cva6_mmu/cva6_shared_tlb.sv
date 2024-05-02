@@ -146,11 +146,10 @@ logic [$clog2(SHARED_TLB_WAYS)-1:0] repl_way;  // way to replace
 logic [SHARED_TLB_WAYS-1:0] repl_way_oh_d;  // way to replace (onehot)
 logic all_ways_valid;  // we need to switch repl strategy since all are valid
 
-assign shared_tlb_access_o = (CVA6Cfg.UseSharedTlb || CVA6Cfg.RVH) ? shared_tlb_access_q : shared_tlb_access_d;
-assign shared_tlb_hit_o = shared_tlb_hit_d;
-assign shared_tlb_vaddr_o = (CVA6Cfg.UseSharedTlb || CVA6Cfg.RVH) ? shared_tlb_vaddr_q : shared_tlb_vaddr_d;
-
-assign itlb_req_o = (CVA6Cfg.UseSharedTlb || CVA6Cfg.RVH) ? itlb_req_q : itlb_req_d;
+assign shared_tlb_access_o = shared_tlb_access_q;
+assign shared_tlb_hit_o    = shared_tlb_hit_d;
+assign shared_tlb_vaddr_o  = shared_tlb_vaddr_q;
+assign itlb_req_o          = itlb_req_q;
 
 genvar i, x;
 generate
