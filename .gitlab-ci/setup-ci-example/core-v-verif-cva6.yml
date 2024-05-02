@@ -5,6 +5,7 @@ variables:
   SPIKE_ROOT: /opt/common/tools/spike
   BBL_ROOT: /opt/common/tools/Linux-ariane-sdk
   SYN_VCS_BASHRC: /opt/synopsys/vcs/XXXX/setup/bashrc.example
+  SYN_SG_BASHRC: /opt/synopsys/spyglass/XXXX/setup/bashrc.example
   SYN_VERDI_BASHRC: /opt/synopsys/verdi/XXXX/setup/bashrc.ini
   SYN_DCSHELL_BASHRC: /opt/synopsys/syn/XXXX/setup/bashrc
   QUESTA_BASHRC: /opt/questa/XXXX/setup/bashrc
