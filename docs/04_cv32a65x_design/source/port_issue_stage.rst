@@ -249,6 +249,8 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``stall_i`` input is tied to 0
 |   ``issue_instr_o`` output is tied to 0
 |   ``issue_instr_hs_o`` output is tied to 0
+| As RVH = False,
+|   ``tinst_o`` output is tied to 0
 | As RVF = 0,
 |   ``fpu_ready_i`` input is tied to 0
 |   ``fpu_valid_o`` output is tied to 0

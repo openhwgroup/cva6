@@ -21,7 +21,7 @@ if [ -d ${VERILATOR_BUILD_DIR} ]; then
 fi
 
 if [ -f ${SPIKE_PATH}/spike ]; then
-    spike_version="$(git -C ${SPIKE_SRC_DIR} log -1 --pretty=tformat:%h -- ${SPIKE_SRC_DIR}/..)"
+    spike_version="$(git -C ${SPIKE_SRC_DIR} log -1 --pretty=tformat:%h -- ${SPIKE_SRC_DIR}/ )"
     spike_installed_version="$(${SPIKE_PATH}/spike -v |& cut -d ' ' -f 2)"
     if [ "$spike_installed_version" != "$spike_version" ]; then
         rm -rf ${SPIKE_INSTALL_DIR}

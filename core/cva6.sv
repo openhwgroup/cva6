@@ -191,7 +191,7 @@ module cva6
       logic                                  data_we;
       logic [(CVA6Cfg.XLEN/8)-1:0]           data_be;
       logic [1:0]                            data_size;
-      logic [DCACHE_TID_WIDTH-1:0]           data_id;
+      logic [CVA6Cfg.DcacheIdWidth-1:0]      data_id;
       logic                                  kill_req;
       logic                                  tag_valid;
     },
@@ -199,7 +199,7 @@ module cva6
     localparam type dcache_req_o_t = struct packed {
       logic                                 data_gnt;
       logic                                 data_rvalid;
-      logic [DCACHE_TID_WIDTH-1:0]          data_rid;
+      logic [CVA6Cfg.DcacheIdWidth-1:0]     data_rid;
       logic [CVA6Cfg.XLEN-1:0]              data_rdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
@@ -354,18 +354,18 @@ module cva6
   // --------------
   // IF <-> ID
   // --------------
-  fetch_entry_t fetch_entry_if_id;
-  logic fetch_valid_if_id;
-  logic fetch_ready_id_if;
+  fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_if_id;
+  logic [ariane_pkg::SUPERSCALAR:0] fetch_valid_if_id;
+  logic [ariane_pkg::SUPERSCALAR:0] fetch_ready_id_if;
 
   // --------------
   // ID <-> ISSUE
   // --------------
-  scoreboard_entry_t issue_entry_id_issue;
-  logic [31:0] orig_instr_id_issue;
-  logic issue_entry_valid_id_issue;
-  logic is_ctrl_fow_id_issue;
-  logic issue_instr_issue_id;
+  scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0] issue_entry_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0] issue_entry_valid_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0] is_ctrl_fow_id_issue;
+  logic [ariane_pkg::SUPERSCALAR:0] issue_instr_issue_id;
 
   // --------------
   // ISSUE <-> EX
@@ -521,70 +521,70 @@ module cva6
   // ----------------------------
   logic [11:0] addr_csr_perf;
   logic [CVA6Cfg.XLEN-1:0] data_csr_perf, data_perf_csr;
-  logic                                                              we_csr_perf;
+  logic we_csr_perf;
 
-  logic                                                              icache_flush_ctrl_cache;
-  logic                                                              itlb_miss_ex_perf;
-  logic                                                              dtlb_miss_ex_perf;
-  logic                                                              dcache_miss_cache_perf;
-  logic                                                              icache_miss_cache_perf;
-  logic             [    NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;
-  logic                                                              stall_issue;
+  logic icache_flush_ctrl_cache;
+  logic itlb_miss_ex_perf;
+  logic dtlb_miss_ex_perf;
+  logic dcache_miss_cache_perf;
+  logic icache_miss_cache_perf;
+  logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;
+  logic stall_issue;
   // --------------
   // CTRL <-> *
   // --------------
-  logic                                                              set_pc_ctrl_pcgen;
-  logic                                                              flush_csr_ctrl;
-  logic                                                              flush_unissued_instr_ctrl_id;
-  logic                                                              flush_ctrl_if;
-  logic                                                              flush_ctrl_id;
-  logic                                                              flush_ctrl_ex;
-  logic                                                              flush_ctrl_bp;
-  logic                                                              flush_tlb_ctrl_ex;
-  logic                                                              flush_tlb_vvma_ctrl_ex;
-  logic                                                              flush_tlb_gvma_ctrl_ex;
-  logic                                                              fence_i_commit_controller;
-  logic                                                              fence_commit_controller;
-  logic                                                              sfence_vma_commit_controller;
-  logic                                                              hfence_vvma_commit_controller;
-  logic                                                              hfence_gvma_commit_controller;
-  logic                                                              halt_ctrl;
-  logic                                                              halt_csr_ctrl;
-  logic                                                              dcache_flush_ctrl_cache;
-  logic                                                              dcache_flush_ack_cache_ctrl;
-  logic                                                              set_debug_pc;
-  logic                                                              flush_commit;
-  logic                                                              flush_acc;
+  logic set_pc_ctrl_pcgen;
+  logic flush_csr_ctrl;
+  logic flush_unissued_instr_ctrl_id;
+  logic flush_ctrl_if;
+  logic flush_ctrl_id;
+  logic flush_ctrl_ex;
+  logic flush_ctrl_bp;
+  logic flush_tlb_ctrl_ex;
+  logic flush_tlb_vvma_ctrl_ex;
+  logic flush_tlb_gvma_ctrl_ex;
+  logic fence_i_commit_controller;
+  logic fence_commit_controller;
+  logic sfence_vma_commit_controller;
+  logic hfence_vvma_commit_controller;
+  logic hfence_gvma_commit_controller;
+  logic halt_ctrl;
+  logic halt_csr_ctrl;
+  logic dcache_flush_ctrl_cache;
+  logic dcache_flush_ack_cache_ctrl;
+  logic set_debug_pc;
+  logic flush_commit;
+  logic flush_acc;
 
-  icache_areq_t                                                      icache_areq_ex_cache;
-  icache_arsp_t                                                      icache_areq_cache_ex;
-  icache_dreq_t                                                      icache_dreq_if_cache;
-  icache_drsp_t                                                      icache_dreq_cache_if;
+  icache_areq_t icache_areq_ex_cache;
+  icache_arsp_t icache_areq_cache_ex;
+  icache_dreq_t icache_dreq_if_cache;
+  icache_drsp_t icache_dreq_cache_if;
 
-  amo_req_t                                                          amo_req;
-  amo_resp_t                                                         amo_resp;
-  logic                                                              sb_full;
+  amo_req_t amo_req;
+  amo_resp_t amo_resp;
+  logic sb_full;
 
   // ----------------
   // DCache <-> *
   // ----------------
-  dcache_req_i_t    [             2:0]                               dcache_req_ports_ex_cache;
-  dcache_req_o_t    [             2:0]                               dcache_req_ports_cache_ex;
-  dcache_req_i_t    [             1:0]                               dcache_req_ports_acc_cache;
-  dcache_req_o_t    [             1:0]                               dcache_req_ports_cache_acc;
-  logic                                                              dcache_commit_wbuffer_empty;
-  logic                                                              dcache_commit_wbuffer_not_ni;
+  dcache_req_i_t [2:0] dcache_req_ports_ex_cache;
+  dcache_req_o_t [2:0] dcache_req_ports_cache_ex;
+  dcache_req_i_t [1:0] dcache_req_ports_acc_cache;
+  dcache_req_o_t [1:0] dcache_req_ports_cache_acc;
+  logic dcache_commit_wbuffer_empty;
+  logic dcache_commit_wbuffer_not_ni;
 
   //RVFI
-  lsu_ctrl_t                                                         rvfi_lsu_ctrl;
-  logic             [CVA6Cfg.PLEN-1:0]                               rvfi_mem_paddr;
-  logic                                                              rvfi_is_compressed;
-  rvfi_probes_csr_t                                                  rvfi_csr;
+  lsu_ctrl_t rvfi_lsu_ctrl;
+  logic [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr;
+  logic [ariane_pkg::SUPERSCALAR:0] rvfi_is_compressed;
+  rvfi_probes_csr_t rvfi_csr;
 
   // Accelerator port
-  logic             [            63:0]                               inval_addr;
-  logic                                                              inval_valid;
-  logic                                                              inval_ready;
+  logic [63:0] inval_addr;
+  logic inval_valid;
+  logic inval_ready;
 
   // --------------
   // Frontend
@@ -1076,7 +1076,7 @@ module cva6
   // ------------------------
   // Performance Counters
   // ------------------------
-  if (PERF_COUNTER_EN) begin : gen_perf_counter
+  if (CVA6Cfg.PerfCounterEn) begin : gen_perf_counter
     perf_counters #(
         .CVA6Cfg(CVA6Cfg),
         .bp_resolve_t(bp_resolve_t),
@@ -1102,7 +1102,9 @@ module cva6
         .itlb_miss_i        (itlb_miss_ex_perf),
         .dtlb_miss_i        (dtlb_miss_ex_perf),
         .sb_full_i          (sb_full),
-        .if_empty_i         (~fetch_valid_if_id),
+        // TODO this is more complex that that
+        // If superscalar then we additionally have to check [1] when transaction 0 succeeded
+        .if_empty_i         (~fetch_valid_if_id[0]),
         .ex_i               (ex_commit),
         .eret_i             (eret),
         .resolved_branch_i  (resolved_branch),
@@ -1191,7 +1193,7 @@ module cva6
     dcache_req_ports_cache_acc[1].data_gnt &= !dcache_req_ports_ex_cache[2].data_req;
   end
 
-  if (DCACHE_TYPE == int'(config_pkg::WT)) begin : gen_cache_wt
+  if (CVA6Cfg.DCacheType == config_pkg::WT) begin : gen_cache_wt
     // this is a cache subsystem that is compatible with OpenPiton
     wt_cache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
@@ -1240,7 +1242,7 @@ module cva6
         .inval_valid_i     (inval_valid),
         .inval_ready_o     (inval_ready)
     );
-  end else if (DCACHE_TYPE == int'(config_pkg::HPDCACHE)) begin : gen_cache_hpd
+  end else if (CVA6Cfg.DCacheType == config_pkg::HPDCACHE) begin : gen_cache_hpd
     cva6_hpdcache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
         .icache_areq_t(icache_areq_t),
@@ -1407,6 +1409,7 @@ module cva6
         .acc_no_st_pending_i   (no_st_pending_commit),
         .dcache_req_ports_i    (dcache_req_ports_ex_cache),
         .ctrl_halt_o           (halt_acc_ctrl),
+        .csr_addr_i            (csr_addr_ex_csr),
         .acc_dcache_req_ports_o(dcache_req_ports_acc_cache),
         .acc_dcache_req_ports_i(dcache_req_ports_cache_acc),
         .inval_ready_i         (inval_ready),
@@ -1468,7 +1471,7 @@ module cva6
     fifo_v3 #(
         .DATA_WIDTH(64),
         .DEPTH(PC_QUEUE_DEPTH),
-        .FPGA_EN(CVA6Cfg.FPGA_EN)
+        .FPGA_EN(CVA6Cfg.FpgaEn)
     ) i_pc_fifo (
         .clk_i     (clk_i),
         .rst_ni    (rst_ni),
@@ -1503,59 +1506,40 @@ module cva6
 `endif  // PITON_ARIANE
 
 `ifndef VERILATOR
-  instr_tracer_if #(
-      .CVA6Cfg(CVA6Cfg),
-      .bp_resolve_t(bp_resolve_t),
-      .exception_t(exception_t),
-      .scoreboard_entry_t(scoreboard_entry_t)
-  ) tracer_if (
-      clk_i
-  );
-  // assign instruction tracer interface
-  // control signals
-  assign tracer_if.rstn           = rst_ni;
-  assign tracer_if.flush_unissued = flush_unissued_instr_ctrl_id;
-  assign tracer_if.flush          = flush_ctrl_ex;
-  // fetch
-  assign tracer_if.instruction    = id_stage_i.fetch_entry_i.instruction;
-  assign tracer_if.fetch_valid    = id_stage_i.fetch_entry_valid_i;
-  assign tracer_if.fetch_ack      = id_stage_i.fetch_entry_ready_o;
-  // Issue
-  assign tracer_if.issue_ack      = issue_stage_i.i_scoreboard.issue_ack_i;
-  assign tracer_if.issue_sbe      = issue_stage_i.i_scoreboard.issue_instr_o;
-  // write-back
-  assign tracer_if.waddr          = waddr_commit_id;
-  assign tracer_if.wdata          = wdata_commit_id;
-  assign tracer_if.we_gpr         = we_gpr_commit_id;
-  assign tracer_if.we_fpr         = we_fpr_commit_id;
-  // commit
-  assign tracer_if.commit_instr   = commit_instr_id_commit;
-  assign tracer_if.commit_ack     = commit_ack;
-  // branch predict
-  assign tracer_if.resolve_branch = resolved_branch;
-  // address translation
-  // stores
-  assign tracer_if.st_valid       = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
-  assign tracer_if.st_paddr       = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
-  // loads
-  assign tracer_if.ld_valid       = ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid;
-  assign tracer_if.ld_kill        = ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req;
-  assign tracer_if.ld_paddr       = ex_stage_i.lsu_i.i_load_unit.paddr_i;
-  // exceptions
-  assign tracer_if.exception      = commit_stage_i.exception_o;
-  // assign current privilege level
-  assign tracer_if.priv_lvl       = priv_lvl;
-  assign tracer_if.debug_mode     = debug_mode;
-
   instr_tracer #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .interrupts_t(interrupts_t),
+      .exception_t(exception_t),
       .INTERRUPTS(INTERRUPTS)
   ) instr_tracer_i (
-      .tracer_if(tracer_if),
-      .hart_id_i
+      // .tracer_if(tracer_if),
+      .pck(clk_i),
+      .rstn(rst_ni),
+      .flush_unissued(flush_unissued_instr_ctrl_id),
+      .flush_all(flush_ctrl_ex),
+      .instruction(id_stage_i.fetch_entry_i[0].instruction),
+      .fetch_valid(id_stage_i.fetch_entry_valid_i[0]),
+      .fetch_ack(id_stage_i.fetch_entry_ready_o[0]),
+      .issue_ack(issue_stage_i.i_scoreboard.issue_ack_i),
+      .issue_sbe(issue_stage_i.i_scoreboard.issue_instr_o),
+      .waddr(waddr_commit_id),
+      .wdata(wdata_commit_id),
+      .we_gpr(we_gpr_commit_id),
+      .we_fpr(we_fpr_commit_id),
+      .commit_instr(commit_instr_id_commit),
+      .commit_ack(commit_ack),
+      .st_valid(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i),
+      .st_paddr(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i),
+      .ld_valid(ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid),
+      .ld_kill(ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req),
+      .ld_paddr(ex_stage_i.lsu_i.i_load_unit.paddr_i),
+      .resolve_branch(resolved_branch),
+      .commit_exception(commit_stage_i.exception_o),
+      .priv_lvl(priv_lvl),
+      .debug_mode(debug_mode),
+      .hart_id_i(hart_id_i)
   );
 
   // mock tracer for Verilator, to be used with spike-dasm
@@ -1617,6 +1601,10 @@ module cva6
 
 
   //RVFI INSTR
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] rvfi_fetch_instr;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign rvfi_fetch_instr[i] = fetch_entry_if_id[i].instruction;
+  end
 
   cva6_rvfi_probes #(
       .CVA6Cfg            (CVA6Cfg),
@@ -1631,15 +1619,15 @@ module cva6
       .flush_i            (flush_ctrl_if),
       .issue_instr_ack_i  (issue_instr_issue_id),
       .fetch_entry_valid_i(fetch_valid_if_id),
-      .instruction_i      (fetch_entry_if_id.instruction),
+      .instruction_i      (rvfi_fetch_instr),
       .is_compressed_i    (rvfi_is_compressed),
 
       .issue_pointer_i (rvfi_issue_pointer),
       .commit_pointer_i(rvfi_commit_pointer),
 
       .flush_unissued_instr_i(flush_unissued_instr_ctrl_id),
-      .decoded_instr_valid_i (issue_entry_valid_id_issue),
-      .decoded_instr_ack_i   (issue_instr_issue_id),
+      .decoded_instr_valid_i (issue_entry_valid_id_issue[0]),
+      .decoded_instr_ack_i   (issue_instr_issue_id[0]),
 
       .rs1_forwarding_i(rs1_forwarding_id_ex),
       .rs2_forwarding_i(rs2_forwarding_id_ex),

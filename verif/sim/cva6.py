@@ -114,7 +114,7 @@ def get_generator_cmd(simulator, simulator_yaml, cov, exp, debug_cmd):
   sys.exit(RET_FAIL)
 
 
-def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv):
+def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params):
   """Parse ISS YAML to get the simulation command
 
   Args:
@@ -145,6 +145,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv):
       cmd = re.sub(r"\<isscomp_opts\>", isscomp_opts, cmd)
       cmd = re.sub(r"\<issrun_opts\>", issrun_opts, cmd)
       cmd = re.sub(r"\<isspostrun_opts\>", isspostrun_opts, cmd)
+      cmd = re.sub(r"\<spike_params\>", spike_params, cmd)
       if m: cmd = re.sub(r"\<xlen\>", m.group('xlen'), cmd)
       if iss == "ovpsim":
         cmd = re.sub(r"\<cfg_path\>", setting_dir, cmd)
@@ -156,7 +157,6 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv):
       else:
         cmd = re.sub(r"\<variant\>", isa, cmd)
         cmd = re.sub(r"\<priv\>", priv, cmd)
-
       return cmd
   logging.error("Cannot find ISS %0s" % iss)
   sys.exit(RET_FAIL)
@@ -411,7 +411,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
 
 
 def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-                 setting_dir, debug_cmd, linker, priv):
+                 setting_dir, debug_cmd, linker, priv, spike_params, test_name = None):
   """Run a directed assembly test with ISS
 
   Args:
@@ -455,14 +455,15 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   elf2bin(elf, binary, debug_cmd)
   log_list = []
   # ISS simulation
+  test_log_name = test_name or asm
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     if log_format == 1:
-      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, asm, test_iteration, target))
+      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test_log_name, test_iteration, target))
     else:
-      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, asm, target))
+      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, test_log_name, target))
     log_list.append(log)
-    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     run_cmd(cmd, 500, debug_cmd = debug_cmd)
@@ -502,7 +503,7 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
 
 # python3 run.py --target rv64gc --iss=spike,verilator --elf_tests bbl.o
 def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-          setting_dir, debug_cmd):
+          setting_dir, debug_cmd, priv, spike_params):
   """Run a directed c test with ISS
 
   Args:
@@ -538,7 +539,7 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, c, target))
     log_list.append(log)
-    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     if "veri" in iss: ratio = 35
@@ -550,7 +551,7 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
 
 def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-          setting_dir, debug_cmd, linker, priv):
+          setting_dir, debug_cmd, linker, priv, spike_params, test_name = None):
   """Run a directed c test with ISS
 
   Args:
@@ -592,14 +593,15 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   elf2bin(elf, binary, debug_cmd)
   log_list = []
   # ISS simulation
+  test_log_name = test_name or c
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     if log_format == 1:
-      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, c, test_iteration, target))
+      log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test_log_name, test_iteration, target))
     else:
-      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, c, target))
+      log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, test_log_name, target))
     log_list.append(log)
-    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     run_cmd(cmd, 300, debug_cmd = debug_cmd)
@@ -639,7 +641,7 @@ def run_c_from_dir(c_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
 
 
 def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
-            isa, target, setting_dir, timeout_s, debug_cmd, priv):
+            isa, target, setting_dir, timeout_s, debug_cmd, priv, spike_params):
   """Run ISS simulation with the generated test program
 
   Args:
@@ -655,7 +657,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
   """
   for iss in iss_list.split(","):
     log_dir = ("%s/%s_sim" % (output_dir, iss))
-    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     logging.info("%s sim log dir: %s" % (iss, log_dir))
     run_cmd_output(["mkdir", "-p", log_dir])
     for test in test_list:
@@ -763,6 +765,7 @@ def read_seed(arg):
                                          'must be a non-negative integer.'
                                          .format(arg))
 
+
 def parse_args(cwd):
   """Create a command line parser.
 
@@ -860,7 +863,7 @@ def parse_args(cwd):
   parser.add_argument("-d", "--debug", type=str, default="",
                       help="Generate debug command log file")
   parser.add_argument("--hwconfig_opts", type=str, default="",
-                      help="custom configuration options, to be passed in config_pkg_generator.py in cva6")
+                      help="custom configuration options for util/user_config.py")
   parser.add_argument("-l", "--linker", type=str, default="",
                       help="Path for the link.ld")
   parser.add_argument("--axi_active", type=str, default="",
@@ -871,7 +874,8 @@ def parse_args(cwd):
                       help="Run test with a specific seed")
   parser.add_argument("--isa_extension", type=str, default="",
                       help="Choose additional z, s, x extensions")
-
+  parser.add_argument("--spike_params", type=str, default="",
+                      help="Spike command line parameters, run spike --help and spike --print-params to see more")
   rsg = parser.add_argument_group('Random seeds',
                                   'To control random seeds, use at most one '
                                   'of the --start_seed, --seed or --seed_yaml '
@@ -907,11 +911,12 @@ def parse_args(cwd):
                     'greater than 1.')
       sys.exit(RET_FAIL)
 
-  # We've parsed all the arguments from the command line; default values
-  # can be set in the config file. Read that here.
-  load_config(args, cwd)
-
   return args
+
+
+def get_full_spike_param_args(spike_params: list[str]):
+  return ' '.join(list(map(lambda s: "--param=" + s, spike_params.split(','))))
+
 
 def load_config(args, cwd):
   """
@@ -1012,10 +1017,12 @@ def load_config(args, cwd):
       args.mabi = "lp64"
       args.isa  = "rv64imc"
     elif args.target == "hwconfig":
-      current_path = os.getcwd()
-      os.chdir(os.getcwd()+"/../../")
-      [args.isa,args.mabi, args.target, args.hwconfig_opts] = generate_config(args.hwconfig_opts.split())
-      os.chdir(current_path)
+      base, changes = user_config.parse_derive_args(args.hwconfig_opts.split())
+      input_file = f"../../core/include/{base}_config_pkg.sv"
+      output_file = "../../core/include/hwconfig_config_pkg.sv"
+      user_config.derive_config(input_file, output_file, changes)
+      args.hwconfig_opts = user_config.get_config(output_file)
+      args.mabi = 'ilp32' if args.hwconfig_opts['XLEN'] == 32 else 'lp64'
     else:
       sys.exit("Unsupported pre-defined target: %0s" % args.target)
     args.core_setting_dir = cwd + "/dv" + "/target/"+ args.isa
@@ -1026,9 +1033,13 @@ def load_config(args, cwd):
     if not args.testlist:
       args.testlist = args.custom_target + "/testlist.yaml"
 
+  args.spike_params = get_full_spike_param_args(args.spike_params) if args.spike_params else ""
+
+
 def incorrect_version_exit(tool, tool_version, required_version):
   logging.error(f"You are currently using version {tool_version} of {tool}, should be: {required_version}. Please install or reinstall it with the installation script." )
   sys.exit(RET_FAIL)
+
 
 def check_gcc_version():
   REQUIRED_GCC_VERSION = 11
@@ -1042,9 +1053,10 @@ def check_gcc_version():
   if int(gcc_version_number[0]) < REQUIRED_GCC_VERSION:
     incorrect_version_exit("GCC", gcc_version_string, f">={REQUIRED_GCC_VERSION}")
 
+
 def check_spike_version():
   # Get Spike hash from core-v-verif submodule
-  spike_hash = subprocess.run('git log -1 --pretty=tformat:%h -- $SPIKE_SRC_DIR/..', capture_output=True, text=True, shell=True, cwd=os.environ.get("SPIKE_SRC_DIR"))
+  spike_hash = subprocess.run('git log -1 --pretty=tformat:%h -- $SPIKE_SRC_DIR/', capture_output=True, text=True, shell=True, cwd=os.environ.get("SPIKE_SRC_DIR"))
   spike_version = "1.1.1-dev " + spike_hash.stdout.strip()
 
   # Get Spike User version
@@ -1060,6 +1072,7 @@ def check_spike_version():
   if user_spike_version_string != spike_version:
     incorrect_version_exit("Spike", user_spike_version_string, spike_version)
 
+
 def check_verilator_version():
   REQUIRED_VERILATOR_VERSION = "5.008"
 
@@ -1070,10 +1083,48 @@ def check_verilator_version():
   if REQUIRED_VERILATOR_VERSION != verilator_version:
     incorrect_version_exit("Verilator", verilator_version, REQUIRED_VERILATOR_VERSION)
 
+
 def check_tools_version():
   check_gcc_version()
   check_spike_version()
   check_verilator_version()
+
+
+def openhw_process_regression_list(testlist, test, iterations, matched_list,
+                            riscv_dv_root):
+    """ Get the matched tests from the regression test list
+
+    Args:
+      testlist      : Regression test list
+      test          : Test to run, "all" means all tests in the list
+      iterations    : Number of iterations for each test
+      riscv_dv_root : Root directory of RISCV-DV
+
+    Returns:
+      matched_list : A list of matched tests
+    """
+    logging.info(
+        "Processing regression test list : {}, test: {}".format(testlist, test))
+    yaml_data = read_yaml(testlist)
+    mult_test = test.split(',')
+    if 'testlist' in yaml_data and isinstance(yaml_data['testlist'], list):
+        yaml_testlist = yaml_data['testlist']
+    else:
+        yaml_testlist = yaml_data
+    for entry in yaml_testlist:
+        if 'import' in entry:
+            sub_list = re.sub('<riscv_dv_root>', riscv_dv_root, entry['import'])
+            openhw_process_regression_list(sub_list, test, iterations, matched_list,
+                                    riscv_dv_root)
+        else:
+            if (entry['test'] in mult_test) or (test == "all"):
+                if iterations > 0 and entry['iterations'] > 0:
+                    entry['iterations'] = iterations
+                if entry['iterations'] > 0:
+                    logging.info("Found matched tests: {}, iterations:{}".format(
+                      entry['test'], entry['iterations']))
+                    matched_list.append(entry)
+
 
 def main():
   """This is the main entry point."""
@@ -1085,6 +1136,10 @@ def main():
     os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
     os.environ["CVA6_DV_ROOT"]  = cwd + "/../env/corev-dv"
     args = parse_args(cwd)
+    # We've parsed all the arguments from the command line; default values
+    # can be set in the config file. Read that here.
+    load_config(args, cwd)
+
     if args.axi_active == "yes":
       args.issrun_opts = args.issrun_opts + " +uvm_set_config_int=*uvm_test_top,force_axi_mode,1"
     elif args.axi_active == "no":
@@ -1154,7 +1209,8 @@ def main():
           # path_asm_test is an assembly file
           elif os.path.isfile(full_path) or args.debug:
             run_assembly(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
-                         args.iss, output_dir, args.core_setting_dir, args.debug, args.linker, args.priv)
+                         args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
+                         args.priv, args.spike_params)
           else:
             logging.error('%s does not exist' % full_path)
             sys.exit(RET_FAIL)
@@ -1173,7 +1229,8 @@ def main():
           # path_c_test is a c file
           elif os.path.isfile(full_path) or args.debug:
             run_c(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
-                  args.iss, output_dir, args.core_setting_dir, args.debug, args.linker, args.priv)
+                  args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
+                  args.priv, args.spike_params)
           else:
             logging.error('%s does not exist' % full_path)
             sys.exit(RET_FAIL)
@@ -1187,7 +1244,7 @@ def main():
           # path_elf_test is an elf file
           if os.path.isfile(full_path) or args.debug:
             run_elf(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
-                  args.iss, output_dir, args.core_setting_dir, args.debug)
+                  args.iss, output_dir, args.core_setting_dir, args.debug, args.spike_params)
           else:
             logging.error('%s does not exist' % full_path)
             sys.exit(RET_FAIL)
@@ -1203,7 +1260,7 @@ def main():
 
       if test_executed ==0:
         if not args.co:
-          process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
+          openhw_process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
           logging.info('CVA6 Configuration is %s'% args.hwconfig_opts)
           for entry in list(matched_list):
             yaml_needs = entry["needs"] if "needs" in entry else []
@@ -1266,7 +1323,8 @@ def main():
               # path_asm_test is an assembly file
               elif os.path.isfile(path_asm_test):
                 run_assembly(path_asm_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
-                             args.iss, output_dir, args.core_setting_dir, args.debug, args.linker, args.priv)
+                             args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
+                             args.priv, args.spike_params, test_entry['test'])
               else:
                 if not args.debug:
                   logging.error('%s does not exist' % path_asm_test)
@@ -1295,7 +1353,8 @@ def main():
               # path_c_test is a C file
               elif os.path.isfile(path_c_test):
                 run_c(path_c_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
-                      args.iss, output_dir, args.core_setting_dir, args.debug, args.linker, args.priv)
+                      args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
+                      args.priv, args.spike_params, test_entry['test'])
               else:
                 if not args.debug:
                   logging.error('%s does not exist' % path_c_test)
@@ -1313,7 +1372,8 @@ def main():
         # Run ISS simulation
         if args.steps == "all" or re.match(".*iss_sim.*", args.steps):
           iss_sim(matched_list, output_dir, args.iss, args.iss_yaml, args.iss_opts,
-                  args.isa, args.target, args.core_setting_dir, args.iss_timeout, args.debug, args.priv)
+                  args.isa, args.target, args.core_setting_dir, args.iss_timeout, args.debug,
+                  args.priv, args.spike_params)
 
         # Compare ISS simulation result
         if args.steps == "all" or re.match(".*iss_cmp.*", args.steps):
@@ -1327,5 +1387,5 @@ def main():
 
 if __name__ == "__main__":
   sys.path.append(os.getcwd()+"/../../util")
-  from config_pkg_generator import *
+  import user_config
   main()

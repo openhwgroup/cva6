@@ -509,7 +509,7 @@ module load_store_unit
 
   shift_reg #(
       .dtype(logic [$bits(ld_valid) + $bits(ld_trans_id) + $bits(ld_result) + $bits(ld_ex) - 1:0]),
-      .Depth(cva6_config_pkg::CVA6ConfigNrLoadPipeRegs)
+      .Depth(CVA6Cfg.NrLoadPipeRegs)
   ) i_pipe_reg_load (
       .clk_i,
       .rst_ni,
@@ -519,7 +519,7 @@ module load_store_unit
 
   shift_reg #(
       .dtype(logic [$bits(st_valid) + $bits(st_trans_id) + $bits(st_result) + $bits(st_ex) - 1:0]),
-      .Depth(cva6_config_pkg::CVA6ConfigNrStorePipeRegs)
+      .Depth(CVA6Cfg.NrStorePipeRegs)
   ) i_pipe_reg_store (
       .clk_i,
       .rst_ni,
@@ -678,7 +678,7 @@ module load_store_unit
       end
     end
 
-    if (ariane_pkg::MMU_PRESENT && en_ld_st_translation_i && lsu_ctrl.overflow) begin
+    if (CVA6Cfg.MmuPresent && en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception.cause = riscv::LD_ACCESS_FAULT;
@@ -704,7 +704,7 @@ module load_store_unit
       end
     end
 
-    if (ariane_pkg::MMU_PRESENT && CVA6Cfg.RVH && en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
+    if (CVA6Cfg.MmuPresent && CVA6Cfg.RVH && en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
 
       if (lsu_ctrl.fu == LOAD) begin
         misaligned_exception.cause = riscv::LOAD_GUEST_PAGE_FAULT;

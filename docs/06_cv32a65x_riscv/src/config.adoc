@@ -1,0 +1,12 @@
+:ohg-config: CV32A65X
+:RVS: false
+:RVU: false
+:RVH: false
+:RVZsmstateen: false
+:RVZsmcsrind-RVZsscsrind: false
+:RVZsmepmp: false
+:RVZsmcntrpmf: false
+:RVZsmrnmi: false
+:RVZsmcdeleg: false
+:RVZsstc: false
+:RVZsscofpmf: false

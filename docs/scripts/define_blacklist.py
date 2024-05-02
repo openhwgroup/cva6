@@ -36,7 +36,7 @@ def define_blacklist(parameters):
 
     param = "DebugEn"
     paramvalue = parameters[param].value
-    if paramvalue == "0":
+    if paramvalue == False:
         black_list["set_debug_pc_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["set_debug_pc_i"] = [f"As {param} = {paramvalue}", "0"]
         black_list["debug_mode_o"] = [f"As {param} = {paramvalue}", "0"]
@@ -45,15 +45,66 @@ def define_blacklist(parameters):
         black_list["single_step_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["single_step_i"] = [f"As {param} = {paramvalue}", "0"]
 
+    param = "RVH"
+    paramvalue = parameters[param].value
+    if paramvalue == False:
+        black_list["v_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["v_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vfs_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vfs_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hfence_vvma_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hfence_gvma_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["flush_tlb_vvma_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["flush_tlb_gvma_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["flush_tlb_vvma_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["flush_tlb_gvma_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["en_g_translation_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["enable_g_translation_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["en_ld_st_g_translation_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["en_ld_st_g_translation_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["ld_st_v_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["ld_st_v_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["csr_hs_ld_st_inst_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["csr_hs_ld_st_inst_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vs_sum_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vs_sum_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vmxr_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vmxr_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vsatp_ppn_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vsatp_ppn_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vs_asid_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vs_asid_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hgatp_ppn_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hgatp_ppn_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vmid_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vmid_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vtw_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vtw_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hu_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hu_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["ld_st_v_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["tinst_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["tinst_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["csr_hs_ld_st_inst_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["exception_gpaddr_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["exception_tinst_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["exception_gva_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hs_ld_st_inst_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hlvx_inst_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hfence_vvma_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["hfence_gvma_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["vmid_to_be_flushed_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["gpaddr_to_be_flushed_i"] = [f"As {param} = {paramvalue}", "0"]
+
     param = "RVV"
     paramvalue = parameters[param].value
-    if paramvalue == "0":
+    if paramvalue == False:
         black_list["vs_i"] = [f"As {param} = {paramvalue}", "0"]
         black_list["vs_o"] = [f"As {param} = {paramvalue}", "0"]
 
     param = "RVS"
     paramvalue = parameters[param].value
-    if paramvalue == "0":
+    if paramvalue == False:
         black_list["en_translation_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["enable_translation_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["enable_translation_i"] = [f"As {param} = {paramvalue}", "0"]
@@ -109,7 +160,7 @@ def define_blacklist(parameters):
 
     param = "RVA"
     paramvalue = parameters[param].value
-    if paramvalue == "0":
+    if paramvalue == False:
         black_list["amo_req_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["amo_resp_i"] = [f"As {param} = {paramvalue}", "0"]
         black_list["amo_valid_commit_o"] = [f"As {param} = {paramvalue}", "0"]

@@ -39,7 +39,6 @@
  */
 package uvme_cva6_pkg;
 
-   import cva6_config_pkg ::*;
    import uvm_pkg         ::*;
    import uvml_hrtbt_pkg  ::*;
    import uvml_sb_pkg     ::*;
@@ -53,6 +52,7 @@ package uvme_cva6_pkg;
    import uvmc_rvfi_scoreboard_pkg::*;
    import uvmc_rvfi_reference_model_pkg::*;
    import uvma_isacov_pkg::*;
+   import config_pkg::*;
    import "DPI-C" function void read_elf(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len);
    import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);

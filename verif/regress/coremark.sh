@@ -31,10 +31,8 @@ if ! [ -n "$DV_SIMULATORS" ]; then
 fi
 
 if ! [ -n "$UVM_VERBOSITY" ]; then
-    UVM_VERBOSITY=UVM_NONE
+    export UVM_VERBOSITY=UVM_NONE
 fi
-
-export DV_OPTS="$DV_OPTS --issrun_opts=\"+UVM_VERBOSITY=$UVM_VERBOSITY\""
 
 make clean
 make -C verif/sim clean_all
@@ -86,7 +84,8 @@ isa="rv32imc_zba_zbb_zbc_zbs"
 set -x
 python3 cva6.py \
         --target hwconfig \
-        --hwconfig_opts="--default_config=$default_config --isa=$isa --NrLoadPipeRegs=0" \
+        --isa "$isa" \
+        --hwconfig_opts="$default_config +CVA6ConfigNrLoadPipeRegs=0" \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \

@@ -160,6 +160,10 @@ module miss_handler
   ariane_pkg::amo_t                                                   amo_op;
   logic                [                                  63:0]       amo_operand_b;
 
+  // 32b request
+  logic                [                                  31:0]       halfword;
+  logic                [ $clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0]       cl_offset;
+
   // ------------------------------
   // Cache Management
   // ------------------------------
@@ -220,6 +224,9 @@ module miss_handler
     amo_resp_o.ack              = 1'b0;
     amo_resp_o.result           = '0;
     amo_operand_b               = '0;
+
+    halfword                    = '0;
+    cl_offset                   = '0;
 
     case (state_q)
 
@@ -303,7 +310,6 @@ module miss_handler
       // ~> replace the cacheline
       SAVE_CACHELINE: begin
         // calculate cacheline offset
-        automatic logic [$clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0] cl_offset;
         cl_offset = mshr_q.addr[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:3] << 6;
         // we've got a valid response from refill unit
         if (valid_miss_fsm) begin
@@ -474,8 +480,6 @@ module miss_handler
           amo_resp_o.ack = 1'b1;
           // Request is assumed to be still valid (ack not granted yet)
           if (amo_req_i.size == 2'b10) begin
-            // 32b request
-            logic [31:0] halfword;
             if (amo_req_i.operand_a[2:0] == '0) begin
               // 64b aligned -> activate lower 4 byte lanes
               halfword = amo_bypass_rsp.rdata[31:0];
@@ -491,6 +495,8 @@ module miss_handler
           end
         end
       end
+
+      default: ;
     endcase
   end
 

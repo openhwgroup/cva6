@@ -310,10 +310,10 @@ module wt_axi_adapter
     end
   end
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .dtype  (icache_req_t),
       .DEPTH  (ReqFifoDepth),
-      .FPGA_EN(CVA6Cfg.FPGA_EN)
+      .FPGA_EN(CVA6Cfg.FpgaEn)
   ) i_icache_data_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -328,10 +328,10 @@ module wt_axi_adapter
       .pop_i     (arb_ack[0])
   );
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .dtype  (dcache_req_t),
       .DEPTH  (ReqFifoDepth),
-      .FPGA_EN(CVA6Cfg.FPGA_EN)
+      .FPGA_EN(CVA6Cfg.FpgaEn)
   ) i_dcache_data_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -353,10 +353,10 @@ module wt_axi_adapter
   logic icache_rtrn_rd_en, dcache_rtrn_rd_en;
   logic icache_rtrn_vld_d, icache_rtrn_vld_q, dcache_rtrn_vld_d, dcache_rtrn_vld_q;
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
       .DEPTH     (MetaFifoDepth),
-      .FPGA_EN   (CVA6Cfg.FPGA_EN)
+      .FPGA_EN   (CVA6Cfg.FpgaEn)
   ) i_rd_icache_id (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -371,10 +371,10 @@ module wt_axi_adapter
       .pop_i     (icache_rtrn_vld_d)
   );
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
       .DEPTH     (MetaFifoDepth),
-      .FPGA_EN   (CVA6Cfg.FPGA_EN)
+      .FPGA_EN   (CVA6Cfg.FpgaEn)
   ) i_rd_dcache_id (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -389,10 +389,10 @@ module wt_axi_adapter
       .pop_i     (dcache_rd_pop)
   );
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .DATA_WIDTH(CVA6Cfg.MEM_TID_WIDTH),
       .DEPTH     (MetaFifoDepth),
-      .FPGA_EN   (CVA6Cfg.FPGA_EN)
+      .FPGA_EN   (CVA6Cfg.FpgaEn)
   ) i_wr_dcache_id (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
@@ -419,11 +419,11 @@ module wt_axi_adapter
   assign axi_wr_rdy = ~b_full;
   assign b_push     = axi_wr_valid & axi_wr_rdy;
 
-  fifo_v3 #(
+  cva6_fifo_v3 #(
       .DATA_WIDTH  (CVA6Cfg.AxiIdWidth + 1),
       .DEPTH       (MetaFifoDepth),
       .FALL_THROUGH(1'b1),
-      .FPGA_EN     (CVA6Cfg.FPGA_EN)
+      .FPGA_EN     (CVA6Cfg.FpgaEn)
   ) i_b_fifo (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

@@ -78,7 +78,7 @@ module decoder
     input logic vtw_i,
     // Trap sret - CSR_REGFILE
     input logic tsr_i,
-    // Hypervisor user mode - CSR_REGFILE 
+    // Hypervisor user mode - CSR_REGFILE
     input logic hu_i,
     // Instruction to be added to scoreboard entry - ISSUE_STAGE
     output scoreboard_entry_t instruction_o,
@@ -135,6 +135,7 @@ module decoder
     // identifying them, but also whether they read/write scalar registers.
     // Accelerators are supposed to define this module.
     cva6_accel_first_pass_decoder #(
+        .CVA6Cfg(CVA6Cfg),
         .scoreboard_entry_t(scoreboard_entry_t)
     ) i_accel_decoder (
         .instruction_i(instruction_i),
@@ -776,14 +777,20 @@ module decoder
                 // Bitwise Shifting
                 {7'b011_0000, 3'b001} : instruction_o.op = ariane_pkg::ROL;  // rol
                 {7'b011_0000, 3'b101} : instruction_o.op = ariane_pkg::ROR;  // ror
-                // Zero Extend Op
-                {7'b000_0100, 3'b100} : instruction_o.op = ariane_pkg::ZEXTH;
+                // Zero Extend Op RV32 encoding
+                {
+                  7'b000_0100, 3'b100
+                } : begin
+                  if (!CVA6Cfg.IS_XLEN64 && instr.instr[24:20] == 5'b00000)
+                    instruction_o.op = ariane_pkg::ZEXTH;
+                  else illegal_instr_bm = 1'b1;
+                end
                 default: begin
                   illegal_instr_bm = 1'b1;
                 end
               endcase
             end
-            if (CVA6Cfg.ZiCondExtEn) begin
+            if (CVA6Cfg.RVZiCond) begin
               unique case ({
                 instr.rtype.funct7, instr.rtype.funct3
               })
@@ -797,7 +804,7 @@ module decoder
             end
             //VCS coverage on
             unique case ({
-              CVA6Cfg.RVB, CVA6Cfg.ZiCondExtEn
+              CVA6Cfg.RVB, CVA6Cfg.RVZiCond
             })
               2'b00: illegal_instr = illegal_instr_non_bm;
               2'b01: illegal_instr = illegal_instr_non_bm & illegal_instr_zic;
@@ -845,6 +852,14 @@ module decoder
                 // Bitwise Shifting
                 {7'b011_0000, 3'b001}: instruction_o.op = ariane_pkg::ROLW;     // rolw
                 {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::RORW;     // rorw
+                // Zero Extend Op RV64 encoding
+                {7'b000_0100, 3'b100}:
+                begin
+                  if (instr.instr[24:20] == 5'b00000)
+                    instruction_o.op = ariane_pkg::ZEXTH;
+                  else
+                    illegal_instr_bm = 1'b1;
+                end
                 default: illegal_instr_bm = 1'b1;
               endcase
               illegal_instr = illegal_instr_non_bm & illegal_instr_bm;

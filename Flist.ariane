@@ -161,7 +161,6 @@ vendor/openhwgroup/cvfpu/src/fpnew_top.sv
 core/pmp/src/pmp.sv
 core/pmp/src/pmp_entry.sv
 common/local/util/instr_tracer.sv
-common/local/util/instr_tracer_if.sv
 core/cvxif_example/cvxif_example_coprocessor.sv
 core/cvxif_example/instr_decoder.sv
 vendor/pulp-platform/common_cells/src/counter.sv

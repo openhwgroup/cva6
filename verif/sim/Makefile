@@ -121,7 +121,7 @@ endif
 ###############################################################################
 spike:
 	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
-		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) -l $(elf)
+		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params) -l $(elf)
 	cp $(log).iss $(log)
 
 ###############################################################################
@@ -136,7 +136,12 @@ vcs-testharness:
 	  $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm) \
 	  $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv) \
 	  -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr
-	# TODO: Add support for waveform collection.
+	# If present, move default waveform files to log directory.
+	# Keep track of target in waveform file name.
+	[ ! -f novas.vpd  ] || \
+	  mv novas.vpd  `dirname $(log)`/`basename $(log) .log`.vpd
+	[ ! -f novas.fsdb ] || \
+	  mv novas.fsdb `dirname $(log)`/`basename $(log) .log`.fsdb
 	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
@@ -144,7 +149,7 @@ vcs-testharness:
 veri-testharness:
 	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) $(elf) $(issrun_opts) \
-	  +elf_file=$(elf) +tohost_addr=$(shell $$RISCV/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)
+	  $(COMMON_PLUS_ARGS)
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.fst
@@ -206,14 +211,21 @@ COMMON_COMP_UVM_FLAGS = \
 	  +incdir+$(CVA6_REPO_DIR)/verif/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/tb/uvmt \
 	  $(if $(spike-tandem), +define+SPIKE_TANDEM=1)
 
-COMMON_RUN_UVM_FLAGS = \
-	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv \
-	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
-	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm \
+COMMON_PLUS_ARGS = \
 	++$(elf) \
 	+elf_file=$(elf) \
 	+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	+signature=$(elf).signature_output  +UVM_TESTNAME=uvmt_cva6_firmware_test_c
+
+ifneq ($(UVM_VERBOSITY),)
+COMMON_PLUS_ARGS += +UVM_VERBOSITY=$(UVM_VERBOSITY)
+endif
+
+COMMON_RUN_UVM_FLAGS = \
+	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv \
+	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
+	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm \
+	$(COMMON_PLUS_ARGS)
 
 ALL_UVM_FLAGS   = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
 	  $(VCS_HOME)/etc/uvm/src/uvm_pkg.sv -ntb_opts uvm-1.2 -timescale=1ns/1ps \

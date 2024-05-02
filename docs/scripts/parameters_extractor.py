@@ -9,10 +9,15 @@
 
 #!/usr/bin/python3
 
+import sys
+import os
+
 import re
 
 from classes import Parameter
 
+sys.path.append(os.getcwd() + "/../util")
+from user_config import get_config
 
 def parameters_extractor(spec_number, target):
 
@@ -39,36 +44,9 @@ def parameters_extractor(spec_number, target):
                 )
                 descript = "TO_BE_COMPLETED"
 
-    file_in = f"../core/include/{target}_config_pkg.sv"
-    a = re.match(r".*\/(.*)_config_pkg.sv", file_in)
-    module = a.group(1)
-    fileout = f"./{spec_number}_{target}_design/source/parameters_{module}.rst"
-    print("Input file " + file_in)
-    print("Output file " + fileout)
-
-    with open(file_in, "r", encoding="utf-8") as fin:
-        for line in fin:
-            e = re.match(r"^ +([\S]*): (.*)(?:,|)\n", line)
-            if e:
-                parameters[e.group(1)].value = e.group(2)
-
-    with open(file_in, "r", encoding="utf-8") as fin:
-        for line in fin:
-            c = re.match(r"^ +localparam ([\S]*) = (.*);\n", line)
-            if c:
-                for name in parameters:
-                    if c.group(1) in parameters[name].value:
-                        parameters[name].value = c.group(2)
-                        break
-
-    for name in parameters:
-        variable = parameters[name].value
-        variable = variable.replace("1024'(", "")
-        variable = variable.replace("bit'(", "")
-        variable = variable.replace("unsigned'(", "")
-        variable = variable.replace(")", "")
-        variable = variable.replace(",", "")
-        parameters[name].value = variable
+    config = get_config(f"../core/include/{target}_config_pkg.sv")
+    for name, parameter in parameters.items():
+        parameter.value = config[name]
 
     return parameters
 

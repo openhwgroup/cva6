@@ -1633,8 +1633,8 @@ plan "CVA6 Verification Master Plan";
             measure Group FLen;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FLen";
             endmeasure
-            measure Group FPGAEn;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FPGAEn";
+            measure Group FpgaEn;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FpgaEn";
             endmeasure
             measure Group FVecEn;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FVecEn";
@@ -1735,8 +1735,8 @@ plan "CVA6 Verification Master Plan";
             measure Group Xlen;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_Xlen";
             endmeasure
-            measure Group ZiCondExtEn;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_ZiCondExtEn";
+            measure Group RVZiCond;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RVZiCond";
             endmeasure
         endfeature
         feature "Hard Reset";

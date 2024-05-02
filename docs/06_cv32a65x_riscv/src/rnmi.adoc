@@ -1,0 +1,6 @@
+[[rnmi]]
+== "Smrnmi" Extension for Resumable Non-Maskable Interrupts, Version 0.5
+
+ifeval::[{RVZsmrnmi} == false]
+{ohg-config}: This extension is not supported.
+endif::[]
