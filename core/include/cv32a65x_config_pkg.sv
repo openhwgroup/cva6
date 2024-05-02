@@ -102,6 +102,8 @@ package cva6_config_pkg;
       FetchUserEn: unsigned'(0),
       InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
       DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
+      UseSharedTlb: bit'(CVA6ConfigUseSharedTlb),
+      SharedTlbDepth: int'(CVA6ConfigSharedTlbDepth),
       NrLoadPipeRegs: int'(0),
       NrStorePipeRegs: int'(0),
       DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)

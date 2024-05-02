@@ -28,11 +28,7 @@ import ariane_pkg::*;
   parameter type tlb_update_cva6_t = logic,
   parameter type dcache_req_i_t = logic,
   parameter type dcache_req_o_t = logic,
-  parameter int unsigned HYP_EXT = 0,
-  parameter int ASID_WIDTH[HYP_EXT:0],
-  parameter int unsigned VPN_LEN = 1,
-  parameter int unsigned USE_SHARED_TLB = 1,
-  parameter int unsigned PT_LEVELS = 1
+  parameter int unsigned HYP_EXT = 0
 ) (
   input logic clk_i,  // Clock
   input logic rst_ni,  // Asynchronous reset active low
@@ -58,7 +54,7 @@ import ariane_pkg::*;
 
   output logic [CVA6Cfg.VLEN-1:0] update_vaddr_o,
 
-  input logic [ASID_WIDTH[0]-1:0] asid_i[HYP_EXT*2:0],  //[vmid,vs_asid,asid]
+  input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i[HYP_EXT*2:0],  //[vmid,vs_asid,asid]
 
   // from TLBs
   // did we miss?
@@ -103,8 +99,8 @@ enum logic [2:0] {
 }
     state_q, state_d;
 
-logic [PT_LEVELS-2:0] misaligned_page;
-logic [HYP_EXT:0][PT_LEVELS-2:0] ptw_lvl_n, ptw_lvl_q;
+logic [CVA6Cfg.PtLevels-2:0] misaligned_page;
+logic [HYP_EXT:0][CVA6Cfg.PtLevels-2:0] ptw_lvl_n, ptw_lvl_q;
 
 // define 3 PTW stages to be used in sv39x4. sv32 and sv39 are always in S_STAGE
 // S_STAGE -> S/VS-stage normal translation controlled by the satp/vsatp CSRs
@@ -123,13 +119,13 @@ logic global_mapping_q, global_mapping_n;
 // latched tag signal
 logic tag_valid_n, tag_valid_q;
 // register the ASIDs
-logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] tlb_update_asid_q, tlb_update_asid_n;
+logic [HYP_EXT:0][CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
 // register the VPN we need to walk, SV39 defines a 39 bit virtual address
 logic [CVA6Cfg.VLEN-1:0] vaddr_q, vaddr_n;
-logic [HYP_EXT*2:0][PT_LEVELS-2:0][(VPN_LEN/PT_LEVELS)-1:0] vaddr_lvl;
+logic [HYP_EXT*2:0][CVA6Cfg.PtLevels-2:0][(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] vaddr_lvl;
 // register the VPN we need to walk, SV39x4 defines a 41 bit virtual address for the G-Stage
 logic [CVA6Cfg.GPLEN-1:0] gpaddr_q, gpaddr_n, gpaddr_base;
-logic [PT_LEVELS-1:0][CVA6Cfg.GPLEN-1:0] gpaddr;
+logic [CVA6Cfg.PtLevels-1:0][CVA6Cfg.GPLEN-1:0] gpaddr;
 // 4 byte aligned physical pointer
 logic [CVA6Cfg.PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 logic [CVA6Cfg.PLEN-1:0] gptw_pptr_q, gptw_pptr_n;
@@ -154,29 +150,29 @@ assign req_port_o.data_id = '0;
 // -----------
 
 assign gpaddr_base = {pte.ppn[CVA6Cfg.GPPNW-1:0], vaddr_q[11:0]};
-assign gpaddr[PT_LEVELS-1] = gpaddr_base;
-assign shared_tlb_update_o.vpn = VPN_LEN'(vaddr_q[CVA6Cfg.SV+HYP_EXT*2-1:12]);
+assign gpaddr[CVA6Cfg.PtLevels-1] = gpaddr_base;
+assign shared_tlb_update_o.vpn = CVA6Cfg.VpnLen'(vaddr_q[CVA6Cfg.SV+HYP_EXT*2-1:12]);
 
 genvar z, w;
 generate
-  for (z = 0; z < PT_LEVELS - 1; z++) begin
+  for (z = 0; z < CVA6Cfg.PtLevels - 1; z++) begin
 
     // check if the ppn is correctly aligned:
     // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
     // exception.
-    assign misaligned_page[z] = (ptw_lvl_q[0] == (z)) && (pte.ppn[(VPN_LEN/PT_LEVELS)*(PT_LEVELS-1-z)-1:0] != '0);
+    assign misaligned_page[z] = (ptw_lvl_q[0] == (z)) && (pte.ppn[(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-1-z)-1:0] != '0);
 
     //record the vaddr corresponding to each level
     for (w = 0; w < HYP_EXT * 2 + 1; w++) begin
-      assign vaddr_lvl[w][z] = w==0 ?  vaddr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-2))] :
-                            w==1 ?  gptw_pptr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-2))]:
-                            gpaddr_q[12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-1))-1:12+((VPN_LEN/PT_LEVELS)*(PT_LEVELS-z-2))];
+      assign vaddr_lvl[w][z] = w==0 ?  vaddr_q[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-2))] :
+                            w==1 ?  gptw_pptr_q[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-2))]:
+                            gpaddr_q[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-2))];
     end
 
     if (CVA6Cfg.RVH) begin
-      assign gpaddr[z][VPN_LEN-(VPN_LEN/PT_LEVELS):0]= (ptw_lvl_q[0] == z) ? vaddr_q[VPN_LEN-(VPN_LEN/PT_LEVELS):0] : gpaddr_base[VPN_LEN-(VPN_LEN/PT_LEVELS):0];
-      assign gpaddr[z][VPN_LEN:VPN_LEN-(VPN_LEN/PT_LEVELS)+1]= (ptw_lvl_q[0] == 0) ? vaddr_q[VPN_LEN:VPN_LEN-(VPN_LEN/PT_LEVELS)+1] : gpaddr_base[VPN_LEN:VPN_LEN-(VPN_LEN/PT_LEVELS)+1];
-      assign gpaddr[z][CVA6Cfg.GPLEN-1:VPN_LEN+1] = gpaddr_base[CVA6Cfg.GPLEN-1:VPN_LEN+1];
+      assign gpaddr[z][CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):0]= (ptw_lvl_q[0] == z) ? vaddr_q[CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):0] : gpaddr_base[CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):0];
+      assign gpaddr[z][CVA6Cfg.VpnLen:CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)+1]= (ptw_lvl_q[0] == 0) ? vaddr_q[CVA6Cfg.VpnLen:CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)+1] : gpaddr_base[CVA6Cfg.VpnLen:CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)+1];
+      assign gpaddr[z][CVA6Cfg.GPLEN-1:CVA6Cfg.VpnLen+1] = gpaddr_base[CVA6Cfg.GPLEN-1:CVA6Cfg.VpnLen+1];
     end
 
 
@@ -186,7 +182,7 @@ endgenerate
 always_comb begin : tlb_update
   // update the correct page table level
   for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
-    for (int unsigned x = 0; x < PT_LEVELS - 1; x++) begin
+    for (int unsigned x = 0; x < CVA6Cfg.PtLevels - 1; x++) begin
       if((&enable_translation_i[HYP_EXT:0] || &en_ld_st_translation_i[HYP_EXT:0]) && CVA6Cfg.RVH) begin
         shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==HYP_EXT?0 : 1] == x);
       end else if (enable_translation_i[0] || en_ld_st_translation_i[0] || HYP_EXT == 0) begin
@@ -274,7 +270,7 @@ always_comb begin : ptw
   // PTW memory interface
   tag_valid_n               = 1'b0;
   req_port_o.data_req       = 1'b0;
-  req_port_o.data_size      = 2'(PT_LEVELS);
+  req_port_o.data_size      = 2'(CVA6Cfg.PtLevels);
   req_port_o.data_we        = 1'b0;
   ptw_error_o               = '0;
   ptw_access_exception_o    = 1'b0;
@@ -320,36 +316,36 @@ always_comb begin : ptw
           ptw_stage_d = G_INTERMED_STAGE;
           pptr = {
             satp_ppn_i[HYP_EXT],
-            shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
-            (PT_LEVELS)'(0)
+            shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+            (CVA6Cfg.PtLevels)'(0)
           };
           gptw_pptr_n = pptr;
           ptw_pptr_n = {
             satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
-            pptr[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
-            (PT_LEVELS)'(0)
+            pptr[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+            (CVA6Cfg.PtLevels)'(0)
           };
         end else if (((|enable_translation_i[HYP_EXT:0] && !enable_translation_i[0]) || (|en_ld_st_translation_i[HYP_EXT:0] && !en_ld_st_translation_i[0])) && CVA6Cfg.RVH) begin
           ptw_stage_d = G_FINAL_STAGE;
           gpaddr_n = shared_tlb_vaddr_i[CVA6Cfg.SV+HYP_EXT*2-1:0];
           ptw_pptr_n = {
             satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
-            shared_tlb_vaddr_i[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
-            (PT_LEVELS)'(0)
+            shared_tlb_vaddr_i[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+            (CVA6Cfg.PtLevels)'(0)
           };
         end else begin
           ptw_stage_d = S_STAGE;
           if((enable_translation_i[HYP_EXT*2] || en_ld_st_translation_i[HYP_EXT*2]) && CVA6Cfg.RVH)
             ptw_pptr_n = {
               satp_ppn_i[HYP_EXT],
-              shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
-              (PT_LEVELS)'(0)
+              shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+              (CVA6Cfg.PtLevels)'(0)
             };
           else
             ptw_pptr_n = {
               satp_ppn_i[0],
-              shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
-              (PT_LEVELS)'(0)
+              shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+              (CVA6Cfg.PtLevels)'(0)
             };
         end
 
@@ -413,8 +409,8 @@ always_comb begin : ptw
                     gpaddr_n = gpaddr[ptw_lvl_q[0]];
                     ptw_pptr_n = {
                       satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
-                      gpaddr[ptw_lvl_q[0]][CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
-                      (PT_LEVELS)'(0)
+                      gpaddr[ptw_lvl_q[0]][CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+                      (CVA6Cfg.PtLevels)'(0)
                     };
                     ptw_lvl_n[0] = '0;
                   end
@@ -491,7 +487,7 @@ always_comb begin : ptw
           end else begin
             // pointer to next level of page table
 
-            if (ptw_lvl_q[0] == PT_LEVELS - 1) begin
+            if (ptw_lvl_q[0] == CVA6Cfg.PtLevels - 1) begin
               // Should already be the last level page table => Error
               ptw_lvl_n[0] = ptw_lvl_q[0];
               state_d = PROPAGATE_ERROR;
@@ -509,26 +505,26 @@ always_comb begin : ptw
                       ptw_stage_d = G_INTERMED_STAGE;
                       if (CVA6Cfg.RVH) gpte_d = pte;
                       ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0] + 1;
-                      pptr = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
+                      pptr = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
                       gptw_pptr_n = pptr;
                       ptw_pptr_n = {
                         satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
-                        pptr[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(VPN_LEN/PT_LEVELS)],
-                        (PT_LEVELS)'(0)
+                        pptr[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+                        (CVA6Cfg.PtLevels)'(0)
                       };
                       ptw_lvl_n[0] = '0;
                     end else begin
-                      ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
+                      ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
                     end
                   end
                   G_INTERMED_STAGE: begin
-                    ptw_pptr_n = {pte.ppn, vaddr_lvl[HYP_EXT][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
+                    ptw_pptr_n = {pte.ppn, vaddr_lvl[HYP_EXT][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
                   end
                   G_FINAL_STAGE: begin
-                    ptw_pptr_n = {pte.ppn, vaddr_lvl[HYP_EXT*2][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
+                    ptw_pptr_n = {pte.ppn, vaddr_lvl[HYP_EXT*2][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
                   end
                 endcase
-              end else ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (PT_LEVELS)'(0)};
+              end else ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
 
               if (CVA6Cfg.RVH && (pte.a || pte.d || pte.u)) begin
                 state_d = PROPAGATE_ERROR;

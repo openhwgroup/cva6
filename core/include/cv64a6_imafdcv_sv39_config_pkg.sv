@@ -145,6 +145,8 @@ package cva6_config_pkg;
       DCacheType: CVA6ConfigDcacheType,
       InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
       DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
+      UseSharedTlb: bit'(CVA6ConfigUseSharedTlb),
+      SharedTlbDepth: int'(CVA6ConfigSharedTlbDepth),
       NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
       DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)

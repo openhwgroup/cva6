@@ -28,10 +28,7 @@ import ariane_pkg::*;
   parameter type pte_cva6_t = logic,
   parameter type tlb_update_cva6_t = logic,
   parameter int unsigned TLB_ENTRIES = 4,
-  parameter int unsigned HYP_EXT = 0,
-  parameter int ASID_WIDTH[HYP_EXT:0],  //[vmid_width,asid_width]
-  parameter int unsigned VPN_LEN = 1,
-  parameter int unsigned PT_LEVELS = 1
+  parameter int unsigned HYP_EXT = 0
 ) (
   input logic clk_i,  // Clock
   input logic rst_ni,  // Asynchronous reset active low
@@ -41,21 +38,21 @@ import ariane_pkg::*;
   input tlb_update_cva6_t update_i,
   // Lookup signals
   input logic lu_access_i,
-  input logic [ASID_WIDTH[0]-1:0] lu_asid_i[HYP_EXT:0],  //[lu_vmid,lu_asid]
+  input logic [CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i[HYP_EXT:0],  //[lu_vmid,lu_asid]
   input logic [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
   output logic [CVA6Cfg.GPLEN-1:0] lu_gpaddr_o,
   output pte_cva6_t [HYP_EXT:0] lu_content_o,
-  input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i[HYP_EXT:0],  //[vmid,asid]
+  input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i[HYP_EXT:0],  //[vmid,asid]
   input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i[HYP_EXT:0],  // [gpaddr,vaddr]
-  output logic [PT_LEVELS-2:0] lu_is_page_o,
+  output logic [CVA6Cfg.PtLevels-2:0] lu_is_page_o,
   output logic lu_hit_o
 );
 localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.VLEN - 33 : 10;
 // SV39 defines three levels of page tables
 struct packed {
-  logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;
-  logic [PT_LEVELS+HYP_EXT-1:0][(VPN_LEN/PT_LEVELS)-1:0] vpn;
-  logic [PT_LEVELS-2:0][HYP_EXT:0] is_page;
+  logic [HYP_EXT:0][CVA6Cfg.ASID_WIDTH-1:0] asid;
+  logic [CVA6Cfg.PtLevels+HYP_EXT-1:0][(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] vpn;
+  logic [CVA6Cfg.PtLevels-2:0][HYP_EXT:0] is_page;
   logic [HYP_EXT*2:0] v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
   logic valid;
 } [TLB_ENTRIES-1:0]
@@ -63,16 +60,16 @@ struct packed {
 
 pte_cva6_t [TLB_ENTRIES-1:0][HYP_EXT:0] content_q, content_n;
 
-logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] vpn_match;
-logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] level_match;
-logic [TLB_ENTRIES-1:0][HYP_EXT:0][PT_LEVELS-1:0] vaddr_vpn_match;
-logic [TLB_ENTRIES-1:0][HYP_EXT:0][PT_LEVELS-1:0] vaddr_level_match;
+logic [TLB_ENTRIES-1:0][CVA6Cfg.PtLevels-1:0] vpn_match;
+logic [TLB_ENTRIES-1:0][CVA6Cfg.PtLevels-1:0] level_match;
+logic [TLB_ENTRIES-1:0][HYP_EXT:0][CVA6Cfg.PtLevels-1:0] vaddr_vpn_match;
+logic [TLB_ENTRIES-1:0][HYP_EXT:0][CVA6Cfg.PtLevels-1:0] vaddr_level_match;
 logic [TLB_ENTRIES-1:0] lu_hit;  // to replacement logic
 logic [TLB_ENTRIES-1:0] replace_en;  // replace the following entry, set by replacement strategy
 logic [TLB_ENTRIES-1:0][HYP_EXT:0] match_asid;
-logic [TLB_ENTRIES-1:0][PT_LEVELS-1:0] page_match;
-logic [TLB_ENTRIES-1:0][HYP_EXT:0][PT_LEVELS-1:0] vpage_match;
-logic [TLB_ENTRIES-1:0][PT_LEVELS-2:0] is_page_o;
+logic [TLB_ENTRIES-1:0][CVA6Cfg.PtLevels-1:0] page_match;
+logic [TLB_ENTRIES-1:0][HYP_EXT:0][CVA6Cfg.PtLevels-1:0] vpage_match;
+logic [TLB_ENTRIES-1:0][CVA6Cfg.PtLevels-2:0] is_page_o;
 logic [TLB_ENTRIES-1:0] match_stage;
 pte_cva6_t g_content;
 logic [TLB_ENTRIES-1:0][(CVA6Cfg.GPPNW-1):0] gppn;
@@ -86,31 +83,31 @@ assign v_st_enbl = (CVA6Cfg.RVH) ? v_st_enbl_i : '1;
 genvar i, x, z, w;
 generate
   for (i = 0; i < TLB_ENTRIES; i++) begin
-    for (x = 0; x < PT_LEVELS; x++) begin
+    for (x = 0; x < CVA6Cfg.PtLevels; x++) begin
       //identify page_match for all TLB Entries  
-      assign page_match[i][x] = x==0 ? 1 :((HYP_EXT==0 || x==(PT_LEVELS-1)) ? // PAGE_MATCH CONTAINS THE MATCH INFORMATION FOR EACH TAG OF is_1G and is_2M in sv39x4. HIGHER LEVEL (Giga page), THEN THERE IS THE Mega page AND AT THE LOWER LEVEL IS ALWAYS 1
-          &(tags_q[i].is_page[PT_LEVELS-1-x] | (~v_st_enbl[HYP_EXT:0])):
+      assign page_match[i][x] = x==0 ? 1 :((HYP_EXT==0 || x==(CVA6Cfg.PtLevels-1)) ? // PAGE_MATCH CONTAINS THE MATCH INFORMATION FOR EACH TAG OF is_1G and is_2M in sv39x4. HIGHER LEVEL (Giga page), THEN THERE IS THE Mega page AND AT THE LOWER LEVEL IS ALWAYS 1
+          &(tags_q[i].is_page[CVA6Cfg.PtLevels-1-x] | (~v_st_enbl[HYP_EXT:0])):
                                         ((&v_st_enbl[HYP_EXT:0]) ? 
-                                        ((tags_q[i].is_page[PT_LEVELS-1-x][0] && (tags_q[i].is_page[PT_LEVELS-2-x][HYP_EXT] || tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT])) 
-                                      || (tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT] && (tags_q[i].is_page[PT_LEVELS-2-x][0] || tags_q[i].is_page[PT_LEVELS-1-x][0]))):
-                                          tags_q[i].is_page[PT_LEVELS-1-x][0] && v_st_enbl[0] || tags_q[i].is_page[PT_LEVELS-1-x][HYP_EXT] && v_st_enbl[HYP_EXT]));
+                                        ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][HYP_EXT] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT])) 
+                                      || (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][0] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0]))):
+                                          tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && v_st_enbl[0] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && v_st_enbl[HYP_EXT]));
 
       //identify if vpn matches at all PT levels for all TLB entries  
-      assign vpn_match[i][x] = (CVA6Cfg.RVH && x == (PT_LEVELS - 1) && ~v_st_enbl[0]) ?  //
-          lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x] && lu_vaddr_i[12+HYP_EXT*(VPN_LEN-1): 12+HYP_EXT*(VPN_LEN-(VPN_LEN%PT_LEVELS))] == tags_q[i].vpn[x+HYP_EXT][(VPN_LEN%PT_LEVELS)-HYP_EXT:0]: //
-          lu_vaddr_i[12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+      assign vpn_match[i][x] = (CVA6Cfg.RVH && x == (CVA6Cfg.PtLevels - 1) && ~v_st_enbl[0]) ?  //
+          lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x] && lu_vaddr_i[12+HYP_EXT*(CVA6Cfg.VpnLen-1): 12+HYP_EXT*(CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))] == tags_q[i].vpn[x+HYP_EXT][(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)-HYP_EXT:0]: //
+          lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
 
       //identify if there is a hit at each PT level for all TLB entries  
-      assign level_match[i][x] = &vpn_match[i][PT_LEVELS-1:x] && page_match[i][x];
+      assign level_match[i][x] = &vpn_match[i][CVA6Cfg.PtLevels-1:x] && page_match[i][x];
 
       //identify vpage_match for all TLB Entries and vaddr_level match (if there is a hit at each PT level for all TLB entries on the vaddr)
       for (z = 0; z < HYP_EXT + 1; z++) begin
-        assign vpage_match[i][z][x] = x == 0 ? 1 : tags_q[i].is_page[PT_LEVELS-1-x][z];
-        assign vaddr_level_match[i][z][x]= &vaddr_vpn_match[i][z][PT_LEVELS-1:x] && vpage_match[i][z][x];
+        assign vpage_match[i][z][x] = x == 0 ? 1 : tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][z];
+        assign vaddr_level_match[i][z][x]= &vaddr_vpn_match[i][z][CVA6Cfg.PtLevels-1:x] && vpage_match[i][z][x];
 
       end
       //identify if virtual address vpn matches at all PT levels for all TLB entries 
-      assign vaddr_vpn_match[i][0][x]  = vaddr_to_be_flushed_i[0][12+((VPN_LEN/PT_LEVELS)*(x+1))-1:12+((VPN_LEN/PT_LEVELS)*x)] == tags_q[i].vpn[x];
+      assign vaddr_vpn_match[i][0][x]  = vaddr_to_be_flushed_i[0][12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
 
     end
 
@@ -124,8 +121,8 @@ generate
 
     end
 
-    for (w = 0; w < PT_LEVELS - 1; w++) begin
-      assign is_page_o[i][w] = page_match[i][PT_LEVELS - 1 - w]; //THIS REORGANIZES THE PAGES TO MATCH THE OUTPUT STRUCTURE (2M,1G)
+    for (w = 0; w < CVA6Cfg.PtLevels - 1; w++) begin
+      assign is_page_o[i][w] = page_match[i][CVA6Cfg.PtLevels - 1 - w]; //THIS REORGANIZES THE PAGES TO MATCH THE OUTPUT STRUCTURE (2M,1G)
     end
   end
 endgenerate
@@ -145,10 +142,10 @@ always_comb begin : translation
   for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
     // first level match, this may be a giga page, check the ASID flags as well
     // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-    match_asid[i][0] = (((lu_asid_i[0][ASID_WIDTH[0]-1:0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]) || content_q[i][0].g) && v_st_enbl[0]) || !v_st_enbl[0];
+    match_asid[i][0] = (((lu_asid_i[0][CVA6Cfg.ASID_WIDTH-1:0] == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]) || content_q[i][0].g) && v_st_enbl[0]) || !v_st_enbl[0];
 
     if (CVA6Cfg.RVH) begin
-      match_asid[i][HYP_EXT] = (lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] && v_st_enbl[HYP_EXT]) || !v_st_enbl[HYP_EXT];
+      match_asid[i][HYP_EXT] = (lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] && v_st_enbl[HYP_EXT]) || !v_st_enbl[HYP_EXT];
     end
 
     // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
@@ -161,10 +158,10 @@ always_comb begin : translation
           lu_gpaddr_o = {content_q[i][0].ppn[(CVA6Cfg.GPPNW-1):0], lu_vaddr_i[11:0]};
           // Giga page
           if (tags_q[i].is_page[0][0])
-            lu_gpaddr_o[12+2*VPN_LEN/PT_LEVELS-1:12] = lu_vaddr_i[12+2*VPN_LEN/PT_LEVELS-1:12];
+            lu_gpaddr_o[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12];
           // Mega page
           if (tags_q[i].is_page[HYP_EXT][0])
-            lu_gpaddr_o[12+VPN_LEN/PT_LEVELS-1:12] = lu_vaddr_i[12+VPN_LEN/PT_LEVELS-1:12];
+            lu_gpaddr_o[12+CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12];
         end else begin
           lu_gpaddr_o =CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: CVA6Cfg.GPLEN)-1:0]);
         end
@@ -182,7 +179,7 @@ always_comb begin : translation
           if (tags_q[i].is_page[HYP_EXT][HYP_EXT]) g_content.ppn[8:0] = lu_gpaddr_o[20:12];
           if (tags_q[i].is_page[0][HYP_EXT]) g_content.ppn[17:0] = lu_gpaddr_o[29:12];
           // Output G-stage and S-stage content
-          lu_content_o[HYP_EXT] = level_match[i][PT_LEVELS-1] ? content_q[i][HYP_EXT] : g_content;
+          lu_content_o[HYP_EXT] = level_match[i][CVA6Cfg.PtLevels-1] ? content_q[i][HYP_EXT] : g_content;
         end
       end
     end
@@ -193,6 +190,7 @@ logic [HYP_EXT:0]asid_to_be_flushed_is0;  // indicates that the ASID provided by
 logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
 
 localparam int VADDR_WIDTH[1:0] = {CVA6Cfg.GPLEN, CVA6Cfg.VLEN};
+localparam int ASID_WIDTH[1:0] = {CVA6Cfg.VMID_WIDTH, CVA6Cfg.ASID_WIDTH};
 
 genvar a;
 generate
@@ -216,11 +214,11 @@ always_comb begin : update_flush
 
       if (tags_q[i].v_st_enbl[0]) begin
         gppn[i] = content_q[i][0].ppn[(CVA6Cfg.GPPNW-1):0];
-        if (tags_q[i].is_page[HYP_EXT][0]) gppn[i][VPN_LEN/PT_LEVELS-1:0] = tags_q[i].vpn[0];
+        if (tags_q[i].is_page[HYP_EXT][0]) gppn[i][CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:0] = tags_q[i].vpn[0];
         if (tags_q[i].is_page[0][0])
-          gppn[i][2*(VPN_LEN/PT_LEVELS)-1:0] = {tags_q[i].vpn[HYP_EXT], tags_q[i].vpn[0]};
+          gppn[i][2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = {tags_q[i].vpn[HYP_EXT], tags_q[i].vpn[0]};
       end else begin
-        gppn[i][VPN_LEN-1:0] = VPN_LEN'(tags_q[i].vpn);
+        gppn[i][CVA6Cfg.VpnLen-1:0] = CVA6Cfg.VpnLen'(tags_q[i].vpn);
       end
     end
 
@@ -234,26 +232,26 @@ always_comb begin : update_flush
         else if (asid_to_be_flushed_is0[0] && (|vaddr_level_match[i][0] ) && (~vaddr_to_be_flushed_is0[0]))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
-        else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0][ASID_WIDTH[0]-1:0] == tags_q[i].asid[0][ASID_WIDTH[0]-1:0] ) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
+        else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0][CVA6Cfg.ASID_WIDTH-1:0] == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0] ) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
-        else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0][ASID_WIDTH[0]-1:0]  == tags_q[i].asid[0][ASID_WIDTH[0]-1:0] ) && (!asid_to_be_flushed_is0[0]))
+        else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0][CVA6Cfg.ASID_WIDTH-1:0]  == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0] ) && (!asid_to_be_flushed_is0[0]))
           tags_n[i].valid = 1'b0;
       end
     end else if (flush_i[HYP_EXT] && CVA6Cfg.RVH) begin
       if (tags_q[i].v_st_enbl[HYP_EXT*2] && tags_q[i].v_st_enbl[0]) begin
         // invalidate logic
         // flush everything if current VMID matches and ASID is 0 and vaddr is 0 ("SFENCE.VMA/HFENCE.VVMA x0 x0" case)
-        if (asid_to_be_flushed_is0[0] && vaddr_to_be_flushed_is0[0] && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
+        if (asid_to_be_flushed_is0[0] && vaddr_to_be_flushed_is0[0] && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
           tags_n[i].valid = 1'b0;
         // flush vaddr in all addressing space if current VMID matches ("SFENCE.VMA/HFENCE.VVMA vaddr x0" case), it should happen only for leaf pages
-        else if (asid_to_be_flushed_is0[0] && (|vaddr_level_match[i][0]) && (~vaddr_to_be_flushed_is0[0]) && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
+        else if (asid_to_be_flushed_is0[0] && (|vaddr_level_match[i][0]) && (~vaddr_to_be_flushed_is0[0]) && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global and asid and vaddr and current VMID matches with the entry to be flushed ("SFENCE.VMA/HFENCE.VVMA vaddr asid" case)
-        else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0][ASID_WIDTH[0]-1:0]  == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
+        else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0][CVA6Cfg.ASID_WIDTH-1:0]  == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if it's not global, and the asid and the current VMID matches and vaddr is 0. ("SFENCE.VMA/HFENCE.VVMA 0 asid" case)
-        else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0][ASID_WIDTH[0]-1:0]  == tags_q[i].asid[0][ASID_WIDTH[0]-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!asid_to_be_flushed_is0[0]))
+        else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0][CVA6Cfg.ASID_WIDTH-1:0]  == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!asid_to_be_flushed_is0[0]))
           tags_n[i].valid = 1'b0;
       end
     end else if (flush_i[HYP_EXT*2] && CVA6Cfg.RVH) begin
@@ -266,10 +264,10 @@ always_comb begin : update_flush
         else if (asid_to_be_flushed_is0[HYP_EXT] && (|vaddr_level_match[i][HYP_EXT] ) && (~vaddr_to_be_flushed_is0[HYP_EXT]))
           tags_n[i].valid = 1'b0;
         // the entry vmid and gpaddr both matches with the entry to be flushed ("HFENCE.GVMA gpaddr vmid" case)
-        else if ((|vaddr_level_match[i][HYP_EXT]) && (asid_to_be_flushed_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) && (~vaddr_to_be_flushed_is0[HYP_EXT]) && (~asid_to_be_flushed_is0[HYP_EXT]))
+        else if ((|vaddr_level_match[i][HYP_EXT]) && (asid_to_be_flushed_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) && (~vaddr_to_be_flushed_is0[HYP_EXT]) && (~asid_to_be_flushed_is0[HYP_EXT]))
           tags_n[i].valid = 1'b0;
         // the entry is flushed if the vmid matches and gpaddr is 0. ("HFENCE.GVMA 0 vmid" case)
-        else if ((vaddr_to_be_flushed_is0[HYP_EXT]) && (asid_to_be_flushed_i[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0] == tags_q[i].asid[HYP_EXT][ASID_WIDTH[HYP_EXT]-1:0]) && (!asid_to_be_flushed_is0[HYP_EXT]))
+        else if ((vaddr_to_be_flushed_is0[HYP_EXT]) && (asid_to_be_flushed_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) && (!asid_to_be_flushed_is0[HYP_EXT]))
           tags_n[i].valid = 1'b0;
       end
       // normal replacement
@@ -278,7 +276,7 @@ always_comb begin : update_flush
       //update tag
       tags_n[i] = {
         update_i.asid,
-        ((PT_LEVELS + HYP_EXT) * (VPN_LEN / PT_LEVELS))'(update_i.vpn),
+        ((CVA6Cfg.PtLevels + HYP_EXT) * (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels))'(update_i.vpn),
         update_i.is_page,
         update_i.v_st_enbl,
         1'b1
@@ -395,7 +393,7 @@ initial begin : p_assertions
     $error("TLB size must be a multiple of 2 and greater than 1");
     $stop();
   end
-  assert (ASID_WIDTH[0] >= 1)
+  assert (CVA6Cfg.ASID_WIDTH >= 1)
   else begin
     $error("ASID width must be at least 1");
     $stop();

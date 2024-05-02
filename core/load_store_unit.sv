@@ -228,145 +228,86 @@ module load_store_unit
 
   logic                                   hs_ld_st_inst;
   logic                                   hlvx_inst;
+
+  logic [2:0] enable_translation,en_ld_st_translation,flush_tlb;
+  logic [1:0] sum, mxr;
+  logic [CVA6Cfg.PPNW-1:0] satp_ppn[2:0];
+  logic [CVA6Cfg.ASID_WIDTH-1:0] asid[2:0], asid_to_be_flushed[1:0];
+  logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed[1:0];
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
+  assign enable_translation   = {v_i, enable_g_translation_i, enable_translation_i};
+  assign en_ld_st_translation = {ld_st_v_i, en_ld_st_g_translation_i, en_ld_st_translation_i};
+  
+  assign sum  = {vs_sum_i, sum_i};
+  assign mxr  = {vmxr_i, mxr_i};
+  assign asid = {(CVA6Cfg.ASID_WIDTH)'(vmid_i), vs_asid_i, asid_i};
+  
+  assign flush_tlb = {flush_tlb_gvma_i, flush_tlb_vvma_i, flush_tlb_i};
+  assign satp_ppn  = {hgatp_ppn_i, vsatp_ppn_i, satp_ppn_i};
+  
+  assign asid_to_be_flushed  = {vmid_to_be_flushed_i, asid_to_be_flushed_i};
+  assign vaddr_to_be_flushed = {gpaddr_to_be_flushed_i, vaddr_to_be_flushed_i};
+
   if (CVA6Cfg.MmuPresent) begin : gen_mmu
     localparam HYP_EXT = CVA6Cfg.RVH ? 1 : 0;
-    localparam VPN_LEN = (CVA6Cfg.XLEN == 64) ? (HYP_EXT ? 29 : 27) : 20;
-    localparam PT_LEVELS = (CVA6Cfg.XLEN == 64) ? 3 : 2;
 
-    if (CVA6Cfg.RVH) begin
-      localparam int mmu_ASID_WIDTH_H[1:0] = {CVA6Cfg.VMID_WIDTH, CVA6Cfg.ASID_WIDTH};
-      cva6_mmu #(
-          .CVA6Cfg          (CVA6Cfg),
-          .exception_t      (exception_t),
-          .icache_areq_t    (icache_areq_t),
-          .icache_arsp_t    (icache_arsp_t),
-          .icache_dreq_t    (icache_dreq_t),
-          .icache_drsp_t    (icache_drsp_t),
-          .dcache_req_i_t   (dcache_req_i_t),
-          .dcache_req_o_t   (dcache_req_o_t),
-          .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-          .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-          .SHARED_TLB_DEPTH (cva6_config_pkg::CVA6ConfigSharedTlbDepth),
-          .USE_SHARED_TLB   (cva6_config_pkg::CVA6ConfigUseSharedTlb),
-          .HYP_EXT          (HYP_EXT),
-          .ASID_WIDTH       (mmu_ASID_WIDTH_H),
-          .VPN_LEN          (VPN_LEN),
-          .PT_LEVELS        (PT_LEVELS)
-      ) i_cva6_mmu (
-          .clk_i(clk_i),
-          .rst_ni(rst_ni),
-          .flush_i(flush_i),
-          .enable_translation_i({v_i, enable_g_translation_i, enable_translation_i}),
-          .en_ld_st_translation_i({ld_st_v_i, en_ld_st_g_translation_i, en_ld_st_translation_i}),
-          .icache_areq_i(icache_areq_i),
-          .icache_areq_o(icache_areq_o),
-          // misaligned bypass
-          .misaligned_ex_i(misaligned_exception),
-          .lsu_req_i(translation_req),
-          .lsu_vaddr_i(mmu_vaddr),
-          .lsu_tinst_i(mmu_tinst),
-          .lsu_is_store_i(st_translation_req),
-          .csr_hs_ld_st_inst_o(csr_hs_ld_st_inst_o),
-          .lsu_dtlb_hit_o(dtlb_hit),  // send in the same cycle as the request
-          .lsu_dtlb_ppn_o(dtlb_ppn),  // send in the same cycle as the request
+    cva6_mmu #(
+      .CVA6Cfg          (CVA6Cfg),
+      .exception_t      (exception_t),
+      .icache_areq_t    (icache_areq_t),
+      .icache_arsp_t    (icache_arsp_t),
+      .icache_dreq_t    (icache_dreq_t),
+      .icache_drsp_t    (icache_drsp_t),
+      .dcache_req_i_t   (dcache_req_i_t),
+      .dcache_req_o_t   (dcache_req_o_t),
+      .HYP_EXT          (HYP_EXT)
+  ) i_cva6_mmu (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .flush_i(flush_i),
+      .enable_translation_i({enable_translation[HYP_EXT*2:0]}),
+      .en_ld_st_translation_i({en_ld_st_translation[HYP_EXT*2:0]}),
+      .icache_areq_i(icache_areq_i),
+      .icache_areq_o(icache_areq_o),
+      // misaligned bypass
+      .misaligned_ex_i(misaligned_exception),
+      .lsu_req_i(translation_req),
+      .lsu_vaddr_i(mmu_vaddr),
+      .lsu_tinst_i(mmu_tinst),
+      .lsu_is_store_i(st_translation_req),
+      .csr_hs_ld_st_inst_o(csr_hs_ld_st_inst_o),
+      .lsu_dtlb_hit_o(dtlb_hit),  // send in the same cycle as the request
+      .lsu_dtlb_ppn_o(dtlb_ppn),  // send in the same cycle as the request
 
-          .lsu_valid_o    (translation_valid),
-          .lsu_paddr_o    (mmu_paddr),
-          .lsu_exception_o(mmu_exception),
+      .lsu_valid_o    (translation_valid),
+      .lsu_paddr_o    (mmu_paddr),
+      .lsu_exception_o(mmu_exception),
 
-          .priv_lvl_i      (priv_lvl_i),
-          .ld_st_priv_lvl_i(ld_st_priv_lvl_i),
-          // connecting PTW to D$ IF
+      .priv_lvl_i      (priv_lvl_i),
+      .ld_st_priv_lvl_i(ld_st_priv_lvl_i),
 
+      .sum_i          ({sum[HYP_EXT:0]}),
+      .mxr_i          ({mxr[HYP_EXT:0]}),
+      .hlvx_inst_i    (mmu_hlvx_inst),
+      .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
 
-          .sum_i          ({vs_sum_i, sum_i}),
-          .mxr_i          ({vmxr_i, mxr_i}),
-          .hlvx_inst_i    (mmu_hlvx_inst),
-          .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
+      .satp_ppn_i           (satp_ppn[HYP_EXT*2:0]),
+      .asid_i               (asid[HYP_EXT*2:0]),
+      .asid_to_be_flushed_i (asid_to_be_flushed[HYP_EXT:0]),
+      .vaddr_to_be_flushed_i(vaddr_to_be_flushed[HYP_EXT:0]),
+      .flush_tlb_i          ({flush_tlb[HYP_EXT*2:0]}),
 
-          .satp_ppn_i           ({hgatp_ppn_i, vsatp_ppn_i, satp_ppn_i}),
-          .asid_i               ({(CVA6Cfg.ASID_WIDTH)'(vmid_i), vs_asid_i, asid_i}),
-          .asid_to_be_flushed_i ({vmid_to_be_flushed_i, asid_to_be_flushed_i}),
-          .vaddr_to_be_flushed_i({gpaddr_to_be_flushed_i, vaddr_to_be_flushed_i}),
-          .flush_tlb_i          ({flush_tlb_gvma_i, flush_tlb_vvma_i, flush_tlb_i}),
+      .itlb_miss_o(itlb_miss_o),
+      .dtlb_miss_o(dtlb_miss_o),
 
-          .itlb_miss_o(itlb_miss_o),
-          .dtlb_miss_o(dtlb_miss_o),
+      .req_port_i(dcache_req_ports_i[0]),
+      .req_port_o(dcache_req_ports_o[0]),
+      .pmpcfg_i,
+      .pmpaddr_i
+  );
 
-          .req_port_i(dcache_req_ports_i[0]),
-          .req_port_o(dcache_req_ports_o[0]),
-          .pmpcfg_i,
-          .pmpaddr_i
-      );
-    end else begin
-
-      localparam int mmu_ASID_WIDTH[HYP_EXT:0] = {CVA6Cfg.ASID_WIDTH};
-
-      cva6_mmu #(
-          .CVA6Cfg          (CVA6Cfg),
-          .exception_t      (exception_t),
-          .icache_areq_t    (icache_areq_t),
-          .icache_arsp_t    (icache_arsp_t),
-          .icache_dreq_t    (icache_dreq_t),
-          .icache_drsp_t    (icache_drsp_t),
-          .dcache_req_i_t   (dcache_req_i_t),
-          .dcache_req_o_t   (dcache_req_o_t),
-          .INSTR_TLB_ENTRIES(ariane_pkg::INSTR_TLB_ENTRIES),
-          .DATA_TLB_ENTRIES (ariane_pkg::DATA_TLB_ENTRIES),
-          .SHARED_TLB_DEPTH (cva6_config_pkg::CVA6ConfigSharedTlbDepth),
-          .USE_SHARED_TLB   (cva6_config_pkg::CVA6ConfigUseSharedTlb),
-          .HYP_EXT          (HYP_EXT),
-          .ASID_WIDTH       (mmu_ASID_WIDTH),
-          .VPN_LEN          (VPN_LEN),
-          .PT_LEVELS        (PT_LEVELS)
-      ) i_cva6_mmu (
-          .clk_i(clk_i),
-          .rst_ni(rst_ni),
-          .flush_i(flush_i),
-          .enable_translation_i({enable_translation_i}),
-          .en_ld_st_translation_i({en_ld_st_translation_i}),
-          .icache_areq_i(icache_areq_i),
-          .icache_areq_o(icache_areq_o),
-          // misaligned bypass
-          .misaligned_ex_i(misaligned_exception),
-          .lsu_req_i(translation_req),
-          .lsu_vaddr_i(mmu_vaddr),
-          .lsu_tinst_i(0),
-          .lsu_is_store_i(st_translation_req),
-          .csr_hs_ld_st_inst_o(),
-          .lsu_dtlb_hit_o(dtlb_hit),  // send in the same cycle as the request
-          .lsu_dtlb_ppn_o(dtlb_ppn),  // send in the same cycle as the request
-
-          .lsu_valid_o    (translation_valid),
-          .lsu_paddr_o    (mmu_paddr),
-          .lsu_exception_o(mmu_exception),
-
-          .priv_lvl_i      (priv_lvl_i),
-          .ld_st_priv_lvl_i(ld_st_priv_lvl_i),
-
-          .sum_i          ({sum_i}),
-          .mxr_i          ({mxr_i}),
-          .hlvx_inst_i    (0),
-          .hs_ld_st_inst_i(0),
-
-          .satp_ppn_i           ({satp_ppn_i}),
-          .asid_i               ({asid_i}),
-          .asid_to_be_flushed_i ({asid_to_be_flushed_i}),
-          .vaddr_to_be_flushed_i({vaddr_to_be_flushed_i}),
-          .flush_tlb_i          ({flush_tlb_i}),
-
-          .itlb_miss_o(itlb_miss_o),
-          .dtlb_miss_o(dtlb_miss_o),
-
-          .req_port_i(dcache_req_ports_i[0]),
-          .req_port_o(dcache_req_ports_o[0]),
-          .pmpcfg_i,
-          .pmpaddr_i
-      );
-    end
   end else begin : gen_no_mmu
 
     if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin

@@ -33,14 +33,7 @@ import ariane_pkg::*;
   parameter type                   dcache_req_i_t               = logic,
   parameter type                   dcache_req_o_t               = logic,
   parameter type                   exception_t                  = logic,
-  parameter int unsigned           INSTR_TLB_ENTRIES            = 4,
-  parameter int unsigned           DATA_TLB_ENTRIES             = 4,
-  parameter int unsigned           SHARED_TLB_DEPTH             = 64,
-  parameter int unsigned           USE_SHARED_TLB               = 1,
-  parameter int unsigned           HYP_EXT                      = 0,
-  parameter int                    ASID_WIDTH       [HYP_EXT:0],
-  parameter int unsigned           VPN_LEN                      = 1,
-  parameter int unsigned           PT_LEVELS                    = 1
+  parameter int unsigned           HYP_EXT                      = 0
 
 ) (
   input logic clk_i,
@@ -78,8 +71,8 @@ import ariane_pkg::*;
   // input logic flag_mprv_i,
   input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
 
-  input logic [ASID_WIDTH[0]-1:0] asid_i               [HYP_EXT*2:0],  //[vmid,vs_asid,asid]
-  input logic [ASID_WIDTH[0]-1:0] asid_to_be_flushed_i [  HYP_EXT:0],
+  input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i               [HYP_EXT*2:0],  //[vmid,vs_asid,asid]
+  input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i [  HYP_EXT:0],
   input logic [ CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i[  HYP_EXT:0],
 
   input logic [HYP_EXT*2:0] flush_tlb_i,
@@ -94,8 +87,8 @@ import ariane_pkg::*;
   input  riscv::pmpcfg_t [15:0]                   pmpcfg_i,
   input  logic           [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
-logic [ASID_WIDTH[0]-1:0] dtlb_mmu_asid_i[HYP_EXT:0];
-logic [ASID_WIDTH[0]-1:0] itlb_mmu_asid_i[HYP_EXT:0];
+logic [CVA6Cfg.ASID_WIDTH-1:0] dtlb_mmu_asid_i[HYP_EXT:0];
+logic [CVA6Cfg.ASID_WIDTH-1:0] itlb_mmu_asid_i[HYP_EXT:0];
 
 genvar b;
 generate
@@ -125,9 +118,9 @@ localparam type pte_cva6_t = struct packed {
 
 localparam type tlb_update_cva6_t = struct packed {
   logic                                valid;
-  logic [PT_LEVELS-2:0][HYP_EXT:0]     is_page;
-  logic [VPN_LEN-1:0]                  vpn;
-  logic [HYP_EXT:0][ASID_WIDTH[0]-1:0] asid;
+  logic [CVA6Cfg.PtLevels-2:0][HYP_EXT:0]     is_page;
+  logic [CVA6Cfg.VpnLen-1:0]                  vpn;
+  logic [HYP_EXT:0][CVA6Cfg.ASID_WIDTH-1:0] asid;
   logic [HYP_EXT*2:0]                  v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
   pte_cva6_t [HYP_EXT:0]               content;
 };
@@ -146,15 +139,15 @@ tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
 logic                          itlb_lu_access;
 pte_cva6_t [        HYP_EXT:0] itlb_content;
-logic      [    PT_LEVELS-2:0] itlb_is_page;
+logic      [    CVA6Cfg.PtLevels-2:0] itlb_is_page;
 logic                          itlb_lu_hit;
 logic      [CVA6Cfg.GPLEN-1:0] itlb_gpaddr;
-logic      [ASID_WIDTH[0]-1:0] itlb_lu_asid;
+logic      [CVA6Cfg.ASID_WIDTH-1:0] itlb_lu_asid;
 
 logic                          dtlb_lu_access;
 pte_cva6_t [        HYP_EXT:0] dtlb_content;
-logic      [    PT_LEVELS-2:0] dtlb_is_page;
-logic      [ASID_WIDTH[0]-1:0] dtlb_lu_asid;
+logic      [    CVA6Cfg.PtLevels-2:0] dtlb_is_page;
+logic      [CVA6Cfg.ASID_WIDTH-1:0] dtlb_lu_asid;
 logic                          dtlb_lu_hit;
 logic      [CVA6Cfg.GPLEN-1:0] dtlb_gpaddr;
 
@@ -171,11 +164,8 @@ cva6_tlb #(
     .CVA6Cfg          (CVA6Cfg),
     .pte_cva6_t       (pte_cva6_t),
     .tlb_update_cva6_t(tlb_update_cva6_t),
-    .TLB_ENTRIES      (INSTR_TLB_ENTRIES),
-    .HYP_EXT          (HYP_EXT),
-    .ASID_WIDTH       (ASID_WIDTH),
-    .VPN_LEN          (VPN_LEN),
-    .PT_LEVELS        (PT_LEVELS)
+    .TLB_ENTRIES      (CVA6Cfg.InstrTlbEntries),
+    .HYP_EXT          (HYP_EXT)
 ) i_itlb (
     .clk_i                (clk_i),
     .rst_ni               (rst_ni),
@@ -197,11 +187,8 @@ cva6_tlb #(
     .CVA6Cfg          (CVA6Cfg),
     .pte_cva6_t       (pte_cva6_t),
     .tlb_update_cva6_t(tlb_update_cva6_t),
-    .TLB_ENTRIES      (DATA_TLB_ENTRIES),
-    .HYP_EXT          (HYP_EXT),
-    .ASID_WIDTH       (ASID_WIDTH),
-    .VPN_LEN          (VPN_LEN),
-    .PT_LEVELS        (PT_LEVELS)
+    .TLB_ENTRIES      (CVA6Cfg.DataTlbEntries),
+    .HYP_EXT          (HYP_EXT)
 ) i_dtlb (
     .clk_i                (clk_i),
     .rst_ni               (rst_ni),
@@ -222,13 +209,8 @@ cva6_tlb #(
 
 cva6_shared_tlb #(
     .CVA6Cfg          (CVA6Cfg),
-    .SHARED_TLB_DEPTH (SHARED_TLB_DEPTH),
-    .USE_SHARED_TLB   (USE_SHARED_TLB),
     .SHARED_TLB_WAYS  (2),
     .HYP_EXT          (HYP_EXT),
-    .ASID_WIDTH       (ASID_WIDTH),
-    .VPN_LEN          (VPN_LEN),
-    .PT_LEVELS        (PT_LEVELS),
     .pte_cva6_t       (pte_cva6_t),
     .tlb_update_cva6_t(tlb_update_cva6_t)
 ) i_shared_tlb (
@@ -273,11 +255,7 @@ cva6_ptw #(
     .tlb_update_cva6_t(tlb_update_cva6_t),
     .dcache_req_i_t   (dcache_req_i_t),
     .dcache_req_o_t   (dcache_req_o_t),
-    .HYP_EXT          (HYP_EXT),
-    .ASID_WIDTH       (ASID_WIDTH),
-    .VPN_LEN          (VPN_LEN),
-    .USE_SHARED_TLB   (USE_SHARED_TLB),
-    .PT_LEVELS        (PT_LEVELS)
+    .HYP_EXT          (HYP_EXT)
 ) i_ptw (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -376,9 +354,9 @@ always_comb begin : instr_interface
       icache_areq_i.fetch_vaddr[11:0]
     };
 
-    if (PT_LEVELS == 3 && itlb_is_page[PT_LEVELS-2]) begin
+    if (CVA6Cfg.PtLevels == 3 && itlb_is_page[CVA6Cfg.PtLevels-2]) begin
 
-      icache_areq_o.fetch_paddr[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS] = icache_areq_i.fetch_vaddr[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS];
+      icache_areq_o.fetch_paddr[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels] = icache_areq_i.fetch_vaddr[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels];
 
     end
 
@@ -516,7 +494,7 @@ exception_t misaligned_ex_n, misaligned_ex_q;
 logic lsu_req_n, lsu_req_q;
 logic lsu_is_store_n, lsu_is_store_q;
 logic dtlb_hit_n, dtlb_hit_q;
-logic [PT_LEVELS-2:0] dtlb_is_page_n, dtlb_is_page_q;
+logic [CVA6Cfg.PtLevels-2:0] dtlb_is_page_n, dtlb_is_page_q;
 
 // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
 assign lsu_dtlb_hit_o = (en_ld_st_translation_i[HYP_EXT:0]) ? dtlb_lu_hit : 1'b1;
@@ -571,9 +549,9 @@ always_comb begin : data_interface
       lsu_vaddr_q[0][11:0]
     };
 
-    if (PT_LEVELS == 3 && dtlb_is_page_q[PT_LEVELS-2]) begin
-      lsu_paddr_o[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS] = lsu_vaddr_q[0][PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS];
-      lsu_dtlb_ppn_o[PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS] = lsu_vaddr_n[0][PPNWMin-(VPN_LEN/PT_LEVELS):9+PT_LEVELS];
+    if (CVA6Cfg.PtLevels == 3 && dtlb_is_page_q[CVA6Cfg.PtLevels-2]) begin
+      lsu_paddr_o[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels] = lsu_vaddr_q[0][PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels];
+      lsu_dtlb_ppn_o[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels] = lsu_vaddr_n[0][PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels];
     end
 
     if (dtlb_is_page_q[0]) begin
@@ -749,7 +727,7 @@ always_comb begin : data_interface
         // an error makes the translation valid
         lsu_valid_o = 1'b1;
         // Any fault of the page table walk should be based of the original access type
-        if (lsu_is_store_q && !CVA6Cfg.RVH && PT_LEVELS == 3) begin 
+        if (lsu_is_store_q && !CVA6Cfg.RVH && CVA6Cfg.PtLevels == 3) begin 
           lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
           lsu_exception_o.valid = 1'b1;
           if (CVA6Cfg.TvalEn)
@@ -831,11 +809,8 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
     dtlb_hit_q      <= '0;
     lsu_is_store_q  <= '0;
     dtlb_is_page_q  <= '0;
-
-    if (CVA6Cfg.RVH) begin
-      lsu_tinst_q     <= '0;
-      hs_ld_st_inst_q <= '0;
-    end
+    lsu_tinst_q     <= '0;
+    hs_ld_st_inst_q <= '0;
   end else begin
     lsu_vaddr_q     <= lsu_vaddr_n;
     lsu_req_q       <= lsu_req_n;
