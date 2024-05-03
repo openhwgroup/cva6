@@ -31,11 +31,6 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
 
-  localparam CVA6ConfigInstrTlbEntries = 2;  // MMU
-  localparam CVA6ConfigDataTlbEntries = 2;  // MMU
-  localparam CVA6ConfigUseSharedTlb = 1; // MMU
-  localparam CVA6ConfigSharedTlbDepth = 64; // MMU
-
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
       FpgaEn: bit'(0),
@@ -100,10 +95,10 @@ package cva6_config_pkg;
       WtDcacheWbufDepth: int'(2),
       FetchUserWidth: unsigned'(32),
       FetchUserEn: unsigned'(0),
-      InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
-      DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
-      UseSharedTlb: bit'(CVA6ConfigUseSharedTlb),
-      SharedTlbDepth: int'(CVA6ConfigSharedTlbDepth),
+      InstrTlbEntries: int'(2),
+      DataTlbEntries: int'(2),
+      UseSharedTlb: bit'(1),
+      SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(0),
       NrStorePipeRegs: int'(0),
       DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
