@@ -30,9 +30,13 @@ import uvm_pkg::*;
 
 `include "uvm_macros.svh"
 
-import "DPI-C" function read_elf(input string filename);
+`ifndef DPI_FESVR_SPIKE_UTILS
+`define DPI_FESVR_SPIKE_UTILS
+import "DPI-C" function void read_elf(input string filename);
+import "DPI-C" function byte read_symbol(input string symbol_name, inout longint unsigned address);
 import "DPI-C" function byte get_section(output longint address, output longint len);
-import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
+import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);
+`endif
 
 module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
@@ -48,7 +52,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
-  input  logic [XLEN-1:0]              boot_addr_i,
+  input  logic [riscv::VLEN-1:0]       boot_addr_i,
   output logic [31:0]                  tb_exit_o,
   output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
   output rvfi_csr_t                    rvfi_csr_o,
@@ -70,7 +74,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   rvfi_csr_t rvfi_csr;
   assign rvfi_o = rvfi_instr;
   assign rvfi_csr_o = rvfi_csr;
-  
+
   cva6 #(
      .CVA6Cfg ( CVA6Cfg ),
      .rvfi_probes_instr_t  ( rvfi_probes_instr_t ),

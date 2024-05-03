@@ -334,19 +334,28 @@ class reg_mie extends csr_reg;
       option.name = "csr_mie__read_cg";
       option.per_instance = 1;
       MEIE: coverpoint data[11:11];
-      SEIE: coverpoint data[9:9];
+      SEIE: coverpoint data[9:9] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       UEIE: coverpoint data[8:8] {
          bins legal_values[] = {0};
          illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       } 
       MTIE: coverpoint data[7:7];
-      STIE: coverpoint data[5:5];
+      STIE: coverpoint data[5:5] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       UTIE: coverpoint data[4:4] {
          bins legal_values[] = {0};
          illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       } 
       MSIE: coverpoint data[3:3];
-      SSIE: coverpoint data[1:1];
+      SSIE: coverpoint data[1:1] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       USIE: coverpoint data[0:0] {
          bins legal_values[] = {0};
          illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
@@ -357,19 +366,28 @@ class reg_mie extends csr_reg;
       option.name = "csr_mie.mie__write_cp";
       option.per_instance = 1;
       MEIE: coverpoint data[11:11];
-      SEIE: coverpoint data[9:9];
+      SEIE: coverpoint data[9:9] {
+         bins legal_values[] = {0};
+         bins illegal_values[]  = {[0:$]} with (!(item inside {0}));
+      }
       UEIE: coverpoint data[8:8] {
          bins legal_values[] = {0};
          bins illegal_values[]  = {[0:$]} with (!(item inside {0}));
-      } 
+      }
       MTIE: coverpoint data[7:7];
-      STIE: coverpoint data[5:5];
+      STIE: coverpoint data[5:5] {
+         bins legal_values[] = {0};
+         bins illegal_values[]  = {[0:$]} with (!(item inside {0}));
+      }
       UTIE: coverpoint data[4:4] {
          bins legal_values[] = {0};
          bins illegal_values[]  = {[0:$]} with (!(item inside {0}));
-      } 
+      }
       MSIE: coverpoint data[3:3];
-      SSIE: coverpoint data[1:1];
+      SSIE: coverpoint data[1:1] {
+         bins legal_values[] = {0};
+         bins illegal_values[]  = {[0:$]} with (!(item inside {0}));
+      }
       USIE: coverpoint data[0:0] {
          bins legal_values[] = {0};
          bins illegal_values[]  = {[0:$]} with (!(item inside {0}));
@@ -2659,19 +2677,28 @@ class reg_mip extends csr_reg;
       option.name = "csr_mip__read_cg";
       option.per_instance = 1;
       MEIP: coverpoint data[11:11];
-      SEIP: coverpoint data[9:9];
+      SEIP: coverpoint data[9:9] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       UEIP: coverpoint data[8:8] {
          bins legal_values[] = {0};
          illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
       MTIP: coverpoint data[7:7];
-      STIP: coverpoint data[5:5];
+      STIP: coverpoint data[5:5] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       UTIP: coverpoint data[4:4] {
          bins legal_values[] = {0};
          illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
       MSIP: coverpoint data[3:3];
-      SSIP: coverpoint data[1:1];
+      SSIP: coverpoint data[1:1] {
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       USIP: coverpoint data[0:0] {
          bins legal_values[] = {0};
          illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
@@ -2681,20 +2708,29 @@ class reg_mip extends csr_reg;
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mip.mip__write_cp";
       option.per_instance = 1;
-      MEIP: coverpoint data[11:11] {
+      MEIP: coverpoint data[11:11];
+      SEIP: coverpoint data[9:9] {
          bins legal_values[] = {0};
          bins illegal_values[] = {[0:$]} with (!(item inside {0}));
       }
-      SEIP: coverpoint data[9:9];
-      UEIP: coverpoint data[8:8];
+      UEIP: coverpoint data[8:8] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
       MTIP: coverpoint data[7:7];
-      STIP: coverpoint data[5:5];
+      STIP: coverpoint data[5:5] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
       UTIP: coverpoint data[4:4] {
          bins legal_values[] = {0};
          bins illegal_values[] = {[0:$]} with (!(item inside {0}));
       }
       MSIP: coverpoint data[3:3];
-      SSIP: coverpoint data[1:1];
+      SSIP: coverpoint data[1:1] {
+         bins legal_values[] = {0};
+         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+      }
       USIP: coverpoint data[0:0] {
          bins legal_values[] = {0};
          bins illegal_values[] = {[0:$]} with (!(item inside {0}));

@@ -1,192 +1,145 @@
-**ISACOV MISSING COVERAGE**
+**ISA COVERAGE STATUS**
 ===============================
 
-The table blow resume what’s missing in ISACOV agent fucntionnal coverage :
+The table summarizes what’s missing in ISA functional coverage :
 
-+----------------------+------------------------------------+----------------------------------------+
-| **Cover group -      | **Missing bins/cover point**       | **Why ?**                              |
-| Instance**           |                                    |                                        |
-+======================+====================================+========================================+
-| cg_executed_type     | -  rv32c_ebreak_cg.cp_executed     | -  RVFI limitation\*                   | 
-|                      |                                    |                                        |
-| -  rv32c_ebreak_cg   | -  rv32i_dret_cg.cp_executed       |                                        |
-|                      |                                    |                                        |
-| -  rv32i_dret_cg     | -  rv32i_ebreak_cg.cp_executed     |                                        |
-|                      |                                    |                                        |
-| -  rv32i_ebreak_cg   | -  rv32i_ecall_cg.cp_executed      |                                        |
-|                      |                                    |                                        |
-| -  rv32i_ecall_cg    | -  rv32i_wfi_cg.cp_executed        |                                        |
-|                      |                                    |                                        |
-| -  rv32i_wfi_cg      |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_sequential        | -  cp_instr, cp_instr_prev_x2      | -  RVFI limitation\*                   | 
-|                      |                                    |                                        |
-|                      | -  cp_group, cp_group_pipe_x2      | -  RVFI limitation\*                   |
-|                      |                                    |                                        |
-|                      | -  cp_csr                          | -  RVFI limitation\*                   | 
-|                      |                                    |                                        |
-|                      | -  cross_seq_instr_x2              | -  RVFI limitation\*                   |
-|                      |                                    |                                        |
-|                      | -  cross_seq_group_x2              | -  RVFI limitation\*                   |
-|                      |                                    |                                        |
-|                      | -  cross_seq_gpr_raw_hazard        | -  RVFI limitation\*                   |        
-|                      |                                    |                                        |
-|                      | -  cross_seq_csr_hazard_x2         | -  RVFI limitation\*                   |
-|                      |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_csritype          | -  \*.cp_csr                       | -  Need CSR tests*\*                   |
-|                      |                                    |                                        |
-| -                    |                                    |                                        |
-|  rv32zicsr_csrrwi_cg |                                    |                                        |
-|                      |                                    |                                        |
-| -                    |                                    |                                        |
-|  rv32zicsr_csrrsi_cg |                                    |                                        |
-|                      |                                    |                                        |
-| -                    |                                    |                                        |
-|  rv32zicsr_csrrci_cg |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_cr_j              | -  rv32c_jalr_cg.cp_rs1_value      | -  boot_addr != 0x0                    |
-|                      |                                    |                                        |
-| -  rv32c_jalr_cg     | -  rv32c_jr_cg.cp_rs1_value        | -  boot_addr != 0x0                    |       
-|                      |                                    |                                        |
-| -  rv32c_jr_cg       | -  rv32c_jalr_cg.cp_rs1_toggle     | -  Tests needed**\*                    |
-|                      |                                    |                                        |
-|                      | -  rv32c_jr_cg.cp_rs1_toggle       | -  Tests needed**\*                    |
-|                      |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_csritype          | -  \*.cp_csr                       | -  Need CSR tests*\*                   |
-|                      |                                    |                                        |
-| -                    |                                    |                                        |
-|   rv32zicsr_csrrw_cg |                                    |                                        |
-|                      |                                    |                                        |
-| -                    |                                    |                                        |
-|   rv32zicsr_csrrs_cg |                                    |                                        |
-|                      |                                    |                                        |
-| -                    |                                    |                                        |
-|   rv32zicsr_csrrc_cg |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_cb_shift          | -  \*.cp_rs1                       | -  UVM_BUG #1425                       |
-|                      |                                    |                                        |
-| -  rv32c_srli_cg     |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32c_srai_cg     |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_cj                | -  \*.cp_imm_value                 | -  imm = 0x0 (infinite loop)           |   
-|                      |                                    |                                        |
-| -  rv32c_j_cg        |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32c_jal_cg      |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_itype_load        | -  rv32i_lbu_cg.cp_rd_toggle       | -  LBU,LHU limitation                  |
-|                      |                                    |                                        |
-| -  rv32i_lbu_cg      | -  rv32i_lhu_cg.cp_rd_toggle       |                                        |
-|                      |                                    |                                        |
-| -  rv32i_lhu_cg      |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_jtype             | -  cp_immj_value                   | -  immj = 0x0 (infinite loop)          |      
-|                      |                                    |                                        |
-| -  rv32i_jal_cg      | -  cp_rd_toggle                    | -  Tests needed***\*                   |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_cb_andi           | -  cp_rs1                          | -  UVM_BUG #1425                       |
-|                      |                                    |                                        |
-| -  rv32c_andi_cg     |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_cr                | -  cp_rs1_toggle                   | -  c.mv should not have rs1 (UVM_BUG)  |                 
-|                      |                                    |                                        |
-| -  rv32c_mv_cg       |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_utype             | -  rv32i_lui_cg.cp_immu_value      | -  Test needed**\*                     |
-|                      |                                    |                                        |
-| -  rv32i_auipc_cg    |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_rtype_slt         | -  \*.cross_rd_rs1_rs2             | -  Test needed***\*                    |
-|                      |                                    |                                        |
-| -  rv32i_sltu_cg     |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_slt_cg      |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_rtype_shift       | -  \*.cross_rd_rs1_rs2             | -  Test needed***\*                    |
-|                      |                                    |                                        |
-| -  rv32i_sra_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_srl_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_sll_cg      |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_rtype             | -  \*.cross_rd_rs1_rs2             | -  Test needed***\*                    |
-|                      |                                    |                                        |
-| -  rv32i_add_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_sub_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_xor_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_and_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_or_cg       |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32m_mul_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32m_mulh_cg     |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32m_mulhu_cg    |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32m_mulhsu_cg   |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32m_rem_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32m_remu_cg     |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32m_div_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32m_divu_cg     |                                    |                                        | 
-+----------------------+------------------------------------+----------------------------------------+            
-| cg_itype             | -  rv32i_jalr_cg.cp_rs1            | -  Test needed**\*                     |
-|                      |                                    |                                        |
-| -  rv32i_jalr_cg     | -  rv32i_jalr_cg.cp_rd             | -  rd = 0x0 it’s a c.jalr (UVM_BUG)    |          
-|                      |                                    |                                        |
-| -  rv32i_andi_cg     | -  rv32i_jalr_cg.cp_rd_rs1_hazard  | -  imm = 0x0 for jalr infinite loop    |           
-|                      |                                    |                                        |
-| -  rv32i_ori_cg      | -  rv32i_jalr_cg.cp_rs1_value      | -  infinite loop                       |
-|                      |                                    |                                        |
-| -  rv32i_xori_cg     | -  rv32i_jalr_cg.cp_rd_value       |                                        |
-|                      |                                    |                                        |
-|                      | -  rv32i_jalr_cg.cp_rd_toggle      |                                        |
-+----------------------+------------------------------------+----------------------------------------+            
-| cg_btype             | -  \*.cross_rs1_rs2                | -  Test needed***\*                    |
-|                      |                                    |                                        |
-| -  rv32i_bge_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_bltu_cg     |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_beq_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_bne_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_blt_cg      |                                    |                                        |
-|                      |                                    |                                        |
-| -  rv32i_bgeu_cg     |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_itype_slt         | -  cross_rs1_immi_value            | -  Test needed**\*                     |
-|                      |                                    |                                        |
-| -  rv32i_slti_cg     |                                    |                                        |
-+----------------------+------------------------------------+----------------------------------------+
-| cg_itype_shift       | -  rv32i_slli_cg.cp_rd_rs1_hazard  | -  Test needed**\*                     |
-|                      |                                    |                                        |
-| -  rv32i_slli_cg     | -  rv32i_srli_cg.cp_rd_rs1_hazard  |                                        |
-|                      |                                    |                                        |
-| -  rv32i_srli_cg     | -  rv32i_slli_cg.cross_rd_rs1      |                                        |
-|                      |                                    |                                        |
-| -  rv32i_srai_cg     | -  rv32i_srli_cg. cross_rd_rs1     |                                        |
-+----------------------+------------------------------------+----------------------------------------+            
+-  cva6 version : `8a9d7a832b7121dd6f9be61a380d1d89ebf2a5f3`
+
+-  core-v-verid version : `f7bda8e953eb060085daa165e4d2af6865474257`
+
++----------------------+----------------------+------------------------------------+----------------------------------------+
+| **ISA extension**    | **Cover group -      | **Missing bins/cover point**       | **Why ?**                              |
+|                      | Instance**           |                                    |                                        |
++======================+======================+====================================+========================================+
+|                      |                      |                                    |                                        |
+|   RV32I              | rv32i_add_cg         | -  cp_rd_rs2_hazard                | -  Gcc optimization(1)                 |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32i_addi_cg        | -  cp_rs1                          | -  Gcc optimization(1)                 |
+|                      |                      |                                    |                                        |
+|                      |                      | -  cp_rd_rs1_hazard                |                                        |
+|                      |                      |                                    |                                        |
+|                      |                      | -  cp_immi_value                   |                                        |
+|                      |                      |                                    |                                        |
+|                      |                      | -  cross_rs1_immi_value            |                                        |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32i_jal_cg         | -  cp_rd_toggle                    | -  Cover pc addresses (pma)            |
+|                      |                      |                                    |                                        |
+|                      |                      | -  cp_immj_value                   | -  Enable interrupt tests              |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32i_jalr_cg        | -  cp_rd_toggle                    | -  Cover pc addresses (pma)            |
+|                      |                      |                                    |                                        |
+|                      |                      | -  cp_rd_value                     | -  Cover pc addresses (pma)            |
+|                      |                      |                                    |                                        |
+|                      |                      | -  cp_rd_rs1_hazard                | -  Enable interrupt tests              |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32i_lb_cg          | -  *.cp_rs1_value                  | -  Cover load addresses (pma)          |
+|                      |                      |                                    |                                        |
+|                      | rv32i_lh_cg          | -  *.cp_rs1                        |                                        |
+|                      |                      |                                    |                                        |
+|                      | rv32i_lbu_cg         | -  *.cp_rd_rs1_hazard              |                                        |
+|                      |                      |                                    |                                        |
+|                      | rv32i_lhu_cg         | -  *.cp_rs1_toggle                 |                                        |
+|                      |                      |                                    |                                        |
+|                      | rv32i_lw_cg          | -  *.cross_rs1_immi_value          |                                        |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32i_sb_cg          | -  *.cp_rs1                        | -  Cover store addresses (pma)         |
+|                      |                      |                                    |                                        |
+|                      | rv32i_sh_cg          | -  *.cp_rs1_toggle                 |                                        |
+|                      |                      |                                    |                                        |
+|                      | rv32i_sw_cg          | -  *.cp_rd_rs1_hazard              |                                        |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32i_wfi_cg         | -  cp_executed                     | -  Enable interrupt tests              |
+|                      |                      |                                    |                                        |
++----------------------+----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|   RV32C              | rv32c_j_cg           | -  *.cp_imm_value                  | -  Enable interrupt tests              |
+|                      |                      |                                    |                                        |
+|                      | rv32c_jal_cg         |                                    |                                        |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32c_jr_cg          | -  *.cp_rs1_toggle                 | -  Cover pc addresses (pma)            |
+|                      |                      |                                    |                                        |
+|                      | rv32c_jalr_cg        |                                    |                                        |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32c_lw_cg          | -  *.cp_rs1_value                  | -  Cover load addresses (pma)          |
+|                      |                      |                                    |                                        |
+|                      |                      | -  *.cp_rs1_toggle                 |                                        |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32c_sw_cg          | -  *.cp_rs1_value                  | -  Cover store addresses (pma)         |
+|                      |                      |                                    |                                        |
+|                      |                      | -  *.cp_rs1_toggle                 |                                        |
+|                      |                      |                                    |                                        |
++----------------------+----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|   RV32Zcb            | rv32zcb_lbu_cg       | -  *.cp_rs1_value                  | -  Cover load addresses (pma)          |
+|                      |                      |                                    |                                        |
+|                      | rv32zcb_lhu_cg       | -  *.cp_rs1_toggle                 |                                        |
+|                      |                      |                                    |                                        |
+|                      | rv32zcb_lh_cg        |                                    |                                        |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32zcb_sb_cg        | -  *.cp_rs1_value                  | -  Cover store addresses (pma)         |
+|                      |                      |                                    |                                        |
+|                      | rv32zcb_sh_cg        | -  *.cp_rs1_toggle                 |                                        |
+|                      |                      |                                    |                                        |
++----------------------+----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|   RV32Zbb            | rv32zbb_clz_cg       | -  *.cp_rd_toggle                  | -  Bug on the ISACOV coverage model    |
+|                      |                      |                                    |                                        |
+|                      | rv32zbb_cpop_cg      |                                    |                                        |
+|                      |                      |                                    |                                        |
+|                      | rv32zbb_ctz_cg       |                                    |                                        |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32zbb_sext_b_cg    | -  *.cp_rd_rs_hazard               | -  Gcc optimization(1)                 |
+|                      |                      |                                    |                                        |
+|                      | rv32zbb_sext_h_cg    |                                    |                                        |
+|                      |                      |                                    |                                        |
+|                      +----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|                      | rv32zbb_zext_h_cg    | -  cp_rd_rs_hazard                 | -  Gcc optimization(1)                 |
+|                      |                      |                                    |                                        |
+|                      |                      | -  cp_rd_toggle                    | -  Bug on the ISACOV coverage model    |
+|                      |                      |                                    |                                        |
++----------------------+----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|   RV32ZBC            | rv32zbc_clmulh_cg    | -  cp_rd_toggle                    | -  Need a test                         |
+|                      |                      |                                    |                                        |
+|                      |                      |                                    |                                        |
++----------------------+----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|   RV32ZBS            | rv32zbs_bset_cg      | -  *.cp_rd_value                   | -  Instruction limitation              |
+|                      |                      |                                    |                                        |
+|                      | rv32zbs_bseti_cg     |                                    |                                        |
+|                      |                      |                                    |                                        |
++----------------------+----------------------+------------------------------------+----------------------------------------+
+|                      |                      |                                    |                                        |
+|   Instruction        | rev32_seq_cg         | -  cross_seq*                      | -  Enable interrupt                    |
+|   execution          |                      |                                    |                                        |
+|   sequences          |                      |                                    | -  A lot of cross combination          |
+|                      |                      |                                    |                                        |
++----------------------+----------------------+------------------------------------+----------------------------------------+
+
 
 **Conventions and Terminology :**
 
-*RVFI limitation\** : the RVFI in the CVA6 get it's information from the commit stage, that means the ISACOV agent can get only information of valid instruction (committed instruction), so any instruction raising an exception or can’t be cover.
-
-*Need CSR tests*\** : we can get what has been done in CSR verification task.
-
-*Test needed*\*** : the test is feasible.
-
-*Test needed*\**** : the test isn’t feasible, because it’s going to take a
-lot of time to write (a lot of combination to cover).
+*Gcc optimization(1)* : The gcc optimize the assembly code to reduce the code size, it changed the normal instructions to compressed ones if it possible.

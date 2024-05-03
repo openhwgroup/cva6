@@ -31,13 +31,13 @@ covergroup cg_illegal_i(
   }
 
   cp_illegal_funct3: coverpoint instr.rvfi.insn[14:12] { // if the instruction has funct3
-    bins ILLEGAL_FUNCT3[3] = {[0:$]} iff (instr.rvfi.insn[6:0] inside legal_i_opcode); //with the right opcode
-    bins ILLEGAL_NOPCODE_FUNCT3[3] = {[0:$]} iff (!(instr.rvfi.insn[6:0] inside legal_i_opcode)); //with the wrong opcode
+    bins ILLEGAL_FUNCT3[3] = {[0:$]} iff (instr.rvfi.insn[6:0] inside {legal_i_opcode}); //with the right opcode
+    bins ILLEGAL_NOPCODE_FUNCT3[3] = {[0:$]} iff (!(instr.rvfi.insn[6:0] inside {legal_i_opcode})); //with the wrong opcode
   }
 
   cp_illegal_funct7: coverpoint instr.rvfi.insn[31:25] { // if the instruction has funct7
-    bins ILLEGAL_FUNCT7[3] = {[0:$]} with (!(item inside legal_i_funct7)) iff (instr.rvfi.insn[6:0] inside legal_i_opcode); //with the right opcode
-    bins ILLEGAL_NOPCODE_FUNCT7[3] = {[0:$]} with (!(item inside legal_i_funct7)) iff (!(instr.rvfi.insn[6:0] inside legal_i_opcode)); //with the wrong opcode
+    bins ILLEGAL_FUNCT7[3] = {[0:$]} with (!(item inside {legal_i_funct7})) iff (instr.rvfi.insn[6:0] inside {legal_i_opcode}); //with the right opcode
+    bins ILLEGAL_NOPCODE_FUNCT7[3] = {[0:$]} with (!(item inside {legal_i_funct7})) iff (!(instr.rvfi.insn[6:0] inside {legal_i_opcode})); //with the wrong opcode
   }
 
   cp_is_illegal: coverpoint instr.cause {
@@ -63,7 +63,7 @@ covergroup cg_illegal_m(
   }
 
   cp_illegal_funct3: coverpoint instr.rvfi.insn[14:12] { // if the instruction has funct3
-    bins ILLEGAL_FUNCT3[3] = {[0:$]} iff (!(instr.rvfi.insn[6:0] == 7'b0110011 & 
+    bins ILLEGAL_FUNCT3[3] = {[0:$]} iff (!(instr.rvfi.insn[6:0] == 7'b0110011 &
                                             instr.rvfi.insn[31:25] == 7'b0000001)); //with the wrong opcode or the wrong funct7
   }
 

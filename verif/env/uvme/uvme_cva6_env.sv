@@ -32,6 +32,9 @@ class uvme_cva6_env_c extends uvm_env;
    uvme_cva6_cfg_c    cfg;
    uvme_cva6_cntxt_c  cntxt;
 
+   // Handle to RTL configuration
+   cva6_cfg_t         CVA6Cfg;
+
    // Components
    uvme_cva6_prd_c        predictor;
    uvme_cva6_sb_c         sb;
@@ -163,6 +166,14 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
       `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
    end
 
+   void'(uvm_config_db#(cva6_cfg_t)::get(this, "", "CVA6Cfg", CVA6Cfg));
+   if (!CVA6Cfg) begin
+      `uvm_fatal("CVA6Cfg", "RTL Configuration handle is null")
+   end
+   else begin
+      `uvm_info("CVA6Cfg", $sformatf("Found RTL configuration handle:\n%p", CVA6Cfg), UVM_DEBUG)
+   end
+
    if (cfg.enabled) begin
       void'(uvm_config_db#(uvme_cva6_cntxt_c)::get(this, "", "cntxt", cntxt));
       if (!cntxt) begin
@@ -235,6 +246,8 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvme_cva6_cfg_c)::set(this, "*", "cfg", cfg);
 
+   uvm_config_db#(cva6_cfg_t)::set(this, "*", "CVA6Cfg", CVA6Cfg);
+
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
 
    uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*cvxif_agent", "cfg", cfg.cvxif_cfg);
@@ -248,6 +261,7 @@ function void uvme_cva6_env_c::assign_cfg();
    uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
 
    if (cfg.scoreboard_enabled) begin
+      uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*rvfi_scoreboard", "cfg", cfg);
       uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "reference_model", "cfg", cfg);
    end
 

@@ -30,7 +30,7 @@ module ras #(
     // Pop address from RAS - FRONTEND
     input logic pop_i,
     // Data to be pushed - FRONTEND
-    input logic [riscv::VLEN-1:0] data_i,
+    input logic [CVA6Cfg.VLEN-1:0] data_i,
     // Popped data - FRONTEND
     output ras_t data_o
 );

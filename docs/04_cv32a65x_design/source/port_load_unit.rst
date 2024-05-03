@@ -64,13 +64,13 @@
      - out
      - Load transaction ID
      - TO_BE_COMPLETED
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``result_o``
      - out
      - Load result
      - TO_BE_COMPLETED
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``ex_o``
      - out
@@ -88,13 +88,13 @@
      - out
      - Virtual address
      - TO_BE_COMPLETED
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``paddr_i``
      - in
      - Physical address
      - TO_BE_COMPLETED
-     - logic[riscv::PLEN-1:0]
+     - logic[CVA6Cfg.PLEN-1:0]
 
    * - ``ex_i``
      - in
@@ -124,7 +124,7 @@
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``req_port_i``
      - in
@@ -146,6 +146,10 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
+| As RVH = False,
+|   ``tinst_o`` output is tied to 0
+|   ``hs_ld_st_inst_o`` output is tied to 0
+|   ``hlvx_inst_o`` output is tied to 0
 | For any HW configuration,
 |   ``dtlb_hit_i`` input is tied to 1
 | As MMUPresent = 0,

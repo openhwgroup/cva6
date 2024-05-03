@@ -46,7 +46,7 @@
      - in
      - Data to be pushed
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``data_o``
      - out

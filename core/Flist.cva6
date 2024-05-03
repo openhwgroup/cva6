@@ -37,25 +37,25 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv
 +incdir+${CVA6_REPO_DIR}/common/local/util/
 
 // Floating point unit
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_pkg.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_cast_multi.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_classifier.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_divsqrt_multi.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_fma_multi.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_fma.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_noncomp.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_opgroup_block.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_opgroup_fmt_slice.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_opgroup_multifmt_slice.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_rounding.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpnew_top.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
-${CVA6_REPO_DIR}/vendor/openhwgroup/cvfpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_pkg.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_cast_multi.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_classifier.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_divsqrt_multi.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_fma_multi.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_fma.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_noncomp.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_opgroup_block.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_opgroup_fmt_slice.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_opgroup_multifmt_slice.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_rounding.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_top.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
 ${CVA6_REPO_DIR}/core/include/config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/${TARGET_CFG}_config_pkg.sv
@@ -133,6 +133,7 @@ ${CVA6_REPO_DIR}/core/commit_stage.sv
 ${CVA6_REPO_DIR}/core/axi_shim.sv
 ${CVA6_REPO_DIR}/core/cva6_accel_first_pass_decoder_stub.sv
 ${CVA6_REPO_DIR}/core/acc_dispatcher.sv
+${CVA6_REPO_DIR}/core/cva6_fifo_v3.sv
 
 // What is "frontend"?
 ${CVA6_REPO_DIR}/core/frontend/btb.sv
@@ -178,7 +179,6 @@ ${CVA6_REPO_DIR}/core/pmp/src/pmp.sv
 ${CVA6_REPO_DIR}/core/pmp/src/pmp_entry.sv
 
 // Tracer (behavioral code, not RTL)
-${CVA6_REPO_DIR}/common/local/util/instr_tracer_if.sv
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
@@ -188,6 +188,11 @@ ${CVA6_REPO_DIR}/common/local/util/sram.sv
 ${CVA6_REPO_DIR}/core/mmu_sv39/mmu.sv
 ${CVA6_REPO_DIR}/core/mmu_sv39/ptw.sv
 ${CVA6_REPO_DIR}/core/mmu_sv39/tlb.sv
+
+// MMU Sv39x4
+${CVA6_REPO_DIR}/core/mmu_sv39x4/cva6_mmu_sv39x4.sv
+${CVA6_REPO_DIR}/core/mmu_sv39x4/cva6_ptw_sv39x4.sv
+${CVA6_REPO_DIR}/core/mmu_sv39x4/cva6_tlb_sv39x4.sv
 
 // MMU Sv32
 ${CVA6_REPO_DIR}/core/mmu_sv32/cva6_mmu_sv32.sv

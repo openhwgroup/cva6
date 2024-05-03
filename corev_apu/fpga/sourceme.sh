@@ -28,3 +28,11 @@ if [ "$BOARD" = "vc707" ]; then
   export XILINX_BOARD="xilinx.com:vc707:part0:1.3"
   export CLK_PERIOD_NS="20"
 fi
+
+if [ "$BOARD" = "nexys_video" ]; then
+  echo -n "Configuring for "
+  echo "Nexys Video Artix-7"
+  export XILINX_PART="xc7a200tsbg484-1"
+  export XILINX_BOARD="digilentinc.com:nexys_video:part0:1.1"
+  export CLK_PERIOD_NS="40"
+fi

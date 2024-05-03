@@ -1,0 +1,138 @@
+hart_ids: [0]
+hart0: &hart0
+    Debug_Spec_Version: '1.0.0'
+    supported_xlen: [64]
+    debug_mode: true
+    parking_loop: 0x800
+    tselect:
+      rv32:
+        accessible: False
+      rv64:
+        accessible: True
+        type:
+            warl:
+                dependency_fields: []
+                legal:
+                  - tselect[63:0] in [0x00000000:0x3]
+                wr_illegal:
+                  - unchanged
+    tinfo:
+      rv32:
+        accessible: False
+      rv64:
+        accessible: True
+        index_select_reg: tselect
+        index_list:
+          - reset-val: 0x78
+            index_val: 0
+            shadow: 
+            shadow_type:
+            type:
+              ro_constant: 0x78
+          - reset-val: 0x8
+            index_val: 1
+            shadow: 
+            shadow_type:
+            type:
+              ro_constant: 0x8
+          - reset-val: 0x10
+            index_val: 2
+            shadow: 
+            shadow_type:
+            type:
+              ro_constant: 0x10
+    tdata1:
+      rv32:
+        accessible: False
+      rv64:
+        accessible: True
+        index_select_reg: tselect
+        index_list:
+          - reset-val: 0xdeadbeef
+            index_val: 0
+            shadow: 
+            shadow_type:
+            type:
+              ro_constant: 0xdeadbeef
+          - reset-val: 0
+            index_val: 1
+            shadow: 
+            shadow_type:
+            type: &mywarl
+              warl:
+                  dependency_fields: []
+                  legal:
+                    - writeval[63:0] in [0x0000000000000000:0xFFFFFFFFFFFFFFFF]
+                  wr_illegal:
+                    - Unchanged
+          - reset-val: 0
+            index_val: 2
+            shadow: 
+            shadow_type:
+            type:
+              warl:
+                  dependency_fields: []
+                  legal:
+                    - writeval[63:0] in [0x0000000000000000:0xFFFFFFFFFFFFFFFF]
+                  wr_illegal:
+                    - Unchanged
+    dcsr:
+      reset-val: 0x40000003
+      rv32:
+        accessible: false
+      rv64:
+        accessible: true
+        prv:
+          implemented: true
+        step:
+          implemented: true
+        nmip:
+          implemented: true
+          type:
+            ro_variable: true
+        mprven:
+          implemented: true
+        v:
+          implemented: True
+        cause:
+          implemented: True
+          type:
+            ro_variable: true
+        stoptime:
+          implemented: True
+        stopcount:
+          implemented: True
+        stepie:
+          implemented: True
+        ebreaku:
+          implemented: True
+        ebreaks:
+          implemented: True
+        ebreakm:
+          implemented: True
+        ebreakvu:
+          implemented: True
+        ebreakvs:
+          implemented: True
+        debugver:
+          implemented: True
+          type:
+            ro_constant: 0x4
+    dpc:
+      reset-val: 0x0
+      rv64:
+        accessible: true
+      rv32:
+        accessible: false
+    dscratch0:
+      reset-val: 0x0
+      rv64:
+        accessible: true
+      rv32:
+        accessible: false
+    dscratch1:
+      reset-val: 0x0
+      rv64:
+        accessible: true
+      rv32:
+        accessible: false    

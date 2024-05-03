@@ -16,11 +16,17 @@
 `include "axi/assign.svh"
 `include "rvfi_types.svh"
 
+`ifdef VERILATOR
+`include "custom_uvm_macros.svh"
+`else
+`include "uvm_macros.svh"
+`endif
+
 module ariane_testharness #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(cva6_config_pkg::cva6_cfg),
   //
-  parameter int unsigned AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH,
-  parameter int unsigned AXI_USER_EN       = ariane_pkg::AXI_USER_EN,
+  parameter int unsigned AXI_USER_WIDTH    = CVA6Cfg.AxiUserWidth,
+  parameter int unsigned AXI_USER_EN       = CVA6Cfg.AXI_USER_EN,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
   parameter int unsigned AXI_DATA_WIDTH    = 64,
   parameter bit          InclSimDTM        = 1'b1,
@@ -122,7 +128,7 @@ module ariane_testharness #(
   initial begin
     if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
     if ($test$plusargs("debug_disable")) debug_enable = 'h0; else debug_enable = 'h1;
-    if (riscv::XLEN != 32 & riscv::XLEN != 64) $error("XLEN different from 32 and 64");
+    if (CVA6Cfg.XLEN != 32 & CVA6Cfg.XLEN != 64) $error("CVA6Cfg.XLEN different from 32 and 64");
   end
 
   // debug if MUX
@@ -540,6 +546,7 @@ module ariane_testharness #(
   ariane_axi_soc::resp_slv_t axi_clint_resp;
 
   clint #(
+    .CVA6Cfg        ( CVA6Cfg                      ),
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH            ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH               ),
     .AXI_ID_WIDTH   ( ariane_axi_soc::IdWidthSlave ),
@@ -616,7 +623,7 @@ module ariane_testharness #(
   rvfi_probes_t rvfi_probes;
   rvfi_csr_t rvfi_csr;
   rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
-  
+
   ariane #(
     .CVA6Cfg              ( CVA6Cfg             ),
     .rvfi_probes_instr_t  ( rvfi_probes_instr_t ),
@@ -663,8 +670,8 @@ module ariane_testharness #(
     end
   end
 
-  
- 
+
+
   cva6_rvfi #(
       .CVA6Cfg   (CVA6Cfg),
       .rvfi_instr_t(rvfi_instr_t),
@@ -699,15 +706,27 @@ module ariane_testharness #(
 `ifdef SPIKE_TANDEM
     spike #(
         .CVA6Cfg ( CVA6Cfg ),
-        .rvfi_instr_t(rvfi_instr_t)
+        .rvfi_instr_t(rvfi_instr_t),
+        .rvfi_csr_t(rvfi_csr_t)
     ) i_spike (
         .clk_i,
         .rst_ni,
         .clint_tick_i   ( rtc_i    ),
-        .rvfi_i         ( rvfi_instr )
+        .rvfi_i         ( rvfi_instr ),
+        .rvfi_csr_i     ( rvfi_csr )
     );
     initial begin
         $display("Running binary in tandem mode");
+    end
+`endif
+
+`ifdef VERILATOR
+    initial begin
+        string verbosity = 0;
+        if ($value$plusargs("UVM_VERBOSITY=%s",verbosity)) begin
+          uvm_set_verbosity_level(verbosity);
+          `uvm_info("ariane_testharness", $sformatf("Set UVM_VERBOSITY to %s", verbosity), UVM_NONE)
+        end
     end
 `endif
 

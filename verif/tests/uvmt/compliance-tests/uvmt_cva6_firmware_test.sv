@@ -160,12 +160,12 @@ task uvmt_cva6_firmware_test_c::run_phase(uvm_phase phase);
    // The firmware is expected to write exit status and pass/fail indication to the Virtual Peripheral.
    // The format of rvfi_vif.tb_exit_o is { wire[31:1] exit_code, wire test_finished }.
    wait (
-          (rvfi_vif.tb_exit_o[0]     == 1'b1)
+          (tb_exit_vif.tb_exit_o[0]  == 1'b1)
         );
    `uvm_info("TEST", "Test FINISHED", UVM_NONE)
    // Set sim_finished (otherwise tb will flag that sim was aborted)
    uvm_config_db#(bit)::set(null, "", "sim_finished", 1);
-   uvm_config_db#(int)::set(null, "", "test_exit_code", { 0'b0, rvfi_vif.tb_exit_o[31:1] });
+   uvm_config_db#(int)::set(null, "", "test_exit_code", { 0'b0, tb_exit_vif.tb_exit_o[31:1] });
    // Let the termination-triggering instruction appear in the log.
    @(posedge env_cntxt.clknrst_cntxt.vif.clk);
    // Allow termination from now on.

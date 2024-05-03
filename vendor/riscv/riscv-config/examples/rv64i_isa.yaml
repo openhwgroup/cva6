@@ -1,0 +1,449 @@
+hart_ids: [0]
+hart0:
+    custom_exceptions:
+      - cause_val: 25
+        cause_name: halt_ebreak
+        priv_mode: M
+      - cause_val: 26
+        cause_name: halt_trigger
+        priv_mode: M
+      - cause_val: 28
+        cause_name: halt_step
+        priv_mode: M
+      - cause_val: 29
+        cause_name: halt_reset
+        priv_mode: M
+    custom_interrupts:
+      - cause_val: 16
+        cause_name: debug_interrupt
+        on_reset_enable: 1
+        priv_mode : M
+    ISA: RV64IMAFDCNSUZicsr_Zifencei
+    User_Spec_Version: '2.3'
+    pmp_granularity: 1
+    physical_addr_sz: 32
+    supported_xlen:
+      - 64
+    sscratch:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - sscratch[63:0] in [0x0000000000000000:0xFFFFFFFFFFFFFFFF]
+                    wr_illegal:
+                      - Unchanged
+
+        reset-val: 0
+    sepc:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type:
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - "sepc[63:60] in [1,2] spec[59:0] not in [1,2]"
+                    wr_illegal:
+                      - "Unchanged"
+        reset-val: 0x2000000000000000
+    stval:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type:
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - stval[63:0] in [0x0000000000000000:0xFFFFFFFFFFFFFFFF]
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    scause:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            exception_code:
+              implemented: True
+            interrupt:
+              implemented: True
+        reset-val: 0
+    mepc:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type:
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - "mepc[63:0] bitmask [0xFFFFFFFFFFFFFFFE, 0x0000000000000000]"
+                    wr_illegal:
+                      - "Unchanged"
+        reset-val: 0
+    mtval:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type:
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - mtval[63:0] in [0x0000000000000000:0xFFFFFFFFFFFFFFFF]
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    mcause:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+        reset-val: 0
+    mcycle:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - mcycle[63:0] in [0x0000000000000000:0xFFFFFFFFFFFFFFFF]
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    minstret:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - minstret[63:0] in [0x0000000000000000:0xFFFFFFFFFFFFFFFF]
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    fcsr:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            fflags:
+              implemented: true
+              type:
+                  warl:
+                      dependency_fields: []
+                      legal:
+                        - fflags[4:0] in [0x00:0x1F]
+                      wr_illegal:
+                        - Unchanged
+            frm:
+              implemented: true
+              type:
+                  warl:
+                      dependency_fields: []
+                      legal:
+                        - frm[2:0] in [0x0:0x7]
+                      wr_illegal:
+                        - Unchanged
+    time:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type:
+                ro_variable: true
+        reset-val: 0
+    mideleg:
+      rv32:
+        accessible: false
+      rv64:
+        accessible: true
+        type:
+          warl:
+            dependency_fields: []
+            legal:
+              - mideleg[63:0] bitmask [0x000000000000F7FF,0x0000000000000000]
+            wr_illegal:
+              - Unchanged
+    medeleg:
+      rv32:
+        accessible: false
+      rv64:
+        accessible: true
+        type:
+          warl:
+            dependency_fields: []
+            legal:
+              - medeleg[63:0] bitmask [0x000000000000F7FF,0x0000000000000000]
+            wr_illegal:
+              - Unchanged
+    pmpcfg0:
+        reset-val: 0
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            pmp0cfg:
+                implemented: true
+                type: 
+                  warl:
+                      dependency_fields: [pmpcfg0::pmp0cfg]
+                      legal:
+                        - "pmp0cfg[7] in [0] -> pmp0cfg[7] in [0x0:0x1] pmp0cfg[6:5] in [0] pmp0cfg[4:3] not in [2] pmp0cfg[2:0] not in [2,6]"
+                      wr_illegal:
+                        - Unchanged
+            pmp1cfg:
+                implemented: true
+                type: 
+                  warl:
+                      dependency_fields: [pmpcfg0::pmp1cfg]
+                      legal:
+                        - "pmp1cfg[7] in [0] -> pmp1cfg[7] in [0x0,0x1] pmp1cfg[6:5] in [0] pmp1cfg[4:3] not in [2] pmp1cfg[2:0] not in [2,6]"
+                      wr_illegal:
+                        - Unchanged
+            pmp2cfg:
+                implemented: true
+                type: 
+                  warl:
+                      dependency_fields: [pmpcfg0::pmp2cfg]
+                      legal:
+                        - "pmp2cfg[7] in [0] -> pmp2cfg[7] in [0x0,0x1] pmp2cfg[6:5] in [0] pmp2cfg[4:3] not in [2] pmp2cfg[2:0] not in [2,6]"
+                      wr_illegal:
+                        - Unchanged
+            pmp3cfg:
+                implemented: true
+                type: 
+                  warl:
+                      dependency_fields: [pmpcfg0::pmp3cfg]
+                      legal:
+                        - "pmp3cfg[7] in [0] -> pmp3cfg[7] in [0x0,0x1] pmp3cfg[6:5] in [0] pmp3cfg[4:3] not in [2] pmp3cfg[2:0] not in [2,6]"
+                      wr_illegal:
+                        - Unchanged
+            pmp4cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp5cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp6cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp7cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+    pmpcfg2:
+        reset-val: 0
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            pmp8cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp9cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp10cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp11cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp12cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp13cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp14cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+            pmp15cfg:
+                implemented: true
+                type:
+                  ro_constant: 0
+    pmpaddr0:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: [pmpcfg0::pmp0cfg]
+                    legal:
+                      - "pmp0cfg[7] in [0] -> pmpaddr0[63:0] bitmask [0xFFFFFFFFFFFFFFFE,0x0000000000000000]"
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    pmpaddr1:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: [pmpcfg0::pmp1cfg]
+                    legal:
+                      - "pmp1cfg[7] in [0] -> pmpaddr1[63:0] bitmask [0xFFFFFFFFFFFFFFFE,0x0000000000000000]"
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    pmpaddr2:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: [pmpcfg0::pmp2cfg]
+                    legal:
+                      - "pmp2cfg[7] in [0] -> pmpaddr2[63:0] bitmask [0xFFFFFFFFFFFFFFFE,0x0000000000000000]"
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    pmpaddr3:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: [pmpcfg0::pmp3cfg]
+                    legal:
+                      - "pmp3cfg[7] in [0] -> pmpaddr3[63:0] bitmask [0xFFFFFFFFFFFFFFFE,0x0000000000000000]"
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    pmpaddr4: &pmp_const
+        rv32:
+          accessible: False
+        rv64:
+          accessible: True
+          type:
+            ro_constant : 0
+    pmpaddr5: 
+      <<: *pmp_const
+    pmpaddr6: 
+      <<: *pmp_const
+    pmpaddr7: 
+      <<: *pmp_const
+    pmpaddr8: 
+      <<: *pmp_const
+    pmpaddr9: 
+      <<: *pmp_const
+    pmpaddr10: 
+      <<: *pmp_const
+    pmpaddr11: 
+      <<: *pmp_const
+    pmpaddr12: 
+      <<: *pmp_const
+    pmpaddr13: 
+      <<: *pmp_const
+    pmpaddr14: 
+      <<: *pmp_const
+    pmpaddr15: 
+      <<: *pmp_const
+    mhpmcounter3:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - "mhpmcounter3[63:0] in [0x0000000000000000:0xFFFFFFFFFFFFFFFF]"
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    mhpmcounter4:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - "mhpmcounter4[63:0] in [0x0000000000000000:0xFFFFFFFFFFFFFFFF]"
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    mhpmevent3:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - "mhpmevent3[63:0] in [0x0000000000000000:0x000000000000001C]"
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    mhpmevent4:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: true
+            type: 
+                warl:
+                    dependency_fields: []
+                    legal:
+                      - "mhpmevent4[63:0] in [0x0000000000000000:0x000000000000001C]"
+                    wr_illegal:
+                      - Unchanged
+        reset-val: 0
+    satp:
+      rv32:
+        accessible: false
+      rv64:
+        accessible: true
+        ppn:
+          type:
+            warl:
+              dependency_fields: []
+              legal:
+                - "ppn[43:0] in [0x00000000000:0xFFFFFFFFFFF]"
+              wr_illegal:
+                - Unchanged
+        asid:
+          type:
+            warl:
+              dependency_fields: []
+              legal:
+                - "asid[15:0] in [0x0000:0x00FF]"
+              wr_illegal:
+                - Unchanged
+        mode:
+          type:
+            warl:
+              dependency_fields: []
+              legal:
+                - "mode[3:0] in [0,8]"
+              wr_illegal:
+                - Unchanged
+      reset-val: 0x0000000000000000
+

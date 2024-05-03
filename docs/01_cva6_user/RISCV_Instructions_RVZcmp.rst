@@ -25,7 +25,6 @@
    :align: left
    :header: "Configuration", "Implementation"
 
-   "CV32A60AX", "Implemented extension"
    "CV32A60X", "Implemented extension"
 
 **Note**: Zcmp is primarily targeted at embedded class CPUs due to implementation complexity. Additionally, it is not compatible with architecture class profiles.  
@@ -35,7 +34,7 @@ RVZcmp Code Size Reduction Instructions
 
 Zcmp belongs to group of extensions called RISC-V Code Size Reduction Extension (Zc*). Zc* has become the superset of Standard C extension adding more 16-bit instructions to the ISA.
 Zcmp includes 16-bit macro instructions, PUSH/POP and double move, which reuse the encoding for c.fsdsp instruction.
-All the Zcmp instructions require at least standard C extension support as pre-requisite, along with Zca extension.
+All the Zcmp instructions require at least C extension support with Zcd extension disabled as pre-requisite.
 
 - **CM.PUSH**: Compressed Push
 

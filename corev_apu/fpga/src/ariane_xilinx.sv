@@ -138,6 +138,38 @@ module ariane_xilinx (
   input  wire [7:0]    pci_exp_rxp     ,
   input  wire [7:0]    pci_exp_rxn     ,
   input  logic         trst_n          ,
+`elsif NEXYS_VIDEO
+  input  logic         sys_clk_i   ,
+  input  logic         cpu_resetn  ,
+
+  inout  wire [15:0]   ddr3_dq     ,
+  inout  wire [ 1:0]   ddr3_dqs_n  ,
+  inout  wire [ 1:0]   ddr3_dqs_p  ,
+  output wire [14:0]   ddr3_addr   ,
+  output wire [ 2:0]   ddr3_ba     ,
+  output wire          ddr3_ras_n  ,
+  output wire          ddr3_cas_n  ,
+  output wire          ddr3_we_n   ,
+  output wire          ddr3_reset_n,
+  output wire [ 0:0]   ddr3_ck_p   ,
+  output wire [ 0:0]   ddr3_ck_n   ,
+  output wire [ 0:0]   ddr3_cke    ,
+  output wire [ 1:0]   ddr3_dm     ,
+  output wire [ 0:0]   ddr3_odt    ,
+
+  output wire          eth_rst_n   ,
+  input  wire          eth_rxck    ,
+  input  wire          eth_rxctl   ,
+  input  wire [3:0]    eth_rxd     ,
+  output wire          eth_txck    ,
+  output wire          eth_txctl   ,
+  output wire [3:0]    eth_txd     ,
+  inout  wire          eth_mdio    ,
+  output logic         eth_mdc     ,
+  output logic [ 7:0]  led         ,
+  input  logic [ 7:0]  sw          ,
+  output logic         fan_pwm     ,
+  input  logic         trst_n      ,
 `endif
   // SPI
   output logic        spi_mosi    ,
@@ -157,7 +189,7 @@ module ariane_xilinx (
 // CVA6 Xilinx configuration
 function automatic config_pkg::cva6_cfg_t build_fpga_config(config_pkg::cva6_user_cfg_t CVA6UserCfg);
   config_pkg::cva6_user_cfg_t cfg = CVA6UserCfg;
-  cfg.ZiCondExtEn = bit'(0);
+  cfg.RVZiCond = bit'(0);
   cfg.NrNonIdempotentRules = unsigned'(1);
   cfg.NonIdempotentAddrBase = 1024'({64'b0});
   cfg.NonIdempotentLength = 1024'({ariane_soc::DRAMBase});
@@ -176,12 +208,15 @@ localparam type rvfi_probes_t = struct packed {
 
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
+  
+// WARNING: If NBSlave is modified, Xilinx's IPs under fpga/xilinx need to be updated with the new AXI id width and regenerated.
+// Otherwise reads and writes to DRAM may be returned to the wrong master and the crossbar will freeze. See issue #568.
 localparam NBSlave = 2; // debug, ariane
 localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 4;
 localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NBSlave); // 5
-localparam AxiUserWidth = ariane_pkg::AXI_USER_WIDTH;
+localparam AxiUserWidth = CVA6Cfg.AxiUserWidth;
 
 `AXI_TYPEDEF_ALL(axi_slave,
                  logic [    AxiAddrWidth-1:0],
@@ -205,8 +240,8 @@ AXI_BUS #(
 ) master[ariane_soc::NB_PERIPHERALS-1:0]();
 
 AXI_BUS #(
-    .AXI_ADDR_WIDTH ( riscv::XLEN      ),
-    .AXI_DATA_WIDTH ( riscv::XLEN      ),
+    .AXI_ADDR_WIDTH ( CVA6Cfg.XLEN      ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.XLEN      ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) master_to_dm[0:0]();
@@ -243,6 +278,9 @@ assign cpu_resetn = ~cpu_reset;
 `elsif VC707
 assign cpu_resetn = ~cpu_reset;
 assign trst_n = ~trst;
+`elsif NEXYS_VIDEO
+logic cpu_reset;
+assign cpu_reset  = ~cpu_resetn;
 `endif
 
 logic pll_locked;
@@ -356,24 +394,24 @@ ariane_axi::resp_t   dm_axi_m_resp;
 
 logic                      dm_slave_req;
 logic                      dm_slave_we;
-logic [riscv::XLEN-1:0]    dm_slave_addr;
-logic [riscv::XLEN/8-1:0]  dm_slave_be;
-logic [riscv::XLEN-1:0]    dm_slave_wdata;
-logic [riscv::XLEN-1:0]    dm_slave_rdata;
+logic [CVA6Cfg.XLEN-1:0]    dm_slave_addr;
+logic [CVA6Cfg.XLEN/8-1:0]  dm_slave_be;
+logic [CVA6Cfg.XLEN-1:0]    dm_slave_wdata;
+logic [CVA6Cfg.XLEN-1:0]    dm_slave_rdata;
 
 logic                      dm_master_req;
-logic [riscv::XLEN-1:0]    dm_master_add;
+logic [CVA6Cfg.XLEN-1:0]    dm_master_add;
 logic                      dm_master_we;
-logic [riscv::XLEN-1:0]    dm_master_wdata;
-logic [riscv::XLEN/8-1:0]  dm_master_be;
+logic [CVA6Cfg.XLEN-1:0]    dm_master_wdata;
+logic [CVA6Cfg.XLEN/8-1:0]  dm_master_be;
 logic                      dm_master_gnt;
 logic                      dm_master_r_valid;
-logic [riscv::XLEN-1:0]    dm_master_r_rdata;
+logic [CVA6Cfg.XLEN-1:0]    dm_master_r_rdata;
 
 // debug module
 dm_top #(
     .NrHarts          ( 1                 ),
-    .BusWidth         ( riscv::XLEN      ),
+    .BusWidth         ( CVA6Cfg.XLEN      ),
     .SelectableHarts  ( 1'b1              )
 ) i_dm_top (
     .clk_i            ( clk               ),
@@ -409,8 +447,8 @@ dm_top #(
 
 axi2mem #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves    ),
-    .AXI_ADDR_WIDTH ( riscv::XLEN        ),
-    .AXI_DATA_WIDTH ( riscv::XLEN        ),
+    .AXI_ADDR_WIDTH ( CVA6Cfg.XLEN        ),
+    .AXI_DATA_WIDTH ( CVA6Cfg.XLEN        ),
     .AXI_USER_WIDTH ( AxiUserWidth        )
 ) i_dm_axi2mem (
     .clk_i      ( clk                       ),
@@ -424,7 +462,7 @@ axi2mem #(
     .data_i     ( dm_slave_rdata            )
 );
 
-if (riscv::XLEN==32 ) begin
+if (CVA6Cfg.XLEN==32 ) begin
 
     assign master_to_dm[0].aw_user = '0;
     assign master_to_dm[0].w_user = '0;
@@ -578,11 +616,11 @@ end
 
 logic [1:0]    axi_adapter_size;
 
-assign axi_adapter_size = (riscv::XLEN == 64) ? 2'b11 : 2'b10;
+assign axi_adapter_size = (CVA6Cfg.XLEN == 64) ? 2'b11 : 2'b10;
 
 axi_adapter #(
     .CVA6Cfg               ( CVA6Cfg                  ),
-    .DATA_WIDTH            ( riscv::XLEN              ),
+    .DATA_WIDTH            ( CVA6Cfg.XLEN              ),
     .axi_req_t             ( ariane_axi::req_t        ),
     .axi_rsp_t             ( ariane_axi::resp_t       )
 ) i_dm_axi_master (
@@ -607,7 +645,7 @@ axi_adapter #(
     .axi_resp_i            ( dm_axi_m_resp             )
 );
 
-if (riscv::XLEN==32 ) begin
+if (CVA6Cfg.XLEN==32 ) begin
     logic [31 : 0] dm_master_m_awaddr;
     logic [31 : 0] dm_master_m_araddr;
 
@@ -754,6 +792,7 @@ axi_slave_req_t  axi_clint_req;
 axi_slave_resp_t axi_clint_resp;
 
 clint #(
+    .CVA6Cfg        ( CVA6Cfg          ),
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
@@ -794,7 +833,7 @@ axi2mem #(
     .data_i ( rom_rdata               )
 );
 
-if (riscv::XLEN==32 ) begin
+if (CVA6Cfg.XLEN==32 ) begin
     bootrom_32 i_bootrom (
         .clk_i   ( clk       ),
         .req_i   ( rom_req   ),
@@ -818,6 +857,8 @@ end
   logic [3:0] unused_switches = 4'b0000;
 `endif
 
+logic clk_200MHz_ref;
+
 ariane_peripherals #(
     .AxiAddrWidth ( AxiAddrWidth     ),
     .AxiDataWidth ( AxiDataWidth     ),
@@ -837,10 +878,13 @@ ariane_peripherals #(
     `elsif VCU118
     .InclSPI      ( 1'b0         ),
     .InclEthernet ( 1'b0         )
+    `elsif NEXYS_VIDEO
+    .InclSPI      ( 1'b1         ),
+    .InclEthernet ( 1'b0         )
     `endif
 ) i_ariane_peripherals (
     .clk_i        ( clk                          ),
-    .clk_200MHz_i ( ddr_clock_out                ),
+    .clk_200MHz_i ( clk_200MHz_ref               ),
     .rst_ni       ( ndmreset_n                   ),
     .plic         ( master[ariane_soc::PLIC]     ),
     .uart         ( master[ariane_soc::UART]     ),
@@ -1088,6 +1132,20 @@ xlnx_axi_clock_converter i_xlnx_axi_clock_converter_ddr (
   .m_axi_rready   ( s_axi_rready     )
 );
 
+`ifdef NEXYS_VIDEO
+xlnx_clk_gen i_xlnx_clk_gen (
+  .clk_out1 ( clk             ), // 25 MHz
+  .clk_out2 ( phy_tx_clk      ), // 125 MHz (for RGMII PHY)
+  .clk_out3 ( eth_clk         ), // 125 MHz quadrature (90 deg phase shift)
+  .clk_out4 ( sd_clk_sys      ), // 50 MHz clock
+  .clk_out5 ( clk_200MHz_ref  ), // 200 MHz clock
+  .reset    ( cpu_reset       ),
+  .locked   ( pll_locked      ),
+  .clk_in1  ( ddr_clock_out   )  // 100MHz input clock
+);
+
+`else
+
 xlnx_clk_gen i_xlnx_clk_gen (
   .clk_out1 ( clk           ), // 50 MHz
   .clk_out2 ( phy_tx_clk    ), // 125 MHz (for RGMII PHY)
@@ -1097,6 +1155,9 @@ xlnx_clk_gen i_xlnx_clk_gen (
   .locked   ( pll_locked    ),
   .clk_in1  ( ddr_clock_out )
 );
+assign clk_200MHz_ref = ddr_clock_out;
+
+`endif
 
 `ifdef KINTEX7
 fan_ctrl i_fan_ctrl (
@@ -1233,6 +1294,83 @@ xlnx_mig_7_ddr3 i_ddr (
     .s_axi_bvalid,
     .s_axi_arid,
     .s_axi_araddr     ( s_axi_araddr[29:0] ),
+    .s_axi_arlen,
+    .s_axi_arsize,
+    .s_axi_arburst,
+    .s_axi_arlock,
+    .s_axi_arcache,
+    .s_axi_arprot,
+    .s_axi_arqos,
+    .s_axi_arvalid,
+    .s_axi_arready,
+    .s_axi_rready,
+    .s_axi_rid,
+    .s_axi_rdata,
+    .s_axi_rresp,
+    .s_axi_rlast,
+    .s_axi_rvalid,
+    .init_calib_complete (            ), // keep open
+    .device_temp         (            ), // keep open
+    .sys_rst             ( cpu_resetn )
+);
+`elsif NEXYS_VIDEO
+
+fan_ctrl i_fan_ctrl (
+    .clk_i         ( clk        ),
+    .rst_ni        ( ndmreset_n ),
+    .pwm_setting_i ( '1         ),
+    .fan_pwm_o     ( fan_pwm    )
+);
+
+xlnx_mig_7_ddr3 i_ddr (
+    .sys_clk_i       ( sys_clk_i      ),
+    .clk_ref_i       ( clk_200MHz_ref ),
+    .ddr3_dq,
+    .ddr3_dqs_n,
+    .ddr3_dqs_p,
+    .ddr3_addr,
+    .ddr3_ba,
+    .ddr3_ras_n,
+    .ddr3_cas_n,
+    .ddr3_we_n,
+    .ddr3_reset_n,
+    .ddr3_ck_p,
+    .ddr3_ck_n,
+    .ddr3_cke,
+    .ddr3_dm,
+    .ddr3_odt,
+    .mmcm_locked     (                ), // keep open
+    .app_sr_req      ( '0             ),
+    .app_ref_req     ( '0             ),
+    .app_zq_req      ( '0             ),
+    .app_sr_active   (                ), // keep open
+    .app_ref_ack     (                ), // keep open
+    .app_zq_ack      (                ), // keep open
+    .ui_clk          ( ddr_clock_out  ),
+    .ui_clk_sync_rst ( ddr_sync_reset ),
+    .aresetn         ( ndmreset_n     ),
+    .s_axi_awid,
+    .s_axi_awaddr    ( s_axi_awaddr[28:0] ),
+    .s_axi_awlen,
+    .s_axi_awsize,
+    .s_axi_awburst,
+    .s_axi_awlock,
+    .s_axi_awcache,
+    .s_axi_awprot,
+    .s_axi_awqos,
+    .s_axi_awvalid,
+    .s_axi_awready,
+    .s_axi_wdata,
+    .s_axi_wstrb,
+    .s_axi_wlast,
+    .s_axi_wvalid,
+    .s_axi_wready,
+    .s_axi_bready,
+    .s_axi_bid,
+    .s_axi_bresp,
+    .s_axi_bvalid,
+    .s_axi_arid,
+    .s_axi_araddr     ( s_axi_araddr[28:0] ),
     .s_axi_arlen,
     .s_axi_arsize,
     .s_axi_arburst,

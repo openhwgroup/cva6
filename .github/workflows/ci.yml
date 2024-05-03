@@ -13,7 +13,7 @@ jobs:
     env:
       NUM_JOBS: 8
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
 
@@ -61,7 +61,7 @@ jobs:
     needs:
       build-riscv-tests
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
 
@@ -101,9 +101,8 @@ jobs:
           DV_SIMULATORS=${{matrix.target}} bash verif/regress/${{matrix.testcase}}.sh
 
     - name: Upload Lint Report to Github
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{matrix.target}}.${{matrix.testcase}}
         path: 'verif/sim/out*'
         retention-days: 10
-        compression-level: 9

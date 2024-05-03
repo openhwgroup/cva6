@@ -23,6 +23,8 @@ module controller
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
+    // Virtualization mode - CSR_REGFILE
+    input logic v_i,
     // Set PC om PC Gen - FRONTEND
     output logic set_pc_commit_o,
     // Flush the IF stage - FRONTEND
@@ -43,6 +45,8 @@ module controller
     input logic flush_dcache_ack_i,
     // Flush TLBs - EX_STAGE
     output logic flush_tlb_o,
+    output logic flush_tlb_vvma_o,
+    output logic flush_tlb_gvma_o,
     // Halt request from CSR (WFI instruction) - CSR_REGFILE
     input logic halt_csr_i,
     // Halt request from accelerator dispatcher - ACC_DISPATCHER
@@ -65,6 +69,8 @@ module controller
     input logic fence_i,
     // We got an instruction to flush the TLBs and pipeline - COMMIT_STAGE
     input logic sfence_vma_i,
+    input logic hfence_vvma_i,
+    input logic hfence_gvma_i,
     // Flush request from commit stage - COMMIT_STAGE
     input logic flush_commit_i,
     // Flush request from accelerator - ACC_DISPATCHER
@@ -88,6 +94,8 @@ module controller
     flush_dcache           = 1'b0;
     flush_icache_o         = 1'b0;
     flush_tlb_o            = 1'b0;
+    flush_tlb_vvma_o       = 1'b0;
+    flush_tlb_gvma_o       = 1'b0;
     flush_bp_o             = 1'b0;
     // ------------
     // Mis-predict
@@ -112,7 +120,7 @@ module controller
       flush_ex_o             = 1'b1;
       // this is not needed in the case since we
       // have a write-through cache in this case
-      if (DCACHE_TYPE == int'(config_pkg::WB)) begin
+      if (CVA6Cfg.DCacheType == config_pkg::WB) begin
         flush_dcache   = 1'b1;
         fence_active_d = 1'b1;
       end
@@ -130,7 +138,7 @@ module controller
       flush_icache_o         = 1'b1;
       // this is not needed in the case since we
       // have a write-through cache in this case
-      if (DCACHE_TYPE == int'(config_pkg::WB)) begin
+      if (CVA6Cfg.DCacheType == config_pkg::WB) begin
         flush_dcache   = 1'b1;
         fence_active_d = 1'b1;
       end
@@ -138,7 +146,7 @@ module controller
 
     // this is not needed in the case since we
     // have a write-through cache in this case
-    if (DCACHE_TYPE == int'(config_pkg::WB)) begin
+    if (CVA6Cfg.DCacheType == config_pkg::WB) begin
       // wait for the acknowledge here
       if (flush_dcache_ack_i && fence_active_q) begin
         fence_active_d = 1'b0;
@@ -157,7 +165,34 @@ module controller
       flush_id_o             = 1'b1;
       flush_ex_o             = 1'b1;
 
-      flush_tlb_o            = 1'b1;
+      if (CVA6Cfg.RVH && v_i) flush_tlb_vvma_o = 1'b1;
+      else flush_tlb_o = 1'b1;
+    end
+
+    // ---------------------------------
+    // HFENCE.VVMA
+    // ---------------------------------
+    if (CVA6Cfg.RVH && hfence_vvma_i) begin
+      set_pc_commit_o        = 1'b1;
+      flush_if_o             = 1'b1;
+      flush_unissued_instr_o = 1'b1;
+      flush_id_o             = 1'b1;
+      flush_ex_o             = 1'b1;
+
+      flush_tlb_vvma_o       = 1'b1;
+    end
+
+    // ---------------------------------
+    // HFENCE.GVMA
+    // ---------------------------------
+    if (CVA6Cfg.RVH && hfence_gvma_i) begin
+      set_pc_commit_o        = 1'b1;
+      flush_if_o             = 1'b1;
+      flush_unissued_instr_o = 1'b1;
+      flush_id_o             = 1'b1;
+      flush_ex_o             = 1'b1;
+
+      flush_tlb_gvma_o       = 1'b1;
     end
 
     // ---------------------------------
@@ -203,7 +238,7 @@ module controller
   // ----------------------
   always_comb begin
     // halt the core if the fence is active
-    halt_o = halt_csr_i || halt_acc_i || (DCACHE_TYPE == int'(config_pkg::WB) && fence_active_q);
+    halt_o = halt_csr_i || halt_acc_i || (CVA6Cfg.DCacheType == config_pkg::WB && fence_active_q);
   end
 
   // ----------------------

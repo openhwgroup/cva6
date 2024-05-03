@@ -1,0 +1,175 @@
+hart_schema:
+  type: dict
+  schema:
+    keysrules:
+      regex: '^(?!uarch_)'
+      type: dict
+      schema:
+        description:
+          type: string
+          default: custom csr.
+        address:
+          type: integer
+        priv_mode:
+          type: string
+          default: M
+        reset-val:
+          type: integer
+          default: 0x0
+        rv32:
+          type: dict
+          schema:
+            fields:
+              type: list
+              default: []
+            keysrules:
+              type: dict
+              regex: '[a-zA_Z0-9_]*'
+              schema:
+                description:
+                  type: string
+                  default: subfield.
+                shadow:
+                  type: string
+                  default:
+                  nullable: True
+                shadow_type:
+                  type: string
+                  default: rw
+                  nullable: True
+                  allowed: ['rw', 'ro']
+                msb:
+                  type: integer
+                lsb:
+                  type: integer
+                implemented:
+                  type: boolean
+                  default: false
+                type:
+                  type: dict
+                  oneof:
+                    - schema:
+                        ro_constant:
+                          type: integer
+                    - schema:
+                        ro_variable:
+                          type: boolean
+                    - schema:
+                        warl:
+                          type: dict
+                          schema:
+                            dependency_fields:
+                              type: list
+                              empty: true
+                              schema:
+                                type: string
+                                nullable: true
+                            legal:
+                              type: list
+                              schema:
+                                type: string
+                            wr_illegal:
+                              type: list
+                              schema:
+                                type: string
+        rv64:
+          type: dict
+          schema:
+            fields:
+              type: list
+              default: []
+            keysrules:
+              type: dict
+              regex: '[a-zA_Z0-9_]*'
+              schema:
+                description:
+                  type: string
+                  default: subfield.
+                shadow:
+                  type: string
+                  default:
+                  nullable: True
+                shadow_type:
+                  type: string
+                  default: rw
+                  nullable: True
+                  allowed: ['rw', 'ro']
+                msb:
+                  type: integer
+                lsb:
+                  type: integer
+                implemented:
+                  type: boolean
+                  default: false
+                type:
+                  type: dict
+                  oneof:
+                    - schema:
+                        ro_constant:
+                          type: integer
+                    - schema:
+                        ro_variable:
+                          type: boolean
+                    - schema:
+                        warl:
+                          type: dict
+                          schema:
+                            dependency_fields:
+                              type: list
+                              empty: true
+                              schema:
+                                type: string
+                                nullable: true
+                            legal:
+                              type: list
+                              schema:
+                                type: string
+                            wr_illegal:
+                              type: list
+                              schema:
+                                type: string
+    uarch_signals:
+      required: false
+      type: dict
+      schema:
+        keysrules:
+          regex: '^uarch_'
+          type: dict
+          oneof:
+          - schema:
+              msb:
+                type: integer
+                required: true
+              lsb:
+                type: integer
+                required: true
+              reset-val:
+                type: integer
+                required: true
+                min: 0
+              legal:
+                type: list
+                required: false
+                nullable: true
+                schema:
+                  type: integer
+          - schema:
+              subfields:
+                type: dict
+                schema:
+                  msb:
+                    type: integer
+                    required: true
+                  lsb:
+                    type: integer
+                    required: true
+                  legal:
+                    type: list
+                    required: false
+                    nullable: true
+                    schema:
+                      type: integer
+              reset-val:
+                type: integer
+                required: true
+                min: 0

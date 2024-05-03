@@ -47,7 +47,7 @@ class uvmt_cva6_base_test_c extends uvm_test;
    } uvma_axi_version_enum;
 
    // Handles testbench interfaces
-   virtual uvmt_rvfi_if                  rvfi_vif;  // virtual peripheral status
+   virtual uvmt_tb_exit_if tb_exit_vif;                // Exit vif
 //   virtual uvmt_cva6_core_cntrl_if   core_cntrl_vif; // control inputs to the core
 
    // Default sequences
@@ -342,11 +342,11 @@ endfunction : phase_ended
 
 function void uvmt_cva6_base_test_c::retrieve_vifs();
 
-   if (!uvm_config_db#(virtual uvmt_rvfi_if)::get(this, "", "rvfi_vif", rvfi_vif)) begin
-      `uvm_fatal("VIF", $sformatf("Could not find rvfi_vif handle of type %s in uvm_config_db", $typename(rvfi_vif)))
+   if (!uvm_config_db#(virtual uvmt_tb_exit_if)::get(this, "", "tb_exit_vif", tb_exit_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find tb_exit_vif handle of type %s in uvm_config_db", $typename(tb_exit_vif)))
    end
    else begin
-      `uvm_info("VIF", $sformatf("Found rvfi_vif handle of type %s in uvm_config_db", $typename(rvfi_vif)), UVM_DEBUG)
+      `uvm_info("VIF", $sformatf("Found tb_exit_vif handle of type %s in uvm_config_db", $typename(tb_exit_vif)), UVM_DEBUG)
    end
 
 endfunction : retrieve_vifs

@@ -6,6 +6,19 @@
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
 // Original Author: Jean-Roch COULON - Thales
+//
+`ifndef READ_SYMBOL_T
+`define READ_SYMBOL_T
+import "DPI-C" function byte read_symbol (input string symbol_name, inout longint unsigned address);
+`endif
+
+`ifndef READ_ELF_T
+`define READ_ELF_T
+import "DPI-C" function void read_elf(input string filename);
+import "DPI-C" function byte get_section(output longint address, output longint len);
+import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);
+`endif
+
 
 module rvfi_tracer #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
@@ -23,16 +36,27 @@ module rvfi_tracer #(
   output logic[31:0]                    end_of_test_o
 );
 
-  logic[riscv::PLEN-1:0] TOHOST_ADDR;
+  longint unsigned TOHOST_ADDR;
+  string binary;
   int f;
   int unsigned SIM_FINISH;
   initial begin
+    TOHOST_ADDR = '0;
     f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
     if (!$value$plusargs("time_out=%d", SIM_FINISH)) SIM_FINISH = 2000000;
     if (!$value$plusargs("tohost_addr=%h", TOHOST_ADDR)) TOHOST_ADDR = '0;
     if (TOHOST_ADDR == '0) begin
-      $display("*** [rvf_tracer] WARNING: No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
-      $fwrite(f, "*** [rvfi_tracer] WARNING No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
+        if (!$value$plusargs("elf_file=%s", binary)) binary = "";
+        if (binary != "") begin
+            read_elf(binary);
+            read_symbol("tohost", TOHOST_ADDR);
+        end
+        $display("*** [rvf_tracer] INFO: Loading binary : %s", binary);
+        $display("*** [rvf_tracer] INFO: tohost_addr: %h", TOHOST_ADDR);
+        if (TOHOST_ADDR == '0) begin
+            $display("*** [rvf_tracer] WARNING: No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
+            $fwrite(f, "*** [rvfi_tracer] WARNING No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
+        end
     end
   end
 
@@ -49,7 +73,7 @@ module rvfi_tracer #(
   always_ff @(posedge clk_i) begin
     end_of_test_q = (rst_ni && (end_of_test_d[0] == 1'b1)) ? end_of_test_d : 0;
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-      pc64 = {{riscv::XLEN-riscv::VLEN{rvfi_i[i].pc_rdata[riscv::VLEN-1]}}, rvfi_i[i].pc_rdata};
+      pc64 = {{CVA6Cfg.XLEN-CVA6Cfg.VLEN{rvfi_i[i].pc_rdata[CVA6Cfg.VLEN-1]}}, rvfi_i[i].pc_rdata};
       // print the instruction information if the instruction is valid or a trap is taken
       if (rvfi_i[i].valid) begin
         // Instruction information
@@ -73,8 +97,8 @@ module rvfi_tracer #(
             (rvfi_i[i].insn[6:0] == 7'b1010011 && rvfi_i[i].insn[31:26] != 6'b111000
                                                && rvfi_i[i].insn[31:26] != 6'b101000
                                                && rvfi_i[i].insn[31:26] != 6'b110000) ||
-            (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && riscv::XLEN == 64) ||
-                                           (rvfi_i[i].insn[15:13] == 3'b011 && riscv::XLEN == 32) ))) begin
+            (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && CVA6Cfg.XLEN == 64) ||
+                                           (rvfi_i[i].insn[15:13] == 3'b011 && CVA6Cfg.XLEN == 32) ))) begin
           $fwrite(f, " f%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
         end else if (rvfi_i[i].rd_addr != 0) begin
           $fwrite(f, " x%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);

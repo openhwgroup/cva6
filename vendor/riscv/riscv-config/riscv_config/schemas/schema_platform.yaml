@@ -1,0 +1,328 @@
+###
+#reset
+#-----
+#
+# - **Description**: Stores the value for the reset vector. It can either be a label or an address.
+#
+#     * label: A string field equal to the label in the assembly code
+#     * address: A value equal to the absolute address where the vector is present
+# - **Constraints**: label and address both cannot be defined
+# - **Examples**:
+#
+#   .. code-block:: yaml
+#
+#      reset:
+#        label: reset_vector
+#      reset:
+#        label: 0x80000000
+
+reset:
+  type: dict
+  schema:
+    label:
+      type: string
+      excludes: ['address']
+    address:
+      type: integer
+      excludes: ['label']
+  required: True
+
+###
+#nmi
+#---
+#
+# - **Description**: Stores the value for the nmi vector. It can either be a label or an address.
+#
+#     * label: A string field equal to the label in the assembly code.
+#     * address: A value equal to the absolute address where the vector is present.
+# - **Constraints**: label and address both cannot be defined
+# - **Examples**: 
+# 
+#   .. code-block:: yaml
+#
+#     nmi:
+#        label: nmi_vector
+#        address: 0x8000000
+
+nmi:
+  type: dict
+  schema:
+    label:
+      type: string
+      excludes: ['address']
+    address:
+      type: integer
+      excludes: ['label']
+  required: False
+  default:
+    label: nmi_vector
+    address: 0x0
+
+###
+#mtime
+#-----
+#
+# - **Description**: Stores the fields for memory mapped *mtime* register.
+#
+#       * implemented: A boolean field indicating that the register has been implemented.
+#       * address: A value equal to the physical address at which the register is present.
+# 
+# - **Examples**: 
+# 
+#   .. code-block:: yaml
+#
+#     mtime:
+#        implemented: True
+#        address: 0x458
+
+mtime:
+  type: dict
+  schema:
+    address:
+      type: integer
+    implemented:
+      type: boolean
+      default: False
+  default:
+    implemented: False
+
+###
+#mtimecmp
+#--------
+# 
+# - **Description**: Stores the fields for memory mapped *mtimecmp* register.
+#
+#       * implemented: A boolean field indicating that the register has been implemented.
+#       * address: A value equal to the physical address at which the register is present.
+# 
+# - **Examples**: 
+# 
+#   .. code-block:: yaml
+#
+#     mtimecmp:
+#        implemented: True
+#        address: 0x458
+
+mtimecmp:
+  type: dict
+  schema:
+    address:
+      type: integer
+    implemented:
+      type: boolean
+      default: False
+  default:
+    implemented: False
+
+###
+#mtval_condition_writes
+#----------------------
+#
+# - **Description**: Stores the fields for *mtval_condition_writes* register.
+#
+#       * implemented: A Boolean value indicating whether the register is implemented.      
+#       * behaviour: A dictionary type to specify which of the exceptions modify the mtval_condition_writes reg
+#
+#           - e0: A string type describing the behaviour of exception 0.
+#           - e1: A string type describing the behaviour of exception 1.
+#           - e2: A string type describing the behaviour of exception 2.
+#           - e3: A string type describing the behaviour of exception 3.
+#           - e4: A string type describing the behaviour of exception 4.
+#           - e5: A string type describing the behaviour of exception 5.
+#           - e6: A string type describing the behaviour of exception 6.
+#           - e7: A string type describing the behaviour of exception 7.
+#           - e8: A string type describing the behaviour of exception 8.
+#           - e9: A string type describing the behaviour of exception 9.
+#           - e10: A string type describing the behaviour of exception 10.
+#           - e11: A string type describing the behaviour of exception 11.
+#           - e12: A string type describing the behaviour of exception 12.
+#           - e13: A string type describing the behaviour of exception 13.
+#           - e15: A string type describing the behaviour of exception 15.
+#
+# - **Examples**: 
+# 
+#  .. code-block:: yaml
+#
+#     TBD: Provide a concrete use-case for the above.
+
+mtval_condition_writes:
+  type: dict
+  schema:
+    implemented:
+      type: boolean
+      default: False
+    behaviour:
+      type: dict
+      schema:
+        e00:
+          type: string
+        e01:
+          type: string
+        e02:
+          type: string
+        e03:
+          type: string  
+        e04:
+          type: string
+        e05:
+          type: string
+        e06:
+          type: string
+        e07:
+          type: string
+        e08:
+          type: string
+        e09:
+          type: string
+        e10:
+          type: string
+        e11:
+          type: string
+        e12:
+          type: string
+        e13:
+          type: string
+        e15:
+          type: string
+  default:
+    implemented: False
+
+###
+#scause_non_standard
+#-------------------
+#
+# - **Description**: Stores the fields for the *scause* register.
+#
+#   * implemented: A boolean field indicating that the register has been implemented.
+#   * values: The list of exception values greater than 16 as assumed by the platform as integers.
+# 
+# - **Examples**: 
+# 
+#   .. code-block:: yaml
+#
+#     scause_non_standard:
+#        implemented: True
+#        value: [16,17,20]
+
+scause_non_standard:
+  type: dict
+  schema:
+    implemented:
+      type: boolean
+    values:
+      type: list
+      check_with: xcause_check
+  default:
+    implemented: False
+  
+###
+#stval_condition_writes
+#----------------------
+#
+# - **Description**: Stores the fields for *stval_condition_writes* register.
+#
+#       - implemented: A Boolean value indicating whether the field is implemented.   
+#       - behaviour: A dictionary type to specify which of the exceptions modify the stval_condition_writes reg
+#
+#           - e0: A string type describing the behaviour of exception 0.
+#           - e1: A string type describing the behaviour of exception 1.
+#           - e2: A string type describing the behaviour of exception 2.
+#           - e3: A string type describing the behaviour of exception 3.
+#           - e4: A string type describing the behaviour of exception 4.
+#           - e5: A string type describing the behaviour of exception 5.
+#           - e6: A string type describing the behaviour of exception 6.
+#           - e7: A string type describing the behaviour of exception 7.
+#           - e8: A string type describing the behaviour of exception 8.
+#           - e9: A string type describing the behaviour of exception 9.
+#           - e10: A string type describing the behaviour of exception 10.
+#           - e11: A string type describing the behaviour of exception 11.
+#           - e12: A string type describing the behaviour of exception 12.
+#           - e13: A string type describing the behaviour of exception 13.
+#           - e15: A string type describing the behaviour of exception 15.
+#
+# - **Examples**: 
+# 
+#   .. code-block:: yaml
+#
+#      TBD: Provide a concrete use-case for the above.
+
+stval_condition_writes:
+  type: dict
+  schema:
+    implemented:
+      type: boolean
+      default: False
+    behaviour:
+      type: dict
+      schema:
+        e00:
+          type: string
+        e01:
+          type: string
+        e02:
+          type: string
+        e03:
+          type: string  
+        e04:
+          type: string
+        e05:
+          type: string
+        e06:
+          type: string
+        e07:
+          type: string
+        e08:
+          type: string
+        e09:
+          type: string
+        e10:
+          type: string
+        e11:
+          type: string
+        e12:
+          type: string
+        e13:
+          type: string
+        e15:
+          type: string
+  default:
+    implemented: False
+
+###
+#zicbo_cache_block_sz
+#--------------------
+#
+# - **Description**: byte size of the cache block
+# - **Constraints**:
+#
+#   - zicbom_sz cannot exceed 4096
+#   - zicboz_sz cannot exceed 4096
+#   - for both the above variables the integer must be a power of 2
+#
+# - **Examples**:
+#
+#   .. code-block:: yaml
+#
+#     zicbo_cache_block_sz :
+#       implemented: true
+#       zicbom_sz: 64
+#       zicboz_sz: 64
+
+zicbo_cache_block_sz:
+  type: dict
+  schema:
+    implemented:
+      type: boolean
+      default: False
+    zicbom_sz:
+      type: integer
+      max: [4096]
+      default: 0
+      check_with: cache_block_size
+    zicboz_sz:
+      type: integer
+      max: [4096]
+      default: 0
+      check_with: cache_block_size
+  default:
+    implemented: False
