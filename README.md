@@ -4,6 +4,8 @@ This repository contains a cycle-accurate performance model of CVA6 control-path
 
 It was developed to explore microarchitecture changes in CVA6 before implementing them.
 
+CVA6 repository can be found here: https://github.com/openhwgroup/cva6
+
 
 ## Getting started
 
