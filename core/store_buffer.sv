@@ -40,10 +40,10 @@ module store_buffer
     input logic valid_i,  // this is a valid store
     input  logic         valid_without_flush_i, // just tell if the address is valid which we are current putting and do not take any further action
 
-    input  logic [riscv::PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
-    output [riscv::PLEN-1:0] rvfi_mem_paddr_o,
-    input logic [riscv::XLEN-1:0] data_i,  // data which is placed in the queue
-    input logic [(riscv::XLEN/8)-1:0] be_i,  // byte enable in
+    input  logic [CVA6Cfg.PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
+    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    input logic [CVA6Cfg.XLEN-1:0] data_i,  // data which is placed in the queue
+    input logic [(CVA6Cfg.XLEN/8)-1:0] be_i,  // byte enable in
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
@@ -55,9 +55,9 @@ module store_buffer
   // 1. Speculative queue
   // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
   struct packed {
-    logic [riscv::PLEN-1:0] address;
-    logic [riscv::XLEN-1:0] data;
-    logic [(riscv::XLEN/8)-1:0] be;
+    logic [CVA6Cfg.PLEN-1:0] address;
+    logic [CVA6Cfg.XLEN-1:0] data;
+    logic [(CVA6Cfg.XLEN/8)-1:0] be;
     logic [1:0] data_size;
     logic valid;  // this entry is valid, we need this for checking if the address offset matches
   }
@@ -141,11 +141,11 @@ module store_buffer
   // we do not require an acknowledgement for writes, thus we do not need to identify uniquely the responses
   assign req_port_o.data_id = '0;
   // those signals can directly be output to the memory
-  assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   // if we got a new request we already saved the tag from the previous cycle
-  assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_TAG_WIDTH     +
-                                                                                    ariane_pkg::DCACHE_INDEX_WIDTH-1 :
-                                                                                    ariane_pkg::DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_TAG_WIDTH     +
+                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
+                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
   assign req_port_o.data_wdata = commit_queue_q[commit_read_pointer_q].data;
   assign req_port_o.data_be = commit_queue_q[commit_read_pointer_q].be;
   assign req_port_o.data_size = commit_queue_q[commit_read_pointer_q].data_size;

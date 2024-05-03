@@ -70,13 +70,13 @@
      - out
      - Load transaction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``load_result_o``
      - out
      - Load result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``load_valid_o``
      - out
@@ -94,13 +94,13 @@
      - out
      - Store transaction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``store_result_o``
      - out
      - Store result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``store_valid_o``
      - out
@@ -130,7 +130,7 @@
      - in
      - Commit transaction ID
      - TO_BE_COMPLETED
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``icache_areq_i``
      - in
@@ -178,15 +178,32 @@
      - in
      - PMP address
      - CSR_REGFILE
-     - logic[15:0][riscv::PLEN-3:0]
+     - logic[15:0][CVA6Cfg.PLEN-3:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As RVA = 0,
+| As RVA = False,
 |   ``amo_valid_commit_i`` input is tied to 0
 |   ``amo_req_o`` output is tied to 0
 |   ``amo_resp_i`` input is tied to 0
-| As RVS = 0,
+| As RVH = False,
+|   ``tinst_i`` input is tied to 0
+|   ``enable_g_translation_i`` input is tied to 0
+|   ``en_ld_st_g_translation_i`` input is tied to 0
+|   ``v_i`` input is tied to 0
+|   ``ld_st_v_i`` input is tied to 0
+|   ``csr_hs_ld_st_inst_o`` output is tied to 0
+|   ``vs_sum_i`` input is tied to 0
+|   ``vmxr_i`` input is tied to 0
+|   ``vsatp_ppn_i`` input is tied to 0
+|   ``vs_asid_i`` input is tied to 0
+|   ``hgatp_ppn_i`` input is tied to 0
+|   ``vmid_i`` input is tied to 0
+|   ``vmid_to_be_flushed_i`` input is tied to 0
+|   ``gpaddr_to_be_flushed_i`` input is tied to 0
+|   ``flush_tlb_vvma_i`` input is tied to 0
+|   ``flush_tlb_gvma_i`` input is tied to 0
+| As RVS = False,
 |   ``enable_translation_i`` input is tied to 0
 |   ``en_ld_st_translation_i`` input is tied to 0
 |   ``sum_i`` input is tied to 0

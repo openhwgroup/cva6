@@ -1,8 +1,10 @@
 package build_config_pkg;
 
   function automatic config_pkg::cva6_cfg_t build_config(config_pkg::cva6_user_cfg_t CVA6Cfg);
-    bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & CVA6Cfg.FpuEn;
-    bit RVD = (riscv::IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
+    bit IS_XLEN32 = (CVA6Cfg.XLEN == 32) ? 1'b1 : 1'b0;
+    bit IS_XLEN64 = (CVA6Cfg.XLEN == 32) ? 1'b0 : 1'b1;
+    bit RVF = (IS_XLEN64 | IS_XLEN32) & CVA6Cfg.FpuEn;
+    bit RVD = (IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn;
     bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
     bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
     int unsigned FLen = RVD ? 64 :  // D ext.
@@ -21,9 +23,26 @@ package build_config_pkg;
     bit EnableAccelerator = CVA6Cfg.RVV;  // Currently only used by V extension (Ara)
     int unsigned NrWbPorts = (CVA6Cfg.CvxifEn || EnableAccelerator) ? 5 : 4;
 
+    int unsigned ICACHE_INDEX_WIDTH = $clog2(CVA6Cfg.IcacheByteSize / CVA6Cfg.IcacheSetAssoc);
+    int unsigned DCACHE_INDEX_WIDTH = $clog2(CVA6Cfg.DcacheByteSize / CVA6Cfg.DcacheSetAssoc);
+    int unsigned DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DcacheLineWidth / 8);
+
     config_pkg::cva6_cfg_t cfg;
 
+    cfg.XLEN = CVA6Cfg.XLEN;
+    cfg.VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;
+    cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
+    cfg.GPLEN = (CVA6Cfg.XLEN == 32) ? 34 : 41;
+    cfg.IS_XLEN32 = IS_XLEN32;
+    cfg.IS_XLEN64 = IS_XLEN64;
+    cfg.XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
+    cfg.ASID_WIDTH = (CVA6Cfg.XLEN == 64) ? 16 : 1;
+    cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 1;
+
+    cfg.FpgaEn = CVA6Cfg.FpgaEn;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
+    cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
+    cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;
     cfg.AxiAddrWidth = CVA6Cfg.AxiAddrWidth;
     cfg.AxiDataWidth = CVA6Cfg.AxiDataWidth;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
@@ -38,11 +57,14 @@ package build_config_pkg;
     cfg.RVB = CVA6Cfg.RVB;
     cfg.RVV = CVA6Cfg.RVV;
     cfg.RVC = CVA6Cfg.RVC;
+    cfg.RVH = CVA6Cfg.RVH;
     cfg.RVZCB = CVA6Cfg.RVZCB;
     cfg.RVZCMP = CVA6Cfg.RVZCMP;
     cfg.XFVec = CVA6Cfg.XFVec;
     cfg.CvxifEn = CVA6Cfg.CvxifEn;
-    cfg.ZiCondExtEn = CVA6Cfg.ZiCondExtEn;
+    cfg.RVZiCond = CVA6Cfg.RVZiCond;
+    cfg.NR_SB_ENTRIES = CVA6Cfg.NrScoreboardEntries;
+    cfg.TRANS_ID_BITS = $clog2(CVA6Cfg.NrScoreboardEntries);
 
     cfg.RVF = bit'(RVF);
     cfg.RVD = bit'(RVD);
@@ -56,6 +78,8 @@ package build_config_pkg;
     cfg.NrRgprPorts = unsigned'(2);
     cfg.NrWbPorts = unsigned'(NrWbPorts);
     cfg.EnableAccelerator = bit'(EnableAccelerator);
+    cfg.PerfCounterEn = CVA6Cfg.PerfCounterEn;
+    cfg.MmuPresent = CVA6Cfg.MmuPresent;
     cfg.RVS = CVA6Cfg.RVS;
     cfg.RVU = CVA6Cfg.RVU;
 
@@ -82,10 +106,50 @@ package build_config_pkg;
     cfg.CachedRegionLength = CVA6Cfg.CachedRegionLength;
     cfg.MaxOutstandingStores = CVA6Cfg.MaxOutstandingStores;
     cfg.DebugEn = CVA6Cfg.DebugEn;
-    cfg.NonIdemPotenceEn = CVA6Cfg.NrNonIdempotentRules && CVA6Cfg.NonIdempotentLength;
+    cfg.NonIdemPotenceEn = (CVA6Cfg.NrNonIdempotentRules > 0) && (CVA6Cfg.NonIdempotentLength > 0);
     cfg.AxiBurstWriteEn = CVA6Cfg.AxiBurstWriteEn;
 
+    cfg.ICACHE_SET_ASSOC = CVA6Cfg.IcacheSetAssoc;
+    cfg.ICACHE_SET_ASSOC_WIDTH = $clog2(CVA6Cfg.IcacheSetAssoc);
+    cfg.ICACHE_INDEX_WIDTH = ICACHE_INDEX_WIDTH;
+    cfg.ICACHE_TAG_WIDTH = cfg.PLEN - ICACHE_INDEX_WIDTH;
+    cfg.ICACHE_LINE_WIDTH = CVA6Cfg.IcacheLineWidth;
+    cfg.ICACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.IcacheLineWidth;
+    cfg.DCacheType = CVA6Cfg.DCacheType;
+    cfg.DcacheIdWidth = CVA6Cfg.DcacheIdWidth;
+    cfg.DCACHE_SET_ASSOC = CVA6Cfg.DcacheSetAssoc;
+    cfg.DCACHE_SET_ASSOC_WIDTH = $clog2(CVA6Cfg.DcacheSetAssoc);
+    cfg.DCACHE_INDEX_WIDTH = DCACHE_INDEX_WIDTH;
+    cfg.DCACHE_TAG_WIDTH = cfg.PLEN - DCACHE_INDEX_WIDTH;
+    cfg.DCACHE_LINE_WIDTH = CVA6Cfg.DcacheLineWidth;
+    cfg.DCACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.DcacheLineWidth;
+    cfg.DCACHE_USER_WIDTH = CVA6Cfg.AxiUserWidth;
+    cfg.DCACHE_OFFSET_WIDTH = DCACHE_OFFSET_WIDTH;
+    cfg.DCACHE_NUM_WORDS = 2 ** (DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
+
     cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
+
+    cfg.DATA_USER_EN = CVA6Cfg.DataUserEn;
+    cfg.WtDcacheWbufDepth = CVA6Cfg.WtDcacheWbufDepth;
+    cfg.FETCH_USER_WIDTH = CVA6Cfg.FetchUserWidth;
+    cfg.FETCH_USER_EN = CVA6Cfg.FetchUserEn;
+    cfg.AXI_USER_EN = CVA6Cfg.DataUserEn | CVA6Cfg.FetchUserEn;
+
+    cfg.FETCH_WIDTH = 32 << ariane_pkg::SUPERSCALAR;
+    cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_WIDTH / 8);
+    cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
+    cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
+
+    cfg.ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
+    cfg.ASIDW = (CVA6Cfg.XLEN == 32) ? 9 : 16;
+    cfg.VMIDW = (CVA6Cfg.XLEN == 32) ? 7 : 14;
+    cfg.PPNW = (CVA6Cfg.XLEN == 32) ? 22 : 44;
+    cfg.GPPNW = (CVA6Cfg.XLEN == 32) ? 22 : 29;
+    cfg.MODE_SV = (CVA6Cfg.XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
+    cfg.SV = (cfg.MODE_SV == config_pkg::ModeSv32) ? 32 : 39;
+    cfg.SVX = (cfg.MODE_SV == config_pkg::ModeSv32) ? 34 : 41;
+    cfg.InstrTlbEntries = CVA6Cfg.InstrTlbEntries;
+    cfg.DataTlbEntries = CVA6Cfg.DataTlbEntries;
 
     return cfg;
   endfunction

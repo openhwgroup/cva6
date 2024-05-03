@@ -83,12 +83,15 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft sys_clk_period          == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
    }
 
-   constraint cvxif_feature { //CV32A60X do not support dual read & write also the memory interface
-      cvxif_cfg.dual_read_write_support_x == 0;
-      cvxif_cfg.load_store_support_x == 0;
-      cvxif_cfg.seq_cus_instr_x2_enabled == 1;
-      cvxif_cfg.reg_cus_crosses_enabled == 0;
+   constraint cvxif_feature { //CV32A65X do not support dual read & write also the memory interface
+      cvxif_cfg.dual_read_write_support_x  == 0;
+      cvxif_cfg.load_store_support_x       == 0;
+      cvxif_cfg.seq_cus_instr_x2_enabled   == 1;
+      cvxif_cfg.reg_cus_crosses_enabled    == 0;
+      cvxif_cfg.mode_s_supported           == mode_s_supported;
+      cvxif_cfg.mode_u_supported           == mode_u_supported;
    }
+
    constraint cva6_riscv_cons {
       xlen == uvma_core_cntrl_pkg::MXL_32;
       ilen == 32;
@@ -167,7 +170,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          clknrst_cfg.enabled   == 1;
          isacov_cfg.enabled    == 1;
          rvfi_cfg.enabled      == 1;
-         rvfi_cfg.csr_enabled  == 1;
       }
 
       isacov_cfg.seq_instr_group_x2_enabled == 1;
@@ -177,6 +179,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.reg_crosses_enabled        == 0;
       isacov_cfg.reg_hazards_enabled        == 1;
       rvfi_cfg.nret                         == cva6_config_pkg::CVA6ConfigNrCommitPorts;
+      rvfi_cfg.unified_exceptions           == 0;
 
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active   == UVM_ACTIVE;
@@ -271,7 +274,9 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
 
    // Remove unsupported CSRs for Embedded configuration
    unsupported_csr_mask[uvma_core_cntrl_pkg::MTVAL] = 1;
+   unsupported_csr_mask[uvma_core_cntrl_pkg::MTVAL2] = 1;
    unsupported_csr_mask[uvma_core_cntrl_pkg::MCOUNTINHIBIT] = 1;
+   unsupported_csr_mask[uvma_core_cntrl_pkg::MTINST] = 1;
 
    // Add supported CSRs for Embedded configuration
    for (int i = 0; i < MAX_NUM_HPMCOUNTERS; i++) begin

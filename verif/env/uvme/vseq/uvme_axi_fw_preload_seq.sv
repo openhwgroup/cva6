@@ -41,7 +41,7 @@ endclass : uvme_axi_fw_preload_seq_c
 function uvme_axi_fw_preload_seq_c::new(string name="uvma_axi_fw_preload_seq");
 
    super.new(name);
-   mem = uvml_mem_c::type_id::create("mem");
+   mem = uvml_mem_c#()::type_id::create("mem");
    mem.mem_default = MEM_DEFAULT_0;
 
 endfunction : new

@@ -40,19 +40,19 @@
      - in
      - Instruction
      - instr_realign
-     - logic[ariane_pkg::INSTR_PER_FETCH-1:0][31:0]
+     - logic[CVA6Cfg.INSTR_PER_FETCH-1:0][31:0]
 
    * - ``addr_i``
      - in
      - Instruction address
      - instr_realign
-     - logic[ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0]
+     - logic[CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0]
 
    * - ``valid_i``
      - in
      - Instruction is valid
      - instr_realign
-     - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - logic[CVA6Cfg.INSTR_PER_FETCH-1:0]
 
    * - ``ready_o``
      - out
@@ -64,7 +64,7 @@
      - out
      - Indicates instructions consummed, or popped by ID_STAGE
      - FRONTEND
-     - logic[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - logic[CVA6Cfg.INSTR_PER_FETCH-1:0]
 
    * - ``exception_i``
      - in
@@ -76,19 +76,19 @@
      - in
      - Exception address
      - CACHE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``predict_address_i``
      - in
      - Branch predict
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``cf_type_i``
      - in
      - Instruction predict address
      - FRONTEND
-     - ariane_pkg::cf_t[ariane_pkg::INSTR_PER_FETCH-1:0]
+     - ariane_pkg::cf_t[CVA6Cfg.INSTR_PER_FETCH-1:0]
 
    * - ``replay_o``
      - out
@@ -100,7 +100,7 @@
      - out
      - Address at which to replay the fetch
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``fetch_entry_o``
      - out
@@ -120,4 +120,10 @@
      - ID_STAGE
      - logic
 
+Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
+
+| As RVH = False,
+|   ``exception_gpaddr_i`` input is tied to 0
+|   ``exception_tinst_i`` input is tied to 0
+|   ``exception_gva_i`` input is tied to 0
 

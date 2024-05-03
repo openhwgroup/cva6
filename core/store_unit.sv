@@ -49,19 +49,25 @@ module store_unit
     // Store result is valid - ISSUE_STAGE
     output logic valid_o,
     // Transaction ID - ISSUE_STAGE
-    output logic [TRANS_ID_BITS-1:0] trans_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     // Store result - ISSUE_STAGE
-    output logic [riscv::XLEN-1:0] result_o,
+    output logic [CVA6Cfg.XLEN-1:0] result_o,
     // Store exception output - TO_BE_COMPLETED
     output exception_t ex_o,
     // Address translation request - TO_BE_COMPLETED
     output logic translation_req_o,
     // Virtual address - TO_BE_COMPLETED
-    output logic [riscv::VLEN-1:0] vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
     // RVFI information - RVFI
-    output [riscv::PLEN-1:0] rvfi_mem_paddr_o,
+    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    // Transformed trap instruction out - TO_BE_COMPLETED
+    output logic [31:0] tinst_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    output logic hs_ld_st_inst_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    output logic hlvx_inst_o,
     // Physical address - TO_BE_COMPLETED
-    input logic [riscv::PLEN-1:0] paddr_i,
+    input logic [CVA6Cfg.PLEN-1:0] paddr_i,
     // Exception raised before store - TO_BE_COMPLETED
     input exception_t ex_i,
     // Data TLB hit - lsu
@@ -81,24 +87,24 @@ module store_unit
 );
 
   // align data to address e.g.: shift data to be naturally 64
-  function automatic [riscv::XLEN-1:0] data_align(logic [2:0] addr, logic [63:0] data);
+  function automatic [CVA6Cfg.XLEN-1:0] data_align(logic [2:0] addr, logic [63:0] data);
     // Set addr[2] to 1'b0 when 32bits
-    logic [ 2:0] addr_tmp = {(addr[2] && riscv::IS_XLEN64), addr[1:0]};
+    logic [ 2:0] addr_tmp = {(addr[2] && CVA6Cfg.IS_XLEN64), addr[1:0]};
     logic [63:0] data_tmp = {64{1'b0}};
     case (addr_tmp)
-      3'b000: data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-1:0]};
+      3'b000: data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-1:0]};
       3'b001:
-      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-9:0], data[riscv::XLEN-1:riscv::XLEN-8]};
+      data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-9:0], data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-8]};
       3'b010:
-      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-17:0], data[riscv::XLEN-1:riscv::XLEN-16]};
+      data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-17:0], data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-16]};
       3'b011:
-      data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-25:0], data[riscv::XLEN-1:riscv::XLEN-24]};
+      data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-25:0], data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-24]};
       3'b100: data_tmp = {data[31:0], data[63:32]};
       3'b101: data_tmp = {data[23:0], data[63:24]};
       3'b110: data_tmp = {data[15:0], data[63:16]};
       3'b111: data_tmp = {data[7:0], data[63:8]};
     endcase
-    return data_tmp[riscv::XLEN-1:0];
+    return data_tmp[CVA6Cfg.XLEN-1:0];
   endfunction
 
   // it doesn't matter what we are writing back as stores don't return anything
@@ -119,16 +125,19 @@ module store_unit
   logic instr_is_amo;
   assign instr_is_amo = is_amo(lsu_ctrl_i.operation);
   // keep the data and the byte enable for the second cycle (after address translation)
-  logic [riscv::XLEN-1:0] st_data_n, st_data_q;
-  logic [(riscv::XLEN/8)-1:0] st_be_n, st_be_q;
+  logic [CVA6Cfg.XLEN-1:0] st_data_n, st_data_q;
+  logic [(CVA6Cfg.XLEN/8)-1:0] st_be_n, st_be_q;
   logic [1:0] st_data_size_n, st_data_size_q;
   amo_t amo_op_d, amo_op_q;
 
-  logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
   // output assignments
-  assign vaddr_o    = lsu_ctrl_i.vaddr; // virtual address
-  assign trans_id_o = trans_id_q; // transaction id from previous cycle
+  assign vaddr_o         = lsu_ctrl_i.vaddr;  // virtual address
+  assign hs_ld_st_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hs_ld_st_inst : 1'b0;
+  assign hlvx_inst_o     = CVA6Cfg.RVH ? lsu_ctrl_i.hlvx_inst : 1'b0;
+  assign tinst_o         = CVA6Cfg.RVH ? lsu_ctrl_i.tinst : '0;  // transformed instruction
+  assign trans_id_o      = trans_id_q;  // transaction id from previous cycle
 
   always_comb begin : store_control
     translation_req_o      = 1'b0;
@@ -149,7 +158,7 @@ module store_unit
           pop_st_o = 1'b1;
           // check if translation was valid and we have space in the store buffer
           // otherwise simply stall
-          if (ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
+          if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
             state_d  = WAIT_TRANSLATION;
             pop_st_o = 1'b0;
           end
@@ -175,7 +184,7 @@ module store_unit
           state_d = VALID_STORE;
           pop_st_o = 1'b1;
 
-          if (ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
+          if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
             state_d  = WAIT_TRANSLATION;
             pop_st_o = 1'b0;
           end
@@ -204,7 +213,7 @@ module store_unit
         // we didn't receive a valid translation, wait for one
         // but we know that the store queue is not full as we could only have landed here if
         // it wasn't full
-        if (state_q == WAIT_TRANSLATION && ariane_pkg::MMU_PRESENT) begin
+        if (state_q == WAIT_TRANSLATION && CVA6Cfg.MmuPresent) begin
           translation_req_o = 1'b1;
 
           if (dtlb_hit_i) begin
@@ -236,8 +245,8 @@ module store_unit
   always_comb begin
     st_be_n = lsu_ctrl_i.be;
     // don't shift the data if we are going to perform an AMO as we still need to operate on this data
-    st_data_n = (CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[riscv::XLEN-1:0] :
-        data_align(lsu_ctrl_i.vaddr[2:0], {{64 - riscv::XLEN{1'b0}}, lsu_ctrl_i.data});
+    st_data_n = (CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0] :
+        data_align(lsu_ctrl_i.vaddr[2:0], {{64 - CVA6Cfg.XLEN{1'b0}}, lsu_ctrl_i.data});
     st_data_size_n = extract_transfer_size(lsu_ctrl_i.operation);
     // save AMO op for next cycle
     if (CVA6Cfg.RVA) begin

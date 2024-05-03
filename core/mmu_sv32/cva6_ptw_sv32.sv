@@ -31,8 +31,7 @@ module cva6_ptw_sv32
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
-    parameter int ASID_WIDTH = 1
+    parameter type dcache_req_o_t = logic
 ) (
     input  logic clk_i,                  // Clock
     input  logic rst_ni,                 // Asynchronous reset active low
@@ -52,34 +51,34 @@ module cva6_ptw_sv32
     // to Shared TLB, update logic
     output tlb_update_sv32_t shared_tlb_update_o,
 
-    output logic [riscv::VLEN-1:0] update_vaddr_o,
+    output logic [CVA6Cfg.VLEN-1:0] update_vaddr_o,
 
-    input logic [ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
 
     // from shared TLB
-    input logic                   shared_tlb_access_i,
-    input logic                   shared_tlb_hit_i,
-    input logic [riscv::VLEN-1:0] shared_tlb_vaddr_i,
+    input logic                    shared_tlb_access_i,
+    input logic                    shared_tlb_hit_i,
+    input logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_i,
 
     input logic itlb_req_i,
 
     // from CSR file
-    input logic [riscv::PPNW-1:0] satp_ppn_i,  // ppn from satp
-    input logic                   mxr_i,
+    input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,  // ppn from satp
+    input logic                    mxr_i,
 
     // Performance counters
     output logic shared_tlb_miss_o,
 
     // PMP
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
-    input logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
-    output logic [riscv::PLEN-1:0] bad_paddr_o
+    input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    output logic [CVA6Cfg.PLEN-1:0] bad_paddr_o
 
 );
 
   // input registers
   logic data_rvalid_q;
-  logic [riscv::XLEN-1:0] data_rdata_q;
+  logic [CVA6Cfg.XLEN-1:0] data_rdata_q;
 
   riscv::pte_sv32_t pte;
   assign pte = riscv::pte_sv32_t'(data_rdata_q);
@@ -109,11 +108,11 @@ module cva6_ptw_sv32
   // latched tag signal
   logic tag_valid_n, tag_valid_q;
   // register the ASID
-  logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VPN we need to walk, SV32 defines a 32 bit virtual address
-  logic [riscv::VLEN-1:0] vaddr_q, vaddr_n;
+  logic [CVA6Cfg.VLEN-1:0] vaddr_q, vaddr_n;
   // 4 byte aligned physical pointer
-  logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
+  logic [CVA6Cfg.PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 
   // Assignments
   assign update_vaddr_o = vaddr_q;
@@ -122,8 +121,8 @@ module cva6_ptw_sv32
   //assign walking_instr_o = is_instr_ptw_q;
   assign walking_instr_o = is_instr_ptw_q;
   // directly output the correct physical address
-  assign req_port_o.address_index = ptw_pptr_q[DCACHE_INDEX_WIDTH-1:0];
-  assign req_port_o.address_tag   = ptw_pptr_q[DCACHE_INDEX_WIDTH+DCACHE_TAG_WIDTH-1:DCACHE_INDEX_WIDTH];
+  assign req_port_o.address_index = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  assign req_port_o.address_tag   = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH+CVA6Cfg.DCACHE_TAG_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
   // we are never going to kill this request
   assign req_port_o.kill_req = '0;
   // we are never going to write with the HPTW
@@ -134,7 +133,7 @@ module cva6_ptw_sv32
   // -----------
   // Shared TLB Update
   // -----------
-  assign shared_tlb_update_o.vpn = vaddr_q[riscv::SV-1:12];
+  assign shared_tlb_update_o.vpn = vaddr_q[CVA6Cfg.SV-1:12];
   // update the correct page table level
   assign shared_tlb_update_o.is_4M = (ptw_lvl_q == LVL1);
   // output the correct ASID
@@ -151,8 +150,8 @@ module cva6_ptw_sv32
 
   pmp #(
       .CVA6Cfg   (CVA6Cfg),
-      .PLEN      (riscv::PLEN),
-      .PMP_LEN   (riscv::PLEN - 2),
+      .PLEN      (CVA6Cfg.PLEN),
+      .PMP_LEN   (CVA6Cfg.PLEN - 2),
       .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
   ) i_pmp_ptw (
       .addr_i       (ptw_pptr_q),
@@ -223,7 +222,7 @@ module cva6_ptw_sv32
         // if we got a Shared TLB miss
         if (shared_tlb_access_i & ~shared_tlb_hit_i) begin
           ptw_pptr_n = {
-            satp_ppn_i, shared_tlb_vaddr_i[riscv::SV-1:22], 2'b0
+            satp_ppn_i, shared_tlb_vaddr_i[CVA6Cfg.SV-1:22], 2'b0
           };  // SATP.PPN * PAGESIZE + VPN*PTESIZE = SATP.PPN * 2^(12) + VPN*4
           is_instr_ptw_n = itlb_req_i;
           tlb_update_asid_n = asid_i;

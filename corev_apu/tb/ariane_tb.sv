@@ -23,9 +23,12 @@ import uvm_pkg::*;
 `define MAIN_MEM(P) dut.i_sram.gen_cut[0].i_tc_sram_wrapper.i_tc_sram.init_val[(``P``)]
 // `define USER_MEM(P) dut.i_sram.gen_cut[0].gen_mem.gen_mem_user.i_tc_sram_wrapper_user.i_tc_sram.init_val[(``P``)]
 
-import "DPI-C" function read_elf(input string filename);
+`ifndef READ_ELF_T
+`define READ_ELF_T
+import "DPI-C" function void read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
-import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
+import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);
+`endif
 
 module ariane_tb;
 

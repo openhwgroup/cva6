@@ -98,7 +98,7 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As DebugEn = 0,
+| As DebugEn = False,
 |   ``debug_req_i`` input is tied to 0
 |   ``debug_mode_i`` input is tied to 0
 | As IsRVFI = 0,
@@ -108,9 +108,14 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``tvm_i`` input is tied to 0
 |   ``tw_i`` input is tied to 0
 |   ``tsr_i`` input is tied to 0
+| As RVH = False,
+|   ``v_i`` input is tied to 0
+|   ``vfs_i`` input is tied to 0
+|   ``vtw_i`` input is tied to 0
+|   ``hu_i`` input is tied to 0
 | As RVF = 0,
 |   ``fs_i`` input is tied to 0
 |   ``frm_i`` input is tied to 0
-| As RVV = 0,
+| As RVV = False,
 |   ``vs_i`` input is tied to 0
 

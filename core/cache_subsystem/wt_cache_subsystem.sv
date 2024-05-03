@@ -14,7 +14,7 @@
 //              coherent memory system.
 //
 //              Define PITON_ARIANE if you want to use this cache.
-//              Define DCACHE_TYPE if you want to use this cache
+//              Define CVA6Cfg.DCacheType if you want to use this cache
 //              with a standard 64 bit AXI interface instead of the OpenPiton
 //              L1.5 interface.
 
@@ -55,7 +55,7 @@ module wt_cache_subsystem
     output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
     output logic dcache_miss_o,  // we missed on a ld/st
     // For Performance Counter
-    output logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
+    output logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
     // AMO interface
     input amo_req_t dcache_amo_req_i,
     output amo_resp_t dcache_amo_resp_o,
@@ -79,17 +79,17 @@ module wt_cache_subsystem
   localparam type dcache_inval_t = struct packed {
     logic                                      vld;  // invalidate only affected way
     logic                                      all;  // invalidate all ways
-    logic [ariane_pkg::DCACHE_INDEX_WIDTH-1:0] idx;  // physical address to invalidate
-    logic [L15_WAY_WIDTH-1:0]                  way;  // way to invalidate
+    logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]     idx;  // physical address to invalidate
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to invalidate
   };
 
   localparam type dcache_req_t = struct packed {
     wt_cache_pkg::dcache_out_t rtype;  // see definitions above
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
-    logic [L1D_WAY_WIDTH-1:0] way;  // way to replace
-    logic [riscv::PLEN-1:0] paddr;  // physical address
-    logic [riscv::XLEN-1:0] data;  // word width of processor (no block stores at the moment)
-    logic [ariane_pkg::DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
+    logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
+    logic [CVA6Cfg.XLEN-1:0] data;  // word width of processor (no block stores at the moment)
+    logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
     logic nc;  // noncacheable
     logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     ariane_pkg::amo_t amo_op;  // amo opcode
@@ -97,8 +97,8 @@ module wt_cache_subsystem
 
   localparam type dcache_rtrn_t = struct packed {
     wt_cache_pkg::dcache_in_t rtype;  // see definitions above
-    logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
-    logic [ariane_pkg::DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
+    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
+    logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
     dcache_inval_t inv;  // invalidation vector
     logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
   };
@@ -251,7 +251,7 @@ module wt_cache_subsystem
         icache_dreq_o.data
     );
 
-  for (genvar j = 0; j < riscv::XLEN / 8; j++) begin : gen_invalid_write_assertion
+  for (genvar j = 0; j < CVA6Cfg.XLEN / 8; j++) begin : gen_invalid_write_assertion
     a_invalid_write_data :
     assert property (
       @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[NumPorts-1].data_req |-> dcache_req_ports_i[NumPorts-1].data_be[j] |-> (|dcache_req_ports_i[NumPorts-1].data_wdata[j*8+:8] !== 1'hX))

@@ -1,5 +1,13 @@
 # CVA6 project root
-export ROOT_PROJECT=$(readlink -f $(dirname "${BASH_SOURCE[0]}")/../..)
+if [ -n "$BASH_VERSION" ]; then
+  SCRIPT_PATH="$BASH_SOURCE[0]"
+elif [ -n "$ZSH_VERSION" ]; then
+  SCRIPT_PATH="${(%):-%N}"
+else
+  echo "Error: Non recognized shell."
+  return
+fi
+export ROOT_PROJECT=$(readlink -f $(dirname "${SCRIPT_PATH}")/../..)
 
 export RTL_PATH="$ROOT_PROJECT/"
 export TB_PATH="$ROOT_PROJECT/verif/tb/core"

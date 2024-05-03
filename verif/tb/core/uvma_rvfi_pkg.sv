@@ -17,7 +17,6 @@ import uvma_core_cntrl_pkg::*;
 
 `include "uvma_rvfi_constants.sv"
 `include "uvma_rvfi_tdefs.sv"
-`include "uvma_rvfi_utils.sv"
 
 endpackage : uvma_rvfi_pkg
 

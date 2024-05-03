@@ -18,38 +18,38 @@ module cvxif_fu
     parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input  logic                                       clk_i,
+    input  logic                                               clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input  logic                                       rst_ni,
+    input  logic                                               rst_ni,
     // FU data needed to execute instruction - ISSUE_STAGE
-    input  fu_data_t                                   fu_data_i,
+    input  fu_data_t                                           fu_data_i,
     // Current privilege mode - CSR_REGFILE
-    input  riscv::priv_lvl_t                           priv_lvl_i,
+    input  riscv::priv_lvl_t                                   priv_lvl_i,
     // CVXIF instruction is valid - ISSUE_STAGE
-    input  logic                                       x_valid_i,
+    input  logic                                               x_valid_i,
     // CVXIF is ready - ISSUE_STAGE
-    output logic                                       x_ready_o,
+    output logic                                               x_ready_o,
     // Offloaded instruction - ISSUE_STAGE
-    input  logic                   [             31:0] x_off_instr_i,
+    input  logic                   [                     31:0] x_off_instr_i,
     // CVXIF transaction ID - ISSUE_STAGE
-    output logic                   [TRANS_ID_BITS-1:0] x_trans_id_o,
+    output logic                   [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_o,
     // CVXIF exception - ISSUE_STAGE
-    output exception_t                                 x_exception_o,
+    output exception_t                                         x_exception_o,
     // CVXIF FU result - ISSUE_STAGE
-    output logic                   [  riscv::XLEN-1:0] x_result_o,
+    output logic                   [         CVA6Cfg.XLEN-1:0] x_result_o,
     // CVXIF result valid - ISSUE_STAGE
-    output logic                                       x_valid_o,
+    output logic                                               x_valid_o,
     // CVXIF write enable - ISSUE_STAGE
-    output logic                                       x_we_o,
+    output logic                                               x_we_o,
     // CVXIF request - SUBSYSTEM
-    output cvxif_pkg::cvxif_req_t                      cvxif_req_o,
+    output cvxif_pkg::cvxif_req_t                              cvxif_req_o,
     // CVXIF response - SUBSYSTEM
-    input  cvxif_pkg::cvxif_resp_t                     cvxif_resp_i
+    input  cvxif_pkg::cvxif_resp_t                             cvxif_resp_i
 );
   localparam X_NUM_RS = ariane_pkg::NR_RGPR_PORTS;
 
   logic illegal_n, illegal_q;
-  logic [TRANS_ID_BITS-1:0] illegal_id_n, illegal_id_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] illegal_id_n, illegal_id_q;
   logic [31:0] illegal_instr_n, illegal_instr_q;
   logic [X_NUM_RS-1:0] rs_valid;
 
@@ -92,9 +92,12 @@ module cvxif_fu
     x_valid_o = cvxif_resp_i.x_result_valid;  //Read result only when CVXIF is enabled
     x_trans_id_o = x_valid_o ? cvxif_resp_i.x_result.id : '0;
     x_result_o = x_valid_o ? cvxif_resp_i.x_result.data : '0;
-    x_exception_o.cause   = x_valid_o ? {{(riscv::XLEN-6){1'b0}}, cvxif_resp_i.x_result.exccode} : '0;
+    x_exception_o.cause   = x_valid_o ? {{(CVA6Cfg.XLEN-6){1'b0}}, cvxif_resp_i.x_result.exccode} : '0;
     x_exception_o.valid = x_valid_o ? cvxif_resp_i.x_result.exc : '0;
     x_exception_o.tval = '0;
+    x_exception_o.tinst = '0;
+    x_exception_o.tval2 = '0;
+    x_exception_o.gva = '0;
     x_we_o = x_valid_o ? cvxif_resp_i.x_result.we : '0;
     if (illegal_n) begin
       if (~x_valid_o) begin
@@ -104,6 +107,9 @@ module cvxif_fu
         x_exception_o.cause = riscv::ILLEGAL_INSTR;
         x_exception_o.valid = 1'b1;
         if (CVA6Cfg.TvalEn) x_exception_o.tval = illegal_instr_n;
+        x_exception_o.tinst = '0;
+        x_exception_o.tval2 = '0;
+        x_exception_o.gva = '0;
         x_we_o = '0;
         illegal_n             = '0; // Reset flag for illegal instr. illegal_id and illegal instr values are a don't care, no need to reset it.
       end

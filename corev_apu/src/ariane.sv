@@ -33,8 +33,8 @@ module ariane import ariane_pkg::*; #(
   input  logic                         clk_i,
   input  logic                         rst_ni,
   // Core ID, Cluster ID and boot address are considered more or less static
-  input  logic [riscv::VLEN-1:0]       boot_addr_i,  // reset boot address
-  input  logic [riscv::XLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+  input  logic [CVA6Cfg.VLEN-1:0]       boot_addr_i,  // reset boot address
+  input  logic [CVA6Cfg.XLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
 
   // Interrupt inputs
   input  logic [1:0]                   irq_i,        // level sensitive IR lines, mip & sip (async)
@@ -80,7 +80,9 @@ module ariane import ariane_pkg::*; #(
   );
 
   if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor
-    cvxif_example_coprocessor i_cvxif_coprocessor (
+    cvxif_example_coprocessor #(
+      .CVA6Cfg ( CVA6Cfg )
+    ) i_cvxif_coprocessor (
       .clk_i                ( clk_i                          ),
       .rst_ni               ( rst_ni                         ),
       .cvxif_req_i          ( cvxif_req                      ),

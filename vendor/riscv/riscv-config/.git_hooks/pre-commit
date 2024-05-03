@@ -1,0 +1,31 @@
+#!/bin/bash
+
+### Pre Commit Hook For The Shakti BLUESPEC codebase
+status=0;
+### Check for Dependencies 
+yapf --help
+status=$?;
+if [ $status -ne 0 ]; then
+    echo "Please install yapf from :: https://github.com/google/yapf "
+    exit $status;
+fi
+
+### Hook Script Body
+echo "Running Pre-Commit YAPF Hook";
+
+files=`git diff --cached --name-status | awk '$1 != "D" { print $2 }'`
+
+echo "$files"
+
+
+for f in $files
+do
+    if  [[ $f == *.py ]]; then
+        echo "Formatting $f using YAPF."
+        yapf -i --style google $f
+        git add $f
+    fi
+done
+
+status=$?;
+exit $status;

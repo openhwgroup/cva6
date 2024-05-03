@@ -52,7 +52,7 @@
      - out
      - Mult result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``mult_valid_o``
      - out
@@ -70,6 +70,6 @@
      - out
      - Mult transaction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
 

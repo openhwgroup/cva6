@@ -1,0 +1,57 @@
+hart_ids: [0]
+hart0:
+    dtim_base:
+             reset-val: 0x0
+             rv32:
+                 accessible: false
+             rv64:
+                 accessible: true
+                 type:
+                     ro_constant: 0x0
+                 shadow:
+                 msb: 63
+                 lsb: 0
+             description: dtim base
+             address: 0x7C3
+             priv_mode: M
+    customcontrol:
+      reset-val: 0x7
+      rv32:
+        accessible: false
+      rv64:
+        accessible: true
+        ienable:
+          implemented: true
+          type:
+            ro_constant: 0x1
+          description: bit for cache-enable of instruction cache, part of rg_customcontrol
+          shadow:
+          msb: 0
+          lsb: 0
+        denable:
+          implemented: true
+          type:
+            ro_constant: 0x1    
+          description: bit for cache-enable of data cache, part of rg_customcontrol
+          shadow:
+          msb: 1
+          lsb: 1
+        bpuenable:
+          implemented: true
+          type:
+            ro_constant: 0x1    
+          description: bit for enabling branch predictor unit, part of rg_customcontrol
+          shadow:
+          msb: 2
+          lsb: 2
+        arith_excep:
+          implemented: true
+          type:
+            ro_constant: 0x0    
+          description: bit for enabling arithmetic exceptions, part of rg_customcontrol
+          shadow:
+          msb: 3
+          lsb: 3
+      description: the register holds enable bits for arithmetic exceptions, branch predictor unit, i-cache, d-cache units
+      address: 0x800
+      priv_mode: U

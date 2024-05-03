@@ -33,7 +33,7 @@ module csr_buffer
     // CSR instruction is valid - ISSUE_STAGE
     input logic csr_valid_i,
     // CSR buffer result - ISSUE_STAGE
-    output logic [riscv::XLEN-1:0] csr_result_o,
+    output logic [CVA6Cfg.XLEN-1:0] csr_result_o,
     // commit the pending CSR OP - TO_BE_COMPLETED
     input logic csr_commit_i,
     // CSR address to write - COMMIT_STAGE

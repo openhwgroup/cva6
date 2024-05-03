@@ -78,7 +78,7 @@ Parameters
    "``RenameEn``",                  "Pipeline",         "Register renaming feature enable"
    "``NrCommitPorts``",             "Pipeline",         "Commit port number"
    "``NrScoreboardEntries``",       "Pipeline",         "Scoreboard entry number"
-   "``FPGAEn``",                    "Technology",       "FPGA optimization enable"
+   "``FpgaEn``",                    "Technology",       "FPGA optimization enable"
 
 
 Configurations
@@ -136,4 +136,4 @@ A configuration is a fixed set of parameters.
    "``RenameEn``",                  "0"
    "``NrCommitPorts``",             "1"
    "``NrScoreboardEntries``",       "4"
-   "``FPGAEn``",                    "0"
+   "``FpgaEn``",                    "0"

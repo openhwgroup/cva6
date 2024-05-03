@@ -31,7 +31,7 @@ module instr_scan #(
     // Unconditional jump instruction - FRONTEND
     output logic rvi_jump_o,
     // Instruction immediat - FRONTEND
-    output logic [riscv::VLEN-1:0] rvi_imm_o,
+    output logic [CVA6Cfg.VLEN-1:0] rvi_imm_o,
     // Branch compressed instruction - FRONTEND
     output logic rvc_branch_o,
     // Unconditional jump compressed instruction - FRONTEND
@@ -45,12 +45,12 @@ module instr_scan #(
     // JAL compressed instruction - FRONTEND
     output logic rvc_call_o,
     // Instruction compressed immediat - FRONTEND
-    output logic [riscv::VLEN-1:0] rvc_imm_o
+    output logic [CVA6Cfg.VLEN-1:0] rvc_imm_o
 );
 
-  function automatic logic [riscv::VLEN-1:0] uj_imm(logic [31:0] instruction_i);
+  function automatic logic [CVA6Cfg.VLEN-1:0] uj_imm(logic [31:0] instruction_i);
     return {
-      {44 + riscv::VLEN - 64{instruction_i[31]}},
+      {44 + CVA6Cfg.VLEN - 64{instruction_i[31]}},
       instruction_i[19:12],
       instruction_i[20],
       instruction_i[30:21],
@@ -58,9 +58,9 @@ module instr_scan #(
     };
   endfunction
 
-  function automatic logic [riscv::VLEN-1:0] sb_imm(logic [31:0] instruction_i);
+  function automatic logic [CVA6Cfg.VLEN-1:0] sb_imm(logic [31:0] instruction_i);
     return {
-      {51 + riscv::VLEN - 64{instruction_i[31]}},
+      {51 + CVA6Cfg.VLEN - 64{instruction_i[31]}},
       instruction_i[31],
       instruction_i[7],
       instruction_i[30:25],
@@ -73,7 +73,7 @@ module instr_scan #(
   assign is_rvc = (instr_i[1:0] != 2'b11);
 
   logic rv32_rvc_jal;
-  assign rv32_rvc_jal = (riscv::XLEN == 32) & ((instr_i[15:13] == riscv::OpcodeC1Jal) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1));
+  assign rv32_rvc_jal = (CVA6Cfg.XLEN == 32) & ((instr_i[15:13] == riscv::OpcodeC1Jal) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1));
 
   logic is_xret;
   assign is_xret = logic'(instr_i[31:30] == 2'b00) & logic'(instr_i[28:0] == 29'b10000001000000000000001110011);
@@ -110,6 +110,6 @@ module instr_scan #(
   assign rvc_return_o = ((instr_i[11:7] == 5'd1) | (instr_i[11:7] == 5'd5)) & rvc_jr_o;
 
   // differentiates between JAL and BRANCH opcode, JALR comes from BHT
-  assign rvc_imm_o    = (instr_i[14]) ? {{56+riscv::VLEN-64{instr_i[12]}}, instr_i[6:5], instr_i[2], instr_i[11:10], instr_i[4:3], 1'b0}
-                                       : {{53+riscv::VLEN-64{instr_i[12]}}, instr_i[8], instr_i[10:9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5:3], 1'b0};
+  assign rvc_imm_o    = (instr_i[14]) ? {{56+CVA6Cfg.VLEN-64{instr_i[12]}}, instr_i[6:5], instr_i[2], instr_i[11:10], instr_i[4:3], 1'b0}
+                                       : {{53+CVA6Cfg.VLEN-64{instr_i[12]}}, instr_i[8], instr_i[10:9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5:3], 1'b0};
 endmodule

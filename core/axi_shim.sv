@@ -269,7 +269,7 @@ module axi_shim #(
   // return path
   assign axi_req_o.r_ready   = rd_rdy_i;
   assign rd_data_o           = axi_resp_i.r.data;
-  if (ariane_pkg::AXI_USER_EN) begin
+  if (CVA6Cfg.AXI_USER_EN) begin
     assign rd_user_o = axi_resp_i.r.user;
   end else begin
     assign rd_user_o = '0;

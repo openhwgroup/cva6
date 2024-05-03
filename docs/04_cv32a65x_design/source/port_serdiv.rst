@@ -34,7 +34,7 @@
      - in
      - Serdiv translation ID
      - Mult
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``op_a_i``
      - in
@@ -88,7 +88,7 @@
      - out
      - Serdiv transaction ID
      - Mult
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``res_o``
      - out

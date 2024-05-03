@@ -31,8 +31,8 @@ module perf_counters
     // SRAM like interface
     input logic [11:0] addr_i,  // read/write address (up to 6 counters possible)
     input logic we_i,  // write enable
-    input logic [riscv::XLEN-1:0] data_i,  // data to write
-    output logic [riscv::XLEN-1:0] data_o,  // data to read
+    input logic [CVA6Cfg.XLEN-1:0] data_i,  // data to write
+    output logic [CVA6Cfg.XLEN-1:0] data_o,  // data to read
     // from commit stage
     input  scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,     // the instruction we want to commit
     input  logic [CVA6Cfg.NrCommitPorts-1:0]              commit_ack_i,       // acknowledge that we are indeed committing
@@ -54,22 +54,24 @@ module perf_counters
     input exception_t branch_exceptions_i,  //Branch exceptions->execute unit-> branch_exception_o
     input icache_dreq_t l1_icache_access_i,
     input dcache_req_i_t [2:0] l1_dcache_access_i,
-    input  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]miss_vld_bits_i,  //For Cache eviction (3ports-LOAD,STORE,PTW)
+    input  logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0]miss_vld_bits_i,  //For Cache eviction (3ports-LOAD,STORE,PTW)
     input logic i_tlb_flush_i,
     input logic stall_issue_i,  //stall-read operands
     input logic [31:0] mcountinhibit_i
 );
 
-  logic [63:0] generic_counter_d[6:1];
-  logic [63:0] generic_counter_q[6:1];
+  typedef logic [11:0] csr_addr_t;
+
+  logic [63:0] generic_counter_d[MHPMCounterNum:1];
+  logic [63:0] generic_counter_q[MHPMCounterNum:1];
 
   //internal signal to keep track of exception
   logic read_access_exception, update_access_exception;
 
   logic events[6:1];
   //internal signal for  MUX select line input
-  logic [4:0] mhpmevent_d[6:1];
-  logic [4:0] mhpmevent_q[6:1];
+  logic [4:0] mhpmevent_d[MHPMCounterNum:1];
+  logic [4:0] mhpmevent_q[MHPMCounterNum:1];
   // internal signal to detect event on multiple commit ports
   logic [CVA6Cfg.NrCommitPorts-1:0] load_event;
   logic [CVA6Cfg.NrCommitPorts-1:0] store_event;
@@ -81,7 +83,7 @@ module perf_counters
 
   //Multiplexer
   always_comb begin : Mux
-    events[6:1] = '{default: 0};
+    events[MHPMCounterNum:1] = '{default: 0};
     load_event = '{default: 0};
     store_event = '{default: 0};
     branch_event = '{default: 0};
@@ -100,7 +102,7 @@ module perf_counters
       fp_event[j] = commit_ack_i[j] & (commit_instr_i[j].fu == FPU || commit_instr_i[j].fu == FPU_VEC);
     end
 
-    for (int unsigned i = 1; i <= 6; i++) begin
+    for (int unsigned i = 1; i <= MHPMCounterNum; i++) begin
       case (mhpmevent_q[i])
         5'b00000: events[i] = 0;
         5'b00001: events[i] = l1_icache_miss_i;  //L1 I-Cache misses
@@ -153,87 +155,51 @@ module perf_counters
     end
 
     //Read
-    unique case (addr_i)
-      riscv::CSR_MHPM_COUNTER_3,
-            riscv::CSR_MHPM_COUNTER_4,
-            riscv::CSR_MHPM_COUNTER_5,
-            riscv::CSR_MHPM_COUNTER_6,
-            riscv::CSR_MHPM_COUNTER_7,
-            riscv::CSR_MHPM_COUNTER_8  :begin
-        if (riscv::XLEN == 32) data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3+1][31:0];
-        else data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3+1];
+    if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3)) && (addr_i < ( csr_addr_t'(riscv::CSR_MHPM_COUNTER_3) + MHPMCounterNum)) ) begin
+      if (riscv::XLEN == 32) begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3+1][31:0];
+      end else begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3+1];
       end
-      riscv::CSR_MHPM_COUNTER_3H,
-            riscv::CSR_MHPM_COUNTER_4H,
-            riscv::CSR_MHPM_COUNTER_5H,
-            riscv::CSR_MHPM_COUNTER_6H,
-            riscv::CSR_MHPM_COUNTER_7H,
-            riscv::CSR_MHPM_COUNTER_8H :begin
-        if (riscv::XLEN == 32)
-          data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3H+1][63:32];
-        else read_access_exception = 1'b1;
+    end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H)) && (addr_i < ( csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H) + MHPMCounterNum)) ) begin
+      if (riscv::XLEN == 32) begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3H+1][63:32];
+      end else begin
+        read_access_exception = 1'b1;
       end
-      riscv::CSR_MHPM_EVENT_3,
-            riscv::CSR_MHPM_EVENT_4,
-            riscv::CSR_MHPM_EVENT_5,
-            riscv::CSR_MHPM_EVENT_6,
-            riscv::CSR_MHPM_EVENT_7,
-            riscv::CSR_MHPM_EVENT_8   :
+    end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_EVENT_3)) && (addr_i < (csr_addr_t'(riscv::CSR_MHPM_EVENT_3) + MHPMCounterNum)) ) begin
       data_o = mhpmevent_q[addr_i-riscv::CSR_MHPM_EVENT_3+1];
-      riscv::CSR_HPM_COUNTER_3,
-            riscv::CSR_HPM_COUNTER_4,
-            riscv::CSR_HPM_COUNTER_5,
-            riscv::CSR_HPM_COUNTER_6,
-            riscv::CSR_HPM_COUNTER_7,
-            riscv::CSR_HPM_COUNTER_8  :begin
-        if (riscv::XLEN == 32) data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3+1][31:0];
-        else data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3+1];
+    end else if( (addr_i >= csr_addr_t'(riscv::CSR_HPM_COUNTER_3)) && (addr_i < (csr_addr_t'(riscv::CSR_HPM_COUNTER_3) + MHPMCounterNum)) ) begin
+      if (riscv::XLEN == 32) begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3+1][31:0];
+      end else begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3+1];
       end
-      riscv::CSR_HPM_COUNTER_3H,
-            riscv::CSR_HPM_COUNTER_4H,
-            riscv::CSR_HPM_COUNTER_5H,
-            riscv::CSR_HPM_COUNTER_6H,
-            riscv::CSR_HPM_COUNTER_7H,
-            riscv::CSR_HPM_COUNTER_8H :begin
-        if (riscv::XLEN == 32)
-          data_o = generic_counter_q[addr_i-riscv::CSR_HPM_COUNTER_3H+1][63:32];
-        else read_access_exception = 1'b1;
+    end else if( (addr_i > csr_addr_t'(riscv::CSR_HPM_COUNTER_3H)) && (addr_i < (csr_addr_t'(riscv::CSR_HPM_COUNTER_3H) + MHPMCounterNum)) ) begin
+      if (riscv::XLEN == 32) begin
+        data_o = generic_counter_q[addr_i-riscv::CSR_MHPM_COUNTER_3H+1][63:32];
+      end else begin
+        read_access_exception = 1'b1;
       end
-      default: data_o = 'b0;
-    endcase
+    end
 
     //Write
     if (we_i) begin
-      unique case (addr_i)
-        riscv::CSR_MHPM_COUNTER_3,
-            riscv::CSR_MHPM_COUNTER_4,
-            riscv::CSR_MHPM_COUNTER_5,
-            riscv::CSR_MHPM_COUNTER_6,
-            riscv::CSR_MHPM_COUNTER_7,
-            riscv::CSR_MHPM_COUNTER_8  :begin
-          if (riscv::XLEN == 32)
-            generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3+1][31:0] = data_i;
-          else generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3+1] = data_i;
+      if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3)) && (addr_i < (csr_addr_t'(riscv::CSR_MHPM_COUNTER_3) + MHPMCounterNum)) ) begin
+        if (riscv::XLEN == 32) begin
+          generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3+1][31:0] = data_i;
+        end else begin
+          generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3+1] = data_i;
         end
-        riscv::CSR_MHPM_COUNTER_3H,
-            riscv::CSR_MHPM_COUNTER_4H,
-            riscv::CSR_MHPM_COUNTER_5H,
-            riscv::CSR_MHPM_COUNTER_6H,
-            riscv::CSR_MHPM_COUNTER_7H,
-            riscv::CSR_MHPM_COUNTER_8H :begin
-          if (riscv::XLEN == 32)
-            generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3H+1][63:32] = data_i;
-          else update_access_exception = 1'b1;
+      end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H)) && (addr_i < (csr_addr_t'(riscv::CSR_MHPM_COUNTER_3H) + MHPMCounterNum)) ) begin
+        if (riscv::XLEN == 32) begin
+          generic_counter_d[addr_i-riscv::CSR_MHPM_COUNTER_3H+1][63:32] = data_i;
+        end else begin
+          update_access_exception = 1'b1;
         end
-        riscv::CSR_MHPM_EVENT_3,
-            riscv::CSR_MHPM_EVENT_4,
-            riscv::CSR_MHPM_EVENT_5,
-            riscv::CSR_MHPM_EVENT_6,
-            riscv::CSR_MHPM_EVENT_7,
-            riscv::CSR_MHPM_EVENT_8   :
+      end else if( (addr_i >= csr_addr_t'(riscv::CSR_MHPM_EVENT_3)) && (addr_i < csr_addr_t'(riscv::CSR_MHPM_EVENT_3) + MHPMCounterNum) ) begin
         mhpmevent_d[addr_i-riscv::CSR_MHPM_EVENT_3+1] = data_i;
-        default: update_access_exception = 1'b1;
-      endcase
+      end
     end
   end
 

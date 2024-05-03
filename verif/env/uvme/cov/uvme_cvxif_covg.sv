@@ -16,6 +16,17 @@
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
+
+`ifndef __UVMA_CVXIF_COVG_SV__
+`define __UVMA_CVXIF_COVG_SV__
+
+`ifdef UNSUPPORTED_WITH //TODO - Remove ifdef when the issue in VCS simulator is fixed
+  `define WITH iff
+`else
+   `define WITH with
+`endif
+
+
 covergroup cg_executed(
     string name,
     bit seq_cus_instr_x2_enabled
@@ -37,7 +48,7 @@ covergroup cg_executed(
    }
 
    cp_prev_instr : coverpoint prev_req_item.issue_req.instr iff (prev_req_item != null) {
-     ignore_bins IGN_X2_OFF = {[0:$]} iff (!seq_cus_instr_x2_enabled);
+     ignore_bins IGN_X2_OFF = {[0:$]} `WITH (!seq_cus_instr_x2_enabled);
      wildcard bins CUS_ADD        = {32'b0000000??????????001?????1111011};
      wildcard bins CUS_ADD_RS3    = {32'b?????01??????????000?????1111011};
      wildcard bins CUS_ADD_MULTI  = {32'b0001000??????????000?????1111011};
@@ -73,20 +84,20 @@ covergroup cg_cus_add_instr(
    }
 
    cp_rs3 : coverpoint req_item.issue_req.instr[31:27] {
-    ignore_bins IGN_RS3[] = {[0:31]} iff (!rs3_valid);
+    ignore_bins IGN_RS3[] = {[0:31]} `WITH (!rs3_valid);
     bins RS3[] = {[0:31]};
    }
 
    cross_rd_rs1 : cross cp_rd, cp_rs1 {
-    ignore_bins IGN_OFF = cross_rd_rs1 iff (!reg_cus_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs1 `WITH (!reg_cus_crosses_enabled);
    }
 
    cross_rd_rs2 : cross cp_rd, cp_rs2 {
-    ignore_bins IGN_OFF = cross_rd_rs2 iff (!reg_cus_crosses_enabled);
+    ignore_bins IGN_OFF = cross_rd_rs2 `WITH (!reg_cus_crosses_enabled);
    }
 
    cross_rd_rs3 : cross cp_rd, cp_rs3 {
-    ignore_bins IGN_OFF = cross_rd_rs3 iff (!reg_cus_crosses_enabled || !rs3_valid);
+    ignore_bins IGN_OFF = cross_rd_rs3 `WITH (!reg_cus_crosses_enabled || !rs3_valid);
    }
 
    `CVXIF_CP_BITWISE(cp_rs1_toggle, req_item.issue_req.rs[0], 1)
@@ -290,4 +301,5 @@ task uvme_cvxif_covg_c::sample_cvxif_req(uvma_cvxif_req_item_c req_item);
    if (!have_sample) `uvm_warning("CVXIF", $sformatf("Could not sample instruction: %b", req_item.issue_req.instr));
 
 endtask : sample_cvxif_req
+`endif // __UVMA_CVXIF_COVG_SV__
 
