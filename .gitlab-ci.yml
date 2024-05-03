@@ -88,7 +88,8 @@ build_tools:
   extends:
     - .setup_job
   script:
-    - git submodule update --init verif/core-v-verif
+    # core-v-verif imports yaml-cpp as a submodule ==> recurse
+    - git submodule update --init --recursive verif/core-v-verif
     - source $SYN_VCS_BASHRC
     # ROOT_PROJECT is used by Spike installer and designates the toplevel of core-v-verif tree.
     - 'export ROOT_PROJECT=$(pwd)'
