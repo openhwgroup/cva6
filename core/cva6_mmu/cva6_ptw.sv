@@ -209,10 +209,10 @@ module cva6_ptw
 
     // set the global mapping bit
     if ((enable_g_translation_i || en_ld_st_g_translation_i) && CVA6Cfg.RVH) begin
-      shared_tlb_update_o.content = gpte_q | (global_mapping_q << 5);
+      shared_tlb_update_o.content   = gpte_q | (global_mapping_q << 5);
       shared_tlb_update_o.g_content = pte;
     end else begin
-      shared_tlb_update_o.content = (pte | (global_mapping_q << 5));
+      shared_tlb_update_o.content   = (pte | (global_mapping_q << 5));
       shared_tlb_update_o.g_content = '0;
     end
 
@@ -378,8 +378,7 @@ module cva6_ptw
           if (itlb_req_i) begin
             tlb_update_asid_n = v_i ? vs_asid_i : asid_i;
             if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
-          end
-          else begin 
+          end else begin
             tlb_update_asid_n = ld_st_v_i ? vs_asid_i : asid_i;
             if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
           end
@@ -649,10 +648,10 @@ module cva6_ptw
       data_rvalid_q     <= req_port_i.data_rvalid;
 
       if (CVA6Cfg.RVH) begin
-        gpaddr_q    <= gpaddr_n;
-        gptw_pptr_q <= gptw_pptr_n;
-        ptw_stage_q <= ptw_stage_d;
-        gpte_q      <= gpte_d;
+        gpaddr_q          <= gpaddr_n;
+        gptw_pptr_q       <= gptw_pptr_n;
+        ptw_stage_q       <= ptw_stage_d;
+        gpte_q            <= gpte_d;
         tlb_update_vmid_q <= tlb_update_vmid_n;
       end
     end

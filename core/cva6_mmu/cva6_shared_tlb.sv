@@ -112,7 +112,7 @@ module cva6_shared_tlb #(
 
   logic [               SHARED_TLB_WAYS-1:0] pte_wr_en;
   logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] pte_wr_addr;
-  logic [             $bits(pte_cva6_t)-1:0] pte_wr_data      [1:0];
+  logic [             $bits(pte_cva6_t)-1:0] pte_wr_data      [                1:0];
 
   logic [               SHARED_TLB_WAYS-1:0] pte_rd_en;
   logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] pte_rd_addr;
@@ -265,10 +265,10 @@ module cva6_shared_tlb #(
 
   always_comb begin : tag_comparison
     shared_tlb_hit_d = 1'b0;
-    dtlb_update_o = '0;
-    itlb_update_o = '0;
-    match_asid     = '{default: 0};
-    match_vmid     = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
+    dtlb_update_o    = '0;
+    itlb_update_o    = '0;
+    match_asid       = '{default: 0};
+    match_vmid       = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
 
 
     if (!CVA6Cfg.UseSharedTlb) begin
@@ -310,7 +310,7 @@ module cva6_shared_tlb #(
         // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
         match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl[i_req_q][HYP_EXT*2:0];
 
-        if (shared_tag_valid[i] && match_asid  && match_vmid && match_stage[i]) begin
+        if (shared_tag_valid[i] && match_asid && match_vmid && match_stage[i]) begin
           if (|level_match[i]) begin
             shared_tlb_hit_d = 1'b1;
             if (itlb_req_q) begin
