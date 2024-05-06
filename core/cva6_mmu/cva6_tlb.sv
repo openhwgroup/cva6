@@ -32,18 +32,26 @@ module cva6_tlb
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
-    input  logic      [HYP_EXT*2:0] flush_i,  // Flush signal [g_stage,vs stage, normal translation signal]
-    input logic [HYP_EXT*2:0] v_st_enbl_i,  // v_i,g-stage enabled, s-stage enabled
+    input logic flush_i,  // Flush normal translations signal
+    input logic flush_vvma_i,  // Flush vs stage signal
+    input logic flush_gvma_i,  // Flush g stage signal
+    input logic s_st_enbl_i,  // s-stage enabled
+    input logic g_st_enbl_i,  // g-stage enabled
+    input logic v_i,  // virtualization mode
     // Update TLB
     input tlb_update_cva6_t update_i,
     // Lookup signals
     input logic lu_access_i,
-    input logic [CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i[HYP_EXT:0],  //[lu_vmid,lu_asid]
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] lu_vmid_i,
     input logic [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
     output logic [CVA6Cfg.GPLEN-1:0] lu_gpaddr_o,
-    output pte_cva6_t [HYP_EXT:0] lu_content_o,
-    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i[HYP_EXT:0],  //[vmid,asid]
-    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i[HYP_EXT:0],  // [gpaddr,vaddr]
+    output pte_cva6_t lu_content_o,
+    output pte_cva6_t lu_g_content_o,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_to_be_flushed_i,
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
+    input logic [CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
     output logic [CVA6Cfg.PtLevels-2:0] lu_is_page_o,
     output logic lu_hit_o
 );
@@ -58,7 +66,11 @@ module cva6_tlb
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 
-  pte_cva6_t [TLB_ENTRIES-1:0][HYP_EXT:0] content_q, content_n;
+  struct packed {
+    pte_cva6_t pte;
+    pte_cva6_t gpte;
+  } [TLB_ENTRIES-1:0]
+      content_q, content_n;
 
   logic [TLB_ENTRIES-1:0][CVA6Cfg.PtLevels-1:0] vpn_match;
   logic [TLB_ENTRIES-1:0][CVA6Cfg.PtLevels-1:0] level_match;
@@ -73,9 +85,9 @@ module cva6_tlb
   logic [TLB_ENTRIES-1:0] match_stage;
   pte_cva6_t g_content;
   logic [TLB_ENTRIES-1:0][(CVA6Cfg.GPPNW-1):0] gppn;
-  logic [HYP_EXT*2:0] v_st_enbl;
+  logic [2:0] v_st_enbl;
 
-  assign v_st_enbl = (CVA6Cfg.RVH) ? v_st_enbl_i : '1;
+  assign v_st_enbl = (CVA6Cfg.RVH) ? {v_i,g_st_enbl_i,s_st_enbl_i} : '1;
   //-------------
   // Translation
   //-------------
@@ -90,10 +102,10 @@ module cva6_tlb
                                         ((&v_st_enbl[HYP_EXT:0]) ? 
                                         ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][HYP_EXT] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT])) 
                                       || (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][0] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0]))):
-                                          tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && v_st_enbl[0] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && v_st_enbl[HYP_EXT]));
+                                          tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && s_st_enbl_i || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && g_st_enbl_i));
 
         //identify if vpn matches at all PT levels for all TLB entries  
-        assign vpn_match[i][x] = (CVA6Cfg.RVH && x == (CVA6Cfg.PtLevels - 1) && ~v_st_enbl[0]) ?  //
+        assign vpn_match[i][x] = (CVA6Cfg.RVH && x == (CVA6Cfg.PtLevels - 1) && ~s_st_enbl_i) ?  //
             lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x] && lu_vaddr_i[12+HYP_EXT*(CVA6Cfg.VpnLen-1): 12+HYP_EXT*(CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))] == tags_q[i].vpn[x+HYP_EXT][(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)-HYP_EXT:0]: //
             lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
 
@@ -107,7 +119,7 @@ module cva6_tlb
 
         end
         //identify if virtual address vpn matches at all PT levels for all TLB entries 
-        assign vaddr_vpn_match[i][0][x]  = vaddr_to_be_flushed_i[0][12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
+        assign vaddr_vpn_match[i][0][x]  = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
 
       end
 
@@ -115,9 +127,9 @@ module cva6_tlb
 
       if (CVA6Cfg.RVH) begin
         //identify if GPADDR matches the GPPN
-        assign vaddr_vpn_match[i][HYP_EXT][0] = (vaddr_to_be_flushed_i[HYP_EXT][20:12] == gppn[i][8:0]);
-        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT] = (vaddr_to_be_flushed_i[HYP_EXT][29:21] == gppn[i][17:9]);
-        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT*2] = (vaddr_to_be_flushed_i[HYP_EXT][30+GPPN2:30] == gppn[i][18+GPPN2:18]);
+        assign vaddr_vpn_match[i][HYP_EXT][0] = (gpaddr_to_be_flushed_i[20:12] == gppn[i][8:0]);
+        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT] = (gpaddr_to_be_flushed_i[29:21] == gppn[i][17:9]);
+        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT*2] = (gpaddr_to_be_flushed_i[30+GPPN2:30] == gppn[i][18+GPPN2:18]);
 
       end
 
@@ -130,32 +142,33 @@ module cva6_tlb
   always_comb begin : translation
 
     // default assignment
-    lu_hit       = '{default: 0};
-    lu_hit_o     = 1'b0;
-    lu_content_o = '{default: 0};
-    lu_is_page_o = '{default: 0};
-    match_asid   = '{default: 0};
-    match_stage  = '{default: 0};
-    g_content    = '{default: 0};
-    lu_gpaddr_o  = '{default: 0};
+    lu_hit         = '{default: 0};
+    lu_hit_o       = 1'b0;
+    lu_content_o   = '{default: 0};
+    lu_g_content_o = '{default: 0};
+    lu_is_page_o   = '{default: 0};
+    match_asid     = '{default: 0};
+    match_stage    = '{default: 0};
+    g_content      = '{default: 0};
+    lu_gpaddr_o    = '{default: 0};
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // first level match, this may be a giga page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-      match_asid[i][0] = (((lu_asid_i[0][CVA6Cfg.ASID_WIDTH-1:0] == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]) || content_q[i][0].g) && v_st_enbl[0]) || !v_st_enbl[0];
+      match_asid[i][0] = (((lu_asid_i == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]) || content_q[i].pte.g) && s_st_enbl_i) || !s_st_enbl_i;
 
       if (CVA6Cfg.RVH) begin
-        match_asid[i][HYP_EXT] = (lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] && v_st_enbl[HYP_EXT]) || !v_st_enbl[HYP_EXT];
+        match_asid[i][HYP_EXT] = (lu_vmid_i == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] && g_st_enbl_i) || !g_st_enbl_i;
       end
 
       // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
-      match_stage[i] = tags_q[i].v_st_enbl == v_st_enbl;
+      match_stage[i] = tags_q[i].v_st_enbl[HYP_EXT*2:0] == v_st_enbl[HYP_EXT*2:0];
 
       if (tags_q[i].valid && &match_asid[i] && match_stage[i]) begin
 
         if (CVA6Cfg.RVH && vpn_match[i][HYP_EXT*2]) begin
-          if (v_st_enbl[0]) begin
-            lu_gpaddr_o = {content_q[i][0].ppn[(CVA6Cfg.GPPNW-1):0], lu_vaddr_i[11:0]};
+          if (s_st_enbl_i) begin
+            lu_gpaddr_o = {content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0], lu_vaddr_i[11:0]};
             // Giga page
             if (tags_q[i].is_page[0][0])
               lu_gpaddr_o[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12];
@@ -169,17 +182,17 @@ module cva6_tlb
 
         if (|level_match[i]) begin
           lu_is_page_o = is_page_o[i];
-          lu_content_o = content_q[i];
+          lu_content_o   = content_q[i].pte;
           lu_hit_o     = 1'b1;
           lu_hit[i]    = 1'b1;
 
           if (CVA6Cfg.RVH) begin
             // Compute G-Stage PPN based on the gpaddr
-            g_content = content_q[i][HYP_EXT];
+            g_content = content_q[i].gpte;
             if (tags_q[i].is_page[HYP_EXT][HYP_EXT]) g_content.ppn[8:0] = lu_gpaddr_o[20:12];
             if (tags_q[i].is_page[0][HYP_EXT]) g_content.ppn[17:0] = lu_gpaddr_o[29:12];
             // Output G-stage and S-stage content
-            lu_content_o[HYP_EXT] = level_match[i][CVA6Cfg.PtLevels-1] ? content_q[i][HYP_EXT] : g_content;
+            lu_g_content_o = level_match[i][CVA6Cfg.PtLevels-1] ? content_q[i].gpte : g_content;
           end
         end
       end
@@ -188,17 +201,13 @@ module cva6_tlb
 
   logic [HYP_EXT:0]asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2)is 0, active high
   logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
+  logic vmid_to_be_flushed_is0;  // indicates that the VMID provided is 0, active high
+  logic gpaddr_to_be_flushed_is0;  // indicates that the GPADDR provided is 0, active high
 
-  localparam int VADDR_WIDTH[1:0] = {CVA6Cfg.GPLEN, CVA6Cfg.VLEN};
-  localparam int ASID_WIDTH[1:0] = {CVA6Cfg.VMID_WIDTH, CVA6Cfg.ASID_WIDTH};
-
-  genvar a;
-  generate
-    for (a = 0; a < HYP_EXT + 1; a++) begin
-      assign asid_to_be_flushed_is0[a]  = ~(|asid_to_be_flushed_i[a][ASID_WIDTH[a]-1:0]);
-      assign vaddr_to_be_flushed_is0[a] = ~(|vaddr_to_be_flushed_i[a][VADDR_WIDTH[a]-1:0]);
-    end
-  endgenerate
+  assign asid_to_be_flushed_is0   = ~(|asid_to_be_flushed_i);
+  assign vaddr_to_be_flushed_is0  = ~(|vaddr_to_be_flushed_i);
+  assign vmid_to_be_flushed_is0   = ~(|vmid_to_be_flushed_i);
+  assign gpaddr_to_be_flushed_is0 = ~(|gpaddr_to_be_flushed_i);
 
   // ------------------
   // Update and Flush
@@ -213,7 +222,7 @@ module cva6_tlb
       if (CVA6Cfg.RVH) begin
 
         if (tags_q[i].v_st_enbl[0]) begin
-          gppn[i] = content_q[i][0].ppn[(CVA6Cfg.GPPNW-1):0];
+          gppn[i] = content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0];
           if (tags_q[i].is_page[HYP_EXT][0])
             gppn[i][CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:0] = tags_q[i].vpn[0];
           if (tags_q[i].is_page[0][0])
@@ -226,51 +235,51 @@ module cva6_tlb
       end
 
 
-      if (flush_i[0]) begin
+      if (flush_i) begin
         if (!tags_q[i].v_st_enbl[HYP_EXT*2] || HYP_EXT == 0) begin
           // invalidate logic
           // flush everything if ASID is 0 and vaddr is 0 ("SFENCE.VMA x0 x0" case)
-          if (asid_to_be_flushed_is0[0] && vaddr_to_be_flushed_is0[0]) tags_n[i].valid = 1'b0;
+          if (asid_to_be_flushed_is0 && vaddr_to_be_flushed_is0) tags_n[i].valid = 1'b0;
           // flush vaddr in all addressing space ("SFENCE.VMA vaddr x0" case), it should happen only for leaf pages
-          else if (asid_to_be_flushed_is0[0] && (|vaddr_level_match[i][0] ) && (~vaddr_to_be_flushed_is0[0]))
+          else if (asid_to_be_flushed_is0 && (|vaddr_level_match[i][0] ) && (~vaddr_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
           // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
-          else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0][CVA6Cfg.ASID_WIDTH-1:0] == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0] ) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
+          else if ((!content_q[i].pte.g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0] ) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
           // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
-          else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0][CVA6Cfg.ASID_WIDTH-1:0]  == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0] ) && (!asid_to_be_flushed_is0[0]))
+          else if ((!content_q[i].pte.g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i  == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0] ) && (!asid_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
         end
-      end else if (flush_i[HYP_EXT] && CVA6Cfg.RVH) begin
+      end else if (flush_vvma_i && CVA6Cfg.RVH) begin
         if (tags_q[i].v_st_enbl[HYP_EXT*2] && tags_q[i].v_st_enbl[0]) begin
           // invalidate logic
           // flush everything if current VMID matches and ASID is 0 and vaddr is 0 ("SFENCE.VMA/HFENCE.VVMA x0 x0" case)
-          if (asid_to_be_flushed_is0[0] && vaddr_to_be_flushed_is0[0] && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
+          if (asid_to_be_flushed_is0 && vaddr_to_be_flushed_is0 && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_vmid_i == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
             tags_n[i].valid = 1'b0;
           // flush vaddr in all addressing space if current VMID matches ("SFENCE.VMA/HFENCE.VVMA vaddr x0" case), it should happen only for leaf pages
-          else if (asid_to_be_flushed_is0[0] && (|vaddr_level_match[i][0]) && (~vaddr_to_be_flushed_is0[0]) && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
+          else if (asid_to_be_flushed_is0 && (|vaddr_level_match[i][0]) && (~vaddr_to_be_flushed_is0) && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_vmid_i == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT]))
             tags_n[i].valid = 1'b0;
           // the entry is flushed if it's not global and asid and vaddr and current VMID matches with the entry to be flushed ("SFENCE.VMA/HFENCE.VVMA vaddr asid" case)
-          else if ((!content_q[i][0].g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i[0][CVA6Cfg.ASID_WIDTH-1:0]  == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!vaddr_to_be_flushed_is0[0]) && (!asid_to_be_flushed_is0[0]))
+          else if ((!content_q[i].pte.g) && (|vaddr_level_match[i][0]) && (asid_to_be_flushed_i  == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_vmid_i == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
           // the entry is flushed if it's not global, and the asid and the current VMID matches and vaddr is 0. ("SFENCE.VMA/HFENCE.VVMA 0 asid" case)
-          else if ((!content_q[i][0].g) && (vaddr_to_be_flushed_is0[0]) && (asid_to_be_flushed_i[0][CVA6Cfg.ASID_WIDTH-1:0]  == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_asid_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!asid_to_be_flushed_is0[0]))
+          else if ((!content_q[i].pte.g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i  == tags_q[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]  && ((tags_q[i].v_st_enbl[HYP_EXT] && lu_vmid_i == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) || !tags_q[i].v_st_enbl[HYP_EXT])) && (!asid_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
         end
-      end else if (flush_i[HYP_EXT*2] && CVA6Cfg.RVH) begin
+      end else if (flush_gvma_i && CVA6Cfg.RVH) begin
         if (tags_q[i].v_st_enbl[HYP_EXT]) begin
           // invalidate logic
           // flush everything if vmid is 0 and addr is 0 ("HFENCE.GVMA x0 x0" case)
-          if (asid_to_be_flushed_is0[HYP_EXT] && vaddr_to_be_flushed_is0[HYP_EXT])
+          if (vmid_to_be_flushed_is0 && gpaddr_to_be_flushed_is0)
             tags_n[i].valid = 1'b0;
           // flush gpaddr in all addressing space ("HFENCE.GVMA gpaddr x0" case), it should happen only for leaf pages
-          else if (asid_to_be_flushed_is0[HYP_EXT] && (|vaddr_level_match[i][HYP_EXT] ) && (~vaddr_to_be_flushed_is0[HYP_EXT]))
+          else if (vmid_to_be_flushed_is0 && (|vaddr_level_match[i][HYP_EXT] ) && (~gpaddr_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
           // the entry vmid and gpaddr both matches with the entry to be flushed ("HFENCE.GVMA gpaddr vmid" case)
-          else if ((|vaddr_level_match[i][HYP_EXT]) && (asid_to_be_flushed_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) && (~vaddr_to_be_flushed_is0[HYP_EXT]) && (~asid_to_be_flushed_is0[HYP_EXT]))
+          else if ((|vaddr_level_match[i][HYP_EXT]) && (vmid_to_be_flushed_i == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) && (~gpaddr_to_be_flushed_is0) && (~vmid_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
           // the entry is flushed if the vmid matches and gpaddr is 0. ("HFENCE.GVMA 0 vmid" case)
-          else if ((vaddr_to_be_flushed_is0[HYP_EXT]) && (asid_to_be_flushed_i[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) && (!asid_to_be_flushed_is0[HYP_EXT]))
+          else if ((gpaddr_to_be_flushed_is0) && (vmid_to_be_flushed_i == tags_q[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0]) && (!vmid_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
         end
         // normal replacement
@@ -285,7 +294,8 @@ module cva6_tlb
           1'b1
         };
         // update content as well
-        content_n[i] = update_i.content;
+        content_n[i].pte = update_i.content[0];
+        if (CVA6Cfg.RVH) content_n[i].gpte = update_i.content[HYP_EXT];
       end
     end
   end

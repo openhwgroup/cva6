@@ -141,14 +141,16 @@ module cva6_mmu
   tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
   logic                               itlb_lu_access;
-  pte_cva6_t [             HYP_EXT:0] itlb_content;
+  pte_cva6_t                          itlb_content;
+  pte_cva6_t                          itlb_g_content;
   logic      [  CVA6Cfg.PtLevels-2:0] itlb_is_page;
   logic                               itlb_lu_hit;
   logic      [     CVA6Cfg.GPLEN-1:0] itlb_gpaddr;
   logic      [CVA6Cfg.ASID_WIDTH-1:0] itlb_lu_asid;
 
   logic                               dtlb_lu_access;
-  pte_cva6_t [             HYP_EXT:0] dtlb_content;
+  pte_cva6_t                          dtlb_content;
+  pte_cva6_t                          dtlb_g_content;
   logic      [  CVA6Cfg.PtLevels-2:0] dtlb_is_page;
   logic      [CVA6Cfg.ASID_WIDTH-1:0] dtlb_lu_asid;
   logic                               dtlb_lu_hit;
@@ -174,21 +176,23 @@ module cva6_mmu
   ) i_itlb (
       .clk_i                (clk_i),
       .rst_ni               (rst_ni),
-      .flush_i              ({flush_tlb_gvma_i,flush_tlb_vvma_i,flush_tlb_i}),
-      .v_st_enbl_i          ({v_i,enable_g_translation_i,enable_translation_i}),
+      .flush_i              (flush_tlb_i),
+      .flush_vvma_i         (flush_tlb_vvma_i),
+      .flush_gvma_i         (flush_tlb_gvma_i),
+      .s_st_enbl_i          (enable_translation_i),
+      .g_st_enbl_i          (enable_g_translation_i),
+      .v_i                  (v_i),
       .update_i             (update_itlb),
       .lu_access_i          (itlb_lu_access),
-      // .lu_asid_i            ({(CVA6Cfg.ASID_WIDTH)'(vmid_i),itlb_lu_asid}),
-      .lu_asid_i             ({itlb_lu_asid}),
-      // .asid_to_be_flushed_i ({(CVA6Cfg.ASID_WIDTH)'(vmid_to_be_flushed_i),asid_to_be_flushed_i}),
-      .asid_to_be_flushed_i  ({asid_to_be_flushed_i}),
-      // .vaddr_to_be_flushed_i({gpaddr_to_be_flushed_i,vaddr_to_be_flushed_i}),
-      .vaddr_to_be_flushed_i ({vaddr_to_be_flushed_i}),
+      .lu_asid_i            (itlb_lu_asid),
+      .lu_vmid_i            (vmid_i),
       .lu_vaddr_i           (icache_areq_i.fetch_vaddr),
       .lu_content_o         (itlb_content),
+      .lu_g_content_o       (itlb_g_content),
       .lu_gpaddr_o          (itlb_gpaddr),
       .lu_is_page_o         (itlb_is_page),
-      .lu_hit_o             (itlb_lu_hit)
+      .lu_hit_o             (itlb_lu_hit),
+      .*
   );
 
   cva6_tlb #(
@@ -200,21 +204,23 @@ module cva6_mmu
   ) i_dtlb (
       .clk_i                (clk_i),
       .rst_ni               (rst_ni),
-      .flush_i              ({flush_tlb_gvma_i,flush_tlb_vvma_i,flush_tlb_i}),
-      .v_st_enbl_i          ({ld_st_v_i,en_ld_st_g_translation_i,en_ld_st_translation_i}),
+      .flush_i              (flush_tlb_i),
+      .flush_vvma_i         (flush_tlb_vvma_i),
+      .flush_gvma_i         (flush_tlb_gvma_i),
+      .s_st_enbl_i          (en_ld_st_translation_i),
+      .g_st_enbl_i          (en_ld_st_g_translation_i),
+      .v_i                  (ld_st_v_i),
       .update_i             (update_dtlb),
       .lu_access_i          (dtlb_lu_access),
-      // .lu_asid_i            ({(CVA6Cfg.ASID_WIDTH)'(vmid_i),itlb_lu_asid}),
-      .lu_asid_i             ({itlb_lu_asid}),
-      // .asid_to_be_flushed_i ({(CVA6Cfg.ASID_WIDTH)'(vmid_to_be_flushed_i),asid_to_be_flushed_i}),
-      .asid_to_be_flushed_i  ({asid_to_be_flushed_i}),
-      // .vaddr_to_be_flushed_i({gpaddr_to_be_flushed_i,vaddr_to_be_flushed_i}),
-      .vaddr_to_be_flushed_i ({vaddr_to_be_flushed_i}),
+      .lu_asid_i            (itlb_lu_asid),
+      .lu_vmid_i            (vmid_i),
       .lu_vaddr_i           (lsu_vaddr_i),
       .lu_content_o         (dtlb_content),
+      .lu_g_content_o       (dtlb_g_content),
       .lu_gpaddr_o          (dtlb_gpaddr),
       .lu_is_page_o         (dtlb_is_page),
-      .lu_hit_o             (dtlb_lu_hit)
+      .lu_hit_o             (dtlb_lu_hit),
+      .*
   );
 
 
@@ -227,11 +233,19 @@ module cva6_mmu
   ) i_shared_tlb (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
-      .flush_i({flush_tlb_gvma_i,flush_tlb_vvma_i,flush_tlb_i}),
-      .v_st_enbl_i({enable_translation_i, en_ld_st_translation_i}),
+      .flush_i              (flush_tlb_i),
+      .flush_vvma_i         (flush_tlb_vvma_i),
+      .flush_gvma_i         (flush_tlb_gvma_i),
+      .s_st_enbl_i          (enable_translation_i),
+      .g_st_enbl_i          (enable_g_translation_i),
+      .v_i                  (v_i),
+      .s_ld_st_enbl_i          (en_ld_st_translation_i),
+      .g_ld_st_enbl_i          (en_ld_st_g_translation_i),
+      .ld_st_v_i                  (ld_st_v_i),
 
-      .dtlb_asid_i  ({dtlb_lu_asid}),
-      .itlb_asid_i  ({itlb_lu_asid}),
+      .dtlb_asid_i  (dtlb_lu_asid),
+      .itlb_asid_i  (itlb_lu_asid),
+      .lu_vmid_i    (vmid_i),
       // from TLBs
       // did we miss?
       .itlb_access_i(itlb_lu_access),
@@ -329,11 +343,11 @@ module cva6_mmu
     icache_areq_o.fetch_exception = '0;
     // Check whether we are allowed to access this memory region from a fetch perspective
     iaccess_err[0] = icache_areq_i.fetch_req && enable_translation_i &&  //
-    (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content[0].u)  //
-    || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content[0].u));
+    (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)  //
+    || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
     if (CVA6Cfg.RVH)
-      iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && enable_g_translation_i && !itlb_content[HYP_EXT].u;
+      iaccess_err[HYP_EXT] = icache_areq_i.fetch_req && enable_g_translation_i && !itlb_g_content.u;
     // MMU enabled: address from TLB, request delayed until hit. Error when TLB
     // hit and no access right or TLB hit and translated address not valid (e.g.
     // AXI decode error), or when PTW performs walk due to ITLB miss and raises
@@ -356,7 +370,7 @@ module cva6_mmu
       icache_areq_o.fetch_valid = 1'b0;
 
       icache_areq_o.fetch_paddr = {
-        (enable_g_translation_i && CVA6Cfg.RVH)? itlb_content[HYP_EXT].ppn : itlb_content[0].ppn,
+        (enable_g_translation_i && CVA6Cfg.RVH)? itlb_g_content.ppn : itlb_content.ppn,
         icache_areq_i.fetch_vaddr[11:0]
       };
 
@@ -495,7 +509,8 @@ module cva6_mmu
   logic [HYP_EXT:0][CVA6Cfg.VLEN-1:0] lsu_vaddr_n, lsu_vaddr_q;
   logic [31:0] lsu_tinst_n, lsu_tinst_q;
   logic hs_ld_st_inst_n, hs_ld_st_inst_q;
-  pte_cva6_t [HYP_EXT:0] dtlb_pte_n, dtlb_pte_q;
+  pte_cva6_t dtlb_pte_n, dtlb_pte_q;
+  pte_cva6_t dtlb_gpte_n, dtlb_gpte_q;
   exception_t misaligned_ex_n, misaligned_ex_q;
   logic lsu_req_n, lsu_req_q;
   logic lsu_is_store_n, lsu_is_store_q;
@@ -531,15 +546,16 @@ module cva6_mmu
     // Check if the User flag is set, then we may only access it in supervisor mode
     // if SUM is enabled
     daccess_err[0] = en_ld_st_translation_i &&
-                ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && (ld_st_v_i ? !vs_sum_i : !sum_i ) && dtlb_pte_q[0].u) || // SUM is not set and we are trying to access a user page in supervisor mode
-    (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q[0].u));
+                ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && (ld_st_v_i ? !vs_sum_i : !sum_i ) && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
+    (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u));
 
     if (CVA6Cfg.RVH) begin
       lsu_tinst_n = lsu_tinst_i;
       hs_ld_st_inst_n = hs_ld_st_inst_i;
       lsu_vaddr_n[HYP_EXT][(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: CVA6Cfg.GPLEN)-1:0] = dtlb_gpaddr[(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: CVA6Cfg.GPLEN)-1:0];
       csr_hs_ld_st_inst_o = hs_ld_st_inst_i || hs_ld_st_inst_q;
-      daccess_err[HYP_EXT] = en_ld_st_g_translation_i && !dtlb_pte_q[HYP_EXT].u;
+      daccess_err[HYP_EXT] = en_ld_st_g_translation_i && !dtlb_gpte_q.u;
+      dtlb_gpte_n = dtlb_g_content;
     end
 
     lsu_paddr_o = (CVA6Cfg.PLEN)'(lsu_vaddr_q[0][((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):0]);
@@ -549,9 +565,9 @@ module cva6_mmu
     if ((en_ld_st_translation_i || en_ld_st_g_translation_i) && !misaligned_ex_q.valid) begin
       lsu_valid_o = 1'b0;
 
-      lsu_dtlb_ppn_o = (en_ld_st_g_translation_i && CVA6Cfg.RVH)? dtlb_content[HYP_EXT].ppn :dtlb_content[0].ppn;
+      lsu_dtlb_ppn_o = (en_ld_st_g_translation_i && CVA6Cfg.RVH)? dtlb_g_content.ppn :dtlb_content.ppn;
       lsu_paddr_o = {
-        (en_ld_st_g_translation_i && CVA6Cfg.RVH)? dtlb_pte_q[HYP_EXT].ppn : dtlb_pte_q[0].ppn,
+        (en_ld_st_g_translation_i && CVA6Cfg.RVH)? dtlb_gpte_q.ppn : dtlb_pte_q.ppn,
         lsu_vaddr_q[0][11:0]
       };
 
@@ -581,7 +597,7 @@ module cva6_mmu
         if (lsu_is_store_q) begin
           // check if the page is write-able and we are not violating privileges
           // also check if the dirty flag is set
-          if(HYP_EXT==1 && en_ld_st_g_translation_i && (!dtlb_pte_q[HYP_EXT].w || daccess_err[HYP_EXT] || !dtlb_pte_q[HYP_EXT].d)) begin
+          if(HYP_EXT==1 && en_ld_st_g_translation_i && (!dtlb_gpte_q.w || daccess_err[HYP_EXT] || !dtlb_gpte_q.d)) begin
             lsu_exception_o.cause = riscv::STORE_GUEST_PAGE_FAULT;
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
@@ -593,7 +609,7 @@ module cva6_mmu
               lsu_exception_o.tinst = '0;
               lsu_exception_o.gva = ld_st_v_i;
             end
-          end else if ((en_ld_st_translation_i || !CVA6Cfg.RVH) && (!dtlb_pte_q[0].w || daccess_err[0] || !dtlb_pte_q[0].d)) begin
+          end else if ((en_ld_st_translation_i || !CVA6Cfg.RVH) && (!dtlb_pte_q.w || daccess_err[0] || !dtlb_pte_q.d)) begin
             lsu_exception_o.cause = riscv::STORE_PAGE_FAULT;
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
@@ -812,6 +828,7 @@ module cva6_mmu
       lsu_req_q       <= '0;
       misaligned_ex_q <= '0;
       dtlb_pte_q      <= '0;
+      dtlb_gpte_q     <= '0;
       dtlb_hit_q      <= '0;
       lsu_is_store_q  <= '0;
       dtlb_is_page_q  <= '0;
@@ -829,6 +846,7 @@ module cva6_mmu
       if (CVA6Cfg.RVH) begin
         lsu_tinst_q     <= lsu_tinst_n;
         hs_ld_st_inst_q <= hs_ld_st_inst_n;
+        dtlb_gpte_q     <= dtlb_gpte_n;
       end
     end
   end
