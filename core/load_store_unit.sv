@@ -237,18 +237,6 @@ module load_store_unit
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
-  assign enable_translation = {v_i, enable_g_translation_i, enable_translation_i};
-  assign en_ld_st_translation = {ld_st_v_i, en_ld_st_g_translation_i, en_ld_st_translation_i};
-
-  assign sum = {vs_sum_i, sum_i};
-  assign mxr = {vmxr_i, mxr_i};
-  assign asid = {(CVA6Cfg.ASID_WIDTH)'(vmid_i), vs_asid_i, asid_i};
-
-  assign flush_tlb = {flush_tlb_gvma_i, flush_tlb_vvma_i, flush_tlb_i};
-  assign satp_ppn = {hgatp_ppn_i, vsatp_ppn_i, satp_ppn_i};
-
-  assign asid_to_be_flushed = {vmid_to_be_flushed_i, asid_to_be_flushed_i};
-  assign vaddr_to_be_flushed = {gpaddr_to_be_flushed_i, vaddr_to_be_flushed_i};
 
   if (CVA6Cfg.MmuPresent) begin : gen_mmu
     localparam HYP_EXT = CVA6Cfg.RVH ? 1 : 0;
@@ -267,8 +255,6 @@ module load_store_unit
         .clk_i(clk_i),
         .rst_ni(rst_ni),
         .flush_i(flush_i),
-        .enable_translation_i({enable_translation[HYP_EXT*2:0]}),
-        .en_ld_st_translation_i({en_ld_st_translation[HYP_EXT*2:0]}),
         .icache_areq_i(icache_areq_i),
         .icache_areq_o(icache_areq_o),
         // misaligned bypass
@@ -288,16 +274,8 @@ module load_store_unit
         .priv_lvl_i      (priv_lvl_i),
         .ld_st_priv_lvl_i(ld_st_priv_lvl_i),
 
-        .sum_i          ({sum[HYP_EXT:0]}),
-        .mxr_i          ({mxr[HYP_EXT:0]}),
         .hlvx_inst_i    (mmu_hlvx_inst),
         .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
-
-        .satp_ppn_i           (satp_ppn[HYP_EXT*2:0]),
-        .asid_i               (asid[HYP_EXT*2:0]),
-        .asid_to_be_flushed_i (asid_to_be_flushed[HYP_EXT:0]),
-        .vaddr_to_be_flushed_i(vaddr_to_be_flushed[HYP_EXT:0]),
-        .flush_tlb_i          ({flush_tlb[HYP_EXT*2:0]}),
 
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
@@ -305,7 +283,8 @@ module load_store_unit
         .req_port_i(dcache_req_ports_i[0]),
         .req_port_o(dcache_req_ports_o[0]),
         .pmpcfg_i,
-        .pmpaddr_i
+        .pmpaddr_i,
+        .*
     );
 
   end else begin : gen_no_mmu
