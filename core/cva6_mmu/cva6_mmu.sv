@@ -129,9 +129,12 @@ module cva6_mmu
   logic [HYP_EXT:0] daccess_err;  // insufficient privilege to access this data page
   logic ptw_active;  // PTW is currently walking a page table
   logic walking_instr;  // PTW is walking because of an ITLB miss
-  logic [HYP_EXT*2:0] ptw_error;  // PTW threw an exception
+  logic ptw_error;  // PTW threw an exception
+  logic ptw_error_at_g_st;  // PTW threw an exception at the G-Stage
+  logic ptw_err_at_g_int_st;  // PTW threw an exception at the G-Stage during S-Stage translation
   logic ptw_access_exception;  // PTW threw an access exception (PMPs)
-  logic [HYP_EXT:0][CVA6Cfg.PLEN-1:0] ptw_bad_paddr;  // PTW guest page fault bad guest physical addr
+  logic [CVA6Cfg.PLEN-1:0] ptw_bad_paddr;  // PTW page fault bad physical addr
+  logic [CVA6Cfg.GPLEN-1:0] ptw_bad_gpaddr;  // PTW guest page fault bad guest physical addr
 
   logic [CVA6Cfg.VLEN-1:0] update_vaddr, shared_tlb_vaddr;
 
@@ -267,22 +270,18 @@ module cva6_mmu
   ) i_ptw (
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
-      .flush_i(flush_i),
 
       .ptw_active_o          (ptw_active),
       .walking_instr_o       (walking_instr),
       .ptw_error_o           (ptw_error),
+      .ptw_error_at_g_st_o   (ptw_error_at_g_st),
+      .ptw_err_at_g_int_st_o (ptw_err_at_g_int_st),
       .ptw_access_exception_o(ptw_access_exception),
-
-      .enable_translation_i  (enable_translation_i),
-      .en_ld_st_translation_i(en_ld_st_translation_i),
 
       .lsu_is_store_i(lsu_is_store_i),
       // PTW memory interface
       .req_port_i    (req_port_i),
       .req_port_o    (req_port_o),
-
-      .asid_i({asid_i}),
 
       .update_vaddr_o(update_vaddr),
 
@@ -299,9 +298,6 @@ module cva6_mmu
       .itlb_req_i(itlb_req),
 
       .hlvx_inst_i(hlvx_inst_i),
-      // from CSR file
-      .satp_ppn_i ({satp_ppn_i}),
-      .mxr_i      ({mxr_i}),
 
       // Performance counters
       .shared_tlb_miss_o(shared_tlb_miss),  //open for now
@@ -309,7 +305,9 @@ module cva6_mmu
       // PMP
       .pmpcfg_i   (pmpcfg_i),
       .pmpaddr_i  (pmpaddr_i),
-      .bad_paddr_o(ptw_bad_paddr)
+      .bad_paddr_o(ptw_bad_paddr),
+      .bad_gpaddr_o(ptw_bad_gpaddr),
+      .*
 
   );
 
@@ -418,15 +416,15 @@ module cva6_mmu
         // ITLB Miss
         // ---------//
         // watch out for exceptions happening during walking the page table
-        icache_areq_o.fetch_valid = ptw_error[0] | ptw_access_exception;
-        if (ptw_error[0]) begin
-          if (CVA6Cfg.RVH && ptw_error[HYP_EXT]) begin
+        icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
+        if (ptw_error) begin
+          if (CVA6Cfg.RVH && ptw_error_at_g_st) begin
             icache_areq_o.fetch_exception.cause = riscv::INSTR_GUEST_PAGE_FAULT;
             icache_areq_o.fetch_exception.valid = 1'b1;
             if (CVA6Cfg.TvalEn) icache_areq_o.fetch_exception.tval = CVA6Cfg.XLEN'(update_vaddr);
             if (CVA6Cfg.RVH) begin
-              icache_areq_o.fetch_exception.tval2 = ptw_bad_paddr[HYP_EXT][CVA6Cfg.GPLEN-1:0];
-              icache_areq_o.fetch_exception.tinst=(ptw_error[HYP_EXT*2] ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
+              icache_areq_o.fetch_exception.tval2 = ptw_bad_gpaddr[CVA6Cfg.GPLEN-1:0];
+              icache_areq_o.fetch_exception.tinst=(ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
               icache_areq_o.fetch_exception.gva = v_i;
             end
           end else begin
@@ -455,7 +453,7 @@ module cva6_mmu
 
     // if it didn't match any execute region throw an `Instruction Access Fault`
     // or: if we are not translating, check PMPs immediately on the paddr
-    if ((!match_any_execute_region && !ptw_error[0]) || (!(enable_translation_i || enable_g_translation_i) && !pmp_instr_allow)) begin
+    if ((!match_any_execute_region && !ptw_error) || (!(enable_translation_i || enable_g_translation_i) && !pmp_instr_allow)) begin
       icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
       icache_areq_o.fetch_exception.valid = 1'b1;
       if (CVA6Cfg.TvalEn)  //To confirm this is the right TVAL 
@@ -673,12 +671,12 @@ module cva6_mmu
       // watch out for exceptions
       if (ptw_active && !walking_instr) begin
         // page table walker threw an exception
-        if (ptw_error[0]) begin
+        if (ptw_error) begin
           // an error makes the translation valid
           lsu_valid_o = 1'b1;
           // the page table walker can only throw page faults
           if (lsu_is_store_q) begin
-            if (CVA6Cfg.RVH && ptw_error[HYP_EXT]) begin
+            if (CVA6Cfg.RVH && ptw_error_at_g_st) begin
               lsu_exception_o.cause = riscv::STORE_GUEST_PAGE_FAULT;
               lsu_exception_o.valid = 1'b1;
               if (CVA6Cfg.TvalEn)
@@ -686,8 +684,8 @@ module cva6_mmu
                   {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr
                 };
               if (CVA6Cfg.RVH) begin
-                lsu_exception_o.tval2 = ptw_bad_paddr[HYP_EXT][CVA6Cfg.GPLEN-1:0];
-                lsu_exception_o.tinst= (ptw_error[HYP_EXT*2] ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
+                lsu_exception_o.tval2 = ptw_bad_gpaddr[CVA6Cfg.GPLEN-1:0];
+                lsu_exception_o.tinst= (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
                 lsu_exception_o.gva = ld_st_v_i;
               end
             end else begin
@@ -704,7 +702,7 @@ module cva6_mmu
               end
             end
           end else begin
-            if (CVA6Cfg.RVH && ptw_error[HYP_EXT]) begin
+            if (CVA6Cfg.RVH && ptw_error_at_g_st) begin
               lsu_exception_o.cause = riscv::LOAD_GUEST_PAGE_FAULT;
               lsu_exception_o.valid = 1'b1;
               if (CVA6Cfg.TvalEn)
@@ -712,8 +710,8 @@ module cva6_mmu
                   {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[0][CVA6Cfg.VLEN-1]}}, update_vaddr
                 };
               if (CVA6Cfg.RVH) begin
-                lsu_exception_o.tval2 = ptw_bad_paddr[HYP_EXT][CVA6Cfg.GPLEN-1:0];
-                lsu_exception_o.tinst= (ptw_error[HYP_EXT*2] ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
+                lsu_exception_o.tval2 = ptw_bad_gpaddr[CVA6Cfg.GPLEN-1:0];
+                lsu_exception_o.tinst= (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
                 lsu_exception_o.gva = ld_st_v_i;
               end
             end else begin

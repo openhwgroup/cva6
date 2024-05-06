@@ -37,10 +37,16 @@ module cva6_ptw
                           // e.g.: there could be a CSR instruction that changes everything
     output logic ptw_active_o,
     output logic walking_instr_o,  // set when walking for TLB
-    output logic [HYP_EXT*2:0] ptw_error_o,  // set when an error occurred
+    output logic ptw_error_o,  // set when an error occurred
+    output logic ptw_error_at_g_st_o,  // set when an error occurred at the G-Stage
+    output logic ptw_err_at_g_int_st_o,  // set when an error occurred at the G-Stage during S-Stage translation
     output logic ptw_access_exception_o,  // set when an PMP access exception occured
-    input logic [HYP_EXT*2:0] enable_translation_i,  //[v_i,enable_g_translation,enable_translation]
-    input  logic   [HYP_EXT*2:0]    en_ld_st_translation_i,   // enable virtual memory translation for load/stores
+    input logic enable_translation_i,  // CSRs indicate to enable SV39 VS-Stage translation
+    input logic enable_g_translation_i,  // CSRs indicate to enable SV39  G-Stage translation
+    input logic en_ld_st_translation_i,  // enable virtual memory translation for load/stores
+    input logic en_ld_st_g_translation_i,  // enable G-Stage translation for load/stores
+    input logic v_i,  // current virtualization mode bit
+    input logic ld_st_v_i,  // load/store virtualization mode bit
     input logic hlvx_inst_i,  // is a HLVX load/store instruction
 
     input  logic          lsu_is_store_i,  // this translation was triggered by a store
@@ -54,7 +60,9 @@ module cva6_ptw
 
     output logic [CVA6Cfg.VLEN-1:0] update_vaddr_o,
 
-    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i[HYP_EXT*2:0],  //[vmid,vs_asid,asid]
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] vs_asid_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
 
     // from TLBs
     // did we miss?
@@ -65,8 +73,11 @@ module cva6_ptw
     input logic itlb_req_i,
 
     // from CSR file
-    input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i[HYP_EXT*2:0],  //[hgatp,vsatp,satp]
-    input logic [       HYP_EXT:0] mxr_i,
+    input  logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,     // ppn from satp
+    input  logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_i,    // ppn from satp
+    input  logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,    // ppn from hgatp
+    input  logic                    mxr_i,
+    input  logic                    vmxr_i,
 
     // Performance counters
     output logic shared_tlb_miss_o,
@@ -75,7 +86,8 @@ module cva6_ptw
 
     input riscv::pmpcfg_t [15:0] pmpcfg_i,
     input logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
-    output logic [HYP_EXT:0][CVA6Cfg.PLEN-1:0] bad_paddr_o
+    output logic [CVA6Cfg.PLEN-1:0] bad_paddr_o,
+    output logic [CVA6Cfg.GPLEN-1:0] bad_gpaddr_o
 
 );
 
@@ -118,8 +130,10 @@ module cva6_ptw
   logic global_mapping_q, global_mapping_n;
   // latched tag signal
   logic tag_valid_n, tag_valid_q;
-  // register the ASIDs
-  logic [HYP_EXT:0][CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
+  // register the ASID
+  logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
+  // register the VMID
+  logic [CVA6Cfg.VMID_WIDTH-1:0] tlb_update_vmid_q, tlb_update_vmid_n;
   // register the VPN we need to walk, SV39 defines a 39 bit virtual address
   logic [CVA6Cfg.VLEN-1:0] vaddr_q, vaddr_n;
   logic [HYP_EXT*2:0][CVA6Cfg.PtLevels-2:0][(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] vaddr_lvl;
@@ -183,9 +197,9 @@ module cva6_ptw
     // update the correct page table level
     for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
       for (int unsigned x = 0; x < CVA6Cfg.PtLevels - 1; x++) begin
-        if((&enable_translation_i[HYP_EXT:0] || &en_ld_st_translation_i[HYP_EXT:0]) && CVA6Cfg.RVH) begin
+        if((enable_g_translation_i && enable_translation_i) || (en_ld_st_g_translation_i && en_ld_st_translation_i) && CVA6Cfg.RVH) begin
           shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==HYP_EXT?0 : 1] == x);
-        end else if (enable_translation_i[0] || en_ld_st_translation_i[0] || HYP_EXT == 0) begin
+        end else if (enable_translation_i || en_ld_st_translation_i || !CVA6Cfg.RVH) begin
           shared_tlb_update_o.is_page[x][y] = y == 0 ? (ptw_lvl_q[0] == x) : 1'b0;
         end else begin
           shared_tlb_update_o.is_page[x][y] = y != 0 ? (ptw_lvl_q[0] == x) : 1'b0;
@@ -193,7 +207,7 @@ module cva6_ptw
       end
 
       // set the global mapping bit
-      if ((enable_translation_i[HYP_EXT] || en_ld_st_translation_i[HYP_EXT]) && CVA6Cfg.RVH) begin
+      if ((enable_g_translation_i || en_ld_st_g_translation_i) && CVA6Cfg.RVH) begin
         shared_tlb_update_o.content[y] = y == 0 ? gpte_q | (global_mapping_q << 5) : pte;
       end else begin
         shared_tlb_update_o.content[y] = y == 0 ? (pte | (global_mapping_q << 5)) : '0;
@@ -202,9 +216,9 @@ module cva6_ptw
     // output the correct ASIDs
     shared_tlb_update_o.asid = tlb_update_asid_q;
 
-    bad_paddr_o[0] = ptw_access_exception_o ? ptw_pptr_q : 'b0;
+    bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
     if (CVA6Cfg.RVH)
-      bad_paddr_o[HYP_EXT][CVA6Cfg.GPLEN-1:0] = ptw_error_o[HYP_EXT] ? ((ptw_stage_q == G_INTERMED_STAGE) ? gptw_pptr_q[CVA6Cfg.GPLEN-1:0] : gpaddr_q) : 'b0;
+      bad_gpaddr_o[CVA6Cfg.GPLEN-1:0] = ptw_error_at_g_st_o ? ((ptw_stage_q == G_INTERMED_STAGE) ? gptw_pptr_q[CVA6Cfg.GPLEN-1:0] : gpaddr_q) : 'b0;
   end
 
   assign req_port_o.tag_valid = tag_valid_q;
@@ -272,7 +286,9 @@ module cva6_ptw
     req_port_o.data_req       = 1'b0;
     req_port_o.data_size      = 2'(CVA6Cfg.PtLevels);
     req_port_o.data_we        = 1'b0;
-    ptw_error_o               = '0;
+    ptw_error_o               = 1'b0;
+    ptw_error_at_g_st_o       = 1'b0;
+    ptw_err_at_g_int_st_o     = 1'b0;
     ptw_access_exception_o    = 1'b0;
     shared_tlb_update_o.valid = 1'b0;
     is_instr_ptw_n            = is_instr_ptw_q;
@@ -311,39 +327,39 @@ module cva6_ptw
 
 
         // if we got an ITLB miss
-        if ((|enable_translation_i[HYP_EXT:0] || |en_ld_st_translation_i[HYP_EXT:0]  || HYP_EXT == 0) && shared_tlb_access_i && ~shared_tlb_hit_i) begin
-          if ((&enable_translation_i[HYP_EXT:0] || &en_ld_st_translation_i[HYP_EXT:0]) && CVA6Cfg.RVH) begin
+        if (((enable_translation_i | enable_g_translation_i) || (en_ld_st_translation_i || en_ld_st_g_translation_i)  || !CVA6Cfg.RVH) && shared_tlb_access_i && ~shared_tlb_hit_i) begin
+          if (((enable_translation_i && enable_g_translation_i) || (en_ld_st_translation_i && en_ld_st_g_translation_i)) && CVA6Cfg.RVH) begin
             ptw_stage_d = G_INTERMED_STAGE;
             pptr = {
-              satp_ppn_i[HYP_EXT],
+              vsatp_ppn_i,
               shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
               (CVA6Cfg.PtLevels)'(0)
             };
             gptw_pptr_n = pptr;
             ptw_pptr_n = {
-              satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
+              hgatp_ppn_i[CVA6Cfg.PPNW-1:2],
               pptr[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
               (CVA6Cfg.PtLevels)'(0)
             };
-          end else if (((|enable_translation_i[HYP_EXT:0] && !enable_translation_i[0]) || (|en_ld_st_translation_i[HYP_EXT:0] && !en_ld_st_translation_i[0])) && CVA6Cfg.RVH) begin
+          end else if ((((enable_translation_i | enable_g_translation_i) && !enable_translation_i) || ((en_ld_st_translation_i || en_ld_st_g_translation_i) && !en_ld_st_translation_i)) && CVA6Cfg.RVH) begin
             ptw_stage_d = G_FINAL_STAGE;
             gpaddr_n = shared_tlb_vaddr_i[CVA6Cfg.SV+HYP_EXT*2-1:0];
             ptw_pptr_n = {
-              satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
+              hgatp_ppn_i[CVA6Cfg.PPNW-1:2],
               shared_tlb_vaddr_i[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
               (CVA6Cfg.PtLevels)'(0)
             };
           end else begin
             ptw_stage_d = S_STAGE;
-            if((enable_translation_i[HYP_EXT*2] || en_ld_st_translation_i[HYP_EXT*2]) && CVA6Cfg.RVH)
+            if((v_i || ld_st_v_i) && CVA6Cfg.RVH)
               ptw_pptr_n = {
-                satp_ppn_i[HYP_EXT],
+                vsatp_ppn_i,
                 shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
                 (CVA6Cfg.PtLevels)'(0)
               };
             else
               ptw_pptr_n = {
-                satp_ppn_i[0],
+                satp_ppn_i,
                 shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
                 (CVA6Cfg.PtLevels)'(0)
               };
@@ -355,14 +371,12 @@ module cva6_ptw
           shared_tlb_miss_o = 1'b1;
 
           if (itlb_req_i)
-            tlb_update_asid_n[0] = enable_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0];
+            tlb_update_asid_n = v_i ? vs_asid_i : asid_i;
+            if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
           else
-            tlb_update_asid_n[0] = en_ld_st_translation_i[2*HYP_EXT] ? asid_i[HYP_EXT] : asid_i[0];
+            tlb_update_asid_n = ld_st_v_i ? vs_asid_i : asid_i;
+            if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
 
-          if (CVA6Cfg.RVH) tlb_update_asid_n[HYP_EXT] = asid_i[HYP_EXT*2];
-          // for (int unsigned b = 0; b < HYP_EXT + 1; b++) begin
-          //   tlb_update_asid_n[b] = b==0 ? ((enable_translation_i[2*HYP_EXT] || en_ld_st_translation_i[2*HYP_EXT]) ? asid_i[HYP_EXT] : asid_i[0]) : asid_i[HYP_EXT*2];
-          // end
         end
       end
 
@@ -382,7 +396,7 @@ module cva6_ptw
         if (data_rvalid_q) begin
 
           // check if the global mapping bit is set
-          if (pte.g && (ptw_stage_q == S_STAGE || HYP_EXT == 0)) global_mapping_n = 1'b1;
+          if (pte.g && (ptw_stage_q == S_STAGE || !CVA6Cfg.RVH)) global_mapping_n = 1'b1;
 
           // -------------
           // Invalid PTE
@@ -401,14 +415,14 @@ module cva6_ptw
               if (CVA6Cfg.RVH) begin
                 case (ptw_stage_q)
                   S_STAGE: begin
-                    if ((is_instr_ptw_q && enable_translation_i[HYP_EXT]) || (!is_instr_ptw_q && en_ld_st_translation_i[HYP_EXT])) begin
+                    if ((is_instr_ptw_q && enable_g_translation_i) || (!is_instr_ptw_q && en_ld_st_g_translation_i)) begin
                       state_d = WAIT_GRANT;
                       ptw_stage_d = G_FINAL_STAGE;
                       if (CVA6Cfg.RVH) gpte_d = pte;
                       ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0];
                       gpaddr_n = gpaddr[ptw_lvl_q[0]];
                       ptw_pptr_n = {
-                        satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
+                        hgatp_ppn_i[CVA6Cfg.PPNW-1:2],
                         gpaddr[ptw_lvl_q[0]][CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
                         (CVA6Cfg.PtLevels)'(0)
                       };
@@ -438,8 +452,7 @@ module cva6_ptw
                 if (!pte.x || !pte.a) begin
                   state_d = PROPAGATE_ERROR;
                   if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                  // end else if((ptw_stage_q == G_FINAL_STAGE) || !enable_translation_i[HYP_EXT] || HYP_EXT==0)
-                end else if (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_translation_i[HYP_EXT]) || !CVA6Cfg.RVH)
+                end else if (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i) || !CVA6Cfg.RVH)
                   shared_tlb_update_o.valid = 1'b1;
 
               end else begin
@@ -451,9 +464,8 @@ module cva6_ptw
                 // If page is not readable (there are no write-only pages)
                 // we can directly raise an error. This doesn't put a useless
                 // entry into the TLB.
-                if (pte.a && ((pte.r && !hlvx_inst_i) || (pte.x && (mxr_i[0] || hlvx_inst_i || (ptw_stage_q == S_STAGE && mxr_i[HYP_EXT] && en_ld_st_translation_i[HYP_EXT*2] && CVA6Cfg.RVH))))) begin
-                  // if((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_translation_i[HYP_EXT] || HYP_EXT==0)
-                  if (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_translation_i[HYP_EXT]) || !CVA6Cfg.RVH)
+                if (pte.a && ((pte.r && !hlvx_inst_i) || (pte.x && (mxr_i || hlvx_inst_i || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH))))) begin
+                  if (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i) || !CVA6Cfg.RVH)
                     shared_tlb_update_o.valid = 1'b1;
                 end else begin
                   state_d = PROPAGATE_ERROR;
@@ -478,7 +490,7 @@ module cva6_ptw
 
               // check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
-                if (((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
+                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = G_FINAL_STAGE;
                 end
@@ -501,14 +513,14 @@ module cva6_ptw
                 if (CVA6Cfg.RVH) begin
                   case (ptw_stage_q)
                     S_STAGE: begin
-                      if (CVA6Cfg.RVH && ((is_instr_ptw_q && enable_translation_i[HYP_EXT]) || (!is_instr_ptw_q && en_ld_st_translation_i[HYP_EXT]))) begin
+                      if (CVA6Cfg.RVH && ((is_instr_ptw_q && enable_g_translation_i) || (!is_instr_ptw_q && en_ld_st_g_translation_i))) begin
                         ptw_stage_d = G_INTERMED_STAGE;
                         if (CVA6Cfg.RVH) gpte_d = pte;
                         ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0] + 1;
                         pptr = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
                         gptw_pptr_n = pptr;
                         ptw_pptr_n = {
-                          satp_ppn_i[HYP_EXT*2][CVA6Cfg.PPNW-1:2],
+                          hgatp_ppn_i[CVA6Cfg.PPNW-1:2],
                           pptr[CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
                           (CVA6Cfg.PtLevels)'(0)
                         };
@@ -539,7 +551,7 @@ module cva6_ptw
 
               // check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
-                if (((enable_translation_i[HYP_EXT*2] && is_instr_ptw_q) || (en_ld_st_translation_i[HYP_EXT*2] && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
+                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = ptw_stage_q;
                 end
@@ -561,10 +573,10 @@ module cva6_ptw
       // Propagate error to MMU/LSU
       PROPAGATE_ERROR: begin
         state_d = LATENCY;
-        ptw_error_o[0] = 1'b1;
+        ptw_error_o = 1'b1;
         if (CVA6Cfg.RVH) begin
-          ptw_error_o[HYP_EXT]   = (ptw_stage_q != S_STAGE) ? 1'b1 : 1'b0;
-          ptw_error_o[HYP_EXT*2] = (ptw_stage_q == G_INTERMED_STAGE) ? 1'b1 : 1'b0;
+          ptw_error_at_g_st_o   = (ptw_stage_q != S_STAGE) ? 1'b1 : 1'b0;
+          ptw_err_at_g_int_st_o = (ptw_stage_q == G_INTERMED_STAGE) ? 1'b1 : 1'b0;
         end
       end
       PROPAGATE_ACCESS_ERROR: begin
