@@ -150,7 +150,7 @@ module cva6_tlb
     lu_g_content_o = '{default: 0};
     lu_is_page_o   = '{default: 0};
     match_asid     = '{default: 0};
-    match_vmid     = '{default: 0};
+    match_vmid     = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
     match_stage    = '{default: 0};
     g_content      = '{default: 0};
     lu_gpaddr_o    = '{default: 0};
