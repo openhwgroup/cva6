@@ -165,10 +165,6 @@ RISC-V Virtual Memory
 CVA6 family
 ~~~~~~~~~~~
 
-.. note::
-   The hypervisor extension will soon be supported in the main repository. This text anticipates the upcoming support.
-   As of now, ``CVA6ConfigHExtEn``, ``vsatp`` and ``hgatp`` are not available in the main repository.
-
 CV32A6 supports the RISC-V **Sv32** virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 32).
 
 CV64A6 supports the RISC-V **Sv39** virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 64).
@@ -200,7 +196,7 @@ Notes for the integrator:
 
 * The virtual memory is implemented by a memory management unit (MMU) that accelerates the translation from virtual memory addresses (as handled by the core) to physical memory addresses. The MMU integrates translation lookaside buffers (TLB) and a hardware page table walker (PTW). The number of instruction and data TLB entries are configured with ``InstrTlbEntries`` and ``DataTlbEntries``.
 
-* The MMU offers a microarchitectural optimization featuring two levels of TLB: level 1 TLB (sized by ``InstrTlbEntries`` and ``DataTlbEntries``) and a shared level 2 TLB. The optimization has no consequences on the programmer's view. This optimization is enabled when the ``CVA6ConfigUseSharedTlb`` parameter is set to 1. The size of the shared TLB can be selected with the parameter ``CVA6ConfigSharedTlbDepth``.
+* The MMU offers a microarchitectural optimization featuring two levels of TLB: level 1 TLB (sized by ``InstrTlbEntries`` and ``DataTlbEntries``) and a shared level 2 TLB. The shared level 2 TLB is enabled when the ``CVA6ConfigUseSharedTlb`` parameter is set to 1. The size of the shared TLB can be selected with the parameter ``CVA6ConfigSharedTlbDepth``. The optimization has no consequences on the programmer's view. 
 
 CV32A60AX virtual memory
 ~~~~~~~~~~~~~~~~~~~~~~~~
