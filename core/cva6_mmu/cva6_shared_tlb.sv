@@ -267,6 +267,8 @@ module cva6_shared_tlb #(
     shared_tlb_hit_d = 1'b0;
     dtlb_update_o = '0;
     itlb_update_o = '0;
+    match_asid     = '{default: 0};
+    match_vmid     = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
 
 
     if (!CVA6Cfg.UseSharedTlb) begin
@@ -278,7 +280,7 @@ module cva6_shared_tlb #(
           itlb_update_o.is_page = shared_tlb_update_i.is_page;
           itlb_update_o.content = shared_tlb_update_i.content;
           itlb_update_o.g_content = shared_tlb_update_i.g_content;
-          itlb_update_o.v_st_enbl = v_st_enbl[i_req_q];
+          itlb_update_o.v_st_enbl = v_st_enbl[i_req_q][HYP_EXT*2:0];
           itlb_update_o.asid = shared_tlb_update_i.asid;
           itlb_update_o.vmid = shared_tlb_update_i.vmid;
 
@@ -288,7 +290,7 @@ module cva6_shared_tlb #(
           dtlb_update_o.is_page = shared_tlb_update_i.is_page;
           dtlb_update_o.content = shared_tlb_update_i.content;
           dtlb_update_o.g_content = shared_tlb_update_i.g_content;
-          dtlb_update_o.v_st_enbl = v_st_enbl[i_req_q];
+          dtlb_update_o.v_st_enbl = v_st_enbl[i_req_q][HYP_EXT*2:0];
           dtlb_update_o.asid = shared_tlb_update_i.asid;
           dtlb_update_o.vmid = shared_tlb_update_i.vmid;
         end
@@ -306,7 +308,7 @@ module cva6_shared_tlb #(
         end
 
         // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
-        match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl[i_req_q];
+        match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl[i_req_q][HYP_EXT*2:0];
 
         if (shared_tag_valid[i] && match_asid  && match_vmid && match_stage[i]) begin
           if (|level_match[i]) begin
@@ -392,7 +394,7 @@ module cva6_shared_tlb #(
   assign shared_tag_wr.asid = shared_tlb_update_i.asid;
   assign shared_tag_wr.vmid = shared_tlb_update_i.vmid;
   assign shared_tag_wr.is_page = shared_tlb_update_i.is_page;
-  assign shared_tag_wr.v_st_enbl = v_st_enbl[i_req_q];
+  assign shared_tag_wr.v_st_enbl = v_st_enbl[i_req_q][HYP_EXT*2:0];
 
   genvar z;
   generate
