@@ -73,11 +73,11 @@ module cva6_ptw
     input logic itlb_req_i,
 
     // from CSR file
-    input  logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,     // ppn from satp
-    input  logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_i,    // ppn from satp
-    input  logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,    // ppn from hgatp
-    input  logic                    mxr_i,
-    input  logic                    vmxr_i,
+    input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,   // ppn from satp
+    input logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_i,  // ppn from satp
+    input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,  // ppn from hgatp
+    input logic                    mxr_i,
+    input logic                    vmxr_i,
 
     // Performance counters
     output logic shared_tlb_miss_o,
@@ -351,7 +351,7 @@ module cva6_ptw
             };
           end else begin
             ptw_stage_d = S_STAGE;
-            if((v_i || ld_st_v_i) && CVA6Cfg.RVH)
+            if ((v_i || ld_st_v_i) && CVA6Cfg.RVH)
               ptw_pptr_n = {
                 vsatp_ppn_i,
                 shared_tlb_vaddr_i[CVA6Cfg.SV-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
@@ -370,12 +370,10 @@ module cva6_ptw
           state_d           = WAIT_GRANT;
           shared_tlb_miss_o = 1'b1;
 
-          if (itlb_req_i)
-            tlb_update_asid_n = v_i ? vs_asid_i : asid_i;
-            if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
-          else
-            tlb_update_asid_n = ld_st_v_i ? vs_asid_i : asid_i;
-            if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
+          if (itlb_req_i) tlb_update_asid_n = v_i ? vs_asid_i : asid_i;
+          if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
+          else tlb_update_asid_n = ld_st_v_i ? vs_asid_i : asid_i;
+          if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
 
         end
       end

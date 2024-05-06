@@ -28,7 +28,7 @@ package build_config_pkg;
     int unsigned DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DcacheLineWidth / 8);
 
     // MMU
-    int unsigned VpnLen   = (CVA6Cfg.XLEN == 64) ? (CVA6Cfg.RVH ? 29 : 27) : 20;
+    int unsigned VpnLen = (CVA6Cfg.XLEN == 64) ? (CVA6Cfg.RVH ? 29 : 27) : 20;
     int unsigned PtLevels = (CVA6Cfg.XLEN == 64) ? 3 : 2;
 
     config_pkg::cva6_cfg_t cfg;

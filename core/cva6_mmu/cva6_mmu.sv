@@ -174,24 +174,24 @@ module cva6_mmu
       .TLB_ENTRIES      (CVA6Cfg.InstrTlbEntries),
       .HYP_EXT          (HYP_EXT)
   ) i_itlb (
-      .clk_i                (clk_i),
-      .rst_ni               (rst_ni),
-      .flush_i              (flush_tlb_i),
-      .flush_vvma_i         (flush_tlb_vvma_i),
-      .flush_gvma_i         (flush_tlb_gvma_i),
-      .s_st_enbl_i          (enable_translation_i),
-      .g_st_enbl_i          (enable_g_translation_i),
-      .v_i                  (v_i),
-      .update_i             (update_itlb),
-      .lu_access_i          (itlb_lu_access),
-      .lu_asid_i            (itlb_lu_asid),
-      .lu_vmid_i            (vmid_i),
-      .lu_vaddr_i           (icache_areq_i.fetch_vaddr),
-      .lu_content_o         (itlb_content),
-      .lu_g_content_o       (itlb_g_content),
-      .lu_gpaddr_o          (itlb_gpaddr),
-      .lu_is_page_o         (itlb_is_page),
-      .lu_hit_o             (itlb_lu_hit),
+      .clk_i         (clk_i),
+      .rst_ni        (rst_ni),
+      .flush_i       (flush_tlb_i),
+      .flush_vvma_i  (flush_tlb_vvma_i),
+      .flush_gvma_i  (flush_tlb_gvma_i),
+      .s_st_enbl_i   (enable_translation_i),
+      .g_st_enbl_i   (enable_g_translation_i),
+      .v_i           (v_i),
+      .update_i      (update_itlb),
+      .lu_access_i   (itlb_lu_access),
+      .lu_asid_i     (itlb_lu_asid),
+      .lu_vmid_i     (vmid_i),
+      .lu_vaddr_i    (icache_areq_i.fetch_vaddr),
+      .lu_content_o  (itlb_content),
+      .lu_g_content_o(itlb_g_content),
+      .lu_gpaddr_o   (itlb_gpaddr),
+      .lu_is_page_o  (itlb_is_page),
+      .lu_hit_o      (itlb_lu_hit),
       .*
   );
 
@@ -202,24 +202,24 @@ module cva6_mmu
       .TLB_ENTRIES      (CVA6Cfg.DataTlbEntries),
       .HYP_EXT          (HYP_EXT)
   ) i_dtlb (
-      .clk_i                (clk_i),
-      .rst_ni               (rst_ni),
-      .flush_i              (flush_tlb_i),
-      .flush_vvma_i         (flush_tlb_vvma_i),
-      .flush_gvma_i         (flush_tlb_gvma_i),
-      .s_st_enbl_i          (en_ld_st_translation_i),
-      .g_st_enbl_i          (en_ld_st_g_translation_i),
-      .v_i                  (ld_st_v_i),
-      .update_i             (update_dtlb),
-      .lu_access_i          (dtlb_lu_access),
-      .lu_asid_i            (itlb_lu_asid),
-      .lu_vmid_i            (vmid_i),
-      .lu_vaddr_i           (lsu_vaddr_i),
-      .lu_content_o         (dtlb_content),
-      .lu_g_content_o       (dtlb_g_content),
-      .lu_gpaddr_o          (dtlb_gpaddr),
-      .lu_is_page_o         (dtlb_is_page),
-      .lu_hit_o             (dtlb_lu_hit),
+      .clk_i         (clk_i),
+      .rst_ni        (rst_ni),
+      .flush_i       (flush_tlb_i),
+      .flush_vvma_i  (flush_tlb_vvma_i),
+      .flush_gvma_i  (flush_tlb_gvma_i),
+      .s_st_enbl_i   (en_ld_st_translation_i),
+      .g_st_enbl_i   (en_ld_st_g_translation_i),
+      .v_i           (ld_st_v_i),
+      .update_i      (update_dtlb),
+      .lu_access_i   (dtlb_lu_access),
+      .lu_asid_i     (itlb_lu_asid),
+      .lu_vmid_i     (vmid_i),
+      .lu_vaddr_i    (lsu_vaddr_i),
+      .lu_content_o  (dtlb_content),
+      .lu_g_content_o(dtlb_g_content),
+      .lu_gpaddr_o   (dtlb_gpaddr),
+      .lu_is_page_o  (dtlb_is_page),
+      .lu_hit_o      (dtlb_lu_hit),
       .*
   );
 
@@ -231,17 +231,17 @@ module cva6_mmu
       .pte_cva6_t       (pte_cva6_t),
       .tlb_update_cva6_t(tlb_update_cva6_t)
   ) i_shared_tlb (
-      .clk_i(clk_i),
-      .rst_ni(rst_ni),
-      .flush_i              (flush_tlb_i),
-      .flush_vvma_i         (flush_tlb_vvma_i),
-      .flush_gvma_i         (flush_tlb_gvma_i),
-      .s_st_enbl_i          (enable_translation_i),
-      .g_st_enbl_i          (enable_g_translation_i),
-      .v_i                  (v_i),
-      .s_ld_st_enbl_i          (en_ld_st_translation_i),
-      .g_ld_st_enbl_i          (en_ld_st_g_translation_i),
-      .ld_st_v_i                  (ld_st_v_i),
+      .clk_i         (clk_i),
+      .rst_ni        (rst_ni),
+      .flush_i       (flush_tlb_i),
+      .flush_vvma_i  (flush_tlb_vvma_i),
+      .flush_gvma_i  (flush_tlb_gvma_i),
+      .s_st_enbl_i   (enable_translation_i),
+      .g_st_enbl_i   (enable_g_translation_i),
+      .v_i           (v_i),
+      .s_ld_st_enbl_i(en_ld_st_translation_i),
+      .g_ld_st_enbl_i(en_ld_st_g_translation_i),
+      .ld_st_v_i     (ld_st_v_i),
 
       .dtlb_asid_i  (dtlb_lu_asid),
       .itlb_asid_i  (itlb_lu_asid),
@@ -282,8 +282,8 @@ module cva6_mmu
       .dcache_req_o_t   (dcache_req_o_t),
       .HYP_EXT          (HYP_EXT)
   ) i_ptw (
-      .clk_i  (clk_i),
-      .rst_ni (rst_ni),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
       .ptw_active_o          (ptw_active),
       .walking_instr_o       (walking_instr),
@@ -370,7 +370,7 @@ module cva6_mmu
       icache_areq_o.fetch_valid = 1'b0;
 
       icache_areq_o.fetch_paddr = {
-        (enable_g_translation_i && CVA6Cfg.RVH)? itlb_g_content.ppn : itlb_content.ppn,
+        (enable_g_translation_i && CVA6Cfg.RVH) ? itlb_g_content.ppn : itlb_content.ppn,
         icache_areq_i.fetch_vaddr[11:0]
       };
 
@@ -567,7 +567,7 @@ module cva6_mmu
 
       lsu_dtlb_ppn_o = (en_ld_st_g_translation_i && CVA6Cfg.RVH)? dtlb_g_content.ppn :dtlb_content.ppn;
       lsu_paddr_o = {
-        (en_ld_st_g_translation_i && CVA6Cfg.RVH)? dtlb_gpte_q.ppn : dtlb_pte_q.ppn,
+        (en_ld_st_g_translation_i && CVA6Cfg.RVH) ? dtlb_gpte_q.ppn : dtlb_pte_q.ppn,
         lsu_vaddr_q[0][11:0]
       };
 

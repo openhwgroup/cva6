@@ -87,7 +87,7 @@ module cva6_tlb
   logic [TLB_ENTRIES-1:0][(CVA6Cfg.GPPNW-1):0] gppn;
   logic [2:0] v_st_enbl;
 
-  assign v_st_enbl = (CVA6Cfg.RVH) ? {v_i,g_st_enbl_i,s_st_enbl_i} : '1;
+  assign v_st_enbl = (CVA6Cfg.RVH) ? {v_i, g_st_enbl_i, s_st_enbl_i} : '1;
   //-------------
   // Translation
   //-------------
@@ -182,7 +182,7 @@ module cva6_tlb
 
         if (|level_match[i]) begin
           lu_is_page_o = is_page_o[i];
-          lu_content_o   = content_q[i].pte;
+          lu_content_o = content_q[i].pte;
           lu_hit_o     = 1'b1;
           lu_hit[i]    = 1'b1;
 
@@ -270,8 +270,7 @@ module cva6_tlb
         if (tags_q[i].v_st_enbl[HYP_EXT]) begin
           // invalidate logic
           // flush everything if vmid is 0 and addr is 0 ("HFENCE.GVMA x0 x0" case)
-          if (vmid_to_be_flushed_is0 && gpaddr_to_be_flushed_is0)
-            tags_n[i].valid = 1'b0;
+          if (vmid_to_be_flushed_is0 && gpaddr_to_be_flushed_is0) tags_n[i].valid = 1'b0;
           // flush gpaddr in all addressing space ("HFENCE.GVMA gpaddr x0" case), it should happen only for leaf pages
           else if (vmid_to_be_flushed_is0 && (|vaddr_level_match[i][HYP_EXT] ) && (~gpaddr_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;

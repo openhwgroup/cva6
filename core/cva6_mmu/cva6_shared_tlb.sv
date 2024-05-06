@@ -158,10 +158,10 @@ module cva6_shared_tlb #(
   logic all_ways_valid;  // we need to switch repl strategy since all are valid
 
   assign shared_tlb_access_o = shared_tlb_access_q;
-  assign shared_tlb_hit_o    = shared_tlb_hit_d;
-  assign shared_tlb_vaddr_o  = shared_tlb_vaddr_q;
-  assign itlb_req_o          = itlb_req_q;
-  assign v_st_enbl = {{v_i,g_st_enbl_i,s_st_enbl_i},{ld_st_v_i,g_ld_st_enbl_i,s_ld_st_enbl_i}};
+  assign shared_tlb_hit_o = shared_tlb_hit_d;
+  assign shared_tlb_vaddr_o = shared_tlb_vaddr_q;
+  assign itlb_req_o = itlb_req_q;
+  assign v_st_enbl = {{v_i, g_st_enbl_i, s_st_enbl_i}, {ld_st_v_i, g_ld_st_enbl_i, s_ld_st_enbl_i}};
 
   genvar i, x;
   generate
