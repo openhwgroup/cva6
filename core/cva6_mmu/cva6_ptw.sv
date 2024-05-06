@@ -205,14 +205,17 @@ module cva6_ptw
           shared_tlb_update_o.is_page[x][y] = y != 0 ? (ptw_lvl_q[0] == x) : 1'b0;
         end
       end
-
-      // set the global mapping bit
-      if ((enable_g_translation_i || en_ld_st_g_translation_i) && CVA6Cfg.RVH) begin
-        shared_tlb_update_o.content[y] = y == 0 ? gpte_q | (global_mapping_q << 5) : pte;
-      end else begin
-        shared_tlb_update_o.content[y] = y == 0 ? (pte | (global_mapping_q << 5)) : '0;
-      end
     end
+
+    // set the global mapping bit
+    if ((enable_g_translation_i || en_ld_st_g_translation_i) && CVA6Cfg.RVH) begin
+      shared_tlb_update_o.content = gpte_q | (global_mapping_q << 5);
+      shared_tlb_update_o.g_content = pte;
+    end else begin
+      shared_tlb_update_o.content = (pte | (global_mapping_q << 5));
+      shared_tlb_update_o.g_content = '0;
+    end
+
     // output the correct ASIDs
     shared_tlb_update_o.asid = tlb_update_asid_q;
 

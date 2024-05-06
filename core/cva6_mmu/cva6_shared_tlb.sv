@@ -111,7 +111,7 @@ module cva6_shared_tlb #(
 
   logic [               SHARED_TLB_WAYS-1:0] pte_wr_en;
   logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] pte_wr_addr;
-  logic [             $bits(pte_cva6_t)-1:0] pte_wr_data      [          HYP_EXT:0];
+  logic [             $bits(pte_cva6_t)-1:0] pte_wr_data      [1:0];
 
   logic [               SHARED_TLB_WAYS-1:0] pte_rd_en;
   logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] pte_rd_addr;
@@ -275,6 +275,7 @@ module cva6_shared_tlb #(
           itlb_update_o.vpn = shared_tlb_update_i.vpn;
           itlb_update_o.is_page = shared_tlb_update_i.is_page;
           itlb_update_o.content = shared_tlb_update_i.content;
+          itlb_update_o.g_content = shared_tlb_update_i.g_content;
           itlb_update_o.v_st_enbl = v_st_enbl[i_req_q];
           itlb_update_o.asid = shared_tlb_update_i.asid;
 
@@ -283,6 +284,7 @@ module cva6_shared_tlb #(
           dtlb_update_o.vpn = shared_tlb_update_i.vpn;
           dtlb_update_o.is_page = shared_tlb_update_i.is_page;
           dtlb_update_o.content = shared_tlb_update_i.content;
+          dtlb_update_o.g_content = shared_tlb_update_i.g_content;
           dtlb_update_o.v_st_enbl = v_st_enbl[i_req_q];
           dtlb_update_o.asid = shared_tlb_update_i.asid;
         end
@@ -309,7 +311,8 @@ module cva6_shared_tlb #(
               itlb_update_o.valid = 1'b1;
               itlb_update_o.vpn = itlb_vpn_q;
               itlb_update_o.is_page = shared_tag_rd[i].is_page;
-              itlb_update_o.content = pte[i];
+              itlb_update_o.content = pte[i][0];
+              itlb_update_o.g_content = pte[i][HYP_EXT];
               itlb_update_o.v_st_enbl = shared_tag_rd[i].v_st_enbl;
               itlb_update_o.asid[0] = tlb_update_asid_q;
               if (CVA6Cfg.RVH) itlb_update_o.asid[HYP_EXT] = tlb_update_vmid_q;
@@ -317,7 +320,8 @@ module cva6_shared_tlb #(
               dtlb_update_o.valid = 1'b1;
               dtlb_update_o.vpn = dtlb_vpn_q;
               dtlb_update_o.is_page = shared_tag_rd[i].is_page;
-              dtlb_update_o.content = pte[i];
+              dtlb_update_o.content = pte[i][0];
+              dtlb_update_o.g_content = pte[i][HYP_EXT];
               dtlb_update_o.v_st_enbl = shared_tag_rd[i].v_st_enbl;
               dtlb_update_o.asid[0] = tlb_update_asid_q;
               if (CVA6Cfg.RVH) dtlb_update_o.asid[HYP_EXT] = tlb_update_vmid_q;
@@ -402,12 +406,10 @@ module cva6_shared_tlb #(
 
   assign pte_wr_addr = shared_tlb_update_i.vpn[$clog2(CVA6Cfg.SharedTlbDepth)-1:0];
 
-  genvar h;
-  generate
-    for (h = 0; h < HYP_EXT + 1; h++) begin : gen_pte_wr_data
-      assign pte_wr_data[h] = shared_tlb_update_i.content[h];
-    end
-  endgenerate
+  assign pte_wr_data[0] = shared_tlb_update_i.content;
+  assign pte_wr_data[1] = shared_tlb_update_i.g_content;
+
+
 
   assign way_valid = shared_tag_valid_q[shared_tlb_update_i.vpn[$clog2(
       CVA6Cfg.SharedTlbDepth

@@ -293,8 +293,8 @@ module cva6_tlb
           1'b1
         };
         // update content as well
-        content_n[i].pte = update_i.content[0];
-        if (CVA6Cfg.RVH) content_n[i].gpte = update_i.content[HYP_EXT];
+        content_n[i].pte = update_i.content;
+        if (CVA6Cfg.RVH) content_n[i].gpte = update_i.g_content;
       end
     end
   end
