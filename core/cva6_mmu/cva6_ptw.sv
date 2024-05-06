@@ -218,6 +218,7 @@ module cva6_ptw
 
     // output the correct ASIDs
     shared_tlb_update_o.asid = tlb_update_asid_q;
+    shared_tlb_update_o.vmid = tlb_update_vmid_q;
 
     bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
     if (CVA6Cfg.RVH)
@@ -302,6 +303,7 @@ module cva6_ptw
     global_mapping_n          = global_mapping_q;
     // input registers
     tlb_update_asid_n         = tlb_update_asid_q;
+    tlb_update_vmid_n         = tlb_update_vmid_q;
     vaddr_n                   = vaddr_q;
     pptr                      = ptw_pptr_q;
 
@@ -373,11 +375,14 @@ module cva6_ptw
           state_d           = WAIT_GRANT;
           shared_tlb_miss_o = 1'b1;
 
-          if (itlb_req_i) tlb_update_asid_n = v_i ? vs_asid_i : asid_i;
-          if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
-          else tlb_update_asid_n = ld_st_v_i ? vs_asid_i : asid_i;
-          if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
-
+          if (itlb_req_i) begin
+            tlb_update_asid_n = v_i ? vs_asid_i : asid_i;
+            if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
+          end
+          else begin 
+            tlb_update_asid_n = ld_st_v_i ? vs_asid_i : asid_i;
+            if (CVA6Cfg.RVH) tlb_update_vmid_n = vmid_i;
+          end
         end
       end
 
@@ -619,6 +624,7 @@ module cva6_ptw
       ptw_lvl_q         <= '0;
       tag_valid_q       <= 1'b0;
       tlb_update_asid_q <= '0;
+      tlb_update_vmid_q <= '0;
       vaddr_q           <= '0;
       ptw_pptr_q        <= '0;
       global_mapping_q  <= 1'b0;
@@ -647,6 +653,7 @@ module cva6_ptw
         gptw_pptr_q <= gptw_pptr_n;
         ptw_stage_q <= ptw_stage_d;
         gpte_q      <= gpte_d;
+        tlb_update_vmid_q <= tlb_update_vmid_n;
       end
     end
   end

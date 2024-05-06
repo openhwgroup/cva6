@@ -84,7 +84,8 @@ module cva6_shared_tlb #(
   endfunction
 
   typedef struct packed {
-    logic [HYP_EXT:0][CVA6Cfg.ASID_WIDTH-1:0] asid;
+    logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
+    logic [CVA6Cfg.VMID_WIDTH-1:0] vmid;
     logic [CVA6Cfg.PtLevels+HYP_EXT-1:0][(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] vpn;
     logic [CVA6Cfg.PtLevels-2:0][HYP_EXT:0] is_page;
     logic [HYP_EXT*2:0] v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
@@ -126,7 +127,8 @@ module cva6_shared_tlb #(
   logic [SHARED_TLB_WAYS-1:0][CVA6Cfg.PtLevels-1:0] page_match;
   logic [SHARED_TLB_WAYS-1:0][CVA6Cfg.PtLevels-1:0] level_match;
 
-  logic [SHARED_TLB_WAYS-1:0][HYP_EXT:0] match_asid;
+  logic [SHARED_TLB_WAYS-1:0] match_asid;
+  logic [SHARED_TLB_WAYS-1:0] match_vmid;
   logic [SHARED_TLB_WAYS-1:0] match_stage;
 
   pte_cva6_t [SHARED_TLB_WAYS-1:0][HYP_EXT:0] pte;
@@ -278,6 +280,7 @@ module cva6_shared_tlb #(
           itlb_update_o.g_content = shared_tlb_update_i.g_content;
           itlb_update_o.v_st_enbl = v_st_enbl[i_req_q];
           itlb_update_o.asid = shared_tlb_update_i.asid;
+          itlb_update_o.vmid = shared_tlb_update_i.vmid;
 
         end else if (dtlb_req_q) begin
           dtlb_update_o.valid = 1'b1;
@@ -287,6 +290,7 @@ module cva6_shared_tlb #(
           dtlb_update_o.g_content = shared_tlb_update_i.g_content;
           dtlb_update_o.v_st_enbl = v_st_enbl[i_req_q];
           dtlb_update_o.asid = shared_tlb_update_i.asid;
+          dtlb_update_o.vmid = shared_tlb_update_i.vmid;
         end
       end
     end else begin
@@ -295,16 +299,16 @@ module cva6_shared_tlb #(
       for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
         // first level match, this may be a giga page, check the ASID flags as well
         // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-        match_asid[i][0] = (((tlb_update_asid_q == shared_tag_rd[i].asid[0][CVA6Cfg.ASID_WIDTH-1:0]) || pte[i][0].g) && v_st_enbl[i_req_q][0]) || !v_st_enbl[i_req_q][0];
+        match_asid[i] = (((tlb_update_asid_q == shared_tag_rd[i].asid) || pte[i][0].g) && v_st_enbl[i_req_q][0]) || !v_st_enbl[i_req_q][0];
 
         if (CVA6Cfg.RVH) begin
-          match_asid[i][HYP_EXT] = (tlb_update_vmid_q == shared_tag_rd[i].asid[HYP_EXT][CVA6Cfg.VMID_WIDTH-1:0] && v_st_enbl[i_req_q][HYP_EXT]) || !v_st_enbl[i_req_q][HYP_EXT];
+          match_vmid[i] = (tlb_update_vmid_q == shared_tag_rd[i].vmid && v_st_enbl[i_req_q][HYP_EXT]) || !v_st_enbl[i_req_q][HYP_EXT];
         end
 
         // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
         match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl[i_req_q];
 
-        if (shared_tag_valid[i] && &match_asid[i] && match_stage[i]) begin
+        if (shared_tag_valid[i] && match_asid  && match_vmid && match_stage[i]) begin
           if (|level_match[i]) begin
             shared_tlb_hit_d = 1'b1;
             if (itlb_req_q) begin
@@ -314,8 +318,8 @@ module cva6_shared_tlb #(
               itlb_update_o.content = pte[i][0];
               itlb_update_o.g_content = pte[i][HYP_EXT];
               itlb_update_o.v_st_enbl = shared_tag_rd[i].v_st_enbl;
-              itlb_update_o.asid[0] = tlb_update_asid_q;
-              if (CVA6Cfg.RVH) itlb_update_o.asid[HYP_EXT] = tlb_update_vmid_q;
+              itlb_update_o.asid = tlb_update_asid_q;
+              itlb_update_o.vmid = tlb_update_vmid_q;
             end else if (dtlb_req_q) begin
               dtlb_update_o.valid = 1'b1;
               dtlb_update_o.vpn = dtlb_vpn_q;
@@ -323,8 +327,8 @@ module cva6_shared_tlb #(
               dtlb_update_o.content = pte[i][0];
               dtlb_update_o.g_content = pte[i][HYP_EXT];
               dtlb_update_o.v_st_enbl = shared_tag_rd[i].v_st_enbl;
-              dtlb_update_o.asid[0] = tlb_update_asid_q;
-              if (CVA6Cfg.RVH) dtlb_update_o.asid[HYP_EXT] = tlb_update_vmid_q;
+              dtlb_update_o.asid = tlb_update_asid_q;
+              dtlb_update_o.vmid = tlb_update_vmid_q;
             end
           end
         end
@@ -386,6 +390,7 @@ module cva6_shared_tlb #(
   end  //update_flush
 
   assign shared_tag_wr.asid = shared_tlb_update_i.asid;
+  assign shared_tag_wr.vmid = shared_tlb_update_i.vmid;
   assign shared_tag_wr.is_page = shared_tlb_update_i.is_page;
   assign shared_tag_wr.v_st_enbl = v_st_enbl[i_req_q];
 

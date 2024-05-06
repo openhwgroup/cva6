@@ -120,10 +120,11 @@ module cva6_mmu
     logic                                     valid;
     logic [CVA6Cfg.PtLevels-2:0][HYP_EXT:0]   is_page;
     logic [CVA6Cfg.VpnLen-1:0]                vpn;
-    logic [HYP_EXT:0][CVA6Cfg.ASID_WIDTH-1:0] asid;
+    logic [CVA6Cfg.ASID_WIDTH-1:0]            asid;
+    logic [CVA6Cfg.VMID_WIDTH-1:0]            vmid;
     logic [HYP_EXT*2:0]                       v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
     pte_cva6_t                                content;
-    pte_cva6_t                                content;
+    pte_cva6_t                                g_content;
   };
 
   logic iaccess_err;  // insufficient privilege to access this instruction page
