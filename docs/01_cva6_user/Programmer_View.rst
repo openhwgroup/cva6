@@ -196,7 +196,7 @@ Notes for the integrator:
 
 * The virtual memory is implemented by a memory management unit (MMU) that accelerates the translation from virtual memory addresses (as handled by the core) to physical memory addresses. The MMU integrates translation lookaside buffers (TLB) and a hardware page table walker (PTW). The number of instruction and data TLB entries are configured with ``InstrTlbEntries`` and ``DataTlbEntries``.
 
-* The MMU offers a microarchitectural optimization featuring two levels of TLB: level 1 TLB (sized by ``InstrTlbEntries`` and ``DataTlbEntries``) and a shared level 2 TLB. The shared level 2 TLB is enabled when the ``CVA6ConfigUseSharedTlb`` parameter is set to 1. The size of the shared TLB can be selected with the parameter ``CVA6ConfigSharedTlbDepth``. The optimization has no consequences on the programmer's view. 
+* The MMU offers a microarchitectural optimization featuring two levels of TLB: level 1 TLB (sized by ``InstrTlbEntries`` and ``DataTlbEntries``) and a shared level 2 TLB. The shared level 2 TLB is enabled when the ``UseSharedTlb`` parameter is set to 1. The size of the shared TLB can be selected with the parameter ``SharedTlbDepth``. The optimization has no consequences on the programmer's view. 
 
 CV32A60AX virtual memory
 ~~~~~~~~~~~~~~~~~~~~~~~~
