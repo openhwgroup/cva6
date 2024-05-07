@@ -26,8 +26,6 @@ module ex_stage
     parameter type fu_data_t = logic,
     parameter type fetch_areq_t = logic,
     parameter type fetch_arsp_t = logic,
-    parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -419,8 +417,6 @@ module ex_stage
       .fu_data_t (fu_data_t),
       .fetch_areq_t(fetch_areq_t),
       .fetch_arsp_t(fetch_arsp_t),
-      .icache_dreq_t(icache_dreq_t),
-      .icache_drsp_t(icache_drsp_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) lsu_i (
       .clk_i,

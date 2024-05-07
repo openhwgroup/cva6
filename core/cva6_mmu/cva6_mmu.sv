@@ -26,10 +26,8 @@ module cva6_mmu
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
-    parameter type                   fetch_areq_t  = logic,
-    parameter type                   fetch_arsp_t  = logic,
-    parameter type                   icache_dreq_t  = logic,
-    parameter type                   icache_drsp_t  = logic,
+    parameter type                   fetch_areq_t   = logic,
+    parameter type                   fetch_arsp_t   = logic,
     parameter type                   dcache_req_i_t = logic,
     parameter type                   dcache_req_o_t = logic,
     parameter type                   exception_t    = logic,

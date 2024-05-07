@@ -37,8 +37,6 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/axi/include/
 +incdir+${CVA6_REPO_DIR}/common/local/util/
 
-
-
 // Floating point unit
 ${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_pkg.sv
 ${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_cast_multi.sv

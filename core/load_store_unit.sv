@@ -246,8 +246,6 @@ module load_store_unit
         .exception_t   (exception_t),
         .fetch_areq_t  (fetch_areq_t),
         .fetch_arsp_t  (fetch_arsp_t),
-        .icache_dreq_t (icache_dreq_t),
-        .icache_drsp_t (icache_drsp_t),
         .dcache_req_i_t(dcache_req_i_t),
         .dcache_req_o_t(dcache_req_o_t),
         .HYP_EXT       (HYP_EXT)
@@ -293,13 +291,13 @@ module load_store_unit
       assign mmu_vaddr_plen   = mmu_vaddr[CVA6Cfg.PLEN-1:0];
       assign fetch_vaddr_plen = fetch_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin
-      assign mmu_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
+      assign mmu_vaddr_plen   = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
       assign fetch_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, fetch_areq_i.fetch_vaddr};
     end
 
-    assign fetch_arsp_o.fetch_valid           = fetch_areq_i.fetch_req;
-    assign fetch_arsp_o.fetch_paddr           = fetch_vaddr_plen;
-    assign fetch_arsp_o.fetch_exception       = '0;
+    assign fetch_arsp_o.fetch_valid            = fetch_areq_i.fetch_req;
+    assign fetch_arsp_o.fetch_paddr            = fetch_vaddr_plen;
+    assign fetch_arsp_o.fetch_exception        = '0;
 
     assign dcache_req_ports_o[0].address_index = '0;
     assign dcache_req_ports_o[0].address_tag   = '0;
