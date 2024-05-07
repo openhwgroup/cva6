@@ -126,8 +126,8 @@ module cva6_icache
     FLUSH,
     IDLE,
     READ,
+    READ_BIS,
     MISS,
-    KILL_ATRANS,
     KILL_MISS
   } state_e;
   state_e state_d, state_q;
@@ -137,7 +137,7 @@ module cva6_icache
   ///////////////////////////////////////////////////////
 
   // extract tag from physical address, check if NC
-  assign cl_tag_d  = (dreq_i.translation_valid) ? dreq_i.paddr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
+  assign cl_tag_d  = (icache_obi_req_i.req) ? icache_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
   assign paddr_is_nc = (~cache_en_q) | (~config_pkg::is_inside_cacheable_regions(
@@ -181,14 +181,9 @@ module cva6_icache
   assign inv_d                                = inv_en;
 
   //OBI
-  assign icache_obi_rsp_o.gnt                 = '1;
-  assign icache_obi_rsp_o.gntpar              = '0;
-  assign icache_obi_rsp_o.rvalid              = dreq_o.valid;
-  assign icache_obi_rsp_o.rvalidpar           = !dreq_o.valid;
-  assign icache_obi_rsp_o.r.rdata             = dreq_o.data;
+  assign icache_obi_rsp_o.gntpar              = !icache_obi_rsp_o.gnt;
+  assign icache_obi_rsp_o.rvalidpar           = !icache_obi_rsp_o.rvalid;
   assign icache_obi_rsp_o.r.rid               = '0;
-  assign icache_obi_rsp_o.r.err               = '0;
-  assign icache_obi_rsp_o.r.r_optional.ruser  = dreq_o.user;
   assign icache_obi_rsp_o.r.r_optional.exokay = '0;
   assign icache_obi_rsp_o.r.r_optional.rchk   = '0;
 
@@ -198,10 +193,7 @@ module cva6_icache
   ///////////////////////////////////////////////////////
   // main control logic
   ///////////////////////////////////////////////////////
-  logic addr_ni;
-  assign addr_ni = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, dreq_i.paddr}
-  );
+
   always_comb begin : p_fsm
     // default assignment
     state_d = state_q;
@@ -212,13 +204,14 @@ module cva6_icache
     cache_wren = 1'b0;
     inv_en = 1'b0;
     flush_d = flush_q | flush_i;  // register incoming flush
-
+    icache_obi_rsp_o.r.err = 1'b0;
     // interfaces
     dreq_o.ready = 1'b0;
-    dreq_o.valid = 1'b0;
+    icache_obi_rsp_o.rvalid = 1'b0;
     mem_data_req_o = 1'b0;
     // performance counter
     miss_o = 1'b0;
+    icache_obi_rsp_o.gnt = 1'b0;
 
     // handle invalidations unconditionally
     // note: invald are mutually exclusive with
@@ -255,14 +248,11 @@ module cva6_icache
           // mem requests are for sure invals here
           if (!mem_rtrn_vld_i) begin
             dreq_o.ready = 1'b1;
-            // we have a new request
+            // we have a new request not killed
             if (dreq_i.req) begin
               cache_rden = 1'b1;
               state_d    = READ;
             end
-          end
-          if (dreq_i.kill_s1) begin
-            state_d = IDLE;
           end
         end
       end
@@ -278,15 +268,21 @@ module cva6_icache
         // readout speculatively
         cache_rden = cache_en_q;
 
-        if (dreq_i.translation_valid && (!dreq_i.spec || ((CVA6Cfg.NonIdemPotenceEn && !addr_ni) || (!CVA6Cfg.NonIdemPotenceEn)))) begin
+        if (icache_obi_req_i.req) begin
+          state_d = READ_BIS;
+          icache_obi_rsp_o.gnt = 1'b1;
+
           // check if we have to flush
           if (flush_d) begin
             state_d = IDLE;
+            icache_obi_rsp_o.rvalid = '1;
+            icache_obi_rsp_o.r.err = '1;  // just don't output in this case
             // we have a hit or an exception output valid result
-          end else if (((|cl_hit && cache_en_q) || dreq_i.kill_req) && !inv_q) begin
-            dreq_o.valid = ~dreq_i.kill_s2;  // just don't output in this case
-            state_d      = IDLE;
 
+          end else if (((|cl_hit && cache_en_q && !inv_q) || dreq_i.kill_req)) begin
+            state_d = IDLE;
+            icache_obi_rsp_o.rvalid = '1;
+            icache_obi_rsp_o.r.err = dreq_i.kill_req;  // just don't output in this case
             // we can accept another request
             // and stay here, but only if no inval is coming in
             // note: we are not expecting ifill return packets here...
@@ -296,14 +292,7 @@ module cva6_icache
                 state_d = READ;
               end
             end
-            // if a request is being killed at this stage,
-            // we have to bail out and wait for the address translation to complete
-            if (dreq_i.kill_s1) begin
-              state_d = IDLE;
-            end
-            // we have a miss / NC transaction
-          end else if (dreq_i.kill_s2) begin
-            state_d = IDLE;
+
           end else if (!inv_q) begin
             cmp_en_d = 1'b0;
             // only count this as a miss if the cache is enabled, and
@@ -316,10 +305,63 @@ module cva6_icache
             end
           end
           // bail out if this request is being killed (and we missed on the TLB)
-        end else if (dreq_i.kill_s2 || flush_d) begin
-          state_d = KILL_ATRANS;
+        end else if (flush_d) begin
+          state_d = IDLE;
+        end else if (dreq_i.kill_req) begin
+          state_d = IDLE;
+          // we can accept another request
+          // and stay here, but only if no inval is coming in
+          // note: we are not expecting ifill return packets here...
+          if (!mem_rtrn_vld_i) begin
+            dreq_o.ready = 1'b1;
+            if (dreq_i.req) begin
+              state_d = READ;
+            end
+          end
+
         end
       end
+
+      READ_BIS: begin
+        // only enable tag comparison if cache is enabled
+        cmp_en_d   = cache_en_q;
+        // readout speculatively
+        cache_rden = cache_en_q;
+
+        // check if we have to flush
+        if (flush_d) begin
+          state_d = IDLE;
+          icache_obi_rsp_o.rvalid = '1;
+          icache_obi_rsp_o.r.err = '1;  // just don't output in this case
+          // we have a hit or an exception output valid result
+
+        end else if (((|cl_hit && cache_en_q && !inv_q) || dreq_i.kill_req)) begin
+          state_d = IDLE;
+          icache_obi_rsp_o.rvalid = '1;
+          icache_obi_rsp_o.r.err = dreq_i.kill_req;  // just don't output in this case
+          // we can accept another request
+          // and stay here, but only if no inval is coming in
+          // note: we are not expecting ifill return packets here...
+          if (!mem_rtrn_vld_i) begin
+            dreq_o.ready = 1'b1;
+            if (dreq_i.req) begin
+              state_d = READ;
+            end
+          end
+
+        end else if (!inv_q) begin
+          cmp_en_d = 1'b0;
+          // only count this as a miss if the cache is enabled, and
+          // the address is cacheable
+          // send out ifill request
+          mem_data_req_o = 1'b1;
+          if (mem_data_ack_i) begin
+            miss_o  = ~paddr_is_nc;
+            state_d = MISS;
+          end
+        end
+      end
+
       //////////////////////////////////
       // wait until the memory transaction
       // returns. do not write to memory
@@ -329,24 +371,17 @@ module cva6_icache
         // so we do not have to check for invals here
         if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
           state_d = IDLE;
+          icache_obi_rsp_o.rvalid = '1;
           // only return data if request is not being killed
-          if (!(dreq_i.kill_s2 || flush_d)) begin
-            dreq_o.valid = 1'b1;
+          if (!(dreq_i.kill_req || flush_d)) begin
             // only write to cache if this address is cacheable
-            cache_wren   = ~paddr_is_nc;
+            cache_wren = ~paddr_is_nc;
+          end else begin
+            icache_obi_rsp_o.r.err = '1;  // just don't output in this case
           end
           // bail out if this request is being killed
-        end else if (dreq_i.kill_s2 || flush_d) begin
+        end else if (dreq_i.kill_req || flush_d) begin
           state_d = KILL_MISS;
-        end
-      end
-      //////////////////////////////////
-      // killed address translation,
-      // wait until paddr is valid, and go
-      // back to idle
-      KILL_ATRANS: begin
-        if (dreq_i.translation_valid) begin
-          state_d = IDLE;
         end
       end
       //////////////////////////////////
@@ -356,8 +391,11 @@ module cva6_icache
       KILL_MISS: begin
         if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
           state_d = IDLE;
+          icache_obi_rsp_o.rvalid = '1;
+          icache_obi_rsp_o.r.err = '1;  // just don't output in this case
         end
       end
+
       default: begin
         // we should never get here
         state_d = FLUSH;
@@ -450,11 +488,13 @@ module cva6_icache
 
   always_comb begin
     if (cmp_en_q) begin
-      dreq_o.data = cl_sel[hit_idx];
-      dreq_o.user = cl_user[hit_idx];
+      icache_obi_rsp_o.r.rdata = cl_sel[hit_idx];
+      icache_obi_rsp_o.r.r_optional.ruser = cl_user[hit_idx];
     end else begin
-      dreq_o.data = mem_rtrn_i.data[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH];
-      dreq_o.user = mem_rtrn_i.user[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_USER_WIDTH];
+      icache_obi_rsp_o.r.rdata = mem_rtrn_i.data[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH];
+      icache_obi_rsp_o.r.r_optional.ruser = mem_rtrn_i.user[{
+        cl_offset_q, 3'b0
+      }+:CVA6Cfg.FETCH_USER_WIDTH];
     end
   end
 
@@ -554,7 +594,7 @@ module cva6_icache
 
   invalid_state :
   assert property (
-    @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, KILL_ATRANS, KILL_MISS}))
+    @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, READ_BIS, MISS, KILL_MISS}))
   else $fatal(1, "[l1 icache] fsm reached an invalid state");
 
   hot1 :

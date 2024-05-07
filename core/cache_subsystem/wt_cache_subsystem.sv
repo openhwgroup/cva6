@@ -245,13 +245,13 @@ module wt_cache_subsystem
 `ifndef VERILATOR
   a_invalid_instruction_fetch :
   assert property (
-    @(posedge clk_i) disable iff (!rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (icache_obi_rsp_o.rvalid && !icache_obi_rsp_o.r.err) |-> (|icache_obi_rsp_o.r.rdata) !== 1'hX)
   else
     $warning(
         1,
         "[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
         icache_dreq_i.vaddr,
-        icache_dreq_o.data
+        icache_obi_rsp_o.r.rdata
     );
 
   for (genvar j = 0; j < CVA6Cfg.XLEN / 8; j++) begin : gen_invalid_write_assertion

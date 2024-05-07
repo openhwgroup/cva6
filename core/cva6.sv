@@ -65,20 +65,12 @@ module cva6
 
     // I$ data requests
     localparam type icache_dreq_t = struct packed {
-      logic                    req;                // we request a new word
-      logic                    kill_s1;            // kill the current request
-      logic                    kill_s2;            // kill the last request
-      logic                    kill_req;           // kill the last request
-      logic                    spec;               // request is speculative
-      logic [CVA6Cfg.VLEN-1:0] vaddr;              // 1st cycle: 12 bit index is taken for lookup
-      logic                    translation_valid;  // address translation valid
-      logic [CVA6Cfg.PLEN-1:0] paddr;              // 1st cycle: 12 bit index is taken for lookup
+      logic                    req;       // we request a new word
+      logic                    kill_req;  // kill the last request
+      logic [CVA6Cfg.VLEN-1:0] vaddr;     // 1st cycle: 12 bit index is taken for lookup
     },
     localparam type icache_drsp_t = struct packed {
-      logic                                ready;  // icache is ready
-      logic                                valid;  // signals a valid read
-      logic [CVA6Cfg.FETCH_WIDTH-1:0]      data;   // 2+ cycle out: tag
-      logic [CVA6Cfg.FETCH_USER_WIDTH-1:0] user;   // User bits
+      logic ready;  // icache is ready
     },
 
     // IF/ID Stage
