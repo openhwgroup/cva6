@@ -24,7 +24,9 @@ module frontend
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
     parameter type fetch_areq_t = logic,
-    parameter type fetch_arsp_t = logic
+    parameter type fetch_arsp_t = logic,
+    parameter type obi_fetch_req_t = logic,
+    parameter type obi_fetch_rsp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -64,6 +66,10 @@ module frontend
     output icache_dreq_t icache_dreq_o,
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
     input icache_drsp_t icache_dreq_i,
+    // OBI Fetch Request channel - CACHES
+    output obi_fetch_req_t icache_obi_req_o,
+    // OBI Fetch Response channel - CACHES
+    input obi_fetch_rsp_t icache_obi_rsp_i,
     // Handshake's data between fetch and decode - ID_STAGE
     output fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_o,
     // Handshake's valid between fetch and decode - ID_STAGE
@@ -334,7 +340,8 @@ module frontend
   assign vaddr_d = (icache_dreq_i.ready & icache_dreq_o.req) ? icache_dreq_o.vaddr : vaddr_q;
   assign paddr_d = (arsp_i.fetch_valid) ? arsp_i.fetch_paddr : paddr_q;
 
-  // cpmtroller FSM
+
+  // comtroller FSM
   typedef enum logic [1:0] {
     IDLE,
     READ,
@@ -379,17 +386,95 @@ module frontend
     endcase
   end
 
+  // OBI CHANNEL A
+  logic obi_a_request;
+  assign obi_a_request = arsp_i.fetch_valid & !icache_dreq_o.kill_s1;
+
+  typedef enum logic [1:0] {
+    TRANSPARENT,
+    REGISTRED
+  } obi_state_e;
+  obi_state_e obi_state_d, obi_state_q;
+
+  always_comb begin : p_fsm_obi
+    // default assignment
+    obi_state_d = obi_state_q;
+
+    unique case (obi_state_q)
+      TRANSPARENT: begin
+        if (obi_a_request && !icache_obi_rsp_i.gnt) begin
+          obi_state_d = REGISTRED;
+        end
+      end
+
+      REGISTRED: begin
+        if (icache_obi_rsp_i.gnt) begin
+          obi_state_d = TRANSPARENT;
+        end
+      end
+
+      default: begin
+        // we should never get here
+        obi_state_d = TRANSPARENT;
+      end
+    endcase
+  end
+
+  always_comb begin
+    if (obi_state_q == TRANSPARENT) begin
+      icache_obi_req_o.req    = obi_a_request;
+      icache_obi_req_o.reqpar = !obi_a_request;
+      icache_obi_req_o.a.addr = arsp_i.fetch_paddr;
+      icache_obi_req_o.a.we   = '0;
+      icache_obi_req_o.a.be   = '1;
+      icache_obi_req_o.a.wdata= '0;
+      icache_obi_req_o.a.aid  = '0;
+      icache_obi_req_o.a.a_optional.auser= '0;
+      icache_obi_req_o.a.a_optional.wuser= '0;
+      icache_obi_req_o.a.a_optional.atop= '0;
+      icache_obi_req_o.a.a_optional.memtype= '0;
+      icache_obi_req_o.a.a_optional.mid= '0;
+      icache_obi_req_o.a.a_optional.prot= '0;
+      icache_obi_req_o.a.a_optional.dbg= '0;
+      icache_obi_req_o.a.a_optional.achk= '0;
+    end else begin
+      // obi_state_q == REGISTERED
+      icache_obi_req_o.req    = 1'b1;
+      icache_obi_req_o.reqpar = 1'b0;
+      icache_obi_req_o.a.addr = vaddr_q;
+      icache_obi_req_o.a.we   = '0;
+      icache_obi_req_o.a.be   = '1;
+      icache_obi_req_o.a.wdata= '0;
+      icache_obi_req_o.a.aid  = '0;
+      icache_obi_req_o.a.a_optional.auser= '0;
+      icache_obi_req_o.a.a_optional.wuser= '0;
+      icache_obi_req_o.a.a_optional.atop= '0;
+      icache_obi_req_o.a.a_optional.memtype= '0;
+      icache_obi_req_o.a.a_optional.mid= '0;
+      icache_obi_req_o.a.a_optional.prot= '0;
+      icache_obi_req_o.a.a_optional.dbg= '0;
+      icache_obi_req_o.a.a_optional.achk= '0;
+    end
+  end
+
+  //always accept OBI response
+  assign icache_obi_req_o.rready = 1'b1;
+  assign icache_obi_req_o.rreadypar = 1'b0;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       state_q <= IDLE;
+      obi_state_q <= TRANSPARENT;
       vaddr_q <= '0;
       paddr_q <= '0;
     end else begin
       state_q <= state_d;
+      obi_state_q <= TRANSPARENT;
       vaddr_q <= vaddr_d;
       paddr_q <= paddr_d;
     end
   end
+
 
   // Update Control Flow Predictions
   bht_update_t bht_update;

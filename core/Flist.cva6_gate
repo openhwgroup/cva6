@@ -9,6 +9,7 @@
 #
 
 +incdir+${CVA6_REPO_DIR}/core/include/
++incdir+${CVA6_REPO_DIR}/core/obi/include/
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/include/
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/axi/include/
@@ -70,4 +71,3 @@ ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper_cache_techno.sv
 
 ${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
-${CVA6_REPO_DIR}/common/local/util/sram_cache.sv

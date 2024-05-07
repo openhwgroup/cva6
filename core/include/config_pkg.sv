@@ -313,6 +313,7 @@ package config_pkg;
     bit          AXI_USER_EN;
 
     int unsigned FETCH_WIDTH;
+    int unsigned FETCH_BE_WIDTH;
     int unsigned FETCH_ALIGN_BITS;
     int unsigned INSTR_PER_FETCH;
     int unsigned LOG2_INSTR_PER_FETCH;
@@ -325,6 +326,12 @@ package config_pkg;
     vm_mode_t MODE_SV;
     int unsigned SV;
     int unsigned SVX;
+
+    int unsigned IdWidth;
+
+    obi_pkg::obi_cfg_t ObiFetchbusCfg;
+    obi_pkg::obi_cfg_t ObiDatabusCfg;
+
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever

@@ -22,6 +22,8 @@ module std_cache_subsystem
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type obi_fetch_req_t = logic,
+    parameter type obi_fetch_rsp_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
     parameter type dcache_req_i_t = logic,
@@ -43,6 +45,12 @@ module std_cache_subsystem
     // data requests
     input icache_dreq_t icache_dreq_i,  // to/from frontend
     output icache_drsp_t icache_dreq_o,
+
+    // OBI Fetch Request channel - FRONTEND
+    input  obi_fetch_req_t icache_obi_req_i,
+    // OBI Fetch Response channel - FRONTEND
+    output obi_fetch_rsp_t icache_obi_rsp_o,
+
     // AMOs
     input amo_req_t amo_req_i,
     output amo_resp_t amo_resp_o,
@@ -74,21 +82,25 @@ module std_cache_subsystem
       .CVA6Cfg(CVA6Cfg),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
+      .obi_fetch_req_t(obi_fetch_req_t),
+      .obi_fetch_rsp_t(obi_fetch_rsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t)
   ) i_cva6_icache_axi_wrapper (
-      .clk_i     (clk_i),
-      .rst_ni    (rst_ni),
-      .priv_lvl_i(priv_lvl_i),
-      .flush_i   (icache_flush_i),
-      .en_i      (icache_en_i),
-      .miss_o    (icache_miss_o),
-      .dreq_i    (icache_dreq_i),
-      .dreq_o    (icache_dreq_o),
-      .axi_req_o (axi_req_icache),
-      .axi_resp_i(axi_resp_icache)
+      .clk_i           (clk_i),
+      .rst_ni          (rst_ni),
+      .priv_lvl_i      (priv_lvl_i),
+      .flush_i         (icache_flush_i),
+      .en_i            (icache_en_i),
+      .miss_o          (icache_miss_o),
+      .dreq_i          (icache_dreq_i),
+      .dreq_o          (icache_dreq_o),
+      .icache_obi_req_i(icache_obi_req_i),
+      .icache_obi_rsp_o(icache_obi_rsp_o),
+      .axi_req_o       (axi_req_icache),
+      .axi_resp_i      (axi_resp_icache)
   );
 
   // decreasing priority
