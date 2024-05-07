@@ -137,7 +137,8 @@ package build_config_pkg;
     cfg.AXI_USER_EN = CVA6Cfg.DataUserEn | CVA6Cfg.FetchUserEn;
 
     cfg.FETCH_WIDTH = 32 << ariane_pkg::SUPERSCALAR;
-    cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_WIDTH / 8);
+    cfg.FETCH_BE_WIDTH = cfg.FETCH_WIDTH / 8;
+    cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_BE_WIDTH);
     cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
     cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
@@ -155,6 +156,53 @@ package build_config_pkg;
     cfg.SharedTlbDepth = CVA6Cfg.SharedTlbDepth;
     cfg.VpnLen = VpnLen;
     cfg.PtLevels = PtLevels;
+
+
+    cfg.IdWidth = cfg.AxiIdWidth;  //to be changed
+
+    cfg.ObiFetchbusCfg = '{
+        UseRReady: 1'b1,
+        CombGnt: 1'b0,
+        AddrWidth: cfg.PLEN,
+        DataWidth: cfg.FETCH_WIDTH,
+        IdWidth: cfg.IdWidth,
+        Integrity: 1'b0,
+        BeFull: 1'b1,
+        OptionalCfg: '{
+            UseAtop: 1'b1,
+            UseMemtype: 1'b1,
+            UseProt: 1'b1,
+            UseDbg: 1'b1,
+            AUserWidth: 1,
+            WUserWidth: cfg.FETCH_USER_WIDTH,
+            RUserWidth: cfg.FETCH_USER_WIDTH,
+            MidWidth: 1,
+            AChkWidth: 1,
+            RChkWidth: 1
+        }
+    };
+
+    cfg.ObiDatabusCfg = '{
+        UseRReady: 1'b1,
+        CombGnt: 1'b0,
+        AddrWidth: cfg.PLEN,
+        DataWidth: cfg.XLEN,
+        IdWidth: cfg.IdWidth,
+        Integrity: 1'b0,
+        BeFull: 1'b1,
+        OptionalCfg: '{
+            UseAtop: 1'b1,
+            UseMemtype: 1'b1,
+            UseProt: 1'b1,
+            UseDbg: 1'b1,
+            AUserWidth: 1,
+            WUserWidth: cfg.DCACHE_USER_WIDTH,
+            RUserWidth: cfg.DCACHE_USER_WIDTH,
+            MidWidth: 1,
+            AChkWidth: 1,
+            RChkWidth: 1
+        }
+    };
 
     return cfg;
   endfunction

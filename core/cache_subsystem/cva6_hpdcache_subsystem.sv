@@ -19,6 +19,8 @@ module cva6_hpdcache_subsystem
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type obi_fetch_req_t = logic,
+    parameter type obi_fetch_rsp_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
     parameter type dcache_req_i_t = logic,
@@ -67,6 +69,12 @@ module cva6_hpdcache_subsystem
     input icache_dreq_t icache_dreq_i,
     // Output Access request - FRONTEND
     output icache_drsp_t icache_dreq_o,
+
+    // OBI Fetch Request channel - FRONTEND
+    input  obi_fetch_req_t icache_obi_req_i,
+    // OBI Fetch Response channel - FRONTEND
+    output obi_fetch_rsp_t icache_obi_rsp_o,
+
     //   }}}
 
     //  D$
@@ -145,22 +153,26 @@ module cva6_hpdcache_subsystem
       .CVA6Cfg(CVA6Cfg),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
+      .obi_fetch_req_t(obi_fetch_req_t),
+      .obi_fetch_rsp_t(obi_fetch_rsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
       .RdTxId(ICACHE_RDTXID)
   ) i_cva6_icache (
-      .clk_i         (clk_i),
-      .rst_ni        (rst_ni),
-      .flush_i       (icache_flush_i),
-      .en_i          (icache_en_i),
-      .miss_o        (icache_miss_o),
-      .dreq_i        (icache_dreq_i),
-      .dreq_o        (icache_dreq_o),
-      .mem_rtrn_vld_i(icache_miss_resp_valid),
-      .mem_rtrn_i    (icache_miss_resp),
-      .mem_data_req_o(icache_miss_valid),
-      .mem_data_ack_i(icache_miss_ready),
-      .mem_data_o    (icache_miss)
+      .clk_i           (clk_i),
+      .rst_ni          (rst_ni),
+      .flush_i         (icache_flush_i),
+      .en_i            (icache_en_i),
+      .miss_o          (icache_miss_o),
+      .dreq_i          (icache_dreq_i),
+      .dreq_o          (icache_dreq_o),
+      .icache_obi_req_i(icache_obi_req_i),
+      .icache_obi_rsp_o(icache_obi_rsp_o),
+      .mem_rtrn_vld_i  (icache_miss_resp_valid),
+      .mem_rtrn_i      (icache_miss_resp),
+      .mem_data_req_o  (icache_miss_valid),
+      .mem_data_ack_i  (icache_miss_ready),
+      .mem_data_o      (icache_miss)
   );
   //  }}}
 

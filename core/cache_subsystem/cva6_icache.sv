@@ -32,6 +32,8 @@ module cva6_icache
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
+    parameter type obi_fetch_req_t = logic,
+    parameter type obi_fetch_rsp_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
     /// ID to be used for read transactions
@@ -49,6 +51,12 @@ module cva6_icache
     // data requests
     input  icache_dreq_t dreq_i,
     output icache_drsp_t dreq_o,
+
+    // OBI Fetch Request channel - FRONTEND
+    input  obi_fetch_req_t icache_obi_req_i,
+    // OBI Fetch Response channel - FRONTEND
+    output obi_fetch_rsp_t icache_obi_rsp_o,
+
     // refill port
     input  logic         mem_rtrn_vld_i,
     input  icache_rtrn_t mem_rtrn_i,
@@ -163,14 +171,29 @@ module cva6_icache
   end
 
 
-  assign mem_data_o.tid = RdTxId;
+  assign mem_data_o.tid                       = RdTxId;
 
-  assign mem_data_o.nc  = paddr_is_nc;
+  assign mem_data_o.nc                        = paddr_is_nc;
   // way that is being replaced
-  assign mem_data_o.way = repl_way;
+  assign mem_data_o.way                       = repl_way;
 
   // invalidations take two cycles
-  assign inv_d          = inv_en;
+  assign inv_d                                = inv_en;
+
+  //OBI
+  assign icache_obi_rsp_o.gnt                 = '1;
+  assign icache_obi_rsp_o.gntpar              = '0;
+  assign icache_obi_rsp_o.rvalid              = dreq_o.valid;
+  assign icache_obi_rsp_o.rvalidpar           = !dreq_o.valid;
+  assign icache_obi_rsp_o.r.rdata             = dreq_o.data;
+  assign icache_obi_rsp_o.r.rid               = '0;
+  assign icache_obi_rsp_o.r.err               = '0;
+  assign icache_obi_rsp_o.r.r_optional.ruser  = dreq_o.user;
+  assign icache_obi_rsp_o.r.r_optional.exokay = '0;
+  assign icache_obi_rsp_o.r.r_optional.rchk   = '0;
+
+
+
 
   ///////////////////////////////////////////////////////
   // main control logic

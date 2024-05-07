@@ -12,7 +12,10 @@
 // Date: 19.03.2017
 // Description: CVA6 Top-level module
 
+`include "obi/typedef.svh"
+`include "obi/assign.svh"
 `include "rvfi_types.svh"
+
 
 module cva6
   import ariane_pkg::*;
@@ -304,6 +307,11 @@ module cva6
     input noc_resp_t noc_resp_i
 );
 
+  //OBI FETCH
+  `OBI_TYPEDEF_ALL(obi_fetch, CVA6Cfg.ObiFetchbusCfg)
+  //OBI DATA
+  `OBI_TYPEDEF_ALL(obi_data, CVA6Cfg.ObiDatabusCfg)
+
   localparam type interrupts_t = struct packed {
     logic [CVA6Cfg.XLEN-1:0] S_SW;
     logic [CVA6Cfg.XLEN-1:0] VS_SW;
@@ -562,6 +570,10 @@ module cva6
   icache_dreq_t icache_dreq_if_cache;
   icache_drsp_t icache_dreq_cache_if;
 
+  // OBI
+  obi_fetch_req_t obi_fetch_req_if_cache;
+  obi_fetch_rsp_t obi_fetch_rsp_cache_if;
+
   amo_req_t amo_req;
   amo_resp_t amo_resp;
   logic sb_full;
@@ -597,7 +609,9 @@ module cva6
       .fetch_areq_t(fetch_areq_t),
       .fetch_arsp_t(fetch_arsp_t),
       .icache_dreq_t(icache_dreq_t),
-      .icache_drsp_t(icache_drsp_t)
+      .icache_drsp_t(icache_drsp_t),
+      .obi_fetch_req_t(obi_fetch_req_t),
+      .obi_fetch_rsp_t(obi_fetch_rsp_t)
   ) i_frontend (
       .flush_i            (flush_ctrl_if),                  // not entirely correct
       .flush_bp_i         (1'b0),
@@ -608,6 +622,8 @@ module cva6
       .areq_o             (fetch_areq_frontend_ex),
       .icache_dreq_i      (icache_dreq_cache_if),
       .icache_dreq_o      (icache_dreq_if_cache),
+      .icache_obi_req_o   (obi_fetch_req_if_cache),         //OBI
+      .icache_obi_rsp_i   (obi_fetch_rsp_cache_if),         //OBI
       .resolved_branch_i  (resolved_branch),
       .pc_commit_i        (pc_commit),
       .set_pc_commit_i    (set_pc_ctrl_pcgen),
@@ -1205,6 +1221,8 @@ module cva6
         .icache_dreq_t(icache_dreq_t),
         .icache_drsp_t(icache_drsp_t),
         .icache_req_t(icache_req_t),
+        .obi_fetch_req_t(obi_fetch_req_t),
+        .obi_fetch_rsp_t(obi_fetch_rsp_t),
         .icache_rtrn_t(icache_rtrn_t),
         .dcache_req_i_t(dcache_req_i_t),
         .dcache_req_o_t(dcache_req_o_t),
@@ -1221,6 +1239,8 @@ module cva6
         .icache_miss_o     (icache_miss_cache_perf),
         .icache_dreq_i     (icache_dreq_if_cache),
         .icache_dreq_o     (icache_dreq_cache_if),
+        .icache_obi_req_i  (obi_fetch_req_if_cache),        //OBI
+        .icache_obi_rsp_o  (obi_fetch_rsp_cache_if),        //OBI
         // D$
         .dcache_enable_i   (dcache_en_csr_nbdcache),
         .dcache_flush_i    (dcache_flush_ctrl_cache),
@@ -1252,6 +1272,8 @@ module cva6
         .icache_rtrn_t(icache_rtrn_t),
         .dcache_req_i_t(dcache_req_i_t),
         .dcache_req_o_t(dcache_req_o_t),
+        .obi_fetch_req_t(obi_fetch_req_t),
+        .obi_fetch_rsp_t(obi_fetch_rsp_t),
         .NumPorts  (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),
@@ -1271,6 +1293,8 @@ module cva6
         .icache_miss_o (icache_miss_cache_perf),
         .icache_dreq_i (icache_dreq_if_cache),
         .icache_dreq_o (icache_dreq_cache_if),
+        .icache_obi_req_i   (obi_fetch_req_if_cache),  //OBI
+        .icache_obi_rsp_o   (obi_fetch_rsp_cache_if),  //OBI
 
         .dcache_enable_i   (dcache_en_csr_nbdcache),
         .dcache_flush_i    (dcache_flush_ctrl_cache),
@@ -1309,19 +1333,21 @@ module cva6
         // note: this only works with one cacheable region
         // not as important since this cache subsystem is about to be
         // deprecated
-        .CVA6Cfg       (CVA6Cfg),
-        .icache_dreq_t (icache_dreq_t),
-        .icache_drsp_t (icache_drsp_t),
-        .icache_req_t  (icache_req_t),
-        .icache_rtrn_t (icache_rtrn_t),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
-        .NumPorts      (NumPorts),
-        .axi_ar_chan_t (axi_ar_chan_t),
-        .axi_aw_chan_t (axi_aw_chan_t),
-        .axi_w_chan_t  (axi_w_chan_t),
-        .axi_req_t     (noc_req_t),
-        .axi_rsp_t     (noc_resp_t)
+        .CVA6Cfg        (CVA6Cfg),
+        .icache_dreq_t  (icache_dreq_t),
+        .icache_drsp_t  (icache_drsp_t),
+        .icache_req_t   (icache_req_t),
+        .icache_rtrn_t  (icache_rtrn_t),
+        .obi_fetch_req_t(obi_fetch_req_t),
+        .obi_fetch_rsp_t(obi_fetch_rsp_t),
+        .dcache_req_i_t (dcache_req_i_t),
+        .dcache_req_o_t (dcache_req_o_t),
+        .NumPorts       (NumPorts),
+        .axi_ar_chan_t  (axi_ar_chan_t),
+        .axi_aw_chan_t  (axi_aw_chan_t),
+        .axi_w_chan_t   (axi_w_chan_t),
+        .axi_req_t      (noc_req_t),
+        .axi_rsp_t      (noc_resp_t)
     ) i_cache_subsystem (
         // to D$
         .clk_i             (clk_i),
@@ -1333,6 +1359,8 @@ module cva6
         .icache_miss_o     (icache_miss_cache_perf),
         .icache_dreq_i     (icache_dreq_if_cache),
         .icache_dreq_o     (icache_dreq_cache_if),
+        .icache_obi_req_i  (obi_fetch_req_if_cache),       //OBI
+        .icache_obi_rsp_o  (obi_fetch_rsp_cache_if),       //OBI
         // D$
         .dcache_enable_i   (dcache_en_csr_nbdcache),
         .dcache_flush_i    (dcache_flush_ctrl_cache),
