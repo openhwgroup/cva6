@@ -16,7 +16,7 @@ At its core, the MMU plays a pivotal role in translating virtual addresses into 
 
 * Instruction TLB (ITLB)
 * Data TLB (DTLB)
-* Shared TLB
+* Shared TLB (optional)
 * Page Table Walker (PTW)
 
 .. figure:: _static/mmu_major_blocks.png
@@ -27,7 +27,7 @@ At its core, the MMU plays a pivotal role in translating virtual addresses into 
 
    **Figure 2:** Major Blocks in CVA6 MMU
 
-The MMU manages privilege levels and access control, enforcing permissions for user and supervisor modes while handling access exceptions. It employs Translation Lookaside Buffers (TLBs) for efficient address translation, reducing the need for page table access. TLB hits yield quick translations, but on misses, the shared TLB is consulted, and if necessary, the Page Table Walker (PTW) performs page table walks, updating TLBs and managing exceptions during the process.
+The MMU manages privilege levels and access control, enforcing permissions for user and supervisor modes while handling access exceptions. It employs Translation Lookaside Buffers (TLBs) for efficient address translation, reducing the need for page table access. TLB hits yield quick translations, but on misses, the shared TLB is consulted (when used), and if necessary, the Page Table Walker (PTW) performs page table walks, updating TLBs and managing exceptions during the process.
 
 In addition to these functionalities, the MMU seamlessly integrates support for Physical Memory Protection (PMP), enabling it to enforce access permissions and memory protection configurations as specified by the PMP settings. This additional layer of security and control enhances the management of memory accesses
 
@@ -37,7 +37,7 @@ In addition to these functionalities, the MMU seamlessly integrates support for 
 
 The MMU maintains interfaces with the instruction cache (ICache) and the load-store unit (LSU). It receives virtual addresses from these components and proceeds to translate them into physical addresses, a fundamental task for ensuring proper program execution and memory access.
 
-The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memory. The available HW configuration parameters are the following:
+The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memory. In CVA6, some of these parameters are configurable by the user, and some others are calculated depending on other parameters of the core. The available HW configuration parameters are the following:
 
 .. raw:: html
 
@@ -50,46 +50,85 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
      - Description
      - Type
      - Possible values
+     - User config
 
-   * - ``INSTR_TLB_ENTRIES``
+   * - ``InstrTlbEntries``
      - Number of entries in Instruction TLB
      - Natural
      - ``>0 and multiple of 2``
+     - Yes
 
-   * - ``DATA_TLB_ENTRIES``
+   * - ``DataTlbEntries``
      - Number of entries in Data TLB
      - Natural
      - ``>0 and multiple of 2``
+     - Yes
 
-   * - ``SHARED_TLB_DEPTH``
+   * - ``SharedTlbDepth``
      - Size of shared TLB
      - Natural
      - ``>0 and multiple of 2``
+     - Yes
 
-   * - ``USE_SHARED_TLB``
+   * - ``UseSharedTlb``
      - Indicates if the shared TLB optimization is used (1) or not (0)
-     - Natural
+     - bit
      - 1 or 0
+     - Yes
    
-   * - ``HYP_EXT``
+   * - ``RVH``
      - Indicates if Hypervisor extension is used (1) or not (0)
-     - Natural
+     - bit
      - 1 or 0
+     - Yes
 
-   * - ``ASID_WIDTH``
-     - Index 0 indicates the ASID_WIDTH, and index 1 indicates the VMID_WIDTH (when Hypervisor extension is enabled)
-     - Natural[HYP_EXT:0]
+   * - ``ASIDW``
+     - Indicates the width of the Address Space Identifier (ASID)
+     - Natural
      - ``>0``
+     - No
+  
+   * - ``VMIDW``
+     - Indicates the width of the Virtual Machine space Identifier (VMID) - (used only when Hypervisor extension is enabled)
+     - Natural
+     - ``>0``
+     - No
 
-   * - ``VPN_LEN``
-     - Length of VPN
+   * - ``PPNW``
+     - Indicates the width of the Physical Page Number (PPN) 
+     - Natural
+     - ``>0``
+     - No
+
+   * - ``GPPNW``
+     - Indicates the width of the Guest Physical Page Number (GPPN) - (used only when Hypervisor extension is enabled)
+     - Natural
+     - ``>0``
+     - No
+
+   * - ``SV``
+     - Indicates the width of the Virtual Address Space
+     - Natural
+     - ``>0``
+     - No
+
+   * - ``SVX``
+     - Indicates the width of the extended Virtual Address Space when Hypervisor is used
+     - Natural
+     - ``>0``
+     - No
+
+   * - ``VpnLen``
+     - Length of Virtual Page Number (VPN)
      - Natural
      - ``>12``
+     - No
 
-   * - ``PT_LEVELS``
+   * - ``PtLevels``
      - Number of page table levels
      - Natural
      - ``>1``
+     - No
 
 .. raw:: html
 
@@ -103,42 +142,67 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
      - sv39
      - sv39x4
 
-   * - ``INSTR_TLB_ENTRIES``
+   * - ``InstrTlbEntries``
      - 2
-     - 4
-     - 4
+     - 16
+     - 16
 
-   * - ``DATA_TLB_ENTRIES``
+   * - ``DataTlbEntries``
      - 2
-     - 4
-     - 4
+     - 16
+     - 16
 
-   * - ``SHARED TLB DEPTH``
+   * - ``SharedTlbDepth``
      - 64
      - 64
      - 64
 
-   * - ``USE_SHARED_TLB``
+   * - ``UseSharedTlb``
      - 1
-     - 1
-     - 1 
+     - 0
+     - 0 
    
-   * - ``HYP_EXT``
+   * - ``RVH``
      - 0
      - 0
      - 1 
 
-   * - ``ASID_WIDTH``
-     - 1
+   * - ``ASIDW``
+     - 9
      - 16
      - 16
+     
+   * - ``VMIDW``
+     - 7
+     - 14
+     - 14
 
-   * - ``VPN_LEN``
+   * - ``PPNW``
+     - 22
+     - 44
+     - 44 
+   
+   * - ``GPPNW``
+     - 22
+     - 29
+     - 29 
+
+   * - ``SV``
+     - 32
+     - 39
+     - 39
+     
+   * - ``SVX``
+     - 34
+     - 41
+     - 41
+
+   * - ``VpnLen``
      - 20
      - 27
      - 29
 
-   * - ``PT_LEVELS``
+   * - ``PtLevels``
      - 2
      - 3
      - 3
@@ -184,14 +248,26 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``enable_translation_i``
      - in
      - CSR RegFile
-     - logic [HYP_EXT*2:0]  
-     - Bit 0 indicates address translation request for instruction. In Hypervisor mode, bit 1 enables virtual memory translation for instrucionts, and bit 2 indicates the virtualization mode state
+     - logic 
+     - Enables address translation request for instruction
+
+   * - ``enable_g_translation_i``
+     - in
+     - CSR RegFile
+     - logic 
+     - Enables virtual memory translation for instrucionts
 
    * - ``en_ld_st_translation_i``
      - in
      - CSR RegFile
-     - logic [HYP_EXT*2:0]
-     - Bit 0 indicates address translation request for load or store. In Hypervisor mode, bit 1 enables virtual memory translation for load or store, and bit 2 indicates the virtualization mode at which load and stores should happen
+     - logic 
+     - Enables address translation request for load or store
+
+   * - ``en_ld_st_g_translation_i``
+     - in
+     - CSR RegFile
+     - logic
+     - Enables virtual memory translation for load or store
 
    * - ``icache_areq_i``
      - in
@@ -220,13 +296,13 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``lsu_vaddr_i``
      - in
      - Load Store Unit
-     - logic [riscv::VLEN-1:0]
+     - logic [VLEN-1:0]
      - Virtual Address In
 
    * - ``lsu_tinst_i``
      - in
      - Load Store Unit
-     - riscv::xlen_t
+     - logic [31:0]
      - Transformed Instruction In when Hypervisor Extension is enabled. Set to 0 (unused) when not.
 
    * - ``lsu_is_store_i``
@@ -250,7 +326,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``lsu_dtlb_ppn_o``
      - out
      - Load Unit
-     - logic [riscv::PPNW-1:0]
+     - logic [PPNW-1:0]
      - Send PNN to LSU
 
    * - ``lsu_valid_o``
@@ -262,7 +338,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``lsu_paddr_o``
      - out
      - Store / Load Unit
-     - logic [riscv::PLEN-1:0]
+     - logic [PLEN-1:0]
      - Translated Address
 
    * - ``lsu_exception_o``
@@ -277,23 +353,47 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
      - riscv::priv_lvl_t
      - Privilege level for instruction fetch interface
 
+   * - ``v_i``
+     - in
+     - CSR RegFile
+     - logic
+     - Virtualization mode state
+
    * - ``ld_st_priv_lvl_i``
      - in
      - CSR RegFile
      - riscv::priv_lvl_t
-     - Privilege Level for Data Interface
+     - Indicates the virtualization mode at which load and stores should happen
+
+   * - ``ld_st_v_i``
+     - in
+     - CSR RegFile
+     - logic
+     - Virtualization mode state
 
    * - ``sum_i``
      - in
      - CSR RegFile
-     - logic [HYP_EXT:0]
-     - Bit 0 is the Supervisor User Memory Access bit in xSTATUS CSR register. Bit 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
+     - logic 
+     - Supervisor User Memory Access bit in xSTATUS CSR register
+
+   * - ``vs_sum_i``
+     - in
+     - CSR RegFile
+     - logic 
+     - Virtual Supervisor User Memory Access bit in xSTATUS CSR register when Hypervisor extension is enabled.
 
    * - ``mxr_i``
      - in
      - CSR RegFile
-     - logic [HYP_EXT:0]
-     - Bit 0 is the Make Executable Readable bit in xSTATUS CSR register. Bit 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
+     - logic
+     - Make Executable Readable bit in xSTATUS CSR register
+
+   * - ``vmxr_i``
+     - in
+     - CSR RegFile
+     - logic
+     - Virtual Make Executable Readable bit in xSTATUS CSR register for virtual supervisor when Hypervisor extension is enabled.
 
    * - ``hlvx_inst_i``
      - in
@@ -310,32 +410,80 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``satp_ppn_i``
      - in
      - CSR RegFile
-     - logic [HYP_EXT*2:0][riscv::PPNW-1:0]
-     - Vector 0 is the PPN of top level page table from SATP register. Vectors 1 and 2 are the analogous one for virtual supervisor and hypervisor when Hypervisor extension is enabled.
+     - logic [PPNW-1:0]
+     - PPN of top level page table from SATP register
+
+   * - ``vsatp_ppn_i``
+     - in
+     - CSR RegFile
+     - logic [PPNW-1:0]
+     - PPN of top level page table from VSATP register when Hypervisor extension is enabled
+
+   * - ``hgatp_ppn_i``
+     - in
+     - CSR RegFile
+     - logic [PPNW-1:0]
+     - PPN of top level page table from HGATP register when Hypervisor extension is enabled
 
    * - ``asid_i``
      - in
      - CSR RegFile
-     - logic [HYP_EXT*2:0][ASID_WIDTH-1:0]
-     - Vector 0 is the ASID for the lookup. Vectors 1 and 2 are the analogous one for virtual supervisor and hypervisor when Hypervisor extension is enabled.
+     - logic [ASIDW-1:0]
+     - ASID for the lookup
+
+   * - ``vs_asid_i``
+     - in
+     - CSR RegFile
+     - logic [ASID_WIDTH-1:0]
+     - ASID for the lookup for virtual supervisor when Hypervisor extension is enabled
+
+   * - ``vmid_i``
+     - in
+     - CSR RegFile
+     - logic [VMID_WIDTH-1:0]
+     - VMID for the lookup when Hypervisor extension is enabled
 
    * - ``asid_to_be_flushed_i``
      - in
      - Execute Stage
-     - logic [HYP_EXT:0][ASID_WIDTH-1:0]
-     - Vector 0 is the ASID of the entry to be flushed. Vector 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
+     - logic [ASID_WIDTH-1:0]
+     - ASID of the entry to be flushed
+
+   * - ``vmid_to_be_flushed_i``
+     - in
+     - Execute Stage
+     - logic [VMID_WIDTH-1:0]
+     - VMID of the entry to be flushed when Hypervisor extension is enabled
 
    * - ``vaddr_to_be_flushed_i``
      - in
      - Execute Stage
-     - logic [HYP_EXT:0][riscv::VLEN-1:0]
-     - Vector 0 is the Virtual address of the entry to be flushed. Vector 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
+     - logic [VLEN-1:0]
+     - Virtual address of the entry to be flushed
+
+   * - ``gpaddr_to_be_flushed_i``
+     - in
+     - Execute Stage
+     - logic [GPLEN-1:0]
+     - Virtual address of the guest entry to be flushed when Hypervisor extension is enabled
 
    * - ``flush_tlb_i``
      - in
      - Controller
-     - logic [HYP_EXT*2:0]
-     - Bit 0 indicates SFENCE.VMA committed. When Hypervisor extension is enabled, bits 1 and 2 respectively indicate SFENCE.VVMA and SFENCE.GVMA committed.
+     - logic 
+     - Indicates SFENCE.VMA committed
+
+   * - ``flush_tlb_vvma_i``
+     - in
+     - Controller
+     - logic 
+     - Indicates SFENCE.VVMA committed
+
+   * - ``flush_tlb_gvma_i``
+     - in
+     - Controller
+     - logic 
+     - Indicates SFENCE.GVMA committed
 
    * - ``itlb_miss_o``
      - out
@@ -370,7 +518,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``pmpaddr_i``
      - in
      - CSR RegFile
-     - logic [15:0][riscv::PLEN-3:0]
+     - logic [15:0][PLEN-3:0]
      - PMP Address
 
 .. raw:: html
@@ -393,7 +541,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
      - Address Translation Valid
 
    * - ``fetch_paddr``
-     - logic [riscv::PLEN-1:0]
+     - logic [PLEN-1:0]
      - Physical Address In
 
    * - ``fetch_exception``
@@ -416,7 +564,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
      - Address Translation Request
 
    * - ``fetch_vaddr``
-     - logic [riscv::VLEN-1:0]
+     - logic [VLEN-1:0]
      - Virtual Address out
 
 .. raw:: html
@@ -431,19 +579,19 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
      - Description
 
    * - ``cause``
-     - riscv::xlen_t
+     - logic [XLEN-1:0]
      - Cause of exception
 
    * - ``tval``
-     - riscv::xlen_t
+     - logic [XLEN-1:0]
      - Additional information of causing exception (e.g. instruction causing it), address of LD/ST fault
 
    * - ``tval2``
-     - logic [riscv::GPLEN-1:0]
+     - logic [GPLEN-1:0]
      - Additional information when the causing exception in a guest exception (used only in hypervisor mode)
 
    * - ``tinst``
-     - riscv::xlen_t
+     - logic [31:0]
      - Transformed instruction information
 
    * - ``gva``
@@ -518,7 +666,7 @@ If virtual memory translation is enabled for instruction fetches, the following 
 * For page translation, the module determines the fetch physical address by combining the physical page number (PPN) from ITLB content and the offset from the virtual address. When hypervisor mode is enabled, the PPN from ITLB content is taken from the stage that is currently doing the translation.
 * Depending on the size of the identified page the PPN of the fetch physical address is updated with the corresponding bits of the VPN to ensure alignment for superpage translation.
 * If the Instruction TLB (ITLB) lookup hits, the fetch valid signal (which indicates a valid physical address) is activated in response to the input fetch request. Memory region accessibility is checked from the perspective of the fetch operation, potentially triggering a page fault exception in case of an access error or insufficient PMP permission.
-* In case of an ITLB miss, if the page table walker (PTW) is active (only active if there is a shared TLB miss) and handling instruction fetches, the fetch valid signal is determined based on PTW errors or access exceptions.
+* In case of an ITLB miss, if the page table walker (PTW) is active (only active if there is a shared TLB miss or the shared TLB is not used) and handling instruction fetches, the fetch valid signal is determined based on PTW errors or access exceptions.
 
 If the fetch physical address doesn't match any execute region, an Instruction Access Fault is raised. When not translating, PMPs are immediately checked against the physical address for access verification.
 
@@ -553,7 +701,7 @@ When address translation is not enabled, the physical address is immediately che
 Translation Lookaside Buffer
 ----------------------------
 
-Page tables are accessed for translating virtual memory addresses to physical memory addresses. This translation needs to be carried out for every load and store instruction and also for every instruction fetch. Since page tables are resident in physical memory, accessing these tables in all these situations has a significant impact on performance.  Page table accesses occur in patterns that are closely related in time. Furthermore, the spatial and temporal locality of data accesses or instruction fetches mean that the same page is referenced repeatedly. Taking advantage of these access patterns the processor keeps the information of recent address translations, to enable fast retrieval, in a small cache called the Translation Lookaside Buffer (TLB) or an address-translation cache. 
+Page tables are accessed for translating virtual memory addresses to physical memory addresses. This translation needs to be carried out for every load and store instruction and also for every instruction fetch. Since page tables are resident in physical memory, accessing these tables in all these situations has a significant impact on performance. Page table accesses occur in patterns that are closely related in time. Furthermore, the spatial and temporal locality of data accesses or instruction fetches mean that the same page is referenced repeatedly. Taking advantage of these access patterns the processor keeps the information of recent address translations, to enable fast retrieval, in a small cache called the Translation Lookaside Buffer (TLB) or an address-translation cache. 
 
 The CVA6 TLB is structured as a fully associative cache, where the virtual address that needs to be translated is compared against all the individual TLB entries. Given a virtual address, the processor examines the TLB (TLB lookup) to determine if the virtual page number (VPN) of the page being accessed is in the TLB. When a TLB entry is found (TLB hit), the TLB returns the corresponding physical page number (PPN) which is used to calculate the target physical address. If no TLB entry is found (TLB miss) the processor has to read individual page table entries from memory (Table walk). In CVA6 table walking is supported by dedicated hardware. Once the processor finishes the table walk, it has the Physical Page Number (PPN) corresponding to the Virtual Page Number (VPN) that needs to be translated. The processor adds an entry for this address translation to the TLB so future translations of that virtual address will happen quickly through the TLB.  During the table walk the processor may find out that the corresponding physical page is not resident in memory. At this stage a page table exception (Page Fault) is generated which gets handled by the operating system. The operating system places the appropriate page in memory, updates the appropriate page tables and returns execution to the instruction which generated the exception.  
 
@@ -599,14 +747,38 @@ The input and output signals of the TLB are shown in the following figure.
   * - ``flush_i``
     - in
     - Controller
-    - logic [HYP_EXT*2:0]
-    - Sfence Committed
+    - logic
+    - SFENCE.VMA Committed
 
-  * - ``v_st_enbl_i``
+  * - ``flush_vvma_i``
     - in
     - Controller
-    - logic [HYP_EXT*2:0]
-    - Used only in Hypervisor mode. Bit 0 indicates address translation request (s-stage), bit 1 enables virtual memory translation (g-stage), and bit 2 indicates the virtualization mode state
+    - logic
+    - SFENCE.VVMA Committed
+
+  * - ``flush_gvma_i``
+    - in
+    - Controller
+    - logic
+    - SFENCE.GVMA Committed
+
+  * - ``s_st_enbl_i``
+    - in
+    - Controller
+    - logic 
+    - Indicates address translation request (s-stage) - used only in Hypervisor mode
+
+  * - ``g_st_enbl_i``
+    - in
+    - Controller
+    - logic 
+    - Indicates address translation request (g-stage) - used only in Hypervisor mode
+
+  * - ``v_i``
+    - in
+    - Controller
+    - logic 
+    - Indicates the virtualization mode state - used only in Hypervisor mode
 
   * - ``update_i``
     - in
@@ -623,38 +795,62 @@ The input and output signals of the TLB are shown in the following figure.
   * - ``lu_asid_i``
     - in
     - CVA6 MMU 
-    - logic[ASID_WIDTH[0]-1:0]
-    - Vector 0 is the ASID (Address Space Identifier) for the lookup. Vector 1 is the analogous one for virtual supervisor or hypervisor when Hypervisor extension is enabled.
+    - logic[ASIDW-1:0]
+    - ASID for the lookup
+
+  * - ``lu_vmid_i``
+    - in
+    - CVA6 MMU 
+    - logic[VMIDW-1:0]
+    - VMID for the lookup when Hypervisor extension is enabled.
 
   * - ``lu_vaddr_i``
     - in
     - Cache Subsystem
-    - logic[riscv::VLEN-1:0]
+    - logic[VLEN-1:0]
     - Virtual address for the lookup
 
   * - ``lu_content_o``
     - out
     - CVA6 MMU 
-    - pte_cva6_t [HYP_EXT:0] 
+    - pte_cva6_t 
     - Output for the content of the TLB entry
+
+  * - ``lu_g_content_o``
+    - out
+    - CVA6 MMU 
+    - pte_cva6_t 
+    - Output for the content of the TLB entry (g-stage)
 
   * - ``asid_to_be_flushed_i``
     - in
     - Execute Stage
-    - logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]
-    - Vector 0 is the ASID of the entry to be flushed. Vector 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
+    - logic [ASIDW-1:0]
+    - ASID of the entry to be flushed. Vector 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled
+
+  * - ``vmid_to_be_flushed_i``
+    - in
+    - Execute Stage
+    - logic [VMIDW-1:0]
+    - VMID of the entry to be flushed when Hypervisor extension is enabled
 
   * - ``vaddr_to_be_flushed_i``
     - in
     - Execute Stage
-    - logic [HYP_EXT:0][riscv::VLEN-1:0]
-    - Vector 0 is the Virtual address of the entry to be flushed. Vector 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
+    - logic [VLEN-1:0]
+    - Virtual address of the entry to be flushed. Vector 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
+
+  * - ``gpaddr_to_be_flushed_i``
+    - in
+    - Execute Stage
+    - logic [VLEN-1:0]
+    - Virtual address of the guest entry to be flushed when Hypervisor extension is enabled.
 
   * - ``lu_is_page_o``
     - out
     - CVA6 MMU
     - logic [PT_LEVELS-2:0]
-    - Output indicating whether the TLB entry corresponds to any page at the different levels
+    - Output indicating whether the TLB entry corresponds to any page at the different page table levels
 
   * - ``lu_hit_o``
     - out
@@ -682,7 +878,7 @@ The input and output signals of the TLB are shown in the following figure.
     - Indicates whether the TLB update entry is valid or not
 
   * - ``is_page``
-    - logic [PT_LEVELS-2:0][HYP_EXT:0]
+    - logic [PtLevels-2:0][HYP_EXT:0]
     - Indicates if the TLB entry corresponds to a any page at the different levels. When Hypervisor extension is used it includes information also for the G-stage.
 
   * - ``vpn``
@@ -690,16 +886,24 @@ The input and output signals of the TLB are shown in the following figure.
     - Virtual Page Number (VPN) used for updating the TLB
 
   * - ``asid``
-    - logic[HYP_EXT:0][ASID_WIDTH[0]-1:0] 
-    - Vector 0 is the Address Space Identifier (ASID) used for updating the TLB. Vector 1 is the analogous one for virtual supervisor or hypervisor when Hypervisor extension is enabled.
+    - logic[ASIDW-1:0] 
+    - ASID used for updating the TLB
+
+  * - ``vmid``
+    - logic[VMIDW-1:0] 
+    - VMID used for updating the TLB when Hypervisor extension is enabled
   
   * - ``v_st_enbl``
     - logic [HYP_EXT*2:0]
     - Used only in Hypervisor mode. Indicates for which stage the translation was requested and for which it is therefore valid (s_stage, g_stage or virtualization enabled).
 
   * - ``content``
-    - pte_cva6_t  [HYP_EXT:0] 
-    - Content of the TLB update entry (both for g and s stage when applicable), defined by the structure
+    - pte_cva6_t  
+    - Content of the TLB update entry 
+
+  * - ``g_content``
+    - pte_cva6_t  
+    - Content of the TLB update entry for g stage when Hypervisor extension is enabled
 
 .. raw:: html
 
@@ -713,7 +917,7 @@ The input and output signals of the TLB are shown in the following figure.
     - Description
 
   * - ``ppn``
-    - logic[riscv::PPNW-1:0] 
+    - logic[PPNW-1:0] 
     - Physical Page Number (PPN)
 
   * - ``rsw``
@@ -772,7 +976,7 @@ The input and output signals of the TLB are shown in the following figure.
 
    <span style="font-size:18px; font-weight:bold;">TLB Entry Fields</span>
 
-The number of TLB entries can be changed via a design parameter. Each TLB entry is made up of two fields: Tag and Content. The Tag field holds the virtual page number, ASID and page size along with a valid bit (VALID) indicating that the entry is valid, and a v_st_enbl fiedl that indicates at which level the translation is valid when hypervisor mode is enabled. The virtual page number, is further split into several separate virtual page numbers according to the number of PT_LEVELS used in each configuration. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page. Note that the V bit in the Content field is the V bit which is present in the page table in memory. It is copied from the page table, as is,  and the VALID bit in the Tag is set based on its value.The TLB entry fields are shown in this Figure.
+The number of TLB entries can be changed via a design parameter. Each TLB entry is made up of two fields: Tag and Content. The Tag field holds the virtual page number, ASID, VMID and page size along with a valid bit (VALID) indicating that the entry is valid, and a v_st_enbl field that indicates at which level the translation is valid when hypervisor mode is enabled. The virtual page number, is further split into several separate virtual page numbers according to the number of PtLevels used in each configuration. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page. Note that the V bit in the Content field is the V bit which is present in the page table in memory. It is copied from the page table, as is,  and the VALID bit in the Tag is set based on its value. g_content is the equivalent for the g-stage translation. The TLB entry fields are shown in this Figure.
 
 .. figure:: _static/cva6_tlb_entry.png
    :name: **Figure 5:** Fields in CVA6 TLB entry
@@ -799,10 +1003,10 @@ The CVA6 TLB implements the following three functions:
 This function takes in the virtual address and certain other fields, examines the TLB to determine if the virtual page number of the page being accessed is in the TLB or not. If a TLB entry is found (TLB hit), the TLB returns the corresponding physical page number (PPN) which is then used to calculate the target physical address. The following checks are done as part of this lookup function to find a match in the TLB:
 
 * **Validity Check:** For a TLB hit, the associated TLB entry must be valid .
-* **ASID and Global Flag Check:** The TLB entry's ASID must match the given ASID (ASID associated with the Virtual address). If the TLB entry’s Global bit (G) is set then this check is not done. This ensures that the translation is either specific to the provided ASID or it is globally applicable. When the hypervisor extension is enabled, either the ASID or the VMID (i.e. ASID[0] and ASID[1]) in the TLB entry must match ASID[0] and/or ASID[1] in the input, depending on which level of translation is enabled. For the VMID (ASID[1]) the check is always applicable, regardless of G bit in the TLB entry.
+* **ASID, VMID and Global Flag Check:** The TLB entry's ASID must match the given ASID (ASID associated with the Virtual address). If the TLB entry’s Global bit (G) is set then this check is not done. This ensures that the translation is either specific to the provided ASID, or it is globally applicable. When the hypervisor extension is enabled, either the ASID or the VMID in the TLB entry must match ASID and/or VMID in the input, depending on which level(s) of translation is enabled. For the VMID the check is always applicable, regardless of G bit in the TLB entry.
 * **Level VPN match:** CVA6 implements a multi-level page table. As such the virtual address is broken up into multiple parts which are the virtual page number used in the different levels. So the condition that is checked next is that the virtual page number of the virtual address matches the virtual page number of the TLB entry at each level. 
-* **Page match:** Without Hypervisor extension, there is a match at a certain level X if the is_page component of the tag is set to 1 at level PT_LEVELS-X. At level 0 page_match is always set to 1. When Hypervisor extension is enabled, the conditions to give a page match vary depending on the level we are at. At the highest level (PT_LEVELS -1), there is a page match at g and s stage (when enabled) if the corresponding is_page bit is set. If a stage is not enabled the is_page is considered a 1. At level 0, page_match is always 1 as in the case of no hypervisor extension. In the intermediate levels, the page_match is determined using the merged final translation size from both stages and their enable signals. 
-  **Level match** The last condition to be checked at each page level, for a TLB hit, is that there is a vpn match for the current level and the higher ones, together with a page match at the current one. E.g. If PT_LEVELS=2, a match at level 2 will occur if there is a VPN match at level 2 and a page match at level 2. For level 1, there will be a match if there is a VPN match at levels 2 and 1, together with a page match at level 1.
+* **Page match:** Without Hypervisor extension, there is a match at a certain level X if the is_page component of the tag is set to 1 at level PtLevels-X. At level 0 page_match is always set to 1. When Hypervisor extension is enabled, the conditions to give a page match vary depending on the level we are at. At the highest level (PT_LEVELS -1), there is a page match at g and s stage (when enabled) if the corresponding is_page bit is set. If a stage is not enabled the is_page is considered a 1. At level 0, page_match is always 1 as in the case of no hypervisor extension. In the intermediate levels, the page_match is determined using the merged final translation size from both stages and their enable signals. 
+  **Level match** The last condition to be checked at each page level, for a TLB hit, is that there is a vpn match for the current level and the higher ones, together with a page match at the current one. E.g. If PtLevels=2, a match at level 2 will occur if there is a VPN match at level 2 and a page match at level 2. For level 1, there will be a match if there is a VPN match at levels 2 and 1, together with a page match at level 1.
 
 
 All the conditions listed above are checked against every TLB entry. If there is a TLB hit then the corresponding bit in the hit array is set. The following Figure Illustrates the TLB hit/miss process listed above.
@@ -861,8 +1065,7 @@ The SFENCE.VMA instruction can be used with certain specific source register spe
 
    **Figure 10:** Invalidate TLB entry for matching ASIDs
 
-The TLB fully implements the supervisor flush instructions, i.e., sfence, including filtering by ASID and virtual address. To
-support nested translation,it supports the two translation stages, including access permissions (rwx) and VMIDs. This is done analogously to the fence cases explained above.
+The TLB fully implements the supervisor flush instructions, i.e., sfence, including filtering by ASID and virtual address. To support nested translation,it supports the two translation stages, including access permissions (rwx) and VMIDs. This is done analogously to the fence cases explained above.
 
 
 .. raw:: html
@@ -969,7 +1172,7 @@ Shared Translation Lookaside Buffer
 
 The CVA6 shared TLB is structured as a 2-way associative cache, where the virtual address requiring translation is compared with the set indicated by the virtual page number. The shared TLB is looked up in case of an Instruction TLB (ITLB) or data TLB (DTLB) miss, signaled by these TLBs. If the entry is found in the shared TLB set, the respective TLB, whose translation is being requested, is updated. If the entry is not found in the shared TLB, then the processor has to perform a page table walk. Once the processor obtains a PPN corresponding to the VPN, the shared TLB is updated with this information. If the physical page is not found in the page table, it results in a page fault, which is handled by the operating system. The operating system will then place the corresponding physical page in memory.
 
-The use of the shared TLB is optional in CVA6, via the ``CVA6ConfigUseSharedTlb`` parameter. When it is not used, the requests from ITLB and DTLB go directly to the PTW, and the update from the PTW goes directly to the ITLB and DTLB respectively.  
+The use of the shared TLB is optional in CVA6, via the ``UseSharedTlb`` parameter. When it is not used, the requests from ITLB and DTLB go directly to the PTW, and the update from the PTW goes directly to the ITLB and DTLB respectively.  
 
 The input and output signals of the shared TLB are shown in the following Figure. 
 
@@ -1013,32 +1216,75 @@ The input and output signals of the shared TLB are shown in the following Figure
     * - ``flush_i``
       - in
       - Controller
-      - logic [HYP_EXT*2:0]
-      - TLB flush request
-
-    * - ``enable_translation_i``
-      - in
-      - CSR RegFile
-      - logic [HYP_EXT*2:0]  
-      - Bit 0 indicates address translation request for instruction. In Hypervisor mode, bit 1 enables virtual memory translation for instrucionts, and bit 2 indicates the virtualization mode state
-
-    * - ``en_ld_st_translation_i``
-      - in
-      - CSR RegFile
       - logic
-      - Bit 0 indicates address translation request for load or store. In Hypervisor mode, bit 1 enables virtual memory translation for load or store, and bit 2 indicates the virtualization mode at which load and stores should happen
+      - SFENCE.VMA Committed
+
+    * - ``flush_vvma_i``
+      - in
+      - Controller
+      - logic
+      - SFENCE.VVMA Committed
+
+    * - ``flush_gvma_i``
+      - in
+      - Controller
+      - logic
+      - SFENCE.GVMA Committed
+
+    * - ``s_st_enbl_i``
+      - in
+      - Controller
+      - logic 
+      - Indicates address translation request (s-stage) 
+
+    * - ``g_st_enbl_i``
+      - in
+      - Controller
+      - logic 
+      - Indicates address translation request (g-stage) - used only in Hypervisor mode
+
+    * - ``v_i``
+      - in
+      - Controller
+      - logic 
+      - Indicates the virtualization mode state - used only in Hypervisor mode
+
+    * - ``s_ld_st_enbl_i``
+      - in
+      - Controller
+      - logic 
+      - Indicates address translation request (s-stage) for load stores
+
+    * - ``g_ld_st_enbl_i``
+      - in
+      - Controller
+      - logic 
+      - Indicates address translation request (g-stage) for load stores - used only in Hypervisor mode
+
+    * - ``ld_st_v_i``
+      - in
+      - Controller
+      - logic 
+      - Indicates the virtualization mode state for load stores
+
 
     * - ``dtlb_asid_i``
       - in
       - MMU
-      - logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]
-      - Vector 0 is the ASID for the lookup in case of a DTLB miss. Vector 1 is the analogous one for virtual supervisor (VMID) when Hypervisor extension is enabled.
+      - logic [ASIDW-1:0]
+      - ASID for the lookup in case of a DTLB miss 
 
     * - ``itlb_asid_i``
       - in
       - MMU
-      - logic [HYP_EXT:0][ASID_WIDTH[0]-1:0]
-      - Vector 0 is the ASID for the lookup in case of an ITLB miss. Vector 1 is the analogous one for virtual supervisor (VMID) when Hypervisor extension is enabled.
+      - logic [ASIDW-1:0]
+      - ASID for the lookup in case of an ITLB miss 
+
+    * - ``lu_vmid_i``
+      - in
+      - MMU
+      - logic [VMIDW-1:0]
+      - VMID for the lookup 
 
     * - ``itlb_access_i``
       - in
@@ -1055,7 +1301,7 @@ The input and output signals of the shared TLB are shown in the following Figure
     * - ``itlb_vaddr_i``
       - in
       - Cache Subsystem
-      - logic [riscv::VLEN-1:0]
+      - logic [VLEN-1:0]
       - Virtual address lookup in ITLB
 
     * - ``dtlb_access_i``
@@ -1073,7 +1319,7 @@ The input and output signals of the shared TLB are shown in the following Figure
     * - ``dtlb_vaddr_i``
       - in
       - Load/Store Unit
-      - logic [riscv::VLEN-1:0]
+      - logic [VLEN-1:0]
       - Virtual address lookup in DTLB
 
     * - ``itlb_update_o``
@@ -1115,7 +1361,7 @@ The input and output signals of the shared TLB are shown in the following Figure
     * - ``shared_tlb_vaddr_o``
       - out
       - PTW
-      - logic [riscv::VLEN-1:0]
+      - logic [VLEN-1:0]
       - Virtual address lookup in shared TLB
       
     * - ``itlb_req_o``
@@ -1132,40 +1378,9 @@ The input and output signals of the shared TLB are shown in the following Figure
 
 .. raw:: html
 
-   <span style="font-size:18px; font-weight:bold;">Struct Description</span>
-
-.. raw:: html
-
-   <p style="text-align:center;"> <b>Table 11:</b> Shared TLB Update Struct </b>(shared_tag_t</b>) </p>
-
-.. list-table::
-   :header-rows: 1
-
-   * - Signal
-     - Type
-     - Description
-
-   * - ``is_page``
-     - logic [PT_LEVELS-2:0][HYP_EXT:0] 
-     - Indicates if the shared TLB entry corresponds to any page. When Hypervisor extenxion is used it includes information for G-stage too.
-
-   * - ``vpn``
-     - logic[PT_LEVELS+HYP_EXT-1:0][(VPN_LEN/PT_LEVELS)-1:0] 
-     - Virtual Page Number (VPN) represents the index of PTE in each page table level.
-
-   * - ``asid``
-     - logic [HYP_EXT*2:0][ASID_WIDTH[0]-1:0]
-     - Vector 0 is the Address Space Identifier (ASID) used to identify different address spaces.  Vector 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
-
-   * - ``v_st_enbl``
-     - logic [HYP_EXT*2:0]
-     - Used only in Hypervisor mode. Indicates for which stage the translation was requested and for which it is therefore valid (s_stage, g_stage or virtualization enabled).
-
-.. raw:: html
-
    <span style="font-size:18px; font-weight:bold;">Shared TLB Entry Structure</span>
 
-Shared TLB is 2-way associative, with a depth of 64 by default, but can be selected via a user parameter. A single entry in the set contains the valid bit, tag and the content. The Tag segment stores details such as the virtual page number, ASID, and page size. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page.
+Shared TLB is 2-way associative, with a depth of 64 by default, but can be selected via a user parameter. A single entry in the set contains the valid bit, tag and the content. The Tag segment stores details such as the virtual page number, ASID, VMID and page size. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page.
 
 .. figure:: _static/shared_tlb.png
    :name: **Figure 15:** CVA6 Shared TLB Structure
@@ -1258,7 +1473,7 @@ The module implemented in CVA6 to find the first non-valid entry in the shared T
 
 The input signal is the vector to be counted, and the output represents the count of trailing/leading zeros. If all bits in the input vector are zero, it will also be indicated.
 
-When initializing the module, the width of the input vector is set to the number of shared TLB ways. The trailing zero counter mode is selected. The vector of valid bits is set as the input vector, but with negation. This is because we want the index of the first non-valid entry, and LZC returns the count of trailing zeros, which actually corresponds to the index of the first occurrence of 1 from the least significant bit (LSB). if there is at least one non-valid entry, that entry is opted for the replacement, and If not then this is signaled by LZC.
+When initializing the module, the width of the input vector is set to the number of shared TLB ways. The trailing zero counter mode is selected. The vector of valid bits is set as the input vector, but with negation. This is because we want the index of the first non-valid entry, and LZC returns the count of trailing zeros, which actually corresponds to the index of the first occurrence of 1 from the least significant bit (LSB). if there is at least one non-valid entry, that entry is opted for the replacement, and if not then this is signaled by LZC.
 
 .. figure:: _static/LZC.png
    :name: **Figure 17:** Replacement of First invalid entry.
@@ -1306,7 +1521,7 @@ The PTW module operates through various states, each with its specific function,
 
    <span style="font-size:18px; font-weight:bold;">Key Features and Capabilities</span>
 
-Key features of this PTW module include support for multiple levels of page tables (PT_LEVELS), accommodating instruction and data page table walks. It rigorously validates and verifies page table entries (PTEs) to ensure translation accuracy and adherence to access permissions. This module seamlessly integrates with the CVA6 processor's memory management unit (MMU), which governs memory access control. It also takes into account global mapping, access flags, and privilege levels during the translation process, ensuring that memory access adheres to the processor's security and privilege settings.
+Key features of this PTW module include support for multiple levels of page tables (PtLevels), accommodating instruction and data page table walks. It rigorously validates and verifies page table entries (PTEs) to ensure translation accuracy and adherence to access permissions. This module seamlessly integrates with the CVA6 processor's memory management unit (MMU), which governs memory access control. It also takes into account global mapping, access flags, and privilege levels during the translation process, ensuring that memory access adheres to the processor's security and privilege settings.
 
 .. raw:: html
 
@@ -1364,8 +1579,20 @@ In addition to its translation capabilities, the PTW module is equipped to detec
     * - ``ptw_error_o``
       - out
       - MMU
-      - logic [HYP_EXT*2:0]
+      - logic
       - Output signal indicating that an error occurred during PTW operation
+
+    * - ``ptw_error_at_g_st_o``
+      - out
+      - MMU
+      - logic
+      - Output signal indicating that an error occurred during PTW operation at the G stage
+
+    * - ``ptw_err_at_g_int_st_o``
+      - out
+      - MMU
+      - logic
+      - Output signal indicating that an error occurred during PTW operation at the G stage during S stage
 
     * - ``ptw_access_exception_o``
       - out
@@ -1374,16 +1601,40 @@ In addition to its translation capabilities, the PTW module is equipped to detec
       - Output signal indicating that a PMP (Physical Memory Protection) access exception occurred during PTW operation.
 
     * - ``enable_translation_i``
-      - in
-      - CSR RegFile
-      - logic [HYP_EXT*2:0]  
-      - Bit 0 indicates address translation request for instruction. In Hypervisor mode, bit 1 enables virtual memory translation for instrucionts, and bit 2 indicates the virtualization mode state
+     - in
+     - CSR RegFile
+     - logic 
+     - Enables address translation request for instruction
+
+    * - ``enable_g_translation_i``
+     - in
+     - CSR RegFile
+     - logic 
+     - Enables virtual memory translation for instrucionts
 
     * - ``en_ld_st_translation_i``
-      - in
-      - CSR RegFile
-      - logic [HYP_EXT*2:0]
-      - Bit 0 indicates address translation request for load or store. In Hypervisor mode, bit 1 enables virtual memory translation for load or store, and bit 2 indicates the virtualization mode at which load and stores should happen
+     - in
+     - CSR RegFile
+     - logic
+     - Enables address translation request for load or store
+
+    * - ``en_ld_st_g_translation_i``
+     - in
+     - CSR RegFile
+     - logic
+     - Enables virtual memory translation for load or store
+
+    * - ``v_i``
+     - in
+     - CSR RegFile
+     - logic
+     - Virtualization mode state
+
+    * - ``ld_st_v_i``
+     - in
+     - CSR RegFile
+     - logic
+     - Virtualization mode state
     
     * - ``hlvx_inst_i``
       - in
@@ -1418,14 +1669,26 @@ In addition to its translation capabilities, the PTW module is equipped to detec
     * - ``update_vaddr_o``
       - out
       - MMU
-      - logic[riscv::VLEN-1:0]
+      - logic[VLEN-1:0]
       - Updated VADDR from shared TLB
 
     * - ``asid_i``
       - in
-      - CSR Regfile
-      - logic [HYP_EXT*2:0][ASID_WIDTH[0]-1:0]
-      - Vector 0 is the ASID for the lookup. Vectors 1 and 2 are the analogous one for virtual supervisor and hypervisor when Hypervisor extension is enabled.
+      - CSR RegFile
+      - logic [ASIDW-1:0]
+      - ASID for the lookup
+
+    * - ``vs_asid_i``
+      - in
+      - CSR RegFile
+      - logic [ASID_WIDTH-1:0]
+      - ASID for the lookup for virtual supervisor when Hypervisor extension is enabled
+
+    * - ``vmid_i``
+      - in
+      - CSR RegFile
+      - logic [VMID_WIDTH-1:0]
+      - VMID for the lookup when Hypervisor extension is enabled
 
     * - ``shared_tlb_access_i``
       - in
@@ -1442,7 +1705,7 @@ In addition to its translation capabilities, the PTW module is equipped to detec
     * - ``shared_tlb_vaddr_i``
       - in
       - Shared TLB
-      - logic[riscv::VLEN-1:0]
+      - logic[VLEN-1:0]
       - Virtual Address from shared TLB
 
     * - ``itlb_req_i``
@@ -1454,14 +1717,32 @@ In addition to its translation capabilities, the PTW module is equipped to detec
     * - ``satp_ppn_i``
       - in
       - CSR RegFile
-      - logic [HYP_EXT*2:0][riscv::PPNW-1:0]
-      - PPN of top level page table from SATP register (vector 0), VSATP register (vector 1 when Hypervisor Extension is enabled) and HGATP (vector 2 when Hypervisor Extension is enabled).
+      - logic [PPNW-1:0]
+      - PPN of top level page table from SATP register
+
+    * - ``vsatp_ppn_i``
+      - in
+      - CSR RegFile
+      - logic [PPNW-1:0]
+      - PPN of top level page table from VSATP register when Hypervisor extension is enabled
+
+    * - ``hgatp_ppn_i``
+      - in
+      - CSR RegFile
+      - logic [PPNW-1:0]
+      - PPN of top level page table from HGATP register when Hypervisor extension is enabled
 
     * - ``mxr_i``
       - in
       - CSR RegFile
-      - logic [HYP_EXT:0]
-      - Bit 0 is the Make Executable Readable bit in xSTATUS CSR register. Bit 1 is the analogous one for virtual supervisor when Hypervisor extension is enabled.
+      - logic
+      - Make Executable Readable bit in xSTATUS CSR register
+
+    * - ``vmxr_i``
+      - in
+      - CSR RegFile
+      - logic
+      - Virtual Make Executable Readable bit in xSTATUS CSR register for virtual supervisor when Hypervisor extension is enabled.
 
     * - ``shared_tlb_miss_o``
       - out
@@ -1484,8 +1765,14 @@ In addition to its translation capabilities, the PTW module is equipped to detec
     * - ``bad_paddr_o``
       - out
       - MMU
-      - logic[HYP_EXT:0][riscv::PLEN-1:0]
-      - Bad Physical Address in case of access exception. Same at G stage when Hypervisor is enabled.
+      - logic[PLEN-1:0]
+      - Bad Physical Address in case of access exception
+
+    * - ``bad_gpaddr_o``
+      - out
+      - MMU
+      - logic[GPLEN-1:0]
+      - Bad Guest Physical Address in case of access exception when Hypervisor is enabled.
 
 .. raw:: html
 
@@ -1527,7 +1814,7 @@ In addition to its translation capabilities, the PTW module is equipped to detec
      - Data Write enabled
 
    * - ``data_be``
-     - logic [(riscv::XLEN/8)-1:0]
+     - logic [(XLEN/8)-1:0]
      - Data Byte enable
 
    * - ``data_size``
@@ -1583,7 +1870,7 @@ In addition to its translation capabilities, the PTW module is equipped to detec
 
 Page Table Walker is implemented as a finite state machine. It listens to shared TLB for incoming translation requests. If there is a shared TLB miss, it saves the virtual address and starts the page table walk. Page table walker transitions between 7 states in CVA6.
 
-* **IDLE:** The initial state where the PTW is awaiting a trigger, often a Shared TLB miss, to initiate a memory access request. In the case of the Hypervisor extension, the stage to which the translation belongs is determined by the enable_translation_i and en_ld_st_translation_i signals. There are 3 possible stages: (i) S-Stage - the PTW current state is translating a guest-virtual address into a guest-physical address; (ii) G-Stage Intermed - the PTW current state is translating memory access made from the VS-Stage during the walk to host-physical address; and (iii) G-Stage Final - the PTW current state is translating the final output address from VS-Stage into a host-physical address. When Hypervisor is not enabled PTW is always in S_STAGE.
+* **IDLE:** The initial state where the PTW is awaiting a trigger, often a Shared TLB miss, to initiate a memory access request. In the case of the Hypervisor extension, the stage to which the translation belongs is determined by the enable_translation_XX and en_ld_st_translation_XX signals. There are 3 possible stages: (i) S-Stage - the PTW current state is translating a guest-virtual address into a guest-physical address; (ii) G-Stage Intermed - the PTW current state is translating memory access made from the VS-Stage during the walk to host-physical address; and (iii) G-Stage Final - the PTW current state is translating the final output address from VS-Stage into a host-physical address. When Hypervisor is not enabled PTW is always in S_STAGE.
 * **WAIT_GRANT:** Request memory access and wait for data grant
 * **PTE_LOOKUP:** Once granted access, the PTW examines the valid Page Table Entry (PTE), checking attributes to determine the appropriate course of action. Depending on the STAGE determined in the previous state, pptr and other atributes are updated accordingly.
 * **PROPAGATE_ERROR:** If the PTE is invalid, this state handles the propagation of an error, often leading to a page-fault exception due to non-compliance with access conditions.
@@ -1612,7 +1899,7 @@ In the IDLE state of the Page Table Walker (PTW) finite state machine, the syste
 3. The signal indicating the instruction page table walk is set to 0.
 4. A conditional check is performed: if there is a shared TLB access request and the entry is not found in the shared TLB (indicating a shared TLB miss), the following steps are executed:
 
-   a. The address of the desired Page Table Entry within the level 0  page table is calculated by multiplying the Physical Page Number (PPN) of the level 0 page table from the SATP register by the page size. This result is then added to the product of the Virtual Page Number, and the size of a page table entry. Depending on the translation indicated by enable_translation_i and en_ld_st_translation_i at the different levels [HYP_EXT * 2:0] the corresponding register (satp_ppn_i[HYP_EXT * 2:0]) and bits of the VPN are used.
+   a. The address of the desired Page Table Entry within the level 0 page table is calculated by multiplying the Physical Page Number (PPN) of the level 0 page table from the SATP register by the page size. This result is then added to the product of the Virtual Page Number, and the size of a page table entry. Depending on the translation indicated by enable_translation_XX, en_ld_st_translation_XX and v_i signals,  the corresponding register (satp_ppn_i, vsatp_ppn_i or hgatp_ppn_i) and bits of the VPN are used.
 
 .. figure:: _static/ptw_nlvl.png
    :name: **Figure 27:** Address of desired PTE at next level of Page Table
@@ -1626,7 +1913,7 @@ In the IDLE state of the Page Table Walker (PTW) finite state machine, the syste
 .. _example:
 
    b. The signal indicating whether it's an instruction page table walk is updated based on the itlb_req_i signal.
-   c. The ASID and virtual address are saved for the page table walk.
+   c. The ASID, VMID and virtual address are saved for the page table walk.
    d. A shared TLB miss is indicated.
 
 .. raw:: html
@@ -1695,7 +1982,7 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 
    **Figure 25:** Data Access Page Table Walk, Store requested
 
-6. The state also checks for potential misalignment issues in the translation: If the current page table level is the first level and if the PPN of in PTE is not zero, it indicates a misaligned superpage, leading to a transition to the "PROPAGATE_ERROR" state.
+6. The state also checks for potential misalignment issues in the translation: If the current page table level is the first level and if the PPN in PTE is not zero, it indicates a misaligned superpage, leading to a transition to the "PROPAGATE_ERROR" state.
 
 .. figure:: _static/ptw_mis_sup.png
    :name: **Figure 26:** Misaligned Superpage Check
