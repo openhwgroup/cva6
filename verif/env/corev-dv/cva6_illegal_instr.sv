@@ -63,7 +63,7 @@ class cva6_illegal_instr_c extends riscv_illegal_instr;
 
   // Invalid SYSTEM instructions
   constraint system_instr_c {
-    if (!(SUPERVISOR_MODE inside supported_privileged_mode)) {
+    if (!(SUPERVISOR_MODE inside {supported_privileged_mode})) {
        if (exception == kIllegalSystemInstr) {
          opcode == 7'b1110011;
          func3 == 3'b000;

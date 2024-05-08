@@ -36,6 +36,12 @@
      - decoder
      - logic
 
+   * - ``is_macro_instr_o``
+     - out
+     - Output instruction is macro
+     - decoder
+     - logic
+
    * - ``is_compressed_o``
      - out
      - Output instruction is compressed

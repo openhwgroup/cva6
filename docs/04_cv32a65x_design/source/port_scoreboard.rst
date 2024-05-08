@@ -76,7 +76,7 @@
      - out
      - rs1 operand
      - issue_read_operands
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``rs1_valid_o``
      - out
@@ -94,7 +94,7 @@
      - out
      - rs2 operand
      - issue_read_operands
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``rs2_valid_o``
      - out
@@ -184,13 +184,13 @@
      - in
      - Transaction ID at which to write the result back
      - TO_BE_COMPLETED
-     - logic[CVA6Cfg.NrWbPorts-1:0][ariane_pkg::TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``wbdata_i``
      - in
      - Results to write back
      - TO_BE_COMPLETED
-     - logic[CVA6Cfg.NrWbPorts-1:0][riscv::XLEN-1:0]
+     - logic[CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``ex_i``
      - in

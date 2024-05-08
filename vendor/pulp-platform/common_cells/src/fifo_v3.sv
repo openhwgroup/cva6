@@ -46,13 +46,6 @@ module fifo_v3 #(
     // actual memory
     dtype [FifoDepth - 1:0] mem_n, mem_q;
 
-    // fifo ram signals for fpga target
-    logic   fifo_ram_we;
-    logic   [ADDR_DEPTH-1:0] fifo_ram_read_address;
-    logic   [ADDR_DEPTH-1:0] fifo_ram_write_address;
-    logic   [$bits(dtype)-1:0] fifo_ram_wdata;
-    logic   [$bits(dtype)-1:0] fifo_ram_rdata;
-
     assign usage_o = status_cnt_q[ADDR_DEPTH-1:0];
 
     if (DEPTH == 0) begin : gen_pass_through
@@ -70,32 +63,18 @@ module fifo_v3 #(
         read_pointer_n  = read_pointer_q;
         write_pointer_n = write_pointer_q;
         status_cnt_n    = status_cnt_q;
-        if (ariane_pkg::FPGA_EN) begin
-             fifo_ram_we             = '0;
-             fifo_ram_read_address   = read_pointer_q;
-             fifo_ram_write_address  = '0;
-             fifo_ram_wdata          = '0;
-             data_o = (DEPTH == 0) ? data_i : fifo_ram_rdata;
-        end else begin
-            data_o          = (DEPTH == 0) ? data_i : mem_q[read_pointer_q];
-            mem_n           = mem_q;
-            gate_clock      = 1'b1;
-        end
+        data_o          = (DEPTH == 0) ? data_i : mem_q[read_pointer_q];
+        mem_n           = mem_q;
+        gate_clock      = 1'b1;
 
         // push a new element to the queue
         if (push_i && ~full_o) begin
-            if (ariane_pkg::FPGA_EN) begin
-                fifo_ram_we = 1'b1;
-                fifo_ram_write_address = write_pointer_q;
-                fifo_ram_wdata = data_i;
-            end else begin
-                // push the data onto the queue
-                mem_n[write_pointer_q] = data_i;
-                // un-gate the clock, we want to write something
-                gate_clock = 1'b0;
-            end
-            
+            // push the data onto the queue
+            mem_n[write_pointer_q] = data_i;
+            // un-gate the clock, we want to write something
+            gate_clock = 1'b0;
             // increment the write counter
+            // this is dead code when DEPTH is a power of two
             if (write_pointer_q == FifoDepth[ADDR_DEPTH-1:0] - 1)
                 write_pointer_n = '0;
             else
@@ -107,6 +86,7 @@ module fifo_v3 #(
         if (pop_i && ~empty_o) begin
             // read from the queue is a default assignment
             // but increment the read pointer...
+            // this is dead code when DEPTH is a power of two
             if (read_pointer_n == FifoDepth[ADDR_DEPTH-1:0] - 1)
                 read_pointer_n = '0;
             else
@@ -149,31 +129,16 @@ module fifo_v3 #(
         end
     end
 
-    if (ariane_pkg::FPGA_EN) begin : gen_fpga_queue
-        AsyncDpRam #(
-            .ADDR_WIDTH (ADDR_DEPTH),
-            .DATA_DEPTH (DEPTH),
-            .DATA_WIDTH ($bits(dtype))
-        ) fifo_ram (
-            .Clk_CI      ( clk_i                   ),  
-            .WrEn_SI     ( fifo_ram_we             ),
-            .RdAddr_DI   ( fifo_ram_read_address   ),
-            .WrAddr_DI   ( fifo_ram_write_address  ),
-            .WrData_DI   ( fifo_ram_wdata          ),
-            .RdData_DO   ( fifo_ram_rdata          )
-        );
-    end else begin : gen_asic_queue
-        always_ff @(posedge clk_i or negedge rst_ni) begin
-            if(~rst_ni) begin
-                mem_q <= '0;
-            end else if (!gate_clock) begin
-                mem_q <= mem_n;
-            end
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            mem_q <= '0;
+        end else if (!gate_clock) begin
+            mem_q <= mem_n;
         end
     end
 
-// pragma translate_off
-`ifndef VERILATOR
+`ifndef SYNTHESIS
+`ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin
         assert (DEPTH > 0)             else $error("DEPTH must be greater than 0.");
     end
@@ -186,6 +151,6 @@ module fifo_v3 #(
         @(posedge clk_i) disable iff (~rst_ni) (empty_o |-> ~pop_i))
         else $fatal (1, "Trying to pop data although the FIFO is empty.");
 `endif
-// pragma translate_on
+`endif
 
 endmodule // fifo_v3

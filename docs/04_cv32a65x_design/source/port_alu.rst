@@ -40,7 +40,7 @@
      - out
      - ALU result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``alu_branch_res_o``
      - out

@@ -1,0 +1,1511 @@
+hart_schema:
+  type : dict
+  schema:
+    ###
+    #supported_xlen
+    #--------------
+    #
+    # - **Description**: list of supported xlen on the target
+    # - **Default**:  This is a required field to be set by the user. No defaults exist.
+    # - **Constraints**: list should include integers from:  32, 64 and/or 128. XLEN=128 is not fully supported though.
+    # - **Examples**:
+    #
+    #   .. code-block:: yaml
+    #
+    #     supported_xlen : [32]
+    #     supported_xlen : [64, 32]
+    #     supported_xlen : [64]
+
+    supported_xlen:
+      type: list
+      schema: { type: integer, allowed: [ 32, 64, 128] }
+      required: true
+
+    ###
+    #Debug_Spec_Version
+    #------------------
+    #
+    # - **Description**: Version number of Debug specification as string. Please enclose the version in "" to avoid type mismatches.
+    # - **Default**: "1.0.0"
+    # - **Constraints**: - should be a valid version later than 1.0.0
+    # - **Examples**:
+    #
+    #   .. code-block:: yaml
+    #
+    #     Debug_Spec_Version: "1.0.0"
+    #     Debug_Spec_Version: "0.13.2"
+    #
+
+    Debug_Spec_Version: {type: string,  default: '1.0.0', required: true, allowed: ["1.0.0", "0.13.2"]}
+    
+    ###
+    #debug_mode
+    #----------
+    #
+    #  - **Description**: Boolean value indicating if the debug instructions are accessible.
+    #  - **Default**: This is a required field, and thus no defaults exists
+    #  - **Examples**:
+    #
+    #    .. code-block:: yaml
+    #
+    #      debug_mode: False
+
+    debug_mode:
+      type: boolean
+      required: True
+      default: False  
+
+    ###
+    #parking_loop
+    #------------
+    #
+    #  - **Description**: Integer value indicating the address of the debug parking loop. Leaving it
+    #    empty indicates that a parking loop doesn't exist
+    #  - **Examples**:
+    #
+    #    .. code-block:: yaml
+    #
+    #       parking_loop: 0x800
+
+    parking_loop:
+      type: integer
+      nullable: True
+      default:
+      
+    schema_node:
+      type: dict
+      allow_unknown: false
+      noneof:
+      - schema:
+          warl: &ref_warl
+            type: dict
+            schema:
+              dependency_fields:
+                type: list
+                empty: true
+                schema:
+                  type: string
+                  nullable: true
+              legal:
+                type: list
+                schema:
+                  type: string
+              wr_illegal:
+                type: list
+                schema:
+                  type: string
+      - 
+        schema:
+          wlrl: &ref_wlrl
+            type: list
+            schema:
+              type: string
+              regex: (^0x[012456789abcdef]+:0x[0123456789abcdef]+$)|(^[0-9]+:[0-9]+$)|(^[0-9]+$)|(^0x[012456789abcdef]+$)
+
+    tselect:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: describes the different triggers implemented. 
+        address: {type: integer, default: 0x7a0, allowed: [0x7a0]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        reset-val:
+          type: integer
+          default: 0
+          check_with: max_length
+        rv32:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            shadow: {type: string, default: , nullable: True}
+            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+            msb: {type: integer, default: 31, allowed: [31]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            type:
+              type: dict
+              oneof:
+              - schema: {ro_constant: {type: integer, max:  0xFFFFFFFF}}
+              - schema: { warl: *ref_warl }
+              default:
+                warl:
+                  dependency_fields: []
+                  legal:
+                  - tselect[31:0] in [0x00000000:0x2]
+                  wr_illegal:
+                  - unchanged
+            accessible:
+              type: boolean
+              default: true
+              check_with: rv32_check
+          default: {accessible: false}
+        rv64:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            shadow: {type: string, default: , nullable: True}
+            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+            msb: {type: integer, default: 63, allowed: [63]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            type:
+              type: dict
+              oneof:
+              - schema: {ro_constant: {type: integer, max:  0xFFFFFFFFFFFFFFFF}}
+              - schema: { warl: *ref_warl }
+              default:
+                warl:
+                  dependency_fields: []
+                  legal:
+                  - tselect[63:0] in [0x00000000:0x2]
+                  wr_illegal:
+                  - unchanged
+    
+            accessible:
+              default: true
+              check_with: rv64_check
+          default: {accessible: false}
+     
+    tdata2:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: provides various control bits related to triggers. 
+        address: {type: integer, default: 0x7a2, allowed: [0x7a2]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        indexing_reg: {type: boolean, default: True, allowed: [True]}
+        rv32:
+          type: dict
+          schema:
+            msb: {type: integer, default: 31, allowed: [31]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFFFFFFFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+
+        rv64:
+          type: dict
+          schema:
+            msb: {type: integer, default: 63, allowed: [63]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFFFFFFFFFFFFFFFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+    
+    tdata3:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: provides various control bits related to triggers. 
+        address: {type: integer, default: 0x7a3, allowed: [0x7a3]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        indexing_reg: {type: boolean, default: True, allowed: [True]}
+        rv32:
+          type: dict
+          schema:
+            msb: {type: integer, default: 31, allowed: [31]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFFFFFFFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+
+        rv64:
+          type: dict
+          schema:
+            msb: {type: integer, default: 63, allowed: [63]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFFFFFFFFFFFFFFFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+    
+    scontext:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: provides various control bits related to triggers. 
+        address: {type: integer, default: 0x5a8, allowed: [0x5a8]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        indexing_reg: {type: boolean, default: True, allowed: [True]}
+        rv32:
+          type: dict
+          schema:
+            msb: {type: integer, default: 15, allowed: [15]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFFFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+
+        rv64:
+          type: dict
+          schema:
+            msb: {type: integer, default: 33, allowed: [33]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0x3FFFFFFFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+    
+    hcontext:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: provides various control bits related to triggers. 
+        address: {type: integer, default: 0x6a8, allowed: [0x6a8]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        indexing_reg: {type: boolean, default: True, allowed: [True]}
+        rv32:
+          type: dict
+          schema:
+            msb: {type: integer, default: 7, allowed: [7]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+
+        rv64:
+          type: dict
+          schema:
+            msb: {type: integer, default: 14, allowed: [14]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0x3FFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+    
+    tcontrol:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: provides various control bits related to triggers. 
+        address: {type: integer, default: 0x7a5, allowed: [0x7a5]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        indexing_reg: {type: boolean, default: True, allowed: [True]}
+        rv32:
+          type: dict
+          schema:
+            msb: {type: integer, default: 7, allowed: [7]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+
+        rv64:
+          type: dict
+          schema:
+            msb: {type: integer, default: 7, allowed: [7]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+    
+    tinfo:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: describes the different triggers implemented. 
+        address: {type: integer, default: 0x7a4, allowed: [0x7a4]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        indexing_reg: {type: boolean, default: True, allowed: [True]}
+        rv32:
+          type: dict
+          schema:
+            msb: {type: integer, default: 15, allowed: [15]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFFFF}}
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+
+        rv64:
+          type: dict
+          schema:
+            msb: {type: integer, default: 15, allowed: [15]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFFFF}}
+                    default:
+                      ro_constant: 0
+          default: {accessible: false}
+
+    tdata1:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: describes the different triggers implemented. 
+        address: {type: integer, default: 0x7a1, allowed: [0x7a1]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        indexing_reg: {type: boolean, default: True, allowed: [True]}
+        rv32:
+          type: dict
+          schema:
+            msb: {type: integer, default: 31, allowed: [31]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFFFFFFFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      warl:
+                        dependency_fields: []
+                        legal:
+                        - writeval[31:0] in [0x00000000:0xFFFFFFFF]
+                        wr_illegal:
+                        - unchanged
+          default: {accessible: false}
+
+        rv64:
+          type: dict
+          schema:
+            msb: {type: integer, default: 63, allowed: [63]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            accessible:
+              type: boolean
+              default: true
+            index_select_reg: {type: string, default: , nullable: True}
+            index_list:
+              type: list
+              schema: 
+                type: dict
+                schema:
+                  index_val: {type: integer, default: 0}
+                  reset-val: {type: integer, default: 0, check_with: max_length}
+                  shadow: {type: string, default: , nullable: True}
+                  shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                  type:
+                    type: dict
+                    oneof:
+                    - schema: {ro_constant: {type: integer, max:  0xFFFFFFFF}}
+                    - schema: { warl: *ref_warl }
+                    default:
+                      warl:
+                        dependency_fields: []
+                        legal:
+                        - writeval[31:0] in [0x00000000:0xFFFFFFFF]
+                        wr_illegal:
+                        - unchanged
+          default: {accessible: false}
+
+    dcsr:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: The mstatus register keeps track of and controls the hart’s current
+            operating state.
+        address: {type: integer, default: 0x7b0, allowed: [0x7b0]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        reset-val:
+          type: integer
+          check_with: max_length
+          default: 0x40000003
+        rv32:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            prv:
+              type: dict
+              schema:
+                description: {type: string,  default: Contains the privilege level the hart was operating in when Debug Mode was entered.}
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 1, allowed: [1]}
+                lsb: {type: integer, default: 0, allowed: [0]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                    - schema: { wlrl: *ref_wlrl }
+                    - schema: { warl: *ref_warl }
+                    - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - prv[1:0] in [0x0:0x3]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            step:
+              type: dict
+              schema:
+                description: { type: string, default: When set and not in Debug Mode the hart will only execute a single instruction;then enter Debug Mode}
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 2, allowed: [2]}
+                lsb: {type: integer, default: 2, allowed: [2]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                    - schema: { wlrl: *ref_wlrl }
+                    - schema: { warl: *ref_warl }
+                    - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - step[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            nmip:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: When set, there is a Non-Maskable-Interrupt (NMI) pending for the hart.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 3, allowed: [3]}
+                lsb: {type: integer, default: 3, allowed: [3]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 0 , min : 0}}
+                  - schema: {ro_variable: {type: boolean}}
+                  default: {ro_constant: 0}
+              default: {implemented: true}
+            mprven:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: mprv in mstatus.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 4, allowed: [4]}
+                lsb: {type: integer, default: 4, allowed: [4]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: { wlrl: *ref_wlrl }
+                  - schema: { warl: *ref_warl }
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - mprven[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            v:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Extends the prv field with the virtualization mode WARL 0 the hart was operating in when Debug Mode was entered 
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 5, allowed: [5]}
+                lsb: {type: integer, default: 5, allowed: [5]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - s_debug_check
+                  oneof:
+                  - schema: { wlrl: *ref_wlrl }
+                  - schema: { warl: *ref_warl }
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    ro_constant: 0
+              default: {implemented: false}
+            cause:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Explains why Debug Mode was entered
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 8, allowed: [8]}
+                lsb: {type: integer, default: 6, allowed: [6]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 0 , min : 0}}
+                  - schema: {ro_variable: {type: boolean}}
+                  default:
+                    ro_variable: True
+              default: {implemented: true}
+            stoptime:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Don’t increment any hart-local timers while in Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 9, allowed: [9]}
+                lsb: {type: integer, default: 9, allowed: [9]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: { warl: *ref_warl }
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - stoptime[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            stopcount:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Don’t increment any hart-local counters while in Debug Mode
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 10, allowed: [10]}
+                lsb: {type: integer, default: 10, allowed: [10]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: { warl: *ref_warl }
+                  - schema: {ro_constant: {type: integer, max: 3 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - stopcount[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: true}
+            stepie:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Interrupts (including NMI) are enabled during single stepping.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 11, allowed: [11]}
+                lsb: {type: integer, default: 11, allowed: [11]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 3 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - stepie[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            ebreaku:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in U-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 12, allowed: [12]}
+                lsb: {type: integer, default: 12, allowed: [12]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - u_debug_check
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 3 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default: {ro_constant: 0}
+              default: {implemented: false}
+            ebreaks:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in S-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 13, allowed: [13]}
+                lsb: {type: integer, default: 13, allowed: [13]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - s_debug_check
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default: {ro_constant: 0}
+              default: {implemented: false}
+            ebreakm:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in M-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 15, allowed: [15]}
+                lsb: {type: integer, default: 15, allowed: [15]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - ebreakm[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            ebreakvu:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in VU-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 16, allowed: [16]}
+                lsb: {type: integer, default: 16, allowed: [16]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - s_debug_check
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default: {ro_constant: 0}
+              default: {implemented: false}
+            ebreakvs:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in VS-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 17, allowed: [17]}
+                lsb: {type: integer, default: 17, allowed: [17]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - s_debug_check
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default: {ro_constant: 0}
+              default: {implemented: false}
+            pelp:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: previous expected-landing-pad (ELP) state.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 18, allowed: [18]}
+                lsb: {type: integer, default: 18, allowed: [18]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with:
+                    - s_debug_check
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default: {ro_constant: 0}
+              default: {implemented: false}
+            debugver:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Debug support exists as it is described in this document.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 31, allowed: [31]}
+                lsb: {type: integer, default: 28, allowed: [28]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  schema: {ro_constant: {type: integer, max: 15 , min : 0}}
+                  default: {ro_constant: 4}
+              default: {implemented: false}
+            accessible:
+              type: boolean
+              default: false
+              check_with: rv32_check
+          default: {accessible: false}
+        rv64:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            prv:
+              type: dict
+              schema:
+                description: {type: string,  default: Contains the privilege level the hart was operating in when Debug Mode was entered.}
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 1, allowed: [1]}
+                lsb: {type: integer, default: 0, allowed: [0]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                    - schema: { wlrl: *ref_wlrl }
+                    - schema: { warl: *ref_warl }
+                    - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - prv[1:0] in [0x0:0x3]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            step:
+              type: dict
+              schema:
+                description: { type: string, default: When set and not in Debug Mode the hart will only execute a single instruction;then enter Debug Mode}
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 2, allowed: [2]}
+                lsb: {type: integer, default: 2, allowed: [2]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                    - schema: { wlrl: *ref_wlrl }
+                    - schema: { warl: *ref_warl }
+                    - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - step[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            nmip:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: When set, there is a Non-Maskable-Interrupt (NMI) pending for the hart.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 3, allowed: [3]}
+                lsb: {type: integer, default: 3, allowed: [3]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 0 , min : 0}}
+                  - schema: {ro_variable: {type: boolean}}
+                  default: {ro_constant: 0}
+              default: {implemented: true}
+            mprven:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: mprv in mstatus.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 4, allowed: [4]}
+                lsb: {type: integer, default: 4, allowed: [4]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: { wlrl: *ref_wlrl }
+                  - schema: { warl: *ref_warl }
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - mprven[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            v:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Extends the prv field with the virtualization mode WARL 0 the hart was operating in when Debug Mode was entered 
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 5, allowed: [5]}
+                lsb: {type: integer, default: 5, allowed: [5]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - s_debug_check
+                  oneof:
+                  - schema: { wlrl: *ref_wlrl }
+                  - schema: { warl: *ref_warl }
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    ro_constant: 0
+              default: {implemented: false}
+            cause:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Explains why Debug Mode was entered
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 8, allowed: [8]}
+                lsb: {type: integer, default: 6, allowed: [6]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  schema: { ro_variable: {type: boolean}}
+                  default:
+                    ro_variable: True
+              default: {implemented: true}
+            stoptime:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Don’t increment any hart-local timers while in Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 9, allowed: [9]}
+                lsb: {type: integer, default: 9, allowed: [9]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: { warl: *ref_warl }
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - stoptime[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            stopcount:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Don’t increment any hart-local counters while in Debug Mode
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 10, allowed: [10]}
+                lsb: {type: integer, default: 10, allowed: [10]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: { warl: *ref_warl }
+                  - schema: {ro_constant: {type: integer, max: 3 , min : 0}}
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - stopcount[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: true}
+            stepie:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Interrupts (including NMI) are enabled during single stepping.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 11, allowed: [11]}
+                lsb: {type: integer, default: 11, allowed: [11]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 3 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - stepie[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            ebreaku:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in U-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 12, allowed: [12]}
+                lsb: {type: integer, default: 12, allowed: [12]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - u_debug_check
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 3 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default: {ro_constant: 0}
+              default: {implemented: false}
+            ebreaks:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in S-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 13, allowed: [13]}
+                lsb: {type: integer, default: 13, allowed: [13]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - s_debug_check
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default: {ro_constant: 0}
+              default: {implemented: false}
+            ebreakm:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in M-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 15, allowed: [15]}
+                lsb: {type: integer, default: 15, allowed: [15]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default:
+                    warl:
+                      dependency_fields: []
+                      legal:
+                        - ebreakm[0] in [0x0, 0x1]
+                      wr_illegal:
+                        - unchanged
+              default: {implemented: false}
+            ebreakvu:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in VU-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 16, allowed: [16]}
+                lsb: {type: integer, default: 16, allowed: [16]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - s_debug_check
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default: {ro_constant: 0}
+              default: {implemented: false}
+            ebreakvs:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: ebreak instructions in VS-mode enter Debug Mode.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 17, allowed: [17]}
+                lsb: {type: integer, default: 17, allowed: [17]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  check_with: 
+                    - s_debug_check
+                  oneof:
+                  - schema: {ro_constant: {type: integer, max: 1 , min : 0}}
+                  - schema: { warl: *ref_warl }
+                  - schema: { wlrl: *ref_wlrl }
+                  default: {ro_constant: 0}
+              default: {implemented: false}
+            debugver:
+              type: dict
+              schema:
+                description:
+                  type: string
+                  default: Debug support exists as it is described in this document.
+                shadow: {type: string, default: , nullable: True}
+                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+                msb: {type: integer, default: 31, allowed: [31]}
+                lsb: {type: integer, default: 28, allowed: [28]}
+                implemented: {type: boolean, default: true}
+                type:
+                  type: dict
+                  schema: {ro_constant: {type: integer, max: 15 , min : 0}}
+                  default: {ro_constant: 4}
+              default: {implemented: false}
+            accessible:
+              type: boolean
+              default: false
+              check_with: rv64_check
+          default: {accessible: false}
+    dscratch0:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: The dscratch0 register is an DXLEN-bit read/write register dedicated
+            for use by debug mode.
+        address: {type: integer, default: 0x7b2, allowed: [0x7b2]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        reset-val:
+          type: integer
+          default: 0
+          check_with: max_length
+        rv32:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            shadow: {type: string, default: , nullable: True}
+            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+            msb: {type: integer, default: 31, allowed: [31]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            type:
+              type: dict
+              oneof:
+              - schema: {ro_constant: {type: integer, max:  0xFFFFFFFF}}
+              - schema: {ro_variable: {type: boolean}}
+              - schema: { warl: *ref_warl }
+              default:
+                warl:
+                  dependency_fields: []
+                  legal:
+                  - dscratch0[31:0] in [0x00000000:0xFFFFFFFF]
+                  wr_illegal:
+                  - unchanged
+            accessible:
+              type: boolean
+              default: true
+              check_with: rv32_check
+          default: {accessible: false}
+        rv64:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            shadow: {type: string, default: , nullable: True}
+            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+            msb: {type: integer, default: 63, allowed: [63]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            type:
+              type: dict
+              oneof:
+              - schema: {ro_constant: {type: integer, max:  0xFFFFFFFFFFFFFFFF}}
+              - schema: {ro_variable: {type: boolean}}
+              - schema: { warl: *ref_warl }
+              default:
+                warl:
+                  dependency_fields: []
+                  legal:
+                  - dscratch0[63:0] in [0x00000000:0xFFFFFFFFFFFFFFFF]
+                  wr_illegal:
+                  - unchanged
+    
+            accessible:
+              default: true
+              check_with: rv64_check
+          default: {accessible: false}
+    dscratch1:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: The dscratch1 register is an DXLEN-bit read/write register dedicated
+            for use by debug mode.
+        address: {type: integer, default: 0x7b3, allowed: [0x7b3]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        reset-val:
+          type: integer
+          default: 0
+          check_with: max_length
+        rv32:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            shadow: {type: string, default: , nullable: True}
+            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+            msb: {type: integer, default: 31, allowed: [31]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            type:
+              type: dict
+              oneof:
+              - schema: {ro_constant: {type: integer, max:  0xFFFFFFFF}}
+              - schema: {ro_variable: {type: boolean}}
+              - schema: { warl: *ref_warl }
+              default:
+                warl:
+                  dependency_fields: []
+                  legal:
+                  - dscratch1[31:0] in [0x00000000:0xFFFFFFFF]
+                  wr_illegal:
+                  - unchanged
+            accessible:
+              type: boolean
+              default: true
+              check_with: rv32_check
+          default: {accessible: false}
+        rv64:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            shadow: {type: string, default: , nullable: True}
+            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+            msb: {type: integer, default: 63, allowed: [63]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            type:
+              type: dict
+              oneof:
+              - schema: {ro_constant: {type: integer, max:  0xFFFFFFFFFFFFFFFF}}
+              - schema: {ro_variable: {type: boolean}}
+              - schema: { warl: *ref_warl }
+              default:
+                warl:
+                  dependency_fields: []
+                  legal:
+                  - dscratch1[63:0] in [0x00000000:0xFFFFFFFFFFFFFFFF]
+                  wr_illegal:
+                  - unchanged
+    
+            accessible:
+              default: true
+              check_with: rv64_check
+          default: {accessible: false}
+    dpc:
+      type: dict
+      schema:
+        description:
+          type: string
+          default: Upon entry to debug mode, dpc is updated with the virtual address of the next instruction to be executed.
+        address: {type: integer, default: 0x7b1, allowed: [0x7b1]}
+        priv_mode: {type: string, default: M, allowed: [M]}
+        reset-val:
+          type: integer
+          default: 0
+          check_with: max_length
+        rv32:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            shadow: {type: string, default: , nullable: True}
+            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+            msb: {type: integer, default: 31, allowed: [31]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            type:
+              type: dict
+              schema: { warl: *ref_warl }
+              default:
+                warl:
+                  dependency_fields: []
+                  legal:
+                  - dpc[31:0] in [0x00000000:0xFFFFFFFF]
+                  wr_illegal:
+                  - unchanged
+    
+            accessible:
+              type: boolean
+              default: true
+              check_with: rv32_check
+          default: {accessible: false}
+        rv64:
+          type: dict
+          schema:
+            fields: {type: list, default: []}
+            shadow: {type: string, default: , nullable: True}
+            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
+            msb: {type: integer, default: 63, allowed: [63]}
+            lsb: {type: integer, default: 0, allowed: [0]}
+            type:
+              type: dict
+              schema: { warl: *ref_warl }
+              default:
+                warl:
+                  dependency_fields: []
+                  legal:
+                  - dpc[63:0] in [0x00000000:0xFFFFFFFFFFFFFFFF]
+                  wr_illegal:
+                  - unchanged
+    
+            accessible:
+              type: boolean
+              default: true
+              check_with: rv64_check
+          default: {accessible: false}
+        

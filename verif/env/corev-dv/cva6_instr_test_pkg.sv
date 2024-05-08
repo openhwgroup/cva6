@@ -37,4 +37,4 @@ package cva6_instr_test_pkg;
    `include "rv32zcmp_instr.sv"
    `include "rv64zcb_instr.sv"
    
-endpackage : cva6_instr_test_pkg;
+endpackage : cva6_instr_test_pkg

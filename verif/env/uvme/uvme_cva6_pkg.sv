@@ -28,6 +28,8 @@
 `include "uvml_sb_macros.sv"
 
 `include "uvma_clknrst_macros.sv"
+`include "uvma_cvxif_macros.sv"
+`include "uvma_isacov_macros.sv"
 `include "uvme_cva6_macros.sv"
 
 
@@ -37,7 +39,6 @@
  */
 package uvme_cva6_pkg;
 
-   import cva6_config_pkg ::*;
    import uvm_pkg         ::*;
    import uvml_hrtbt_pkg  ::*;
    import uvml_sb_pkg     ::*;
@@ -51,9 +52,10 @@ package uvme_cva6_pkg;
    import uvmc_rvfi_scoreboard_pkg::*;
    import uvmc_rvfi_reference_model_pkg::*;
    import uvma_isacov_pkg::*;
-   import "DPI-C" function read_elf(input string filename);
+   import config_pkg::*;
+   import "DPI-C" function void read_elf(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len);
-   import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
+   import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);
 
   // Default legal opcode and funct7 for RV32I instructions
   bit [6:0]  legal_i_opcode[$] = '{7'b0000011,

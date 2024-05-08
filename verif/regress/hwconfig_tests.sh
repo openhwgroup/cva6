@@ -25,7 +25,7 @@ if ! [ -n "$DV_SIMULATORS" ]; then
 fi
 
 cd verif/sim/
-python3 cva6.py --testlist=../tests/testlist_hwconfig.yaml --iss_yaml cva6.yaml --target hwconfig --hwconfig_opts="$DV_HWCONFIG_OPTS" --iss=$DV_SIMULATORS
+python3 cva6.py --testlist=../tests/testlist_hwconfig.yaml --iss_yaml cva6.yaml --target hwconfig --isa=rv32imac --hwconfig_opts="$DV_HWCONFIG_OPTS" --iss=$DV_SIMULATORS
 make -C ../.. clean
 make clean_all
 

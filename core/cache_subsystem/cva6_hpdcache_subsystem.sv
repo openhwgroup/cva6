@@ -181,7 +181,7 @@ module cva6_hpdcache_subsystem
   //    NumPorts + 1: Hardware Memory Prefetcher (hwpf)
   localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
 
-  typedef logic [riscv::PLEN-1:0] hpdcache_mem_addr_t;
+  typedef logic [CVA6Cfg.PLEN-1:0] hpdcache_mem_addr_t;
   typedef logic [CVA6Cfg.MEM_TID_WIDTH-1:0] hpdcache_mem_id_t;
   typedef logic [CVA6Cfg.AxiDataWidth-1:0] hpdcache_mem_data_t;
   typedef logic [CVA6Cfg.AxiDataWidth/8-1:0] hpdcache_mem_be_t;
@@ -425,7 +425,7 @@ module cva6_hpdcache_subsystem
 
   hpdcache #(
       .NREQUESTERS         (HPDCACHE_NREQUESTERS),
-      .HPDcacheMemAddrWidth(riscv::PLEN),
+      .HPDcacheMemAddrWidth(CVA6Cfg.PLEN),
       .HPDcacheMemIdWidth  (CVA6Cfg.MEM_TID_WIDTH),
       .HPDcacheMemDataWidth(CVA6Cfg.AxiDataWidth)
   ) i_hpdcache (
@@ -520,8 +520,7 @@ module cva6_hpdcache_subsystem
   //  AXI arbiter instantiation
   //  {{{
   cva6_hpdcache_subsystem_axi_arbiter #(
-      .HPDcacheMemIdWidth   (CVA6Cfg.MEM_TID_WIDTH),
-      .HPDcacheMemDataWidth (CVA6Cfg.AxiDataWidth),
+      .CVA6Cfg              (CVA6Cfg),
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
       .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),

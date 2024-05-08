@@ -54,7 +54,8 @@ cflags=(
 set -x
 python3 cva6.py \
         --target hwconfig \
-        --hwconfig_opts="--default_config=cv64a6_imafdc_sv39 --isa=rv64imafdc --NrLoadPipeRegs=0" \
+        --isa rv64imafdc \
+        --hwconfig_opts="cv64a6_imafdc_sv39 +CVA6ConfigNrLoadPipeRegs=0" \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \

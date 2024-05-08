@@ -17,11 +17,6 @@
 
 package std_cache_pkg;
 
-  // Calculated parameter
-  localparam DCACHE_BYTE_OFFSET = $clog2(ariane_pkg::DCACHE_LINE_WIDTH / 8);
-  localparam DCACHE_NUM_WORDS = 2 ** (ariane_pkg::DCACHE_INDEX_WIDTH - DCACHE_BYTE_OFFSET);
-  localparam DCACHE_DIRTY_WIDTH = ariane_pkg::DCACHE_SET_ASSOC * 2;
-  localparam DCACHE_SET_ASSOC_WIDTH = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
   // localparam DECISION_BIT = 30; // bit on which to decide whether the request is cache-able or not
 
   typedef struct packed {

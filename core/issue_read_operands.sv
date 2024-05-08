@@ -42,13 +42,13 @@ module issue_read_operands
     // rs1 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs1_o,
     // rs1 operand - scoreboard
-    input logic [riscv::XLEN-1:0] rs1_i,
+    input logic [CVA6Cfg.XLEN-1:0] rs1_i,
     // rs1 operand is valid - scoreboard
     input logic rs1_valid_i,
     // rs2 operand address - scoreboard
     output logic [REG_ADDR_SIZE-1:0] rs2_o,
     // rs2 operand - scoreboard
-    input logic [riscv::XLEN-1:0] rs2_i,
+    input logic [CVA6Cfg.XLEN-1:0] rs2_i,
     // rs2 operand is valid - scoreboard
     input logic rs2_valid_i,
     // rs3 operand address - scoreboard
@@ -65,11 +65,11 @@ module issue_read_operands
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output fu_data_t fu_data_o,
     // Unregistered version of fu_data_o.operanda - TO_BE_COMPLETED
-    output logic [riscv::XLEN-1:0] rs1_forwarding_o,
+    output logic [CVA6Cfg.XLEN-1:0] rs1_forwarding_o,
     // Unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
-    output logic [riscv::XLEN-1:0] rs2_forwarding_o,
+    output logic [CVA6Cfg.XLEN-1:0] rs2_forwarding_o,
     // Instruction pc - TO_BE_COMPLETED
-    output logic [riscv::VLEN-1:0] pc_o,
+    output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - TO_BE_COMPLETED
     output logic is_compressed_instr_o,
     // Fixed Latency Unit ready to accept new request - TO_BE_COMPLETED
@@ -78,6 +78,8 @@ module issue_read_operands
     output logic alu_valid_o,
     // Branch instruction is valid - TO_BE_COMPLETED
     output logic branch_valid_o,
+    // Transformed instruction - TO_BE_COMPLETED
+    output logic [31:0] tinst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output branchpredict_sbe_t branch_predict_o,
     // Load Store Unit is ready - TO_BE_COMPLETED
@@ -105,7 +107,7 @@ module issue_read_operands
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -116,13 +118,13 @@ module issue_read_operands
 );
   logic stall;
   logic fu_busy;  // functional unit is busy
-  logic [riscv::XLEN-1:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
+  logic [CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
   rs3_len_t
       operand_c_regfile,
       operand_c_fpr,
       operand_c_gpr;  // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
   // output flipflop (ID <-> EX)
-  logic [riscv::XLEN-1:0]
+  logic [CVA6Cfg.XLEN-1:0]
       operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q, imm_forward_rs3;
 
   logic        alu_valid_q;
@@ -136,39 +138,41 @@ module issue_read_operands
   logic        cvxif_valid_q;
   logic [31:0] cvxif_off_instr_q;
 
-  logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
   fu_op operator_n, operator_q;  // operation to perform
   fu_t fu_n, fu_q;  // functional unit to use
+  logic [31:0] tinst_n, tinst_q;  // transformed instruction
 
   // forwarding signals
   logic forward_rs1, forward_rs2, forward_rs3;
 
   // original instruction
   riscv::instruction_t orig_instr;
-  assign orig_instr          = riscv::instruction_t'(orig_instr_i);
+  assign orig_instr = riscv::instruction_t'(orig_instr_i);
 
   // ID <-> EX registers
 
-  assign rs1_forwarding_o    = operand_a_n[riscv::VLEN-1:0];  //forwarding or unregistered rs1 value
-  assign rs2_forwarding_o    = operand_b_n[riscv::VLEN-1:0];  //forwarding or unregistered rs2 value
+  assign rs1_forwarding_o = operand_a_n[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
+  assign rs2_forwarding_o = operand_b_n[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
 
   assign fu_data_o.operand_a = operand_a_q;
   assign fu_data_o.operand_b = operand_b_q;
-  assign fu_data_o.fu        = fu_q;
+  assign fu_data_o.fu = fu_q;
   assign fu_data_o.operation = operator_q;
-  assign fu_data_o.trans_id  = trans_id_q;
-  assign fu_data_o.imm       = imm_q;
-  assign alu_valid_o         = alu_valid_q;
-  assign branch_valid_o      = branch_valid_q;
-  assign lsu_valid_o         = lsu_valid_q;
-  assign csr_valid_o         = csr_valid_q;
-  assign mult_valid_o        = mult_valid_q;
-  assign fpu_valid_o         = fpu_valid_q;
-  assign fpu_fmt_o           = fpu_fmt_q;
-  assign fpu_rm_o            = fpu_rm_q;
-  assign cvxif_valid_o       = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
-  assign cvxif_off_instr_o   = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
-  assign stall_issue_o       = stall;
+  assign fu_data_o.trans_id = trans_id_q;
+  assign fu_data_o.imm = imm_q;
+  assign alu_valid_o = alu_valid_q;
+  assign branch_valid_o = branch_valid_q;
+  assign lsu_valid_o = lsu_valid_q;
+  assign csr_valid_o = csr_valid_q;
+  assign mult_valid_o = mult_valid_q;
+  assign fpu_valid_o = fpu_valid_q;
+  assign fpu_fmt_o = fpu_fmt_q;
+  assign fpu_rm_o = fpu_rm_q;
+  assign cvxif_valid_o = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
+  assign cvxif_off_instr_o = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
+  assign stall_issue_o = stall;
+  assign tinst_o = CVA6Cfg.RVH ? tinst_q : '0;
   // ---------------
   // Issue Stage
   // ---------------
@@ -262,7 +266,7 @@ module issue_read_operands
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_rs3
     assign imm_forward_rs3 = rs3_i;
   end else begin : gen_fp_rs3
-    assign imm_forward_rs3 = {{riscv::XLEN - CVA6Cfg.FLen{1'b0}}, rs3_i};
+    assign imm_forward_rs3 = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, rs3_i};
   end
 
   // Forwarding/Output MUX
@@ -274,15 +278,18 @@ module issue_read_operands
     // for FP operations, the imm field can also be the third operand from the regfile
     if (CVA6Cfg.NrRgprPorts == 3) begin
       imm_n = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i.op)) ?
-          {{riscv::XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile} :
+          {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile} :
           issue_instr_i.op == OFFLOAD ? operand_c_regfile : issue_instr_i.result;
     end else begin
       imm_n = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i.op)) ?
-          {{riscv::XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile} : issue_instr_i.result;
+          {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile} : issue_instr_i.result;
     end
     trans_id_n = issue_instr_i.trans_id;
     fu_n       = issue_instr_i.fu;
     operator_n = issue_instr_i.op;
+    if (CVA6Cfg.RVH) begin
+      tinst_n = issue_instr_i.ex.tinst;
+    end
     // or should we forward
     if (forward_rs1) begin
       operand_a_n = rs1_i;
@@ -299,14 +306,14 @@ module issue_read_operands
     // use the PC as operand a
     if (issue_instr_i.use_pc) begin
       operand_a_n = {
-        {riscv::XLEN - riscv::VLEN{issue_instr_i.pc[riscv::VLEN-1]}}, issue_instr_i.pc
+        {CVA6Cfg.XLEN - CVA6Cfg.VLEN{issue_instr_i.pc[CVA6Cfg.VLEN-1]}}, issue_instr_i.pc
       };
     end
 
     // use the zimm as operand a
     if (issue_instr_i.use_zimm) begin
       // zero extend operand a
-      operand_a_n = {{riscv::XLEN - 5{1'b0}}, issue_instr_i.rs1[4:0]};
+      operand_a_n = {{CVA6Cfg.XLEN - 5{1'b0}}, issue_instr_i.rs1[4:0]};
     end
     // or is it an immediate (including PC), this is not the case for a store, control flow, and accelerator instructions
     // also make sure operand B is not already used as an FP operand
@@ -464,13 +471,13 @@ module issue_read_operands
   // ----------------------
   // Integer Register File
   // ----------------------
-  logic [  CVA6Cfg.NrRgprPorts-1:0][riscv::XLEN-1:0] rdata;
-  logic [  CVA6Cfg.NrRgprPorts-1:0][            4:0] raddr_pack;
+  logic [  CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] rdata;
+  logic [  CVA6Cfg.NrRgprPorts-1:0][             4:0] raddr_pack;
 
   // pack signals
-  logic [CVA6Cfg.NrCommitPorts-1:0][            4:0] waddr_pack;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] wdata_pack;
-  logic [CVA6Cfg.NrCommitPorts-1:0]                  we_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0][             4:0] waddr_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
 
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_rs3
     assign raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
@@ -483,10 +490,10 @@ module issue_read_operands
     assign wdata_pack[i] = wdata_i[i];
     assign we_pack[i]    = we_gpr_i[i];
   end
-  if (ariane_pkg::FPGA_EN) begin : gen_fpga_regfile
+  if (CVA6Cfg.FpgaEn) begin : gen_fpga_regfile
     ariane_regfile_fpga #(
         .CVA6Cfg      (CVA6Cfg),
-        .DATA_WIDTH   (riscv::XLEN),
+        .DATA_WIDTH   (CVA6Cfg.XLEN),
         .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
         .ZERO_REG_ZERO(1)
     ) i_ariane_regfile_fpga (
@@ -501,7 +508,7 @@ module issue_read_operands
   end else begin : gen_asic_regfile
     ariane_regfile #(
         .CVA6Cfg      (CVA6Cfg),
-        .DATA_WIDTH   (riscv::XLEN),
+        .DATA_WIDTH   (CVA6Cfg.XLEN),
         .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
         .ZERO_REG_ZERO(1)
     ) i_ariane_regfile (
@@ -522,7 +529,7 @@ module issue_read_operands
 
   // pack signals
   logic [2:0][4:0] fp_raddr_pack;
-  logic [CVA6Cfg.NrCommitPorts-1:0][riscv::XLEN-1:0] fp_wdata_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] fp_wdata_pack;
 
   generate
     if (CVA6Cfg.FpPresent) begin : float_regfile_gen
@@ -532,7 +539,7 @@ module issue_read_operands
       for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_fp_wdata_pack
         assign fp_wdata_pack[i] = {wdata_i[i][CVA6Cfg.FLen-1:0]};
       end
-      if (ariane_pkg::FPGA_EN) begin : gen_fpga_fp_regfile
+      if (CVA6Cfg.FpgaEn) begin : gen_fpga_fp_regfile
         ariane_regfile_fpga #(
             .CVA6Cfg      (CVA6Cfg),
             .DATA_WIDTH   (CVA6Cfg.FLen),
@@ -569,7 +576,7 @@ module issue_read_operands
   endgenerate
 
   if (CVA6Cfg.NrRgprPorts == 3) begin : gen_operand_c
-    assign operand_c_fpr = {{riscv::XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[2]};
+    assign operand_c_fpr = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[2]};
     assign operand_c_gpr = rdata[2];
   end else begin
     assign operand_c_fpr = fprdata[2];
@@ -577,10 +584,10 @@ module issue_read_operands
 
   assign operand_a_regfile = (CVA6Cfg.FpPresent && is_rs1_fpr(
       issue_instr_i.op
-  )) ? {{riscv::XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[0];
+  )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[0];
   assign operand_b_regfile = (CVA6Cfg.FpPresent && is_rs2_fpr(
       issue_instr_i.op
-  )) ? {{riscv::XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[1];
+  )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[1];
   assign operand_c_regfile = (CVA6Cfg.NrRgprPorts == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(
       issue_instr_i.op
   )) ? operand_c_fpr : operand_c_gpr) : operand_c_fpr;
@@ -591,22 +598,28 @@ module issue_read_operands
   // ----------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      operand_a_q           <= '{default: 0};
-      operand_b_q           <= '{default: 0};
-      imm_q                 <= '0;
-      fu_q                  <= NONE;
-      operator_q            <= ADD;
-      trans_id_q            <= '0;
+      operand_a_q <= '{default: 0};
+      operand_b_q <= '{default: 0};
+      imm_q       <= '0;
+      fu_q        <= NONE;
+      operator_q  <= ADD;
+      trans_id_q  <= '0;
+      if (CVA6Cfg.RVH) begin
+        tinst_q <= '0;
+      end
       pc_o                  <= '0;
       is_compressed_instr_o <= 1'b0;
-      branch_predict_o      <= {cf_t'(0), {riscv::VLEN{1'b0}}};
+      branch_predict_o      <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
     end else begin
-      operand_a_q           <= operand_a_n;
-      operand_b_q           <= operand_b_n;
-      imm_q                 <= imm_n;
-      fu_q                  <= fu_n;
-      operator_q            <= operator_n;
-      trans_id_q            <= trans_id_n;
+      operand_a_q <= operand_a_n;
+      operand_b_q <= operand_b_n;
+      imm_q       <= imm_n;
+      fu_q        <= fu_n;
+      operator_q  <= operator_n;
+      trans_id_q  <= trans_id_n;
+      if (CVA6Cfg.RVH) begin
+        tinst_q <= tinst_n;
+      end
       pc_o                  <= issue_instr_i.pc;
       is_compressed_instr_o <= issue_instr_i.is_compressed;
       branch_predict_o      <= issue_instr_i.bp;

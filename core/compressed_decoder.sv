@@ -111,7 +111,7 @@ module compressed_decoder #(
             //   c.ld -> ld rd', imm(rs1')
             // RV32
             //   c.flw -> flw fprd', imm(rs1')
-            if (riscv::IS_XLEN64) begin
+            if (CVA6Cfg.IS_XLEN64) begin
               // CLD: | funct3 | imm[5:3] | rs1' | imm[7:6] | rd' | C0 |
               instr_o = {
                 4'b0,
@@ -282,7 +282,7 @@ module compressed_decoder #(
             //   c.sd -> sd rs2', imm(rs1')
             // RV32
             //   c.fsw -> fsw fprs2', imm(rs1')
-            if (riscv::IS_XLEN64) begin
+            if (CVA6Cfg.IS_XLEN64) begin
               instr_o = {
                 4'b0,
                 instr_i[6:5],
@@ -343,7 +343,7 @@ module compressed_decoder #(
 
 
           riscv::OpcodeC1Addiw: begin  // or riscv::OpcodeC1Jal for RV32IC
-            if (riscv::IS_XLEN64) begin
+            if (CVA6Cfg.IS_XLEN64) begin
               // c.addiw -> addiw rd, rd, nzimm for RV64IC
               if (instr_i[11:7] != 5'h0) begin  // only valid if the destination is not r0
                 instr_o = {
@@ -516,7 +516,7 @@ module compressed_decoder #(
                   end
 
                   3'b100: begin
-                    if (riscv::IS_XLEN64) begin
+                    if (CVA6Cfg.IS_XLEN64) begin
                       // c.subw -> subw rd', rd', rs2'
                       instr_o = {
                         2'b01,
@@ -536,7 +536,7 @@ module compressed_decoder #(
                   end
 
                   3'b101: begin
-                    if (riscv::IS_XLEN64) begin
+                    if (CVA6Cfg.IS_XLEN64) begin
                       // c.addw -> addw rd', rd', rs2'
                       instr_o = {
                         2'b00,
@@ -613,7 +613,7 @@ module compressed_decoder #(
                         3'b010: begin
                           if (CVA6Cfg.RVB) begin
                             // c.zext.h -> zext.h rd', rd'
-                            if (riscv::IS_XLEN64) begin
+                            if (CVA6Cfg.IS_XLEN64) begin
                               instr_o = {
                                 7'h4,
                                 5'h0,
@@ -658,7 +658,7 @@ module compressed_decoder #(
                         3'b100: begin
                           if (CVA6Cfg.RVB) begin
                             // c.zext.w -> add.uw
-                            if (riscv::IS_XLEN64) begin
+                            if (CVA6Cfg.IS_XLEN64) begin
                               instr_o = {
                                 7'h4,
                                 5'h0,
@@ -795,7 +795,7 @@ module compressed_decoder #(
             //   c.ldsp -> ld rd, imm(x2)
             // RV32
             //   c.flwsp -> flw fprd, imm(x2)
-            if (riscv::IS_XLEN64) begin
+            if (CVA6Cfg.IS_XLEN64) begin
               instr_o = {
                 3'b0,
                 instr_i[4:2],
@@ -900,7 +900,7 @@ module compressed_decoder #(
             //   c.sdsp -> sd rs2, imm(x2)
             // RV32
             //   c.fswsp -> fsw fprs2, imm(x2)
-            if (riscv::IS_XLEN64) begin
+            if (CVA6Cfg.IS_XLEN64) begin
               instr_o = {
                 3'b0,
                 instr_i[9:7],

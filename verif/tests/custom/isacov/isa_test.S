@@ -319,6 +319,9 @@ main:
   add t5, t5, zero
   add t6, t6, zero
 
+  andi t6, zero, 0
+  xori t6, zero, 0
+
   #End of test
   j test_pass
 

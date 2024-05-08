@@ -32,7 +32,7 @@ module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
   timeprecision 1ps;
 
   // memory configuration (64bit words)
-  parameter MemBytes          = 2**DCACHE_INDEX_WIDTH * 4 * 32;
+  parameter MemBytes          = 2**CVA6Cfg.DCACHE_INDEX_WIDTH * 4 * 32;
   parameter MemWords          = MemBytes>>3;
   // noncacheable portion
   parameter logic [63:0] CachedAddrBeg = MemBytes>>3;//1/8th of the memory is NC
@@ -546,9 +546,9 @@ module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
     inv_rand_en  = 0;
     seq_type     = '{IDLE_SEQ, IDLE_SEQ, LINEAR_SEQ};
     req_rate     = '{default:100};
-    runSeq((CachedAddrBeg>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC,0);
+    runSeq((CachedAddrBeg>>3)+(2**(CVA6Cfg.DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC,0);
     seq_type     = '{LINEAR_SEQ, IDLE_SEQ, IDLE_SEQ};
-    runSeq(0,(CachedAddrBeg>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC);
+    runSeq(0,(CachedAddrBeg>>3)+(2**(CVA6Cfg.DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////

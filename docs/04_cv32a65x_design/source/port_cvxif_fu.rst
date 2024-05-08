@@ -58,7 +58,7 @@
      - out
      - CVXIF transaction ID
      - ISSUE_STAGE
-     - logic[TRANS_ID_BITS-1:0]
+     - logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
    * - ``x_exception_o``
      - out
@@ -70,7 +70,7 @@
      - out
      - CVXIF FU result
      - ISSUE_STAGE
-     - riscv::xlen_t
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``x_valid_o``
      - out

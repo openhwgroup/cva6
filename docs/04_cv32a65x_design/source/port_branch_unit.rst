@@ -40,7 +40,7 @@
      - in
      - Instruction PC
      - ISSUE_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``is_compressed_instr_i``
      - in
@@ -70,7 +70,7 @@
      - out
      - Brach unit result
      - ISSUE_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``branch_predict_i``
      - in
@@ -98,6 +98,8 @@
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
-| As DebugEn = 0,
+| As RVH = False,
+|   ``v_i`` input is tied to 0
+| As DebugEn = False,
 |   ``debug_mode_i`` input is tied to 0
 

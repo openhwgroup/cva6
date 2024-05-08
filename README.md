@@ -1,12 +1,5 @@
 ![Build Status](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml/badge.svg?branch=master)
 
-> **Warning**
-> We inform you that big RTL modifications are in process to better parametrize CVA6. For deeper information, please refer to the https://github.com/openhwgroup/cva6/issues/1233 github issue :warning:
-
-These changes will impact CVA6 interfaces (and top-level parameters). They will be performed progressively with several pull requests over a few weeks.
-To avoid integrating a moving target in their design, CVA6 users can therefore consider pointing to a specific GitHub hash during the changes
-(or investigate [vendorization](https://opentitan.org/book/util/doc/vendor.html)).
-
 
 # CVA6 RISC-V CPU
 

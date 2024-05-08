@@ -58,25 +58,25 @@
      - in
      - Input address translation request
      - EX_STAGE
-     - ariane_pkg::icache_areq_t
+     - icache_areq_t
 
    * - ``icache_areq_o``
      - out
      - Output address translation request
      - EX_STAGE
-     - ariane_pkg::icache_arsp_t
+     - icache_arsp_t
 
    * - ``icache_dreq_i``
      - in
      - Input data translation request
      - FRONTEND
-     - ariane_pkg::icache_dreq_t
+     - icache_dreq_t
 
    * - ``icache_dreq_o``
      - out
      - Output data translation request
      - FRONTEND
-     - ariane_pkg::icache_drsp_t
+     - icache_drsp_t
 
    * - ``dcache_enable_i``
      - in
@@ -112,13 +112,13 @@
      - in
      - Data cache input request ports
      - EX_STAGE
-     - ariane_pkg::dcache_req_i_t[NumPorts-1:0]
+     - dcache_req_i_t[NumPorts-1:0]
 
    * - ``dcache_req_ports_o``
      - out
      - Data cache output request ports
      - EX_STAGE
-     - ariane_pkg::dcache_req_o_t[NumPorts-1:0]
+     - dcache_req_o_t[NumPorts-1:0]
 
    * - ``wbuffer_empty_o``
      - out

@@ -64,13 +64,13 @@
      - in
      - Address from which to start booting, mtvec is set to the same address
      - SUBSYSTEM
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``hart_id_i``
      - in
      - Hart id in a multicore environment (reflected in a CSR)
      - SUBSYSTEM
-     - logic[riscv::XLEN-1:0]
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``ex_i``
      - in
@@ -94,19 +94,19 @@
      - in
      - Write data in
      - COMMIT_STAGE
-     - logic[riscv::XLEN-1:0]
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``csr_rdata_o``
      - out
      - Read data out
      - COMMIT_STAGE
-     - logic[riscv::XLEN-1:0]
+     - logic[CVA6Cfg.XLEN-1:0]
 
    * - ``pc_i``
      - in
      - PC of instruction accessing the CSR
      - COMMIT_STAGE
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``csr_exception_o``
      - out
@@ -118,7 +118,7 @@
      - out
      - Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``eret_o``
      - out
@@ -130,7 +130,7 @@
      - out
      - Output base of exception vector, correct CSR is output (mtvec, stvec)
      - FRONTEND
-     - logic[riscv::VLEN-1:0]
+     - logic[CVA6Cfg.VLEN-1:0]
 
    * - ``irq_ctrl_o``
      - out
@@ -190,16 +190,31 @@ Due to cv32a65x configuration, some ports are tied to a static value. These port
 |   ``tvm_o`` output is tied to 0
 |   ``tw_o`` output is tied to 0
 |   ``tsr_o`` output is tied to 0
-| As RVV = 0,
+| As RVH = False,
+|   ``v_o`` output is tied to 0
+|   ``vfs_o`` output is tied to 0
+|   ``en_g_translation_o`` output is tied to 0
+|   ``en_ld_st_g_translation_o`` output is tied to 0
+|   ``ld_st_v_o`` output is tied to 0
+|   ``csr_hs_ld_st_inst_i`` input is tied to 0
+|   ``vs_sum_o`` output is tied to 0
+|   ``vmxr_o`` output is tied to 0
+|   ``vsatp_ppn_o`` output is tied to 0
+|   ``vs_asid_o`` output is tied to 0
+|   ``hgatp_ppn_o`` output is tied to 0
+|   ``vmid_o`` output is tied to 0
+|   ``vtw_o`` output is tied to 0
+|   ``hu_o`` output is tied to 0
+| As RVV = False,
 |   ``vs_o`` output is tied to 0
-| As RVS = 0,
+| As RVS = False,
 |   ``en_translation_o`` output is tied to 0
 |   ``en_ld_st_translation_o`` output is tied to 0
 |   ``sum_o`` output is tied to 0
 |   ``mxr_o`` output is tied to 0
 |   ``satp_ppn_o`` output is tied to 0
 |   ``asid_o`` output is tied to 0
-| As DebugEn = 0,
+| As DebugEn = False,
 |   ``debug_req_i`` input is tied to 0
 |   ``set_debug_pc_o`` output is tied to 0
 |   ``debug_mode_o`` output is tied to 0
