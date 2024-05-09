@@ -7,7 +7,7 @@ The Memory Management Unit (MMU) module is a crucial component in the RISC-V-bas
 .. figure:: _static/mmu_in_out.png
    :name: **Figure 1:** Inputs and Outputs of CVA6 MMU
    :align: center
-   :width: 70%
+   :width: 100%
    :alt: mmu_in_out
 
    **Figure 1:** Inputs and Outputs of CVA6 MMU
@@ -350,7 +350,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``priv_lvl_i``
      - in
      - CSR RegFile
-     - riscv::priv_lvl_t
+     - priv_lvl_t
      - Privilege level for instruction fetch interface
 
    * - ``v_i``
@@ -362,7 +362,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``ld_st_priv_lvl_i``
      - in
      - CSR RegFile
-     - riscv::priv_lvl_t
+     - priv_lvl_t
      - Indicates the virtualization mode at which load and stores should happen
 
    * - ``ld_st_v_i``
@@ -434,25 +434,25 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``vs_asid_i``
      - in
      - CSR RegFile
-     - logic [ASID_WIDTH-1:0]
+     - logic [ASIDW-1:0]
      - ASID for the lookup for virtual supervisor when Hypervisor extension is enabled
 
    * - ``vmid_i``
      - in
      - CSR RegFile
-     - logic [VMID_WIDTH-1:0]
+     - logic [VMIDW-1:0]
      - VMID for the lookup when Hypervisor extension is enabled
 
    * - ``asid_to_be_flushed_i``
      - in
      - Execute Stage
-     - logic [ASID_WIDTH-1:0]
+     - logic [ASIDW-1:0]
      - ASID of the entry to be flushed
 
    * - ``vmid_to_be_flushed_i``
      - in
      - Execute Stage
-     - logic [VMID_WIDTH-1:0]
+     - logic [VMIDW-1:0]
      - VMID of the entry to be flushed when Hypervisor extension is enabled
 
    * - ``vaddr_to_be_flushed_i``
@@ -512,7 +512,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``pmpcfg_i``
      - in
      - CSR RegFile
-     - riscv::pmpcfg_t [15:0]
+     - pmpcfg_t [15:0]
      - PMP configurations
 
    * - ``pmpaddr_i``
@@ -710,7 +710,7 @@ The input and output signals of the TLB are shown in the following figure.
 .. figure:: _static/in_out_tlb.png
    :name: **Figure 4:** Inputs and Outputs of CVA6 TLB
    :align: center
-   :width: 65%
+   :width: 100%
    :alt: in_out_tlb
  
    **Figure 4:** Inputs and Outputs of CVA6 TLB
@@ -976,12 +976,12 @@ The input and output signals of the TLB are shown in the following figure.
 
    <span style="font-size:18px; font-weight:bold;">TLB Entry Fields</span>
 
-The number of TLB entries can be changed via a design parameter. Each TLB entry is made up of two fields: Tag and Content. The Tag field holds the virtual page number, ASID, VMID and page size along with a valid bit (VALID) indicating that the entry is valid, and a v_st_enbl field that indicates at which level the translation is valid when hypervisor mode is enabled. The virtual page number, is further split into several separate virtual page numbers according to the number of PtLevels used in each configuration. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page. Note that the V bit in the Content field is the V bit which is present in the page table in memory. It is copied from the page table, as is,  and the VALID bit in the Tag is set based on its value. g_content is the equivalent for the g-stage translation. The TLB entry fields are shown in this Figure.
+The number of TLB entries can be changed via a design parameter. Each TLB entry is made up of two fields: Tag and Content. The Tag field holds the virtual page number, ASID, VMID and page size along with a valid bit (VALID) indicating that the entry is valid, and a v_st_enbl field that indicates at which level the translation is valid when hypervisor mode is enabled. The virtual page number, is further split into several separate virtual page numbers according to the number of PtLevels used in each configuration. The Content field contains the physical page numbers along with a number of bits which specify various attributes of the physical page. Note that the V bit in the Content field is the V bit which is present in the page table in memory. It is copied from the page table, as is,  and the VALID bit in the Tag is set based on its value. g_content is the equivalent for the g-stage translation. The TLB entry fields are shown in this Figure. Fields colored in grey are used only when H extension is implemented.
 
 .. figure:: _static/cva6_tlb_entry.png
    :name: **Figure 5:** Fields in CVA6 TLB entry
    :align: center
-   :width: 80%
+   :width: 100%
    :alt: cva6_tlb_entry
 
    **Figure 5:** Fields in CVA6 TLB entry
@@ -1179,7 +1179,7 @@ The input and output signals of the shared TLB are shown in the following Figure
 .. figure:: _static/shared_tlb_in_out.png
    :name: **Figure 14:** Inputs and outputs of CVA6 shared TLB
    :align: center
-   :width: 60%
+   :width: 100%
    :alt: shared_tlb_in_out
 
    **Figure 14:** Inputs and outputs of CVA6 shared TLB
@@ -1506,7 +1506,7 @@ The "CVA6 Page Table Walker (PTW)" is a hardware module designed to facilitate t
 .. figure:: _static/ptw_in_out.png
    :name: **Figure 19:** Input and Outputs of Page Table Walker
    :align: center
-   :width: 60%
+   :width: 100%
    :alt: ptw_in_out
 
    **Figure 19:** Input and Outputs of Page Table Walker
@@ -1601,40 +1601,40 @@ In addition to its translation capabilities, the PTW module is equipped to detec
       - Output signal indicating that a PMP (Physical Memory Protection) access exception occurred during PTW operation.
 
     * - ``enable_translation_i``
-     - in
-     - CSR RegFile
-     - logic 
-     - Enables address translation request for instruction
+      - in
+      - CSR RegFile
+      - logic 
+      - Enables address translation request for instruction
 
     * - ``enable_g_translation_i``
-     - in
-     - CSR RegFile
-     - logic 
-     - Enables virtual memory translation for instrucionts
+      - in
+      - CSR RegFile
+      - logic 
+      - Enables virtual memory translation for instrucionts
 
     * - ``en_ld_st_translation_i``
-     - in
-     - CSR RegFile
-     - logic
-     - Enables address translation request for load or store
+      - in
+      - CSR RegFile
+      - logic
+      - Enables address translation request for load or store
 
     * - ``en_ld_st_g_translation_i``
-     - in
-     - CSR RegFile
-     - logic
-     - Enables virtual memory translation for load or store
+      - in
+      - CSR RegFile
+      - logic
+      - Enables virtual memory translation for load or store
 
     * - ``v_i``
-     - in
-     - CSR RegFile
-     - logic
-     - Virtualization mode state
+      - in
+      - CSR RegFile
+      - logic
+      - Virtualization mode state
 
     * - ``ld_st_v_i``
-     - in
-     - CSR RegFile
-     - logic
-     - Virtualization mode state
+      - in
+      - CSR RegFile
+      - logic
+      - Virtualization mode state
     
     * - ``hlvx_inst_i``
       - in
@@ -1681,13 +1681,13 @@ In addition to its translation capabilities, the PTW module is equipped to detec
     * - ``vs_asid_i``
       - in
       - CSR RegFile
-      - logic [ASID_WIDTH-1:0]
+      - logic [ASIDW-1:0]
       - ASID for the lookup for virtual supervisor when Hypervisor extension is enabled
 
     * - ``vmid_i``
       - in
       - CSR RegFile
-      - logic [VMID_WIDTH-1:0]
+      - logic [VMIDW-1:0]
       - VMID for the lookup when Hypervisor extension is enabled
 
     * - ``shared_tlb_access_i``
@@ -1753,13 +1753,13 @@ In addition to its translation capabilities, the PTW module is equipped to detec
     * - ``pmpcfg_i``
       - in
       - CSR RegFile
-      - riscv::pmpcfg_t[15:0]
+      - pmpcfg_t[15:0]
       - PMP configuration
 
     * - ``pmpaddr_i``
       - in
       - CSR RegFile
-      - logic[15:0][riscv::PLEN-3:0]
+      - logic[15:0][PLEN-3:0]
       - PMP Address
 
     * - ``bad_paddr_o``
@@ -1798,7 +1798,7 @@ In addition to its translation capabilities, the PTW module is equipped to detec
      - Tag of the Dcache Line
 
    * - ``data_wdata``
-     - riscv::xlen_t
+     - xlen_t
      - Data to write in the Dcache
 
    * - ``data_wuser``
@@ -1857,7 +1857,7 @@ In addition to its translation capabilities, the PTW module is equipped to detec
      - Requested data ID
 
    * - ``data_rdata``
-     - riscv::xlen_t
+     - xlen_t
      - Data from D cache
 
    * - ``data_ruser``
