@@ -45,6 +45,7 @@ package cva6_config_pkg;
       MemTidWidth: unsigned'(2),
       NrLoadBufEntries: unsigned'(CVA6ConfigNrLoadBufEntries),
       FpuEn: bit'(0),
+      RVD: bit'(0),
       XF16: bit'(0),
       XF16ALT: bit'(0),
       XF8: bit'(0),

@@ -66,6 +66,8 @@ package config_pkg;
     bit                          RVZiCond;
     // Floating Point
     bit                          FpuEn;
+    // Floating Point
+    bit                          RVD;
     // Non standard 16bits Floating Point extension
     bit                          XF16;
     // Non standard 16bits Floating Point Alt extension
