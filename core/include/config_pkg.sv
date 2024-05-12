@@ -76,6 +76,10 @@ package config_pkg;
     bit                          XF8;
     // Non standard Vector Floating Point extension
     bit                          XFVec;
+    // Perf counters
+    bit                          PerfCounterEn;
+    // MMU
+    bit                          MmuPresent;
     // Supervisor mode
     bit                          RVS;
     // User mode
@@ -138,6 +142,10 @@ package config_pkg;
     int unsigned                 IcacheSetAssoc;
     // Instruction cache line width
     int unsigned                 IcacheLineWidth;
+    // Cache Type
+    cache_type_t                 DCacheType;
+    // Data cache ID
+    int unsigned                 DcacheIdWidth;
     // Data cache size (in bytes)
     int unsigned                 DcacheByteSize;
     // Data cache associativity (number of ways)
@@ -146,6 +154,8 @@ package config_pkg;
     int unsigned                 DcacheLineWidth;
     // User field on data bus enable
     int unsigned                 DataUserEn;
+    // Write-through data cache write buffer depth
+    int unsigned                 WtDcacheWbufDepth;
     // User field on fetch bus enable
     int unsigned                 FetchUserEn;
     // Width of fetch user field
@@ -154,6 +164,10 @@ package config_pkg;
     bit                          FpgaEn;
     // Number of commit ports
     int unsigned                 NrCommitPorts;
+    // Load cycle latency number
+    int unsigned                 NrLoadPipeRegs;
+    // Store cycle latency number
+    int unsigned                 NrStorePipeRegs;
     // Scoreboard length
     int unsigned                 NrScoreboardEntries;
     // Load buffer entry buffer
@@ -166,6 +180,10 @@ package config_pkg;
     int unsigned                 BTBEntries;
     // Branch history entries
     int unsigned                 BHTEntries;
+    // MMU instruction TLB entries
+    int unsigned                 InstrTlbEntries;
+    // MMU data TLB entries
+    int unsigned                 DataTlbEntries;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -185,6 +203,8 @@ package config_pkg;
     /// ports than issue ports, for the scoreboard to empty out in case one
     /// instruction stalls a little longer.
     int unsigned NrCommitPorts;
+    int unsigned NrLoadPipeRegs;
+    int unsigned NrStorePipeRegs;
     /// AXI parameters.
     int unsigned AxiAddrWidth;
     int unsigned AxiDataWidth;
@@ -222,14 +242,19 @@ package config_pkg;
     int unsigned NrRgprPorts;
     int unsigned NrWbPorts;
     bit          EnableAccelerator;
+    bit          PerfCounterEn;
+    bit          MmuPresent;
     bit          RVS;                //Supervisor mode
     bit          RVU;                //User mode
 
-    logic [63:0]                 HaltAddress;
-    logic [63:0]                 ExceptionAddress;
-    int unsigned                 RASDepth;
-    int unsigned                 BTBEntries;
-    int unsigned                 BHTEntries;
+    logic [63:0] HaltAddress;
+    logic [63:0] ExceptionAddress;
+    int unsigned RASDepth;
+    int unsigned BTBEntries;
+    int unsigned BHTEntries;
+    int unsigned InstrTlbEntries;
+    int unsigned DataTlbEntries;
+
     logic [63:0]                 DmBaseAddress;
     bit                          TvalEn;
     int unsigned                 NrPMPEntries;
@@ -257,6 +282,8 @@ package config_pkg;
     int unsigned ICACHE_TAG_WIDTH;
     int unsigned ICACHE_LINE_WIDTH;
     int unsigned ICACHE_USER_LINE_WIDTH;
+    cache_type_t DCacheType;
+    int unsigned DcacheIdWidth;
     int unsigned DCACHE_SET_ASSOC;
     int unsigned DCACHE_SET_ASSOC_WIDTH;
     int unsigned DCACHE_INDEX_WIDTH;
@@ -270,11 +297,13 @@ package config_pkg;
     int unsigned DCACHE_MAX_TX;
 
     int unsigned DATA_USER_EN;
+    int unsigned WtDcacheWbufDepth;
     int unsigned FETCH_USER_WIDTH;
     int unsigned FETCH_USER_EN;
     bit          AXI_USER_EN;
 
     int unsigned FETCH_WIDTH;
+    int unsigned FETCH_ALIGN_BITS;
     int unsigned INSTR_PER_FETCH;
     int unsigned LOG2_INSTR_PER_FETCH;
 

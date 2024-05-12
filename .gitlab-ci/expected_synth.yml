@@ -1,4 +1,4 @@
 cv32a6_embedded:
-  gates: 110738
+  gates: 110095
 cv32a65x:
-  gates: 110129
+  gates: 109555

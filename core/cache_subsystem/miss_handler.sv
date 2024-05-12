@@ -161,8 +161,8 @@ module miss_handler
   logic                [                                  63:0]       amo_operand_b;
 
   // 32b request
-  logic [31:0] halfword;
-  logic [$clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0] cl_offset;
+  logic                [                                  31:0]       halfword;
+  logic                [ $clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0]       cl_offset;
 
   // ------------------------------
   // Cache Management
@@ -225,8 +225,8 @@ module miss_handler
     amo_resp_o.result           = '0;
     amo_operand_b               = '0;
 
-    halfword = '0;
-    cl_offset = '0;
+    halfword                    = '0;
+    cl_offset                   = '0;
 
     case (state_q)
 
@@ -496,7 +496,7 @@ module miss_handler
         end
       end
 
-      default:;
+      default: ;
     endcase
   end
 

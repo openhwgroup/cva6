@@ -264,7 +264,7 @@ module load_unit
             if (!req_port_i.data_gnt) begin
               state_d = WAIT_GNT;
             end else begin
-              if (ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
+              if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
                 state_d = ABORT_TRANSACTION;
               end else begin
                 if (!stall_ni) begin
@@ -300,7 +300,7 @@ module load_unit
         // we finally got a data grant
         if (req_port_i.data_gnt) begin
           // so we send the tag in the next cycle
-          if (ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
+          if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
             state_d = ABORT_TRANSACTION;
           end else begin
             if (!stall_ni) begin
@@ -334,7 +334,7 @@ module load_unit
               state_d = WAIT_GNT;
             end else begin
               // we got a grant so we can send the tag in the next cycle
-              if (ariane_pkg::MMU_PRESENT && !dtlb_hit_i) begin
+              if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
                 state_d = ABORT_TRANSACTION;
               end else begin
                 if (!stall_ni) begin
@@ -374,7 +374,7 @@ module load_unit
         // abort the previous request - free the D$ arbiter
         // we are here because of a TLB miss, we need to abort the current request and give way for the
         // PTW walker to satisfy the TLB miss
-        if (state_q == ABORT_TRANSACTION && ariane_pkg::MMU_PRESENT) begin
+        if (state_q == ABORT_TRANSACTION && CVA6Cfg.MmuPresent) begin
           req_port_o.kill_req = 1'b1;
           req_port_o.tag_valid = 1'b1;
           // wait until the WB is empty
@@ -388,7 +388,7 @@ module load_unit
           // Wait until the write-back buffer is empty in the data cache.
           // the write buffer is empty, so lets go and re-do the translation.
           state_d = WAIT_TRANSLATION;
-        end else if(state_q == WAIT_TRANSLATION && (ariane_pkg::MMU_PRESENT || CVA6Cfg.NonIdemPotenceEn)) begin
+        end else if(state_q == WAIT_TRANSLATION && (CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn)) begin
           translation_req_o = 1'b1;
           // we've got a hit and we can continue with the request process
           if (dtlb_hit_i) state_d = WAIT_GNT;
@@ -446,7 +446,7 @@ module load_unit
     // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
     // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
     // round in the load FSM
-    if ((ariane_pkg::MMU_PRESENT || CVA6Cfg.NonIdemPotenceEn) && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
+    if ((CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn) && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
       trans_id_o = lsu_ctrl_i.trans_id;
       valid_o = 1'b1;
       ex_o.valid = 1'b1;
@@ -548,8 +548,8 @@ module load_unit
   //pragma translate_off
 `ifndef VERILATOR
   initial
-    assert (ariane_pkg::DCACHE_TID_WIDTH >= REQ_ID_BITS)
-    else $fatal(1, "CVA6ConfigDcacheIdWidth parameter is not wide enough to encode pending loads");
+    assert (CVA6Cfg.DcacheIdWidth >= REQ_ID_BITS)
+    else $fatal(1, "DcacheIdWidth parameter is not wide enough to encode pending loads");
   // check invalid offsets, but only issue a warning as these conditions actually trigger a load address misaligned exception
   addr_offset0 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)

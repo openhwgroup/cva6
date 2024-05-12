@@ -32,23 +32,23 @@ module id_stage #(
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
     // Handshake's data between fetch and decode - FRONTEND
-    input fetch_entry_t fetch_entry_i,
+    input fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_i,
     // Handshake's valid between fetch and decode - FRONTEND
-    input logic fetch_entry_valid_i,
+    input logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid_i,
     // Handshake's ready between fetch and decode - FRONTEND
-    output logic fetch_entry_ready_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_ready_o,
     // Handshake's data between decode and issue - ISSUE
-    output scoreboard_entry_t issue_entry_o,
+    output scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0] issue_entry_o,
     // Instruction value - ISSUE
-    output logic [31:0] orig_instr_o,
+    output logic [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr_o,
     // Handshake's valid between decode and issue - ISSUE
-    output logic issue_entry_valid_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] issue_entry_valid_o,
     // Report if instruction is a control flow instruction - ISSUE
-    output logic is_ctrl_flow_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] is_ctrl_flow_o,
     // Handshake's acknowlege between decode and issue - ISSUE
-    input logic issue_instr_ack_i,
+    input logic [ariane_pkg::SUPERSCALAR:0] issue_instr_ack_i,
     // Information dedicated to RVFI - RVFI
-    output logic rvfi_is_compressed_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
     // Current virtualization mode - CSR_REGFILE
@@ -85,55 +85,62 @@ module id_stage #(
     logic [31:0]       orig_instr;
     logic              is_ctrl_flow;
   } issue_struct_t;
-  issue_struct_t issue_n, issue_q;
+  issue_struct_t [ariane_pkg::SUPERSCALAR:0] issue_n, issue_q;
 
-  logic                     is_control_flow_instr;
-  scoreboard_entry_t        decoded_instruction;
-  logic              [31:0] orig_instr;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_control_flow_instr;
+  scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_instruction;
+  logic              [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr;
 
-  logic                     is_illegal;
-  logic                     is_illegal_cmp;
-  logic              [31:0] instruction;
-  logic              [31:0] compressed_instr;
-  logic                     is_compressed;
-  logic                     is_compressed_cmp;
-  logic                     is_macro_instr_i;
-  logic                     stall_instr_fetch;
-  logic                     is_last_macro_instr_o;
-  logic                     is_double_rd_macro_instr_o;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_illegal;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_illegal_cmp;
+  logic              [ariane_pkg::SUPERSCALAR:0][31:0] instruction;
+  logic              [ariane_pkg::SUPERSCALAR:0][31:0] compressed_instr;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_compressed;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_compressed_cmp;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_macro_instr_i;
+  logic                                                stall_instr_fetch;
+  logic                                                is_last_macro_instr_o;
+  logic                                                is_double_rd_macro_instr_o;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
     // 1. Check if they are compressed and expand in case they are
     // ---------------------------------------------------------
-    compressed_decoder #(
-        .CVA6Cfg(CVA6Cfg)
-    ) compressed_decoder_i (
-        .instr_i         (fetch_entry_i.instruction),
-        .instr_o         (compressed_instr),
-        .illegal_instr_o (is_illegal),
-        .is_compressed_o (is_compressed),
-        .is_macro_instr_o(is_macro_instr_i)
-    );
+    for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+      compressed_decoder #(
+          .CVA6Cfg(CVA6Cfg)
+      ) compressed_decoder_i (
+          .instr_i         (fetch_entry_i[i].instruction),
+          .instr_o         (compressed_instr[i]),
+          .illegal_instr_o (is_illegal[i]),
+          .is_compressed_o (is_compressed[i]),
+          .is_macro_instr_o(is_macro_instr_i[i])
+      );
+    end
     if (CVA6Cfg.RVZCMP) begin
       //sequencial decoder
       macro_decoder #(
           .CVA6Cfg(CVA6Cfg)
       ) macro_decoder_i (
-          .instr_i                   (compressed_instr),
-          .is_macro_instr_i          (is_macro_instr_i),
+          .instr_i                   (compressed_instr[0]),
+          .is_macro_instr_i          (is_macro_instr_i[0]),
           .clk_i                     (clk_i),
           .rst_ni                    (rst_ni),
-          .instr_o                   (instruction),
-          .illegal_instr_i           (is_illegal),
-          .is_compressed_i           (is_compressed),
-          .issue_ack_i               (issue_instr_ack_i),
-          .illegal_instr_o           (is_illegal_cmp),
-          .is_compressed_o           (is_compressed_cmp),
+          .instr_o                   (instruction[0]),
+          .illegal_instr_i           (is_illegal[0]),
+          .is_compressed_i           (is_compressed[0]),
+          .issue_ack_i               (issue_instr_ack_i[0]),
+          .illegal_instr_o           (is_illegal_cmp[0]),
+          .is_compressed_o           (is_compressed_cmp[0]),
           .fetch_stall_o             (stall_instr_fetch),
           .is_last_macro_instr_o     (is_last_macro_instr_o),
           .is_double_rd_macro_instr_o(is_double_rd_macro_instr_o)
       );
+      if (ariane_pkg::SUPERSCALAR > 0) begin
+        assign instruction[ariane_pkg::SUPERSCALAR] = '0;
+        assign is_illegal_cmp[ariane_pkg::SUPERSCALAR] = '0;
+        assign is_compressed_cmp[ariane_pkg::SUPERSCALAR] = '0;
+      end
     end else begin
       assign instruction = compressed_instr;
       assign is_illegal_cmp = is_illegal;
@@ -142,7 +149,9 @@ module id_stage #(
       assign is_double_rd_macro_instr_o = '0;
     end
   end else begin
-    assign instruction = fetch_entry_i.instruction;
+    for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+      assign instruction[i] = fetch_entry_i[i].instruction;
+    end
     assign is_illegal_cmp = '0;
     assign is_compressed_cmp = '0;
     assign is_macro_instr_i = '0;
@@ -154,76 +163,120 @@ module id_stage #(
   // ---------------------------------------------------------
   // 2. Decode and emit instruction to issue stage
   // ---------------------------------------------------------
-  decoder #(
-      .CVA6Cfg(CVA6Cfg),
-      .branchpredict_sbe_t(branchpredict_sbe_t),
-      .exception_t(exception_t),
-      .irq_ctrl_t(irq_ctrl_t),
-      .scoreboard_entry_t(scoreboard_entry_t),
-      .interrupts_t(interrupts_t),
-      .INTERRUPTS(INTERRUPTS)
-  ) decoder_i (
-      .debug_req_i,
-      .irq_ctrl_i,
-      .irq_i,
-      .pc_i                      (fetch_entry_i.address),
-      .is_compressed_i           (is_compressed_cmp),
-      .is_macro_instr_i          (is_macro_instr_i),
-      .is_last_macro_instr_i     (is_last_macro_instr_o),
-      .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
-      .is_illegal_i              (is_illegal_cmp),
-      .instruction_i             (instruction),
-      .compressed_instr_i        (fetch_entry_i.instruction[15:0]),
-      .branch_predict_i          (fetch_entry_i.branch_predict),
-      .ex_i                      (fetch_entry_i.ex),
-      .priv_lvl_i                (priv_lvl_i),
-      .v_i                       (v_i),
-      .debug_mode_i              (debug_mode_i),
-      .fs_i,
-      .vfs_i,
-      .frm_i,
-      .vs_i,
-      .tvm_i,
-      .tw_i,
-      .vtw_i,
-      .tsr_i,
-      .hu_i,
-      .instruction_o             (decoded_instruction),
-      .orig_instr_o              (orig_instr),
-      .is_control_flow_instr_o   (is_control_flow_instr)
-  );
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    decoder #(
+        .CVA6Cfg(CVA6Cfg),
+        .branchpredict_sbe_t(branchpredict_sbe_t),
+        .exception_t(exception_t),
+        .irq_ctrl_t(irq_ctrl_t),
+        .scoreboard_entry_t(scoreboard_entry_t),
+        .interrupts_t(interrupts_t),
+        .INTERRUPTS(INTERRUPTS)
+    ) decoder_i (
+        .debug_req_i,
+        .irq_ctrl_i,
+        .irq_i,
+        .pc_i                      (fetch_entry_i[i].address),
+        .is_compressed_i           (is_compressed_cmp[i]),
+        .is_macro_instr_i          (is_macro_instr_i[i]),
+        .is_last_macro_instr_i     (is_last_macro_instr_o),
+        .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
+        .is_illegal_i              (is_illegal_cmp[i]),
+        .instruction_i             (instruction[i]),
+        .compressed_instr_i        (fetch_entry_i[i].instruction[15:0]),
+        .branch_predict_i          (fetch_entry_i[i].branch_predict),
+        .ex_i                      (fetch_entry_i[i].ex),
+        .priv_lvl_i                (priv_lvl_i),
+        .v_i                       (v_i),
+        .debug_mode_i              (debug_mode_i),
+        .fs_i,
+        .vfs_i,
+        .frm_i,
+        .vs_i,
+        .tvm_i,
+        .tw_i,
+        .vtw_i,
+        .tsr_i,
+        .hu_i,
+        .instruction_o             (decoded_instruction[i]),
+        .orig_instr_o              (orig_instr[i]),
+        .is_control_flow_instr_o   (is_control_flow_instr[i])
+    );
+  end
 
   // ------------------
   // Pipeline Register
   // ------------------
-  always_comb begin
-    issue_entry_o = issue_q.sbe;
-    issue_entry_valid_o = issue_q.valid;
-    is_ctrl_flow_o = issue_q.is_ctrl_flow;
-    orig_instr_o = issue_q.orig_instr;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign issue_entry_o[i] = issue_q[i].sbe;
+    assign issue_entry_valid_o[i] = issue_q[i].valid;
+    assign is_ctrl_flow_o[i] = issue_q[i].is_ctrl_flow;
+    assign orig_instr_o[i] = issue_q[i].orig_instr;
   end
 
-  always_comb begin
-    issue_n             = issue_q;
-    fetch_entry_ready_o = 1'b0;
+  if (ariane_pkg::SUPERSCALAR) begin
+    always_comb begin
+      issue_n = issue_q;
+      fetch_entry_ready_o = '0;
 
-    // Clear the valid flag if issue has acknowledged the instruction
-    if (issue_instr_ack_i) issue_n.valid = 1'b0;
-
-    // if we have a space in the register and the fetch is valid, go get it
-    // or the issue stage is currently acknowledging an instruction, which means that we will have space
-    // for a new instruction
-    if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i) begin
-      if (stall_instr_fetch) begin
-        fetch_entry_ready_o = 1'b0;
-      end else begin
-        fetch_entry_ready_o = 1'b1;
+      // Clear the valid flag if issue has acknowledged the instruction
+      if (issue_instr_ack_i[0]) begin
+        issue_n[0].valid = 1'b0;
       end
-      issue_n = '{1'b1, decoded_instruction, orig_instr, is_control_flow_instr};
-    end
+      if (issue_instr_ack_i[1]) begin
+        issue_n[1].valid = 1'b0;
+      end
 
-    // invalidate the pipeline register on a flush
-    if (flush_i) issue_n.valid = 1'b0;
+      if (!issue_n[0].valid) begin
+        if (issue_n[1].valid) begin
+          issue_n[0] = issue_n[1];
+          issue_n[1].valid = 1'b0;
+        end else if (fetch_entry_valid_i[0]) begin
+          fetch_entry_ready_o[0] = 1'b1;
+          issue_n[0] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
+        end
+      end
+
+      if (!issue_n[1].valid) begin
+        if (fetch_entry_ready_o[0]) begin
+          if (fetch_entry_valid_i[1]) begin
+            fetch_entry_ready_o[1] = 1'b1;
+            issue_n[1] = '{1'b1, decoded_instruction[1], orig_instr[1], is_control_flow_instr[1]};
+          end
+        end else if (fetch_entry_valid_i[0]) begin
+          fetch_entry_ready_o[0] = 1'b1;
+          issue_n[1] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
+        end
+      end
+
+      if (flush_i) begin
+        issue_n[0].valid = 1'b0;
+        issue_n[1].valid = 1'b0;
+      end
+    end
+  end else begin
+    always_comb begin
+      issue_n             = issue_q;
+      fetch_entry_ready_o = '0;
+
+      // Clear the valid flag if issue has acknowledged the instruction
+      if (issue_instr_ack_i[0]) issue_n[0].valid = 1'b0;
+
+      // if we have a space in the register and the fetch is valid, go get it
+      // or the issue stage is currently acknowledging an instruction, which means that we will have space
+      // for a new instruction
+      if ((!issue_q[0].valid || issue_instr_ack_i[0]) && fetch_entry_valid_i[0]) begin
+        if (stall_instr_fetch) begin
+          fetch_entry_ready_o[0] = 1'b0;
+        end else begin
+          fetch_entry_ready_o[0] = 1'b1;
+        end
+        issue_n[0] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
+      end
+
+      // invalidate the pipeline register on a flush
+      if (flush_i) issue_n[0].valid = 1'b0;
+    end
   end
   // -------------------------
   // Registers (ID <-> Issue)

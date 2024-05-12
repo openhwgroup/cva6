@@ -52,9 +52,10 @@ module cva6_rvfi
 
   logic flush;
   logic issue_instr_ack;
-  logic fetch_entry_valid;
-  logic [31:0] instruction;
-  logic is_compressed;
+  logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid;
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] instruction;
+  logic [ariane_pkg::SUPERSCALAR:0] is_compressed;
+  logic [ariane_pkg::SUPERSCALAR:0][31:0] truncated;
 
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer;
@@ -158,23 +159,49 @@ module cva6_rvfi
 
   //ID STAGE
 
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign truncated[i] = (is_compressed[i]) ? {16'b0, instruction[i][15:0]} : instruction[i];
+  end
+
   typedef struct packed {
     logic        valid;
     logic [31:0] instr;
   } issue_struct_t;
-  issue_struct_t issue_n, issue_q;
+  issue_struct_t [ariane_pkg::SUPERSCALAR:0] issue_n, issue_q;
+  logic took0;
 
   always_comb begin
     issue_n = issue_q;
+    took0   = 1'b0;
 
-    if (issue_instr_ack) issue_n.valid = 1'b0;
+    if (issue_instr_ack) issue_n[0].valid = 1'b0;
 
-    if ((!issue_q.valid || issue_instr_ack) && fetch_entry_valid) begin
-      issue_n.valid = 1'b1;
-      issue_n.instr = (is_compressed) ? {{16{1'b0}}, instruction[15:0]} : instruction;
+    if (!issue_n[ariane_pkg::SUPERSCALAR].valid) begin
+      issue_n[ariane_pkg::SUPERSCALAR].valid = fetch_entry_valid[0];
+      issue_n[ariane_pkg::SUPERSCALAR].instr = truncated[0];
+      took0 = 1'b1;
     end
 
-    if (flush) issue_n.valid = 1'b0;
+    if (!issue_n[0].valid) begin
+      issue_n[0] = issue_n[ariane_pkg::SUPERSCALAR];
+      issue_n[ariane_pkg::SUPERSCALAR].valid = 1'b0;
+    end
+
+    if (!issue_n[ariane_pkg::SUPERSCALAR].valid) begin
+      if (took0) begin
+        issue_n[ariane_pkg::SUPERSCALAR].valid = fetch_entry_valid[ariane_pkg::SUPERSCALAR];
+        issue_n[ariane_pkg::SUPERSCALAR].instr = truncated[ariane_pkg::SUPERSCALAR];
+      end else begin
+        issue_n[ariane_pkg::SUPERSCALAR].valid = fetch_entry_valid[0];
+        issue_n[ariane_pkg::SUPERSCALAR].instr = truncated[0];
+      end
+    end
+
+    if (flush) begin
+      for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+        issue_n[i].valid = 1'b0;
+      end
+    end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -210,7 +237,7 @@ module cva6_rvfi
           lsu_rmask: '0,
           lsu_wmask: '0,
           lsu_wdata: '0,
-          instr: issue_q.instr
+          instr: issue_q[0].instr
       };
     end
 
@@ -240,31 +267,32 @@ module cva6_rvfi
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       logic exception;
       exception = commit_instr_valid[i][0] && ex_commit_valid;
-      rvfi_instr_o[i].valid    = (commit_ack[i] && !ex_commit_valid) ||
+      rvfi_instr_o[i].valid    <= (commit_ack[i] && !ex_commit_valid) ||
         (exception && (ex_commit_cause == riscv::ENV_CALL_MMODE ||
                   ex_commit_cause == riscv::ENV_CALL_SMODE ||
                   ex_commit_cause == riscv::ENV_CALL_UMODE));
-      rvfi_instr_o[i].insn = mem_q[commit_pointer[i]].instr;
+      rvfi_instr_o[i].insn <= mem_q[commit_pointer[i]].instr;
       // when trap, the instruction is not executed
-      rvfi_instr_o[i].trap = exception;
-      rvfi_instr_o[i].cause = ex_commit_cause;
-      rvfi_instr_o[i].mode = (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
-      rvfi_instr_o[i].ixl = CVA6Cfg.XLEN == 64 ? 2 : 1;
-      rvfi_instr_o[i].rs1_addr = commit_instr_rs1[i][4:0];
-      rvfi_instr_o[i].rs2_addr = commit_instr_rs2[i][4:0];
-      rvfi_instr_o[i].rd_addr = commit_instr_rd[i][4:0];
-      rvfi_instr_o[i].rd_wdata = (CVA6Cfg.FpPresent && is_rd_fpr(commit_instr_op[i])) ?
-          commit_instr_result[i] : wdata[i];
-      rvfi_instr_o[i].pc_rdata = commit_instr_pc[i];
-      rvfi_instr_o[i].mem_addr = mem_q[commit_pointer[i]].lsu_addr;
+      rvfi_instr_o[i].trap <= exception;
+      rvfi_instr_o[i].cause <= ex_commit_cause;
+      rvfi_instr_o[i].mode <= (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
+      rvfi_instr_o[i].ixl <= CVA6Cfg.XLEN == 64 ? 2 : 1;
+      rvfi_instr_o[i].rs1_addr <= commit_instr_rs1[i][4:0];
+      rvfi_instr_o[i].rs2_addr <= commit_instr_rs2[i][4:0];
+      rvfi_instr_o[i].rd_addr <= commit_instr_rd[i][4:0];
+      rvfi_instr_o[i].rd_wdata <= (CVA6Cfg.FpPresent && is_rd_fpr(
+          commit_instr_op[i]
+      )) ? commit_instr_result[i] : wdata[i];
+      rvfi_instr_o[i].pc_rdata <= commit_instr_pc[i];
+      rvfi_instr_o[i].mem_addr <= mem_q[commit_pointer[i]].lsu_addr;
       // So far, only write paddr is reported. TODO: read paddr
-      rvfi_instr_o[i].mem_paddr = mem_paddr;
-      rvfi_instr_o[i].mem_wmask = mem_q[commit_pointer[i]].lsu_wmask;
-      rvfi_instr_o[i].mem_wdata = mem_q[commit_pointer[i]].lsu_wdata;
-      rvfi_instr_o[i].mem_rmask = mem_q[commit_pointer[i]].lsu_rmask;
-      rvfi_instr_o[i].mem_rdata = commit_instr_result[i];
-      rvfi_instr_o[i].rs1_rdata = mem_q[commit_pointer[i]].rs1_rdata;
-      rvfi_instr_o[i].rs2_rdata = mem_q[commit_pointer[i]].rs2_rdata;
+      rvfi_instr_o[i].mem_paddr <= mem_paddr;
+      rvfi_instr_o[i].mem_wmask <= mem_q[commit_pointer[i]].lsu_wmask;
+      rvfi_instr_o[i].mem_wdata <= mem_q[commit_pointer[i]].lsu_wdata;
+      rvfi_instr_o[i].mem_rmask <= mem_q[commit_pointer[i]].lsu_rmask;
+      rvfi_instr_o[i].mem_rdata <= commit_instr_result[i];
+      rvfi_instr_o[i].rs1_rdata <= mem_q[commit_pointer[i]].rs1_rdata;
+      rvfi_instr_o[i].rs2_rdata <= mem_q[commit_pointer[i]].rs2_rdata;
     end
   end
 
@@ -273,20 +301,16 @@ module cva6_rvfi
   // CSR
   //----------------------------------------------------------------------------------------------------------
 
-
-
-  `define CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME, CSR_SOURCE_NAME) \
-      bit [CVA6Cfg.XLEN-1:0] ``CSR_NAME``_d; \
-      always_ff @(posedge clk_i) begin \
-        ``CSR_NAME``_d <= {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}; \
-      end \
-      always_comb begin \
-        rvfi_csr_o.``CSR_NAME = CSR_ENABLE_COND ? \
-        '{ rdata: ``CSR_NAME``_d , \
-          wdata: { {{CVA6Cfg.XLEN-$bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME} }, \
-          rmask: '1, wmask: '1} \
-          : '0; \
-      end
+  `define CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME,
+                            CSR_SOURCE_NAME) \
+    always_ff @(posedge clk_i) begin \
+        if (CSR_ENABLE_COND) begin \
+            rvfi_csr_o.``CSR_NAME``.rdata <= {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}; \
+        end \
+    end \
+    assign rvfi_csr_o.``CSR_NAME``.wdata = CSR_ENABLE_COND ? { {{CVA6Cfg.XLEN-$bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME} } : 0; \
+    assign rvfi_csr_o.``CSR_NAME``.rmask = CSR_ENABLE_COND ? 1 : 0; \
+    assign rvfi_csr_o.``CSR_NAME``.wmask = (rvfi_csr_o.``CSR_NAME``.rdata != {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}) && CSR_ENABLE_COND;
 
   `define COMMA ,
 
@@ -380,29 +404,7 @@ module cva6_rvfi
   genvar i;
   generate
     for (i = 0; i < 16; i++) begin
-      always_ff @(posedge clk_i) begin
-        pmpaddr_q[i] = (csr.pmpcfg_q[i].addr_mode[1] == 1'b1) ?
-            {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
-            : {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}} , csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1] , 1'b0 };
-      end
-      always_comb begin
-        rvfi_csr_o.pmpaddr[i] = '{
-            rdata: {'0, pmpaddr_q[i]},
-            wdata:
-            csr.pmpcfg_q[i].addr_mode[1]
-            == 1'b1 ?
-            {{CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}, csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0]}
-            : {
-            {CVA6Cfg.XLEN - (CVA6Cfg.PLEN - 2) {1'b0}}
-            ,
-            csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1]
-            ,
-            1'b0
-            },
-            rmask: '1,
-            wmask: '1
-        };
-      end
+      `CONNECT_RVFI_FULL(1'b1, pmpaddr[i], csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:0])
     end
   endgenerate
   ;

@@ -81,12 +81,15 @@ module instr_queue
     // Address at which to replay the fetch - FRONTEND
     output logic [CVA6Cfg.VLEN-1:0] replay_addr_o,
     // Handshake’s data with ID_STAGE - ID_STAGE
-    output fetch_entry_t fetch_entry_o,
+    output fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_o,
     // Handshake’s valid with ID_STAGE - ID_STAGE
-    output logic fetch_entry_valid_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid_o,
     // Handshake’s ready with ID_STAGE - ID_STAGE
-    input logic fetch_entry_ready_i
+    input logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_ready_i
 );
+
+  // Calculate next index based on whether superscalar is enabled or not.
+  localparam NID = ariane_pkg::SUPERSCALAR > 0 ? 1 : 0;
 
   typedef struct packed {
     logic [31:0]                     instr;      // instruction word
@@ -119,11 +122,18 @@ ariane_pkg::FETCH_FIFO_DEPTH
   logic                                            address_overflow;
   // input stream counter
   logic [CVA6Cfg.LOG2_INSTR_PER_FETCH-1:0] idx_is_d, idx_is_q;
+
   // Registers
   // output FIFO select, one-hot
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] idx_ds_d, idx_ds_q;
+  // rotated by N
+  logic [ariane_pkg::SUPERSCALAR+1:0][CVA6Cfg.INSTR_PER_FETCH-1:0] idx_ds;
+
   logic [CVA6Cfg.VLEN-1:0] pc_d, pc_q;  // current PC
+  logic [ariane_pkg::SUPERSCALAR+1:0][CVA6Cfg.VLEN-1:0] pc_j;
   logic reset_address_d, reset_address_q;  // we need to re-set the address because of a flush
+
+  logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_is_cf, fetch_entry_fire;
 
   logic [CVA6Cfg.INSTR_PER_FETCH*2-2:0] branch_mask_extended;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] branch_mask;
@@ -144,7 +154,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
 
   assign ready_o = ~(|instr_queue_full) & ~full_address;
 
-  if (ariane_pkg::RVC) begin : gen_multiple_instr_per_fetch_with_C
+  if (CVA6Cfg.RVC) begin : gen_multiple_instr_per_fetch_with_C
 
     for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_unpack_taken
       assign taken[i] = cf_type_i[i] != ariane_pkg::NoCF;
@@ -209,8 +219,8 @@ ariane_pkg::FETCH_FIFO_DEPTH
     // shift the inputs
     for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_fifo_input_select
       /* verilator lint_off WIDTH */
-      assign instr_data_in[i].instr = instr[i+idx_is_q];
-      assign instr_data_in[i].cf = cf[i+idx_is_q];
+      assign instr_data_in[i].instr = instr[CVA6Cfg.INSTR_PER_FETCH+i-idx_is_q];
+      assign instr_data_in[i].cf = cf[CVA6Cfg.INSTR_PER_FETCH+i-idx_is_q];
       assign instr_data_in[i].ex = exception_i;  // exceptions hold for the whole fetch packet
       assign instr_data_in[i].ex_vaddr = exception_addr_i;
       if (CVA6Cfg.RVH) begin : gen_hyp_ex_with_C
@@ -271,7 +281,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   // (e.g.: we pushed and it was full)
   // 2. The address/branch predict FIFO was full
   // if one of the FIFOs was full we need to replay the faulting instruction
-  if (ariane_pkg::RVC == 1'b1) begin : gen_instr_overflow_fifo_with_C
+  if (CVA6Cfg.RVC == 1'b1) begin : gen_instr_overflow_fifo_with_C
     assign instr_overflow_fifo = instr_queue_full & fifo_pos;
   end else begin : gen_instr_overflow_fifo_without_C
     assign instr_overflow_fifo = instr_queue_full & valid_i;
@@ -280,7 +290,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   assign address_overflow = full_address & push_address;
   assign replay_o = instr_overflow | address_overflow;
 
-  if (ariane_pkg::RVC) begin : gen_replay_addr_o_with_c
+  if (CVA6Cfg.RVC) begin : gen_replay_addr_o_with_c
     // select the address, in the case of an address fifo overflow just
     // use the base of this package
     // if we successfully pushed some instructions we can output the next instruction
@@ -294,110 +304,156 @@ ariane_pkg::FETCH_FIFO_DEPTH
   // Downstream interface
   // ----------------------
   // as long as there is at least one queue which can take the value we have a valid instruction
-  assign fetch_entry_valid_o = ~(&instr_queue_empty);
+  assign fetch_entry_valid_o[0] = ~(&instr_queue_empty);
+  if (ariane_pkg::SUPERSCALAR > 0) begin : gen_fetch_entry_valid_1
+    // TODO Maybe this additional fetch_entry_is_cf check is useless as issue-stage already performs it?
+    assign fetch_entry_valid_o[NID] = ~|(instr_queue_empty & idx_ds[1]) & ~(&fetch_entry_is_cf);
+  end
 
-  if (ariane_pkg::RVC) begin : gen_downstream_itf_with_c
+  assign idx_ds[0] = idx_ds_q;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    if (CVA6Cfg.INSTR_PER_FETCH > 1) begin
+      assign idx_ds[i+1] = {
+        idx_ds[i][CVA6Cfg.INSTR_PER_FETCH-2:0], idx_ds[i][CVA6Cfg.INSTR_PER_FETCH-1]
+      };
+    end else begin
+      assign idx_ds[i+1] = idx_ds[i];
+    end
+  end
+
+  if (CVA6Cfg.RVC) begin : gen_downstream_itf_with_c
     always_comb begin
-      idx_ds_d = idx_ds_q;
+      idx_ds_d  = idx_ds_q;
 
       pop_instr = '0;
       // assemble fetch entry
-      fetch_entry_o.instruction = '0;
-      fetch_entry_o.address = pc_q;
-      fetch_entry_o.ex.valid = 1'b0;
-      fetch_entry_o.ex.cause = '0;
+      for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+        fetch_entry_o[i].instruction = '0;
+        fetch_entry_o[i].address = pc_j[i];
+        fetch_entry_o[i].ex.valid = 1'b0;
+        fetch_entry_o[i].ex.cause = '0;
 
-      fetch_entry_o.ex.tval = '0;
-      fetch_entry_o.ex.tval2 = '0;
-      fetch_entry_o.ex.gva = 1'b0;
-      fetch_entry_o.ex.tinst = '0;
-      fetch_entry_o.branch_predict.predict_address = address_out;
-      fetch_entry_o.branch_predict.cf = ariane_pkg::NoCF;
+        fetch_entry_o[i].ex.tval = '0;
+        fetch_entry_o[i].ex.tval2 = '0;
+        fetch_entry_o[i].ex.gva = 1'b0;
+        fetch_entry_o[i].ex.tinst = '0;
+        fetch_entry_o[i].branch_predict.predict_address = address_out;
+        fetch_entry_o[i].branch_predict.cf = ariane_pkg::NoCF;
+      end
+
       // output mux select
       for (int unsigned i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
-        if (idx_ds_q[i]) begin
+        // TODO handle fetch_entry_o[1] if superscalar
+        if (idx_ds[0][i]) begin
           if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
-            fetch_entry_o.ex.cause = riscv::INSTR_ACCESS_FAULT;
+            fetch_entry_o[0].ex.cause = riscv::INSTR_ACCESS_FAULT;
           end else if (CVA6Cfg.RVH && instr_data_out[i].ex == ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT) begin
-            fetch_entry_o.ex.cause = riscv::INSTR_GUEST_PAGE_FAULT;
+            fetch_entry_o[0].ex.cause = riscv::INSTR_GUEST_PAGE_FAULT;
           end else begin
-            fetch_entry_o.ex.cause = riscv::INSTR_PAGE_FAULT;
+            fetch_entry_o[0].ex.cause = riscv::INSTR_PAGE_FAULT;
           end
-          fetch_entry_o.instruction = instr_data_out[i].instr;
-          fetch_entry_o.ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
+          fetch_entry_o[0].instruction = instr_data_out[i].instr;
+          fetch_entry_o[0].ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
           if (CVA6Cfg.TvalEn)
-            fetch_entry_o.ex.tval = {
+            fetch_entry_o[0].ex.tval = {
               {(CVA6Cfg.XLEN - CVA6Cfg.VLEN) {1'b0}}, instr_data_out[i].ex_vaddr
             };
           if (CVA6Cfg.RVH) begin
-            fetch_entry_o.ex.tval2 = instr_data_out[i].ex_gpaddr;
-            fetch_entry_o.ex.tinst = instr_data_out[i].ex_tinst;
-            fetch_entry_o.ex.gva   = instr_data_out[i].ex_gva;
+            fetch_entry_o[0].ex.tval2 = instr_data_out[i].ex_gpaddr;
+            fetch_entry_o[0].ex.tinst = instr_data_out[i].ex_tinst;
+            fetch_entry_o[0].ex.gva   = instr_data_out[i].ex_gva;
           end
-          fetch_entry_o.branch_predict.cf = instr_data_out[i].cf;
-          pop_instr[i] = fetch_entry_valid_o & fetch_entry_ready_i;
+          fetch_entry_o[0].branch_predict.cf = instr_data_out[i].cf;
+          pop_instr[i] = fetch_entry_fire[0];
+        end
+
+        if (ariane_pkg::SUPERSCALAR > 0) begin
+          if (idx_ds[1][i]) begin
+            if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
+              fetch_entry_o[NID].ex.cause = riscv::INSTR_ACCESS_FAULT;
+            end else begin
+              fetch_entry_o[NID].ex.cause = riscv::INSTR_PAGE_FAULT;
+            end
+            fetch_entry_o[NID].instruction = instr_data_out[i].instr;
+            fetch_entry_o[NID].ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
+            fetch_entry_o[NID].ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[i].ex_vaddr};
+            fetch_entry_o[NID].branch_predict.cf = instr_data_out[i].cf;
+            // Cannot output two CF the same cycle.
+            pop_instr[i] = fetch_entry_fire[NID];
+          end
         end
       end
       // rotate the pointer left
-      if (fetch_entry_ready_i) begin
-        idx_ds_d = {idx_ds_q[CVA6Cfg.INSTR_PER_FETCH-2:0], idx_ds_q[CVA6Cfg.INSTR_PER_FETCH-1]};
+      if (fetch_entry_fire[0]) begin
+        if (ariane_pkg::SUPERSCALAR > 0) begin
+          idx_ds_d = fetch_entry_fire[NID] ? idx_ds[2] : idx_ds[1];
+        end else begin
+          idx_ds_d = idx_ds[1];
+        end
       end
     end
   end else begin : gen_downstream_itf_without_c
     always_comb begin
       idx_ds_d = '0;
       idx_is_d = '0;
-      fetch_entry_o.instruction = instr_data_out[0].instr;
-      fetch_entry_o.address = pc_q;
+      fetch_entry_o[0].instruction = instr_data_out[0].instr;
+      fetch_entry_o[0].address = pc_q;
 
-      fetch_entry_o.ex.valid = instr_data_out[0].ex != ariane_pkg::FE_NONE;
+      fetch_entry_o[0].ex.valid = instr_data_out[0].ex != ariane_pkg::FE_NONE;
       if (instr_data_out[0].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
-        fetch_entry_o.ex.cause = riscv::INSTR_ACCESS_FAULT;
+        fetch_entry_o[0].ex.cause = riscv::INSTR_ACCESS_FAULT;
       end else begin
-        fetch_entry_o.ex.cause = riscv::INSTR_PAGE_FAULT;
+        fetch_entry_o[0].ex.cause = riscv::INSTR_PAGE_FAULT;
       end
       if (CVA6Cfg.TvalEn)
-        fetch_entry_o.ex.tval = {{64 - CVA6Cfg.VLEN{1'b0}}, instr_data_out[0].ex_vaddr};
-      else fetch_entry_o.ex.tval = '0;
+        fetch_entry_o[0].ex.tval = {{64 - CVA6Cfg.VLEN{1'b0}}, instr_data_out[0].ex_vaddr};
+      else fetch_entry_o[0].ex.tval = '0;
       if (CVA6Cfg.RVH) begin
-        fetch_entry_o.ex.tval2 = instr_data_out[0].ex_gpaddr;
-        fetch_entry_o.ex.tinst = instr_data_out[0].ex_tinst;
-        fetch_entry_o.ex.gva   = instr_data_out[0].ex_gva;
+        fetch_entry_o[0].ex.tval2 = instr_data_out[0].ex_gpaddr;
+        fetch_entry_o[0].ex.tinst = instr_data_out[0].ex_tinst;
+        fetch_entry_o[0].ex.gva   = instr_data_out[0].ex_gva;
       end else begin
-        fetch_entry_o.ex.tval2 = '0;
-        fetch_entry_o.ex.tinst = '0;
-        fetch_entry_o.ex.gva   = 1'b0;
+        fetch_entry_o[0].ex.tval2 = '0;
+        fetch_entry_o[0].ex.tinst = '0;
+        fetch_entry_o[0].ex.gva   = 1'b0;
       end
 
-      fetch_entry_o.branch_predict.predict_address = address_out;
-      fetch_entry_o.branch_predict.cf = instr_data_out[0].cf;
+      fetch_entry_o[0].branch_predict.predict_address = address_out;
+      fetch_entry_o[0].branch_predict.cf = instr_data_out[0].cf;
 
-      pop_instr[0] = fetch_entry_valid_o & fetch_entry_ready_i;
+      pop_instr[0] = fetch_entry_valid_o[0] & fetch_entry_ready_i[0];
     end
   end
 
-  // TODO(zarubaf): This needs to change for dual-issue
-  // if the handshaking is successful and we had a prediction pop one address entry
-  assign pop_address = ((fetch_entry_o.branch_predict.cf != ariane_pkg::NoCF) & |pop_instr);
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign fetch_entry_is_cf[i] = fetch_entry_o[i].branch_predict.cf != ariane_pkg::NoCF;
+    assign fetch_entry_fire[i]  = fetch_entry_valid_o[i] & fetch_entry_ready_i[i];
+  end
+
+  assign pop_address = |(fetch_entry_is_cf & fetch_entry_fire);
 
   // ----------------------
   // Calculate (Next) PC
   // ----------------------
+  assign pc_j[0] = pc_q;
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    assign pc_j[i+1] = fetch_entry_is_cf[i] ? address_out : (
+      pc_j[i] + ((fetch_entry_o[i].instruction[1:0] != 2'b11) ? 'd2 : 'd4)
+    );
+  end
+
   always_comb begin
     pc_d = pc_q;
     reset_address_d = flush_i ? 1'b1 : reset_address_q;
 
-    if (fetch_entry_ready_i) begin
-      // TODO(zarubaf): This needs to change for a dual issue implementation
-      // advance the PC
-      if (ariane_pkg::RVC == 1'b1) begin : gen_pc_with_c_extension
-        pc_d = pc_q + ((fetch_entry_o.instruction[1:0] != 2'b11) ? 'd2 : 'd4);
-      end else begin : gen_pc_without_c_extension
-        pc_d = pc_q + 'd4;
+    if (fetch_entry_fire[0]) begin
+      pc_d = pc_j[1];
+      if (ariane_pkg::SUPERSCALAR > 0) begin
+        if (fetch_entry_fire[NID]) begin
+          pc_d = pc_j[2];
+        end
       end
     end
-
-    if (pop_address) pc_d = address_out;
 
     // we previously flushed so we need to reset the address
     if (valid_i[0] && reset_address_q) begin
@@ -463,7 +519,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   unread i_unread_fifo_pos (.d_i(|fifo_pos_extended));  // we don't care about the lower signals
   unread i_unread_instr_fifo (.d_i(|instr_queue_usage));
 
-  if (ariane_pkg::RVC) begin : gen_pc_q_with_c
+  if (CVA6Cfg.RVC) begin : gen_pc_q_with_c
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         idx_ds_q        <= 'b1;

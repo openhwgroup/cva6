@@ -41,6 +41,8 @@ package build_config_pkg;
 
     cfg.FpgaEn = CVA6Cfg.FpgaEn;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
+    cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
+    cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;
     cfg.AxiAddrWidth = CVA6Cfg.AxiAddrWidth;
     cfg.AxiDataWidth = CVA6Cfg.AxiDataWidth;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
@@ -76,6 +78,8 @@ package build_config_pkg;
     cfg.NrRgprPorts = unsigned'(2);
     cfg.NrWbPorts = unsigned'(NrWbPorts);
     cfg.EnableAccelerator = bit'(EnableAccelerator);
+    cfg.PerfCounterEn = CVA6Cfg.PerfCounterEn;
+    cfg.MmuPresent = CVA6Cfg.MmuPresent;
     cfg.RVS = CVA6Cfg.RVS;
     cfg.RVU = CVA6Cfg.RVU;
 
@@ -111,6 +115,8 @@ package build_config_pkg;
     cfg.ICACHE_TAG_WIDTH = cfg.PLEN - ICACHE_INDEX_WIDTH;
     cfg.ICACHE_LINE_WIDTH = CVA6Cfg.IcacheLineWidth;
     cfg.ICACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.IcacheLineWidth;
+    cfg.DCacheType = CVA6Cfg.DCacheType;
+    cfg.DcacheIdWidth = CVA6Cfg.DcacheIdWidth;
     cfg.DCACHE_SET_ASSOC = CVA6Cfg.DcacheSetAssoc;
     cfg.DCACHE_SET_ASSOC_WIDTH = $clog2(CVA6Cfg.DcacheSetAssoc);
     cfg.DCACHE_INDEX_WIDTH = DCACHE_INDEX_WIDTH;
@@ -124,13 +130,15 @@ package build_config_pkg;
     cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
 
     cfg.DATA_USER_EN = CVA6Cfg.DataUserEn;
+    cfg.WtDcacheWbufDepth = CVA6Cfg.WtDcacheWbufDepth;
     cfg.FETCH_USER_WIDTH = CVA6Cfg.FetchUserWidth;
     cfg.FETCH_USER_EN = CVA6Cfg.FetchUserEn;
     cfg.AXI_USER_EN = CVA6Cfg.DataUserEn | CVA6Cfg.FetchUserEn;
 
-    cfg.FETCH_WIDTH = 32;
-    cfg.INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? (cfg.FETCH_WIDTH / 16) : 1;
-    cfg.LOG2_INSTR_PER_FETCH = CVA6Cfg.RVC == 1'b1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
+    cfg.FETCH_WIDTH = 32 << ariane_pkg::SUPERSCALAR;
+    cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_WIDTH / 8);
+    cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
+    cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
     cfg.ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
     cfg.ASIDW = (CVA6Cfg.XLEN == 32) ? 9 : 16;
@@ -140,6 +148,8 @@ package build_config_pkg;
     cfg.MODE_SV = (CVA6Cfg.XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
     cfg.SV = (cfg.MODE_SV == config_pkg::ModeSv32) ? 32 : 39;
     cfg.SVX = (cfg.MODE_SV == config_pkg::ModeSv32) ? 34 : 41;
+    cfg.InstrTlbEntries = CVA6Cfg.InstrTlbEntries;
+    cfg.DataTlbEntries = CVA6Cfg.DataTlbEntries;
 
     return cfg;
   endfunction

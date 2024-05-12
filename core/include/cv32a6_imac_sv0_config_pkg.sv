@@ -48,6 +48,7 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigWtDcacheWbufDepth = 8;
 
+  localparam CVA6ConfigSuperscalarEn = 0;
   localparam CVA6ConfigNrCommitPorts = 2;
   localparam CVA6ConfigNrScoreboardEntries = 8;
   localparam CVA6ConfigNrLoadBufEntries = 2;
@@ -102,6 +103,8 @@ package cva6_config_pkg;
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       RVZiCond: bit'(CVA6ConfigRVZiCond),
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
+      PerfCounterEn: bit'(CVA6ConfigPerfCounterEn),
+      MmuPresent: bit'(CVA6ConfigMmuPresent),
       RVS: bit'(1),
       RVU: bit'(1),
       HaltAddress: 64'h800,
@@ -120,7 +123,6 @@ package cva6_config_pkg;
       NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
       NonIdempotentLength: 1024'({64'b0, 64'b0}),
       NrExecuteRegionRules: unsigned'(3),
-      //                      DRAM,          Boot ROM,   Debug Module
       ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
       ExecuteRegionLength: 1024'({64'h40000000, 64'h10000, 64'h1000}),
       NrCachedRegionRules: unsigned'(1),
@@ -132,11 +134,18 @@ package cva6_config_pkg;
       IcacheByteSize: unsigned'(CVA6ConfigIcacheByteSize),
       IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc),
       IcacheLineWidth: unsigned'(CVA6ConfigIcacheLineWidth),
+      DCacheType: CVA6ConfigDcacheType,
       DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
       DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
       DataUserEn: unsigned'(CVA6ConfigDataUserEn),
+      WtDcacheWbufDepth: int'(CVA6ConfigWtDcacheWbufDepth),
       FetchUserWidth: unsigned'(CVA6ConfigFetchUserWidth),
-      FetchUserEn: unsigned'(CVA6ConfigFetchUserEn)
+      FetchUserEn: unsigned'(CVA6ConfigFetchUserEn),
+      InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
+      DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
+      NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
+      NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
+      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
   };
 endpackage

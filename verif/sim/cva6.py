@@ -1033,7 +1033,7 @@ def load_config(args, cwd):
     if not args.testlist:
       args.testlist = args.custom_target + "/testlist.yaml"
 
-  args.spike_params = get_full_spike_param_args(args.spike_params)
+  args.spike_params = get_full_spike_param_args(args.spike_params) if args.spike_params else ""
 
 
 def incorrect_version_exit(tool, tool_version, required_version):
@@ -1056,7 +1056,7 @@ def check_gcc_version():
 
 def check_spike_version():
   # Get Spike hash from core-v-verif submodule
-  spike_hash = subprocess.run('git log -1 --pretty=tformat:%h -- $SPIKE_SRC_DIR/..', capture_output=True, text=True, shell=True, cwd=os.environ.get("SPIKE_SRC_DIR"))
+  spike_hash = subprocess.run('git log -1 --pretty=tformat:%h -- $SPIKE_SRC_DIR/', capture_output=True, text=True, shell=True, cwd=os.environ.get("SPIKE_SRC_DIR"))
   spike_version = "1.1.1-dev " + spike_hash.stdout.strip()
 
   # Get Spike User version
@@ -1088,6 +1088,42 @@ def check_tools_version():
   check_gcc_version()
   check_spike_version()
   check_verilator_version()
+
+
+def openhw_process_regression_list(testlist, test, iterations, matched_list,
+                            riscv_dv_root):
+    """ Get the matched tests from the regression test list
+
+    Args:
+      testlist      : Regression test list
+      test          : Test to run, "all" means all tests in the list
+      iterations    : Number of iterations for each test
+      riscv_dv_root : Root directory of RISCV-DV
+
+    Returns:
+      matched_list : A list of matched tests
+    """
+    logging.info(
+        "Processing regression test list : {}, test: {}".format(testlist, test))
+    yaml_data = read_yaml(testlist)
+    mult_test = test.split(',')
+    if 'testlist' in yaml_data and isinstance(yaml_data['testlist'], list):
+        yaml_testlist = yaml_data['testlist']
+    else:
+        yaml_testlist = yaml_data
+    for entry in yaml_testlist:
+        if 'import' in entry:
+            sub_list = re.sub('<riscv_dv_root>', riscv_dv_root, entry['import'])
+            openhw_process_regression_list(sub_list, test, iterations, matched_list,
+                                    riscv_dv_root)
+        else:
+            if (entry['test'] in mult_test) or (test == "all"):
+                if iterations > 0 and entry['iterations'] > 0:
+                    entry['iterations'] = iterations
+                if entry['iterations'] > 0:
+                    logging.info("Found matched tests: {}, iterations:{}".format(
+                      entry['test'], entry['iterations']))
+                    matched_list.append(entry)
 
 
 def main():
@@ -1224,7 +1260,7 @@ def main():
 
       if test_executed ==0:
         if not args.co:
-          process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
+          openhw_process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
           logging.info('CVA6 Configuration is %s'% args.hwconfig_opts)
           for entry in list(matched_list):
             yaml_needs = entry["needs"] if "needs" in entry else []

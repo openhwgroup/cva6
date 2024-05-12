@@ -1,0 +1,28 @@
+spike_param_tree:
+  bootrom: true
+  bootrom_base: 0x10000
+  bootrom_size: 0x1000
+  dram: true
+  dram_base: 0x80000000
+  dram_size: 0x40000000
+  generic_core_config: false
+  max_steps: 200000
+  max_steps_enabled: false
+  isa: rv32imc_zba_zbb_zbs_zbc_zicsr_zifencei
+  priv: MSU
+  core_configs:
+    - isa: rv32imc_zba_zbb_zbs_zbc_zicsr_zifencei
+      marchid: 0x3
+      misa_we: false
+      misa_we_enable: true
+      misaligned: false
+      mmu_mode: sv39
+      mvendorid: 0x00000602
+      pmpaddr0: 0x0
+      pmpcfg0: 0x0
+      pmpregions: 0x0
+      priv: MSU
+      status_fs_field_we: false
+      status_fs_field_we_enable: false
+      status_vs_field_we: false
+      status_vs_field_we_enable: false

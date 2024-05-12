@@ -59,11 +59,11 @@ module frontend
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
     input icache_drsp_t icache_dreq_i,
     // Handshake's data between fetch and decode - ID_STAGE
-    output fetch_entry_t fetch_entry_o,
+    output fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_o,
     // Handshake's valid between fetch and decode - ID_STAGE
-    output logic fetch_entry_valid_o,
+    output logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid_o,
     // Handshake's ready between fetch and decode - ID_STAGE
-    input logic fetch_entry_ready_i
+    input logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_ready_i
 );
 
   localparam type bht_update_t = struct packed {
@@ -371,7 +371,9 @@ module frontend
     end
     // 1. Default assignment
     if (if_ready) begin
-      npc_d = {fetch_address[CVA6Cfg.VLEN-1:2], 2'b0} + 'h4;
+      npc_d = {
+        fetch_address[CVA6Cfg.VLEN-1:CVA6Cfg.FETCH_ALIGN_BITS] + 1, {CVA6Cfg.FETCH_ALIGN_BITS{1'b0}}
+      };
     end
     // 2. Replay instruction fetch
     if (replay) begin
@@ -445,9 +447,9 @@ module frontend
         end
 
         // Map the only three exceptions which can occur in the frontend to a two bit enum
-        if (ariane_pkg::MMU_PRESENT && icache_dreq_i.ex.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
+        if (CVA6Cfg.MmuPresent && icache_dreq_i.ex.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT;
-        end else if (ariane_pkg::MMU_PRESENT && icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
+        end else if (CVA6Cfg.MmuPresent && icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
         end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;

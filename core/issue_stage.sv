@@ -37,15 +37,15 @@ module issue_stage
     // Stall inserted by Acc dispatcher - ACC_DISPATCHER
     input logic stall_i,
     // Handshake's data with decode stage - ID_STAGE
-    input scoreboard_entry_t decoded_instr_i,
+    input scoreboard_entry_t [SUPERSCALAR:0] decoded_instr_i,
     // instruction value - ID_STAGE
-    input logic [31:0] orig_instr_i,
+    input logic [SUPERSCALAR:0][31:0] orig_instr_i,
     // Handshake's valid with decode stage - ID_STAGE
-    input logic decoded_instr_valid_i,
+    input logic [SUPERSCALAR:0] decoded_instr_valid_i,
     // Is instruction a control flow instruction - ID_STAGE
-    input logic is_ctrl_flow_i,
+    input logic [SUPERSCALAR:0] is_ctrl_flow_i,
     // Handshake's acknowlege with decode stage - ID_STAGE
-    output logic decoded_instr_ack_o,
+    output logic [SUPERSCALAR:0] decoded_instr_ack_o,
     // rs1 forwarding - EX_STAGE
     output [CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
     // rs2 forwarding - EX_STAGE
@@ -130,34 +130,34 @@ module issue_stage
   // ---------------------------------------------------
   typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? CVA6Cfg.XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
 
-  fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_sb_iro;
-  fu_t               [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;
+  fu_t               [2**REG_ADDR_SIZE-1:0]       rd_clobber_gpr_sb_iro;
+  fu_t               [2**REG_ADDR_SIZE-1:0]       rd_clobber_fpr_sb_iro;
 
-  logic              [   REG_ADDR_SIZE-1:0] rs1_iro_sb;
-  logic              [    CVA6Cfg.XLEN-1:0] rs1_sb_iro;
-  logic                                     rs1_valid_sb_iro;
+  logic              [   REG_ADDR_SIZE-1:0]       rs1_iro_sb;
+  logic              [    CVA6Cfg.XLEN-1:0]       rs1_sb_iro;
+  logic                                           rs1_valid_sb_iro;
 
-  logic              [   REG_ADDR_SIZE-1:0] rs2_iro_sb;
-  logic              [    CVA6Cfg.XLEN-1:0] rs2_sb_iro;
-  logic                                     rs2_valid_iro_sb;
+  logic              [   REG_ADDR_SIZE-1:0]       rs2_iro_sb;
+  logic              [    CVA6Cfg.XLEN-1:0]       rs2_sb_iro;
+  logic                                           rs2_valid_iro_sb;
 
-  logic              [   REG_ADDR_SIZE-1:0] rs3_iro_sb;
-  rs3_len_t                                 rs3_sb_iro;
-  logic                                     rs3_valid_iro_sb;
+  logic              [   REG_ADDR_SIZE-1:0]       rs3_iro_sb;
+  rs3_len_t                                       rs3_sb_iro;
+  logic                                           rs3_valid_iro_sb;
 
-  scoreboard_entry_t                        issue_instr_sb_iro;
-  logic              [                31:0] orig_instr_sb_iro;
-  logic                                     issue_instr_valid_sb_iro;
-  logic                                     issue_ack_iro_sb;
+  scoreboard_entry_t [       SUPERSCALAR:0]       issue_instr_sb_iro;
+  logic              [       SUPERSCALAR:0][31:0] orig_instr_sb_iro;
+  logic              [       SUPERSCALAR:0]       issue_instr_valid_sb_iro;
+  logic              [       SUPERSCALAR:0]       issue_ack_iro_sb;
 
-  logic              [    CVA6Cfg.XLEN-1:0] rs1_forwarding_xlen;
-  logic              [    CVA6Cfg.XLEN-1:0] rs2_forwarding_xlen;
+  logic              [    CVA6Cfg.XLEN-1:0]       rs1_forwarding_xlen;
+  logic              [    CVA6Cfg.XLEN-1:0]       rs2_forwarding_xlen;
 
   assign rs1_forwarding_o = rs1_forwarding_xlen[CVA6Cfg.VLEN-1:0];
   assign rs2_forwarding_o = rs2_forwarding_xlen[CVA6Cfg.VLEN-1:0];
 
-  assign issue_instr_o    = issue_instr_sb_iro;
-  assign issue_instr_hs_o = issue_instr_valid_sb_iro & issue_ack_iro_sb;
+  assign issue_instr_o    = issue_instr_sb_iro[0];
+  assign issue_instr_hs_o = issue_instr_valid_sb_iro[0] & issue_ack_iro_sb[0];
 
 
   // ---------------------------------------------------------
@@ -170,19 +170,18 @@ module issue_stage
       .exception_t(exception_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) i_scoreboard (
-      .sb_full_o          (sb_full_o),
-      .unresolved_branch_i(1'b0),
-      .rd_clobber_gpr_o   (rd_clobber_gpr_sb_iro),
-      .rd_clobber_fpr_o   (rd_clobber_fpr_sb_iro),
-      .rs1_i              (rs1_iro_sb),
-      .rs1_o              (rs1_sb_iro),
-      .rs1_valid_o        (rs1_valid_sb_iro),
-      .rs2_i              (rs2_iro_sb),
-      .rs2_o              (rs2_sb_iro),
-      .rs2_valid_o        (rs2_valid_iro_sb),
-      .rs3_i              (rs3_iro_sb),
-      .rs3_o              (rs3_sb_iro),
-      .rs3_valid_o        (rs3_valid_iro_sb),
+      .sb_full_o       (sb_full_o),
+      .rd_clobber_gpr_o(rd_clobber_gpr_sb_iro),
+      .rd_clobber_fpr_o(rd_clobber_fpr_sb_iro),
+      .rs1_i           (rs1_iro_sb),
+      .rs1_o           (rs1_sb_iro),
+      .rs1_valid_o     (rs1_valid_sb_iro),
+      .rs2_i           (rs2_iro_sb),
+      .rs2_o           (rs2_sb_iro),
+      .rs2_valid_o     (rs2_valid_iro_sb),
+      .rs3_i           (rs3_iro_sb),
+      .rs3_o           (rs3_sb_iro),
+      .rs3_valid_o     (rs3_valid_iro_sb),
 
       .decoded_instr_i      (decoded_instr_i),
       .decoded_instr_valid_i(decoded_instr_valid_i),
@@ -210,10 +209,10 @@ module issue_stage
       .rs3_len_t(rs3_len_t)
   ) i_issue_read_operands (
       .flush_i            (flush_unissued_instr_i),
-      .issue_instr_i      (issue_instr_sb_iro),
-      .orig_instr_i       (orig_instr_sb_iro),
-      .issue_instr_valid_i(issue_instr_valid_sb_iro),
-      .issue_ack_o        (issue_ack_iro_sb),
+      .issue_instr_i      (issue_instr_sb_iro[0]),
+      .orig_instr_i       (orig_instr_sb_iro[0]),
+      .issue_instr_valid_i(issue_instr_valid_sb_iro[0]),
+      .issue_ack_o        (issue_ack_iro_sb[0]),
       .fu_data_o          (fu_data_o),
       .flu_ready_i        (flu_ready_i),
       .rs1_o              (rs1_iro_sb),
@@ -240,5 +239,8 @@ module issue_stage
       .tinst_o            (tinst_o),
       .*
   );
+  if (SUPERSCALAR) begin
+    assign issue_ack_iro_sb[1] = 1'b0;
+  end
 
 endmodule

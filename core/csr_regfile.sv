@@ -551,7 +551,7 @@ module csr_regfile
         riscv::CSR_MHARTID: csr_rdata = hart_id_i;
         riscv::CSR_MCONFIGPTR: csr_rdata = '0;  // not implemented
         riscv::CSR_MCOUNTINHIBIT:
-        if (PERF_COUNTER_EN)
+        if (CVA6Cfg.PerfCounterEn)
           csr_rdata = {{(CVA6Cfg.XLEN - (MHPMCounterNum + 3)) {1'b0}}, mcountinhibit_q};
         else read_access_exception = 1'b1;
         // Counters and Timers
@@ -806,12 +806,13 @@ module csr_regfile
     if (!debug_mode_q) begin
       // increase instruction retired counter
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-        if (commit_ack_i[i] && !ex_i.valid && (!PERF_COUNTER_EN || (PERF_COUNTER_EN && !mcountinhibit_q[2])))
+        if (commit_ack_i[i] && !ex_i.valid && (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[2])))
           instret++;
       end
       instret_d = instret;
       // increment the cycle count
-      if (!PERF_COUNTER_EN || (PERF_COUNTER_EN && !mcountinhibit_q[0])) cycle_d = cycle_q + 1'b1;
+      if (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[0]))
+        cycle_d = cycle_q + 1'b1;
       else cycle_d = cycle_q;
     end
 
@@ -1049,6 +1050,12 @@ module csr_regfile
             if (!CVA6Cfg.RVV) begin
               mstatus_d.vs = riscv::Off;
             end
+            // If h-extension is not enabled, priv level HS is reserved
+            if (!CVA6Cfg.RVH) begin
+              if (mstatus_d.mpp == riscv::PRIV_LVL_HS) begin
+                mstatus_d.mpp = riscv::PRIV_LVL_U;
+              end
+            end
             // this instruction has side-effects
             flush_o = 1'b1;
           end else begin
@@ -1242,6 +1249,12 @@ module csr_regfile
           if (!CVA6Cfg.RVV) begin
             mstatus_d.vs = riscv::Off;
           end
+          // If h-extension is not enabled, priv level HS is reserved
+          if (!CVA6Cfg.RVH) begin
+            if (mstatus_d.mpp == riscv::PRIV_LVL_HS) begin
+              mstatus_d.mpp = riscv::PRIV_LVL_U;
+            end
+          end
           mstatus_d.wpri3 = 9'b0;
           mstatus_d.wpri1 = 1'b0;
           mstatus_d.wpri2 = 1'b0;
@@ -1306,12 +1319,18 @@ module csr_regfile
                     | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
           end else begin
-            mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_STIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_MSIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
+            if (CVA6Cfg.RVS) begin
+              mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_STIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MSIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
+            end else begin
+              mask = CVA6Cfg.XLEN'(riscv::MIP_MSIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
+            end
           end
           mie_d = (mie_q & ~mask) | (csr_wdata & mask); // we only support supervisor and M-mode interrupts
         end
@@ -1346,10 +1365,12 @@ module csr_regfile
                     | CVA6Cfg.XLEN'(riscv::MIP_STIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_VSSIP);
-          end else begin
+          end else if (CVA6Cfg.RVS) begin
             mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_STIP)
                     | CVA6Cfg.XLEN'(riscv::MIP_SEIP);
+          end else begin
+            mask = '0;
           end
           mip_d = (mip_q & ~mask) | (csr_wdata & mask);
         end
@@ -1358,7 +1379,8 @@ module csr_regfile
           if (!CVA6Cfg.RVU || CVA6Cfg.XLEN != 32) update_access_exception = 1'b1;
         end
         riscv::CSR_MCOUNTINHIBIT:
-        if (PERF_COUNTER_EN) mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
+        if (CVA6Cfg.PerfCounterEn)
+          mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
         else update_access_exception = 1'b1;
         // performance counters
         riscv::CSR_MCYCLE: cycle_d[CVA6Cfg.XLEN-1:0] = csr_wdata;
@@ -1524,7 +1546,7 @@ module csr_regfile
           // index is specified by the last byte in the address
           automatic logic [3:0] index = csr_addr.csr_decode.address[3:0];
           // check if the entry or the entry above is locked
-          if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index].addr_mode == riscv::TOR)) begin
+          if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
             pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
           end
         end
@@ -1876,7 +1898,7 @@ module csr_regfile
 
       en_ld_st_g_translation_o = (en_ld_st_g_translation_q && !csr_hs_ld_st_inst_i) || (csr_hs_ld_st_inst_i && config_pkg::vm_mode_t'(hgatp_q.mode) == CVA6Cfg.MODE_SV && csr_hs_ld_st_inst_i);
     end else begin
-      if (ariane_pkg::MMU_PRESENT && mprv && CVA6Cfg.RVS && config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
+      if (CVA6Cfg.MmuPresent && mprv && CVA6Cfg.RVS && config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
         en_ld_st_translation_d = 1'b1;
       else  // otherwise we go with the regular settings
         en_ld_st_translation_d = en_translation_o;
@@ -2423,9 +2445,17 @@ module csr_regfile
   always_comb begin : write
     for (int i = 0; i < 16; i++) begin
       if (i < CVA6Cfg.NrPMPEntries) begin
-        // We only support >=8-byte granularity, NA4 is disabled
-        if(!CVA6Cfg.PMPEntryReadOnly[i] && pmpcfg_d[i].addr_mode != riscv::NA4 && !(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1)) begin
+        if (!CVA6Cfg.PMPEntryReadOnly[i]) begin
+          // PMP locked logic is handled in the CSR write process above
           pmpcfg_next[i] = pmpcfg_d[i];
+          // We only support >=8-byte granularity, NA4 is disabled
+          if (pmpcfg_d[i].addr_mode == riscv::NA4) begin
+            pmpcfg_next[i].addr_mode = pmpcfg_q[i].addr_mode;
+          end
+          // Follow collective WARL spec for RWX fields
+          if (pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1) begin
+            pmpcfg_next[i].access_type = pmpcfg_q[i].access_type;
+          end
         end else begin
           pmpcfg_next[i] = pmpcfg_q[i];
         end

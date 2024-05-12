@@ -1,0 +1,28 @@
+// -*- coding: utf-8 -*-
+// Copyright (C) 2024 Thales DIS France SAS
+// SPDX-License-Identifier: Apache-2.0.
+// Original Author: Zbigniew Chamski (Thales)
+
+{
+    // Name of the project
+    name: "riscv-config",
+
+    // Target directory: relative to the location of this script.
+    target_dir: "riscv/riscv-config",
+
+    // Upstream repository
+    upstream: {
+        // URL
+        url: "https://github.com/riscv/riscv-config.git",
+        // revision
+        rev: "3.18.1",
+    }
+
+    // Patch dir for local changes
+    patch_dir: "patches/riscv/riscv-config",
+
+    // Exclusions from upstream content
+    exclude_from_upstream: [
+	".github",
+    ]
+}

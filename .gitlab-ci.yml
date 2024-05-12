@@ -88,7 +88,8 @@ build_tools:
   extends:
     - .setup_job
   script:
-    - git submodule update --init verif/core-v-verif
+    # core-v-verif imports yaml-cpp as a submodule ==> recurse
+    - git submodule update --init --recursive verif/core-v-verif
     - source $SYN_VCS_BASHRC
     # ROOT_PROJECT is used by Spike installer and designates the toplevel of core-v-verif tree.
     - 'export ROOT_PROJECT=$(pwd)'
@@ -211,11 +212,7 @@ asic-synthesis:
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"
     PERIOD: "0.85"
-  parallel:
-    matrix:
-      - DV_TARGET:
-        - "cv32a6_embedded"
-        - "cv32a65x"
+    DV_TARGET: "cv32a6_embedded"
   script:
     - echo $SYNTH_PERIOD
     - echo $INPUT_DELAY
@@ -334,7 +331,7 @@ riscv-tests-p:
       allow_failure: true
     - when: manual
       allow_failure: true
-  timeout: 4h
+  timeout: 6h
 
 mmu_sv32_tests:
   extends:
