@@ -457,46 +457,91 @@ module cva6_icache
 
   for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_sram
     // Tag RAM
-    sram #(
-        // tag + valid bit
-        .DATA_WIDTH(CVA6Cfg.ICACHE_TAG_WIDTH + 1),
-        .NUM_WORDS (ICACHE_NUM_WORDS)
-    ) tag_sram (
-        .clk_i  (clk_i),
-        .rst_ni (rst_ni),
-        .req_i  (vld_req[i]),
-        .we_i   (vld_we),
-        .addr_i (vld_addr),
-        // we can always use the saved tag here since it takes a
-        // couple of cycle until we write to the cache upon a miss
-        .wuser_i('0),
-        .wdata_i({vld_wdata[i], cl_tag_q}),
-        .be_i   ('1),
-        .ruser_o(),
-        .rdata_o(cl_tag_valid_rdata[i])
-    );
+    if (CVA6Cfg.FpgaEn) begin : gen_fpga_sram_tag
+      sram #(
+          // tag + valid bit
+          .DATA_WIDTH(CVA6Cfg.ICACHE_TAG_WIDTH + 1),
+          .NUM_WORDS (ICACHE_NUM_WORDS)
+      ) tag_sram (
+          .clk_i  (clk_i),
+          .rst_ni (rst_ni),
+          .req_i  (vld_req[i]),
+          .we_i   (vld_we),
+          .addr_i (vld_addr),
+          // we can always use the saved tag here since it takes a
+          // couple of cycle until we write to the cache upon a miss
+          .wuser_i('0),
+          .wdata_i({vld_wdata[i], cl_tag_q}),
+          .be_i   ('1),
+          .ruser_o(),
+          .rdata_o(cl_tag_valid_rdata[i])
+      );
+    end else begin : gen_cache_sram_tag
+      sram_cache #(
+          // tag + valid bit
+          .DATA_WIDTH (CVA6Cfg.ICACHE_TAG_WIDTH + 1),
+          .BYTE_ACCESS(0),
+          .TECHNO_CUT(CVA6Cfg.TechnoCut),
+          .NUM_WORDS  (ICACHE_NUM_WORDS)
+      ) tag_sram (
+          .clk_i  (clk_i),
+          .rst_ni (rst_ni),
+          .req_i  (vld_req[i]),
+          .we_i   (vld_we),
+          .addr_i (vld_addr),
+          // we can always use the saved tag here since it takes a
+          // couple of cycle until we write to the cache upon a miss
+          .wuser_i('0),
+          .wdata_i({vld_wdata[i], cl_tag_q}),
+          .be_i   ('1),
+          .ruser_o(),
+          .rdata_o(cl_tag_valid_rdata[i])
+      );
+    end
 
     assign cl_tag_rdata[i] = cl_tag_valid_rdata[i][CVA6Cfg.ICACHE_TAG_WIDTH-1:0];
     assign vld_rdata[i]    = cl_tag_valid_rdata[i][CVA6Cfg.ICACHE_TAG_WIDTH];
 
     // Data RAM
-    sram #(
-        .USER_WIDTH(CVA6Cfg.ICACHE_USER_LINE_WIDTH),
-        .DATA_WIDTH(CVA6Cfg.ICACHE_LINE_WIDTH),
-        .USER_EN   (CVA6Cfg.FETCH_USER_EN),
-        .NUM_WORDS (ICACHE_NUM_WORDS)
-    ) data_sram (
-        .clk_i  (clk_i),
-        .rst_ni (rst_ni),
-        .req_i  (cl_req[i]),
-        .we_i   (cl_we),
-        .addr_i (cl_index),
-        .wuser_i(mem_rtrn_i.user),
-        .wdata_i(mem_rtrn_i.data),
-        .be_i   ('1),
-        .ruser_o(cl_ruser[i]),
-        .rdata_o(cl_rdata[i])
-    );
+    if (CVA6Cfg.FpgaEn) begin : gen_fpga_sram_data
+      sram #(
+          .USER_WIDTH(CVA6Cfg.ICACHE_USER_LINE_WIDTH),
+          .DATA_WIDTH(CVA6Cfg.ICACHE_LINE_WIDTH),
+          .USER_EN   (CVA6Cfg.FETCH_USER_EN),
+          .NUM_WORDS (ICACHE_NUM_WORDS)
+      ) data_sram (
+          .clk_i  (clk_i),
+          .rst_ni (rst_ni),
+          .req_i  (cl_req[i]),
+          .we_i   (cl_we),
+          .addr_i (cl_index),
+          .wuser_i(mem_rtrn_i.user),
+          .wdata_i(mem_rtrn_i.data),
+          .be_i   ('1),
+          .ruser_o(cl_ruser[i]),
+          .rdata_o(cl_rdata[i])
+      );
+    end else begin : gen_cache_sram_data
+      sram_cache #(
+          .USER_WIDTH (CVA6Cfg.ICACHE_USER_LINE_WIDTH),
+          .DATA_WIDTH (CVA6Cfg.ICACHE_LINE_WIDTH),
+          .USER_EN    (CVA6Cfg.FETCH_USER_EN),
+          .BYTE_ACCESS(0),
+          .TECHNO_CUT(CVA6Cfg.TechnoCut),
+          .NUM_WORDS  (ICACHE_NUM_WORDS)
+      ) data_sram (
+          .clk_i  (clk_i),
+          .rst_ni (rst_ni),
+          .req_i  (cl_req[i]),
+          .we_i   (cl_we),
+          .addr_i (cl_index),
+          .wuser_i(mem_rtrn_i.user),
+          .wdata_i(mem_rtrn_i.data),
+          .be_i   ('1),
+          .ruser_o(cl_ruser[i]),
+          .rdata_o(cl_rdata[i])
+      );
+    end
   end
 
 

@@ -180,8 +180,11 @@ ${CVA6_REPO_DIR}/core/pmp/src/pmp_entry.sv
 // Tracer (behavioral code, not RTL)
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
+${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper_cache_techno.sv
+${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper_cache.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
+${CVA6_REPO_DIR}/common/local/util/sram_cache.sv
 
 // MMU 
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_mmu.sv
