@@ -1648,8 +1648,8 @@ plan "CVA6 Verification Master Plan";
             measure Group FpPresent;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FpPresent";
             endmeasure
-            measure Group FpuEn;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FpuEn";
+            measure Group RVF;
+                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RVF";
             endmeasure
             measure Group HaltAddress;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_HaltAddress";
