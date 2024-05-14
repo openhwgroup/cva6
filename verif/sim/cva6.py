@@ -411,7 +411,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
 
 
 def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-                 setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=900):
+                 setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=500):
   """Run a directed assembly test with ISS
 
   Args:
@@ -476,7 +476,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
 
 
 def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
-                          output_dir, setting_dir, debug_cmd, iss_timeout=900):
+                          output_dir, setting_dir, debug_cmd, iss_timeout=500):
   """Run a directed assembly test from a directory with spike
 
   Args:
@@ -556,7 +556,7 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
 
 def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-          setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=900):
+          setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=500):
   """Run a directed c test with ISS
 
   Args:
@@ -834,7 +834,7 @@ def parse_args(cwd):
                       help="Address that privileged CSR test writes to at EOT")
   parser.add_argument("--iss_opts", type=str, default="",
                       help="Any ISS command line arguments")
-  parser.add_argument("--iss_timeout", type=int, default=900,
+  parser.add_argument("--iss_timeout", type=int, default=500,
                       help="ISS sim timeout limit in seconds")
   parser.add_argument("--iss_yaml", type=str, default="",
                       help="ISS setting YAML")
