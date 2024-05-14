@@ -411,7 +411,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
 
 
 def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-                 setting_dir, debug_cmd, linker, priv, spike_params, test_name = None):
+                 setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=500):
   """Run a directed assembly test with ISS
 
   Args:
@@ -425,6 +425,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     setting_dir : Generator setting directory
     debug_cmd   : Produce the debug cmd log without running
     linker      : Path to the linker
+    iss_timeout : Timeout for ISS simulation
   """
   if not asm_test.endswith(".S"):
     logging.error("%s is not an assembly .S file" % asm_test)
@@ -466,14 +467,16 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
-    run_cmd(cmd, 500, debug_cmd = debug_cmd)
+    if "spike" in iss: ratio = 10
+    else: ratio = 1
+    run_cmd(cmd, iss_timeout//ratio, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
 
 
 def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
-                          output_dir, setting_dir, debug_cmd):
+                          output_dir, setting_dir, debug_cmd, iss_timeout=500):
   """Run a directed assembly test from a directory with spike
 
   Args:
@@ -486,6 +489,7 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
     output_dir      : Output directory of compiled test files
     setting_dir     : Generator setting directory
     debug_cmd       : Produce the debug cmd log without running
+    iss_timeout : Timeout for ISS simulation
   """
   result = run_cmd("find %s -name \"*.S\"" % asm_test_dir)
   if result:
@@ -494,7 +498,7 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
                  (len(asm_list), asm_test_dir))
     for asm_file in asm_list:
       run_assembly(asm_file, iss_yaml, isa, target, mabi, gcc_opts, iss, output_dir,
-                   setting_dir, debug_cmd, linker)
+                   setting_dir, debug_cmd, linker, iss_timeout=iss_timeout)
       if "," in iss:
         report = ("%s/iss_regr.log" % output_dir).rstrip()
         save_regr_report(report)
@@ -503,7 +507,7 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
 
 # python3 run.py --target rv64gc --iss=spike,verilator --elf_tests bbl.o
 def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-          setting_dir, debug_cmd, priv, spike_params):
+          setting_dir, debug_cmd, priv, spike_params, iss_timeout=50000):
   """Run a directed c test with ISS
 
   Args:
@@ -543,15 +547,16 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     if "veri" in iss: ratio = 35
+    elif "spike" in iss: ratio = 0.1
     else: ratio = 1
-    run_cmd(cmd, 50000*ratio, debug_cmd = debug_cmd)
+    run_cmd(cmd, int(iss_timeout*ratio), debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
 
 
 def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-          setting_dir, debug_cmd, linker, priv, spike_params, test_name = None):
+          setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=500):
   """Run a directed c test with ISS
 
   Args:
@@ -565,6 +570,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     setting_dir : Generator setting directory
     debug_cmd   : Produce the debug cmd log without running
     linker      : Path to the linker
+    iss_timeout : Timeout for ISS simulation
   """
   if not c_test.endswith(".c"):
     logging.error("%s is not a .c file" % c_test)
@@ -604,14 +610,16 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
-    run_cmd(cmd, 300, debug_cmd = debug_cmd)
+    if "spike" in iss: ratio = 10
+    else: ratio = 1
+    run_cmd(cmd, iss_timeout//ratio, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
 
 
 def run_c_from_dir(c_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
-                   output_dir, setting_dir, debug_cmd, priv):
+                   output_dir, setting_dir, debug_cmd, priv, iss_timeout):
   """Run a directed c test from a directory with spike
 
   Args:
@@ -632,7 +640,7 @@ def run_c_from_dir(c_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
                  (len(c_list), c_test_dir))
     for c_file in c_list:
       run_c(c_file, iss_yaml, isa, target, mabi, gcc_opts, iss, output_dir,
-            setting_dir, debug_cmd, linker, priv)
+            setting_dir, debug_cmd, linker, priv, iss_timeout=iss_timeout)
       if "," in iss:
         report = ("%s/iss_regr.log" % output_dir).rstrip()
         save_regr_report(report)
@@ -826,7 +834,7 @@ def parse_args(cwd):
                       help="Address that privileged CSR test writes to at EOT")
   parser.add_argument("--iss_opts", type=str, default="",
                       help="Any ISS command line arguments")
-  parser.add_argument("--iss_timeout", type=int, default=10,
+  parser.add_argument("--iss_timeout", type=int, default=500,
                       help="ISS sim timeout limit in seconds")
   parser.add_argument("--iss_yaml", type=str, default="",
                       help="ISS setting YAML")
@@ -1205,12 +1213,12 @@ def main():
           if os.path.isdir(full_path):
             run_assembly_from_dir(full_path, args.iss_yaml, args.isa, args.mabi,
                                   args.gcc_opts, args.iss, output_dir,
-                                  args.core_setting_dir, args.debug, args.priv)
+                                  args.core_setting_dir, args.debug, args.priv, iss_timeout=args.iss_timeout)
           # path_asm_test is an assembly file
           elif os.path.isfile(full_path) or args.debug:
             run_assembly(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
                          args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
-                         args.priv, args.spike_params)
+                         args.priv, args.spike_params, iss_timeout=args.iss_timeout)
           else:
             logging.error('%s does not exist' % full_path)
             sys.exit(RET_FAIL)
@@ -1225,12 +1233,12 @@ def main():
           if os.path.isdir(full_path):
             run_c_from_dir(full_path, args.iss_yaml, args.isa, args.mabi,
                            args.gcc_opts, args.iss, output_dir,
-                           args.core_setting_dir, args.debug, args.priv)
+                           args.core_setting_dir, args.debug, args.priv, args.iss_timeout)
           # path_c_test is a c file
           elif os.path.isfile(full_path) or args.debug:
             run_c(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
                   args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
-                  args.priv, args.spike_params)
+                  args.priv, args.spike_params, iss_timeout=args.iss_timeout)
           else:
             logging.error('%s does not exist' % full_path)
             sys.exit(RET_FAIL)
@@ -1244,7 +1252,7 @@ def main():
           # path_elf_test is an elf file
           if os.path.isfile(full_path) or args.debug:
             run_elf(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
-                  args.iss, output_dir, args.core_setting_dir, args.debug, args.spike_params)
+                  args.iss, output_dir, args.core_setting_dir, args.debug, args.priv, args.spike_params, iss_timeout=args.iss_timeout)
           else:
             logging.error('%s does not exist' % full_path)
             sys.exit(RET_FAIL)
@@ -1319,12 +1327,12 @@ def main():
               if os.path.isdir(path_asm_test):
                 run_assembly_from_dir(path_asm_test, args.iss_yaml, args.isa, args.mabi,
                                       gcc_opts, args.iss, output_dir,
-                                      args.core_setting_dir, args.debug, args.priv)
+                                      args.core_setting_dir, args.debug, args.priv, iss_timeout=args.iss_timeout)
               # path_asm_test is an assembly file
               elif os.path.isfile(path_asm_test):
                 run_assembly(path_asm_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
                              args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
-                             args.priv, args.spike_params, test_entry['test'])
+                             args.priv, args.spike_params, test_entry['test'], iss_timeout=args.iss_timeout)
               else:
                 if not args.debug:
                   logging.error('%s does not exist' % path_asm_test)
@@ -1349,12 +1357,12 @@ def main():
               if os.path.isdir(path_c_test):
                 run_c_from_dir(path_c_test, args.iss_yaml, args.isa, args.mabi,
                                gcc_opts, args.iss, output_dir,
-                               args.core_setting_dir, args.debug, args.priv)
+                               args.core_setting_dir, args.debug, args.priv, args.iss_timeout)
               # path_c_test is a C file
               elif os.path.isfile(path_c_test):
                 run_c(path_c_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
                       args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
-                      args.priv, args.spike_params, test_entry['test'])
+                      args.priv, args.spike_params, test_entry['test'], iss_timeout=args.iss_timeout)
               else:
                 if not args.debug:
                   logging.error('%s does not exist' % path_c_test)
