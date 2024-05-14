@@ -1175,6 +1175,19 @@ def main():
     setup_logging(args.verbose)
     logg = logging.getLogger()
 
+    # Check if --iss argument is provided
+    if args.iss:
+        # Split the string into a list
+        args_list = args.iss.split(',')
+
+        # If 'spike' is in the list, move it to the beginning
+        if 'spike' in args_list:
+            args_list.remove('spike')  # Remove 'spike' from the list
+            args_list.insert(0, 'spike')  # Insert 'spike' at the beginning of the list
+
+        # Join the list back into a string
+        args.iss = ','.join(args_list)
+
     check_tools_version()
 
     # create file handler which logs even debug messages13.1.1
