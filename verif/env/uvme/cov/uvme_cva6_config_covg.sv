@@ -24,8 +24,8 @@ covergroup cg_cva6_config(string name) with function sample(cva6_cfg_t CVA6Cfg);
    cp_Xlen : coverpoint CVA6Cfg.XLEN {
       bins Xlen ={32};
    }
-   cp_FpuEn : coverpoint CVA6Cfg.FpuEn {
-      bins FpuEn ={0};
+   cp_RVF : coverpoint CVA6Cfg.RVF {
+      bins RVF ={0};
    }
    cp_F16En : coverpoint CVA6Cfg.XF16 {
       bins F16En ={0};

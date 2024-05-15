@@ -3,19 +3,17 @@ package build_config_pkg;
   function automatic config_pkg::cva6_cfg_t build_config(config_pkg::cva6_user_cfg_t CVA6Cfg);
     bit IS_XLEN32 = (CVA6Cfg.XLEN == 32) ? 1'b1 : 1'b0;
     bit IS_XLEN64 = (CVA6Cfg.XLEN == 32) ? 1'b0 : 1'b1;
-    bit RVF = (IS_XLEN64 | IS_XLEN32) & CVA6Cfg.FpuEn;
-    bit RVD = (IS_XLEN64 ? 1 : 0) & CVA6Cfg.FpuEn & CVA6Cfg.RVD;
-    bit FpPresent = RVF | RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
+    bit FpPresent = CVA6Cfg.RVF | CVA6Cfg.RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
     bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
-    int unsigned FLen = RVD ? 64 :  // D ext.
-    RVF ? 32 :  // F ext.
+    int unsigned FLen = CVA6Cfg.RVD ? 64 :  // D ext.
+    CVA6Cfg.RVF ? 32 :  // F ext.
     CVA6Cfg.XF16 ? 16 :  // Xf16 ext.
     CVA6Cfg.XF16ALT ? 16 :  // Xf16alt ext.
     CVA6Cfg.XF8 ? 8 :  // Xf8 ext.
     1;  // Unused in case of no FP
 
     // Transprecision floating-point extensions configuration
-    bit RVFVec     = RVF             & CVA6Cfg.XFVec & FLen>32; // FP32 vectors available if vectors and larger fmt enabled
+    bit RVFVec     = CVA6Cfg.RVF     & CVA6Cfg.XFVec & FLen>32; // FP32 vectors available if vectors and larger fmt enabled
     bit XF16Vec    = CVA6Cfg.XF16    & CVA6Cfg.XFVec & FLen>16; // FP16 vectors available if vectors and larger fmt enabled
     bit XF16ALTVec = CVA6Cfg.XF16ALT & CVA6Cfg.XFVec & FLen>16; // FP16ALT vectors available if vectors and larger fmt enabled
     bit XF8Vec     = CVA6Cfg.XF8     & CVA6Cfg.XFVec & FLen>8;  // FP8 vectors available if vectors and larger fmt enabled
@@ -49,7 +47,8 @@ package build_config_pkg;
     cfg.AxiUserWidth = CVA6Cfg.AxiUserWidth;
     cfg.MEM_TID_WIDTH = CVA6Cfg.MemTidWidth;
     cfg.NrLoadBufEntries = CVA6Cfg.NrLoadBufEntries;
-    cfg.FpuEn = CVA6Cfg.FpuEn;
+    cfg.RVF = CVA6Cfg.RVF;
+    cfg.RVD = CVA6Cfg.RVD;
     cfg.XF16 = CVA6Cfg.XF16;
     cfg.XF16ALT = CVA6Cfg.XF16ALT;
     cfg.XF8 = CVA6Cfg.XF8;
@@ -66,8 +65,6 @@ package build_config_pkg;
     cfg.NR_SB_ENTRIES = CVA6Cfg.NrScoreboardEntries;
     cfg.TRANS_ID_BITS = $clog2(CVA6Cfg.NrScoreboardEntries);
 
-    cfg.RVF = bit'(RVF);
-    cfg.RVD = bit'(RVD);
     cfg.FpPresent = bit'(FpPresent);
     cfg.NSX = bit'(NSX);
     cfg.FLen = unsigned'(FLen);

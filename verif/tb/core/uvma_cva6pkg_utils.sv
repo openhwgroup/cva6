@@ -13,7 +13,7 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg base);
     base.ext_c_supported = CVA6Cfg.RVC;
     base.ext_p_supported = 1;
     base.ext_v_supported = CVA6Cfg.RVV;
-    base.ext_f_supported = CVA6Cfg.RVF | CVA6Cfg.FpuEn;
+    base.ext_f_supported = CVA6Cfg.RVF;
     base.ext_d_supported = CVA6Cfg.RVD;
     base.ext_zba_supported = cva6_config_pkg::CVA6ConfigBExtEn;
     base.ext_zbb_supported = cva6_config_pkg::CVA6ConfigBExtEn;

@@ -65,7 +65,7 @@ package config_pkg;
     // Zicond RISC-V extension
     bit                          RVZiCond;
     // Floating Point
-    bit                          FpuEn;
+    bit                          RVF;
     // Floating Point
     bit                          RVD;
     // Non standard 16bits Floating Point extension
@@ -212,7 +212,8 @@ package config_pkg;
     int unsigned AxiUserWidth;
     int unsigned MEM_TID_WIDTH;
     int unsigned NrLoadBufEntries;
-    bit          FpuEn;
+    bit          RVF;
+    bit          RVD;
     bit          XF16;
     bit          XF16ALT;
     bit          XF8;
@@ -230,8 +231,6 @@ package config_pkg;
     int unsigned NR_SB_ENTRIES;
     int unsigned TRANS_ID_BITS;
 
-    bit          RVF;
-    bit          RVD;
     bit          FpPresent;
     bit          NSX;
     int unsigned FLen;
