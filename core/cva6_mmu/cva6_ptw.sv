@@ -249,7 +249,9 @@ module cva6_ptw
   );
 
 
-  assign req_port_o.data_be = CVA6Cfg.XLEN == 32 ? be_gen_32(req_port_o.address_index[1:0], req_port_o.data_size) : '1;
+  assign req_port_o.data_be = CVA6Cfg.XLEN == 32 ? be_gen_32(
+      req_port_o.address_index[1:0], req_port_o.data_size
+  ) : '1;
 
 
 
