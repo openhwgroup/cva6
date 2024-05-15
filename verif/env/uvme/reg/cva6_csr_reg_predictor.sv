@@ -32,7 +32,10 @@ class cva6_csr_reg_predictor #(type BUSTYPE=int) extends uvm_reg_predictor #(BUS
       uvm_reg_field reg_fields[$];
       string fields_access[$];
       csr_reg rg;
-      
+
+      if (tr.instr.trap != 0)
+         return; //Skip on traps
+
       if (tr.instr.group != uvma_isacov_pkg::CSR_GROUP)
          return; //Skip non CSR instructions
       
