@@ -183,20 +183,10 @@ ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
 
-// MMU Sv39
-${CVA6_REPO_DIR}/core/mmu_sv39/mmu.sv
-${CVA6_REPO_DIR}/core/mmu_sv39/ptw.sv
-${CVA6_REPO_DIR}/core/mmu_sv39/tlb.sv
-
-// MMU Sv39x4
-${CVA6_REPO_DIR}/core/mmu_sv39x4/cva6_mmu_sv39x4.sv
-${CVA6_REPO_DIR}/core/mmu_sv39x4/cva6_ptw_sv39x4.sv
-${CVA6_REPO_DIR}/core/mmu_sv39x4/cva6_tlb_sv39x4.sv
-
-// MMU Sv32
-${CVA6_REPO_DIR}/core/mmu_sv32/cva6_mmu_sv32.sv
-${CVA6_REPO_DIR}/core/mmu_sv32/cva6_ptw_sv32.sv
-${CVA6_REPO_DIR}/core/mmu_sv32/cva6_tlb_sv32.sv
-${CVA6_REPO_DIR}/core/mmu_sv32/cva6_shared_tlb_sv32.sv
+// MMU 
+${CVA6_REPO_DIR}/core/cva6_mmu/cva6_mmu.sv
+${CVA6_REPO_DIR}/core/cva6_mmu/cva6_ptw.sv
+${CVA6_REPO_DIR}/core/cva6_mmu/cva6_tlb.sv
+${CVA6_REPO_DIR}/core/cva6_mmu/cva6_shared_tlb.sv
 
 // end of manifest

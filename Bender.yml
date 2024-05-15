@@ -65,23 +65,11 @@ sources:
           - core/cva6_accel_first_pass_decoder_stub.sv
 
       # MMU
-      - target: any(cv64a6_imafdcv_sv39, cv64a6_imafdc_sv39, cv64a6_imafdc_sv39_wb)
+      - target: any(cv64a6_imafdcv_sv39, cv64a6_imafdc_sv39, cv64a6_imafdc_sv39_wb, cv64a6_imafdch_sv39, cv64a6_imafdch_sv39_wb, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32)
         files:
-          - core/mmu_sv39/tlb.sv
-          - core/mmu_sv39/mmu.sv
-          - core/mmu_sv39/ptw.sv
-
-      - target: any(cv64a6_imafdch_sv39, cv64a6_imafdch_sv39_wb)
-        files:
-          - core/mmu_sv39x4/cva6_tlb_sv39x4.sv
-          - core/mmu_sv39x4/cva6_mmu_sv39x4.sv
-          - core/mmu_sv39x4/cva6_ptw_sv39x4.sv
-
-      - target: any(cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32)
-        files:
-          - core/mmu_sv32/cva6_tlb_sv32.sv
-          - core/mmu_sv32/cva6_mmu_sv32.sv
-          - core/mmu_sv32/cva6_ptw_sv32.sv
+          - core/cva6_mmu/cva6_tlb.sv
+          - core/cva6_mmu/cva6_mmu.sv
+          - core/cva6_mmu/cva6_ptw.sv
 
       # Packages
       - core/include/wt_cache_pkg.sv

@@ -25,6 +25,10 @@ package build_config_pkg;
     int unsigned DCACHE_INDEX_WIDTH = $clog2(CVA6Cfg.DcacheByteSize / CVA6Cfg.DcacheSetAssoc);
     int unsigned DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DcacheLineWidth / 8);
 
+    // MMU
+    int unsigned VpnLen = (CVA6Cfg.XLEN == 64) ? (CVA6Cfg.RVH ? 29 : 27) : 20;
+    int unsigned PtLevels = (CVA6Cfg.XLEN == 64) ? 3 : 2;
+
     config_pkg::cva6_cfg_t cfg;
 
     cfg.XLEN = CVA6Cfg.XLEN;
@@ -147,6 +151,10 @@ package build_config_pkg;
     cfg.SVX = (cfg.MODE_SV == config_pkg::ModeSv32) ? 34 : 41;
     cfg.InstrTlbEntries = CVA6Cfg.InstrTlbEntries;
     cfg.DataTlbEntries = CVA6Cfg.DataTlbEntries;
+    cfg.UseSharedTlb = CVA6Cfg.UseSharedTlb;
+    cfg.SharedTlbDepth = CVA6Cfg.SharedTlbDepth;
+    cfg.VpnLen = VpnLen;
+    cfg.PtLevels = PtLevels;
 
     return cfg;
   endfunction

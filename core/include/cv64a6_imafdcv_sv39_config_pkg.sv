@@ -58,9 +58,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigNrStorePipeRegs = 0;
   localparam CVA6ConfigNrLoadBufEntries = 2;
 
-  localparam CVA6ConfigInstrTlbEntries = 16;
-  localparam CVA6ConfigDataTlbEntries = 16;
-
   localparam CVA6ConfigRASDepth = 2;
   localparam CVA6ConfigBTBEntries = 32;
   localparam CVA6ConfigBHTEntries = 128;
@@ -142,8 +139,10 @@ package cva6_config_pkg;
       FetchUserWidth: unsigned'(CVA6ConfigFetchUserWidth),
       FetchUserEn: unsigned'(CVA6ConfigFetchUserEn),
       DCacheType: CVA6ConfigDcacheType,
-      InstrTlbEntries: int'(CVA6ConfigInstrTlbEntries),
-      DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
+      InstrTlbEntries: int'(16),
+      DataTlbEntries: int'(16),
+      UseSharedTlb: bit'(0),
+      SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
       DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)

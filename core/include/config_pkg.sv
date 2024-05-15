@@ -184,6 +184,10 @@ package config_pkg;
     int unsigned                 InstrTlbEntries;
     // MMU data TLB entries
     int unsigned                 DataTlbEntries;
+    // MMU option to use shared TLB
+    bit unsigned                 UseSharedTlb;
+    // MMU depth of shared TLB
+    int unsigned                 SharedTlbDepth;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -253,6 +257,10 @@ package config_pkg;
     int unsigned BHTEntries;
     int unsigned InstrTlbEntries;
     int unsigned DataTlbEntries;
+    bit unsigned UseSharedTlb;
+    int unsigned SharedTlbDepth;
+    int unsigned VpnLen;
+    int unsigned PtLevels;
 
     logic [63:0]                 DmBaseAddress;
     bit                          TvalEn;
