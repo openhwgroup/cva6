@@ -10,15 +10,19 @@
 // Date: February, 2023
 // Description: Interface adapter for the CVA6 core
 module cva6_hpdcache_if_adapter
-  import hpdcache_pkg::*;
-
 //  Parameters
 //  {{{
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
-    parameter type                   dcache_req_i_t = logic,
-    parameter type                   dcache_req_o_t = logic,
-    parameter bit                    is_load_port   = 1'b1
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter hpdcache_pkg::hpdcache_cfg_t hpdcacheCfg = '0,
+    parameter type hpdcache_tag_t = logic,
+    parameter type hpdcache_req_offset_t = logic,
+    parameter type hpdcache_req_sid_t = logic,
+    parameter type hpdcache_req_t = logic,
+    parameter type hpdcache_rsp_t = logic,
+    parameter type dcache_req_i_t = logic,
+    parameter type dcache_req_o_t = logic,
+    parameter bit is_load_port = 1'b1
 )
 //  }}}
 
@@ -30,7 +34,7 @@ module cva6_hpdcache_if_adapter
     input logic rst_ni,
 
     //  Port ID
-    input hpdcache_pkg::hpdcache_req_sid_t hpdcache_req_sid_i,
+    input hpdcache_req_sid_t hpdcache_req_sid_i,
 
     //  Request/response ports from/to the CVA6 core
     input  dcache_req_i_t         cva6_req_i,
@@ -41,14 +45,14 @@ module cva6_hpdcache_if_adapter
     //  Request port to the L1 Dcache
     output logic                        hpdcache_req_valid_o,
     input  logic                        hpdcache_req_ready_i,
-    output hpdcache_pkg::hpdcache_req_t hpdcache_req_o,
+    output hpdcache_req_t               hpdcache_req_o,
     output logic                        hpdcache_req_abort_o,
-    output hpdcache_pkg::hpdcache_tag_t hpdcache_req_tag_o,
+    output hpdcache_tag_t               hpdcache_req_tag_o,
     output hpdcache_pkg::hpdcache_pma_t hpdcache_req_pma_o,
 
     //  Response port from the L1 Dcache
-    input logic                        hpdcache_rsp_valid_i,
-    input hpdcache_pkg::hpdcache_rsp_t hpdcache_rsp_i
+    input logic          hpdcache_rsp_valid_i,
+    input hpdcache_rsp_t hpdcache_rsp_i
 );
   //  }}}
 
@@ -102,35 +106,35 @@ module cva6_hpdcache_if_adapter
          //  {{{
     else begin : store_amo_gen
       //  STORE/AMO request
-      hpdcache_req_addr_t   amo_addr;
-      hpdcache_req_offset_t amo_addr_offset;
-      hpdcache_tag_t        amo_tag;
+      logic                 [63:0] amo_addr;
+      hpdcache_req_offset_t        amo_addr_offset;
+      hpdcache_tag_t               amo_tag;
       logic amo_is_word, amo_is_word_hi;
-      logic             [63:0] amo_data;
-      logic             [ 7:0] amo_data_be;
-      hpdcache_req_op_t        amo_op;
-      logic             [31:0] amo_resp_word;
-      logic                    amo_pending_q;
+      logic                           [63:0] amo_data;
+      logic                           [ 7:0] amo_data_be;
+      hpdcache_pkg::hpdcache_req_op_t        amo_op;
+      logic                           [31:0] amo_resp_word;
+      logic                                  amo_pending_q;
 
       //  AMO logic
       //  {{{
       always_comb begin : amo_op_comb
         amo_addr = cva6_amo_req_i.operand_a;
-        amo_addr_offset = amo_addr[0+:HPDCACHE_REQ_OFFSET_WIDTH];
-        amo_tag = amo_addr[HPDCACHE_REQ_OFFSET_WIDTH+:HPDCACHE_TAG_WIDTH];
+        amo_addr_offset = amo_addr[0+:hpdcacheCfg.reqOffsetWidth];
+        amo_tag = amo_addr[hpdcacheCfg.reqOffsetWidth+:hpdcacheCfg.tagWidth];
         unique case (cva6_amo_req_i.amo_op)
-          ariane_pkg::AMO_LR:   amo_op = HPDCACHE_REQ_AMO_LR;
-          ariane_pkg::AMO_SC:   amo_op = HPDCACHE_REQ_AMO_SC;
-          ariane_pkg::AMO_SWAP: amo_op = HPDCACHE_REQ_AMO_SWAP;
-          ariane_pkg::AMO_ADD:  amo_op = HPDCACHE_REQ_AMO_ADD;
-          ariane_pkg::AMO_AND:  amo_op = HPDCACHE_REQ_AMO_AND;
-          ariane_pkg::AMO_OR:   amo_op = HPDCACHE_REQ_AMO_OR;
-          ariane_pkg::AMO_XOR:  amo_op = HPDCACHE_REQ_AMO_XOR;
-          ariane_pkg::AMO_MAX:  amo_op = HPDCACHE_REQ_AMO_MAX;
-          ariane_pkg::AMO_MAXU: amo_op = HPDCACHE_REQ_AMO_MAXU;
-          ariane_pkg::AMO_MIN:  amo_op = HPDCACHE_REQ_AMO_MIN;
-          ariane_pkg::AMO_MINU: amo_op = HPDCACHE_REQ_AMO_MINU;
-          default:              amo_op = HPDCACHE_REQ_LOAD;
+          ariane_pkg::AMO_LR:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_LR;
+          ariane_pkg::AMO_SC:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_SC;
+          ariane_pkg::AMO_SWAP: amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_SWAP;
+          ariane_pkg::AMO_ADD:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_ADD;
+          ariane_pkg::AMO_AND:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_AND;
+          ariane_pkg::AMO_OR:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_OR;
+          ariane_pkg::AMO_XOR:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_XOR;
+          ariane_pkg::AMO_MAX:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MAX;
+          ariane_pkg::AMO_MAXU: amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MAXU;
+          ariane_pkg::AMO_MIN:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MIN;
+          ariane_pkg::AMO_MINU: amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MINU;
+          default:              amo_op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
         endcase
       end
       //  }}}

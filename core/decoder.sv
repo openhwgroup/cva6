@@ -1534,7 +1534,7 @@ module decoder
     if (~ex_i.valid) begin
       // if we didn't already get an exception save the instruction here as we may need it
       // in the commit stage if we got a access exception to one of the CSR registers
-      if (CVA6Cfg.CvxifEn || CVA6Cfg.FpuEn)
+      if (CVA6Cfg.CvxifEn || CVA6Cfg.RVF)
         orig_instr_o = (is_compressed_i) ? {{CVA6Cfg.XLEN-16{1'b0}}, compressed_instr_i} : {{CVA6Cfg.XLEN-32{1'b0}}, instruction_i};
       if (CVA6Cfg.TvalEn)
         instruction_o.ex.tval  = (is_compressed_i) ? {{CVA6Cfg.XLEN-16{1'b0}}, compressed_instr_i} : {{CVA6Cfg.XLEN-32{1'b0}}, instruction_i};
@@ -1599,19 +1599,21 @@ module decoder
           interrupt_cause = INTERRUPTS.HS_EXT;
         end
       end
-      // Supervisor Timer Interrupt
-      if (irq_ctrl_i.mie[riscv::IRQ_S_TIMER] && irq_ctrl_i.mip[riscv::IRQ_S_TIMER]) begin
-        interrupt_cause = INTERRUPTS.S_TIMER;
-      end
-      // Supervisor Software Interrupt
-      if (irq_ctrl_i.mie[riscv::IRQ_S_SOFT] && irq_ctrl_i.mip[riscv::IRQ_S_SOFT]) begin
-        interrupt_cause = INTERRUPTS.S_SW;
-      end
-      // Supervisor External Interrupt
-      // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
-      // used to generate external interrupts to the supervisor
-      if (irq_ctrl_i.mie[riscv::IRQ_S_EXT] && (irq_ctrl_i.mip[riscv::IRQ_S_EXT] | irq_i[ariane_pkg::SupervisorIrq])) begin
-        interrupt_cause = INTERRUPTS.S_EXT;
+      if (CVA6Cfg.RVS) begin
+        // Supervisor Timer Interrupt
+        if (irq_ctrl_i.mie[riscv::IRQ_S_TIMER] && irq_ctrl_i.mip[riscv::IRQ_S_TIMER]) begin
+          interrupt_cause = INTERRUPTS.S_TIMER;
+        end
+        // Supervisor Software Interrupt
+        if (irq_ctrl_i.mie[riscv::IRQ_S_SOFT] && irq_ctrl_i.mip[riscv::IRQ_S_SOFT]) begin
+          interrupt_cause = INTERRUPTS.S_SW;
+        end
+        // Supervisor External Interrupt
+        // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
+        // used to generate external interrupts to the supervisor
+        if (irq_ctrl_i.mie[riscv::IRQ_S_EXT] && (irq_ctrl_i.mip[riscv::IRQ_S_EXT] | irq_i[ariane_pkg::SupervisorIrq])) begin
+          interrupt_cause = INTERRUPTS.S_EXT;
+        end
       end
       // Machine Timer Interrupt
       if (irq_ctrl_i.mip[riscv::IRQ_M_TIMER] && irq_ctrl_i.mie[riscv::IRQ_M_TIMER]) begin

@@ -53,7 +53,7 @@
   iterations: 1
   needs:
     - XLEN: 64
-    - FpuEn: 1
+    - RVF: 1
     - RVC: 1
   path_var: TESTS_PATH
   gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ <path_var>/riscv-tests/env/v/entry.S <path_var>/riscv-tests/env/v/vm.c <path_var>/riscv-tests/env/v/string.c -I<path_var>/riscv-tests/env/v/ -I<path_var>/riscv-tests/riscv-target/spike/"
@@ -63,7 +63,7 @@
   iterations: 1
   needs:
     - XLEN: 32
-    - FpuEn: 1
+    - RVF: 1
     - RVC: 1
   path_var: TESTS_PATH
   gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ <path_var>/riscv-tests/env/v/entry.S <path_var>/riscv-tests/env/v/vm.c <path_var>/riscv-tests/env/v/string.c -I<path_var>/riscv-tests/env/v/ -I<path_var>/riscv-tests/riscv-target/spike/"
@@ -137,7 +137,7 @@
   iterations: 1
   needs:
     - XLEN: 64
-    - FpuEn: 1
+    - RVF: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv64uf/fcmp.S
@@ -146,7 +146,7 @@
   iterations: 1
   needs:
     - XLEN: 32
-    - FpuEn: 1
+    - RVF: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv32uf/fcmp.S
