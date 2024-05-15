@@ -20,12 +20,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiDataWidth = 64;  // axi_pkg.sv
   localparam CVA6ConfigDataUserWidth = 32;  // axi_pkg.sv
 
-  localparam CVA6ConfigDcacheIdWidth = 1;  // hpdcache
-  localparam CVA6ConfigDcacheByteSize = 32768;  // hpdcache
-  localparam CVA6ConfigDcacheSetAssoc = 8;  // hpdcache
-  localparam CVA6ConfigDcacheLineWidth = 128;  // hpdcache
-  localparam CVA6ConfigNrLoadBufEntries = 2;  // hpdcache
-  localparam CVA6ConfigWtDcacheWbufDepth = 2;  // hpdcache
+  localparam CVA6ConfigWtDcacheWbufDepth = 2;  // wtcache
 
   localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
 
@@ -43,7 +38,7 @@ package cva6_config_pkg;
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),
       AxiUserWidth: unsigned'(CVA6ConfigDataUserWidth),
       MemTidWidth: unsigned'(CVA6ConfigAxiIdWidth),
-      NrLoadBufEntries: unsigned'(CVA6ConfigNrLoadBufEntries),
+      NrLoadBufEntries: unsigned'(2),
       RVF: bit'(0),
       RVD: bit'(0),
       XF16: bit'(0),
@@ -92,9 +87,9 @@ package cva6_config_pkg;
       IcacheSetAssoc: unsigned'(2),
       IcacheLineWidth: unsigned'(128),
       DCacheType: config_pkg::HPDCACHE,
-      DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
-      DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
-      DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
+      DcacheByteSize: unsigned'(32768),
+      DcacheSetAssoc: unsigned'(8),
+      DcacheLineWidth: unsigned'(128),
       DataUserEn: unsigned'(0),
       WtDcacheWbufDepth: int'(2),
       FetchUserWidth: unsigned'(32),
@@ -103,7 +98,7 @@ package cva6_config_pkg;
       DataTlbEntries: int'(CVA6ConfigDataTlbEntries),
       NrLoadPipeRegs: int'(0),
       NrStorePipeRegs: int'(0),
-      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
+      DcacheIdWidth: int'(1)
   };
 
 endpackage
