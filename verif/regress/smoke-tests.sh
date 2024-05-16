@@ -70,7 +70,6 @@ python3 cva6.py --target cv32a65x --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --c_
 make -C ../.. clean
 make clean_all
 python3 cva6.py --testlist=../tests/testlist_riscv-compliance-cv64a6_imafdc_sv39.yaml --test rv32i-I-ADD-01 --iss_yaml cva6.yaml --target cv64a6_mmu --iss=$DV_SIMULATORS $DV_OPTS
-#python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-v.yaml --test rv64ui-v-add --iss_yaml cva6.yaml --target cv64a6_mmu --iss=$DV_SIMULATORS $DV_OPTS
 python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-add --iss_yaml cva6.yaml --target cv64a6_mmu --iss=$DV_SIMULATORS $DV_OPTS
 python3 cva6.py --testlist=../tests/testlist_riscv-arch-test-cv64a6_imafdc_sv39.yaml --test rv64i_m-add-01 --iss_yaml cva6.yaml --target cv64a6_mmu --iss=$DV_SIMULATORS $DV_OPTS  --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
 python3 cva6.py -v --target cv64a6_mmu --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --c_tests ../tests/custom/hello_world/hello_world.c --linker=../tests/custom/common/test.ld\
