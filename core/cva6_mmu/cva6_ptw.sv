@@ -404,9 +404,8 @@ module cva6_ptw
           // -------------
           // Invalid PTE
           // -------------
-          // If pte.v = 0, or if pte.r = 0 and pte.w = 1, stop and raise a page-fault exception.
-          if (!pte.v || (!pte.r && pte.w))  // || (|pte.reserved))
-            state_d = PROPAGATE_ERROR;
+          // If pte.v = 0, or if pte.r = 0 and pte.w = 1, or if pte.reserved !=0, stop and raise a page-fault exception.
+          if (!pte.v || (!pte.r && pte.w) || (|pte.reserved)) state_d = PROPAGATE_ERROR;
           // -----------
           // Valid PTE
           // -----------
