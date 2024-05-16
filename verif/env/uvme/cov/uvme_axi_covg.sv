@@ -67,15 +67,15 @@ covergroup cg_axi_w_channel(string name)
 endgroup : cg_axi_w_channel
 
 covergroup cg_axi_b_channel(string name)
-   with function sample(uvma_axi_transaction_c item, bit RVA);
+   with function sample(uvma_axi_transaction_c item, bit RVA, bit hpdcache);
 
    option.per_instance = 1;
    option.name         = name;
 
    bid:   coverpoint (item.b_id){
-      bins one   = {[1:3]};
-      illegal_bins ILLEGAL_BINS = {2};
-      ignore_bins  IGN_EXID = {3} iff(!RVA);
+      bins one   = {[1:3]} iff(!hpdcache);
+      illegal_bins ILLEGAL_BINS = {2} iff(!hpdcache);
+      ignore_bins  IGN_EXID = {3} iff(!RVA && !hpdcache);
    }
    bresp: coverpoint (item.b_resp){
       bins zero  = {0};
@@ -88,13 +88,13 @@ covergroup cg_axi_b_channel(string name)
 endgroup : cg_axi_b_channel
 
 covergroup cg_axi_ar_channel(string name)
-   with function sample(uvma_axi_transaction_c item, bit RVA);
+   with function sample(uvma_axi_transaction_c item, bit RVA, bit hpdcache);
 
    option.per_instance = 1;
    option.name         = name;
 
    arid: coverpoint (item.ar_id) {
-      bins ID[] = {[0:1]};
+      bins ID[] = {[0:1]} iff(!hpdcache);
    }
 
    arlen: coverpoint (item.ar_len) {
@@ -131,15 +131,15 @@ covergroup cg_axi_ar_channel(string name)
 endgroup : cg_axi_ar_channel
 
 covergroup cg_axi_r_channel(string name)
-   with function sample(uvma_axi_transaction_c item, int index, bit RVA);
+   with function sample(uvma_axi_transaction_c item, int index, bit RVA, bit hpdcache);
 
    option.per_instance = 1;
    option.name         = name;
 
    rid: coverpoint (item.r_data_trs[index].r_id) {
-      bins ID[] = {[0:3]};
-      illegal_bins ILLEGAL_BINS = {2};
-      ignore_bins  IGN_EXID = {3} iff(!RVA);
+      bins ID[] = {[0:3]} iff(!hpdcache);
+      illegal_bins ILLEGAL_BINS = {2} iff(!hpdcache);
+      ignore_bins  IGN_EXID = {3} iff(!RVA && !hpdcache);
    }
 
    rlast: coverpoint (item.r_data_trs[index].r_last);
@@ -165,6 +165,7 @@ class uvme_axi_covg_c extends uvm_component;
    uvme_cva6_cntxt_c         cntxt;
    uvme_cva6_cfg_c           cfg;
    bit RVA;
+   bit HPDCache;
 
    // TLM
    uvm_tlm_analysis_fifo #(uvma_axi_transaction_c)    uvme_axi_cov_resp_fifo;
@@ -226,6 +227,7 @@ function void uvme_axi_covg_c::build_phase(uvm_phase phase);
    end
 
    RVA = cfg.ext_a_supported;
+   HPDCache = cfg.HPDCache_supported;
 
    uvme_axi_cov_resp_fifo  = new("uvme_axi_cov_resp_fifo"   , this);
 
@@ -249,14 +251,14 @@ task uvme_axi_covg_c::run_phase(uvm_phase phase);
          UVMA_AXI_ACCESS_WRITE : begin
 
              w_axi_cg.sample(resp_item, RVA);
-             b_axi_cg.sample(resp_item, RVA);
+             b_axi_cg.sample(resp_item, RVA, HPDCache);
 
          end
          UVMA_AXI_ACCESS_READ : begin
 
-            ar_axi_cg.sample(resp_item, RVA);
+            ar_axi_cg.sample(resp_item, RVA, HPDCache);
             for(int i = 0; i <= resp_item.ar_len; i++) begin
-               r_axi_cg.sample(resp_item, i, RVA);
+               r_axi_cg.sample(resp_item, i, RVA, HPDCache);
             end
 
          end

@@ -47,6 +47,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
    // Zicond extension
    rand bit                      ext_zicond_supported;
+   rand bit                      HPDCache_supported;
 
    //pmp entries
    rand int                      nr_pmp_entries;
@@ -58,6 +59,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zicond_supported        , UVM_DEFAULT          )
+      `uvm_field_int (                         HPDCache_supported          , UVM_DEFAULT          )
       `uvm_field_int (                         nr_pmp_entries              , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
 
@@ -138,6 +140,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       dm_halt_addr_valid      == 1;
       dm_exception_addr_valid == 1;
       nmi_addr_valid          == 1;
+      HPDCache_supported      == 1;
    }
 
    constraint ext_const {
