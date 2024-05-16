@@ -333,9 +333,11 @@ done_processing:
 #if (VERILATOR_VERSION_INTEGER >= 5000000)
   // Verilator v5: Use rootp pointer and .data() accessor.
 #define MEM top->rootp->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram.m_storage
+#define MEM_USER top->rootp->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem_user__DOT__i_tc_sram_wrapper_user__DOT__i_tc_sram__DOT__sram.m_storage
 #else
   // Verilator v4
 #define MEM top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram
+#define MEM_USER top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem_user__DOT__i_tc_sram_wrapper_user__DOT__i_tc_sram__DOT__sram
 #endif
   long long addr;
   long long len;
@@ -345,6 +347,12 @@ done_processing:
   {
     if (addr == 0x80000000)
         read_section_void(addr, (void *) MEM , mem_size);
+    if (addr == 0x84000000)
+        try {
+          read_section_void(addr, (void *) MEM_USER , mem_size);
+        } catch (...){
+          std::cerr << "No user memory instanciated ...\n";
+        }
   }
 
   while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)) {
