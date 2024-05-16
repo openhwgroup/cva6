@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2021 Thales DIS design services SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
@@ -28,6 +29,11 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness,spike
 fi
 
+if [[ "$DV_TARGET" =~ cv64a6_imafdc* ]] ; then
+  TESTLIST=../tests/testlist_riscv-arch-test-cv64a6_imafdc_sv39.yaml
+else
+  TESTLIST=../tests/testlist_riscv-arch-test-$DV_TARGET.yaml
+fi
+
 cd verif/sim
-python3 cva6.py --testlist=../tests/testlist_riscv-arch-test-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
-cd -
+python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
