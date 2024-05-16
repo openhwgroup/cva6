@@ -285,8 +285,7 @@ module cva6_tlb
             tags_n[i].valid = 1'b0;
         end
         // normal replacement
-      end else if (update_i.valid & replace_en[i]) begin
-        // end else if (update_i.valid & replace_en[i] && !lu_hit_o) begin //to add this fix
+      end else if (update_i.valid & replace_en[i] & !lu_hit_o) begin
         //update tag
         tags_n[i] = {
           update_i.asid,
