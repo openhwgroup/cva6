@@ -48,11 +48,17 @@ cd verif/sim/
 errors=0
 
 # 32-bit configurations without MMU
-python3 cva6.py --testlist=../tests/testlist_riscv-tests-${DV_TARGET}-p.yaml --test rv32ui-p-add --iss_yaml cva6.yaml --target ${DV_TARGET} --iss=$DV_SIMULATORS $DV_OPTS
-[[ $? > 0 ]] && ((errors++))
-
-python3 cva6.py --testlist=../tests/testlist_riscv-tests-${DV_TARGET}-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target ${DV_TARGET} --iss=$DV_SIMULATORS $DV_OPTS
-[[ $? > 0 ]] && ((errors++))
+riscv_tests_list=(
+  rv32ui-p-add
+  rv32ui-p-lw
+  rv32ui-p-sw
+  rv32ui-p-beq
+  rv32ui-p-jal
+)
+for t in ${riscv_tests_list[@]} ; do
+  python3 cva6.py --testlist=../tests/testlist_riscv-tests-${DV_TARGET}-p.yaml --test $t --iss_yaml cva6.yaml --target ${DV_TARGET} --iss=$DV_SIMULATORS $DV_OPTS
+  [[ $? > 0 ]] && ((errors++))
+done
 
 python3 cva6.py --target ${DV_TARGET} --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --c_tests ../tests/custom/hello_world/hello_world.c --linker=../tests/custom/common/test.ld\
   --gcc_opts="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -lgcc -I../tests/custom/env -I../tests/custom/common" $DV_OPTS

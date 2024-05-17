@@ -7,6 +7,9 @@
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
 # Original Author: Jean-Roch COULON - Thales
+#
+# Contributor: Cesar Fuguet, CEA List
+# RISC-V tests for 64-bit configurations implementing MMU
 
 # where are the tools
 if ! [ -n "$RISCV" ]; then
@@ -48,11 +51,17 @@ cd verif/sim/
 errors=0
 
 # 64-bit configurations implementing MMU
-python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-v.yaml --test rv64ui-v-add --iss_yaml cva6.yaml --target ${DV_TARGET} --iss=$DV_SIMULATORS $DV_OPTS
-[[ $? > 0 ]] && ((errors++))
-
-python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-v.yaml --test rv64ui-v-ld  --iss_yaml cva6.yaml --target ${DV_TARGET} --iss=$DV_SIMULATORS $DV_OPTS
-[[ $? > 0 ]] && ((errors++))
+riscv_tests_list=(
+  rv64ui-v-add
+  rv64ui-v-ld
+  rv64ui-v-sd
+  rv64ui-v-beq
+  rv64ui-v-jal
+)
+for t in ${riscv_tests_list[@]} ; do
+  python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-v.yaml --test $t --iss_yaml cva6.yaml --target ${DV_TARGET} --iss=$DV_SIMULATORS $DV_OPTS
+  [[ $? > 0 ]] && ((errors++))
+done
 
 python3 cva6.py --target ${DV_TARGET} --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --c_tests ../tests/custom/hello_world/hello_world.c \
   --gcc_opts="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld" $DV_OPTS
