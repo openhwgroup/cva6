@@ -1,5 +1,5 @@
 !Feature
-next_elt_id: 9
+next_elt_id: 10
 name: Signals
 id: 6
 display_order: 6
@@ -7,20 +7,22 @@ subfeatures: !!omap
 - 000_ID: !Subfeature
     name: 000_ID
     tag: VP_IP006_P000
-    next_elt_id: 3
+    next_elt_id: 4
     display_order: 0
     items: !!omap
     - '000': !VerifItem
         name: '000'
         tag: VP_1_F006_S000_I000
         description: The CVA6 identify read transaction with an ID equal to 0 or 1
+          for normal transaction, and 3 for exclusive transaction
         reqt_doc: AXI Design doc - Transaction Identifiers
         ref_mode: ''
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: Ensure that ARID == 0b01 || ARID == 0b00 is always true while
-          AR_VALID is asserted.
+        verif_goals: Ensure that ARID == 0b01 || ARID == 0b00 || (ARID == 0b11 &&
+          (Exclusive_Access || Atomic_transaction)) is always true while ARVALID is
+          asserted.
         pfc: 4
         test_type: 3
         cov_method: 2
@@ -30,13 +32,15 @@ subfeatures: !!omap
     - '001': !VerifItem
         name: '001'
         tag: VP_1_F006_S000_I001
-        description: The CVA6 identify write transaction with an ID equal to 1
+        description: The CVA6 identify write transaction with an ID equal to 1 for
+          normal transaction, and 3 for exclusive transaction or atomic operations
         reqt_doc: AXI Design doc - Transaction Identifiers
         ref_mode: ''
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: Ensure that AWID == 0b01 is always true while AW_VALID is asserted.
+        verif_goals: Ensure that AWID == 0b01 || AWID == 0b11 && (Exclusive_Access
+          || Atomic_transaction) is always true while AWVALID is asserted.
         pfc: 4
         test_type: 3
         cov_method: 2
@@ -59,7 +63,7 @@ subfeatures: !!omap
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: Ensure that AxUSER = 0b00 is always true while AX_VALID is asserted.
+        verif_goals: Ensure that AxUSER = 0b00 is always true while AxVALID is asserted.
         pfc: 4
         test_type: 3
         cov_method: 2
@@ -76,7 +80,7 @@ subfeatures: !!omap
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: Ensure that BUSER = 0b00 is always true while B_VALID is asserted.
+        verif_goals: Ensure that BUSER = 0b00 is always true while BVALID is asserted.
         pfc: 4
         test_type: 3
         cov_method: 2
@@ -98,7 +102,7 @@ subfeatures: !!omap
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: Ensure that AxQOS = 0b0000 is always true while AX_VALID is asserted.
+        verif_goals: Ensure that AxQOS = 0b0000 is always true while AxVALID is asserted.
         pfc: 4
         test_type: 3
         cov_method: 2
@@ -114,13 +118,13 @@ subfeatures: !!omap
     - '000': !VerifItem
         name: '000'
         tag: VP_1_F006_S003_I000
-        description: AxCACHE always take 0b0000.
+        description: AxCACHE always take 0b0010.
         reqt_doc: 'AXI Design Doc - Transaction Attributes: Memory types'
         ref_mode: ''
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: Ensure that AxCACHE = 0b0000 is always true while AX_VALID is
+        verif_goals: Ensure that AxCACHE = 0b0010 is always true while AxVALID is
           asserted.
         pfc: 4
         test_type: 3
@@ -143,7 +147,7 @@ subfeatures: !!omap
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: Ensure that AxPROT = 0b000 is always true while AX_VALID is asserted.
+        verif_goals: Ensure that AxPROT = 0b000 is always true while AxVALID is asserted.
         pfc: 4
         test_type: 3
         cov_method: 2
@@ -165,7 +169,7 @@ subfeatures: !!omap
         ref_page: ''
         ref_section: ''
         ref_viewer: ''
-        verif_goals: Ensure that AxREGION = 0b0000 is always true while AX_VALID is
+        verif_goals: Ensure that AxREGION = 0b0000 is always true while AxVALID is
           asserted.
         pfc: 4
         test_type: 3
@@ -173,7 +177,48 @@ subfeatures: !!omap
         cores: 56
         coverage_loc: ''
         comments: ''
-vptool_gitrev: '$Id: 03047594b4818fcbd06a40669e637081ff1d4fb9 $'
+- 009_Strob: !Subfeature
+    name: 009_Strob
+    tag: VP_AXI_F006_S009
+    next_elt_id: 2
+    display_order: 9
+    items: !!omap
+    - '000': !VerifItem
+        name: '000'
+        tag: VP_AXI_F006_S009_I000
+        description: CVA6 does not performe unaligned memory accesses, therefore WSTRB
+          takes only combinations for aligned accesses
+        reqt_doc: ''
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Ensure that WSTRB does not take value different than 1, 2, 3,
+          4, 8, 12, 15, 16, 32, 48, 64, 128, 192, 240 and 255
+        pfc: 4
+        test_type: 3
+        cov_method: 1
+        cores: 56
+        coverage_loc: ''
+        comments: ''
+    - '001': !VerifItem
+        name: '001'
+        tag: VP_AXI_F006_S009_I001
+        description: If(RV32) WSTRB < 255, Since AWSIZE lower than 3, so the data
+          bus cannot have more than 4 valid byte lanes
+        reqt_doc: ''
+        ref_mode: page
+        ref_page: ''
+        ref_section: ''
+        ref_viewer: firefox
+        verif_goals: Ensure that WSTRB does not take 255
+        pfc: -1
+        test_type: -1
+        cov_method: -1
+        cores: 24
+        coverage_loc: ''
+        comments: ''
+vptool_gitrev: '$Id: b0efb3ae3f9057b71a577d43c2b77f1cfb2ef82f $'
 io_fmt_gitrev: '$Id: 7ee5d68801f5498a957bcbe23fcad87817a364c5 $'
 config_gitrev: '$Id: 0422e19126dae20ffc4d5a84e4ce3de0b6eb4eb5 $'
 ymlcfg_gitrev: '$Id: 286c689bd48b7a58f9a37754267895cffef1270c $'

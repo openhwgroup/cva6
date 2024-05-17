@@ -12,10 +12,10 @@
   All transaction performed by CVA6 are of type INCR. AxBURST = 0b01
 * **Verification Goals**
   
-  Ensure that AxBURST == 0b01 is always true while AX_VALID is asserted.
+  Ensure that AxBURST == 0b01 is always true while AxVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
-* **Coverage Method:** Assertion Coverage
+* **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_1_F005_S000_I000
 * **Link to Coverage:** 
@@ -28,13 +28,13 @@
 * **Requirement location:** AXI Design doc - Address structure
 * **Feature Description**
   
-  All Read transaction performed by CVA6 are of burst lenght less or equal to 2. ARLEN = 0b01
+  All Read transaction performed by CVA6 are of burst length less or equal to ICACHE_LINE_WIDTH/64. ARLEN = 0b01 or 0b00
 * **Verification Goals**
   
-  Ensure that ARLEN == 0b01 is always true while AR_VALID is asserted.
+  Ensure that ARLEN == 0b01 || ARLEN == 0b00 is always true while ARVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
-* **Coverage Method:** Assertion Coverage
+* **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_1_F005_S000_I001
 * **Link to Coverage:** 
@@ -50,10 +50,10 @@
   All write transaction performed by CVA6 are of burst lenght equal to 1. AWLEN = 0b00
 * **Verification Goals**
   
-  Ensure that AWLEN == 0b00 is always true while AW_VALID is asserted.
+  Ensure that AWLEN == 0b00 is always true while AWVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
-* **Coverage Method:** Assertion Coverage
+* **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_1_F005_S000_I002
 * **Link to Coverage:** 
@@ -69,7 +69,7 @@
   The size of a read transfer does not exceed the width of the data interface. The maximum value can be taking by AxSIZE is 3.
 * **Verification Goals**
   
-  Ensure that AxSIZE <= log2(AXI_DATA_WIDTH/8) is always true while AR_VALID is asserted.
+  Ensure that AxSIZE <= log2(AXI_DATA_WIDTH/8) is always true while ARVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
@@ -80,20 +80,61 @@
   
   *(none)*  
   
-#### Item: 007
+#### Item: 013
 
-* **Requirement location:** https://developer.arm.com/documentation/ihi0022/hc - (Section A7.2.4)
+* **Requirement location:** 
 * **Feature Description**
   
-  Exclusive access transactions cannot have a length greater than 16 beats
+  The maximum value can be taken by AxSIZE is XLEN/8
 * **Verification Goals**
   
-  Ensure that AxLOCK && AxLEN <= 15 is always true while AX_VALID is asserted.
-* **Pass/Fail Criteria:** Assertion
-* **Test Type:** Constrained Random
-* **Coverage Method:** Assertion Coverage
+  Ensure that AxSIZE <= clog2(XLEN/8)
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** Directed SelfChk
+* **Coverage Method:** Functional Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
-* **Unique verification tag:** VP_1_F005_S000_I007
+* **Unique verification tag:** VP_AXI_F005_S000_I013
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 014
+
+* **Requirement location:** 
+* **Feature Description**
+  
+  if(RV32) ARSIZE != 3 && ARLEN = 0 && ARID = 1, the maximum load instruction size is 4 bytes  
+  ARSIZE can not be equal to 0, 1 or 2 if ARLOCK = 1
+* **Verification Goals**
+  
+  Ensure that ARSIZE != 3 when ARID = 1 and ARLEN = 0  
+  Ensure that ARSIZE != 0, 1 or 2 when ARID = 0  
+  Ensure that ARSIZE != 0, 1 or 2 when ARLOCK = 1
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_AXI_F005_S000_I014
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 015
+
+* **Requirement location:** 
+* **Feature Description**
+  
+  if(RVA) AxLOCK = 1 => AxSIZE > 1, CVA6 doesn't perform exclusive transaction with size lower than 4 bytes
+* **Verification Goals**
+  
+  Ensure that AWSIZE > 1 when AWLOCK = 1
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_AXI_F005_S000_I015
 * **Link to Coverage:** 
 * **Comments**
   
@@ -108,10 +149,10 @@
 * **Requirement location:** AXI Design doc - Transaction Identifiers
 * **Feature Description**
   
-  The CVA6 identify read transaction with an ID equal to 0 or 1
+  The CVA6 identify read transaction with an ID equal to 0 or 1 for normal transaction, and 3 for exclusive transaction
 * **Verification Goals**
   
-  Ensure that ARID == 0b01 || ARID == 0b00 is always true while AR_VALID is asserted.
+  Ensure that ARID == 0b01 || ARID == 0b00 || (ARID == 0b11 && (Exclusive_Access || Atomic_transaction)) is always true while ARVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
@@ -127,10 +168,10 @@
 * **Requirement location:** AXI Design doc - Transaction Identifiers
 * **Feature Description**
   
-  The CVA6 identify write transaction with an ID equal to 1
+  The CVA6 identify write transaction with an ID equal to 1 for normal transaction, and 3 for exclusive transaction or atomic operations
 * **Verification Goals**
   
-  Ensure that AWID == 0b01 is always true while AW_VALID is asserted.
+  Ensure that AWID == 0b01 || AWID == 0b11 && (Exclusive_Access || Atomic_transaction) is always true while AWVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
@@ -151,7 +192,7 @@
   User-defined extension for the write and read address channel is not supported. AxUSER = 0b00
 * **Verification Goals**
   
-  Ensure that AxUSER = 0b00 is always true while AX_VALID is asserted.
+  Ensure that AxUSER = 0b00 is always true while AxVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
@@ -170,7 +211,7 @@
   User-defined extension for the write response channel is not supported.
 * **Verification Goals**
   
-  Ensure that BUSER = 0b00 is always true while B_VALID is asserted.
+  Ensure that BUSER = 0b00 is always true while BVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
@@ -191,7 +232,7 @@
   Quality of Service identifier is not supported. AxQOS = 0b0000
 * **Verification Goals**
   
-  Ensure that AxQOS = 0b0000 is always true while AX_VALID is asserted.
+  Ensure that AxQOS = 0b0000 is always true while AxVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
@@ -209,10 +250,10 @@
 * **Requirement location:** AXI Design Doc - Transaction Attributes: Memory types
 * **Feature Description**
   
-  AxCACHE always take 0b0000.
+  AxCACHE always take 0b0010.
 * **Verification Goals**
   
-  Ensure that AxCACHE = 0b0000 is always true while AX_VALID is asserted.
+  Ensure that AxCACHE = 0b0010 is always true while AxVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
@@ -233,7 +274,7 @@
   Protection attributes always take the 0b000
 * **Verification Goals**
   
-  Ensure that AxPROT = 0b000 is always true while AX_VALID is asserted.
+  Ensure that AxPROT = 0b000 is always true while AxVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
@@ -254,12 +295,52 @@
   Region indicator is not supported. AxREGION = 0b0000
 * **Verification Goals**
   
-  Ensure that AxREGION = 0b0000 is always true while AX_VALID is asserted.
+  Ensure that AxREGION = 0b0000 is always true while AxVALID is asserted.
 * **Pass/Fail Criteria:** Assertion
 * **Test Type:** Constrained Random
 * **Coverage Method:** Assertion Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_1_F006_S008_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 009_Strob
+
+#### Item: 000
+
+* **Requirement location:** 
+* **Feature Description**
+  
+  CVA6 does not performe unaligned memory accesses, therefore WSTRB takes only combinations for aligned accesses
+* **Verification Goals**
+  
+  Ensure that WSTRB does not take value different than 1, 2, 3, 4, 8, 12, 15, 16, 32, 48, 64, 128, 192, 240 and 255
+* **Pass/Fail Criteria:** Assertion
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_AXI_F006_S009_I000
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+#### Item: 001
+
+* **Requirement location:** 
+* **Feature Description**
+  
+  If(RV32) WSTRB < 255, Since AWSIZE lower than 3, so the data bus cannot have more than 4 valid byte lanes
+* **Verification Goals**
+  
+  Ensure that WSTRB does not take 255
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2
+* **Unique verification tag:** VP_AXI_F006_S009_I001
 * **Link to Coverage:** 
 * **Comments**
   
@@ -321,6 +402,27 @@
 * **Coverage Method:** Assertion Coverage
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_1_F007_S000_I002
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+### Sub-feature: 001_Hard_Reset
+
+#### Item: 000
+
+* **Requirement location:** 
+* **Feature Description**
+  
+  Random hard reset during simulation.
+* **Verification Goals**
+  
+  Ensure that the CVA6 restarts the test from the start address and does not crash after disabling the reset.
+* **Pass/Fail Criteria:** Check RM
+* **Test Type:** Constrained Random
+* **Coverage Method:** Functional Coverage
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_AXI_F007_S001_I000
 * **Link to Coverage:** 
 * **Comments**
   
@@ -454,6 +556,29 @@
 * **Coverage Method:** N/A
 * **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
 * **Unique verification tag:** VP_1_F008_S001_I005
+* **Link to Coverage:** 
+* **Comments**
+  
+  *(none)*  
+  
+## Feature: Error Injection
+
+### Sub-feature: 000_Protocol errors
+
+#### Item: 003
+
+* **Requirement location:** 
+* **Feature Description**
+  
+  Injection error by randomizing resp signal.
+* **Verification Goals**
+  
+  Randomize xRESP signals. The CVA6 shouldn’t crash if RESP signal indicate an error in a transaction.
+* **Pass/Fail Criteria:** NDY (Not Defined Yet)
+* **Test Type:** NDY (Not Defined Yet)
+* **Coverage Method:** NDY (Not Defined Yet)
+* **Applicable Cores:** CV32A6_v0.1.0, CV32A6-step2, CV64A6-step3
+* **Unique verification tag:** VP_AXI_F009_S000_I003
 * **Link to Coverage:** 
 * **Comments**
   
