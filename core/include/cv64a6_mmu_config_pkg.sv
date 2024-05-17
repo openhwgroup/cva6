@@ -11,7 +11,7 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigXlen = 64;
 
-  localparam CVA6ConfigFpuEn = 0;
+  localparam CVA6ConfigRVF = 0;
   localparam CVA6ConfigF16En = 0;
   localparam CVA6ConfigF16AltEn = 0;
   localparam CVA6ConfigF8En = 0;
@@ -57,9 +57,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigNrStorePipeRegs = 0;
   localparam CVA6ConfigNrLoadBufEntries = 1;
 
-  localparam CVA6ConfigInstrTlbEntries = 2;
-  localparam CVA6ConfigDataTlbEntries = 2;
-
   localparam CVA6ConfigRASDepth = 2;
   localparam CVA6ConfigBTBEntries = 0;
   localparam CVA6ConfigBHTEntries = 32;
@@ -72,7 +69,7 @@ package cva6_config_pkg;
 
   localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::WT;
 
-  localparam CVA6ConfigMmuPresent = 0;
+  localparam CVA6ConfigMmuPresent = 1;
 
   localparam CVA6ConfigRvfiTrace = 1;
 
@@ -86,7 +83,8 @@ package cva6_config_pkg;
       AxiUserWidth: unsigned'(CVA6ConfigDataUserWidth),
       MemTidWidth: unsigned'(CVA6ConfigMemTidWidth),
       NrLoadBufEntries: unsigned'(CVA6ConfigNrLoadBufEntries),
-      FpuEn: bit'(CVA6ConfigFpuEn),
+      RVF: bit'(CVA6ConfigRVF),
+      RVD: bit'(CVA6ConfigRVF),
       XF16: bit'(CVA6ConfigF16En),
       XF16ALT: bit'(CVA6ConfigF16AltEn),
       XF8: bit'(CVA6ConfigF8En),
@@ -101,6 +99,8 @@ package cva6_config_pkg;
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       RVZiCond: bit'(CVA6ConfigRVZiCond),
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
+      PerfCounterEn: bit'(CVA6ConfigPerfCounterEn),
+      MmuPresent: bit'(CVA6ConfigMmuPresent),
       RVS: bit'(1),
       RVU: bit'(1),
       HaltAddress: 64'h800,
@@ -130,12 +130,21 @@ package cva6_config_pkg;
       IcacheByteSize: unsigned'(CVA6ConfigIcacheByteSize),
       IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc),
       IcacheLineWidth: unsigned'(CVA6ConfigIcacheLineWidth),
+      DCacheType: CVA6ConfigDcacheType,
       DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
       DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
       DataUserEn: unsigned'(CVA6ConfigDataUserEn),
+      WtDcacheWbufDepth: int'(CVA6ConfigWtDcacheWbufDepth),
       FetchUserWidth: unsigned'(CVA6ConfigFetchUserWidth),
-      FetchUserEn: unsigned'(CVA6ConfigFetchUserEn)
+      FetchUserEn: unsigned'(CVA6ConfigFetchUserEn),
+      InstrTlbEntries: int'(2),
+      DataTlbEntries: int'(2),
+      UseSharedTlb: bit'(1),
+      SharedTlbDepth: int'(64),
+      NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
+      NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
+      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
   };
 
 endpackage
