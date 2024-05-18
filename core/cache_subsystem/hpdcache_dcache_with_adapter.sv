@@ -20,9 +20,10 @@ module hpdcache_dcache_with_adapter
     output logic dcache_flush_ack_o,
     // Load or store miss - PERF_COUNTERS
     output logic dcache_miss_o,
-    input logic dcache_miss_ready,
-    output logic dcache_miss_valid,
-    output hpdcache_mem_req_t  dcache_miss,
+
+    input logic dcache_miss_ready_i,
+    output logic dcache_miss_valid_o,
+    output hpdcache_mem_req_t  dcache_miss_lo,
 
     output logic dcache_miss_resp_ready_o,
     input logic dcache_miss_resp_valid_i,
@@ -337,9 +338,9 @@ module hpdcache_dcache_with_adapter
       .core_rsp_valid_o(dcache_rsp_valid),
       .core_rsp_o      (dcache_rsp),
 
-      .mem_req_miss_read_ready_i(dcache_miss_ready),
-      .mem_req_miss_read_valid_o(dcache_miss_valid),
-      .mem_req_miss_read_o      (dcache_miss),
+      .mem_req_miss_read_ready_i(dcache_miss_ready_i),
+      .mem_req_miss_read_valid_o(dcache_miss_valid_o),
+      .mem_req_miss_read_o      (dcache_miss_lo),
 
       .mem_resp_miss_read_ready_o(dcache_miss_resp_ready_o),
       .mem_resp_miss_read_valid_i(dcache_miss_resp_valid_i),
