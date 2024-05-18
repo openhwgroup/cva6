@@ -13,37 +13,33 @@ module hpdcache_icache_with_adapter
 (
     //    Cache management
     // Data cache enable - CSR_REGFILE
-    input  logic dcache_enable_i,
+    input  logic icache_enable_i,
     // Data cache flush - CONTROLLER
-    input  logic dcache_flush_i,
+    input  logic icache_flush_i,
     // Flush acknowledge - CONTROLLER
-    output logic dcache_flush_ack_o,
+    output logic icache_flush_ack_o,
     // Load or store miss - PERF_COUNTERS
-    output logic dcache_miss_o,
-    input logic dcache_miss_ready,
-    output logic dcache_miss_valid,
-    output hpdcache_mem_req_t  dcache_miss,
+    output logic icache_miss_o,
+    input logic icache_miss_ready,
+    output logic icache_miss_valid,
+    output hpdcache_mem_req_t  icache_miss,
 
-    output logic dcache_miss_resp_ready_o,
-    input logic dcache_miss_resp_valid_i,
-    input hpdcache_mem_resp_r_t dcache_miss_resp_i,
+    output logic icache_miss_resp_ready_o,
+    input logic icache_miss_resp_valid_i,
+    input hpdcache_mem_resp_r_t icache_miss_resp_i,
 
     // AMO request - EX_STAGE
-    input  ariane_pkg::amo_req_t                 dcache_amo_req_i,
+    input  ariane_pkg::amo_req_t                 icache_amo_req_i,
     // AMO response - EX_STAGE
-    output ariane_pkg::amo_resp_t                dcache_amo_resp_o,
+    output ariane_pkg::amo_resp_t                icache_amo_resp_o,
     // CMO interface request - TO_BE_COMPLETED
-    input  cmo_req_t                             dcache_cmo_req_i,
+    input  cmo_req_t                             icache_cmo_req_i,
     // CMO interface response - TO_BE_COMPLETED
-    output cmo_rsp_t                             dcache_cmo_resp_o,
+    output cmo_rsp_t                             icache_cmo_resp_o,
     // Data cache input request ports - EX_STAGE
-    input  dcache_req_i_t         [NumPorts-1:0] dcache_req_ports_i,
+    input  dcache_req_i_t         [NumPorts-1:0] icache_req_ports_i,
     // Data cache output request ports - EX_STAGE
-    output dcache_req_o_t         [NumPorts-1:0] dcache_req_ports_o,
-
-    output hpdcache_mem_req_t     dcache_wbuf_o,
-    output logic dcache_wbuf_valid_o,
-    input logic dcache_wbuf_ready_i,
+    output dcache_req_o_t         [NumPorts-1:0] icache_req_ports_o,
 
     // Write buffer status to know if empty - EX_STAGE
     output logic                                 wbuffer_empty_o,
@@ -73,33 +69,13 @@ module hpdcache_icache_with_adapter
     output logic [               63:0]       hwpf_status_o,
     //  }}}
 
-    input logic dcache_wbuf_data_ready_i,
-    output logic dcache_wbuf_data_valid_o,
-    output hpdcache_mem_req_w_t dcache_wbuf_data_o,
+    input logic icache_uc_read_ready_i,
+    output logic icache_uc_read_valid_o,
+    output hpdcache_mem_req_t icache_uc_read_o,
 
-    output logic dcache_wbuf_resp_ready_o,
-    input logic dcache_wbuf_resp_valid_i,
-    input hpdcache_mem_resp_w_t dcache_wbuf_resp_i,
-
-    input logic dcache_uc_read_ready_i,
-    output logic dcache_uc_read_valid_o,
-    output hpdcache_mem_req_t dcache_uc_read_o,
-
-    output logic dcache_uc_read_resp_ready_o,
-    input logic dcache_uc_read_resp_valid_i,
-    input hpdcache_mem_resp_r_t dcache_uc_read_resp_i,
-
-    input logic dcache_uc_write_ready_i,
-    output logic dcache_uc_write_valid_o,
-    output hpdcache_mem_req_t dcache_uc_write_o,
-
-    input logic dcache_uc_write_data_ready_i,
-    output logic dcache_uc_write_data_valid_o,
-    output hpdcache_mem_req_w_t dcache_uc_write_data_o,
-
-    output logic dcache_uc_write_resp_ready_o,
-    input logic dcache_uc_write_resp_valid_i,
-    input hpdcache_mem_resp_w_t dcache_uc_write_resp_i
+    output logic icache_uc_read_resp_ready_o,
+    input logic icache_uc_read_resp_valid_i,
+    input hpdcache_mem_resp_r_t icache_uc_read_resp_i
 );
   //  }}}
 
@@ -150,7 +126,7 @@ module hpdcache_icache_with_adapter
     dcache_req_i_t dcache_req_ports[HPDCACHE_NREQUESTERS-1:0];
 
     for (genvar r = 0; r < (NumPorts - 1); r++) begin : cva6_hpdcache_load_if_adapter_gen
-      assign dcache_req_ports[r] = dcache_req_ports_i[r];
+      assign dcache_req_ports[r] = icache_req_ports_i[r];
 
       cva6_hpdcache_if_adapter #(
           .CVA6Cfg       (CVA6Cfg),
@@ -164,7 +140,7 @@ module hpdcache_icache_with_adapter
           .hpdcache_req_sid_i(hpdcache_pkg::hpdcache_req_sid_t'(r)),
 
           .cva6_req_i     (dcache_req_ports[r]),
-          .cva6_req_o     (dcache_req_ports_o[r]),
+          .cva6_req_o     (icache_req_ports_o[r]),
           .cva6_amo_req_i ('0),
           .cva6_amo_resp_o(  /* unused */),
 
@@ -191,10 +167,10 @@ module hpdcache_icache_with_adapter
 
         .hpdcache_req_sid_i(hpdcache_pkg::hpdcache_req_sid_t'(NumPorts - 1)),
 
-        .cva6_req_i     (dcache_req_ports_i[NumPorts-1]),
-        .cva6_req_o     (dcache_req_ports_o[NumPorts-1]),
-        .cva6_amo_req_i (dcache_amo_req_i),
-        .cva6_amo_resp_o(dcache_amo_resp_o),
+        .cva6_req_i     (icache_req_ports_i[NumPorts-1]),
+        .cva6_req_o     (icache_req_ports_o[NumPorts-1]),
+        .cva6_amo_req_i (icache_amo_req_i),
+        .cva6_amo_resp_o(icache_amo_resp_o),
 
         .hpdcache_req_valid_o(dcache_req_valid[NumPorts-1]),
         .hpdcache_req_ready_i(dcache_req_ready[NumPorts-1]),
@@ -217,8 +193,8 @@ module hpdcache_icache_with_adapter
 
         .dcache_req_sid_i(hpdcache_pkg::hpdcache_req_sid_t'(NumPorts)),
 
-        .cva6_cmo_req_i (dcache_cmo_req_i),
-        .cva6_cmo_resp_o(dcache_cmo_resp_o),
+        .cva6_cmo_req_i (icache_cmo_req_i),
+        .cva6_cmo_resp_o(icache_cmo_resp_o),
 
         .dcache_req_valid_o(dcache_req_valid[NumPorts]),
         .dcache_req_ready_i(dcache_req_ready[NumPorts]),
@@ -316,7 +292,7 @@ module hpdcache_icache_with_adapter
       .hpdcache_rsp_i      (dcache_rsp[NumPorts+1])
   );
 
-  hpdcache #(
+  hpdcache_icache #(
       .NREQUESTERS         (HPDCACHE_NREQUESTERS),
       .HPDcacheMemAddrWidth(CVA6Cfg.PLEN),
       .HPDcacheMemIdWidth  (CVA6Cfg.MEM_TID_WIDTH),
@@ -325,7 +301,7 @@ module hpdcache_icache_with_adapter
       .clk_i,
       .rst_ni,
 
-      .wbuf_flush_i(dcache_flush_i),
+      .wbuf_flush_i(icache_flush_i),
 
       .core_req_valid_i(dcache_req_valid),
       .core_req_ready_o(dcache_req_ready),
@@ -337,45 +313,21 @@ module hpdcache_icache_with_adapter
       .core_rsp_valid_o(dcache_rsp_valid),
       .core_rsp_o      (dcache_rsp),
 
-      .mem_req_miss_read_ready_i(dcache_miss_ready),
-      .mem_req_miss_read_valid_o(dcache_miss_valid),
-      .mem_req_miss_read_o      (dcache_miss),
+      .mem_req_miss_read_ready_i(icache_miss_ready),
+      .mem_req_miss_read_valid_o(icache_miss_valid),
+      .mem_req_miss_read_o      (icache_miss),
 
-      .mem_resp_miss_read_ready_o(dcache_miss_resp_ready_o),
-      .mem_resp_miss_read_valid_i(dcache_miss_resp_valid_i),
-      .mem_resp_miss_read_i      (dcache_miss_resp_i),
+      .mem_resp_miss_read_ready_o(icache_miss_resp_ready_o),
+      .mem_resp_miss_read_valid_i(icache_miss_resp_valid_i),
+      .mem_resp_miss_read_i      (icache_miss_resp_i),
 
-      .mem_req_wbuf_write_ready_i(dcache_wbuf_ready_i),
-      .mem_req_wbuf_write_valid_o(dcache_wbuf_valid_o),
-      .mem_req_wbuf_write_o      (dcache_wbuf_o),
+      .mem_req_uc_read_ready_i(icache_uc_read_ready_i),
+      .mem_req_uc_read_valid_o(icache_uc_read_valid_o),
+      .mem_req_uc_read_o      (icache_uc_read_o),
 
-      .mem_req_wbuf_write_data_ready_i(dcache_wbuf_data_ready_i),
-      .mem_req_wbuf_write_data_valid_o(dcache_wbuf_data_valid_o),
-      .mem_req_wbuf_write_data_o      (dcache_wbuf_data_o),
-
-      .mem_resp_wbuf_write_ready_o(dcache_wbuf_resp_ready_o),
-      .mem_resp_wbuf_write_valid_i(dcache_wbuf_resp_valid_i),
-      .mem_resp_wbuf_write_i      (dcache_wbuf_resp_i),
-
-      .mem_req_uc_read_ready_i(dcache_uc_read_ready_i),
-      .mem_req_uc_read_valid_o(dcache_uc_read_valid_o),
-      .mem_req_uc_read_o      (dcache_uc_read_o),
-
-      .mem_resp_uc_read_ready_o(dcache_uc_read_resp_ready_o),
-      .mem_resp_uc_read_valid_i(dcache_uc_read_resp_valid_i),
-      .mem_resp_uc_read_i      (dcache_uc_read_resp_i),
-
-      .mem_req_uc_write_ready_i(dcache_uc_write_ready_i),
-      .mem_req_uc_write_valid_o(dcache_uc_write_valid_o),
-      .mem_req_uc_write_o      (dcache_uc_write_o),
-
-      .mem_req_uc_write_data_ready_i(dcache_uc_write_data_ready_i),
-      .mem_req_uc_write_data_valid_o(dcache_uc_write_data_valid_o),
-      .mem_req_uc_write_data_o      (dcache_uc_write_data_o),
-
-      .mem_resp_uc_write_ready_o(dcache_uc_write_resp_ready_o),
-      .mem_resp_uc_write_valid_i(dcache_uc_write_resp_valid_i),
-      .mem_resp_uc_write_i      (dcache_uc_write_resp_i),
+      .mem_resp_uc_read_ready_o(icache_uc_read_resp_ready_o),
+      .mem_resp_uc_read_valid_i(icache_uc_read_resp_valid_i),
+      .mem_resp_uc_read_i      (icache_uc_read_resp_i),
 
       .evt_cache_write_miss_o(dcache_write_miss),
       .evt_cache_read_miss_o (dcache_read_miss),
@@ -391,7 +343,7 @@ module hpdcache_icache_with_adapter
 
       .wbuf_empty_o(wbuffer_empty_o),
 
-      .cfg_enable_i                       (dcache_enable_i),
+      .cfg_enable_i                       (icache_enable_i),
       .cfg_wbuf_threshold_i               (4'd2),
       .cfg_wbuf_reset_timecnt_on_write_i  (1'b1),
       .cfg_wbuf_sequential_waw_i          (1'b0),
@@ -401,11 +353,11 @@ module hpdcache_icache_with_adapter
       .cfg_rtab_single_entry_i            (1'b0)
   );
 
-  assign dcache_miss_o = dcache_read_miss, wbuffer_not_ni_o = wbuffer_empty_o;
+  assign icache_miss_o = dcache_read_miss, wbuffer_not_ni_o = wbuffer_empty_o;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : dcache_flush_ff
-    if (!rst_ni) dcache_flush_ack_o <= 1'b0;
-    else dcache_flush_ack_o <= ~dcache_flush_ack_o & dcache_flush_i;
+    if (!rst_ni) icache_flush_ack_o <= 1'b0;
+    else icache_flush_ack_o <= ~icache_flush_ack_o & icache_flush_i;
   end
 
   //  }}}
