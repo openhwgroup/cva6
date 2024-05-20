@@ -163,9 +163,6 @@ class uvme_cva6_config_covg_c extends uvm_component;
    uvme_cva6_cfg_c         cfg      ;
    uvme_cva6_cntxt_c       cntxt    ;
 
-   // Handle to RTL configuration
-   cva6_cfg_t         CVA6Cfg;
-
    `uvm_analysis_imp_decl(_reset)
    uvm_analysis_imp_reset #(uvma_clknrst_mon_trn_c, uvme_cva6_config_covg_c) reset_imp;
    
@@ -198,11 +195,6 @@ function void uvme_cva6_config_covg_c::build_phase(uvm_phase phase);
 
    super.build_phase(phase);
 
-   void'(uvm_config_db#(cva6_cfg_t)::get(this, "", "CVA6Cfg", CVA6Cfg));
-   if (!CVA6Cfg) begin
-      `uvm_fatal("CVA6Cfg", "RTL Configuration handle is null")
-   end
-
    void'(uvm_config_db#(uvme_cva6_cfg_c)::get(this, "", "cfg", cfg));
    if (!cfg) begin
       `uvm_fatal("CFG", "Configuration handle is null")
@@ -222,7 +214,7 @@ endfunction : build_phase
 
 function void uvme_cva6_config_covg_c::sample_cva6_config();
 
-   config_cg.sample(CVA6Cfg);
+   config_cg.sample(cfg.CVA6Cfg);
    boot_addr_cg.sample(cfg.boot_addr);
    clock_period_cg.sample(cfg.sys_clk_period);
    
