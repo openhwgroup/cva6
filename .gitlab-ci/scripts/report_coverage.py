@@ -32,7 +32,7 @@ components = [
 	"controller_i",
 	"csr_regfile_i",
 	"ex_stage_i",
-	"gen_cache_wt.i_cache_subsystem",
+	"gen_cache_hpd.i_cache_subsystem",
 	"i_frontend",
 	"id_stage_i",
 	"issue_stage_i",
