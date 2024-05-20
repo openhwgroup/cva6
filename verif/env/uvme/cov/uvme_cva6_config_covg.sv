@@ -76,7 +76,7 @@ covergroup cg_cva6_config(string name) with function sample(cva6_cfg_t CVA6Cfg);
       bins DataUserEn ={0};
    }
    cp_IcacheSetAssoc : coverpoint CVA6Cfg.ICACHE_SET_ASSOC {
-      bins IcacheSetAssoc ={4};
+      bins IcacheSetAssoc ={2};
    }
    cp_IcacheLineWidth : coverpoint CVA6Cfg.ICACHE_LINE_WIDTH {
       bins IcacheLineWidth ={128};
@@ -94,7 +94,7 @@ covergroup cg_cva6_config(string name) with function sample(cva6_cfg_t CVA6Cfg);
       bins FpgaEn ={0};
    }
    cp_NrLoadBufEntries : coverpoint CVA6Cfg.NrLoadBufEntries {
-      bins NrLoadBufEntries ={1};
+      bins NrLoadBufEntries ={2};
    }
    cp_RASDepth : coverpoint CVA6Cfg.RASDepth {
       bins RASDepth ={2};
