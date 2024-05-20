@@ -28,11 +28,23 @@ ifndef TECH_NAME
   $(error "Please provide TECH_NAME techno")
 endif
 
+# Create Flist with good compilation order for synthesis
+#	- config_pkg.sv
+#	- hpdcache_params_pkg.sv before hdpcache_pkg.sv
+#	- pkg before rtl
 pre_cva6_synth:
-	grep "CVA6_REPO_DIR\}" ../../core/Flist.cva6|grep -v "instr_tracer"|grep -v "cva6_rvfi_probes"|grep -v "incdir" > Flist.cva6_synth
-	grep "CVA6_REPO_DIR\}" ../../core/Flist.cva6|grep -v "instr_tracer"|grep -v "incdir" > Flist.cva6_synth
-	sed -i "s/^/analyze -f sverilog -lib ariane_lib /" Flist.cva6_synth
+	grep "{\w*}" ../../core/Flist.cva6|grep -v "instr_tracer"|grep -v "incdir"|grep -v "hpdcache.Flist" > Flist.cva6_synth
+	grep "{\w*}" ../../core/cache_subsystem/hpdcache/rtl/hpdcache.Flist|grep -v "incdir" >> Flist.cva6_synth
+	grep "hpdcache_pkg.sv" Flist.cva6_synth > hpdcache_pkg.tmp
+	grep "_pkg.sv" Flist.cva6_synth | grep -v "hpdcache_pkg.sv" > packages.tmp
+	grep -v "hpdcache_pkg.sv" Flist.cva6_synth | grep -v "HPDCACHE_TARGET_CFG" | grep -v "_pkg.sv" > rtl.tmp
+	cat packages.tmp > Flist.cva6_synth
+	cat hpdcache_pkg.tmp >> Flist.cva6_synth
+	cat rtl.tmp >> Flist.cva6_synth
+	sed -i "s/^/analyze -f sverilog -lib ariane_lib -define HPDCACHE_ASSERT_OFF /" Flist.cva6_synth
+	sed -i -e 's/behav/blackbox/g' Flist.cva6_synth
 
+# Deprecated
 cva6_synth: pre_cva6_synth
 	@echo $(PERIOD)
 	@export $(EXPORT_LIST); $(DC_SHELL_PATH)/dc_shell -f ./cva6_synth.tcl -output synthesis_batch.log
@@ -42,10 +54,13 @@ cva6_synth: pre_cva6_synth
 	sed -i 's/cva6_ /cva6 /g' $(DESIGN_NAME)_$(TARGET)_synth.v
 	echo $(NAND2_AREA) > $(DESIGN_NAME)_$(TARGET)/nand2area.txt
 
+# Supported for cv32a65x
 rm_synth: pre_cva6_synth
 	@echo $(PERIOD) 
 	cp Flist.cva6_synth ../../$(SYNTH_FLOW_NAME)/synth/
 	CVA6_REPO_DIR=$(CVA6_REPO_DIR) make -C ../../$(SYNTH_FLOW_NAME)/synth/ platform_synth_topo
+	sed -i -n -e '/module hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080/,/endmodule/!p' $(DESIGN_NAME)_$(TARGET)_synth.v
+	sed -i -n -e '/module hpdcache_sram_1rw_00000006_0000001a_00000040/,/endmodule/!p' $(DESIGN_NAME)_$(TARGET)_synth.v
 	echo $(NAND2_AREA) > $(DESIGN_NAME)_$(TARGET)/nand2area.txt
 
 cva6_read:
