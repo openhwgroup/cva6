@@ -52,6 +52,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    //pmp entries
    rand int                      nr_pmp_entries;
 
+   // Handle to RTL configuration
+   rand cva6_cfg_t         CVA6Cfg;
+
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
@@ -90,43 +93,43 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       cvxif_cfg.load_store_support_x       == 0;
       cvxif_cfg.seq_cus_instr_x2_enabled   == 1;
       cvxif_cfg.reg_cus_crosses_enabled    == 0;
-      cvxif_cfg.mode_s_supported           == mode_s_supported;
-      cvxif_cfg.mode_u_supported           == mode_u_supported;
+      cvxif_cfg.mode_s_supported           == CVA6Cfg.RVS;
+      cvxif_cfg.mode_u_supported           == CVA6Cfg.RVU;
    }
 
    constraint cva6_riscv_cons {
-      xlen == uvma_core_cntrl_pkg::MXL_32;
+      xlen == CVA6Cfg.XLEN;
       ilen == 32;
 
       ext_i_supported        == 1;
-      ext_a_supported        == 0;
+      ext_a_supported        == CVA6Cfg.RVA;
       ext_m_supported        == 1;
-      ext_c_supported        == 1;
+      ext_c_supported        == CVA6Cfg.RVC;
       ext_p_supported        == 0;
-      ext_v_supported        == 0;
-      ext_f_supported        == 0;
-      ext_d_supported        == 0;
-      ext_zba_supported      == 1;
-      ext_zbb_supported      == 1;
-      ext_zbc_supported      == 1;
+      ext_v_supported        == CVA6Cfg.RVV;
+      ext_f_supported        == CVA6Cfg.RVF;
+      ext_d_supported        == CVA6Cfg.RVD;
+      ext_zba_supported      == CVA6Cfg.RVB;
+      ext_zbb_supported      == CVA6Cfg.RVB;
+      ext_zbc_supported      == CVA6Cfg.RVB;
       ext_zbe_supported      == 0;
       ext_zbf_supported      == 0;
       ext_zbm_supported      == 0;
       ext_zbp_supported      == 0;
       ext_zbr_supported      == 0;
-      ext_zbs_supported      == 1;
+      ext_zbs_supported      == CVA6Cfg.RVB;
       ext_zbt_supported      == 0;
       ext_zifencei_supported == 1;
       ext_zicsr_supported    == 1;
-      ext_zicond_supported   == 0;
-      ext_zcb_supported      == 1;
+      ext_zicond_supported   == CVA6Cfg.RVZiCond;
+      ext_zcb_supported      == CVA6Cfg.RVZCB;
 
-      mode_s_supported       == 0;
-      mode_u_supported       == 0;
+      mode_s_supported       == CVA6Cfg.RVS;
+      mode_u_supported       == CVA6Cfg.RVU;
 
-      pmp_supported          == 1;
+      pmp_supported          == (CVA6Cfg.NrPMPEntries > 0);
       nr_pmp_entries         == 16;
-      debug_supported        == 0;
+      debug_supported        == CVA6Cfg.DebugEn;
 
       unaligned_access_supported     == 0;
       unaligned_access_amo_supported == 0;
@@ -140,7 +143,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       dm_halt_addr_valid      == 1;
       dm_exception_addr_valid == 1;
       nmi_addr_valid          == 1;
-      HPDCache_supported      == 1;
+      HPDCache_supported      == (CVA6Cfg.DCacheType == 2);
    }
 
    constraint ext_const {
