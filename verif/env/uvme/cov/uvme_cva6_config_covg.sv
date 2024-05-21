@@ -116,11 +116,11 @@ covergroup cg_cva6_config(string name) with function sample(cva6_cfg_t CVA6Cfg);
    }
 endgroup: cg_cva6_config
 
-covergroup cg_cva6_boot_addr(string name) with function sample(bit [cva6_config_pkg::CVA6ConfigXlen-1:0] boot_addr);
+covergroup cg_cva6_boot_addr(string name) with function sample(uvme_cva6_cfg_c cfg);
    option.per_instance = 1;
    option.name = name;
    
-   cp_boot_addr : coverpoint boot_addr {
+   cp_boot_addr : coverpoint cfg.boot_addr {
       bins BOOT_ADDR_0 ={0};
       bins BOOT_ADDR_LOW ={[1:'h10000_0000]};
       bins BOOT_ADDR_HIGH ={['h10000_0000:$]};
@@ -215,7 +215,7 @@ endfunction : build_phase
 function void uvme_cva6_config_covg_c::sample_cva6_config();
 
    config_cg.sample(cfg.CVA6Cfg);
-   boot_addr_cg.sample(cfg.boot_addr);
+   boot_addr_cg.sample(cfg);
    clock_period_cg.sample(cfg.sys_clk_period);
    
 endfunction : sample_cva6_config
