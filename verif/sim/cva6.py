@@ -965,7 +965,7 @@ def load_config(args, cwd):
   if not args.custom_target:
     if not args.testlist:
       args.testlist = cwd + "/target/"+ args.target +"/testlist.yaml"
-    if args.target == "cv64a6_imafdc_sv39":
+    if args.target in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_wb"):
       args.mabi = "lp64d"
       args.isa  = "rv64gc_zba_zbb_zbs_zbc"
     elif args.target == "cv32a60x": # step1 configuration
