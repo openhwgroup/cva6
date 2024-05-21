@@ -1,0 +1,12 @@
+misa:
+    reset-val: 123475      
+mcycle: 
+      reset-val: 123475 
+mvendorid:
+    description: '' 
+misa:
+    rv32:
+        mxl:
+            shadow_type: ''
+pmp : 
+    reset-val: 123475
