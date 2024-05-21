@@ -1586,32 +1586,14 @@ plan "CVA6 Verification Master Plan";
             measure Group CvxifEn;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_CvxifEn";
             endmeasure
-            measure Group DataTlbEntries;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DataTlbEntries";
-            endmeasure
             measure Group DataUserEn;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DataUserEn";
-            endmeasure
-            measure Group DataUserWidth;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DataUserWidth";
-            endmeasure
-            measure Group DcacheByteSize;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheByteSize";
-            endmeasure
-            measure Group DcacheIdWidth;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheIdWidth";
             endmeasure
             measure Group DcacheLineWidth;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheLineWidth";
             endmeasure
             measure Group DcacheSetAssoc;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheSetAssoc";
-            endmeasure
-            measure Group DcacheType;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_DcacheType";
-            endmeasure
-            measure Group EnableAccelerator;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_EnableAccelerator";
             endmeasure
             measure Group ExceptionAddress;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_ExceptionAddress";
@@ -1625,9 +1607,6 @@ plan "CVA6 Verification Master Plan";
             measure Group F16En;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_F16En";
             endmeasure
-            measure Group FLen;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FLen";
-            endmeasure
             measure Group FpgaEn;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FpgaEn";
             endmeasure
@@ -1640,17 +1619,8 @@ plan "CVA6 Verification Master Plan";
             measure Group FetchUserWidth;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FetchUserWidth";
             endmeasure
-            measure Group FpPresent;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_FpPresent";
-            endmeasure
-            measure Group RVF;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RVF";
-            endmeasure
             measure Group HaltAddress;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_HaltAddress";
-            endmeasure
-            measure Group IcacheByteSize;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_IcacheByteSize";
             endmeasure
             measure Group IcacheLineWidth;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_IcacheLineWidth";
@@ -1658,74 +1628,23 @@ plan "CVA6 Verification Master Plan";
             measure Group IcacheSetAssoc;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_IcacheSetAssoc";
             endmeasure
-            measure Group InstrTlbEntries;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_InstrTlbEntries";
-            endmeasure
-            measure Group MemTidWidth;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_MemTidWidth";
-            endmeasure
-            measure Group MmuPresent;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_MmuPresent";
-            endmeasure
-            measure Group NSX;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NSX";
-            endmeasure
             measure Group NrCommitPorts;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrCommitPorts";
             endmeasure
             measure Group NrLoadBufEntries;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrLoadBufEntries";
             endmeasure
-            measure Group NrLoadPipeRegs;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrLoadPipeRegs";
-            endmeasure
             measure Group NrPMPEntries;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrPMPEntries";
-            endmeasure
-            measure Group NrRgprPorts;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrRgprPorts";
-            endmeasure
-            measure Group NrScoreboardEntries;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrScoreboardEntries";
-            endmeasure
-            measure Group NrStorePipeRegs;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrStorePipeRegs";
-            endmeasure
-            measure Group NrWbPorts;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_NrWbPorts";
-            endmeasure
-            measure Group PerfCounterEn;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_PerfCounterEn";
             endmeasure
             measure Group RASDepth;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RASDepth";
             endmeasure
-            measure Group RVD;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RVD";
-            endmeasure
             measure Group RVF;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RVF";
             endmeasure
-            measure Group RVFVec;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RVFVec";
-            endmeasure
-            measure Group RvfiTrace;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_RvfiTrace";
-            endmeasure
             measure Group VExtEn;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_VExtEn";
-            endmeasure
-            measure Group WtDcacheWbufDepth;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_WtDcacheWbufDepth";
-            endmeasure
-            measure Group XF8Vec;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_XF8Vec";
-            endmeasure
-            measure Group XF16ALTVec;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_XF16ALTVec";
-            endmeasure
-            measure Group XF16Vec;
-                source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_XF16Vec";
             endmeasure
             measure Group Xlen;
                 source = "group instance: uvme_cva6_pkg.uvme_cva6_pkg.config_cg.cp_Xlen";
