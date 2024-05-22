@@ -216,7 +216,7 @@ spyglass:
     - make -C spyglass design_read
     - make -C spyglass lint_check
     - mv spyglass/sg_run_results/cva6_sg_reports/cva6_lint_lint_rtl artifacts/lint_reports
-    - python3 .gitlab-ci/scripts/report_spyglass_lint.py artifacts/lint_reports/cva6_lint_lint_rtl/spyglass.log
+    - python3 .gitlab-ci/scripts/report_spyglass_lint.py artifacts/lint_reports/cva6_lint_lint_rtl/summary.rpt artifacts/lint_reports/cva6_lint_lint_rtl/spyglass.log
 
 asic-synthesis:
   extends:
