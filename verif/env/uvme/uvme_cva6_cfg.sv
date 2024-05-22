@@ -184,7 +184,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.seq_instr_x2_enabled       == 1;
       isacov_cfg.reg_crosses_enabled        == 0;
       isacov_cfg.reg_hazards_enabled        == 1;
-      rvfi_cfg.nret                         == cva6_config_pkg::CVA6ConfigNrCommitPorts;
+      rvfi_cfg.nret                         == CVA6Cfg.NrCommitPorts;
       rvfi_cfg.unified_exceptions           == 0;
 
       if (is_active == UVM_ACTIVE) {
