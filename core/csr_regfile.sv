@@ -773,7 +773,8 @@ module csr_regfile
           // -> last bit of pmpaddr must be set 0/1 based on the mode:
           // NA4, NAPOT: 1
           // TOR, OFF:   0
-          if (pmpcfg_q[index].addr_mode[1] == 1'b1) csr_rdata = pmpaddr_q[index][CVA6Cfg.PLEN-3:0];
+          if (pmpcfg_q[index].addr_mode[1] == 1'b1 || pmpcfg_q[index].addr_mode == 'h0)
+            csr_rdata = pmpaddr_q[index][CVA6Cfg.PLEN-3:0];
           else csr_rdata = {pmpaddr_q[index][CVA6Cfg.PLEN-3:1], 1'b0};
         end
         default: read_access_exception = 1'b1;
@@ -1248,6 +1249,18 @@ module csr_regfile
           end
           if (!CVA6Cfg.RVV) begin
             mstatus_d.vs = riscv::Off;
+          end
+          if (!CVA6Cfg.RVS) begin
+            mstatus_d.sie  = riscv::Off;
+            mstatus_d.spie = riscv::Off;
+            mstatus_d.spp  = riscv::Off;
+            mstatus_d.sum  = riscv::Off;
+            mstatus_d.mxr  = riscv::Off;
+            mstatus_d.tvm  = riscv::Off;
+            mstatus_d.tsr  = riscv::Off;
+          end
+          if (!CVA6Cfg.RVU) begin
+            mstatus_d.mprv = riscv::Off;
           end
           // If h-extension is not enabled, priv level HS is reserved
           if (!CVA6Cfg.RVH) begin
