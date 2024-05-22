@@ -368,7 +368,7 @@ questa-uvm:
 
 
 generate_cov_dash:
-	urg -hvp_proj cva6_embedded -format both -group instcov_for_score -hvp_attributes weight+description+Comment -dir vcs_results/default/vcs.d/simv.vdb -plan cva6.hvp -tgl portsonly
+	urg -warn none -hvp_proj cva6_embedded -format both -group instcov_for_score -hvp_attributes weight+description+Comment -dir vcs_results/default/vcs.d/simv.vdb -plan cva6.hvp -tgl portsonly
 
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
