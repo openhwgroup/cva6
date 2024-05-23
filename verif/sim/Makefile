@@ -301,7 +301,7 @@ vcs_uvm_comp:
 	  $(cov-comp-opt) +define+UNSUPPORTED_WITH+ $(isscomp_opts)\
 	  -top uvmt_cva6_tb
 
-vcs_uvm_run:
+vcs_uvm_run: vcs_uvm_comp
 	$(if $(TRACE_FAST), unset VERDI_HOME ;) \
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv \
@@ -309,9 +309,7 @@ vcs_uvm_run:
 	    $(ALL_SIMV_UVM_FLAGS) \
 	    $(cov-run-opt) $(issrun_opts)
 
-vcs-uvm:
-	make vcs_uvm_comp
-	make vcs_uvm_run
+vcs-uvm: vcs_uvm_comp vcs_uvm_run
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.
 	[ ! -f $(VCS_WORK_DIR)/novas.vpd  ] || \
