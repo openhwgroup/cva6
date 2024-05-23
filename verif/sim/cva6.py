@@ -1141,8 +1141,6 @@ def main():
     global test_iteration
     global log_format
     cwd = os.path.dirname(os.path.realpath(__file__))
-    os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
-    os.environ["CVA6_DV_ROOT"]  = cwd + "/../env/corev-dv"
     args = parse_args(cwd)
     # We've parsed all the arguments from the command line; default values
     # can be set in the config file. Read that here.
