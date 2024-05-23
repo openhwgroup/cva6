@@ -104,6 +104,7 @@ module cva6_mmu
 
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
+    logic [9:0] reserved;
     logic [CVA6Cfg.PPNW-1:0] ppn;  // PPN length for
     logic [1:0] rsw;
     logic d;

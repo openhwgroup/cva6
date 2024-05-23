@@ -98,7 +98,7 @@ module cva6_ptw
   pte_cva6_t pte;
   // register to perform context switch between stages
   pte_cva6_t gpte_q, gpte_d;
-  assign pte = pte_cva6_t'(data_rdata_q[CVA6Cfg.PPNW+9:0]);
+  assign pte = pte_cva6_t'(data_rdata_q);
 
   enum logic [2:0] {
     IDLE,
@@ -404,8 +404,8 @@ module cva6_ptw
           // -------------
           // Invalid PTE
           // -------------
-          // If pte.v = 0, or if pte.r = 0 and pte.w = 1, stop and raise a page-fault exception.
-          if (!pte.v || (!pte.r && pte.w))  // || (|pte.reserved))
+          // If pte.v = 0, or if pte.r = 0 and pte.w = 1, or if pte.reserved !=0 in sv39 and sv39x4, stop and raise a page-fault exception.
+          if (!pte.v || (!pte.r && pte.w) || (|pte.reserved && CVA6Cfg.XLEN == 64))
             state_d = PROPAGATE_ERROR;
           // -----------
           // Valid PTE

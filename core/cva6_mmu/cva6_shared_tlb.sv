@@ -112,11 +112,11 @@ module cva6_shared_tlb #(
 
   logic [               SHARED_TLB_WAYS-1:0] pte_wr_en;
   logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] pte_wr_addr;
-  logic [             $bits(pte_cva6_t)-1:0] pte_wr_data      [                1:0];
+  logic [                  CVA6Cfg.XLEN-1:0] pte_wr_data      [                1:0];
 
   logic [               SHARED_TLB_WAYS-1:0] pte_rd_en;
   logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] pte_rd_addr;
-  logic [             $bits(pte_cva6_t)-1:0] pte_rd_data      [SHARED_TLB_WAYS-1:0] [HYP_EXT:0];
+  logic [                  CVA6Cfg.XLEN-1:0] pte_rd_data      [SHARED_TLB_WAYS-1:0] [HYP_EXT:0];
 
   logic [               SHARED_TLB_WAYS-1:0] pte_req;
   logic [               SHARED_TLB_WAYS-1:0] pte_we;
@@ -413,8 +413,8 @@ module cva6_shared_tlb #(
 
   assign pte_wr_addr = shared_tlb_update_i.vpn[$clog2(CVA6Cfg.SharedTlbDepth)-1:0];
 
-  assign pte_wr_data[0] = shared_tlb_update_i.content;
-  assign pte_wr_data[1] = shared_tlb_update_i.g_content;
+  assign pte_wr_data[0] = shared_tlb_update_i.content[CVA6Cfg.XLEN-1:0];
+  assign pte_wr_data[1] = shared_tlb_update_i.g_content[CVA6Cfg.XLEN-1:0];
 
 
 
@@ -479,7 +479,7 @@ module cva6_shared_tlb #(
       for (genvar a = 0; a < HYP_EXT + 1; a++) begin : g_content_sram
         // PTE RAM
         sram #(
-            .DATA_WIDTH($bits(pte_cva6_t)),
+            .DATA_WIDTH(CVA6Cfg.XLEN),
             .NUM_WORDS (CVA6Cfg.SharedTlbDepth)
         ) pte_sram (
             .clk_i  (clk_i),
