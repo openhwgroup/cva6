@@ -17,11 +17,11 @@ import yaml
 import report_builder as rb
 from pprint import pprint
 
-def extract_info (summary_rpt):
-	pattern = re.compile(r'(WARNING|ERROR|INFO)\s+([\w.-]+)\s+(\d+)\s+(.+)$')
+def extract_info (summary_rpt_ref):
+	pattern = re.compile(r'(WARNING|ERROR|INFO)\s+(\S+)\s+(\d+)\s+(.+)$')
 	info_list = []
 
-	with open(str(sys.argv[1]), "r") as f:
+	with open(summary_rpt_ref, "r") as f:
 		lines = f.readlines()
 
 	for line in lines:
@@ -36,47 +36,47 @@ def extract_info (summary_rpt):
 
 	return info_list
 
-def print_table(info_list):
-	print("{:<10} {:<20} {:<10} {:<50}".format('Severity','Rule Name', 'Count', 'Short Help'))
-	print("=" * 81)
+def compare_summaries(baseline_info, new_info):
+	baseline_dict={(severity, rule_name):(count,short_help) for severity, rule_name, count, short_help in baseline_info}
+	new_dict={(severity, rule_name):(count,short_help) for severity, rule_name, count, short_help in new_info}
 
-	for info in info_list:
-		if info[0] in ['WARNING', 'ERROR','INFO']:
-			print("{:<10} {:<20} {:<10} {:<50}".format(*info))
+	comparison_results = []
 
-def check_spyglass(spyglass_log_path):
-	# Read the spyglass log files
-	with open(str(sys.argv[2]), "r") as f:
-		log = f.read()
+	for key in baseline_dict.keys():
+		if key not in new_dict:
+			comparison_results.append((*key, baseline_dict[key][0], baseline_dict[key][1], "PASS", "Deleted"))
 
-	# Define patterns to search for in the logs
-	success_pattern = r'SpyGlass Rule Checking Complete'
-	failure_pattern = r'SpyGlass Rule Checking ABORTED'
+	for key in new_dict.keys():
+		if key not in baseline_dict:
+			comparison_results.append((*key, new_dict[key][0], new_dict[key][1], "FAIL", "NEW"))
 
-	# Check if Spyglass lint check was successful
-	if re.search(success_pattern, log):
-		print("Spyglass lint check completed successfully.")
-	else:
-		print("Spyglass lint check failed")
+	for key in new_dict.keys():
+		if key in baseline_dict:
+			if new_dict[key][0] == baseline_dict[key][0]:
+				comparison_results.append((*key, new_dict[key][0], new_dict[key][1], "PASS", "SAME"))
+			else:
+				comparison_results.append((*key, new_dict[key][0], new_dict[key][1], "FAIL", f"Count changed from {baseline_dict[key][0]} to {new_dict[key][0]}"))
+	return  comparison_results
+
+def print_comparison_table(comparison_results):
+	print("{:<10} {:<25} {:<10} {:<50} {:<5} {:<10}".format('Severity','Rule Name', 'Count', 'Short Help', 'Check', 'Status'))
+	print("=" * 135)
+
+	for result in comparison_results:
+		print("{:<10} {:<25} {:<10} {:<50} {:<5} {:<10} ".format(*result))
 
 
 if __name__ == "__main__":
 	if len(sys.argv) != 3:
-		print("Usage: python script.py <summary_file_path>  <spyglass_log_file>")
+		print("Usage: python script.py <summary_ref_file> <summary_file_path>")
 		sys.exit(1)
-	summary_rpt = sys.argv[1]
-	spyglass_log_path = sys.argv[2]
+	summary_rpt_ref = sys.argv[1]
+	summary_rpt = sys.argv[2]
 
-	if not os.path.exists(summary_rpt):
-		print("Summary file does not exist.")
-		sys.exit(1)
+	baseline_info = extract_info(summary_rpt_ref)
 
-	if not os.path.exists(spyglass_log_path):
-		print("Spyglass log file does not exist.")
-		sys.exit(1)
+	new_info = extract_info(summary_rpt)
 
-	check_spyglass(spyglass_log_path)
+	comparison_results = compare_summaries(baseline_info, new_info)
 
-	info_list = extract_info(summary_rpt)
-
-	print_table(info_list)
+	print_comparison_table(comparison_results)
