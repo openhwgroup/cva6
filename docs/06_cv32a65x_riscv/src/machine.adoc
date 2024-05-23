@@ -727,11 +727,12 @@ whether access-fault exceptions are raised due to PMAs or PMP.
 endif::[]
 
 ifeval::[{RVS} == false]
-[{ohg-config}] As S-mode is not implemented, MXR and SUM is read-only 0.
-
-[{ohg-config}] As the U-Mode is not implemented, MPRV is read-only 0.
+[{ohg-config}] As U-Mode is not implemented, MPRV is read-only 0.
 Loads and stores behave as normal, using the translation and protection
 mechanisms of the current privilege mode.
+
+[{ohg-config}] As S-mode is not implemented, MXR and SUM are read-only 0.
+
 endif::[]
 
 ===== Endianness Control in `mstatus` and `mstatush` Registers
@@ -1519,7 +1520,7 @@ ifeval::[{RVU} == false]
 mode.
 
 [{ohg-config}] As S-mode is not implemented, the `medeleg` and `mideleg` registers do not exist.
-The SPP, SPIE, SIE field of `mstatus` are read-only zero.
+The SPP, SPIE, SIE fields of `mstatus` are read-only zero.
 endif::[]
 
 ==== Machine Interrupt Registers (`mip` and `mie`)
