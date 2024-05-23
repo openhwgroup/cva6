@@ -17,10 +17,11 @@
 `include "tb.svh"
 
 program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter string       PortName      = "atomics port 0",
   parameter              MemWords      = 1024*1024,// in 64bit words
-  parameter logic [63:0] CachedAddrBeg = 0,
-  parameter logic [63:0] CachedAddrEnd = 0,
+  parameter logic [CVA6Cfg.PLEN-1:0] CachedAddrBeg = 0,
+  parameter logic [CVA6Cfg.PLEN-1:0] CachedAddrEnd = 0,
   parameter              RndSeed       = 1110,
   parameter              Verbose       = 0
 ) (
@@ -35,9 +36,9 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
   output logic          seq_done_o,
 
   // expresp interface
-  input logic [63:0]    act_mem_i,
-  input logic [63:0]    exp_mem_i,
-  input logic [63:0]    exp_result_i,
+  input logic [CVA6Cfg.XLEN-1:0]    act_mem_i,
+  input logic [CVA6Cfg.XLEN-1:0]    exp_mem_i,
+  input logic [CVA6Cfg.XLEN-1:0]    exp_result_i,
 
   // interface to DUT
   output amo_req_t  dut_amo_req_port_o,
@@ -55,8 +56,8 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
 ///////////////////////////////////////////////////////////////////////////////
 
   task automatic applyAtomics();
-    automatic logic [63:0] paddr;
-    automatic logic [63:0] data;
+    automatic logic [CVA6Cfg.XLEN-1:0] paddr;
+    automatic logic [CVA6Cfg.XLEN-1:0] data;
     automatic logic [1:0]  size;
     automatic amo_t amo_op;
     automatic logic [63:0] delay;
@@ -83,7 +84,7 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
       void'(randomize(amo_op) with {!(amo_op inside {AMO_NONE, AMO_CAS1, AMO_CAS2});});
       void'(randomize(data));
       if (riscv::XLEN == 64)
-        void'(randomize(size) with {size >= 2; size <= 3;});
+        void'(randomize(size) with {size >= 2; size <= $clog2(CVA6Cfg.XLEN/8);});
       else
         size = 'h2;
 
@@ -94,7 +95,7 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
       if (amo_op inside {AMO_LR, AMO_SC})
         void'(randomize(paddr) with {paddr >= 8; paddr < 12;});
       else
-        void'(randomize(paddr) with {paddr >= 8; paddr < (MemWords<<3);});
+        void'(randomize(paddr) with {paddr >= 8; paddr < (MemWords<<$clog2(CVA6Cfg.XLEN/8));});
 
       // Align adress
       if (size == 2)
@@ -163,7 +164,7 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
     progress status;
     string failingTests, tmpstr0, tmpstr1, tmpstr2;
     int    n;
-    logic [63:0] exp_res;
+    logic [CVA6Cfg.XLEN-1:0] exp_res;
 
     status       = new(PortName);
     failingTests = "";
@@ -189,7 +190,7 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
         // Assert expected data is not 'x, protects against ineffective ==? comparisons
         assert(exp_result_i !== 'x) else $error("Expected result is unknown");
         // note: wildcard as defined in right operand!
-        ok=(dut_amo_resp_port_i.result ==? exp_result_i) && (act_mem_i == exp_mem_i);
+        ok=(dut_amo_resp_port_i.result[CVA6Cfg.XLEN-1:0] ==? exp_result_i) && (act_mem_i == exp_mem_i);
 
         if(Verbose | !ok) begin
           tmpstr0 =  $psprintf("vector: %02d - %06d -- paddr:   %16X -- AMO: 0x%2X -- size: %X  -- op_a: %16X -- op_b: %16X",

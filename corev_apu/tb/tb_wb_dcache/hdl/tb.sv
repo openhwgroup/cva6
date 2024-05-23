@@ -17,19 +17,20 @@
 `include "assign.svh"
 `include "axi/typedef.svh"
 
-module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()();
+module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #(
+  // CVA6 config
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(
+    cva6_config_pkg::cva6_cfg
+  )
+)();
 
   // leave this
   timeunit 1ps;
   timeprecision 1ps;
 
-  // memory configuration (64bit words)
-  parameter MemBytes          = 2**CVA6Cfg.DCACHE_INDEX_WIDTH * 4 * 32;
-  parameter MemWords          = MemBytes>>3;
-
   // noncacheable portion
-  parameter logic [63:0] CachedAddrBeg = MemBytes>>3;//1/8th of the memory is NC
-  parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
+  parameter logic [CVA6Cfg.PLEN-1:0] CachedAddrBeg = cva6_config_pkg::CachedAddrBeg;
+  parameter logic [CVA6Cfg.PLEN-1:0] CachedAddrEnd = {CVA6Cfg.XLEN{1'b1}};
 
   // contention and invalidation rates (in %)
   parameter MemRandHitRate   = 75;
@@ -59,6 +60,29 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   /// Test time of the DUT
   parameter time          TbTestTime         = 8ns;
 
+
+  // D$ data requests
+  localparam type dcache_req_i_t = struct packed {
+    logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
+    logic [CVA6Cfg.XLEN-1:0]               data_wdata;
+    logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]  data_wuser;
+    logic                                  data_req;
+    logic                                  data_we;
+    logic [(CVA6Cfg.XLEN/8)-1:0]           data_be;
+    logic [1:0]                            data_size;
+    logic [CVA6Cfg.DcacheIdWidth-1:0]      data_id;
+    logic                                  kill_req;
+    logic                                  tag_valid;
+  };
+
+  localparam type dcache_req_o_t = struct packed {
+    logic                                 data_gnt;
+    logic                                 data_rvalid;
+    logic [CVA6Cfg.DcacheIdWidth-1:0]     data_rid;
+    logic [CVA6Cfg.XLEN-1:0]              data_rdata;
+    logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
+  };
 
 ///////////////////////////////////////////////////////////////////////////////
 // MUT signal declarations
@@ -103,25 +127,26 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   logic tlb_rand_en;
 
   logic write_en;
-  logic [63:0] write_paddr, write_data;
+  logic [CVA6Cfg.PLEN-1:0] write_paddr;
+  logic [CVA6Cfg.XLEN-1:0] write_data;
   logic [7:0] write_be;
 
   typedef struct packed  {
     logic [1:0]  size;
-    logic [63:0] paddr;
+    logic [CVA6Cfg.PLEN-1:0] paddr;
   } resp_fifo_t;
 
   typedef struct packed {
     logic        valid;
-    logic [63:0] paddr;
+    logic [CVA6Cfg.PLEN-1:0] paddr;
   } reservation_t;
 
-  logic [63:0] act_paddr[1:0];
-  logic [63:0] exp_rdata[1:0];
-  logic [63:0] exp_paddr[1:0];
-  logic [63:0] amo_act_mem;
-  logic [63:0] amo_shadow;
-  logic [63:0] amo_exp_result;
+  logic [CVA6Cfg.PLEN-1:0] act_paddr[1:0];
+  logic [CVA6Cfg.XLEN-1:0] exp_rdata[1:0];
+  logic [CVA6Cfg.PLEN-1:0] exp_paddr[1:0];
+  logic [CVA6Cfg.XLEN-1:0] amo_act_mem;
+  logic [CVA6Cfg.XLEN-1:0] amo_shadow;
+  logic [CVA6Cfg.XLEN-1:0] amo_exp_result;
   resp_fifo_t  fifo_data_in[1:0];
   resp_fifo_t  fifo_data[1:0];
   logic [1:0]  fifo_push, fifo_pop, fifo_flush;
@@ -152,19 +177,19 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   `AXI_ASSIGN_TO_RESP(axi_bypass_i, axi_bypass_dv)
 
   typedef tb_mem_port #(
-    .AW                   ( TbAxiAddrWidthFull       ),
-    .DW                   ( TbAxiDataWidthFull       ),
-    .IW                   ( TbAxiIdWidthFull + 32'd1 ),
-    .UW                   ( TbAxiUserWidthFull       ),
-    .TA                   ( TbApplTime               ),
-    .TT                   ( TbTestTime               ),
-    .AX_MIN_WAIT_CYCLES   ( 0                        ),
-    .AX_MAX_WAIT_CYCLES   ( 50                       ),
-    .R_MIN_WAIT_CYCLES    ( 10                       ),
-    .R_MAX_WAIT_CYCLES    ( 20                       ),
-    .RESP_MIN_WAIT_CYCLES ( 10                       ),
-    .RESP_MAX_WAIT_CYCLES ( 20                       ),
-    .MEM_BYTES            ( MemBytes                 )
+    .AW                   ( TbAxiAddrWidthFull        ),
+    .DW                   ( TbAxiDataWidthFull        ),
+    .IW                   ( TbAxiIdWidthFull + 32'd1  ),
+    .UW                   ( TbAxiUserWidthFull        ),
+    .TA                   ( TbApplTime                ),
+    .TT                   ( TbTestTime                ),
+    .AX_MIN_WAIT_CYCLES   ( 0                         ),
+    .AX_MAX_WAIT_CYCLES   ( 50                        ),
+    .R_MIN_WAIT_CYCLES    ( 10                        ),
+    .R_MAX_WAIT_CYCLES    ( 20                        ),
+    .RESP_MIN_WAIT_CYCLES ( 10                        ),
+    .RESP_MAX_WAIT_CYCLES ( 20                        ),
+    .MEM_BYTES            ( cva6_config_pkg::MemBytes )
   ) tb_mem_port_t;
 
   tb_mem_port_t data_mem_port;
@@ -258,7 +283,7 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 
   // listen to the write/AMO ports and keep shadow memory up-to-date
   initial begin : p_mem
-    automatic logic[63:0] amo_result, amo_op_a, amo_op_b, amo_op_a_u, amo_op_b_u;
+    automatic logic[CVA6Cfg.XLEN-1:0] amo_result, amo_op_a, amo_op_b, amo_op_a_u, amo_op_b_u;
     reservation_t reservation;
 
     // Initialize
@@ -330,12 +355,12 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
             // Check whether we have a valid reservation. If so, do the store and return 0.
             if (reservation.valid && reservation.paddr == amo_req_i.operand_a) begin
               amo_result     = amo_op_b;
-              amo_exp_result = 64'b0;
+              amo_exp_result = 'b0;
 
             // Else, leave the memory unchanged and return 1.
             end else begin
               amo_result     = amo_shadow;
-              amo_exp_result = 64'b1;
+              amo_exp_result = 'b1;
             end
 
             // Either way, invalidate the reservation.
@@ -394,10 +419,10 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 ///////////////////////////////////////////////////////////////////////////////
 
   std_nbdcache  #(
-    .CVA6Cfg        ( ArianeDefaultConfig ),
-    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull  ),
-    .AXI_DATA_WIDTH ( TbAxiDataWidthFull  ),
-    .AXI_ID_WIDTH   ( TbAxiIdWidthFull    ),
+    .CVA6Cfg        ( CVA6Cfg             ),
+    .dcache_req_i_t ( dcache_req_i_t      ),
+    .dcache_req_o_t ( dcache_req_o_t      ),
+    .NumPorts       ( 3                   ),
     .axi_req_t      ( axi_req_t           ),
     .axi_rsp_t      ( axi_resp_t          )
   ) i_dut (
@@ -427,7 +452,7 @@ axi_riscv_atomics_wrap #(
     .AXI_ID_WIDTH       ( TbAxiIdWidthFull + 32'd1 ),
     .AXI_USER_WIDTH     ( TbAxiUserWidthFull       ),
     .AXI_MAX_WRITE_TXNS ( 1                        ),
-    .RISCV_WORD_WIDTH   ( 64                       )
+    .RISCV_WORD_WIDTH   ( CVA6Cfg.XLEN             )
 ) i_amo_adapter (
     .clk_i  ( clk_i                         ),
     .rst_ni ( rst_ni                        ),
@@ -453,8 +478,8 @@ axi_riscv_atomics_wrap #(
       assign fifo_data_in[k] =  {req_ports_i[k].data_size,
                                  exp_paddr[k]};
 
-      for (genvar l=0; l<8; l++)
-        assign exp_rdata[k][l*8 +: 8] = tb_mem_port_t::shadow_q[{fifo_data[k].paddr[63:3], 3'b0} + l];
+      for (genvar l=0; l<CVA6Cfg.XLEN/8; l++)
+        assign exp_rdata[k][l*8 +: 8] = tb_mem_port_t::shadow_q[{fifo_data[k].paddr[CVA6Cfg.PLEN-1:3], 3'b0} + l];
 
       assign fifo_push[k]  = req_ports_i[k].data_req & req_ports_o[k].data_gnt;
       assign fifo_flush[k] = req_ports_i[k].kill_req;
@@ -479,21 +504,24 @@ axi_riscv_atomics_wrap #(
   endgenerate
 
   // memory and shadow memory region that are addressed by current AMO
-  for (genvar k=0; k<8; k++) begin
+  for (genvar k=0; k<CVA6Cfg.XLEN/8; k++) begin
     assign amo_act_mem[k*8 +: 8] = tb_mem_port_t::memory_q[amo_req_i.operand_a + k];
     assign amo_shadow[k*8 +: 8] = tb_mem_port_t::shadow_q[amo_req_i.operand_a + k];
   end
 
   tb_readport #(
-    .PortName      ( "RD0"         ),
-    .FlushRate     ( FlushRate     ),
-    .KillRate      ( KillRate      ),
-    .TlbHitRate    ( TlbHitRate    ),
-    .MemWords      ( MemWords      ),
-    .CachedAddrBeg ( CachedAddrBeg ),
-    .CachedAddrEnd ( CachedAddrEnd ),
-    .RndSeed       ( 5555555       ),
-    .Verbose       ( Verbose       )
+    .CVA6Cfg        ( CVA6Cfg         ),
+    .PortName       ( "RD0"           ),
+    .FlushRate      ( FlushRate       ),
+    .KillRate       ( KillRate        ),
+    .TlbHitRate     ( TlbHitRate      ),
+    .MemWords       ( cva6_config_pkg::MemWords        ),
+    .CachedAddrBeg  ( CachedAddrBeg   ),
+    .CachedAddrEnd  ( CachedAddrEnd   ),
+    .RndSeed        ( 5555555         ),
+    .Verbose        ( Verbose         ),
+    .dcache_req_i_t ( dcache_req_i_t  ),
+    .dcache_req_o_t ( dcache_req_o_t  )
   ) i_tb_readport0 (
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
@@ -518,15 +546,18 @@ axi_riscv_atomics_wrap #(
     );
 
   tb_readport #(
-    .PortName      ( "RD1"         ),
-    .FlushRate     ( FlushRate     ),
-    .KillRate      ( KillRate      ),
-    .TlbHitRate    ( TlbHitRate    ),
-    .MemWords      ( MemWords      ),
-    .CachedAddrBeg ( CachedAddrBeg ),
-    .CachedAddrEnd ( CachedAddrEnd ),
-    .RndSeed       ( 3333333       ),
-    .Verbose       ( Verbose       )
+    .CVA6Cfg        ( CVA6Cfg         ),
+    .PortName       ( "RD1"           ),
+    .FlushRate      ( FlushRate       ),
+    .KillRate       ( KillRate        ),
+    .TlbHitRate     ( TlbHitRate      ),
+    .MemWords       ( cva6_config_pkg::MemWords        ),
+    .CachedAddrBeg  ( CachedAddrBeg   ),
+    .CachedAddrEnd  ( CachedAddrEnd   ),
+    .RndSeed        ( 3333333         ),
+    .Verbose        ( Verbose         ),
+    .dcache_req_i_t ( dcache_req_i_t  ),
+    .dcache_req_o_t ( dcache_req_o_t  )
   ) i_tb_readport1 (
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
@@ -551,12 +582,15 @@ axi_riscv_atomics_wrap #(
   );
 
   tb_writeport #(
-    .PortName      ( "WR0"         ),
-    .MemWords      ( MemWords      ),
-    .CachedAddrBeg ( CachedAddrBeg ),
-    .CachedAddrEnd ( CachedAddrEnd ),
-    .RndSeed       ( 7777777       ),
-    .Verbose       ( Verbose       )
+    .CVA6Cfg        ( CVA6Cfg         ),
+    .PortName       ( "WR0"           ),
+    .MemWords       ( cva6_config_pkg::MemWords        ),
+    .CachedAddrBeg  ( CachedAddrBeg   ),
+    .CachedAddrEnd  ( CachedAddrEnd   ),
+    .RndSeed        ( 7777777         ),
+    .Verbose        ( Verbose         ),
+    .dcache_req_i_t ( dcache_req_i_t  ),
+    .dcache_req_o_t ( dcache_req_o_t  )
   ) i_tb_writeport (
     .clk_i          ( clk_i               ),
     .rst_ni         ( rst_ni              ),
@@ -572,8 +606,9 @@ axi_riscv_atomics_wrap #(
   );
 
   tb_amoport  #(
-    .PortName      ("AMO0"),
-    .MemWords      ( MemWords      ),
+    .CVA6Cfg       ( CVA6Cfg       ),
+    .PortName      ("AMO0"         ),
+    .MemWords      ( cva6_config_pkg::MemWords      ),
     .CachedAddrBeg ( CachedAddrBeg ),
     .CachedAddrEnd ( CachedAddrEnd ),
     .RndSeed       ( 1111111       ),
@@ -596,8 +631,8 @@ axi_riscv_atomics_wrap #(
   // Translate write requests for shadow memory. Delay them for one cycle for consistency.
   initial begin
     automatic logic       write_en_n;
-    automatic logic[63:0] write_paddr_n;
-    automatic logic[63:0] write_data_n;
+    automatic logic[CVA6Cfg.PLEN-1:0] write_paddr_n;
+    automatic logic[CVA6Cfg.XLEN-1:0] write_data_n;
     automatic logic[7:0]  write_be_n;
 
     write_en_n    = '0;
@@ -655,7 +690,8 @@ axi_riscv_atomics_wrap #(
 
     // Print some info
     $display("TB> current configuration:");
-    $display("TB> MemWords        %d",   MemWords);
+    $display("TB> MemWords        %d",   cva6_config_pkg::MemWords);
+    $display("TB> IndexWidth      %d",   CVA6Cfg.DCACHE_INDEX_WIDTH);
     $display("TB> CachedAddrBeg   %16X", CachedAddrBeg);
     $display("TB> CachedAddrEnd   %16X", CachedAddrEnd);
     $display("TB> MemRandHitRate  %d",   MemRandHitRate);
@@ -678,7 +714,7 @@ axi_riscv_atomics_wrap #(
     req_rate     = '{default: 7'd50};
 
     // Cache disabled ~> all requests should use bypass port
-    bypass_mem_port.set_region(0, MemBytes - 1);
+    bypass_mem_port.set_region(0, cva6_config_pkg::MemBytes - 1);
     data_mem_port.set_region(0, 0);
 
     runSeq(nReadVectors);
@@ -708,7 +744,7 @@ axi_riscv_atomics_wrap #(
     // cache enabled ~> requests to cached region should use cache port,
     // those to uncached regions should use bypass port
     bypass_mem_port.set_region(0, CachedAddrBeg - 1);
-    data_mem_port.set_region(CachedAddrBeg, MemBytes - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
 
     runSeq(nReadVectors);
     flushCache();
@@ -781,7 +817,7 @@ axi_riscv_atomics_wrap #(
     req_rate     = '{default: 7'd25};
 
     // cache disabled ~> all requests should use bypass port
-    bypass_mem_port.set_region(0, MemBytes - 1);
+    bypass_mem_port.set_region(0, cva6_config_pkg::MemBytes - 1);
     data_mem_port.set_region(0, 0);
 
     runSeq(nReadVectors,nWriteVectors);
@@ -802,7 +838,7 @@ axi_riscv_atomics_wrap #(
     // cache enabled ~> requests to cached region should use cache port,
     // those to uncached regions should use bypass port
     bypass_mem_port.set_region(0, CachedAddrBeg - 1);
-    data_mem_port.set_region(CachedAddrBeg, MemBytes - 1);
+    data_mem_port.set_region(CachedAddrBeg, cva6_config_pkg::MemBytes - 1);
 
     runSeq(nReadVectors,2*nWriteVectors);
     flushCache();
@@ -849,9 +885,9 @@ axi_riscv_atomics_wrap #(
     seq_type     = '{IDLE_SEQ, IDLE_SEQ, LINEAR_SEQ};
     req_rate     = '{default:100};
 
-    runSeq((CachedAddrBeg>>3)+(2**(CVA6Cfg.DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC);
+    runSeq((CachedAddrBeg>>3)+(2**(CVA6Cfg.DCACHE_INDEX_WIDTH-3))*CVA6Cfg.DCACHE_SET_ASSOC);
     seq_type     = '{LINEAR_SEQ, IDLE_SEQ, IDLE_SEQ};
-    runSeq(0,(CachedAddrBeg>>3)+(2**(CVA6Cfg.DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC);
+    runSeq(0,(CachedAddrBeg>>3)+(2**(CVA6Cfg.DCACHE_INDEX_WIDTH-3))*CVA6Cfg.DCACHE_SET_ASSOC);
     flushCache();
     tb_mem_port_t::check_mem();
 
@@ -958,7 +994,7 @@ axi_riscv_atomics_wrap #(
     req_rate     = '{50,0,2};
 
     // AMOs should use cache port
-    bypass_mem_port.set_region(0, MemBytes-1);
+    bypass_mem_port.set_region(0, cva6_config_pkg::MemBytes-1);
     data_mem_port.set_region(0, 0);
 
     runAMOs(nAMOs,1); // Last sequence flag, terminates agents

@@ -20,15 +20,18 @@
 
 
 program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter string       PortName      = "read port 0",
   parameter              FlushRate     = 1,
   parameter              KillRate      = 5,
   parameter              TlbHitRate    = 95,
   parameter              MemWords      = 1024*1024,// in 64bit words
-  parameter logic [63:0] CachedAddrBeg = 0,
-  parameter logic [63:0] CachedAddrEnd = 0,
+  parameter logic [CVA6Cfg.PLEN-1:0] CachedAddrBeg = 0,
+  parameter logic [CVA6Cfg.PLEN-1:0] CachedAddrEnd = 0,
   parameter              RndSeed       = 1110,
-  parameter              Verbose       = 0
+  parameter              Verbose       = 0,
+  parameter type dcache_req_i_t        = logic,
+  parameter type dcache_req_o_t        = logic
 ) (
   input logic           clk_i,
   input logic           rst_ni,
@@ -45,11 +48,11 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
   output logic          seq_done_o,
 
   // expresp interface
-  output logic [63:0]   exp_paddr_o,
-  input  logic [1:0]    exp_size_i,
-  input  logic [riscv::XLEN-1:0]  exp_rdata_i,
-  input  logic [63:0]   exp_paddr_i,
-  input  logic [63:0]   act_paddr_i,
+  output logic [CVA6Cfg.PLEN-1:0]   exp_paddr_o,
+  input  logic [1:0]                exp_size_i,
+  input  logic [CVA6Cfg.XLEN-1:0]   exp_rdata_i,
+  input  logic [CVA6Cfg.PLEN-1:0]   exp_paddr_i,
+  input  logic [CVA6Cfg.PLEN-1:0]   act_paddr_i,
 
   // interface to DUT
   output logic          flush_o,
@@ -62,7 +65,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
   timeunit 1ps;
   timeprecision 1ps;
 
-  logic [63:0] paddr;
+  logic [CVA6Cfg.PLEN-1:0] paddr;
   logic seq_end_req, seq_end_ack, prog_end;
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_q;
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_vld_q;
@@ -74,7 +77,8 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
 
   // // TODO: add randomization
   initial begin : p_tag_delay
-    logic [63:0] tmp_paddr, val;
+    logic [CVA6Cfg.PLEN-1:0] tmp_paddr;
+    logic [CVA6Cfg.XLEN-1:0] val;
     int unsigned cnt;
     logic tmp_vld;
 
@@ -142,7 +146,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
 
 
   task automatic genRandReq();
-    automatic logic [63:0] val;
+    automatic logic [CVA6Cfg.XLEN-1:0] val;
     automatic logic [1:0] size;
 
     void'($urandom(RndSeed));
@@ -170,8 +174,8 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
           if(val < req_rate_i) begin
             dut_req_port_o.data_req = 1'b1;
             // generate random address
-            void'(randomize(val) with {val >= 0; val < (MemWords<<3);});
-            void'(randomize(size));
+            void'(randomize(val) with {val >= 0; val < (MemWords<<$clog2(CVA6Cfg.XLEN/8));});
+            void'(randomize(size) with {size <= $clog2(CVA6Cfg.XLEN/8);});
 
             dut_req_port_o.data_size = size;
             paddr = val;
@@ -198,7 +202,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
   endtask : genRandReq
 
   task automatic genSeqRead();
-    automatic logic [63:0] val;
+    automatic logic [CVA6Cfg.XLEN-1:0] val;
     paddr                        = '0;
     dut_req_port_o.data_req      = '0;
     dut_req_port_o.data_size     = '0;
@@ -206,10 +210,10 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
     val                          = '0;
     while(~seq_end_req) begin
       dut_req_port_o.data_req  = 1'b1;
-      dut_req_port_o.data_size = 2'b11;
+      dut_req_port_o.data_size = $clog2(CVA6Cfg.XLEN/8);
       paddr = val;
       // generate linear read
-      val = (val + 8) % (MemWords<<3);
+      val = (val + CVA6Cfg.XLEN/8) % (MemWords<<$clog2(CVA6Cfg.XLEN/8));
       `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
       `APPL_WAIT_CYC(clk_i,1)
     end
@@ -220,7 +224,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
 
   // Generate a sequence of reads to the same set (constant index)
   task automatic genSetSeqRead();
-    automatic logic [63:0] val, rnd;
+    automatic logic [CVA6Cfg.XLEN-1:0] val, rnd;
     paddr                        = CachedAddrBeg + 2 ** CVA6Cfg.DCACHE_INDEX_WIDTH;
     dut_req_port_o.data_req      = '0;
     dut_req_port_o.data_size     = '0;
@@ -230,12 +234,12 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
       void'(randomize(rnd) with {rnd > 0; rnd <= 100;});
       if(rnd < req_rate_i) begin
         dut_req_port_o.data_req  = 1'b1;
-        dut_req_port_o.data_size = 2'b11;
+        dut_req_port_o.data_size = $clog2(CVA6Cfg.XLEN/8);
         paddr = val;
         // generate linear read
         `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
         // increment by set size
-        val = (val + 2 ** CVA6Cfg.DCACHE_INDEX_WIDTH) % (MemWords<<3);
+        val = (val + 2 ** CVA6Cfg.DCACHE_INDEX_WIDTH) % (MemWords<<$clog2(CVA6Cfg.XLEN/8));
       end
       `APPL_WAIT_CYC(clk_i,1)
       dut_req_port_o.data_req      = '0;
@@ -246,7 +250,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
   endtask : genSetSeqRead
 
   task automatic genWrapSeq();
-    automatic logic [63:0] val;
+    automatic logic [CVA6Cfg.XLEN-1:0] val;
     paddr                        = CachedAddrBeg;
     dut_req_port_o.data_req      = '0;
     dut_req_port_o.data_size     = '0;
@@ -254,11 +258,11 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
     val                          = '0;
     while(~seq_end_req) begin
       dut_req_port_o.data_req  = 1'b1;
-      dut_req_port_o.data_size = 2'b11;
+      dut_req_port_o.data_size = $clog2(CVA6Cfg.XLEN/8);
       paddr = val;
       // generate wrapping read of 1 cachelines
       paddr = CachedAddrBeg + val;
-      val = (val + 8) % (1*(DCACHE_LINE_WIDTH/64)*8);
+      val = (val + CVA6Cfg.XLEN/8) % (1*(CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.XLEN)*(CVA6Cfg.XLEN/8)); // <=> /8
       `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
       `APPL_WAIT_CYC(clk_i,1)
     end
@@ -341,7 +345,8 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
     progress status;
     string failingTests, tmpstr1, tmpstr2;
     int    n;
-    logic [63:0] exp_rdata, exp_paddr;
+    logic [CVA6Cfg.XLEN-1:0] exp_rdata;
+    logic [CVA6Cfg.PLEN-1:0] exp_paddr;
     logic [1:0] exp_size;
 
     status       = new(PortName);
@@ -378,7 +383,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
 
         if(Verbose | !ok) begin
           tmpstr1 =  $psprintf("vector: %02d - %06d -- exp_paddr: %16X -- exp_data: %16X -- access size: %01d Byte",
-                      n, k, exp_paddr_i, exp_rdata, 2**exp_size_i);
+                      n, k, exp_paddr_i, exp_rdata_i, 2**exp_size_i);
           tmpstr2 =  $psprintf("vector: %02d - %06d -- act_paddr: %16X -- act_data: %16X -- access size: %01d Byte",
                       n, k, act_paddr_i, dut_req_port_i.data_rdata, 2**exp_size_i);
           $display("%s> %s", PortName, tmpstr1);
