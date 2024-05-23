@@ -15,6 +15,7 @@
 # ================================================================================
 #                  Regression test list format
 # --------------------------------------------------------------------------------
+# testlist        : Assembly test list
 # test            : Assembly test name
 # description     : Description of this test
 # gen_opts        : Instruction generator options
@@ -30,483 +31,445 @@
 # gcc_opts        : gcc compile options
 # --------------------------------------------------------------------------------
 
-- test: rv32_vm_satp_access
-  iterations: 1
+common_test_config: &common_test_config
   path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
   gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_satp_access.S
 
-- test: rv32_vm_invalid_pte_level_1_u
-  iterations: 1
+common_test_config_2: &common_test_config_2
   path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_invalid_pte_level_1.S
+  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
 
-- test: rv32_vm_invalid_pte_level_1_s
-  iterations: 1
+
+common_test_config_3: &common_test_config_3
   path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
+  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+
+common_test_config_4: &common_test_config_4
+  path_var: TESTS_PATH
+  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+
+common_test_config_5: &common_test_config_5
+  path_var: TESTS_PATH
   gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -Dsmdoe=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_invalid_pte_level_1.S
 
-- test: rv32_vm_invalid_pte_level_0_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_invalid_pte_level_0.S
+testlist:
+  - test: rv32_vm_satp_access
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_satp_access.S
 
-- test: rv32_vm_invalid_pte_level_0_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -Dsmdoe=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_invalid_pte_level_0.S
+  - test: rv32_vm_invalid_pte_level_1_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_invalid_pte_level_1.S
 
-- test: rv32_vm_misaligned_superpage_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_misaligned_superpage.S
+  - test: rv32_vm_invalid_pte_level_1_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_5
+    asm_tests: <path_var>/custom/sv32/vm_invalid_pte_level_1.S
 
-- test: rv32_vm_misaligned_superpage_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -Dsmdoe=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_misaligned_superpage.S
+  - test: rv32_vm_invalid_pte_level_0_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_invalid_pte_level_0.S
 
-- test: rv32_vm_sum_set_level_1
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_sum_set_level_1.S
+  - test: rv32_vm_invalid_pte_level_0_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_5
+    asm_tests: <path_var>/custom/sv32/vm_invalid_pte_level_0.S
 
-- test: rv32_vm_sum_set_level_0
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_sum_set_level_0.S
+  - test: rv32_vm_misaligned_superpage_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_misaligned_superpage.S
 
-- test: rv32_vm_rwx_access_smode_01
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_rwx_access_smode_01.S
+  - test: rv32_vm_misaligned_superpage_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_5
+    asm_tests: <path_var>/custom/sv32/vm_misaligned_superpage.S
 
-- test: rv32_vm_rwx_access_smode_02
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_rwx_access_smode_02.S
+  - test: rv32_vm_sum_set_level_1
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_sum_set_level_1.S
 
-- test: rv32_vm_rwx_access_smode_03
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_rwx_access_smode_03.S
+  - test: rv32_vm_sum_set_level_0
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_sum_set_level_0.S
 
-- test: rv32_vm_rwx_access_smode_04
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_rwx_access_smode_04.S
-   
-- test: rv32_vm_access_bit_level_0_01_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_access_bit_level_0.S
+  - test: rv32_vm_rwx_access_smode_01
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_rwx_access_smode_01.S
 
-- test: rv32_vm_access_bit_level_0_01_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_access_bit_level_0.S
+  - test: rv32_vm_rwx_access_smode_02
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_rwx_access_smode_02.S
 
-- test: rv32_vm_access_bit_level_1_02_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_access_bit_level_1.S
+  - test: rv32_vm_rwx_access_smode_03
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_rwx_access_smode_03.S
 
-- test: rv32_vm_access_bit_level_1_02_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_access_bit_level_1.S
+  - test: rv32_vm_rwx_access_smode_04
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_rwx_access_smode_04.S
 
-- test: rv32_vm_mxr_clear_level_0_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_mxr_clear_level_0.S
+  - test: rv32_vm_access_bit_level_0_01_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_access_bit_level_0.S
 
-- test: rv32_vm_mxr_clear_level_0_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_mxr_clear_level_0.S
+  - test: rv32_vm_access_bit_level_0_01_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_access_bit_level_0.S
 
-- test: rv32_vm_mxr_clear_level_1_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_mxr_clear_level_1.S
+  - test: rv32_vm_access_bit_level_1_02_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_access_bit_level_1.S
 
-- test: rv32_vm_mxr_clear_level_1_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_mxr_clear_level_1.S
+  - test: rv32_vm_access_bit_level_1_02_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_access_bit_level_1.S
 
-- test: rv32_vm_sum_clear_level_0
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_sum_clear_level_0.S
+  - test: rv32_vm_mxr_clear_level_0_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_mxr_clear_level_0.S
 
-- test: rv32_vm_sum_clear_level_1
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_sum_clear_level_1.S
+  - test: rv32_vm_mxr_clear_level_0_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_mxr_clear_level_0.S
 
-- test: rv32_vm_pmp_check_level_0_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pmp_check_level_0.S
+  - test: rv32_vm_mxr_clear_level_1_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_mxr_clear_level_1.S
 
-- test: rv32_vm_pmp_check_level_0_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pmp_check_level_0.S
+  - test: rv32_vm_mxr_clear_level_1_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_mxr_clear_level_1.S
 
-- test: rv32_vm_pmp_check_level_1_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pmp_check_level_1.S
+  - test: rv32_vm_sum_clear_level_0
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_sum_clear_level_0.S
 
-- test: rv32_vm_pmp_check_level_1_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pmp_check_level_1.S
+  - test: rv32_vm_sum_clear_level_1
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_sum_clear_level_1.S
 
-- test: rv32_vm_dirty_bit_level_1_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_dirty_bit_level_1.S
+  - test: rv32_vm_pmp_check_level_0_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_pmp_check_level_0.S
 
-- test: rv32_vm_dirty_bit_level_1_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_dirty_bit_level_1.S 
+  - test: rv32_vm_pmp_check_level_0_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_pmp_check_level_0.S
 
-- test: rv32_vm_dirty_bit_level_0_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_dirty_bit_level_0.S
+  - test: rv32_vm_pmp_check_level_1_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_pmp_check_level_1.S
 
-- test: rv32_vm_dirty_bit_level_0_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_dirty_bit_level_0.S
+  - test: rv32_vm_pmp_check_level_1_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_pmp_check_level_1.S
 
-- test: rv32_vm_mstatus_tvm_level_1_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_mstatus_tvm_level_1.S  
+  - test: rv32_vm_dirty_bit_level_1_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_dirty_bit_level_1.S
 
-- test: rv32_vm_mstatus_tvm_level_1_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_mstatus_tvm_level_1.S   
+  - test: rv32_vm_dirty_bit_level_1_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_dirty_bit_level_1.S
 
-- test: rv32_vm_mstatus_tvm_level_0_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_mstatus_tvm_level_0.S   
+  - test: rv32_vm_dirty_bit_level_0_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_dirty_bit_level_0.S
 
-- test: rv32_vm_mstatus_tvm_level_0_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_mstatus_tvm_level_0.S   
+  - test: rv32_vm_dirty_bit_level_0_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_dirty_bit_level_0.S
 
-- test: rv32_vm_mxr_set_level_1_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_mxr_set_level_1.S
+  - test: rv32_vm_mstatus_tvm_level_1_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_mstatus_tvm_level_1.S
 
-- test: rv32_vm_mxr_set_level_1_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_mxr_set_level_1.S
+  - test: rv32_vm_mstatus_tvm_level_1_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_mstatus_tvm_level_1.S
 
-- test: rv32_vm_mxr_set_level_0_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_mxr_set_level_0.S
+  - test: rv32_vm_mstatus_tvm_level_0_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_mstatus_tvm_level_0.S
 
-- test: rv32_vm_mxr_set_level_0_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_mxr_set_level_0.S
+  - test: rv32_vm_mstatus_tvm_level_0_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_mstatus_tvm_level_0.S
 
-- test: rv32_vm_rwx_reserved_level_1_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_rwx_reserved_level_1.S
+  - test: rv32_vm_mxr_set_level_1_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_mxr_set_level_1.S
 
-- test: rv32_vm_rwx_reserved_level_1_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_rwx_reserved_level_1.S
+  - test: rv32_vm_mxr_set_level_1_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_mxr_set_level_1.S
 
-- test: rv32_vm_rwx_reserved_level_0_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_rwx_reserved_level_0.S
+  - test: rv32_vm_mxr_set_level_0_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_mxr_set_level_0.S
 
-- test: rv32_vm_rwx_reserved_level_0_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32  
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_rwx_reserved_level_0.S
+  - test: rv32_vm_mxr_set_level_0_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_mxr_set_level_0.S
 
-- test: rv32_vm_satp_mode_set
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32 
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_satp_mode_set.S
+  - test: rv32_vm_rwx_reserved_level_1_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_rwx_reserved_level_1.S
 
-- test: rv32_vm_nonlead_pte_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32 
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_nonleaf_pte.S
+  - test: rv32_vm_rwx_reserved_level_1_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_rwx_reserved_level_1.S
 
-- test: rv32_vm_nonlead_pte_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32 
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_nonleaf_pte.S
+  - test: rv32_vm_rwx_reserved_level_0_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_rwx_reserved_level_0.S
 
-- test: rv32_vm_pte_pmp_check_level_1_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32 
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_pte_pmp_check_level_1.S
+  - test: rv32_vm_rwx_reserved_level_0_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_rwx_reserved_level_0.S
 
-- test: rv32_vm_pte_pmp_check_level_1_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32 
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_pte_pmp_check_level_1.S
+  - test: rv32_vm_satp_mode_set
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_satp_mode_set.S
 
-- test: rv32_vm_pte_pmp_check_level_0_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32 
-  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_pte_pmp_check_level_0.S
+  - test: rv32_vm_nonlead_pte_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_nonleaf_pte.S
 
-- test: rv32_vm_pte_pmp_check_level_0_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32 
-  gcc_opts: "-DENTROPY=0x1 -static -Dsmode=True -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
-  asm_tests: <path_var>/custom/sv32/vm_pte_pmp_check_level_0.S
+  - test: rv32_vm_nonlead_pte_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_nonleaf_pte.S
 
-- test: rv32_vm_bare_mode_level_1_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_bare_mode_level_1.S
+  - test: rv32_vm_pte_pmp_check_level_1_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_pte_pmp_check_level_1.S
 
-- test: rv32_vm_bare_mode_level_1_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_bare_mode_level_1.S
-  
-- test: rv32_vm_bare_mode_level_0_u
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_bare_mode_level_0.S
+  - test: rv32_vm_pte_pmp_check_level_1_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_pte_pmp_check_level_1.S
 
-- test: rv32_vm_bare_mode_level_0_s
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -Dsmode=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_bare_mode_level_0.S
+  - test: rv32_vm_pte_pmp_check_level_0_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_3
+    asm_tests: <path_var>/custom/sv32/vm_pte_pmp_check_level_0.S
 
-- test: rv32_vm_pte_u_bit_set_01
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_set_01.S
+  - test: rv32_vm_pte_pmp_check_level_0_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_4
+    asm_tests: <path_var>/custom/sv32/vm_pte_pmp_check_level_0.S
 
-- test: rv32_vm_pte_u_bit_set_02
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_set_02.S
+  - test: rv32_vm_bare_mode_level_1_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_bare_mode_level_1.S
 
-- test: rv32_vm_pte_u_bit_set_03
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_set_03.S
+  - test: rv32_vm_bare_mode_level_1_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_bare_mode_level_1.S
 
-- test: rv32_vm_pte_u_bit_set_04
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_set_04.S
+  - test: rv32_vm_bare_mode_level_0_u
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_bare_mode_level_0.S
 
-- test: rv32_vm_pte_u_bit_unset_level_1
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_unset_level_1.S
+  - test: rv32_vm_bare_mode_level_0_s
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config_2
+    asm_tests: <path_var>/custom/sv32/vm_bare_mode_level_0.S
 
-- test: rv32_vm_pte_u_bit_unset_level_0
-  iterations: 1
-  path_var: TESTS_PATH
-  march: rv32izicsr
-  mabi: ilp32
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-  asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_unset_level_0.S
-  
+  - test: rv32_vm_pte_u_bit_set_01
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_set_01.S
+
+  - test: rv32_vm_pte_u_bit_set_02
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_set_02.S
+
+  - test: rv32_vm_pte_u_bit_set_03
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_set_03.S
+
+  - test: rv32_vm_pte_u_bit_set_04
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_set_04.S
+
+  - test: rv32_vm_pte_u_bit_unset_level_1
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_unset_level_1.S
+
+  - test: rv32_vm_pte_u_bit_unset_level_0
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_pte_u_bit_unset_level_0.S
+
