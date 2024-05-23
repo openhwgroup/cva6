@@ -3115,28 +3115,16 @@ ifeval::[{ohg-config} == CV32A65X]
 [{ohg-config}] PMAs are inherent properties of the underlying hardware. The PMAs of
 some memory regions are fixed at chip design time.
 
-[{ohg-config}] Most systems will require that at least some PMAs are dynamically
+[{ohg-config}] Some PMAs are dynamically
 checked in hardware later in the execution pipeline after the physical
 address is known, as some operations will not be supported at all
 physical memory addresses, and some operations require knowing the
-current setting of a configurable PMA attribute. While many other
-architectures specify some PMAs in the virtual memory page tables and
-use the TLB to inform the pipeline of these properties, this approach
-injects platform-specific information into a virtualized layer and can
-cause system errors unless attributes are correctly initialized in each
-page-table entry for each physical memory region. In addition, the
-available page sizes might not be optimal for specifying attributes in
-the physical memory space, leading to address-space fragmentation and
-inefficient use of expensive TLB entries.
+setting of a PMA attribute.
 
 [{ohg-config}] For RISC-V, we separate out specification and checking of PMAs into a
-separate hardware structure, the _PMA checker_. In many cases, the
+separate hardware structure, the _PMA checker_. In {ohg-config}, the
 attributes are known at system design time for each physical address
-region, and can be hardwired into the PMA checker. Where the attributes
-are run-time configurable, platform-specific memory-mapped control
-registers can be provided to specify these attributes at a granularity
-appropriate to each region on the platform (e.g., for an on-chip SRAM
-that can be flexibly divided between cacheable and uncacheable uses).
+region, and are hardwired into the PMA checker.
 PMAs are checked for any access to physical memory, including accesses
 that have undergone virtual to physical memory translation. To aid in
 system debugging, we strongly recommend that, where possible, RISC-V
@@ -3148,17 +3136,7 @@ when probing a legacy bus architecture that uses access failures as part
 of the discovery mechanism. In this case, error responses from
 peripheral devices will be reported as imprecise bus-error interrupts.
 
-[{ohg-config}] PMAs must also be readable by software to correctly access certain
-devices or to correctly configure other hardware components that access
-memory, such as DMA engines. As PMAs are tightly tied to a given
-physical platform’s organization, many details are inherently
-platform-specific, as is the means by which software can learn the PMA
-values for a platform. Some devices, particularly legacy buses, do not
-support discovery of PMAs and so will give error responses or time out
-if an unsupported access is attempted. Typically, platform-specific
-machine-mode code will extract PMAs and ultimately present this
-information to higher-level less-privileged software using some standard
-representation.
+[{ohg-config}] PMAs are not readable by software.
 endif::[]
 
 ==== Main Memory versus I/O versus Vacant Regions
@@ -3355,6 +3333,7 @@ endif::[]
 
 ==== Memory-Ordering PMAs
 
+ifeval::[{ohg-config} != CV32A65X]
 Regions of the address space are classified as either _main memory_ or
 _I/O_ for the purposes of ordering by the FENCE instruction and
 atomic-instruction ordering bits.
@@ -3396,6 +3375,12 @@ that hart across any regions with the same channel number.
 
 Systems might support dynamic configuration of ordering properties on
 each memory region.
+endif::[]
+
+ifeval::[{ohg-config} == CV32A65X]
+[{ohg-config}] As {ohg-config} is dedicated to a one hart
+platform without any DMA, no memory-ordering mechanism is implemented.
+endif::[]
 
 ifeval::[{note} == true]
 [NOTE]
@@ -3533,7 +3518,7 @@ endif::[]
 
 For non-idempotent regions, implicit reads and writes must not be
 performed early or speculatively, with the following exceptions. When a
-non-speculative implicit read is performed, an implementation (TODO) is
+non-speculative implicit read is performed, an implementation is
 permitted to additionally read any of the bytes within a naturally
 aligned power-of-2 region containing the address of the non-speculative
 implicit read. Furthermore, when a non-speculative instruction fetch is
