@@ -15,6 +15,7 @@
 # ================================================================================
 #                  Regression test list format
 # --------------------------------------------------------------------------------
+# testlist        : Assembly test list
 # test            : Assembly test name
 # description     : Description of this test
 # gen_opts        : Instruction generator options
@@ -30,689 +31,580 @@
 # gcc_opts        : gcc compile options
 # --------------------------------------------------------------------------------
 ## C
-- test: rv32im-cadd-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cadd-01.S
-
-- test: rv32im-caddi-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/caddi-01.S
-
-- test: rv32im-caddi16sp-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/caddi16sp-01.S
-
-- test: rv32im-caddi4spn-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/caddi4spn-01.S
-
-- test: rv32im-cand-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cand-01.S
-
-- test: rv32im-candi-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/candi-01.S
-
-- test: rv32im-cbeqz-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cbeqz-01.S
-
-- test: rv32im-cbnez-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cbnez-01.S
-
-- test: rv32im-cebreak-01
-  iterations: 0
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cebreak-01.S
-
-- test: rv32im-cj-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cj-01.S
-
-- test: rv32im-cjal-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cjal-01.S
-
-- test: rv32im-cjalr-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cjalr-01.S
-
-- test: rv32im-cjr-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cjr-01.S
-
-- test: rv32im-cli-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cli-01.S
-
-- test: rv32im-clui-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/clui-01.S
-
-- test: rv32im-clw-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/clw-01.S
-
-- test: rv32im-clwsp-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/clwsp-01.S
-
-- test: rv32im-cmv-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cmv-01.S
-
-- test: rv32im-cnop-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cnop-01.S
-
-- test: rv32im-cor-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cor-01.S
-
-- test: rv32im-cslli-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cslli-01.S
-
-- test: rv32im-csrai-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/csrai-01.S
-
-- test: rv32im-csrli-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/csrli-01.S
-
-- test: rv32im-csub-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/csub-01.S
-
-- test: rv32im-csw-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/csw-01.S
-
-- test: rv32im-cswsp-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cswsp-01.S
-
-- test: rv32im-cxor-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cxor-01.S
-
-  # I
-- test: rv32im-add-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/add-01.S
-
-- test: rv32im-addi-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/addi-01.S
-
-- test: rv32im-and-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/and-01.S
-
-- test: rv32im-andi-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/andi-01.S
-
-- test: rv32im-auipc-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/auipc-01.S
-
-- test: rv32im-beq-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/beq-01.S
-
-- test: rv32im-bge-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/bge-01.S
-
-- test: rv32im-bgeu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/bgeu-01.S
-
-- test: rv32im-blt-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/blt-01.S
-
-- test: rv32im-bltu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/bltu-01.S
-
-- test: rv32im-bne-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/bne-01.S
-
-- test: rv32im-fence-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/fence-01.S
-
-- test: rv32im-jal-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/jal-01.S
-
-- test: rv32im-jalr-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/jalr-01.S
-
-- test: rv32im-lb-align-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lb-align-01.S
-
-- test: rv32im-lbu-align-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lbu-align-01.S
-
-- test: rv32im-lh-align-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lh-align-01.S
-
-- test: rv32im-lhu-align-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lhu-align-01.S
-
-- test: rv32im-lui-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lui-01.S
-
-- test: rv32im-lw-align-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lw-align-01.S
-
-- test: rv32im-or-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/or-01.S
-
-- test: rv32im-ori-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/ori-01.S
-
-- test: rv32im-sb-align-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sb-align-01.S
-
-- test: rv32im-sh-align-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sh-align-01.S
-
-- test: rv32im-sll-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sll-01.S
-
-- test: rv32im-slli-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/slli-01.S
-
-- test: rv32im-slt-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/slt-01.S
-
-- test: rv32im-slti-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/slti-01.S
-
-- test: rv32im-sltiu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sltiu-01.S
-
-- test: rv32im-sltu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sltu-01.S
-
-- test: rv32im-sra-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sra-01.S
-
-- test: rv32im-srai-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/srai-01.S
-
-- test: rv32im-srl-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/srl-01.S
-
-- test: rv32im-srli-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/srli-01.S
-
-- test: rv32im-sub-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sub-01.S
-
-- test: rv32im-sw-align-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sw-align-01.S
-
-- test: rv32im-xor-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/xor-01.S
-
-- test: rv32im-xori-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/xori-01.S
-
-  # M
-- test: rv32im-div-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/div-01.S
-
-- test: rv32im-divu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/divu-01.S
-
-- test: rv32im-mul-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/mul-01.S
-
-- test: rv32im-mulh-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/mulh-01.S
-
-- test: rv32im-mulhsu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/mulhsu-01.S
-
-- test: rv32im-mulhu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/mulhu-01.S
-
-- test: rv32im-rem-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/rem-01.S
-
-- test: rv32im-remu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/remu-01.S
-
-- test: rv32im-andn-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/andn-01.S
-
-- test: rv32im-bclr-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bclr-01.S
-
-- test: rv32im-bclri-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bclri-01.S
-
-- test: rv32im-bext-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bext-01.S
-
-- test: rv32im-bexti-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bexti-01.S
-
-- test: rv32im-binv-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/binv-01.S
-
-- test: rv32im-binvi-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/binvi-01.S
-
-- test: rv32im-bset-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bset-01.S
-
-- test: rv32im-bseti-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bseti-01.S
-
-- test: rv32im-clmul-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/clmul-01.S
-
-- test: rv32im-clmulh-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/clmulh-01.S
-
-- test: rv32im-clmulr-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/clmulr-01.S
-
-- test: rv32im-clz-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/clz-01.S
-
-- test: rv32im-cpop-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/cpop-01.S
-
-- test: rv32im-ctz-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/ctz-01.S
-
-- test: rv32im-max-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/max-01.S
-
-- test: rv32im-maxu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/maxu-01.S
-
-- test: rv32im-min-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/min-01.S
-
-- test: rv32im-minu-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/minu-01.S
-
-- test: rv32im-orcb_32-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/orcb_32-01.S
-
-- test: rv32im-orn-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/orn-01.S
-
-- test: rv32im-rev8_32-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/rev8_32-01.S
-
-- test: rv32im-rol-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/rol-01.S
-
-- test: rv32im-ror-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/ror-01.S
-
-- test: rv32im-rori-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/rori-01.S
-
-- test: rv32im-sext.b-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sext.b-01.S
-
-- test: rv32im-sext.h-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sext.h-01.S
-
-- test: rv32im-sh1add-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sh1add-01.S
-
-- test: rv32im-sh2add-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sh2add-01.S
-
-- test: rv32im-sh3add-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sh3add-01.S
-
-- test: rv32im-xnor-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/xnor-01.S
-
-- test: rv32im-zext.h_32-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/zext.h_32-01.S
-
-  ##A
-- test: rv32im-amoadd.w-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoadd.w-01.S
-
-- test: rv32im-amoand.w-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoand.w-01.S
-
-- test: rv32im-amomax.w-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amomax.w-01.S
-
-- test: rv32im-amomaxu.w-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amomaxu.w-01.S
-
-- test: rv32im-amomin.w-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amomin.w-01.S
-
-- test: rv32im-amominu.w-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amominu.w-01.S
-
-- test: rv32im-amoor.w-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoor.w-01.S
-
-- test: rv32im-amoswap.w-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoswap.w-01.S
-
-- test: rv32im-amoxor.w-01
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
-  asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoxor.w-01.S
+common_test_config: &common_test_config
+  path_var: TESTS_PATH
+  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/"
+
+testlist:
+  - test: rv32im-cadd-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cadd-01.S
+
+  - test: rv32im-caddi-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/caddi-01.S
+
+  - test: rv32im-caddi16sp-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/caddi16sp-01.S
+
+  - test: rv32im-caddi4spn-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/caddi4spn-01.S
+
+  - test: rv32im-cand-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cand-01.S
+
+  - test: rv32im-candi-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/candi-01.S
+
+  - test: rv32im-cbeqz-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cbeqz-01.S
+
+  - test: rv32im-cbnez-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cbnez-01.S
+
+  - test: rv32im-cebreak-01
+    <<: *common_test_config
+    iterations: 0
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cebreak-01.S
+
+  - test: rv32im-cj-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cj-01.S
+
+  - test: rv32im-cjal-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cjal-01.S
+
+  - test: rv32im-cjalr-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cjalr-01.S
+
+  - test: rv32im-cjr-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cjr-01.S
+
+  - test: rv32im-cli-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cli-01.S
+
+  - test: rv32im-clui-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/clui-01.S
+
+  - test: rv32im-clw-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/clw-01.S
+
+  - test: rv32im-clwsp-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/clwsp-01.S
+
+  - test: rv32im-cmv-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cmv-01.S
+
+  - test: rv32im-cnop-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cnop-01.S
+
+  - test: rv32im-cor-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cor-01.S
+
+  - test: rv32im-cslli-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cslli-01.S
+
+  - test: rv32im-csrai-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/csrai-01.S
+
+  - test: rv32im-csrli-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/csrli-01.S
+
+  - test: rv32im-csub-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/csub-01.S
+
+  - test: rv32im-csw-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/csw-01.S
+
+  - test: rv32im-cswsp-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cswsp-01.S
+
+  - test: rv32im-cxor-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/C/src/cxor-01.S
+
+    # I
+  - test: rv32im-add-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/add-01.S
+
+  - test: rv32im-addi-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/addi-01.S
+
+  - test: rv32im-and-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/and-01.S
+
+  - test: rv32im-andi-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/andi-01.S
+
+  - test: rv32im-auipc-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/auipc-01.S
+
+  - test: rv32im-beq-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/beq-01.S
+
+  - test: rv32im-bge-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/bge-01.S
+
+  - test: rv32im-bgeu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/bgeu-01.S
+
+  - test: rv32im-blt-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/blt-01.S
+
+  - test: rv32im-bltu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/bltu-01.S
+
+  - test: rv32im-bne-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/bne-01.S
+
+  - test: rv32im-fence-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/fence-01.S
+
+  - test: rv32im-jal-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/jal-01.S
+
+  - test: rv32im-jalr-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/jalr-01.S
+
+  - test: rv32im-lb-align-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lb-align-01.S
+
+  - test: rv32im-lbu-align-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lbu-align-01.S
+
+  - test: rv32im-lh-align-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lh-align-01.S
+
+  - test: rv32im-lhu-align-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lhu-align-01.S
+
+  - test: rv32im-lui-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lui-01.S
+
+  - test: rv32im-lw-align-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/lw-align-01.S
+
+  - test: rv32im-or-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/or-01.S
+
+  - test: rv32im-ori-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/ori-01.S
+
+  - test: rv32im-sb-align-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sb-align-01.S
+
+  - test: rv32im-sh-align-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sh-align-01.S
+
+  - test: rv32im-sll-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sll-01.S
+
+  - test: rv32im-slli-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/slli-01.S
+
+  - test: rv32im-slt-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/slt-01.S
+
+  - test: rv32im-slti-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/slti-01.S
+
+  - test: rv32im-sltiu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sltiu-01.S
+
+  - test: rv32im-sltu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sltu-01.S
+
+  - test: rv32im-sra-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sra-01.S
+
+  - test: rv32im-srai-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/srai-01.S
+
+  - test: rv32im-srl-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/srl-01.S
+
+  - test: rv32im-srli-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/srli-01.S
+
+  - test: rv32im-sub-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sub-01.S
+
+  - test: rv32im-sw-align-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/sw-align-01.S
+
+  - test: rv32im-xor-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/xor-01.S
+
+  - test: rv32im-xori-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/xori-01.S
+
+    # M
+  - test: rv32im-div-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/div-01.S
+
+  - test: rv32im-divu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/divu-01.S
+
+  - test: rv32im-mul-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/mul-01.S
+
+  - test: rv32im-mulh-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/mulh-01.S
+
+  - test: rv32im-mulhsu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/mulhsu-01.S
+
+  - test: rv32im-mulhu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/mulhu-01.S
+
+  - test: rv32im-rem-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/rem-01.S
+
+  - test: rv32im-remu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/M/src/remu-01.S
+
+  - test: rv32im-andn-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/andn-01.S
+
+  - test: rv32im-bclr-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bclr-01.S
+
+  - test: rv32im-bclri-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bclri-01.S
+
+  - test: rv32im-bext-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bext-01.S
+
+  - test: rv32im-bexti-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bexti-01.S
+
+  - test: rv32im-binv-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/binv-01.S
+
+  - test: rv32im-binvi-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/binvi-01.S
+
+  - test: rv32im-bset-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bset-01.S
+
+  - test: rv32im-bseti-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/bseti-01.S
+
+  - test: rv32im-clmul-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/clmul-01.S
+
+  - test: rv32im-clmulh-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/clmulh-01.S
+
+  - test: rv32im-clmulr-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/clmulr-01.S
+
+  - test: rv32im-clz-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/clz-01.S
+
+  - test: rv32im-cpop-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/cpop-01.S
+
+  - test: rv32im-ctz-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/ctz-01.S
+
+  - test: rv32im-max-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/max-01.S
+
+  - test: rv32im-maxu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/maxu-01.S
+
+  - test: rv32im-min-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/min-01.S
+
+  - test: rv32im-minu-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/minu-01.S
+
+  - test: rv32im-orcb_32-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/orcb_32-01.S
+
+  - test: rv32im-orn-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/orn-01.S
+
+  - test: rv32im-rev8_32-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/rev8_32-01.S
+
+  - test: rv32im-rol-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/rol-01.S
+
+  - test: rv32im-ror-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/ror-01.S
+
+  - test: rv32im-rori-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/rori-01.S
+
+  - test: rv32im-sext.b-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sext.b-01.S
+
+  - test: rv32im-sext.h-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sext.h-01.S
+
+  - test: rv32im-sh1add-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sh1add-01.S
+
+  - test: rv32im-sh2add-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sh2add-01.S
+
+  - test: rv32im-sh3add-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/sh3add-01.S
+
+  - test: rv32im-xnor-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/xnor-01.S
+
+  - test: rv32im-zext.h_32-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/B/src/zext.h_32-01.S
+
+    ##A
+  - test: rv32im-amoadd.w-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoadd.w-01.S
+
+  - test: rv32im-amoand.w-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoand.w-01.S
+
+  - test: rv32im-amomax.w-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amomax.w-01.S
+
+  - test: rv32im-amomaxu.w-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amomaxu.w-01.S
+
+  - test: rv32im-amomin.w-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amomin.w-01.S
+
+  - test: rv32im-amominu.w-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amominu.w-01.S
+
+  - test: rv32im-amoor.w-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoor.w-01.S
+
+  - test: rv32im-amoswap.w-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoswap.w-01.S
+
+  - test: rv32im-amoxor.w-01
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoxor.w-01.S

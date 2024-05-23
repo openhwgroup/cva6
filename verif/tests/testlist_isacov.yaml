@@ -10,6 +10,7 @@
 # ================================================================================
 #                  Regression test list format
 # --------------------------------------------------------------------------------
+# testlist        : Assembly test list
 # test            : Assembly test name
 # description     : Description of this test
 # gen_opts        : Instruction generator options
@@ -25,44 +26,42 @@
 # gcc_opts        : gcc compile options
 # --------------------------------------------------------------------------------
 
-- test: branch_test
-  iterations: 1
+common_test_config: &common_test_config
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/branch_to_zero.S
 
-- test: load_reg_hazard
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/load_reg_hazard.S
+testlist:
+  - test: branch_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/isacov/branch_to_zero.S
 
-- test: load_store_test
-  iterations: 0
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/load_store_test.S
+  - test: load_reg_hazard
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/isacov/load_reg_hazard.S
 
-- test: seq_test
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/seq_hazard.S
+  - test: load_store_test
+    <<: *common_test_config
+    iterations: 0
+    asm_tests: <path_var>/custom/isacov/load_store_test.S
 
-- test: isa_test
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/isa_test.S
+  - test: seq_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/isacov/seq_hazard.S
 
-- test: jump_test
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/jump_test.S
+  - test: isa_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/isacov/isa_test.S
 
-- test: illegal_test
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/isacov/illegal_isa.S
+  - test: jump_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/isacov/jump_test.S
+
+  - test: illegal_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/isacov/illegal_isa.S

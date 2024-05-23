@@ -15,6 +15,7 @@
 # ================================================================================
 #                  Regression test list format
 # --------------------------------------------------------------------------------
+# testlist        : Assembly test list
 # test            : Assembly test name
 # description     : Description of this test
 # gen_opts        : Instruction generator options
@@ -29,16 +30,18 @@
 # compare_opts    : Options for the RTL & ISS trace comparison
 # gcc_opts        : gcc compile options
 # --------------------------------------------------------------------------------
-
-- test: compressed-fpreg-commits-rv64
-  iterations: 1
+common_test_config: &common_test_config
   path_var: TESTS_PATH
   gcc_opts: "-static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv64.S
 
-- test: compressed-fpreg-commits-rv32
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv32.S
+testlist:
+  - test: compressed-fpreg-commits-rv64
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv64.S
+
+  - test: compressed-fpreg-commits-rv32
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv32.S
 

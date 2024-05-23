@@ -10,6 +10,7 @@
 # ================================================================================
 #                  Regression test list format
 # --------------------------------------------------------------------------------
+# testlist        : Assembly test list
 # test            : Assembly test name
 # description     : Description of this test
 # gen_opts        : Instruction generator options
@@ -25,33 +26,32 @@
 # gcc_opts        : gcc compile options
 # --------------------------------------------------------------------------------
 
-
-- test: csr_test
-  iterations: 1
+common_test_config: &common_test_config
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/csr_embedded/csr_test.S
 
-- test: csrrw_fullrandom_test
-  iterations: 0
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/csr_embedded/csrrw_fullrandom_test.S
+testlist:
+  - test: csr_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/csr_embedded/csr_test.S
 
-- test: csrrw_ro_test
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/csr_embedded/csrrw_ro_test.S
+  - test: csrrw_fullrandom_test
+    <<: *common_test_config
+    iterations: 0
+    asm_tests: <path_var>/custom/csr_embedded/csrrw_fullrandom_test.S
 
-- test: csrrw_unmapped_test
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/csr_embedded/csrrw_unmapped_test.S
+  - test: csrrw_ro_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/csr_embedded/csrrw_ro_test.S
 
-- test: counters_overflow_test
-  iterations: 1
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../tests/custom/common/test.ld -lgcc"
-  asm_tests: <path_var>/custom/csr_embedded/csr_counters_overflow.S
+  - test: csrrw_unmapped_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/csr_embedded/csrrw_unmapped_test.S
+
+  - test: counters_overflow_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/csr_embedded/csr_counters_overflow.S
