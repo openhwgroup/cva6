@@ -13,6 +13,10 @@ export RTL_PATH="$ROOT_PROJECT/"
 export TB_PATH="$ROOT_PROJECT/verif/tb/core"
 export TESTS_PATH="$ROOT_PROJECT/verif/tests"
 
+# RISCV-DV & COREV-DV
+export RISCV_DV_ROOT="$ROOT_PROJECT/verif/sim/dv"
+export CVA6_DV_ROOT="$ROOT_PROJECT/verif/env/corev-dv"
+
 if [ -z "$RISCV" ]; then
   echo "Error: RISCV variable undefined."
   return
