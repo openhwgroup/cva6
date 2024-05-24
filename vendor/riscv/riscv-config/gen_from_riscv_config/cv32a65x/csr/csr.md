@@ -43,6 +43,24 @@
 **Description** The mstatus register keeps track of and controls the hart’s current operating state.
 |Bits|Field name|legal values|Mask|Access|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
+|0|uie|||RW|Stores the state of the user mode interrupts.|
+|1|sie|||RW|Stores the state of the supervisor mode interrupts.|
+|3|mie|0|1|RW|Stores the state of the machine mode interrupts.|
+|4|upie|||RW|Stores the state of the user mode interrupts prior to the trap.|
+|5|spie|||RW|Stores the state of the supervisor mode interrupts prior to the trap.|
+|7|mpie|0|1|RW|Stores the state of the machine mode interrupts prior to the trap.|
+|8|spp|||RW|Stores the previous priority mode for supervisor.|
+|[12:11]|mpp|0x0|0x3|RW|Stores the previous priority mode for machine.|
+|[14:13]|fs|||RW|Encodes the status of the floating-point unit, including the CSR fcsr and floating-point data registers.|
+|[16:15]|xs|0x1|0|RW|Encodes the status of additional user-mode extensions and associated state.|
+|17|mprv|||RW|Modifies the privilege level at which loads and stores execute in all privilege modes.|
+|18|sum|||RW|Modifies the privilege with which S-mode loads and stores access virtual memory.|
+|19|mxr|||RW|Modifies the privilege with which loads access virtual memory.|
+|20|tvm|||RW|Supports intercepting supervisor virtual-memory management operations.|
+|21|tw|||RW|Supports intercepting the WFI instruction.|
+|22|tsr|||RW|Supports intercepting the supervisor exception return instruction.|
+|23|spelp|||RW|Supervisor mode previous expected-landing-pad (ELP) state.|
+|31|sd|||RW|Read-only bit that summarizes whether either the FS field or XS field signals the presence of some dirty state.|
 |[30:24]|Reserved_24|||Reserved|Reserved|
 
 #### mstatush
@@ -54,6 +72,11 @@
 **Description** The mstatush register keeps track of and controls the hart’s current operating state.
 |Bits|Field name|legal values|Mask|Access|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
+|4|sbe|||RW|control the endianness of memory accesses other than instruction fetches for supervisor mode|
+|5|mbe|||RW|control the endianness of memory accesses other than instruction fetches for machine mode|
+|6|gva|||RW|Stores the state of the supervisor mode interrupts.|
+|7|mpv|||RW|Stores the state of the user mode interrupts.|
+|9|mpelp|||RW|Machine mode previous expected-landing-pad (ELP) state.|
 |[31:10]|Reserved_10|||Reserved|Reserved|
 
 #### misa
@@ -65,6 +88,8 @@
 **Description** misa is a read-write register reporting the ISA supported by the hart.
 |Bits|Field name|legal values|Mask|Access|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
+|[25:0]|extensions|0x0000000|0x3FFFFFF|RW|Encodes the presence of the standard extensions, with a single bit per letter of the alphabet.|
+|[31:30]|mxl|0x1|None|RW|Encodes the native base integer ISA width.|
 |[29:26]|Reserved_26|||Reserved|Reserved|
 
 #### mie
@@ -76,6 +101,19 @@
 **Description** The mie register is an MXLEN-bit read/write register containing interrupt enable bits.
 |Bits|Field name|legal values|Mask|Access|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
+|0|usie|||RW|User Software Interrupt enable.|
+|1|ssie|||RW|Supervisor Software Interrupt enable.|
+|2|vssie|||RW|VS-level Software Interrupt enable.|
+|3|msie|0x0|0x1|RW|Machine Software Interrupt enable.|
+|4|utie|||RW|User Timer Interrupt enable.|
+|5|stie|||RW|Supervisor Timer Interrupt enable.|
+|6|vstie|||RW|VS-level Timer Interrupt enable.|
+|7|mtie|0|1|RW|Machine Timer Interrupt enable.|
+|8|ueie|||RW|User External Interrupt enable.|
+|9|seie|||RW|Supervisor External Interrupt enable.|
+|10|vseie|||RW|VS-level External Interrupt enable.|
+|11|meie|0|1|RW|Machine External Interrupt enable.|
+|12|sgeie|||RW|HS-level External Interrupt enable.|
 |[31:13]|Reserved_13|||Reserved|Reserved|
 
 #### mtvec
@@ -87,6 +125,8 @@
 **Description** MXLEN-bit read/write register that holds trap vector configuration.
 |Bits|Field name|legal values|Mask|Access|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
+|[1:0]|mode|0x0|0x1|RW|Vector mode.|
+|[31:2]|base|0x3FFFFFFF|0x00000000|RW|Vector base address.|
 
 #### mcountinhibit
   
@@ -141,6 +181,8 @@
 **Description** The mcause register stores the information regarding the trap.
 |Bits|Field name|legal values|Mask|Access|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
+|[30:0]|exception_code|0|15|RW|Encodes the exception code.|
+|31|interrupt|0x0|0x1|RW|Indicates whether the trap was due to an interrupt.|
 
 #### mtval
   
@@ -162,6 +204,19 @@
 **Description** The mip register is an MXLEN-bit read/write register containing information on pending interrupts.
 |Bits|Field name|legal values|Mask|Access|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
+|0|usip|||RW|User Software Interrupt Pending.|
+|1|ssip|||RW|Supervisor Software Interrupt Pending.|
+|2|vssip|||RW|VS-level Software Interrupt Pending.|
+|3|msip|0x1|0|RW|Machine Software Interrupt Pending.|
+|4|utip|||RW|User Timer Interrupt Pending.|
+|5|stip|||RW|Supervisor Timer Interrupt Pending.|
+|6|vstip|||RW|VS-level Timer Interrupt Pending.|
+|7|mtip|0x1|0|RW|Machine Timer Interrupt Pending.|
+|8|ueip|||RW|User External Interrupt Pending.|
+|9|seip|||RW|Supervisor External Interrupt Pending.|
+|10|vseip|||RW|VS-level External Interrupt Pending.|
+|11|meip|0x1|0|RW|Machine External Interrupt Pending.|
+|12|sgeip|||RW|HS-level External Interrupt Pending.|
 |[31:13]|Reserved_13|||Reserved|Reserved|
 
 #### pmpcfg[0-15]
@@ -173,6 +228,10 @@
 **Description** PMP configuration register
 |Bits|Field name|legal values|Mask|Access|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
+|[7:0]|pmp[i*4 + 0]cfg|0x00|0xFF|RW|pmp configuration bits|
+|[15:8]|pmp[i*4 + 1]cfg|0x00|0xFF|RW|pmp configuration bits|
+|[23:16]|pmp[i*4 + 2]cfg|0x00|0xFF|RW|pmp configuration bits|
+|[31:24]|pmp[i*4 + 3]cfg|0x00|0xFF|RW|pmp configuration bits|
 
 #### pmpaddr[0-63]
   

@@ -14,7 +14,7 @@ pip install -r requirements.txt
 It needs to setup path `(From 'riscv-config stage')` with  :
 
 ```bash
-'export PYTHONPATH =`/gen_from_riscv_config/scripts/libs:$PYTHONPATH`
+'export PYTHONPATH =`/scripts/libs:$PYTHONPATH`
 ```
 
 ##  Usage 

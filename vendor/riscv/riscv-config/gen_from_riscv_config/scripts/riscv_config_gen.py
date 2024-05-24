@@ -26,22 +26,22 @@ from libs.utils import MdAddressBlock
 from libs.utils import InstrstBlock
 from libs.utils import InstmdBlock
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='ipxact2rst')
-    parser.add_argument('-s', '--srcFile', help='yaml input file')
-    parser.add_argument('-d', '--destDir', help="write generated file to dir")
-    parser.add_argument('-m', '--modif', help="ISA Formatter if existe")
-    parser.add_argument('-i', '--temp', help="Full ISA Template")
-    parser.add_argument('-t', '--target', help="Specifiy Config Name")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="ipxact2rst")
+    parser.add_argument("-s", "--srcFile", help="yaml input file")
+    parser.add_argument("-d", "--destDir", help="write generated file to dir")
+    parser.add_argument("-m", "--modif", help="ISA Formatter if existe")
+    parser.add_argument("-i", "--temp", help="Full ISA Template")
+    parser.add_argument("-t", "--target", help="Specifiy Config Name")
     args, unknown_args = parser.parse_known_args()
     if args.temp:
-        e = IsaParser(args.srcFile, args.temp,args.target,args.modif)
+        e = IsaParser(args.srcFile, args.temp, args.target, args.modif)
         document = e.returnDocument()
         generator = IsaGenerator(args.target)
         generator.generateISA(InstrstBlock, document)
         generator.generateISA(InstmdBlock, document)
     else:
-        e = CsrParser(args.srcFile,args.target,args.modif)
+        e = CsrParser(args.srcFile, args.target, args.modif)
         document = e.returnDocument()
         generator = CsrGenerator(args.target)
         generator.generateCSR(RstAddressBlock, document)
