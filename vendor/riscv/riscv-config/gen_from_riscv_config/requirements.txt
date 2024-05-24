@@ -2,6 +2,6 @@ docutils
 pyyaml
 mdutils
 restructuredtext-lint
-pandoc
 rstcloth
 regex
+docstring

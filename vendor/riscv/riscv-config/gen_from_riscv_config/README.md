@@ -11,6 +11,12 @@ The software depend on python libraries that you need to install using `pip` com
 ```bash
 pip install -r requirements.txt
 ```
+It needs to setup path `(From 'riscv-config stage')` with  :
+
+```bash
+'export PYTHONPATH =`/gen_from_riscv_config/scripts/libs:$PYTHONPATH`
+```
+
 ##  Usage 
 
 ```bash
@@ -170,7 +176,7 @@ You can execute the tool from `Config/riscv-config` repo  :
 
     'pip3 install -r ../../vendor/riscv-config/Requirements.txt' .
 
-- It needs to setup environement variables Configuration (From 'CVA6 stage') with  :
+- It needs to setup path (From 'CVA6 stage') with  :
 
     'export PYTHONPATH =`pwd ../../vendor/riscv/riscv-config:$PYTHONPATH`.
 

@@ -13,16 +13,16 @@
 # limitations under the License.
 #
 # Original Author: Oukalrazqou Abdessamii
-import sys
-import os
+""" Module is used to factorize multiples registers with the same name to 
+    a specific format of registers """
+
 import argparse
-import pypandoc
-from libs.utils import CSRParser
-from libs.utils import ISAParser
-from libs.utils import ISAGenerator
-from libs.utils import CSRGenerator
-from libs.utils import rstAddressBlock
-from libs.utils import mdAddressBlock
+from libs.utils import CsrParser
+from libs.utils import IsaParser
+from libs.utils import IsaGenerator
+from libs.utils import CsrGenerator
+from libs.utils import RstAddressBlock
+from libs.utils import MdAddressBlock
 from libs.utils import InstrstBlock
 from libs.utils import InstmdBlock
 
@@ -33,18 +33,16 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--modif', help="ISA Formatter if existe")
     parser.add_argument('-i', '--temp', help="Full ISA Template")
     parser.add_argument('-t', '--target', help="Specifiy Config Name")
-    parser.add_argument('--adoc', action = 'store_true' , help="Generate adoc file from Yaml")
-   
     args, unknown_args = parser.parse_known_args()
     if args.temp:
-       e = ISAParser(args.srcFile, args.temp,args.target,args.modif)
-       document = e.returnDocument()
-       generator = ISAGenerator(args.target)
-       generator.generateISA(InstrstBlock, document)
-       generator.generateISA(InstmdBlock, document)
+        e = IsaParser(args.srcFile, args.temp,args.target,args.modif)
+        document = e.returnDocument()
+        generator = IsaGenerator(args.target)
+        generator.generateISA(InstrstBlock, document)
+        generator.generateISA(InstmdBlock, document)
     else:
-       e = CSRParser(args.srcFile,args.target,args.modif)
-       document = e.returnDocument()
-       generator = CSRGenerator(args.target)
-       generator.generateCSR(rstAddressBlock, document)
-       generator.generateCSR(mdAddressBlock, document)
+        e = CsrParser(args.srcFile,args.target,args.modif)
+        document = e.returnDocument()
+        generator = CsrGenerator(args.target)
+        generator.generateCSR(RstAddressBlock, document)
+        generator.generateCSR(MdAddressBlock, document)
