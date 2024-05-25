@@ -162,52 +162,51 @@ module extended_hpdcache_subsystem
   //  I$ instantiation
   //  {{{
 
-  logic                                                         icache_miss_ready;
-  logic                                                         icache_miss_valid;
-  hpdcache_mem_req_t                                            icache_miss;
+  logic                 icache_miss_ready;
+  logic                 icache_miss_valid;
+  hpdcache_mem_req_t    icache_miss;
 
-  logic                                                         icache_miss_resp_ready;
-  logic                                                         icache_miss_resp_valid;
-  hpdcache_mem_resp_r_t                                         icache_miss_resp;
+  logic                 icache_miss_resp_ready;
+  logic                 icache_miss_resp_valid;
+  hpdcache_mem_resp_r_t icache_miss_resp;
 
-  logic                                                         icache_uc_read_ready;
-  logic                                                         icache_uc_read_valid;
-  hpdcache_mem_req_t                                            icache_uc_read;
+  logic                 icache_uc_read_ready;
+  logic                 icache_uc_read_valid;
+  hpdcache_mem_req_t    icache_uc_read;
 
-  logic                                                         icache_uc_read_ready;
-  logic                                                         icache_uc_read_valid;
-  hpdcache_mem_req_t                                            icache_uc_read;
+  logic                 icache_uc_read_ready;
+  logic                 icache_uc_read_valid;
+  hpdcache_mem_req_t    icache_uc_read;
 
-  logic                                                         icache_uc_read_resp_ready;
-  logic                                                         icache_uc_read_resp_valid;
-  hpdcache_mem_resp_r_t                                         icache_uc_read_resp;
+  logic                 icache_uc_read_resp_ready;
+  logic                 icache_uc_read_resp_valid;
+  hpdcache_mem_resp_r_t icache_uc_read_resp;
 
 
   //  {{{
-  hpdcache_icache_with_adapter # (
-  ) i_hpdcache_dcache (
-      .icache_enable_i(icache_enable_i), //
-      .icache_flush_i(icache_flush_i), //
-      .icache_flush_ack_o(icache_flush_ack_o), //
-      .icache_miss_o(icache_miss_o), //
-      .icache_amo_req_i(icache_amo_req_i), //
-      .icache_amo_resp_o(icache_amo_resp_o), //
-      .icache_cmo_req_i(icache_cmo_req_i), //
-      .icache_cmo_resp_o(icache_cmo_resp_o), //
-      .icache_req_ports_i(icache_req_ports_i), //
-      .icache_req_ports_o(icache_req_ports_o), //
-      .wbuffer_empty_o(/**/),  //
-      .wbuffer_not_ni_o(/**/),//
-      .hwpf_base_set_i(icache_hwpf_base_set_i),//
-      .hwpf_base_i(icache_hwpf_base_i),//
-      .hwpf_base_o(icache_hwpf_base_o),//
-      .hwpf_param_set_i(icache_hwpf_param_set_i), //
-      .hwpf_param_i(icache_hwpf_param_i),//
-      .hwpf_param_o(icache_hwpf_param_o),//
-      .hwpf_throttle_set_i(icache_hwpf_throttle_set_i),//
-      .hwpf_throttle_i(icache_hwpf_throttle_i),//
-      .hwpf_throttle_o(icache_hwpf_throttle_o), //
-      .hwpf_status_o(icache_hwpf_status_o),//
+  hpdcache_icache_with_adapter #() i_hpdcache_dcache (
+      .icache_enable_i(icache_enable_i),  //
+      .icache_flush_i(icache_flush_i),  //
+      .icache_flush_ack_o(icache_flush_ack_o),  //
+      .icache_miss_o(icache_miss_o),  //
+      .icache_amo_req_i(icache_amo_req_i),  //
+      .icache_amo_resp_o(icache_amo_resp_o),  //
+      .icache_cmo_req_i(icache_cmo_req_i),  //
+      .icache_cmo_resp_o(icache_cmo_resp_o),  //
+      .icache_req_ports_i(icache_req_ports_i),  //
+      .icache_req_ports_o(icache_req_ports_o),  //
+      .wbuffer_empty_o(  /**/),  //
+      .wbuffer_not_ni_o(  /**/),  //
+      .hwpf_base_set_i(icache_hwpf_base_set_i),  //
+      .hwpf_base_i(icache_hwpf_base_i),  //
+      .hwpf_base_o(icache_hwpf_base_o),  //
+      .hwpf_param_set_i(icache_hwpf_param_set_i),  //
+      .hwpf_param_i(icache_hwpf_param_i),  //
+      .hwpf_param_o(icache_hwpf_param_o),  //
+      .hwpf_throttle_set_i(icache_hwpf_throttle_set_i),  //
+      .hwpf_throttle_i(icache_hwpf_throttle_i),  //
+      .hwpf_throttle_o(icache_hwpf_throttle_o),  //
+      .hwpf_status_o(icache_hwpf_status_o),  //
 
       .icache_miss_ready_i(icache_miss_ready),
       .icache_miss_valid_o(icache_miss_valid),
@@ -226,51 +225,51 @@ module extended_hpdcache_subsystem
       .icache_miss_resp_i(icache_miss_resp)
   );
 
-//   //  D$ instantiation
+  //   //  D$ instantiation
 
-  logic                                                         dcache_miss_ready;
-  logic                                                         dcache_miss_valid;
-  hpdcache_mem_req_t                                            dcache_miss;
+  logic                 dcache_miss_ready;
+  logic                 dcache_miss_valid;
+  hpdcache_mem_req_t    dcache_miss;
 
-  logic                                                         dcache_miss_resp_ready;
-  logic                                                         dcache_miss_resp_valid;
-  hpdcache_mem_resp_r_t                                         dcache_miss_resp;
+  logic                 dcache_miss_resp_ready;
+  logic                 dcache_miss_resp_valid;
+  hpdcache_mem_resp_r_t dcache_miss_resp;
 
-  logic                                                         dcache_wbuf_ready;
-  logic                                                         dcache_wbuf_valid;
-  hpdcache_mem_req_t                                            dcache_wbuf;
+  logic                 dcache_wbuf_ready;
+  logic                 dcache_wbuf_valid;
+  hpdcache_mem_req_t    dcache_wbuf;
 
-  logic                                                         dcache_wbuf_data_ready;
-  logic                                                         dcache_wbuf_data_valid;
-  hpdcache_mem_req_w_t                                          dcache_wbuf_data;
+  logic                 dcache_wbuf_data_ready;
+  logic                 dcache_wbuf_data_valid;
+  hpdcache_mem_req_w_t  dcache_wbuf_data;
 
-  logic                                                         dcache_wbuf_resp_ready;
-  logic                                                         dcache_wbuf_resp_valid;
-  hpdcache_mem_resp_w_t                                         dcache_wbuf_resp;
+  logic                 dcache_wbuf_resp_ready;
+  logic                 dcache_wbuf_resp_valid;
+  hpdcache_mem_resp_w_t dcache_wbuf_resp;
 
-  logic                                                         dcache_uc_read_ready;
-  logic                                                         dcache_uc_read_valid;
-  hpdcache_mem_req_t                                            dcache_uc_read;
+  logic                 dcache_uc_read_ready;
+  logic                 dcache_uc_read_valid;
+  hpdcache_mem_req_t    dcache_uc_read;
 
-  logic                                                         dcache_uc_read_resp_ready;
-  logic                                                         dcache_uc_read_resp_valid;
-  hpdcache_mem_resp_r_t                                         dcache_uc_read_resp;
+  logic                 dcache_uc_read_resp_ready;
+  logic                 dcache_uc_read_resp_valid;
+  hpdcache_mem_resp_r_t dcache_uc_read_resp;
 
-  logic                                                         dcache_uc_write_ready;
-  logic                                                         dcache_uc_write_valid;
-  hpdcache_mem_req_t                                            dcache_uc_write;
+  logic                 dcache_uc_write_ready;
+  logic                 dcache_uc_write_valid;
+  hpdcache_mem_req_t    dcache_uc_write;
 
-  logic                                                         dcache_uc_write_data_ready;
-  logic                                                         dcache_uc_write_data_valid;
-  hpdcache_mem_req_w_t                                          dcache_uc_write_data;
+  logic                 dcache_uc_write_data_ready;
+  logic                 dcache_uc_write_data_valid;
+  hpdcache_mem_req_w_t  dcache_uc_write_data;
 
-  logic                                                         dcache_uc_write_resp_ready;
-  logic                                                         dcache_uc_write_resp_valid;
-  hpdcache_mem_resp_w_t                                         dcache_uc_write_resp;
+  logic                 dcache_uc_write_resp_ready;
+  logic                 dcache_uc_write_resp_valid;
+  hpdcache_mem_resp_w_t dcache_uc_write_resp;
 
 
   //  {{{
-  hpdcache_dcache_with_adapter # () i_hpdcache_dcache (
+  hpdcache_dcache_with_adapter #() i_hpdcache_dcache (
       .dcache_enable_i(dcache_enable_i),
       .dcache_flush_i(dcache_flush_i),
       .dcache_flush_ack_o(dcache_flush_ack_o),
