@@ -51,7 +51,7 @@ module extended_hpdcache_subsystem_axi_arbiter
     output logic              icache_miss_ready_o,
     input  logic              icache_miss_valid_i,
     input  hpdcache_mem_req_t icache_miss_i,
-    input  hpdcache_mem_id_t icache_miss_id_i,
+    input  hpdcache_mem_id_t  icache_miss_id_i,
 
     input  logic                 icache_miss_resp_ready_i,
     output logic                 icache_miss_resp_valid_o,

@@ -1,7 +1,6 @@
 `include "hpdcache_typedef.svh"
 
-module hpdcache_dcache_with_adapter
-#(
+module hpdcache_dcache_with_adapter #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
@@ -9,8 +8,7 @@ module hpdcache_dcache_with_adapter
     parameter int NrHwPrefetchers = 4,
     parameter type cmo_req_t = logic,
     parameter type cmo_rsp_t = logic
-)
-(
+) (
     //    Cache management
     // Data cache enable - CSR_REGFILE
     input  logic dcache_enable_i,
@@ -23,7 +21,7 @@ module hpdcache_dcache_with_adapter
 
     input logic dcache_miss_ready_i,
     output logic dcache_miss_valid_o,
-    output hpdcache_mem_req_t  dcache_miss_lo,
+    output hpdcache_mem_req_t dcache_miss_lo,
 
     output logic dcache_miss_resp_ready_o,
     input logic dcache_miss_resp_valid_i,
@@ -42,14 +40,14 @@ module hpdcache_dcache_with_adapter
     // Data cache output request ports - EX_STAGE
     output dcache_req_o_t         [NumPorts-1:0] dcache_req_ports_o,
 
-    output hpdcache_mem_req_t     dcache_wbuf_o,
-    output logic dcache_wbuf_valid_o,
-    input logic dcache_wbuf_ready_i,
+    output hpdcache_mem_req_t dcache_wbuf_o,
+    output logic              dcache_wbuf_valid_o,
+    input  logic              dcache_wbuf_ready_i,
 
     // Write buffer status to know if empty - EX_STAGE
-    output logic                                 wbuffer_empty_o,
+    output logic wbuffer_empty_o,
     // Write buffer status to know if not non idempotent - EX_STAGE
-    output logic                                 wbuffer_not_ni_o,
+    output logic wbuffer_not_ni_o,
 
     //  Hardware memory prefetcher configuration
     // TO_BE_COMPLETED - TO_BE_COMPLETED
