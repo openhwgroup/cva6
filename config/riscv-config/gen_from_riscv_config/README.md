@@ -18,7 +18,7 @@
 
 # Gen From Risc-V Config
 
-This software takes a Risc -V Config Yaml description of CSR Registers, and generates  ReStructuredText documents and Mardown Documents for CSR Registers and ISA Extensions. In the example/tb directory there is an example of how to generate
+This software takes a `Risc -V Config Yaml` description of CSR Registers, and generates  ReStructuredText documents and Mardown Documents for CSR Registers and ISA Extensions. In the example/tb directory there is an example of how to generate
 the packages.
  
 For more details about RISC-V Config Yaml, see [Annexes](##Annexes) section
