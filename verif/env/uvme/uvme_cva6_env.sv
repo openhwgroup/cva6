@@ -178,8 +178,8 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
-      if ($test$plusargs("scoreboard_enabled"))
-          $value$plusargs("scoreboard_enabled=%b",cfg.scoreboard_enabled);
+      if ($test$plusargs("spike_tandem_enabled"))
+          $value$plusargs("spike_tandem_enabled=%b",cfg.spike_tandem_enabled);
 
       retrieve_vif();
       assign_cfg           ();
@@ -208,10 +208,8 @@ function void uvme_cva6_env_c::connect_phase(uvm_phase phase);
    super.connect_phase(phase);
 
    if (cfg.enabled) begin
-      if (cfg.scoreboard_enabled) begin
-         connect_predictor ();
-         connect_scoreboard();
-      end
+      connect_predictor ();
+      connect_scoreboard();
 
       if (cfg.is_active) begin
          assemble_vsequencer();
@@ -255,10 +253,8 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
 
-   if (cfg.scoreboard_enabled) begin
-      uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*rvfi_scoreboard", "cfg", cfg);
-      uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "reference_model", "cfg", cfg);
-   end
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*rvfi_scoreboard", "cfg", cfg);
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "reference_model", "cfg", cfg);
 
 endfunction: assign_cfg
 
@@ -287,10 +283,13 @@ endfunction: create_agents
 
 function void uvme_cva6_env_c::create_env_components();
 
+   if (cfg.spike_tandem_enabled) begin
+      reference_model = uvmc_rvfi_reference_model#(ILEN,XLEN)::type_id::create("reference_model", this);
+   end
+
    if (cfg.scoreboard_enabled) begin
       predictor = uvme_cva6_prd_c::type_id::create("predictor", this);
       sb        = uvme_cva6_sb_c ::type_id::create("sb"       , this);
-      reference_model = uvmc_rvfi_reference_model#(ILEN,XLEN)::type_id::create("reference_model", this);
    end
 
    if (cfg.cov_model_enabled) begin
@@ -339,10 +338,15 @@ function void uvme_cva6_env_c::connect_scoreboard();
 
    // TODO Connect predictor -> scoreboard
    //      Ex: predictor.debug_ap.connect(sb.debug_sb.exp_export);
+    if (cfg.spike_tandem_enabled) begin
+       rvfi_agent.rvfi_core_ap.connect(sb.m_rvfi_scoreboard.m_imp_core);
+       rvfi_agent.rvfi_core_ap.connect(reference_model.m_analysis_imp);
+       reference_model.m_analysis_port.connect(sb.m_rvfi_scoreboard.m_imp_reference_model);
+    end
 
-    rvfi_agent.rvfi_core_ap.connect(sb.m_rvfi_scoreboard.m_imp_core);
-    rvfi_agent.rvfi_core_ap.connect(reference_model.m_analysis_imp);
-    reference_model.m_analysis_port.connect(sb.m_rvfi_scoreboard.m_imp_reference_model);
+    if (cfg.scoreboard_enabled) begin
+       isacov_agent.monitor.ap.connect(sb.instr_trn_fifo.analysis_export);
+    end
 
 endfunction: connect_scoreboard
 
