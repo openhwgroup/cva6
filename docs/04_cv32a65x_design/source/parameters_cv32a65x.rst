@@ -52,7 +52,11 @@
      - Zicond RISC-V extension
      - False
 
-   * - FpuEn
+   * - RVF
+     - Floating Point
+     - False
+
+   * - RVD
      - Floating Point
      - False
 
@@ -70,6 +74,14 @@
 
    * - XFVec
      - Non standard Vector Floating Point extension
+     - False
+
+   * - PerfCounterEn
+     - Perf counters
+     - False
+
+   * - MmuPresent
+     - MMU
      - False
 
    * - RVS
@@ -182,7 +194,7 @@
 
    * - MemTidWidth
      - TODO
-     - 2
+     - 4
 
    * - IcacheByteSize
      - Instruction cache size (in bytes)
@@ -195,6 +207,14 @@
    * - IcacheLineWidth
      - Instruction cache line width
      - 128
+
+   * - DCacheType
+     - Cache Type
+     - config_pkg::HPDCACHE
+
+   * - DcacheIdWidth
+     - Data cache ID
+     - 1
 
    * - DcacheByteSize
      - Data cache size (in bytes)
@@ -212,6 +232,10 @@
      - User field on data bus enable
      - 0
 
+   * - WtDcacheWbufDepth
+     - Write-through data cache write buffer depth
+     - 2
+
    * - FetchUserEn
      - User field on fetch bus enable
      - 0
@@ -228,13 +252,21 @@
      - Number of commit ports
      - 1
 
+   * - NrLoadPipeRegs
+     - Load cycle latency number
+     - 0
+
+   * - NrStorePipeRegs
+     - Store cycle latency number
+     - 0
+
    * - NrScoreboardEntries
      - Scoreboard length
      - 4
 
    * - NrLoadBufEntries
      - Load buffer entry buffer
-     - 1
+     - 2
 
    * - MaxOutstandingStores
      - Maximum number of outstanding stores
@@ -251,3 +283,19 @@
    * - BHTEntries
      - Branch history entries
      - 32
+
+   * - InstrTlbEntries
+     - MMU instruction TLB entries
+     - 2
+
+   * - DataTlbEntries
+     - MMU data TLB entries
+     - 2
+
+   * - UseSharedTlb
+     - MMU option to use shared TLB
+     - True
+
+   * - SharedTlbDepth
+     - MMU depth of shared TLB
+     - 64

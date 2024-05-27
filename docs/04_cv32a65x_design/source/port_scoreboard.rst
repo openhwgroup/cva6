@@ -48,12 +48,6 @@
      - TO_BE_COMPLETED
      - logic
 
-   * - ``unresolved_branch_i``
-     - in
-     - We have an unresolved branch
-     - TO_BE_COMPLETED
-     - logic
-
    * - ``rd_clobber_gpr_o``
      - out
      - TO_BE_COMPLETED
@@ -136,43 +130,43 @@
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - scoreboard_entry_t
+     - scoreboard_entry_t[ariane_pkg::SUPERSCALAR:0]
 
    * - ``orig_instr_i``
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[31:0]
+     - logic[ariane_pkg::SUPERSCALAR:0][31:0]
 
    * - ``decoded_instr_valid_i``
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``decoded_instr_ack_o``
      - out
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``orig_instr_o``
      - out
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[31:0]
+     - logic[ariane_pkg::SUPERSCALAR:0][31:0]
 
    * - ``issue_instr_valid_o``
      - out
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``issue_ack_i``
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``resolved_branch_i``
      - in

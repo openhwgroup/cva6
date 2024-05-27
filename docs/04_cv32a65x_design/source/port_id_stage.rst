@@ -40,49 +40,49 @@
      - in
      - Handshake's data between fetch and decode
      - FRONTEND
-     - fetch_entry_t
+     - fetch_entry_t[ariane_pkg::SUPERSCALAR:0]
 
    * - ``fetch_entry_valid_i``
      - in
      - Handshake's valid between fetch and decode
      - FRONTEND
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``fetch_entry_ready_o``
      - out
      - Handshake's ready between fetch and decode
      - FRONTEND
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``issue_entry_o``
      - out
      - Handshake's data between decode and issue
      - ISSUE
-     - scoreboard_entry_t
+     - scoreboard_entry_t[ariane_pkg::SUPERSCALAR:0]
 
    * - ``orig_instr_o``
      - out
      - Instruction value
      - ISSUE
-     - logic[31:0]
+     - logic[ariane_pkg::SUPERSCALAR:0][31:0]
 
    * - ``issue_entry_valid_o``
      - out
      - Handshake's valid between decode and issue
      - ISSUE
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``is_ctrl_flow_o``
      - out
      - Report if instruction is a control flow instruction
      - ISSUE
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``issue_instr_ack_i``
      - in
      - Handshake's acknowlege between decode and issue
      - ISSUE
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``irq_i``
      - in
