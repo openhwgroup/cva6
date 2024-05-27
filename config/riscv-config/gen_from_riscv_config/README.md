@@ -34,10 +34,10 @@ pip3 install -r requirements.txt
 
 ```bash
 #Generate the Markdown-text /Restructred-text documentation for Control and Status Registers (CSR)
-python3 <scripts/riscv_config_gen>.py -s <riscv-config/Config_Name/generated/isa_gen>.yaml -m <updaters/Config_Name/csr_updater>.yaml -t < Config_Name>
+python3 <scripts/riscv_config_gen>.py -s <../Config_Name/generated/isa_gen>.yaml -m <updaters/Config_Name/csr_updater>.yaml -t < Config_Name>
 
 #Generate the Markdown-text /Restructred-text documentation for ISA extensions
-python3 <scripts/riscv_config_gen>.py -s <riscv-config/Config_Name/generated/isa_gen>.yaml -i <templates/isa_template>.yaml -m <updaters/Config_Name/isa_updater>.yaml -t < Config_Name>
+python3 <scripts/riscv_config_gen>.py -s <../Config_Name/generated/isa_gen>.yaml -i <templates/isa_template>.yaml -m <updaters/Config_Name/isa_updater>.yaml -t < Config_Name>
 ```
 
  
