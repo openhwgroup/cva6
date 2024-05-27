@@ -37,6 +37,12 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg base);
     base.pmp_regions = CVA6Cfg.NrPMPEntries;
     base.debug_supported = CVA6Cfg.DebugEn;
 
+    // FIXME TODO: Temporary solution. We need explicit info on memory map.
+    // FORNOW The solution below relies on specific region ordering.
+    base.dram_base = CVA6Cfg.ExecuteRegionAddrBase[2];
+    base.dram_size = CVA6Cfg.ExecuteRegionLength[2];
+    base.dram_valid = 1;
+
     base.disable_all_csr_checks = 0;
 
     base.unsupported_csr_mask['h643] = 1; // HTVAL
