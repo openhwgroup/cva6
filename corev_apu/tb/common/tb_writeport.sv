@@ -19,12 +19,15 @@
 
 
 program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter string       PortName      = "write port 0",
   parameter              MemWords      = 1024*1024,// in 64bit words
-  parameter logic [63:0] CachedAddrBeg = 0,
-  parameter logic [63:0] CachedAddrEnd = 0,
+  parameter logic [CVA6Cfg.PLEN-1:0] CachedAddrBeg = 0,
+  parameter logic [CVA6Cfg.PLEN-1:0] CachedAddrEnd = 0,
   parameter              RndSeed       = 1110,
-  parameter              Verbose       = 0
+  parameter              Verbose       = 0,
+  parameter type dcache_req_i_t        = logic,
+  parameter type dcache_req_o_t        = logic
 ) (
   input logic           clk_i,
   input logic           rst_ni,
@@ -47,7 +50,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
   timeunit 1ps;
   timeprecision 1ps;
 
-  logic [63:0] paddr;
+  logic [CVA6Cfg.PLEN-1:0] paddr;
 
   assign dut_req_port_o.address_tag   = paddr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
   assign dut_req_port_o.address_index = paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
@@ -59,11 +62,11 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
 
 
   task automatic applyRandData();
-    automatic logic [63:0] val;
-    automatic logic [7:0]  be;
+    automatic logic [CVA6Cfg.XLEN-1:0] val;
+    automatic logic [CVA6Cfg.XLEN/8-1:0]  be;
     automatic logic [1:0]  size;
 
-    void'(randomize(size));
+    void'(randomize(size) with {size <= $clog2(CVA6Cfg.XLEN/8);});
     // align to size, set correct byte enables
     be = '0;
     unique case(size)
@@ -77,7 +80,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
 
 
     void'(randomize(val));
-    for(int k=0; k<8; k++) begin
+    for(int k=0; k<CVA6Cfg.XLEN/8; k++) begin
       if( be[k] ) begin
         dut_req_port_o.data_wdata[k*8 +: 8] = val[k*8 +: 8];
       end
@@ -89,7 +92,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
 
 
   task automatic genRandReq();
-    automatic logic [63:0] val;
+    automatic logic [CVA6Cfg.XLEN-1:0] val;
 
     void'($urandom(RndSeed));
 
@@ -108,7 +111,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
       if(val < req_rate_i) begin
         dut_req_port_o.data_req = 1'b1;
         // generate random address
-        void'(randomize(paddr) with {paddr >= 0; paddr < (MemWords<<3);});
+        void'(randomize(paddr) with {paddr >= 0; paddr < (MemWords<<$clog2(CVA6Cfg.XLEN/8));}); 
         applyRandData();
         `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
       end
@@ -124,7 +127,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
   endtask : genRandReq
 
   task automatic genSeqWrite();
-    automatic logic [63:0] val;
+    automatic logic [CVA6Cfg.XLEN-1:0] val;
     paddr                         = '0;
     dut_req_port_o.data_req       = '0;
     dut_req_port_o.data_size      = '0;
@@ -133,12 +136,12 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
     val                           = '0;
     repeat(seq_num_vect_i) begin
       dut_req_port_o.data_req   = 1'b1;
-      dut_req_port_o.data_size  = 2'b11;
+      dut_req_port_o.data_size  = $clog2(CVA6Cfg.XLEN/8);
       dut_req_port_o.data_be    = '1;
       dut_req_port_o.data_wdata = val;
       paddr = val;
       // generate linear read
-      val = (val + 8) % (MemWords<<3);
+      val = (val + CVA6Cfg.XLEN/8) % (MemWords<<$clog2(CVA6Cfg.XLEN/8));
       `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
       `APPL_WAIT_CYC(clk_i,1)
     end
@@ -151,7 +154,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
 
   // Repeadedly write to the same address
   task automatic genConstWrite();
-    automatic logic [63:0] val;
+    automatic logic [CVA6Cfg.XLEN-1:0] val;
     paddr                         = CachedAddrBeg;
     dut_req_port_o.data_req       = '0;
     dut_req_port_o.data_size      = '0;
@@ -160,7 +163,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
     repeat(seq_num_vect_i) begin
       void'(randomize(val));
       dut_req_port_o.data_req   = 1'b1;
-      dut_req_port_o.data_size  = 2'b11;
+      dut_req_port_o.data_size  = $clog2(CVA6Cfg.XLEN/8);
       dut_req_port_o.data_be    = '1;
       dut_req_port_o.data_wdata = val;
       `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
@@ -174,7 +177,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
   endtask : genConstWrite
 
   task automatic genWrapSeq();
-    automatic logic [63:0] val;
+    automatic logic [CVA6Cfg.XLEN-1:0] val;
     void'($urandom(RndSeed));
 
     paddr                         = CachedAddrBeg;
@@ -188,7 +191,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
       applyRandData();
       // generate wrapping read of 1 cacheline
       paddr = CachedAddrBeg + val;
-      val = (val + 8) % (1*(DCACHE_LINE_WIDTH/64)*8);
+      val = (val + CVA6Cfg.XLEN/8) % (1*(CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.XLEN)*(CVA6Cfg.XLEN/8));
       `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
       `APPL_WAIT_CYC(clk_i,1)
     end
@@ -201,8 +204,8 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
   endtask : genWrapSeq
 
   task automatic genSeqBurst();
-    automatic logic [63:0] val;
-    automatic logic [7:0]  be;
+    automatic logic [CVA6Cfg.XLEN-1:0] val;
+    automatic logic [CVA6Cfg.XLEN/8-1:0]  be;
     automatic logic [1:0]  size;
     automatic int cnt, burst_len;
 
@@ -223,16 +226,16 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
       if(val < req_rate_i) begin
         dut_req_port_o.data_req = 1'b1;
         // generate random address base
-        void'(randomize(paddr) with {paddr >= 0; paddr < (MemWords<<3);});
+        void'(randomize(paddr) with {paddr >= 0; paddr < (MemWords<<$clog2(CVA6Cfg.XLEN/8));});
 
         // do a random burst
         void'(randomize(burst_len) with {burst_len >= 1; burst_len < 100;});
-        for(int k=0; k<burst_len && cnt < seq_num_vect_i && paddr < ((MemWords-1)<<3); k++) begin
+        for(int k=0; k<burst_len && cnt < seq_num_vect_i && paddr < ((MemWords-1)<<$clog2(CVA6Cfg.XLEN/8)); k++) begin
           applyRandData();
           `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
           `APPL_WAIT_CYC(clk_i,1)
           //void'(randomize(val) with {val>=0 val<=8;};);
-          paddr += 8;
+          paddr += CVA6Cfg.XLEN/8;
           cnt ++;
         end
       end
