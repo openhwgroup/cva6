@@ -1,0 +1,1266 @@
+#   Copyright (c) 2024 OpenHW Group
+#   Copyright (c) 2024 Thales
+#   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#   Author: Abdessamii Oukalrazqou
+
+
+RV32Zcb Code Size Reduction Instructions:
+  Description: >
+      Zcb belongs to the group of extensions called RISC-V Code Size Reduction Extension (Zc*). Zc* has become the superset of the Standard C extension adding more 16-bit instructions to the ISA. Zcb includes the 16-bit version of additional Integer (I), Multiply (M), and Bit-Manipulation (Zbb) Instructions. All the Zcb instructions require at least standard C extension support as a prerequisite, along with M and Zbb extensions for the 16-bit version of the respective instructions.
+  Subset_Name: Zcb
+  Instructions:
+    Code Size Reduction Operations:
+     C.ZEXT.B:
+      Format: c.zext.b rd'
+      Description: >
+        This instruction takes a single source/destination operand. It
+        zero-extends the least-significant byte of the operand by inserting
+        zeros into all of the bits more significant than 7.
+      Pseudocode: x[8 + rd'] = zext(x[8 + rd'][7:0])
+      Invalid_Values: NONE
+      Exception raised: NONE
+     C.SEXT.B:
+      Format: c.sext.b rd'
+      Description: >
+        This instruction takes a single source/destination operand. It
+        sign-extends the least-significant byte in the operand by copying the
+        most-significant bit in the byte (i.e., bit 7) to all of the
+        more-significant bits. It also requires Bit-Manipulation (Zbb) extension
+        support.
+      Pseudocode: x[8 + rd'] = sext(x[8 + rd'][7:0])
+      Invalid_Values: NONE
+      Exception raised: NONE
+     C.ZEXT.H:
+      Format: c.zext.h rd'
+      Description: > 
+        This instruction takes a single source/destination operand. It
+        zero-extends the least-significant halfword of the operand by inserting
+        zeros into all of the bits more significant than 15. It also requires
+        Bit-Manipulation (Zbb) extension support.
+      Pseudocode: x[8 + rd'] = zext(x[8 + rd'][15:0])
+      Invalid_Values: NONE
+      Exception raised: NONE
+     C.SEXT.H:
+      Format: c.sext.h rd'
+      Description: >
+        This instruction takes a single source/destination operand. It
+        sign-extends the least-significant halfword in the operand by copying
+        the most-significant bit in the halfword (i.e., bit 15) to all of the
+        more-significant bits. It also requires Bit-Manipulation (Zbb) extension
+        support.
+      Pseudocode: x[8 + rd'] = sext(x[8 + rd'][15:0])
+      Invalid_Values: NONE
+      Exception raised: NONE
+     C.NOT:
+      Format: c.not rd'
+      Description: >
+        This instruction takes the one’s complement of rd'/rs1' and writes
+        the result to the same register.
+      Pseudocode: x[8 + rd'] = x[8 + rd'] ^ -1
+      Invalid_Values: NONE
+      Exception raised: NONE
+     C.MUL:
+      Format: c.mul rd', rs2'
+      Description: >
+        performs a 32-bit × 32-bit multiplication and places the lower 32
+        bits in the destination register (Both rd' and rs2' treated as signed
+        numbers). It also requires M extension support.
+      Pseudocode: x[8 + rd'] = (x[8 + rd'] * x[8 + rs2'])[31:0]
+      Invalid_Values: NONE
+      Exception raised: NONE
+     C.LHU:
+      Format: c.lhu rd', uimm(rs1')
+      Description: >
+        This instruction loads a halfword from the memory address formed by
+        adding rs1' to the zero extended immediate uimm. The resulting halfword
+        is zero extended and is written to rd'.
+      Pseudocode: x[8+rd'] = zext(M[x[8+rs1'] + zext(uimm[1])][15:0])
+      Invalid_Values: NONE
+      Exception raised: an exception raised if the memory address isn't aligned
+        (2-byte boundary).
+     C.LH:
+      Format: c.lh rd', uimm(rs1')
+      Description: >
+        This instruction loads a halfword from the memory address formed by
+        adding rs1' to the zero extended immediate uimm. The resulting halfword
+        is sign extended and is written to rd'.
+      Pseudocode: x[8+rd'] = sext(M[x[8+rs1'] + zext(uimm[1])][15:0])
+      Invalid_Values: NONE
+      Exception raised: an exception raised if the memory address isn't aligned
+        (2-byte boundary).
+     C.LBU:
+      Format: c.lbu rd', uimm(rs1')
+      Description: > 
+        This instruction loads a byte from the memory address formed by
+        adding rs1' to the zero extended immediate uimm. The resulting byte is
+        zero extended and is written to rd'.
+      Pseudocode: x[8+rd'] = zext(M[x[8+rs1'] + zext(uimm[1:0])][7:0])
+      Invalid_Values: NONE
+      Exception raised: NONE
+     C.SH:
+      Format: c.sh rs2', uimm(rs1')
+      Description: >
+        This instruction stores the least significant halfword of rs2' to
+        the memory address formed by adding rs1' to the zero extended immediate
+        uimm.
+      Pseudocode: M[x[8+rs1'] + zext(uimm[1])][15:0] = x[8+rs2']
+      Invalid_Values: NONE
+      Exception raised: an exception raised if the memory address isn't aligned
+        (2-byte boundary).
+     C.SB:
+      Format: c.sb rs2', uimm(rs1')
+      Description: >
+        This instruction stores the least significant byte of rs2' to the
+        memory address formed by adding rs1' to the zero extended immediate
+        uimm.
+      Pseudocode: M[x[8+rs1'] + zext(uimm[1:0])][7:0] = x[8+rs2']
+      Invalid_Values: NONE
+      Exception raised: NONE
+RV32A Atomic Instructions:
+  Description: >
+    The standard atomic instruction extension is denoted by instruction
+    subset name "A", and contains instructions that atomically read-modify-write
+    memory to support synchronization between multiple RISC-V harts running in
+    the same memory space. The two forms of atomic instruction provided are
+    load-reserved/store-conditional instructions and atomic fetch-and-op memory
+    instructions. Both types of atomic instruction support various memory
+    consistency orderings including unordered, acquire, release, and
+    sequentially consistent semantics.
+  Subset_Name: A
+  Instructions:
+    Load-Reserved/Store-Conditional Instructions:
+      LR.W:
+        Format: lr.w rd, (rs1)
+        Description: LR loads a word from the address in rs1, places the sign-extended
+          value in rd, and registers a reservation on the memory address.
+        Pseudocode: x[rd] = LoadReserved32(M[x[rs1]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          Load/AMO address misaligned exception will be generated.
+      SC.W:
+        Format: sc.w rd, rs2, (rs1)
+        Description: SC writes a word in rs2 to the address in rs1, provided a valid
+          reservation still exists on that address. SC writes zero to rd on
+          success or a nonzero code on failure.
+        Pseudocode: x[rd] = StoreConditional32(M[x[rs1]], x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          Store/AMO address misaligned exception will be generated.
+    Atomic_Memory_Operations:
+      AMOADD.W:
+        Format: amoadd.w rd, rs2, (rs1)
+        Description: AMOADD.W atomically loads a data value from the address in rs1,
+          places the value into register rd, then adds the loaded value and the
+          original value in rs2, then stores the result back to the address in
+          rs1.
+        Pseudocode: x[rd] = AMO32(M[x[rs1]] + x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          misaligned address exception will be generated.
+      AMOAND.W:
+        Format: amoand.w rd, rs2, (rs1)
+        Description: AMOAND.W atomically loads a data value from the address in rs1,
+          places the value into register rd, then performs an AND between the
+          loaded value and the original value in rs2, then stores the result
+          back to the address in rs1.
+        Pseudocode: x[rd] = AMO32(M[x[rs1]] & x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          misaligned address exception will be generated.
+      AMOOR.W:
+        Format: amoor.w rd, rs2, (rs1)
+        Description: AMOOR.W atomically loads a data value from the address in rs1,
+          places the value into register rd, then performs an OR between the
+          loaded value and the original value in rs2, then stores the result
+          back to the address in rs1.
+        Pseudocode: x[rd] = AMO32(M[x[rs1]] | x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          misaligned address exception will be generated.
+      AMOXOR.W:
+        Format: amoxor.w rd, rs2, (rs1)
+        Description: AMOXOR.W atomically loads a data value from the address in rs1,
+          places the value into register rd, then performs a XOR between the
+          loaded value and the original value in rs2, then stores the result
+          back to the address in rs1.
+        Pseudocode: x[rd] = AMO32(M[x[rs1]] ^ x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          misaligned address exception will be generated.
+      AMOSWAP.W:
+        Format: amoswap.w rd, rs2, (rs1)
+        Description: AMOSWAP.W atomically loads a data value from the address in rs1,
+          places the value into register rd, then performs a SWAP between the
+          loaded value and the original value in rs2, then stores the result
+          back to the address in rs1.
+        Pseudocode: x[rd] = AMO32(M[x[rs1]] SWAP x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          misaligned address exception will be generated.
+      AMOMIN.W:
+        Format: amomin.d rd, rs2, (rs1)
+        Description: AMOMIN.W atomically loads a data value from the address in rs1,
+          places the value into register rd, then choses the minimum between the
+          loaded value and the original value in rs2, then stores the result
+          back to the address in rs1.
+        Pseudocode: x[rd] = AMO32(M[x[rs1]] MIN x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          misaligned address exception will be generated.
+      AMOMINU.W:
+        Format: amominu.d rd, rs2, (rs1)
+        Description: AMOMINU.W atomically loads a data value from the address in rs1,
+          places the value into register rd, then choses the minimum (the values
+          treated as unsigned) between the loaded value and the original value
+          in rs2, then stores the result back to the address in rs1.
+        Pseudocode: x[rd] = AMO32(M[x[rs1]] MINU x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          misaligned address exception will be generated.
+      AMOMAX.W:
+        Format: amomax.d rd, rs2, (rs1)
+        Description: AMOMAX.W atomically loads a data value from the address in rs1,
+          places the value into register rd, then choses the maximum between the
+          loaded value and the original value in rs2, then stores the result
+          back to the address in rs1.
+        Pseudocode: x[rd] = AMO32(M[x[rs1]] MAX x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          misaligned address exception will be generated.
+      AMOMAXU.W:
+        Format: amomaxu.d rd, rs2, (rs1)
+        Description: AMOMAXU.W atomically loads a data value from the address in rs1,
+          places the value into register rd, then choses the maximum (the values
+          treated as unsigned) between the loaded value and the original value
+          in rs2, then stores the result back to the address in rs1.
+        Pseudocode: x[rd] = AMO32(M[x[rs1]] MAXU x[rs2]])
+        Invalid_Values: NONE
+        Exception_Raised: If the address is not naturally aligned (4-byte boundary), a
+          misaligned address exception will be generated.
+RV32C Compressed Instructions:
+  Description: >
+    RVC uses a simple compression scheme that offers shorter 16-bit
+    versions of common 32-bit RISC-V instructions when:
+
+        the immediate or address offset is small;
+        one of the registers is the zero register (x0), the ABI link register (x1), or the ABI stack pointer (x2);
+        the destination register and the first source register are identical;
+        the registers used are the 8 most popular ones.
+
+    The C extension is compatible with all other standard instruction extensions. The C extension allows 16-bit instructions to be freely intermixed with 32-bit instructions, with the latter now able to start on any 16-bit boundary. With the addition of the C extension, JAL and JALR instructions will no longer raise an instruction misaligned exception
+  Subset_Name: C
+  Instructions:
+    Integer Computational Instructions:
+      C.LI:
+        Format: c.li rd, imm[5:0]
+        Description: loads the sign-extended 6-bit immediate, imm, into register rd.
+        Pseudocode: x[rd] = sext(imm[5:0])
+        Invalid_Values: rd = x0
+        Exception_Raised: NONE
+      C.LUI:
+        Format: c.lui rd, nzimm[17:12]
+        Description: loads the non-zero 6-bit immediate field into bits 17–12 of the
+          destination register, clears the bottom 12 bits, and sign-extends bit
+          17 into all higher bits of the destination.
+        Pseudocode: x[rd] = sext(nzimm[17:12] << 12)
+        Invalid_Values: rd = x0 & rd = x2 & nzimm = 0
+        Exception_Raised: NONE
+      C.ADDI:
+        Format: c.addi rd, nzimm[5:0]
+        Description: adds the non-zero sign-extended 6-bit immediate to the value in
+          register rd then writes the result to rd.
+        Pseudocode: x[rd] = x[rd] + sext(nzimm[5:0])
+        Invalid_Values: rd = x0 & nzimm = 0
+        Exception_Raised: NONE
+      C.ADDI16SP:
+        Format: c.addi16sp nzimm[9:4]
+        Description: adds the non-zero sign-extended 6-bit immediate to the value in the
+          stack pointer (sp=x2), where the immediate is scaled to represent
+          multiples of 16 in the range (-512,496). C.ADDI16SP is used to adjust
+          the stack pointer in procedure prologues and epilogues. C.ADDI16SP
+          shares the opcode with C.LUI, but has a destination field of x2.
+        Pseudocode: x[2] = x[2] + sext(nzimm[9:4])
+        Invalid_Values: rd != x2 & nzimm = 0
+        Exception_Raised: NONE
+      C.ADDI4SPN:
+        Format: c.addi4spn rd', nzimm[9:2]
+        Description: adds a zero-extended non-zero immediate, scaled by 4, to the stack
+          pointer, x2, and writes the result to rd'. This instruction is used to
+          generate pointers to stack-allocated variables.
+        Pseudocode: x[8 + rd'] = x[2] + zext(nzimm[9:2])
+        Invalid_Values: nzimm = 0
+        Exception_Raised: NONE
+      C.SLLI:
+        Format: c.slli rd, uimm[5:0]
+        Description: performs a logical left shift (zeros are shifted into the lower bits).
+        Pseudocode: x[rd] = x[rd] << uimm[5:0]
+        Invalid_Values: rd = x0 & uimm[5] = 0
+        Exception_Raised: NONE
+      C.SRLI:
+        Format: c.srli rd', uimm[5:0]
+        Description: performs a logical right shift (zeros are shifted into the upper bits).
+        Pseudocode: x[8 + rd'] = x[8 + rd'] >> uimm[5:0]
+        Invalid_Values: uimm[5] = 0
+        Exception_Raised: NONE
+      C.SRAI:
+        Format: c.srai rd', uimm[5:0]
+        Description: performs an arithmetic right shift (sign bits are shifted into the
+          upper bits).
+        Pseudocode: x[8 + rd'] = x[8 + rd'] >>s uimm[5:0]
+        Invalid_Values: uimm[5] = 0
+        Exception_Raised: NONE
+      C.ANDI:
+        Format: c.andi rd', imm[5:0]
+        Description: computes the bitwise AND of the value in register rd', and the
+          sign-extended 6-bit immediate, then writes the result to rd'.
+        Pseudocode: x[8 + rd'] = x[8 + rd'] & sext(imm[5:0])
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      C.ADD:
+        Format: c.add rd, rs2
+        Description: adds the values in registers rd and rs2 and writes the result to
+          register rd.
+        Pseudocode: x[rd] = x[rd] + x[rs2]
+        Invalid_Values: rd = x0 & rs2 = x0
+        Exception_Raised: NONE
+      C.MV:
+        Format: c.mv rd, rs2
+        Description: copies the value in register rs2 into register rd.
+        Pseudocode: x[rd] = x[rs2]
+        Invalid_Values: rd = x0 & rs2 = x0
+        Exception_Raised: NONE
+      C.AND:
+        Format: c.and rd', rs2'
+        Description: computes the bitwise AND of of the value in register rd', and
+          register rs2', then writes the result to rd'.
+        Pseudocode: x[8 + rd'] = x[8 + rd'] & x[8 + rs2']
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      C.OR:
+        Format: c.or rd', rs2'
+        Description: computes the bitwise OR of of the value in register rd', and
+          register rs2', then writes the result to rd'.
+        Pseudocode: x[8 + rd'] = x[8 + rd'] | x[8 + rs2']
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      C.XOR:
+        Format: c.and rd', rs2'
+        Description: computes the bitwise XOR of of the value in register rd', and
+          register rs2', then writes the result to rd'.
+        Pseudocode: x[8 + rd'] = x[8 + rd'] ^ x[8 + rs2']
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      C.SUB:
+        Format: c.sub rd', rs2'
+        Description: subtracts the value in registers rs2' from value in rd' and writes
+          the result to register rd'.
+        Pseudocode: x[8 + rd'] = x[8 + rd'] - x[8 + rs2']
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      C.EBREAK:
+        Format: c.ebreak
+        Description: cause control to be transferred back to the debugging environment.
+        Pseudocode: RaiseException(Breakpoint)
+        Invalid_Values: NONE
+        Exception_Raised: Raise a Breakpoint exception.
+    Control Transfer Instructions:
+      C.J:
+        Format: c.j imm[11:1]
+        Description: performs an unconditional control transfer. The offset is
+          sign-extended and added to the pc to form the jump target address.
+        Pseudocode: pc += sext(imm[11:1])
+        Invalid_Values: NONE
+        Exception_Raised: jumps to an unaligned address (4-byte or 2-byte boundary) will
+          usually raise an exception.
+      C.JAL:
+        Format: c.jal imm[11:1]
+        Description: performs the same operation as C.J, but additionally writes the
+          address of the instruction following the jump (pc+2) to the link
+          register, x1.
+        Pseudocode: x[1] = pc+2; pc += sext(imm[11:1])
+        Invalid_Values: NONE
+        Exception_Raised: jumps to an unaligned address (4-byte or 2-byte boundary) will
+          usually raise an exception.
+      C.JR:
+        Format: c.jr rs1
+        Description: performs an unconditional control transfer to the address in
+          register rs1.
+        Pseudocode: pc = x[rs1]
+        Invalid_Values: rs1 = x0
+        Exception_Raised: jumps to an unaligned address (4-byte or 2-byte boundary) will
+          usually raise an exception.
+      C.JALR:
+        Format: c.jalr rs1
+        Description: performs the same operation as C.JR, but additionally writes the
+          address of the instruction following the jump (pc+2) to the link
+          register, x1.
+        Pseudocode: t = pc+2; pc = x[rs1]; x[1] = t
+        Invalid_Values: rs1 = x0
+        Exception_Raised: jumps to an unaligned address (4-byte or 2-byte boundary) will
+          usually raise an exception.
+      C.BEQZ:
+        Format: c.beqz rs1', imm[8:1]
+        Description: performs conditional control transfers. The offset is sign-extended
+          and added to the pc to form the branch target address. C.BEQZ takes
+          the branch if the value in register rs1' is zero.
+        Pseudocode: if (x[8+rs1'] == 0) pc += sext(imm[8:1])
+        Invalid_Values: NONE
+        Exception_Raised: no instruction fetch misaligned exception is generated for a
+          conditional branch that is not taken. An Instruction address
+          misaligned exception is raised if the target address is not aligned on
+          4-byte or 2-byte boundary, because the core supports compressed
+          instructions.
+      C.BNEZ:
+        Format: c.bnez rs1', imm[8:1]
+        Description: performs conditional control transfers. The offset is sign-extended
+          and added to the pc to form the branch target address. C.BEQZ takes
+          the branch if the value in register rs1' isn't zero.
+        Pseudocode: if (x[8+rs1'] != 0) pc += sext(imm[8:1])
+        Invalid_Values: NONE
+        Exception_Raised: no instruction fetch misaligned exception is generated for a
+          conditional branch that is not taken. An Instruction address
+          misaligned exception is raised if the target address is not aligned on
+          4-byte or 2-byte boundary, because the core supports compressed
+          instructions.
+    Load and Store Instructions:
+      C.LWSP:
+        Format: c.lwsp rd, uimm(x2)
+        Description: loads a 32-bit value from memory into register rd. It computes an
+          effective address by adding the zero-extended offset, scaled by 4, to
+          the stack pointer, x2.
+        Pseudocode: x[rd] = M[x[2] + zext(uimm[7:2])][31:0]
+        Invalid_Values: rd = x0
+        Exception_Raised: loads with a destination of x0 must still raise any
+          exceptions, also an exception if the memory address isn't aligned
+          (4-byte boundary).
+      C.SWSP:
+        Format: c.swsp rd, uimm(x2)
+        Description: stores a 32-bit value in register rs2 to memory. It computes an
+          effective address by adding the zero-extended offset, scaled by 4, to
+          the stack pointer, x2.
+        Pseudocode: M[x[2] + zext(uimm[7:2])][31:0] = x[rs2]
+        Invalid_Values: NONE
+        Exception_Raised: an exception raised if the memory address isn't aligned
+          (4-byte boundary).
+      C.LW:
+        Format: c.lw rd', uimm(rs1')
+        Description: loads a 32-bit value from memory into register rd'. It computes an
+          effective address by adding the zero-extended offset, scaled by 4, to
+          the base address in register rs1'.
+        Pseudocode: x[8+rd'] = M[x[8+rs1'] + zext(uimm[6:2])][31:0])
+        Invalid_Values: NONE
+        Exception_Raised: an exception raised if the memory address isn't aligned
+          (4-byte boundary).
+      C.SW:
+        Format: c.sw rs2', uimm(rs1')
+        Description: stores a 32-bit value from memory into register rd'. It computes an
+          effective address by adding the zero-extended offset, scaled by 4, to
+          the base address in register rs1'.
+        Pseudocode: M[x[8+rs1'] + zext(uimm[6:2])][31:0] = x[8+rs2']
+        Invalid_Values: NONE
+        Exception_Raised: an exception raised if the memory address isn't aligned
+          (4-byte boundary).
+RV32M Multiplication and Division Instructions:
+  Description: >
+    the standard integer multiplication and division instruction
+    extension, which is named “M” and contains instructions that multiply or
+    divide values held in two integer registers.
+  Subset_Name: M
+  Instructions:
+    Multiplication Operations:
+      MUL:
+        Format: mul rd, rs1, rs2
+        Description: performs a 32-bit × 32-bit multiplication and places the lower 32
+          bits in the destination register (Both rs1 and rs2 treated as signed
+          numbers).
+        Pseudocode: x[rd] = x[rs1] * x[rs2]
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      MULH:
+        Format: mulh rd, rs1, rs2
+        Description: performs a 32-bit × 32-bit multiplication and places the upper 32
+          bits in the destination register of the 64-bit product (Both rs1 and
+          rs2 treated as signed numbers).
+        Pseudocode: x[rd] = (x[rs1] s*s x[rs2]) >>s 32
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      MULHU:
+        Format: mulhu rd, rs1, rs2
+        Description: performs a 32-bit × 32-bit multiplication and places the upper 32
+          bits in the destination register of the 64-bit product (Both rs1 and
+          rs2 treated as unsigned numbers).
+        Pseudocode: x[rd] = (x[rs1] u*u x[rs2]) >>u 32
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      MULHSU:
+        Format: mulhsu rd, rs1, rs2
+        Description: performs a 32-bit × 32-bit multiplication and places the upper 32
+          bits in the destination register of the 64-bit product (rs1 treated as
+          signed number, rs2 treated as unsigned number).
+        Pseudocode: x[rd] = (x[rs1] s*u x[rs2]) >>s 32
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    Division Operations:
+      DIV:
+        Format: div rd, rs1, rs2
+        Description: perform signed integer division of 32 bits by 32 bits (rounding
+          towards zero).
+        Pseudocode: x[rd] = x[rs1] /s x[rs2]
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      DIVU:
+        Format: divu rd, rs1, rs2
+        Description: perform unsigned integer division of 32 bits by 32 bits (rounding
+          towards zero).
+        Pseudocode: x[rd] = x[rs1] /u x[rs2]
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      REM:
+        Format: rem rd, rs1, rs2
+        Description: provide the remainder of the corresponding division operation DIV
+          (the sign of rd equals the sign of rs1).
+        Pseudocode: x[rd] = x[rs1] %s x[rs2]
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      REMU:
+        Format: rem rd, rs1, rs2
+        Description: provide the remainder of the corresponding division operation DIVU.
+        Pseudocode: x[rd] = x[rs1] %u x[rs2]
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+RV32Zicond Integer Conditional Instructions:
+  Description: >
+    The instructions follow the format for R-type instructions with 3 operands (i.e., 2 source operands and 1 destination operand). 
+    Using these instructions, branchless sequences can be implemented (typically in two-instruction sequences) without the need for instruction fusion,
+    special provisions during the decoding of architectural instructions, or other microarchitectural provisions
+  Subset_Name: Zicond
+  Instructions:
+    Integer Conditional Operations:
+      CZERO.EQZ:
+        Format: czero.eqz rd, rs1, rs2
+        Description: >
+          This instruction behaves as if there is a conditional branch
+          dependent on rs2 being equal to zero, wherein it branches to code that
+          writes a 0 into rd when the equivalence is true, and otherwise falls
+          through to code that moves rs1 into rd.
+        Pseudocode: if (x[rs2] == 0) x[rd] = 0 else x[rs1]
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      CZERO.NEZ:
+        Format: czero.nez rd, rs1, rs2
+        Description: > 
+          This instruction behaves as if there is a conditional branch
+          dependent on rs2 being not equal to zero, wherein it branches to code
+          that writes a 0 into rd when the equivalence is true, and otherwise
+          falls through to code that moves rs1 into rd.
+        Pseudocode: if (x[rs2] != 0) x[rd] = 0 else x[rs1]
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+RV32Zicsr Control and Status Register Instructions:
+  Description: >
+    All CSR instructions atomically read-modify-write a single CSR,
+    whose CSR specifier is encoded in the 12-bit csr field of the instruction
+    held in bits 31–20. The immediate forms use a 5-bit zero-extended immediate
+    encoded in the rs1 field.
+  Subset_Name: Zicsr
+  Instructions:
+    Control and Status Register Operations:
+      CSRRW:
+        Format: csrrw rd, csr, rs1
+        Description: >
+          Reads the old value of the CSR, zero-extends the value to 32 bits,
+          then writes it to integer register rd. The initial value in rs1 is
+          written to the CSR. If rd=x0, then the instruction shall not read the
+          CSR and shall not cause any of the side-effects that might occur on a
+          CSR read.
+        Pseudocode: t = CSRs[csr]; CSRs[csr] = x[rs1]; x[rd] = t
+        Invalid_Values: NONE
+        Exception_Raised: >
+          Attempts to access a non-existent CSR raise an illegal
+          instruction exception. Attempts to access a CSR without appropriate
+          privilege level or to write a read-only register also raise illegal
+          instruction exceptions.
+      CSRRS:
+        Format: csrrs rd, csr, rs1
+        Description: >
+          Reads the value of the CSR, zero-extends the value to 32 bits, and
+          writes it to integer register rd. The initial value in integer
+          register rs1 is treated as a bit mask that specifies bit positions to
+          be set in the CSR. Any bit that is high in rs1 will cause the
+          corresponding bit to be set in the CSR, if that CSR bit is writable.
+          Other bits in the CSR are unaffected (though CSRs might have side
+          effects when written). If rs1=x0, then the instruction will not write
+          to the CSR at all, and so shall not cause any of the side effects that
+          might otherwise occur on a CSR write, such as raising illegal
+          instruction exceptions on accesses to read-only CSRs.
+        Pseudocode: t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
+        Invalid_Values: NONE
+        Exception_Raised: > 
+          Attempts to access a non-existent CSR raise an illegal
+          instruction exception. Attempts to access a CSR without appropriate
+          privilege level or to write a read-only register also raise illegal
+          instruction exceptions.
+      CSRRC:
+        Format: csrrc rd, csr, rs1
+        Description: >
+          Reads the value of the CSR, zero-extends the value to 32 bits, and
+          writes it to integer register rd. The initial value in integer
+          register rs1 is treated as a bit mask that specifies bit positions to
+          be cleared in the CSR. Any bit that is high in rs1 will cause the
+          corresponding bit to be set in the CSR, if that CSR bit is writable.
+          Other bits in the CSR are unaffected (though CSRs might have side
+          effects when written). If rs1=x0, then the instruction will not write
+          to the CSR at all, and so shall not cause any of the side effects that
+          might otherwise occur on a CSR write, such as raising illegal
+          instruction exceptions on accesses to read-only CSRs.
+        Pseudocode: t = CSRs[csr]; CSRs[csr] = t & ∼x[rs1]; x[rd] = t
+        Invalid_Values: NONE
+        Exception_Raised: >
+          Attempts to access a non-existent CSR raise an illegal
+          instruction exception. Attempts to access a CSR without appropriate
+          privilege level or to write a read-only register also raise illegal
+          instruction exceptions.
+      CSRRWI:
+        Format: csrrwi rd, csr, uimm[4:0]
+        Description: >
+          Reads the old value of the CSR, zero-extends the value to 32 bits,
+          then writes it to integer register rd. The zero-extends immediate is
+          written to the CSR. If rd=x0, then the instruction shall not read the
+          CSR and shall not cause any of the side-effects that might occur on a
+          CSR read.
+        Pseudocode: x[rd] = CSRs[csr]; CSRs[csr] = zext(uimm[4:0])
+        Invalid_Values: NONE
+        Exception_Raised: >
+          Attempts to access a non-existent CSR raise an illegal
+          instruction exception. Attempts to access a CSR without appropriate
+          privilege level or to write a read-only register also raise illegal
+          instruction exceptions.
+      CSRRSI:
+        Format: csrrsi rd, csr, uimm[4:0]
+        Description: >
+          Reads the value of the CSR, zero-extends the value to 32 bits, and
+          writes it to integer register rd. The zero-extends immediate value is
+          treated as a bit mask that specifies bit positions to be set in the
+          CSR. Any bit that is high in zero-extends immediate will cause the
+          corresponding bit to be set in the CSR, if that CSR bit is writable.
+          Other bits in the CSR are unaffected (though CSRs might have side
+          effects when written). If the uimm[4:0] field is zero, then these
+          instructions will not write to the CSR, and shall not cause any of the
+          side effects that might otherwise occur on a CSR write.
+        Pseudocode: t = CSRs[csr]; CSRs[csr] = t | zext(uimm[4:0]); x[rd] = t
+        Invalid_Values: NONE
+        Exception_Raised: >
+          Attempts to access a non-existent CSR raise an illegal
+          instruction exception. Attempts to access a CSR without appropriate
+          privilege level or to write a read-only register also raise illegal
+          instruction exceptions.
+      CSRRCI:
+        Format: csrrci rd, csr, uimm[4:0]
+        Description: >
+          Reads the value of the CSR, zero-extends the value to 32 bits, and
+          writes it to integer register rd. The zero-extends immediate value is
+          treated as a bit mask that specifies bit positions to be cleared in
+          the CSR. Any bit that is high in zero-extends immediate will cause the
+          corresponding bit to be set in the CSR, if that CSR bit is writable.
+          Other bits in the CSR are unaffected (though CSRs might have side
+          effects when written). If the uimm[4:0] field is zero, then these
+          instructions will not write to the CSR, and shall not cause any of the
+          side effects that might otherwise occur on a CSR write.
+        Pseudocode: t = CSRs[csr]; CSRs[csr] = t & ∼zext(uimm[4:0]); x[rd] = t
+        Invalid_Values: NONE
+        Exception_Raised: >
+          Attempts to access a non-existent CSR raise an illegal
+          instruction exception. Attempts to access a CSR without appropriate
+          privilege level or to write a read-only register also raise illegal
+          instruction exceptions.
+RVZcmp_Code_Size_Reduction_Instructions:
+  Description: >
+    Zcmp belongs to group of extensions called RISC-V Code Size Reduction Extension (Zc*). Zc* has become the superset of Standard C extension adding more 16-bit instructions to the ISA.
+    Zcmp includes 16-bit macro instructions, PUSH/POP and double move, which reuse the encoding for c.fsdsp instruction.
+    All the Zcmp instructions require at least C extension support with Zcd extension disabled as pre-requisite.
+  Subset_Name: Zicmp
+  Instructions:
+    Code Size Reduction operations:
+     CM.PUSH:
+      Format: cm.push {reg_list}, -stack_adj
+      Description: >
+        Pushes (stores) the registers in reg_list to the memory below the
+        stack pointer, and then creates the stack frame by decrementing the
+        stack pointer by stack_adj, including any additional stack space
+        requested by the value of spimm.
+      Pseudocode: |
+        if (XLEN==32) bytes=4; else bytes=8;
+        addr=sp-bytes;
+        for(i in 27,26,25,24,23,22,21,20,19,18,9,8,1) {
+          if (xreg_list[i]) {
+            switch(bytes) {
+             4: asm("sw x[i], 0(addr)");
+             8: asm("sd x[i], 0(addr)");
+            }
+            addr-=bytes;
+          }
+        }
+        sp-=stack_adj;
+      Invalid_Values: >
+        reg_list not in [{ra}, {ra, s0}, {ra, s0-s1}, ..., {ra, s0-s9},
+        {ra, s0-s11}], stack_adj not in [16, 32, 48, 64, 80, 96, 112] and [16,
+        32, 48, 64, 80, 96, 112, 128, 144, 160] for RV32 and RV64 respectively.
+      Exception_Raised: NONE
+     CM.POP:
+      Format: cm.pop {reg_list}, stack_abj
+      Description: >
+        Loads ra and 0 to 12 saved registers from the stack frame,
+        deallocates the stack frame.
+      Pseudocode: |
+        if (XLEN==32) bytes=4; else bytes=8;
+        addr=sp+stack_adj-bytes;
+        for(i in 27,26,25,24,23,22,21,20,19,18,9,8,1) {
+          if (xreg_list[i]) {
+            switch(bytes) {
+              4: asm("lw x[i], 0(addr)");
+              8: asm("ld x[i], 0(addr)");
+            }
+            addr-=bytes;
+          }
+        }
+        sp+=stack_adj;
+      Invalid_Values: >
+        reg_list not in [{ra}, {ra, s0}, {ra, s0-s1}, ..., {ra, s0-s9},
+        {ra, s0-s11}], stack_adj not in [16, 32, 48, 64, 80, 96, 112] and [16,
+        32, 48, 64, 80, 96, 112, 128, 144, 160] for RV32 and RV64 respectively.
+      Exception_Raised: NONE
+     CM.POPRETZ:
+      Format: cm.popretz {reg_list}, stack_adj
+      Description: >
+        Loads ra and 0 to 12 saved registers from the stack frame,
+        deallocates the stack frame, moves zero into a0, returns to ra.
+      Pseudocode: |
+        if (XLEN==32) bytes=4; else bytes=8;
+        addr=sp+stack_adj-bytes;
+        for(i in 27,26,25,24,23,22,21,20,19,18,9,8,1) {
+          if (xreg_list[i]) {
+           switch(bytes) {
+             4: asm("lw x[i], 0(addr)");
+             8: asm("ld x[i], 0(addr)");
+            }
+            addr-=bytes;
+          }
+        }
+        asm("li a0, 0");
+        sp+=stack_adj;
+        asm("ret");
+      Invalid_Values: >
+       reg_list not in [{ra}, {ra, s0}, {ra, s0-s1}, ..., {ra, s0-s9},
+        {ra, s0-s11}], stack_adj not in [16, 32, 48, 64, 80, 96, 112] and [16,
+        32, 48, 64, 80, 96, 112, 128, 144, 160] for RV32 and RV64 respectively.
+      Exception_Raised: NONE
+     CM.POPRET:
+      Format: cm.popret {reg_list}, stack_adj
+      Description: >
+        Loads ra and 0 to 12 saved registers from the stack frame,
+        deallocates the stack frame, returns to ra.
+      Pseudocode: |
+        if (XLEN==32) bytes=4; else bytes=8;
+        addr=sp+stack_adj-bytes;
+        for(i in 27,26,25,24,23,22,21,20,19,18,9,8,1) {
+          if (xreg_list[i]) {
+            switch(bytes) {
+              4: asm("lw x[i], 0(addr)");
+              8: asm("ld x[i], 0(addr)");
+            }
+           addr-=bytes;
+         }
+        }
+        sp+=stack_adj;
+        asm("ret");
+      Invalid_Values: >
+        reg_list not in [{ra}, {ra, s0}, {ra, s0-s1}, ..., {ra, s0-s9},
+        {ra, s0-s11}], stack_adj not in [16, 32, 48, 64, 80, 96, 112] and [16,
+        32, 48, 64, 80, 96, 112, 128, 144, 160] for RV32 and RV64 respectively.
+      Exception_Raised: NONE
+     CM.MVSA01:
+      Format: cm.mvsa01 r1s', r2s'
+      Description: |
+        Moves a0 into r1s' and a1 into r2s'. r1s' and r2s' must be different.
+      Pseudocode: |
+        if (RV32E && (r1sc>1 || r2sc>1)) {
+          reserved();
+        }
+        xreg1 = {r1sc[2:1]>0,r1sc[2:1]==0,r1sc[2:0]};
+        xreg2 = {r2sc[2:1]>0,r2sc[2:1]==0,r2sc[2:0]};
+        X[xreg1] = X[10];
+        X[xreg2] = X[11];
+      Invalid_Values: r1s' = r2s'
+      Exception_Raised: NONE
+     CM.MVA01S:
+      Format: cm.mva01s r1s', r2s'
+      Description: |
+        Moves r1s' into a0 and r2s' into a1.
+      Pseudocode: |
+        if (RV32E && (r1sc>1 || r2sc>1)) {
+          reserved();
+        }
+        xreg1 = {r1sc[2:1]>0,r1sc[2:1]==0,r1sc[2:0]};
+        xreg2 = {r2sc[2:1]>0,r2sc[2:1]==0,r2sc[2:0]};
+        X[10] = X[xreg1];
+        X[11] = X[xreg2];
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+RVZifencei Instruction Fetch Fence:
+  Description : |
+    FENCE.I instruction that provides explicit synchronization between writes to instruction memory and instruction fetches on the same hart.
+    Currently, this instruction is the only standard mechanism to ensure that stores visible to a hart will also be visible to it instruction fetches.
+  Subset_Name: Zifencei
+  Instructions:
+    Fetch Fence Operations:
+     FENCE.I:
+      Format: fence.i
+      Description: >
+        The FENCE.I instruction is used to synchronize the instruction and
+        data streams. RISC-V does not guarantee that stores to instruction
+        memory will be made visible to instruction fetches on the same RISC-V
+        hart until a FENCE.I instruction is executed. A FENCE.I instruction only
+        ensures that a subsequent instruction fetch on a RISC-V hart will see
+        any previous data stores already visible to the same RISC-V hart.
+      Pseudocode: Fence(Store, Fetch)
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+RVZbs Single bit Instructions:
+  Description: >
+    The single-bit instructions provide a mechanism to set, clear,
+    invert, or extract a single bit in a register. The bit is specified by its
+    index.
+  Subset_Name: Zbs
+  Instructions:
+   Single_bit_Operations:
+    BCLR:
+      Format: bclr rd, rs1, rs2
+      Description: >
+        This instruction returns rs1 with a single bit cleared at the index
+        specified in rs2. The index is read from the lower log2(XLEN) bits of
+        rs2.
+      Pseudocode: X(rd) = X(rs1) & ~(1 << (X(rs2) & (XLEN - 1)))
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+    BCLRI:
+      Format: bclri rd, rs1, shamt
+      Description: >
+        This instruction returns rs1 with a single bit cleared at the index
+        specified in shamt. The index is read from the lower log2(XLEN) bits of
+        shamt. For RV32, the encodings corresponding to shamt[5]=1 are reserved.
+      Pseudocode: X(rd) = X(rs1) & ~(1 << (shamt & (XLEN - 1)))
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+    BEXT:
+      Format: bext rd, rs1, rs2
+      Description: >
+        This instruction returns a single bit extracted from rs1 at the
+        index specified in rs2. The index is read from the lower log2(XLEN) bits
+        of rs2.
+      Pseudocode: X(rd) = (X(rs1) >> (X(rs2) & (XLEN - 1))) & 1
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+    BEXTI:
+      Format: bexti rd, rs1, shamt
+      Description: >
+        This instruction returns a single bit extracted from rs1 at the
+        index specified in rs2. The index is read from the lower log2(XLEN) bits
+        of shamt. For RV32, the encodings corresponding to shamt[5]=1 are
+        reserved.
+      Pseudocode: X(rd) = (X(rs1) >> (shamt & (XLEN - 1))) & 1
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+    BINV:
+      Format: binv rd, rs1, rs2
+      Description: >
+        This instruction returns rs1 with a single bit inverted at the
+        index specified in rs2. The index is read from the lower log2(XLEN) bits
+        of rs2.
+      Pseudocode: X(rd) = X(rs1) ^ (1 << (X(rs2) & (XLEN - 1)))
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+    BINVI:
+      Format: binvi rd, rs1, shamt
+      Description: >
+        This instruction returns rs1 with a single bit inverted at the
+        index specified in shamt. The index is read from the lower log2(XLEN)
+        bits of shamt. For RV32, the encodings corresponding to shamt[5]=1 are
+        reserved.
+      Pseudocode: X(rd) = X(rs1) ^ (1 << (shamt & (XLEN - 1)))
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+    BSET:
+      Format: bset rd, rs1, rs2
+      Description: >
+        This instruction returns rs1 with a single bit set at the index
+        specified in rs2. The index is read from the lower log2(XLEN) bits of
+        rs2.
+      Pseudocode: X(rd) = X(rs1) | (1 << (X(rs2) & (XLEN - 1)))
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+    BSETI:
+      Format: bseti rd, rs1, shamt
+      Description: >
+        This instruction returns rs1 with a single bit set at the index
+        specified in shamt. The index is read from the lower log2(XLEN) bits of
+        shamt. For RV32, the encodings corresponding to shamt[5]=1 are reserved.
+      Pseudocode: X(rd) = X(rs1) | (1 << (shamt & (XLEN - 1)))
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+RVZbc Carry-less multiplication:
+  Subset_Name: Zicb
+  Instructions:
+    Carry-less multiplication Operations:
+      CLMUL:
+        Format: clmul rd, rs1, rs2
+        Description: |
+          clmul produces the lower half of the 2.XLEN carry-less product.
+        Pseudocode: |
+          foreach (i from 1 to xlen by 1) {
+            output = if ((rs2 >> i) & 1) then output ^ (rs1 << i); else output;
+          }
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      CLMULH:
+        Format: clmulh rd, rs1, rs2
+        Description: |
+          clmulh produces the upper half of the 2.XLEN carry-less product.
+        Pseudocode: >
+          foreach (i from 1 to xlen by 1) {
+            output = if ((rs2_val >> i) & 1) then output ^ (rs1_val >> (xlen - i)) else output
+          }
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      CLMULR:
+        Format: clmulr rd, rs1, rs2
+        Description: |
+          clmulr produces bits 2.XLEN-2:XLEN-1 of the 2.XLEN carry-less product.
+        Pseudocode: >
+          foreach (i from 0 to (xlen - 1) by 1) {
+            output = if ((rs2_val >> i) & 1) then output ^ (rs1_val >> (xlen - i - 1)) else output
+          }
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+RVZba Address generation instructions:
+    Description: >
+      The Zba instructions can be used to accelerate the generation of addresses that index into arrays of basic types (halfword, word, doubleword) using both unsigned word-sized and XLEN-sized indices: a shifted index is added to a base address.
+      The shift and add instructions do a left shift of 1, 2, or 3 because these are commonly found in real-world code and because they can be implemented with a minimal amount of additional hardware beyond that of the simple adder. This avoids lengthening the critical path in implementations.
+      While the shift and add instructions are limited to a maximum left shift of 3, the slli instruction (from the base ISA) can be used to perform similar shifts for indexing into arrays of wider elements. The slli.uw added in this extension can be used when the index is to be interpreted as an unsigned word.
+    Subset_Name : Zba
+    Instructions:
+     Address generation instructions :
+      ADD.UW:
+        Format: add.uw rd, rs1, rs2
+        Description: >
+          This instruction performs an XLEN-wide addition between rs2 and the zero-extended least-significant word of rs1.
+        Pseudocode: X(rd) = rs2 + EXTZ(X(rs1)[31..0])
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      SH1ADD:
+        Format: sh1add rd, rs1, rs2
+        Description: >
+          This instruction shifts rs1 to the left by 1 bit and adds it to rs2.
+        Pseudocode: X(rd) = X(rs2) + (X(rs1) << 1)
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      SH1ADD.UW:
+        Format: sh1add.uw rd, rs1, rs2
+        Description: >
+          This instruction performs an XLEN-wide addition of two addends. The first addend is rs2. The second addend is the unsigned value formed by extracting the least-significant word of rs1 and shifting it left by 1 place.
+        Pseudocode: X(rd) = rs2 + (EXTZ(X(rs1)[31..0]) << 1)
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      SH2ADD:
+        Format: sh2add rd, rs1, rs2
+        Description: >
+          This instruction shifts rs1 to the left by 2 bit and adds it to rs2.
+        Pseudocode: X(rd) = X(rs2) + (X(rs1) << 2)
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      SH2ADD.UW:
+        Format: sh2add.uw rd, rs1, rs2
+        Description: >
+          This instruction performs an XLEN-wide addition of two addends. The first addend is rs2. The second addend is the unsigned value formed by extracting the least-significant word of rs1 and shifting it left by 2 places.
+        Pseudocode: X(rd) = rs2 + (EXTZ(X(rs1)[31..0]) << 2)
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      SH3ADD:
+        Format: sh3add rd, rs1, rs2
+        Description: >
+          This instruction shifts rs1 to the left by 3 bit and adds it to rs2.
+        Pseudocode: X(rd) = X(rs2) + (X(rs1) << 3)
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      SH3ADD.UW:
+        Format: sh3add.uw rd, rs1, rs2
+        Description: >
+          This instruction performs an XLEN-wide addition of two addends. The first addend is rs2. The second addend is the unsigned value formed by extracting the least-significant word of rs1 and shifting it left by 3 places.
+        Pseudocode: X(rd) = rs2 + (EXTZ(X(rs1)[31..0]) << 3)
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+      SLLI.UW:
+        Format: slli.uw rd, rs1, imm
+        Description: >
+          This instruction takes the least-significant word of rs1, zero-extends it, and shifts it left by the immediate.
+        Pseudocode: X(rd) = (EXTZ(X(rs)[31..0]) << imm)
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+RV32I Base Integer Instructions:
+ Description : |
+   the base integer instruction set, also known as the 'RV32I' or 'RV64I' instruction set , depending on the address space size, provides the core functionality required for general-purpose computing .
+   it includes instructions for arithmetic, logical, and control operations, as well as memory access
+   and manipulation
+ Subset_Name : I
+ Instructions :
+  Integer_Register_Immediate_Operations:
+    ADDI:
+      Format: "addi rd, rs1, imm[11:0]"
+      Description: "add sign-extended 12-bit immediate to register rs1, and store the result in register rd."
+      Pseudocode: "x[rd] = x[rs1] + sext(imm[11:0])"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    ANDI:
+      Format: "andi rd, rs1, imm[11:0]"
+      Description: "perform bitwise AND on register rs1 and the sign-extended 12-bit immediate and place the result in rd."
+      Pseudocode: "x[rd] = x[rs1] & sext(imm[11:0])"
+      Invalid_Values: "NONE"
+      Exception_Raised: NONE
+    ORI:
+      Format: "ori rd, rs1, imm[11:0]"
+      Description: "perform bitwise OR on register rs1 and the sign-extended 12-bit immediate and place the result in rd."
+      Pseudocode: "x[rd] = x[rs1] | sext(imm[11:0])"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    XORI:
+      Format: "xori rd, rs1, imm[11:0]"
+      Description: "perform bitwise XOR on register rs1 and the sign-extended 12-bit immediate and place the result in rd."
+      Pseudocode: "x[rd] = x[rs1] ^ sext(imm[11:0])"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SLTI:
+      Format: slti rd, rs1, imm[11:0]
+      Description: set register rd to 1 if register rs1 is less than the sign extended immediate when both are treated as signed numbers, else 0 is written to rd.
+      Pseudocode: if (x[rs1] < sext(imm[11:0])) x[rd] = 1 else x[rd] = 0
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+    SLTIU:
+      Format: "sltiu rd, rs1, imm[11:0]"
+      Description: set register rd to 1 if register rs1 is less than the sign extended immediate when both are treated as unsigned numbers, else 0 is written to rd."
+      Pseudocode: if (x[rs1] <u sext(imm[11:0])) x[rd] = 1 else x[rd] = 0
+      Invalid_Values: NONE
+      Exception_Raised: NONE
+    SLLI:
+      Format: "slli rd, rs1, imm[4:0]"
+      Description: "logical left shift (zeros are shifted into the lower bits)."
+      Pseudocode: "x[rd] = x[rs1] << imm[4:0]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SRLI:
+      Format: "srli rd, rs1, imm[4:0]"
+      Description: "logical right shift (zeros are shifted into the upper bits)."
+      Pseudocode: "x[rd] = x[rs1] >> imm[4:0]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SRAI:
+      Format: "srai rd, rs1, imm[4:0]"
+      Description: "arithmetic right shift (the original sign bit is copied into the vacated upper bits)."
+      Pseudocode: "x[rd] = x[rs1] >>s imm[4:0]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    LUI:
+      Format: "lui rd, imm[19:0]"
+      Description: "place the immediate value in the top 20 bits of the destination register rd, filling in the lowest 12 bits with zeros."
+      Pseudocode: "x[rd] = sext(imm[31:12] << 12)"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    AUIPC:
+      Format: "auipc rd, imm[19:0]"
+      Description: "form a 32-bit offset from the 20-bit immediate, filling in the lowest 12 bits with zeros, adds this offset to the pc, then place the result in register rd."
+      Pseudocode: "x[rd] = pc + sext(immediate[31:12] << 12)"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+  Integer_Register_Register_Operations:
+    ADD:
+      Format: "add rd, rs1, rs2"
+      Description: "add rs2 to register rs1, and store the result in register rd."
+      Pseudocode: "x[rd] = x[rs1] + x[rs2]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SUB:
+      Format: "sub rd, rs1, rs2"
+      Description: "subtract rs2 from register rs1, and store the result in register rd."
+      Pseudocode: "x[rd] = x[rs1] - x[rs2]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    AND:
+      Format: "and rd, rs1, rs2"
+      Description: "perform bitwise AND on register rs1 and rs2 and place the result in rd."
+      Pseudocode: "x[rd] = x[rs1] & x[rs2]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    OR:
+      Format: "or rd, rs1, rs2"
+      Description: "perform bitwise OR on register rs1 and rs2 and place the result in rd."
+      Pseudocode: "x[rd] = x[rs1] | x[rs2]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    XOR:
+      Format: "xor rd, rs1, rs2"
+      Description: "perform bitwise XOR on register rs1 and rs2 and place the result in rd."
+      Pseudocode: "x[rd] = x[rs1] ^ x[rs2]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SLT:
+      Format: "slt rd, rs1, rs2"
+      Description: "set register rd to 1 if register rs1 is less than rs2 when both are treated as signed numbers, else 0 is written to rd."
+      Pseudocode: "if (x[rs1] < x[rs2]) x[rd] = 1 else x[rd] = 0"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SLTU:
+      Format: "sltu rd, rs1, rs2"
+      Description: "set register rd to 1 if register rs1 is less than rs2 when both are treated as unsigned numbers, else 0 is written to rd."
+      Pseudocode: "if (x[rs1] <u x[rs2]) x[rd] = 1 else x[rd] = 0"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SLL:
+      Format: "sll rd, rs1, rs2"
+      Description: "logical left shift (zeros are shifted into the lower bits)."
+      Pseudocode: "x[rd] = x[rs1] << x[rs2]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SRL:
+      Format: "srl rd, rs1, rs2"
+      Description: "logical right shift (zeros are shifted into the upper bits)."
+      Pseudocode: "x[rd] = x[rs1] >> x[rs2]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SRA:
+      Format: "sra rd, rs1, rs2"
+      Description: "arithmetic right shift (the original sign bit is copied into the vacated upper bits)."
+      Pseudocode: "x[rd] = x[rs1] >>s x[rs2]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+  Control_Transfer_Operations-Unconditional_Jumps:
+      JAL:
+        Format: "jal rd, imm[20:1]"
+        Description: "offset is sign-extended and added to the pc to form the jump target address (pc is calculated using signed arithmetic), then setting the least-significant bit of the result to zero, and store the address of instruction following the jump (pc+4) into register rd."
+        Pseudocode: "x[rd] = pc+4; pc += sext(imm[20:1])"
+        Invalid_Values: "NONE"
+        Exception_Raised: "jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception."
+      JALR:
+        Format: "jalr rd, rs1, imm[11:0]"
+        Description: "target address is obtained by adding the 12-bit signed immediate to the register rs1 (pc is calculated using signed arithmetic), then setting the least-significant bit of the result to zero, and store the address of instruction following the jump (pc+4) into register rd."
+        Pseudocode: "t = pc+4; pc = (x[rs1]+sext(imm[11:0]))&∼1 ; x[rd] = t"
+        Invalid_Values: "NONE"
+        Exception_Raised: "jumps to an unaligned address (4-byte or 2-byte boundary) will usually raise an exception."
+  Control_Transfer_Operations-Conditional_Branches:
+      BEQ:
+        Format: "beq rs1, rs2, imm[12:1]"
+        Description: "takes the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are equal."
+        Pseudocode: "if (x[rs1] == x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4"
+        Invalid_Values: "NONE"
+        Exception_Raised: "no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions."
+      BNE:
+        Format: "bne rs1, rs2, imm[12:1]"
+        Description: "takes the branch (pc is calculated using signed arithmetic) if registers rs1 and rs2 are not equal."
+        Pseudocode: "if (x[rs1] != x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4"
+        Invalid_Values: "NONE"
+        Exception_Raised: "no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions."
+      BLT:
+        Format: "blt rs1, rs2, imm[12:1]"
+        Description: "takes the branch (pc is calculated using signed arithmetic) if registers rs1 less than rs2 (using signed comparison)."
+        Pseudocode: "if (x[rs1] < x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4"
+        Invalid_Values: "NONE"
+        Exception_Raised: "no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions."
+      BLTU:
+        Format: "bltu rs1, rs2, imm[12:1]"
+        Description: "takes the branch (pc is calculated using signed arithmetic) if registers rs1 less than rs2 (using unsigned comparison)."
+        Pseudocode: "if (x[rs1] <u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4"
+        Invalid_Values: "NONE"
+        Exception_Raised: "no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions."
+      BGE:
+        Format: "bge rs1, rs2, imm[12:1]"
+        Description: "takes the branch (pc is calculated using signed arithmetic) if registers rs1 is greater than or equal rs2 (using signed comparison)."
+        Pseudocode: "if (x[rs1] >= x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4"
+        Invalid_Values: "NONE"
+        Exception_Raised: "no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions."
+      BGEU:
+        Format: "bgeu rs1, rs2, imm[12:1]"
+        Description: "takes the branch (pc is calculated using signed arithmetic) if registers rs1 is greater than or equal rs2 (using unsigned comparison)."
+        Pseudocode: "if (x[rs1] >=u x[rs2]) pc += sext({imm[12:1], 1’b0}) else pc += 4"
+        Invalid_Values: "NONE"
+        Exception_Raised: "no instruction fetch misaligned exception is generated for a conditional branch that is not taken. An Instruction address misaligned exception is raised if the target address is not aligned on 4-byte or 2-byte boundary, because the core supports compressed instructions."
+  Load_and_Store_Instructions:
+    LB:
+      Format: "lb rd, imm(rs1)"
+      Description: "loads a 8-bit value from memory, then sign-extends to 32-bit before storing in rd (rd is calculated using signed arithmetic), the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset."
+      Pseudocode: "x[rd] = sext(M[x[rs1] + sext(imm[11:0])][7:0])"
+      Invalid_Values: "NONE"
+      Exception_Raised: "loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded."
+    LH:
+      Format: "lh rd, imm(rs1)"
+      Description: "loads a 16-bit value from memory, then sign-extends to 32-bit before storing in rd (rd is calculated using signed arithmetic), the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset."
+      Pseudocode: "x[rd] = sext(M[x[rs1] + sext(imm[11:0])][15:0])"
+      Invalid_Values: "NONE"
+      Exception_Raised: "loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded, also an exception is raised if the memory address isn't aligned (2-byte boundary)."
+    LW:
+      Format: "lw rd, imm(rs1)"
+      Description: "loads a 32-bit value from memory, then storing in rd (rd is calculated using signed arithmetic). The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset."
+      Pseudocode: "x[rd] = sext(M[x[rs1] + sext(imm[11:0])][31:0])"
+      Invalid_Values: "NONE"
+      Exception_Raised: "loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded, also an exception is raised if the memory address isn't aligned (4-byte boundary)."
+    LBU:
+      Format: "lbu rd, imm(rs1)"
+      Description: "loads a 8-bit value from memory, then zero-extends to 32-bit before storing in rd (rd is calculated using unsigned arithmetic), the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset."
+      Pseudocode: "x[rd] = zext(M[x[rs1] + sext(imm[11:0])][7:0])"
+      Invalid_Values: "NONE"
+      Exception_Raised: "loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded."
+    LHU:
+      Format: "lhu rd, imm(rs1)"
+      Description: "loads a 16-bit value from memory, then zero-extends to 32-bit before storing in rd (rd is calculated using unsigned arithmetic), the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset."
+      Pseudocode: "x[rd] = zext(M[x[rs1] + sext(imm[11:0])][15:0])"
+      Invalid_Values: "NONE"
+      Exception_Raised: "loads with a destination of x0 must still raise any exceptions and action any other side effects even though the load value is discarded, also an exception is raised if the memory address isn't aligned (2-byte boundary)."
+    SB:
+      Format: "sb rs2, imm(rs1)"
+      Description: "stores a 8-bit value from the low bits of register rs2 to memory, the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset."
+      Pseudocode: "M[x[rs1] + sext(imm[11:0])][7:0] = x[rs2][7:0]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+    SH:
+      Format: "sh rs2, imm(rs1)"
+      Description: "stores a 16-bit value from the low bits of register rs2 to memory, the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset."
+      Pseudocode: "M[x[rs1] + sext(imm[11:0])][15:0] = x[rs2][15:0]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "an exception is raised if the memory address isn't aligned (2-byte boundary)."
+    SW:
+      Format: "sw rs2, imm(rs1)"
+      Description: "stores a 32-bit value from register rs2 to memory, the effective address is obtained by adding register rs1 to the sign-extended 12-bit offset."
+      Pseudocode: "M[x[rs1] + sext(imm[11:0])][31:0] = x[rs2][31:0]"
+      Invalid_Values: "NONE"
+      Exception_Raised: "an exception is raised if the memory address isn't aligned (4-byte boundary)."
+  Memory_Ordering:
+    FENCE:
+      Format: "fence pre, succ"
+      Description: "order device I/O and memory accesses as viewed by other RISC-V harts and external devices or coprocessors. Any combination of device input (I), device output (O), memory reads (R), and memory writes (W) may be ordered with respect to any combination of the same. Informally, no other RISC-V hart or external device can observe any operation in the successor set following a FENCE before any operation in the predecessor set preceding the FENCE, as the core support 1 hart, the fence instruction has no effect so we can considerate it as a nop instruction."
+      Pseudocode: "No operation (nop)"
+      Invalid_Values: "NONE"
+      Exception_Raised: "NONE"
+  Environment_Call_and_Breakpoints:
+    ECALL:
+      Format: "ecall"
+      Description: "make a request to the supporting execution environment, which is usually an operating system. The ABI for the system will define how parameters for the environment request are passed, but usually these will be in defined locations in the integer register file."
+      Pseudocode: "RaiseException(EnvironmentCall)"
+      Invalid_Values: "NONE"
+      Exception_Raised: "Raise an Environment Call exception."
+    EBREAK:
+      Format: "ebreak"
+      Description: "cause control to be transferred back to a debugging environment."
+      Pseudocode: "RaiseException(Breakpoint)"
+      Invalid_Values: "NONE"
+      Exception_Raised: "Raise a Breakpoint exception.rmat: c.sext.b rd"
+      Description: >
+        This instruction takes a single source/destination operand. It sign-extends the least-significant byte in the operand by copying the most-significant bit in the byte (i.e., bit 7) to all of the more-significant bits. It also requires Bit-Manipulation (Zbb) extension support.
+      Pseudocode: x[8 + rd'] = sext(x[8 + rd'][7:0])
+      Invalid_Values: NONE
+      Exception_Raised: NONE
