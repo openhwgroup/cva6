@@ -40,6 +40,15 @@ python3 <scripts/riscv_config_gen>.py -s <../Config_Name/generated/isa_gen>.yaml
 python3 <scripts/riscv_config_gen>.py -s <../Config_Name/generated/isa_gen>.yaml -i <templates/isa_template>.yaml -m <updaters/Config_Name/isa_updater>.yaml -t < Config_Name>
 ```
 
+##  Usage with cv32a65x 
+
+```bash
+#Generate the Markdown-text /Restructred-text documentation for Control and Status Registers (CSR)
+python3 scripts/riscv_config_gen.py -s ../cv32a65x/generated/isa_gen.yaml -m updaters/cv32a65x/csr_updater.yaml -t cv32a65x
+
+#Generate the Markdown-text /Restructred-text documentation for ISA extensions
+python3 scripts/riscv_config_gen.py -s ../cv32a65x/generated/isa_gen.yaml -i templates/isa_template.yaml -m updaters/cv32a65x/isa_updater.yaml -t cv32a65x
+```
  
 You could find your output files in this directory : 
 

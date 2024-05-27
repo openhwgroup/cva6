@@ -336,25 +336,9 @@ class InstmdBlock(InstructionBlockClass):
         InstrNameList = [reg.key for reg in self.Instructionlist]
         InstrDescrList = [reg.descr for reg in self.Instructionlist]
         InstrExtList = [reg.Extension_Name for reg in self.Instructionlist]
-        licence = """
-		   <!--
-           # Copyright 2024 Thales DIS France SAS
-
-           # Licensed under the Apache License, Version 2.0 (the "License");
-           # you may not use this file except in compliance with the License
-           # You may obtain a copy of the License at
-           #    http://www.apache.org/licenses/LICENSE-2.0
-
-           # Unless required by applicable law or agreed to in writing, software
-           # distributed under the License is distributed on an "AS IS" BASIS,
-           # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-           # See the License for the specific language governing permissions and
-           # limitations under the License.
-           #
-           # Original Author: Abdessamii Oukalrazqou
-           -->
-            """
-        self.mdFile.new_paragraph(licence)
+        licence = ["<!--Copyright (c) 2024 OpenHW Group","Copyright (c) 2024 Thales","SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1 ","Author: Abdessamii Oukalrazqou" ,"-->"]
+        for l in licence :
+            self.mdFile.write(l + '\n')
         self.mdFile.new_header(
             level=1, title=self.name
         )  # Use the name of the addressBlock as title
@@ -441,25 +425,9 @@ class MdAddressBlock(AddressBlockClass):
         regNameList = [reg.name for reg in registerlist if reg.RV32 | reg.RV64]
         regAddressList = [reg.address for reg in registerlist if reg.RV32 | reg.RV64]
         regDescrList = [reg.desc for reg in registerlist if reg.RV32 | reg.RV64]
-        licence = """
-		   <!--
-           # Copyright 2024 Thales DIS France SAS
-
-           # Licensed under the Apache License, Version 2.0 (the "License");
-           # you may not use this file except in compliance with the License
-           # You may obtain a copy of the License at
-           #    http://www.apache.org/licenses/LICENSE-2.0
-
-           # Unless required by applicable law or agreed to in writing, software
-           # distributed under the License is distributed on an "AS IS" BASIS,
-           # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-           # See the License for the specific language governing permissions and
-           # limitations under the License.
-           #
-           # Original Author: Abdessamii Oukalrazqou
-           -->
-            """
-        self.mdFile.new_paragraph(licence)
+        licence = ["<!--Copyright (c) 2024 OpenHW Group","Copyright (c) 2024 Thales","SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1 ","Author: Abdessamii Oukalrazqou" ,"-->"]
+        for l in licence :
+            self.mdFile.write(l + '\n')
         self.mdFile.new_header(
             level=1, title=self.name
         )  # Use the name of the addressBlock as title
