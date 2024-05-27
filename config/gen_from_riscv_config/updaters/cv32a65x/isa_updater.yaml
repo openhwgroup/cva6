@@ -1,0 +1,18 @@
+#   Copyright (c) 2024 OpenHW Group
+#   Copyright (c) 2024 Thales
+#   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#   Author: Abdessamii Oukalrazqou
+
+Zicond : True 
+
+m0 :  True
+
+I : True
+
+Zcmp : False
+
+RV32I Base Integer Instructions:
+ Instructions :
+  Integer_Register_Immediate_Operations:
+    ADDI:
+      Format: addi
