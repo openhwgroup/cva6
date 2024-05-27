@@ -46,31 +46,31 @@
      - in
      - Handshake's data with decode stage
      - ID_STAGE
-     - scoreboard_entry_t
+     - scoreboard_entry_t[SUPERSCALAR:0]
 
    * - ``orig_instr_i``
      - in
      - instruction value
      - ID_STAGE
-     - logic[31:0]
+     - logic[SUPERSCALAR:0][31:0]
 
    * - ``decoded_instr_valid_i``
      - in
      - Handshake's valid with decode stage
      - ID_STAGE
-     - logic
+     - logic[SUPERSCALAR:0]
 
    * - ``is_ctrl_flow_i``
      - in
      - Is instruction a control flow instruction
      - ID_STAGE
-     - logic
+     - logic[SUPERSCALAR:0]
 
    * - ``decoded_instr_ack_o``
      - out
      - Handshake's acknowlege with decode stage
      - ID_STAGE
-     - logic
+     - logic[SUPERSCALAR:0]
 
    * - ``rs1_forwarding_o``
      - out

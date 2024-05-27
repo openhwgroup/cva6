@@ -106,19 +106,19 @@
      - out
      - Handshake's data between fetch and decode
      - ID_STAGE
-     - fetch_entry_t
+     - fetch_entry_t[ariane_pkg::SUPERSCALAR:0]
 
    * - ``fetch_entry_valid_o``
      - out
      - Handshake's valid between fetch and decode
      - ID_STAGE
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
    * - ``fetch_entry_ready_i``
      - in
      - Handshake's ready between fetch and decode
      - ID_STAGE
-     - logic
+     - logic[ariane_pkg::SUPERSCALAR:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
