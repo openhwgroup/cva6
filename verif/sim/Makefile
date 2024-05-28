@@ -59,12 +59,12 @@ endif
 ##############################################
 
 # Set default Spike parameter file.
-spike_yaml ?= $(CVA6_REPO_DIR)/verif/spike_configs/$(target).yaml
+spike_yaml ?= $(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spike.yaml
 
 # Set up flags for Spike solo and tandem invocations, but only if parameter file exists.
 ifneq ($(wildcard $(spike_yaml)),)
   spike_params += --yaml-param $(spike_yaml)
-  spike-yaml-plusarg = +config_file=$(CVA6_REPO_DIR)/verif/spike_configs/$(target).yaml
+  spike-yaml-plusarg = +config_file=$(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spike.yaml
 endif
 
 ##############################################
