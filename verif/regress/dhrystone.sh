@@ -45,6 +45,8 @@ cflags=(
         -nostartfiles
         -lgcc
         -O3 --no-inline
+        -Wno-implicit-function-declaration
+        -Wno-implicit-int
         -I../tests/custom/env
         -I../tests/custom/common
         -I../tests/riscv-tests/benchmarks/dhrystone/
