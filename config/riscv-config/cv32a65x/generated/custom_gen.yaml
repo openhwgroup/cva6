@@ -61,12 +61,18 @@ hart0:
                 shadow_type:
                 msb: 0
                 lsb: 0
+            reserved_0:
+                implemented: true
+                description: reserved for future use
+                type:
+                    ro_constant: 0x0
+                shadow:
+                shadow_type:
+                msb: 31
+                lsb: 1
             fields:
               - dcache
-              -
-                  -
-                      - 1
-                      - 31
+              - reserved_0
         description: the register controls the operation of the d-cache unit.
         address: 0x7c1
         priv_mode: M

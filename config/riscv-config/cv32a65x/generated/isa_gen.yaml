@@ -16,7 +16,7 @@
 
 hart_ids: [0]
 hart0:
-    ISA: RV32IMCZicsr_Zicntr_Zifencei
+    ISA: RV32IMCZicsr_Zicntr_Zifencei_Zba_Zbb_Zbc_Zbs
     User_Spec_Version: '2.3'
     supported_xlen:
       - 32
@@ -69,11 +69,11 @@ hart0:
         rv64:
             accessible: false
     mvendorid:
-        reset-val: 0xdeadbeef
+        reset-val: 0x00000602
         rv32:
             accessible: true
             type:
-                ro_constant: 0xdeadbeef
+                ro_constant: 0x00000602
             fields: []
             shadow:
             shadow_type: rw
@@ -146,7 +146,7 @@ hart0:
         address: 0x200
         priv_mode: S
     mstatus:
-        reset-val: 0x0
+        reset-val: 0x00001800
         rv32:
             accessible: true
             uie:
@@ -213,7 +213,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - mpp[1:0] in [0x0, 0x3]
+                          - mpp[1:0] in [0x3]
                         wr_illegal:
                           - Unchanged
                 description: Stores the previous priority mode for machine.
@@ -690,7 +690,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                ro_constant: 0x0
+                ro_constant: 0x00000003
             fields: []
             shadow:
             shadow_type: rw
@@ -698,7 +698,7 @@ hart0:
             lsb: 0
         rv64:
             accessible: false
-        reset-val: 0x0
+        reset-val: 0x00000003
         description: MXLEN-bit read-only register encoding the base microarchitecture
             of the hart.
         address: 3858
