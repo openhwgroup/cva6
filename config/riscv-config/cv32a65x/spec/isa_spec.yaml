@@ -155,9 +155,7 @@ hart0: &hart0
      fs:
       implemented: false
      xs:
-      implemented: true
-      type:
-        ro_variable: true
+      implemented: false
      mprv:
       implemented: false
      sum:
