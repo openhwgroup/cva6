@@ -17,6 +17,6 @@ Functionality
 
    instructions
    traps
-   CSRs
+   csr
    AXI
    CVXIF

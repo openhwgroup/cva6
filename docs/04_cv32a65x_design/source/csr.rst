@@ -1,1 +1,1 @@
-.. include:: ../../csr-from-ip-xact/cv32a60x/csr.rst
+.. include:: ../../../config/gen_from_riscv_config/cv32a65x/csr/csr.rst
