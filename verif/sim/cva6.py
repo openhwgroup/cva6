@@ -1049,7 +1049,7 @@ def load_config(args, cwd):
 
 def incorrect_version_exit(tool, tool_version, required_version):
   if tool == "Spike":
-    logging.error(f"Please clean-up executing: rm -r tools/spike verif/core-v-verif/vendor/riscv/riscv-isa-sim/build")
+    logging.error(f"Please clean up Spike by executing: rm -r tools/spike verif/core-v-verif/vendor/riscv/riscv-isa-sim/build")
   logging.error(f"You are currently using version {tool_version} of {tool}, should be: {required_version}. Please install or reinstall it with the installation script." )
   sys.exit(RET_FAIL)
 
