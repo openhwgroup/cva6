@@ -70,7 +70,7 @@ hart0: &hart0
          warl:
            dependency_fields: []
            legal:
-             - mode[1:0] in [0x0,0x1]
+             - mode[1:0] in [0x0]
            wr_illegal:
              - Unchanged
   sstatus:
