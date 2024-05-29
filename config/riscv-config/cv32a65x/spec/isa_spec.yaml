@@ -16,13 +16,13 @@
 
 hart_ids: [0]
 hart0: &hart0
-  ISA: RV32IMCZicsr_Zicntr_Zifencei
+  ISA: RV32IMCZicsr_Zicntr_Zifencei_Zba_Zbb_Zbc_Zbs
   User_Spec_Version: '2.3'
   supported_xlen: [32]
   physical_addr_sz: 32
   pmp_granularity: 5
   misa:
-   reset-val: 0x40001104 # C: bit 2, I = bit 8, M = bit 12, Z = bit 25
+   reset-val: 0x40001104 # B: bit 1, C: bit 2, I = bit 8, M = bit 12, Z = bit 25
    rv32:
      accessible: true
      mxl:
@@ -44,11 +44,11 @@ hart0: &hart0
               wr_illegal:
                 - unchanged
   mvendorid:
-   reset-val: 0xdeadbeef
+   reset-val: 0x00000602
    rv32:
      accessible: true
      type:
-       ro_constant: 0xdeadbeef
+       ro_constant: 0x00000602
    rv64:
      accessible: false
   mtvec:
@@ -61,18 +61,18 @@ hart0: &hart0
          warl:
            dependency_fields: []
            legal:
-             - "base[29:0] bitmask [0x3FFFFFFF, 0x00000000]"
+             - base[29:0] bitmask [0x3FFFFFFF, 0x00000000]
            wr_illegal:
-             - "Unchanged"
+             - Unchanged
      mode:
        implemented: true
        type:                            
          warl:
            dependency_fields: []
            legal:
-             - "mode[1:0] in [0x0,0x1]"
+             - mode[1:0] in [0x0]
            wr_illegal:
-             - "Unchanged"
+             - Unchanged
   sstatus:
    reset-val: 0x0
    rv32:
@@ -126,70 +126,50 @@ hart0: &hart0
    rv64:
      accessible: false
   mstatus:
-   reset-val: 0x0
+   reset-val: 0x00001800 # .mpp = 0x3
    rv32:
      accessible: true
      uie:
       implemented: false
      sie:
       implemented: false
-      type:
-        wlrl: [0:1]
      mie:
       implemented: true
      upie:
       implemented: false
      spie:
       implemented: false
-      type:
-        wlrl: [0:1]
      mpie:
       implemented: true
      spp:
       implemented: false
-      type:
-        wlrl: [0:1]
      mpp:
       implemented: true
       type:
         warl:
           dependency_fields: []
           legal: 
-            - mpp[1:0] in [0x0, 0x3]
+            - mpp[1:0] in [0x3]
           wr_illegal: 
             - Unchanged
      fs:
       implemented: false
      xs:
-      implemented: true
-      type:
-        ro_variable: true
+      implemented: false
      mprv:
       implemented: false
-      type:
-        wlrl: [0:1]
      sum:
       implemented: false
-      type:
-        wlrl: [0:1]
      mxr:
       implemented: false
-      type:
-        wlrl: [0:1]
      tvm:
       implemented: false
-      type:
-        wlrl: [0:1]
      tw:
       implemented: false
      tsr:
       implemented: false
-      type:
-        wlrl: [0:1]
      sd:
       implemented: false
-      type:
-        ro_variable: true
    rv64:
      accessible: false
 
@@ -212,7 +192,7 @@ hart0: &hart0
      mtip:
       implemented: true
       type:
-        ro_variable: [0x01]
+        ro_variable: true
      ueip:
       implemented: false
      seip:
@@ -306,10 +286,10 @@ hart0: &hart0
    rv32:
      accessible: true
      type:
-       ro_constant: 0x0
+       ro_constant: 0x00000003
    rv64:
      accessible: false
-   reset-val: 0x0
+   reset-val: 0x00000003
   mhartid:
     rv32:
       accessible: true
