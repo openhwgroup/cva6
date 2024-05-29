@@ -30,10 +30,12 @@ from libs.isa_updater import isa_filter
 from libs.csr_updater import csr_formatter
 from libs.csr_factorizer import factorizer
 
-pattern_warl = r"\b(?:warl|wlrl|ro_constant|ro_variable)\b" #pattern to detect warl in field
-pattern_legal_dict = r"\[(0x[0-9A-Fa-f]+)(.*?(0x[0-9A-Fa-f]+))?\]" # pattern to detect if warl field is dict
-pattern_legal_list = r"\[(0x[0-9A-Fa-f]+)(.*?(0x[0-9A-Fa-f]+))?\]" #pattern to detect if warl field is a list
-Factorizer_pattern = r".*(\d).*" # pattern to detect factorized fields
+pattern_warl = (
+    r"\b(?:warl|wlrl|ro_constant|ro_variable)\b"  # pattern to detect warl in field
+)
+pattern_legal_dict = r"\[(0x[0-9A-Fa-f]+)(.*?(0x[0-9A-Fa-f]+))?\]"  # pattern to detect if warl field is dict
+pattern_legal_list = r"\[(0x[0-9A-Fa-f]+)(.*?(0x[0-9A-Fa-f]+))?\]"  # pattern to detect if warl field is a list
+Factorizer_pattern = r".*(\d).*"  # pattern to detect factorized fields
 
 
 class DocumentClass:
@@ -75,7 +77,7 @@ class AddressBlockClass:
 
     def returnAsString(self):
         raise NotImplementedError(
-            "method returnAsString() is virutal and must be overridden."
+            "method returnAsString() is virtual and must be overridden."
         )
 
 
@@ -180,7 +182,7 @@ class InstructionBlockClass:
 
     def returnAsString(self):
         raise NotImplementedError(
-            "method returnAsString() is virutal and must be overridden."
+            "method returnAsString() is virtual and must be overridden."
         )
 
 
@@ -208,10 +210,15 @@ class RstAddressBlock(AddressBlockClass):
         regDescrList = [reg.desc for reg in registerlist]
         regRV32List = [reg.RV32 for reg in registerlist]
         regRV64List = [reg.RV64 for reg in registerlist]
-        r.directive('..', content= ["Copyright (c) 2024 OpenHW Group",
-                                    "Copyright (c) 2024 Thales",
-                                    "SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1",
-                                    "Author: Abdessamii Oukalrazqou"])
+        r.directive(
+            "..",
+            content=[
+                "Copyright (c) 2024 OpenHW Group",
+                "Copyright (c) 2024 Thales",
+                "SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1",
+                "Author: Abdessamii Oukalrazqou",
+            ],
+        )
         r.title(self.name)  # Use the name of the addressBlock as title
         r.newline()
         r.h2("Register Summary")
@@ -236,7 +243,7 @@ class RstAddressBlock(AddressBlockClass):
                         "Reset Value",
                         "0x" + f"{reg.resetValue[2:].zfill(int(reg.size/4))}",
                     )
-                    r.field("priviliege mode", reg.access)
+                    r.field("Privilege Mode", reg.access)
                     r.field("Description", reg.desc)
                 for field in reg.field:
                     if field.bitWidth == 1:  # only one bit -> no range needed
@@ -252,7 +259,7 @@ class RstAddressBlock(AddressBlockClass):
                     ]
                     _line.append(field.fieldDesc)
                     reg_table.append(_line)
-                _headers = ["Bits", "Field name", "Legalvalues", "Mask", "Access"]
+                _headers = ["Bits", "Field Name", "Legal Values", "Mask", "Access"]
                 _headers.append("Description")
                 # table of the register
                 r.table(header=_headers, data=reg_table)
@@ -260,7 +267,7 @@ class RstAddressBlock(AddressBlockClass):
 
 
 class InstrstBlock(InstructionBlockClass):
-    """Generates a ISA ReStructuredText file from RISC V Config Yaml register description"""
+    """Generates a ISA ReStructuredText file from RISC-V Config Yaml register description"""
 
     def __init__(self, name):
         super().__init__("isa")
@@ -275,10 +282,15 @@ class InstrstBlock(InstructionBlockClass):
         InstrNameList = [reg.key for reg in self.Instructionlist]
         InstrDescrList = [reg.descr for reg in self.Instructionlist]
         InstrExtList = [reg.Extension_Name for reg in self.Instructionlist]
-        r.directive('..', content= ["Copyright (c) 2024 OpenHW Group",
-                                    "Copyright (c) 2024 Thales",
-                                    "SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1",
-                                    "Author: Abdessamii Oukalrazqou"])
+        r.directive(
+            "..",
+            content=[
+                "Copyright (c) 2024 OpenHW Group",
+                "Copyright (c) 2024 Thales",
+                "SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1",
+                "Author: Abdessamii Oukalrazqou",
+            ],
+        )
         r.title(self.name)  # Use the name of the addressBlock as title
         r.newline()
         r.h2("Instructions")
@@ -291,15 +303,15 @@ class InstrstBlock(InstructionBlockClass):
                     str(InstrDescrList[i]),
                 ]
             )
-        r.table(header=["Subset Name", "Name ", "Description"], data=summary_table)
+        r.table(header=["Subset Name", "Name", "Description"], data=summary_table)
         for reg in self.Instructionlist:
             reg_table = []
             _headers = [
                 "Name",
                 "Format",
-                "pseudocode",
-                "invalid_values",
-                "exception_raised",
+                "Pseudocode",
+                "Invalid_values",
+                "Exception_raised",
                 "Description",
                 "Op Name",
             ]
@@ -336,9 +348,15 @@ class InstmdBlock(InstructionBlockClass):
         InstrNameList = [reg.key for reg in self.Instructionlist]
         InstrDescrList = [reg.descr for reg in self.Instructionlist]
         InstrExtList = [reg.Extension_Name for reg in self.Instructionlist]
-        licence = ["<!--Copyright (c) 2024 OpenHW Group","Copyright (c) 2024 Thales","SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1 ","Author: Abdessamii Oukalrazqou" ,"-->"]
-        for l in licence :
-            self.mdFile.write(l + '\n')
+        licence = [
+            "<!--Copyright (c) 2024 OpenHW Group",
+            "Copyright (c) 2024 Thales",
+            "SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1 ",
+            "Author: Abdessamii Oukalrazqou",
+            "-->",
+        ]
+        for l in licence:
+            self.mdFile.write(l + "\n")
         self.mdFile.new_header(
             level=1, title=self.name
         )  # Use the name of the addressBlock as title
@@ -425,9 +443,15 @@ class MdAddressBlock(AddressBlockClass):
         regNameList = [reg.name for reg in registerlist if reg.RV32 | reg.RV64]
         regAddressList = [reg.address for reg in registerlist if reg.RV32 | reg.RV64]
         regDescrList = [reg.desc for reg in registerlist if reg.RV32 | reg.RV64]
-        licence = ["<!--Copyright (c) 2024 OpenHW Group","Copyright (c) 2024 Thales","SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1 ","Author: Abdessamii Oukalrazqou" ,"-->"]
-        for l in licence :
-            self.mdFile.write(l + '\n')
+        licence = [
+            "<!--Copyright (c) 2024 OpenHW Group",
+            "Copyright (c) 2024 Thales",
+            "SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1 ",
+            "Author: Abdessamii Oukalrazqou",
+            "-->",
+        ]
+        for l in licence:
+            self.mdFile.write(l + "\n")
         self.mdFile.new_header(
             level=1, title=self.name
         )  # Use the name of the addressBlock as title
@@ -455,7 +479,7 @@ class MdAddressBlock(AddressBlockClass):
         self.mdFile.new_header(level=3, title="Registers Description")
         for reg in registerlist:
             if reg.RV64 | reg.RV32:
-                headers = ["Bits", "Field name", "legal values", "Mask", "Access"]
+                headers = ["Bits", "Field Name", "Legal Values", "Mask", "Access"]
                 headers.append("Description")
                 self.returnMdRegDesc(
                     reg.name, reg.address, reg.resetValue, reg.desc, reg.access
@@ -487,14 +511,14 @@ class MdAddressBlock(AddressBlockClass):
         self.mdFile.new_line("**Address** " + str(address))
         if resetValue:
             # display the resetvalue in hex notation in the full length of the register
-            self.mdFile.new_line("**Reset Value**" + resetValue)
-        self.mdFile.new_line("**Priviliege mode** " + access)
+            self.mdFile.new_line("**Reset Value** " + resetValue)
+        self.mdFile.new_line("**Privilege Mode** " + access)
         self.mdFile.new_line("**Description** " + desc)
 
 
 # -----------------------------------------------------------------------------------------------------------------------#
 class CsrParser:
-    """parse CSR risc-v config yaml file"""
+    """parse CSR RISC-V config yaml file"""
 
     def __init__(self, srcFile, target, modiFile=None):
         self.srcFile = srcFile
@@ -578,11 +602,11 @@ class CsrParser:
                         match_field = re.search(Factorizer_pattern, str(item))
                         if match_field:
                             fieldName = re.sub(
-                                    match_field.group(1),
-                                    f"[i*4 + {match_field.group(1)}]",
-                                    item,
-                                )
-                    else :
+                                match_field.group(1),
+                                f"[i*4 + {match_field.group(1)}]",
+                                item,
+                            )
+                    else:
                         fieldName = item
                 elif isinstance(item, list):
                     for item_ in item:
@@ -596,15 +620,15 @@ class CsrParser:
                         bitlegal = legal
                         bitmask = ""
                 f = Field(
-                     fieldName,
-                     bitlegal,
-                     bitmask,
-                     bitmsb,
-                     bitlsb,
-                     bitWidth,
-                     fieldDesc,
-                     fieldaccess,
-                    )
+                    fieldName,
+                    bitlegal,
+                    bitmask,
+                    bitmsb,
+                    bitlsb,
+                    bitWidth,
+                    fieldDesc,
+                    fieldaccess,
+                )
                 field.append(f)
         elif len(fieldList) == 0:
             pattern = r"(\D+)\[(\d+)\-\d+\](.*)"
