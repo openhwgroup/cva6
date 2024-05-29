@@ -1,5 +1,5 @@
 [[smepmp]]
-== "Smepmp" Extension for PMP Enhancements for memory access and execution prevention in Machine mode, Version 1.0.0
+== "Smepmp" Extension for PMP Enhancements for memory access and execution prevention in Machine mode, Version 1.0
 
 ifeval::[{RVZsmepmp} == false]
 {ohg-config}: This extension is not supported.

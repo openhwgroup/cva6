@@ -6,23 +6,28 @@
 #
 #   Original Author: Jean-Roch COULON - Thales
 
-all: priv unpriv priv-html
+all: priv-pdf priv-html unpriv-pdf unpriv-html
 
 setup:
 	mkdir -p build/riscv-isa-manual
 	cp -r riscv-isa-manual/* build/riscv-isa-manual
 	cp -r src build/riscv-isa-manual
 
-priv: setup
-	cd build/riscv-isa-manual/build; make priv
+priv-pdf: setup
+	cd build/riscv-isa-manual/build; make priv-pdf
 	cp ./build/riscv-isa-manual/build/priv-isa-asciidoc.pdf priv-isa-cv32a65x.pdf
 
 priv-html: setup
 	cd build/riscv-isa-manual/build; make priv-html
 	cp ./build/riscv-isa-manual/build/priv-isa-asciidoc.html priv-isa-cv32a65x.html
 
-unpriv: setup
-	cd build/riscv-isa-manual/build; make unpriv
+unpriv-pdf: setup
+	cd build/riscv-isa-manual/build; make unpriv-pdf
+	cp ./build/riscv-isa-manual/build/unpriv-isa-asciidoc.html unpriv-isa-cv32a65x.html
+
+unpriv-html: setup
+	cd build/riscv-isa-manual/build; make unpriv-html
+	cp ./build/riscv-isa-manual/build/unpriv-isa-asciidoc.html unpriv-isa-cv32a65x.html
 
 clean:
 	rm -rf build

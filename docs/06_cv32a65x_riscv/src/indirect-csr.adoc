@@ -1,5 +1,5 @@
 [[indirect-csr]]
-== "Smcsrind/Sscsrind" Indirect CSR Access, Version 1.0.0
+== "Smcsrind/Sscsrind" Indirect CSR Access, Version 1.0
 
 ifeval::[{RVZsmcsrind-RVZsscsrind} == false]
 {ohg-config}: This extension is not supported.
