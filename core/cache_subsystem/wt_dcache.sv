@@ -122,7 +122,7 @@ module wt_dcache
   logic     [         CVA6Cfg.DCACHE_MAX_TX-1:0]                                  tx_vld;
 
   // wbuffer <-> memory
-  wbuffer_t [             DCACHE_WBUF_DEPTH-1:0]                                  wbuffer_data;
+  wbuffer_t [     CVA6Cfg.WtDcacheWbufDepth-1:0]                                  wbuffer_data;
 
 
   ///////////////////////////////////////////////////////

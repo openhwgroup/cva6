@@ -104,7 +104,7 @@ module wt_dcache_wbuffer
     output logic [(CVA6Cfg.XLEN/8)-1:0] wr_data_be_o,
     output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wr_user_o,
     // to forwarding logic and miss unit
-    output wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_o,
+    output wbuffer_t [CVA6Cfg.WtDcacheWbufDepth-1:0] wbuffer_data_o,
     output logic [CVA6Cfg.DCACHE_MAX_TX-1:0][CVA6Cfg.PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
     output logic [CVA6Cfg.DCACHE_MAX_TX-1:0] tx_vld_o
 );
@@ -161,21 +161,21 @@ module wt_dcache_wbuffer
   endfunction : repData32
 
   typedef struct packed {
-    logic                                 vld;
-    logic [(CVA6Cfg.XLEN/8)-1:0]          be;
-    logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
+    logic                                         vld;
+    logic [(CVA6Cfg.XLEN/8)-1:0]                  be;
+    logic [$clog2(CVA6Cfg.WtDcacheWbufDepth)-1:0] ptr;
   } tx_stat_t;
 
   tx_stat_t [CVA6Cfg.DCACHE_MAX_TX-1:0] tx_stat_d, tx_stat_q;
-  wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_d, wbuffer_q;
-  logic [DCACHE_WBUF_DEPTH-1:0] valid;
-  logic [DCACHE_WBUF_DEPTH-1:0] dirty;
-  logic [DCACHE_WBUF_DEPTH-1:0] tocheck;
-  logic [DCACHE_WBUF_DEPTH-1:0] wbuffer_hit_oh, inval_hit;
-  //logic     [DCACHE_WBUF_DEPTH-1:0][7:0]    bdirty;
-  logic [DCACHE_WBUF_DEPTH-1:0][(CVA6Cfg.XLEN/8)-1:0] bdirty;
+  wbuffer_t [CVA6Cfg.WtDcacheWbufDepth-1:0] wbuffer_d, wbuffer_q;
+  logic [CVA6Cfg.WtDcacheWbufDepth-1:0] valid;
+  logic [CVA6Cfg.WtDcacheWbufDepth-1:0] dirty;
+  logic [CVA6Cfg.WtDcacheWbufDepth-1:0] tocheck;
+  logic [CVA6Cfg.WtDcacheWbufDepth-1:0] wbuffer_hit_oh, inval_hit;
+  //logic     [CVA6Cfg.WtDcacheWbufDepth-1:0][7:0]    bdirty;
+  logic [CVA6Cfg.WtDcacheWbufDepth-1:0][(CVA6Cfg.XLEN/8)-1:0] bdirty;
 
-  logic [$clog2(DCACHE_WBUF_DEPTH)-1:0]
+  logic [$clog2(CVA6Cfg.WtDcacheWbufDepth)-1:0]
       next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
   logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tx_id, rtrn_id;
 
@@ -187,14 +187,14 @@ module wt_dcache_wbuffer
   logic check_en_d, check_en_q, check_en_q1;
   logic full, dirty_rd_en, rdy;
   logic rtrn_empty, evict;
-  logic [DCACHE_WBUF_DEPTH-1:0] ni_pending_d, ni_pending_q;
+  logic [CVA6Cfg.WtDcacheWbufDepth-1:0] ni_pending_d, ni_pending_q;
   logic wbuffer_wren;
   logic free_tx_slots;
 
   logic wr_cl_vld_q, wr_cl_vld_d;
   logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_q, wr_cl_idx_d;
 
-  logic [CVA6Cfg.PLEN-1:0] debug_paddr[DCACHE_WBUF_DEPTH-1:0];
+  logic [CVA6Cfg.PLEN-1:0] debug_paddr[CVA6Cfg.WtDcacheWbufDepth-1:0];
 
   wbuffer_t wbuffer_check_mux, wbuffer_dirty_mux;
 
@@ -404,12 +404,12 @@ module wt_dcache_wbuffer
   // readout of status bits, index calculation
   ///////////////////////////////////////////////////////
 
-  logic [DCACHE_WBUF_DEPTH-1:0][DCACHE_CL_IDX_WIDTH-1:0] wtag_comp;
+  logic [CVA6Cfg.WtDcacheWbufDepth-1:0][DCACHE_CL_IDX_WIDTH-1:0] wtag_comp;
 
   assign wr_cl_vld_d = wr_cl_vld_i;
   assign wr_cl_idx_d = wr_cl_idx_i;
 
-  for (genvar k = 0; k < DCACHE_WBUF_DEPTH; k++) begin : gen_flags
+  for (genvar k = 0; k < CVA6Cfg.WtDcacheWbufDepth; k++) begin : gen_flags
     // only for debug, will be pruned
     if (CVA6Cfg.DebugEn) begin
       assign debug_paddr[k] = {
@@ -443,7 +443,7 @@ module wt_dcache_wbuffer
 
   // next free entry in the buffer
   lzc #(
-      .WIDTH(DCACHE_WBUF_DEPTH)
+      .WIDTH(CVA6Cfg.WtDcacheWbufDepth)
   ) i_vld_lzc (
       .in_i   (~valid),
       .cnt_o  (next_ptr),
@@ -452,7 +452,7 @@ module wt_dcache_wbuffer
 
   // get index of hit
   lzc #(
-      .WIDTH(DCACHE_WBUF_DEPTH)
+      .WIDTH(CVA6Cfg.WtDcacheWbufDepth)
   ) i_hit_lzc (
       .in_i   (wbuffer_hit_oh),
       .cnt_o  (hit_ptr),
@@ -461,7 +461,7 @@ module wt_dcache_wbuffer
 
   // next dirty word to serve
   rr_arb_tree #(
-      .NumIn   (DCACHE_WBUF_DEPTH),
+      .NumIn   (CVA6Cfg.WtDcacheWbufDepth),
       .LockIn  (1'b1),
       .DataType(wbuffer_t)
   ) i_dirty_rr (
@@ -480,7 +480,7 @@ module wt_dcache_wbuffer
 
   // next word to lookup in the cache
   rr_arb_tree #(
-      .NumIn   (DCACHE_WBUF_DEPTH),
+      .NumIn   (CVA6Cfg.WtDcacheWbufDepth),
       .DataType(wbuffer_t)
   ) i_clean_rr (
       .clk_i  (clk_i),
@@ -531,7 +531,7 @@ module wt_dcache_wbuffer
 
     // if an invalidation or cache line refill comes in and hits on the write buffer,
     // we have to discard our knowledge of the corresponding cacheline state
-    for (int k = 0; k < DCACHE_WBUF_DEPTH; k++) begin
+    for (int k = 0; k < CVA6Cfg.WtDcacheWbufDepth; k++) begin
       if (inval_hit[k]) begin
         wbuffer_d[k].checked = 1'b0;
       end
@@ -676,7 +676,7 @@ module wt_dcache_wbuffer
   assert property (@(posedge clk_i) disable iff (!rst_ni) !req_port_i.kill_req)
   else $fatal(1, "[l1 dcache wbuffer] req_port_i.kill_req should not be asserted");
 
-  for (genvar k = 0; k < DCACHE_WBUF_DEPTH; k++) begin : gen_assert1
+  for (genvar k = 0; k < CVA6Cfg.WtDcacheWbufDepth; k++) begin : gen_assert1
     for (genvar j = 0; j < (CVA6Cfg.XLEN / 8); j++) begin : gen_assert2
       byteStates :
       assert property (
