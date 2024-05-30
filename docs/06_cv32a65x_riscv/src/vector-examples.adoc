@@ -1,0 +1,7 @@
+[appendix]
+== Vector Assembly Code Examples
+
+ifeval::[{RVV} == false]
+{ohg-config}: This appendix is not applicable as vector extension is
+not supported.
+endif::[]

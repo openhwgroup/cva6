@@ -1,0 +1,6 @@
+[[quad-float]]
+== "Q" Extension for Quad-Precision Floating-Point, Version 2.2
+
+ifeval::[{RVQ} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

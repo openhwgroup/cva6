@@ -1,0 +1,6 @@
+[[double-float]]
+== "D" Extension for Double-Precision Floating-Point, Version 2.2
+
+ifeval::[{RVD} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

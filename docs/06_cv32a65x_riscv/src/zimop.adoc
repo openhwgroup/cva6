@@ -1,0 +1,12 @@
+[[zimop]]
+== "Zimop" Extension for May-Be-Operations, Version 1.0
+
+ifeval::[{RVZimop} == false]
+{ohg-config}: This extension is not supported.
+endif::[]
+
+=== "Zcmop" Compressed May-Be-Operations Extension, Version 1.0
+
+ifeval::[{RVZimop} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

@@ -1,0 +1,6 @@
+[[zihintpause]]
+== "Zihintpause" Extension for Pause Hint, Version 2.0
+
+ifeval::[{RVZihintpause} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

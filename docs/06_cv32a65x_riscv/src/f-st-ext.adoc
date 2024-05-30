@@ -1,0 +1,6 @@
+[[single-float]]
+== "F" Extension for Single-Precision Floating-Point, Version 2.2
+
+ifeval::[{RVF} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

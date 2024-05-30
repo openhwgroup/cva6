@@ -1,0 +1,6 @@
+[[zfh]]
+== "Zfh" and "Zfhmin" Extensions for Half-Precision Floating-Point, Version 1.0
+
+ifeval::[{RVZfh} == false]
+{ohg-config}: These extensions are not supported.
+endif::[]

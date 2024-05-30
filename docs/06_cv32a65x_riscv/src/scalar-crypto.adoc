@@ -1,0 +1,6 @@
+[[scalar-crypto]]
+== Cryptography Extensions: Scalar & Entropy Source Instructions, Version 1.0.1
+
+ifeval::[{RVZk} == false]
+{ohg-config}: These extensions are not supported.
+endif::[]

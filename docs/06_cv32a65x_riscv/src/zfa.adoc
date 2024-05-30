@@ -1,0 +1,6 @@
+[[zfa]]
+== "Zfa" Extension for Additional Floating-Point Instructions, Version 1.0
+
+ifeval::[{RVZfa} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

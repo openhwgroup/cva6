@@ -1,0 +1,6 @@
+[[chap:zawrs]]
+== "Zawrs" Extension for Wait-on-Reservation-Set instructions, Version 1.01
+
+ifeval::[{RVZawrs} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

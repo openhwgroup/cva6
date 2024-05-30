@@ -1,0 +1,6 @@
+[[sec:zfinx]]
+== "Zfinx", "Zdinx", "Zhinx", "Zhinxmin" Extensions for Floating-Point in Integer Registers, Version 1.0
+
+ifeval::[{RVZfinx} == false]
+{ohg-config}: These extensions are not supported.
+endif::[]
