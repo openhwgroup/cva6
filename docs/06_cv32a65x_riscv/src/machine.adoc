@@ -2473,7 +2473,6 @@ endif::[]
 
 ==== Machine Configuration Pointer (`mconfigptr`) Register
 
-==== Machine Configuration Pointer Register (`mconfigptr`)
 
 ifeval::[{ohg-config} != CV32A65X]
 The `mconfigptr` register is an MXLEN-bit read-only CSR, formatted as shown in
