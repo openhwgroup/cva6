@@ -6,6 +6,8 @@
 :RVU: false
 :RVH: false
 :SV: SV0
+:RVZicfilp: false
+:RVZicfiss: false
 :RVZsmstateen: false
 :RVZsmcsrind-RVZsscsrind: false
 :RVZsmepmp: false

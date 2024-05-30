@@ -440,7 +440,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>The RISC-V Instruction Set Manual for CV32A65X: Volume II: Privileged Architecture</h1>
 <div class="details">
-<span id="revnumber">version 20240411</span>
+<span id="revnumber">version 20240528</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -474,12 +474,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_machine_level_csrs">3.1. Machine-Level CSRs</a>
 <ul class="sectlevel3">
-<li><a href="#misa">3.1.1. Machine ISA Register <code>misa</code></a></li>
-<li><a href="#_machine_vendor_id_register_mvendorid">3.1.2. Machine Vendor ID Register <code>mvendorid</code></a></li>
-<li><a href="#_machine_architecture_id_register_marchid">3.1.3. Machine Architecture ID Register <code>marchid</code></a></li>
-<li><a href="#_machine_implementation_id_register_mimpid">3.1.4. Machine Implementation ID Register <code>mimpid</code></a></li>
-<li><a href="#_hart_id_register_mhartid">3.1.5. Hart ID Register <code>mhartid</code></a></li>
-<li><a href="#_machine_status_registers_mstatus_and_mstatush">3.1.6. Machine Status Registers (<code>mstatus</code> and <code>mstatush</code>)</a>
+<li><a href="#misa">3.1.1. Machine ISA (<code>misa</code>) Register</a></li>
+<li><a href="#_machine_vendor_id_mvendorid_register">3.1.2. Machine Vendor ID (<code>mvendorid</code>) Register</a></li>
+<li><a href="#_machine_architecture_id_marchid_register">3.1.3. Machine Architecture ID (<code>marchid</code>) Register</a></li>
+<li><a href="#_machine_implementation_id_mimpid_register">3.1.4. Machine Implementation ID (<code>mimpid</code>) Register</a></li>
+<li><a href="#_hart_id_mhartid_register">3.1.5. Hart ID (<code>mhartid</code>) Register</a></li>
+<li><a href="#_machine_status_mstatus_and_mstatush_registers">3.1.6. Machine Status (<code>mstatus</code> and <code>mstatush</code>) Registers</a>
 <ul class="sectlevel4">
 <li><a href="#privstack">3.1.6.1. Privilege and Global Interrupt-Enable Stack in <code>mstatus</code> register</a></li>
 <li><a href="#xlen-control">3.1.6.2. Base ISA Control in <code>mstatus</code> Register</a></li>
@@ -489,24 +489,25 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_extension_context_status_in_mstatus_register">3.1.6.6. Extension Context Status in <code>mstatus</code> Register</a></li>
 </ul>
 </li>
-<li><a href="#_machine_trap_vector_base_address_register_mtvec">3.1.7. Machine Trap-Vector Base-Address Register (<code>mtvec</code>)</a></li>
-<li><a href="#_machine_trap_delegation_registers_medeleg_and_mideleg">3.1.8. Machine Trap Delegation Registers (<code>medeleg</code> and <code>mideleg</code>)</a></li>
-<li><a href="#_machine_interrupt_registers_mip_and_mie">3.1.9. Machine Interrupt Registers (<code>mip</code> and <code>mie</code>)</a></li>
+<li><a href="#_machine_trap_vector_base_address_mtvec_register">3.1.7. Machine Trap-Vector Base-Address (<code>mtvec</code>) Register</a></li>
+<li><a href="#_machine_trap_delegation_medeleg_and_mideleg_registers">3.1.8. Machine Trap Delegation (<code>medeleg</code> and <code>mideleg</code>) Registers</a></li>
+<li><a href="#_machine_interrupt_mip_and_mie_registers">3.1.9. Machine Interrupt (<code>mip</code> and <code>mie</code>) Registers</a></li>
 <li><a href="#_hardware_performance_monitor">3.1.10. Hardware Performance Monitor</a></li>
-<li><a href="#mcounteren">3.1.11. Machine Counter-Enable Register (<code>mcounteren</code>)</a></li>
-<li><a href="#_machine_counter_inhibit_csr_mcountinhibit">3.1.12. Machine Counter-Inhibit CSR (<code>mcountinhibit</code>)</a></li>
-<li><a href="#_machine_scratch_register_mscratch">3.1.13. Machine Scratch Register (<code>mscratch</code>)</a></li>
-<li><a href="#_machine_exception_program_counter_mepc">3.1.14. Machine Exception Program Counter (<code>mepc</code>)</a></li>
-<li><a href="#mcause">3.1.15. Machine Cause Register (<code>mcause</code>)</a></li>
-<li><a href="#_machine_trap_value_register_mtval">3.1.16. Machine Trap Value Register (<code>mtval</code>)</a></li>
-<li><a href="#_machine_configuration_pointer_register_mconfigptr">3.1.17. Machine Configuration Pointer Register (<code>mconfigptr</code>)</a></li>
-<li><a href="#sec:menvcfg">3.1.18. Machine Environment Configuration Register (<code>menvcfg</code>)</a></li>
-<li><a href="#_machine_security_configuration_register_mseccfg">3.1.19. Machine Security Configuration Register (<code>mseccfg</code>)</a></li>
+<li><a href="#mcounteren">3.1.11. Machine Counter-Enable (<code>mcounteren</code>) Register</a></li>
+<li><a href="#_machine_counter_inhibit_mcountinhibit_register">3.1.12. Machine Counter-Inhibit (<code>mcountinhibit</code>) Register</a></li>
+<li><a href="#_machine_scratch_mscratch_register">3.1.13. Machine Scratch (<code>mscratch</code>) Register</a></li>
+<li><a href="#_machine_exception_program_counter_mepc_register">3.1.14. Machine Exception Program Counter (<code>mepc</code>) Register</a></li>
+<li><a href="#mcause">3.1.15. Machine Cause (<code>mcause</code>) Register</a></li>
+<li><a href="#_machine_trap_value_mtval_register">3.1.16. Machine Trap Value (<code>mtval</code>) Register</a></li>
+<li><a href="#_machine_configuration_pointer_mconfigptr_register">3.1.17. Machine Configuration Pointer (<code>mconfigptr</code>) Register</a></li>
+<li><a href="#_machine_configuration_pointer_register_mconfigptr">3.1.18. Machine Configuration Pointer Register (<code>mconfigptr</code>)</a></li>
+<li><a href="#sec:menvcfg">3.1.19. Machine Environment Configuration (<code>menvcfg</code>) Register</a></li>
+<li><a href="#_machine_security_configuration_mseccfg_register">3.1.20. Machine Security Configuration (<code>mseccfg</code>) Register</a></li>
 </ul>
 </li>
 <li><a href="#_machine_level_memory_mapped_registers">3.2. Machine-Level Memory-Mapped Registers</a>
 <ul class="sectlevel3">
-<li><a href="#_machine_timer_registers_mtime_and_mtimecmp">3.2.1. Machine Timer Registers (<code>mtime</code> and <code>mtimecmp</code>)</a></li>
+<li><a href="#_machine_timer_mtime_and_mtimecmp_registers">3.2.1. Machine Timer (<code>mtime</code> and <code>mtimecmp</code>) Registers</a></li>
 </ul>
 </li>
 <li><a href="#_machine_mode_privileged_instructions">3.3. Machine-Mode Privileged Instructions</a>
@@ -521,7 +522,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#nmi">3.5. Non-Maskable Interrupts</a></li>
 <li><a href="#pma">3.6. Physical Memory Attributes</a>
 <ul class="sectlevel3">
-<li><a href="#_main_memory_versus_io_versus_vacant_regions">3.6.1. Main Memory versus I/O versus Vacant Regions</a></li>
+<li><a href="#_main_memory_versus_io_regions">3.6.1. Main Memory versus I/O Regions</a></li>
 <li><a href="#_supported_access_type_pmas">3.6.2. Supported Access Type PMAs</a></li>
 <li><a href="#_atomicity_pmas">3.6.3. Atomicity PMAs</a>
 <ul class="sectlevel4">
@@ -549,20 +550,21 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#smstateen">4. "Smstateen/Ssstateen" Extensions, Version 1.0.0</a></li>
-<li><a href="#indirect-csr">5. "Smcsrind/Sscsrind" Indirect CSR Access, Version 1.0.0</a></li>
-<li><a href="#smepmp">6. "Smepmp" Extension for PMP Enhancements for memory access and execution prevention in Machine mode, Version 1.0.0</a></li>
-<li><a href="#smcntrpmf">7. "Smcntrpmf" Cycle and Instret Privilege Mode Filtering, Version 1.0.0</a></li>
+<li><a href="#smstateen">4. "Smstateen/Ssstateen" Extensions, Version 1.0</a></li>
+<li><a href="#indirect-csr">5. "Smcsrind/Sscsrind" Indirect CSR Access, Version 1.0</a></li>
+<li><a href="#smepmp">6. "Smepmp" Extension for PMP Enhancements for memory access and execution prevention in Machine mode, Version 1.0</a></li>
+<li><a href="#smcntrpmf">7. "Smcntrpmf" Cycle and Instret Privilege Mode Filtering, Version 1.0</a></li>
 <li><a href="#rnmi">8. "Smrnmi" Extension for Resumable Non-Maskable Interrupts, Version 0.5</a></li>
-<li><a href="#smcdeleg">9. "Smcdeleg" Counter Delegation Extension, Version 1.0.0</a></li>
+<li><a href="#smcdeleg">9. "Smcdeleg" Counter Delegation Extension, Version 1.0</a></li>
 <li><a href="#supervisor">10. Supervisor-Level ISA, Version 1.13</a></li>
-<li><a href="#Sstc">11. "Sstc" Extension for Supervisor-mode Timer Interrupts, Version 1.0.0</a></li>
-<li><a href="#Sscofpmf">12. "Sscofpmf" Extension for Count Overflow and Mode-Based Filtering, Version 1.0.0</a></li>
+<li><a href="#Sstc">11. "Sstc" Extension for Supervisor-mode Timer Interrupts, Version 1.0</a></li>
+<li><a href="#Sscofpmf">12. "Sscofpmf" Extension for Count Overflow and Mode-Based Filtering, Version 1.0</a></li>
 <li><a href="#hypervisor">13. "H" Extension for Hypervisor Support, Version 1.0</a></li>
-<li><a href="#_risc_v_privileged_instruction_set_listings">14. RISC-V Privileged Instruction Set Listings</a></li>
-<li><a href="#_history">15. History</a>
+<li><a href="#priv-cfi">14. Control-flow Integrity (CFI)</a></li>
+<li><a href="#_risc_v_privileged_instruction_set_listings">15. RISC-V Privileged Instruction Set Listings</a></li>
+<li><a href="#_history">16. History</a>
 <ul class="sectlevel2">
-<li><a href="#_research_funding_at_uc_berkeley">15.1. Research Funding at UC Berkeley</a></li>
+<li><a href="#_research_funding_at_uc_berkeley">16.1. Research Funding at UC Berkeley</a></li>
 </ul>
 </li>
 <li><a href="#_bibliography">Bibliography</a></li>
@@ -618,11 +620,11 @@ Jean-Roch Coulon, André Sintzoff.</em></p>
 OpenHW Group CV32A65X.</p>
 </div>
 <div class="paragraph">
-<p><strong class="big"><em>Preface to Version 20240326</em></strong></p>
+<p><strong class="big"><em>Preface to Version 20240528</em></strong></p>
 </div>
 <div class="paragraph">
 <p>This document describes the RISC-V privileged architecture. This
-release, version 20240213, contains the following versions of the RISC-V ISA
+release, version 20240528, contains the following versions of the RISC-V ISA
 modules:</p>
 </div>
 <table class="tableblock frame-all grid-all fit-content center">
@@ -657,14 +659,14 @@ modules:</p>
 <strong>Sscofpmf</strong><br>
 <strong>Hypervisor ISA</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>1.13</em><br>
-<strong>1.0.0</strong><br>
-<strong>1.0.0</strong><br>
-<strong>1.0.0</strong><br>
-<strong>1.0.0</strong><br>
-<strong>1.0.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
 <em>1.13</em><br>
-<strong>1.0.0</strong><br>
-<em>0.1</em><br>
+<strong>1.0</strong><br>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
@@ -678,9 +680,9 @@ modules:</p>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
-<em>Draft</em><br>
 <strong>Ratified</strong><br>
 <em>Draft</em><br>
+<strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
@@ -692,74 +694,9 @@ modules:</p>
 </tbody>
 </table>
 <div class="paragraph">
-<p>The following changes have been made since version 1.13, which, while
-not strictly backwards compatible, are not anticipated to cause software
-portability problems in practice:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>The inclusion of all ratified extensions through March 2024.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p><strong class="big"><em>Preface to Version 20240213</em></strong></p>
-</div>
-<div class="paragraph">
-<p>This document describes the RISC-V privileged architecture. This
-release, version 20240213, contains the following versions of the RISC-V ISA
-modules:</p>
-</div>
-<table class="tableblock frame-all grid-all fit-content center">
-<colgroup>
-<col>
-<col>
-<col>
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-center valign-top">Module</th>
-<th class="tableblock halign-left valign-top">Version</th>
-<th class="tableblock halign-center valign-top">Status</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><em>Machine ISA</em><br>
-<em>Supervisor ISA</em><br>
-<em>Smrnmi Extension</em><br>
-<strong>Svade Extension</strong><br>
-<strong>Svnapot Extension</strong><br>
-<strong>Svpbmt Extension</strong><br>
-<strong>Svinval Extension</strong><br>
-<strong>Svadu Extension</strong><br>
-<strong>Hypervisor ISA</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>1.13</em><br>
-<em>1.13</em><br>
-<em>0.1</em><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><em>Draft</em><br>
-<em>Draft</em><br>
-<em>Draft</em><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong></p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p>The following changes have been made since version 1.12, which, while
-not strictly backwards compatible, are not anticipated to cause software
-portability problems in practice:</p>
+<p>The following changes have been made since version 1.12 of the Machine and
+Supervisor ISAs, which, while not strictly backwards compatible, are not
+anticipated to cause software portability problems in practice:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -772,14 +709,11 @@ portability problems in practice:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>Additionally, the following compatible changes have been made to the Machine ISA since
-version 1.12:</p>
+<p>Additionally, the following compatible changes have been
+made to the Machine and Supervisor ISAs since version 1.12:</p>
 </div>
 <div class="ulist">
 <ul>
-<li>
-<p>Transliterated the document from LaTeX into AsciiDoc.</p>
-</li>
 <li>
 <p>Defined the <code>misa</code>.V field to reflect that the V extension has been
 implemented.</p>
@@ -802,7 +736,21 @@ extension.</p>
 in <code>menvcfg</code> and <code>henvcfg</code>.</p>
 </li>
 <li>
-<p>Incorporated Svade and Svadu extension specifications.</p>
+<p>Exposed count-overflow interrups to VS-mode.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Finally, the following clarifications and document improvments have been made
+since the last document release:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Transliterated the document from LaTeX into AsciiDoc.</p>
+</li>
+<li>
+<p>Included all ratified extensions through March 2024.</p>
 </li>
 <li>
 <p>Clarified that "platform- or custom-use" interrupts are actually
@@ -837,7 +785,7 @@ be set to a nonzero value but sometimes not.</p>
 <p>Clarified that Svpbmt allows implementations to override additional PMAs.</p>
 </li>
 <li>
-<p>Exposed count-overflow interrups to VS-mode.</p>
+<p>Replaced the concept of vacant memory regions with inaccessible memory or I/O regions.</p>
 </li>
 </ul>
 </div>
@@ -1916,21 +1864,21 @@ Note that not all registers are required on all implementations.</p>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>10</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>0XXX</code></p></td>
 <td class="tableblock halign-center valign-top" colspan="2"><p class="tableblock"><code>0xE00-0xE7F</code></p></td>
-<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Standard read/write</p></td>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Standard read-only</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>11</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>10</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>10XX</code></p></td>
 <td class="tableblock halign-center valign-top" colspan="2"><p class="tableblock"><code>0xE80-0xEBF</code></p></td>
-<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Standard read/write</p></td>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Standard read-only</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>11</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>10</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>11XX</code></p></td>
 <td class="tableblock halign-center valign-top" colspan="2"><p class="tableblock"><code>0xEC0-0xEFF</code></p></td>
-<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Custom read/write</p></td>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Custom read-only</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top" colspan="8"><p class="tableblock">Machine-Level CSRs</p></td>
@@ -2003,21 +1951,21 @@ Note that not all registers are required on all implementations.</p>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>11</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>0XXX</code></p></td>
 <td class="tableblock halign-center valign-top" colspan="2"><p class="tableblock"><code>0xF00-0xF7F</code></p></td>
-<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Standard read/write</p></td>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Standard read-only</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>11</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>11</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>10XX</code></p></td>
 <td class="tableblock halign-center valign-top" colspan="2"><p class="tableblock"><code>0xF80-0xFBF</code></p></td>
-<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Standard read/write</p></td>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Standard read-only</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>11</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>11</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>11XX</code></p></td>
 <td class="tableblock halign-center valign-top" colspan="2"><p class="tableblock"><code>0xFC0-0xFFF</code></p></td>
-<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Custom read/write</p></td>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock">Custom read-only</p></td>
 </tr>
 </tbody>
 </table>
@@ -2055,6 +2003,15 @@ URW</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Floating-Point Accrued Exceptions.<br>
 Floating-Point Dynamic Rounding Mode.<br>
 Floating-Point Control and Status Register (<code>frm</code> +<code>fflags</code>).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top" colspan="4"><p class="tableblock">Unprivileged Zicfiss extension CSR</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0x011</code><br></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URW<br></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ssp</code><br></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Shadow Stack Pointer.<br></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top" colspan="4"><p class="tableblock">Unprivileged Counter/Timers</p></td>
@@ -3078,7 +3035,7 @@ other details of the hardware implementation.</p>
 <div class="sect2">
 <h3 id="_machine_level_csrs">3.1. Machine-Level CSRs</h3>
 <div class="sect3">
-<h4 id="misa">3.1.1. Machine ISA Register <code>misa</code></h4>
+<h4 id="misa">3.1.1. Machine ISA (<code>misa</code>) Register</h4>
 <div class="paragraph">
 <p>The <code>misa</code> CSR is a <strong>WARL</strong> read-write register reporting the ISA supported by the hart.</p>
 </div>
@@ -3126,7 +3083,9 @@ with a single bit per letter of the alphabet (bit 0 encodes presence of
 extension "A" , bit 1 encodes presence of extension "B", through to
 bit 25 which encodes "Z"). The "I" bit will be set for RV32I, RV64I,
 and RV128I base ISAs, and the "E" bit will be set for RV32E and RV64E.
-In CVA6, the Extensions field is not writeable, the presence of standard extensions corresponds to the hardware reset value and cannot be modified by writing in the register.</p>
+In CVA6, the Extensions field is not writeable, the presence of standard
+extensions corresponds to the hardware reset value and cannot be modified
+by writing in the register.</p>
 </div>
 <table class="tableblock frame-all grid-all fit-content center">
 <caption class="title">Table 10. Encoding of Extensions field in <code>misa</code>.  All bits that are reserved for future use must return zero when read.</caption>
@@ -3239,10 +3198,12 @@ implementation may not support one or more of the Zba, Zbb, or Zbs extensions.</
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_vendor_id_register_mvendorid">3.1.2. Machine Vendor ID Register <code>mvendorid</code></h4>
+<h4 id="_machine_vendor_id_mvendorid_register">3.1.2. Machine Vendor ID (<code>mvendorid</code>) Register</h4>
 <div class="paragraph">
 <p>[CVA6] The <code>mvendorid</code> CSR is a 32-bit read-only register providing the JEDEC
-manufacturer ID of the provider of the core. In CVA6, <code>mvendorid</code> is implemented and returns the commercial implementation id supplied to OpenHW Group organization, 0x602.</p>
+manufacturer ID of the provider of the core.
+In CVA6, <code>mvendorid</code> is implemented and returns the commercial implementation
+id supplied to OpenHW Group organization, 0x602.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -3252,20 +3213,22 @@ manufacturer ID of the provider of the core. In CVA6, <code>mvendorid</code> is 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_architecture_id_register_marchid">3.1.3. Machine Architecture ID Register <code>marchid</code></h4>
+<h4 id="_machine_architecture_id_marchid_register">3.1.3. Machine Architecture ID (<code>marchid</code>) Register</h4>
 <div class="paragraph">
 <p>[CVA6] The <code>marchid</code> CSR is an MXLEN-bit read-only register encoding the base
-microarchitecture of the hart. In CVA6, <code>marchid</code> is implemented and returns the base microarchitecture of the hart supplied to CVA6, 0x3.</p>
+microarchitecture of the hart.
+In CVA6, <code>marchid</code> is implemented and returns the base microarchitecture
+of the hart supplied to CVA6, 0x3.</p>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nOTInIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHhtbG5zOnN2Zz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZlcnNpb249JzEuMCcgdmlld0JveD0nMCAwIDE0ODAgOTInIHdpZHRoPScxNDgwJyB4bWxuczp4bGluaz0naHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluaycgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxNjAnIHk9JzExJz5NWExFTi0xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyMDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzI0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMjgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSczMjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzM2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNDAwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc0NDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzQ4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNTIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc1NjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzYwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNjQwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2ODAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzcyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzYwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc4MDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzg0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nODgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc5MjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzk2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTAwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTA0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTA4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTEyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTE2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTIwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTI0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTI4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTMyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTM2MCcgeT0nMTEnPjA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPScxMzgwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwJyB4Mj0nMTM4MCcgeTE9JzU2JyB5Mj0nNTYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEzODAnIHgyPScxMzgwJyB5MT0nMjEnIHkyPSc1NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwJyB4Mj0nMTAwJyB5MT0nMjEnIHkyPSc1NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzQwJyB5PSczOS41Jz5BcmNoaXRlY3R1cmUgSUQ8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc3NDAnIHk9Jzc0LjUnPk1YTEVOPC90ZXh0Pjwvc3ZnPg==" alt="Diagram" width="1480" height="92">
 </div>
-<div class="title">Figure 4. Machine Architecture ID register (<code>marchid</code>)</div>
+<div class="title">Figure 4. Machine Architecture ID (<code>marchid</code>) register</div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_implementation_id_register_mimpid">3.1.4. Machine Implementation ID Register <code>mimpid</code></h4>
+<h4 id="_machine_implementation_id_mimpid_register">3.1.4. Machine Implementation ID (<code>mimpid</code>) Register</h4>
 <div class="paragraph">
 <p>The <code>mimpid</code> CSR provides a unique encoding of the version of the
 processor implementation.</p>
@@ -3279,11 +3242,11 @@ processor itself and not any surrounding system.</p>
 <div class="content">
 <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nOTInIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHhtbG5zOnN2Zz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZlcnNpb249JzEuMCcgdmlld0JveD0nMCAwIDE0ODAgOTInIHdpZHRoPScxNDgwJyB4bWxuczp4bGluaz0naHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluaycgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxNjAnIHk9JzExJz5NWExFTi0xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyMDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzI0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMjgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSczMjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzM2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNDAwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc0NDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzQ4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNTIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc1NjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzYwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNjQwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2ODAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzcyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzYwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc4MDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzg0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nODgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc5MjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzk2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTAwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTA0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTA4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTEyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTE2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTIwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTI0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTI4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTMyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTM2MCcgeT0nMTEnPjA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPScxMzgwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwJyB4Mj0nMTM4MCcgeTE9JzU2JyB5Mj0nNTYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEzODAnIHgyPScxMzgwJyB5MT0nMjEnIHkyPSc1NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwJyB4Mj0nMTAwJyB5MT0nMjEnIHkyPSc1NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzQwJyB5PSczOS41Jz5JbXBsZW1lbnRhdGlvbjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzc0MCcgeT0nNzQuNSc+TVhMRU48L3RleHQ+PC9zdmc+" alt="Diagram" width="1480" height="92">
 </div>
-<div class="title">Figure 5. Machine Implementation ID register (<code>mimpid</code>)</div>
+<div class="title">Figure 5. Machine Implementation ID (<code>mimpid</code>) register</div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_hart_id_register_mhartid">3.1.5. Hart ID Register <code>mhartid</code></h4>
+<h4 id="_hart_id_mhartid_register">3.1.5. Hart ID (<code>mhartid</code>) Register</h4>
 <div class="paragraph">
 <p>[CV32A65X] The <code>mhartid</code> CSR is an MXLEN-bit read-only register containing the
 integer ID of the hardware thread running the code. This register is
@@ -3294,11 +3257,11 @@ Hart ID is zero.</p>
 <div class="content">
 <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nOTInIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHhtbG5zOnN2Zz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZlcnNpb249JzEuMCcgdmlld0JveD0nMCAwIDE0ODAgOTInIHdpZHRoPScxNDgwJyB4bWxuczp4bGluaz0naHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluaycgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxNjAnIHk9JzExJz5NWExFTi0xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyMDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzI0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMjgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSczMjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzM2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNDAwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc0NDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzQ4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNTIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc1NjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzYwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNjQwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2ODAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzcyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzYwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc4MDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzg0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nODgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc5MjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzk2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTAwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTA0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTA4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTEyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTE2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTIwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTI0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTI4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTMyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTM2MCcgeT0nMTEnPjA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPScxMzgwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwJyB4Mj0nMTM4MCcgeTE9JzU2JyB5Mj0nNTYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEzODAnIHgyPScxMzgwJyB5MT0nMjEnIHkyPSc1NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwJyB4Mj0nMTAwJyB5MT0nMjEnIHkyPSc1NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzQwJyB5PSczOS41Jz5IYXJ0IElEPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzQwJyB5PSc3NC41Jz5NWExFTjwvdGV4dD48L3N2Zz4=" alt="Diagram" width="1480" height="92">
 </div>
-<div class="title">Figure 6. Hart ID register (<code>mhartid</code>)</div>
+<div class="title">Figure 6. Hart ID (<code>mhartid</code>) register</div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_status_registers_mstatus_and_mstatush">3.1.6. Machine Status Registers (<code>mstatus</code> and <code>mstatush</code>)</h4>
+<h4 id="_machine_status_mstatus_and_mstatush_registers">3.1.6. Machine Status (<code>mstatus</code> and <code>mstatush</code>) Registers</h4>
 <div class="paragraph">
 <p>[CV32A65X] The <code>mstatus</code> register is an MXLEN-bit read/write register formatted as
 shown in <a href="#mstatusreg-rv32">Figure 7</a>. The <code>mstatus</code> register
@@ -3306,9 +3269,9 @@ keeps track of and controls the hart’s current operating state.</p>
 </div>
 <div id="mstatusreg-rv32" class="imageblock">
 <div class="content">
-<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nMTEyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB4bWxuczpzdmc9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2ZXJzaW9uPScxLjAnIHZpZXdCb3g9JzAgMCAxMjgwIDExMicgd2lkdGg9JzEyODAnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyMCcgeT0nMTEnPjMxPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2MCcgeT0nMTEnPjMwPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzE0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyMjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzI2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMzAwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSczNDAnIHk9JzExJz4yMzwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMzgwJyB5PScxMSc+MjI8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzQyMCcgeT0nMTEnPjIxPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc0NjAnIHk9JzExJz4yMDwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNTAwJyB5PScxMSc+MTk8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzU0MCcgeT0nMTEnPjE4PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc1ODAnIHk9JzExJz4xNzwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNjIwJyB5PScxMSc+MTY8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzY2MCcgeT0nMTEnPjE1PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc3MDAnIHk9JzExJz4xNDwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzQwJyB5PScxMSc+MTM8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzc4MCcgeT0nMTEnPjEyPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc4MjAnIHk9JzExJz4xMTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nODYwJyB5PScxMSc+MTA8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzkwMCcgeT0nMTEnPjk8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzk0MCcgeT0nMTEnPjg8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzk4MCcgeT0nMTEnPjc8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEwMjAnIHk9JzExJz42PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMDYwJyB5PScxMSc+NTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTEwMCcgeT0nMTEnPjQ8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzExNDAnIHk9JzExJz4zPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMTgwJyB5PScxMSc+MjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTIyMCcgeT0nMTEnPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEyNjAnIHk9JzExJz4wPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMCcgeDI9JzQwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMCcgeDI9JzQwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDAnIHgyPSc0MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzAnIHgyPScwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxNCcgdGV4dC1hbmNob3I9J21pZGRsZScgdmVydGljYWwtYWxpZ249J21pZGRsZScgeD0nMjAnIHk9JzQ0LjUnPlNEPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDAnIHgyPSczNjAnIHkxPScyMScgeTI9JzIxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc0MCcgeDI9JzM2MCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzM2MCcgeDI9JzM2MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzQwJyB4Mj0nNDAnIHkxPScyMScgeTI9JzY2Jy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC13ZWlnaHQ9J2JvbGQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzIwMCcgeT0nNDQuNSc+V1BSSTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzM2MCcgeDI9JzQwMCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzM2MCcgeDI9JzQwMCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzQwMCcgeDI9JzQwMCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzM2MCcgeDI9JzM2MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzM4MCcgeT0nNDQuNSc+VFNSPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDAwJyB4Mj0nNDQwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDAwJyB4Mj0nNDQwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDQwJyB4Mj0nNDQwJyB5MT0nMjEnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDAwJyB4Mj0nNDAwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxNCcgdGV4dC1hbmNob3I9J21pZGRsZScgdmVydGljYWwtYWxpZ249J21pZGRsZScgeD0nNDIwJyB5PSc0NC41Jz5UVzwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzQ0MCcgeDI9JzQ4MCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzQ0MCcgeDI9JzQ4MCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzQ4MCcgeDI9JzQ4MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzQ0MCcgeDI9JzQ0MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzQ2MCcgeT0nNDQuNSc+VFZNPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDgwJyB4Mj0nNTIwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDgwJyB4Mj0nNTIwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNTIwJyB4Mj0nNTIwJyB5MT0nMjEnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDgwJyB4Mj0nNDgwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxNCcgdGV4dC1hbmNob3I9J21pZGRsZScgdmVydGljYWwtYWxpZ249J21pZGRsZScgeD0nNTAwJyB5PSc0NC41Jz5NWFI8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc1MjAnIHgyPSc1NjAnIHkxPScyMScgeTI9JzIxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc1MjAnIHgyPSc1NjAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc1NjAnIHgyPSc1NjAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc1MjAnIHgyPSc1MjAnIHkxPScyMScgeTI9JzY2Jy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PSc1NDAnIHk9JzQ0LjUnPlNVTTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzU2MCcgeDI9JzYwMCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzU2MCcgeDI9JzYwMCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzYwMCcgeDI9JzYwMCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzU2MCcgeDI9JzU2MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzU4MCcgeT0nNDQuNSc+TVBSVjwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzYwMCcgeDI9JzY4MCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzYwMCcgeDI9JzY4MCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzY4MCcgeDI9JzY4MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzYwMCcgeDI9JzYwMCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzY0MCcgeT0nNDQuNSc+WFNbMTowXTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzY4MCcgeDI9Jzc2MCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzY4MCcgeDI9Jzc2MCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzc2MCcgeDI9Jzc2MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzY4MCcgeDI9JzY4MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzcyMCcgeT0nNDQuNSc+RlNbMTowXTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzc2MCcgeDI9Jzg0MCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzc2MCcgeDI9Jzg0MCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzg0MCcgeDI9Jzg0MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzc2MCcgeDI9Jzc2MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzgwMCcgeT0nNDQuNSc+TVBQWzE6MF08L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc4NDAnIHgyPSc5MjAnIHkxPScyMScgeTI9JzIxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc4NDAnIHgyPSc5MjAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5MjAnIHgyPSc5MjAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc4NDAnIHgyPSc4NDAnIHkxPScyMScgeTI9JzY2Jy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PSc4ODAnIHk9JzQ0LjUnPlZTWzE6MF08L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5MjAnIHgyPSc5NjAnIHkxPScyMScgeTI9JzIxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5MjAnIHgyPSc5NjAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5NjAnIHgyPSc5NjAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5MjAnIHgyPSc5MjAnIHkxPScyMScgeTI9JzY2Jy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PSc5NDAnIHk9JzQ0LjUnPlNQUDwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzk2MCcgeDI9JzEwMDAnIHkxPScyMScgeTI9JzIxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5NjAnIHgyPScxMDAwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwMCcgeDI9JzEwMDAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5NjAnIHgyPSc5NjAnIHkxPScyMScgeTI9JzY2Jy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PSc5ODAnIHk9JzQ0LjUnPk1QSUU8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAwJyB4Mj0nMTA0MCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwMDAnIHgyPScxMDQwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTA0MCcgeDI9JzEwNDAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAwJyB4Mj0nMTAwMCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzEwMjAnIHk9JzQ0LjUnPlVCRTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwNDAnIHgyPScxMDgwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTA0MCcgeDI9JzEwODAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDgwJyB4Mj0nMTA4MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwNDAnIHgyPScxMDQwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxNCcgdGV4dC1hbmNob3I9J21pZGRsZScgdmVydGljYWwtYWxpZ249J21pZGRsZScgeD0nMTA2MCcgeT0nNDQuNSc+U1BJRTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwODAnIHgyPScxMTIwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTA4MCcgeDI9JzExMjAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTIwJyB4Mj0nMTEyMCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwODAnIHgyPScxMDgwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtd2VpZ2h0PSdib2xkJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMTAwJyB5PSc0NC41Jz5XUFJJPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTEyMCcgeDI9JzExNjAnIHkxPScyMScgeTI9JzIxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTIwJyB4Mj0nMTE2MCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzExNjAnIHgyPScxMTYwJyB5MT0nMjEnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTEyMCcgeDI9JzExMjAnIHkxPScyMScgeTI9JzY2Jy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PScxMTQwJyB5PSc0NC41Jz5NSUU8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTYwJyB4Mj0nMTIwMCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzExNjAnIHgyPScxMjAwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTIwMCcgeDI9JzEyMDAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTYwJyB4Mj0nMTE2MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LXdlaWdodD0nYm9sZCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTE4MCcgeT0nNDQuNSc+V1BSSTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyMDAnIHgyPScxMjQwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTIwMCcgeDI9JzEyNDAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMjQwJyB4Mj0nMTI0MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyMDAnIHgyPScxMjAwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxNCcgdGV4dC1hbmNob3I9J21pZGRsZScgdmVydGljYWwtYWxpZ249J21pZGRsZScgeD0nMTIyMCcgeT0nNDQuNSc+U0lFPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTI0MCcgeDI9JzEyODAnIHkxPScyMScgeTI9JzIxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMjQwJyB4Mj0nMTI4MCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyODAnIHgyPScxMjgwJyB5MT0nMjEnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTI0MCcgeDI9JzEyNDAnIHkxPScyMScgeTI9JzY2Jy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC13ZWlnaHQ9J2JvbGQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEyNjAnIHk9JzQ0LjUnPldQUkk8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PScyMCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzIwMCcgeT0nODkuNSc+ODwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzM4MCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzQyMCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzQ2MCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzUwMCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzU0MCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzU4MCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzY0MCcgeT0nODkuNSc+MjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzcyMCcgeT0nODkuNSc+MjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzgwMCcgeT0nODkuNSc+MjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9Jzg4MCcgeT0nODkuNSc+MjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9Jzk0MCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9Jzk4MCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzEwMjAnIHk9Jzg5LjUnPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PScxMDYwJyB5PSc4OS41Jz4xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxNCcgdGV4dC1hbmNob3I9J21pZGRsZScgdmVydGljYWwtYWxpZ249J21pZGRsZScgeD0nMTEwMCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzExNDAnIHk9Jzg5LjUnPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PScxMTgwJyB5PSc4OS41Jz4xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxNCcgdGV4dC1hbmNob3I9J21pZGRsZScgdmVydGljYWwtYWxpZ249J21pZGRsZScgeD0nMTIyMCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzEyNjAnIHk9Jzg5LjUnPjE8L3RleHQ+PC9zdmc+" alt="Diagram" width="1280" height="112">
+<img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nMTEyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB2aWV3Qm94PScwIDAgMTAyNCAxMTInIHdpZHRoPScxMDI0JyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxnIGZvbnQtZmFtaWx5PSdzYW5zLXNlcmlmJyBmb250LXNpemU9JzE0JyBmb250LXdlaWdodD0nbm9ybWFsJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgwLjUsMC41KSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNCw3NyknPjxnIHN0cm9rZT0nYmxhY2snIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgc3Ryb2tlLXdpZHRoPScxJz48bGluZSB4Mj0nMTAxNScvPjxsaW5lIHkyPSczMScvPjxsaW5lIHgyPScxMDE1JyB5MT0nMzEnIHkyPSczMScvPjxsaW5lIHgxPScxMDE1JyB4Mj0nMTAxNScgeTI9JzMxJy8+PGxpbmUgeDE9Jzk1MicgeDI9Jzk1MicgeTI9JzMxJy8+PGxpbmUgeDE9Jzg4OCcgeDI9Jzg4OCcgeTI9JzMxJy8+PGxpbmUgeDE9JzgyNScgeDI9JzgyNScgeTI9JzMxJy8+PGxpbmUgeDE9Jzc2MScgeDI9Jzc2MScgeTI9JzMxJy8+PGxpbmUgeDE9JzY5OCcgeDI9JzY5OCcgeTI9JzMxJy8+PGxpbmUgeDE9JzYzNCcgeDI9JzYzNCcgeTI9JzMxJy8+PGxpbmUgeDE9JzU3MScgeDI9JzU3MScgeTI9JzMxJy8+PGxpbmUgeDE9JzUwOCcgeDI9JzUwOCcgeTI9JzMxJy8+PGxpbmUgeDE9JzQ0NCcgeDI9JzQ0NCcgeTI9JzMxJy8+PGxpbmUgeDE9JzM4MScgeDI9JzM4MScgeTI9JzMnLz48bGluZSB4MT0nMzgxJyB4Mj0nMzgxJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSczMTcnIHgyPSczMTcnIHkyPSczMScvPjxsaW5lIHgxPScyNTQnIHgyPScyNTQnIHkyPSczJy8+PGxpbmUgeDE9JzI1NCcgeDI9JzI1NCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTkwJyB4Mj0nMTkwJyB5Mj0nMzEnLz48bGluZSB4MT0nMTI3JyB4Mj0nMTI3JyB5Mj0nMycvPjxsaW5lIHgxPScxMjcnIHgyPScxMjcnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzYzJyB4Mj0nNjMnIHkyPSczMScvPjwvZz48Zz48Zy8+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzIsLTExKSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoOTUyKSc+PHRleHQgeT0nNic+MDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoODg4KSc+PHRleHQgeT0nNic+MTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoODI1KSc+PHRleHQgeT0nNic+MjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNzYxKSc+PHRleHQgeT0nNic+MzwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjk4KSc+PHRleHQgeT0nNic+NDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjM0KSc+PHRleHQgeT0nNic+NTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTcxKSc+PHRleHQgeT0nNic+NjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTA4KSc+PHRleHQgeT0nNic+NzwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDQ0KSc+PHRleHQgeT0nNic+ODwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzgxKSc+PHRleHQgeT0nNic+OTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzE3KSc+PHRleHQgeT0nNic+MTA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI1NCknPjx0ZXh0IHk9JzYnPjExPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxOTApJz48dGV4dCB5PSc2Jz4xMjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMTI3KSc+PHRleHQgeT0nNic+MTM8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDYzKSc+PHRleHQgeT0nNic+MTQ8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDApJz48dGV4dCB5PSc2Jz4xNTwvdGV4dD48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDMyLDE1KSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoOTUyKSc+PHRleHQgeT0nNic+PHRzcGFuPldQUkk8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoODg4KSc+PHRleHQgeT0nNic+PHRzcGFuPlNJRTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg4MjUpJz48dGV4dCB5PSc2Jz48dHNwYW4+V1BSSTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NjEpJz48dGV4dCB5PSc2Jz48dHNwYW4+TUlFPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDY5OCknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5XUFJJPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDYzNCknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5TUElFPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDU3MSknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5VQkU8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTA4KSc+PHRleHQgeT0nNic+PHRzcGFuPk1QSUU8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDQ0KSc+PHRleHQgeT0nNic+PHRzcGFuPlNQUDwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgzNDkpJz48dGV4dCB5PSc2Jz48dHNwYW4+VlNbMTowXTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyMjIpJz48dGV4dCB5PSc2Jz48dHNwYW4+TVBQWzE6MF08L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoOTUpJz48dGV4dCB5PSc2Jz48dHNwYW4+RlNbMTowXTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgwKSc+PHRleHQgeT0nNic+PHRzcGFuPlhTWzE6MF08L3RzcGFuPjwvdGV4dD48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDMyLDM5KScvPjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNCwyMSknPjxnIHN0cm9rZT0nYmxhY2snIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgc3Ryb2tlLXdpZHRoPScxJz48bGluZSB4Mj0nMTAxNScvPjxsaW5lIHkyPSczMScvPjxsaW5lIHgyPScxMDE1JyB5MT0nMzEnIHkyPSczMScvPjxsaW5lIHgxPScxMDE1JyB4Mj0nMTAxNScgeTI9JzMxJy8+PGxpbmUgeDE9Jzk1MicgeDI9Jzk1MicgeTI9JzMxJy8+PGxpbmUgeDE9Jzg4OCcgeDI9Jzg4OCcgeTI9JzMxJy8+PGxpbmUgeDE9JzgyNScgeDI9JzgyNScgeTI9JzMxJy8+PGxpbmUgeDE9Jzc2MScgeDI9Jzc2MScgeTI9JzMxJy8+PGxpbmUgeDE9JzY5OCcgeDI9JzY5OCcgeTI9JzMxJy8+PGxpbmUgeDE9JzYzNCcgeDI9JzYzNCcgeTI9JzMxJy8+PGxpbmUgeDE9JzU3MScgeDI9JzU3MScgeTI9JzMxJy8+PGxpbmUgeDE9JzUwOCcgeDI9JzUwOCcgeTI9JzMxJy8+PGxpbmUgeDE9JzQ0NCcgeDI9JzQ0NCcgeTI9JzMnLz48bGluZSB4MT0nNDQ0JyB4Mj0nNDQ0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSczODEnIHgyPSczODEnIHkyPSczJy8+PGxpbmUgeDE9JzM4MScgeDI9JzM4MScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzE3JyB4Mj0nMzE3JyB5Mj0nMycvPjxsaW5lIHgxPSczMTcnIHgyPSczMTcnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzI1NCcgeDI9JzI1NCcgeTI9JzMnLz48bGluZSB4MT0nMjU0JyB4Mj0nMjU0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScxOTAnIHgyPScxOTAnIHkyPSczJy8+PGxpbmUgeDE9JzE5MCcgeDI9JzE5MCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTI3JyB4Mj0nMTI3JyB5Mj0nMycvPjxsaW5lIHgxPScxMjcnIHgyPScxMjcnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzYzJyB4Mj0nNjMnIHkyPSczMScvPjwvZz48Zz48Zy8+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzIsLTExKSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoOTUyKSc+PHRleHQgeT0nNic+MTY8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDg4OCknPjx0ZXh0IHk9JzYnPjE3PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg4MjUpJz48dGV4dCB5PSc2Jz4xODwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNzYxKSc+PHRleHQgeT0nNic+MTk8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDY5OCknPjx0ZXh0IHk9JzYnPjIwPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2MzQpJz48dGV4dCB5PSc2Jz4yMTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTcxKSc+PHRleHQgeT0nNic+MjI8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDUwOCknPjx0ZXh0IHk9JzYnPjIzPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0NDQpJz48dGV4dCB5PSc2Jz4yNDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjMpJz48dGV4dCB5PSc2Jz4zMDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMCknPjx0ZXh0IHk9JzYnPjMxPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzIsMTUpJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg5NTIpJz48dGV4dCB5PSc2Jz48dHNwYW4+WFNbMTowXTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg4ODgpJz48dGV4dCB5PSc2Jz48dHNwYW4+TVBSVjwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg4MjUpJz48dGV4dCB5PSc2Jz48dHNwYW4+U1VNPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc2MSknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5NWFI8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjk4KSc+PHRleHQgeT0nNic+PHRzcGFuPlRWTTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2MzQpJz48dGV4dCB5PSc2Jz48dHNwYW4+VFc8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTcxKSc+PHRleHQgeT0nNic+PHRzcGFuPlRTUjwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg1MDgpJz48dGV4dCB5PSc2Jz48dHNwYW4+U1BFTFA8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMjU0KSc+PHRleHQgeT0nNic+PHRzcGFuPldQUkk8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMCknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5TRDwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzIsMzkpJy8+PC9nPjwvZz48L2c+PC9zdmc+" alt="Diagram" width="1024" height="112">
 </div>
-<div class="title">Figure 7. Machine-mode status register (<code>mstatus</code>) for RV32</div>
+<div class="title">Figure 7. Machine-mode status (<code>mstatus</code>) register for RV32</div>
 </div>
 <div class="paragraph">
 <p>[CV32A65X] <code>mstatush</code> is a 32-bit read/write register formatted as
@@ -3316,9 +3279,9 @@ shown in <a href="#mstatushreg">Figure 8</a>.</p>
 </div>
 <div id="mstatushreg" class="imageblock">
 <div class="content">
-<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nMTEyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB4bWxuczpzdmc9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2ZXJzaW9uPScxLjAnIHZpZXdCb3g9JzAgMCAxMjgwIDExMicgd2lkdGg9JzEyODAnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyMCcgeT0nMTEnPjMxPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTAwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxNDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzE4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMjIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyNjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzMwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMzQwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSczODAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzQyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNDYwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc1MDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzU0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNTgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2MjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzY2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzAwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc3NDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzc4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nODIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc4NjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzkwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nOTQwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc5ODAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEwMjAnIHk9JzExJz42PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMDYwJyB5PScxMSc+NTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTEwMCcgeT0nMTEnPjQ8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzExNDAnIHk9JzExJz4zPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMTgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMjIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMjYwJyB5PScxMSc+MDwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzAnIHgyPScxMDQwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMCcgeDI9JzEwNDAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDQwJyB4Mj0nMTA0MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzAnIHgyPScwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtd2VpZ2h0PSdib2xkJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc1MjAnIHk9JzQ0LjUnPldQUkk8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDQwJyB4Mj0nMTA4MCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwNDAnIHgyPScxMDgwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTA4MCcgeDI9JzEwODAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDQwJyB4Mj0nMTA0MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzEwNjAnIHk9JzQ0LjUnPk1CRTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwODAnIHgyPScxMTIwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTA4MCcgeDI9JzExMjAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTIwJyB4Mj0nMTEyMCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwODAnIHgyPScxMDgwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxNCcgdGV4dC1hbmNob3I9J21pZGRsZScgdmVydGljYWwtYWxpZ249J21pZGRsZScgeD0nMTEwMCcgeT0nNDQuNSc+U0JFPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTEyMCcgeDI9JzEyODAnIHkxPScyMScgeTI9JzIxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTIwJyB4Mj0nMTI4MCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyODAnIHgyPScxMjgwJyB5MT0nMjEnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTEyMCcgeDI9JzExMjAnIHkxPScyMScgeTI9JzY2Jy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC13ZWlnaHQ9J2JvbGQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEyMDAnIHk9JzQ0LjUnPldQUkk8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PSc1MjAnIHk9Jzg5LjUnPjI2PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxNCcgdGV4dC1hbmNob3I9J21pZGRsZScgdmVydGljYWwtYWxpZ249J21pZGRsZScgeD0nMTA2MCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHZlcnRpY2FsLWFsaWduPSdtaWRkbGUnIHg9JzExMDAnIHk9Jzg5LjUnPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB2ZXJ0aWNhbC1hbGlnbj0nbWlkZGxlJyB4PScxMjAwJyB5PSc4OS41Jz40PC90ZXh0Pjwvc3ZnPg==" alt="Diagram" width="1280" height="112">
+<img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nNTYnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHZpZXdCb3g9JzAgMCAxMDI0IDU2JyB3aWR0aD0nMTAyNCcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48ZyBmb250LWZhbWlseT0nc2Fucy1zZXJpZicgZm9udC1zaXplPScxNCcgZm9udC13ZWlnaHQ9J25vcm1hbCcgdGV4dC1hbmNob3I9J21pZGRsZScgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMC41LDAuNSknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQsMjEpJz48ZyBzdHJva2U9J2JsYWNrJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS13aWR0aD0nMSc+PGxpbmUgeDI9JzEwMTUnLz48bGluZSB5Mj0nMzEnLz48bGluZSB4Mj0nMTAxNScgeTE9JzMxJyB5Mj0nMzEnLz48bGluZSB4MT0nMTAxNScgeDI9JzEwMTUnIHkyPSczMScvPjxsaW5lIHgxPSc5ODMnIHgyPSc5ODMnIHkyPSczJy8+PGxpbmUgeDE9Jzk4MycgeDI9Jzk4MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nOTUyJyB4Mj0nOTUyJyB5Mj0nMycvPjxsaW5lIHgxPSc5NTInIHgyPSc5NTInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzkyMCcgeDI9JzkyMCcgeTI9JzMnLz48bGluZSB4MT0nOTIwJyB4Mj0nOTIwJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc4ODgnIHgyPSc4ODgnIHkyPSczMScvPjxsaW5lIHgxPSc4NTYnIHgyPSc4NTYnIHkyPSczMScvPjxsaW5lIHgxPSc4MjUnIHgyPSc4MjUnIHkyPSczMScvPjxsaW5lIHgxPSc3OTMnIHgyPSc3OTMnIHkyPSczJy8+PGxpbmUgeDE9Jzc5MycgeDI9Jzc5MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzYxJyB4Mj0nNzYxJyB5Mj0nMycvPjxsaW5lIHgxPSc3NjEnIHgyPSc3NjEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzczMCcgeDI9JzczMCcgeTI9JzMnLz48bGluZSB4MT0nNzMwJyB4Mj0nNzMwJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2OTgnIHgyPSc2OTgnIHkyPSczJy8+PGxpbmUgeDE9JzY5OCcgeDI9JzY5OCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNjY2JyB4Mj0nNjY2JyB5Mj0nMycvPjxsaW5lIHgxPSc2NjYnIHgyPSc2NjYnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzYzNCcgeDI9JzYzNCcgeTI9JzMnLz48bGluZSB4MT0nNjM0JyB4Mj0nNjM0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2MDMnIHgyPSc2MDMnIHkyPSczJy8+PGxpbmUgeDE9JzYwMycgeDI9JzYwMycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNTcxJyB4Mj0nNTcxJyB5Mj0nMycvPjxsaW5lIHgxPSc1NzEnIHgyPSc1NzEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzUzOScgeDI9JzUzOScgeTI9JzMnLz48bGluZSB4MT0nNTM5JyB4Mj0nNTM5JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc1MDgnIHgyPSc1MDgnIHkyPSczJy8+PGxpbmUgeDE9JzUwOCcgeDI9JzUwOCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDc2JyB4Mj0nNDc2JyB5Mj0nMycvPjxsaW5lIHgxPSc0NzYnIHgyPSc0NzYnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzQ0NCcgeDI9JzQ0NCcgeTI9JzMnLz48bGluZSB4MT0nNDQ0JyB4Mj0nNDQ0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc0MTInIHgyPSc0MTInIHkyPSczJy8+PGxpbmUgeDE9JzQxMicgeDI9JzQxMicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzgxJyB4Mj0nMzgxJyB5Mj0nMycvPjxsaW5lIHgxPSczODEnIHgyPSczODEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzM0OScgeDI9JzM0OScgeTI9JzMnLz48bGluZSB4MT0nMzQ5JyB4Mj0nMzQ5JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSczMTcnIHgyPSczMTcnIHkyPSczJy8+PGxpbmUgeDE9JzMxNycgeDI9JzMxNycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjg1JyB4Mj0nMjg1JyB5Mj0nMycvPjxsaW5lIHgxPScyODUnIHgyPScyODUnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzI1NCcgeDI9JzI1NCcgeTI9JzMnLz48bGluZSB4MT0nMjU0JyB4Mj0nMjU0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScyMjInIHgyPScyMjInIHkyPSczJy8+PGxpbmUgeDE9JzIyMicgeDI9JzIyMicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTkwJyB4Mj0nMTkwJyB5Mj0nMycvPjxsaW5lIHgxPScxOTAnIHgyPScxOTAnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzE1OScgeDI9JzE1OScgeTI9JzMnLz48bGluZSB4MT0nMTU5JyB4Mj0nMTU5JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScxMjcnIHgyPScxMjcnIHkyPSczJy8+PGxpbmUgeDE9JzEyNycgeDI9JzEyNycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nOTUnIHgyPSc5NScgeTI9JzMnLz48bGluZSB4MT0nOTUnIHgyPSc5NScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNjMnIHgyPSc2MycgeTI9JzMnLz48bGluZSB4MT0nNjMnIHgyPSc2MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzInIHgyPSczMicgeTI9JzMnLz48bGluZSB4MT0nMzInIHgyPSczMicgeTE9JzMxJyB5Mj0nMjgnLz48L2c+PGc+PGcvPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE2LC0xMSknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDk4MyknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDg4OCknPjx0ZXh0IHk9JzYnPjM8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDg1NiknPjx0ZXh0IHk9JzYnPjQ8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDgyNSknPjx0ZXh0IHk9JzYnPjU8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc5MyknPjx0ZXh0IHk9JzYnPjY8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDApJz48dGV4dCB5PSc2Jz4zMTwvdGV4dD48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE2LDE1KSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoOTM2KSc+PHRleHQgeT0nNic+PHRzcGFuPldQUkk8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoODU2KSc+PHRleHQgeT0nNic+PHRzcGFuPlNCRTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg4MjUpJz48dGV4dCB5PSc2Jz48dHNwYW4+TUJFPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDM5NiknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5XUFJJPC90c3Bhbj48L3RleHQ+PC9nPjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNiwzOSknLz48L2c+PC9nPjwvZz48L3N2Zz4=" alt="Diagram" width="1024" height="56">
 </div>
-<div class="title">Figure 8. Additional machine-mode status register (<code>mstatush</code>) for RV32.</div>
+<div class="title">Figure 8. Additional machine-mode status (<code>mstatush</code>) register  for RV32.</div>
 </div>
 <div class="sect4">
 <h5 id="privstack">3.1.6.1. Privilege and Global Interrupt-Enable Stack in <code>mstatus</code> register</h5>
@@ -3356,7 +3319,7 @@ and UPP are read-only 0.</p>
 <div class="sect4">
 <h5 id="_memory_privilege_in_mstatus_register">3.1.6.3. Memory Privilege in <code>mstatus</code> Register</h5>
 <div class="paragraph">
-<p>[CV32A65X] As U-Mode is not implemented, MPRV is read-only 0.
+<p>[CV32A65X] As U-Mode is not implemented, the MPRV (Modify PRiVilege) bit is read-only 0.
 Loads and stores behave as normal, using the translation and protection
 mechanisms of the current privilege mode.</p>
 </div>
@@ -3451,7 +3414,7 @@ illegal-instruction exception.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_trap_vector_base_address_register_mtvec">3.1.7. Machine Trap-Vector Base-Address Register (<code>mtvec</code>)</h4>
+<h4 id="_machine_trap_vector_base_address_mtvec_register">3.1.7. Machine Trap-Vector Base-Address (<code>mtvec</code>) Register</h4>
 <div class="paragraph">
 <p>The <code>mtvec</code> register is an MXLEN-bit <strong>WARL</strong> read/write register that holds
 trap vector configuration, consisting of a vector base address (BASE)
@@ -3503,7 +3466,7 @@ machine mode cause the <code>pc</code> to be set to the address in the BASE fiel
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_trap_delegation_registers_medeleg_and_mideleg">3.1.8. Machine Trap Delegation Registers (<code>medeleg</code> and <code>mideleg</code>)</h4>
+<h4 id="_machine_trap_delegation_medeleg_and_mideleg_registers">3.1.8. Machine Trap Delegation (<code>medeleg</code> and <code>mideleg</code>) Registers</h4>
 <div class="paragraph">
 <p>[CV32A65X] All traps at any privilege level are handled in machine
 mode.</p>
@@ -3514,7 +3477,7 @@ The SPP, SPIE, SIE fields of <code>mstatus</code> are read-only zero.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_interrupt_registers_mip_and_mie">3.1.9. Machine Interrupt Registers (<code>mip</code> and <code>mie</code>)</h4>
+<h4 id="_machine_interrupt_mip_and_mie_registers">3.1.9. Machine Interrupt (<code>mip</code> and <code>mie</code>) Registers</h4>
 <div class="paragraph">
 <p>The <code>mip</code> register is an MXLEN-bit read/write register containing
 information on pending interrupts, while <code>mie</code> is the corresponding
@@ -3528,13 +3491,13 @@ bits 16 and above are designated for platform use.</p>
 <div class="content">
 <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nMTIyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB4bWxuczpzdmc9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2ZXJzaW9uPScxLjAnIHZpZXdCb3g9JzAgMCAxNDgwIDEyMicgd2lkdGg9JzE0ODAnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J3N0YXJ0JyB4PScxMDQnIHk9JzIyJz5NWExFTi0xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J2VuZCcgeD0nMTM3NicgeT0nMjInPjA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPSc3ODAnIHkxPSc0MScgeTI9JzQxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPSc3ODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPScxMDAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nZW5kJyB4PSc3NzYnIHk9JzYyJz5JbnRlcnJ1cHRzPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNzgwJyB4Mj0nMTM4MCcgeTE9JzQxJyB5Mj0nNDEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzc4MCcgeDI9JzEzODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMzgwJyB4Mj0nMTM4MCcgeTE9JzQxJyB5Mj0nODEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LXdlaWdodD0nYm9sZCcgdGV4dC1hbmNob3I9J3N0YXJ0JyB4PSc3ODQnIHk9JzYyJz4oV0FSTCk8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc3NDAnIHk9JzEwMic+TVhMRU48L3RleHQ+PC9zdmc+" alt="Diagram" width="1480" height="122">
 </div>
-<div class="title">Figure 10. Machine Interrupt-Pending Register (mip).</div>
+<div class="title">Figure 10. Machine Interrupt-Pending (<code>mip</code>) register.</div>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nMTIyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB4bWxuczpzdmc9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2ZXJzaW9uPScxLjAnIHZpZXdCb3g9JzAgMCAxNDgwIDEyMicgd2lkdGg9JzE0ODAnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J3N0YXJ0JyB4PScxMDQnIHk9JzIyJz5NWExFTi0xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J2VuZCcgeD0nMTM3NicgeT0nMjInPjA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPSc3ODAnIHkxPSc0MScgeTI9JzQxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPSc3ODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPScxMDAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nZW5kJyB4PSc3NzYnIHk9JzYyJz5JbnRlcnJ1cHRzPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNzgwJyB4Mj0nMTM4MCcgeTE9JzQxJyB5Mj0nNDEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzc4MCcgeDI9JzEzODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMzgwJyB4Mj0nMTM4MCcgeTE9JzQxJyB5Mj0nODEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LXdlaWdodD0nYm9sZCcgdGV4dC1hbmNob3I9J3N0YXJ0JyB4PSc3ODQnIHk9JzYyJz4oV0FSTCk8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc3NDAnIHk9JzEwMic+TVhMRU48L3RleHQ+PC9zdmc+" alt="Diagram" width="1480" height="122">
 </div>
-<div class="title">Figure 11. Machine Interrupt-Enable Register (mie)</div>
+<div class="title">Figure 11. Machine Interrupt-Enable (<code>mie</code>) register</div>
 </div>
 <div class="paragraph">
 <p>[CV32A65X] As only M-Mode is implemented, an interrupt <em>i</em> will trap
@@ -3654,9 +3617,9 @@ are not provided.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="mcounteren">3.1.11. Machine Counter-Enable Register (<code>mcounteren</code>)</h4>
+<h4 id="mcounteren">3.1.11. Machine Counter-Enable (<code>mcounteren</code>) Register</h4>
 <div class="paragraph">
-<p>The counter-enable register <code>mcounteren</code> is a 32-bit register that
+<p>The counter-enable <code>mcounteren</code> register is a 32-bit register that
 controls the availability of the hardware performance-monitoring
 counters to the next-lower privileged mode.</p>
 </div>
@@ -3665,12 +3628,12 @@ counters to the next-lower privileged mode.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_counter_inhibit_csr_mcountinhibit">3.1.12. Machine Counter-Inhibit CSR (<code>mcountinhibit</code>)</h4>
+<h4 id="_machine_counter_inhibit_mcountinhibit_register">3.1.12. Machine Counter-Inhibit (<code>mcountinhibit</code>) Register</h4>
 <div class="imageblock">
 <div class="content">
 <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nMTEyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB4bWxuczpzdmc9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2ZXJzaW9uPScxLjAnIHZpZXdCb3g9JzAgMCAxMzIxIDExMicgd2lkdGg9JzEzMjEnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2MCcgeT0nMTEnPjMxPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzE0MCcgeT0nMTEnPjMwPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxODAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzIyMCcgeT0nMTEnPjI5PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyNjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzMwMCcgeT0nMTEnPjI4PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSczNDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzM4MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNDIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc0NjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzUwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNTQwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc1ODAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzYyMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNjYwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc3MDAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzc0MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNzgwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc4MjAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzg2MCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nOTAwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc5NDAnIHk9JzExJz42PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc5ODAnIHk9JzExJz41PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMDIwJyB5PScxMScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMDYwJyB5PScxMSc+NDwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTEwMCcgeT0nMTEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTE0MCcgeT0nMTEnPjM8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzExODAnIHk9JzExJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J0NvdXJpZXIgTmV3LCBtb25vc3BhY2UnIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEyMjAnIHk9JzExJz4yPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDb3VyaWVyIE5ldywgbW9ub3NwYWNlJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMjYwJyB5PScxMSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nQ291cmllciBOZXcsIG1vbm9zcGFjZScgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTMwMCcgeT0nMTEnPjA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc0MCcgeDI9JzEyMCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzQwJyB4Mj0nMTIwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTIwJyB4Mj0nMTIwJyB5MT0nMjEnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNDAnIHgyPSc0MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzgwJyB5PSc0NC41Jz5IUE0zMTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyMCcgeDI9JzIwMCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyMCcgeDI9JzIwMCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzIwMCcgeDI9JzIwMCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyMCcgeDI9JzEyMCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzE2MCcgeT0nNDQuNSc+SFBNMzA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScyMDAnIHgyPScyODAnIHkxPScyMScgeTI9JzIxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScyMDAnIHgyPScyODAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScyODAnIHgyPScyODAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScyMDAnIHgyPScyMDAnIHkxPScyMScgeTI9JzY2Jy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyNDAnIHk9JzQ0LjUnPkhQTTI5PC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMjgwJyB4Mj0nOTYwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMjgwJyB4Mj0nOTYwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nOTYwJyB4Mj0nOTYwJyB5MT0nMjEnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMjgwJyB4Mj0nMjgwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNjIwJyB5PSc0NC41Jz4uLi48L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5NjAnIHgyPScxMDQwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nOTYwJyB4Mj0nMTA0MCcgeTE9JzY2JyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwNDAnIHgyPScxMDQwJyB5MT0nMjEnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nOTYwJyB4Mj0nOTYwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTAwMCcgeT0nNDQuNSc+SFBNNTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwNDAnIHgyPScxMTIwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTA0MCcgeDI9JzExMjAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTIwJyB4Mj0nMTEyMCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwNDAnIHgyPScxMDQwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTA4MCcgeT0nNDQuNSc+SFBNNDwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzExMjAnIHgyPScxMjAwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTEyMCcgeDI9JzEyMDAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMjAwJyB4Mj0nMTIwMCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzExMjAnIHgyPScxMTIwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTE2MCcgeT0nNDQuNSc+SFBNMzwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyMDAnIHgyPScxMjQwJyB5MT0nMjEnIHkyPScyMScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTIwMCcgeDI9JzEyNDAnIHkxPSc2NicgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMjQwJyB4Mj0nMTI0MCcgeTE9JzIxJyB5Mj0nNjYnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyMDAnIHgyPScxMjAwJyB5MT0nMjEnIHkyPSc2NicvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTIyMCcgeT0nNDQuNSc+SVI8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMjQwJyB4Mj0nMTI4MCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyNDAnIHgyPScxMjgwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTI4MCcgeDI9JzEyODAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMjQwJyB4Mj0nMTI0MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEyNjAnIHk9JzQ0LjUnPjA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMjgwJyB4Mj0nMTMyMCcgeTE9JzIxJyB5Mj0nMjEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyODAnIHgyPScxMzIwJyB5MT0nNjYnIHkyPSc2NicvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTMyMCcgeDI9JzEzMjAnIHkxPScyMScgeTI9JzY2Jy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMjgwJyB4Mj0nMTI4MCcgeTE9JzIxJyB5Mj0nNjYnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEzMDAnIHk9JzQ0LjUnPkNZPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nODAnIHk9Jzg5LjUnPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxNjAnIHk9Jzg5LjUnPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyNDAnIHk9Jzg5LjUnPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2MjAnIHk9Jzg5LjUnPjIzPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTAwMCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEwODAnIHk9Jzg5LjUnPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMTYwJyB5PSc4OS41Jz4xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScxOCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTIyMCcgeT0nODkuNSc+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMTgnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEyNjAnIHk9Jzg5LjUnPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzE4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMzAwJyB5PSc4OS41Jz4xPC90ZXh0Pjwvc3ZnPg==" alt="Diagram" width="1321" height="112">
 </div>
-<div class="title">Figure 15. Counter-inhibit register <code>mcountinhibit</code></div>
+<div class="title">Figure 15. Counter-inhibit <code>mcountinhibit</code> register</div>
 </div>
 <div class="paragraph">
 <p>[CV32A65X] The <code>mcountinhibit</code> register is not implemented, the implementation
@@ -3678,7 +3641,7 @@ behaves as though the register were set to zero.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_scratch_register_mscratch">3.1.13. Machine Scratch Register (<code>mscratch</code>)</h4>
+<h4 id="_machine_scratch_mscratch_register">3.1.13. Machine Scratch (<code>mscratch</code>) Register</h4>
 <div class="paragraph">
 <p>The <code>mscratch</code> register is an MXLEN-bit read/write register dedicated
 for use by machine mode. Typically, it is used to hold a pointer to a
@@ -3693,7 +3656,7 @@ upon entry to an M-mode trap handler.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_exception_program_counter_mepc">3.1.14. Machine Exception Program Counter (<code>mepc</code>)</h4>
+<h4 id="_machine_exception_program_counter_mepc_register">3.1.14. Machine Exception Program Counter (<code>mepc</code>) Register</h4>
 <div class="paragraph">
 <p><code>mepc</code> is an MXLEN-bit read/write register formatted as shown in
 <a href="#mepcreg">Figure 17</a>. The low bit of <code>mepc</code> (<code>mepc[0]</code>) is
@@ -3720,7 +3683,7 @@ though it may be explicitly written by software.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="mcause">3.1.15. Machine Cause Register (<code>mcause</code>)</h4>
+<h4 id="mcause">3.1.15. Machine Cause (<code>mcause</code>) Register</h4>
 <div class="paragraph">
 <p>The <code>mcause</code> register is an MXLEN-bit read-write register formatted as
 shown in <a href="#mcausereg">Figure 18</a>. When a trap is taken into
@@ -3739,7 +3702,7 @@ the possible machine-level exception codes. The Exception Code is a
 <div class="content">
 <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nMTIyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB4bWxuczpzdmc9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2ZXJzaW9uPScxLjAnIHZpZXdCb3g9JzAgMCAxNjgwIDEyMicgd2lkdGg9JzE2ODAnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMjgwJyB5PScyMic+TVhMRU4tMTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdzdGFydCcgeD0nMzY0JyB5PScyMic+TVhMRU4tMjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdlbmQnIHg9JzE0NzYnIHk9JzIyJz4wPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMjAwJyB4Mj0nMzYwJyB5MT0nNDEnIHkyPSc0MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMjAwJyB4Mj0nMzYwJyB5MT0nODEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzYwJyB4Mj0nMzYwJyB5MT0nNDEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMjAwJyB4Mj0nMjAwJyB5MT0nNDEnIHkyPSc4MScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMjgwJyB5PSc2Mic+SW50ZXJydXB0PC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzYwJyB4Mj0nOTYwJyB5MT0nNDEnIHkyPSc0MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzYwJyB4Mj0nOTYwJyB5MT0nODEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzYwJyB4Mj0nMzYwJyB5MT0nNDEnIHkyPSc4MScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J2VuZCcgeD0nOTU2JyB5PSc2Mic+RXhjZXB0aW9uIENvZGUgPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nOTYwJyB4Mj0nMTQ4MCcgeTE9JzQxJyB5Mj0nNDEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzk2MCcgeDI9JzE0ODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxNDgwJyB4Mj0nMTQ4MCcgeTE9JzQxJyB5Mj0nODEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LXdlaWdodD0nYm9sZCcgdGV4dC1hbmNob3I9J3N0YXJ0JyB4PSc5NjQnIHk9JzYyJz4oV0xSTCk8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyODAnIHk9JzEwMic+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzkyMCcgeT0nMTAyJz5NWExFTi0xPC90ZXh0Pjwvc3ZnPg==" alt="Diagram" width="1680" height="122">
 </div>
-<div class="title">Figure 18. Machine Cause register <code>mcause</code>.</div>
+<div class="title">Figure 18. Machine Cause (<code>mcause</code>) register.</div>
 </div>
 <div class="paragraph">
 <p>[CV32A65X] Note that load and load-reserved instructions generate load exceptions,
@@ -3755,7 +3718,7 @@ synchronous exceptions is implementation-defined. TODO</p>
 </div>
 <div style="page-break-after: always;"></div>
 <table id="mcauses" class="tableblock frame-all grid-all fit-content center">
-<caption class="title">Table 12. Machine cause register (mcause) values after trap.</caption>
+<caption class="title">Table 12. Machine cause (<code>mcause</code>) register values after trap.</caption>
 <colgroup>
 <col>
 <col>
@@ -3977,24 +3940,26 @@ exceptions. TODO</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_trap_value_register_mtval">3.1.16. Machine Trap Value Register (<code>mtval</code>)</h4>
-<div class="paragraph">
-<p>[CV32A65X] The <code>mtval</code> register is an MXLEN-bit read-only 0 register.</p>
-</div>
+<h4 id="_machine_trap_value_mtval_register">3.1.16. Machine Trap Value (<code>mtval</code>) Register</h4>
+
 </div>
 <div class="sect3">
-<h4 id="_machine_configuration_pointer_register_mconfigptr">3.1.17. Machine Configuration Pointer Register (<code>mconfigptr</code>)</h4>
+<h4 id="_machine_configuration_pointer_mconfigptr_register">3.1.17. Machine Configuration Pointer (<code>mconfigptr</code>) Register</h4>
+
+</div>
+<div class="sect3">
+<h4 id="_machine_configuration_pointer_register_mconfigptr">3.1.18. Machine Configuration Pointer Register (<code>mconfigptr</code>)</h4>
 <div class="paragraph">
-<p><code>mconfigptr</code> is an MXLEN-bit read-only CSR that holds the physical
+<p>The <code>mconfigptr</code> register is an MXLEN-bit read-only CSR that holds the physical
 address of a configuration data structure.</p>
 </div>
 <div class="paragraph">
-<p>[CV32A65X] <code>mconfigptr</code> is implemented, but it is read-only 0 to indicate the
+<p>[CV32A65X] The <code>mconfigptr</code> register is implemented, but it is read-only 0 to indicate the
 configuration data structure does not exist.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sec:menvcfg">3.1.18. Machine Environment Configuration Register (<code>menvcfg</code>)</h4>
+<h4 id="sec:menvcfg">3.1.19. Machine Environment Configuration (<code>menvcfg</code>) Register</h4>
 <div class="paragraph">
 <p>The <code>menvcfg</code> CSR is a 64-bit read/write register that controls
 certain characteristics of the execution environment for modes less
@@ -4010,7 +3975,7 @@ not exist.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_security_configuration_register_mseccfg">3.1.19. Machine Security Configuration Register (<code>mseccfg</code>)</h4>
+<h4 id="_machine_security_configuration_mseccfg_register">3.1.20. Machine Security Configuration (<code>mseccfg</code>) Register</h4>
 <div class="paragraph">
 <p><code>mseccfg</code> is an optional 64-bit read/write register,
 that controls security features.</p>
@@ -4028,7 +3993,7 @@ that aliases bits 63:32 of <code>mseccfg</code>.</p>
 <div class="sect2">
 <h3 id="_machine_level_memory_mapped_registers">3.2. Machine-Level Memory-Mapped Registers</h3>
 <div class="sect3">
-<h4 id="_machine_timer_registers_mtime_and_mtimecmp">3.2.1. Machine Timer Registers (<code>mtime</code> and <code>mtimecmp</code>)</h4>
+<h4 id="_machine_timer_mtime_and_mtimecmp_registers">3.2.1. Machine Timer (<code>mtime</code> and <code>mtimecmp</code>) Registers</h4>
 <div class="paragraph">
 <p>Platforms provide a real-time counter, exposed as a memory-mapped
 machine-mode read-write register, <code>mtime</code>. <code>mtime</code> must increment at
@@ -4102,8 +4067,9 @@ exception, and performs no other operation.</p>
 </div>
 <div class="paragraph">
 <p>The EBREAK instruction is used by debuggers to cause control to be
-transferred back to a debugging environment. It generates a breakpoint
-exception and performs no other operation.</p>
+transferred back to a debugging environment.
+Unless overridden by an external debug environment, EBREAK raises
+a breakpoint exception and performs no other operation.</p>
 </div>
 <div class="paragraph">
 <p>ECALL and EBREAK cause the receiving privilege mode’s <code>epc</code> register to
@@ -4232,8 +4198,8 @@ reporting, and possible containment of the hardware error.</p>
 <h3 id="pma">3.6. Physical Memory Attributes</h3>
 <div class="paragraph">
 <p>The physical memory map for a complete system includes various address
-ranges, some corresponding to memory regions, some to memory-mapped
-control registers, and some to vacant holes in the address space. Some
+ranges, some corresponding to memory regions and some to memory-mapped
+control registers, portions of which might not be accessible.  Some
 memory regions might not support reads, writes, or execution; some might
 not support subword or subblock accesses; some might not support atomic
 operations; and some might not support cache coherence or might have
@@ -4276,16 +4242,29 @@ peripheral devices will be reported as imprecise bus-error interrupts.</p>
 <p>[CV32A65X] PMAs are not readable by software.</p>
 </div>
 <div class="sect3">
-<h4 id="_main_memory_versus_io_versus_vacant_regions">3.6.1. Main Memory versus I/O versus Vacant Regions</h4>
+<h4 id="_main_memory_versus_io_regions">3.6.1. Main Memory versus I/O Regions</h4>
 <div class="paragraph">
 <p>The most important characterization of a given memory address range is
-whether it holds regular main memory, or I/O devices, or is vacant.
+whether it holds regular main memory or I/O devices.
 Regular main memory is required to have a number of properties,
 specified below, whereas I/O devices can have a much broader range of
 attributes. Memory regions that do not fit into regular main memory, for
-example, device scratchpad RAMs, are categorized as I/O regions. Vacant
-regions are also classified as I/O regions but with attributes
-specifying that no accesses are supported.</p>
+example, device scratchpad RAMs, are categorized as I/O regions.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+What previous versions of this specification termed <em>vacant</em> regions are
+no longer a distinct category; they are now described as I/O regions that are
+not accessible (i.e. lacking read, write, and execute permissions).
+Main memory regions that are not accessible are also allowed.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect3">
@@ -4452,7 +4431,7 @@ W, and X fields form a collective <strong>WARL</strong> field for which the comb
 </div>
 <div id="pmpcfg" class="imageblock">
 <div class="content">
-<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nMTIyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB4bWxuczpzdmc9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2ZXJzaW9uPScxLjAnIHZpZXdCb3g9JzAgMCAxNDgwIDEyMicgd2lkdGg9JzE0ODAnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMjAwJyB5PScyMic+NzwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdzdGFydCcgeD0nMzA0JyB5PScyMic+NjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdlbmQnIHg9JzUzNicgeT0nMjInPjU8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2MDAnIHk9JzIyJz40PC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J2VuZCcgeD0nNzc2JyB5PScyMic+MzwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzg4MCcgeT0nMjInPjI8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMDgwJyB5PScyMic+MTwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEyODAnIHk9JzIyJz4wPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwJyB4Mj0nMTgwJyB5MT0nNDEnIHkyPSc0MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwJyB4Mj0nMTgwJyB5MT0nODEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTAwJyB4Mj0nMTAwJyB5MT0nNDEnIHkyPSc4MScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J2VuZCcgeD0nMTc2JyB5PSc2Mic+TCA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxODAnIHgyPSczMDAnIHkxPSc0MScgeTI9JzQxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxODAnIHgyPSczMDAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSczMDAnIHgyPSczMDAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1zaXplPScyNCcgZm9udC13ZWlnaHQ9J2JvbGQnIHRleHQtYW5jaG9yPSdzdGFydCcgeD0nMTg0JyB5PSc2Mic+KFdBUkwpPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzAwJyB4Mj0nNDIwJyB5MT0nNDEnIHkyPSc0MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzAwJyB4Mj0nNDIwJyB5MT0nODEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzAwJyB4Mj0nMzAwJyB5MT0nNDEnIHkyPSc4MScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J2VuZCcgeD0nNDE2JyB5PSc2Mic+MCA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc0MjAnIHgyPSc1NDAnIHkxPSc0MScgeTI9JzQxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc0MjAnIHgyPSc1NDAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc1NDAnIHgyPSc1NDAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1zaXplPScyNCcgZm9udC13ZWlnaHQ9J2JvbGQnIHRleHQtYW5jaG9yPSdzdGFydCcgeD0nNDI0JyB5PSc2Mic+KFdBUkwpPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNTQwJyB4Mj0nNjYwJyB5MT0nNDEnIHkyPSc0MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNTQwJyB4Mj0nNjYwJyB5MT0nODEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNTQwJyB4Mj0nNTQwJyB5MT0nNDEnIHkyPSc4MScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J2VuZCcgeD0nNjU2JyB5PSc2Mic+QSA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc2NjAnIHgyPSc3ODAnIHkxPSc0MScgeTI9JzQxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc2NjAnIHgyPSc3ODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc3ODAnIHgyPSc3ODAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1zaXplPScyNCcgZm9udC13ZWlnaHQ9J2JvbGQnIHRleHQtYW5jaG9yPSdzdGFydCcgeD0nNjY0JyB5PSc2Mic+KFdBUkwpPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNzgwJyB4Mj0nODYwJyB5MT0nNDEnIHkyPSc0MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNzgwJyB4Mj0nODYwJyB5MT0nODEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNzgwJyB4Mj0nNzgwJyB5MT0nNDEnIHkyPSc4MScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J2VuZCcgeD0nODU2JyB5PSc2Mic+WCA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc4NjAnIHgyPSc5ODAnIHkxPSc0MScgeTI9JzQxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc4NjAnIHgyPSc5ODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5ODAnIHgyPSc5ODAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1zaXplPScyNCcgZm9udC13ZWlnaHQ9J2JvbGQnIHRleHQtYW5jaG9yPSdzdGFydCcgeD0nODY0JyB5PSc2Mic+KFdBUkwpPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nOTgwJyB4Mj0nMTA2MCcgeTE9JzQxJyB5Mj0nNDEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzk4MCcgeDI9JzEwNjAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5ODAnIHgyPSc5ODAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nZW5kJyB4PScxMDU2JyB5PSc2Mic+VyA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDYwJyB4Mj0nMTE4MCcgeTE9JzQxJyB5Mj0nNDEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEwNjAnIHgyPScxMTgwJyB5MT0nODEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTE4MCcgeDI9JzExODAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1zaXplPScyNCcgZm9udC13ZWlnaHQ9J2JvbGQnIHRleHQtYW5jaG9yPSdzdGFydCcgeD0nMTA2NCcgeT0nNjInPihXQVJMKTwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzExODAnIHgyPScxMjYwJyB5MT0nNDEnIHkyPSc0MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTE4MCcgeDI9JzEyNjAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTgwJyB4Mj0nMTE4MCcgeTE9JzQxJyB5Mj0nODEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdlbmQnIHg9JzEyNTYnIHk9JzYyJz5SIDwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEyNjAnIHgyPScxMzgwJyB5MT0nNDEnIHkyPSc0MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTI2MCcgeDI9JzEzODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMzgwJyB4Mj0nMTM4MCcgeTE9JzQxJyB5Mj0nODEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LXNpemU9JzI0JyBmb250LXdlaWdodD0nYm9sZCcgdGV4dC1hbmNob3I9J3N0YXJ0JyB4PScxMjY0JyB5PSc2Mic+KFdBUkwpPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMjAwJyB5PScxMDInPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc0MjAnIHk9JzEwMic+MjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzY2MCcgeT0nMTAyJz4yPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nODgwJyB5PScxMDInPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMDgwJyB5PScxMDInPjE8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMjgwJyB5PScxMDInPjE8L3RleHQ+PC9zdmc+" alt="Diagram" width="1480" height="122">
+<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0nVVRGLTgnPz48c3ZnIGhlaWdodD0nMTIyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB4bWxuczpzdmc9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2ZXJzaW9uPScxLjAnIHZpZXdCb3g9JzAgMCAxNDgwIDEyMicgd2lkdGg9JzE0ODAnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMjAwJyB5PScyMic+NzwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdzdGFydCcgeD0nMzA0JyB5PScyMic+NjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdlbmQnIHg9JzUzNicgeT0nMjInPjU8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nc3RhcnQnIHg9JzU0NCcgeT0nMjInPjQ8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nZW5kJyB4PSc3NzYnIHk9JzIyJz4zPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nODgwJyB5PScyMic+MjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEwODAnIHk9JzIyJz4xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTI4MCcgeT0nMjInPjA8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPSczMDAnIHkxPSc0MScgeTI9JzQxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPSczMDAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSczMDAnIHgyPSczMDAnIHkxPSc0MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMDAnIHgyPScxMDAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScyMDAnIHk9JzYyJz5MPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzAwJyB4Mj0nNTQwJyB5MT0nNDEnIHkyPSc0MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzAwJyB4Mj0nNTQwJyB5MT0nODEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nNTQwJyB4Mj0nNTQwJyB5MT0nNDEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMzAwJyB4Mj0nMzAwJyB5MT0nNDEnIHkyPSc4MScvPjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNDIwJyB5PSc2Mic+MDwvdGV4dD48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzU0MCcgeDI9Jzc4MCcgeTE9JzQxJyB5Mj0nNDEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzU0MCcgeDI9Jzc4MCcgeTE9JzgxJyB5Mj0nODEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzc4MCcgeDI9Jzc4MCcgeTE9JzQxJyB5Mj0nODEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzU0MCcgeDI9JzU0MCcgeTE9JzQxJyB5Mj0nODEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzY2MCcgeT0nNjInPkE8L3RleHQ+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc3ODAnIHgyPSc5ODAnIHkxPSc0MScgeTI9JzQxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc3ODAnIHgyPSc5ODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc5ODAnIHgyPSc5ODAnIHkxPSc0MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPSc3ODAnIHgyPSc3ODAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc4ODAnIHk9JzYyJz5YPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nOTgwJyB4Mj0nMTE4MCcgeTE9JzQxJyB5Mj0nNDEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzk4MCcgeDI9JzExODAnIHkxPSc4MScgeTI9JzgxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTgwJyB4Mj0nMTE4MCcgeTE9JzQxJyB5Mj0nODEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9Jzk4MCcgeDI9Jzk4MCcgeTE9JzQxJyB5Mj0nODEnLz48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzEwODAnIHk9JzYyJz5XPC90ZXh0PjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTE4MCcgeDI9JzEzODAnIHkxPSc0MScgeTI9JzQxJy8+PGxpbmUgc3Ryb2tlPScjMDAwMDAwJyBzdHJva2Utd2lkdGg9JzEnIHgxPScxMTgwJyB4Mj0nMTM4MCcgeTE9JzgxJyB5Mj0nODEnLz48bGluZSBzdHJva2U9JyMwMDAwMDAnIHN0cm9rZS13aWR0aD0nMScgeDE9JzEzODAnIHgyPScxMzgwJyB5MT0nNDEnIHkyPSc4MScvPjxsaW5lIHN0cm9rZT0nIzAwMDAwMCcgc3Ryb2tlLXdpZHRoPScxJyB4MT0nMTE4MCcgeDI9JzExODAnIHkxPSc0MScgeTI9JzgxJy8+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PScxMjgwJyB5PSc2Mic+UjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9JzIwMCcgeT0nMTAyJz4xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nNDIwJyB5PScxMDInPjI8L3RleHQ+PHRleHQgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgZm9udC1mYW1pbHk9J00rIDFwIEZhbGxiYWNrJyBmb250LXNpemU9JzI0JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB4PSc2NjAnIHk9JzEwMic+MjwvdGV4dD48dGV4dCBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmb250LWZhbWlseT0nTSsgMXAgRmFsbGJhY2snIGZvbnQtc2l6ZT0nMjQnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHg9Jzg4MCcgeT0nMTAyJz4xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTA4MCcgeT0nMTAyJz4xPC90ZXh0Pjx0ZXh0IGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdNKyAxcCBGYWxsYmFjaycgZm9udC1zaXplPScyNCcgdGV4dC1hbmNob3I9J21pZGRsZScgeD0nMTI4MCcgeT0nMTAyJz4xPC90ZXh0Pjwvc3ZnPg==" alt="Diagram" width="1480" height="122">
 </div>
 <div class="title">Figure 24. PMP configuration register format.</div>
 </div>
@@ -4564,7 +4543,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="smstateen">4. "Smstateen/Ssstateen" Extensions, Version 1.0.0</h2>
+<h2 id="smstateen">4. "Smstateen/Ssstateen" Extensions, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4572,7 +4551,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="indirect-csr">5. "Smcsrind/Sscsrind" Indirect CSR Access, Version 1.0.0</h2>
+<h2 id="indirect-csr">5. "Smcsrind/Sscsrind" Indirect CSR Access, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4580,7 +4559,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="smepmp">6. "Smepmp" Extension for PMP Enhancements for memory access and execution prevention in Machine mode, Version 1.0.0</h2>
+<h2 id="smepmp">6. "Smepmp" Extension for PMP Enhancements for memory access and execution prevention in Machine mode, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4588,7 +4567,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="smcntrpmf">7. "Smcntrpmf" Cycle and Instret Privilege Mode Filtering, Version 1.0.0</h2>
+<h2 id="smcntrpmf">7. "Smcntrpmf" Cycle and Instret Privilege Mode Filtering, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4604,7 +4583,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="smcdeleg">9. "Smcdeleg" Counter Delegation Extension, Version 1.0.0</h2>
+<h2 id="smcdeleg">9. "Smcdeleg" Counter Delegation Extension, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4620,7 +4599,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="Sstc">11. "Sstc" Extension for Supervisor-mode Timer Interrupts, Version 1.0.0</h2>
+<h2 id="Sstc">11. "Sstc" Extension for Supervisor-mode Timer Interrupts, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4628,7 +4607,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="Sscofpmf">12. "Sscofpmf" Extension for Count Overflow and Mode-Based Filtering, Version 1.0.0</h2>
+<h2 id="Sscofpmf">12. "Sscofpmf" Extension for Count Overflow and Mode-Based Filtering, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4644,7 +4623,18 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_risc_v_privileged_instruction_set_listings">14. RISC-V Privileged Instruction Set Listings</h2>
+<h2 id="priv-cfi">14. Control-flow Integrity (CFI)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>CV32A65X: The Zicfiss extension is not supported.</p>
+</div>
+<div class="paragraph">
+<p>CV32A65X: The Zicfilp extension is not supported.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_risc_v_privileged_instruction_set_listings">15. RISC-V Privileged Instruction Set Listings</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>This chapter presents instruction-set listings for all instructions
@@ -4664,10 +4654,10 @@ manual.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_history">15. History</h2>
+<h2 id="_history">16. History</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_research_funding_at_uc_berkeley">15.1. Research Funding at UC Berkeley</h3>
+<h3 id="_research_funding_at_uc_berkeley">16.1. Research Funding at UC Berkeley</h3>
 <div class="paragraph">
 <p>Development of the RISC-V architecture and implementations has been
 partially funded by the following sponsors.</p>
@@ -4712,7 +4702,7 @@ inferred.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 20240411<br>
+Version 20240528<br>
 </div>
 </div>
 </body>
