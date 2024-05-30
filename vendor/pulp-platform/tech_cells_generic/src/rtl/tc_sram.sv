@@ -163,7 +163,10 @@ module tc_sram #(
     // write memory array
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        sram <= init_val;
+        // Fix to avoid runtime space reaching maximum capacity in simulation
+        foreach (init_val[i]) begin
+          sram[i] <= init_val[i];
+        end
         for (int i = 0; i < NumPorts; i++) begin
           r_addr_q[i] <= {AddrWidth{1'b0}};
           // initialize the read output register for each port
