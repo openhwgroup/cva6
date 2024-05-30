@@ -82,10 +82,10 @@ module cache_ctrl
     logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] index;
     logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   tag;
     logic [CVA6Cfg.DcacheIdWidth-1:0]      id;
-    logic [7:0]                            be;
+    logic [(CVA6Cfg.XLEN/8)-1:0]           be;
     logic [1:0]                            size;
     logic                                  we;
-    logic [63:0]                           wdata;
+    logic [CVA6Cfg.XLEN-1:0]               wdata;
     logic                                  bypass;
     logic                                  killed;
   } mem_req_t;
@@ -112,9 +112,12 @@ module cache_ctrl
   // --------------
   always_comb begin : cache_ctrl_fsm
     automatic logic [$clog2(CVA6Cfg.DCACHE_LINE_WIDTH)-1:0] cl_offset;
+    automatic logic [$clog2(CVA6Cfg.AxiDataWidth)-1:0] axi_offset;
     // incoming cache-line -> this is needed as synthesis is not supporting +: indexing in a multi-dimensional array
-    // cache-line offset -> multiple of 64
-    cl_offset = mem_req_q.index[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:3] << 6;  // shift by 6 to the left
+    // cache-line offset -> multiple of XLEN
+    cl_offset = mem_req_q.index[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:$clog2(CVA6Cfg.XLEN/8)] <<
+        $clog2(CVA6Cfg.XLEN);  // shift by log2(XLEN) to the left
+    axi_offset = '0;
     // default assignments
     state_d = state_q;
     mem_req_d = mem_req_q;
@@ -134,6 +137,11 @@ module cache_ctrl
     we_o = '0;
 
     mem_req_d.killed |= req_port_i.kill_req;
+
+    if (CVA6Cfg.XLEN == 32) begin
+      axi_offset = mem_req_q.index[$clog2(CVA6Cfg.AxiDataWidth/8)-1:$clog2(CVA6Cfg.XLEN/8)] <<
+          $clog2(CVA6Cfg.XLEN);
+    end
 
     case (state_q)
 
@@ -211,7 +219,7 @@ module cache_ctrl
             end
 
             // this is timing critical
-            req_port_o.data_rdata = cl_i[cl_offset+:64];
+            req_port_o.data_rdata = cl_i[cl_offset+:CVA6Cfg.XLEN];
 
             // report data for a read
             if (!mem_req_q.we) begin
@@ -307,14 +315,15 @@ module cache_ctrl
           addr_o                     = mem_req_q.index;
           we_o                       = 1'b1;
 
-          be_o.vldrty                = hit_way_q;
+          be_o.vldrty                             = hit_way_q;
 
           // set the correct byte enable
-          be_o.data[cl_offset>>3+:8] = mem_req_q.be;
-          data_o.data[cl_offset+:64] = mem_req_q.wdata;
+          be_o.data[cl_offset>>3+:CVA6Cfg.XLEN/8] = mem_req_q.be;
+          data_o.data[cl_offset+:CVA6Cfg.XLEN]    = mem_req_q.wdata;
+          data_o.tag                              = mem_req_d.tag;
           // ~> change the state
-          data_o.dirty               = 1'b1;
-          data_o.valid               = 1'b1;
+          data_o.dirty                            = 1'b1;
+          data_o.valid                            = 1'b1;
 
           // got a grant ~> this is finished now
           if (gnt_i) begin
@@ -357,10 +366,10 @@ module cache_ctrl
         miss_req_o.valid = 1'b1;
         miss_req_o.bypass = mem_req_q.bypass;
         miss_req_o.addr = {mem_req_q.tag, mem_req_q.index};
-        miss_req_o.be = mem_req_q.be;
+        miss_req_o.be[axi_offset>>3+:CVA6Cfg.XLEN/8] = mem_req_q.be;
         miss_req_o.size = mem_req_q.size;
         miss_req_o.we = mem_req_q.we;
-        miss_req_o.wdata = mem_req_q.wdata;
+        miss_req_o.wdata[axi_offset+:CVA6Cfg.XLEN] = mem_req_q.wdata;
 
         // got a grant so go to valid
         if (bypass_gnt_i) begin
@@ -399,7 +408,7 @@ module cache_ctrl
 
         if (critical_word_valid_i) begin
           req_port_o.data_rvalid = ~mem_req_q.killed;
-          req_port_o.data_rdata  = critical_word_i;
+          req_port_o.data_rdata  = critical_word_i[axi_offset+:CVA6Cfg.XLEN];
           // we can make another request
           if (req_port_i.data_req && !flush_i) begin
             // save index, be and we
@@ -428,7 +437,7 @@ module cache_ctrl
       WAIT_REFILL_VALID: begin
         // got a valid answer
         if (bypass_valid_i) begin
-          req_port_o.data_rdata = bypass_data_i;
+          req_port_o.data_rdata = bypass_data_i[axi_offset+:CVA6Cfg.XLEN];
           req_port_o.data_rvalid = ~mem_req_q.killed;
           state_d = IDLE;
         end
