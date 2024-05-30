@@ -2471,6 +2471,10 @@ be able to hold all values less than 2^__N__^, where
 _N_ is the smaller of MXLEN and ILEN.
 endif::[]
 
+ifeval::[{MTvalEn} == false]
+[{ohg-config}] The `mtval` register is an MXLEN-bit read-only 0 register.
+endif::[]
+
 ==== Machine Configuration Pointer (`mconfigptr`) Register
 
 
