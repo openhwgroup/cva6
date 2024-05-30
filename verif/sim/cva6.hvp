@@ -725,6 +725,11 @@ plan "CVA6 Verification Master Plan";
         endfeature
         feature "CSR access";
             description = "CSR registers access.\nSpecification: Done, Dvplan: Done, Verification execution: Done";
+            feature "CSR CODE COVERAGE";
+                measure Line, Cond, Toggle CSR_code_cov;
+                    source = "tree: uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6.csr_regfile_i";
+                endmeasure
+            endfeature
             feature CYCLE;
                 measure Group CYCLE;
                     source = "group instance: uvme_cva6_pkg.csr_reg_cov.cycle.cycle__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.cycle.cycle__write_cg";
