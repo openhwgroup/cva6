@@ -42,7 +42,7 @@ covergroup cg_exception(
     bins ILLEGAL_INSTR = {2} iff (instr.trap);
 
     ignore_bins IGN_ADDR_MISALIGNED_EXC = {0, 4, 6} iff (unaligned_access_supported);
-    ignore_bins IGN_INSTR_ADDR_MISALIGNED_EXC = {0} iff (ext_c_supported);
+    ignore_bins IGN_INSTR_ADDR_MISALIGNED_EXC = {0} iff (ext_c_supported && instr.trap);
     bins INSTR_ADDR_MISALIGNED = {0} iff (instr.trap);
 
     bins LD_ADDR_MISALIGNED    = {4} iff (instr.trap);
