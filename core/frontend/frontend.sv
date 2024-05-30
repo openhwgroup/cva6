@@ -22,7 +22,9 @@ module frontend
     parameter type bp_resolve_t = logic,
     parameter type fetch_entry_t = logic,
     parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic
+    parameter type icache_drsp_t = logic,
+    parameter type fetch_areq_t = logic,
+    parameter type fetch_arsp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -54,6 +56,10 @@ module frontend
     input logic set_debug_pc_i,
     // Debug mode state - CSR
     input logic debug_mode_i,
+    // address translation request chanel - EXECUTE
+    input fetch_arsp_t arsp_i,
+    // address translation response chanel - EXECUTE
+    output fetch_areq_t areq_o,
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
     output icache_dreq_t icache_dreq_o,
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
@@ -106,16 +112,19 @@ module frontend
   logic [CVA6Cfg.VLEN-1:0] npc_d, npc_q;  // next PC
 
   // indicates whether we come out of reset (then we need to load boot_addr_i)
-  logic                                       npc_rst_load_q;
+  logic                    npc_rst_load_q;
 
-  logic                                       replay;
-  logic [                   CVA6Cfg.VLEN-1:0] replay_addr;
+  logic                    replay;
+  logic [CVA6Cfg.VLEN-1:0] replay_addr;
+
+  logic [CVA6Cfg.VLEN-1:0] vaddr_d, vaddr_q;
+  logic [CVA6Cfg.PLEN-1:0] paddr_d, paddr_q;
 
   // shift amount
   logic [$clog2(CVA6Cfg.INSTR_PER_FETCH)-1:0] shamt;
   // address will always be 16 bit aligned, make this explicit here
   if (CVA6Cfg.RVC) begin : gen_shamt
-    assign shamt = icache_dreq_i.vaddr[$clog2(CVA6Cfg.INSTR_PER_FETCH):1];
+    assign shamt = vaddr_q[$clog2(CVA6Cfg.INSTR_PER_FETCH):1];
   end else begin
     assign shamt = 1'b0;
   end
@@ -315,6 +324,72 @@ module frontend
   // if we have a valid branch-prediction we need to only kill the last cache request
   // also if we killed the first stage we also need to kill the second stage (inclusive flush)
   assign icache_dreq_o.kill_s2 = icache_dreq_o.kill_s1 | bp_valid;
+  // Kill when address translation expection occurs
+  assign icache_dreq_o.kill_req = arsp_i.fetch_exception.valid;
+
+  // MMU interface
+  assign areq_o.fetch_vaddr = (vaddr_q >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
+  assign icache_dreq_o.paddr = paddr_d;
+  assign icache_dreq_o.translation_valid = arsp_i.fetch_valid;
+  assign vaddr_d = (icache_dreq_i.ready & icache_dreq_o.req) ? icache_dreq_o.vaddr : vaddr_q;
+  assign paddr_d = (arsp_i.fetch_valid) ? arsp_i.fetch_paddr : paddr_q;
+
+  // cpmtroller FSM
+  typedef enum logic [1:0] {
+    IDLE,
+    READ,
+    KILL_ATRANS
+  } state_e;
+  state_e state_d, state_q;
+
+  always_comb begin : p_fsm
+    // default assignment
+    state_d = state_q;
+    areq_o.fetch_req = 1'b0;
+
+    unique case (state_q)
+      IDLE: begin
+        if (icache_dreq_o.req && !icache_dreq_o.kill_s1) begin
+          state_d = READ;
+        end
+      end
+
+      READ: begin
+        areq_o.fetch_req = '1;
+        if (arsp_i.fetch_valid) begin
+          if (!icache_dreq_o.req || icache_dreq_o.kill_s1) begin
+            state_d = IDLE;
+          end
+        end else if (icache_dreq_o.kill_s2) begin
+          state_d = KILL_ATRANS;
+        end
+      end
+
+      KILL_ATRANS: begin
+        areq_o.fetch_req = '1;
+        if (arsp_i.fetch_valid) begin
+          state_d = IDLE;
+        end
+      end
+
+      default: begin
+        // we should never get here
+        state_d = IDLE;
+      end
+    endcase
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+    if (!rst_ni) begin
+      state_q <= IDLE;
+      vaddr_q <= '0;
+      paddr_q <= '0;
+    end else begin
+      state_q <= state_d;
+      vaddr_q <= vaddr_d;
+      paddr_q <= paddr_d;
+    end
+  end
 
   // Update Control Flow Predictions
   bht_update_t bht_update;
@@ -435,11 +510,11 @@ module frontend
       icache_valid_q <= icache_dreq_i.valid;
       if (icache_dreq_i.valid) begin
         icache_data_q  <= icache_data;
-        icache_vaddr_q <= icache_dreq_i.vaddr;
+        icache_vaddr_q <= vaddr_q;
         if (CVA6Cfg.RVH) begin
-          icache_gpaddr_q <= icache_dreq_i.ex.tval2[CVA6Cfg.GPLEN-1:0];
-          icache_tinst_q  <= icache_dreq_i.ex.tinst;
-          icache_gva_q    <= icache_dreq_i.ex.gva;
+          icache_gpaddr_q <= arsp_i.fetch_exception.tval2[CVA6Cfg.GPLEN-1:0];
+          icache_tinst_q  <= arsp_i.fetch_exception.tinst;
+          icache_gva_q    <= arsp_i.fetch_exception.gva;
         end else begin
           icache_gpaddr_q <= 'b0;
           icache_tinst_q  <= 'b0;
@@ -447,11 +522,11 @@ module frontend
         end
 
         // Map the only three exceptions which can occur in the frontend to a two bit enum
-        if (CVA6Cfg.MmuPresent && icache_dreq_i.ex.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
+        if (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT;
-        end else if (CVA6Cfg.MmuPresent && icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
+        end else if (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.cause == riscv::INSTR_PAGE_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
-        end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
+        end else if (arsp_i.fetch_exception.cause == riscv::INSTR_ACCESS_FAULT) begin
           icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
         end else begin
           icache_ex_valid_q <= ariane_pkg::FE_NONE;
@@ -484,7 +559,7 @@ module frontend
   //For FPGA, BTB is implemented in read synchronous BRAM
   //while for ASIC, BTB is implemented in D flip-flop
   //and can be read at the same cycle.
-  assign vpc_btb = (CVA6Cfg.FpgaEn) ? icache_dreq_i.vaddr : icache_vaddr_q;
+  assign vpc_btb = (CVA6Cfg.FpgaEn) ? vaddr_q : icache_vaddr_q;
 
   if (CVA6Cfg.BTBEntries == 0) begin
     assign btb_prediction = '0;
