@@ -349,7 +349,8 @@ module cva6_rvfi
 
   `CONNECT_RVFI_FULL(1'b1, mstatus, csr.mstatus_extended)
 
-  `CONNECT_RVFI_FULL(1'b1, mstatush, '0)
+  bit [31:0] mstatush_q;
+    `CONNECT_RVFI_FULL(1'b1, mstatush, mstatush_q)
 
   `CONNECT_RVFI_FULL(1'b1, misa, IsaCode)
 
@@ -369,7 +370,7 @@ module cva6_rvfi
 
   `CONNECT_RVFI_FULL(1'b1, menvcfg, csr.fiom_q)
 
-  `CONNECT_RVFI_FULL(CVA6Cfg.XLEN == 32, menvcfgh, 0)
+  `CONNECT_RVFI_FULL(CVA6Cfg.XLEN == 32, menvcfgh, 32'h0)
 
   `CONNECT_RVFI_FULL(1'b1, mvendorid, OPENHWGROUP_MVENDORID)
   `CONNECT_RVFI_FULL(1'b1, marchid, ARIANE_MARCHID)

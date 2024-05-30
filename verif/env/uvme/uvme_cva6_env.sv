@@ -178,8 +178,8 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
-      if ($test$plusargs("spike_tandem_enabled"))
-          $value$plusargs("spike_tandem_enabled=%b",cfg.spike_tandem_enabled);
+      if ($test$plusargs("tandem_enabled"))
+          $value$plusargs("tandem_enabled=%b",cfg.tandem_enabled);
 
       retrieve_vif();
       assign_cfg           ();
@@ -283,7 +283,7 @@ endfunction: create_agents
 
 function void uvme_cva6_env_c::create_env_components();
 
-   if (cfg.spike_tandem_enabled) begin
+   if (cfg.tandem_enabled) begin
       reference_model = uvmc_rvfi_reference_model#(ILEN,XLEN)::type_id::create("reference_model", this);
    end
 
@@ -338,7 +338,7 @@ function void uvme_cva6_env_c::connect_scoreboard();
 
    // TODO Connect predictor -> scoreboard
    //      Ex: predictor.debug_ap.connect(sb.debug_sb.exp_export);
-    if (cfg.spike_tandem_enabled) begin
+    if (cfg.tandem_enabled) begin
        rvfi_agent.rvfi_core_ap.connect(sb.m_rvfi_scoreboard.m_imp_core);
        rvfi_agent.rvfi_core_ap.connect(reference_model.m_analysis_imp);
        reference_model.m_analysis_port.connect(sb.m_rvfi_scoreboard.m_imp_reference_model);

@@ -24,6 +24,7 @@ import sys
 import logging
 import subprocess
 import datetime
+import yaml
 
 from dv.scripts.lib import *
 from verilator_log_to_trace_csv import *
@@ -463,6 +464,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
       log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test_log_name, test_iteration, target))
     else:
       log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, test_log_name, target))
+    yaml = ("%s/%s_sim/%s.%s.log.yaml" % (output_dir, iss, test_log_name, target))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
@@ -471,6 +473,9 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     else: ratio = 1
     run_cmd(cmd, iss_timeout//ratio, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
+    if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
+        analize_result_yaml(yaml)
+
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
 
@@ -504,6 +509,21 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
         save_regr_report(report)
   else:
     logging.error("No assembly test(*.S) found under %s" % asm_test_dir)
+
+def analize_result_yaml(yaml_path):
+
+    if (os.path.exists(yaml_path)):
+        with open(yaml_path, 'r') as f:
+            data = yaml.safe_load(f)
+        mismatches = data["mismatches"]
+        mismatches_count =  (data["mismatches_count"])
+        instr_count = (data["instr_count"])
+        matches_count =  instr_count - mismatches_count
+        logging.info("TANDEM Result : %s with %s mismatches and %s matches"
+            % (data["exit_cause"], mismatches_count, matches_count))
+    else:
+        logging.info("TANDEM YAML not found")
+
 
 # python3 run.py --target rv64gc --iss=spike,verilator --elf_tests bbl.o
 def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
@@ -541,7 +561,8 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   # ISS simulation
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
-    log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, c, target))
+    log  = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, c, target))
+    yaml = ("%s/%s_sim/%s.%s.log.yaml" % (output_dir, iss, c, target))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
@@ -551,9 +572,9 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     else: ratio = 1
     run_cmd(cmd, int(iss_timeout*ratio), debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
+
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
-
 
 def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
           setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=500):
@@ -606,6 +627,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
       log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test_log_name, test_iteration, target))
     else:
       log = ("%s/%s_sim/%s.%s.log" % (output_dir, iss, test_log_name, target))
+    yaml = ("%s/%s_sim/%s.%s.log.yaml" % (output_dir, iss, test_log_name, target))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
@@ -614,6 +636,10 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     else: ratio = 1
     run_cmd(cmd, iss_timeout//ratio, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
+
+    if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
+        analize_result_yaml(yaml)
+
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
 

@@ -42,7 +42,7 @@ jobs:
           cache-name: cache-spike
       with:
           path: tools/spike/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh', 'verif/core-v-verif/vendor/riscv/riscv-isa-sim/') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh', 'verif/core-v-verif/vendor/riscv/') }}
 
     - name: Prepare
       run: |
@@ -95,7 +95,7 @@ jobs:
           cache-name: cache-spike
       with:
           path: tools/spike/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh', 'verif/core-v-verif/vendor/riscv/riscv-isa-sim/') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh', 'verif/core-v-verif/vendor/riscv/') }}
 
     - name: Run Tests
       run: |
@@ -155,7 +155,7 @@ jobs:
           cache-name: cache-spike
       with:
           path: tools/spike/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh', 'verif/core-v-verif/vendor/riscv/riscv-isa-sim/') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh', 'verif/core-v-verif/vendor/riscv/') }}
 
     - name: Run Tests
       run: |
