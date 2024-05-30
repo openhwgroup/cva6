@@ -287,9 +287,9 @@ ifneq ($(DEBUG),)               # If RTL DEBUG support requested
 endif
 
 ifneq ($(SPIKE_TANDEM),)
-COMMON_RUN_UVM_FLAGS += +scoreboard_enabled=1
+COMMON_RUN_UVM_FLAGS += +spike_tandem_enabled=1
 else
-COMMON_RUN_UVM_FLAGS += +scoreboard_enabled=0
+COMMON_RUN_UVM_FLAGS += +spike_tandem_enabled=0
 endif
 
 vcs_uvm_comp:

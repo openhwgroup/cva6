@@ -32,6 +32,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand bit                      enabled;
 
    rand bit                      scoreboard_enabled;
+   rand bit                      spike_tandem_enabled;
    rand bit                      cov_model_enabled;
    rand bit                      cov_cvxif_model_enabled;
    rand bit                      cov_isa_model_enabled;
@@ -59,6 +60,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
       `uvm_field_int (                         scoreboard_enabled          , UVM_DEFAULT          )
+      `uvm_field_int (                         spike_tandem_enabled        , UVM_DEFAULT          )
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zicond_supported        , UVM_DEFAULT          )

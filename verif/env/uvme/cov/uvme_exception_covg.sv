@@ -22,6 +22,7 @@ covergroup cg_exception(
     string name,
     bit pmp_supported,
     bit unaligned_access_supported,
+    bit ext_c_supported,
     bit mode_u_supported,
     bit mode_s_supported,
     bit debug_supported,
@@ -37,54 +38,40 @@ covergroup cg_exception(
     bins NO_EXCEPTION = {0} iff (!instr.trap);
 
     bins BREAKPOINT = {3} iff (instr.trap);
-    bins BREAKPOINT_EXC_RAISED = (NO_EXCEPTION => BREAKPOINT => NO_EXCEPTION);
 
     bins ILLEGAL_INSTR = {2} iff (instr.trap);
-    bins ILLEGAL_INSTR_EXC_RAISED = (NO_EXCEPTION => ILLEGAL_INSTR => NO_EXCEPTION);
 
     ignore_bins IGN_ADDR_MISALIGNED_EXC = {0, 4, 6} iff (unaligned_access_supported);
+    ignore_bins IGN_INSTR_ADDR_MISALIGNED_EXC = {0} iff (ext_c_supported);
     bins INSTR_ADDR_MISALIGNED = {0} iff (instr.trap);
-    bins INSTR_ADDR_MISALIGNED_EXC_RAISED = (NO_EXCEPTION => INSTR_ADDR_MISALIGNED => NO_EXCEPTION);
 
     bins LD_ADDR_MISALIGNED    = {4} iff (instr.trap);
-    bins LD_ADDR_MISALIGNED_EXC_RAISED = (NO_EXCEPTION => LD_ADDR_MISALIGNED => NO_EXCEPTION);
 
     bins ST_ADDR_MISALIGNED    = {6} iff (instr.trap);
-    bins ST_ADDR_MISALIGNED_EXC_RAISED = (NO_EXCEPTION => ST_ADDR_MISALIGNED => NO_EXCEPTION);
 
     ignore_bins IGN_ACCESS_FAULT_EXC = {1,5,7} iff (!pmp_supported);
     bins INSTR_ACCESS_FAULT = {1} iff (instr.trap);
-    bins INSTR_ACCESS_FAULT_EXC_RAISED = (NO_EXCEPTION => INSTR_ACCESS_FAULT => NO_EXCEPTION);
 
     bins LD_ACCESS_FAULT    = {5} iff (instr.trap);
-    bins LD_ACCESS_FAULT_EXC_RAISED = (NO_EXCEPTION => LD_ACCESS_FAULT => NO_EXCEPTION);
 
     bins ST_ACCESS_FAULT    = {7} iff (instr.trap);
-    bins ST_ACCESS_FAULT_EXC_RAISED = (NO_EXCEPTION => ST_ACCESS_FAULT => NO_EXCEPTION);
 
     ignore_bins IGN_ENV_CALL_UMODE = {8} iff (!mode_u_supported);
     bins ENV_CALL_UMODE = {8} iff (instr.trap);
-    bins ENV_CALL_UMODE_EXC_RAISED = (NO_EXCEPTION => ENV_CALL_UMODE => NO_EXCEPTION);
 
     ignore_bins IGN_ENV_CALL_SMODE = {9} iff (!mode_s_supported);
     bins ENV_CALL_SMODE = {9} iff (instr.trap);
-    bins ENV_CALL_SMODE_EXC_RAISED = (NO_EXCEPTION => ENV_CALL_SMODE => NO_EXCEPTION);
 
     bins ENV_CALL_MMODE = {11} iff (instr.trap);
-    bins ENV_CALL_MMODE_EXC_RAISED = (NO_EXCEPTION => ENV_CALL_MMODE => NO_EXCEPTION);
 
     bins INSTR_PAGE_FAULT = {12} iff (instr.trap);
-    bins INSTR_PAGE_FAULT_EXC_RAISED = (NO_EXCEPTION => INSTR_PAGE_FAULT => NO_EXCEPTION);
 
     bins LOAD_PAGE_FAULT  = {13} iff (instr.trap);
-    bins LOAD_PAGE_FAULT_EXC_RAISED = (NO_EXCEPTION => LOAD_PAGE_FAULT => NO_EXCEPTION);
 
     bins STORE_PAGE_FAULT = {15} iff (instr.trap);
-    bins STORE_PAGE_FAULT_EXC_RAISED = (NO_EXCEPTION => STORE_PAGE_FAULT => NO_EXCEPTION);
 
     ignore_bins IGN_DEBUG_REQUEST = {24} iff (!debug_supported);
     bins DEBUG_REQUEST = {24} iff (instr.trap);
-    bins DEBUG_REQUEST_EXC_RAISED = (NO_EXCEPTION => DEBUG_REQUEST => NO_EXCEPTION);
 
   }
 
@@ -143,11 +130,11 @@ covergroup cg_exception(
     ignore_bins IGN = !binsof(cp_exception) intersect{2};
   }
 
-  cross_illegal_csr : cross cp_exception, cp_illegal_csr,  cp_is_csr {
+  cross_illegal_csr : cross cp_exception, cp_illegal_csr, cp_is_csr {
     ignore_bins IGN = !binsof(cp_exception) intersect{2};
   }
 
-  cross_illegal_write_csr : cross cp_exception, cp_ro_csr,  cp_is_write_csr {
+  cross_illegal_write_csr : cross cp_exception, cp_ro_csr, cp_is_write_csr {
     ignore_bins IGN = !binsof(cp_exception) intersect{2};
   }
 
@@ -207,6 +194,7 @@ function void uvme_exception_cov_model_c::build_phase(uvm_phase phase);
    exception_cg = new("exception_cg",
                       .pmp_supported(cfg.pmp_supported),
                       .unaligned_access_supported(cfg.unaligned_access_supported),
+                      .ext_c_supported(cfg.ext_c_supported),
                       .mode_u_supported(cfg.mode_u_supported),
                       .mode_s_supported(cfg.mode_s_supported),
                       .debug_supported(cfg.debug_supported),
