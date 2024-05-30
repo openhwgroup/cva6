@@ -139,7 +139,8 @@ module cache_ctrl
     mem_req_d.killed |= req_port_i.kill_req;
 
     if (CVA6Cfg.XLEN == 32) begin
-      axi_offset = mem_req_q.index[$clog2(CVA6Cfg.AxiDataWidth/8)-1:$clog2(CVA6Cfg.XLEN/8)] << $clog2(CVA6Cfg.XLEN);
+      axi_offset = mem_req_q.index[$clog2(CVA6Cfg.AxiDataWidth/8)-1:$clog2(CVA6Cfg.XLEN/8)] <<
+          $clog2(CVA6Cfg.XLEN);
     end
 
     case (state_q)
