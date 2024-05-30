@@ -259,8 +259,6 @@ package ariane_pkg;
   localparam int unsigned MEM_TID_WIDTH = `L15_THREADID_WIDTH;
 `endif
 
-  localparam int unsigned WT_DCACHE_WBUF_DEPTH = cva6_config_pkg::CVA6ConfigWtDcacheWbufDepth;
-
   // ---------------
   // EX Stage
   // ---------------

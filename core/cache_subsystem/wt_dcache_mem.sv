@@ -73,7 +73,7 @@ module wt_dcache_mem
     input logic [(CVA6Cfg.XLEN/8)-1:0] wr_data_be_i,
 
     // forwarded wbuffer
-    input wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data_i
+    input wbuffer_t [CVA6Cfg.WtDcacheWbufDepth-1:0] wbuffer_data_i
 );
 
   localparam DCACHE_NUM_BANKS = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
@@ -119,8 +119,8 @@ module wt_dcache_mem
 
   logic [$clog2(NumPorts)-1:0] vld_sel_d, vld_sel_q;
 
-  logic [DCACHE_WBUF_DEPTH-1:0] wbuffer_hit_oh;
-  logic [ (CVA6Cfg.XLEN/8)-1:0] wbuffer_be;
+  logic [CVA6Cfg.WtDcacheWbufDepth-1:0] wbuffer_hit_oh;
+  logic [(CVA6Cfg.XLEN/8)-1:0] wbuffer_be;
   logic [CVA6Cfg.XLEN-1:0] wbuffer_rdata, rdata;
   logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] wbuffer_ruser, ruser;
   logic [CVA6Cfg.PLEN-1:0] wbuffer_cmp_addr;
@@ -229,7 +229,7 @@ module wt_dcache_mem
 
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:0] wr_cl_off;
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:0] wr_cl_nc_off;
-  logic [                           $clog2(DCACHE_WBUF_DEPTH)-1:0] wbuffer_hit_idx;
+  logic [                   $clog2(CVA6Cfg.WtDcacheWbufDepth)-1:0] wbuffer_hit_idx;
   logic [                    $clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] rd_hit_idx;
 
   assign cmp_en_d = (|vld_req) & ~vld_we;
@@ -246,12 +246,12 @@ module wt_dcache_mem
     assign ruser_cl[i] = bank_ruser[bank_off_q[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]][i];
   end
 
-  for (genvar k = 0; k < DCACHE_WBUF_DEPTH; k++) begin : gen_wbuffer_hit
+  for (genvar k = 0; k < CVA6Cfg.WtDcacheWbufDepth; k++) begin : gen_wbuffer_hit
     assign wbuffer_hit_oh[k] = (|wbuffer_data_i[k].valid) & ({{CVA6Cfg.XLEN_ALIGN_BYTES{1'b0}}, wbuffer_data_i[k].wtag} == (wbuffer_cmp_addr >> CVA6Cfg.XLEN_ALIGN_BYTES));
   end
 
   lzc #(
-      .WIDTH(DCACHE_WBUF_DEPTH)
+      .WIDTH(CVA6Cfg.WtDcacheWbufDepth)
   ) i_lzc_wbuffer_hit (
       .in_i   (wbuffer_hit_oh),
       .cnt_o  (wbuffer_hit_idx),

@@ -45,9 +45,6 @@ package wt_cache_pkg;
   localparam ADAPTER_RTRN_FIFO_DEPTH = 2;
 
 
-  // write buffer parameterization
-  localparam DCACHE_WBUF_DEPTH = ariane_pkg::WT_DCACHE_WBUF_DEPTH;
-
   // TX status registers are indexed with the transaction ID
   // they basically store which bytes from which buffer entry are part
   // of that transaction

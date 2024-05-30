@@ -18,8 +18,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiDataWidth = 64;  // axi_pkg.sv
   localparam CVA6ConfigDataUserWidth = 32;  // axi_pkg.sv
 
-  localparam CVA6ConfigWtDcacheWbufDepth = 2;  // wtcache
-
   localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
 
   localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
