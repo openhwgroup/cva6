@@ -482,25 +482,25 @@ module cva6_icache
     assign vld_rdata[i]    = cl_tag_valid_rdata[i][CVA6Cfg.ICACHE_TAG_WIDTH];
 
     // Data RAM
-      sram_cache #(
-          .USER_WIDTH (CVA6Cfg.ICACHE_USER_LINE_WIDTH),
-          .DATA_WIDTH (CVA6Cfg.ICACHE_LINE_WIDTH),
-          .USER_EN    (CVA6Cfg.FETCH_USER_EN),
-          .BYTE_ACCESS(0),
-          .TECHNO_CUT (CVA6Cfg.TechnoCut),
-          .NUM_WORDS  (ICACHE_NUM_WORDS)
-      ) data_sram (
-          .clk_i  (clk_i),
-          .rst_ni (rst_ni),
-          .req_i  (cl_req[i]),
-          .we_i   (cl_we),
-          .addr_i (cl_index),
-          .wuser_i(mem_rtrn_i.user),
-          .wdata_i(mem_rtrn_i.data),
-          .be_i   ('1),
-          .ruser_o(cl_ruser[i]),
-          .rdata_o(cl_rdata[i])
-      );
+    sram_cache #(
+        .USER_WIDTH (CVA6Cfg.ICACHE_USER_LINE_WIDTH),
+        .DATA_WIDTH (CVA6Cfg.ICACHE_LINE_WIDTH),
+        .USER_EN    (CVA6Cfg.FETCH_USER_EN),
+        .BYTE_ACCESS(0),
+        .TECHNO_CUT (CVA6Cfg.TechnoCut),
+        .NUM_WORDS  (ICACHE_NUM_WORDS)
+    ) data_sram (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .req_i  (cl_req[i]),
+        .we_i   (cl_we),
+        .addr_i (cl_index),
+        .wuser_i(mem_rtrn_i.user),
+        .wdata_i(mem_rtrn_i.data),
+        .be_i   ('1),
+        .ruser_o(cl_ruser[i]),
+        .rdata_o(cl_rdata[i])
+    );
   end
 
 
