@@ -109,7 +109,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - mode[1:0] in [0x0,0x1]
+                          - mode[1:0] in [0x0]
                         wr_illegal:
                           - Unchanged
                 description: Vector mode.
@@ -230,9 +230,7 @@ hart0:
                 msb: 14
                 lsb: 13
             xs:
-                implemented: true
-                type:
-                    ro_variable: true
+                implemented: false
                 description: Encodes the status of additional user-mode extensions
                     and associated state.
                 shadow:
