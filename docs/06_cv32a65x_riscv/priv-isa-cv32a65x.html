@@ -487,6 +487,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_endianness_control_in_mstatus_and_mstatush_registers">3.1.6.4. Endianness Control in <code>mstatus</code> and <code>mstatush</code> Registers</a></li>
 <li><a href="#virt-control">3.1.6.5. Virtualization Support in <code>mstatus</code> Register</a></li>
 <li><a href="#_extension_context_status_in_mstatus_register">3.1.6.6. Extension Context Status in <code>mstatus</code> Register</a></li>
+<li><a href="#_previous_expected_landing_pad_elp_state_in_mstatus_register">3.1.6.7. Previous Expected Landing Pad (ELP) State in <code>mstatus</code> Register</a></li>
 </ul>
 </li>
 <li><a href="#_machine_trap_vector_base_address_mtvec_register">3.1.7. Machine Trap-Vector Base-Address (<code>mtvec</code>) Register</a></li>
@@ -500,9 +501,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#mcause">3.1.15. Machine Cause (<code>mcause</code>) Register</a></li>
 <li><a href="#_machine_trap_value_mtval_register">3.1.16. Machine Trap Value (<code>mtval</code>) Register</a></li>
 <li><a href="#_machine_configuration_pointer_mconfigptr_register">3.1.17. Machine Configuration Pointer (<code>mconfigptr</code>) Register</a></li>
-<li><a href="#_machine_configuration_pointer_register_mconfigptr">3.1.18. Machine Configuration Pointer Register (<code>mconfigptr</code>)</a></li>
-<li><a href="#sec:menvcfg">3.1.19. Machine Environment Configuration (<code>menvcfg</code>) Register</a></li>
-<li><a href="#_machine_security_configuration_mseccfg_register">3.1.20. Machine Security Configuration (<code>mseccfg</code>) Register</a></li>
+<li><a href="#sec:menvcfg">3.1.18. Machine Environment Configuration (<code>menvcfg</code>) Register</a></li>
+<li><a href="#_machine_security_configuration_mseccfg_register">3.1.19. Machine Security Configuration (<code>mseccfg</code>) Register</a></li>
 </ul>
 </li>
 <li><a href="#_machine_level_memory_mapped_registers">3.2. Machine-Level Memory-Mapped Registers</a>
@@ -3412,6 +3412,13 @@ to read or write the corresponding state will cause an
 illegal-instruction exception.</p>
 </div>
 </div>
+<div class="sect4">
+<h5 id="_previous_expected_landing_pad_elp_state_in_mstatus_register">3.1.6.7. Previous Expected Landing Pad (ELP) State in <code>mstatus</code> Register</h5>
+<div class="paragraph">
+<p>[CV32A65X] As the Zicfilp extension is not supported,
+the <code>SPELP</code> and <code>MPELP</code> fields are read-only zero.</p>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_machine_trap_vector_base_address_mtvec_register">3.1.7. Machine Trap-Vector Base-Address (<code>mtvec</code>) Register</h4>
@@ -3941,14 +3948,12 @@ exceptions. TODO</p>
 </div>
 <div class="sect3">
 <h4 id="_machine_trap_value_mtval_register">3.1.16. Machine Trap Value (<code>mtval</code>) Register</h4>
-
+<div class="paragraph">
+<p>[CV32A65X] The <code>mtval</code> register is an MXLEN-bit read-only 0 register.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_machine_configuration_pointer_mconfigptr_register">3.1.17. Machine Configuration Pointer (<code>mconfigptr</code>) Register</h4>
-
-</div>
-<div class="sect3">
-<h4 id="_machine_configuration_pointer_register_mconfigptr">3.1.18. Machine Configuration Pointer Register (<code>mconfigptr</code>)</h4>
 <div class="paragraph">
 <p>The <code>mconfigptr</code> register is an MXLEN-bit read-only CSR that holds the physical
 address of a configuration data structure.</p>
@@ -3959,7 +3964,7 @@ configuration data structure does not exist.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sec:menvcfg">3.1.19. Machine Environment Configuration (<code>menvcfg</code>) Register</h4>
+<h4 id="sec:menvcfg">3.1.18. Machine Environment Configuration (<code>menvcfg</code>) Register</h4>
 <div class="paragraph">
 <p>The <code>menvcfg</code> CSR is a 64-bit read/write register that controls
 certain characteristics of the execution environment for modes less
@@ -3975,7 +3980,7 @@ not exist.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_machine_security_configuration_mseccfg_register">3.1.20. Machine Security Configuration (<code>mseccfg</code>) Register</h4>
+<h4 id="_machine_security_configuration_mseccfg_register">3.1.19. Machine Security Configuration (<code>mseccfg</code>) Register</h4>
 <div class="paragraph">
 <p><code>mseccfg</code> is an optional 64-bit read/write register,
 that controls security features.</p>

@@ -1398,15 +1398,20 @@ interrupts, unless the interrupt results in a user-level context swap.
 ====
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
 ===== Previous Expected Landing Pad (ELP) State in `mstatus` Register
 
+ifeval::[{RVZicfilp} == true]
 The Zicfilp extension adds the `SPELP` and `MPELP` fields that hold the previous
 `ELP`, and are updated as specified in <<ZICFILP_FORWARD_TRAPS>>. The
 *__x__*`PELP` fields are encoded as follows:
 
 * 0 - `NO_LP_EXPECTED` - no landing pad instruction expected.
 * 1 - `LP_EXPECTED` - a landing pad instruction is expected.
+endif::[]
+
+ifeval::[{RVZicfilp} == false]
+[{ohg-config}] As the Zicfilp extension is not supported,
+the `SPELP` and `MPELP` fields are read-only zero.
 endif::[]
 
 ==== Machine Trap-Vector Base-Address (`mtvec`) Register
