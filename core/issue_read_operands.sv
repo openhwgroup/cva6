@@ -490,20 +490,37 @@ module issue_read_operands
     assign wdata_pack[i] = wdata_i[i];
     assign we_pack[i]    = we_gpr_i[i];
   end
-  ariane_regfile #(
-      .CVA6Cfg      (CVA6Cfg),
-      .DATA_WIDTH   (CVA6Cfg.XLEN),
-      .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
-      .ZERO_REG_ZERO(1)
-  ) i_ariane_regfile (
-      .test_en_i(1'b0),
-      .raddr_i  (raddr_pack),
-      .rdata_o  (rdata),
-      .waddr_i  (waddr_pack),
-      .wdata_i  (wdata_pack),
-      .we_i     (we_pack),
-      .*
-  );
+  if (CVA6Cfg.FpgaEn) begin : gen_fpga_regfile
+    ariane_regfile_fpga #(
+        .CVA6Cfg      (CVA6Cfg),
+        .DATA_WIDTH   (CVA6Cfg.XLEN),
+        .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
+        .ZERO_REG_ZERO(1)
+    ) i_ariane_regfile_fpga (
+        .test_en_i(1'b0),
+        .raddr_i  (raddr_pack),
+        .rdata_o  (rdata),
+        .waddr_i  (waddr_pack),
+        .wdata_i  (wdata_pack),
+        .we_i     (we_pack),
+        .*
+    );
+  end else begin : gen_asic_regfile
+    ariane_regfile #(
+        .CVA6Cfg      (CVA6Cfg),
+        .DATA_WIDTH   (CVA6Cfg.XLEN),
+        .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
+        .ZERO_REG_ZERO(1)
+    ) i_ariane_regfile (
+        .test_en_i(1'b0),
+        .raddr_i  (raddr_pack),
+        .rdata_o  (rdata),
+        .waddr_i  (waddr_pack),
+        .wdata_i  (wdata_pack),
+        .we_i     (we_pack),
+        .*
+    );
+  end
 
   // -----------------------------
   // Floating-Point Register File
