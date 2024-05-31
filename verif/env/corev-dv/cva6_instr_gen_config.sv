@@ -42,6 +42,10 @@ class cva6_instr_gen_config_c extends riscv_instr_gen_config;
     }
   }
 
+  constraint mtvec_mode_c {
+    mtvec_mode == DIRECT;
+  }
+
     `uvm_object_utils_begin(cva6_instr_gen_config_c)
       `uvm_field_int(enable_x_extension, UVM_DEFAULT)
       `uvm_field_int(enable_rdrs1_hazard, UVM_DEFAULT)
