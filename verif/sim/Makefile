@@ -194,14 +194,11 @@ COMMON_PLUS_ARGS = \
 	+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	+signature=$(elf).signature_output +UVM_TESTNAME=uvmt_cva6_firmware_test_c \
 	$(spike-yaml-plusarg) \
+	+report_file=$(log).yaml +core_name=$(target)
 
 ifneq ($(UVM_VERBOSITY),)
 COMMON_PLUS_ARGS += +UVM_VERBOSITY=$(UVM_VERBOSITY)
 endif
-
-COMMON_RUN_UVM_FLAGS = \
-	 +UVM_TESTNAME=uvmt_cva6_firmware_test_c \
-	+report_file=$(log).yaml +core_name=$(target)
 
 COMMON_RUN_ARGS = \
 	$(COMMON_PLUS_ARGS) $(issrun_opts) \
