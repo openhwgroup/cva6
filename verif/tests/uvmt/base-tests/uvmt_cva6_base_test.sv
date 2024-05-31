@@ -241,25 +241,16 @@ function void uvmt_cva6_base_test_c::build_phase(uvm_phase phase);
    create_env       ();
    create_components();
 
-   `uvm_info("BASE TEST", $sformatf("AXI config version = %s", env_cfg.axi_cfg.version), UVM_LOW)
-
    factory = uvm_factory::get();
 
-   case (env_cfg.axi_cfg.version)
-      UVMA_AXI_VERSION_1P2 : begin
-         factory.set_type_override_by_name("uvma_axi_synchronizer_c", "uvma_axi_ext_synchronizer_c");
-         `uvm_info("BASE TEST", $sformatf("AXI EXT SYNCHRONIZER"), UVM_LOW)
-      end
-      UVMA_AXI_VERSION_1P3 : begin
-         factory.set_type_override_by_name("uvma_axi_synchronizer_c", "uvma_axi_amo_synchronizer_c");
-         `uvm_info("BASE TEST", $sformatf("AXI AMO SYNCHRONIZER"), UVM_LOW)
-      end
-   endcase
+   if(env_cfg.axi_cfg.version == 1) begin
+      factory.set_type_override_by_name("uvma_axi_synchronizer_c", "uvma_axi_amo_synchronizer_c");
+      `uvm_info("BASE TEST", $sformatf("AXI AMO SYNCHRONIZER"), UVM_LOW)
+   end
 
    if(!env_cfg.axi_cfg.preload_mem) begin
       factory.set_type_override_by_name("uvma_axi_fw_preload_seq_c", "uvme_axi_fw_preload_seq_c");
    end
-
 
 endfunction : build_phase
 
