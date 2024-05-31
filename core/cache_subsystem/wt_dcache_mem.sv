@@ -305,25 +305,25 @@ module wt_dcache_mem
 
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_data_banks
     // Data RAM
-      sram_cache #(
-          .USER_WIDTH (CVA6Cfg.DCACHE_SET_ASSOC * CVA6Cfg.DCACHE_USER_WIDTH),
-          .DATA_WIDTH (CVA6Cfg.DCACHE_SET_ASSOC * CVA6Cfg.XLEN),
-          .USER_EN    (CVA6Cfg.DATA_USER_EN),
-          .BYTE_ACCESS(1),
-          .TECHNO_CUT (CVA6Cfg.TechnoCut),
-          .NUM_WORDS  (CVA6Cfg.DCACHE_NUM_WORDS)
-      ) i_data_sram (
-          .clk_i  (clk_i),
-          .rst_ni (rst_ni),
-          .req_i  (bank_req[k]),
-          .we_i   (bank_we[k]),
-          .addr_i (bank_idx[k]),
-          .wuser_i(bank_wuser[k]),
-          .wdata_i(bank_wdata[k]),
-          .be_i   (bank_be[k]),
-          .ruser_o(bank_ruser[k]),
-          .rdata_o(bank_rdata[k])
-      );
+    sram_cache #(
+        .USER_WIDTH (CVA6Cfg.DCACHE_SET_ASSOC * CVA6Cfg.DCACHE_USER_WIDTH),
+        .DATA_WIDTH (CVA6Cfg.DCACHE_SET_ASSOC * CVA6Cfg.XLEN),
+        .USER_EN    (CVA6Cfg.DATA_USER_EN),
+        .BYTE_ACCESS(1),
+        .TECHNO_CUT (CVA6Cfg.TechnoCut),
+        .NUM_WORDS  (CVA6Cfg.DCACHE_NUM_WORDS)
+    ) i_data_sram (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .req_i  (bank_req[k]),
+        .we_i   (bank_we[k]),
+        .addr_i (bank_idx[k]),
+        .wuser_i(bank_wuser[k]),
+        .wdata_i(bank_wdata[k]),
+        .be_i   (bank_be[k]),
+        .ruser_o(bank_ruser[k]),
+        .rdata_o(bank_rdata[k])
+    );
   end
 
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : gen_tag_srams
