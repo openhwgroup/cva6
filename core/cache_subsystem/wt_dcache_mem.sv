@@ -332,24 +332,24 @@ module wt_dcache_mem
     assign rd_vld_bits_o[i] = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH];
 
     // Tag RAM
-      sram_cache #(
-          // tag + valid bit
-          .DATA_WIDTH (CVA6Cfg.DCACHE_TAG_WIDTH + 1),
-          .BYTE_ACCESS(0),
-          .TECHNO_CUT (CVA6Cfg.TechnoCut),
-          .NUM_WORDS  (CVA6Cfg.DCACHE_NUM_WORDS)
-      ) i_tag_sram (
-          .clk_i  (clk_i),
-          .rst_ni (rst_ni),
-          .req_i  (vld_req[i]),
-          .we_i   (vld_we),
-          .addr_i (vld_addr),
-          .wuser_i('0),
-          .wdata_i({vld_wdata[i], wr_cl_tag_i}),
-          .be_i   ('1),
-          .ruser_o(),
-          .rdata_o(vld_tag_rdata[i])
-      );
+    sram_cache #(
+        // tag + valid bit
+        .DATA_WIDTH (CVA6Cfg.DCACHE_TAG_WIDTH + 1),
+        .BYTE_ACCESS(0),
+        .TECHNO_CUT (CVA6Cfg.TechnoCut),
+        .NUM_WORDS  (CVA6Cfg.DCACHE_NUM_WORDS)
+    ) i_tag_sram (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .req_i  (vld_req[i]),
+        .we_i   (vld_we),
+        .addr_i (vld_addr),
+        .wuser_i('0),
+        .wdata_i({vld_wdata[i], wr_cl_tag_i}),
+        .be_i   ('1),
+        .ruser_o(),
+        .rdata_o(vld_tag_rdata[i])
+    );
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
