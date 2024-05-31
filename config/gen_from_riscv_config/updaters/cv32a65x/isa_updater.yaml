@@ -3,16 +3,12 @@
 #   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #   Author: Abdessamii Oukalrazqou
 
-Zicond : True 
+Zicond : False 
 
-m0 :  True
-
-I : True
+Zcb : True
 
 Zcmp : False
 
-RV32I Base Integer Instructions:
- Instructions :
-  Integer_Register_Immediate_Operations:
-    ADDI:
-      Format: addi
+Zbb : False
+
+

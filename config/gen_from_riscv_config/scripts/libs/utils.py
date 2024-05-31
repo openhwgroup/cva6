@@ -102,11 +102,19 @@ class Field:
     """field class"""
 
     def __init__(
-        self, name, bitlegal, bitmask, bitmsb, bitlsb, bitWidth, fieldDesc, fieldaccess
+        self,
+        name,
+        bitlegal,
+        fieldreset,
+        bitmsb,
+        bitlsb,
+        bitWidth,
+        fieldDesc,
+        fieldaccess,
     ):
         self.name = name
         self.bitlegal = bitlegal
-        self.bitmask = bitmask
+        self.fieldreset = fieldreset
         self.bitmsb = bitmsb
         self.bitlsb = bitlsb
         self.bitWidth = bitWidth
@@ -226,7 +234,11 @@ class RstAddressBlock(AddressBlockClass):
         for i, _ in enumerate(regNameList):
             if regRV32List[i] | regRV64List[i]:
                 summary_table.append(
-                    [regAddressList[i], str(regNameList[i]), str(regDescrList[i])]
+                    [
+                        regAddressList[i],
+                        str(regNameList[i]).upper(),
+                        str(regDescrList[i]),
+                    ]
                 )
         r.table(header=["Address", "Register Name", "Description"], data=summary_table)
 
@@ -234,7 +246,7 @@ class RstAddressBlock(AddressBlockClass):
         for reg in registerlist:
             if reg.RV32 | reg.RV64:
                 reg_table = []
-                r.h2(reg.name)
+                r.h2(reg.name.upper())
                 r.newline()
                 r.field("Address", (reg.address))
                 if reg.resetValue:
@@ -252,14 +264,14 @@ class RstAddressBlock(AddressBlockClass):
                         bits = f"[{field.bitmsb}:{field.bitlsb}]"
                     _line = [
                         bits,
-                        field.name,
+                        field.name.upper(),
                         field.bitlegal,
-                        field.bitmask,
+                        field.fieldreset,
                         field.fieldaccess,
                     ]
                     _line.append(field.fieldDesc)
                     reg_table.append(_line)
-                _headers = ["Bits", "Field Name", "Legal Values", "Mask", "Access"]
+                _headers = ["Bits", "Field Name", "Legal Values", "Reset", "Access"]
                 _headers.append("Description")
                 # table of the register
                 r.table(header=_headers, data=reg_table)
@@ -306,31 +318,31 @@ class InstrstBlock(InstructionBlockClass):
         r.table(header=["Subset Name", "Name", "Description"], data=summary_table)
         for reg in self.Instructionlist:
             reg_table = []
-            _headers = [
-                "Name",
-                "Format",
-                "Pseudocode",
-                "Invalid_values",
-                "Exception_raised",
-                "Description",
-                "Op Name",
-            ]
             if len(reg.Name) > 0:
+                _headers = [
+                    "Name",
+                    "Format",
+                    "Pseudocode",
+                    "Invalid_values",
+                    "Exception_raised",
+                    "Description",
+                    "Op Name",
+                ]
                 r.h2(reg.key)
                 r.newline()
-            for fieldIndex in list(range(len(reg.Name))):
-                _line = [
-                    reg.Name[fieldIndex],
-                    reg.Format[fieldIndex],
-                    reg.pseudocode[fieldIndex],
-                    reg.invalid_values[fieldIndex],
-                    reg.exception_raised[fieldIndex],
-                    reg.Description[fieldIndex],
-                ]
-                _line.append(reg.OperationName[fieldIndex])
-                reg_table.append(_line)
+                for fieldIndex in list(range(len(reg.Name))):
+                    _line = [
+                        reg.Name[fieldIndex],
+                        reg.Format[fieldIndex],
+                        reg.pseudocode[fieldIndex],
+                        reg.invalid_values[fieldIndex],
+                        reg.exception_raised[fieldIndex],
+                        reg.Description[fieldIndex],
+                    ]
+                    _line.append(reg.OperationName[fieldIndex])
+                    reg_table.append(_line)
                 # table of the register
-            r.table(header=_headers, data=reg_table)
+                r.table(header=_headers, data=reg_table)
         return r.data
 
 
@@ -465,7 +477,7 @@ class MdAddressBlock(AddressBlockClass):
             rows.extend(
                 [
                     regAddressList[i],
-                    f"[{regNameList[i]}](#{regNameList[i]})",
+                    f"[{regNameList[i].upper()}](#{regNameList[i].upper()})",
                     str(regDescrList[i]),
                 ]
             )
@@ -479,7 +491,7 @@ class MdAddressBlock(AddressBlockClass):
         self.mdFile.new_header(level=3, title="Registers Description")
         for reg in registerlist:
             if reg.RV64 | reg.RV32:
-                headers = ["Bits", "Field Name", "Legal Values", "Mask", "Access"]
+                headers = ["Bits", "Field Name", "Legal Values", "Reset", "Access"]
                 headers.append("Description")
                 self.returnMdRegDesc(
                     reg.name, reg.address, reg.resetValue, reg.desc, reg.access
@@ -491,9 +503,9 @@ class MdAddressBlock(AddressBlockClass):
                     else:
                         bits = f"[{field.bitmsb}:{field.bitlsb}]"
                     reg_table.append(bits)
-                    reg_table.append(field.name)
+                    reg_table.append(field.name.upper())
                     reg_table.append(field.bitlegal)
-                    reg_table.append(field.bitmask)
+                    reg_table.append(field.fieldreset)
                     reg_table.append(field.fieldaccess)
                     reg_table.append(field.fieldDesc)
                 self.mdFile.new_table(
@@ -506,7 +518,7 @@ class MdAddressBlock(AddressBlockClass):
         return self.mdFile.file_data_text
 
     def returnMdRegDesc(self, name, address, resetValue, desc, access):
-        self.mdFile.new_header(level=4, title=name)
+        self.mdFile.new_header(level=4, title=name.upper())
         self.mdFile.new_line("---")
         self.mdFile.new_line("**Address** " + str(address))
         if resetValue:
@@ -553,18 +565,19 @@ class CsrParser:
                     )
                     bitmsb = int(registerElem.get("rv32", "")[item].get("msb", ""))
                     bitlsb = int(registerElem.get("rv32", "")[item].get("lsb", ""))
-                    fieldaccess = (
-                        registerElem.get("rv32", "")[item]
-                        .get("shadow_type", "")
-                        .upper()
+                    fieldreset = hex(
+                        int(resetValue, 16) >> (bitlsb) & ((1 << ((bitWidth))) - 1)
                     )
+                    fieldaccess = ""
                     legal = registerElem.get("rv32", "")[item].get("type", None)
                     if legal is None:
-                        bitlegal = ""
-                        bitmask = ""
+                        bitlegal = "WPRI"
+                        fieldaccess = "WARL"
+                        fieldDesc = fieldDesc + "//not implemented"
                     else:
                         warl = re.findall(pattern_warl, str(legal.keys()))
                         if warl:
+                            fieldaccess = warl[0].upper()
                             legal_2 = (
                                 registerElem.get("rv32", "")[item]
                                 .get("type", None)
@@ -579,22 +592,19 @@ class CsrParser:
                                         pattern, str(legal_2["legal"][0])
                                     )
                                     if matches:
-                                        legal_value = matches.group(3)
-                                        mask = matches.group(4)
-                                        bitmask = mask
+                                        legal_value = matches.group(2)
                                         bitlegal = legal_value
                                 elif isinstance(legal_2, list):
                                     pattern = r"\s*((?:0x)?[0-9A-Fa-f]+)\s*(.)\s*((?:0x)?[0-9A-Fa-f]+)\s*"
                                     matches = re.search(pattern, legal_2[0])
                                     if matches:
-                                        legal_value = matches.group(1)
-                                        mask = matches.group(3)
-                                        bitmask = mask
+                                        legal_value = (
+                                            f"[{matches.group(1)} , {matches.group(3)}]"
+                                        )
+
                                         bitlegal = legal_value
                                 else:
-                                    mask = 0
                                     legal_value = hex(legal_2)
-                                    bitmask = mask
                                     bitlegal = legal_value
                     pattern = r"((\D+)\d+(.*))-\d+"
                     match = re.match(pattern, regName)
@@ -613,16 +623,18 @@ class CsrParser:
                         fieldName = f"Reserved_{item_[0]}"
                         bitlsb = item_[0]
                         bitmsb = item_[len(item_) - 1]
-                        legal = ""
-                        fieldaccess = "Reserved"
+                        legal = "WPRI"
+                        fieldaccess = "WPRI"
                         bitWidth = int(item_[len(item_) - 1]) - int(item_[0]) + 1
-                        fieldDesc = "Reserved"
+                        fieldDesc = "RESERVED"
                         bitlegal = legal
-                        bitmask = ""
+                        fieldreset = hex(
+                            int(resetValue, 16) >> (bitlsb) & ((1 << ((bitWidth))) - 1)
+                        )
                 f = Field(
                     fieldName,
                     bitlegal,
-                    bitmask,
+                    fieldreset,
                     bitmsb,
                     bitlsb,
                     bitWidth,
@@ -653,12 +665,15 @@ class CsrParser:
             bitmsb = registerElem.get("rv32", None).get("msb", None)
             bitlsb = registerElem.get("rv32", None).get("lsb", None)
             legal = registerElem.get("rv32", "").get("type", None)
+            fieldaccess = ""
             if legal is None:
                 bitlegal = ""
                 bitmask = ""
+                fieldaccess = "RO"
             else:
                 warl = re.findall(pattern_warl, str(legal.keys()))
                 if warl:
+                    fieldaccess = warl[0].upper()
                     legal_2 = (
                         registerElem.get("rv32", "")
                         .get("type", None)
@@ -671,7 +686,9 @@ class CsrParser:
                             pattern = r"([\w\[\]:]+\s*\w+\s*)(\[\s*((?:0x)?[0-9A-Fa-f]+)\s*\D+\s*(?:((?:0x)?[0-9A-Fa-f]+))?\s*])"
                             matches = re.search(pattern, str(legal_2["legal"][0]))
                             if matches:
-                                legal_value = matches.group(3)
+                                legal_value = (
+                                    f"[{matches.group(3)} , {matches.group(4)}]"
+                                )
                                 mask = matches.group(4)
                                 bitmask = mask
                                 bitlegal = legal_value
@@ -679,15 +696,17 @@ class CsrParser:
                             pattern = r"([0-9A-Fa-f]+).*([0-9A-Fa-f]+)"
                             matches = re.search(pattern, legal_2[0])
                             if matches:
-                                legal_value = matches.group(1)
+                                legal_value = (
+                                    f"[{matches.group(1)} , {matches.group(2)}]"
+                                )
                                 mask = matches.group(2)
                                 bitmask = mask
-                                bitlegal = hex(legal_value)
+                                bitlegal = legal_value
                         else:
                             bitmask = 0
-                            bitlegal = hex(legal_2)
-            fieldaccess = registerElem.get("rv32", "").get("shadow_type", "").upper()
+                            bitlegal = "0x" + hex(legal_2)[2:].zfill(int(size / 4))
             fieldDesc = regDesc
+            fieldreset = "0x" + hex(int(resetValue, 16))[2:].zfill(int(size / 4))
             if bitlsb is None:
                 bitlsb = 0
             if bitmsb is None:
@@ -698,7 +717,7 @@ class CsrParser:
             f = Field(
                 fieldName,
                 bitlegal,
-                bitmask,
+                fieldreset,
                 bitmsb,
                 bitlsb,
                 bitWidth,

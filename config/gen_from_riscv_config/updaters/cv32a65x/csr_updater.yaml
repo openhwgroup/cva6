@@ -5,14 +5,24 @@
 
 
 misa:
-    reset-val: 123475      
-mcycle: 
-      reset-val: 123475 
-mvendorid:
-    description: '' 
-misa:
-    rv32:
-        mxl:
-            shadow_type: ''
-pmp : 
-    reset-val: 123475
+    reset-val: 0x40001106      
+
+mcountinhibit: 
+    rv32 : 
+        accessible : false
+pmpaddr0:
+    reset-val: 0x0       
+#  Range control
+pmpaddr : 
+    range: 8
+pmpcfg :
+    range : 2
+    
+exclude :         
+    key : priv_mode       
+    cond : S
+exclude :         
+    key : priv_mode       
+    cond : U
+    
+

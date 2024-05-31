@@ -14,6 +14,7 @@
 #
 # Original Author: Oukalrazqou Abdessamii
 """ Module is used to update csr based on yaml file called  csr updater"""
+import re
 import yaml
 
 
@@ -28,7 +29,6 @@ def csr_recursive_update(original_dict, csr_update):
     """
     for key, value in csr_update.items():
         if key in original_dict.keys():
-            print(key)
             if isinstance(value, dict):
                 csr_recursive_update(original_dict[key], value)
             elif isinstance(value, bool):
@@ -85,7 +85,7 @@ def csr_formatter(srcfile, modifile):
                     else:
                         if v.get(exclude_key) == cond:
                             keys_to_remove.append(k)
-                remove_keys_recursive(v)
+                    remove_keys_recursive(v)
             for k in keys_to_remove:
                 dictionary.pop(k)
 

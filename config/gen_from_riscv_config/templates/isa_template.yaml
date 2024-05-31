@@ -18,7 +18,7 @@ RV32Zcb Code Size Reduction Instructions:
         zeros into all of the bits more significant than 7.
       Pseudocode: x[8 + rd'] = zext(x[8 + rd'][7:0])
       Invalid_Values: NONE
-      Exception raised: NONE
+      Exception_Raised: NONE
      C.SEXT.B:
       Format: c.sext.b rd'
       Description: >
@@ -29,7 +29,7 @@ RV32Zcb Code Size Reduction Instructions:
         support.
       Pseudocode: x[8 + rd'] = sext(x[8 + rd'][7:0])
       Invalid_Values: NONE
-      Exception raised: NONE
+      Exception_Raised: NONE
      C.ZEXT.H:
       Format: c.zext.h rd'
       Description: > 
@@ -39,7 +39,7 @@ RV32Zcb Code Size Reduction Instructions:
         Bit-Manipulation (Zbb) extension support.
       Pseudocode: x[8 + rd'] = zext(x[8 + rd'][15:0])
       Invalid_Values: NONE
-      Exception raised: NONE
+      Exception_Raised: NONE
      C.SEXT.H:
       Format: c.sext.h rd'
       Description: >
@@ -50,7 +50,7 @@ RV32Zcb Code Size Reduction Instructions:
         support.
       Pseudocode: x[8 + rd'] = sext(x[8 + rd'][15:0])
       Invalid_Values: NONE
-      Exception raised: NONE
+      Exception_Raised: NONE
      C.NOT:
       Format: c.not rd'
       Description: >
@@ -58,7 +58,7 @@ RV32Zcb Code Size Reduction Instructions:
         the result to the same register.
       Pseudocode: x[8 + rd'] = x[8 + rd'] ^ -1
       Invalid_Values: NONE
-      Exception raised: NONE
+      Exception_Raised: NONE
      C.MUL:
       Format: c.mul rd', rs2'
       Description: >
@@ -67,7 +67,7 @@ RV32Zcb Code Size Reduction Instructions:
         numbers). It also requires M extension support.
       Pseudocode: x[8 + rd'] = (x[8 + rd'] * x[8 + rs2'])[31:0]
       Invalid_Values: NONE
-      Exception raised: NONE
+      Exception_Raised: NONE
      C.LHU:
       Format: c.lhu rd', uimm(rs1')
       Description: >
@@ -76,7 +76,7 @@ RV32Zcb Code Size Reduction Instructions:
         is zero extended and is written to rd'.
       Pseudocode: x[8+rd'] = zext(M[x[8+rs1'] + zext(uimm[1])][15:0])
       Invalid_Values: NONE
-      Exception raised: an exception raised if the memory address isn't aligned
+      Exception_Raised: an exception raised if the memory address isn't aligned
         (2-byte boundary).
      C.LH:
       Format: c.lh rd', uimm(rs1')
@@ -86,7 +86,7 @@ RV32Zcb Code Size Reduction Instructions:
         is sign extended and is written to rd'.
       Pseudocode: x[8+rd'] = sext(M[x[8+rs1'] + zext(uimm[1])][15:0])
       Invalid_Values: NONE
-      Exception raised: an exception raised if the memory address isn't aligned
+      Exception_Raised: an exception raised if the memory address isn't aligned
         (2-byte boundary).
      C.LBU:
       Format: c.lbu rd', uimm(rs1')
@@ -96,7 +96,7 @@ RV32Zcb Code Size Reduction Instructions:
         zero extended and is written to rd'.
       Pseudocode: x[8+rd'] = zext(M[x[8+rs1'] + zext(uimm[1:0])][7:0])
       Invalid_Values: NONE
-      Exception raised: NONE
+      Exception_Raised: NONE
      C.SH:
       Format: c.sh rs2', uimm(rs1')
       Description: >
@@ -105,7 +105,7 @@ RV32Zcb Code Size Reduction Instructions:
         uimm.
       Pseudocode: M[x[8+rs1'] + zext(uimm[1])][15:0] = x[8+rs2']
       Invalid_Values: NONE
-      Exception raised: an exception raised if the memory address isn't aligned
+      Exception_Raised: an exception raised if the memory address isn't aligned
         (2-byte boundary).
      C.SB:
       Format: c.sb rs2', uimm(rs1')
@@ -115,7 +115,7 @@ RV32Zcb Code Size Reduction Instructions:
         uimm.
       Pseudocode: M[x[8+rs1'] + zext(uimm[1:0])][7:0] = x[8+rs2']
       Invalid_Values: NONE
-      Exception raised: NONE
+      Exception_Raised: NONE
 RV32A Atomic Instructions:
   Description: >
     The standard atomic instruction extension is denoted by instruction
@@ -908,7 +908,11 @@ RVZbs Single bit Instructions:
       Invalid_Values: NONE
       Exception_Raised: NONE
 RVZbc Carry-less multiplication:
-  Subset_Name: Zicb
+  Description : | 
+    Carry-less multiplication is the multiplication in the polynomial ring over GF(2).
+    clmul produces the lower half of the carry-less product and clmulh produces the upper half of the 2✕XLEN carry-less product.
+    clmulr produces bits 2✕XLEN−2:XLEN-1 of the 2✕XLEN carry-less product.
+  Subset_Name: Zbc
   Instructions:
     Carry-less multiplication Operations:
       CLMUL:
@@ -1264,3 +1268,166 @@ RV32I Base Integer Instructions:
       Pseudocode: x[8 + rd'] = sext(x[8 + rd'][7:0])
       Invalid_Values: NONE
       Exception_Raised: NONE
+RVZbb Basic bit-manipulation:
+ Description : |
+    The bit-manipulation (bitmanip) extension collection is comprised of several component extensions to the base RISC-V architecture that are intended to provide some combination of code size reduction, performance improvement, and energy reduction. 
+    While the instructions are intended to have general use, some instructions are more useful in some domains than others. Hence, several smaller bitmanip extensions are provided. Each of these smaller extensions is grouped by common function and use case, and each has its own Zb*-extension name.
+ Subset_Name : Zbb 
+ Instructions :  
+  Logical_with_negate:
+    ANDN:
+        Format: andn rd, rs1, rs2
+        Description: Performs bitwise AND operation between rs1 and bitwise inversion of rs2.
+        Pseudocode: X(rd) = X(rs1) & ~X(rs2)
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    ORN:
+        Format: orn rd, rs1, rs2
+        Description: Performs bitwise OR operation between rs1 and bitwise inversion of rs2.
+        Pseudocode: X(rd) = X(rs1) | ~X(rs2)
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    XNOR: 
+        Format: xnor rd, rs1, rs2
+        Description: Performs bitwise XOR operation between rs1 and rs2, then complements the result.
+        Pseudocode: X(rd) = ~(X(rs1) ^ X(rs2))
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+  Count_leading_trailing_zero_bits:
+    CLZ :
+        Format: clz rd, rs
+        Description: Counts leading zero bits in rs.
+        Pseudocode: if [x[i]] == 1 then return(i) else return -1
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    CTZ :
+        Format: ctz rd, rs
+        Description: Counts trailing zero bits in rs.
+        Pseudocode: if [x[i]] == 1 then return(i) else return xlen;
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    CLZW: 
+        Format: clzw rd, rs
+        Description: Counts leading zero bits in the least-significant word of rs.
+        Pseudocode: if [x[i]] == 1 then return(i) else return -1
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    CTZW: 
+        Format: ctzw rd, rs
+        Description: Counts trailing zero bits in the least-significant word of rs.
+        Pseudocode: if [x[i]] == 1 then return(i) else return 32;
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+
+  Count_population:
+    CPOP:
+        Format: cpop rd, rs
+        Description: Counts set bits in rs.
+        Pseudocode: if rs[i] == 1 then bitcount = bitcount + 1 else ()
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    CPOPW:
+        Format: cpopw rd, rs
+        Description: Counts set bits in the least-significant word of rs.
+        Pseudocode: if rs[i] == 0b1 then bitcount = bitcount + 1 else ()
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+  Integer_minimum_maximum:
+    MAX:
+        Format: max rd, rs1, rs2
+        Description: Returns the larger of two signed integers.
+        Pseudocode: if rs1_val <_s rs2_val then rs2_val else rs1_val
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    MAXU:
+        Format: maxu rd, rs1, rs2
+        Description: Returns the larger of two unsigned integers.
+        Pseudocode: if rs1_val <_u rs2_val then rs2_val else rs1_val
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    MIN:
+        Format: min rd, rs1, rs2
+        Description: Returns the smaller of two signed integers.
+        Pseudocode: if rs1_val <_s rs2_val then rs1_val else rs2_val
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    MINU:
+        Format: minu rd, rs1, rs2
+        Description: Returns the smaller of two unsigned integers.
+        Pseudocode: if rs1_val <_u rs2_val then rs1_val else rs2_val
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+  Sign_and_zero_extension:
+    SEXT.B:
+        Format: sext.b rd, rs
+        Description: Sign-extends the least-significant byte in the source to XLEN.
+        Pseudocode: X(rd) = EXTS(X(rs)[7..0])
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    SEXT.H:
+        Format: sext.h rd, rs
+        Description: Sign-extends the least-significant halfword in rs to XLEN.
+        Pseudocode: X(rd) = EXTS(X(rs)[15..0])
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    ZEXT.H:
+        Format: zext.h rd, rs
+        Description: Zero-extends the least-significant halfword of the source to XLEN.
+        Pseudocode: X(rd) = EXTZ(X(rs)[15..0])
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+  Bitwise_rotation:
+    ROL:
+        Format: rol rd, rs1, rs2
+        Description: Performs a rotate left of rs1 by the amount in least-significant log2(XLEN) bits of rs2.
+        Pseudocode: (X(rs1) << log2(XLEN)) | (X(rs1) >> (xlen - log2(XLEN)))
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    ROR:
+        Format: ror rd, rs1, rs2
+        Description: Performs a rotate right of rs1 by the amount in least-significant log2(XLEN) bits of rs2.
+        Pseudocode: (X(rs1) >> log2(XLEN)) | (X(rs1) << (xlen - log2(XLEN)))
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    RORI:
+        Format: rori rd, rs1, shamt
+        Description: Performs a rotate right of rs1 by the amount in least-significant log2(XLEN) bits of shamt.
+        Pseudocode: (X(rs1) >> log2(XLEN)) | (X(rs1) << (xlen - log2(XLEN)))
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+        
+    ROLW:
+        Format: rolw rd, rs1, rs2
+        Description: Performs a rotate left on the least-significant word of rs1 by the amount in least-significant 5 bits of rs2.
+        Pseudocode: EXTS((rs1 << X(rs2)[4..0]) | (rs1 >> (32 - X(rs2)[4..0])))
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    RORIW:
+        Format: roriw rd, rs1, shamt
+        Description: Performs a rotate right on the least-significant word of rs1 by the amount in least-significant log2(XLEN) bits of shamt.
+        Pseudocode: (rs1_data >> shamt[4..0]) | (rs1_data << (32 - shamt[4..0]))
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+    RORW:
+        Format: rorw rd, rs1, rs2
+        Description: Performs a rotate right on the least-significant word of rs1 by the amount in least-significant 5 bits of rs2.
+        Pseudocode: (rs1 >> X(rs2)[4..0]) | (rs1 << (32 - X(rs2)[4..0]))
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+
+  OR_Combine:
+    ORC.b:
+        Format: orc.b rd, rs
+        Description: Sets the bits of each byte in rd to all zeros if no bit within the respective byte of rs is set, or to all ones if any bit within the respective byte of rs is set.
+        Pseudocode: if { input[(i + 7)..i] == 0 then 0b00000000 else 0b11111111
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+
+  Byte_reverse:
+    REV8:
+        Format: rev8 rd, rs
+        Description: Reverses the order of the bytes in rs.
+        Pseudocode: output[i..(i + 7)] = input[(j - 7)..j]
+        Invalid_Values: NONE
+        Exception_Raised: NONE
+
