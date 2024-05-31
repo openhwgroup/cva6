@@ -68,30 +68,30 @@ module dcache
 
     //  Hardware memory prefetcher configuration
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic [NrHwPrefetchers-1:0]       hwpf_base_set_i,
+    input  logic              [NrHwPrefetchers-1:0]       hwpf_base_set_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic [NrHwPrefetchers-1:0][63:0] hwpf_base_i,
+    input  logic              [NrHwPrefetchers-1:0][63:0] hwpf_base_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic [NrHwPrefetchers-1:0][63:0] hwpf_base_o,
+    output logic              [NrHwPrefetchers-1:0][63:0] hwpf_base_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic [NrHwPrefetchers-1:0]       hwpf_param_set_i,
+    input  logic              [NrHwPrefetchers-1:0]       hwpf_param_set_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic [NrHwPrefetchers-1:0][63:0] hwpf_param_i,
+    input  logic              [NrHwPrefetchers-1:0][63:0] hwpf_param_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic [NrHwPrefetchers-1:0][63:0] hwpf_param_o,
+    output logic              [NrHwPrefetchers-1:0][63:0] hwpf_param_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic [NrHwPrefetchers-1:0]       hwpf_throttle_set_i,
+    input  logic              [NrHwPrefetchers-1:0]       hwpf_throttle_set_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_i,
+    input  logic              [NrHwPrefetchers-1:0][63:0] hwpf_throttle_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_o,
+    output logic              [NrHwPrefetchers-1:0][63:0] hwpf_throttle_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic [               63:0]       hwpf_status_o,
+    output logic              [               63:0]       hwpf_status_o,
     //  }}}
     // 追加
-    input logic dcache_miss_ready_i,
-    output logic dcache_miss_valid_o,
-    output hpdcache_mem_req_t dcache_miss_lo,
+    input  logic                                          dcache_miss_ready_i,
+    output logic                                          dcache_miss_valid_o,
+    output hpdcache_mem_req_t                             dcache_miss_lo,
 
     output logic dcache_miss_resp_ready_o,
     input logic dcache_miss_resp_valid_i,
@@ -109,7 +109,7 @@ module dcache
     input logic dcache_wbuf_resp_valid_i,
     input hpdcache_mem_resp_w_t dcache_wbuf_resp_i,
 
-    input logic  dcache_uc_read_ready_i,
+    input logic dcache_uc_read_ready_i,
     output logic dcache_uc_read_valid_o,
     output hpdcache_mem_req_t dcache_uc_read_o,
 
