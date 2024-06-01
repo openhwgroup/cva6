@@ -12,6 +12,77 @@
 //              instruction cache and the Core-V High-Performance L1
 //              data cache (CV-HPDcache).
 
+`include "hpdcache_typedef.svh"
+
+// localparam config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty;
+localparam config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(
+    cva6_config_pkg::cva6_cfg
+);
+
+localparam NumPorts = 4;
+localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
+
+function int unsigned __minu(int unsigned x, int unsigned y);
+  return x < y ? x : y;
+endfunction
+
+function int unsigned __maxu(int unsigned x, int unsigned y);
+  return y < x ? x : y;
+endfunction
+
+localparam hpdcache_pkg::hpdcache_user_cfg_t hpdcacheUserCfg = '{
+    nRequesters: HPDCACHE_NREQUESTERS,
+    paWidth: CVA6Cfg.PLEN,
+    wordWidth: CVA6Cfg.XLEN,
+    sets: CVA6Cfg.DCACHE_NUM_WORDS,
+    ways: CVA6Cfg.DCACHE_SET_ASSOC,
+    clWords: CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN,
+    reqWords: 1,
+    reqTransIdWidth: CVA6Cfg.DcacheIdWidth,
+    reqSrcIdWidth: 3,  // Up to 8 requesters
+    victimSel: hpdcache_pkg::HPDCACHE_VICTIM_RANDOM,
+    dataWaysPerRamWord: __minu(CVA6Cfg.DCACHE_SET_ASSOC, 128 / CVA6Cfg.XLEN),
+    dataSetsPerRam: CVA6Cfg.DCACHE_NUM_WORDS,
+    dataRamByteEnable: 1'b1,
+    accessWords: __maxu(CVA6Cfg.DCACHE_LINE_WIDTH / (2 * CVA6Cfg.XLEN), 1),
+    mshrSets: CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2,
+    mshrWays: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
+    mshrWaysPerRamWord: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
+    mshrSetsPerRam: CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2,
+    mshrRamByteEnable: 1'b1,
+    mshrUseRegbank: (CVA6Cfg.NrLoadBufEntries < 16),
+    refillCoreRspFeedthrough: 1'b1,
+    refillFifoDepth: 2,
+    wbufDirEntries: CVA6Cfg.WtDcacheWbufDepth,
+    wbufDataEntries: CVA6Cfg.WtDcacheWbufDepth,
+    wbufWords: 1,
+    wbufTimecntWidth: 3,
+    wbufSendFeedThrough: 1'b0,
+    rtabEntries: 4,
+    memAddrWidth: CVA6Cfg.AxiAddrWidth,
+    memIdWidth: CVA6Cfg.MEM_TID_WIDTH,
+    memDataWidth: CVA6Cfg.AxiDataWidth
+};
+
+localparam hpdcache_pkg::hpdcache_cfg_t hpdcacheCfg = hpdcache_pkg::hpdcacheBuildConfig(
+    hpdcacheUserCfg
+);
+
+`HPDCACHE_TYPEDEF_MEM_ATTR_T(hpdcache_mem_addr_t, hpdcache_mem_id_t, hpdcache_mem_data_t,
+                             hpdcache_mem_be_t, hpdcacheCfg);
+`HPDCACHE_TYPEDEF_MEM_REQ_T(hpdcache_mem_req_t, hpdcache_mem_addr_t, hpdcache_mem_id_t);
+`HPDCACHE_TYPEDEF_MEM_RESP_R_T(hpdcache_mem_resp_r_t, hpdcache_mem_id_t, hpdcache_mem_data_t);
+`HPDCACHE_TYPEDEF_MEM_REQ_W_T(hpdcache_mem_req_w_t, hpdcache_mem_data_t, hpdcache_mem_be_t);
+`HPDCACHE_TYPEDEF_MEM_RESP_W_T(hpdcache_mem_resp_w_t, hpdcache_mem_id_t);
+
+`HPDCACHE_TYPEDEF_REQ_ATTR_T(hpdcache_req_offset_t, hpdcache_data_word_t, hpdcache_data_be_t,
+                             hpdcache_req_data_t, hpdcache_req_be_t, hpdcache_req_sid_t,
+                             hpdcache_req_tid_t, hpdcache_tag_t, hpdcacheCfg);
+`HPDCACHE_TYPEDEF_REQ_T(hpdcache_req_t, hpdcache_req_offset_t, hpdcache_req_data_t,
+                        hpdcache_req_be_t, hpdcache_req_sid_t, hpdcache_req_tid_t, hpdcache_tag_t);
+`HPDCACHE_TYPEDEF_RSP_T(hpdcache_rsp_t, hpdcache_req_data_t, hpdcache_req_sid_t,
+                        hpdcache_req_tid_t);
+
 
 module dcache
 //  Parameters
@@ -20,11 +91,15 @@ module dcache
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
-    parameter int NumPorts = 4,
+    // parameter int NumPorts = 4,
     parameter int NrHwPrefetchers = 4,
 
     parameter type cmo_req_t = logic,
     parameter type cmo_rsp_t = logic
+    //     parameter type hpdcache_mem_req_t = logic,
+    //     parameter type hpdcache_mem_req_w_t = logic,
+    //     parameter type hpdcache_mem_resp_r_t = logic,
+    //     parameter type hpdcache_mem_resp_w_t = logic
 )
 //  }}}
 
@@ -131,17 +206,17 @@ module dcache
 );
   //  }}}
 
-  function int unsigned __minu(int unsigned x, int unsigned y);
-    return x < y ? x : y;
-  endfunction
+  //   function int unsigned __minu(int unsigned x, int unsigned y);
+  //     return x < y ? x : y;
+  //   endfunction
 
-  function int unsigned __maxu(int unsigned x, int unsigned y);
-    return y < x ? x : y;
-  endfunction
+  //   function int unsigned __maxu(int unsigned x, int unsigned y);
+  //     return y < x ? x : y;
+  //   endfunction
 
   //  D$ instantiation
   //  {{{
-  `include "hpdcache_typedef.svh"
+  //   `include "hpdcache_typedef.svh"
   //    0: Page-Table Walk (PTW)
   //    1: Load unit
   //    2: Accelerator load
@@ -151,61 +226,61 @@ module dcache
   //    .
   //    NumPorts: CMO
   //    NumPorts + 1: Hardware Memory Prefetcher (hwpf)
-  localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
+  //   localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
 
-  localparam hpdcache_pkg::hpdcache_user_cfg_t hpdcacheUserCfg = '{
-      nRequesters: HPDCACHE_NREQUESTERS,
-      paWidth: CVA6Cfg.PLEN,
-      wordWidth: CVA6Cfg.XLEN,
-      sets: CVA6Cfg.DCACHE_NUM_WORDS,
-      ways: CVA6Cfg.DCACHE_SET_ASSOC,
-      clWords: CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN,
-      reqWords: 1,
-      reqTransIdWidth: CVA6Cfg.DcacheIdWidth,
-      reqSrcIdWidth: 3,  // Up to 8 requesters
-      victimSel: hpdcache_pkg::HPDCACHE_VICTIM_RANDOM,
-      dataWaysPerRamWord: __minu(CVA6Cfg.DCACHE_SET_ASSOC, 128 / CVA6Cfg.XLEN),
-      dataSetsPerRam: CVA6Cfg.DCACHE_NUM_WORDS,
-      dataRamByteEnable: 1'b1,
-      accessWords: __maxu(CVA6Cfg.DCACHE_LINE_WIDTH / (2 * CVA6Cfg.XLEN), 1),
-      mshrSets: CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2,
-      mshrWays: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
-      mshrWaysPerRamWord: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
-      mshrSetsPerRam: CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2,
-      mshrRamByteEnable: 1'b1,
-      mshrUseRegbank: (CVA6Cfg.NrLoadBufEntries < 16),
-      refillCoreRspFeedthrough: 1'b1,
-      refillFifoDepth: 2,
-      wbufDirEntries: CVA6Cfg.WtDcacheWbufDepth,
-      wbufDataEntries: CVA6Cfg.WtDcacheWbufDepth,
-      wbufWords: 1,
-      wbufTimecntWidth: 3,
-      wbufSendFeedThrough: 1'b0,
-      rtabEntries: 4,
-      memAddrWidth: CVA6Cfg.AxiAddrWidth,
-      memIdWidth: CVA6Cfg.MEM_TID_WIDTH,
-      memDataWidth: CVA6Cfg.AxiDataWidth
-  };
+  //   localparam hpdcache_pkg::hpdcache_user_cfg_t hpdcacheUserCfg = '{
+  //       nRequesters: HPDCACHE_NREQUESTERS,
+  //       paWidth: CVA6Cfg.PLEN,
+  //       wordWidth: CVA6Cfg.XLEN,
+  //       sets: CVA6Cfg.DCACHE_NUM_WORDS,
+  //       ways: CVA6Cfg.DCACHE_SET_ASSOC,
+  //       clWords: CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN,
+  //       reqWords: 1,
+  //       reqTransIdWidth: CVA6Cfg.DcacheIdWidth,
+  //       reqSrcIdWidth: 3,  // Up to 8 requesters
+  //       victimSel: hpdcache_pkg::HPDCACHE_VICTIM_RANDOM,
+  //       dataWaysPerRamWord: __minu(CVA6Cfg.DCACHE_SET_ASSOC, 128 / CVA6Cfg.XLEN),
+  //       dataSetsPerRam: CVA6Cfg.DCACHE_NUM_WORDS,
+  //       dataRamByteEnable: 1'b1,
+  //       accessWords: __maxu(CVA6Cfg.DCACHE_LINE_WIDTH / (2 * CVA6Cfg.XLEN), 1),
+  //       mshrSets: CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2,
+  //       mshrWays: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
+  //       mshrWaysPerRamWord: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
+  //       mshrSetsPerRam: CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2,
+  //       mshrRamByteEnable: 1'b1,
+  //       mshrUseRegbank: (CVA6Cfg.NrLoadBufEntries < 16),
+  //       refillCoreRspFeedthrough: 1'b1,
+  //       refillFifoDepth: 2,
+  //       wbufDirEntries: CVA6Cfg.WtDcacheWbufDepth,
+  //       wbufDataEntries: CVA6Cfg.WtDcacheWbufDepth,
+  //       wbufWords: 1,
+  //       wbufTimecntWidth: 3,
+  //       wbufSendFeedThrough: 1'b0,
+  //       rtabEntries: 4,
+  //       memAddrWidth: CVA6Cfg.AxiAddrWidth,
+  //       memIdWidth: CVA6Cfg.MEM_TID_WIDTH,
+  //       memDataWidth: CVA6Cfg.AxiDataWidth
+  //   };
 
-  localparam hpdcache_pkg::hpdcache_cfg_t hpdcacheCfg = hpdcache_pkg::hpdcacheBuildConfig(
-      hpdcacheUserCfg
-  );
+  //   localparam hpdcache_pkg::hpdcache_cfg_t hpdcacheCfg = hpdcache_pkg::hpdcacheBuildConfig(
+  //       hpdcacheUserCfg
+  //   );
 
-  `HPDCACHE_TYPEDEF_MEM_ATTR_T(hpdcache_mem_addr_t, hpdcache_mem_id_t, hpdcache_mem_data_t,
-                               hpdcache_mem_be_t, hpdcacheCfg);
-  `HPDCACHE_TYPEDEF_MEM_REQ_T(hpdcache_mem_req_t, hpdcache_mem_addr_t, hpdcache_mem_id_t);
-  `HPDCACHE_TYPEDEF_MEM_RESP_R_T(hpdcache_mem_resp_r_t, hpdcache_mem_id_t, hpdcache_mem_data_t);
-  `HPDCACHE_TYPEDEF_MEM_REQ_W_T(hpdcache_mem_req_w_t, hpdcache_mem_data_t, hpdcache_mem_be_t);
-  `HPDCACHE_TYPEDEF_MEM_RESP_W_T(hpdcache_mem_resp_w_t, hpdcache_mem_id_t);
+  //   `HPDCACHE_TYPEDEF_MEM_ATTR_T(hpdcache_mem_addr_t, hpdcache_mem_id_t, hpdcache_mem_data_t,
+  //                                hpdcache_mem_be_t, hpdcacheCfg);
+  //   `HPDCACHE_TYPEDEF_MEM_REQ_T(hpdcache_mem_req_t, hpdcache_mem_addr_t, hpdcache_mem_id_t);
+  //   `HPDCACHE_TYPEDEF_MEM_RESP_R_T(hpdcache_mem_resp_r_t, hpdcache_mem_id_t, hpdcache_mem_data_t);
+  //   `HPDCACHE_TYPEDEF_MEM_REQ_W_T(hpdcache_mem_req_w_t, hpdcache_mem_data_t, hpdcache_mem_be_t);
+  //   `HPDCACHE_TYPEDEF_MEM_RESP_W_T(hpdcache_mem_resp_w_t, hpdcache_mem_id_t);
 
-  `HPDCACHE_TYPEDEF_REQ_ATTR_T(hpdcache_req_offset_t, hpdcache_data_word_t, hpdcache_data_be_t,
-                               hpdcache_req_data_t, hpdcache_req_be_t, hpdcache_req_sid_t,
-                               hpdcache_req_tid_t, hpdcache_tag_t, hpdcacheCfg);
-  `HPDCACHE_TYPEDEF_REQ_T(hpdcache_req_t, hpdcache_req_offset_t, hpdcache_req_data_t,
-                          hpdcache_req_be_t, hpdcache_req_sid_t, hpdcache_req_tid_t,
-                          hpdcache_tag_t);
-  `HPDCACHE_TYPEDEF_RSP_T(hpdcache_rsp_t, hpdcache_req_data_t, hpdcache_req_sid_t,
-                          hpdcache_req_tid_t);
+  //   `HPDCACHE_TYPEDEF_REQ_ATTR_T(hpdcache_req_offset_t, hpdcache_data_word_t, hpdcache_data_be_t,
+  //                                hpdcache_req_data_t, hpdcache_req_be_t, hpdcache_req_sid_t,
+  //                                hpdcache_req_tid_t, hpdcache_tag_t, hpdcacheCfg);
+  //   `HPDCACHE_TYPEDEF_REQ_T(hpdcache_req_t, hpdcache_req_offset_t, hpdcache_req_data_t,
+  //                           hpdcache_req_be_t, hpdcache_req_sid_t, hpdcache_req_tid_t,
+  //                           hpdcache_tag_t);
+  //   `HPDCACHE_TYPEDEF_RSP_T(hpdcache_rsp_t, hpdcache_req_data_t, hpdcache_req_sid_t,
+  //                           hpdcache_req_tid_t);
 
   typedef logic [hpdcacheCfg.u.wbufTimecntWidth-1:0] hpdcache_wbuf_timecnt_t;
 

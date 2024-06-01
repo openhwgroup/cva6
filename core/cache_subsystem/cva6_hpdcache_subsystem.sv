@@ -312,7 +312,7 @@ module cva6_hpdcache_subsystem
       .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
-      .NumPorts(NumPorts),
+      // .NumPorts(NumPorts),
       .NrHwPrefetchers(NrHwPrefetchers),
       .cmo_req_t(cmo_req_t),
       .cmo_rsp_t(cmo_rsp_t)
