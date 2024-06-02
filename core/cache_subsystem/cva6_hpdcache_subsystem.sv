@@ -308,7 +308,7 @@ module cva6_hpdcache_subsystem
   hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_in;
   hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
 
-  dcache #(
+  hpdcache_with_adapter #(
       .CVA6Cfg(CVA6Cfg),
       .hpdcacheCfg(hpdcacheCfg),
       .dcache_req_i_t(dcache_req_i_t),
@@ -361,8 +361,7 @@ module cva6_hpdcache_subsystem
       .hwpf_throttle_i(hwpf_throttle_i),
       .hwpf_throttle_o(hwpf_throttle_o),
       .hwpf_status_o(hwpf_status_o),
-      //  }}}
-      // 追加
+
       .dcache_miss_ready_i(dcache_miss_ready),
       .dcache_miss_valid_o(dcache_miss_valid),
       .dcache_miss_lo(dcache_miss),
