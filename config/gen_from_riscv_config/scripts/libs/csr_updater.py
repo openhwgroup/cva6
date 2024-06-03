@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 # Original Author: Oukalrazqou Abdessamii
-""" Module is used to update csr based on yaml file called  csr updater"""
+""" Module is used to update csr based on yaml file called  csr updater """
 import re
 import yaml
 

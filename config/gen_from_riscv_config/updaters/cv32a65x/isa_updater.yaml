@@ -3,6 +3,8 @@
 #   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #   Author: Abdessamii Oukalrazqou
 
+
+ # Enable and disable extension
 Zicond : False 
 
 Zcb : True

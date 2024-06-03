@@ -271,7 +271,7 @@ class RstAddressBlock(AddressBlockClass):
                     ]
                     _line.append(field.fieldDesc)
                     reg_table.append(_line)
-                _headers = ["Bits", "Field Name", "Legal Values", "Reset", "Access"]
+                _headers = ["Bits", "Field Name", "Legal Values", "Reset", "Type"]
                 _headers.append("Description")
                 reg_table = sorted(
                     reg_table, key=lambda x: int(x[0].strip("[]").split(":")[0])

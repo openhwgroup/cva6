@@ -17,7 +17,7 @@ pmpaddr :
     range: 8
 pmpcfg :
     range : 2
-    
+ #  Exclude mode 
 exclude :         
     key : priv_mode       
     cond : S

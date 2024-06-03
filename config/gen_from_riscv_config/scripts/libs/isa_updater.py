@@ -14,7 +14,7 @@
 #
 # Original Author: Oukalrazqou Abdessamii
 
-""" Module is used to update isa based on yaml file called  isa updater"""
+""" Module is used to update isa based on yaml file called  isa updater """
 
 
 import re
