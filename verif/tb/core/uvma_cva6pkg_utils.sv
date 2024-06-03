@@ -75,6 +75,8 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
     void'(spike_set_param_bool(base, "status_xs_field_we", 1'b0));
     void'(spike_set_param_uint64_t(base, "misa_override_value", get_misa(cfg)));
     void'(spike_set_param_uint64_t(base, "misa_override_mask", 64'h0FFF_FFFF));
+    void'(spike_set_param_bool    (base, "misa_we_enable", 1'b1));
+    void'(spike_set_param_bool    (base, "misa_we", 1'b0));
 
     return cfg;
 
