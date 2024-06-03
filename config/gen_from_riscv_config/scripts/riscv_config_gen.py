@@ -30,7 +30,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ipxact2rst")
     parser.add_argument("-s", "--srcFile", help="yaml input file")
     parser.add_argument("-d", "--destDir", help="write generated file to dir")
-    parser.add_argument("-m", "--modif", help="ISA Formatter if existe")
+    parser.add_argument("-m", "--modif", help="ISA /CSR Formatter if exist")
     parser.add_argument("-i", "--temp", help="Full ISA Template")
     parser.add_argument("-t", "--target", help="Specifiy Config Name")
     args, unknown_args = parser.parse_known_args()

@@ -53,10 +53,10 @@ python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_ge
 You could find your output files in this directory : 
 
 if the output is ISA Documentation: 
-                [Config_Name]\isa\
+                `<Config_Name>/isa/`
                 
 if the output is CSR Documentation :
-                [Config_Name]\csr\
+                `<Config_Name>/csr/`
                 
                 
 for more details about How to write CSR or ISA Updater,see [UPDATERS](##Updaters) section
@@ -86,7 +86,7 @@ If you want to add an extension to documentation not existed by default u can pu
      
 - Format : 
         
-        [Extension_Name]: True
+        <Extension_Name>: True
           
 - Example : 
 
@@ -96,7 +96,7 @@ If you want to remove an extension from documentation not existed by default u c
      
 - Format : 
 
-        [Extension_Name]: False
+        <Extension_Name>: False
           
 - Example : 
 
@@ -107,7 +107,7 @@ If you want to remove an extension from documentation  already existed :
            
 - Format : 
 
-        [Extension_Name]: False
+        <Extension_Name>: False
           
 - Example : 
 
@@ -191,7 +191,7 @@ Risc-V Config Yaml file is generated based on Risc-Config tool which include all
    <https://github.com/openhwgroup/cva6/tree/master/vendor/riscv/riscv-config>.
                     
  
-You can execute the tool from `Config/riscv-config` repo  :
+You can execute the tool from `../config/riscv-config` repo  :
 
 
 - It needs python dependancies with : 
